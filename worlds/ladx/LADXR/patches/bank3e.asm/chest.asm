@@ -829,6 +829,7 @@ ItemSpriteTable:
     db $46, $1C        ; NIGHTMARE_KEY9
     db $4C, $1C        ; Toadstool
     db $AE, $14        ; Guardian Acorn
+    db $58, $01        ; Book
 
 LargeItemSpriteTable:
     db $AC, $02, $AC, $22 ; heart piece

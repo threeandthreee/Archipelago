@@ -100,6 +100,7 @@ class ItemName:
     BAD_HEART_CONTAINER = "Bad Heart Container"
     TOADSTOOL = "Toadstool"
     GUARDIAN_ACORN = "Guardian Acorn"
+    BOOK = "Book"
     KEY = "Key"
     KEY1 = "Small Key (Tail Cave)"
     KEY2 = "Small Key (Bottle Grotto)"
@@ -224,6 +225,7 @@ links_awakening_items = [
     #ItemData(ItemName.BAD_HEART_CONTAINER, "BAD_HEART_CONTAINER", ItemClassification.trap),
     ItemData(ItemName.TOADSTOOL, "TOADSTOOL", ItemClassification.progression),
     ItemData(ItemName.GUARDIAN_ACORN, "GUARDIAN_ACORN", ItemClassification.filler),
+    ItemData(ItemName.BOOK, "BOOK", ItemClassification.filler),)
     DungeonItemData(ItemName.KEY, "KEY", ItemClassification.progression),
     DungeonItemData(ItemName.KEY1, "KEY1", ItemClassification.progression),
     DungeonItemData(ItemName.KEY2, "KEY2", ItemClassification.progression),

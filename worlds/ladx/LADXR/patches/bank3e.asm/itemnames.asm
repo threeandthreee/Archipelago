@@ -171,7 +171,7 @@ ItemNamePointers:
     dw ItemNameNightmareKey9
     dw ItemNameToadstool
     dw ItemNameGuardianAcorn
-    dw ItemNameNone ; 0x52
+    dw ItemNameBook
     dw ItemNameNone ; 0x53
     dw ItemNameNone ; 0x54
     dw ItemNameNone ; 0x55
@@ -421,6 +421,8 @@ ItemNameToadstool:
     db m"Got the {TOADSTOOL}", $ff
 ItemNameGuardianAcorn:
     db m"Got a Guardian Acorn", $ff
+ItemNameBook:
+    db m"Got a Book", $ff
 
 ItemNameHeartPiece:
     db m"Got the {HEART_PIECE}", $ff

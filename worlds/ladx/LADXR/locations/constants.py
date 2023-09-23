@@ -88,6 +88,7 @@ CHEST_ITEMS = {
     TOADSTOOL: 0x50,
 
     GUARDIAN_ACORN: 0x51,
+    BOOK: 0x52,
 
     HEART_PIECE: 0x80,
     BOWWOW: 0x81,
