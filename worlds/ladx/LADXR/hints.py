@@ -1,5 +1,6 @@
 from .locations.items import *
 from .utils import formatText
+from ..Items import LinksAwakeningItem
 from ..Locations import LinksAwakeningLocation
 
 
@@ -62,12 +63,11 @@ def add_hints(rom, rnd, multiworld, ap_setting):
 
 
 def get_item_pool(multiworld, ap_setting):
-    # TODO: filter unshuffled keys, filter instruments
     item_pool = multiworld.get_items().filter(is_hintable)
     if ap_setting['hint_classification'] == HintClassification.option_useful:
-        item_pool = item_pool.filter(is_useful)
+        item_pool = item_pool.filter(is_useful).filter(not_unshuffled_dungeon_item)
     elif ap_setting['hint_classification'] == HintClassification.option_progression:
-        item_pool = item_pool.filter(is_progression)
+        item_pool = item_pool.filter(is_progression).filter(not_unshuffled_dungeon_item)
     if ap_setting['hint_locality'] == HintLocality.option_our_items:
         item_pool = item_pool.filter(is_ours)
     elif ap_setting['hint_locality'] == HintLocality.option_local_items:
@@ -90,13 +90,25 @@ def generate_hint(item_pool, rnd, multiworld, is_junk):
 
 def is_hintable(item):
     return item.location and item.code is not None and item.location.show_in_spoiler
+
 def is_useful(item):
     return all(ItemClassification[type] not in item.classification for type in ['trap', 'filler'])
+
 def is_progression(item):
     return any(ItemClassification[type] in item.classification for type in ['progression', 'progression_skip_balancing'])
+
+def not_unshuffled_dungeon_item(item):
+    is_unshuffled_dungeon_item = from_ladx(item) and isinstance(item.item_data, DungeonItemData) and item.location.parent_region and item.item_data.dungeon_index == item.location.parent_region.dungeon_index
+    return not is_unshuffled_dungeon_item
+
 def is_ours(item):
-    return item.player = player_id
+    return item.player == player_id
+
 def is_local(item):
-    return item.location.player = player_id
+    return item.location.player == player_id
+
 def in_ladx(item):
     return isinstance(item.location, LinksAwakeningLocation)
+
+def from_ladx(item):
+    return isinstance(item, LinksAwakeningItem)
