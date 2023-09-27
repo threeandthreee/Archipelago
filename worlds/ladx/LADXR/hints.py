@@ -80,7 +80,7 @@ def generate_hint(item_pool, rnd, multiworld, is_junk):
     item = item_pool.pop()
     name = "Your" if is_ours(item) else f"{multiworld.player_name[item.player]}'s"
     location_name = item.location.ladxr_item.metadata.name if in_ladx(item) else item.location.name
-    hint = f"{name} {item} is at {location_name}"
+    hint = f"{name} {item.name} is at {location_name}"
     if not is_local(item):
         hint += f" in {multiworld.player_name[item.location.player]}'s world"
     # Cap hint size at 85
