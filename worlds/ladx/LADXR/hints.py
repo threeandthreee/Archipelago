@@ -49,6 +49,7 @@ useless_hint = [
 
 def add_hints(rom, rnd, multiworld, ap_setting):
     item_pool = get_item_pool(multiworld, ap_setting)
+    rnd.shuffle(item_pool)
     text_ids = hint_text_ids.copy()
     rnd.shuffle(text_ids)
     for text_id in text_ids:
@@ -71,11 +72,12 @@ def get_item_pool(multiworld, ap_setting):
         item_pool = item_pool.filter(is_ours)
     elif ap_setting['hint_locality'] == HintLocality.option_local_items:
         item_pool = item_pool.filter(is_local)
+    return item_pool
 
-def generate_hint(items, rnd, multiworld, is_junk):
+def generate_hint(item_pool, rnd, multiworld, is_junk):
     if is_junk or not items:
         return rnd.choice(hints).format(*rnd.choice(useless_hint))
-    item = rnd.choice(items)
+    item = item_pool.pop()
     name = "Your" if is_ours(item) else f"{multiworld.player_name[item.player]}'s"
     location_name = item.location.ladxr_item.metadata.name if in_ladx(item) else item.location.name
     hint = f"{name} {item} is at {location_name}"
