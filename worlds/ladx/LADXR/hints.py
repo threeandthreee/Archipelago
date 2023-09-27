@@ -54,13 +54,10 @@ def add_hints(rom, rnd, multiworld, ap_setting):
     text_ids = hint_text_ids.copy()
     rnd.shuffle(text_ids)
     for text_id in text_ids:
-        is_junk = rnd.uniform(0,100) < ap_setting['junk_hint_rate']
-        hint = generate_hint(item_pool, rnd, multiworld, is_junk)
+        hint = generate_hint(item_pool, rnd, multiworld, ap_setting)
         rom.texts[text_id] = formatText(hint)
-
     for text_id in range(0x200, 0x20C, 2):
         rom.texts[text_id] = formatText("Read this book?", ask="YES  NO")
-
 
 def get_item_pool(multiworld, ap_setting):
     item_pool = multiworld.get_items().filter(is_hintable)
@@ -72,9 +69,12 @@ def get_item_pool(multiworld, ap_setting):
         item_pool = item_pool.filter(is_ours)
     elif ap_setting['hint_locality'] == HintLocality.option_local_items:
         item_pool = item_pool.filter(is_local)
+    elif ap_setting['hint_locality'] == HintLocality.option_our_local_items:
+        item_pool = item_pool.filter(is_ours).filter(is_local)
     return item_pool
 
-def generate_hint(item_pool, rnd, multiworld, is_junk):
+def generate_hint(item_pool, rnd, multiworld, ap_setting):
+    is_junk = rnd.uniform(0,100) < ap_setting['junk_hint_rate']
     if is_junk or not items:
         return rnd.choice(hints).format(*rnd.choice(useless_hint))
     item = item_pool.pop()

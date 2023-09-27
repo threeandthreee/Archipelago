@@ -14,7 +14,7 @@ class LADXROption:
     def to_ladxr_option(self, all_options):
         if not self.ladxr_name:
             return None, None
-        
+
         return (self.ladxr_name, self.name_lookup[self.value].replace("_", ""))
 
 
@@ -32,7 +32,7 @@ class Logic(Choice, LADXROption):
     option_hard = 2
     option_glitched = 3
     option_hell = 4
-    
+
     default = option_normal
 
 class TradeQuest(DefaultOffToggle, LADXROption):
@@ -44,7 +44,7 @@ class TradeQuest(DefaultOffToggle, LADXROption):
 
 class Rooster(DefaultOnToggle, LADXROption):
     """
-    [On] Adds the rooster to the item pool. 
+    [On] Adds the rooster to the item pool.
     [Off] The rooster spot is still a check giving an item. But you will never find the rooster. Any rooster spot is accessible without rooster by other means.
     """
     ladxr_name = "rooster"
@@ -74,7 +74,7 @@ class EntranceShuffle(Choice, LADXROption):
     option_none = 0
     option_simple = 1
     #option_advanced = 2
-    #option_expert = 3    
+    #option_expert = 3
     #option_insanity = 4
     default = option_none
     ladxr_name = "entranceshuffle"
@@ -90,7 +90,7 @@ class APTitleScreen(DefaultOnToggle):
     """
     Enables AP specific title screen and disables the intro cutscene
     """
-    
+
 
 class BossShuffle(Choice):
     none = 0
@@ -128,7 +128,7 @@ class ShuffleSmallKeys(DungeonItemShuffle):
     [Own Dungeons] The item will be within a dungeon in your world
     [Own World] The item will be somewhere in your world
     [Any World] The item could be anywhere
-    [Different World] The item will be somewhere in another world 
+    [Different World] The item will be somewhere in another world
     """
     ladxr_item = "KEY"
 class ShuffleMaps(DungeonItemShuffle):
@@ -169,14 +169,14 @@ class Goal(Choice, LADXROption):
     The Goal of the game
     [Instruments] The Wind Fish's Egg will only open if you have the required number of Instruments of the Sirens, and play the Ballad of the Wind Fish.
     [Seashells] The Egg will open when you bring 20 seashells. The Ballad and Ocarina are not needed.
-    [Open] The Egg will start pre-opened.  
+    [Open] The Egg will start pre-opened.
     """
     display_name = "Goal"
     ladxr_name = "goal"
     option_instruments = 1
     option_seashells = 2
     option_open = 3
-    
+
     default = option_instruments
 
     def to_ladxr_option(self, all_options):
@@ -343,12 +343,12 @@ class GfxMod(FreeText, LADXROption):
                 name, extension = os.path.splitext(file)
                 if extension in self.extensions:
                     GfxMod.__spriteFiles[name].append(file)
-                    
+
     def verify(self, world, player_name: str, plando_options) -> None:
         if self.value == "Link" or self.value in GfxMod.__spriteFiles:
             return
         raise Exception(f"LADX Sprite '{self.value}' not found. Possible sprites are: {['Link'] + list(GfxMod.__spriteFiles.keys())}")
-            
+
 
     def to_ladxr_option(self, all_options):
         if self.value == -1 or self.value == "Link":
@@ -363,7 +363,7 @@ class GfxMod(FreeText, LADXROption):
 
 class Palette(Choice):
     """
-    Sets the palette for the game. 
+    Sets the palette for the game.
     Note: A few places aren't patched, such as the menu and a few color dungeon tiles.
     [Normal] The vanilla palette
     [1-Bit] One bit of color per channel
@@ -378,7 +378,7 @@ class Palette(Choice):
     option_greyscale = 3
     option_pink = 4
     option_inverted = 5
-    
+
 
 class HintClassification(Choice):
     """
@@ -394,7 +394,7 @@ class HintClassification(Choice):
 
 class JunkHintRate(Range):
     """
-    Percentage of in-game hints that will be useless, such as: "If you want sand, start looking in Yarna Desert."
+    Percentage of in-game hints that will have no informational value, such as: "If you want sand, start looking in Yarna Desert. Set to 100 to effectively disable in-game hints."
     """
     display_name = "Junk Hint Rate"
     range_start = 0
@@ -406,22 +406,24 @@ class HintLocality(Choice):
     Sets which pool of items will appear in in-game hints.
     [Our Items] Hints are for our items, in any world.
     [Local Items] Hints are for anybody's items, in our world.
+    [Our Local Items] Hints are for our items, in our world.
     [Any] Hints are for any items in any world.
     """
     display_name = "Hint Locality"
     option_our_items = 0
     option_local_items = 1
-    option_any = 2
+    option_our_local_items = 2
+    option_any = 3
 
 links_awakening_options: typing.Dict[str, typing.Type[Option]] = {
     'logic': Logic,
-    # 'heartpiece': DefaultOnToggle, # description='Includes heart pieces in the item pool'),                
-    # 'seashells': DefaultOnToggle, # description='Randomizes the secret sea shells hiding in the ground/trees. (chest are always randomized)'),                
-    # 'heartcontainers': DefaultOnToggle, # description='Includes boss heart container drops in the item pool'),                
-    # 'instruments': DefaultOffToggle, # description='Instruments are placed on random locations, dungeon goal will just contain a random item.'),                
-    'tradequest': TradeQuest, # description='Trade quest items are randomized, each NPC takes its normal trade quest item, but gives a random item'),                
-    # 'witch': DefaultOnToggle, # description='Adds both the toadstool and the reward for giving the toadstool to the witch to the item pool'),                
-    'rooster': Rooster, # description='Adds the rooster to the item pool. Without this option, the rooster spot is still a check giving an item. But you will never find the rooster. Any rooster spot is accessible without rooster by other means.'),                
+    # 'heartpiece': DefaultOnToggle, # description='Includes heart pieces in the item pool'),
+    # 'seashells': DefaultOnToggle, # description='Randomizes the secret sea shells hiding in the ground/trees. (chest are always randomized)'),
+    # 'heartcontainers': DefaultOnToggle, # description='Includes boss heart container drops in the item pool'),
+    # 'instruments': DefaultOffToggle, # description='Instruments are placed on random locations, dungeon goal will just contain a random item.'),
+    'tradequest': TradeQuest, # description='Trade quest items are randomized, each NPC takes its normal trade quest item, but gives a random item'),
+    # 'witch': DefaultOnToggle, # description='Adds both the toadstool and the reward for giving the toadstool to the witch to the item pool'),
+    'rooster': Rooster, # description='Adds the rooster to the item pool. Without this option, the rooster spot is still a check giving an item. But you will never find the rooster. Any rooster spot is accessible without rooster by other means.'),
     # 'boomerang': Boomerang,
     # 'randomstartlocation': DefaultOffToggle, # 'Randomize where your starting house is located'),
     'experimental_dungeon_shuffle': DungeonShuffle, # 'Randomizes the dungeon that each dungeon entrance leads to'),
@@ -447,5 +449,5 @@ links_awakening_options: typing.Dict[str, typing.Type[Option]] = {
     'ap_title_screen': APTitleScreen,
     'hint_classification': HintClassification,
     'junk_hint_rate': JunkHintRate,
-    'hint_locality': HintLocality
+    'hint_locality': HintLocality,
 }
