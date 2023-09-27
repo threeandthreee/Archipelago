@@ -255,6 +255,7 @@ ItemNamePointers:
     dw ItemTradeQuest13
     dw ItemTradeQuest14
     dw ItemPieceOfPower
+    dw ItemHorsePiece
 
 ItemNameNone:
     db m"NONE", $ff
@@ -504,5 +505,7 @@ ItemTradeQuest14:
  
 ItemPieceOfPower:
     db m"You've got a Piece of Power", $ff
+ItemHorsePiece:
+    db m"You've got a Horse Piece", $ff
 
 MultiNamePointers:

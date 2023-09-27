@@ -138,6 +138,7 @@ SYNONYMS = {
     'TEXTBOOK': 'BOOK',
     'TOME': 'BOOK',
     'WORKBOOK': 'BOOK',
+    'CHESS': 'HORSE_PIECE',
     'KEY': 'KEY', # Without this, keys show up as nightmare keys
     'FOSSIL': 'STONE_BEAK',
     'RELIC': 'STONE_BEAK',

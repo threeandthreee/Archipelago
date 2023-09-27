@@ -177,6 +177,7 @@ class ItemName:
     TRADING_ITEM_SCALE = "Scale"
     TRADING_ITEM_MAGNIFYING_GLASS = "Magnifying Glass"
     PIECE_OF_POWER = "Piece Of Power"
+    HORSE_PIECE = "Horse Piece"
 
 trade_item_prog = ItemClassification.progression 
 
@@ -225,7 +226,7 @@ links_awakening_items = [
     #ItemData(ItemName.BAD_HEART_CONTAINER, "BAD_HEART_CONTAINER", ItemClassification.trap),
     ItemData(ItemName.TOADSTOOL, "TOADSTOOL", ItemClassification.progression),
     ItemData(ItemName.GUARDIAN_ACORN, "GUARDIAN_ACORN", ItemClassification.filler),
-    ItemData(ItemName.BOOK, "BOOK", ItemClassification.filler),)
+    ItemData(ItemName.BOOK, "BOOK", ItemClassification.filler),
     DungeonItemData(ItemName.KEY, "KEY", ItemClassification.progression),
     DungeonItemData(ItemName.KEY1, "KEY1", ItemClassification.progression),
     DungeonItemData(ItemName.KEY2, "KEY2", ItemClassification.progression),
@@ -302,6 +303,7 @@ links_awakening_items = [
     TradeItemData(ItemName.TRADING_ITEM_SCALE, "TRADING_ITEM_SCALE", trade_item_prog, "Mermaid (Martha's Bay)"),
     TradeItemData(ItemName.TRADING_ITEM_MAGNIFYING_GLASS, "TRADING_ITEM_MAGNIFYING_GLASS", trade_item_prog, "Mermaid Statue (Martha's Bay)"),
     ItemData(ItemName.PIECE_OF_POWER, "PIECE_OF_POWER", ItemClassification.filler),
+    ItemData(ItemName.HORSE_PIECE, "HORSE_PIECE", ItemClassification.filler),
 ]
 
 ladxr_item_to_la_item_name = {

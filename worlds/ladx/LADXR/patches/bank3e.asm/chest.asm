@@ -870,6 +870,7 @@ LargeItemSpriteTable:
     db $DC, $0D, $DE, $0D ; TradeItem13
     db $E0, $0D, $E2, $0D ; TradeItem14
     db $14, $42, $14, $62 ; Piece Of Power
+    db $60, $03, $62, $03 ; Horse Piece
 
 ItemMessageTable:
     db $90, $3D, $89, $93, $94, $95, $96, $97, $98, $99, $9A, $9B, $9C, $9D, $D9, $A2
@@ -884,7 +885,7 @@ ItemMessageTable:
     ; $80
     db $4F, $C8, $CA, $CB, $E2, $E3, $E4, $CC, $CD, $2A, $2B, $C9, $C9, $C9, $C9, $C9
     db $C9, $C9, $C9, $C9, $C9, $C9, $B8, $44, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9
-    db $C9, $C9, $C9, $C9, $9D, $C9
+    db $C9, $C9, $C9, $C9, $9D, $C9, $C9
 
 RenderDroppedKey:
     ;TODO: See EntityInitKeyDropPoint for a few special cases to unload.
