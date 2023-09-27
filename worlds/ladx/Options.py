@@ -379,6 +379,40 @@ class Palette(Choice):
     option_pink = 4
     option_inverted = 5
     
+
+class HintClassification(Choice):
+    """
+    Sets classification of items included in in-game hints from the library and owl statues.
+    [Any] All item classifications are included
+    [Useful] Excludes trap and filler items
+    [Progression] Includes progression items only
+    """
+    display_name = "Hint Classification"
+    option_any = 0
+    option_useful = 1
+    option_progression = 2
+
+class JunkHintRate(Range):
+    """
+    Percentage of in-game hints that will be useless, such as: "If you want sand, start looking in Yarna Desert."
+    """
+    display_name = "Junk Hint Rate"
+    range_start = 0
+    range_end = 100
+    default = 33
+
+class HintLocality(Choice):
+    """
+    Sets which pool of items will appear in in-game hints.
+    [Our Items] Hints are for our items, in any world.
+    [Local Items] Hints are for anybody's items, in our world.
+    [Any] Hints are for any items in any world.
+    """
+    display_name = "Hint Locality"
+    option_our_items = 0
+    option_local_items = 1
+    option_any = 2
+
 links_awakening_options: typing.Dict[str, typing.Type[Option]] = {
     'logic': Logic,
     # 'heartpiece': DefaultOnToggle, # description='Includes heart pieces in the item pool'),                
@@ -411,4 +445,7 @@ links_awakening_options: typing.Dict[str, typing.Type[Option]] = {
     'music_change_condition': MusicChangeCondition,
     'nag_messages': NagMessages,
     'ap_title_screen': APTitleScreen,
+    'hint_classification': HintClassification,
+    'junk_hint_rate': JunkHintRate,
+    'hint_locality': HintLocality
 }

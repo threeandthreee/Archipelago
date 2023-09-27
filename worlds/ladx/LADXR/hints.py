@@ -1,5 +1,6 @@
 from .locations.items import *
 from .utils import formatText
+from ..Locations import LinksAwakeningLocation
 
 
 hint_text_ids = [
@@ -26,10 +27,6 @@ hint_text_ids = [
     0x20B,  # Pre open: 0x20A
 ]
 
-hint_items = (POWER_BRACELET, SHIELD, BOW, HOOKSHOT, MAGIC_ROD, PEGASUS_BOOTS, OCARINA, FEATHER, SHOVEL,
-              MAGIC_POWDER, SWORD, FLIPPERS, TAIL_KEY, ANGLER_KEY, FACE_KEY,
-              BIRD_KEY, SLIME_KEY, GOLD_LEAF, BOOMERANG, BOWWOW)
-
 hints = [
     "{0} is at {1}",
     "If you want {0} start looking in {1}",
@@ -37,6 +34,7 @@ hints = [
     "They say that {0} is at {1}",
     "You might want to look in {1} for a secret",
 ]
+
 useless_hint = [
     ("Egg", "Mt. Tamaranch"),
     ("Marin", "Mabe Village"),
@@ -49,14 +47,54 @@ useless_hint = [
 ]
 
 
-def addHints(rom, rnd, hint_generator):
+def add_hints(rom, rnd, multiworld, ap_setting):
+    item_pool = get_item_pool(multiworld, ap_setting)
     text_ids = hint_text_ids.copy()
     rnd.shuffle(text_ids)
     for text_id in text_ids:
-        hint = hint_generator()
-        if not hint:
-            hint = rnd.choice(hints).format(*rnd.choice(useless_hint))
+        is_junk = rnd.uniform(0,100) < ap_setting['junk_hint_rate']
+        hint = generate_hint(item_pool, rnd, multiworld, is_junk)
         rom.texts[text_id] = formatText(hint)
 
     for text_id in range(0x200, 0x20C, 2):
         rom.texts[text_id] = formatText("Read this book?", ask="YES  NO")
+
+
+def get_item_pool(multiworld, ap_setting):
+    # TODO: filter unshuffled keys, filter instruments
+    item_pool = multiworld.get_items().filter(is_hintable)
+    if ap_setting['hint_classification'] == HintClassification.option_useful:
+        item_pool = item_pool.filter(is_useful)
+    elif ap_setting['hint_classification'] == HintClassification.option_progression:
+        item_pool = item_pool.filter(is_progression)
+    if ap_setting['hint_locality'] == HintLocality.option_our_items:
+        item_pool = item_pool.filter(is_ours)
+    elif ap_setting['hint_locality'] == HintLocality.option_local_items:
+        item_pool = item_pool.filter(is_local)
+
+def generate_hint(items, rnd, multiworld, is_junk):
+    if is_junk or not items:
+        return rnd.choice(hints).format(*rnd.choice(useless_hint))
+    item = rnd.choice(items)
+    name = "Your" if is_ours(item) else f"{multiworld.player_name[item.player]}'s"
+    location_name = item.location.ladxr_item.metadata.name if in_ladx(item) else item.location.name
+    hint = f"{name} {item} is at {location_name}"
+    if not is_local(item):
+        hint += f" in {multiworld.player_name[item.location.player]}'s world"
+    # Cap hint size at 85
+    # Realistically we could go bigger but let's be safe instead
+    hint = hint[:85]
+    return hint
+
+def is_hintable(item):
+    return item.location and item.code is not None and item.location.show_in_spoiler
+def is_useful(item):
+    return all(ItemClassification[type] not in item.classification for type in ['trap', 'filler'])
+def is_progression(item):
+    return any(ItemClassification[type] in item.classification for type in ['progression', 'progression_skip_balancing'])
+def is_ours(item):
+    return item.player = player_id
+def is_local(item):
+    return item.location.player = player_id
+def in_ladx(item):
+    return isinstance(item.location, LinksAwakeningLocation)
