@@ -48,6 +48,7 @@ class TextShuffle(DefaultOffToggle):
     [On] Shuffles all the text in the game
     [Off] (default) doesn't shuffle them.
     """
+    display_name = "Text Shuffle"
 
 class Rooster(DefaultOnToggle, LADXROption):
     """
@@ -404,12 +405,14 @@ class WarpImprovements(DefaultOffToggle):
     [On] Adds remake style warp screen to the game. Choose your warp destination on the map after jumping in a portal and press B to select.
     [Off] No change
     """
+    display_name = "Warp Improvements"
 
 class AdditionalWarpPoints(DefaultOffToggle):
     """
     [On] (requires warp improvements) Adds a warp point at Crazy Tracy's house (the Mambo teleport spot) and Eagle's Tower
     [Off] No change
     """
+    display_name = "Additional Warp Points"
      
 
 links_awakening_options: typing.Dict[str, typing.Type[Option]] = {
