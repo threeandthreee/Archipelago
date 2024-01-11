@@ -24,6 +24,7 @@ from .LADXR.worldSetup import WorldSetup as LADXRWorldSetup
 from .Locations import (LinksAwakeningLocation, LinksAwakeningRegion,
                         create_regions_from_ladxr, get_locations_to_id)
 from .Options import DungeonItemShuffle, links_awakening_options
+from .Presets import LinksAwakeningPresets
 from .Rom import LADXDeltaPatch
 
 DEVELOPER_MODE = False
@@ -64,6 +65,7 @@ class LinksAwakeningWebWorld(WebWorld):
         ["zig"]
     )]
     theme = "dirt"
+    options_presets = LinksAwakeningPresets
 
 
 class LinksAwakeningWorld(World):
