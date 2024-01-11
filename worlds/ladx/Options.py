@@ -20,8 +20,7 @@ class LADXROption:
 
 class Logic(Choice, LADXROption):
     """
-    Affects where items are allowed to be placed.
-    [Normal] Playable without using any tricks or glitches. Can require knowledge from a vanilla playthrough, such as how to open Color Dungeon.
+    [Normal] Playable without using any tricks or glitches.
     [Hard] More advanced techniques may be required, but glitches are not. Examples include tricky jumps, killing enemies with only pots.
     [Glitched] Advanced glitches and techniques may be required, but extremely difficult or tedious tricks are not required. Examples include Bomb Triggers, Super Jumps and Jesus Jumps.
     [Hell] Obscure knowledge and hard techniques may be required. Examples include featherless jumping with boots and/or hookshot, sequential pit buffers and unclipped superjumps. Things in here can be extremely hard to do or very time consuming."""
@@ -37,23 +36,21 @@ class Logic(Choice, LADXROption):
 
 class TradeQuest(DefaultOffToggle, LADXROption):
     """
-    [On] adds the trade items to the pool (the trade locations will always be local items)
-    [Off] (default) doesn't add them
+    Adds the trade items to the pool (the trade locations will always be local items).
     """
     display_name = "Trade Quest"
     ladxr_name = "tradequest"
 
 class TextShuffle(DefaultOffToggle):
     """
-    [On] Shuffles all the text in the game
-    [Off] (default) doesn't shuffle them.
+    Shuffles all the text in the game.
     """
     display_name = "Text Shuffle"
 
 class Rooster(DefaultOnToggle, LADXROption):
     """
-    [On] Adds the rooster to the item pool. 
-    [Off] The rooster spot is still a check giving an item. But you will never find the rooster. Any rooster spot is accessible without rooster by other means.
+    Adds the rooster to the item pool.
+    Even when disabled, the rooster's grave is included in the location pool. All vanilla locations requiring the rooster have been patched to be accessible by other means.
     """
     display_name = "Rooster"
     ladxr_name = "rooster"
@@ -70,7 +67,7 @@ class Boomerang(Choice):
 
 class EntranceShuffle(Choice, LADXROption):
     """
-    [WARNING] Experimental, may fail to fill
+    Experimental, may fail to fill!
     Randomizes where overworld entrances lead to.
     [Simple] Single-entrance caves/houses that have items are shuffled amongst each other.
     If random start location and/or dungeon shuffle is enabled, then these will be shuffled with all the non-connector entrance pool.
@@ -91,15 +88,15 @@ class EntranceShuffle(Choice, LADXROption):
 
 class DungeonShuffle(DefaultOffToggle, LADXROption):
     """
-    [WARNING] Experimental, may fail to fill
-    Randomizes dungeon entrances within eachother
+    Experimental, may fail to fill!
+    Randomizes dungeon entrances within eachother.
     """
     display_name = "Experimental Dungeon Shuffle"
     ladxr_name = "dungeonshuffle"
 
 class APTitleScreen(DefaultOnToggle):
     """
-    Enables AP specific title screen and disables the intro cutscene
+    Enables AP specific title screen and disables the intro cutscene.
     """
     display_name = "AP Title Screen"
 
@@ -123,66 +120,60 @@ class DungeonItemShuffle(Choice):
 
 class ShuffleNightmareKeys(DungeonItemShuffle):
     """
-    Shuffle Nightmare Keys
-    [Original Dungeon] The item will be within its original dungeon
-    [Own Dungeons] The item will be within a dungeon in your world
-    [Own World] The item will be somewhere in your world
-    [Any World] The item could be anywhere
-    [Different World] The item will be somewhere in another world
+    [Original Dungeon] The item will be within its original dungeon.
+    [Own Dungeons] The item will be within a dungeon in your world.
+    [Own World] The item will be somewhere in your world.
+    [Any World] The item could be anywhere.
+    [Different World] The item will be somewhere in another world.
     """
     display_name = "Shuffle Nightmare Keys"
     ladxr_item = "NIGHTMARE_KEY"
 
 class ShuffleSmallKeys(DungeonItemShuffle):
     """
-    Shuffle Small Keys
-    [Original Dungeon] The item will be within its original dungeon
-    [Own Dungeons] The item will be within a dungeon in your world
-    [Own World] The item will be somewhere in your world
-    [Any World] The item could be anywhere
-    [Different World] The item will be somewhere in another world 
+    [Original Dungeon] The item will be within its original dungeon.
+    [Own Dungeons] The item will be within a dungeon in your world.
+    [Own World] The item will be somewhere in your world.
+    [Any World] The item could be anywhere.
+    [Different World] The item will be somewhere in another world .
     """
     display_name = "Shuffle Small Keys"
     ladxr_item = "KEY"
 class ShuffleMaps(DungeonItemShuffle):
     """
-    Shuffle Dungeon Maps
-    [Original Dungeon] The item will be within its original dungeon
-    [Own Dungeons] The item will be within a dungeon in your world
-    [Own World] The item will be somewhere in your world
-    [Any World] The item could be anywhere
-    [Different World] The item will be somewhere in another world
+    [Original Dungeon] The item will be within its original dungeon.
+    [Own Dungeons] The item will be within a dungeon in your world.
+    [Own World] The item will be somewhere in your world.
+    [Any World] The item could be anywhere.
+    [Different World] The item will be somewhere in another world.
     """
     display_name = "Shuffle Maps"
     ladxr_item = "MAP"
 
 class ShuffleCompasses(DungeonItemShuffle):
     """
-    Shuffle Dungeon Compasses
-    [Original Dungeon] The item will be within its original dungeon
-    [Own Dungeons] The item will be within a dungeon in your world
-    [Own World] The item will be somewhere in your world
-    [Any World] The item could be anywhere
-    [Different World] The item will be somewhere in another world
+    [Original Dungeon] The item will be within its original dungeon.
+    [Own Dungeons] The item will be within a dungeon in your world.
+    [Own World] The item will be somewhere in your world.
+    [Any World] The item could be anywhere.
+    [Different World] The item will be somewhere in another world.
     """
     display_name = "Shuffle Compasses"
     ladxr_item = "COMPASS"
 
 class ShuffleStoneBeaks(DungeonItemShuffle):
     """
-    Shuffle Owl Beaks
-    [Original Dungeon] The item will be within its original dungeon
-    [Own Dungeons] The item will be within a dungeon in your world
-    [Own World] The item will be somewhere in your world
-    [Any World] The item could be anywhere
-    [Different World] The item will be somewhere in another world
+    [Original Dungeon] The item will be within its original dungeon.
+    [Own Dungeons] The item will be within a dungeon in your world.
+    [Own World] The item will be somewhere in your world.
+    [Any World] The item could be anywhere.
+    [Different World] The item will be somewhere in another world.
     """
     display_name = "Shuffle Stone Beaks"
     ladxr_item = "STONE_BEAK"
 
 class Goal(Choice, LADXROption):
     """
-    The Goal of the game
     [Instruments] The Wind Fish's Egg will only open if you have the required number of Instruments of the Sirens, and play the Ballad of the Wind Fish.
     [Seashells] The Egg will open when you bring 20 seashells. The Ballad and Ocarina are not needed.
     [Open] The Egg will start pre-opened.  
@@ -203,7 +194,7 @@ class Goal(Choice, LADXROption):
 
 class InstrumentCount(Range, LADXROption):
     """
-    Sets the number of instruments required to open the Egg
+    Sets the number of instruments required to open the Egg.
     """
     display_name = "Instrument Count"
     ladxr_name = None
@@ -213,16 +204,15 @@ class InstrumentCount(Range, LADXROption):
 
 class NagMessages(DefaultOffToggle, LADXROption):
     """
-    Controls if nag messages are shown when rocks and crystals are touched. Useful for glitches, annoying for everyone else.
+    Controls if nag messages are shown when rocks and crystals are touched. Useful for certain glitches, annoying otherwise.
     """
     display_name = "Nag Messages"
     ladxr_name = "nagmessages"
 
 class MusicChangeCondition(Choice):
     """
-    Controls how the music changes.
-    [Sword] When you pick up a sword, the music changes
-    [Always] You always have the post-sword music
+    [Sword] When you pick up a sword, the music changes.
+    [Always] You always have the post-sword music.
     """
     display_name = "Music Change Condition"
     option_sword = 0
@@ -324,12 +314,12 @@ class LinkPalette(Choice, LADXROption):
 
 class TrendyGame(Choice):
     """
-    [Easy] All of the items hold still for you
-    [Normal] The vanilla behavior
-    [Hard] The trade item also moves
-    [Harder] The items move faster
-    [Hardest] The items move diagonally
-    [Impossible] The items move impossibly fast, may scroll on and off the screen
+    [Easy] All of the items hold still for you.
+    [Normal] The vanilla behavior.
+    [Hard] The trade item also moves.
+    [Harder] The items move faster.
+    [Hardest] The items move diagonally.
+    [Impossible] The items move impossibly fast, may scroll on and off the screen.
     """
     display_name = "Trendy Game"
     option_easy = 0
@@ -342,8 +332,8 @@ class TrendyGame(Choice):
 
 class GfxMod(FreeText, LADXROption):
     """
-    Sets the sprite for link, among other things
-    The option should be the same name as a with sprite (and optional name) file in data/sprites/ladx
+    Sets the sprite for link, among other things.
+    The option should be the same name as a with sprite (and optional name) file in data/sprites/ladx.
     """
     display_name = "GFX Modification"
     ladxr_name = "gfxmod"
@@ -383,14 +373,13 @@ class GfxMod(FreeText, LADXROption):
 
 class Palette(Choice):
     """
-    Sets the palette for the game. 
     Note: A few places aren't patched, such as the menu and a few color dungeon tiles.
-    [Normal] The vanilla palette
-    [1-Bit] One bit of color per channel
-    [2-Bit] Two bits of color per channel
-    [Greyscale] Shades of grey
-    [Pink] Aesthetic
-    [Inverted] Inverted
+    [Normal] The vanilla palette.
+    [1-Bit] One bit of color per channel.
+    [2-Bit] Two bits of color per channel.
+    [Greyscale] Shades of grey.
+    [Pink] Aesthetic.
+    [Inverted] Inverted.
     """
     display_name = "Palette"
     option_normal = 0
@@ -402,15 +391,14 @@ class Palette(Choice):
 
 class WarpImprovements(DefaultOffToggle):
     """
-    [On] Adds remake style warp screen to the game. Choose your warp destination on the map after jumping in a portal and press B to select.
-    [Off] No change
+    Adds remake style warp screen to the game. Choose your warp destination on the map after jumping in a portal and press B to select.
     """
     display_name = "Warp Improvements"
 
 class AdditionalWarpPoints(DefaultOffToggle):
     """
-    [On] (requires warp improvements) Adds a warp point at Crazy Tracy's house (the Mambo teleport spot) and Eagle's Tower
-    [Off] No change
+    Requires Warp Improvements!
+    Adds a warp point at Crazy Tracy's house (the Mambo teleport spot) and Eagle's Tower.
     """
     display_name = "Additional Warp Points"
      
