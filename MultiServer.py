@@ -2200,7 +2200,7 @@ class ServerCommandProcessor(CommonCommandProcessor):
                                 if match['sender'] == match['receiver']:
                                     payload = f'**{match["sender"]}** found their **{match["item"]}** {match["location"]}'
                                 else:
-                                    payload = f'**{match["sender"]}** sent **{match["item"]}** {match["location"]} to **{match["receiver"]}**'
+                                    payload = f'**{match["sender"]}** sent **{match["item"]}** to **{match["receiver"]}** {match["location"]}'
                                 try:
                                     response = discord_webhook.DiscordWebhook(
                                         webhook_url, rate_limit_retry=True, content=payload).execute()
