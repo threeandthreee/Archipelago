@@ -14,6 +14,7 @@ import math
 import operator
 import pickle
 import random
+import re
 import threading
 import time
 import typing
@@ -2194,19 +2195,25 @@ class ServerCommandProcessor(CommonCommandProcessor):
                                     message += "\n" + record.msg
                                     record = None
                         if message:
-                            try:
-                                response = discord_webhook.DiscordWebhook(
-                                    webhook_url, rate_limit_retry=True, content=message.strip()).execute()
-                                if response.status_code not in (200, 204):
+                            match = re.match(r"^\(Team #1\) (?P<sender>.+?) sent (?P<item>.+?) to (?P<receiver>.+?) (?P<location>\(.+\))", message.strip())
+                            if match:
+                                if match['sender'] == match['receiver']:
+                                    payload = f'**{match["sender"]}** found their **{match["item"]}** {match["location"]}'
+                                else:
+                                    payload = f'**{match["sender"]}** sent **{match["item"]}** {match["location"]} to **{match["receiver"]}**'
+                                try:
+                                    response = discord_webhook.DiscordWebhook(
+                                        webhook_url, rate_limit_retry=True, content=payload).execute()
+                                    if response.status_code not in (200, 204):
+                                        shutdown()
+                                        logging.info(f"Disabled Discord WebHook due to error code {response.status_code}.")
+                                        return
+                                # just in case to prevent an error-loop logging itself
+                                except Exception as e:
                                     shutdown()
-                                    logging.info(f"Disabled Discord WebHook due to error code {response.status_code}.")
+                                    logging.error("Disabled Discord WebHook due to error.")
+                                    logging.exception(e)
                                     return
-                            # just in case to prevent an error-loop logging itself
-                            except Exception as e:
-                                shutdown()
-                                logging.error("Disabled Discord WebHook due to error.")
-                                logging.exception(e)
-                                return
 
             emitter = Emitter()
             emitter.daemon = True
