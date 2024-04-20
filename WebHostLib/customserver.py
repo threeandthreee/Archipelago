@@ -161,7 +161,7 @@ def get_static_server_data() -> dict:
 
 def run_server_process(room_id, ponyconfig: dict, static_server_data: dict,
                        cert_file: typing.Optional[str], cert_key_file: typing.Optional[str],
-                       host: str):
+                       host: str, discordwebhook: str):
     # establish DB connection for multidata and multisave
     db.bind(**ponyconfig)
     db.generate_mapping(check_tables=False)
@@ -196,6 +196,9 @@ def run_server_process(room_id, ponyconfig: dict, static_server_data: dict,
                 port = socketname[1]
         if port:
             logging.info(f'Hosting game at {host}:{port}')
+            if discordwebhook:
+                ctx.commandprocessor(f'/discord_webhook {discordwebhook}')
+
             with db_session:
                 room = Room.get(id=ctx.room_id)
                 room.last_port = port

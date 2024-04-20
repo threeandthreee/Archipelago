@@ -42,6 +42,8 @@ from Utils import version_tuple, restricted_loads, Version, async_start
 from NetUtils import Endpoint, ClientStatus, NetworkItem, decode, encode, NetworkPlayer, Permission, NetworkSlot, \
     SlotType, LocationStore
 
+from base64 import urlsafe_b64decode, urlsafe_b64encode
+from uuid import UUID
 min_client_version = Version(0, 1, 6)
 colorama.init()
 
@@ -176,6 +178,8 @@ class Context:
     all_item_and_group_names: typing.Dict[str, typing.Set[str]]
     all_location_and_group_names: typing.Dict[str, typing.Set[str]]
     non_hintable_names: typing.Dict[str, typing.Set[str]]
+    webhook_active = False
+    webhook_url = ""
 
     def __init__(self, host: str, port: int, server_password: str, password: str, location_check_points: int,
                  hint_cost: int, item_cheat: bool, release_mode: str = "disabled", collect_mode="disabled",
@@ -324,6 +328,42 @@ class Context:
             if self.log_network:
                 logging.info(f"Outgoing broadcast: {msg}")
             return True
+
+    def push_to_webhook(self, event: int, message: str):
+        import discord_webhook
+
+        if message:
+            # event 0 is for raw text sending
+            # event 1 is for item sending
+            if event == 1:
+                match = re.match(
+                    r"^\(Team #1\) (?P<sender>.+?) sent (?P<item>.+?) to (?P<receiver>.+?) (?P<location>\(.+\)) (?P<flag>.+?)",
+                    message.strip())
+                if match:
+                    if match['sender'] == match['receiver']:
+                        message = f'**{match["sender"]}** found their **{match["item"]}** {match["location"]}'
+                    else:
+                        flag = int(match["flag"])
+                        item_classification = ""
+                        if flag == 1:
+                            item_classification = "[Progression]"
+                        elif flag == 2:
+                            item_classification = "[Useful]"
+                        elif flag == 4:
+                            item_classification = "[Trap]"
+                        elif flag == 8:
+                            item_classification = "[Skip_Balancing]"
+                        elif flag == 9:
+                            item_classification = "[Progression_Skip_Balancing]"
+
+                        message = f'**{match["sender"]}** sent **{match["item"]}** to **{match["receiver"]}** {match["location"]} {item_classification}'
+            # event 2 is for hints
+            # elif event == 2:
+
+            response = discord_webhook.DiscordWebhook(self.webhook_url, wait=True,
+                                                          content=message).execute()
+            if response.status_code not in (200, 204):
+                logging.info(f"Unable to push to the webhook with error code {response.status_code}")
 
     def broadcast_all(self, msgs: typing.List[dict]):
         msgs = self.dumper(msgs)
@@ -964,9 +1004,13 @@ def register_location_checks(ctx: Context, team: int, slot: int, locations: typi
             new_item = NetworkItem(item_id, location, slot, flags)
             send_items_to(ctx, team, target_player, new_item)
 
-            logging.info('(Team #%d) %s sent %s to %s (%s)' % (
+            log_message = '(Team #%d) %s sent %s to %s (%s)' % (
                 team + 1, ctx.player_names[(team, slot)], ctx.item_names[item_id],
-                ctx.player_names[(team, target_player)], ctx.location_names[location]))
+                ctx.player_names[(team, target_player)], ctx.location_names[location])
+            logging.info(log_message)
+            ctx.push_to_webhook(1, '%s %s' % (
+                log_message, flags))
+
             info_text = json_format_send_event(new_item, target_player)
             ctx.broadcast_team(team, [info_text])
 
@@ -2168,76 +2212,14 @@ class ServerCommandProcessor(CommonCommandProcessor):
         """Needs to be supplied with a Discord WebHook url as parameter,
         which will then relay the server log to a discord channel."""
 
-        import discord_webhook
-        initial_response = discord_webhook.DiscordWebhook(webhook_url, wait=True,
-                                                          content="Beginning Discord Logging").execute()
-        if initial_response.ok:
-            import queue
-            response_queue = queue.SimpleQueue()
-
-            class Emitter(threading.Thread):
-                def run(self):
-                    record: typing.Optional[logging.LogRecord] = None
-                    while True:
-                        time.sleep(1)
-                        # check for leftover record from last iteration
-                        message = record.msg if record else ""
-                        while 1:
-                            try:
-                                record = response_queue.get_nowait()
-                            except queue.Empty:
-                                break
-                            else:
-                                if record is None:
-                                    return  # shutdown
-                                if len(record.msg) > 1999:
-                                    continue  # content size limit
-                                if len(message) + len(record.msg) > 2000:
-                                    break  # reached content size limit in total
-                                else:
-                                    message += "\n" + record.msg
-                                    record = None
-                        if message:
-                            match = re.match(r"^\(Team #1\) (?P<sender>.+?) sent (?P<item>.+?) to (?P<receiver>.+?) (?P<location>\(.+\))", message.strip())
-                            if match:
-                                if match['sender'] == match['receiver']:
-                                    payload = f'**{match["sender"]}** found their **{match["item"]}** {match["location"]}'
-                                else:
-                                    payload = f'**{match["sender"]}** sent **{match["item"]}** to **{match["receiver"]}** {match["location"]}'
-                                try:
-                                    response = discord_webhook.DiscordWebhook(
-                                        webhook_url, rate_limit_retry=True, content=payload).execute()
-                                    if response.status_code not in (200, 204):
-                                        shutdown()
-                                        logging.info(f"Disabled Discord WebHook due to error code {response.status_code}.")
-                                        return
-                                # just in case to prevent an error-loop logging itself
-                                except Exception as e:
-                                    shutdown()
-                                    logging.error("Disabled Discord WebHook due to error.")
-                                    logging.exception(e)
-                                    return
-
-            emitter = Emitter()
-            emitter.daemon = True
-            emitter.start()
-
-            class DiscordLogger(logging.Handler):
-                """Logs to Discord WebHook"""
-                def emit(self, record: logging.LogRecord):
-                    response_queue.put(record)
-
-            handler = DiscordLogger()
-
-            def shutdown():
-                response_queue.put(None)
-                logging.getLogger().removeHandler(handler)
-
-            logging.getLogger().addHandler(handler)
-            self.output("Discord Link established.")
-
+        self.ctx.webhook_active = not self.ctx.webhook_active
+        if self.ctx.webhook_active:
+            self.ctx.webhook_url = webhook_url
+            self.ctx.push_to_webhook(0, f"Webhook notifications enabled: {self.ctx.webhook_active}")
+            # self.ctx.push_to_webhook(f"Multi-World server for Room {urlsafe_b64encode(self.ctx.room_id.bytes).rstrip(b'=').decode('ascii')} starting up.")
         else:
-            self.output("Discord Link could not be established. Check your webhook url.")
+            self.ctx.webhook_url = ""
+
 
 
 async def console(ctx: Context):
