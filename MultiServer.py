@@ -330,7 +330,7 @@ class Context:
             return True
 
     def push_to_webhook(self, event: int, message: str):
-        import discord_webhook
+        from discordwebhook import DiscordWebhook
 
         if message:
             # event 0 is for raw text sending
@@ -360,10 +360,10 @@ class Context:
             # event 2 is for hints
             # elif event == 2:
 
-            response = discord_webhook.DiscordWebhook(self.webhook_url, wait=True,
+            response = DiscordWebhook(self.webhook_url, wait=True,
                                                           content=message).execute()
             if response.status_code not in (200, 204):
-                logging.info(f"Unable to push to the webhook with error code {response.status_code}")
+                logging.debug(f"Unable to push to the webhook with error code {response.status_code}")
 
     def broadcast_all(self, msgs: typing.List[dict]):
         msgs = self.dumper(msgs)
@@ -722,6 +722,9 @@ class Context:
                         new_hint_events.add(player)
 
             logging.info("Notice (Team #%d): %s" % (team + 1, format_hint(self, team, hint)))
+            if not hint.local and not hint.found and recipients is None:
+                # Push here, concerns would have the thing
+                self.push_to_webhook(2, format_hint_for_webhook(self, team, hint))
         for slot in new_hint_events:
             self.on_new_hint(team, slot)
         for slot, hint_data in concerns.items():
@@ -1070,8 +1073,18 @@ def format_hint(ctx: Context, team: int, hint: NetUtils.Hint) -> str:
 
     if hint.entrance:
         text += f" at {hint.entrance}"
-    return text + (". (found)" if hint.found else ".")
+    return text + (". (found)" if hint.found else ". (not found)")
 
+
+def format_hint_for_webhook(ctx: Context, team: int, hint: NetUtils.Hint) -> str:
+    text = f"[Hint]: **{ctx.player_names[team, hint.receiving_player]}**'s " \
+           f"**{ctx.item_names[hint.item]}** is " \
+           f"at __{ctx.location_names[hint.location]}__ " \
+           f"in **{ctx.player_names[team, hint.finding_player]}**'s World"
+
+    if hint.entrance:
+        text += f" at __{hint.entrance}__"
+    return text
 
 def json_format_send_event(net_item: NetworkItem, receiving_player: int):
     parts = []

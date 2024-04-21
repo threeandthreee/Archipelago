@@ -24,6 +24,7 @@ from .locker import Locker
 from .models import Command, GameDataPackage, Room, db
 
 
+
 class CustomClientMessageProcessor(ClientMessageProcessor):
     ctx: WebHostContext
 
