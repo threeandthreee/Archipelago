@@ -433,7 +433,7 @@ class DiscordWebhook:
             params["wait"] = self.wait
         return params
 
-    def execute(self, remove_embeds: bool = False) -> "requests.Response":
+    async def execute(self, remove_embeds: bool = False) -> "requests.Response":
         """
         Execute the sending of the webhook with the given data.
         :param bool remove_embeds: clear the stored embeds after webhook is executed

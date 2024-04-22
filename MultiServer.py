@@ -331,7 +331,7 @@ class Context:
 
     def push_to_webhook(self, event: int, message: str):
         from discordwebhook import DiscordWebhook
-
+        # look into threading this?
         if message:
             # event 0 is for raw text sending
             # event 1 is for item sending
@@ -357,13 +357,11 @@ class Context:
                             item_classification = "[Progression_Skip_Balancing]"
 
                         message = f'**{match["sender"]}** sent **{match["item"]}** to **{match["receiver"]}** {match["location"]} {item_classification}'
-            # event 2 is for hints
-            # elif event == 2:
+            # event 2 is for hints, and we can take the format that has already been given
 
-            response = DiscordWebhook(self.webhook_url, wait=True,
-                                                          content=message).execute()
-            if response.status_code not in (200, 204):
-                logging.debug(f"Unable to push to the webhook with error code {response.status_code}")
+            # response = DiscordWebhook(self.webhook_url, wait=True,
+            #                                            content=message).execute()
+            async_start(DiscordWebhook(self.webhook_url, wait=True, content=message).execute())
 
     def broadcast_all(self, msgs: typing.List[dict]):
         msgs = self.dumper(msgs)
@@ -723,7 +721,6 @@ class Context:
 
             logging.info("Notice (Team #%d): %s" % (team + 1, format_hint(self, team, hint)))
             if not hint.local and not hint.found and recipients is None:
-                # Push here, concerns would have the thing
                 self.push_to_webhook(2, format_hint_for_webhook(self, team, hint))
         for slot in new_hint_events:
             self.on_new_hint(team, slot)

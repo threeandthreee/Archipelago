@@ -50,9 +50,9 @@ app.config["PONY"] = {
 }
 app.config["MAX_ROLL"] = 20
 app.config["CACHE_TYPE"] = "SimpleCache"
-app.config["HOST_ADDRESS"] = "ashiryn.servequake.com"
-# app.config["DISCORD_WEBHOOK"] = "https://discord.com/api/webhooks/1230708396072632370/i6UvHLqqSVF4gqlx62QxC3uyCBRfz93_C2N_JIoeS1DpZcezXWr3Dsfp38qxwj1iDNQU"
-app.config["DISCORD_WEBHOOK"] = "https://ashiryn.ngrok.io/discord/archipelago"
+app.config["HOST_ADDRESS"] = ""
+app.config["DISCORD_WEBHOOK"] = ""
+app.config["DISCORD_AUTO_START"] = True
 
 cache = Cache()
 Compress(app)
