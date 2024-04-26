@@ -993,10 +993,9 @@ def register_location_checks(ctx: Context, team: int, slot: int, locations: typi
             new_item = NetworkItem(item_id, location, slot, flags)
             send_items_to(ctx, team, target_player, new_item)
 
-            log_message = '(Team #%d) %s sent %s to %s (%s)' % (
+            logging.info('(Team #%d) %s sent %s to %s (%s)' % (
                 team + 1, ctx.player_names[(team, slot)], ctx.item_names[item_id],
-                ctx.player_names[(team, target_player)], ctx.location_names[location])
-            logging.info(log_message)
+                ctx.player_names[(team, target_player)], ctx.location_names[location]))
 
             _push_item_information(ctx, team, slot, item_id, target_player, location, flags)
 
