@@ -43,10 +43,6 @@ def main(args, seed=None, baked_server_options: Optional[Dict[str, object]] = No
     multiworld.player_name = args.name.copy()
     multiworld.sprite = args.sprite.copy()
     multiworld.sprite_pool = args.sprite_pool.copy()
-<<<<<<< HEAD
-    #multiworld.glitch_triforce = args.glitch_triforce  # This is enabled/disabled globally, no per player option.
-=======
->>>>>>> raceswild
 
     multiworld.set_options(args)
     multiworld.set_item_links()
