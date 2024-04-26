@@ -4,6 +4,7 @@ import asyncio
 import collections
 import datetime
 import functools
+import json
 import logging
 import pickle
 import random
@@ -162,7 +163,7 @@ def get_static_server_data() -> dict:
 
 def run_server_process(room_id, ponyconfig: dict, static_server_data: dict,
                        cert_file: typing.Optional[str], cert_key_file: typing.Optional[str],
-                       host: str, discordwebhook: str):
+                       host: str, discordwebhook: dict):
     # establish DB connection for multidata and multisave
     db.bind(**ponyconfig)
     db.generate_mapping(check_tables=False)
@@ -172,6 +173,7 @@ def run_server_process(room_id, ponyconfig: dict, static_server_data: dict,
             raise Exception("Worlds system should not be loaded in the custom server.")
 
         import gc
+        from base64 import urlsafe_b64encode
         Utils.init_logging(str(room_id), write_mode="a")
         ctx = WebHostContext(static_server_data)
         ctx.load(room_id)
@@ -197,12 +199,17 @@ def run_server_process(room_id, ponyconfig: dict, static_server_data: dict,
                 port = socketname[1]
         if port:
             logging.info(f'Hosting game at {host}:{port}')
-            if discordwebhook:
-                ctx.commandprocessor(f'/discord_webhook {discordwebhook}')
+            #Setup Discord settings with the current context
+            if discordwebhook["DISCORD_AUTO_START"]:
+                ctx.webhook_active = True
+                ctx.webhook_url = discordwebhook["DISCORD_WEBHOOK"]
 
             with db_session:
                 room = Room.get(id=ctx.room_id)
                 room.last_port = port
+                ctx.room_url = urlsafe_b64encode(room.id.bytes).rstrip(b'=').decode('ascii')
+                ctx.seed_url = urlsafe_b64encode(room.seed.id.bytes).rstrip(b'=').decode('ascii')
+                _push_player_list(ctx, room_id)
         else:
             logging.exception("Could not determine port. Likely hosting failure.")
         with db_session:
@@ -232,3 +239,11 @@ def run_server_process(room_id, ponyconfig: dict, static_server_data: dict,
                 # ensure the Room does not spin up again on its own, minute of safety buffer
                 room.last_activity = datetime.datetime.utcnow() - datetime.timedelta(minutes=1, seconds=room.timeout)
             raise
+
+
+def _push_player_list(ctx: Context, room_id):
+    player_list = []
+    for player in ctx.player_names.values():
+        player_list.append(player)
+
+    ctx.push_to_webhook({"event": "player_list", "room": ctx.room_url, "seed": ctx.seed_url, "players": player_list})

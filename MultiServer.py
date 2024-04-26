@@ -9,6 +9,7 @@ import functools
 import hashlib
 import inspect
 import itertools
+import json
 import logging
 import math
 import operator
@@ -180,6 +181,8 @@ class Context:
     non_hintable_names: typing.Dict[str, typing.Set[str]]
     webhook_active = False
     webhook_url = ""
+    room_url: str
+    seed_url: str
 
     def __init__(self, host: str, port: int, server_password: str, password: str, location_check_points: int,
                  hint_cost: int, item_cheat: bool, release_mode: str = "disabled", collect_mode="disabled",
@@ -329,39 +332,11 @@ class Context:
                 logging.info(f"Outgoing broadcast: {msg}")
             return True
 
-    def push_to_webhook(self, event: int, message: str):
+    def push_to_webhook(self, message: typing.Dict[str, typing.Any]):
         from discordwebhook import DiscordWebhook
-        # look into threading this?
         if message:
-            # event 0 is for raw text sending
-            # event 1 is for item sending
-            if event == 1:
-                match = re.match(
-                    r"^\(Team #1\) (?P<sender>.+?) sent (?P<item>.+?) to (?P<receiver>.+?) (?P<location>\(.+\)) (?P<flag>.+?)",
-                    message.strip())
-                if match:
-                    if match['sender'] == match['receiver']:
-                        message = f'**{match["sender"]}** found their **{match["item"]}** {match["location"]}'
-                    else:
-                        flag = int(match["flag"])
-                        item_classification = ""
-                        if flag == 1:
-                            item_classification = "[Progression]"
-                        elif flag == 2:
-                            item_classification = "[Useful]"
-                        elif flag == 4:
-                            item_classification = "[Trap]"
-                        elif flag == 8:
-                            item_classification = "[Skip_Balancing]"
-                        elif flag == 9:
-                            item_classification = "[Progression_Skip_Balancing]"
-
-                        message = f'**{match["sender"]}** sent **{match["item"]}** to **{match["receiver"]}** {match["location"]} {item_classification}'
-            # event 2 is for hints, and we can take the format that has already been given
-
-            # response = DiscordWebhook(self.webhook_url, wait=True,
-            #                                            content=message).execute()
-            async_start(DiscordWebhook(self.webhook_url, wait=True, content=message).execute())
+            payload = json.dumps(message)
+            async_start(DiscordWebhook(self.webhook_url, wait=True, content=payload).execute())
 
     def broadcast_all(self, msgs: typing.List[dict]):
         msgs = self.dumper(msgs)
@@ -720,8 +695,7 @@ class Context:
                         new_hint_events.add(player)
 
             logging.info("Notice (Team #%d): %s" % (team + 1, format_hint(self, team, hint)))
-            if not hint.local and not hint.found and recipients is None:
-                self.push_to_webhook(2, format_hint_for_webhook(self, team, hint))
+            self._try_push_hint(hint, team, recipients)
         for slot in new_hint_events:
             self.on_new_hint(team, slot)
         for slot, hint_data in concerns.items():
@@ -732,6 +706,21 @@ class Context:
                 client_hints = [datum[1] for datum in sorted(hint_data, key=lambda x: x[0].finding_player == slot)]
                 for client in clients:
                     async_start(self.send_msgs(client, client_hints))
+
+    def _try_push_hint(self, hint: NetUtils.Hint, team: int, recipients: typing.Sequence[int]):
+        if not hint.local and not hint.found and recipients is None:
+            hint_information = {
+                "event": "hint",
+                "room": self.room_url,
+                "seed": self.seed_url,
+                "receiver": self.player_names[team, hint.receiving_player],
+                "item": self.item_names[hint.item],
+                "location": self.location_names[hint.location],
+                "finder": self.player_names[team, hint.finding_player]
+            }
+            if hint.entrance:
+                hint_information["entrance"] = hint.entrance
+            self.push_to_webhook(hint_information)
 
     # "events"
 
@@ -1008,8 +997,8 @@ def register_location_checks(ctx: Context, team: int, slot: int, locations: typi
                 team + 1, ctx.player_names[(team, slot)], ctx.item_names[item_id],
                 ctx.player_names[(team, target_player)], ctx.location_names[location])
             logging.info(log_message)
-            ctx.push_to_webhook(1, '%s %s' % (
-                log_message, flags))
+
+            _push_item_information(ctx, team, slot, item_id, target_player, location, flags)
 
             info_text = json_format_send_event(new_item, target_player)
             ctx.broadcast_team(team, [info_text])
@@ -1026,6 +1015,32 @@ def register_location_checks(ctx: Context, team: int, slot: int, locations: typi
         if old_hints != ctx.hints[team, slot]:
             ctx.on_changed_hints(team, slot)
         ctx.save()
+
+
+def _push_item_information(ctx: Context, team: int, slot: int, item_id, target_player, location, flags):
+    item_information = {
+        "event": "item",
+        "room": ctx.room_url,
+        "seed": ctx.seed_url,
+        "sender": ctx.player_names[(team, slot)],
+        "item": ctx.item_names[item_id],
+        "receiver": ctx.player_names[(team, target_player)],
+        "location": ctx.location_names[location]
+    }
+    item_classification = "Filler"
+    if flags == 1:
+        item_classification = "Progression"
+    elif flags == 2:
+        item_classification = "Useful"
+    elif flags == 4:
+        item_classification = "Trap"
+    elif flags == 8:
+        item_classification = "Skip_Balancing"
+    elif flags == 9:
+        item_classification = "Progression_Skip_Balancing"
+
+    item_information["item_classification"] = item_classification
+    ctx.push_to_webhook(item_information)
 
 
 def collect_hints(ctx: Context, team: int, slot: int, item: typing.Union[int, str]) -> typing.List[NetUtils.Hint]:
@@ -1073,15 +1088,6 @@ def format_hint(ctx: Context, team: int, hint: NetUtils.Hint) -> str:
     return text + (". (found)" if hint.found else ". (not found)")
 
 
-def format_hint_for_webhook(ctx: Context, team: int, hint: NetUtils.Hint) -> str:
-    text = f"[Hint]: **{ctx.player_names[team, hint.receiving_player]}**'s " \
-           f"**{ctx.item_names[hint.item]}** is " \
-           f"at __{ctx.location_names[hint.location]}__ " \
-           f"in **{ctx.player_names[team, hint.finding_player]}**'s World"
-
-    if hint.entrance:
-        text += f" at __{hint.entrance}__"
-    return text
 
 def json_format_send_event(net_item: NetworkItem, receiving_player: int):
     parts = []
@@ -2225,8 +2231,7 @@ class ServerCommandProcessor(CommonCommandProcessor):
         self.ctx.webhook_active = not self.ctx.webhook_active
         if self.ctx.webhook_active:
             self.ctx.webhook_url = webhook_url
-            self.ctx.push_to_webhook(0, f"Webhook notifications enabled: {self.ctx.webhook_active}")
-            # self.ctx.push_to_webhook(f"Multi-World server for Room {urlsafe_b64encode(self.ctx.room_id.bytes).rstrip(b'=').decode('ascii')} starting up.")
+            self.ctx.push_to_webhook({"event": "info", "room": self.ctx.room_url, "seed": self.ctx.seed_url, "message": f"Webhook notifications enabled: {self.ctx.webhook_active}"})
         else:
             self.ctx.webhook_url = ""
 
