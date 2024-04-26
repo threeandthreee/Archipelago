@@ -50,7 +50,8 @@ app.config["PONY"] = {
 }
 app.config["MAX_ROLL"] = 20
 app.config["CACHE_TYPE"] = "SimpleCache"
-app.config["HOST_ADDRESS"] = "archipelago.gg"
+app.config["HOST_ADDRESS"] = ""
+app.config["ASSET_RIGHTS"] = False
 app.config["DISCORD_WEBHOOK"] = ""
 app.config["DISCORD_AUTO_START"] = False
 
@@ -84,6 +85,6 @@ def register():
 
     from WebHostLib.customserver import run_server_process
     # to trigger app routing picking up on it
-    from . import tracker, upload, landing, check, generate, downloads, api, stats, misc
+    from . import tracker, upload, landing, check, generate, downloads, api, stats, misc, robots
 
     app.register_blueprint(api.api_endpoints)
