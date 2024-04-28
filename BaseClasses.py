@@ -1051,7 +1051,8 @@ class ItemClassification(IntFlag):
 
     def as_flag(self) -> int:
         """As Network API flag int."""
-        return int(self & 0b0111)
+        # Updated this to always write all the bytes, doesn't seem to break anything but allows for filtering of skip balancing
+        return int(self & 0b1111)
 
 
 class Item:

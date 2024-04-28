@@ -42,9 +42,8 @@ import Utils
 from Utils import version_tuple, restricted_loads, Version, async_start
 from NetUtils import Endpoint, ClientStatus, NetworkItem, decode, encode, NetworkPlayer, Permission, NetworkSlot, \
     SlotType, LocationStore
+from BaseClasses import ItemClassification
 
-from base64 import urlsafe_b64decode, urlsafe_b64encode
-from uuid import UUID
 min_client_version = Version(0, 1, 6)
 colorama.init()
 
@@ -333,6 +332,9 @@ class Context:
             return True
 
     def push_to_webhook(self, message: typing.Dict[str, typing.Any]):
+        if not self.webhook_active:
+            return
+
         from discordwebhook import DiscordWebhook
         if message:
             payload = json.dumps(message)
@@ -1027,17 +1029,19 @@ def _push_item_information(ctx: Context, team: int, slot: int, item_id, target_p
         "location": ctx.location_names[location]
     }
     item_classification = "Filler"
-    if flags == 1:
+
+    if flags == ItemClassification.progression:
         item_classification = "Progression"
-    elif flags == 2:
+    elif flags == ItemClassification.useful:
         item_classification = "Useful"
-    elif flags == 4:
+    elif flags == ItemClassification.trap:
         item_classification = "Trap"
-    elif flags == 8:
+    elif flags == ItemClassification.skip_balancing:
         item_classification = "Skip_Balancing"
-    elif flags == 9:
+    elif flags == ItemClassification.progression_skip_balancing:
         item_classification = "Progression_Skip_Balancing"
 
+    logging.info(f"{item_classification} was assigned using flag {flags}, PSB={ItemClassification.progression_skip_balancing}")
     item_information["item_classification"] = item_classification
     ctx.push_to_webhook(item_information)
 
