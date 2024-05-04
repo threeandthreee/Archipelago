@@ -209,7 +209,7 @@ def run_server_process(room_id, ponyconfig: dict, static_server_data: dict,
                 room.last_port = port
                 ctx.room_url = urlsafe_b64encode(room.id.bytes).rstrip(b'=').decode('ascii')
                 ctx.seed_url = urlsafe_b64encode(room.seed.id.bytes).rstrip(b'=').decode('ascii')
-                _push_player_list(ctx, room_id)
+                _push_player_list(ctx)
         else:
             logging.exception("Could not determine port. Likely hosting failure.")
         with db_session:
@@ -241,7 +241,7 @@ def run_server_process(room_id, ponyconfig: dict, static_server_data: dict,
             raise
 
 
-def _push_player_list(ctx: Context, room_id):
+def _push_player_list(ctx: Context):
     player_list = []
     for player in ctx.player_names.values():
         player_list.append(player)

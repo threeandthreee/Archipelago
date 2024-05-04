@@ -2264,6 +2264,32 @@ class ServerCommandProcessor(CommonCommandProcessor):
         else:
             self.ctx.webhook_queue.put(None)
 
+    def _cmd_item_info(self, item: str):
+        item_classification_flag: int = 0b0000
+
+        for slot, game in self.ctx.games:
+            names = self.ctx.all_item_and_group_names[game]
+            item_name, usable, response = get_intended_text(item, names)
+            seeked_item_id = item if isinstance(item, int) else self.ctx.item_names_for_game(game)[item_name]
+            slots: typing.Set[int] = {slot}
+            for finding_player, location_id, item_id, receiving_player, item_flags \
+                in self.ctx.locations.find_item(slots, seeked_item_id):
+                item_classification_flag |= item_flags
+
+        item_classification = []
+        if item_classification_flag == ItemClassification.filler:
+            item_classification.append("Filler")
+        if item_classification_flag & ItemClassification.progression:
+            item_classification.append("Progression")
+        if item_classification_flag & ItemClassification.useful:
+            item_classification.append("Useful")
+        if item_classification_flag & ItemClassification.trap:
+            item_classification.append("Trap")
+        if item_classification_flag & ItemClassification.skip_balancing:
+            item_classification.append("Skip_Balancing")
+
+        split = ", "
+        self.output(f"Found {item} has the following flags {split.join(item_classification)}")
 
     def _cmd_datastore(self):
         """Debug Tool: list writable datastorage keys and approximate the size of their values with pickle."""
