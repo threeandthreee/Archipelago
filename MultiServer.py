@@ -14,6 +14,7 @@ import logging
 import math
 import operator
 import pickle
+import queue
 import random
 import re
 import threading
@@ -43,6 +44,7 @@ from Utils import version_tuple, restricted_loads, Version, async_start
 from NetUtils import Endpoint, ClientStatus, NetworkItem, decode, encode, NetworkPlayer, Permission, NetworkSlot, \
     SlotType, LocationStore
 from BaseClasses import ItemClassification
+from Webhook import Webhook
 
 min_client_version = Version(0, 1, 6)
 colorama.init()
@@ -180,6 +182,7 @@ class Context:
     non_hintable_names: typing.Dict[str, typing.Set[str]]
     webhook_active = False
     webhook_url = ""
+    webhook_queue: queue.SimpleQueue
     room_url: str
     seed_url: str
 
@@ -252,7 +255,7 @@ class Context:
         self.all_item_and_group_names = {}
         self.all_location_and_group_names = {}
         self.non_hintable_names = collections.defaultdict(frozenset)
-
+        self.webhook_queue = queue.SimpleQueue()
         self._load_game_data()
 
     # Data package retrieval
@@ -335,10 +338,31 @@ class Context:
         if not self.webhook_active:
             return
 
-        from discordwebhook import DiscordWebhook
-        if message:
-            payload = json.dumps(message)
-            async_start(DiscordWebhook(self.webhook_url, wait=True, content=payload).execute())
+        self.webhook_queue.put(message)
+
+    class WebhookThread(threading.Thread):
+        ctx: Context
+
+        def __init__(self, ctx: Context):
+            threading.Thread.__init__(self)
+            self.name = "Webhook"
+            self.ctx = ctx
+
+        def run(self):
+            while self.ctx.webhook_active:
+                time.sleep(1)
+                while 1:
+                    try:
+                        message = self.ctx.webhook_queue.get_nowait()
+                    except queue.Empty:
+                        break
+                    else:
+                        if message is None:
+                            return
+
+                        message["debug"] = True
+                        payload = json.dumps(message)
+                        Webhook(self.ctx.webhook_url, content=payload).execute()
 
     def broadcast_all(self, msgs: typing.List[dict]):
         msgs = self.dumper(msgs)
@@ -959,7 +983,7 @@ def collect_player(ctx: Context, team: int, slot: int, is_group: bool = False):
                            % (ctx.player_names[(team, slot)], team + 1),
                            {"type": "Collect", "team": team, "slot": slot})
     for source_player, location_ids in all_locations.items():
-        register_location_checks(ctx, team, source_player, location_ids, count_activity=False)
+        register_location_checks(ctx, team, source_player, location_ids, count_activity=False, push_webhook=False)
         update_checked_locations(ctx, team, source_player)
 
     if not is_group:
@@ -984,7 +1008,7 @@ def send_items_to(ctx: Context, team: int, target_slot: int, *items: NetworkItem
 
 
 def register_location_checks(ctx: Context, team: int, slot: int, locations: typing.Iterable[int],
-                             count_activity: bool = True):
+                             count_activity: bool = True, push_webhook: bool = True):
     new_locations = set(locations) - ctx.location_checks[team, slot]
     new_locations.intersection_update(ctx.locations[slot])  # ignore location IDs unknown to this multidata
     if new_locations:
@@ -999,7 +1023,8 @@ def register_location_checks(ctx: Context, team: int, slot: int, locations: typi
                 team + 1, ctx.player_names[(team, slot)], ctx.item_names[item_id],
                 ctx.player_names[(team, target_player)], ctx.location_names[location]))
 
-            _push_item_information(ctx, team, slot, item_id, target_player, location, flags)
+            if push_webhook:
+                _push_item_information(ctx, team, slot, item_id, target_player, location, flags)
 
             info_text = json_format_send_event(new_item, target_player)
             ctx.broadcast_team(team, [info_text])
@@ -1041,7 +1066,6 @@ def _push_item_information(ctx: Context, team: int, slot: int, item_id, target_p
     elif flags == ItemClassification.progression_skip_balancing:
         item_classification = "Progression_Skip_Balancing"
 
-    logging.info(f"{item_classification} was assigned using flag {flags}, PSB={ItemClassification.progression_skip_balancing}")
     item_information["item_classification"] = item_classification
     ctx.push_to_webhook(item_information)
 
@@ -2235,8 +2259,10 @@ class ServerCommandProcessor(CommonCommandProcessor):
         if self.ctx.webhook_active:
             self.ctx.webhook_url = webhook_url
             self.ctx.push_to_webhook({"event": "info", "room": self.ctx.room_url, "seed": self.ctx.seed_url, "message": f"Webhook notifications enabled: {self.ctx.webhook_active}"})
+            self.ctx.WebhookThread(self.ctx).start()
         else:
             self.ctx.webhook_url = ""
+            self.ctx.webhook_queue.put(None)
 
 
     def _cmd_datastore(self):

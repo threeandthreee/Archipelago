@@ -203,6 +203,7 @@ def run_server_process(room_id, ponyconfig: dict, static_server_data: dict,
             if discordwebhook["DISCORD_AUTO_START"]:
                 ctx.webhook_active = True
                 ctx.webhook_url = discordwebhook["DISCORD_WEBHOOK"]
+                ctx.WebhookThread(ctx).start()
 
             with db_session:
                 room = Room.get(id=ctx.room_id)
