@@ -5,6 +5,11 @@
 # TODO
 #SELFHOST: true
 
+# Webhook URL to post multi-server logging to
+#DISCORD_WEBHOOK: https://discord.com/api/webhooks/1230708396072632370/i6UvHLqqSVF4gqlx62QxC3uyCBRfz93_C2N_JIoeS1DpZcezXWr3Dsfp38qxwj1iDNQU
+# Whether to auto start discord integration when a multi-server is launched
+#DISCORD_AUTO_START: false
+
 # Maximum concurrent world gens
 #GENERATORS: 8
 

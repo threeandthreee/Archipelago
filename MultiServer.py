@@ -9,6 +9,7 @@ import functools
 import hashlib
 import inspect
 import itertools
+import json
 import logging
 import math
 import operator
@@ -41,6 +42,7 @@ import Utils
 from Utils import version_tuple, restricted_loads, Version, async_start
 from NetUtils import Endpoint, ClientStatus, NetworkItem, decode, encode, NetworkPlayer, Permission, NetworkSlot, \
     SlotType, LocationStore
+from BaseClasses import ItemClassification
 
 min_client_version = Version(0, 1, 6)
 colorama.init()
@@ -176,6 +178,10 @@ class Context:
     all_item_and_group_names: typing.Dict[str, typing.Set[str]]
     all_location_and_group_names: typing.Dict[str, typing.Set[str]]
     non_hintable_names: typing.Dict[str, typing.Set[str]]
+    webhook_active = False
+    webhook_url = ""
+    room_url: str
+    seed_url: str
 
     def __init__(self, host: str, port: int, server_password: str, password: str, location_check_points: int,
                  hint_cost: int, item_cheat: bool, release_mode: str = "disabled", collect_mode="disabled",
@@ -324,6 +330,15 @@ class Context:
             if self.log_network:
                 logging.info(f"Outgoing broadcast: {msg}")
             return True
+
+    def push_to_webhook(self, message: typing.Dict[str, typing.Any]):
+        if not self.webhook_active:
+            return
+
+        from discordwebhook import DiscordWebhook
+        if message:
+            payload = json.dumps(message)
+            async_start(DiscordWebhook(self.webhook_url, wait=True, content=payload).execute())
 
     def broadcast_all(self, msgs: typing.List[dict]):
         msgs = self.dumper(msgs)
@@ -682,6 +697,7 @@ class Context:
                         new_hint_events.add(player)
 
             logging.info("Notice (Team #%d): %s" % (team + 1, format_hint(self, team, hint)))
+            self._try_push_hint(hint, team, recipients)
         for slot in new_hint_events:
             self.on_new_hint(team, slot)
         for slot, hint_data in concerns.items():
@@ -692,6 +708,21 @@ class Context:
                 client_hints = [datum[1] for datum in sorted(hint_data, key=lambda x: x[0].finding_player == slot)]
                 for client in clients:
                     async_start(self.send_msgs(client, client_hints))
+
+    def _try_push_hint(self, hint: NetUtils.Hint, team: int, recipients: typing.Sequence[int]):
+        if not hint.local and not hint.found and recipients is None:
+            hint_information = {
+                "event": "hint",
+                "room": self.room_url,
+                "seed": self.seed_url,
+                "receiver": self.player_names[team, hint.receiving_player],
+                "item": self.item_names[hint.item],
+                "location": self.location_names[hint.location],
+                "finder": self.player_names[team, hint.finding_player]
+            }
+            if hint.entrance:
+                hint_information["entrance"] = hint.entrance
+            self.push_to_webhook(hint_information)
 
     # "events"
 
@@ -967,6 +998,9 @@ def register_location_checks(ctx: Context, team: int, slot: int, locations: typi
             logging.info('(Team #%d) %s sent %s to %s (%s)' % (
                 team + 1, ctx.player_names[(team, slot)], ctx.item_names[item_id],
                 ctx.player_names[(team, target_player)], ctx.location_names[location]))
+
+            _push_item_information(ctx, team, slot, item_id, target_player, location, flags)
+
             info_text = json_format_send_event(new_item, target_player)
             ctx.broadcast_team(team, [info_text])
 
@@ -982,6 +1016,34 @@ def register_location_checks(ctx: Context, team: int, slot: int, locations: typi
         if old_hints != ctx.hints[team, slot]:
             ctx.on_changed_hints(team, slot)
         ctx.save()
+
+
+def _push_item_information(ctx: Context, team: int, slot: int, item_id, target_player, location, flags):
+    item_information = {
+        "event": "item",
+        "room": ctx.room_url,
+        "seed": ctx.seed_url,
+        "sender": ctx.player_names[(team, slot)],
+        "item": ctx.item_names[item_id],
+        "receiver": ctx.player_names[(team, target_player)],
+        "location": ctx.location_names[location]
+    }
+    item_classification = "Filler"
+
+    if flags == ItemClassification.progression:
+        item_classification = "Progression"
+    elif flags == ItemClassification.useful:
+        item_classification = "Useful"
+    elif flags == ItemClassification.trap:
+        item_classification = "Trap"
+    elif flags == ItemClassification.skip_balancing:
+        item_classification = "Skip_Balancing"
+    elif flags == ItemClassification.progression_skip_balancing:
+        item_classification = "Progression_Skip_Balancing"
+
+    logging.info(f"{item_classification} was assigned using flag {flags}, PSB={ItemClassification.progression_skip_balancing}")
+    item_information["item_classification"] = item_classification
+    ctx.push_to_webhook(item_information)
 
 
 def collect_hints(ctx: Context, team: int, slot: int, item: typing.Union[int, str]) -> typing.List[NetUtils.Hint]:
@@ -1026,7 +1088,8 @@ def format_hint(ctx: Context, team: int, hint: NetUtils.Hint) -> str:
 
     if hint.entrance:
         text += f" at {hint.entrance}"
-    return text + (". (found)" if hint.found else ".")
+    return text + (". (found)" if hint.found else ". (not found)")
+
 
 
 def json_format_send_event(net_item: NetworkItem, receiving_player: int):
@@ -2168,76 +2231,13 @@ class ServerCommandProcessor(CommonCommandProcessor):
         """Needs to be supplied with a Discord WebHook url as parameter,
         which will then relay the server log to a discord channel."""
 
-        import discord_webhook
-        initial_response = discord_webhook.DiscordWebhook(webhook_url, wait=True,
-                                                          content="Beginning Discord Logging").execute()
-        if initial_response.ok:
-            import queue
-            response_queue = queue.SimpleQueue()
-
-            class Emitter(threading.Thread):
-                def run(self):
-                    record: typing.Optional[logging.LogRecord] = None
-                    while True:
-                        time.sleep(1)
-                        # check for leftover record from last iteration
-                        message = record.msg if record else ""
-                        while 1:
-                            try:
-                                record = response_queue.get_nowait()
-                            except queue.Empty:
-                                break
-                            else:
-                                if record is None:
-                                    return  # shutdown
-                                if len(record.msg) > 1999:
-                                    continue  # content size limit
-                                if len(message) + len(record.msg) > 2000:
-                                    break  # reached content size limit in total
-                                else:
-                                    message += "\n" + record.msg
-                                    record = None
-                        if message:
-                            match = re.match(r"^\(Team #1\) (?P<sender>.+?) sent (?P<item>.+?) to (?P<receiver>.+?) (?P<location>\(.+\))", message.strip())
-                            if match:
-                                if match['sender'] == match['receiver']:
-                                    payload = f'**{match["sender"]}** found their **{match["item"]}** {match["location"]}'
-                                else:
-                                    payload = f'**{match["sender"]}** sent **{match["item"]}** to **{match["receiver"]}** {match["location"]}'
-                                try:
-                                    response = discord_webhook.DiscordWebhook(
-                                        webhook_url, rate_limit_retry=True, content=payload).execute()
-                                    if response.status_code not in (200, 204):
-                                        shutdown()
-                                        logging.info(f"Disabled Discord WebHook due to error code {response.status_code}.")
-                                        return
-                                # just in case to prevent an error-loop logging itself
-                                except Exception as e:
-                                    shutdown()
-                                    logging.error("Disabled Discord WebHook due to error.")
-                                    logging.exception(e)
-                                    return
-
-            emitter = Emitter()
-            emitter.daemon = True
-            emitter.start()
-
-            class DiscordLogger(logging.Handler):
-                """Logs to Discord WebHook"""
-                def emit(self, record: logging.LogRecord):
-                    response_queue.put(record)
-
-            handler = DiscordLogger()
-
-            def shutdown():
-                response_queue.put(None)
-                logging.getLogger().removeHandler(handler)
-
-            logging.getLogger().addHandler(handler)
-            self.output("Discord Link established.")
-
+        self.ctx.webhook_active = not self.ctx.webhook_active
+        if self.ctx.webhook_active:
+            self.ctx.webhook_url = webhook_url
+            self.ctx.push_to_webhook({"event": "info", "room": self.ctx.room_url, "seed": self.ctx.seed_url, "message": f"Webhook notifications enabled: {self.ctx.webhook_active}"})
         else:
-            self.output("Discord Link could not be established. Check your webhook url.")
+            self.ctx.webhook_url = ""
+
 
     def _cmd_datastore(self):
         """Debug Tool: list writable datastorage keys and approximate the size of their values with pickle."""
