@@ -751,18 +751,24 @@ class Context:
             self.push_to_webhook(hint_information)
 
     def push_item_information(self):
-        game_items: dict[str, int] = {}
-        for slot, game in self.games:
+        games = []
+        for slot, game in self.games.items():
+            if game in games:
+                continue
+
+            games.append(game)
+            game_items: dict[str, int] = {}
             names = self.all_item_and_group_names[game]
             for item_name in names:
-                seeked_item_id = self.item_names_for_game(game)[item_name]
-                slots: typing.Set[int] = {slot}
-                for finding_player, location_id, item_id, receiving_player, item_flags \
-                    in self.locations.find_item(slots, seeked_item_id):
-                    game_items[item_name] |= item_flags
+                game_items[item_name] = 0b0000
+                if item_name in self.item_names_for_game(game):
+                    seeked_item_id = self.item_names_for_game(game)[item_name]
+                    slots: typing.Set[int] = {slot}
+                    for finding_player, location_id, item_id, receiving_player, item_flags \
+                        in self.locations.find_item(slots, seeked_item_id):
+                        game_items[item_name] |= item_flags
 
-            self.push_to_webhook({"event": "item_information", "room:": self.room_url, "seed": self.seed_url,
-                                  "game": game, "items": game_items})
+            self.push_to_webhook({"event": "item_information", "room:": self.room_url, "seed": self.seed_url, "game": game, "items": game_items})
 
     # "events"
 
@@ -1516,6 +1522,40 @@ class ClientMessageProcessor(CommonCommandProcessor):
             self.ctx.save()
             return True
         return False
+
+    @mark_raw
+    def _cmd_item_info(self, item: str):
+        game_items: dict[str, int] = {}
+
+        for slot, game in self.ctx.games.items():
+            if game in game_items:
+                continue
+            names = self.ctx.all_item_and_group_names[game]
+            item_name, usable, response = get_intended_text(item, names)
+            if usable:
+                game_items[game] = 0b0000
+                if item_name in self.ctx.item_names_for_game(game):
+                    seeked_item_id = item if isinstance(item, int) else self.ctx.item_names_for_game(game)[item_name]
+                    slots: typing.Set[int] = {slot}
+                    for finding_player, location_id, item_id, receiving_player, item_flags \
+                        in self.ctx.locations.find_item(slots, seeked_item_id):
+                        game_items[game] |= item_flags
+
+        for game, flag in game_items.items():
+            item_classification = []
+            if flag == ItemClassification.filler:
+                item_classification.append("Filler")
+            if flag & ItemClassification.progression:
+                item_classification.append("Progression")
+            if flag & ItemClassification.useful:
+                item_classification.append("Useful")
+            if flag & ItemClassification.trap:
+                item_classification.append("Trap")
+            if flag & ItemClassification.skip_balancing:
+                item_classification.append("Skip_Balancing")
+
+            split = ", "
+            self.output(f"Found {item} in {game} that has the following flags {split.join(item_classification)}")
 
     @mark_raw
     def _cmd_getitem(self, item_name: str) -> bool:
@@ -2277,36 +2317,6 @@ class ServerCommandProcessor(CommonCommandProcessor):
             self.ctx.push_to_webhook({"event": "info", "room": self.ctx.room_url, "seed": self.ctx.seed_url, "message": f"Webhook notifications enabled: {self.ctx.webhook_active}"})
         else:
             self.ctx.webhook_queue.put(None)
-
-    def _cmd_item_info(self, item: str):
-        game_items: dict[str, int] = {}
-
-        for slot, game in self.ctx.games:
-            names = self.ctx.all_item_and_group_names[game]
-            item_name, usable, response = get_intended_text(item, names)
-            if response:
-                game_items[game] = 0b0000
-                seeked_item_id = item if isinstance(item, int) else self.ctx.item_names_for_game(game)[item_name]
-                slots: typing.Set[int] = {slot}
-                for finding_player, location_id, item_id, receiving_player, item_flags \
-                    in self.ctx.locations.find_item(slots, seeked_item_id):
-                    game_items[game] |= item_flags
-
-        for game, flag in game_items:
-            item_classification = []
-            if flag == ItemClassification.filler:
-                item_classification.append("Filler")
-            if flag & ItemClassification.progression:
-                item_classification.append("Progression")
-            if flag & ItemClassification.useful:
-                item_classification.append("Useful")
-            if flag & ItemClassification.trap:
-                item_classification.append("Trap")
-            if flag & ItemClassification.skip_balancing:
-                item_classification.append("Skip_Balancing")
-
-            split = ", "
-            self.output(f"Found {item} in {game} that has the following flags {split.join(item_classification)}")
 
     def _cmd_datastore(self):
         """Debug Tool: list writable datastorage keys and approximate the size of their values with pickle."""

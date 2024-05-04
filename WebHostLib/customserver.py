@@ -202,18 +202,20 @@ def run_server_process(room_id, ponyconfig: dict, static_server_data: dict,
             #Setup Discord settings with the current context
             if webhook["WEBHOOK_AUTO_START"]:
                 ctx.webhook_active = True
-                ctx.WebhookThread(ctx, webhook["WEBHOOK_URL"]).start()
+                #ctx.WebhookThread(ctx, webhook["WEBHOOK_URL"]).start()
 
             with db_session:
                 room = Room.get(id=ctx.room_id)
                 room.last_port = port
                 ctx.room_url = urlsafe_b64encode(room.id.bytes).rstrip(b'=').decode('ascii')
                 ctx.seed_url = urlsafe_b64encode(room.seed.id.bytes).rstrip(b'=').decode('ascii')
-                logging.info("Pushing Player List")
-                _push_player_list(ctx)
-                logging.info("Pushing Item Information")
-                ctx.push_item_information()
-                logging.info("Done pushing data")
+                if room.is_new:
+                    logging.info("Pushing Player List")
+                    _push_player_list(ctx)
+                    logging.info("Pushing Item Information")
+                    ctx.push_item_information()
+                    logging.info("Done pushing data")
+                    room.is_new = False
         else:
             logging.exception("Could not determine port. Likely hosting failure.")
         with db_session:

@@ -1101,7 +1101,7 @@ class Item:
 
     @property
     def raw_flags(self) -> int:
-        return self.classification
+        return int(self.classification)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Item):
