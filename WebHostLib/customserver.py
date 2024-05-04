@@ -209,7 +209,11 @@ def run_server_process(room_id, ponyconfig: dict, static_server_data: dict,
                 room.last_port = port
                 ctx.room_url = urlsafe_b64encode(room.id.bytes).rstrip(b'=').decode('ascii')
                 ctx.seed_url = urlsafe_b64encode(room.seed.id.bytes).rstrip(b'=').decode('ascii')
+                logging.info("Pushing Player List")
                 _push_player_list(ctx)
+                logging.info("Pushing Item Information")
+                ctx.push_item_information()
+                logging.info("Done pushing data")
         else:
             logging.exception("Could not determine port. Likely hosting failure.")
         with db_session:

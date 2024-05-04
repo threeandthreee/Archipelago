@@ -750,6 +750,20 @@ class Context:
                 hint_information["entrance"] = hint.entrance
             self.push_to_webhook(hint_information)
 
+    def push_item_information(self):
+        game_items: dict[str, int] = {}
+        for slot, game in self.games:
+            names = self.all_item_and_group_names[game]
+            for item_name in names:
+                seeked_item_id = self.item_names_for_game(game)[item_name]
+                slots: typing.Set[int] = {slot}
+                for finding_player, location_id, item_id, receiving_player, item_flags \
+                    in self.locations.find_item(slots, seeked_item_id):
+                    game_items[item_name] |= item_flags
+
+            self.push_to_webhook({"event": "item_information", "room:": self.room_url, "seed": self.seed_url,
+                                  "game": game, "items": game_items})
+
     # "events"
 
     def on_goal_achieved(self, client: Client):
@@ -2289,7 +2303,7 @@ class ServerCommandProcessor(CommonCommandProcessor):
             if flag & ItemClassification.trap:
                 item_classification.append("Trap")
             if flag & ItemClassification.skip_balancing:
-                 item_classification.append("Skip_Balancing")
+                item_classification.append("Skip_Balancing")
 
             split = ", "
             self.output(f"Found {item} in {game} that has the following flags {split.join(item_classification)}")
