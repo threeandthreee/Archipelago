@@ -342,11 +342,13 @@ class Context:
 
     class WebhookThread(threading.Thread):
         ctx: Context
+        url: str
 
-        def __init__(self, ctx: Context):
+        def __init__(self, ctx: Context, url: str):
             threading.Thread.__init__(self)
             self.name = "Webhook"
             self.ctx = ctx
+            self.url = url
 
         def run(self):
             while self.ctx.webhook_active:
@@ -362,7 +364,7 @@ class Context:
 
                         message["debug"] = True
                         payload = json.dumps(message)
-                        Webhook(self.ctx.webhook_url, content=payload).execute()
+                        Webhook(self.url, content=payload).execute()
 
     def broadcast_all(self, msgs: typing.List[dict]):
         msgs = self.dumper(msgs)
@@ -2257,11 +2259,9 @@ class ServerCommandProcessor(CommonCommandProcessor):
 
         self.ctx.webhook_active = not self.ctx.webhook_active
         if self.ctx.webhook_active:
-            self.ctx.webhook_url = webhook_url
+            self.ctx.WebhookThread(self.ctx, webhook_url).start()
             self.ctx.push_to_webhook({"event": "info", "room": self.ctx.room_url, "seed": self.ctx.seed_url, "message": f"Webhook notifications enabled: {self.ctx.webhook_active}"})
-            self.ctx.WebhookThread(self.ctx).start()
         else:
-            self.ctx.webhook_url = ""
             self.ctx.webhook_queue.put(None)
 
 
