@@ -1,8 +1,8 @@
+from dataclasses import dataclass
 import math
-import typing
+from typing import List
 
-from BaseClasses import MultiWorld
-from Options import Option, DefaultOnToggle, Range, Toggle, DeathLink, Choice, TextChoice, FreeText
+from Options import DefaultOnToggle, PerGameCommonOptions, Range, Choice, FreeText
 
 
 class CharacterCount(Range):
@@ -28,6 +28,7 @@ class DragonCount(Range):
     range_end = 8
     default = 4
 
+
 class BossCount(Range):
     """Sets the number of bosses required to access the final battle"""
     display_name = "Bosses Required"
@@ -35,12 +36,14 @@ class BossCount(Range):
     range_end = 40
     default = 16
 
+
 class StartingCharacterCount(Range):
     """Sets the number of starting characters"""
     display_name = "Starting Character Count"
     range_start = 1
     range_end = 4
     default = 2
+
 
 class StartingCharacter1(Choice):
     """Starting Character 1"""
@@ -61,6 +64,7 @@ class StartingCharacter1(Choice):
     option_umaro = 13
     option_random_with_no_gogo_or_umaro = 14
     default = 14
+
 
 class StartingCharacter2(Choice):
     """Starting Character 2. Only used if Starting Character Count is 2+"""
@@ -83,6 +87,7 @@ class StartingCharacter2(Choice):
     option_random_with_no_gogo_or_umaro = 15
     default = 15
 
+
 class StartingCharacter3(Choice):
     """Starting Character 3. Only used if Starting Character Count is 3+"""
     display_name = "Starting Character 3"
@@ -103,6 +108,7 @@ class StartingCharacter3(Choice):
     option_none = 14
     option_random_with_no_gogo_or_umaro = 15
     default = 14
+
 
 class StartingCharacter4(Choice):
     """Starting Character 4. Only used if Starting Character Count is 4"""
@@ -125,6 +131,7 @@ class StartingCharacter4(Choice):
     option_random_with_no_gogo_or_umaro = 15
     default = 14
 
+
 class RandomizedStats(Choice):
     """Modify character base stats, as a range of percentages applied to their vanilla stats.
     Options include vanilla (100%), Light (85-125%), Moderate (50-150%), Boosted (100-1750%) and Wild (0-200%)"""
@@ -135,6 +142,7 @@ class RandomizedStats(Choice):
     option_boosted = 3
     option_wild = 4
     default = 1
+
 
 class RandomizedCommands(Choice):
     """Randomize everyone's unique commands. Random Vanilla will pull only from the base list of commands.
@@ -147,6 +155,7 @@ class RandomizedCommands(Choice):
     option_random_all = 3
     default = 2
 
+
 class BattleRewardMultiplier(Choice):
     """Multiplies the rewards (EXP, MP, GP) from enemies."""
     display_name = "Battle Reward Multiplier"
@@ -157,6 +166,7 @@ class BattleRewardMultiplier(Choice):
     option_quintuple = 4
     default = 2
 
+
 class RandomizedBosses(Choice):
     """Modifies boss encounters. Shuffled mixes up the vanilla bosses (so you'll still have one of each). Random
     will roll each slot independently, making it likely a boss will show up multiple times or not at all."""
@@ -166,6 +176,7 @@ class RandomizedBosses(Choice):
     option_randomized = 2
     default = 1
 
+
 class RandomEncounters(Choice):
     """Modifies random encounters. The Wild setting mixes bosses into the pool of encounters"""
     display_name = "Random Encounters"
@@ -173,6 +184,7 @@ class RandomEncounters(Choice):
     option_randomized = 1
     option_wild = 2
     default = 1
+
 
 class EsperSpells(Choice):
     """Modifies the spells taught by Espers. Shuffle mixes around the vanilla learnsets, while
@@ -184,6 +196,7 @@ class EsperSpells(Choice):
     option_random_tiered = 3
     default = 1
 
+
 class EsperBonuses(Choice):
     """Modifies level up bonuses from Espers. Shuffle mixes around the vanilla bonuses, while Random
     rolls new options for every Esper"""
@@ -192,6 +205,7 @@ class EsperBonuses(Choice):
     option_shuffled = 1
     option_randomized = 2
     default = 1
+
 
 class EsperEquipability(Choice):
     """Modifies who can equip each esper. Random rolls a set of characters for each Esper, while Balanced
@@ -202,6 +216,7 @@ class EsperEquipability(Choice):
     option_balanced_random = 2
     default = 0
 
+
 class NaturalMagic(Choice):
     """Modifies which two characters learn Magic via level up, and what they learn"""
     display_name = "Natural Magic"
@@ -211,12 +226,14 @@ class NaturalMagic(Choice):
     option_both = 3
     default = 3
 
+
 class StartingGP(Range):
     """Starting supply of GP"""
     display_name = "Starting GP"
     range_start = 0
     range_end = 50000
     default = 30000
+
 
 class RandomizedShops(Choice):
     """Modifies shop inventories. Random can result in anything, while Random Tiered weights more powerful items
@@ -227,6 +244,7 @@ class RandomizedShops(Choice):
     option_random_tiered = 2
     default = 2
 
+
 class SpellcastingItems(Choice):
     """Controls if Rods, Super Balls, and elemental Shields are allowed in shops. Limited removes Shields and
     makes rods and Super Balls very expensive"""
@@ -235,6 +253,7 @@ class SpellcastingItems(Choice):
     option_limited = 1
     option_none = 2
     default = 1
+
 
 class Equipment(Choice):
     """Modifies who can use what equipment. Shuffled mixes each character's equipability with another's,
@@ -246,13 +265,16 @@ class Equipment(Choice):
     option_balanced_random = 3
     default = 1
 
+
 class AllowStrongestItems(DefaultOnToggle):
     """Controls if EXP Eggs, Illuminas, and Paladin Shields can appear in the game."""
     display_name = "Allow Strongest Items"
 
+
 class RandomizeZozoClock(DefaultOnToggle):
     """Randomize the clock puzzle in Zozo."""
     display_name = "Randomize Zozo Clock"
+
 
 class Treasuresanity(Choice):
     """Mixes all treasure chests and the like into the location pool. Not recommended for beginners.
@@ -262,53 +284,56 @@ class Treasuresanity(Choice):
     option_on = 1
     option_on_with_additional_gating = 2
 
+
 class Flagstring(FreeText):
     """Enables custom flagstring. For advanced users only: will override most other options"""
     display_name = "Flagstring"
     default = "False"
 
-ff6wc_options: typing.Dict[str, type(Option)] = {
-    "CharacterCount": CharacterCount,
-    "EsperCount": EsperCount,
-    "DragonCount": DragonCount,
-    "BossCount": BossCount,
-    "StartingCharacterCount": StartingCharacterCount,
-    "StartingCharacter1": StartingCharacter1,
-    "StartingCharacter2": StartingCharacter2,
-    "StartingCharacter3": StartingCharacter3,
-    "StartingCharacter4": StartingCharacter4,
-    "RandomizedStats": RandomizedStats,
-    "RandomizedCommands": RandomizedCommands,
-    "BattleRewardMultiplier": BattleRewardMultiplier,
-    "RandomizedBosses": RandomizedBosses,
-    "RandomEncounters": RandomEncounters,
-    "EsperSpells": EsperSpells,
-    "EsperBonuses": EsperBonuses,
-    "EsperEquipability": EsperEquipability,
-    "NaturalMagic": NaturalMagic,
-    "StartingGP": StartingGP,
-    "RandomizedShops": RandomizedShops,
-    "SpellcastingItems": SpellcastingItems,
-    "Equipment": Equipment,
-    "AllowStrongestItems": AllowStrongestItems,
-    "RandomizeZozoClock": RandomizeZozoClock,
-    "Treasuresanity": Treasuresanity,
-    "Flagstring": Flagstring
-}
 
-def generate_flagstring(multiworld: MultiWorld, player: int, starting_characters):
-    if (multiworld.Flagstring[player].value).capitalize() != 'False':
-        flags = multiworld.Flagstring[player].value.split(" ")
+@dataclass
+class FF6WCOptions(PerGameCommonOptions):
+    CharacterCount: CharacterCount
+    EsperCount: EsperCount
+    DragonCount: DragonCount
+    BossCount: BossCount
+    StartingCharacterCount: StartingCharacterCount
+    StartingCharacter1: StartingCharacter1
+    StartingCharacter2: StartingCharacter2
+    StartingCharacter3: StartingCharacter3
+    StartingCharacter4: StartingCharacter4
+    RandomizedStats: RandomizedStats
+    RandomizedCommands: RandomizedCommands
+    BattleRewardMultiplier: BattleRewardMultiplier
+    RandomizedBosses: RandomizedBosses
+    RandomEncounters: RandomEncounters
+    EsperSpells: EsperSpells
+    EsperBonuses: EsperBonuses
+    EsperEquipability: EsperEquipability
+    NaturalMagic: NaturalMagic
+    StartingGP: StartingGP
+    RandomizedShops: RandomizedShops
+    SpellcastingItems: SpellcastingItems
+    Equipment: Equipment
+    AllowStrongestItems: AllowStrongestItems
+    RandomizeZozoClock: RandomizeZozoClock
+    Treasuresanity: Treasuresanity
+    Flagstring: Flagstring
+
+
+def generate_flagstring(options: FF6WCOptions, starting_characters: List[str]) -> List[str]:
+    if (options.Flagstring.value).capitalize() != 'False':
+        flags = options.Flagstring.value.split(" ")
     else:
         flags = [
             *generate_settings_string(),
-            *generate_objectives_string(multiworld, player),
-            *generate_party_string(multiworld, player, starting_characters),
-            *generate_commands_string(multiworld, player),
-            *generate_battle_string(multiworld, player),
-            *generate_magic_string(multiworld, player),
-            *generate_items_string(multiworld, player),
-            *generate_gameplay_string(multiworld, player),
+            *generate_objectives_string(options),
+            *generate_party_string(options, starting_characters),
+            *generate_commands_string(options),
+            *generate_battle_string(options),
+            *generate_magic_string(options),
+            *generate_items_string(options),
+            *generate_gameplay_string(options),
             *generate_graphics_string(),
             *generate_accessibility_string(),
             *generate_fixes_string()
@@ -317,15 +342,27 @@ def generate_flagstring(multiworld: MultiWorld, player: int, starting_characters
     return flags
 
 
-def generate_settings_string():
+def generate_settings_string() -> List[str]:
     # Character gating is always on, and we want the spoiler log
     return ["-cg", "-sl"]
 
-def generate_objectives_string(multiworld: MultiWorld, player: int):
-    character_count = multiworld.CharacterCount[player]
-    esper_count = multiworld.EsperCount[player]
-    dragon_count = multiworld.DragonCount[player]
-    boss_count = multiworld.BossCount[player]
+
+def generate_objectives_string(options: FF6WCOptions) -> List[str]:
+    character_count = options.CharacterCount
+    esper_count = options.EsperCount
+    dragon_count = options.DragonCount
+
+    # randomized bosses can make it so not enough bosses are available for kefka requirement
+    # A proper fix for this needs to be in the WorldsCollide code,
+    # but a workaround here can make it really unlikely that this problem occurs
+    # TODO: remove this workaround when it's fixed in WorldsCollide code (and that version of WC is here in AP)
+    # https://discord.com/channels/666661907628949504/1235621693381410906
+    if options.RandomizedBosses.value == RandomizedBosses.option_randomized:
+        # 18 makes it around 1/85000 if bosses randomized and requirement randomized
+        if options.BossCount.value > 18:
+            options.BossCount.value = 18
+
+    boss_count = options.BossCount
 
     # fb = final battle unlock
     fb_character_string = f".2.{character_count}.{character_count}" if character_count > 0 else ""
@@ -362,8 +399,9 @@ def generate_objectives_string(multiworld: MultiWorld, player: int):
 
     return [*fb_string, *kts_string, *swdtech_learn, *magitek_upgrade]
 
-def generate_party_string(multiworld: MultiWorld, player: int, starting_characters):
-    character_count = multiworld.StartingCharacterCount[player].value
+
+def generate_party_string(options: FF6WCOptions, starting_characters: List[str]) -> List[str]:
+    character_count = options.StartingCharacterCount.value
 
     if character_count < 4:
         starting_characters.extend(["", "", ""])
@@ -380,64 +418,68 @@ def generate_party_string(multiworld: MultiWorld, player: int, starting_characte
 
     stat_min = 100
     stat_max = 100
-    if multiworld.RandomizedStats == 1: # Light
+    if options.RandomizedStats == 1:  # Light
         stat_min = 85
         stat_max = 125
-    elif multiworld.RandomizedStats == 2: # Moderate
+    elif options.RandomizedStats == 2:  # Moderate
         stat_min = 50
         stat_max = 150
-    elif multiworld.RandomizedStats == 3: # Boosted
+    elif options.RandomizedStats == 3:  # Boosted
         stat_min = 100
         stat_max = 175
-    elif multiworld.RandomizedStats == 4: # Wild
+    elif options.RandomizedStats == 4:  # Wild
         stat_min = 0
         stat_max = 200
 
-    stat_string = [f"-csrp", f"{stat_min}", f"{stat_max}"]
+    stat_string = ["-csrp", f"{stat_min}", f"{stat_max}"]
 
     equipable_umaro = "-eu"
 
     return [character_one, character_two, character_three, character_four, *stat_string, equipable_umaro]
 
-def generate_commands_string(multiworld: MultiWorld, player: int):
+
+def generate_commands_string(options: FF6WCOptions) -> List[str]:
     command_strings = []
-    if multiworld.RandomizedCommands[player] == 0: # Vanilla
+    if options.RandomizedCommands.value == RandomizedCommands.option_vanilla:
         command_strings = ["-com=03050708091011121315191629"]
-    if multiworld.RandomizedCommands[player] == 1: # Randomized Vanilla
+    if options.RandomizedCommands.value == RandomizedCommands.option_random_vanilla:
         command_strings = ["-com=03050708091011121315191629", "-scc"]
-    if multiworld.RandomizedCommands[player].value >= 2: # Random Most/Random All
-        forbid_commands_strings = ["-rec1=28", "-rec2=27", "-rec3=26"] if multiworld.RandomizedCommands[player] == 3 else ""
+    if options.RandomizedCommands.value >= 2:  # Random Most/Random All
+        forbid_commands_strings = (
+            ["-rec1=28", "-rec2=27", "-rec3=26"] if options.RandomizedCommands.value == 3 else ""
+        )
         command_strings = ["-com=98989898989898989898989898", *forbid_commands_strings]
 
-    steal_command_strings = ["-sch", "-fc"] # Higher Steal Chance, Fix Capture Bugs
-    swdtech_command_strings = ["-fst", "-sel"] # Fast SwdTech, Everyone Learns
-    tools_command_strings = ["-sto=1"] # One starting Tool
-    blitz_command_strings = ["-brl", "-bel"] # Bum Rush Last, Everyone Learns
+    steal_command_strings = ["-sch", "-fc"]  # Higher Steal Chance, Fix Capture Bugs
+    swdtech_command_strings = ["-fst", "-sel"]  # Fast SwdTech, Everyone Learns
+    tools_command_strings = ["-sto=1"]  # One starting Tool
+    blitz_command_strings = ["-brl", "-bel"]  # Bum Rush Last, Everyone Learns
     # Start with 3-5 Lores, +/- 25% MP cost, Everyone Learns
     lore_command_strings = ["-slr", "3", "5", "-lmprp", "75", "125", "-lel"]
-    sketch_command_strings = ["-scis"] # Improved Sketch/Control
+    sketch_command_strings = ["-scis"]  # Improved Sketch/Control
     # Start with one Dance, Shuffle Abilities, Display Abilities, No Stumble, Everyone Learns
     dance_command_strings = ["-sdr", "1", "1", "-das", "-dda", "-dns", "-del"]
-    rage_command_strings = ["-srr", "10", "20", "-rnl"] # Start with 10-20 Rages, No Leap
-    other_command_string = ["-stra"] #SwdTech/Runic All
+    rage_command_strings = ["-srr", "10", "20", "-rnl"]  # Start with 10-20 Rages, No Leap
+    other_command_string = ["-stra"]  # SwdTech/Runic All
 
     return [*command_strings, *steal_command_strings, *swdtech_command_strings, *tools_command_strings,
             *blitz_command_strings, *lore_command_strings, *sketch_command_strings, *dance_command_strings,
             *rage_command_strings, *other_command_string]
 
-def generate_battle_string(multiworld: MultiWorld, player: int):
-    reward_value = multiworld.BattleRewardMultiplier[player] + 1
+
+def generate_battle_string(options: FF6WCOptions) -> List[str]:
+    reward_value = options.BattleRewardMultiplier + 1
     rewards_strings = [f"-xpm={reward_value}", f"-mpm={reward_value}", f"-gpm={reward_value}", "-be", "-nxppd"]
 
     boss_string = ""
-    if multiworld.RandomizedBosses[player] == 1:
+    if options.RandomizedBosses == 1:
         boss_string = "-bbs"
-    elif multiworld.RandomizedBosses[player] == 2:
+    elif options.RandomizedBosses == 2:
         boss_string = "-bbr"
 
-    statue_string = "-stloc=mix" # Mix statues into the general pool
+    statue_string = "-stloc=mix"  # Mix statues into the general pool
 
-    dragon_string = "-drloc=shuffle" # Shuffle dragons amongst each other
+    dragon_string = "-drloc=shuffle"  # Shuffle dragons amongst each other
 
     # Scaling factor of 2, abilities scale keeping elements, max level scale is 40, dragons get scaled
     scaling_string = ["-lsc=2", "-hmc=2", "-xgc=2", "-ase=2", "-msl=40", "-sed"]
@@ -445,90 +487,95 @@ def generate_battle_string(multiworld: MultiWorld, player: int):
     return [*rewards_strings, boss_string, statue_string, dragon_string, *scaling_string]
 
 
-def generate_magic_string(multiworld: MultiWorld, player: int):
-    spell_strings = ["-mmprp", "75", "125"] # Spell cost +/- 25%
+def generate_magic_string(options: FF6WCOptions) -> List[str]:
+    spell_strings = ["-mmprp", "75", "125"]  # Spell cost +/- 25%
 
     esper_spells_strings = [""]
-    if multiworld.EsperSpells[player] == 1:
-        esper_spells_strings = ["-ess"] # Shuffle Esper spells
-    elif multiworld.EsperSpells[player] == 2:
-        esper_spells_strings = ["-esr", "1", "5"] # Fully randomize Esper spells
-    elif multiworld.EsperSpells[player] == 3:
-        esper_spells_strings = ["-esrt"] # Randomize Esper spells with tiered weighting
+    if options.EsperSpells == 1:
+        esper_spells_strings = ["-ess"]  # Shuffle Esper spells
+    elif options.EsperSpells == 2:
+        esper_spells_strings = ["-esr", "1", "5"]  # Fully randomize Esper spells
+    elif options.EsperSpells == 3:
+        esper_spells_strings = ["-esrt"]  # Randomize Esper spells with tiered weighting
 
     esper_bonuses_string = ""
-    if multiworld.EsperBonuses[player] == 1: # Shuffled bonuses
+    if options.EsperBonuses == 1:  # Shuffled bonuses
         esper_bonuses_string = "-ebs"
-    elif multiworld.EsperBonuses[player] == 2: # Random bonuses
+    elif options.EsperBonuses == 2:  # Random bonuses
         esper_bonuses_string = "-ebr=70"
 
     esper_equipability_string = ""
-    if multiworld.EsperEquipability[player] == 1: # Random equipability
+    if options.EsperEquipability == 1:  # Random equipability
         esper_equipability_string = ["-eer", "1", "12"]
-    elif multiworld.EsperEquipability[player] == 2: # Balanced random equipability
+    elif options.EsperEquipability == 2:  # Balanced random equipability
         esper_equipability_string = ["-eebr", "6"]
 
     multi_summon_string = "-ems"
 
-    natural_magic_strings = ["-nmmi"] # Show who has Natural Magic
-    if multiworld.NaturalMagic[player] == 1 or multiworld.NaturalMagic == 3: # Random characters
+    natural_magic_strings = ["-nmmi"]  # Show who has Natural Magic
+    if options.NaturalMagic == 1 or options.NaturalMagic == 3:  # Random characters
         natural_magic_strings.extend(["-nm1=random", "-nm2=random"])
-    if multiworld.NaturalMagic[player] == 2 or multiworld.NaturalMagic == 3: # Random learnsets
+    if options.NaturalMagic == 2 or options.NaturalMagic == 3:  # Random learnsets
         natural_magic_strings.extend(["-rns1", "-rns2", "-rnl1", "-rnl2"])
 
     return [*spell_strings, *esper_spells_strings, esper_bonuses_string, *esper_equipability_string,
             multi_summon_string, *natural_magic_strings]
 
-def generate_items_string(multiworld: MultiWorld, player: int):
-    starting_gp_string = f"-gp={multiworld.StartingGP[player]}"
+
+def generate_items_string(options: FF6WCOptions) -> List[str]:
+    starting_gp_string = f"-gp={options.StartingGP}"
     # Three Moogle Charms, a Warp Stone, and five Fenix Downs
     starting_items_strings = ["-smc=3", "-sws=1", "-sfd=5"]
 
     # 75-125% shop prices, five Dried Meat shops, no priceless items
     shops_strings = ["-sprp", "75", "125", "-sdm", "5", "-npi"]
-    if multiworld.RandomizedShops[player] == 1: # Shuffled shops
+    if options.RandomizedShops == 1:  # Shuffled shops
         shops_strings.extend(["-slsr"])
-    elif multiworld.RandomizedShops[player] == 2: # Randomized Shops
+    elif options.RandomizedShops == 2:  # Randomized Shops
         shops_strings.extend(["-sirt"])
 
     spellcasting_items_string = []
-    if multiworld.SpellcastingItems[player] == 1: # Limited
+    if options.SpellcastingItems == 1:  # Limited
         spellcasting_items_string = ["-sebr", "-sesb", "-snes"]
-    elif multiworld.SpellcastingItems[player] == 2: # None
+    elif options.SpellcastingItems == 2:  # None
         spellcasting_items_string = ["-snbr", "-snsb", "-snes"]
 
     # Moogle Charms equipable by all, no Moogle Charms in item pool, no Sprint Shoes in pool
     # Stronger Atma Weapon, 8-32 battles to uncurse Cursed Shield
     equipability_strings = ["-mca", "-nmc", "-noshoes", "-saw", "-csb", "8", "32"]
-    if multiworld.AllowStrongestItems[player] == False:
+    if not options.AllowStrongestItems.value:
         equipability_strings.extend(["-nee", "-nil", "-nfps"])
-    if multiworld.Equipment[player] == 1: # Shuffled
+    if options.Equipment == 1:  # Shuffled
         equipability_strings.extend(["-iesr=0", "-iersr=0"])
-    elif multiworld.Equipment[player] == 2: # Random
+    elif options.Equipment == 2:  # Random
         equipability_strings.extend(["-ier", "1", "14", "-ierr", "1", "14"])
-    elif multiworld.Equipment[player] == 3: # Balanced Random
+    elif options.Equipment == 3:  # Balanced Random
         equipability_strings.extend(["-iebr=6", "-ierbr=6"])
-    chest_randomization = ["-ccsr", "20"] # Default shuffle + 20% random. Only applies if Treasuresanity = off
+    chest_randomization = ["-ccsr", "20"]  # Default shuffle + 20% random. Only applies if Treasuresanity = off
     return [starting_gp_string, *starting_items_strings, *shops_strings,
             *spellcasting_items_string, *equipability_strings, *chest_randomization]
 
-def generate_gameplay_string(multiworld: MultiWorld, player: int):
+
+def generate_gameplay_string(options: FF6WCOptions) -> List[str]:
     # B Dash, randomized Coliseum rewards and enemies, randomize Auction House minor items
     gameplay_strings = ["-move=bd", "-cor", "-crr", "-crvr", "50", "250", "-crm", "-ari"]
-    if multiworld.AllowStrongestItems[player] == False:
+    if not options.AllowStrongestItems.value:
         gameplay_strings.extend(["-cnee", "-cnil"])
-    if multiworld.RandomizeZozoClock[player] == True:
+    if options.RandomizeZozoClock.value:
         gameplay_strings.extend(["-rc"])
     return gameplay_strings
 
-def generate_graphics_string():
+
+def generate_graphics_string() -> List[str]:
     # Lowercase the names.
     return ["-name=Terra.Locke.Cyan.Shadow.Edgar.Sabin.Celes.Strago.Relm.Setzer.Mog.Gau.Gogo.Umaro "]
 
-def generate_accessibility_string():
+
+def generate_accessibility_string() -> List[str]:
     # Remove flashing, add high contrast world map
     return ["-frm", "-wmhc"]
 
-def generate_fixes_string():
+
+def generate_fixes_string() -> List[str]:
     # Bug fixes, and Magimaster can cast his final spell because I'm a jerk.
     return ["-fedc", "-fe", "-fbs", "-fvd", "-fj", "-dgne", "-wnz", "-cmd"]

@@ -1,17 +1,21 @@
-from worlds.AutoWorld import LogicMixin, World
-from . import Locations
-from .Locations import dragons
+from typing import Counter
+
+from BaseClasses import CollectionState
+from .Options import FF6WCOptions
 
 
-class LogicFunctions(LogicMixin):
-    def _ff6wc_has_enough_characters(self, world, player):
-        return self.has_group("characters", player, world.CharacterCount[player])
+def has_dragons(prog_items_player: Counter[str], number: int) -> bool:
+    from . import FF6WCWorld
+    found: int = 0
+    for dragon_event_name in FF6WCWorld.all_dragon_clears:
+        found += prog_items_player[dragon_event_name]
+        if found >= number:
+            return True
+    return False
 
-    def _ff6wc_has_enough_espers(self, world, player):
-        return self.has_group("espers", player, world.EsperCount[player])
 
-    def _ff6wc_has_enough_dragons(self, world, player):
-        return self.has_group("dragons", player, world.DragonCount[player])
-
-    def _ff6wc_has_enough_bosses(self, world, player):
-        return self.has("Busted!", player, world.BossCount[player])
+def can_beat_final_kefka(options: FF6WCOptions, player: int, cs: CollectionState) -> bool:
+    return (cs.has_group("characters", player, options.CharacterCount.value)
+            and cs.has_group("espers", player, options.EsperCount.value)
+            and has_dragons(cs.prog_items[player], options.DragonCount.value)
+            and cs.has("Busted!", player, options.BossCount.value))

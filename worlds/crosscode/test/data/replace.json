@@ -1,0 +1,15 @@
+{
+	"foo": {
+		"thing::REPLACE": 7,
+		"numbers::REPLACE": {
+            "four": 4,
+			"five": 5,
+			"six": 6
+        },
+        "letters::REPLACE": [
+            "e",
+            "f",
+            "g"
+        ]
+    }
+}

@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 
 class Arguments:
@@ -53,7 +54,9 @@ class Arguments:
 
         # seed game based on given flags as well so players can't change them for competitions without changing the rest of the game
         from ..seed import seed_rng
-        self.seed = seed_rng(self.seed, self.seed_rng_flags)
+        # for AP, file name has unique information from seed
+        input_seed = Path(self.output_file).stem if self.output_file else None
+        self.seed = seed_rng(input_seed, self.seed_rng_flags)
 
         from .. import sprite_hash as sprite_hash
         from .. import version as version

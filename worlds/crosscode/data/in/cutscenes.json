@@ -1,0 +1,338 @@
+{
+    "cutscenes": {
+	"Talatu Introductions": {
+	    "location": {
+		"map": "autumn.path-8",
+		"mapId": 458,
+		"path": ".settings.event.21.accepted.6" 
+	    },
+	    "region": {
+		"linear": "3",
+		"open": "open3" 
+	    },
+	    "reward": [
+		[ "item", "Disc of Flora", 1 ]
+	    ]
+	},
+        "Schneider Guild Pass": {
+            "location": {
+                "map": "autumn.path-3-1",
+                "mapId": 452,
+                "path": ".settings.npcStates.1.event.10" 
+            },
+            "region": {
+                "linear": "3.1",
+                "open": "open3.1" 
+            },
+            "reward": [
+                [ "item", "Guild Pass", 1 ]
+            ]
+        },
+        "Bergen Mine Guard": {
+            "location": {
+                "map": "bergen.mine-entrance",
+                "mapId": 316,
+                "path": ".settings.npcStates.0.event.quest.2.thenStep.17" 
+            },
+            "region": {
+                "linear": "4",
+                "open": "open4.1" 
+            },
+            "reward": [
+                [ "item", "Just Water", 2 ]
+            ]
+        },
+        "Bergen Mine Detector": {
+            "location": {
+                "map": "bergen.inner-questhub-1",
+                "mapId": 135,
+                "path": ".settings.npcStates.1.event.quest.5"
+            },
+            "region": {
+                "linear": "3",
+                "open": "open3"
+            },
+            "reward": [
+                [ "item", "Mine Detector", 1]
+            ]
+        },
+        "Temple Mine Shade Statue": {
+            "location": {
+                "map": "cold-dng.g.expo-space",
+                "mapId": 136,
+                "path": ".settings.event.20" 
+            },
+            "region": {
+                "linear": "10",
+                "open": "open4.1" 
+            },
+            "condition": [
+                ["item", "Mine Master Key", 1]
+            ],
+            "reward": [
+                [ "item", "Blue Ice Shade", 1 ]
+            ]
+        },
+        "Old Dojo Shade Statue": {
+            "location": {
+                "map": "forest.interior.expo-space",
+                "mapId": 137,
+                "path": ".settings.event.19" 
+            },
+            "region": {
+                "linear": "32",
+                "open": "open17" 
+            },
+            "reward": [
+                [ "item", "Meteor Shade", 1 ]
+            ]
+        },
+        "Vagabond Dojo Key": {
+            "location": {
+                "map": "forest.path-04-vaga",
+                "mapId": 447,
+                "path": ".settings.npcStates.2.event.quest.12"
+            },
+            "region": {
+                "linear": "31",
+                "open": "open16" 
+            },
+            "reward": [
+                [ "item", "Old Dojo Key", 1 ]
+            ]
+        },
+        "Faj'ro Shade Statue": {
+            "location": {
+                "map": "heat.dng-expo-space",
+                "mapId": 136,
+                "path": ".settings.event.20" 
+            },
+            "region": {
+                "linear": "19",
+                "open": "open7.8" 
+            },
+            "reward": [
+                [ "item", "Red Flame Shade", 1 ]
+            ]
+        },
+        "Ba'kii Kum Cursed Man": {
+            "location": {
+                "map": "heat-village.interior.house-2",
+                "mapId": 31,
+                "path": ".settings.npcStates.0.event.4.0.9" 
+            },
+            "region": {
+                "linear": "11",
+                "open": "open5" 
+            },
+            "condition": [
+                [ "item", "Cold", 1 ]
+            ],
+            "reward": [
+                [ "item", "Cursed Coin", 1 ]
+            ]
+        },
+        "Ba'kii Eldress": {
+            "location": {
+                "map": "heat-village.interior.quest-hub-og",
+                "mapId": 112,
+                "path": ".settings.npcStates.1.event.quest.3.accepted.3" 
+            },
+            "region": {
+                "linear": "11",
+                "open": "open5" 
+            },
+            "reward": [
+                [ "item", "Maroon Cave Pass", 1 ]
+            ]
+        },
+        "Ba'kii Shade Statue": {
+            "location": {
+                "map": "heat-village.special.expo-space",
+                "mapId": 136,
+                "path": ".settings.event.17" 
+            },
+            "region": {
+                "linear": "12",
+                "open": "open6" 
+            },
+            "reward": [
+                [ "item", "Yellow Sand Shade", 1 ]
+            ]
+        },
+        "Zir'vitar Shade Statue": {
+            "location": {
+                "map": "jungle.dng.shock-expo-space",
+                "mapId": 136,
+                "path": ".settings.event.20" 
+            },
+            "region": {
+                "linear": "25",
+                "open": "open13.2" 
+            },
+            "condition": [
+                [ "item", "Wave", 1 ]
+            ],
+            "reward": [
+                [ "item", "Purple Bolt Shade", 1 ]
+            ]
+        },
+        "Krys'kajo Shade Statue": {
+            "location": {
+                "map": "jungle.dng.tree-expo-space",
+                "mapId": 60,
+                "path": ".settings.event.25" 
+            },
+            "region": {
+                "linear": "30",
+                "open": "open15.3" 
+            },
+            "reward": [
+                [ "item", "Star Shade", 1 ]
+            ]
+        },
+        "So'najiz Shade Statue": {
+            "location": {
+                "map": "jungle.dng.wave-expo-space",
+                "mapId": 136,
+                "path": ".settings.event.20" 
+            },
+            "region": {
+                "linear": "27",
+                "open": "open14.5"
+            },
+            "reward": [
+                [ "item", "Azure Drop Shade", 1 ]
+            ]
+        },
+        "Rookie Harbor Shade": {
+            "location": {
+                "map": "rookie-harbor.expo-space",
+                "mapId": 136,
+                "path": ".settings.event.74" 
+            },
+            "region": {
+                "linear": "2",
+                "open": "open2" 
+            },
+            "reward": [
+                [ "item", "Green Leaf Shade", 1 ]
+            ]
+        },
+        "Rookie Harbor Disc": {
+            "location": {
+                "map": "rookie-harbor.expo-space",
+                "mapId": 136,
+                "path": ".settings.event.90" 
+            },
+            "region": {
+                "linear": "2",
+                "open": "open2" 
+            },
+            "reward": [
+                [ "item", "Disc of Insight", 1 ]
+            ]
+        },
+        "Rookie Harbor Post Mine": {
+            "location": {
+                "map": "rookie-harbor.expo-space",
+                "mapId": 137,
+                "path": ".settings.event.36" 
+            },
+            "region": {
+                "linear": "11",
+                "open": "open4.8" 
+            },
+            "reward": [
+                [ "item", "Circuit Override", 1 ]
+            ]
+        },
+        "Rookie Harbor Post Faj'ro": {
+            "location": {
+                "map": "rookie-harbor.expo-space",
+                "mapId": 138,
+                "path": ".settings.event.35" 
+            },
+            "region": {
+                "linear": "19",
+                "open": "open7.8" 
+            },
+            "reward": [
+                [ "item", "Circuit Override", 1 ]
+            ]
+        },
+        "Rookie Harbor Post Krys'kajo": {
+            "location": {
+                "map": "rookie-harbor.expo-space",
+                "mapId": 140,
+                "path": ".settings.event.36" 
+            },
+            "region": {
+                "linear": "30",
+                "open": "open15.3" 
+            },
+            "reward": [
+                [ "item", "Circuit Override", 2 ]
+            ]
+        },
+        "Rookie Harbor Post So'najiz": {
+            "location": {
+                "map": "rookie-harbor.expo-space",
+                "mapId": 142,
+                "path": ".settings.event.14" 
+            },
+            "region": {
+                "linear": "27",
+                "open": "open14.5"
+            },
+            "reward": [
+                [ "item", "Circuit Override", 1 ]
+            ]
+        },
+        "Rookie Harbor Post Zir'vitar": {
+            "location": {
+                "map": "rookie-harbor.expo-space",
+                "mapId": 143,
+                "path": ".settings.event.14" 
+            },
+            "region": {
+                "linear": "25",
+                "open": "open13.2" 
+            },
+            "condition": [
+                [ "item", "Wave", 1 ]
+            ],
+            "reward": [
+                [ "item", "Circuit Override", 1 ]
+            ]
+        } ,
+        "Faj'ro SP Upgrade": {
+            "location": {
+                "map": "heat.dng-expo-space",
+                "mapId": 136,
+                "path": ".settings.event.38" 
+            },
+            "region": {
+                "linear": "19",
+                "open": "open7.8" 
+            },
+            "reward": [
+                [ "sp" ]
+            ]
+        },
+        "Krys'kajo SP Upgrade": {
+            "location": {
+                "map": "jungle.dng.tree-expo-space",
+                "mapId": 60,
+                "path": ".settings.event.44" 
+            },
+            "region": {
+                "linear": "30",
+                "open": "open15.3" 
+            },
+            "reward": [
+                [ "sp" ]
+            ]
+        }
+    }
+}
