@@ -363,8 +363,11 @@ class Context:
                             return
 
                         message["debug"] = True
-                        payload = json.dumps(message)
-                        Webhook(self.url, content=payload).execute()
+                        try:
+                            Webhook(self.url, content=message).execute()
+                        except Exception as e:
+                            logging.exception(e)
+
 
     def broadcast_all(self, msgs: typing.List[dict]):
         msgs = self.dumper(msgs)
@@ -759,6 +762,7 @@ class Context:
             games.append(game)
             game_items: dict[str, int] = {}
             names = self.all_item_and_group_names[game]
+
             for item_name in names:
                 game_items[item_name] = 0b0000
                 if item_name in self.item_names_for_game(game):
@@ -768,7 +772,7 @@ class Context:
                         in self.locations.find_item(slots, seeked_item_id):
                         game_items[item_name] |= item_flags
 
-            self.push_to_webhook({"event": "item_information", "room:": self.room_url, "seed": self.seed_url, "game": game, "items": game_items})
+            self.push_to_webhook({"event": "item_information", "room": self.room_url, "seed": self.seed_url, "game": game, "items": game_items})
 
     # "events"
 

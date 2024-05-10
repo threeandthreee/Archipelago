@@ -34,7 +34,7 @@ class Webhook:
         """
         return requests.post(self.url, json=self.content)
 
-    async def execute(self) -> "requests.Response":
+    def execute(self) -> "requests.Response":
         """
         Execute the sending of the webhook with the given data.
         :param bool remove_embeds: clear the stored embeds after webhook is executed
