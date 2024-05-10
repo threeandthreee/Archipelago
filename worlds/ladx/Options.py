@@ -482,7 +482,7 @@ links_awakening_options: typing.Dict[str, typing.Type[Option]] = {
     'instrument_count': InstrumentCount,
     # 'itempool': ItemPool,
     # 'bowwow': Bowwow,
-    # 'overworld': Overworld,
+    'overworld': Overworld,
     'link_palette': LinkPalette,
     'warp_improvements': WarpImprovements,
     'additional_warp_points': AdditionalWarpPoints,
