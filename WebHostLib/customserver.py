@@ -163,7 +163,7 @@ def get_static_server_data() -> dict:
 
 def run_server_process(room_id, ponyconfig: dict, static_server_data: dict,
                        cert_file: typing.Optional[str], cert_key_file: typing.Optional[str],
-                       host: str, discordwebhook: dict):
+                       host: str, webhook: dict):
     # establish DB connection for multidata and multisave
     db.bind(**ponyconfig)
     db.generate_mapping(check_tables=False)
@@ -200,16 +200,19 @@ def run_server_process(room_id, ponyconfig: dict, static_server_data: dict,
         if port:
             logging.info(f'Hosting game at {host}:{port}')
             #Setup Discord settings with the current context
-            if discordwebhook["DISCORD_AUTO_START"]:
+            if webhook["WEBHOOK_AUTO_START"]:
                 ctx.webhook_active = True
-                ctx.webhook_url = discordwebhook["DISCORD_WEBHOOK"]
+                ctx.WebhookThread(ctx, webhook["WEBHOOK_URL"]).start()
 
             with db_session:
                 room = Room.get(id=ctx.room_id)
                 room.last_port = port
                 ctx.room_url = urlsafe_b64encode(room.id.bytes).rstrip(b'=').decode('ascii')
                 ctx.seed_url = urlsafe_b64encode(room.seed.id.bytes).rstrip(b'=').decode('ascii')
-                _push_player_list(ctx, room_id)
+                if room.is_new:
+                    _push_player_list(ctx)
+                    ctx.push_item_information()
+                    room.is_new = False
         else:
             logging.exception("Could not determine port. Likely hosting failure.")
         with db_session:
@@ -241,7 +244,7 @@ def run_server_process(room_id, ponyconfig: dict, static_server_data: dict,
             raise
 
 
-def _push_player_list(ctx: Context, room_id):
+def _push_player_list(ctx: Context):
     player_list = []
     for player in ctx.player_names.values():
         player_list.append(player)

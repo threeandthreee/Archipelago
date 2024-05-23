@@ -52,8 +52,8 @@ app.config["MAX_ROLL"] = 20
 app.config["CACHE_TYPE"] = "SimpleCache"
 app.config["HOST_ADDRESS"] = ""
 app.config["ASSET_RIGHTS"] = False
-app.config["DISCORD_WEBHOOK"] = ""
-app.config["DISCORD_AUTO_START"] = False
+app.config["WEBHOOK_URL"] = ""
+app.config["WEBHOOK_AUTO_START"] = False
 
 cache = Cache()
 Compress(app)

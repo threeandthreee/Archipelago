@@ -12,3 +12,4 @@ cython>=3.0.8
 cymem>=2.0.8
 orjson>=3.9.10
 typing_extensions>=4.7.0
+requests~=2.31.0

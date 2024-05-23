@@ -1051,8 +1051,7 @@ class ItemClassification(IntFlag):
 
     def as_flag(self) -> int:
         """As Network API flag int."""
-        # Updated this to always write all the bytes, doesn't seem to break anything but allows for filtering of skip balancing
-        return int(self & 0b1111)
+        return int(self & 0b0111)
 
 
 class Item:
@@ -1099,6 +1098,10 @@ class Item:
     @property
     def flags(self) -> int:
         return self.classification.as_flag()
+
+    @property
+    def raw_flags(self) -> int:
+        return int(self.classification)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Item):

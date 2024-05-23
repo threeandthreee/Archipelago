@@ -1,5 +1,8 @@
+from typing import Sequence
+
+
 class WC():
-    def main(self, ap_args):
+    def main(self, ap_args: Sequence[str]) -> None:
         from . import args as args
         args.main(ap_args)
         from . import log
