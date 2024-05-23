@@ -1,87 +1,75 @@
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Dict, Any
 from schema import Schema, Optional
 from dataclasses import dataclass
 from worlds.AutoWorld import PerGameCommonOptions
 from Options import Range, Toggle, DeathLink, Choice, OptionDict, DefaultOnToggle
+# from BaseClasses import OptionGroup
 
 if TYPE_CHECKING:
     from . import HatInTimeWorld
-    
+
 
 def adjust_options(world: "HatInTimeWorld"):
-    world.options.HighestChapterCost.value = max(
-        world.options.HighestChapterCost.value,
-        world.options.LowestChapterCost.value)
+    if world.options.HighestChapterCost < world.options.LowestChapterCost:
+        world.options.HighestChapterCost.value, world.options.LowestChapterCost.value = \
+         world.options.LowestChapterCost.value, world.options.HighestChapterCost.value
 
-    world.options.LowestChapterCost.value = min(
-        world.options.LowestChapterCost.value,
-        world.options.HighestChapterCost.value)
+    if world.options.FinalChapterMaxCost < world.options.FinalChapterMinCost:
+        world.options.FinalChapterMaxCost.value, world.options.FinalChapterMinCost.value = \
+         world.options.FinalChapterMinCost.value, world.options.FinalChapterMaxCost.value
 
-    world.options.FinalChapterMinCost.value = min(
-        world.options.FinalChapterMinCost.value,
-        world.options.FinalChapterMaxCost.value)
+    if world.options.BadgeSellerMaxItems < world.options.BadgeSellerMinItems:
+        world.options.BadgeSellerMaxItems.value, world.options.BadgeSellerMinItems.value = \
+         world.options.BadgeSellerMinItems.value, world.options.BadgeSellerMaxItems.value
 
-    world.options.FinalChapterMaxCost.value = max(
-        world.options.FinalChapterMaxCost.value,
-        world.options.FinalChapterMinCost.value)
+    if world.options.NyakuzaThugMaxShopItems < world.options.NyakuzaThugMinShopItems:
+        world.options.NyakuzaThugMaxShopItems.value, world.options.NyakuzaThugMinShopItems.value = \
+         world.options.NyakuzaThugMinShopItems.value, world.options.NyakuzaThugMaxShopItems.value
 
-    world.options.BadgeSellerMinItems.value = min(
-        world.options.BadgeSellerMinItems.value,
-        world.options.BadgeSellerMaxItems.value)
-
-    world.options.BadgeSellerMaxItems.value = max(
-        world.options.BadgeSellerMinItems.value,
-        world.options.BadgeSellerMaxItems.value)
-
-    world.options.NyakuzaThugMinShopItems.value = min(
-        world.options.NyakuzaThugMinShopItems.value,
-        world.options.NyakuzaThugMaxShopItems.value)
-
-    world.options.NyakuzaThugMaxShopItems.value = max(
-        world.options.NyakuzaThugMinShopItems.value,
-        world.options.NyakuzaThugMaxShopItems.value)
-
-    world.options.DWShuffleCountMin.value = min(
-        world.options.DWShuffleCountMin.value,
-        world.options.DWShuffleCountMax.value)
-
-    world.options.DWShuffleCountMax.value = max(
-        world.options.DWShuffleCountMin.value,
-        world.options.DWShuffleCountMax.value)
+    if world.options.DWShuffleCountMax < world.options.DWShuffleCountMin:
+        world.options.DWShuffleCountMax.value, world.options.DWShuffleCountMin.value = \
+         world.options.DWShuffleCountMin.value, world.options.DWShuffleCountMax.value
 
     total_tps: int = get_total_time_pieces(world)
-    if world.options.HighestChapterCost.value > total_tps-5:
+    if world.options.HighestChapterCost > total_tps-5:
         world.options.HighestChapterCost.value = min(45, total_tps-5)
 
-    if world.options.LowestChapterCost.value > total_tps-5:
+    if world.options.LowestChapterCost > total_tps-5:
         world.options.LowestChapterCost.value = min(45, total_tps-5)
 
-    if world.options.FinalChapterMaxCost.value > total_tps:
+    if world.options.FinalChapterMaxCost > total_tps:
         world.options.FinalChapterMaxCost.value = min(50, total_tps)
 
-    if world.options.FinalChapterMinCost.value > total_tps:
-        world.options.FinalChapterMinCost.value = min(50, total_tps-5)
+    if world.options.FinalChapterMinCost > total_tps:
+        world.options.FinalChapterMinCost.value = min(50, total_tps)
+
+    if world.is_dlc1() and world.options.ShipShapeCustomTaskGoal <= 0:
+        # automatically determine task count based on Tasksanity settings
+        if world.options.Tasksanity:
+            world.options.ShipShapeCustomTaskGoal.value = world.options.TasksanityCheckCount * world.options.TasksanityTaskStep
+        else:
+            world.options.ShipShapeCustomTaskGoal.value = 18
 
     # Don't allow Rush Hour goal if DLC2 content is disabled
-    if world.options.EndGoal.value == 2 and world.options.EnableDLC2.value == 0:
-        world.options.EndGoal.value = 1
+    if world.options.EndGoal == EndGoal.option_rush_hour and not world.options.EnableDLC2:
+        world.options.EndGoal.value = EndGoal.option_finale
 
     # Don't allow Seal the Deal goal if Death Wish content is disabled
-    if world.options.EndGoal.value == 3 and not world.is_dw():
-        world.options.EndGoal.value = 1
+    if world.options.EndGoal == EndGoal.option_seal_the_deal and not world.is_dw():
+        world.options.EndGoal.value = EndGoal.option_finale
 
-    if world.options.DWEnableBonus.value > 0:
+    if world.options.DWEnableBonus:
         world.options.DWAutoCompleteBonuses.value = 0
 
     if world.is_dw_only():
-        world.options.EndGoal.value = 3
+        world.options.EndGoal.value = EndGoal.option_seal_the_deal
         world.options.ActRandomizer.value = 0
         world.options.ShuffleAlpineZiplines.value = 0
         world.options.ShuffleSubconPaintings.value = 0
         world.options.ShuffleStorybookPages.value = 0
         world.options.ShuffleActContracts.value = 0
         world.options.EnableDLC1.value = 0
-        world.options.LogicDifficulty.value = -1
+        world.options.LogicDifficulty.value = LogicDifficulty.option_normal
         world.options.DWTimePieceRequirement.value = 0
 
 
@@ -93,7 +81,7 @@ def get_total_time_pieces(world: "HatInTimeWorld") -> int:
     if world.is_dlc2():
         count += 10
 
-    return min(40+world.options.MaxExtraTimePieces.value, count)
+    return min(40+world.options.MaxExtraTimePieces, count)
 
 
 class EndGoal(Choice):
@@ -306,7 +294,7 @@ class FinalChapterMaxCost(Range):
 
 
 class MaxExtraTimePieces(Range):
-    """Maximum amount of extra Time Pieces from the DLCs.
+    """Maximum number of extra Time Pieces from the DLCs.
     Arctic Cruise will add up to 6. Nyakuza Metro will add up to 10. The absolute maximum is 56."""
     display_name = "Max Extra Time Pieces"
     range_start = 0
@@ -339,8 +327,8 @@ class YarnAvailable(Range):
 
 
 class MinExtraYarn(Range):
-    """The minimum amount of extra yarn in the item pool.
-    There must be at least this much more yarn over the total amount of yarn needed to craft all hats.
+    """The minimum number of extra yarn in the item pool.
+    There must be at least this much more yarn over the total number of yarn needed to craft all hats.
     For example, if this option's value is 10, and the total yarn needed to craft all hats is 40,
     there must be at least 50 yarn in the pool."""
     display_name = "Max Extra Yarn"
@@ -355,7 +343,7 @@ class HatItems(Toggle):
 
 
 class MinPonCost(Range):
-    """The minimum amount of Pons that any shop item can cost."""
+    """The minimum number of Pons that any item in the Badge Seller's shop can cost."""
     display_name = "Minimum Shop Pon Cost"
     range_start = 10
     range_end = 800
@@ -363,7 +351,7 @@ class MinPonCost(Range):
 
 
 class MaxPonCost(Range):
-    """The maximum amount of Pons that any shop item can cost."""
+    """The maximum number of Pons that any item in the Badge Seller's shop can cost."""
     display_name = "Maximum Shop Pon Cost"
     range_start = 10
     range_end = 800
@@ -371,7 +359,7 @@ class MaxPonCost(Range):
 
 
 class BadgeSellerMinItems(Range):
-    """The smallest amount of items that the Badge Seller can have for sale."""
+    """The smallest number of items that the Badge Seller can have for sale."""
     display_name = "Badge Seller Minimum Items"
     range_start = 0
     range_end = 10
@@ -379,7 +367,7 @@ class BadgeSellerMinItems(Range):
 
 
 class BadgeSellerMaxItems(Range):
-    """The largest amount of items that the Badge Seller can have for sale."""
+    """The largest number of items that the Badge Seller can have for sale."""
     display_name = "Badge Seller Maximum Items"
     range_start = 0
     range_end = 10
@@ -408,7 +396,7 @@ class TasksanityTaskStep(Range):
 class TasksanityCheckCount(Range):
     """How many Tasksanity checks there will be in total."""
     display_name = "Tasksanity Check Count"
-    range_start = 5
+    range_start = 1
     range_end = 30
     default = 18
 
@@ -421,11 +409,14 @@ class ExcludeTour(Toggle):
 
 
 class ShipShapeCustomTaskGoal(Range):
-    """Change the amount of tasks required to complete Ship Shape. This will not affect Cruisin' for a Bruisin'."""
+    """Change the number of tasks required to complete Ship Shape. If this option's value is 0, the number of tasks
+    required will be TasksanityTaskStep x TasksanityCheckCount, if Tasksanity is enabled. If Tasksanity is disabled,
+    it will use the game's default of 18.
+    This option will not affect Cruisin' for a Bruisin'."""
     display_name = "Ship Shape Custom Task Goal"
-    range_start = 1
-    range_end = 30
-    default = 18
+    range_start = 0
+    range_end = 90
+    default = 0
 
 
 class EnableDLC2(Toggle):
@@ -451,7 +442,7 @@ class MetroMaxPonCost(Range):
 
 
 class NyakuzaThugMinShopItems(Range):
-    """The smallest amount of items that the thugs in Nyakuza Metro can have for sale."""
+    """The smallest number of items that the thugs in Nyakuza Metro can have for sale."""
     display_name = "Nyakuza Thug Minimum Shop Items"
     range_start = 0
     range_end = 5
@@ -459,7 +450,7 @@ class NyakuzaThugMinShopItems(Range):
 
 
 class NyakuzaThugMaxShopItems(Range):
-    """The largest amount of items that the thugs in Nyakuza Metro can have for sale."""
+    """The largest number of items that the thugs in Nyakuza Metro can have for sale."""
     display_name = "Nyakuza Thug Maximum Shop Items"
     range_start = 0
     range_end = 5
@@ -700,6 +691,33 @@ class AHITOptions(PerGameCommonOptions):
     ParadeTrapWeight:         ParadeTrapWeight
 
     death_link:               DeathLink
+
+
+ahit_option_groups: Dict[str, List[Any]] = {
+    "General Options": [EndGoal, ShuffleStorybookPages, ShuffleAlpineZiplines, ShuffleSubconPaintings,
+                        MinPonCost, MaxPonCost, BadgeSellerMinItems, BadgeSellerMaxItems, LogicDifficulty,
+                        NoPaintingSkips, CTRLogic],
+
+    "Act Options": [ActRandomizer, StartingChapter, LowestChapterCost, HighestChapterCost,
+                    ChapterCostIncrement, ChapterCostMinDifference, FinalChapterMinCost, FinalChapterMaxCost,
+                    FinaleShuffle, ActPlando, ActBlacklist],
+
+    "Item Options": [StartWithCompassBadge, CompassBadgeMode, RandomizeHatOrder, YarnAvailable, YarnCostMin,
+                     YarnCostMax, MinExtraYarn, HatItems, UmbrellaLogic, MaxExtraTimePieces, YarnBalancePercent,
+                     TimePieceBalancePercent],
+
+    "Arctic Cruise Options": [EnableDLC1, Tasksanity, TasksanityTaskStep, TasksanityCheckCount,
+                              ShipShapeCustomTaskGoal, ExcludeTour],
+
+    "Nyakuza Metro Options": [EnableDLC2, MetroMinPonCost, MetroMaxPonCost, NyakuzaThugMinShopItems,
+                              NyakuzaThugMaxShopItems, BaseballBat, NoTicketSkips],
+
+    "Death Wish Options": [EnableDeathWish, DWTimePieceRequirement, DWShuffle, DWShuffleCountMin, DWShuffleCountMax,
+                           DWEnableBonus, DWAutoCompleteBonuses, DWExcludeAnnoyingContracts, DWExcludeAnnoyingBonuses,
+                           DWExcludeCandles, DeathWishOnly],
+
+    "Trap Options": [TrapChance, BabyTrapWeight, LaserTrapWeight, ParadeTrapWeight]
+}
 
 
 slot_data_options: List[str] = [

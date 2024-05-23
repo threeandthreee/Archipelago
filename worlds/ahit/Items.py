@@ -2,7 +2,8 @@ from BaseClasses import Item, ItemClassification
 from .Types import HatDLC, HatType, hat_type_to_item, Difficulty, ItemData, HatInTimeItem
 from .Locations import get_total_locations
 from .Rules import get_difficulty
-from typing import Optional, List, Dict, TYPE_CHECKING
+from .Options import get_total_time_pieces, CTRLogic
+from typing import List, Dict, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from . import HatInTimeWorld
@@ -10,13 +11,12 @@ if TYPE_CHECKING:
 
 def create_itempool(world: "HatInTimeWorld") -> List[Item]:
     itempool: List[Item] = []
-    if not world.is_dw_only() and world.options.HatItems.value == 0:
-        calculate_yarn_costs(world)
+    if world.has_yarn():
         yarn_pool: List[Item] = create_multiple_items(world, "Yarn",
                                                       world.options.YarnAvailable.value,
                                                       ItemClassification.progression_skip_balancing)
 
-        for i in range(int(len(yarn_pool) * (0.01 * world.options.YarnBalancePercent.value))):
+        for i in range(int(len(yarn_pool) * (0.01 * world.options.YarnBalancePercent))):
             yarn_pool[i].classification = ItemClassification.progression
 
         itempool += yarn_pool
@@ -28,7 +28,7 @@ def create_itempool(world: "HatInTimeWorld") -> List[Item]:
         if not item_dlc_enabled(world, name):
             continue
 
-        if world.options.HatItems.value == 0 and name in hat_type_to_item.values():
+        if not world.options.HatItems and name in hat_type_to_item.values():
             continue
 
         item_type: ItemClassification = item_table.get(name).classification
@@ -39,11 +39,10 @@ def create_itempool(world: "HatInTimeWorld") -> List[Item]:
                 continue
         else:
             if name == "Scooter Badge":
-                if world.options.CTRLogic.value >= 1 or get_difficulty(world) >= Difficulty.MODERATE:
+                if world.options.CTRLogic is CTRLogic.option_scooter or get_difficulty(world) >= Difficulty.MODERATE:
                     item_type = ItemClassification.progression
-            elif name == "No Bonk Badge":
-                if get_difficulty(world) >= Difficulty.MODERATE:
-                    item_type = ItemClassification.progression
+            elif name == "No Bonk Badge" and world.is_dw():
+                item_type = ItemClassification.progression
 
         # some death wish bonuses require one hit hero + hookshot
         if world.is_dw() and name == "Badge Pin" and not world.is_dw_only():
@@ -52,32 +51,21 @@ def create_itempool(world: "HatInTimeWorld") -> List[Item]:
         if item_type is ItemClassification.filler or item_type is ItemClassification.trap:
             continue
 
-        if name in act_contracts.keys() and world.options.ShuffleActContracts.value == 0:
+        if name in act_contracts.keys() and not world.options.ShuffleActContracts:
             continue
 
-        if name in alps_hooks.keys() and world.options.ShuffleAlpineZiplines.value == 0:
+        if name in alps_hooks.keys() and not world.options.ShuffleAlpineZiplines:
             continue
 
-        if name == "Progressive Painting Unlock" \
-           and world.options.ShuffleSubconPaintings.value == 0:
+        if name == "Progressive Painting Unlock" and not world.options.ShuffleSubconPaintings:
             continue
 
-        if world.options.StartWithCompassBadge.value > 0 and name == "Compass Badge":
+        if world.options.StartWithCompassBadge and name == "Compass Badge":
             continue
 
         if name == "Time Piece":
-            tp_count = 40
-            max_extra = 0
-            if world.is_dlc1():
-                max_extra += 6
-
-            if world.is_dlc2():
-                max_extra += 10
-
-            tp_count += min(max_extra, world.options.MaxExtraTimePieces.value)
-            tp_list: List[Item] = create_multiple_items(world, name, tp_count, item_type)
-
-            for i in range(int(len(tp_list) * (0.01 * world.options.TimePieceBalancePercent.value))):
+            tp_list: List[Item] = create_multiple_items(world, name, get_total_time_pieces(world), item_type)
+            for i in range(int(len(tp_list) * (0.01 * world.options.TimePieceBalancePercent))):
                 tp_list[i].classification = ItemClassification.progression
 
             itempool += tp_list
@@ -90,23 +78,27 @@ def create_itempool(world: "HatInTimeWorld") -> List[Item]:
 
 
 def calculate_yarn_costs(world: "HatInTimeWorld"):
-    mw = world.multiworld
     min_yarn_cost = int(min(world.options.YarnCostMin.value, world.options.YarnCostMax.value))
     max_yarn_cost = int(max(world.options.YarnCostMin.value, world.options.YarnCostMax.value))
 
     max_cost = 0
     for i in range(5):
-        cost: int = mw.random.randint(min(min_yarn_cost, max_yarn_cost), max(max_yarn_cost, min_yarn_cost))
-        world.hat_yarn_costs[HatType(i)] = cost
-        max_cost += cost
+        hat: HatType = HatType(i)
+        if not world.is_hat_precollected(hat):
+            cost: int = world.random.randint(min_yarn_cost, max_yarn_cost)
+            world.hat_yarn_costs[hat] = cost
+            max_cost += cost
+        else:
+            world.hat_yarn_costs[hat] = 0
 
     available_yarn: int = world.options.YarnAvailable.value
     if max_cost > available_yarn:
         world.options.YarnAvailable.value = max_cost
         available_yarn = max_cost
 
-    if max_cost + world.options.MinExtraYarn.value > available_yarn:
-        world.options.YarnAvailable.value += (max_cost + world.options.MinExtraYarn.value) - available_yarn
+    extra_yarn = max_cost + world.options.MinExtraYarn - available_yarn
+    if extra_yarn > 0:
+        world.options.YarnAvailable.value += extra_yarn
 
 
 def item_dlc_enabled(world: "HatInTimeWorld", name: str) -> bool:
@@ -130,7 +122,7 @@ def create_item(world: "HatInTimeWorld", name: str) -> Item:
 
 
 def create_multiple_items(world: "HatInTimeWorld", name: str, count: int = 1,
-                          item_type: Optional[ItemClassification] = ItemClassification.progression) -> List[Item]:
+                          item_type: ItemClassification = ItemClassification.progression) -> List[Item]:
 
     data = item_table[name]
     itemlist: List[Item] = []
@@ -166,11 +158,11 @@ def create_junk_items(world: "HatInTimeWorld", count: int) -> List[Item]:
 
     for i in range(count):
         if trap_chance > 0 and world.random.randint(1, 100) <= trap_chance:
-            junk_pool += [world.create_item(
-                world.random.choices(list(trap_list.keys()), weights=list(trap_list.values()), k=1)[0])]
+            junk_pool.append(world.create_item(
+                world.random.choices(list(trap_list.keys()), weights=list(trap_list.values()), k=1)[0]))
         else:
-            junk_pool += [world.create_item(
-                world.random.choices(list(junk_list.keys()), weights=list(junk_list.values()), k=1)[0])]
+            junk_pool.append(world.create_item(
+                world.random.choices(list(junk_list.keys()), weights=list(junk_list.values()), k=1)[0]))
 
     return junk_pool
 
