@@ -351,7 +351,7 @@ class Context:
             self.url = url
 
         def run(self):
-            while self.ctx.webhook_active:
+            while self.ctx.webhook_active and not self.ctx.exit_event.is_set():
                 time.sleep(1)
                 while 1:
                     try:
@@ -2047,6 +2047,8 @@ class ServerCommandProcessor(CommonCommandProcessor):
         self.ctx.server.ws_server.close()
         if self.ctx.shutdown_task:
             self.ctx.shutdown_task.cancel()
+
+        self.ctx.webhook_active = False
         self.ctx.exit_event.set()
         return True
 
@@ -2424,6 +2426,7 @@ async def auto_shutdown(ctx, to_cancel=None):
             for task in to_cancel:
                 task.cancel()
         logging.info("Shutting down due to inactivity.")
+        ctx.webhook_active = False
 
     while not ctx.exit_event.is_set():
         if not ctx.client_activity_timers.values():
