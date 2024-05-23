@@ -25,7 +25,7 @@ from .ips import IPS_Patch
 from .Client import SMMRSNIClient
 from importlib.metadata import version, PackageNotFoundError
 
-required_pysmmaprando_version = "0.103.1"
+required_pysmmaprando_version = "0.111.1"
 
 class WrongVersionError(Exception):
     pass
@@ -34,6 +34,7 @@ try:
     if version("pysmmaprando") != required_pysmmaprando_version:
         raise WrongVersionError
     from pysmmaprando import create_gamedata, APRandomizer, APCollectionState, patch_rom, Options as Pysmmr_options
+    from pysmmaprando import ControllerButton, ControllerConfig, CustomizeSettings, MusicSettings, PaletteTheme, ShakingSetting, TileTheme
 
 # required for APWorld distribution outside official AP releases as stated at https://docs.python.org/3/library/zipimport.html:
 # ZIP import of dynamic modules (.pyd, .so) is disallowed.
@@ -64,6 +65,7 @@ except (ImportError, WrongVersionError, PackageNotFoundError) as e:
             z.extractall(f"{os.path.dirname(sys.executable)}/lib")
             
     from pysmmaprando import create_gamedata, APRandomizer, APCollectionState, patch_rom, Options as Pysmmr_options
+    from pysmmaprando import ControllerButton, ControllerConfig, CustomizeSettings, MusicSettings, PaletteTheme, ShakingSetting, TileTheme
 
 def GetAPWorldPath():
     filename = sys.modules[__name__].__file__
@@ -131,7 +133,7 @@ class SMMapRandoWorld(World):
 
     game: str = "Super Metroid Map Rando"
     topology_present = True
-    data_version = 1
+    data_version = 0
     options_dataclass = SMMROptions
     options: SMMROptions
 
@@ -154,6 +156,8 @@ class SMMapRandoWorld(World):
         135 : "Wrecked Ship",
         154 : "Maridia"
     }
+
+    nothing_item_id = 22
 
     web = SMMapRandoWeb()
 
@@ -183,6 +187,8 @@ class SMMapRandoWorld(World):
                           list(self.options.techs.value),
                           list(self.options.strats.value),
                           self.options.shinespark_tiles.value,
+                          self.options.heated_shinespark_tiles.value,
+                          self.options.shinecharge_leniency_frames.value,
                           self.options.resource_multiplier.value / 100,
                           self.options.gate_glitch_leniency.value,
                           self.options.door_stuck_leniency.value,
@@ -190,8 +196,9 @@ class SMMapRandoWorld(World):
                           self.options.draygon_proficiency.value / 100,
                           self.options.ridley_proficiency.value / 100,
                           self.options.botwoon_proficiency.value / 100,
+                          self.options.mother_brain_proficiency.value / 100,
                           self.options.escape_timer_multiplier.value / 100,
-                          self.options.randomized_start.value == 1,
+                          self.options.start_location_mode.value,
                           self.options.save_animals.value,
                           self.options.early_save.value == 1,
                           self.options.objectives.value,
@@ -204,6 +211,7 @@ class SMMapRandoWorld(World):
                           self.options.escape_refill.value == 1,
                           self.options.escape_movement_items.value == 1,
                           self.options.mark_map_stations.value == 1,
+                          self.options.room_outline_revealed.value == 1,
                           self.options.transition_letters.value == 1,
                           self.options.item_markers.value,
                           self.options.item_dots_disappear.value == 1,
@@ -218,8 +226,9 @@ class SMMapRandoWorld(World):
                           self.options.momentum_conservation.value == 1,
                           self.options.wall_jump.value,
                           self.options.etank_refill.value,
-                          self.options.maps_revealed.value == 1,
+                          self.options.maps_revealed.value,
                           self.options.map_layout.value,
+                          self.options.energy_free_shinesparks.value == 1,
                           self.options.ultra_low_qol.value == 1,
                           "", #skill_assumptions_preset
                           "", #item_progression_preset
@@ -353,7 +362,7 @@ class SMMapRandoWorld(World):
         
     def set_rules(self):
         chozo_regions = [   
-                            self.multiworld.get_region("Bowling Alley Bowling Chozo Statue", self.player), 
+                            self.multiworld.get_region("Bowling Alley Bowling Chozo Statue (unlocked)", self.player), 
                             self.multiworld.get_region("Bomb Torizo Room Bomb Torizo (unlocked)", self.player)
                         ]
         pirates_regions = [ 
@@ -479,10 +488,81 @@ class SMMapRandoWorld(World):
                             get_area_name(SMMapRandoWorld.location_name_to_id[loc.name] - locations_start_id) if loc.player == self.player else 
                             self.multiworld.get_player_name(loc.player) + " world" #+ itemloc.loc.name
                         ) 
-                    for sphere_idx, sphere in enumerate(spheres) for loc in sphere if loc.item.player == self.player and not loc.item.name.startswith("f_")
+                    for sphere_idx, sphere in enumerate(spheres) for loc in sphere if loc.item.player == self.player and not loc.item.name.startswith("f_") and loc.item.name != "Nothing"
                     ]
+        
+        controller_mapping_string = {
+                                        "X": ControllerButton.X, 
+                                        "Y": ControllerButton.Y,  
+                                        "A": ControllerButton.A,  
+                                        "B": ControllerButton.B, 
+                                        "L": ControllerButton.L,  
+                                        "R": ControllerButton.R, 
+                                        "Select": ControllerButton.Select, 
+                                        "Start": ControllerButton.Start, 
+                                        "Up": ControllerButton.Up, 
+                                        "Down": ControllerButton.Down, 
+                                        "Left": ControllerButton.Left, 
+                                        "Right": ControllerButton.Right,
+                                     }
+        controller_mapping_int = {
+                                    int(ControllerButton.X): ControllerButton.X, 
+                                    int(ControllerButton.Y): ControllerButton.Y,  
+                                    int(ControllerButton.A): ControllerButton.A,  
+                                    int(ControllerButton.B): ControllerButton.B, 
+                                    int(ControllerButton.L): ControllerButton.L,  
+                                    int(ControllerButton.R): ControllerButton.R, 
+                                    int(ControllerButton.Select): ControllerButton.Select, 
+                                    int(ControllerButton.Start): ControllerButton.Start, 
+                                    int(ControllerButton.Up): ControllerButton.Up, 
+                                    int(ControllerButton.Down): ControllerButton.Down, 
+                                    int(ControllerButton.Left): ControllerButton.Left, 
+                                    int(ControllerButton.Right): ControllerButton.Right, 
+                                }
+        music_settings_mapping = {
+                                    0: MusicSettings.Vanilla,
+                                    1: MusicSettings.AreaThemed,
+                                    2: MusicSettings.Disabled
+                                  }
+        tile_theme_mapping = { 
+                                0: TileTheme.Vanilla,
+                                1: TileTheme.Scrambled,
+                                2: TileTheme.OuterCrateria,
+                                3: TileTheme.InnerCrateria,
+                                4: TileTheme.GreenBrinstar,
+                                5: TileTheme.UpperNorfair,
+                                6: TileTheme.WreckedShip,
+                                7: TileTheme.WestMaridia,
+                            }
+        shaking_settings_mapping = {
+                                    0: ShakingSetting.Vanilla,
+                                    1: ShakingSetting.Reduced,
+                                    2: ShakingSetting.Disabled
+                                  }
 
-        patched_rom_bytes = patch_rom(get_base_rom_path(), self.map_rando, items, self.multiworld.state.smmrcs[self.player].randomization_state, summary)
+        controller_config = ControllerConfig(
+                controller_mapping_int[self.options.shot.value],
+                controller_mapping_int[self.options.jump.value],
+                controller_mapping_int[self.options.dash.value],
+                controller_mapping_int[self.options.item_select.value],
+                controller_mapping_int[self.options.item_cancel.value],
+                controller_mapping_int[self.options.angle_up.value],
+                controller_mapping_int[self.options.angle_down.value],
+                [controller_mapping_string[button] for button in self.options.spin_lock_buttons.value],
+                [controller_mapping_string[button] for button in self.options.quick_reload_buttons.value],
+                self.options.moonwalk.value == 1)
+        customize_settings = CustomizeSettings(
+                None,
+                (self.options.etank_color_red.value // 8, self.options.etank_color_green.value // 8, self.options.etank_color_blue.value // 8),
+                self.options.reserve_hud_style.value == 1,
+                self.options.vanilla_screw_attack_animation.value == 1,
+                PaletteTheme.Vanilla if self.options.palette_theme.value == 1 else PaletteTheme.AreaThemed,
+                tile_theme_mapping[self.options.tile_theme.value],
+                music_settings_mapping[self.options.music.value],
+                self.options.disable_beeping.value == 1,
+                shaking_settings_mapping[self.options.shaking.value],
+                controller_config)
+        patched_rom_bytes = patch_rom(get_base_rom_path(), self.map_rando, items, self.multiworld.state.smmrcs[self.player].randomization_state, summary, customize_settings)
         #patched_rom_bytes = None
         #with open(get_base_rom_path(), "rb") as stream:
         #    patched_rom_bytes = stream.read()
@@ -539,11 +619,14 @@ class SMMapRandoWorld(World):
         multiWorldLocations: List[ByteEdit] = []
         multiWorldItems: List[ByteEdit] = []
         idx = 0
-        vanillaItemTypesCount = 22
+        vanillaItemTypesCount = 23
+        locations_nothing = bytearray(20)
         for itemLoc in self.multiworld.get_locations():
             if itemLoc.player == self.player and not itemLoc.name.startswith("f_"):
                 # item to place in this SMMR world: write full item data to tables
                 if isinstance(itemLoc.item, SMMRItem) and itemLoc.item.code < items_start_id + vanillaItemTypesCount:
+                    if itemLoc.item.code == items_start_id + self.nothing_item_id:
+                        locations_nothing[(itemLoc.address - locations_start_id)//8] |= 1 << (itemLoc.address % 8)
                     itemId = itemLoc.item.code - items_start_id
                 else:
                     itemId = self.item_name_to_id['ArchipelagoItem'] - items_start_id + idx
@@ -607,6 +690,12 @@ class SMMapRandoWorld(World):
             "values": self.getWordArray(self.player)
         }]
 
+        location_nothing: List[ByteEdit] = [{
+            "sym": symbols["locations_nothing"],
+            "offset": 0,
+            "values": locations_nothing
+        }]
+
         patchDict = {   'MultiWorldLocations': multiWorldLocations,
                         'MultiWorldItems': multiWorldItems,
                         'offworldSprites': offworldSprites,
@@ -614,7 +703,8 @@ class SMMapRandoWorld(World):
                         'remoteItem': remoteItem,
                         'ownPlayerId': ownPlayerId,
                         'playerNameData':  playerNameData,
-                        'playerIdData':  playerIdData}
+                        'playerIdData':  playerIdData,
+                        'location_nothing': location_nothing}
 
         # convert an array of symbolic byte_edit dicts like {"sym": symobj, "offset": 0, "values": [1, 0]}
         # to a single rom patch dict like {0x438c: [1, 0], 0xa4a5: [0, 0, 0]}
@@ -777,7 +867,14 @@ class SMMapRandoWorld(World):
             multidata["connect_names"][new_name] = multidata["connect_names"][self.multiworld.player_name[self.player]]
 
     def fill_slot_data(self): 
-        slot_data = {}      
+        slot_data = {}
+        if not self.multiworld.is_race:
+            locations_nothing = [itemLoc.address - locations_start_id 
+                                for itemLoc in self.locations.values()
+                                if itemLoc.address is not None and itemLoc.player == self.player and itemLoc.item.code == items_start_id + self.nothing_item_id ]
+        
+            slot_data["locations_nothing"] = locations_nothing
+                
         return slot_data
     
     
@@ -813,6 +910,7 @@ class SMMRRegion(Region):
         r_regions = set()
         if state.stale[self.player]:
             local_world = self.multiworld.worlds[self.player]
+            defeated_mother_brain_flag_id = local_world.item_name_to_id["f_DefeatedMotherBrain"] - items_start_id - len(local_world.gamedata.item_isv)
             rrp = state.reachable_regions[self.player]
             state.stale[self.player] = False
             (bi_reachability, f_reachability, r_reachability, f_traverse, r_traverse) = local_world.map_rando.update_reachability(state.smmrcs[self.player].randomization_state, local_world.debug)
@@ -833,6 +931,13 @@ class SMMRRegion(Region):
                             rrp.add(local_world.region_dict[local_world.flag_id_to_region_dict[event] + local_world.vertex_cnt])
                 if (f_reachability[i]):
                     f_regions.add(local_world.region_dict[i])
+                    # special case for f_DefeatedMotherBrain as it cant be reverse reachable
+                    event_src = local_world.events_connections.get(local_world.region_map_reverse[i], None)
+                    if (event_src != None):
+                        for event in event_src:
+                            if event == defeated_mother_brain_flag_id:
+                                rrp.add(local_world.region_dict[local_world.flag_id_to_region_dict[defeated_mother_brain_flag_id] + local_world.vertex_cnt])
+
                 if (r_reachability[i]):
                     r_regions.add(local_world.region_dict[i])
             #state.update_reachable_regions(self.player)
