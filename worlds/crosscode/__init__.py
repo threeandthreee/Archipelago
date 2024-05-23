@@ -160,8 +160,8 @@ class CrossCodeWorld(World):
         
         self.dungeon_location_list = defaultdict(set)
 
-        local_items = self.multiworld.local_items[self.player].value
-        non_local_items = self.multiworld.non_local_items[self.player].value
+        local_items = self.options.local_items.value
+        non_local_items = self.options.non_local_items.value
 
         for key in ("shade_shuffle", "element_shuffle", "small_key_shuffle", "master_key_shuffle", "chest_key_shuffle"):
             getattr(self.options, key).register_locality(local_items, non_local_items)

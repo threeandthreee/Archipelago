@@ -1,12 +1,16 @@
-from BaseClasses import Region, Entrance, ItemClassification, Location
+from BaseClasses import Region, Entrance, ItemClassification, Location, LocationProgressType
 from .Types import ChapterIndex, Difficulty, HatInTimeLocation, HatInTimeItem
 from .Locations import location_table, storybook_pages, event_locs, is_location_valid, \
     shop_locations, TASKSANITY_START_ID, snatcher_coins, zero_jumps, zero_jumps_expert, zero_jumps_hard
-from typing import TYPE_CHECKING, List, Dict
+from typing import TYPE_CHECKING, List, Dict, Optional
 from .Rules import set_rift_rules, get_difficulty
+from .Options import ActRandomizer, EndGoal
 
 if TYPE_CHECKING:
     from . import HatInTimeWorld
+
+
+MIN_FIRST_SPHERE_LOCATIONS = 30
 
 
 # ChapterIndex: region
@@ -216,17 +220,32 @@ chapter_act_info = {
     "Time Rift - Rumbi Factory":    "Metro_CaveRift_RumbiFactory"
 }
 
-# Guarantee that the first level a player can access is a location dense area beatable with no items
+# Some of these may vary depending on options. See is_valid_first_act()
 guaranteed_first_acts = [
     "Welcome to Mafia Town",
     "Barrel Battle",
     "She Came from Outer Space",
     "Down with the Mafia!",
-    "Heating Up Mafia Town",  # Removed in umbrella logic
+    "Heating Up Mafia Town",
     "The Golden Vault",
 
-    "Contractual Obligations",  # Removed in painting logic
-    "Queen Vanessa's Manor",  # Removed in umbrella/painting logic
+    "Dead Bird Studio",
+    "Murder on the Owl Express",
+    "Dead Bird Studio Basement",
+
+    "Contractual Obligations",
+    "The Subcon Well",
+    "Queen Vanessa's Manor",
+    "Your Contract has Expired",
+
+    "Rock the Boat",
+
+    "Time Rift - Mafia of Cooks",
+    "Time Rift - Dead Bird Studio",
+    "Time Rift - Sleepy Subcon",
+    "Time Rift - Alpine Skyline"
+    "Time Rift - Tour",
+    "Time Rift - Rumbi Factory",
 ]
 
 purple_time_rifts = [
@@ -277,183 +296,180 @@ blacklisted_combos = {
 
 
 def create_regions(world: "HatInTimeWorld"):
-    w = world
-    p = world.player
-
     # ------------------------------------------- HUB -------------------------------------------------- #
-    menu = create_region(w, "Menu")
-    spaceship = create_region_and_connect(w, "Spaceship", "Save File -> Spaceship", menu)
+    menu = create_region(world, "Menu")
+    spaceship = create_region_and_connect(world, "Spaceship", "Save File -> Spaceship", menu)
 
     # we only need the menu and the spaceship regions
     if world.is_dw_only():
         return
 
-    create_rift_connections(w, create_region(w, "Time Rift - Gallery"))
-    create_rift_connections(w, create_region(w, "Time Rift - The Lab"))
+    create_rift_connections(world, create_region(world, "Time Rift - Gallery"))
+    create_rift_connections(world, create_region(world, "Time Rift - The Lab"))
 
     # ------------------------------------------- MAFIA TOWN ------------------------------------------- #
-    mafia_town = create_region_and_connect(w, "Mafia Town", "Telescope -> Mafia Town", spaceship)
-    mt_act1 = create_region_and_connect(w, "Welcome to Mafia Town", "Mafia Town - Act 1", mafia_town)
-    mt_act2 = create_region_and_connect(w, "Barrel Battle", "Mafia Town - Act 2", mafia_town)
-    mt_act3 = create_region_and_connect(w, "She Came from Outer Space", "Mafia Town - Act 3", mafia_town)
-    mt_act4 = create_region_and_connect(w, "Down with the Mafia!", "Mafia Town - Act 4", mafia_town)
-    mt_act6 = create_region_and_connect(w, "Heating Up Mafia Town", "Mafia Town - Act 6", mafia_town)
-    mt_act5 = create_region_and_connect(w, "Cheating the Race", "Mafia Town - Act 5", mafia_town)
-    mt_act7 = create_region_and_connect(w, "The Golden Vault", "Mafia Town - Act 7", mafia_town)
+    mafia_town = create_region_and_connect(world, "Mafia Town", "Telescope -> Mafia Town", spaceship)
+    mt_act1 = create_region_and_connect(world, "Welcome to Mafia Town", "Mafia Town - Act 1", mafia_town)
+    mt_act2 = create_region_and_connect(world, "Barrel Battle", "Mafia Town - Act 2", mafia_town)
+    mt_act3 = create_region_and_connect(world, "She Came from Outer Space", "Mafia Town - Act 3", mafia_town)
+    mt_act4 = create_region_and_connect(world, "Down with the Mafia!", "Mafia Town - Act 4", mafia_town)
+    mt_act6 = create_region_and_connect(world, "Heating Up Mafia Town", "Mafia Town - Act 6", mafia_town)
+    mt_act5 = create_region_and_connect(world, "Cheating the Race", "Mafia Town - Act 5", mafia_town)
+    mt_act7 = create_region_and_connect(world, "The Golden Vault", "Mafia Town - Act 7", mafia_town)
 
     # ------------------------------------------- BOTB ------------------------------------------------- #
-    botb = create_region_and_connect(w, "Battle of the Birds", "Telescope -> Battle of the Birds", spaceship)
-    dbs = create_region_and_connect(w, "Dead Bird Studio", "Battle of the Birds - Act 1", botb)
-    create_region_and_connect(w, "Murder on the Owl Express", "Battle of the Birds - Act 2", botb)
-    pp = create_region_and_connect(w, "Picture Perfect", "Battle of the Birds - Act 3", botb)
-    tr = create_region_and_connect(w, "Train Rush", "Battle of the Birds - Act 4", botb)
-    create_region_and_connect(w, "The Big Parade", "Battle of the Birds - Act 5", botb)
-    create_region_and_connect(w, "Award Ceremony", "Battle of the Birds - Finale A", botb)
-    basement = create_region_and_connect(w, "Dead Bird Studio Basement", "Battle of the Birds - Finale B", botb)
-    create_rift_connections(w, create_region(w, "Time Rift - Dead Bird Studio"))
-    create_rift_connections(w, create_region(w, "Time Rift - The Owl Express"))
-    create_rift_connections(w, create_region(w, "Time Rift - The Moon"))
+    botb = create_region_and_connect(world, "Battle of the Birds", "Telescope -> Battle of the Birds", spaceship)
+    dbs = create_region_and_connect(world, "Dead Bird Studio", "Battle of the Birds - Act 1", botb)
+    create_region_and_connect(world, "Murder on the Owl Express", "Battle of the Birds - Act 2", botb)
+    pp = create_region_and_connect(world, "Picture Perfect", "Battle of the Birds - Act 3", botb)
+    tr = create_region_and_connect(world, "Train Rush", "Battle of the Birds - Act 4", botb)
+    create_region_and_connect(world, "The Big Parade", "Battle of the Birds - Act 5", botb)
+    create_region_and_connect(world, "Award Ceremony", "Battle of the Birds - Finale A", botb)
+    basement = create_region_and_connect(world, "Dead Bird Studio Basement", "Battle of the Birds - Finale B", botb)
+    create_rift_connections(world, create_region(world, "Time Rift - Dead Bird Studio"))
+    create_rift_connections(world, create_region(world, "Time Rift - The Owl Express"))
+    create_rift_connections(world, create_region(world, "Time Rift - The Moon"))
 
     # Items near the Dead Bird Studio elevator can be reached from the basement act, and beyond in Expert
-    ev_area = create_region_and_connect(w, "Dead Bird Studio - Elevator Area", "DBS -> Elevator Area", dbs)
-    post_ev_area = create_region_and_connect(w, "Dead Bird Studio - Post Elevator Area", "DBS -> Post Elevator Area", dbs)
-    connect_regions(basement, ev_area, "DBS Basement -> Elevator Area", p)
-    if world.options.LogicDifficulty.value >= int(Difficulty.EXPERT):
-        connect_regions(basement, post_ev_area, "DBS Basement -> Post Elevator Area", p)
+    ev_area = create_region_and_connect(world, "Dead Bird Studio - Elevator Area", "DBS -> Elevator Area", dbs)
+    post_ev = create_region_and_connect(world, "Dead Bird Studio - Post Elevator Area", "DBS -> Post Elevator Area", dbs)
+    basement.connect(ev_area, "DBS Basement -> Elevator Area")
+    if world.options.LogicDifficulty >= int(Difficulty.EXPERT):
+        basement.connect(post_ev, "DBS Basement -> Post Elevator Area")
 
     # ------------------------------------------- SUBCON FOREST --------------------------------------- #
-    subcon_forest = create_region_and_connect(w, "Subcon Forest", "Telescope -> Subcon Forest", spaceship)
-    sf_act1 = create_region_and_connect(w, "Contractual Obligations", "Subcon Forest - Act 1", subcon_forest)
-    sf_act2 = create_region_and_connect(w, "The Subcon Well", "Subcon Forest - Act 2", subcon_forest)
-    sf_act3 = create_region_and_connect(w, "Toilet of Doom", "Subcon Forest - Act 3", subcon_forest)
-    sf_act4 = create_region_and_connect(w, "Queen Vanessa's Manor", "Subcon Forest - Act 4", subcon_forest)
-    sf_act5 = create_region_and_connect(w, "Mail Delivery Service", "Subcon Forest - Act 5", subcon_forest)
-    create_region_and_connect(w, "Your Contract has Expired", "Subcon Forest - Finale", subcon_forest)
+    subcon_forest = create_region_and_connect(world, "Subcon Forest", "Telescope -> Subcon Forest", spaceship)
+    sf_act1 = create_region_and_connect(world, "Contractual Obligations", "Subcon Forest - Act 1", subcon_forest)
+    sf_act2 = create_region_and_connect(world, "The Subcon Well", "Subcon Forest - Act 2", subcon_forest)
+    sf_act3 = create_region_and_connect(world, "Toilet of Doom", "Subcon Forest - Act 3", subcon_forest)
+    sf_act4 = create_region_and_connect(world, "Queen Vanessa's Manor", "Subcon Forest - Act 4", subcon_forest)
+    sf_act5 = create_region_and_connect(world, "Mail Delivery Service", "Subcon Forest - Act 5", subcon_forest)
+    create_region_and_connect(world, "Your Contract has Expired", "Subcon Forest - Finale", subcon_forest)
 
     # ------------------------------------------- ALPINE SKYLINE ------------------------------------------ #
-    alpine_skyline = create_region_and_connect(w, "Alpine Skyline",  "Telescope -> Alpine Skyline", spaceship)
-    alpine_freeroam = create_region_and_connect(w, "Alpine Free Roam", "Alpine Skyline - Free Roam", alpine_skyline)
-    alpine_area = create_region_and_connect(w, "Alpine Skyline Area", "AFR -> Alpine Skyline Area", alpine_freeroam)
+    alpine_skyline = create_region_and_connect(world, "Alpine Skyline",  "Telescope -> Alpine Skyline", spaceship)
+    alpine_freeroam = create_region_and_connect(world, "Alpine Free Roam", "Alpine Skyline - Free Roam", alpine_skyline)
+    alpine_area = create_region_and_connect(world, "Alpine Skyline Area", "AFR -> Alpine Skyline Area", alpine_freeroam)
 
     # Needs to be separate because there are a lot of locations in Alpine that can't be accessed from Illness
-    alpine_area_tihs = create_region_and_connect(w, "Alpine Skyline Area (TIHS)", "-> Alpine Skyline Area (TIHS)",
+    alpine_area_tihs = create_region_and_connect(world, "Alpine Skyline Area (TIHS)", "-> Alpine Skyline Area (TIHS)",
                                                  alpine_area)
 
-    create_region_and_connect(w, "The Birdhouse", "-> The Birdhouse", alpine_area)
-    create_region_and_connect(w, "The Lava Cake", "-> The Lava Cake", alpine_area)
-    create_region_and_connect(w, "The Windmill", "-> The Windmill", alpine_area)
-    create_region_and_connect(w, "The Twilight Bell", "-> The Twilight Bell", alpine_area)
+    create_region_and_connect(world, "The Birdhouse", "-> The Birdhouse", alpine_area)
+    create_region_and_connect(world, "The Lava Cake", "-> The Lava Cake", alpine_area)
+    create_region_and_connect(world, "The Windmill", "-> The Windmill", alpine_area)
+    create_region_and_connect(world, "The Twilight Bell", "-> The Twilight Bell", alpine_area)
 
-    illness = create_region_and_connect(w, "The Illness has Spread", "Alpine Skyline - Finale", alpine_skyline)
-    connect_regions(illness, alpine_area_tihs, "TIHS -> Alpine Skyline Area (TIHS)", p)
-    create_rift_connections(w, create_region(w, "Time Rift - Alpine Skyline"))
-    create_rift_connections(w, create_region(w, "Time Rift - The Twilight Bell"))
-    create_rift_connections(w, create_region(w, "Time Rift - Curly Tail Trail"))
+    illness = create_region_and_connect(world, "The Illness has Spread", "Alpine Skyline - Finale", alpine_skyline)
+    illness.connect(alpine_area_tihs, "TIHS -> Alpine Skyline Area (TIHS)")
+    create_rift_connections(world, create_region(world, "Time Rift - Alpine Skyline"))
+    create_rift_connections(world, create_region(world, "Time Rift - The Twilight Bell"))
+    create_rift_connections(world, create_region(world, "Time Rift - Curly Tail Trail"))
 
     # ------------------------------------------- OTHER -------------------------------------------------- #
-    mt_area: Region = create_region(w, "Mafia Town Area")
-    mt_area_humt: Region = create_region(w, "Mafia Town Area (HUMT)")
-    connect_regions(mt_area, mt_area_humt, "MT Area -> MT Area (HUMT)", p)
-    connect_regions(mt_act1, mt_area, "Mafia Town Entrance WTMT", p)
-    connect_regions(mt_act2, mt_area, "Mafia Town Entrance BB", p)
-    connect_regions(mt_act3, mt_area, "Mafia Town Entrance SCFOS", p)
-    connect_regions(mt_act4, mt_area, "Mafia Town Entrance DWTM", p)
-    connect_regions(mt_act5, mt_area, "Mafia Town Entrance CTR", p)
-    connect_regions(mt_act6, mt_area_humt, "Mafia Town Entrance HUMT", p)
-    connect_regions(mt_act7, mt_area, "Mafia Town Entrance TGV", p)
+    mt_area: Region = create_region(world, "Mafia Town Area")
+    mt_area_humt: Region = create_region(world, "Mafia Town Area (HUMT)")
+    mt_area.connect(mt_area_humt, "MT Area -> MT Area (HUMT)")
+    mt_act1.connect(mt_area, "Mafia Town Entrance WTMT")
+    mt_act2.connect(mt_area, "Mafia Town Entrance BB")
+    mt_act3.connect(mt_area, "Mafia Town Entrance SCFOS")
+    mt_act4.connect(mt_area, "Mafia Town Entrance DWTM")
+    mt_act5.connect(mt_area, "Mafia Town Entrance CTR")
+    mt_act6.connect(mt_area_humt, "Mafia Town Entrance HUMT")
+    mt_act7.connect(mt_area, "Mafia Town Entrance TGV")
 
-    create_rift_connections(w, create_region(w, "Time Rift - Mafia of Cooks"))
-    create_rift_connections(w, create_region(w, "Time Rift - Sewers"))
-    create_rift_connections(w, create_region(w, "Time Rift - Bazaar"))
+    create_rift_connections(world, create_region(world, "Time Rift - Mafia of Cooks"))
+    create_rift_connections(world, create_region(world, "Time Rift - Sewers"))
+    create_rift_connections(world, create_region(world, "Time Rift - Bazaar"))
 
-    sf_area: Region = create_region(w, "Subcon Forest Area")
-    connect_regions(sf_act1, sf_area, "Subcon Forest Entrance CO", p)
-    connect_regions(sf_act2, sf_area, "Subcon Forest Entrance SW", p)
-    connect_regions(sf_act3, sf_area, "Subcon Forest Entrance TOD", p)
-    connect_regions(sf_act4, sf_area, "Subcon Forest Entrance QVM", p)
-    connect_regions(sf_act5, sf_area, "Subcon Forest Entrance MDS", p)
+    sf_area: Region = create_region(world, "Subcon Forest Area")
+    sf_act1.connect(sf_area, "Subcon Forest Entrance CO")
+    sf_act2.connect(sf_area, "Subcon Forest Entrance SW")
+    sf_act3.connect(sf_area, "Subcon Forest Entrance TOD")
+    sf_act4.connect(sf_area, "Subcon Forest Entrance QVM")
+    sf_act5.connect(sf_area, "Subcon Forest Entrance MDS")
 
-    create_rift_connections(w, create_region(w, "Time Rift - Sleepy Subcon"))
-    create_rift_connections(w, create_region(w, "Time Rift - Pipe"))
-    create_rift_connections(w, create_region(w, "Time Rift - Village"))
+    create_rift_connections(world, create_region(world, "Time Rift - Sleepy Subcon"))
+    create_rift_connections(world, create_region(world, "Time Rift - Pipe"))
+    create_rift_connections(world, create_region(world, "Time Rift - Village"))
 
-    badge_seller = create_badge_seller(w)
-    connect_regions(mt_area, badge_seller, "MT Area -> Badge Seller", p)
-    connect_regions(mt_area_humt, badge_seller, "MT Area (HUMT) -> Badge Seller", p)
-    connect_regions(sf_area, badge_seller, "SF Area -> Badge Seller", p)
-    connect_regions(dbs, badge_seller, "DBS -> Badge Seller", p)
-    connect_regions(pp, badge_seller, "PP -> Badge Seller", p)
-    connect_regions(tr, badge_seller, "TR -> Badge Seller", p)
-    connect_regions(alpine_area_tihs, badge_seller, "ASA -> Badge Seller", p)
+    badge_seller = create_badge_seller(world)
+    mt_area.connect(badge_seller, "MT Area -> Badge Seller")
+    mt_area_humt.connect(badge_seller, "MT Area (HUMT) -> Badge Seller")
+    sf_area.connect(badge_seller, "SF Area -> Badge Seller")
+    dbs.connect(badge_seller, "DBS -> Badge Seller")
+    pp.connect(badge_seller, "PP -> Badge Seller")
+    tr.connect(badge_seller, "TR -> Badge Seller")
+    alpine_area_tihs.connect(badge_seller, "ASA -> Badge Seller")
 
-    times_end = create_region_and_connect(w, "Time's End", "Telescope -> Time's End", spaceship)
-    create_region_and_connect(w, "The Finale", "Time's End - Act 1", times_end)
+    times_end = create_region_and_connect(world, "Time's End", "Telescope -> Time's End", spaceship)
+    create_region_and_connect(world, "The Finale", "Time's End - Act 1", times_end)
 
     # ------------------------------------------- DLC1 ------------------------------------------------- #
-    if w.is_dlc1():
-        arctic_cruise = create_region_and_connect(w, "The Arctic Cruise", "Telescope -> The Arctic Cruise", spaceship)
-        cruise_ship = create_region(w, "Cruise Ship")
+    if world.is_dlc1():
+        arctic_cruise = create_region_and_connect(world, "The Arctic Cruise", "Telescope -> Arctic Cruise", spaceship)
+        cruise_ship = create_region(world, "Cruise Ship")
 
-        ac_act1 = create_region_and_connect(w, "Bon Voyage!", "The Arctic Cruise - Act 1", arctic_cruise)
-        ac_act2 = create_region_and_connect(w, "Ship Shape", "The Arctic Cruise - Act 2", arctic_cruise)
-        ac_act3 = create_region_and_connect(w, "Rock the Boat", "The Arctic Cruise - Finale", arctic_cruise)
+        ac_act1 = create_region_and_connect(world, "Bon Voyage!", "The Arctic Cruise - Act 1", arctic_cruise)
+        ac_act2 = create_region_and_connect(world, "Ship Shape", "The Arctic Cruise - Act 2", arctic_cruise)
+        ac_act3 = create_region_and_connect(world, "Rock the Boat", "The Arctic Cruise - Finale", arctic_cruise)
 
-        connect_regions(ac_act1, cruise_ship, "Cruise Ship Entrance BV", p)
-        connect_regions(ac_act2, cruise_ship, "Cruise Ship Entrance SS", p)
-        connect_regions(ac_act3, cruise_ship, "Cruise Ship Entrance RTB", p)
-        create_rift_connections(w, create_region(w, "Time Rift - Balcony"))
-        create_rift_connections(w, create_region(w, "Time Rift - Deep Sea"))
+        ac_act1.connect(cruise_ship, "Cruise Ship Entrance BV")
+        ac_act2.connect(cruise_ship, "Cruise Ship Entrance SS")
+        ac_act3.connect(cruise_ship, "Cruise Ship Entrance RTB")
+        create_rift_connections(world, create_region(world, "Time Rift - Balcony"))
+        create_rift_connections(world, create_region(world, "Time Rift - Deep Sea"))
 
-        if w.options.ExcludeTour.value == 0:
-            create_rift_connections(w, create_region(w, "Time Rift - Tour"))
+        if not world.options.ExcludeTour:
+            create_rift_connections(world, create_region(world, "Time Rift - Tour"))
 
-        if w.options.Tasksanity.value > 0:
-            create_tasksanity_locations(w)
+        if world.options.Tasksanity:
+            create_tasksanity_locations(world)
 
-        connect_regions(cruise_ship, badge_seller, "CS -> Badge Seller", p)
+        cruise_ship.connect(badge_seller, "CS -> Badge Seller")
 
-    if w.is_dlc2():
-        nyakuza_metro = create_region_and_connect(w, "Nyakuza Metro", "Telescope -> Nyakuza Metro", spaceship)
-        metro_freeroam = create_region_and_connect(w, "Nyakuza Free Roam", "Nyakuza Metro - Free Roam", nyakuza_metro)
-        create_region_and_connect(w, "Rush Hour", "Nyakuza Metro - Finale", nyakuza_metro)
+    if world.is_dlc2():
+        nyakuza = create_region_and_connect(world, "Nyakuza Metro", "Telescope -> Nyakuza Metro", spaceship)
+        metro_freeroam = create_region_and_connect(world, "Nyakuza Free Roam", "Nyakuza Metro - Free Roam", nyakuza)
+        create_region_and_connect(world, "Rush Hour", "Nyakuza Metro - Finale", nyakuza)
 
-        yellow = create_region_and_connect(w, "Yellow Overpass Station", "-> Yellow Overpass Station", metro_freeroam)
-        green = create_region_and_connect(w, "Green Clean Station", "-> Green Clean Station", metro_freeroam)
-        pink = create_region_and_connect(w, "Pink Paw Station", "-> Pink Paw Station", metro_freeroam)
-        create_region_and_connect(w, "Bluefin Tunnel", "-> Bluefin Tunnel", metro_freeroam)  # No manhole
+        yellow = create_region_and_connect(world, "Yellow Overpass Station", "-> Yellow Overpass Station", metro_freeroam)
+        green = create_region_and_connect(world, "Green Clean Station", "-> Green Clean Station", metro_freeroam)
+        pink = create_region_and_connect(world, "Pink Paw Station", "-> Pink Paw Station", metro_freeroam)
+        create_region_and_connect(world, "Bluefin Tunnel", "-> Bluefin Tunnel", metro_freeroam)  # No manhole
 
-        create_region_and_connect(w, "Yellow Overpass Manhole", "-> Yellow Overpass Manhole", yellow)
-        create_region_and_connect(w, "Green Clean Manhole", "-> Green Clean Manhole", green)
-        create_region_and_connect(w, "Pink Paw Manhole", "-> Pink Paw Manhole", pink)
+        create_region_and_connect(world, "Yellow Overpass Manhole", "-> Yellow Overpass Manhole", yellow)
+        create_region_and_connect(world, "Green Clean Manhole", "-> Green Clean Manhole", green)
+        create_region_and_connect(world, "Pink Paw Manhole", "-> Pink Paw Manhole", pink)
 
-        create_rift_connections(w, create_region(w, "Time Rift - Rumbi Factory"))
-        create_thug_shops(w)
+        create_rift_connections(world, create_region(world, "Time Rift - Rumbi Factory"))
+        create_thug_shops(world)
 
 
 def create_rift_connections(world: "HatInTimeWorld", region: Region):
     for i, name in enumerate(rift_access_regions[region.name]):
         act_region = world.multiworld.get_region(name, world.player)
         entrance_name = f"{region.name} Portal - Entrance {i+1}"
-        connect_regions(act_region, region, entrance_name, world.player)
+        act_region.connect(region, entrance_name)
 
 
 def create_tasksanity_locations(world: "HatInTimeWorld"):
     ship_shape: Region = world.multiworld.get_region("Ship Shape", world.player)
     id_start: int = TASKSANITY_START_ID
-    for i in range(world.options.TasksanityCheckCount.value):
+    for i in range(world.options.TasksanityCheckCount):
         location = HatInTimeLocation(world.player, f"Tasksanity Check {i+1}", id_start+i, ship_shape)
         ship_shape.locations.append(location)
 
 
 def randomize_act_entrances(world: "HatInTimeWorld"):
-    region_list: List[Region] = get_act_regions(world)
+    region_list: List[Region] = get_shuffleable_act_regions(world)
     world.random.shuffle(region_list)
     region_list.sort(key=sort_acts)
     candidate_list: List[Region] = region_list.copy()
     rift_dict: Dict[str, Region] = {}
 
     # Check if Plando's are valid, if so, map them
-    if len(world.options.ActPlando) > 0:
+    if world.options.ActPlando:
         player_name = world.multiworld.get_player_name(world.player)
         for (name1, name2) in world.options.ActPlando.items():
             region: Region
@@ -474,7 +490,7 @@ def randomize_act_entrances(world: "HatInTimeWorld"):
                       f"Possible reasons are typos, case-sensitivity, or DLC options.")
                 continue
 
-            if is_valid_plando(world, region.name) and is_valid_plando(world, act.name, True):
+            if is_valid_plando(world, region.name, act.name):
                 region_list.remove(region)
                 candidate_list.remove(act)
                 connect_acts(world, region, act, rift_dict)
@@ -484,30 +500,62 @@ def randomize_act_entrances(world: "HatInTimeWorld"):
                       f"\"{name1}: {name2}\" "
                       f"is an invalid or disallowed act plando combination!")
 
-    first_act_mapped: bool = False
+    # Decide what should be on the first few levels before randomizing the rest
+    first_acts: List[Region] = []
+    first_chapter_name = chapter_regions[ChapterIndex(world.options.StartingChapter)]
+    first_acts.append(get_act_by_number(world, first_chapter_name, 1))
+    # Chapter 3 and 4 only have one level accessible at the start
+    if first_chapter_name == "Mafia Town" or first_chapter_name == "Battle of the Birds":
+        first_acts.append(get_act_by_number(world, first_chapter_name, 2))
+        first_acts.append(get_act_by_number(world, first_chapter_name, 3))
+
+    valid_first_acts: List[Region] = []
+    for candidate in candidate_list:
+        if is_valid_first_act(world, candidate):
+            valid_first_acts.append(candidate)
+
+    total_locations = 0
+    for level in first_acts:
+        if level not in region_list:  # make sure it hasn't been plando'd
+            continue
+
+        candidate = valid_first_acts[world.random.randint(0, len(valid_first_acts)-1)]
+        region_list.remove(level)
+        candidate_list.remove(candidate)
+        valid_first_acts.remove(candidate)
+        connect_acts(world, level, candidate, rift_dict)
+
+        # Only allow one purple rift
+        if candidate.name in purple_time_rifts:
+            for act in reversed(valid_first_acts):
+                if act.name in purple_time_rifts:
+                    valid_first_acts.remove(act)
+
+        total_locations += get_region_location_count(world, candidate.name)
+        if "Time Rift" not in candidate.name:
+            chapter = act_chapters.get(candidate.name)
+            if chapter == "Mafia Town":
+                total_locations += get_region_location_count(world, "Mafia Town Area (HUMT)")
+                if candidate.name != "Heating Up Mafia Town":
+                    total_locations += get_region_location_count(world, "Mafia Town Area")
+            elif chapter == "Subcon Forest":
+                total_locations += get_region_location_count(world, "Subcon Forest Area")
+            elif chapter == "The Arctic Cruise":
+                total_locations += get_region_location_count(world, "Cruise Ship")
+
+        # If we have enough Sphere 1 locations, we can allow the rest to be randomized
+        if total_locations >= MIN_FIRST_SPHERE_LOCATIONS:
+            break
+
     ignore_certain_rules: bool = False
     while len(region_list) > 0:
-        region: Region
-        if not first_act_mapped:
-            region = get_first_act(world)
-        else:
-            region = region_list[0]
-
+        region = region_list[0]
         candidate: Region
         valid_candidates: List[Region] = []
 
         # Look for candidates to map this act to
         for c in candidate_list:
-            # Map the first act before anything
-            if not first_act_mapped:
-                if not is_valid_first_act(world, c):
-                    continue
-
-                valid_candidates.append(c)
-                first_act_mapped = True
-                break  # we can stop here, as we only need one
-
-            if is_valid_act_combo(world, region, c, bool(world.options.ActRandomizer.value == 1), ignore_certain_rules):
+            if is_valid_act_combo(world, region, c, ignore_certain_rules):
                 valid_candidates.append(c)
 
         if len(valid_candidates) > 0:
@@ -528,9 +576,6 @@ def randomize_act_entrances(world: "HatInTimeWorld"):
         connect_acts(world, region, candidate, rift_dict)
 
     for name in blacklisted_acts.values():
-        if not is_act_blacklisted(world, name):
-            continue
-
         region: Region = world.multiworld.get_region(name, world.player)
         update_chapter_act_info(world, region, region)
 
@@ -550,7 +595,7 @@ def sort_acts(act: Region) -> int:
        and "Time Rift" not in act.name:
         return -3
 
-    if act.name == "Contractual Obligations":
+    if act.name == "Contractual Obligations" or act.name == "The Subcon Well":
         return -2
 
     world = act.multiworld.worlds[act.player]
@@ -561,18 +606,6 @@ def sort_acts(act: Region) -> int:
                 return -1
 
     return 0
-
-
-def get_first_act(world: "HatInTimeWorld") -> Region:
-    first_chapter = get_first_chapter_region(world)
-    act: Region
-    for e in first_chapter.exits:
-        if "Act 1" in e.name or "Free Roam" in e.name:
-            act = e.connected_region
-            break
-
-    # noinspection PyUnboundLocalVariable
-    return act
 
 
 def connect_acts(world: "HatInTimeWorld", entrance_act: Region, exit_act: Region, rift_dict: Dict[str, Region]):
@@ -601,11 +634,11 @@ def connect_acts(world: "HatInTimeWorld", entrance_act: Region, exit_act: Region
 
 
 def is_valid_act_combo(world: "HatInTimeWorld", entrance_act: Region,
-                       exit_act: Region, separate_rifts: bool, ignore_certain_rules=False) -> bool:
+                       exit_act: Region, ignore_certain_rules: bool = False) -> bool:
 
     # Ignore certain rules that aren't to prevent impossible combos. This is needed for ActPlando.
     if not ignore_certain_rules:
-        if separate_rifts and not ignore_certain_rules:
+        if world.options.ActRandomizer == ActRandomizer.option_light and not ignore_certain_rules:
             # Don't map Time Rifts to normal acts
             if "Time Rift" in entrance_act.name and "Time Rift" not in exit_act.name:
                 return False
@@ -619,7 +652,7 @@ def is_valid_act_combo(world: "HatInTimeWorld", entrance_act: Region,
                     or entrance_act.name not in purple_time_rifts and exit_act.name in purple_time_rifts:
                 return False
 
-        if world.options.FinaleShuffle.value > 0 and entrance_act.name in chapter_finales:
+        if world.options.FinaleShuffle and entrance_act.name in chapter_finales:
             if exit_act.name not in chapter_finales:
                 return False
 
@@ -630,15 +663,15 @@ def is_valid_act_combo(world: "HatInTimeWorld", entrance_act: Region,
     if entrance_act.name in blacklisted_combos.keys() and exit_act.name in blacklisted_combos[entrance_act.name]:
         return False
 
-    if len(world.options.ActBlacklist) > 0:
+    if world.options.ActBlacklist:
         act_blacklist = world.options.ActBlacklist.get(entrance_act.name)
         if act_blacklist is not None and exit_act.name in act_blacklist:
             return False
 
     # Prevent Contractual Obligations from being inaccessible if contracts are not shuffled
-    if world.options.ShuffleActContracts.value == 0:
+    if not world.options.ShuffleActContracts:
         if (entrance_act.name == "Your Contract has Expired" or entrance_act.name == "The Subcon Well") \
-                and exit_act.name == "Contractual Obligations":
+           and exit_act.name == "Contractual Obligations":
             return False
 
     return True
@@ -648,39 +681,70 @@ def is_valid_first_act(world: "HatInTimeWorld", act: Region) -> bool:
     if act.name not in guaranteed_first_acts:
         return False
 
-    # Not completable without Umbrella
-    if world.options.UmbrellaLogic.value > 0 \
-            and (act.name == "Heating Up Mafia Town" or act.name == "Queen Vanessa's Manor"):
+    # If there's only a single level in the starting chapter, only allow Mafia Town or Subcon Forest levels
+    start_chapter = world.options.StartingChapter
+    if start_chapter is ChapterIndex.ALPINE or start_chapter is ChapterIndex.SUBCON:
+        if "Time Rift" in act.name:
+            return False
+
+        if act_chapters[act.name] != "Mafia Town" and act_chapters[act.name] != "Subcon Forest":
+            return False
+
+    if act.name in purple_time_rifts and not world.options.ShuffleStorybookPages:
         return False
 
-    # Subcon sphere 1 is too small without painting unlocks, and no acts are completable either
-    if world.options.ShuffleSubconPaintings.value > 0 \
-            and "Subcon Forest" in act_entrances[act.name]:
+    diff = get_difficulty(world)
+    # Not completable without Umbrella?
+    if world.options.UmbrellaLogic:
+        # Needs to be at least moderate to cross the big dweller wall
+        if act.name == "Queen Vanessa's Manor" and diff < Difficulty.MODERATE:
+            return False
+        elif act.name == "Your Contract has Expired" and diff < Difficulty.EXPERT:  # Snatcher Hover
+            return False
+        elif act.name == "Heating Up Mafia Town":  # Straight up impossible
+            return False
+
+    if act.name == "Dead Bird Studio":
+        # No umbrella logic = moderate, umbrella logic = expert.
+        if diff < Difficulty.MODERATE or world.options.UmbrellaLogic and diff < Difficulty.EXPERT:
+            return False
+    elif act.name == "Dead Bird Studio Basement" and (diff < Difficulty.EXPERT or world.options.FinaleShuffle):
         return False
+    elif act.name == "Rock the Boat" and (diff < Difficulty.MODERATE or world.options.FinaleShuffle):
+        return False
+    elif act.name == "The Subcon Well" and diff < Difficulty.MODERATE:
+        return False
+    elif act.name == "Contractual Obligations" and world.options.ShuffleSubconPaintings:
+        return False
+
+    if world.options.ShuffleSubconPaintings and act_chapters.get(act.name, "") == "Subcon Forest":
+        # This requires a cherry hover to enter Subcon
+        if act.name == "Your Contract has Expired":
+            if diff < Difficulty.EXPERT or world.options.NoPaintingSkips:
+                return False
+        else:
+            # Only allow Subcon levels if paintings can be skipped
+            if diff < Difficulty.MODERATE or world.options.NoPaintingSkips:
+                return False
 
     return True
 
 
 def connect_time_rift(world: "HatInTimeWorld", time_rift: Region, exit_region: Region):
-    count: int = len(rift_access_regions[time_rift.name])
-    i: int = 1
-    while i <= count:
+    i = 1
+    while i <= len(rift_access_regions[time_rift.name]):
         name = f"{time_rift.name} Portal - Entrance {i}"
         entrance: Entrance
         try:
             entrance = world.multiworld.get_entrance(name, world.player)
+            reconnect_regions(entrance, entrance.parent_region, exit_region)
         except KeyError:
-            if len(time_rift.entrances) > 0:
-                entrance = time_rift.entrances[i-1]
-            else:
-                entrance = connect_regions(time_rift, exit_region, name, world.player)
+            time_rift.connect(exit_region, name)
 
-        # noinspection PyUnboundLocalVariable
-        reconnect_regions(entrance, entrance.parent_region, exit_region)
         i += 1
 
 
-def get_act_regions(world: "HatInTimeWorld") -> List[Region]:
+def get_shuffleable_act_regions(world: "HatInTimeWorld") -> List[Region]:
     act_list: List[Region] = []
     for region in world.multiworld.get_regions(world.player):
         if region.name in chapter_act_info.keys():
@@ -691,56 +755,51 @@ def get_act_regions(world: "HatInTimeWorld") -> List[Region]:
 
 
 def is_act_blacklisted(world: "HatInTimeWorld", name: str) -> bool:
-    plando: bool = name in world.options.ActPlando.keys() and is_valid_plando(world, name) \
-        or name in world.options.ActPlando.values() and is_valid_plando(world, name, True)
+    act_plando = world.options.ActPlando
+    plando: bool = name in act_plando.keys() and is_valid_plando(world, name, act_plando[name])
+    if not plando and name in act_plando.values():
+        for key in act_plando.keys():
+            if act_plando[key] == name and is_valid_plando(world, key, name):
+                plando = True
+                break
 
     if name == "The Finale":
-        return not plando and world.options.EndGoal.value == 1
+        return not plando and world.options.EndGoal == EndGoal.option_finale
 
     if name == "Rush Hour":
-        return not plando and world.options.EndGoal.value == 2
+        return not plando and world.options.EndGoal == EndGoal.option_rush_hour
 
     if name == "Time Rift - Tour":
-        return world.options.ExcludeTour.value > 0
+        return bool(world.options.ExcludeTour)
 
     return name in blacklisted_acts.values()
 
 
-def is_valid_plando(world: "HatInTimeWorld", region: str, is_candidate: bool = False) -> bool:
+def is_valid_plando(world: "HatInTimeWorld", region: str, act: str) -> bool:
     # Duplicated keys will throw an exception for us, but we still need to check for duplicated values
-    if is_candidate:
-        found_list: List = []
-        old_region = region
-        for name, act in world.options.ActPlando.items():
-            if act == old_region:
-                region = name
-                found_list.append(name)
+    found_count = 0
+    for val in world.options.ActPlando.values():
+        if val == act:
+            found_count += 1
 
-        if len(found_list) == 0:
-            return False
-
-        if len(found_list) > 1:
-            raise Exception(f"ActPlando ({world.multiworld.get_player_name(world.player)}) - "
-                  f"Duplicated act plando mapping found for act: \"{old_region}\"")
-    elif region not in world.options.ActPlando.keys():
-        return False
+    if found_count > 1:
+        raise Exception(f"ActPlando ({world.multiworld.get_player_name(world.player)}) - "
+              f"Duplicated act plando mapping found for act: \"{act}\"")
 
     if region in blacklisted_acts.values() or (region not in act_entrances.keys() and "Time Rift" not in region):
-        return False
-
-    act = world.options.ActPlando.get(region)
-    try:
-        world.multiworld.get_region(region, world.player)
-        world.multiworld.get_region(act, world.player)
-    except KeyError:
         return False
 
     if act in blacklisted_acts.values() or (act not in act_entrances.keys() and "Time Rift" not in act):
         return False
 
-    # Don't allow plando-ing things onto the first act that aren't completable with nothing
-    if act == get_first_act(world).name and not is_valid_first_act(world, act):
-        return False
+    # Don't allow plando-ing things onto the first act that aren't permitted
+    entrance_name = act_entrances.get(region, "")
+    if entrance_name != "":
+        is_first_act: bool = act_chapters.get(region) == get_first_chapter_region(world).name \
+                             and ("Act 1" in entrance_name or "Free Roam" in entrance_name)
+
+        if is_first_act and not is_valid_first_act(world, world.multiworld.get_region(act, world.player)):
+            return False
 
     # Don't allow straight up impossible mappings
     if (region == "Time Rift - Curly Tail Trail"
@@ -749,8 +808,7 @@ def is_valid_plando(world: "HatInTimeWorld", region: str, is_candidate: bool = F
        and act == "Alpine Free Roam":
         return False
 
-    if (region == "Rush Hour" or region == "Time Rift - Rumbi Factory") \
-       and act == "Nyakuza Free Roam":
+    if (region == "Rush Hour" or region == "Time Rift - Rumbi Factory") and act == "Nyakuza Free Roam":
         return False
 
     if region == "Time Rift - The Owl Express" and act == "Murder on the Owl Express":
@@ -773,8 +831,7 @@ def create_region(world: "HatInTimeWorld", name: str) -> Region:
             continue
 
         if data.region == name:
-            if key in storybook_pages.keys() \
-               and world.options.ShuffleStorybookPages.value == 0:
+            if key in storybook_pages.keys() and not world.options.ShuffleStorybookPages:
                 continue
 
             location = HatInTimeLocation(world.player, key, data.id, reg)
@@ -792,7 +849,7 @@ def create_badge_seller(world: "HatInTimeWorld") -> Region:
     count = 0
     max_items = 0
 
-    if world.options.BadgeSellerMaxItems.value > 0:
+    if world.options.BadgeSellerMaxItems > 0:
         max_items = world.random.randint(world.options.BadgeSellerMinItems.value,
                                          world.options.BadgeSellerMaxItems.value)
 
@@ -814,13 +871,6 @@ def create_badge_seller(world: "HatInTimeWorld") -> Region:
 
     world.badge_seller_count = max_items
     return badge_seller
-
-
-def connect_regions(start_region: Region, exit_region: Region, entrancename: str, player: int) -> Entrance:
-    entrance = Entrance(player, entrancename, start_region)
-    start_region.exits.append(entrance)
-    entrance.connect(exit_region)
-    return entrance
 
 
 # Takes an entrance, removes its old connections, and reconnects it between the two regions specified.
@@ -856,12 +906,12 @@ def create_region_and_connect(world: "HatInTimeWorld",
         entrance_region = reg
         exit_region = connected_region
 
-    connect_regions(entrance_region, exit_region, entrancename, world.player)
+    entrance_region.connect(exit_region, entrancename)
     return reg
 
 
 def get_first_chapter_region(world: "HatInTimeWorld") -> Region:
-    start_chapter: ChapterIndex = ChapterIndex(world.options.StartingChapter.value)
+    start_chapter: ChapterIndex = ChapterIndex(world.options.StartingChapter)
     return world.multiworld.get_region(chapter_regions.get(start_chapter), world.player)
 
 
@@ -885,9 +935,30 @@ def get_shuffled_region(world: "HatInTimeWorld", region: str) -> str:
                     return name
 
 
+def get_region_location_count(world: "HatInTimeWorld", region_name: str, included_only: bool = True) -> int:
+    count = 0
+    region = world.multiworld.get_region(region_name, world.player)
+    for loc in region.locations:
+        if loc.address is not None and (not included_only or loc.progress_type is not LocationProgressType.EXCLUDED):
+            count += 1
+
+    return count
+
+
+def get_act_by_number(world: "HatInTimeWorld", chapter_name: str, num: int) -> Region:
+    chapter = world.multiworld.get_region(chapter_name, world.player)
+    act: Optional[Region] = None
+    for e in chapter.exits:
+        if f"Act {num}" in e.name or num == 1 and "Free Roam" in e.name:
+            act = e.connected_region
+            break
+
+    return act
+
+
 def create_thug_shops(world: "HatInTimeWorld"):
-    min_items: int = min(world.options.NyakuzaThugMinShopItems.value, world.options.NyakuzaThugMaxShopItems.value)
-    max_items: int = max(world.options.NyakuzaThugMaxShopItems.value, world.options.NyakuzaThugMinShopItems.value)
+    min_items: int = world.options.NyakuzaThugMinShopItems.value
+    max_items: int = world.options.NyakuzaThugMaxShopItems.value
     count = -1
     step = 0
     old_name = ""

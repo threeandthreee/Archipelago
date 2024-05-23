@@ -5,8 +5,8 @@ from .DeathWishLocations import dw_prereqs, dw_candles
 from BaseClasses import Entrance, Location, ItemClassification
 from worlds.generic.Rules import add_rule, set_rule
 from typing import List, Callable, TYPE_CHECKING
-from .Regions import act_chapters
-from .Locations import zero_jumps, zero_jumps_expert, zero_jumps_hard, death_wishes
+from .Locations import death_wishes
+from .Options import EndGoal
 
 if TYPE_CHECKING:
     from . import HatInTimeWorld
@@ -103,12 +103,11 @@ required_snatcher_coins = {
 
 
 def set_dw_rules(world: "HatInTimeWorld"):
-    if "Snatcher's Hit List" not in world.excluded_dws \
-       or "Camera Tourist" not in world.excluded_dws:
+    if "Snatcher's Hit List" not in world.excluded_dws or "Camera Tourist" not in world.excluded_dws:
         set_enemy_rules(world)
 
     dw_list: List[str] = []
-    if world.options.DWShuffle.value > 0:
+    if world.options.DWShuffle:
         dw_list = world.dw_shuffle
     else:
         for name in death_wishes.keys():
@@ -119,89 +118,37 @@ def set_dw_rules(world: "HatInTimeWorld"):
             continue
 
         dw = world.multiworld.get_region(name, world.player)
-        temp_list: List[Location] = []
+        if not world.options.DWShuffle and name in dw_stamp_costs.keys():
+            for entrance in dw.entrances:
+                add_rule(entrance, lambda state, n=name: state.has("Stamps", world.player, dw_stamp_costs[n]))
+
         main_objective = world.multiworld.get_location(f"{name} - Main Objective", world.player)
-        full_clear = world.multiworld.get_location(f"{name} - All Clear", world.player)
+        all_clear = world.multiworld.get_location(f"{name} - All Clear", world.player)
         main_stamp = world.multiworld.get_location(f"Main Stamp - {name}", world.player)
         bonus_stamps = world.multiworld.get_location(f"Bonus Stamps - {name}", world.player)
-        temp_list.append(main_objective)
-        temp_list.append(full_clear)
-
-        if world.options.DWShuffle.value == 0:
-            if name in dw_stamp_costs.keys():
-                for entrance in dw.entrances:
-                    add_rule(entrance, lambda state, n=name: get_total_dw_stamps(state, world) >= dw_stamp_costs[n])
-
-        if world.options.DWEnableBonus.value == 0:
+        if not world.options.DWEnableBonus:
             # place nothing, but let the locations exist still, so we can use them for bonus stamp rules
-            full_clear.address = None
-            full_clear.place_locked_item(HatInTimeItem("Nothing", ItemClassification.filler, None, world.player))
-            full_clear.show_in_spoiler = False
+            all_clear.address = None
+            all_clear.place_locked_item(HatInTimeItem("Nothing", ItemClassification.filler, None, world.player))
+            all_clear.show_in_spoiler = False
 
         # No need for rules if excluded - stamps will be auto-granted
         if world.is_dw_excluded(name):
             continue
 
-        # Specific Rules
         modify_dw_rules(world, name)
+        add_dw_rules(world, main_objective)
+        add_dw_rules(world, all_clear)
+        add_rule(main_stamp, main_objective.access_rule)
+        add_rule(all_clear, main_objective.access_rule)
+        # Only set bonus stamp rules if we don't auto complete bonuses
+        if not world.options.DWAutoCompleteBonuses and not world.is_bonus_excluded(all_clear.name):
+            add_rule(bonus_stamps, all_clear.access_rule)
 
-        main_rule: Callable[[CollectionState], bool]
-        for i in range(len(temp_list)):
-            loc = temp_list[i]
-            data: LocData
-
-            if loc.name == main_objective.name:
-                data = dw_requirements.get(name)
-            else:
-                data = dw_bonus_requirements.get(name)
-
-            if data is None:
-                continue
-
-            if data.hookshot:
-                add_rule(loc, lambda state: can_use_hookshot(state, world))
-
-            for hat in data.required_hats:
-                if hat is not HatType.NONE:
-                    add_rule(loc, lambda state, h=hat: can_use_hat(state, world, h))
-
-            for misc in data.misc_required:
-                add_rule(loc, lambda state, item=misc: state.has(item, world.player))
-
-            if data.paintings > 0 and world.options.ShuffleSubconPaintings.value > 0:
-                add_rule(loc, lambda state, paintings=data.paintings: has_paintings(state, world, paintings))
-
-            if data.hit_type is not HitType.none and world.options.UmbrellaLogic.value > 0:
-                if data.hit_type == HitType.umbrella:
-                    add_rule(loc, lambda state: state.has("Umbrella", world.player))
-
-                elif data.hit_type == HitType.umbrella_or_brewing:
-                    add_rule(loc, lambda state: state.has("Umbrella", world.player)
-                             or can_use_hat(state, world, HatType.BREWING))
-
-                elif data.hit_type == HitType.dweller_bell:
-                    add_rule(loc, lambda state: state.has("Umbrella", world.player)
-                             or can_use_hat(state, world, HatType.BREWING)
-                             or can_use_hat(state, world, HatType.DWELLER))
-
-            main_rule = main_objective.access_rule
-
-            if loc.name == main_objective.name:
-                add_rule(main_stamp, loc.access_rule)
-            elif loc.name == full_clear.name:
-                add_rule(loc, main_rule)
-                # Only set bonus stamp rules if we don't auto complete bonuses
-                if world.options.DWAutoCompleteBonuses.value == 0 \
-                   and not world.is_bonus_excluded(loc.name):
-                    add_rule(bonus_stamps, loc.access_rule)
-
-    if world.options.DWShuffle.value > 0:
-        for i in range(len(world.dw_shuffle)):
-            if i == 0:
-                continue
-
-            name = world.dw_shuffle[i]
-            prev_dw = world.multiworld.get_region(world.dw_shuffle[i-1], world.player)
+    if world.options.DWShuffle:
+        for i in range(len(world.dw_shuffle)-1):
+            name = world.dw_shuffle[i+1]
+            prev_dw = world.multiworld.get_region(world.dw_shuffle[i], world.player)
             entrance = world.multiworld.get_entrance(f"{prev_dw.name} -> {name}", world.player)
             add_rule(entrance, lambda state, n=prev_dw.name: state.has(f"1 Stamp - {n}", world.player))
     else:
@@ -223,9 +170,45 @@ def set_dw_rules(world: "HatInTimeWorld"):
                 for rule in access_rules:
                     add_rule(entrance, rule)
 
-    if world.options.EndGoal.value == 3:
-        world.multiworld.completion_condition[world.player] = lambda state: state.has("1 Stamp - Seal the Deal",
-                                                                                      world.player)
+    if world.options.EndGoal == EndGoal.option_seal_the_deal:
+        world.multiworld.completion_condition[world.player] = lambda state: \
+            state.has("1 Stamp - Seal the Deal", world.player)
+
+
+def add_dw_rules(world: "HatInTimeWorld", loc: Location):
+    bonus: bool = "All Clear" in loc.name
+    if not bonus:
+        data = dw_requirements.get(loc.name)
+    else:
+        data = dw_bonus_requirements.get(loc.name)
+
+    if data is None:
+        return
+
+    if data.hookshot:
+        add_rule(loc, lambda state: can_use_hookshot(state, world))
+
+    for hat in data.required_hats:
+        add_rule(loc, lambda state, h=hat: can_use_hat(state, world, h))
+
+    for misc in data.misc_required:
+        add_rule(loc, lambda state, item=misc: state.has(item, world.player))
+
+    if data.paintings > 0 and world.options.ShuffleSubconPaintings:
+        add_rule(loc, lambda state, paintings=data.paintings: has_paintings(state, world, paintings))
+
+    if data.hit_type is not HitType.none and world.options.UmbrellaLogic:
+        if data.hit_type == HitType.umbrella:
+            add_rule(loc, lambda state: state.has("Umbrella", world.player))
+
+        elif data.hit_type == HitType.umbrella_or_brewing:
+            add_rule(loc, lambda state: state.has("Umbrella", world.player)
+                     or can_use_hat(state, world, HatType.BREWING))
+
+        elif data.hit_type == HitType.dweller_bell:
+            add_rule(loc, lambda state: state.has("Umbrella", world.player)
+                     or can_use_hat(state, world, HatType.BREWING)
+                     or can_use_hat(state, world, HatType.DWELLER))
 
 
 def modify_dw_rules(world: "HatInTimeWorld", name: str):
@@ -274,41 +257,18 @@ def modify_dw_rules(world: "HatInTimeWorld", name: str):
         set_candle_dw_rules(name, world)
 
 
-def get_total_dw_stamps(state: CollectionState, world: "HatInTimeWorld") -> int:
-    if world.options.DWShuffle.value > 0:
-        return 999  # no stamp costs in death wish shuffle
-
-    count = 0
-
-    for name in death_wishes:
-        if name == "Snatcher Coins in Nyakuza Metro" and not world.is_dlc2():
-            continue
-
-        if state.has(f"1 Stamp - {name}", world.player):
-            count += 1
-        else:
-            continue
-
-        if state.has(f"2 Stamps - {name}", world.player):
-            count += 2
-        elif name not in dw_candles:
-            count += 1
-
-    return count
-
-
 def set_candle_dw_rules(name: str, world: "HatInTimeWorld"):
     main_objective = world.multiworld.get_location(f"{name} - Main Objective", world.player)
     full_clear = world.multiworld.get_location(f"{name} - All Clear", world.player)
 
     if name == "Zero Jumps":
-        add_rule(main_objective, lambda state: get_zero_jump_clear_count(state, world) >= 1)
-        add_rule(full_clear, lambda state: get_zero_jump_clear_count(state, world) >= 4
+        add_rule(main_objective, lambda state: state.has("Zero Jumps", world.player))
+        add_rule(full_clear, lambda state: state.has("Zero Jumps", world.player, 4)
                  and state.has("Train Rush (Zero Jumps)", world.player) and can_use_hat(state, world, HatType.ICE))
 
         # No Ice Hat/painting required in Expert for Toilet Zero Jumps
         # This painting wall can only be skipped via cherry hover.
-        if get_difficulty(world) < Difficulty.EXPERT or world.options.NoPaintingSkips.value == 1:
+        if get_difficulty(world) < Difficulty.EXPERT or world.options.NoPaintingSkips:
             set_rule(world.multiworld.get_location("Toilet of Doom (Zero Jumps)", world.player),
                      lambda state: can_use_hookshot(state, world) and can_hit(state, world)
                      and has_paintings(state, world, 1, False))
@@ -321,18 +281,18 @@ def set_candle_dw_rules(name: str, world: "HatInTimeWorld"):
 
     elif name == "Snatcher's Hit List":
         add_rule(main_objective, lambda state: state.has("Mafia Goon", world.player))
-        add_rule(full_clear, lambda state: get_reachable_enemy_count(state, world) >= 12)
+        add_rule(full_clear, lambda state: state.has("Enemy", world.player, 12))
 
     elif name == "Camera Tourist":
-        add_rule(main_objective, lambda state: get_reachable_enemy_count(state, world) >= 8)
-        add_rule(full_clear, lambda state: can_reach_all_bosses(state, world)
-                 and state.has("Triple Enemy Picture", world.player))
+        add_rule(main_objective, lambda state: state.has("Enemy", world.player, 8))
+        add_rule(full_clear, lambda state: state.has("Boss", world.player, 6)
+                 and state.has("Triple Enemy Photo", world.player))
 
     elif "Snatcher Coins" in name:
         coins: List[str] = []
         for coin in required_snatcher_coins[name]:
             coins.append(coin)
-            add_rule(full_clear, lambda state: state.has(coin, world.player))
+            add_rule(full_clear, lambda state, c=coin: state.has(c, world.player))
 
         # any coin works for the main objective
         add_rule(main_objective, lambda state: state.has(coins[0], world.player)
@@ -340,51 +300,8 @@ def set_candle_dw_rules(name: str, world: "HatInTimeWorld"):
                  or state.has(coins[2], world.player))
 
 
-def get_zero_jump_clear_count(state: CollectionState, world: "HatInTimeWorld") -> int:
-    total = 0
-
-    for name in act_chapters.keys():
-        n = f"{name} (Zero Jumps)"
-        if n not in zero_jumps:
-            continue
-
-        if get_difficulty(world) < Difficulty.HARD and n in zero_jumps_hard:
-            continue
-
-        if get_difficulty(world) < Difficulty.EXPERT and n in zero_jumps_expert:
-            continue
-
-        if not state.has(n, world.player):
-            continue
-
-        total += 1
-
-    return total
-
-
-def get_reachable_enemy_count(state: CollectionState, world: "HatInTimeWorld") -> int:
-    count = 0
-    for enemy in hit_list.keys():
-        if enemy in bosses:
-            continue
-
-        if state.has(enemy, world.player):
-            count += 1
-
-    return count
-
-
-def can_reach_all_bosses(state: CollectionState, world: "HatInTimeWorld") -> bool:
-    for boss in bosses:
-        if not state.has(boss, world.player):
-            return False
-
-    return True
-
-
 def create_enemy_events(world: "HatInTimeWorld"):
-    no_tourist = "Camera Tourist" in world.excluded_dws or "Camera Tourist" in world.excluded_bonuses
-
+    no_tourist = "Camera Tourist" in world.excluded_dws
     for enemy, regions in hit_list.items():
         if no_tourist and enemy in bosses:
             continue
@@ -393,14 +310,13 @@ def create_enemy_events(world: "HatInTimeWorld"):
             if (area == "Bon Voyage!" or area == "Time Rift - Deep Sea") and not world.is_dlc1():
                 continue
 
-            if area == "Time Rift - Tour" and (not world.is_dlc1()
-               or world.options.ExcludeTour.value > 0):
+            if area == "Time Rift - Tour" and (not world.is_dlc1() or world.options.ExcludeTour):
                 continue
 
             if area == "Bluefin Tunnel" and not world.is_dlc2():
                 continue
-            if world.options.DWShuffle.value > 0 and area in death_wishes.keys() \
-               and area not in world.dw_shuffle:
+
+            if world.options.DWShuffle and area in death_wishes.keys() and area not in world.dw_shuffle:
                 continue
 
             region = world.multiworld.get_region(area, world.player)
@@ -410,16 +326,15 @@ def create_enemy_events(world: "HatInTimeWorld"):
             event.show_in_spoiler = False
 
     for name in triple_enemy_locations:
-        if name == "Time Rift - Tour" and (not world.is_dlc1() or world.options.ExcludeTour.value > 0):
+        if name == "Time Rift - Tour" and (not world.is_dlc1() or world.options.ExcludeTour):
             continue
 
-        if world.options.DWShuffle.value > 0 and name in death_wishes.keys() \
-           and name not in world.dw_shuffle:
+        if world.options.DWShuffle and name in death_wishes.keys() and name not in world.dw_shuffle:
             continue
 
         region = world.multiworld.get_region(name, world.player)
-        event = HatInTimeLocation(world.player, f"Triple Enemy Picture - {name}", None, region)
-        event.place_locked_item(HatInTimeItem("Triple Enemy Picture", ItemClassification.progression, None, world.player))
+        event = HatInTimeLocation(world.player, f"Triple Enemy Photo - {name}", None, region)
+        event.place_locked_item(HatInTimeItem("Triple Enemy Photo", ItemClassification.progression, None, world.player))
         region.locations.append(event)
         event.show_in_spoiler = False
         if name == "The Mustache Gauntlet":
@@ -437,15 +352,13 @@ def set_enemy_rules(world: "HatInTimeWorld"):
             if (area == "Bon Voyage!" or area == "Time Rift - Deep Sea") and not world.is_dlc1():
                 continue
 
-            if area == "Time Rift - Tour" and (not world.is_dlc1()
-               or world.options.ExcludeTour.value > 0):
+            if area == "Time Rift - Tour" and (not world.is_dlc1() or world.options.ExcludeTour):
                 continue
 
             if area == "Bluefin Tunnel" and not world.is_dlc2():
                 continue
 
-            if world.options.DWShuffle.value > 0 and area in death_wishes \
-               and area not in world.dw_shuffle:
+            if world.options.DWShuffle and area in death_wishes and area not in world.dw_shuffle:
                 continue
 
             event = world.multiworld.get_location(f"{enemy} - {area}", world.player)
@@ -528,7 +441,7 @@ hit_list = {
     "Mustache Girl":    ["The Finale", "Boss Rush", "No More Bad Guys"],
 }
 
-# Camera Tourist has a bonus that requires getting three different types of enemies in one picture.
+# Camera Tourist has a bonus that requires getting three different types of enemies in one photo.
 triple_enemy_locations = [
     "She Came from Outer Space",
     "She Speedran from Outer Space",

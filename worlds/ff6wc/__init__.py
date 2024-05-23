@@ -5,7 +5,7 @@ import os
 import random
 import string
 import threading
-from typing import Any, Dict, List, Union
+from typing import Any, ClassVar, Dict, List, Union
 
 from BaseClasses import Item, Location, Region, MultiWorld, ItemClassification, Tutorial
 from .gen_data import GenData
@@ -65,6 +65,7 @@ class FF6WCWorld(World):
     """
     options_dataclass = FF6WCOptions
     options: FF6WCOptions  # type: ignore
+    settings: ClassVar[FF6WCSettings]  # type: ignore
     game = "Final Fantasy 6 Worlds Collide"
     location_name_groups = {
         "Terra Major": {*Locations.major_terra_checks},
