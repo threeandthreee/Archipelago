@@ -16,10 +16,10 @@ class KHRECOMItemData(NamedTuple):
     weight: int = 1
 
 
-def get_items_by_category(category: str, disclude: list) -> Dict[str, KHRECOMItemData]:
+def get_items_by_category(category: str, exclude: list) -> Dict[str, KHRECOMItemData]:
     item_dict: Dict[str, KHRECOMItemData] = {}
     for name, data in item_table.items():
-        if data.category == category and all(x not in name for x in disclude):
+        if data.category == category and all(x not in name for x in exclude):
             item_dict.setdefault(name, data)
 
     return item_dict
@@ -201,7 +201,7 @@ item_table: Dict[str, KHRECOMItemData] = {
     "Sleight Magic LV3":                 KHRECOMItemData("Sleights",         code = 268_2066, classification = ItemClassification.useful,      max_quantity = 1, weight = 5),
     "Sleight Stardust Blitz":            KHRECOMItemData("Sleights",         code = 268_2067, classification = ItemClassification.useful,      max_quantity = 1, weight = 5),
     "Sleight Goofy Tornado LV2":         KHRECOMItemData("Sleights",         code = 268_2068, classification = ItemClassification.useful,      max_quantity = 1, weight = 5),
-    "Sleight Goofy Torando LV3":         KHRECOMItemData("Sleights",         code = 268_2069, classification = ItemClassification.useful,      max_quantity = 1, weight = 5),
+    "Sleight Goofy Tornado LV3":         KHRECOMItemData("Sleights",         code = 268_2069, classification = ItemClassification.useful,      max_quantity = 1, weight = 5),
     "Sleight Goofy Smash":               KHRECOMItemData("Sleights",         code = 268_2070, classification = ItemClassification.useful,      max_quantity = 1, weight = 5),
     "Sleight Wild Crush":                KHRECOMItemData("Sleights",         code = 268_2071, classification = ItemClassification.useful,      max_quantity = 1, weight = 5),
     "Sleight Sandstorm LV2":             KHRECOMItemData("Sleights",         code = 268_2072, classification = ItemClassification.useful,      max_quantity = 1, weight = 5),
@@ -250,7 +250,7 @@ item_table: Dict[str, KHRECOMItemData] = {
     "Friend Card Beast":                 KHRECOMItemData("Friend Cards",     code = 268_5005, classification = ItemClassification.progression, max_quantity = 1, weight = 1),
     "Friend Card Peter Pan":             KHRECOMItemData("Friend Cards",     code = 268_5006, classification = ItemClassification.progression, max_quantity = 1, weight = 1),
     "Friend Card Jack":                  KHRECOMItemData("Friend Cards",     code = 268_5007, classification = ItemClassification.progression, max_quantity = 1, weight = 1),
-    "Friend Card Pluto":                 KHRECOMItemData("Manual Placement", code = 268_5008, classification = ItemClassification.progression, max_quantity = 1, weight = 1),
+    "Friend Card Pluto":                 KHRECOMItemData("Friend Cards",     code = 268_5008, classification = ItemClassification.progression, max_quantity = 1, weight = 1),
 }
 
 event_item_table: Dict[str, KHRECOMItemData] = {
