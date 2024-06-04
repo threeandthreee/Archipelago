@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from Options import Choice, DefaultOnToggle, PerGameCommonOptions, Toggle
+from Options import Choice, DefaultOnToggle, PerGameCommonOptions, Toggle, Range
 
 class LogicMode(Choice):
     """
@@ -95,11 +95,61 @@ class StartWithChestDetector(DefaultOnToggle):
     """
     display_name = "Start with Chest Detector"
 
+class StartWithDiscs(Choice):
+    """
+    If set to a value other than "none", the player will start with the corresponding disc items.
+    Disc of Insight unlocks the records menu.
+    Disc of Flora unlocks the botany menu, allowing the player to start collecting plant samples from the beginning.
+    """
+
+    option_none = 0
+    option_insight = 1
+    option_flora = 2
+    option_both = 3
+
+    default = 1
+
+    display_name = "Start with Discs"
+
+class StartWithPet(DefaultOnToggle):
+    """
+    If enabled, the player will start with a random pet. This is just for fun.
+    """
+    display_name = "Start with Pet"
+
 class Keyrings(Toggle):
     """
     If enabled, all keys for each dungeon will be replaced with a singular item that unlocks every door in that dungeon.
     """
     display_name = "Keyrings"
+
+class ProgressiveAreaUnlocks(Choice):
+    """
+    If enabled, the items that unlock overworld areas and dungeons (including shades and some passes) will be made progressive.
+    [None] no areas are unlocked progressively.
+    [Dungeons] dungeons are unlocked progressively; overworld areas are not.
+    [Overworld] overworld areas are unlocked progressively; dungeons are not.
+    [Split] both dungeons and overworld areas are unlocked progressively in separate progressive chains.
+    [Combined] both dungeons and overworld areas are unlocked progressively from the same progressive chain.
+    """
+
+    display_name = "Progressive Area Unlocks"
+
+    # treat this option as a bitmask
+    # first bit: include dungeons
+    # second bit: include overworld
+    # third bit: combine pools
+    DUNGEONS = 1 << 0
+    OVERWORLD = 1 << 1
+    COMBINE_POOLS = 1 << 2
+
+    option_none = 0
+    option_dungeons = DUNGEONS
+    option_overworld = OVERWORLD
+    option_split = DUNGEONS | OVERWORLD
+    option_combined = COMBINE_POOLS | DUNGEONS | OVERWORLD
+
+    default = 0
 
 class Reachability(Choice):
     option_own_world = 0
@@ -145,6 +195,7 @@ class ShadeShuffle(Reachability):
             "Green Leaf Shade", "Yellow Sand Shade", "Blue Ice Shade",
             "Red Flame Shade", "Purple Bolt Shade", "Azure Drop Shade",
             "Green Seed Shade", "Star Shade", "Meteor Shade",
+            "Progressive Area Unlock", "Progressive Overworld Area Unlock",
         }
     }
 
@@ -200,23 +251,97 @@ class ChestKeyShuffle(DungeonReachability):
         "wave-dng": { "Radiant Key" },
     }
 
+class CommonPoolWeight(Range):
+    """
+    Controls the likelihood of choosing a common filler item when filling the world.
+    """
+    display_name = "Common Pool Weight"
+
+    range_start = 0
+    range_end = 100
+    default = 42
+
+class RarePoolWeight(Range):
+    """
+    Controls the likelihood of choosing a rare filler item when filling the world.
+    """
+    display_name = "Rare Pool Weight"
+
+    range_start = 0
+    range_end = 100
+    default = 32
+
+class EpicPoolWeight(Range):
+    """
+    Controls the likelihood of choosing a epic filler item when filling the world.
+    """
+    display_name = "Epic Pool Weight"
+
+    range_start = 0
+    range_end = 100
+    default = 24
+
+class LegendaryPoolWeight(Range):
+    """
+    Controls the likelihood of choosing a legendary filler item when filling the world.
+    """
+    display_name = "Legendary Pool Weight"
+
+    range_start = 0
+    range_end = 100
+    default = 2
+
+class ConsumableWeight(Range):
+    """
+    Controls the likelihood of choosing a consumable item (as opposed to a drop).
+    """
+    display_name = "Consumable Weight"
+
+    range_start = 0
+    range_end = 100
+    default = 50
+
+class DropWeight(Range):
+    """
+    Controls the likelihood of choosing a drop item (as opposed to a consumable).
+    """
+    display_name = "Drop Weight"
+
+    range_start = 0
+    range_end = 100
+    default = 50
+
 @dataclass
 class CrossCodeOptions(PerGameCommonOptions):
     logic_mode: LogicMode
     vt_shade_lock: VTShadeLock
     vw_meteor_passage: VWMeteorPassage
     vt_skip: VTSkip
+
     quest_rando: QuestRando
     hidden_quest_reward_mode: HiddenQuestRewardMode
     hidden_quest_obfuscation_level: HiddenQuestObfuscationLevel
     quest_dialog_hints: QuestDialogHints
+
     start_with_green_leaf_shade: StartWithGreenLeafShade
     start_with_chest_detector: StartWithChestDetector
+    start_with_discs: StartWithDiscs
+    start_with_pet: StartWithPet
+
+    progressive_area_unlocks: ProgressiveAreaUnlocks
     keyrings: Keyrings
+
     shade_shuffle: ShadeShuffle
     element_shuffle: ElementShuffle
     small_key_shuffle: SmallKeyShuffle
     master_key_shuffle: MasterKeyShuffle
     chest_key_shuffle: ChestKeyShuffle
+
+    common_pool_weight: CommonPoolWeight
+    rare_pool_weight: RarePoolWeight
+    epic_pool_weight: EpicPoolWeight
+    legendary_pool_weight: LegendaryPoolWeight
+    consumable_weight: ConsumableWeight
+    drop_weight: DropWeight
 
 addon_options = ["quest_rando"]
