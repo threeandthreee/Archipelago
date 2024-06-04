@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 import math
-from typing import List
+from typing import List, Sequence
 
 from Options import DefaultOnToggle, PerGameCommonOptions, Range, Choice, FreeText
 
@@ -321,6 +321,15 @@ class FF6WCOptions(PerGameCommonOptions):
     Flagstring: Flagstring
 
 
+def verify_flagstring(flags: Sequence[str]) -> None:
+    """ raises exception (`ValueError`) if flagstring is invalid """
+    from .WorldsCollide.args.arguments import Arguments
+    assert not isinstance(flags, str)
+    if "-i" not in flags:
+        flags = ["-i", "x"] + list(flags)
+    Arguments(flags)
+
+
 def generate_flagstring(options: FF6WCOptions, starting_characters: List[str]) -> List[str]:
     if (options.Flagstring.value).capitalize() != 'False':
         flags = options.Flagstring.value.split(" ")
@@ -339,6 +348,7 @@ def generate_flagstring(options: FF6WCOptions, starting_characters: List[str]) -
             *generate_fixes_string()
         ]
         flags = [_ for _ in flags if len(_) > 0]
+    verify_flagstring(flags)
     return flags
 
 
