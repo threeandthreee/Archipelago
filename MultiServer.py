@@ -786,6 +786,8 @@ class Context:
             release_player(self, client.team, client.slot)
         self.save()  # save goal completion flag
 
+        self.push_to_webhook({"event": "goal_complete", "player": self.player_names[client.team, client.slot]})
+
     def on_new_hint(self, team: int, slot: int):
         self.on_changed_hints(team, slot)
         self.broadcast(self.clients[team][slot], [{
