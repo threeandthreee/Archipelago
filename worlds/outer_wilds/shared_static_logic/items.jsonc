@@ -1,0 +1,65 @@
+[
+    // per AP docs, 1734473680 was randomly chosen from the range of
+    // positive 32-bit integers to avoid conflicts with other AP games
+    { "code": 1734473680, "name": "Nothing", "type": "filler" }, // no longer used, here for backwards compatibility
+
+    { "code": 1734473681, "name": "Launch Codes", "type": "progression" },
+
+    { "code": 1734473732, "name": "Spacesuit", "type": "progression" },
+    { "code": 1734473682, "name": "Translator", "type": "progression" },
+    { "code": 1734473683, "name": "Signalscope", "type": "progression" },
+    { "code": 1734473684, "name": "Scout", "type": "progression" },
+    { "code": 1734473685, "name": "Ghost Matter Wavelength", "type": "progression" },
+    { "code": 1734473687, "name": "Imaging Rule", "type": "progression" },
+    { "code": 1734473688, "name": "Nomai Warp Codes", "type": "progression" },
+    { "code": 1734473689, "name": "Warp Core Installation Manual", "type": "progression" },
+    { "code": 1734473690, "name": "Entanglement Rule", "type": "progression" },
+    { "code": 1734473691, "name": "Shrine Door Codes", "type": "progression" },
+    { "code": 1734473692, "name": "Tornado Aerodynamic Adjustments", "type": "progression" },
+    { "code": 1734473693, "name": "Silent Running Mode", "type": "progression" },
+    { "code": 1734473694, "name": "Electrical Insulation", "type": "progression" },
+    { "code": 1734473695, "name": "Coordinates", "type": "progression" },
+
+    { "code": 1734473697, "name": "Distress Beacon Frequency", "type": "progression" },
+    { "code": 1734473698, "name": "Quantum Fluctuations Frequency", "type": "progression" },
+    { "code": 1734473699, "name": "Hide & Seek Frequency", "type": "progression" },
+
+    { "code": 1734473700, "name": "Chert's Signal", "type": "filler" },
+    { "code": 1734473701, "name": "Esker's Signal", "type": "filler" },
+    { "code": 1734473702, "name": "Riebeck's Signal", "type": "filler" },
+    { "code": 1734473703, "name": "Gabbro's Signal", "type": "filler" },
+    { "code": 1734473704, "name": "Feldspar's Signal", "type": "progression" },
+    { "code": 1734473705, "name": "Museum Shard Signal", "type": "filler" },
+    { "code": 1734473706, "name": "Grove Shard Signal", "type": "filler" },
+    { "code": 1734473707, "name": "Cave Shard Signal", "type": "filler" },
+    { "code": 1734473708, "name": "Tower Shard Signal", "type": "filler" },
+    { "code": 1734473709, "name": "Island Shard Signal", "type": "filler" },
+    { "code": 1734473710, "name": "Quantum Moon Signal", "type": "progression" },
+    { "code": 1734473711, "name": "Escape Pod 1 Signal", "type": "filler" },
+    { "code": 1734473712, "name": "Escape Pod 2 Signal", "type": "filler" },
+    { "code": 1734473713, "name": "Escape Pod 3 Signal", "type": "progression" },
+    { "code": 1734473714, "name": "Galena's Radio Signal", "type": "filler" },
+    { "code": 1734473715, "name": "Tephra's Radio Signal", "type": "filler" },
+
+    { "code": null, "name": "Victory - Song of Five", "type": "progression" },
+    { "code": null, "name": "Victory - Song of Six", "type": "progression" },
+
+    { "code": 1734473716, "name": "Autopilot", "type": "useful" },
+    { "code": 1734473717, "name": "Landing Camera", "type": "useful" },
+    { "code": 1734473718, "name": "Eject Button", "type": "useful" },
+    { "code": 1734473719, "name": "Velocity Matcher", "type": "useful" },
+    { "code": 1734473720, "name": "Surface Integrity Scanner", "type": "useful" },
+    { "code": 1734473729, "name": "Oxygen Capacity Upgrade", "type": "useful" },
+    { "code": 1734473730, "name": "Fuel Capacity Upgrade", "type": "useful" },
+    { "code": 1734473731, "name": "Boost Duration Upgrade", "type": "useful" },
+
+    { "code": 1734473721, "name": "Oxygen Refill", "type": "filler" },
+    { "code": 1734473722, "name": "Jetpack Fuel Refill", "type": "filler" },
+    { "code": 1734473723, "name": "Marshmallow", "type": "filler" },
+    { "code": 1734473724, "name": "Perfect Marshmallow", "type": "filler" },
+    { "code": 1734473725, "name": "Burnt Marshmallow", "type": "filler" },
+
+    { "code": 1734473726, "name": "Ship Damage Trap", "type": "trap" },
+    { "code": 1734473727, "name": "Audio Trap", "type": "trap" },
+    { "code": 1734473728, "name": "Nap Trap", "type": "trap" }
+]

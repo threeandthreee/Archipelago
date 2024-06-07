@@ -2,8 +2,7 @@ from typing import List, TYPE_CHECKING, Dict, Any
 from schema import Schema, Optional
 from dataclasses import dataclass
 from worlds.AutoWorld import PerGameCommonOptions
-from Options import Range, Toggle, DeathLink, Choice, OptionDict, DefaultOnToggle
-# from BaseClasses import OptionGroup
+from Options import Range, Toggle, DeathLink, Choice, OptionDict, DefaultOnToggle#, OptionGroup
 
 if TYPE_CHECKING:
     from . import HatInTimeWorld
@@ -695,8 +694,8 @@ class AHITOptions(PerGameCommonOptions):
 
 ahit_option_groups: Dict[str, List[Any]] = {
     "General Options": [EndGoal, ShuffleStorybookPages, ShuffleAlpineZiplines, ShuffleSubconPaintings,
-                        MinPonCost, MaxPonCost, BadgeSellerMinItems, BadgeSellerMaxItems, LogicDifficulty,
-                        NoPaintingSkips, CTRLogic],
+                        ShuffleActContracts, MinPonCost, MaxPonCost, BadgeSellerMinItems, BadgeSellerMaxItems,
+                        LogicDifficulty, NoPaintingSkips, CTRLogic],
 
     "Act Options": [ActRandomizer, StartingChapter, LowestChapterCost, HighestChapterCost,
                     ChapterCostIncrement, ChapterCostMinDifference, FinalChapterMinCost, FinalChapterMaxCost,

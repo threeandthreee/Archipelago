@@ -37,7 +37,11 @@ class Arguments:
         for group in self.group_modules.values():
             group.parse(self.parser)
 
-        self.parser.parse_args(ap_args, namespace = self)
+        # self.parser.parse_args(ap_args, namespace = self)  # This uses `exit()` instead of raising exception
+        _args, unrecognized_args = self.parser.parse_known_args(ap_args, namespace=self)
+        if unrecognized_args:
+            msg = f"unrecognized arguments: {' '.join(unrecognized_args)}"
+            raise ValueError(msg)
 
         self.flags = ""
         self.seed_rng_flags = ""

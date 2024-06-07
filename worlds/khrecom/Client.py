@@ -9,7 +9,7 @@ ModuleUpdate.update()
 
 import Utils
 
-check_num = 0
+item_num = 1
 
 if __name__ == "__main__":
     Utils.init_logging("KHRECOMClient", exception_logger="Client")
@@ -61,6 +61,8 @@ class KHRECOMContext(CommonContext):
             for file in files:
                 if file.find("obtain") <= -1:
                     os.remove(root + "/" + file)
+        global item_num
+        item_num = 1
 
     @property
     def endpoints(self):
@@ -75,6 +77,8 @@ class KHRECOMContext(CommonContext):
             for file in files:
                 if file.find("obtain") <= -1:
                     os.remove(root+"/"+file)
+        global item_num
+        item_num = 1
 
     def on_package(self, cmd: str, args: dict):
         if cmd in {"Connected"}:
@@ -84,61 +88,25 @@ class KHRECOMContext(CommonContext):
                 filename = f"send{ss}"
                 with open(os.path.join(self.game_communication_path, filename), 'w') as f:
                     f.close()
-            if "EXP Multiplier" in list(args['slot_data'].keys()):
-                exp_multiplier = args['slot_data']["EXP Multiplier"]
-            else:
-                exp_multiplier = 1
-            with open(os.path.join(self.game_communication_path, "xpmult.cfg"), 'w') as f:
-                f.write(str(exp_multiplier))
-                f.close()
-            if "World Order" in list(args['slot_data'].keys()):
-                world_order = args['slot_data']["World Order"]
-            else:
-                world_order = "2,3,4,5,6,7,8,9,10"
-            with open(os.path.join(self.game_communication_path, "worldorder.cfg"), 'w') as f:
-                f.write(str(world_order))
-                f.close()
-            if "Zeroes" in list(args['slot_data'].keys()):
-                zeroes_str = args['slot_data']["Zeroes"]
-            else:
-                zeroes_str = "Yes"
-            if zeroes_str == "No":
-                with open(os.path.join(self.game_communication_path, "nozeroes.cfg"), 'w') as f:
-                    f.write("")
+            for key in list(args['slot_data'].keys()):
+                with open(os.path.join(self.game_communication_path, key + ".cfg"), 'w') as f:
+                    f.write(str(args['slot_data'][key]))
                     f.close()
-            if "Attack Power" in list(args['slot_data'].keys()):
-                attack_power = args['slot_data']["Attack Power"]
-            else:
-                attack_power = 10
-            with open(os.path.join(self.game_communication_path, "attackpower.cfg"), 'w') as f:
-                f.write(str(attack_power))
-                f.close()
         if cmd in {"ReceivedItems"}:
             start_index = args["index"]
             if start_index != len(self.items_received):
+                global item_num
                 for item in args['items']:
-                    check_num = 0
-                    for filename in os.listdir(self.game_communication_path):
-                        if filename.startswith("AP"):
-                            if int(filename.split("_")[-1].split(".")[0]) > check_num:
-                                check_num = int(filename.split("_")[-1].split(".")[0])
-                    item_id = ""
-                    location_id = ""
-                    player = ""
                     found = False
+                    item_filename = f"AP_{str(item_num)}.item"
                     for filename in os.listdir(self.game_communication_path):
-                        if filename.startswith(f"AP"):
-                            with open(os.path.join(self.game_communication_path, filename), 'r') as f:
-                                item_id = str(f.readline()).replace("\n", "")
-                                location_id = str(f.readline()).replace("\n", "")
-                                player = str(f.readline()).replace("\n", "")
-                                if str(item_id) == str(NetworkItem(*item).item) and str(location_id) == str(NetworkItem(*item).location) and str(player) == str(NetworkItem(*item).player):
-                                    found = True
+                        if filename == item_filename:
+                            found = True
                     if not found:
-                        filename = f"AP_{str(check_num+1)}.item"
-                        with open(os.path.join(self.game_communication_path, filename), 'w') as f:
+                        with open(os.path.join(self.game_communication_path, item_filename), 'w') as f:
                             f.write(str(NetworkItem(*item).item) + "\n" + str(NetworkItem(*item).location) + "\n" + str(NetworkItem(*item).player))
                             f.close()
+                            item_num = item_num + 1
 
         if cmd in {"RoomUpdate"}:
             if "checked_locations" in args:

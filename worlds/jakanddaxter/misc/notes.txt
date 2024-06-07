@@ -1,0 +1,43 @@
+Notes
+
+Archipelago GitHub
+https://github.com/ArchipelagoMW/Archipelago/
+
+C++ Archipelago multiworld randomizer client library
+https://github.com/black-sliver/apclientpp
+
+OpenGOAL GitHub
+https://github.com/open-goal/jak-project
+
+OpenGOAL Mod Launcher
+https://jakmods.dev/
+
+OpenGOAL Mod Base - Getting Started
+https://www.youtube.com/watch?v=3QiqmEA6Wc8
+
+OpenGOAL Modding Examples
+https://opengoal.dev/docs/category/modding-examples/
+https://github.com/dallmeyer/opengoal-sm64/blob/main/data/goal_src/jak1/pc/features/autosplit-h.gc#L165-L181
+https://github.com/OpenGOAL-Unofficial-Mods/jak-tracker/blob/main/OpenGoalAutoTracker.py
+https://github.com/Zedb0T/Opengoal-Twitch-CrowdControl/blob/main/resources/twitchcommands.py
+
+
+Go Home menu action:
+(start 'play (get-continue-by-name *game-info* "game-start"))
+
+"Retail" game start:
+(start 'play (get-continue-by-name *game-info* "title-start"))
+
+
+fisherman's boat       | 2007
+jungle elevator        | 2008
+blue eco switch        | 2009
+flut flut              | 2010
+warrior's pontoons     | 2011
+snowy mountain gondola | 2012
+yellow eco switch      | 2013
+snowy fort gate        | 2014
+freed the blue sage    | 2015
+freed the red sage     | 2016
+freed the yellow sage  | 2017
+freed the green sage   | 2018

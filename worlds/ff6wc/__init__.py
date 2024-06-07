@@ -133,9 +133,13 @@ class FF6WCWorld(World):
         'espers': set(all_espers),
     }
 
+    starting_characters: Union[List[str], None]
+    flagstring: Union[List[str], None]
+
     def __init__(self, world: MultiWorld, player: int):
         super().__init__(world, player)
         self.starting_characters = None
+        self.flagstring = None
         self.no_illuminas = False
         self.no_paladin_shields = False
         self.no_exp_eggs = False
@@ -513,6 +517,10 @@ class FF6WCWorld(World):
         set_rule(self.multiworld.get_location("Beat Final Kefka", self.player),
                  functools.partial(can_beat_final_kefka, self.options, self.player))
 
+        assert not (self.starting_characters is None), "need starting characters from generate_early"
+        # TODO: move this generate_flagstring earlier if we can verify that options aren't changed
+        self.flagstring = generate_flagstring(self.options, self.starting_characters)
+
     def post_fill(self) -> None:
         spheres = list(self.multiworld.get_spheres())
         sphere_count = len(spheres)
@@ -576,10 +584,9 @@ class FF6WCWorld(World):
         self.rom_name = self.romName
         self.rom_name_available_event.set()
         locations["RomName"] = self.rom_name_text
-        assert not (self.starting_characters is None), "didn't get starting characters yet"
-        flagstring = generate_flagstring(self.options, self.starting_characters)
 
-        gen_data = GenData(locations, flagstring)
+        assert not (self.flagstring is None), "need flagstring from earlier generation step"
+        gen_data = GenData(locations, self.flagstring)
         out_file_base = self.multiworld.get_out_file_name_base(self.player)
         patch_file_name = os.path.join(output_directory, f"{out_file_base}{FF6WCPatch.patch_file_ending}")
         patch = FF6WCPatch(patch_file_name,

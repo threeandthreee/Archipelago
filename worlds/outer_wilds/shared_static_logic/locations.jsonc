@@ -1,0 +1,1134 @@
+[
+// Default Locations
+
+    // per AP docs, 1085038250 was randomly chosen from the range of
+    // positive 32-bit integers to avoid conflicts with other AP games
+    {
+        "address": 1085038250, "name": "Sun Station (Projection Stone Text)",
+        "region": "Sun Station", "requires": [ { "item": "Translator" } ]
+    },
+
+    // Ember Twin
+    {
+        "address": 1085038251, "name": "ET: High Energy Lab (Upper Text Wall)",
+        "region": "Hourglass Twins", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "address": 1085038252, "name": "ET: Sunless City Shrine (Entrance Text Wall)",
+        "region": "Hourglass Twins", "requires": [
+            { "item": "Translator" },
+            { "item": "Ghost Matter Wavelength" },
+            { "item": "Spacesuit" }
+        ]
+    },
+    {
+        "address": 1085038253, "name": "ET: QM Locator (2nd Scroll)",
+        "region": "Hourglass Twins", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "address": 1085038254, "name": "ET: Fossil (Children's Text)",
+        "region": "Hourglass Twins", "requires": [
+            { "item": "Translator" },
+            { "item": "Scout" },
+            { "item": "Spacesuit" }
+        ]
+    },
+    {
+        "address": 1085038255, "name": "ET: Lakebed Cave (Floor Text)",
+        "region": "Hourglass Twins", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "address": 1085038256, "name": "ET: Coleus' Cave (Text Wall)",
+        "region": "Hourglass Twins", "requires": [
+            { "item": "Translator" },
+            { "item": "Entanglement Rule" },
+            { "item": "Spacesuit" }
+        ]
+    },
+    {
+        "address": 1085038319, "name": "ET: Enter Sunless City",
+        "region": "Hourglass Twins", "requires": [ { "item": "Spacesuit" } ]
+    },
+    {
+        "address": 1085038320, "name": "ET: Chert's QM Locator Recorder",
+        "region": "Hourglass Twins", "requires": []
+    },
+    {
+        "address": 1085038327, "name": "ET: QM Locator Fuel Tank",
+        "region": "Hourglass Twins", "requires": [ { "item": "Spacesuit" } ]
+    },
+    {
+        "address": 1085038328, "name": "ET: Chert's Camp Fuel Tank",
+        "region": "Hourglass Twins", "requires": [ { "item": "Spacesuit" } ]
+    },
+
+    // Ash Twin
+    {
+        "address": 1085038257, "name": "AT: Enter the ATP",
+        "region": "Ash Twin Interior", "requires": []
+    },
+    {
+        "address": 1085038322, "name": "AT: HGT Towers (Text Wall)",
+        "region": "Hourglass Twins", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "address": 1085038323, "name": "AT: BH Tower (Text Wall)",
+        "region": "Hourglass Twins", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ]
+    },
+
+    // Timber Hearth
+    {
+        "address": 1085038258, "name": "TH: Ghost Matter Plaque",
+        "region": "Timber Hearth Village", "requires": []
+    },
+    {
+        "address": 1085038259, "name": "TH: Zero-G Repairs",
+        "region": "Timber Hearth Village", "requires": []
+    },
+    {
+        "address": 1085038260, "name": "TH: Get the Translator from Hal",
+        "region": "Timber Hearth Village", "requires": []
+    },
+    {
+        "address": 1085038261, "name": "TH: Talk to Hornfels",
+        "region": "Timber Hearth Village", "requires": []
+    },
+    {
+        "address": 1085038262, "name": "TH: Talk to Tektite about Bramble Seed",
+        "region": "Timber Hearth", "requires": []
+    },
+    {
+        "address": 1085038263, "name": "TH: Mines (Text Wall)",
+        "region": "Timber Hearth", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "address": 1085038309, "name": "TH: Hornfels' Radio Tower Campfire Note",
+        "region": "Timber Hearth", "requires": []
+    },
+    {
+        "address": 1085038310, "name": "TH: Chert's Grove Shard Plaque",
+        "region": "Timber Hearth", "requires": []
+    },
+
+    // Attlerock
+    {
+        "address": 1085038264, "name": "AR: Signal Locator (Text Wall)",
+        "region": "Space", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "address": 1085038311, "name": "AR: Riebeck's Signal Locator Recorder",
+        "region": "Space", "requires": []
+    },
+    {
+        "address": 1085038312, "name": "AR: Chert's Ice Crater Recorder",
+        "region": "Space", "requires": []
+    },
+    {
+        "address": 1085038313, "name": "AR: Esker's Lunar Lookout Plaque",
+        "region": "Space", "requires": []
+    },
+    {
+        "address": 1085038329, "name": "AR: Ice Crater Fuel Tank",
+        "region": "Space", "requires": [ { "item": "Spacesuit" } ]
+    },
+    {
+        "address": 1085038335, "name": "AR: Esker's House Fuel Tank",
+        "region": "Space", "requires": [ { "item": "Spacesuit" } ]
+    },
+
+    // Brittle Hollow
+    {
+        "address": 1085038265, "name": "BH: Southern Observatory (Tornado Text Wall)",
+        "region": "Brittle Hollow", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "address": 1085038266, "name": "BH: Old Settlement Murals",
+        "region": "Brittle Hollow", "requires": []
+    },
+    {
+        "address": 1085038267, "name": "BH: Forge (2nd Scroll)",
+        "region": "Black Hole Forge",
+        "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "address": 1085038268, "name": "BH: Tower (Top Floor Text Wall)",
+        "region": "Brittle Hollow", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "address": 1085038314, "name": "BH: Feldspar's Spare Fuel Note",
+        "region": "Brittle Hollow", "requires": []
+    },
+    {
+        "address": 1085038315, "name": "BH: Riebeck's Southern Observatory Recorder",
+        "region": "Brittle Hollow", "requires": []
+    },
+    {
+        "address": 1085038316, "name": "BH: Riebeck's Surface Campsite Note",
+        "region": "Brittle Hollow", "requires": []
+    },
+    {
+        "address": 1085038317, "name": "BH: Solanum's Class Report (2nd Scroll)",
+        // Sadly does not require GM Wavelength. You have to avoid a lot of GM, but just looking at
+        // the crystals tell you where the GM is so the camera provides no new information.
+        "region": "Brittle Hollow", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "address": 1085038318, "name": "BH: Hanging City Shrine (Text Wall)",
+        "region": "Brittle Hollow", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "address": 1085038324, "name": "BH: Visit Hanging City",
+        "region": "Brittle Hollow", "requires": []
+    },
+    {
+        "address": 1085038330, "name": "BH: Northern Glacier Fuel Tank",
+        "region": "Brittle Hollow", "requires": [ { "item": "Spacesuit" } ]
+    },
+    {
+        "address": 1085038331, "name": "BH: Riebeck's Camp Fuel Tank",
+        "region": "Brittle Hollow", "requires": [ { "item": "Spacesuit" } ]
+    },
+
+    // Hollow's Lantern
+    {
+        "address": 1085038269, "name": "HL: Volcanic Testing Site (Text Wall)",
+        "region": "Space", "requires": [ { "item": "Translator" } ]
+    },
+
+    // White Hole Station
+    {
+        "address": 1085038270, "name": "WHS (Text Wall)",
+        // this is a one-location region because it has a warp pad
+        "region": "White Hole Station", "requires": [ { "item": "Translator" } ]
+    },
+
+    // Giant's Deep
+    // Entering the orbital probe cannon, the northern hurricane or the counterclockwise tornado
+    // all require the Spaceship, so those parts of Giant's Deep are in the "Space" region
+    {
+        "address": 1085038271, "name": "GD: Enter the Orbital Probe Cannon",
+        "region": "Space", "requires": [ { "item": "Spacesuit" } ]
+    },
+    {
+        "address": 1085038272, "name": "GD: Control Module Logs (Text Wheels)",
+        "region": "Space", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "address": 1085038273, "name": "GD: Bramble Island Recorder",
+        "region": "Giant's Deep", "requires": [ { "item": "Ghost Matter Wavelength" } ]
+    },
+    {
+        "address": 1085038274, "name": "GD: Construction Yard (Text Wall)",
+        "region": "Giant's Deep", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "address": 1085038275, "name": "GD: Statue Island Workshop (Text Wheel)",
+        "region": "Giant's Deep", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "address": 1085038276, "name": "GD: Tower Rule (Pedestal Text)",
+        "region": "Space", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "address": 1085038277, "name": "GD: Complete the Tower (Text Wall)",
+        "region": "Space", "requires": [
+            { "item": "Translator" },
+            { "item": "Imaging Rule" },
+            { "item": "Spacesuit" }
+        ]
+    },
+    {
+        "address": 1085038278, "name": "GD: Enter the Ocean Depths",
+        "region": "GD Ocean Depths", "requires": []
+    },
+    {
+        "address": 1085038279, "name": "GD: Enter the Core",
+        "region": "GD Core", "requires": []
+    },
+    {
+        // spoiler-free name, as opposed to e.g. "Eye of the Universe Coordinates"
+        "address": 1085038280, "name": "GD: See the Coordinates",
+        "region": "GD Core", "requires": []
+    },
+    {
+        "address": 1085038325, "name": "GD: Find Gabbro's Ship",
+        "region": "Giant's Deep", "requires": []
+    },
+    {
+        "address": 1085038326, "name": "GD: Find Gabbro's Statue",
+        "region": "Giant's Deep", "requires": []
+    },
+    {
+        "address": 1085038332, "name": "GD: Bramble Island Fuel Tank",
+        "region": "Giant's Deep", "requires": [ { "item": "Ghost Matter Wavelength" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "address": 1085038333, "name": "GD: Gabbro's Camp Fuel Tank",
+        "region": "Giant's Deep", "requires": [ { "item": "Spacesuit" } ]
+    },
+
+    // Interloper
+    {
+        "address": 1085038281, "name": "Frozen Shuttle Log (Text Wheel)",
+        "region": "Frozen Shuttle Log", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        // spoiler-free name, as opposed to e.g. "Interloper Core"
+        "address": 1085038282, "name": "Ruptured Core (Text Wheel)",
+        "region": "Interloper Core", "requires": [ { "item": "Translator" } ]
+    },
+
+    // Quantum Moon
+    {
+        "address": 1085038283, "name": "QM: Land",
+        "region": "Quantum Moon", "requires": [] // handled by the region connection
+    },
+    {
+        "address": 1085038284, "name": "Solanum's Shuttle Log (Text Wheel)",
+        "region": "Solanum's Shuttle Interior", "requires": [ { "item": "Translator" } ] // text wheel inside shuttle
+    },
+    {
+        // spoiler-free name, as opposed to e.g. "Meet Solanum"
+        "address": 1085038285, "name": "QM: Explore the Sixth Location",
+        "region": "Sixth Location", "requires": []
+    },
+
+    // Dark Bramble
+    // see connection logic for more comments
+    {
+        // spoiler-free name, as opposed to e.g. "Frozen Jellyfish Note"
+        "address": 1085038286, "name": "DB: Feldspar's Note",
+        "region": "Feldspar's Camp", "requires": [ { "item": "Spacesuit" } ]
+    },
+    {
+        // spoiler-free name, as opposed to e.g. "Frozen Jellyfish Tape Recorder"
+        "address": 1085038308, "name": "DB: Feldspar's Recorder",
+        "region": "Feldspar's Camp", "requires": [ { "item": "Spacesuit" } ]
+    },
+    {
+        "address": 1085038287, "name": "DB: Nomai Grave (Text Wheel)",
+        "region": "Nomai Grave", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "address": 1085038288, "name": "DB: Find The Vessel",
+        "region": "The Vessel", "requires": []
+    },
+    {
+        "address": 1085038334, "name": "DB: Feldspar's Camp Fuel Tank",
+        "region": "Feldspar's Camp", "requires": [ { "item": "Spacesuit" } ]
+    },
+
+    // Signalscope Frequencies
+    {
+        "address": 1085038289, "name": "Scan Any Distress Beacon",
+        "region": "Distress Beacon Frequency", "requires": [ { "item": "Signalscope" }, { "item": "Distress Beacon Frequency" } ]
+    },
+    {
+        "address": 1085038290, "name": "Scan Any Quantum Fluctuation",
+        "region": "Quantum Fluctuations Frequency", "requires": [ { "item": "Signalscope" }, { "item": "Quantum Fluctuations Frequency" } ]
+    },
+    {
+        "address": 1085038291, "name": "TH: Receive Hide & Seek Frequency",
+        // the only signalscope location that doesn't require the signalscope to scan
+        "region": "Timber Hearth Village", "requires": []
+    },
+
+    // Signalscope Signals
+    {
+        "address": 1085038292, "name": "ET: Scan Drum Signal",
+        "region": "Hourglass Twins", "requires": [ { "item": "Signalscope" } ]
+    },
+    {
+        "address": 1085038293, "name": "AR: Scan Whistling Signal",
+        "region": "Space", "requires": [ { "item": "Signalscope" } ]
+    },
+    {
+        "address": 1085038294, "name": "BH: Scan Banjo Signal",
+        "region": "Brittle Hollow", "requires": [ { "item": "Signalscope" } ]
+    },
+    {
+        "address": 1085038295, "name": "GD: Scan Flute Signal",
+        "region": "Giant's Deep", "requires": [ { "item": "Signalscope" } ]
+    },
+    {
+        "address": 1085038296, "name": "DB: Scan Harmonica Signal",
+        "region": "Feldspar's Camp", // see connection logic
+        "requires": [ { "item": "Signalscope" } ]
+    },
+    {
+        "address": 1085038297, "name": "TH: Scan Museum Shard Signal",
+        "region": "Timber Hearth Village", "requires": [ { "item": "Signalscope" }, { "item": "Quantum Fluctuations Frequency" } ]
+    },
+    {
+        "address": 1085038298, "name": "TH: Scan Grove Shard Signal",
+        "region": "Timber Hearth", "requires": [ { "item": "Signalscope" }, { "item": "Quantum Fluctuations Frequency" } ]
+    },
+    {
+        "address": 1085038299, "name": "ET: Scan Cave Shard Signal",
+        "region": "Hourglass Twins", "requires": [ { "item": "Signalscope" }, { "item": "Quantum Fluctuations Frequency" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "address": 1085038300, "name": "BH: Scan Tower Shard Signal",
+        "region": "Brittle Hollow", "requires": [ { "item": "Signalscope" }, { "item": "Quantum Fluctuations Frequency" } ]
+    },
+    {
+        "address": 1085038301, "name": "GD: Scan Island Shard Signal",
+        "region": "Space", "requires": [ { "item": "Signalscope" }, { "item": "Quantum Fluctuations Frequency" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "address": 1085038302, "name": "Scan QM Signal",
+        "region": "Quantum Moon Signal", "requires": [ { "item": "Signalscope" }, { "item": "Quantum Fluctuations Frequency" } ]
+    },
+    {
+        "address": 1085038303, "name": "BH: Scan Escape Pod 1 Signal",
+        "region": "Brittle Hollow", "requires": [ { "item": "Signalscope" }, { "item": "Distress Beacon Frequency" } ]
+    },
+    {
+        "address": 1085038304, "name": "ET: Scan Escape Pod 2 Signal",
+        "region": "Hourglass Twins", "requires": [ { "item": "Signalscope" }, { "item": "Distress Beacon Frequency" } ]
+    },
+    {
+        "address": 1085038305, "name": "DB: Scan Escape Pod 3 Signal",
+        "region": "Nomai Grave", "requires": [ { "item": "Distress Beacon Frequency" } ] // see connection logic
+    },
+    {
+        "address": 1085038306, "name": "TH: Scan Galena's Radio Signal",
+        "region": "Timber Hearth Village", "requires": [ { "item": "Signalscope" }, { "item": "Hide & Seek Frequency" } ]
+    },
+    {
+        "address": 1085038307, "name": "TH: Scan Tephra's Radio Signal",
+        "region": "Timber Hearth Village", "requires": [ { "item": "Signalscope" }, { "item": "Hide & Seek Frequency" } ]
+    },
+
+    // Victory events
+    {
+        "address": null, "name": "Victory - Song of Five",
+        "region": "The Vessel",
+        "requires": [
+            { "item": "Warp Core Installation Manual" },
+            { "item": "Coordinates" },
+            { "location": "AT: Enter the ATP" }
+        ]
+    },
+    {
+        "address": null, "name": "Victory - Song of Six",
+        "region": "The Vessel",
+        "requires": [
+            { "item": "Warp Core Installation Manual" },
+            { "item": "Coordinates" },
+            { "location": "AT: Enter the ATP" },
+            { "location": "QM: Explore the Sixth Location" }
+        ]
+    },
+
+// Logsanity Locations
+// These location ids start at 1085039000 (i.e. rounding up to the next thousand),
+// to make it slightly easier to add default locations in the future.
+
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039000, "name": "Ship Log: Sun Station 1 - Purpose",
+        "region": "Sun Station", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039001, "name": "Ship Log: Sun Station 2 - Test Result",
+        "region": "Sun Station", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039002, "name": "Ship Log: Sun Station 3 - Comet",
+        "region": "Sun Station", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039003, "name": "Ship Log: Sun Station 4 - Current Status",
+        "region": "Sun Station", "requires": [ { "item": "Translator" } ]
+    },
+
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039004, "name": "ET Ship Log: Chert's Camp 1 - Visit",
+        "region": "Hourglass Twins", "requires": []
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039005, "name": "ET Ship Log: Chert's Camp 2 - Supernovae",
+        "region": "Hourglass Twins", "requires": []
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039006, "name": "ET Ship Log: Chert's Camp 3 - All The Stars",
+        "region": "Hourglass Twins", "requires": []
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039007, "name": "ET Ship Log: Chert's Camp 4 - Old Age",
+        "region": "Hourglass Twins", "requires": []
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039008, "name": "ET Ship Log: Chert's Camp 5 - Resignation",
+        "region": "Hourglass Twins", "requires": []
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039009, "name": "ET Ship Log: QM Locator 1 - Purpose",
+        "region": "Hourglass Twins", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039010, "name": "ET Ship Log: QM Locator 2 - Hypothesis",
+        "region": "Hourglass Twins", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039011, "name": "ET Ship Log: QM Locator 3 - Five Locations",
+        "region": "Hourglass Twins", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039012, "name": "ET Ship Log: Gravity Cannon 1 - Activate",
+        "region": "Hourglass Twins", "requires": []
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039013, "name": "ET Ship Log: Gravity Cannon 2 - Recall",
+        "region": "Hourglass Twins", "requires": []
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039014, "name": "ET Ship Log: Escape Pod 2 1 - Identify",
+        "region": "Hourglass Twins", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039015, "name": "ET Ship Log: Escape Pod 2 2 - Vessel",
+        "region": "Hourglass Twins", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039016, "name": "ET Ship Log: High Energy Lab 1 - Temporal Anomaly",
+        "region": "Hourglass Twins", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039017, "name": "ET Ship Log: High Energy Lab 2 - Increasing Interval",
+        "region": "Hourglass Twins", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039018, "name": "ET Ship Log: High Energy Lab 3 - ATP",
+        "region": "Hourglass Twins", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039019, "name": "ET Ship Log: AT Tower Designs 1 - Identify",
+        "region": "Hourglass Twins", "requires": [ { "item": "Spacesuit" } ] // you only need to look at the designs on the HEL walls
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039020, "name": "ET Ship Log: AT Tower Designs 2 - Different Planets",
+        "region": "Hourglass Twins", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039021, "name": "ET Ship Log: AT Tower Designs 3 - Reflect Destinations",
+        "region": "Hourglass Twins", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039022, "name": "ET Ship Log: AT Tower Designs 4 - ATP",
+        "region": "Hourglass Twins", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039023, "name": "ET Ship Log: Sunless City 1 - Identify",
+        "region": "Hourglass Twins", "requires": [ { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039024, "name": "ET Ship Log: Sunless City 2 - Sun Station Debate",
+        "region": "Hourglass Twins", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039025, "name": "ET Ship Log: Sunless City 3 - Signal",
+        "region": "Hourglass Twins", "requires": [ { "item": "Translator" }, { "item": "Ghost Matter Wavelength" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039026, "name": "ET Ship Log: Anglerfish Fossil 1 - Children's Game",
+        "region": "Hourglass Twins", "requires": [ { "item": "Translator" }, { "item": "Scout" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039027, "name": "ET Ship Log: Anglerfish Fossil 2 - Blindfold Rule",
+        "region": "Hourglass Twins", "requires": [ { "item": "Translator" }, { "item": "Scout" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039028, "name": "ET Ship Log: Anglerfish Fossil 3 - Adult Response",
+        "region": "Hourglass Twins", "requires": [ { "item": "Translator" }, { "item": "Scout" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039029, "name": "ET Ship Log: Quantum Caves 1 - Wandering Rock",
+        "region": "Hourglass Twins", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039030, "name": "ET Ship Log: Quantum Caves 2 - Quantum Signal",
+        "region": "Hourglass Twins", "requires": [ { "item": "Signalscope" }, { "item": "Quantum Fluctuations Frequency" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039031, "name": "ET Ship Log: Lakebed Cave 1 - Coleus Disappeared",
+        "region": "Hourglass Twins", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ] // this is the floor text in Lakebed Cave itself
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039032, "name": "ET Ship Log: Lakebed Cave 2 - Entanglement Rule",
+        "region": "Hourglass Twins", "requires": [ { "item": "Translator" }, { "item": "Entanglement Rule" }, { "item": "Spacesuit" } ] // wall text where Coleus was trapped
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039033, "name": "ET Ship Log: Lakebed Cave 3 - Theorizing",
+        "region": "Hourglass Twins", "requires": [ { "item": "Translator" }, { "item": "Entanglement Rule" }, { "item": "Spacesuit" } ] // wall text where Coleus was trapped
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039034, "name": "AT Ship Log: Towers 1 - Identify",
+        "region": "Hourglass Twins", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039035, "name": "AT Ship Log: Towers 2 - WHS",
+        "region": "Hourglass Twins", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039036, "name": "AT Ship Log: ATP 1 - Entered",
+        "region": "Ash Twin Interior", "requires": []
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039037, "name": "AT Ship Log: ATP 2 - Monoliths",
+        "region": "Ash Twin Interior", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039038, "name": "AT Ship Log: ATP 3 - Energy",
+        "region": "Ash Twin Interior", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039039, "name": "AT Ship Log: ATP 4 - Sun Station",
+        "region": "Ash Twin Interior", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039040, "name": "AT Ship Log: ATP 5 - Core",
+        "region": "Ash Twin Interior", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039041, "name": "TH Ship Log: Village 1 - Identify",
+        "region": "Timber Hearth Village", "requires": []
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039042, "name": "TH Ship Log: Village 2 - Statue Eyes Opened",
+        "region": "Timber Hearth Village", "requires": []
+    },
+    // removed 1085039043 / Village 3 because it's perma-missable
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039044, "name": "TH Ship Log: Zero-G Cave 1 - Identify",
+        "region": "Timber Hearth Village", "requires": []
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039045, "name": "TH Ship Log: Zero-G Cave 2 - Repair",
+        "region": "Timber Hearth Village", "requires": []
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039046, "name": "TH Ship Log: Dark Bramble Seed 1 - Tektite",
+        "region": "Timber Hearth", "requires": []
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039047, "name": "TH Ship Log: Dark Bramble Seed 2 - Harmonica Signal",
+        "region": "Timber Hearth", "requires": [ { "item": "Signalscope" }, { "item": "Feldspar's Signal" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039048, "name": "TH Ship Log: Dark Bramble Seed 3 - Scout Photos",
+        "region": "Timber Hearth", "requires": [ { "item": "Scout" } ] // shoot your scout into the seed and take a photo of the anglerfish skeleton
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039049, "name": "TH Ship Log: Nomai Mines 1 - Shell",
+        "region": "Timber Hearth", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039050, "name": "TH Ship Log: Nomai Mines 2 - No Physical Entrance",
+        "region": "Timber Hearth", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039051, "name": "TH Ship Log: Nomai Mines 3 - Four-Eyed Lifeforms",
+        "region": "Timber Hearth", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039052, "name": "TH Ship Log: Quantum Grove 1 - Quantum Signal",
+        "region": "Timber Hearth", "requires": [ { "item": "Signalscope" }, { "item": "Quantum Fluctuations Frequency" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039053, "name": "TH Ship Log: Quantum Grove 2 - Poem",
+        "region": "Timber Hearth", "requires": []
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039054, "name": "AR Ship Log: Esker's Camp",
+        "region": "Space", "requires": []
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039055, "name": "AR Ship Log: Lunar Lookout",
+        "region": "Space", "requires": []
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039056, "name": "AR Ship Log: Eye Signal Locator 1 - Identify",
+        "region": "Space", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039057, "name": "AR Ship Log: Eye Signal Locator 2 - Failure",
+        "region": "Space", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039058, "name": "BH Ship Log: Riebeck's Camp 1 - Visit",
+        "region": "Brittle Hollow", "requires": []
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039059, "name": "BH Ship Log: Riebeck's Camp 2 - Archaeology",
+        "region": "Brittle Hollow", "requires": []
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039060, "name": "BH Ship Log: Gravity Cannon 1 - Activate",
+        "region": "Brittle Hollow", "requires": []
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039061, "name": "BH Ship Log: Gravity Cannon 2 - Recall",
+        "region": "Brittle Hollow", "requires": []
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039062, "name": "BH Ship Log: Tower 1 - Sixth Location",
+        "region": "Brittle Hollow", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039063, "name": "BH Ship Log: Tower 2 - Pilgrimage",
+        "region": "Brittle Hollow", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039064, "name": "BH Ship Log: Tower 3 - United Goal",
+        "region": "Brittle Hollow", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039065, "name": "BH Ship Log: Tower Shard 1 - Grove Objects",
+        "region": "Brittle Hollow", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039066, "name": "BH Ship Log: Tower Shard 2 - Hypothesis",
+        "region": "Brittle Hollow", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039067, "name": "BH Ship Log: Tower Shard 3 - QM Signal",
+        "region": "Brittle Hollow", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039068, "name": "BH Ship Log: Northern Glacier 1 - Identify",
+        "region": "Brittle Hollow", "requires": [ { "item": "Translator" } ] // Nomai text in either NG building
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039069, "name": "BH Ship Log: Northern Glacier 2 - WHS",
+        "region": "Brittle Hollow", "requires": [ { "item": "Translator" } ] // Nomai text in the larger, lower NG building
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039070, "name": "BH Ship Log: Escape Pod 1 1 - Identify",
+        "region": "Brittle Hollow", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039071, "name": "BH Ship Log: Escape Pod 1 2 - Vessel",
+        "region": "Brittle Hollow", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039072, "name": "BH Ship Log: Old Settlement 1 - Identify",
+        "region": "Brittle Hollow", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039073, "name": "BH Ship Log: Old Settlement 2 - Eye-Shaped Signal",
+        "region": "Brittle Hollow", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039074, "name": "BH Ship Log: Old Settlement 3 - Named",
+        "region": "Brittle Hollow", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039075, "name": "BH Ship Log: Old Settlement 4 - Abandoned",
+        "region": "Brittle Hollow", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039076, "name": "BH Ship Log: Old Settlement Mural 1",
+        "region": "Brittle Hollow", "requires": []
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039077, "name": "BH Ship Log: Old Settlement Mural 2",
+        "region": "Brittle Hollow", "requires": []
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039078, "name": "BH Ship Log: Old Settlement Mural 3",
+        "region": "Brittle Hollow", "requires": []
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039079, "name": "BH Ship Log: Hanging City 1 - Visit",
+        "region": "Brittle Hollow", "requires": []
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039080, "name": "BH Ship Log: Hanging City 2 - BHF Switch",
+        "region": "Brittle Hollow", "requires": [] // this is for simply using the orb, so no items needed
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039081, "name": "BH Ship Log: Hanging City 3 - Warp Core",
+        "region": "Brittle Hollow", "requires": [ { "item": "Translator" } ] // meltwater district text wall
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039082, "name": "BH Ship Log: Hanging City 4 - Signal",
+        "region": "Brittle Hollow", "requires": [ { "item": "Translator" } ] // eye shrine text wall
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039083, "name": "BH Ship Log: Black Hole Forge 1 - Astral Body Alignment",
+        "region": "Black Hole Forge", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039084, "name": "BH Ship Log: Black Hole Forge 2 - Receiver Location",
+        "region": "Black Hole Forge", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039085, "name": "BH Ship Log: Black Hole Forge 3 - Hourglass Twins",
+        "region": "Black Hole Forge", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039086, "name": "BH Ship Log: Black Hole Forge 4 - Ash Twin Towers",
+        "region": "Black Hole Forge", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039087, "name": "BH Ship Log: Black Hole Forge 5 - Poke's Warp Core",
+        "region": "Black Hole Forge", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039088, "name": "BH Ship Log: Alignment Angle Diagram 1 - Identify",
+        "region": "Black Hole Forge", "requires": [] // just for looking at it
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039089, "name": "BH Ship Log: Alignment Angle Diagram 2 - Five Degrees",
+        "region": "Black Hole Forge", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039090, "name": "BH Ship Log: Alignment Angle Diagram 3 - Several Seconds",
+        "region": "Black Hole Forge", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039091, "name": "BH Ship Log: Alignment Angle Diagram 4 - Active Window",
+        "region": "Black Hole Forge", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039092, "name": "BH Ship Log: Southern Observatory 1 - Signal",
+        "region": "Brittle Hollow", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039093, "name": "BH Ship Log: Southern Observatory 2 - Distant Orbit",
+        "region": "Brittle Hollow", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039094, "name": "BH Ship Log: Southern Observatory 3 - Deep Space Probe",
+        "region": "Brittle Hollow", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039095, "name": "BH Ship Log: Southern Observatory 4 - Probability",
+        "region": "Brittle Hollow", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039096, "name": "BH Ship Log: Tornado Simulation 1 - Most Cyclones",
+        "region": "Brittle Hollow", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039097, "name": "BH Ship Log: Tornado Simulation 2 - Below",
+        "region": "Brittle Hollow", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039098, "name": "HL Ship Log: Volcanic Testing Site 1 - Purpose",
+        "region": "Space", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039099, "name": "HL Ship Log: Volcanic Testing Site 2 - Shell",
+        "region": "Space", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039100, "name": "HL Ship Log: Volcanic Testing Site 3 - Smallest Crack",
+        "region": "Space", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039101, "name": "GD Ship Log: Ocean Depths 1 - Electrical Field",
+        "region": "GD Ocean Depths", "requires": []
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039102, "name": "GD Ship Log: Ocean Depths 2 - Coral Forest",
+        "region": "GD Core", "requires": []
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039103, "name": "GD Ship Log: Gabbro's Island 1 - Hammock",
+        "region": "Giant's Deep", "requires": []
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039104, "name": "GD Ship Log: Gabbro's Island 2 - Gabbro's Statue",
+        "region": "Giant's Deep", "requires": []
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039105, "name": "GD Ship Log: Gabbro's Island 3 - Remembers",
+        "region": "Giant's Deep", "requires": []
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039106, "name": "GD Ship Log: Gabbro's Island 4 - Only Ones",
+        "region": "Giant's Deep", "requires": []
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039107, "name": "GD Ship Log: Construction Yard 1 - Built OPC",
+        "region": "Giant's Deep", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039108, "name": "GD Ship Log: Construction Yard 2 - Hiatus",
+        "region": "Giant's Deep", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039109, "name": "GD Ship Log: Construction Yard 3 - Launch",
+        "region": "Giant's Deep", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039110, "name": "GD Ship Log: Bramble Island",
+        "region": "Giant's Deep", "requires": [ { "item": "Ghost Matter Wavelength" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039111, "name": "GD Ship Log: Statue Island 1 - Purpose",
+        "region": "Giant's Deep", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039112, "name": "GD Ship Log: Statue Island 2 - Beach Statue",
+        "region": "Giant's Deep", "requires": [] // just for looking at the statue, no items needed
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039113, "name": "GD Ship Log: Island Workshop 1 - Memories",
+        "region": "Giant's Deep", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039114, "name": "GD Ship Log: Island Workshop 2 - Masks",
+        "region": "Giant's Deep", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039115, "name": "GD Ship Log: Island Workshop 3 - Activation",
+        "region": "Giant's Deep", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039116, "name": "GD Ship Log: Tower 1 - Journey",
+        "region": "Space", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039117, "name": "GD Ship Log: Tower 2 - Observing",
+        "region": "Space", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039118, "name": "GD Ship Log: Tower 3 - Rule of Imaging",
+        "region": "Space", "requires": [ { "item": "Translator" }, { "item": "Imaging Rule" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039119, "name": "GD Ship Log: Tower 4 - Other Shards",
+        "region": "Space", "requires": [ { "item": "Translator" }, { "item": "Imaging Rule" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039120, "name": "GD Ship Log: OPC 1 - Entered",
+        "region": "Space", "requires": [ { "item": "Spacesuit" } ] // just entering the central chamber
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039121, "name": "GD Ship Log: OPC 2 - Purpose",
+        "region": "Space", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ] // control module projection stone text
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039122, "name": "GD Ship Log: OPC 3 - Maximum Power",
+        "region": "Space", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ] // control module projection stone text
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039123, "name": "GD Ship Log: Probe Tracking Module 1 - Millions",
+        "region": "GD Core", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039124, "name": "GD Ship Log: Probe Tracking Module 2 - Anomaly Located",
+        "region": "GD Core", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039125, "name": "GD Ship Log: Probe Tracking Module 3 - Statue",
+        "region": "GD Core", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039126, "name": "GD Ship Log: Probe Tracking Module 4 - Coordinates",
+        "region": "GD Core", "requires": [ { "item": "Translator" } ] // this requires translating the terminal, not just seeing the coords
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039127, "name": "GD Ship Log: Launch Module 1 - Damaged",
+        "region": "Space", "requires": [ { "item": "Spacesuit" } ] // just entering the module
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039128, "name": "GD Ship Log: Launch Module 2 - Only Once",
+        "region": "Space", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ] // launch module projection stone text
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039129, "name": "GD Ship Log: Launch Module 3 - Receive Data",
+        "region": "Space", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ] // launch module projection stone text
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039130, "name": "GD Ship Log: Control Module 1 - Request",
+        "region": "Space", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039131, "name": "GD Ship Log: Control Module 2 - Status",
+        "region": "Space", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039132, "name": "DB Ship Log: Feldspar's Camp 1 - Status",
+        "region": "Feldspar's Camp", "requires": []
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039133, "name": "DB Ship Log: Feldspar's Camp 2 - Space Doesn't Work",
+        "region": "Feldspar's Camp", "requires": []
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039134, "name": "DB Ship Log: Feldspar's Camp 3 - Peace And Quiet",
+        "region": "Feldspar's Camp", "requires": []
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039135, "name": "DB Ship Log: Frozen Jellyfish 1 - Outside",
+        "region": "Feldspar's Camp", "requires": [ { "item": "Spacesuit" } ] // The suit is required to navigate/survive the vine interior
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039136, "name": "DB Ship Log: Frozen Jellyfish 2 - Inside",
+        "region": "Feldspar's Camp", "requires": [ { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039137, "name": "DB Ship Log: Frozen Jellyfish 3 - Do Not Eat",
+        "region": "Feldspar's Camp", "requires": [ { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039138, "name": "DB Ship Log: Escape Pod 3 1 - Identify",
+        "region": "Nomai Grave", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039139, "name": "DB Ship Log: Escape Pod 3 2 - Vessel",
+        "region": "Nomai Grave", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039140, "name": "DB Ship Log: Escape Pod 3 3 - Two Beacons",
+        "region": "Nomai Grave", "requires": [ { "item": "Translator" }, { "item": "Spacesuit" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039141, "name": "DB Ship Log: Nomai Grave 1 - Followed Beacon",
+        "region": "Nomai Grave", "requires": [ { "item": "Translator" } ] // text wheel
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039142, "name": "DB Ship Log: Nomai Grave 2 - Within the Seed",
+        "region": "Nomai Grave", "requires": [ { "item": "Translator" } ] // text wheel
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039143, "name": "DB Ship Log: Nomai Grave 3 - Beacon Dying",
+        "region": "Nomai Grave", "requires": [ { "item": "Translator" } ] // text wheel
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039144, "name": "DB Ship Log: Nomai Grave 4 - Scout Photos",
+        "region": "Nomai Grave", "requires": [ { "item": "Scout" } ] // shoot your scout into the seed and take a photo of the vessel
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039145, "name": "DB Ship Log: The Vessel 1 - Entered",
+        "region": "The Vessel", "requires": [] // just enter the bridge, no items
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039146, "name": "DB Ship Log: The Vessel 2 - Dead Core",
+        "region": "The Vessel", "requires": [ { "item": "Warp Core Installation Manual" } ] // put the dead warp core into the socket
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039147, "name": "DB Ship Log: The Vessel 3 - Input Pillar",
+        "region": "The Vessel", "requires": [] // activate the coordinates input pillar, which only involves the floor orb
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039148, "name": "DB Ship Log: The Vessel 4 - Call For Help",
+        "region": "The Vessel", "requires": [ { "item": "Translator" } ] // upper right text wall
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039149, "name": "DB Ship Log: The Vessel 5 - Clans Regrouping",
+        "region": "The Vessel", "requires": [ { "item": "Translator" } ] // upper left text wall
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039150, "name": "DB Ship Log: The Vessel 6 - Original Recording",
+        "region": "The Vessel", "requires": [ { "item": "Translator" } ] // text wheel on lower level
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039151, "name": "Ship Log: WHS 1 - Warp Towers",
+        "region": "White Hole Station", "requires": [ { "item": "Translator" } ] // text wall in WHS
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039152, "name": "Ship Log: WHS 2 - Alignment",
+        "region": "White Hole Station", "requires": [ { "item": "Translator" } ] // projection stone text, requires carrying it out of WHS
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039153, "name": "Ship Log: WHS 3 - Temporal Anomaly",
+        "region": "White Hole Station", "requires": [ { "item": "Translator" } ] // projection stone text, requires carrying it out of WHS
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039154, "name": "Ship Log: WHS 4 - Miniscule Interval",
+        "region": "White Hole Station", "requires": [ { "item": "Translator" } ] // text wall in WHS
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039155, "name": "Ship Log: Frozen Shuttle 1 - Identify",
+        "region": "Space", "requires": [ { "item": "Translator" } ] // text wheel just outside the shuttle, on Interloper surface
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039156, "name": "Ship Log: Frozen Shuttle 2 - Energy Readings",
+        "region": "Hourglass Twins", "requires": [ { "item": "Translator" } ] // text wheel inside the shuttle, read by recalling to ET
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039157, "name": "Ship Log: Frozen Shuttle 3 - Stayed",
+        "region": "Space", "requires": [ { "item": "Translator" } ] // text wheel just outside the shuttle, on Interloper surface
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039158, "name": "Ship Log: Frozen Shuttle 4 - Lost Contact",
+        "region": "Hourglass Twins", "requires": [ { "item": "Translator" } ] // text wheel inside the shuttle, read by recalling to ET
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039159, "name": "Ship Log: Ruptured Core 1 - Missing Crew",
+        "region": "Interloper Core", "requires": [] // enter the core and see the bodies
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039160, "name": "Ship Log: Ruptured Core 2 - Exotic Matter",
+        "region": "Interloper Core", "requires": [ { "item": "Translator" } ] // text wheel
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039161, "name": "Ship Log: Ruptured Core 3 - Instant Blanket",
+        "region": "Interloper Core", "requires": [ { "item": "Translator" } ] // text wheel
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039162, "name": "Ship Log: Ruptured Core 4 - Warn the Others",
+        "region": "Interloper Core", "requires": [ { "item": "Translator" } ] // text wheel
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039163, "name": "QM Ship Log: QM 1 - Land",
+        "region": "Quantum Moon", "requires": []
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039164, "name": "QM Ship Log: QM 2 - Corpse",
+        "region": "Quantum Moon", "requires": []
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039165, "name": "Ship Log: Solanum's Shuttle 1 - Landing",
+        "region": "Solanum's Shuttle Interior", "requires": [ { "item": "Translator" } ] // text wheel inside shuttle
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039166, "name": "Ship Log: Solanum's Shuttle 2 - South Pole",
+        "region": "Solanum's Shuttle Interior", "requires": [ { "item": "Translator" } ] // text wheel inside shuttle
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039167, "name": "QM Ship Log: Quantum Shrine 1 - Identify",
+        "region": "Quantum Shrine", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039168, "name": "QM Ship Log: Quantum Shrine 2 - Imaging Rule",
+        "region": "Quantum Shrine", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039169, "name": "QM Ship Log: Quantum Shrine 3 - Entanglement Rule",
+        "region": "Quantum Shrine", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039170, "name": "QM Ship Log: Quantum Shrine 4 - Sixth Location Rule",
+        "region": "Quantum Shrine", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039171, "name": "QM Ship Log: Sixth Location 1 - Visit",
+        "region": "Sixth Location", "requires": [] // just attempt to talk to Solanum, no text translation needed
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039172, "name": "QM Ship Log: Sixth Location 2 - Moon",
+        "region": "Sixth Location", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039173, "name": "QM Ship Log: Sixth Location 3 - Reflection",
+        "region": "Sixth Location", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039174, "name": "QM Ship Log: Sixth Location 4 - Source",
+        "region": "Sixth Location", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039175, "name": "QM Ship Log: Sixth Location 5 - Conscious Observer",
+        "region": "Sixth Location", "requires": [ { "item": "Translator" } ]
+    },
+    {
+        "creation_settings": [ "logsanity" ], "address": 1085039176, "name": "QM Ship Log: Sixth Location 6 - Status",
+        "region": "Sixth Location", "requires": [ { "item": "Translator" } ]
+    }
+]
