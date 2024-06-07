@@ -84,7 +84,7 @@ class ShahrazadWorld(World):
     def generate_basic(self):
         for victim_id, item_name in self.item_pool_names.items():
             menu = self.multiworld.get_region("Menu", victim_id)
-            # self.multiworld.progression_balancing[player].value = 0
+            self.multiworld.worlds[victim_id].options.progression_balancing.value = 0
             for exit in menu.exits:
                 add_rule(exit, lambda state, item_name=item_name: state.has(item_name, self.player))
             if menu.locations:
