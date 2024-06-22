@@ -213,7 +213,7 @@ def run_server_process(room_id, ponyconfig: dict, static_server_data: dict,
                 if room.is_new:
                     _push_player_list(ctx)
                     ctx.push_item_information()
-                    #room.is_new = False
+                    room.is_new = False
         else:
             logging.exception("Could not determine port. Likely hosting failure.")
         with db_session:
