@@ -1,3 +1,7 @@
+"""
+This module provides the options and option dataclass for the Options dataclass.
+"""
+
 from dataclasses import dataclass
 
 from Options import Choice, DefaultOnToggle, PerGameCommonOptions, Toggle, Range
@@ -5,20 +9,24 @@ from Options import Choice, DefaultOnToggle, PerGameCommonOptions, Toggle, Range
 class LogicMode(Choice):
     """
     Logic mode; in other words, how is the player allowed to access items.
-    [Linear] Progression follows the game's linear path, though sequence breaks are allowed and inevitably will still occur. Makes for a longer, more BK-heavy playthrough with fewer options at each point.
-    [Open] (Default) Progression is based only on whether it is possible to reach area given the current list of received items.
+    [Linear] Progression follows the game's linear path, though sequence breaks are allowed and inevitably will still
+             occur. Makes for a longer, more BK-heavy playthrough with fewer options at each point.
+    [Open] (Default) Progression is based only on whether it is possible to reach area given the current list of
+           received items.
     """
     display_name = "Logic Mode"
     option_linear = 0
     option_open = 1
-    
+
     default = 1
 
 class VTShadeLock(Choice):
     """
-    If set to a non-None value, creates an in-game barrier at the entrance of Vermillion Tower to prevent extremely quick playthroughs.
+    If set to a non-None value, creates an in-game barrier at the entrance of Vermillion Tower to prevent extremely
+    quick playthroughs.
     [Bosses] Vermillion Tower only opens when the bosses at the end of the first four dungeons have been beaten.
-    [Shades] Vermillion Tower only opens when the four shades acquired at the end of the first four dungeons have been acquired.
+    [Shades] Vermillion Tower only opens when the four shades acquired at the end of the first four dungeons have been
+             acquired.
     [Bosses and Shades] Vermillion Tower opens when both of the other conditions have been satisfied.
     """
     display_name = "Vermillion Tower Shade Lock"
@@ -31,13 +39,14 @@ class VTShadeLock(Choice):
 
 class VWMeteorPassage(DefaultOnToggle):
     """
-    If enabled, places a gate between Sapphire Ridge and Vermillion Wasteland unlockable with the meteor shade
+    If enabled, places a gate between Sapphire Ridge and Vermillion Wasteland unlockable with the meteor shade,
     """
     display_name = "Vermillion Wasteland Meteor Passage"
 
 class VTSkip(DefaultOnToggle):
     """
-    If enabled, Vermillion Tower will not need to be completed; instead, the player will skip through it to the final boss.
+    If enabled, Vermillion Tower will not need to be completed; instead, the player will skip through it to the final
+    boss.
     """
     display_name = "Skip Vermillion Tower"
 
@@ -67,7 +76,8 @@ class HiddenQuestObfuscationLevel(Choice):
     For quests with hidden rewards, this option controls the level to which rewards are obscured.
     [Hide Item] Only hides the item name. The icon and receiving player are still accurate.
     [Hide Text] Obscures item name and receiving player. The icon will still be accurate.
-    [Hide All] The item name and receiving player will all be hidden and the icon will be replaced with a generic archipelago logo.
+    [Hide All] The item name and receiving player will all be hidden and the icon will be replaced with a generic
+               archipelago logo.
     """
     display_name = "Hidden Quest Obfuscation Level"
 
@@ -79,13 +89,15 @@ class HiddenQuestObfuscationLevel(Choice):
 
 class QuestDialogHints(DefaultOnToggle):
     """
-    If enabled, upon viewing the quest dialog for a quest with rewards that are not hidden, corresponding hints are sent to the archipelago server.
+    If enabled, upon viewing the quest dialog for a quest with rewards that are not hidden, corresponding hints are sent
+    to the archipelago server.
     """
     display_name = "Quest Dialog Hints"
 
 class StartWithGreenLeafShade(DefaultOnToggle):
     """
-    If enabled, the player will start with the green leaf shade, unlocking Autumn's Fall. This makes the early game far more open.
+    If enabled, the player will start with the green leaf shade, unlocking Autumn's Fall. This makes the early game far
+    more open.
     """
     display_name = "Start with Green Leaf Shade"
 
@@ -125,7 +137,8 @@ class Keyrings(Toggle):
 
 class ProgressiveAreaUnlocks(Choice):
     """
-    If enabled, the items that unlock overworld areas and dungeons (including shades and some passes) will be made progressive.
+    If enabled, the items that unlock overworld areas and dungeons (including shades and some passes) will be made
+    progressive.
     [None] no areas are unlocked progressively.
     [Dungeons] dungeons are unlocked progressively; overworld areas are not.
     [Overworld] overworld areas are unlocked progressively; dungeons are not.
@@ -152,6 +165,9 @@ class ProgressiveAreaUnlocks(Choice):
     default = 0
 
 class Reachability(Choice):
+    """
+    This is an internal class. Can define where an item can be placed.
+    """
     option_own_world = 0
     option_different_world = 1
     option_any_world = 2
@@ -159,8 +175,15 @@ class Reachability(Choice):
     default = 2
 
     items: dict[str, set[str]]
+    """
+    A dict associating areas with the set of items that this option specifies as part of that area.
+    """
 
     def register_locality(self, local_items: set[str], non_local_items: set[str]):
+        """
+        Adds this option's `items` to the two arguments, `local_items` and `non_local_items` based on this option's
+        value.
+        """
         if self.value == Reachability.option_own_world:
             for _, lst in self.items.items():
                 local_items |= lst
@@ -169,6 +192,9 @@ class Reachability(Choice):
                 non_local_items |= lst
 
 class DungeonReachability(Reachability):
+    """
+    Extends the Reachability class, adding options for items that are local to dungeons.
+    """
     option_own_dungeons = 10
     option_original_dungeons = 11
 
@@ -177,6 +203,10 @@ class DungeonReachability(Reachability):
         specific_dungeons: dict[str, set[str]],
         all_dungeons: set[str]
     ):
+        """
+        Adds this option's `items` to the `specific_dungeons` or `all_dungeons` argument depending on the value of this
+        option.
+        """
         if self.value == DungeonReachability.option_own_dungeons:
             for _, lst in self.items.items():
                 all_dungeons |= lst
@@ -240,7 +270,8 @@ class MasterKeyShuffle(DungeonReachability):
 
 class ChestKeyShuffle(DungeonReachability):
     """
-    Where the Thief's Key, White Key, and Radiant Key (the keys that open bronze, silver, and gold chests, respectively) may appear.
+    Where the Thief's Key, White Key, and Radiant Key (the keys that open bronze, silver, and gold chests, respectively)
+    may appear.
     """
 
     display_name = "Chest Key Shuffle"
@@ -313,6 +344,9 @@ class DropWeight(Range):
 
 @dataclass
 class CrossCodeOptions(PerGameCommonOptions):
+    """
+    Options dataclass for CrossCode
+    """
     logic_mode: LogicMode
     vt_shade_lock: VTShadeLock
     vw_meteor_passage: VWMeteorPassage

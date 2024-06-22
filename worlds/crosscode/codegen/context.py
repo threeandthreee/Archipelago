@@ -18,7 +18,7 @@ class Context:
         self.num_items = len(self.item_data)
 
 
-def make_context_from_package(package, with_assets=True) -> Context:
+def make_context_from_package(package: str, with_assets: bool = True) -> Context:
     master = load_json_with_includes(package, "data/in/master.json")
 
     cached_location_ids = {}

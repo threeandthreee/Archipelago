@@ -4,3 +4,4 @@ in case we need to reapply them after an update.
 5365438119d69632403bc13062b597491aa456d1 typing in wc.py
 c8bbc62771768eff7e00f4ea6247c91bb437d207 args/arguments.py seed for determinism
 66ed9777c4258a0c3e0fdaa1bf15366c32ce38e2 raise exception instead of exit in argparse
+b791c84934cbe70f9cbb7f96ee5f9a3d27241405 add newer sprites from upstream

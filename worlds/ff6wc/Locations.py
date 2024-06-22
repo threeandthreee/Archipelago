@@ -600,6 +600,20 @@ no_character_checks = ["Auction House 10kGP", "Auction House 20kGP", "Dream Stoo
                        "AtmaWeapon", "Ifrit and Shiva", "Number 024",
                        "Tzen Thief"]
 
+phoenix_cave_major_checks = [
+    loc
+    for loc in major_locke_checks
+    if loc.startswith("Red Dragon") or loc.startswith("Phoenix")
+]
+assert len(phoenix_cave_major_checks) == 3
+
+phoenix_cave_minor_ext_checks = [
+    loc
+    for loc in minor_locke_ext_checks
+    if loc.startswith("Phoenix")
+]
+assert len(phoenix_cave_minor_ext_checks) == 9
+
 point_of_no_return_checks = {
     "Wrexsoul": [
         "Cyan's Dream Phantom Train Fourth Car Upper Right",

@@ -1,7 +1,11 @@
+"""
+Provides the default WorldData instance based on the generated data.
+"""
+
 from .types.world import WorldData
 from .regions import region_packs
 from .items import single_items_dict, items_dict, items_by_full_name, keyring_items
-from .locations import locations_data, locations_dict, events_dict
+from .locations import locations_dict, events_dict
 from .item_pools import item_pools_template
 from .prog_items import progressive_chains, progressive_items
 from .vars import variable_definitions

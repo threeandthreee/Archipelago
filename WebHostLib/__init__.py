@@ -22,6 +22,9 @@ app.jinja_env.filters['any'] = any
 app.jinja_env.filters['all'] = all
 
 app.config["SELFHOST"] = True  # application process is in charge of running the websites
+app.config["WEBHOOK_URL"] = "" # Webhook URL to post multi-server logging to
+app.config["WEBHOOK_AUTO_START"] = False # Whether to auto start discord integration when a multi-server is launched
+app.config["WEBHOOK_DEBUG"] = False # Whether to run the multi-server with debuggable webhooks
 app.config["GENERATORS"] = 8  # maximum concurrent world gens
 app.config["SELFLAUNCH"] = True  # application process is in charge of launching Rooms.
 app.config["SELFLAUNCHCERT"] = None  # can point to a SSL Certificate to encrypt Room websocket connections
@@ -51,9 +54,8 @@ app.config["PONY"] = {
 app.config["MAX_ROLL"] = 20
 app.config["CACHE_TYPE"] = "SimpleCache"
 app.config["HOST_ADDRESS"] = ""
+app.config["ADMIN_PASSWORD"] = "" # Custom admin password for use in logging into a multiworld session as admin
 app.config["ASSET_RIGHTS"] = False
-app.config["WEBHOOK_URL"] = ""
-app.config["WEBHOOK_AUTO_START"] = False
 
 cache = Cache()
 Compress(app)

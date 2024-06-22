@@ -14,9 +14,8 @@ def generate_random_orbits(random: Random) -> (List[str], Dict[str, int], Dict[s
     # We want vanilla/flat orbits, angled orbits and vertical orbits to all be reasonably likely,
     # and we want to avoid collisions that would potentially make a location unreachable
     # or kill the player in sudden, unpredictable ways. Specific tests we did include:
-    # - While not exhaustively tested, The Interloper is unlikely to be an issue since I'm not
-    # changing the Interloper itself, I'm not randomizing where each planet starts along its orbit,
-    # the vanilla orbits don't collide with it, and any angle besides 0 and 180 prevents collisions.
+    # - While not exhaustively tested, since I'm not changing The Interloper's orbit, only angles of
+    # 0 or 180 might collide with it. So far the only known problem is GD in the last lane at angle 0.
     # - The Stranger and Dreamworld have a fixed position 45 degrees above the vanilla orbital plane,
     # about the same distance from the sun as Brittle Hollow's vanilla orbit. A planet at 60 degrees
     # may become visible in the Dreamworld "sky", but won't cause any problems.
@@ -25,21 +24,23 @@ def generate_random_orbits(random: Random) -> (List[str], Dict[str, int], Dict[s
 
     # Thus, we use multiples of 30 both to avoid the Stranger and to get a decent variety of
     # angles without it being too obvious that we're only using a fixed set of choices.
-    possible_angles = [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330]
-    # And the 2 outermost orbits need to be non-vertical to avoid the DB void.
-    # This rule is the main reason we have to choose planet_order and orbit_angles together.
-    non_vertical_angles = [a for a in possible_angles if a != 90 and a != 270]
+    all_possible_angles = [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330]
 
     orbit_angles: Dict[str, int] = {}
     for index, planet in enumerate(planet_order):
-        if index < 3:
-            orbit_angles[planet] = random.choice(possible_angles)
-        else:
-            orbit_angles[planet] = random.choice(non_vertical_angles)
+        possible_angles = all_possible_angles.copy()
+        if index > 2:
+            # The 2 outermost orbits need to be non-vertical to avoid the DB void.
+            possible_angles.remove(90)
+            possible_angles.remove(270)
+        if index == 4 and planet == "GD":
+            # If GD is the farthest from the sun, then angle 0 would collide with The Interloper.
+            possible_angles.remove(0)
+        orbit_angles[planet] = random.choice(possible_angles)
 
     # No subtle constraints for the satellite orbits
     for satellite in ["SS", "AR", "HL", "OPC"]:
-        orbit_angles[satellite] = random.choice(possible_angles)
+        orbit_angles[satellite] = random.choice(all_possible_angles)
 
     # Rotations could be generated separately from order and angles, but since we have to
     # generate the order and angles together, keeping all three together feels simpler.

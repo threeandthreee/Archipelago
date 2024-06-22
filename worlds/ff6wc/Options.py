@@ -1,6 +1,10 @@
 from dataclasses import dataclass
 import math
-from typing import List, Sequence
+from random import Random
+import random
+from typing import Any, List, Sequence
+
+from typing_extensions import override
 
 from Options import DefaultOnToggle, PerGameCommonOptions, Range, Choice, FreeText
 
@@ -64,6 +68,22 @@ class StartingCharacter1(Choice):
     option_umaro = 13
     option_random_with_no_gogo_or_umaro = 14
     default = 14
+
+    @override
+    @classmethod
+    def from_any(cls, data: Any) -> Choice:
+        """
+        random doesn't allow gogo or umaro in slot 1
+        because if it did allow it, we wouldn't have a good way
+        to prevent random making possible unbeatable seeds
+        """
+        # TODO: if core gives us the source of the option
+        # so we know whether Gogo/Umaro was chosen from "random"
+        # then we can remove this restriction
+        # TODO: return type is `Self` after it's fixed in base class
+        if data == "random":
+            return super().from_any(random.randrange(1, 12))
+        return super().from_any(data)
 
 
 class StartingCharacter2(Choice):
@@ -589,3 +609,53 @@ def generate_accessibility_string() -> List[str]:
 def generate_fixes_string() -> List[str]:
     # Bug fixes, and Magimaster can cast his final spell because I'm a jerk.
     return ["-fedc", "-fe", "-fbs", "-fvd", "-fj", "-dgne", "-wnz", "-cmd"]
+
+
+def resolve_character_options(options: FF6WCOptions, random: Random) -> List[str]:
+    """ returns the starting characters and sets the option values to match the returned characters """
+
+    from . import Rom
+
+    character_count = options.StartingCharacterCount.value
+    from_options = [
+        (options.StartingCharacter1.current_key).capitalize(),
+        (options.StartingCharacter2.current_key).capitalize(),
+        (options.StartingCharacter3.current_key).capitalize(),
+        (options.StartingCharacter4.current_key).capitalize()
+    ]
+    to_use = from_options[:character_count]
+    assert len(to_use) == character_count, f"{to_use=} {character_count=}"
+    specified: List[str] = []
+    for ch in to_use:
+        specified.append(ch if (ch in Rom.characters and ch not in specified) else "")
+    assert len(specified) == character_count, f"{specified=} {character_count=}"
+    have_non_gogo_umaro = any(ch in Rom.characters[:12] for ch in specified)
+    for i in range(character_count):
+        if specified[i] == "":
+            # If the player is asking for no Gogo or Umaro
+            # or if they don't have any other characters besides Gogo or Umaro
+            # then the random choice doesn't allow Gogo or Umaro.
+            # Also don't choose from characters already chosen.
+            choices = [ch for ch in (
+                Rom.characters[:12]
+                if (to_use[i] == "Random_with_no_gogo_or_umaro" or not have_non_gogo_umaro)
+                else Rom.characters
+            ) if ch not in specified]
+            choice = random.choice(choices)
+            specified[i] = choice
+            assert any(ch in Rom.characters[:12] for ch in specified), (
+                f"still don't have ngu {specified=} {choices=} {choice=}"
+            )
+            have_non_gogo_umaro = True
+    assert all(ch in Rom.characters for ch in specified), f"{specified=}"
+    assert len(specified) == character_count, f"{specified=} {character_count=}"
+
+    options.StartingCharacter1.value = StartingCharacter1.options[specified[0].lower()]
+    if character_count > 1:
+        options.StartingCharacter2.value = StartingCharacter2.options[specified[1].lower()]
+    if character_count > 2:
+        options.StartingCharacter3.value = StartingCharacter3.options[specified[2].lower()]
+    if character_count > 3:
+        options.StartingCharacter4.value = StartingCharacter4.options[specified[3].lower()]
+
+    return specified

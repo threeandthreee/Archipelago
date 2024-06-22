@@ -8,7 +8,11 @@ import typing
 from .types.regions import RegionConnection, RegionsData
 from .types.condition import *
 
-modes = [ "linear", "open" ]
+modes = [
+    'linear',
+    'open',
+]
+
 default_mode = "open"
 
 region_packs: typing.Dict[str, RegionsData] = {

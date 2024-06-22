@@ -246,3 +246,10 @@ class TestSuitlessLogsanitySongOfSixWorld(OuterWildsTestBase):
         self.assertReachableWith("GD Ship Log: Probe Tracking Module 1 - Millions", [
             "Tornado Aerodynamic Adjustments", "Electrical Insulation", "Spacesuit", "Translator"
         ])
+
+
+class TestRandomOrbitsOff(OuterWildsTestBase):
+    options = {
+        "randomize_orbits": "false",
+    }
+

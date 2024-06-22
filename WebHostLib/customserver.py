@@ -163,7 +163,7 @@ def get_static_server_data() -> dict:
 
 def run_server_process(room_id, ponyconfig: dict, static_server_data: dict,
                        cert_file: typing.Optional[str], cert_key_file: typing.Optional[str],
-                       host: str, webhook: dict):
+                       host: str, webhook: dict, admin_password):
     # establish DB connection for multidata and multisave
     db.bind(**ponyconfig)
     db.generate_mapping(check_tables=False)
@@ -199,10 +199,11 @@ def run_server_process(room_id, ponyconfig: dict, static_server_data: dict,
                 port = socketname[1]
         if port:
             logging.info(f'Hosting game at {host}:{port}')
-            #Setup Discord settings with the current context
+            ctx.admin_password = admin_password
+            # Setup Webhook settings with the current context
             if webhook["WEBHOOK_AUTO_START"]:
                 ctx.webhook_active = True
-                ctx.WebhookThread(ctx, webhook["WEBHOOK_URL"]).start()
+                ctx.WebhookThread(ctx, webhook["WEBHOOK_URL"], webhook["WEBHOOK_DEBUG"]).start()
 
             with db_session:
                 room = Room.get(id=ctx.room_id)
