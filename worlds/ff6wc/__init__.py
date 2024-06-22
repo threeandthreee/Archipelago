@@ -1,5 +1,6 @@
 import functools
 import importlib
+import itertools
 import logging
 import os
 import random
@@ -16,7 +17,7 @@ from worlds.AutoWorld import World, WebWorld
 from . import Locations
 from . import Items
 from .Logic import can_beat_final_kefka
-from .Options import FF6WCOptions, generate_flagstring
+from .Options import FF6WCOptions, Treasuresanity, generate_flagstring, resolve_character_options
 import Utils
 import settings
 
@@ -247,6 +248,9 @@ class FF6WCWorld(World):
                         kt_obj_list = objective_code_list
                         kt_obj_code_index = flags_list.index(objective) + 1
                         break
+            if kt_obj_code_index == len(flags_list):
+                # TODO: use yaml options instead?
+                raise ValueError("kt objective code not found in flags")
             # Determining Character, Esper, Dragon and Boss Counts
             # Since AP only (currently) takes in counts for bosses, espers, characters, and dragons, this code
             # identifies the root objective number/prefix, parses the ranges/values, and then tells the loop to skip to
@@ -300,48 +304,7 @@ class FF6WCWorld(World):
             self.options.BossCount.value = boss_count
 
         else:
-            starting_characters = [
-                (self.options.StartingCharacter1.current_key).capitalize(),
-                (self.options.StartingCharacter2.current_key).capitalize(),
-                (self.options.StartingCharacter3.current_key).capitalize(),
-                (self.options.StartingCharacter4.current_key).capitalize()
-            ]
-            character_count = len(starting_characters) - starting_characters.count("None")
-            self.options.StartingCharacterCount.value = character_count
-
-            starting_characters.sort(key=lambda character: character == "None")
-            starting_characters = starting_characters[0:character_count]
-
-            starting_characters.sort(key=lambda character: character == "Random_with_no_gogo_or_umaro")
-
-            filtered_starting_characters: List[str] = []
-            for character in starting_characters:
-                if character != "Random_with_no_gogo_or_umaro" and character in filtered_starting_characters:
-                    character = random.choice(Rom.characters[:14])
-                    while character in filtered_starting_characters:
-                        character = random.choice(Rom.characters[:14])
-                elif character == "Random_with_no_gogo_or_umaro":
-                    character = random.choice(Rom.characters[:12])
-                    while character in filtered_starting_characters:
-                        character = random.choice(Rom.characters[:12])
-                if character not in filtered_starting_characters:
-                    filtered_starting_characters.append(character)
-            starting_characters = filtered_starting_characters
-
-            starting_char_options = list(self.options.StartingCharacter1.name_lookup.values())
-            self.options.StartingCharacter1.value = starting_char_options.index(starting_characters[0].lower())
-            self.options.StartingCharacter2.value = 14
-            self.options.StartingCharacter3.value = 14
-            self.options.StartingCharacter4.value = 14
-            starting_char_options = list(self.options.StartingCharacter2.name_lookup.values())
-            if character_count > 1:
-                self.options.StartingCharacter2.value = starting_char_options.index(starting_characters[1].lower())
-            if character_count > 2:
-                self.options.StartingCharacter3.value = starting_char_options.index(starting_characters[2].lower())
-            if character_count > 3:
-                self.options.StartingCharacter4.value = starting_char_options.index(starting_characters[3].lower())
-
-            self.starting_characters = starting_characters
+            self.starting_characters = resolve_character_options(self.options, self.random)
 
     def create_regions(self):
         menu = Region("Menu", self.player, self.multiworld)
@@ -395,15 +358,15 @@ class FF6WCWorld(World):
 
         for index, dragon in enumerate(Locations.dragons):
             dragon_event = Locations.dragon_events_link[dragon]
-            self.multiworld.get_location(dragon_event, self.player).place_locked_item(
+            self.get_location(dragon_event).place_locked_item(
                 self.create_event(self.all_dragon_clears[index]))
 
         for boss in [location for location in Locations.major_checks if "(Boss)" in location]:
-            self.multiworld.get_location(boss, self.player).place_locked_item(self.create_event("Busted!"))
+            self.get_location(boss).place_locked_item(self.create_event("Busted!"))
 
-        self.multiworld.get_location("Kefka's Tower", self.player).place_locked_item(
+        self.get_location("Kefka's Tower").place_locked_item(
             self.create_event("Kefka's Tower Access"))
-        self.multiworld.get_location("Beat Final Kefka", self.player).place_locked_item(
+        self.get_location("Beat Final Kefka").place_locked_item(
             self.create_event("Victory"))
         self.multiworld.completion_condition[self.player] = lambda state: state.has("Victory", self.player)
 
@@ -465,56 +428,82 @@ class FF6WCWorld(World):
             "Gogo": (Locations.major_gogo_checks, Locations.minor_gogo_checks, Locations.minor_gogo_ext_checks),
             "Umaro": (Locations.major_umaro_checks, Locations.minor_umaro_checks, Locations.minor_umaro_ext_checks),
         }
+
+        treasuresanity = self.options.Treasuresanity.value != Treasuresanity.option_off
+
         # Set every character locked check to require that character.
         for check_name, checks in check_list.items():
             # Major checks. These are always on.
             for check in checks[0]:
-                set_rule(self.multiworld.get_location(check, self.player),
+                set_rule(self.get_location(check),
                          lambda state, character=check_name: state.has(character, self.player))
             # Minor checks. These are only on if Treasuresanity is on.
-            if self.options.Treasuresanity.value != 0:
+            if treasuresanity:
                 for check in checks[1]:
-                    set_rule(self.multiworld.get_location(check, self.player),
+                    set_rule(self.get_location(check),
                              lambda state, character=check_name: state.has(character, self.player))
             # Minor extended gating checks. These are on if Treasuresanity are on, but can be character gated.
             if self.options.Treasuresanity.value == 2:
                 for check in checks[2]:
-                    set_rule(self.multiworld.get_location(check, self.player),
+                    set_rule(self.get_location(check),
                              lambda state, character=check_name: state.has(character, self.player))
 
         # Lock (ha!) these behind Terra as well as Locke, since whatever isn't chosen is put behind Whelk
         for check_name in ["Narshe Weapon Shop 1", "Narshe Weapon Shop 2"]:
-            add_rule(self.multiworld.get_location(check_name, self.player),
+            add_rule(self.get_location(check_name),
                      lambda state: state.has("Terra", self.player))
 
         for check in Locations.major_checks:
-            add_item_rule(self.multiworld.get_location(check, self.player),
+            add_item_rule(self.get_location(check),
                           lambda item: item.name not in Items.okay_items)
 
         for check in Locations.item_only_checks:
-            if self.options.Treasuresanity.value != 0 or (
-                    check not in Locations.minor_checks and check not in Locations.minor_ext_checks):
-                add_item_rule(self.multiworld.get_location(check, self.player),
+            if treasuresanity or (
+                check not in Locations.minor_checks and check not in Locations.minor_ext_checks
+            ):
+                add_item_rule(self.get_location(check),
                               lambda item: (item.name not in self.item_name_groups["characters"]
                                             and item.name not in self.item_name_groups['espers']
                                             or item.player != self.player))
 
         for check in Locations.no_character_checks:
-            add_item_rule(self.multiworld.get_location(check, self.player),
+            add_item_rule(self.get_location(check),
                           lambda item: (item.name not in self.item_name_groups["characters"]
                                         or item.player != self.player))
 
         for dragon in Locations.dragons:
             dragon_event = Locations.dragon_events_link[dragon]
-            add_rule(self.multiworld.get_location(dragon_event, self.player),
+            add_rule(self.get_location(dragon_event),
                      lambda state: state.can_reach(str(dragon), 'Location', self.player))
 
         for location in Locations.fanatics_tower_checks:
-            if self.options.Treasuresanity.value != 0 or location not in Locations.all_minor_checks:
-                add_rule(self.multiworld.get_location(location, self.player),
+            if treasuresanity or location not in Locations.all_minor_checks:
+                add_rule(self.get_location(location),
                          lambda state: state.has_group("espers", self.player, 4))
 
-        set_rule(self.multiworld.get_location("Beat Final Kefka", self.player),
+        # TODO: This might be better on the region entrance to final dungeon
+        kefka_tower = itertools.chain(
+            Locations.major_kefka_checks,
+            Locations.minor_kefka_checks if treasuresanity else ()
+        )
+        for location_name in kefka_tower:
+            # TODO: maybe this should be has_group_unique
+            # I don't know what happens if you get more than 1 of a character
+            add_rule(self.get_location(location_name),
+                     lambda state: state.has_group("characters", self.player, 3))
+
+        two_players_required = itertools.chain(
+            Locations.phoenix_cave_major_checks,
+            Locations.phoenix_cave_minor_ext_checks if treasuresanity else (),
+            ("Kefka at Narshe", "Kefka at Narshe (Boss)")
+        )
+        for location_name in two_players_required:
+            # TODO: maybe this should be has_group_unique
+            # I don't know what happens if you get more than 1 of a character
+            add_rule(self.get_location(location_name),
+                     lambda state: state.has_group("characters", self.player, 2))
+
+        set_rule(self.get_location("Beat Final Kefka"),
                  functools.partial(can_beat_final_kefka, self.options, self.player))
 
         assert not (self.starting_characters is None), "need starting characters from generate_early"

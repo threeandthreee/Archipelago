@@ -42,7 +42,7 @@ class OuterWildsWorld(World):
         self.db_layout = generate_random_db_layout(self.random, db_option) \
             if db_option != db_option.option_false else "vanilla"
         (self.planet_order, self.orbit_angles, self.rotation_axes) = generate_random_orbits(self.random) \
-            if self.options.randomize_orbits else "vanilla"
+            if self.options.randomize_orbits else ("vanilla", "vanilla", "vanilla")
 
     # members and methods implemented by LocationsAndRegions.py, locations.jsonc and connections.jsonc
 
@@ -96,7 +96,7 @@ class OuterWildsWorld(World):
         slot_data["rotation_axes"] = self.rotation_axes
         # Archipelago does not yet have apworld versions (data_version is deprecated),
         # so we have to roll our own with slot_data for the time being
-        slot_data["apworld_version"] = "0.2.1"
+        slot_data["apworld_version"] = "0.2.3"
         return slot_data
 
     def write_spoiler(self, spoiler_handle: TextIO) -> None:

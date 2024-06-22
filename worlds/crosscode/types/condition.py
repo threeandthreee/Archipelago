@@ -84,3 +84,14 @@ class VariableCondition(Condition):
                 return False
 
         return True
+
+__all__ = [
+    "Condition",
+    "ItemCondition",
+    "QuestCondition",
+    "LocationCondition",
+    "RegionCondition",
+    "AnyElementCondition",
+    "OrCondition",
+    "VariableCondition"
+]

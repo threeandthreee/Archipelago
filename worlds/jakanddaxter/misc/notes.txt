@@ -29,15 +29,34 @@ Go Home menu action:
 (start 'play (get-continue-by-name *game-info* "title-start"))
 
 
-fisherman's boat       | 2007
-jungle elevator        | 2008
-blue eco switch        | 2009
-flut flut              | 2010
-warrior's pontoons     | 2011
-snowy mountain gondola | 2012
-yellow eco switch      | 2013
-snowy fort gate        | 2014
-freed the blue sage    | 2015
-freed the red sage     | 2016
-freed the yellow sage  | 2017
-freed the green sage   | 2018
+
+Death?
+(when (not (movie?)) (target-attack-up *target* 'attack ))
+
+
+
+
+			Orbs To Be				Smallest Number Of
+			Spent					Orbs Obtainable
+
+Hub 1		420						327
+Hub 2		510						677
+Hub 3		600						300
+End			0						230
+
+			Progressive Scaling		Progressive Scaling				Most Frivolous
+			Of Orbs To Be Spent		Of Minimum Orbs Obtainable		Possible Spending
+
+Hub 1		420						327								0 (can't afford)
+Hub 2		930						1004							1004 - 510 - 420 = 74
+Hub 3		1530					1304							0 (can't afford)
+End			1530					1534							1534 - 600 - 510 - 420 = 4
+
+			Progressive Scaling		Progressive Scaling				Most Frivolous
+			Of Orbs To Be Spent		Of Minimum Orbs Obtainable		Possible Spending
+
+Hub 1		0						327
+Hub 2		420						1004
+Hub 3		930						1304
+End			1530					1534
+

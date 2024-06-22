@@ -6,7 +6,7 @@
 from collections import defaultdict
 from BaseClasses import ItemClassification
 from worlds.crosscode.types.items import get_info_from_full_name
-from .util import keydefaultdict
+from .util import KeyDefaultDict
 from .types.items import ItemData, SingleItemData
 
 num_items = 676
@@ -680,7 +680,7 @@ def __item_data_from_tuple(key: tuple[str, int]) -> ItemData:
     name, amount = key
     return ItemData(item=single_items_dict[name], amount=amount)
 
-items_dict: dict[tuple[str, int], ItemData] = keydefaultdict(__item_data_from_tuple, {
+items_dict: dict[tuple[str, int], ItemData] = KeyDefaultDict(__item_data_from_tuple, {
     ('Heat', 1): ItemData(item=single_items_dict['Heat'], amount=1, combo_id=3235824000),
     ('Cold', 1): ItemData(item=single_items_dict['Cold'], amount=1, combo_id=3235824001),
     ('Shock', 1): ItemData(item=single_items_dict['Shock'], amount=1, combo_id=3235824002),
@@ -1424,7 +1424,7 @@ However, can also be used to generate an arbitrary amount of items.
 This feature is useful for custom item placement.
 """
 
-items_by_full_name: dict[str, ItemData] = keydefaultdict(
+items_by_full_name: dict[str, ItemData] = KeyDefaultDict(
     lambda name: items_dict[get_info_from_full_name(name)],
     { name if amount == 1 else f"{name} x{amount}": value for (name, amount), value in items_dict.items() }
 )

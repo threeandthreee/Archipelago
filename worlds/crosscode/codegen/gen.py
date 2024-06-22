@@ -1,8 +1,6 @@
 from collections import defaultdict
 from copy import deepcopy
 import logging
-from posixpath import commonpath
-import sys
 import typing
 import ast
 import os
@@ -10,13 +8,14 @@ import json
 
 import jinja2
 
-from worlds.crosscode.codegen.merge import merge
-from worlds.crosscode.types.regions import RegionsData
+from worlds.crosscode.codegen.jinja import create_jinja_extension
+
+from ..types.regions import RegionsData
 
 from .ast import AstGenerator
 from .context import Context, make_context_from_package
 from .emit import emit_dict, emit_list, emit_set
-from .util import BASE_ID, GENERATED_COMMENT, RESERVED_ITEM_IDS
+from .util import GENERATED_COMMENT
 from .lists import ListInfo
 
 cglogger = logging.getLogger("crosscode.codegen")
@@ -37,7 +36,8 @@ class FileGenerator:
         template_dir = os.path.join(world_dir, "templates")
 
         self.environment = jinja2.Environment(
-            loader=jinja2.FileSystemLoader(template_dir))
+            loader=jinja2.FileSystemLoader(template_dir),
+        )
 
         if lists == None:
             self.ctx = make_context_from_package(world_dir.replace('/', '.'))
@@ -57,152 +57,103 @@ class FileGenerator:
 
         self.ast_generator = AstGenerator()
 
+        self.environment.add_extension(create_jinja_extension(self.ast_generator))
+
         self.common_args = {
             "generated_comment": GENERATED_COMMENT,
             "modes": self.ctx.rando_data["modes"],
             "default_mode": self.ctx.rando_data["defaultMode"],
         }
 
-    def generate_python_files(self) -> None:
-        # LOCATIONS
+    def generate_python_file_locations(self):
         template = self.environment.get_template("locations.template.py")
 
-        code_locations_data = emit_list([self.ast_generator.create_ast_call_location(loc) for loc in self.lists.locations_data.values()])
-        code_events_data =  emit_list([self.ast_generator.create_ast_call_location(loc) for loc in self.lists.events_data.values()])
-
-        locations_complete = template.render(locations_data=code_locations_data, events_data=code_events_data, **self.common_args)
+        locations_complete = template.render(
+            locations_data=self.lists.locations_data.values(),
+            events_data=self.lists.events_data.values(),
+            **self.common_args
+        )
 
         with open(os.path.join(self.world_dir, "locations.py"), "w") as f:
             f.write(locations_complete)
 
-        # ITEMS
+    def generate_python_file_items(self):
         template = self.environment.get_template("items.template.py")
 
-        sorted_single_item_data = [(value.item_id, key, value) for key, value in self.lists.single_items_dict.items()]
-        sorted_single_item_data.sort()
+        sorted_single_item_data = sorted(
+            self.lists.single_items_dict.items(),
+            key=lambda i: i[1].item_id
+        )
 
-        code_single_item_dict = emit_dict([(ast.Constant(key), self.ast_generator.create_ast_call_single_item(value)) for _, key, value in sorted_single_item_data])
-
-        sorted_item_data = [(value.combo_id, key, value) for key, value in self.lists.items_dict.items()]
-        sorted_item_data.sort()
-
-        item_dict_items = []
-        for _, key, value in sorted_item_data:
-            key = ast.Tuple(elts=[ast.Constant(x) for x in key])
-            ast.fix_missing_locations(key)
-            value = self.ast_generator.create_ast_call_item(value)
-            item_dict_items.append((key, value))
-
-        code_item_dict = emit_dict(item_dict_items)
-
-        code_keyring_items = emit_set(
-            [ast.Constant(item) for item in self.ctx.rando_data["keyringItems"]]
+        sorted_item_data = sorted(
+            self.lists.items_dict.items(),
+            key=lambda i: i[1].combo_id
         )
 
         items_complete = template.render(
-            single_items_dict=code_single_item_dict,
-            items_dict=code_item_dict,
+            single_items_dict=sorted_single_item_data,
+            items_dict=sorted_item_data,
             num_items=self.ctx.num_items,
-            keyring_items=code_keyring_items,
+            keyring_items=self.ctx.rando_data["keyringItems"],
             **self.common_args
         )
 
         with open(os.path.join(self.world_dir, "items.py"), "w") as f:
             f.write(items_complete)
 
-        # ITEM POOLS
+    def generate_python_file_item_pools(self):
         template = self.environment.get_template("item_pools.template.py")
 
-        code_item_pools = {
-            name: emit_list([
-                self.ast_generator.create_ast_call_item_pool_entry(entry)
-                for entry in pool
-            ])
-            for name, pool in self.lists.item_pools.items()
-        }
-
         item_pools_complete = template.render(
-            item_pools=code_item_pools,
+            item_pools=self.lists.item_pools,
             **self.common_args
         )
 
         with open(os.path.join(self.world_dir, "item_pools.py"), "w") as f:
             f.write(item_pools_complete)
 
-        # PROG ITEMS
+    def generate_python_file_prog_items(self):
         template = self.environment.get_template("prog_items.template.py")
 
-        code_prog_chain_names = {
-            name: chain.display_name for name, chain in self.lists.progressive_chains.items()
-        }
-
-        code_prog_items = emit_dict([
-            (ast.Constant(name), self.ast_generator.create_ast_call_item_ref(item))
-            for name, item in self.lists.progressive_items.items()
-        ])
-
-        code_prog_chain_lists = {
-            name: emit_list([
-                self.ast_generator.create_ast_call_progressive_chain_entry(entry)
-                for entry in chain.items
-            ])
-            for name, chain in self.lists.progressive_chains.items()
-        }
-
         item_pools_complete = template.render(
-            prog_chain_names=code_prog_chain_names,
-            prog_items=code_prog_items,
-            prog_chain_lists=code_prog_chain_lists,
+            prog_chains=self.lists.progressive_chains,
+            prog_items=self.lists.progressive_items,
             **self.common_args
         )
 
         with open(os.path.join(self.world_dir, "prog_items.py"), "w") as f:
             f.write(item_pools_complete)
 
-        # REGIONS
+    def generate_python_file_regions(self):
         template = self.environment.get_template("regions.template.py")
-
-        region_lists = {
-            mode: emit_list([ast.Constant(r) for r in regions.region_list])
-            for mode, regions in self.regions_data.items()
-        }
-
-        region_connections = {
-            mode: emit_list([
-                self.ast_generator.create_ast_call_region_connection(rc) for rc in regions.region_connections
-            ])
-            for mode, regions in self.regions_data.items()
-        }
 
         regions_complete = template.render(
             modes_string=", ".join([f'"{x}"' for x in self.ctx.rando_data["modes"]]),
             region_packs=self.regions_data,
-            region_lists=region_lists,
-            region_connections=region_connections,
             **self.common_args
         )
 
         with open(os.path.join(self.world_dir, "regions.py"), "w") as f:
             f.write(regions_complete)
 
-        # VARS
+    def generate_python_file_vars(self):
         template = self.environment.get_template("vars.template.py")
 
-        code_var_defs = defaultdict(dict)
-
-        for name, values in self.lists.variable_definitions.items():
-            for val, conds in values.items():
-                code_var_defs[name][val] = emit_list(
-                    [self.ast_generator.create_ast_call_condition(c) for c in conds]
-                )
-
         regions_complete = template.render(
-            code_var_defs=code_var_defs,
+            variable_definitions=self.lists.variable_definitions,
             **self.common_args
         )
 
         with open(os.path.join(self.world_dir, "vars.py"), "w") as f:
             f.write(regions_complete)
+
+    def generate_python_files(self) -> None:
+        self.generate_python_file_locations()
+        self.generate_python_file_items()
+        self.generate_python_file_item_pools()
+        self.generate_python_file_prog_items()
+        self.generate_python_file_regions()
+        self.generate_python_file_vars()
 
     def generate_mod_files(self):
         merged_data = deepcopy(self.ctx.rando_data)
