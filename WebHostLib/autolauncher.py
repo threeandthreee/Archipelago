@@ -143,17 +143,19 @@ class MultiworldInstance():
         self.host = config["HOST_ADDRESS"]
         self.webhook_url = config["WEBHOOK_URL"]
         self.webhook_autostart = config["WEBHOOK_AUTO_START"]
+        self.webhook_debug = config["WEBHOOK_DEBUG"]
+        self.admin_password = config["ADMIN_PASSWORD"]
 
     def start(self):
         if self.process and self.process.is_alive():
             return False
 
-        discord_settings = {"WEBHOOK_URL": self.webhook_url, "WEBHOOK_AUTO_START": self.webhook_autostart}
+        webhook_settings = {"WEBHOOK_URL": self.webhook_url, "WEBHOOK_AUTO_START": self.webhook_autostart, "WEBHOOK_DEBUG": self.webhook_debug}
 
         logging.info(f"Spinning up {self.room_id}")
         process = multiprocessing.Process(group=None, target=run_server_process,
                                           args=(self.room_id, self.ponyconfig, get_static_server_data(),
-                                                self.cert, self.key, self.host, discord_settings),
+                                                self.cert, self.key, self.host, webhook_settings, self.admin_password),
                                           name="MultiHost")
         process.start()
         # bind after start to prevent thread sync issues with guardian.

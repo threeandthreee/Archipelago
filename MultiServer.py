@@ -181,10 +181,10 @@ class Context:
     all_location_and_group_names: typing.Dict[str, typing.Set[str]]
     non_hintable_names: typing.Dict[str, typing.Set[str]]
     webhook_active = False
-    webhook_url = ""
     webhook_queue: queue.SimpleQueue
     room_url: str
     seed_url: str
+    admin_password: str
 
     def __init__(self, host: str, port: int, server_password: str, password: str, location_check_points: int,
                  hint_cost: int, item_cheat: bool, release_mode: str = "disabled", collect_mode="disabled",
@@ -343,12 +343,14 @@ class Context:
     class WebhookThread(threading.Thread):
         ctx: Context
         url: str
+        is_debug: bool
 
-        def __init__(self, ctx: Context, url: str):
+        def __init__(self, ctx: Context, url: str, is_debug: bool):
             threading.Thread.__init__(self)
             self.name = "Webhook"
             self.ctx = ctx
             self.url = url
+            self.is_debug = is_debug
 
         def run(self):
             while self.ctx.webhook_active and not self.ctx.exit_event.is_set():
@@ -362,7 +364,7 @@ class Context:
                         if message is None:
                             return
 
-                        message["debug"] = True
+                        message["debug"] = self.is_debug
                         try:
                             Webhook(self.url, content=message).execute()
                         except Exception as e:
@@ -786,7 +788,7 @@ class Context:
             release_player(self, client.team, client.slot)
         self.save()  # save goal completion flag
 
-        self.push_to_webhook({"event": "goal_complete", "player": self.player_names[client.team, client.slot]})
+        self.push_to_webhook({"event": "goal_complete", "room": self.room_url, "seed": self.seed_url, "player": self.player_names[client.team, client.slot]})
 
     def on_new_hint(self, team: int, slot: int):
         self.on_changed_hints(team, slot)
@@ -1345,9 +1347,10 @@ class ClientMessageProcessor(CommonCommandProcessor):
         self.ctx.broadcast_text_all(self.ctx.get_aliased_name(self.client.team, self.client.slot) + ': ' + output,
                                     {"type": "Chat", "team": self.client.team, "slot": self.client.slot, "message": output})
 
-        if not self.ctx.server_password:
-            self.output("Sorry, Remote administration is disabled")
-            return False
+        #Disabling this for our version of Arch and allowing for us to have a manual admin password
+        #if not self.ctx.server_password:
+        #    self.output("Sorry, Remote administration is disabled")
+        #    return False
 
         if not command:
             if self.is_authenticated():
@@ -1358,7 +1361,7 @@ class ClientMessageProcessor(CommonCommandProcessor):
             return True
 
         if command.startswith("login "):
-            if command == f"login {self.ctx.server_password}":
+            if command == f"login {self.ctx.admin_password}":
                 self.output("Login successful. You can now issue server side commands.")
                 self.ctx.commandprocessor.client = self.client
                 return True
