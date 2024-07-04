@@ -26,6 +26,7 @@ app.config["WEBHOOK_URL"] = "" # Webhook URL to post multi-server logging to
 app.config["WEBHOOK_AUTO_START"] = False # Whether to auto start discord integration when a multi-server is launched
 app.config["WEBHOOK_DEBUG"] = False # Whether to run the multi-server with debuggable webhooks
 app.config["GENERATORS"] = 8  # maximum concurrent world gens
+app.config["HOSTERS"] = 8  # maximum concurrent room hosters
 app.config["SELFLAUNCH"] = True  # application process is in charge of launching Rooms.
 app.config["SELFLAUNCHCERT"] = None  # can point to a SSL Certificate to encrypt Room websocket connections
 app.config["SELFLAUNCHKEY"] = None  # can point to a SSL Certificate Key to encrypt Room websocket connections
@@ -87,6 +88,6 @@ def register():
 
     from WebHostLib.customserver import run_server_process
     # to trigger app routing picking up on it
-    from . import tracker, upload, landing, check, generate, downloads, api, stats, misc, robots
+    from . import tracker, upload, landing, check, generate, downloads, api, stats, misc, robots, options
 
     app.register_blueprint(api.api_endpoints)
