@@ -10,14 +10,12 @@ import functools
 import hashlib
 import inspect
 import itertools
-import json
 import logging
 import math
 import operator
 import pickle
 import queue
 import random
-import re
 import threading
 import time
 import typing
@@ -781,12 +779,10 @@ class Context:
                 "room": self.room_url,
                 "seed": self.seed_url,
                 "receiver": self.player_names[team, hint.receiving_player],
-                "item": self.item_names[hint.item],
-                "location": self.location_names[hint.location],
+                "item": self.item_names[self.slot_info[hint.receiving_player].game][hint.item],
+                "location": self.location_names[self.slot_info[hint.finding_player].game][hint.location],
                 "finder": self.player_names[team, hint.finding_player]
             }
-            # game = self.ctx.games[self.client.slot]
-            # game = self.ctx.slot_info[self.client.slot].game
             if hint.entrance:
                 hint_information["entrance"] = hint.entrance
             self.push_to_webhook(hint_information)
@@ -1130,9 +1126,9 @@ def _push_item_information(ctx: Context, team: int, slot: int, item_id, target_p
         "room": ctx.room_url,
         "seed": ctx.seed_url,
         "sender": ctx.player_names[(team, slot)],
-        "item": ctx.item_names[item_id],
+        "item": ctx.item_names[ctx.slot_info[slot].game][item_id],
         "receiver": ctx.player_names[(team, target_player)],
-        "location": ctx.location_names[location]
+        "location": ctx.location_names[ctx.slot_info[slot].game][location]
     }
     item_classification = "Filler"
 

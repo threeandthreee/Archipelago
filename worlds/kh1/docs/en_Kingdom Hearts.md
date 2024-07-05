@@ -7,13 +7,21 @@ Denho's original KH rando laid the foundation for the work here and makes everyt
 
 Other credits include:
 
-Sonicshadowsilver2 for their work finding many memory addresses and working to idenitify and resolve bugs.
+Sonicshadowsilver2 for their work finding many memory addresses, working to idenitify and resolve bugs, and coverting the code base to the latest EGS update.
 
 Shananas and the rest of the OpenKH team for providing such an amazing tool for us to utilize on this project.
 
-Krujo and the team from the KH1 Critical Mix Riku mod for their work on the `Show Prompt` method.
+TopazTK for their work on the `Show Prompt` method and Krujo for their implementation of the method in AP.
 
 JaredWeakStrike for helping clean up my mess of code.
+
+KSX for their interact in battle code.
+
+RavSpect for their title screen image edit.
+
+SunCatMC for their work on ChecksFinder, which I used as a basis for game-to-client communication.
+
+ThePhar for their work on Rogue Legacy AP, which I used as a basis for the apworld creation.
 
 ## Where is the options page?
 
@@ -24,9 +32,9 @@ configure and export a config file.
 
 The Kingdom Hearts AP Randomizer randomizes most rewards in the game, and adds several items which are used to unlock worlds, Olympus Coliseum cups, and world progression.
 
-Worlds can only be accessed by finding the corresponding item.  For example, you need to find the "Monstro" item to enter Monstro.
+Worlds can only be accessed by finding the corresponding item.  For example, you need to find the `Monstro` item to enter Monstro.
 
-The default goal is to enter End of the World and defeat Final Ansem.  You can enter the world by obtaining a number of Ansem's Reports defined in your YAML.
+The default goal is to enter End of the World and defeat Final Ansem.
 
 ## What items and locations get shuffled?
 
@@ -58,15 +66,18 @@ Find `Footprints` in the multiworld.
 
 ###I can't enter any cups in Olympus Coliseum.
 
-Phil Cup, Pegasus Cup, and Hercules Cup are all multiworld items.  Finding all 3 grant you access to Hades Cup and the Platinum Match.  Clearing all cups lets you challenge Ice Titan.
+Firstly, find `Entry Pass` in the multiworld.  Additionally, `Phil Cup`, `Pegasus Cup`, and `Hercules Cup` are all multiworld items.  Finding all 3 grant you access to Hades Cup and the Platinum Match.  Clearing all cups lets you challenge Ice Titan.
 
 ###The slides aren't spawning in Deep Jungle.
 
-Find `Slide 1` in the multiworld.
+Find `Slides` in the multiworld.
+
+###I can't progress Atlantica.
+Find `Crystal Trident` in the multiworld.
 
 ###I can't progress Halloween Town.
 
-Find `Jack-in-the-Box` in the multiworld.
+Find `Forget-Me-Not` and `Jack-in-the-Box` in the multiworld.
 
 ###The Hollow Bastion Library is missing a book.
 
@@ -74,13 +85,4 @@ Find `Theon Vol. 6` in the multiworld.
 
 ##How do I enter the End of the World?
 
-Find the required number of Ansem's Reports defined in your settings in the multiworld.
-
-##I am stuck in Hollow Bastion, how do I leave?
-
-You can open the full menu and warp out using `L1` + `L2` + `R2` + `Select`
-
-##I am still receiving vanilla rewards in several locations.
-There are locations that still grant vanilla rewards, as it is currently not known how to remove them.  Such locations include Atlantica Clams, Spinners in the Hollow Bastion Library, Puppy Rewards, and several Postcard Locations.
-
-Where these items are progression, they remain vanilla.  Where they are filler items, they grant a check in addition to the vanilla reward.
+You can enter End of the World by obtaining a number of Ansem's Reports or by finding `End of the World` in the multiworld, depending on your settings.

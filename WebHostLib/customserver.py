@@ -286,7 +286,7 @@ def run_server_process(name: str, ponyconfig: dict, static_server_data: dict,
                         if room.is_new:
                             _push_player_list(ctx)
                             ctx.push_item_information()
-                            room.is_new = False
+                            room.is_new = webhook["WEBHOOK_DEBUG"]
                 else:
                     ctx.logger.exception("Could not determine port. Likely hosting failure.")
                 with db_session:

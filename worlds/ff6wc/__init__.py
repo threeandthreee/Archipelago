@@ -9,6 +9,7 @@ import threading
 from typing import Any, ClassVar, Dict, List, Union
 
 from BaseClasses import Item, Location, Region, MultiWorld, ItemClassification, Tutorial
+from .id_maps import item_name_to_id, location_name_to_id
 from .gen_data import GenData
 from . import Rom
 from .patch import FF6WCPatch, NA10HASH
@@ -22,8 +23,6 @@ import Utils
 import settings
 
 importlib.import_module(".Client", "worlds.ff6wc")  # register with SNIClient
-
-BASE_ID = 6000
 
 
 class FF6WCItem(Item):
@@ -106,8 +105,8 @@ class FF6WCWorld(World):
     data_version = 0
     web = FF6WCWeb()
     wc_ready = threading.Lock()
-    item_name_to_id = {name: index + BASE_ID for index, name in enumerate(Items.item_table)}
-    location_name_to_id = {name: index + BASE_ID for index, name in enumerate(Locations.location_table)}
+    item_name_to_id = item_name_to_id
+    location_name_to_id = location_name_to_id
 
     all_characters = [
         'Terra', 'Locke', 'Cyan', 'Shadow', 'Edgar',

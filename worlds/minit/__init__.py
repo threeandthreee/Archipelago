@@ -19,7 +19,7 @@ from .Regions import region_table
 from .ERData import (
     er_regions,
     er_entrances,
-    minit_get_target_groups,
+    minit_target_group_lookup,
     er_static_connections,
     door_names,
 )
@@ -37,9 +37,8 @@ from worlds.LauncherComponents import (
 )
 from Utils import visualize_regions
 
-
 try:
-    from EntranceRando import randomize_entrances
+    from entrance_rando import randomize_entrances
     from BaseClasses import EntranceType
     er_loaded = True
 except ModuleNotFoundError:
@@ -157,6 +156,11 @@ class MinitWorld(World):
         super().__init__(multiworld, player)
         self.spoiler_hints = {}
 
+    def generate_early(self):
+        if self.options.er_option and not er_loaded:
+            from Options import OptionError
+            raise OptionError("Please use the Generic Entrance Rando branch for ER")
+
     def create_item(self, name: str) -> MinitItem:
         data = item_table[name]
 
@@ -271,8 +275,8 @@ class MinitWorld(World):
         er_on = bool(self.options.er_option)
         starting_entrance = ""
         early_location_list: List[Location] = []
+        self.add_regions_and_locations(er_on)
         if er_on and er_loaded:
-            self.add_regions_and_locations(er_on)  # will move this back up when er is finished
             # current code for using the Generic ER randomizer
             if True: #self.multiworld.players == 1:
                 # if there is a one-player world, make at least one
@@ -290,21 +294,20 @@ class MinitWorld(World):
                     "factory queue",  # deadend
                     "trophy room",  # deadend
                     ]  # consider removing the deadends because they could have a higher chance of killing the seed
-                self.random.shuffle(free_checks)
-                starting_entrance = free_checks.pop()
+                room_lookup = {
+                    "camera house outside south": "camera house inside",
+                    "glove outside east": "glove inside",
+                    "glove outside west": "glove inside",
+                    "factory loading upper north": "factory loading upper",
+                    "factory loading upper east": "factory loading upper",
+                    "factory loading upper south": "factory loading upper",
+                    "factory snakehall north": "factory loading upper",
+                }
 
-                starting_region = starting_entrance
-                if starting_entrance == "camera house outside south":
-                    starting_region = "camera house inside"
-                elif starting_entrance in ["glove outside east", "glove outside west"]:
-                    starting_region = "glove inside"
-                elif starting_entrance in [
-                                            "factory loading upper north",
-                                            "factory loading upper east",
-                                            "factory loading upper south",
-                                            "factory snakehall north",
-                                            ]:
-                    starting_region = "factory loading upper"
+                starting_entrance = self.random.choices(free_checks)[0]
+
+                if starting_entrance in room_lookup:
+                    starting_region = room_lookup[starting_entrance]
                 else:
                     starting_region = starting_entrance
 
@@ -325,8 +328,8 @@ class MinitWorld(World):
                 # entrance.is_dead_end = er_entrance[2]
 
                 en1 = region.create_exit(er_entrance.entrance_name)
-                en1.er_type = EntranceType.TWO_WAY
-                en1.er_group = er_entrance.group_type
+                en1.randomization_type = EntranceType.TWO_WAY
+                en1.randomization_group = er_entrance.group_type
                 if starting_entrance and er_entrance.entrance_name in ["dog house south", starting_entrance]:
                     if er_entrance.entrance_name == "dog house south":
                         manual_connect_start = en1
@@ -349,24 +352,24 @@ class MinitWorld(World):
                         # add_manual_connect = False
                 else:
                     en2 = region.create_er_target(er_entrance.entrance_name)
-                    en2.er_type = EntranceType.TWO_WAY
-                    en2.er_group = er_entrance.group_type
+                    en2.randomization_type = EntranceType.TWO_WAY
+                    en2.randomization_group = er_entrance.group_type
 
-        elif er_on and not er_loaded:
-            # also only needed for ER POC before Generic ER gets merged
-            self.add_regions_and_locations(False)
-            self.output_connections = self.make_bad_map()
-            for name in [
-                "Dog House - Dolphin Heart",
-                "Dog House - Plant Heart",
-                "Desert RV - ItemGlove",
-                "Hotel Room - Queue",
-                "Dog House - ItemSword",
-            ]:
-                early_location_list.append(self.multiworld.get_location(name, self.player))
+        # should never be called with the new OptionError
+        # elif er_on and not er_loaded:
+        #     # also only needed for ER POC before Generic ER gets merged
+        #     self.add_regions_and_locations(False)
+        #     self.output_connections = self.make_bad_map()
+        #     for name in [
+        #         "Dog House - Dolphin Heart",
+        #         "Dog House - Plant Heart",
+        #         "Desert RV - ItemGlove",
+        #         "Hotel Room - Queue",
+        #         "Dog House - ItemSword",
+        #     ]:
+        #         early_location_list.append(self.multiworld.get_location(name, self.player))
 
         else:
-            self.add_regions_and_locations(er_on)  # will move this back up when er is finished
             self.output_connections = None
             for name in [
                 "Dog House - Dolphin Heart",
@@ -399,14 +402,6 @@ class MinitWorld(World):
         # forbid_item(early_location, "HeartPiece", self.player)
         # forbid_item(early_location, "Tentacle", self.player)
 
-    def parse_goals(self) -> List[str]:
-        if self.options.chosen_goal == "boss_fight":
-            return ["boss"]
-        elif self.options.chosen_goal == "toilet_goal":
-            return ["toilet"]
-        elif self.options.chosen_goal == "any_goal":
-            return ["toilet", "boss"]
-
     def write_spoiler_header(self, spoiler_handle: TextIO) -> None:
         if self.options.er_option == "off" or not er_loaded:
             return
@@ -414,6 +409,42 @@ class MinitWorld(World):
         spoiler_handle.write(f"Entrance Rando Location Paths:\n")
         for location, path in self.spoiler_hints.items():
             spoiler_handle.write(f"\t{location}: {path}\n")
+
+    # copied from BaseClasses CollectionState in order to rewrite it to
+    # path from all houses and grab the shortest path for hint data
+    # also reference Tunic's https://github.com/ArchipelagoMW/Archipelago/blob/main/worlds/tunic/__init__.py#L307C9-L307C32
+    #
+    # def update_reachable_regions(self, player: int):
+    #     self.stale[player] = False
+    #     reachable_regions = self.reachable_regions[player]
+    #     blocked_connections = self.blocked_connections[player]
+    #     queue = deque(self.blocked_connections[player])
+    #     start = self.multiworld.get_region("Menu", player)
+
+    #     # init on first call - this can't be done on construction since the regions don't exist yet
+    #     if start not in reachable_regions:
+    #         reachable_regions.add(start)
+    #         blocked_connections.update(start.exits)
+    #         queue.extend(start.exits)
+
+    #     # run BFS on all connections, and keep track of those blocked by missing items
+    #     while queue:
+    #         connection = queue.popleft()
+    #         new_region = connection.connected_region
+    #         if new_region in reachable_regions:
+    #             blocked_connections.remove(connection)
+    #         elif connection.can_reach(self):
+    #             assert new_region, f"tried to search through an Entrance \"{connection}\" with no Region"
+    #             reachable_regions.add(new_region)
+    #             blocked_connections.remove(connection)
+    #             blocked_connections.update(new_region.exits)
+    #             queue.extend(new_region.exits)
+    #             self.path[new_region] = (new_region.name, self.path.get(connection, None))
+
+    #             # Retry connections if the new region can unblock them
+    #             for new_entrance in self.multiworld.indirect_connections.get(new_region, set()):
+    #                 if new_entrance in blocked_connections and new_entrance not in queue:
+    #                     queue.append(new_entrance)
 
     def extend_hint_information(self, hint_data: Dict[int, Dict[int, str]]) -> None:
         if self.options.er_option == "off" or not er_loaded:
@@ -447,13 +478,14 @@ class MinitWorld(World):
                 hint_data[self.player][loc.address] = text
 
     def fill_slot_data(self) -> Dict[str, Any]:
-        return {
-            "slot_number": self.player,  # unneeded?
-            "death_link": self.options.death_link.value,
-            "death_amnisty_total": self.options.death_amnisty_total.value,
-            "ER_connections": self.output_connections,
-            "goals": self.parse_goals(),
-            }
+        slot_data = self.options.as_dict(
+                "death_link",
+                "death_amnisty_total",
+            )
+        slot_data["ER_connections"] = self.output_connections
+        slot_data["goals"] = self.options.chosen_goal.parse_goals()
+
+        return slot_data
 
     def interpret_slot_data(self, slot_data: Dict[str, Any]):
         try:
@@ -480,7 +512,7 @@ class MinitWorld(World):
             self.output_connections += randomize_entrances(
                     world=self,
                     coupled=True,
-                    get_target_groups=minit_get_target_groups,
+                    target_group_lookup=minit_target_group_lookup,
                     preserve_group_order=False
                     ).pairings
             # visualize_regions(

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from Options import NamedRange, Choice, Range, Option, Toggle, DeathLink, DefaultOnToggle, OptionSet, PerGameCommonOptions
+from Options import NamedRange, Choice, Range, Option, Toggle, DeathLink, DefaultOnToggle, OptionSet, PerGameCommonOptions, StartInventoryPool
 
 class StrengthIncrease(Range):
     """
@@ -119,6 +119,7 @@ class Goal(Choice):
     Postcards: Turn in all 10 postcards in Traverse Town
     Final Ansem: Enter End of the World and defeat Ansem as normal
     Puppies: Rescue and return all 99 puppies in Traverse Town.
+    Final Rest: Open the chest in End of the World Final Rest
     """
     display_name = "Goal"
     option_sephiroth = 0
@@ -126,6 +127,7 @@ class Goal(Choice):
     option_postcards = 2
     option_final_ansem = 3
     option_puppies = 4
+    option_final_rest = 5
     default = 3
 
 class EndoftheWorldUnlock(Choice):
@@ -291,6 +293,75 @@ class GoofyDeathLink(Toggle):
     """
     display_name = "Goofy Death Link"
 
+class KeybladesUnlockChests(Toggle):
+    """
+    If toggled on, the player is required to have a certain keyblade to open chests in certain worlds.
+    TT   - Lionheart
+    WL   - Lady Luck
+    OC   - Olympia
+    DJ   - Jungle King
+    AG   - Three Wishes
+    MS   - Wishing Star
+    HT   - Pumpkinhead
+    NL   - Fairy Harp
+    HB   - Divine Rose
+    EotW - Oblivion
+    HAW  - Oathkeeper
+    
+    Note: Does not apply to Atlantica, the emblem and carousel chests in Hollow Bastion, or the Aero chest in Neverland currently.
+    """
+    display_name = "Keyblades Unlock Chests"
+
+class InteractInBattle(Toggle):
+    """
+    Allow Sora to talk, examine, and open chests in battle
+    """
+    display_name = "Interact in Battle"
+
+class AdvancedLogic(Toggle):
+    """
+    If on, logic may expect you to do advanced skips like combo master, dumbo, and other unusual methods for reaching locations.
+    """
+    display_name = "Advanced Logic"
+
+class ExtraSharedAbilities(Toggle):
+    """
+    If on, adds extra shared abilities to the pool.  These can stack, so multiple high jumps make you jump higher and multiple glides make you superglide faster.
+    """
+    display_name = "Extra Shared Abilities"
+
+class EXPZeroInPool(Toggle):
+    """
+    If on, adds EXP Zero ability to the item pool.  This is redundant if you are planning on playing on Proud.
+    """
+    display_name = "EXP Zero in Pool"
+
+class VanillaEmblemPieces(DefaultOnToggle):
+    """
+    If on, the Hollow Bastion emblem pieces are in their vanilla locations.
+    """
+    display_name = "Vanilla Emblem Pieces"
+
+class JunkInMissableLocations(DefaultOnToggle):
+    """
+    If on, will place Elixirs in missable locations.  If turned off, there is a chance you will need to play the game multiple times to get the missed items.
+    Locations include:
+        Leon Gift
+        Aerith Gift
+        Clock Tower Doors
+        World Terminus Hollow Bastion Chest
+    """
+    display_name = "Junk in Missable Locations"
+
+class StartingWorlds(Range):
+    """
+    Number of random worlds to start with in addition to Traverse Town, which is always available.  Will only consider Atlantica if toggled, and will only consider End of the World if its unlock is set to "Item".
+    """
+    display_name = "Starting Worlds"
+    default = 0
+    range_start = 0
+    range_end = 10
+
 @dataclass
 class KH1Options(PerGameCommonOptions):
     goal: Goal
@@ -304,7 +375,17 @@ class KH1Options(PerGameCommonOptions):
     hundred_acre_wood: HundredAcreWood
     cups: Cups
     puppies: Puppies
+    starting_worlds: StartingWorlds
+    keyblades_unlock_chests: KeybladesUnlockChests
+    interact_in_battle: InteractInBattle
     exp_multiplier: EXPMultiplier
+    advanced_logic: AdvancedLogic
+    extra_shared_abilities: ExtraSharedAbilities
+    exp_zero_in_pool: EXPZeroInPool
+    vanilla_emblem_pieces: VanillaEmblemPieces
+    junk_in_missable_locations: JunkInMissableLocations
+    donald_death_link: DonaldDeathLink
+    goofy_death_link: GoofyDeathLink
     randomize_keyblade_stats: RandomizeKeybladeStats
     bad_starting_weapons: BadStartingWeapons
     keyblade_max_str: KeybladeMaxStrength
@@ -320,6 +401,5 @@ class KH1Options(PerGameCommonOptions):
     mp_increase: MPIncrease
     accessory_slot_increase: AccessorySlotIncrease
     item_slot_increase: ItemSlotIncrease
-    donald_death_link: DonaldDeathLink
-    goofy_death_link: GoofyDeathLink
+    start_inventory_from_pool: StartInventoryPool
     
