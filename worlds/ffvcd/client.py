@@ -2,10 +2,11 @@ import logging
 import asyncio
 from NetUtils import ClientStatus, color
 from worlds.AutoSNIClient import SNIClient
-from .locations import loc_id_start
+from .locations import loc_id_start, location_data
 from .items import item_table, arch_item_offset
 from .rom import crystal_ram_data, magic_ram_data, ability_ram_data, item_ram_data, \
     key_item_ram_data, gil_ram_data, full_flag_dict
+from typing import Dict
 
 snes_logger = logging.getLogger("SNES")
 
@@ -28,6 +29,8 @@ FFVCD_IN_MENU_FLAG_ADDR = WRAM_START + 0x00014B
 FFVCD_IN_MENU_FLAG2_ADDR = WRAM_START + 0x00020D
 FFVCD_IN_MENU_FLAG3_ADDR = WRAM_START + 0x000B45 # this is tied to screen visibility fade in/out
 FFVCD_IN_BATTLE_FLAG_ADDR = WRAM_START + 0x00014D
+FFVCD_PIANO_ADDRESS = 0xA45 #piano flags
+FFVCD_CURRENT_WORLD = 0xA2D #offset from RAM start that stores current world
         
 FFVCD_LOADED_GAME_FLAG = WRAM_START + 0x30
 FFVCD_LOADED_GAME_FLAG2 = WRAM_START + 0x6F
@@ -35,10 +38,21 @@ FFVCD_LOADED_GAME_FLAG2 = WRAM_START + 0x6F
 FFVCD_RECV_PROGRESS_ADDR = WRAM_START + 0x9F4
 FFVCD_FILE_NAME_ADDR = WRAM_START + 0x5D9
 
+FFVCD_GOAL_SETTINGS = 0x3FFFFF
 
+tracker_event_locations = ["ExDeath","ExDeath World 2","Piano (Tule)","Piano (Carwen)","Piano (Karnak)",
+                           "Piano (Jacole)","Piano (Crescent)","Piano (Mua)","Piano (Rugor)","Piano (Mirage)"]
+piano_addresses = [0xC0FFF6,0xC0FFF7,0xC0FFF8,0xC0FFF9,0xC0FFFA,0xC0FFFB,0xC0FFFC,0xC0FFFD]
+world_flags = ["world 1", "world 2", "world 3"]
 
 class FFVCDSNIClient(SNIClient):
     game = "Final Fantasy V Career Day"
+    local_set_events: Dict[str, bool]
+    local_set_events = {flag_name: False for flag_name in tracker_event_locations}
+    world_byte = 0
+    current_world: Dict[str, bool]
+    current_world = {flag_name: False for flag_name in world_flags} 
+    
     async def deathlink_kill_player(self, ctx):
         pass
 
@@ -52,8 +66,8 @@ class FFVCDSNIClient(SNIClient):
         
         ctx.game = self.game
         ctx.items_handling = 0b111  # remote items
-
         ctx.rom = rom_name
+        
         return True
 
 
@@ -64,7 +78,6 @@ class FFVCDSNIClient(SNIClient):
         # EVENTS
         ##############
         d1 = await snes_read(ctx, FFVCD_EVENT_FLAG_ADDR, 0x100)
-        
         start = 0xA14 # 0xA14
         ram_dict = {} 
         for idx, i in enumerate(d1):
@@ -81,7 +94,7 @@ class FFVCDSNIClient(SNIClient):
             ram_dict[start+idx] = i
                 
 
-        
+        goal_flags = await snes_read(ctx,FFVCD_GOAL_SETTINGS,0x1)
     
         
 
@@ -129,15 +142,24 @@ class FFVCDSNIClient(SNIClient):
                 loc_id = event_flag_addr + loc_id_start
                 
                 # exdeath special handling for victory condition
+                #now checks all victory conditions
                 if event_flag_addr == 0xC0FFFF:
                     status1 = check_status_bits(ram_byte, 0, direction)
                     status2 = check_status_bits(ram_byte, 1, direction)
                     status3 = check_status_bits(ram_byte, 2, direction)
                     if status1 and status2 and status3:
                         status = True
+                        # Handle Victory
+                        if not ctx.finished_game:
+                            await ctx.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
+                            ctx.finished_game = True
                     else:
                         status = False
-                        
+                elif event_flag_addr in piano_addresses and check_status_bits(goal_flags[0],1,1): #is piano percent on
+                    status = check_status_bits(ram_byte, loc_bit, direction)
+                    if ram_dict[FFVCD_PIANO_ADDRESS] == 255 and not ctx.finished_game:
+                        await ctx.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
+                        ctx.finished_game = True
                 # normal case
                 else:
                     status = check_status_bits(ram_byte, loc_bit, direction)
@@ -149,14 +171,54 @@ class FFVCDSNIClient(SNIClient):
             except:
                 import traceback
                 print("Error checking full_flag_dict: %s" % traceback.print_exc())
-                
-
+        
+        
         for new_check_id in new_checks:
-            ctx.locations_checked.add(new_check_id)
             location = ctx.location_names[new_check_id]
-            snes_logger.info(
-                f'New Check: {location} ({len(ctx.locations_checked)}/{len(ctx.missing_locations) + len(ctx.checked_locations)})')
-            await ctx.send_msgs([{"cmd": 'LocationChecks', "locations": [new_check_id]}])
+            if location in tracker_event_locations:
+                # Send tracker event flags
+                if not self.local_set_events[location] and ctx.slot is not None:
+                    snes_logger.info(f'New Event: {location}')
+                    event_bitfield = 0
+                    self.local_set_events[location] = True
+                    for i, flag_name in enumerate(tracker_event_locations):
+                        if self.local_set_events[flag_name]:
+                            event_bitfield |= 1 << i
+                    await ctx.send_msgs([{
+                        "cmd": "Set",
+                        "key": f"FFVCD_EVENTS_{ctx.team}_{ctx.slot}",
+                        "default": 0,
+                        "want_reply": False,
+                        "operations": [{"operation": "or", "value": event_bitfield}],
+                    }])
+            else:
+                ctx.locations_checked.add(new_check_id)
+                snes_logger.info(
+                    f'New Check: {location} ({len(ctx.locations_checked)}/{len(ctx.missing_locations) + len(ctx.checked_locations)})')
+                await ctx.send_msgs([{"cmd": 'LocationChecks', "locations": [new_check_id]}])
+
+        world_byte = ram_dict[FFVCD_CURRENT_WORLD]
+        for i, k in enumerate(self.current_world.keys()):
+            self.current_world[k] = bool(check_status_bits(world_byte,i,1))
+            
+        if world_byte != self.world_byte:
+            world_bitfield = 0
+            self.world_byte = world_byte
+            for i, flag_name in enumerate(world_flags):
+                if self.current_world[flag_name]:
+                    world_bitfield |= 1 << i
+            await ctx.send_msgs([{
+                "cmd": "Set",
+                "key": f"FFVCD_WORLD_{ctx.team}_{ctx.slot}",
+                "default": 0,
+                "want_reply": False,
+                "operations": [{"operation": "replace", "value": world_bitfield}],
+            }])
+            
+            #for i, flag_name in enumerate(world_tracker):
+             #           if self.local_set_events[flag_name]:
+              #              event_bitfield |= 1 << i
+            
 
         recv_count = await snes_read(ctx, FFVCD_RECV_PROGRESS_ADDR, 2)
         recv_index = recv_count[0] +recv_count[1] * 256
@@ -173,18 +235,6 @@ class FFVCDSNIClient(SNIClient):
                 recv_index_list = [recv_index % 256, recv_index // 256]            
                 snes_buffered_write(ctx, FFVCD_RECV_PROGRESS_ADDR, bytes(recv_index_list))            
                 arch_item_id = item.item - arch_item_offset
-                
-    
-                ####################            
-                # RECEIVE VICTORY ITEM
-                ####################
-    
-                if arch_item_id == 1200:
-                    # Handle Victory
-                    if not ctx.finished_game:
-                        await ctx.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
-                        ctx.finished_game = True
-    
     
                 ####################            
                 # RECEIVE CRYSTALS
@@ -361,7 +411,7 @@ class FFVCDSNIClient(SNIClient):
                             key_item_byte, key_item_addr_offset, key_item_direction = key_item_data_entry
                             snes_buffered_write(ctx, WRAM_START + 0xA00 + key_item_addr_offset, bytes([key_item_byte]))
 
-                            
+
                 await snes_flush_writes(ctx)
             except Exception as e:
                 print("\n\n\n%s\n\n\n"%e)

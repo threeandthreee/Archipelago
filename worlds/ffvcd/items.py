@@ -1,5 +1,8 @@
 import os, sys
 from BaseClasses import ItemClassification, Item
+import logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)-15s %(message)s")
+logger = logging.getLogger("Final Fantasy V Career Day")
 arch_item_offset = 352000000
 
 
@@ -26,7 +29,63 @@ ITEM_CODE_KEY_ITEMS = '7'
 ITEM_CODE_MAGIC = '8'
 ITEM_CODE_VICTORY = '9'
 ITEM_CODE_MIB_REWARD = '10'
-ITEM_CODE_EXDEATH_W2 = '11'
+ITEM_CODE_MIB_REWARD_PROG = '11'
+
+#Job Codes: Used for grouping together abilities and crystals for additional settings
+JOB_CODE_KNIGHT = '12'
+JOB_CODE_MONK = '13'
+JOB_CODE_THIEF = '14'
+JOB_CODE_DRAGOON = '15'
+JOB_CODE_NINJA = '16'
+JOB_CODE_SAMURAI = '17'
+JOB_CODE_BERSERKER = '18'
+JOB_CODE_HUNTER = '19'
+JOB_CODE_MYSTIC_KNIGHT = '20'
+JOB_CODE_WHITE_MAGE = '21'
+JOB_CODE_BLACK_MAGE = '22'
+JOB_CODE_TIME_MAGE = '23'
+JOB_CODE_SUMMONER = '24'
+JOB_CODE_BLUE_MAGE = '25'
+JOB_CODE_RED_MAGE = '26'
+JOB_CODE_TRAINER = '27'
+JOB_CODE_CHEMIST = '28'
+JOB_CODE_GEOMANCER = '29'
+JOB_CODE_BARD = '30'
+JOB_CODE_DANCER = '31'
+JOB_CODE_MIMIC = '32'
+JOB_CODE_FREELANCER = '33'
+
+MAGIC_CODE_TIER_1 = '34'
+MAGIC_CODE_TIER_2 = '35'
+MAGIC_CODE_TIER_3 = '36'
+
+EVENT_CODE = None
+
+#this is how we'll handle crystal selections now so we can do more with job and ability associations
+job_selection_dict = {
+    "Knight": '12',
+    "Monk": '13',
+    "Thief": '14',
+    "Dragoon": '15',
+    "Ninja": '16',
+    "Samurai": '17',
+    "Berserker": '18',
+    "Hunter": '19',
+    "Mystic Knight": '20',
+    "White Mage": '21',
+    "Black Mage": '22',
+    "Time Mage": '23',
+    "Summoner": '24',
+    "Blue Mage": '25',
+    "Red Mage": '26',
+    "Trainer": '27',
+    "Chemist": '28',
+    "Geomancer": '29',
+    "Bard": '30',
+    "Dancer": '31',
+    "Mimic": '32',
+    "Freelancer": '33',
+}
 
 class ItemData:
     def __init__(self, item_id, classification, groups):
@@ -34,37 +93,50 @@ class ItemData:
         self.classification = classification
         self.id = None if item_id is None else item_id + arch_item_offset
 
+class FFVCDEventData:
+    def __init__(self, event_location, event_item, classification):
+        self.event_location = event_location
+        self.event_item = event_item
+        self.classification = classification
+        self.code = EVENT_CODE
 
 def create_item(name: str, classification, item_data_id, player, groups) -> Item:
     return FFVCDItem(name, classification, item_data_id, player, groups)
 
+#not sure this is necessary but wanted to exclude the groups and make absolutely sure everything was set to None for events.
+def create_event_item(event: str, classification, EVENT_CODE, player) -> Item:
+    return FFVCDEventItem(event, classification.progression, EVENT_CODE, player)
 
+def create_world_events(world):
+    for event in [i for i in event_table]:
+        event_data = event_table[event]
+        new_event_item = create_event_item(event_data.event_item, event_data.classification, event_data.code, world.player)
+        new_event_loc = world.multiworld.get_location(event_data.event_location, world.player)
+        new_event_loc.address = event_data.code
+        new_event_loc.event = True
+        new_event_loc.place_locked_item(new_event_item)
 
 def create_world_items(world, trapped_chests_flag = False, chosen_mib_locations = None):
     
     mib_items_to_place = []
     mib_item_pool = []
-
-
-
+    mib_key_item_excludes = []
     
-    # add victory first, manually update location and item table
-    exdeath = world.multiworld.get_location("ExDeath", world.player)    
-    new_item = create_item("Victory",  
-                                ItemClassification.progression, 
-                                EXDEATH_ITEM_ID + arch_item_offset, 
-                                world.player, [ITEM_CODE_VICTORY])
-    exdeath.place_locked_item(new_item)
+    ##################
+    # AP Models Events as items so let's create our events here
+    ##################
+    create_world_events(world)
 
-
-    
     ##################
     # trapped chest items handling
     ##################
     
-    if trapped_chests_flag and chosen_mib_locations:
+    if trapped_chests_flag and chosen_mib_locations and world.options.trapped_chests_settings in [0,1]:
         
-        mib_item_data = dict({(i, item_table[i]) for i in item_table if '10' in item_table[i].groups})
+        mib_item_data = dict({(i, item_table[i]) for i in item_table \
+                              if(ITEM_CODE_MIB_REWARD in item_table[i].groups or \
+                                (world.options.trapped_chests_settings == 1 and ITEM_CODE_MIB_REWARD_PROG in item_table[i].groups\
+                                  and world.options.progression_checks != 0))})
         sorted_list = sorted(mib_item_data.items())
         sorted_dict = {}
         for key, value in sorted_list:
@@ -73,8 +145,10 @@ def create_world_items(world, trapped_chests_flag = False, chosen_mib_locations 
         for k, v in mib_item_data.items():
             mib_item_pool.append(create_item(k, v.classification, v.id, world.player, v.groups))
             
-        mib_items_to_place = world.multiworld.per_slot_randoms[world.player].choices(mib_item_pool, k=len(chosen_mib_locations))
-            
+        mib_items_to_place = world.multiworld.per_slot_randoms[world.player].sample(mib_item_pool, k=len(chosen_mib_locations))
+        for i in mib_items_to_place:
+            if i.classification == ItemClassification.progression:
+                mib_key_item_excludes.append(i.name)
     
     ##################    
     # add progression items
@@ -82,31 +156,41 @@ def create_world_items(world, trapped_chests_flag = False, chosen_mib_locations 
     placed_items = []
     for key_item_name in [i for i in item_table if ITEM_CODE_KEY_ITEMS in item_table[i].groups]:
         item_data = item_table[key_item_name]
-        if item_data.classification == ItemClassification.progression:
+        if item_data.classification == ItemClassification.progression and key_item_name not in mib_key_item_excludes:
+            
             new_item = create_item(key_item_name, item_data.classification, item_data.id, \
                                    world.player, item_data.groups)
             placed_items.append(new_item)
 
 
-            
+    ###############
+    # Shuffle job list
+    # with how jobs/abilities are being handled now this is a simpler way to do the logic.
+    ###############
+    available_job_groups = []
+    unavailable_job_groups = []
+    starting_job_groups = []
+    initial_job_list = []
+
+
+    for job_name in job_selection_dict:
+        if job_name in world.options.jobs_included:
+            initial_job_list.append(job_selection_dict[job_name])
+    world.random.shuffle(initial_job_list)
+    shuffled_job_list = list(initial_job_list)
+    job_count = len(initial_job_list)
+
     ###############
     # FOUR JOB ENABLED
-    # do not add abilities/crystals to pool if four job enabled
+    # set 4 starting jobs
     ###############
     if world.options.four_job:
-        starting_crystals = world.multiworld.random.sample([i for i in item_table \
-                                                            if ITEM_CODE_CRYSTALS in item_table[i].groups],4)       
-        for item_name in [i for i in item_table\
-                              if ITEM_CODE_MAGIC in item_table[i].groups or ITEM_CODE_GIL in item_table[i].groups]:
-            
-            if item_name not in starting_crystals:
-                
-                item_data = item_table[item_name]
-                new_item = create_item(item_name, item_data.classification, item_data.id, \
-                                       world.player, item_data.groups)
-                placed_items.append(new_item)
+        for i in range(4):
+            if job_count < 4:
+                raise Exception("4 Job Mode Requires 4 jobs enabled.")
+            starting_job_groups.append(shuffled_job_list.pop())
 
-
+        starting_crystals = [i for i in item_table if ITEM_CODE_CRYSTALS in item_table[i].groups and any(y in starting_job_groups for y in item_table[i].groups)]
 
     ###############
     # FOUR JOB DISABLED
@@ -115,293 +199,449 @@ def create_world_items(world, trapped_chests_flag = False, chosen_mib_locations 
     else:
         
         # first choose starting crystal
-        starting_crystals = [world.multiworld.random.choice([i for i in item_table \
-                                                             if ITEM_CODE_CRYSTALS in item_table[i].groups])]
-
-        for item_name in [i for i in item_table if ITEM_CODE_CRYSTALS in item_table[i].groups or \
-                              ITEM_CODE_ABILITIES in item_table[i].groups or ITEM_CODE_MAGIC in item_table[i].groups\
-                                  or ITEM_CODE_GIL in item_table[i].groups]:
-            if item_name not in starting_crystals:
+        starting_job_groups.append(shuffled_job_list.pop())
+        starting_crystals = [i for i in item_table if ITEM_CODE_CRYSTALS in item_table[i].groups \
+                             and any(y in starting_job_groups for y in item_table[i].groups)]
+        
+        for i in range(world.options.random_job_count - 1): #minus 1 because of starting job
+            if i > job_count-2: #minus 2 because starting job and i starting at 0
+                break
+            available_job_groups.append(shuffled_job_list.pop())
+        jobs_to_place = [i for i in item_table if ITEM_CODE_CRYSTALS in item_table[i].groups \
+                          and any(y in available_job_groups for y in item_table[i].groups)] 
+        
+        for item_name in [i for i in item_table if ITEM_CODE_CRYSTALS in item_table[i].groups]:
+            if item_name in jobs_to_place:
                 item_data = item_table[item_name]
                 new_item = create_item(item_name, item_data.classification, item_data.id, \
                                        world.player, item_data.groups)
                 placed_items.append(new_item)
-
         
+    ###############
+    # ABILITIES SETTINGS
+    # if enabled with 4 job mode then place only abilities associated with starting jobs
+    ###############
+    #set all job groups to available job groups, for abilities there's no reason for distinction between starting and available
+    for job in starting_job_groups:
+        available_job_groups.append(job)
 
+    # All job abilities
+    if world.options.ability_settings == 0 and not world.options.four_job: 
+        for item_name in [i for i in item_table if ITEM_CODE_ABILITIES in item_table[i].groups \
+                          and any(y in initial_job_list for y in item_table[i].groups)]:
+            if item_name not in starting_crystals:
+                item_data = item_table[item_name]
+                new_item = create_item(item_name, item_data.classification, item_data.id, \
+                                    world.player, item_data.groups)
+                placed_items.append(new_item)
+    #Only for Available Jobs
+    elif world.options.ability_settings == 1:
+        for item_name in [i for i in item_table if ITEM_CODE_ABILITIES in item_table[i].groups \
+                          and any(y in available_job_groups for y in item_table[i].groups)]:
+            if item_name not in starting_crystals:
+                item_data = item_table[item_name]
+                new_item = create_item(item_name, item_data.classification, item_data.id, \
+                                    world.player, item_data.groups)
+                placed_items.append(new_item)
+    #Available Jobs Plus Extra
+    elif world.options.ability_settings == 2 and not world.options.four_job:
+        #add additonal job groups
+        for i in range(world.options.job_group_abilities_number):
+            if len(available_job_groups) >= job_count:
+                break
+            available_job_groups.append(shuffled_job_list.pop())
+        
+        for item_name in [i for i in item_table if ITEM_CODE_ABILITIES in item_table[i].groups \
+                           and any(y in available_job_groups for y in item_table[i].groups)]:
+            if item_name not in starting_crystals:
+                item_data = item_table[item_name]
+                new_item = create_item(item_name, item_data.classification, item_data.id, \
+                                    world.player, item_data.groups)
+                placed_items.append(new_item)
+    #Random by Job
+    elif world.options.ability_settings == 3 and not world.options.four_job:
+        random_job_groups = world.multiworld.random.sample(initial_job_list,world.options.job_group_abilities_number) 
+        for item_name in [i for i in item_table if ITEM_CODE_ABILITIES in item_table[i].groups \
+                           and any(y in random_job_groups for y in item_table[i].groups)]:
+            if item_name not in starting_crystals:
+                item_data = item_table[item_name]
+                new_item = create_item(item_name, item_data.classification, item_data.id, \
+                                    world.player, item_data.groups)
+                placed_items.append(new_item)
+    #Random All
+    elif world.options.ability_settings == 4 and not world.options.four_job:
+        random_any_ability_odds = world.multiworld.random.randint(1,101)
+        for item_name in [i for i in item_table if ITEM_CODE_ABILITIES in item_table[i].groups  \
+                          and any(y in initial_job_list for y in item_table[i].groups)]:
+            random_individual_ability_odds = world.multiworld.random.randint(1,101)
+            if item_name not in starting_crystals and random_individual_ability_odds > random_any_ability_odds:
+                item_data = item_table[item_name]
+                new_item = create_item(item_name, item_data.classification, item_data.id, \
+                                    world.player, item_data.groups)
+                placed_items.append(new_item)
+    #Random only unavailable
+    elif world.options.ability_settings == 6 and not world.options.four_job:
+        for job in initial_job_list:
+            if job not in available_job_groups:
+                if (len(available_job_groups) + len(unavailable_job_groups)) >= job_count:
+                    break
+                elif len(unavailable_job_groups) > world.options.job_group_abilities_number:
+                    break
+                unavailable_job_groups.append(job)
+        for item_name in [i for i in item_table if ITEM_CODE_ABILITIES in item_table[i].groups \
+                          and any(y in unavailable_job_groups for y in item_table[i].groups)]:
+            if item_name not in starting_crystals:
+                item_data = item_table[item_name]
+                new_item = create_item(item_name, item_data.classification, item_data.id, \
+                                    world.player, item_data.groups)
+                placed_items.append(new_item)
+    #Don't Place skips this step
+    
+    ###############
+    # PLACE ABILITIES DISABLED
+    # do not add abilities only if diabled
+    ###############
+
+    ###############
+    # PLACE MAGIC
+    ###############
+    # This will be used to identify all potentially useful magic associated to existing abilities or job crystals in the world.
+    if world.options.only_usable_magic:
+        placed_job_group_list = []
+        for item in placed_items:
+            item_groups = getattr(item,'groups')
+            for group in [i for i in item_groups if i in initial_job_list]:
+                placed_job_group_list.append(group)
+        placed_job_group_list = list(set(placed_job_group_list))
+
+    magic_exlude_list = []
+    if world.options.disable_tier_1_magic:
+        magic_exlude_list.append(MAGIC_CODE_TIER_1)
+    if world.options.disable_tier_2_magic:
+        magic_exlude_list.append(MAGIC_CODE_TIER_2)
+    if world.options.disable_tier_3_magic:
+        magic_exlude_list.append(MAGIC_CODE_TIER_3)
+
+    if world.options.only_usable_magic:
+        for item_name in [i for i in item_table\
+                                if ITEM_CODE_MAGIC in item_table[i].groups and \
+                                    not any(y in magic_exlude_list for y in item_table[i].groups)\
+                                        and any(x in placed_job_group_list for x in item_table[i].groups)]:
+                
+                if item_name not in starting_crystals:
+                    
+                    item_data = item_table[item_name]
+                    new_item = create_item(item_name, item_data.classification, item_data.id, \
+                                        world.player, item_data.groups)
+                    placed_items.append(new_item)
+
+    else:
+        for item_name in [i for i in item_table\
+                                if ITEM_CODE_MAGIC in item_table[i].groups and \
+                                    not any(y in magic_exlude_list for y in item_table[i].groups)]:
+                
+                if item_name not in starting_crystals:
+                    
+                    item_data = item_table[item_name]
+                    new_item = create_item(item_name, item_data.classification, item_data.id, \
+                                        world.player, item_data.groups)
+                    placed_items.append(new_item)   
+
+    for item_name in [i for i in item_table\
+                              if ITEM_CODE_GIL in item_table[i].groups]:
+            
+            if item_name not in starting_crystals:
+                
+                item_data = item_table[item_name]
+                new_item = create_item(item_name, item_data.classification, item_data.id, \
+                                       world.player, item_data.groups)
+                placed_items.append(new_item)   
+    
 
     
     # then calculate remaining    
     locations_this_world = [i for i in world.multiworld.get_locations(world.player)]
-    # this has a minus 1 at the end to accommodate special locations like "ExDeath" at the end
     
-    item_count_to_place = len(locations_this_world) - len(mib_items_to_place) - len(placed_items) - 1
+    item_count_to_place = len(locations_this_world) - len(mib_items_to_place) - len(placed_items)
     
     # get mib item names, if any
     mib_already_chosen_items = [i.name for i in mib_items_to_place]
     
-    for item_name in world.multiworld.random.sample([i for i in item_table if ITEM_CODE_FUNGIBLE in \
-                                                     item_table[i].groups and i not in mib_already_chosen_items
-                                                     ], item_count_to_place):
-        item_data = item_table[item_name]
-        new_item = create_item(item_name, item_data.classification, item_data.id, \
-                                                   world.player, item_data.groups)
-            
-        placed_items.append(new_item)
+    filler_list = [i for i in item_table if ITEM_CODE_FUNGIBLE in \
+                    item_table[i].groups and i not in mib_already_chosen_items]
+    filler_count = len(filler_list)
+
+    # to facilitate more customization we'll make the filler able to dynamically resize using a while loop
+    while item_count_to_place > 0: 
+        if item_count_to_place > filler_count:
+            sample = filler_count
+        else:
+            sample = item_count_to_place
+
+        for item_name in world.multiworld.random.sample([i for i in item_table if ITEM_CODE_FUNGIBLE in \
+                                                        item_table[i].groups and i not in mib_already_chosen_items
+                                                        ], sample):
+            item_data = item_table[item_name]
+            new_item = create_item(item_name, item_data.classification, item_data.id, \
+                                                    world.player, item_data.groups)
+                
+            placed_items.append(new_item)
+        item_count_to_place -= filler_count
 
     world.random.shuffle(placed_items)
     # add remaining to itempool
     for new_item in placed_items:
         world.multiworld.itempool.append(new_item)
         
-        
     return starting_crystals, placed_items, mib_items_to_place
 
 item_table = {
-    "Knight Crystal" : ItemData(100, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS]),
-    "Monk Crystal" : ItemData(101, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS]),
-    "Thief Crystal" : ItemData(102, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS]),
-    "Dragoon Crystal" : ItemData(103, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS]),
-    "Ninja Crystal" : ItemData(104, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS]),
-    "Samurai Crystal" : ItemData(105, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS]),
-    "Berserker Crystal" : ItemData(106, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS]),
-    "Hunter Crystal" : ItemData(107, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS]),
-    "MysticKnight Crystal" : ItemData(108, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS]),
-    "WhiteMage Crystal" : ItemData(109, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS]),
-    "BlackMage Crystal" : ItemData(110, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS]),
-    "TimeMage Crystal" : ItemData(111, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS]),
-    "Summoner Crystal" : ItemData(112, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS]),
-    "BlueMage Crystal" : ItemData(113, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS]),
-    "RedMage Crystal" : ItemData(114, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS]),
-    "Trainer Crystal" : ItemData(115, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS]),
-    "Chemist Crystal" : ItemData(116, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS]),
-    "Geomancer Crystal" : ItemData(117, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS]),
-    "Bard Crystal" : ItemData(118, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS]),
-    "Dancer Crystal" : ItemData(119, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS]),
-    "Mimic Crystal" : ItemData(120, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS]),
-    "Freelancer Crystal" : ItemData(121, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS]),
-        
-    "Ice Sword Magic" : ItemData(201, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Bolt Sword Magic" : ItemData(202, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Venom Sword Magic" : ItemData(203, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Mute Sword Magic" : ItemData(204, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Sleep Sword Magic" : ItemData(205, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Fire2 Sword Magic" : ItemData(206, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Ice2 Sword Magic" : ItemData(207, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Bolt2 Sword Magic" : ItemData(208, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Drain Sword Magic" : ItemData(209, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Break Sword Magic" : ItemData(210, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Bio Sword Magic" : ItemData(211, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Fire3 Sword Magic" : ItemData(212, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Ice3 Sword Magic" : ItemData(213, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Bolt3 Sword Magic" : ItemData(214, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Holy Sword Magic" : ItemData(215, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Flare Sword Magic" : ItemData(216, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Psych Sword Magic" : ItemData(217, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Cure White Magic" : ItemData(218, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Scan White Magic" : ItemData(219, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Antdt White Magic" : ItemData(220, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Mute White Magic" : ItemData(221, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Armor White Magic" : ItemData(222, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Size White Magic" : ItemData(223, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Cure2 White Magic" : ItemData(224, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Life White Magic" : ItemData(225, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Charm White Magic" : ItemData(226, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Image White Magic" : ItemData(227, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Shell White Magic" : ItemData(228, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Heal White Magic" : ItemData(229, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Cure3 White Magic" : ItemData(230, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Wall White Magic" : ItemData(231, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Bersk White Magic" : ItemData(232, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Life2 White Magic" : ItemData(233, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Holy White Magic" : ItemData(234, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Dispel White Magic" : ItemData(235, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Fire Black Magic" : ItemData(236, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Ice Black Magic" : ItemData(237, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Bolt Black Magic" : ItemData(238, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Venom Black Magic" : ItemData(239, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Sleep Black Magic" : ItemData(240, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Toad Black Magic" : ItemData(241, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Fire2 Black Magic" : ItemData(242, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Ice2 Black Magic" : ItemData(243, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Bolt2 Black Magic" : ItemData(244, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Drain Black Magic" : ItemData(245, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Break Black Magic" : ItemData(246, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Bio Black Magic" : ItemData(247, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Fire3 Black Magic" : ItemData(248, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Ice3 Black Magic" : ItemData(249, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Bolt3 Black Magic" : ItemData(250, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Flare Black Magic" : ItemData(251, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Doom Black Magic" : ItemData(252, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Psych Black Magic" : ItemData(253, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Slow Time Magic" : ItemData(255, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Regen Time Magic" : ItemData(256, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Void Time Magic" : ItemData(257, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Haste Time Magic" : ItemData(258, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Float Time Magic" : ItemData(259, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Demi Time Magic" : ItemData(260, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Stop Time Magic" : ItemData(261, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Comet Time Magic" : ItemData(263, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Slow2 Time Magic" : ItemData(264, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Reset Time Magic" : ItemData(265, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Qrter Time Magic" : ItemData(266, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Hast2 Time Magic" : ItemData(267, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Old Time Magic" : ItemData(268, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Meteo Time Magic" : ItemData(269, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Quick Time Magic" : ItemData(270, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Xzone Time Magic" : ItemData(271, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Chocob Esper Magic" : ItemData(272, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Sylph Esper Magic" : ItemData(273, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Remora Esper Magic" : ItemData(274, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Shiva Esper Magic" : ItemData(275, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Ramuh Esper Magic" : ItemData(276, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Ifrit Esper Magic" : ItemData(277, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Titan Esper Magic" : ItemData(278, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Golem Esper Magic" : ItemData(279, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Shoat Esper Magic" : ItemData(280, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Crbnkl Esper Magic" : ItemData(281, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Syldra Esper Magic" : ItemData(282, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Odin Esper Magic" : ItemData(283, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Phenix Esper Magic" : ItemData(284, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Levia Esper Magic" : ItemData(285, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Bahmut Esper Magic" : ItemData(286, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Power Song Magic" : ItemData(287, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Speed Song Magic" : ItemData(288, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Vitality Song Magic" : ItemData(289, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Magic Song Magic" : ItemData(290, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Hero Song Magic" : ItemData(291, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Requiem Song Magic" : ItemData(292, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Love Song Magic" : ItemData(293, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Charm Song Magic" : ItemData(294, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Condemn Blue Magic" : ItemData(295, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Roulette Blue Magic" : ItemData(296, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "AquaRake Blue Magic" : ItemData(297, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "L5 Doom Blue Magic" : ItemData(298, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "L4 Qrter Blue Magic" : ItemData(299, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "L2 Old Blue Magic" : ItemData(300, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "L3 Flare Blue Magic" : ItemData(301, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "FrogSong Blue Magic" : ItemData(302, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "TinySong Blue Magic" : ItemData(303, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Flash Blue Magic" : ItemData(304, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Time Slip Blue Magic" : ItemData(305, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "MoonFlut Blue Magic" : ItemData(306, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "DethClaw Blue Magic" : ItemData(307, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Aero Blue Magic" : ItemData(308, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Aero 2 Blue Magic" : ItemData(309, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Aero 3 Blue Magic" : ItemData(310, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Emission Blue Magic" : ItemData(311, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "GblinPnch Blue Magic" : ItemData(312, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "DrkShock Blue Magic" : ItemData(313, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "GuardOff Blue Magic" : ItemData(314, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Fusion Blue Magic" : ItemData(315, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "MindBlst Blue Magic" : ItemData(316, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Vampire Blue Magic" : ItemData(317, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Hammer Blue Magic" : ItemData(318, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "BigGuard Blue Magic" : ItemData(319, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Exploder Blue Magic" : ItemData(320, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "???? Blue Magic" : ItemData(321, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Blowfish Blue Magic" : ItemData(322, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "WhiteWind Blue Magic" : ItemData(323, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-    "Missile Blue Magic" : ItemData(324, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC]),
-        
-    "Kick Ability" : ItemData(400, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "BuildUp Ability" : ItemData(401, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Mantra Ability" : ItemData(402, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Escape Ability" : ItemData(403, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Steal Ability" : ItemData(404, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Mug Ability" : ItemData(405, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Jump Ability" : ItemData(406, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "DrgnSwd Ability" : ItemData(407, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Smoke Ability" : ItemData(408, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Image Ability" : ItemData(409, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Throw Ability" : ItemData(410, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "SwdSlap Ability" : ItemData(411, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "GilToss Ability" : ItemData(412, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Slash Ability" : ItemData(413, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Animals Ability" : ItemData(414, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Aim Ability" : ItemData(415, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "X-Fight Ability" : ItemData(416, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Conjure Ability" : ItemData(417, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Observe Ability" : ItemData(418, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Analyze Ability" : ItemData(419, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Tame Ability" : ItemData(420, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Control Ability" : ItemData(421, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Catch Ability" : ItemData(422, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Mix Ability" : ItemData(423, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Drink Ability" : ItemData(424, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Pray Ability" : ItemData(425, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Revive Ability" : ItemData(426, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Terrain Ability" : ItemData(427, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Hide Ability" : ItemData(428, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Sing Ability" : ItemData(429, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Flirt Ability" : ItemData(430, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Dance Ability" : ItemData(431, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Mimic Ability" : ItemData(432, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "MgcSwrd Lv.1 Ability" : ItemData(433, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "MgcSwrd Lv.2 Ability" : ItemData(434, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "MgcSwrd Lv.3 Ability" : ItemData(435, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "MgcSwrd Lv.4 Ability" : ItemData(436, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "MgcSwrd Lv.5 Ability" : ItemData(437, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "MgcSwrd Lv.6 Ability" : ItemData(438, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "White Lv.1 Ability" : ItemData(439, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "White Lv.2 Ability" : ItemData(440, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "White Lv.3 Ability" : ItemData(441, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "White Lv.4 Ability" : ItemData(442, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "White Lv.5 Ability" : ItemData(443, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "White Lv.6 Ability" : ItemData(444, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Black Lv.1 Ability" : ItemData(445, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Black Lv.2 Ability" : ItemData(446, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Black Lv.3 Ability" : ItemData(447, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Black Lv.4 Ability" : ItemData(448, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Black Lv.5 Ability" : ItemData(449, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Black Lv.6 Ability" : ItemData(450, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Time Lv.1 Ability" : ItemData(451, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Time Lv.2 Ability" : ItemData(452, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Time Lv.3 Ability" : ItemData(453, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Time Lv.4 Ability" : ItemData(454, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Time Lv.5 Ability" : ItemData(455, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Time Lv.6 Ability" : ItemData(456, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Summon Lv.1 Ability" : ItemData(457, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Summon Lv.2 Ability" : ItemData(458, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Summon Lv.3 Ability" : ItemData(459, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Summon Lv.4 Ability" : ItemData(460, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Summon Lv.5 Ability" : ItemData(461, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Red Lv.1 Ability" : ItemData(462, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Red Lv.2 Ability" : ItemData(463, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Red Lv.3 Ability" : ItemData(464, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "X-Magic Ability" : ItemData(465, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Blue Ability" : ItemData(466, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Equip Shield Ability" : ItemData(467, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Equip Armors Ability" : ItemData(468, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Equip Ribbon Ability" : ItemData(469, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Equip Swords Ability" : ItemData(470, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Equip Spears Ability" : ItemData(471, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Equip Katana Ability" : ItemData(472, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Equip Axes Ability" : ItemData(473, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Equip Bows Ability" : ItemData(474, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Equip Whips Ability" : ItemData(475, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Equip Harps Ability" : ItemData(476, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Agility Ability" : ItemData(477, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "HP +10% Ability" : ItemData(478, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "HP +20% Ability" : ItemData(479, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "HP +30% Ability" : ItemData(480, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "MP +10% Ability" : ItemData(481, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "MP +30% Ability" : ItemData(482, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Brawl Ability" : ItemData(483, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Dbl Grip Ability" : ItemData(484, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "2-Wield Ability" : ItemData(485, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Medicine Ability" : ItemData(486, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Cover Ability" : ItemData(487, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Counter Ability" : ItemData(488, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Evade Ability" : ItemData(489, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Barrier Ability" : ItemData(490, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Berserk Ability" : ItemData(491, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Caution Ability" : ItemData(492, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Preemptive Ability" : ItemData(493, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "DmgFloor Ability" : ItemData(494, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
-    "Equip Rods Ability" : ItemData(495, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES]),
+    "Knight Crystal" : ItemData(100, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS,JOB_CODE_KNIGHT]),
+    "Monk Crystal" : ItemData(101, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS,JOB_CODE_MONK]),
+    "Thief Crystal" : ItemData(102, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS,JOB_CODE_THIEF]),
+    "Dragoon Crystal" : ItemData(103, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS,JOB_CODE_DRAGOON]),
+    "Ninja Crystal" : ItemData(104, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS,JOB_CODE_NINJA]),
+    "Samurai Crystal" : ItemData(105, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS,JOB_CODE_SAMURAI]),
+    "Berserker Crystal" : ItemData(106, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS,JOB_CODE_BERSERKER]),
+    "Hunter Crystal" : ItemData(107, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS,JOB_CODE_HUNTER]),
+    "MysticKnight Crystal" : ItemData(108, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS,JOB_CODE_MYSTIC_KNIGHT]),
+    "WhiteMage Crystal" : ItemData(109, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS,JOB_CODE_WHITE_MAGE]),
+    "BlackMage Crystal" : ItemData(110, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS,JOB_CODE_BLACK_MAGE]),
+    "TimeMage Crystal" : ItemData(111, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS,JOB_CODE_TIME_MAGE]),
+    "Summoner Crystal" : ItemData(112, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS,JOB_CODE_SUMMONER]),
+    "BlueMage Crystal" : ItemData(113, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS,JOB_CODE_BLUE_MAGE]),
+    "RedMage Crystal" : ItemData(114, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS,JOB_CODE_RED_MAGE]),
+    "Trainer Crystal" : ItemData(115, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS,JOB_CODE_TRAINER]),
+    "Chemist Crystal" : ItemData(116, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS,JOB_CODE_CHEMIST]),
+    "Geomancer Crystal" : ItemData(117, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS,JOB_CODE_GEOMANCER]),
+    "Bard Crystal" : ItemData(118, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS,JOB_CODE_BARD]),
+    "Dancer Crystal" : ItemData(119, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS,JOB_CODE_DANCER]),
+    "Mimic Crystal" : ItemData(120, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS,JOB_CODE_MIMIC]),
+    "Freelancer Crystal" : ItemData(121, ItemClassification.useful, [ITEM_CODE_UNIQUE, ITEM_CODE_CRYSTALS,JOB_CODE_FREELANCER]),
     
+    #"Fire Sword Magic" : ItemData(200, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_MYSTIC_KNIGHT, MAGIC_CODE_TIER_1]),
+    "Ice Sword Magic" : ItemData(201, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_MYSTIC_KNIGHT, MAGIC_CODE_TIER_1]),
+    "Bolt Sword Magic" : ItemData(202, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_MYSTIC_KNIGHT, MAGIC_CODE_TIER_1]),
+    "Venom Sword Magic" : ItemData(203, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_MYSTIC_KNIGHT, MAGIC_CODE_TIER_1]),
+    "Mute Sword Magic" : ItemData(204, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_MYSTIC_KNIGHT, MAGIC_CODE_TIER_1]),
+    "Sleep Sword Magic" : ItemData(205, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_MYSTIC_KNIGHT, MAGIC_CODE_TIER_1]),
+    "Fire2 Sword Magic" : ItemData(206, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_MYSTIC_KNIGHT, MAGIC_CODE_TIER_2]),
+    "Ice2 Sword Magic" : ItemData(207, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_MYSTIC_KNIGHT, MAGIC_CODE_TIER_2]),
+    "Bolt2 Sword Magic" : ItemData(208, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_MYSTIC_KNIGHT, MAGIC_CODE_TIER_2]),
+    "Drain Sword Magic" : ItemData(209, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_MYSTIC_KNIGHT, MAGIC_CODE_TIER_2]),
+    "Break Sword Magic" : ItemData(210, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_MYSTIC_KNIGHT, MAGIC_CODE_TIER_2]),
+    "Bio Sword Magic" : ItemData(211, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_MYSTIC_KNIGHT, MAGIC_CODE_TIER_2]),
+    "Fire3 Sword Magic" : ItemData(212, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_MYSTIC_KNIGHT, MAGIC_CODE_TIER_3]),
+    "Ice3 Sword Magic" : ItemData(213, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_MYSTIC_KNIGHT, MAGIC_CODE_TIER_3]),
+    "Bolt3 Sword Magic" : ItemData(214, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_MYSTIC_KNIGHT, MAGIC_CODE_TIER_3]),
+    "Holy Sword Magic" : ItemData(215, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_MYSTIC_KNIGHT, MAGIC_CODE_TIER_3]),
+    "Flare Sword Magic" : ItemData(216, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_MYSTIC_KNIGHT, MAGIC_CODE_TIER_3]),
+    "Psych Sword Magic" : ItemData(217, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_MYSTIC_KNIGHT, MAGIC_CODE_TIER_3]),
+    "Cure White Magic" : ItemData(218, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_WHITE_MAGE,JOB_CODE_RED_MAGE, MAGIC_CODE_TIER_1]),
+    "Scan White Magic" : ItemData(219, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_WHITE_MAGE,JOB_CODE_RED_MAGE, MAGIC_CODE_TIER_1]),
+    "Antdt White Magic" : ItemData(220, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_WHITE_MAGE,JOB_CODE_RED_MAGE, MAGIC_CODE_TIER_1]),
+    "Mute White Magic" : ItemData(221, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_WHITE_MAGE,JOB_CODE_RED_MAGE, MAGIC_CODE_TIER_1]),
+    "Armor White Magic" : ItemData(222, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_WHITE_MAGE,JOB_CODE_RED_MAGE, MAGIC_CODE_TIER_1]),
+    "Size White Magic" : ItemData(223, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_WHITE_MAGE,JOB_CODE_RED_MAGE, MAGIC_CODE_TIER_1]),
+    "Cure2 White Magic" : ItemData(224, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_WHITE_MAGE,JOB_CODE_RED_MAGE, MAGIC_CODE_TIER_2]),
+    "Life White Magic" : ItemData(225, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_WHITE_MAGE,JOB_CODE_RED_MAGE, MAGIC_CODE_TIER_2]),
+    "Charm White Magic" : ItemData(226, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_WHITE_MAGE,JOB_CODE_RED_MAGE, MAGIC_CODE_TIER_2]),
+    "Image White Magic" : ItemData(227, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_WHITE_MAGE, MAGIC_CODE_TIER_2]),
+    "Shell White Magic" : ItemData(228, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_WHITE_MAGE, MAGIC_CODE_TIER_2]),
+    "Heal White Magic" : ItemData(229, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_WHITE_MAGE, MAGIC_CODE_TIER_2]),
+    "Cure3 White Magic" : ItemData(230, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_WHITE_MAGE, MAGIC_CODE_TIER_3]),
+    "Wall White Magic" : ItemData(231, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_WHITE_MAGE, MAGIC_CODE_TIER_3]),
+    "Bersk White Magic" : ItemData(232, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_WHITE_MAGE, MAGIC_CODE_TIER_3]),
+    "Life2 White Magic" : ItemData(233, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_WHITE_MAGE, MAGIC_CODE_TIER_3]),
+    "Holy White Magic" : ItemData(234, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_WHITE_MAGE, MAGIC_CODE_TIER_3]),
+    "Dispel White Magic" : ItemData(235, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_WHITE_MAGE, MAGIC_CODE_TIER_3]),
+    "Fire Black Magic" : ItemData(236, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLACK_MAGE,JOB_CODE_RED_MAGE, MAGIC_CODE_TIER_1]),
+    "Ice Black Magic" : ItemData(237, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLACK_MAGE,JOB_CODE_RED_MAGE, MAGIC_CODE_TIER_1]),
+    "Bolt Black Magic" : ItemData(238, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLACK_MAGE,JOB_CODE_RED_MAGE, MAGIC_CODE_TIER_1]),
+    "Venom Black Magic" : ItemData(239, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLACK_MAGE,JOB_CODE_RED_MAGE, MAGIC_CODE_TIER_1]),
+    "Sleep Black Magic" : ItemData(240, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLACK_MAGE,JOB_CODE_RED_MAGE, MAGIC_CODE_TIER_1]),
+    "Toad Black Magic" : ItemData(241, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLACK_MAGE,JOB_CODE_RED_MAGE, MAGIC_CODE_TIER_1]),
+    "Fire2 Black Magic" : ItemData(242, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLACK_MAGE,JOB_CODE_RED_MAGE, MAGIC_CODE_TIER_2]),
+    "Ice2 Black Magic" : ItemData(243, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLACK_MAGE,JOB_CODE_RED_MAGE, MAGIC_CODE_TIER_2]),
+    "Bolt2 Black Magic" : ItemData(244, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLACK_MAGE,JOB_CODE_RED_MAGE, MAGIC_CODE_TIER_2]),
+    "Drain Black Magic" : ItemData(245, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLACK_MAGE, MAGIC_CODE_TIER_2]),
+    "Break Black Magic" : ItemData(246, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLACK_MAGE, MAGIC_CODE_TIER_2]),
+    "Bio Black Magic" : ItemData(247, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLACK_MAGE, MAGIC_CODE_TIER_2]),
+    "Fire3 Black Magic" : ItemData(248, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLACK_MAGE, MAGIC_CODE_TIER_3]),
+    "Ice3 Black Magic" : ItemData(249, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLACK_MAGE, MAGIC_CODE_TIER_3]),
+    "Bolt3 Black Magic" : ItemData(250, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLACK_MAGE, MAGIC_CODE_TIER_3]),
+    "Flare Black Magic" : ItemData(251, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLACK_MAGE, MAGIC_CODE_TIER_3]),
+    "Doom Black Magic" : ItemData(252, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLACK_MAGE, MAGIC_CODE_TIER_3]),
+    "Psych Black Magic" : ItemData(253, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLACK_MAGE, MAGIC_CODE_TIER_3]),
+    #"Drag Time Magic" : ItemData(254, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_TIME_MAGE, MAGIC_CODE_TIER_1]),
+    "Slow Time Magic" : ItemData(255, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_TIME_MAGE, MAGIC_CODE_TIER_1]),
+    "Regen Time Magic" : ItemData(256, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_TIME_MAGE, MAGIC_CODE_TIER_1]),
+    "Void Time Magic" : ItemData(257, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_TIME_MAGE, MAGIC_CODE_TIER_1]),
+    "Haste Time Magic" : ItemData(258, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_TIME_MAGE, MAGIC_CODE_TIER_1]),
+    "Float Time Magic" : ItemData(259, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_TIME_MAGE, MAGIC_CODE_TIER_1]),
+    "Demi Time Magic" : ItemData(260, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_TIME_MAGE, MAGIC_CODE_TIER_2]),
+    "Stop Time Magic" : ItemData(261, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_TIME_MAGE, MAGIC_CODE_TIER_2]),
+    #"Exit Time Magic" : ItemData(255, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_TIME_MAGE, MAGIC_CODE_TIER_2]), world state is set such that using exit will always trigger leaving the rift
+    "Comet Time Magic" : ItemData(263, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_TIME_MAGE, MAGIC_CODE_TIER_2]),
+    "Slow2 Time Magic" : ItemData(264, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_TIME_MAGE, MAGIC_CODE_TIER_2]),
+    "Reset Time Magic" : ItemData(265, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_TIME_MAGE, MAGIC_CODE_TIER_2]),
+    "Qrter Time Magic" : ItemData(266, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_TIME_MAGE, MAGIC_CODE_TIER_3]),
+    "Hast2 Time Magic" : ItemData(267, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_TIME_MAGE, MAGIC_CODE_TIER_3]),
+    "Old Time Magic" : ItemData(268, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_TIME_MAGE, MAGIC_CODE_TIER_3]),
+    "Meteo Time Magic" : ItemData(269, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_TIME_MAGE, MAGIC_CODE_TIER_3]),
+    "Quick Time Magic" : ItemData(270, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_TIME_MAGE, MAGIC_CODE_TIER_3]),
+    "Xzone Time Magic" : ItemData(271, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_TIME_MAGE, MAGIC_CODE_TIER_3]),
+    "Chocob Esper Magic" : ItemData(272, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_SUMMONER, MAGIC_CODE_TIER_1]),
+    "Sylph Esper Magic" : ItemData(273, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_SUMMONER, MAGIC_CODE_TIER_1]),
+    "Remora Esper Magic" : ItemData(274, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_SUMMONER, MAGIC_CODE_TIER_1]),
+    "Shiva Esper Magic" : ItemData(275, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_SUMMONER, MAGIC_CODE_TIER_1]),
+    "Ramuh Esper Magic" : ItemData(276, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_SUMMONER, MAGIC_CODE_TIER_1]),
+    "Ifrit Esper Magic" : ItemData(277, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_SUMMONER, MAGIC_CODE_TIER_1]),
+    "Titan Esper Magic" : ItemData(278, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_SUMMONER, MAGIC_CODE_TIER_2]),
+    "Golem Esper Magic" : ItemData(279, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_SUMMONER, MAGIC_CODE_TIER_2]),
+    "Shoat Esper Magic" : ItemData(280, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_SUMMONER, MAGIC_CODE_TIER_2]),
+    "Crbnkl Esper Magic" : ItemData(281, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_SUMMONER, MAGIC_CODE_TIER_2]),
+    "Syldra Esper Magic" : ItemData(282, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_SUMMONER, MAGIC_CODE_TIER_2]),
+    "Odin Esper Magic" : ItemData(283, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_SUMMONER, MAGIC_CODE_TIER_2]),
+    "Phenix Esper Magic" : ItemData(284, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_SUMMONER, MAGIC_CODE_TIER_3]),
+    "Levia Esper Magic" : ItemData(285, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_SUMMONER, MAGIC_CODE_TIER_3]),
+    "Bahmut Esper Magic" : ItemData(286, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_SUMMONER, MAGIC_CODE_TIER_3]),
+    "Power Song Magic" : ItemData(287, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BARD]),
+    "Speed Song Magic" : ItemData(288, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BARD]),
+    "Vitality Song Magic" : ItemData(289, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BARD]),
+    "Magic Song Magic" : ItemData(290, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BARD]),
+    "Hero Song Magic" : ItemData(291, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BARD]),
+    "Requiem Song Magic" : ItemData(292, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BARD]),
+    "Love Song Magic" : ItemData(293, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BARD]),
+    "Charm Song Magic" : ItemData(294, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BARD]),
+    "Condemn Blue Magic" : ItemData(295, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLUE_MAGE]),
+    "Roulette Blue Magic" : ItemData(296, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLUE_MAGE]),
+    "AquaRake Blue Magic" : ItemData(297, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLUE_MAGE]),
+    "L5 Doom Blue Magic" : ItemData(298, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLUE_MAGE]),
+    "L4 Qrter Blue Magic" : ItemData(299, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLUE_MAGE]),
+    "L2 Old Blue Magic" : ItemData(300, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLUE_MAGE]),
+    "L3 Flare Blue Magic" : ItemData(301, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLUE_MAGE]),
+    "FrogSong Blue Magic" : ItemData(302, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLUE_MAGE]),
+    "TinySong Blue Magic" : ItemData(303, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLUE_MAGE]),
+    "Flash Blue Magic" : ItemData(304, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLUE_MAGE]),
+    "Time Slip Blue Magic" : ItemData(305, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLUE_MAGE]),
+    "MoonFlut Blue Magic" : ItemData(306, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLUE_MAGE]),
+    "DethClaw Blue Magic" : ItemData(307, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLUE_MAGE]),
+    "Aero Blue Magic" : ItemData(308, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLUE_MAGE]),
+    "Aero 2 Blue Magic" : ItemData(309, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLUE_MAGE]),
+    "Aero 3 Blue Magic" : ItemData(310, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLUE_MAGE]),
+    "Emission Blue Magic" : ItemData(311, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLUE_MAGE]),
+    "GblinPnch Blue Magic" : ItemData(312, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLUE_MAGE]),
+    "DrkShock Blue Magic" : ItemData(313, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLUE_MAGE]),
+    "GuardOff Blue Magic" : ItemData(314, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLUE_MAGE]),
+    "Fusion Blue Magic" : ItemData(315, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLUE_MAGE]),
+    "MindBlst Blue Magic" : ItemData(316, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLUE_MAGE]),
+    "Vampire Blue Magic" : ItemData(317, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLUE_MAGE]),
+    "Hammer Blue Magic" : ItemData(318, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLUE_MAGE]),
+    "BigGuard Blue Magic" : ItemData(319, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLUE_MAGE]),
+    "Exploder Blue Magic" : ItemData(320, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLUE_MAGE]),
+    "???? Blue Magic" : ItemData(321, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLUE_MAGE]),
+    "Blowfish Blue Magic" : ItemData(322, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLUE_MAGE]),
+    "WhiteWind Blue Magic" : ItemData(323, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLUE_MAGE]),
+    "Missile Blue Magic" : ItemData(324, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_MAGIC,JOB_CODE_BLUE_MAGE]),
         
+    "Kick Ability" : ItemData(400, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_MONK]),
+    "BuildUp Ability" : ItemData(401, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_MONK]),
+    "Mantra Ability" : ItemData(402, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_MONK]),
+    "Escape Ability" : ItemData(403, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_THIEF]),
+    "Steal Ability" : ItemData(404, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_THIEF]),
+    "Mug Ability" : ItemData(405, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_THIEF]),
+    "Jump Ability" : ItemData(406, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_DRAGOON]),
+    "DrgnSwd Ability" : ItemData(407, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_DRAGOON]),
+    "Smoke Ability" : ItemData(408, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_NINJA]),
+    "Image Ability" : ItemData(409, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_NINJA]),
+    "Throw Ability" : ItemData(410, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_NINJA]),
+    "SwdSlap Ability" : ItemData(411, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_SAMURAI]),
+    "GilToss Ability" : ItemData(412, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_SAMURAI]),
+    "Slash Ability" : ItemData(413, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_SAMURAI]),
+    "Animals Ability" : ItemData(414, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_HUNTER]),
+    "Aim Ability" : ItemData(415, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_HUNTER]),
+    "X-Fight Ability" : ItemData(416, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_HUNTER]),
+    "Conjure Ability" : ItemData(417, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_SUMMONER]),
+    "Observe Ability" : ItemData(418, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_BLUE_MAGE]),
+    "Analyze Ability" : ItemData(419, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_BLUE_MAGE]),
+    "Tame Ability" : ItemData(420, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_TRAINER]),
+    "Control Ability" : ItemData(421, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_TRAINER]),
+    "Catch Ability" : ItemData(422, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_TRAINER]),
+    "Mix Ability" : ItemData(423, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_CHEMIST]),
+    "Drink Ability" : ItemData(424, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_CHEMIST]),
+    "Pray Ability" : ItemData(425, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_CHEMIST]),
+    "Revive Ability" : ItemData(426, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_CHEMIST]),
+    "Terrain Ability" : ItemData(427, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_GEOMANCER]),
+    "Hide Ability" : ItemData(428, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_BARD]),
+    "Sing Ability" : ItemData(429, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_BARD]),
+    "Flirt Ability" : ItemData(430, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_DANCER]),
+    "Dance Ability" : ItemData(431, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_DANCER]),
+    "Mimic Ability" : ItemData(432, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_MIMIC]),
+    "MgcSwrd Lv.1 Ability" : ItemData(433, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_MYSTIC_KNIGHT]),
+    "MgcSwrd Lv.2 Ability" : ItemData(434, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_MYSTIC_KNIGHT]),
+    "MgcSwrd Lv.3 Ability" : ItemData(435, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_MYSTIC_KNIGHT]),
+    "MgcSwrd Lv.4 Ability" : ItemData(436, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_MYSTIC_KNIGHT]),
+    "MgcSwrd Lv.5 Ability" : ItemData(437, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_MYSTIC_KNIGHT]),
+    "MgcSwrd Lv.6 Ability" : ItemData(438, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_MYSTIC_KNIGHT]),
+    "White Lv.1 Ability" : ItemData(439, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_WHITE_MAGE]),
+    "White Lv.2 Ability" : ItemData(440, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_WHITE_MAGE]),
+    "White Lv.3 Ability" : ItemData(441, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_WHITE_MAGE]),
+    "White Lv.4 Ability" : ItemData(442, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_WHITE_MAGE]),
+    "White Lv.5 Ability" : ItemData(443, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_WHITE_MAGE]),
+    "White Lv.6 Ability" : ItemData(444, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_WHITE_MAGE]),
+    "Black Lv.1 Ability" : ItemData(445, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_BLACK_MAGE]),
+    "Black Lv.2 Ability" : ItemData(446, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_BLACK_MAGE]),
+    "Black Lv.3 Ability" : ItemData(447, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_BLACK_MAGE]),
+    "Black Lv.4 Ability" : ItemData(448, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_BLACK_MAGE]),
+    "Black Lv.5 Ability" : ItemData(449, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_BLACK_MAGE]),
+    "Black Lv.6 Ability" : ItemData(450, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_BLACK_MAGE]),
+    "Time Lv.1 Ability" : ItemData(451, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_TIME_MAGE]),
+    "Time Lv.2 Ability" : ItemData(452, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_TIME_MAGE]),
+    "Time Lv.3 Ability" : ItemData(453, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_TIME_MAGE]),
+    "Time Lv.4 Ability" : ItemData(454, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_TIME_MAGE]),
+    "Time Lv.5 Ability" : ItemData(455, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_TIME_MAGE]),
+    "Time Lv.6 Ability" : ItemData(456, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_TIME_MAGE]),
+    "Summon Lv.1 Ability" : ItemData(457, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_SUMMONER]),
+    "Summon Lv.2 Ability" : ItemData(458, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_SUMMONER]),
+    "Summon Lv.3 Ability" : ItemData(459, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_SUMMONER]),
+    "Summon Lv.4 Ability" : ItemData(460, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_SUMMONER]),
+    "Summon Lv.5 Ability" : ItemData(461, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_SUMMONER]),
+    "Red Lv.1 Ability" : ItemData(462, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_RED_MAGE]),
+    "Red Lv.2 Ability" : ItemData(463, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_RED_MAGE]),
+    "Red Lv.3 Ability" : ItemData(464, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_RED_MAGE]),
+    "X-Magic Ability" : ItemData(465, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_RED_MAGE]),
+    "Blue Ability" : ItemData(466, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_BLUE_MAGE]),
+    "Equip Shield Ability" : ItemData(467, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_KNIGHT]),
+    "Equip Armors Ability" : ItemData(468, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_KNIGHT]),
+    "Equip Ribbon Ability" : ItemData(469, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_DANCER]),
+    "Equip Swords Ability" : ItemData(470, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_KNIGHT]),
+    "Equip Spears Ability" : ItemData(471, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_DRAGOON]),
+    "Equip Katana Ability" : ItemData(472, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_SAMURAI]),
+    "Equip Axes Ability" : ItemData(473, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_BERSERKER]),
+    "Equip Bows Ability" : ItemData(474, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_HUNTER]),
+    "Equip Whips Ability" : ItemData(475, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_TRAINER]),
+    "Equip Harps Ability" : ItemData(476, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_BARD]),
+    "Agility Ability" : ItemData(477, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_THIEF]),
+    "HP +10% Ability" : ItemData(478, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_MONK]),
+    "HP +20% Ability" : ItemData(479, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_MONK]),
+    "HP +30% Ability" : ItemData(480, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_MONK]),
+    "MP +10% Ability" : ItemData(481, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_WHITE_MAGE]),
+    "MP +30% Ability" : ItemData(482, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_BLACK_MAGE]),
+    "Brawl Ability" : ItemData(483, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_MONK]),
+    "Dbl Grip Ability" : ItemData(484, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_KNIGHT]),
+    "2-Wield Ability" : ItemData(485, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_NINJA]),
+    "Medicine Ability" : ItemData(486, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_CHEMIST]),
+    "Cover Ability" : ItemData(487, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_KNIGHT]),
+    "Counter Ability" : ItemData(488, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_MONK]),
+    "Evade Ability" : ItemData(489, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_SAMURAI]),
+    "Barrier Ability" : ItemData(490, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_MYSTIC_KNIGHT]),
+    "Berserk Ability" : ItemData(491, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_BERSERKER]),
+    "Caution Ability" : ItemData(492, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_THIEF]),
+    "Preemptive Ability" : ItemData(493, ItemClassification.useful, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_NINJA]),
+    "DmgFloor Ability" : ItemData(494, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_GEOMANCER]),
+    "Equip Rods Ability" : ItemData(495, ItemClassification.filler, [ITEM_CODE_UNIQUE,ITEM_CODE_ABILITIES,JOB_CODE_TIME_MAGE]),
+      
     "Knife Item" : ItemData(600, ItemClassification.filler, [ITEM_CODE_FUNGIBLE, ITEM_CODE_ITEM]),
     "Dagger Item" : ItemData(601, ItemClassification.filler, [ITEM_CODE_FUNGIBLE, ITEM_CODE_ITEM]),
     "Mythril Knife Item" : ItemData(602, ItemClassification.filler, [ITEM_CODE_FUNGIBLE, ITEM_CODE_ITEM]),
@@ -648,32 +888,44 @@ item_table = {
     "25000 Gil" : ItemData(926, ItemClassification.useful, [ITEM_CODE_GIL, ITEM_CODE_ITEM]),
 
 
-    "Walse Tower Key" : ItemData(1000, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS]),
-    "Steamship Key" : ItemData(1001, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS]),
-    "Ifrit's Fire" : ItemData(1002, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS]),
-    "SandwormBait" : ItemData(1003, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS]),
-    "Big Bridge Key" : ItemData(1004, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS]),
-    "Hiryuu Call" : ItemData(1005, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS]),
-    "Submarine Key" : ItemData(1006, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS]),
-    "Anti Barrier" : ItemData(1007, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS]),
-    "Bracelet" : ItemData(1008, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS]),
-    "Pyramid Page" : ItemData(1009, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS]),
-    "Shrine Page" : ItemData(1010, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS]),
-    "Trench Page" : ItemData(1011, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS]),
-    "Falls Page" : ItemData(1012, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS]),
-    "Mirage Radar" : ItemData(1013, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS]),
-    "Adamantite" : ItemData(1014, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS]),
-    "Moogle Suit" : ItemData(1015, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS]),
-    "Elder Branch" : ItemData(1016, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS]),
-    "1st Tablet" : ItemData(1017, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS]),
-    "2nd Tablet" : ItemData(1018, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS]),
-    "3rd Tablet" : ItemData(1019, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS]),
-    "4th Tablet" : ItemData(1020, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS]),
+    "Walse Tower Key" : ItemData(1000, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS, ITEM_CODE_MIB_REWARD_PROG]),
+    "Steamship Key" : ItemData(1001, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS, ITEM_CODE_MIB_REWARD_PROG]),
+    "Ifrit's Fire" : ItemData(1002, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS, ITEM_CODE_MIB_REWARD_PROG]),
+    "SandwormBait" : ItemData(1003, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS, ITEM_CODE_MIB_REWARD_PROG]),
+    "Big Bridge Key" : ItemData(1004, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS, ITEM_CODE_MIB_REWARD_PROG]),
+    "Hiryuu Call" : ItemData(1005, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS, ITEM_CODE_MIB_REWARD_PROG]),
+    "Submarine Key" : ItemData(1006, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS, ITEM_CODE_MIB_REWARD_PROG]),
+    "Anti Barrier" : ItemData(1007, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS, ITEM_CODE_MIB_REWARD_PROG]),
+    "Bracelet" : ItemData(1008, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS, ITEM_CODE_MIB_REWARD_PROG]),
+    "Pyramid Page" : ItemData(1009, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS, ITEM_CODE_MIB_REWARD_PROG]),
+    "Shrine Page" : ItemData(1010, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS, ITEM_CODE_MIB_REWARD_PROG]),
+    "Trench Page" : ItemData(1011, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS, ITEM_CODE_MIB_REWARD_PROG]),
+    "Falls Page" : ItemData(1012, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS, ITEM_CODE_MIB_REWARD_PROG]),
+    "Mirage Radar" : ItemData(1013, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS, ITEM_CODE_MIB_REWARD_PROG]),
+    "Adamantite" : ItemData(1014, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS, ITEM_CODE_MIB_REWARD_PROG]),
+    "Moogle Suit" : ItemData(1015, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS, ITEM_CODE_MIB_REWARD_PROG]),
+    "Elder Branch" : ItemData(1016, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS, ITEM_CODE_MIB_REWARD_PROG]),
+    "1st Tablet" : ItemData(1017, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS, ITEM_CODE_MIB_REWARD_PROG]),
+    "2nd Tablet" : ItemData(1018, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS, ITEM_CODE_MIB_REWARD_PROG]),
+    "3rd Tablet" : ItemData(1019, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS, ITEM_CODE_MIB_REWARD_PROG]),
+    "4th Tablet" : ItemData(1020, ItemClassification.progression, [ITEM_CODE_UNIQUE, ITEM_CODE_KEY_ITEMS, ITEM_CODE_MIB_REWARD_PROG]),
 
-    "Victory" : ItemData(1200, ItemClassification.progression, [ITEM_CODE_VICTORY]),
-    "Exdeath in World 2" : ItemData(1203, ItemClassification.progression, [ITEM_CODE_EXDEATH_W2]),
+    #"Victory" : ItemData(1200, ItemClassification.progression, [ITEM_CODE_VICTORY]),
+    #"Exdeath in World 2" : ItemData(1203, ItemClassification.progression, [ITEM_CODE_EXDEATH_W2]),
 
 }
+
+event_table = {
+    "Victory": FFVCDEventData("ExDeath", "Victory", ItemClassification.progression),
+    "ExDeath World 2": FFVCDEventData("ExDeath World 2", "ExDeath World 2", ItemClassification.progression),
+    "Piano (Tule)": FFVCDEventData("Piano (Tule)", "Piano (Tule)", ItemClassification.progression),
+    "Piano (Carwen)": FFVCDEventData("Piano (Carwen)", "Piano (Carwen)", ItemClassification.progression),
+    "Piano (Karnak)": FFVCDEventData("Piano (Karnak)", "Piano (Karnak)", ItemClassification.progression),
+    "Piano (Jacole)": FFVCDEventData("Piano (Jacole)", "Piano (Jacole)", ItemClassification.progression),
+    "Piano (Crescent)": FFVCDEventData("Piano (Crescent)", "Piano (Crescent)", ItemClassification.progression),
+    "Piano (Mua)": FFVCDEventData("Piano (Mua)", "Piano (Mua)", ItemClassification.progression),
+    "Piano (Rugor)": FFVCDEventData("Piano (Rugor)", "Piano (Rugor)", ItemClassification.progression),
+    "Piano (Mirage)": FFVCDEventData("Piano (Mirage)", "Piano (Mirage)", ItemClassification.progression),}
 
 item_groups = {}
 for item, data in item_table.items():
@@ -686,4 +938,11 @@ class FFVCDItem(Item):
     def __init__(self, name, classification, item_data_id, player, groups):
         super().__init__(name, classification, item_data_id, player)
         self.groups = groups
+
+#not sure this is necessary but wanted to exclude the groups and make absolutely sure everything was set to None for events.
+class FFVCDEventItem(Item):
+    game = "ffvcd"
+    def __init__(self, name, classification, item_data_id, player):
+        super().__init__(name, classification, item_data_id, player)
+        Item.id = None
 

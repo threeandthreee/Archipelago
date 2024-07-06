@@ -10,6 +10,7 @@ from .options import ffvcd_options
 from .regions import create_regions
 from .rules import set_rules
 from worlds.ffvcd.ffvcd_arch.utilities.data import conductor
+from worlds.ffvcd.ffvcd_arch.utilities.data import collectible
 from .client import FFVCDSNIClient
 from .rom import LocalRom, get_base_rom_path, patch_rom, FFVCDDeltaPatch
 from collections import Counter
@@ -62,8 +63,10 @@ class FFVCDWorld(World):
     
     cond = None
     starting_crystals = None # passed to conductor later
+    placed_crystals = []
+    placed_abilities = []
+    placed_magic = []
 
-    
     def __init__(self, world: MultiWorld, player: int):
         self.rom_name_available_event = threading.Event()
         super().__init__(world, player)
@@ -87,20 +90,20 @@ class FFVCDWorld(World):
         if self.world_lock == 2:
             new_item = create_item("World 2 Access (Item)",  
                         ItemClassification.progression, 
-                        WORLD2_ACCESS_ITEM_ID + arch_item_offset, 
+                        None, 
                         self.player, ['World Access'])
             self.starting_items[new_item] = 1
             self.multiworld.push_precollected(new_item)
         if self.world_lock == 3:
             new_item = create_item("World 2 Access (Item)",  
                         ItemClassification.progression, 
-                        WORLD2_ACCESS_ITEM_ID + arch_item_offset, 
+                        None, 
                         self.player, ['World Access'])
             self.starting_items[new_item] = 1
             self.multiworld.push_precollected(new_item)
             new_item = create_item("World 3 Access (Item)",  
                         ItemClassification.progression, 
-                        WORLD3_ACCESS_ITEM_ID + arch_item_offset, 
+                        None, 
                         self.player, ['World Access'])
             self.starting_items[new_item] = 1
             self.multiworld.push_precollected(new_item)
@@ -139,36 +142,36 @@ class FFVCDWorld(World):
                     i.mib_flag = True
                     self.chosen_mib_locations.append(i)
                     
-                    
-                    
-                    
-                    
         self.starting_crystals, placed_items, self.mib_items_to_place = create_world_items(self, trapped_chests_flag =\
                                                                   self.options.trapped_chests,\
                                                                   chosen_mib_locations = self.chosen_mib_locations)
-            
-            
-            
         
+        ITEM_CODE_ABILITIES = '2'
+        ITEM_CODE_CRYSTALS = '3'
+        ITEM_CODE_MAGIC = '8'
+
+        for magic in [i for i in placed_items if ITEM_CODE_MAGIC in getattr(i, "groups")]: self.placed_magic.append(getattr(magic,"name"))
+        for ability in [i for i in placed_items if ITEM_CODE_ABILITIES in getattr(i, "groups")]: self.placed_abilities.append(getattr(ability,"name"))
+        for crystal in [i for i in placed_items if ITEM_CODE_CRYSTALS in getattr(i, "groups")]: self.placed_crystals.append(getattr(crystal,"name"))
+
         self.multiworld.get_location("Kelb - CornaJar at Kelb (CornaJar)", self.player).access_rule(\
         lambda state: state.has("Catch Ability", self.player, 1) or state.has("Trainer Crystal", self.player, 1))
-
 
         self.multiworld.get_location("Crescent Island - Power Song from Crescent Town (Power)", self.player).access_rule(\
         lambda state: state.has("Adamantite", self.player, 1) or state.has("World 2 Access (Item)", self.player, 1))
 
+        self.multiworld.get_location("Piano (Mua)", self.player).access_rule(\
+        lambda state: state.has("Adamantite", self.player, 1) or state.has("World 2 Access (Item)", self.player, 1))
+
+        self.multiworld.get_location("Piano (Rugor)", self.player).access_rule(\
+        lambda state: state.has("Adamantite", self.player, 1) or state.has("World 2 Access (Item)", self.player, 1))
 
         self.multiworld.get_location("Crescent Island - Hero Song from Crescent Town (Hero)", self.player).access_rule(\
         lambda state: state.has("World 3 Access (Item)", self.player, 1) and state.has("Mirage Radar", self.player, 1))
-            
 
-            
-
-
-        
-
-            
-            
+        self.multiworld.get_location("Piano (Mirage)", self.player).access_rule(\
+        lambda state: state.has("World 3 Access (Item)", self.player, 1) and state.has("Mirage Radar", self.player, 1))
+ 
     def parse_options_for_conductor(self):
         # this sets up a config file from archipelago's options
         # for FFVCD's base randomizer to work with
@@ -194,29 +197,34 @@ class FFVCDWorld(World):
             options_conductor['trapped_chests'] = True
         else:
             options_conductor['trapped_chests'] = False
-            
+
+        if self.options.piano_percent:
+            options_conductor['piano_percent'] = True
+        else:
+            options_conductor['piano_percent'] = False
+
         options_conductor['source_rom_abs_path'] = self.source_rom_abs_path
         options_conductor['world_lock'] = self.world_lock
         options_conductor['player'] = self.player
         options_conductor['player_name'] = self.multiworld.player_name[self.player]
         options_conductor['all_player_names'] = self.multiworld.player_name
         options_conductor['starting_crystals'] = self.starting_crystals
-        
+        options_conductor['ability_settings'] = self.options.ability_settings
+        options_conductor['character_names'] = {"Lenna": self.options.lenna_name.value,
+            "Galuf": self.options.galuf_name.value,
+            "Krile": self.options.krile_name.value,
+            "Faris": self.options.faris_name.value,}
+
         self.options_conductor = options_conductor
         
-            
         return options_conductor
                 
     def pre_fill(self):
-        if self.options.trapped_chests:
+        if self.options.trapped_chests and self.options.trapped_chests_settings in [0,1]:
             state = self.multiworld.get_all_state(False)
             fill_restrictive(self.multiworld, state, self.chosen_mib_locations, self.mib_items_to_place,
                                single_player_placement=True, lock=True, allow_excluded=True)
-            
-
-    def fill_slot_data(self):
-        slot_data = self.options.as_dict("four_job", "world_lock", "progression_checks", "trapped_chests")
-        return slot_data
+        
 
     def create_regions(self):
         create_regions(self.multiworld, self.player)
@@ -237,7 +245,8 @@ class FFVCDWorld(World):
                 except:
                     pass
             else:
-                print("No item for %s" % loc)
+                if not loc.is_event: #skip warning for event locations
+                    print("No item for %s" % loc)
 
         options_conductor = self.parse_options_for_conductor()
 
@@ -245,10 +254,9 @@ class FFVCDWorld(World):
 
         
         self.cond = conductor.Conductor(self.multiworld.per_slot_randoms[self.player], options_conductor, arch_data = data, \
-                                        player = self.player, seed = self.multiworld.seed)
-
+                                        player = self.player, seed = self.multiworld.seed, placed_crystals = self.placed_crystals,\
+                                        placed_abilities = self.placed_abilities, placed_magic = self.placed_magic)
         self.cond.randomize()
-        
 
         # move 
         temp_patch_path = self.cond.save_patch(output_directory)
@@ -279,7 +287,7 @@ class FFVCDWorld(World):
                                 player_name=self.multiworld.player_name[self.player], patched_path=rompath)
         
         patch.write()
-    
+
         if os.path.exists(rompath):
             os.unlink(rompath)
 
@@ -292,7 +300,39 @@ class FFVCDWorld(World):
         self.rom_name_available_event.set() # make sure threading continues and errors are collected
         logger.debug("Finished generate_output function")
         
-        
+    def fill_slot_data(self):
+        slot_data = self.options.as_dict("four_job", "world_lock", "progression_checks", "trapped_chests")
+        #this might look inefficient but due to order of operations this is the simplest way to pull starting ability currently
+        slot_data['starting crystals'] = self.starting_crystals
+        crystal_id_list = \
+        {"Knight Crystal": "Guard",
+        "Monk Crystal": "Kick",
+        "Thief Crystal": "Escape",
+        "Dragoon Crystal": "Jump",
+        "Ninja Crystal": "Smoke",
+        "Samurai Crystal": "SwdSlap",
+        "Berserker Crystal": None,
+        "Hunter Crystal": "Animals",
+        "MysticKnight Crystal": "MgcSwrd Lv. 1",
+        "WhiteMage Crystal": "White Lv. 1",
+        "BlackMage Crystal": "Black Lv. 1",
+        "TimeMage Crystal": "Time Lv. 1",
+        "Summoner Crystal": "Summon Lv. 1",
+        "BlueMage Crystal": "Blue",
+        "RedMage Crystal": "Red Lv. 1",
+        "Trainer Crystal": "Tame",
+        "Chemist Crystal": "Mix",
+        "Geomancer Crystal": "Terrain",
+        "Bard Crystal": "Hide",
+        "Dancer Crystal": "Flirt",
+        "Mimic Crystal": "Mimic",
+        "Freelancer Crystal": None,}
+        ability_list = []
+        for i in self.starting_crystals:
+            ability_list.append(crystal_id_list[i])
+        slot_data["starting abilities"] = ability_list
+        return slot_data
+      
     def modify_multidata(self, multidata: dict):
         # wait for self.rom_name to be available.
         self.rom_name_available_event.wait()

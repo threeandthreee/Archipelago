@@ -120,9 +120,6 @@ class Formation(object):
             # That's NOT what we want. We want 3000hp to WingRaptor (LiquidFlame's vanilla hp), 
             # which is why this original clause exists
             
-            #TODO: Some formations might be misassinging enemies to bosses and vice versa, will unfortunately
-            #have to go through with a fine tooth comb to find them. Make sure to do this before randomzing
-            #non boss formations
             elif original_flag:
                 # Create new Enemy classes to grab from original, unaltered/randomized data
                 # If it's Byblos or Ifrit, the only exceptions, grab from enemies, else grab from bosses
@@ -132,6 +129,7 @@ class Formation(object):
                     new_enemy = Enemy(enemy_id,data_manager,'hex', False)
             else:
                 # If it's not original, iterate through the list of all enemies 
+                
                 if self.rank == 'standard':
                     for enemy_loop in [x for x in enemy_manager.enemies if x.enemy_rank == 'enemy']:  # Search through first set of enemies before bosses
                         if enemy_loop.idx_hex == enemy_id:
@@ -141,6 +139,8 @@ class Formation(object):
                         if enemy_loop.idx_hex == enemy_id:
                             new_enemy = enemy_loop
             enemy_list.append(new_enemy)
+            
+            
             
         # Assign list of enemy class objects to self for all enemies
         self.enemy_classes = enemy_list

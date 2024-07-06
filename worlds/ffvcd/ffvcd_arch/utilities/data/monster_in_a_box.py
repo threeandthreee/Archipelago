@@ -32,6 +32,7 @@ class MonsterInABoxManager:
     def get_mib_for_area(self, area):
         #print("getting mib for area: " + area.area_name)
         working_list = [x for x in self.monsters_in_boxes if x.area == area.area_name and x.processed == False]
+    
         # if working_list:
         #     breakpoint()
         #print("mib list length: " + str(len(working_list)))

@@ -16,6 +16,7 @@ from .text_parser import TextParser
 from .monster_in_a_box import MonsterInABoxManager
 # from item_randomization import *
 from .misc_features import randomize_default_abilities, randomize_learning_abilities, free_shop_prices
+from typing import Dict
 import patcher
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)-15s %(message)s")
@@ -57,7 +58,8 @@ CRYSTAL_SHOP_TYPE = "07"
 VERSION = "FFV Career Day Archipelago v1.0"
 
 class Conductor():
-    def __init__(self, random_engine, arch_options, arch_data = {}, player = 1, seed = None):
+    def __init__(self, random_engine, arch_options, arch_data = {}, player = 1, seed = None, placed_crystals = [], \
+                                        placed_abilities = [], placed_magic = []):
         
         self.RE = random_engine
         self.arch_data = arch_data
@@ -93,10 +95,11 @@ class Conductor():
         self.job_2 = "Random"
         self.job_3 = "Random"
         self.job_4 = "Random"
-        self.lenna_name = 'Lenna'
-        self.galuf_name = 'Galuf'
-        self.cara_name = 'Krile'
-        self.faris_name = 'Faris'
+        character_names = arch_options["character_names"]
+        self.lenna_name = character_names['Lenna']
+        self.galuf_name = character_names['Galuf']
+        self.cara_name = character_names['Krile']
+        self.faris_name = character_names['Faris']
         self.music_randomization = False
         self.free_shops = False
         self.extra_patches = True
@@ -108,6 +111,9 @@ class Conductor():
         self.randomize_loot_setting = False
         self.loot_percent = 0
         self.portal_boss = "Random"
+        self.placed_abilities = placed_abilities
+        self.placed_crystals = placed_crystals
+        self.placed_magic = placed_magic
             
         # Some configs set up for the managers 
         collectible_config = {'place_all_rewards':self.translateBool(self.place_all_rewards),
@@ -194,7 +200,6 @@ class Conductor():
         self.starting_crystal = crystals[0]
         self.chosen_crystals = crystals[1]
         self.chosen_crystals_names = [x.reward_name for x in self.chosen_crystals]
-
         self.exdeath_patch = ""
         self.odin_location_fix_patch = ""
         self.superbosses_spoiler = ""
@@ -202,7 +207,7 @@ class Conductor():
         logger.debug("Init weigh collectibles...")
         self.weigh_collectibles()
         logger.debug("Init finished.")
-
+        
     def get_crystals(self):
 
         arch_crystals_names = [i.split(" ")[0] for i in self.arch_options['starting_crystals']]
@@ -220,14 +225,13 @@ class Conductor():
             logger.debug("First job random, ensuring others chosen are not in pool")
             temp_crystals = [i for i in crystals if i.collectible_name not in [self.job_2,self.job_3,self.job_4]]
             starting_crystal = self.RE.choice(temp_crystals)
-            
         else:
             starting_crystal = [i for i in crystals if i.collectible_name == self.job_1][0]
-            
+
             # while starting_crystal.collectible_name == 'Mimic' or starting_crystal.collectible_name == 'Samurai':
             #     logger.debug("Rerolling starting crystal...")
             #     starting_crystal = self.RE.choice(crystals)
-            
+        
         self.CM.add_to_placement_history(starting_crystal,"No") #don't allow the starting crystal to appear anywhere in game
         if starting_crystal.starting_spell_list == ['']:
             starting_crystal.starting_spell = "None"
@@ -331,7 +335,12 @@ class Conductor():
         # the below used to call for self.fjf_strict but now it's default
             # For Four Job mode, mark all Abilities as unobtainable 
             for ability in [x for x in self.CM.get_all_of_type(Ability)]:
-                self.CM.add_to_placement_history(ability,"No")
+                if self.arch_options['ability_settings'] == 'only_for_available_jobs': #if abilities are set for only for available jobs
+                    self.CM.add_to_placement_history(ability,"Yes")
+                else:
+                    self.CM.add_to_placement_history(ability,"No")
+
+                    
                 
                 
         else:
@@ -432,7 +441,6 @@ class Conductor():
                     matching_mib = self.MIBM.get_mib_by_address(next_key_reward.address)
                     matching_mib.processed = True
                     og_mib_encounter_data = matching_mib.monster_chest_data
-                    
                     next_key_reward.collectible.reward_type = "B" + og_mib_encounter_data[1:]
                     
                     logger.debug("Updating chosen mib_key %s area volume" % next_key_reward.description)
@@ -579,11 +587,9 @@ class Conductor():
                 
             mib = self.MIBM.get_mib_for_area(area)
             #logger.debug("Area rewards: next reward style: " + next_reward.reward_style)
-            
+            logger.debug(mib.area + mib.monster_chest_data)
             
                 
-
-            
             if mib is not None and next_reward.reward_style == "chest": #only mibs in chests
                 if self.key_items_in_mib:
                     possible_placed_mib_keys = [x for x in self.RM.rewards if x.area == mib.area
@@ -605,6 +611,7 @@ class Conductor():
                 logger.debug("Assigning MIB from chosen tier %s -> Tier %s : %s" % (chosen_tier, to_place.tier, to_place.reward_name))
                 next_reward.mib_type = mib.monster_chest_data
                 mib.processed = True
+                
                 #logger.debug(mib.processed)
                 #logger.debug(next_reward.mib_type)
                 #logger.debug("Area rewards: \n\n\n")
@@ -812,9 +819,11 @@ class Conductor():
             
             
             
-            
-            
-            
+            if len(self.placed_magic) == 0 and kind == "magic":
+                kind = "item"
+            if (len(self.placed_abilities) + len(self.placed_crystals)) == 0 and kind == "crystal":
+                kind = "item"
+            all_placed = False
             
             if kind == "item":
                 if value.num_items < 4:
@@ -845,7 +854,7 @@ class Conductor():
                     
                     
                     
-                    
+            
             elif kind == "magic":
                 if value.num_items > 5:
                     value.num_items = 5
@@ -859,19 +868,33 @@ class Conductor():
                 value.shop_type = MAGIC_SHOP_TYPE
                 try:
                     for i in range(0, value.num_items):
+                        count = 0
+                        temp_tier = value.tier
                         while True:
-                            item_to_place = self.CM.get_random_collectible(random, respect_weight=True, reward_loc_tier = value.tier, 
+                            item_to_place = self.CM.get_random_collectible(random, respect_weight=True, reward_loc_tier = temp_tier, 
                                                                            monitor_counts=True,next_reward = value,
                                                                            of_type=Magic, disable_zerozero=True, tiering_config=self.tiering_config, tiering_percentage=self.tiering_percentage, tiering_threshold=self.tiering_threshold)
                             
-
                             
-                            if item_to_place not in contents:
+                            AP_name = item_to_place.collectible_name + " " + item_to_place.type + " " + "Magic"
+                            
+                            if item_to_place not in contents and AP_name in self.placed_magic:
                                 break
+                            
+                            #Some failsafes for settings that could create exceedingly low magic totals
+                            if count % 100 == 0 and temp_tier > 1:
+                                temp_tier -= 1
+                            
+                            if len(contents) >= len(self.placed_magic):
+                                all_placed = True
+                                break
+                            
+                            count += 1
 
-                        contents.append(item_to_place)
-                        value.update_volume(item_to_place.tier)
-                        self.CM.update_placement_rewards(item_to_place, value)
+                        if not all_placed:
+                            contents.append(item_to_place)
+                            value.update_volume(item_to_place.tier)
+                            self.CM.update_placement_rewards(item_to_place, value)
                 except Exception as e:
                     contents = []
                     value.shop_type = ITEM_SHOP_TYPE
@@ -898,16 +921,34 @@ class Conductor():
                 value.shop_type = CRYSTAL_SHOP_TYPE #shop type: crystal/ability
                 try:
                     for i in range(0, value.num_items):
+                        count = 0
+                        temp_tier = value.tier
                         while True:
                             item_to_place = self.CM.get_random_collectible(random, respect_weight=True, reward_loc_tier = value.tier, 
                                                                            monitor_counts=True,next_reward = value,
                                                                            of_type=(Crystal, Ability), tiering_config=self.tiering_config, tiering_percentage=self.tiering_percentage, tiering_threshold=self.tiering_threshold)
-                            if item_to_place not in contents:
-                                break
 
-                        contents.append(item_to_place)
-                        value.update_volume(item_to_place.tier)
-                        self.CM.update_placement_rewards(item_to_place, value)
+                            if item_to_place.type == 'Crystal':
+                                AP_name = item_to_place.collectible_name + " " + "Crystal"
+                            elif item_to_place.type == 'Ability':
+                                AP_name = item_to_place.collectible_name + " " + "Ability"
+
+                            if item_to_place not in contents and (AP_name in self.placed_abilities or AP_name in self.placed_crystals):
+                                break
+                            
+                            #Some failsafes for settings that could create exceedingly low crystal or ability totals
+                            if count % 100 == 0 and temp_tier > 1:
+                                temp_tier -= 1
+                            
+                            if len(contents) >= (len(self.placed_abilities) + len(self.placed_crystals)):
+                                all_placed = True
+                                break
+                            
+                            count += 1
+                        if not all_placed:
+                            contents.append(item_to_place)
+                            value.update_volume(item_to_place.tier)
+                            self.CM.update_placement_rewards(item_to_place, value)
                 except Exception as e:
                     contents = []
                     value.shop_type = ITEM_SHOP_TYPE
@@ -2253,7 +2294,6 @@ class Conductor():
         asar_str = asar_str + self.TP.run_encrypt_text_string(self.faris_name,ff_fill=8)
         asar_str = asar_str +'\norg $C0BEE1\n'
         asar_str = asar_str + self.TP.run_encrypt_text_string(self.cara_name,ff_fill=8)
-        
         return asar_str
         
     def translateBool(self, boolean):
@@ -2330,7 +2370,24 @@ class Conductor():
 #        logger.debug(patch)
         return patch
         
-        
+    def goal_settings(self):
+        goal_array = ["ExDeath1", "Pianos"]
+        goal_dict: Dict[str, bool]
+        goal_dict = {flag_name: False for flag_name in goal_array}
+
+        if self.arch_options["piano_percent"]:
+            goal_dict["Pianos"] = True
+
+        goal_bitfield = 0
+        for i, flag_name in enumerate(goal_array):
+            if goal_dict[flag_name]:
+                goal_bitfield |= 1 << i
+
+        goal_bitfield = i2b(goal_bitfield)
+        goals = "\n;Goals\norg $FFFFFF\ndb $%s" % (goal_bitfield)
+
+        return goals
+
     
     def create_hash(self):
         choices = {"BB":"Crystal",
@@ -2404,14 +2461,9 @@ class Conductor():
         
         self.AM.change_power_level(float(self.conductor_config['DEFAULT_POWER_CHANGE']))
         
-        
-
-
-        
         arch_data = self.DM.files['arch_id']
         
-        
-        
+
         for address, arch_item_data in self.arch_data.items():
             if address == 'C0FFFE':
                 logger.debug("Skipping Exdeath W2 at C0FFFE")
@@ -2445,7 +2497,7 @@ class Conductor():
                     reward.set_collectible(collectible)
                     setattr(reward, 'reward_arch', arch_item_name)
                     setattr(reward, 'reward_arch_player', arch_player)
-                    
+                    collectible
                     if arch_mib_flag and self.arch_options['trapped_chests']:
                         
                         # update chest flag - Ax will change it to MIB for items 
@@ -2454,8 +2506,13 @@ class Conductor():
                         mib_modifier = str(arch_region_rank)
                         if mib_modifier == '10':
                             mib_modifier = 'A'
-                            
-                        new_reward_type = "A%s" % mib_modifier
+                        
+                        if collectible.reward_type == '40':
+                            new_reward_type = "A%s" % mib_modifier
+                        elif collectible.reward_type in ['60','30']:
+                            new_reward_type = "B%s" % mib_modifier 
+                        #    if collectible.reward_type == '60':
+                        #        collectible.ability_id = str(hex(int(("0x" + collectible.ability_id),16) + int("0x40",16)))
 
                         reward.mib_chest_id = new_reward_type
                 else:
@@ -2476,23 +2533,15 @@ class Conductor():
                 chosen_formation.region_rank = rank
                 
                 formation_code = hex(int(chosen_idx) - 1).replace("0x","")
+                
                 if len(formation_code) > 2:
                     formation_code = "%s, $01" % (formation_code[1:])
                 else:
                     formation_code = "%s, $00" % formation_code
-                
+            
                 patch += 'db $%s\n' % formation_code
                 patch += 'db $%s\n' % formation_code # doubled because of ffv vanilla weirdness
             self.FM.mib_arch_patch = patch
-
-
-
-
-
-
-
-
-
 
         logger.debug("Randomizing shops...")
         self.randomize_shops()
@@ -2560,7 +2609,8 @@ class Conductor():
 
             
         patch = patch + self.parse_configs()
-
+        patch = patch + self.goal_settings()
+        
         spoiler = ""
         if self.seed is not None and self.setting_string is not None:
             spoiler = spoiler + self.spoiler_intro()

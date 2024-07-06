@@ -7,6 +7,8 @@ loc_id_start = 342000000
 LOC_TYPE_CHEST = 1
 LOC_TYPE_EVENT = 2
 LOC_TYPE_KEY = 3
+LOC_TYPE_TRACKER_EVENT = 4
+
 
 class LocationData:
     def __init__(self, name, address = None, parent = None, area = None, location_type="", type="Item"):
@@ -14,6 +16,7 @@ class LocationData:
         self.address = address + loc_id_start
         self.address_hex = address
         self.parent = parent
+        self.event = False
         self.area = area
         self.location_type = location_type
         self.type = type
@@ -44,8 +47,10 @@ class FFVCDLocation(Location):
 
 
         # kuzar shouldn't have key items because of the permanent choice of using tablets
-        if location_data.area in ["Kuzar"]:
-            add_item_rule(self, lambda item: not (item.classification & ItemClassification.progression))
+        #if location_data.area in ["Kuzar"]:
+        #    add_item_rule(self, lambda item: not (item.classification & ItemClassification.progression))
+        # other player's progression can land here or other key items relevant to other's progression just not the FFV player's progression
+        # so there shouldn't be a reason to block this location as it already requires all 4 tablets in the region rules
 
             
 
@@ -56,6 +61,8 @@ class FFVCDLocation(Location):
             add_item_rule(self, lambda item: not (item.code > (900 + arch_item_offset) and \
                                                   item.code < (999 + arch_item_offset)))
 
+        #if location_data.address in [0xC0FFFE,0xC0FFFF]:
+        #    location_data.event = True
         
             
 
@@ -76,8 +83,8 @@ LocationData("Wind Shrine - Wind Crystal (Thief)", address = 0xC0FABC, area = "W
 LocationData("Karnak - Fire Crystal (Trainer)", address = 0xC0FABE, area = "Karnak", location_type=LOC_TYPE_EVENT),
 LocationData("Karnak - Fire Crystal (Geomancer)", address = 0xC0FAC0, area = "Karnak", location_type=LOC_TYPE_EVENT),
 LocationData("Karnak - Fire Crystal (Ninja)", address = 0xC0FAC2, area = "Karnak", location_type=LOC_TYPE_EVENT),
-LocationData("Crescent Island - Black Choco Crystals (Bard)", address = 0xC0FAC4, area = "Crescent Island", location_type=LOC_TYPE_EVENT),
-LocationData("Crescent Island - Black Choco Crystals (Hunter)", address = 0xC0FAC6, area = "Crescent Island", location_type=LOC_TYPE_EVENT),
+LocationData("Black Choco Forest - Black Choco Crystals (Bard)", address = 0xC0FAC4, area = "Crescent Island", location_type=LOC_TYPE_EVENT),
+LocationData("Black Choco Forest - Black Choco Crystals (Hunter)", address = 0xC0FAC6, area = "Crescent Island", location_type=LOC_TYPE_EVENT),
 LocationData("Flying Lonka Ruins - Earth Crystal (Samurai)", address = 0xC0FAC8, area = "Flying Lonka Ruins", location_type=LOC_TYPE_EVENT),
 LocationData("Flying Lonka Ruins - Earth Crystal (Dragoon)", address = 0xC0FACA, area = "Flying Lonka Ruins", location_type=LOC_TYPE_EVENT),
 LocationData("Flying Lonka Ruins - Earth Crystal (Chemist)", address = 0xC0FACC, area = "Flying Lonka Ruins", location_type=LOC_TYPE_EVENT),
@@ -86,7 +93,7 @@ LocationData("Istory Falls - Leviathan Esper (Levia)", address = 0xC0FAD0, area 
 LocationData("Karnak Meteor - Titan (Titan)", address = 0xC0FAD2, area = "Karnak Meteor", location_type=LOC_TYPE_EVENT),
 LocationData("Exdeath's Castle - Carbuncle (Crbnkl)", address = 0xC0FAD4, area = "Exdeath's Castle", location_type=LOC_TYPE_EVENT),
 LocationData("Pirate's Cave - Syldra (Syldra)", address = 0xC0FAD6, area = "Pirate's Cave", location_type=LOC_TYPE_EVENT),
-LocationData("Bal Castle Lower - Odin (Odin)", address = 0xC0FAD8, area = "Bal Castle Lower", location_type=LOC_TYPE_EVENT),
+LocationData("Jacole - Jacole Cave - Odin (Odin)", address = 0xC0FAD8, area = "Bal Castle Lower", location_type=LOC_TYPE_EVENT),
 LocationData("Phoenix Tower - Phoenix (Phenix)", address = 0xC0FADA, area = "Phoenix Tower", location_type=LOC_TYPE_EVENT),
 LocationData("North Mountain (World 3) - Bahamut (Bahmut)", address = 0xC0FADC, area = "North Mountain (World 3)", location_type=LOC_TYPE_EVENT),
 LocationData("Crescent Island - Life Song (Vitality)", address = 0xC0FADE, area = "Crescent Island", location_type=LOC_TYPE_EVENT),
@@ -125,13 +132,13 @@ LocationData("Walse Tower - Water Crystal (Berserker)", address = 0xC0FB20, area
 LocationData("Walse Tower - Water Crystal (MysticKnight)", address = 0xC0FB22, area = "Walse Tower", location_type=LOC_TYPE_EVENT),
 LocationData("Walse Tower - Water Crystal (TimeMage)", address = 0xC0FB24, area = "Walse Tower", location_type=LOC_TYPE_EVENT),
 LocationData("Walse Tower - Water Crystal (Summoner)", address = 0xC0FB26, area = "Walse Tower", location_type=LOC_TYPE_EVENT),
-LocationData("Mua - Secret Area (Brave Blade/Chicken Knife)", address = 0xC0FB28, area = "Mua", location_type=LOC_TYPE_EVENT),
+LocationData("Mua - Secret Area (Brave Blade - Chicken Knife)", address = 0xC0FB28, area = "Mua", location_type=LOC_TYPE_EVENT),
 LocationData("Tycoon Castle - Tycoon Castle Cabin (Cabin (1))", address = 0xC0FB2C, area = "Tycoon Castle", location_type=LOC_TYPE_EVENT),
 LocationData("Tycoon Castle - Tycoon Castle Cabin (Cabin (2))", address = 0xC0FB2E, area = "Tycoon Castle", location_type=LOC_TYPE_EVENT),
 LocationData("Walse Tower Sunken - Walse Tower Chest (GoGo)", address = 0xC0FB30, area = "Walse Tower Sunken", location_type=LOC_TYPE_EVENT),
 LocationData("Pyramid - Pyramid Top (Pyramid Tablet)", address = 0xC0FB32, area = "Pyramid", location_type=LOC_TYPE_EVENT),
 LocationData("Istory - Toad Event (Toad)", address = 0xC0FB34, area = "Istory", location_type=LOC_TYPE_EVENT),
-LocationData("Mua Forest - Aegis Shield Chest (Aegis Shield)", address = 0xC0FB36, area = "Mua Forest", location_type=LOC_TYPE_EVENT),
+LocationData("Mua Forest - Mua Forest Chest (Aegis Shield)", address = 0xC0FB36, area = "Mua Forest", location_type=LOC_TYPE_EVENT),
 LocationData("Carwen - Barrel (Cabin)", address = 0xC0FB38, area = "Carwen", location_type=LOC_TYPE_EVENT),
 LocationData("Jacole - Jacole Cave Chest (Thunder Whip)", address = 0xC0FB3A, area = "Jacole", location_type=LOC_TYPE_EVENT),
 LocationData("Bal Castle - Moat Item (Epee)", address = 0xC0FB3C, area = "Bal Castle", location_type=LOC_TYPE_EVENT),
@@ -372,11 +379,11 @@ LocationData("Rift (1 Tablet) - Rift (Ruins) Chest (Cabin)", address = 0xD135AE,
 LocationData("Rift (1 Tablet) - Rift (Ruins) Chest (Elixir 1)", address = 0xD135B2, area = "Rift (1 Tablet)", location_type=LOC_TYPE_CHEST),
 LocationData("Rift (1 Tablet) - Rift (Ruins) Chest (DarkMatter)", address = 0xD135B6, area = "Rift (1 Tablet)", location_type=LOC_TYPE_CHEST),
 LocationData("Rift (1 Tablet) - Rift (Ruins) Chest (Elixir 2)", address = 0xD135BA, area = "Rift (1 Tablet)", location_type=LOC_TYPE_CHEST),
-LocationData("Rift (1 Tablet) - Rift (Ruins) Chest (Drain Sword)", address = 0xD135BE, area = "Rift (1 Tablets)", location_type=LOC_TYPE_CHEST),
-LocationData("Rift (2 Tablet) - Rift (Forest) Chest (DragonFang)", address = 0xD135C2, area = "Rift (2 Tablets)", location_type=LOC_TYPE_CHEST),
-LocationData("Rift (2 Tablet) - Rift (Forest) Chest (Ribbon)", address = 0xD135C6, area = "Rift (2 Tablets)", location_type=LOC_TYPE_CHEST),
-LocationData("Rift (2 Tablet) - Rift (Forest) Chest (Enhancer)", address = 0xD135CA, area = "Rift (2 Tablets)", location_type=LOC_TYPE_CHEST),
-LocationData("Rift (2 Tablet) - Rift (Forest) Chest (Lillith Rod)", address = 0xD135CE, area = "Rift (2 Tablets)", location_type=LOC_TYPE_CHEST),
+LocationData("Rift (1 Tablet) - Rift (Ruins) Chest (Drain Sword)", address = 0xD135BE, area = "Rift (1 Tablet)", location_type=LOC_TYPE_CHEST),
+LocationData("Rift (2 Tablets) - Rift (Forest) Chest (DragonFang)", address = 0xD135C2, area = "Rift (2 Tablets)", location_type=LOC_TYPE_CHEST),
+LocationData("Rift (2 Tablets) - Rift (Forest) Chest (Ribbon)", address = 0xD135C6, area = "Rift (2 Tablets)", location_type=LOC_TYPE_CHEST),
+LocationData("Rift (2 Tablets) - Rift (Forest) Chest (Enhancer)", address = 0xD135CA, area = "Rift (2 Tablets)", location_type=LOC_TYPE_CHEST),
+LocationData("Rift (2 Tablets) - Rift (Forest) Chest (Lillith Rod)", address = 0xD135CE, area = "Rift (2 Tablets)", location_type=LOC_TYPE_CHEST),
 LocationData("Rift (2 Tablets) - Rift (Cave) Chest (Angel Ring)", address = 0xD135D2, area = "Rift (2 Tablets)", location_type=LOC_TYPE_CHEST),
 LocationData("Rift (2 Tablets) - Rift (Cave) Chest (Coral Ring)", address = 0xD135D6, area = "Rift (2 Tablets)", location_type=LOC_TYPE_CHEST),
 LocationData("Rift (3 Tablets) - Rift (Castle) Chest (Thor Hammer)", address = 0xD135DA, area = "Rift (3 Tablets)", location_type=LOC_TYPE_CHEST),
@@ -419,7 +426,7 @@ LocationData("Exdeath's Castle - Carbunkle (Boss)", address = 0xC0FB9E, area = "
 LocationData("Exdeath's Castle - Gilgamesh 4 (Boss)", address = 0xC0FBA0, area = "Exdeath's Castle",location_type=LOC_TYPE_KEY),
 LocationData("Tule Pass - Antlion (Boss)", address = 0xC0FBA2, area = "Tule Pass",location_type=LOC_TYPE_KEY),
 LocationData("Pyramid - Merugene (Boss)", address = 0xC0FBA4, area = "Pyramid",location_type=LOC_TYPE_KEY),
-LocationData("Bal Castle Lower - Odin (Boss)", address = 0xC0FBA6, area = "Bal Castle Lower",location_type=LOC_TYPE_KEY),
+LocationData("Jacole - Jacole Cave - Odin (Boss)", address = 0xC0FBA6, area = "Bal Castle Lower",location_type=LOC_TYPE_KEY),
 LocationData("Great Trench - Triton, Neregeid & Phobos (Boss)", address = 0xC0FBA8, area = "Great Trench",location_type=LOC_TYPE_KEY),
 LocationData("Fork Tower - Omniscient (Boss)", address = 0xC0FBAA, area = "Fork Tower",location_type=LOC_TYPE_KEY),
 LocationData("Fork Tower - Minotauros (Boss)", address = 0xC0FBAC, area = "Fork Tower",location_type=LOC_TYPE_KEY),
@@ -427,5 +434,21 @@ LocationData("Istory Falls - Leviathan (Boss)", address = 0xC0FBAE, area = "Isto
 LocationData("Solitary Island - Stalker (Boss)", address = 0xC0FBB0, area = "Solitary Island",location_type=LOC_TYPE_KEY),
 LocationData("Walse Tower Sunken - GoGo (Boss)", address = 0xC0FBB2, area = "Walse Tower Sunken",location_type=LOC_TYPE_KEY),
 LocationData("North Mountain (World 3) - Bahamut (Boss)", address = 0xC0FBB4, area = "North Mountain (World 3)", location_type=LOC_TYPE_KEY),
-LocationData("ExDeath", address = 0xC0FFFF, area = "Void", location_type=LOC_TYPE_KEY),
+#LocationData("Rift (2 Tablets) - Calofisteri (Boss)", address = 0xC0FBB5, area =  "Rift (2 Tablets)", location_type=LOC_TYPE_KEY),
+#LocationData("Rift (3 Tablets) - Apanda (Boss)", address = 0xC0FBB7, area =  "Rift (3 Tablets)", location_type=LOC_TYPE_KEY),
+#LocationData("Rift (3 Tablets) - Apocalypse (Boss)", address = 0xC0FBB9, area =  "Rift (3 Tablets)", location_type=LOC_TYPE_KEY),
+#LocationData("Rift (3 Tablets) - Catastroph (Boss)", address = 0xC0FBBB, area =  "Rift (3 Tablets)", location_type=LOC_TYPE_KEY),
+#LocationData("Rift (4 Tablets) - Halicarnaso (Boss)", address = 0xC0FBBC, area =  "Rift (4 Tablets)", location_type=LOC_TYPE_KEY),
+#LocationData("Rift (4 Tablets) - Twintania (Boss)", address = 0xC0FBBD, area =  "Rift (4 Tablets)", location_type=LOC_TYPE_KEY),
+#LocationData("Void - Necrofobia (Boss)", address = 0xC0FBBE, area = "Void", location_type=LOC_TYPE_CHEST),
+LocationData("Piano (Tule)", address = 0xC0FFF6, area = "Tule", location_type=LOC_TYPE_TRACKER_EVENT),
+LocationData("Piano (Carwen)", address = 0xC0FFF7, area = "Carwen", location_type=LOC_TYPE_TRACKER_EVENT),
+LocationData("Piano (Karnak)", address = 0xC0FFF8, area = "Karnak", location_type=LOC_TYPE_TRACKER_EVENT),
+LocationData("Piano (Jacole)", address = 0xC0FFF9, area = "Jacole", location_type=LOC_TYPE_TRACKER_EVENT),
+LocationData("Piano (Crescent)", address = 0xC0FFFA, area = "Crescent Island", location_type=LOC_TYPE_TRACKER_EVENT),
+LocationData("Piano (Mua)", address = 0xC0FFFB, area = "Mua", location_type=LOC_TYPE_TRACKER_EVENT),
+LocationData("Piano (Rugor)", address = 0xC0FFFC, area = "Rugor", location_type=LOC_TYPE_TRACKER_EVENT),
+LocationData("Piano (Mirage)", address = 0xC0FFFD, area = "Mirage Village", location_type=LOC_TYPE_TRACKER_EVENT),
+LocationData("ExDeath World 2", address = 0xC0FFFE, area = "Exdeath's Castle", location_type=LOC_TYPE_TRACKER_EVENT),
+LocationData("ExDeath", address = 0xC0FFFF, area = "Void", location_type=LOC_TYPE_TRACKER_EVENT),
 ]

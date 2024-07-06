@@ -111,7 +111,7 @@ def create_regions(multiworld, player: int):
                               state.has("2nd Tablet", player) and
                               state.has("3rd Tablet", player) and
                               state.has("4th Tablet", player),
-                                                        region_rank = None)
+                                                        region_rank = 7)
     setup_region_and_entrance(multiworld, player, "Lix", "World 1 Access", access_rule = None,
                               region_rank = 5)
     setup_region_and_entrance(multiworld, player, "Lonka Meteor", "World 1 Access", access_rule = None,
