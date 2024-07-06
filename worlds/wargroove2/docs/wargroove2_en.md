@@ -6,11 +6,6 @@
   - Only the Steam Windows version is supported. MAC and Switch are not supported.
 - [The most recent Archipelago release](https://github.com/ArchipelagoMW/Archipelago/releases)
 
-## Switch to the beta branch
-
-Wargroove 2 mods currently only work on the beta branch. 
-`Right Click Wargroove 2->Properties->Betas->Switch to the preview branch using the Beta Participation dropdown`
-
 ## Backup playerProgress files
 `playerProgress` and `playerProgress.bak` contain save data for all of your Wargroove 2 campaigns. 
 Backing up these files is strongly recommended in case they become corrupted.

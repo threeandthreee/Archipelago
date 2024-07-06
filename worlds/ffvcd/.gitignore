@@ -1,0 +1,8 @@
+*.pyc
+*.DS_Store
+*.sublime-*
+*.~lock.*
+*.sfc
+*.smc
+__pycache__/*
+basepatch/*

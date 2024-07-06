@@ -290,7 +290,7 @@ class CommonPoolWeight(Range):
 
     range_start = 0
     range_end = 100
-    default = 42
+    default = 38
 
 class RarePoolWeight(Range):
     """
@@ -320,7 +320,7 @@ class LegendaryPoolWeight(Range):
 
     range_start = 0
     range_end = 100
-    default = 2
+    default = 6
 
 class ConsumableWeight(Range):
     """

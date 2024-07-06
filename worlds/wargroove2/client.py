@@ -242,7 +242,7 @@ class Wargroove2Context(CommonContext):
                 if not os.path.isfile(path):
                     open(path, 'w').close()
                     # Announcing commander unlocks
-                    item_name = self.item_names[network_item.item]
+                    item_name = self.item_names.lookup_in_slot(network_item.item)
                     if item_name in faction_table.keys():
                         for commander in faction_table[item_name]:
                             logger.info(f"{commander.name} has been unlocked!")
@@ -265,7 +265,7 @@ class Wargroove2Context(CommonContext):
                     open(print_path, 'w').close()
                     with open(print_path, 'w') as f:
                         f.write("Received " +
-                                self.item_names[network_item.item] +
+                                self.item_names.lookup_in_slot(network_item.item) +
                                 " from " +
                                 self.player_names[network_item.player])
                         f.close()

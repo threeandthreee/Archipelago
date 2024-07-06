@@ -740,6 +740,10 @@ bra MIBKeyItemResume
 ; pass case
 MIBKeyItemPass:
 
+lda $12
+cmp #$1D
+;;bcs BranchToMIBAbilityReward
+
 lda #$88 ; #$88 custom flag for MIB in chests
 sta !unusedram3
 
@@ -782,7 +786,10 @@ ldx $11
 MIBKeyItemFinish:
 jml $c00ed1
 
-
+;;BranchToMIBAbilityReward:
+;;SBC #$40
+;;sta $12
+;;JSL BranchToAbilityReward
 
 ;; new code to disable giving prior item
 

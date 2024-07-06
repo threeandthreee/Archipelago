@@ -6,6 +6,7 @@ from NetUtils import ClientStatus
 from worlds.AutoSNIClient import SNIClient
 
 from . import Rom, Locations
+from .id_maps import location_name_to_id
 from .patch import FF6WCPatch
 
 if typing.TYPE_CHECKING:
@@ -19,11 +20,12 @@ snes_logger: Logger = logging.getLogger("SNES")
 class FF6WCClient(SNIClient):
     game: str = "Final Fantasy 6 Worlds Collide"
     location_names: typing.List[str] = list(Rom.event_flag_location_names)
-    location_ids = None
+    location_ids: typing.Dict[str, int]
     patch_suffix = FF6WCPatch.patch_file_ending
 
     def __init__(self):
         super()
+        self.location_ids = location_name_to_id
 
     async def validate_rom(self, ctx: SNIContext) -> bool:
         from SNIClient import snes_read
@@ -61,9 +63,6 @@ class FF6WCClient(SNIClient):
         if ctx.server is None or ctx.slot is None:
             # not successfully connected to a multiworld server, cannot process the game sending items
             return False
-
-        if self.location_ids is None:
-            self.location_ids = dict((v, k) for k, v in ctx.location_names.items())
 
         map_data = await snes_read(ctx, Rom.map_index_address, 2)
         if map_data is None:
