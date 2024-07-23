@@ -35,6 +35,22 @@ class SM64World(World):
     item_name_to_id = item_table
     location_name_to_id = location_table
 
+    item_name_groups = {
+        "cannons": {
+            "Cannon Unlock BoB", "Cannon Unlock CCM", "Cannon Unlock JRB",
+            "Cannon Unlock RR" , "Cannon Unlock SL" , "Cannon Unlock SSL",
+            "Cannon Unlock THI", "Cannon Unlock TTM", "Cannon Unlock WDW",
+            "Cannon Unlock WF"
+        },
+        "caps": {
+            "Metal Cap", "Vanish Cap", "Wing Cap"
+        },
+        "moves": {
+            "Backflip", "Climb", "Dive", "Double Jump", "Ground Pound", "Kick",
+            "Ledge Grab", "Long Jump", "Side Flip", "Triple Jump", "Wall Kick"
+        },
+    }
+
     required_client_version = (0, 3, 5)
 
     area_connections: typing.Dict[int, int]
