@@ -36,18 +36,18 @@ class SM64World(World):
     location_name_to_id = location_table
 
     item_name_groups = {
-        "cannons": {
+        "Cannons": {
             "Cannon Unlock BoB", "Cannon Unlock CCM", "Cannon Unlock JRB",
             "Cannon Unlock RR" , "Cannon Unlock SL" , "Cannon Unlock SSL",
             "Cannon Unlock THI", "Cannon Unlock TTM", "Cannon Unlock WDW",
-            "Cannon Unlock WF"
+            "Cannon Unlock WF",
         },
-        "caps": {
-            "Metal Cap", "Vanish Cap", "Wing Cap"
+        "Caps": {
+            "Metal Cap", "Vanish Cap", "Wing Cap",
         },
-        "moves": {
+        "Moves": {
             "Backflip", "Climb", "Dive", "Double Jump", "Ground Pound", "Kick",
-            "Ledge Grab", "Long Jump", "Side Flip", "Triple Jump", "Wall Kick"
+            "Ledge Grab", "Long Jump", "Side Flip", "Triple Jump", "Wall Kick",
         },
     }
 
