@@ -99,9 +99,30 @@ class LinksAwakeningWorld(World):
 
     # Items can be grouped using their names to allow easy checking if any item
     # from that group has been collected. Group names can also be used for !hint
-    #item_name_groups = {
-    #    "weapons": {"sword", "lance"}
-    #}
+    item_name_groups = {
+        "Instruments": {
+            "Full Moon Cello", "Conch Horn", "Sea Lily's Bell", "Surf Harp",
+            "Wind Marimba", "Coral Triangle", "Organ of Evening Calm", "Thunder Drum"
+        },
+        "Entrance Keys": {
+            "Tail Key", "Angler Key", "Face Key", "Bird Key", "Slime Key",
+        },
+        "Nightmare Keys": {
+            "Nightmare Key",                 "Nightmare Key (Angler's Tunnel)",
+            "Nightmare Key (Bottle Grotto)", "Nightmare Key (Catfish's Maw)",
+            "Nightmare Key (Color Dungeon)", "Nightmare Key (Eagle's Tower)",
+            "Nightmare Key (Face Shrine)",   "Nightmare Key (Key Cavern)",
+            "Nightmare Key (Tail Cave)",     "Nightmare Key (Turtle Rock)",
+        },
+        "Equipment": {
+            "Progressive Shield", "Progressive Sword", "Shovel", "Bomb", "Bow",
+            "Feather", "Progressive Power Bracelet", "Pegasus Boots", "Flippers",
+            "Hookshot", "Magic Rod", "Rooster", "Ocarina", "Boomerang",
+        },
+        "Movement": {
+            "Feather", "Flippers", "Hookshot", "Pegasus Boots", "Rooster",
+        },
+    }
 
     prefill_dungeon_items = None
 
