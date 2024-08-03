@@ -1050,7 +1050,7 @@ def release_player(ctx: Context, team: int, slot: int):
     ctx.broadcast_text_all("%s (Team #%d) has released all remaining items from their world."
                            % (ctx.player_names[(team, slot)], team + 1),
                            {"type": "Release", "team": team, "slot": slot})
-    register_location_checks(ctx, team, slot, all_locations)
+    register_location_checks(ctx, team, slot, all_locations, False, True, True)
     update_checked_locations(ctx, team, slot)
 
 
@@ -1087,7 +1087,7 @@ def send_items_to(ctx: Context, team: int, target_slot: int, *items: NetworkItem
 
 
 def register_location_checks(ctx: Context, team: int, slot: int, locations: typing.Iterable[int],
-                             count_activity: bool = True, push_webhook: bool = True):
+                             count_activity: bool = True, push_webhook: bool = True, released = False):
     new_locations = set(locations) - ctx.location_checks[team, slot]
     new_locations.intersection_update(ctx.locations[slot])  # ignore location IDs unknown to this multidata
     if new_locations:
@@ -1102,7 +1102,7 @@ def register_location_checks(ctx: Context, team: int, slot: int, locations: typi
                 team + 1, ctx.player_names[(team, slot)], ctx.item_names[ctx.slot_info[target_player].game][item_id],
                 ctx.player_names[(team, target_player)], ctx.location_names[ctx.slot_info[slot].game][location]))
             if push_webhook:
-                _push_item_information(ctx, team, slot, item_id, target_player, location, flags)
+                _push_item_information(ctx, team, slot, item_id, target_player, location, flags, released)
             info_text = json_format_send_event(new_item, target_player)
             ctx.broadcast_team(team, [info_text])
 
@@ -1120,7 +1120,7 @@ def register_location_checks(ctx: Context, team: int, slot: int, locations: typi
         ctx.save()
 
 
-def _push_item_information(ctx: Context, team: int, slot: int, item_id, target_player, location, flags):
+def _push_item_information(ctx: Context, team: int, slot: int, item_id, target_player, location, flags, released: bool):
     item_information = {
         "event": "item",
         "room": ctx.room_url,
@@ -1128,7 +1128,8 @@ def _push_item_information(ctx: Context, team: int, slot: int, item_id, target_p
         "sender": ctx.player_names[(team, slot)],
         "item": ctx.item_names[ctx.slot_info[target_player].game][item_id],
         "receiver": ctx.player_names[(team, target_player)],
-        "location": ctx.location_names[ctx.slot_info[slot].game][location]
+        "location": ctx.location_names[ctx.slot_info[slot].game][location],
+        "released": released
     }
     item_classification = "Filler"
 
