@@ -186,6 +186,7 @@ class Context:
     logger: logging.Logger
     webhook_active = False
     webhook_queue: queue.SimpleQueue
+
     room_url: str
     seed_url: str
     admin_password: str
@@ -387,7 +388,6 @@ class Context:
                             Webhook(self.url, content=message).execute()
                         except Exception as e:
                             self.ctx.logger.exception(e)
-
 
     def broadcast_all(self, msgs: typing.List[dict]):
         msgs = self.dumper(msgs)
@@ -820,7 +820,7 @@ class Context:
             release_player(self, client.team, client.slot)
         self.save()  # save goal completion flag
 
-        self.push_to_webhook({"event": "goal_complete", "room": self.room_url, "seed": self.seed_url, "player": self.player_names[client.team, client.slot]})
+        self.push_to_webhook({"event": "goal_complete", "room": self.room_url, "seed": self.seed_url, "player": self.player_names[client.team, client.slot], "released": "auto" in self.release_mode})
 
     def on_new_hint(self, team: int, slot: int):
         self.on_changed_hints(team, slot)
@@ -1126,7 +1126,7 @@ def _push_item_information(ctx: Context, team: int, slot: int, item_id, target_p
         "room": ctx.room_url,
         "seed": ctx.seed_url,
         "sender": ctx.player_names[(team, slot)],
-        "item": ctx.item_names[ctx.slot_info[slot].game][item_id],
+        "item": ctx.item_names[ctx.slot_info[target_player].game][item_id],
         "receiver": ctx.player_names[(team, target_player)],
         "location": ctx.location_names[ctx.slot_info[slot].game][location]
     }
@@ -1558,6 +1558,26 @@ class ClientMessageProcessor(CommonCommandProcessor):
             self.ctx.save()
             return True
         return False
+
+    @mark_raw
+    def _cmd_gift_hint(self, player_name: str) -> bool:
+        seeked_player, usable, response = get_intended_text(player_name, self.ctx.player_names.values())
+        if usable:
+            points_available = get_client_points(self.ctx, self.client)
+            cost = self.ctx.get_hint_cost(self.client.slot)
+            if (points_available // cost) > 0:
+                self.ctx.hints_used[self.client.team, self.client.slot] += 1
+                team, slot = self.ctx.player_name_lookup[seeked_player]
+                self.ctx.hints_used[team, slot] -= 1
+                self.ctx.broadcast_text_all(self.ctx.get_aliased_name(self.client.team, self.client.slot) + ' gifted ' + self.ctx.get_aliased_name(team, slot) + ' a hint!',
+                                            {"type": "CommandResult"})
+                return True
+            else:
+                self.output(f"You do not have enough points to gift a hint {points_available}/{cost}")
+                return False
+        else:
+            self.output(response)
+            return False
 
     @mark_raw
     def _cmd_item_info(self, item: str):
