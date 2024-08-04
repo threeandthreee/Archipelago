@@ -27,7 +27,7 @@ class KHBBSWeb(WebWorld):
             "multiworld, and related software.",
             "English",
             "kh1_en.md",
-            "kh1/en",
+            "setup/en",
             ["Gicu"]
     )]
 
