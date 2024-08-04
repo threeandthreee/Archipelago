@@ -1,5 +1,5 @@
 import random
-import typing
+from typing import ByteString, List, Callable
 import json
 import pymem
 from pymem import pattern
@@ -7,7 +7,8 @@ from pymem.exception import ProcessNotFound, ProcessError, MemoryReadError, WinA
 from dataclasses import dataclass
 
 from CommonClient import logger
-from ..locs import (CellLocations as Cells,
+from ..locs import (OrbLocations as Orbs,
+                    CellLocations as Cells,
                     ScoutLocations as Flies,
                     SpecialLocations as Specials,
                     OrbCacheLocations as Caches)
@@ -16,6 +17,7 @@ from ..locs import (CellLocations as Cells,
 sizeof_uint64 = 8
 sizeof_uint32 = 4
 sizeof_uint8 = 1
+sizeof_float = 4
 
 
 # IMPORTANT: OpenGOAL memory structures are particular about the alignment, in memory, of member elements according to
@@ -65,6 +67,24 @@ orb_caches_checked_offset = offsets.define(sizeof_uint32, 16)
 moves_received_offset = offsets.define(sizeof_uint8, 16)
 moverando_enabled_offset = offsets.define(sizeof_uint8)
 
+# Orbsanity information.
+orbsanity_option_offset = offsets.define(sizeof_uint8)
+orbsanity_bundle_offset = offsets.define(sizeof_uint32)
+collected_bundle_offset = offsets.define(sizeof_uint32, 17)
+
+# Progression and Completion information.
+fire_canyon_unlock_offset = offsets.define(sizeof_float)
+mountain_pass_unlock_offset = offsets.define(sizeof_float)
+lava_tube_unlock_offset = offsets.define(sizeof_float)
+completion_goal_offset = offsets.define(sizeof_uint8)
+completed_offset = offsets.define(sizeof_uint8)
+
+# Text to display in the HUD (32 char max per string).
+their_item_name_offset = offsets.define(sizeof_uint8, 32)
+their_item_owner_offset = offsets.define(sizeof_uint8, 32)
+my_item_name_offset = offsets.define(sizeof_uint8, 32)
+my_item_finder_offset = offsets.define(sizeof_uint8, 32)
+
 # The End.
 end_marker_offset = offsets.define(sizeof_uint8, 4)
 
@@ -111,7 +131,7 @@ def autopsy(died: int) -> str:
 
 
 class JakAndDaxterMemoryReader:
-    marker: typing.ByteString
+    marker: ByteString
     goal_address = None
     connected: bool = False
     initiated_connect: bool = False
@@ -128,15 +148,20 @@ class JakAndDaxterMemoryReader:
     send_deathlink: bool = False
     cause_of_death: str = ""
 
-    def __init__(self, marker: typing.ByteString = b'UnLiStEdStRaTs_JaK1\x00'):
+    # Orbsanity handling
+    orbsanity_enabled: bool = False
+    orbs_paid: int = 0
+
+    def __init__(self, marker: ByteString = b'UnLiStEdStRaTs_JaK1\x00'):
         self.marker = marker
         self.connect()
 
     async def main_tick(self,
-                        location_callback: typing.Callable,
-                        finish_callback: typing.Callable,
-                        deathlink_callback: typing.Callable,
-                        deathlink_toggle: typing.Callable):
+                        location_callback: Callable,
+                        finish_callback: Callable,
+                        deathlink_callback: Callable,
+                        deathlink_toggle: Callable,
+                        paid_orbs_callback: Callable):
         if self.initiated_connect:
             await self.connect()
             self.initiated_connect = False
@@ -159,6 +184,7 @@ class JakAndDaxterMemoryReader:
         # Checked Locations in game. Handle the entire outbox every tick until we're up to speed.
         if len(self.location_outbox) > self.outbox_index:
             location_callback(self.location_outbox)
+            self.save_data()
             self.outbox_index += 1
 
         if self.finished_game:
@@ -170,6 +196,10 @@ class JakAndDaxterMemoryReader:
 
         if self.send_deathlink:
             deathlink_callback()
+
+        if self.orbs_paid > 0:
+            paid_orbs_callback(self.orbs_paid)
+            self.orbs_paid = 0
 
     async def connect(self):
         try:
@@ -204,10 +234,10 @@ class JakAndDaxterMemoryReader:
         logger.info("Memory Reader Status:")
         logger.info("   Game process ID: " + (str(self.gk_process.process_id) if self.gk_process else "None"))
         logger.info("   Game state memory address: " + str(self.goal_address))
-        logger.info("   Last location checked: " + (str(self.location_outbox[self.outbox_index])
+        logger.info("   Last location checked: " + (str(self.location_outbox[self.outbox_index - 1])
                                                     if self.outbox_index else "None"))
 
-    def read_memory(self) -> typing.List[int]:
+    def read_memory(self) -> List[int]:
         try:
             next_cell_index = self.read_goal_address(0, sizeof_uint64)
             next_buzzer_index = self.read_goal_address(next_buzzer_index_offset, sizeof_uint64)
@@ -220,6 +250,16 @@ class JakAndDaxterMemoryReader:
                     self.location_outbox.append(cell_ap_id)
                     logger.debug("Checked power cell: " + str(next_cell))
 
+                    # If orbsanity is ON and next_cell is one of the traders or oracles, then run a callback
+                    # to add their amount to the DataStorage value holding our current orb trade total.
+                    if next_cell in {11, 12, 31, 32, 33, 96, 97, 98, 99}:
+                        self.orbs_paid += 90
+                        logger.debug("Traded 90 orbs!")
+
+                    if next_cell in {13, 14, 34, 35, 100, 101}:
+                        self.orbs_paid += 120
+                        logger.debug("Traded 120 orbs!")
+
             for k in range(0, next_buzzer_index):
                 next_buzzer = self.read_goal_address(buzzers_checked_offset + (k * sizeof_uint32), sizeof_uint32)
                 buzzer_ap_id = Flies.to_ap_id(next_buzzer)
@@ -229,19 +269,10 @@ class JakAndDaxterMemoryReader:
 
             for k in range(0, next_special_index):
                 next_special = self.read_goal_address(specials_checked_offset + (k * sizeof_uint32), sizeof_uint32)
-
-                # 112 is the game-task ID of `finalboss-movies`, which is written to this array when you grab
-                # the white eco. This is our victory condition, so we need to catch it and act on it.
-                if next_special == 112 and not self.finished_game:
-                    self.finished_game = True
-                    logger.info("Congratulations! You finished the game!")
-                else:
-
-                    # All other special checks handled as normal.
-                    special_ap_id = Specials.to_ap_id(next_special)
-                    if special_ap_id not in self.location_outbox:
-                        self.location_outbox.append(special_ap_id)
-                        logger.debug("Checked special: " + str(next_special))
+                special_ap_id = Specials.to_ap_id(next_special)
+                if special_ap_id not in self.location_outbox:
+                    self.location_outbox.append(special_ap_id)
+                    logger.debug("Checked special: " + str(next_special))
 
             died = self.read_goal_address(died_offset, sizeof_uint8)
             if died > 0:
@@ -262,8 +293,49 @@ class JakAndDaxterMemoryReader:
                     logger.debug("Checked orb cache: " + str(next_cache))
 
             # Listen for any changes to this setting.
-            moverando_flag = self.read_goal_address(moverando_enabled_offset, sizeof_uint8)
-            self.moverando_enabled = bool(moverando_flag)
+            # moverando_flag = self.read_goal_address(moverando_enabled_offset, sizeof_uint8)
+            # self.moverando_enabled = bool(moverando_flag)
+
+            orbsanity_option = self.read_goal_address(orbsanity_option_offset, sizeof_uint8)
+            bundle_size = self.read_goal_address(orbsanity_bundle_offset, sizeof_uint32)
+            self.orbsanity_enabled = orbsanity_option > 0
+
+            # Per Level Orbsanity option. Only need to do this loop if we chose this setting.
+            if orbsanity_option == 1:
+                for level in range(0, 16):
+                    collected_bundles = self.read_goal_address(collected_bundle_offset + (level * sizeof_uint32),
+                                                               sizeof_uint32)
+
+                    # Count up from the first bundle, by bundle size, until you reach the latest collected bundle.
+                    # e.g. {25, 50, 75, 100, 125...}
+                    if collected_bundles > 0:
+                        for bundle in range(bundle_size,
+                                            bundle_size + collected_bundles,  # Range max is non-inclusive.
+                                            bundle_size):
+
+                            bundle_ap_id = Orbs.to_ap_id(Orbs.find_address(level, bundle, bundle_size))
+                            if bundle_ap_id not in self.location_outbox:
+                                self.location_outbox.append(bundle_ap_id)
+                                logger.debug("Checked orb bundle: " + str(bundle_ap_id))
+
+            # Global Orbsanity option. Index 16 refers to all orbs found regardless of level.
+            if orbsanity_option == 2:
+                collected_bundles = self.read_goal_address(collected_bundle_offset + (16 * sizeof_uint32),
+                                                           sizeof_uint32)
+                if collected_bundles > 0:
+                    for bundle in range(bundle_size,
+                                        bundle_size + collected_bundles,  # Range max is non-inclusive.
+                                        bundle_size):
+
+                        bundle_ap_id = Orbs.to_ap_id(Orbs.find_address(16, bundle, bundle_size))
+                        if bundle_ap_id not in self.location_outbox:
+                            self.location_outbox.append(bundle_ap_id)
+                            logger.debug("Checked orb bundle: " + str(bundle_ap_id))
+
+            completed = self.read_goal_address(completed_offset, sizeof_uint8)
+            if completed > 0 and not self.finished_game:
+                self.finished_game = True
+                logger.info("Congratulations! You finished the game!")
 
         except (ProcessError, MemoryReadError, WinAPIError):
             logger.error("The gk process has died. Restart the game and run \"/memr connect\" again.")

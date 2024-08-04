@@ -29,11 +29,11 @@ At this time, this method of setup works on Windows only, but Linux support is a
   - `C:\Users\<YourName>\AppData\Roaming\OpenGOAL-Mods\archipelagoal\iso_data` should have *all* the same files as
   - `C:\Users\<YourName>\AppData\Roaming\OpenGOAL-Mods\_iso_data`, if it doesn't, copy those files over manually.
   - And then `Recompile` if you needed to copy the files over.
-- **DO NOT LAUNCH THE GAME FROM THE MOD LAUNCHER.** It will run in retail mode, which is incompatible with Archipelago. We need it to run in debug mode (see below).
+- **DO NOT PLAY AN ARCHIPELAGO GAME THROUGH THE MOD LAUNCHER.** It will run in retail mode, which is incompatible with Archipelago. We need it to run in debug mode (see below).
 
 ***Archipelago Launcher***
 
-- Copy the `jakanddaxter.apworld` file into your `Archipelago/lib/worlds` directory.
+- Copy the `jakanddaxter.apworld` file into your `Archipelago/custom_worlds` directory.
   - Reminder: the default installation location for Archipelago is `C:\ProgramData\Archipelago`.
 - Run the Archipelago Launcher.
 - From the left-most list, click `Generate Template Options`.
@@ -43,6 +43,20 @@ At this time, this method of setup works on Windows only, but Linux support is a
 - If you plan to host the game yourself, from the left-most list, click `Host`.
   - When asked to select your multiworld seed, navigate to `Archipelago/output` and select the zip file containing the seed you just generated.
   - You can sort by Date Modified to make it easy to find.
+
+## Updates and New Releases
+
+***OpenGOAL Mod Launcher***
+
+- Run the Mod Launcher and click `ArchipelaGOAL` in the mod list.
+- Click `Launch` to download and install any new updates that have been released.
+- You can verify your version once you reach the title screen menu by navigating to `Options > Game Options > Miscellaneous > Speedrunner Mode`.
+- Turn on `Speedrunner Mode` and exit the menu. You should see the installed version number in the bottom left corner. Then turn `Speedrunner Mode` back off.
+- Once you've verified your version, you can close the game. Remember, this is just for downloading updates. **DO NOT PLAY AN ARCHIPELAGO GAME THROUGH THE MOD LAUNCHER.**
+ 
+***Archipelago Launcher***
+
+- Copy the latest `jakanddaxter.apworld` file into your `Archipelago/custom_worlds` directory.
 
 ## Starting a Game
 
@@ -59,15 +73,17 @@ At this time, this method of setup works on Windows only, but Linux support is a
     - You should see several messages appear after the compiler has run to 100% completion. If you see `The REPL is ready!` and `The Memory Reader is ready!` then that should indicate a successful startup.
     - The game should then load in the title screen.
 - You can *minimize* the 2 powershell windows, **BUT DO NOT CLOSE THEM.** They are required for Archipelago and the game to communicate with each other.
+- Use the text client to connect to the Archipelago server while on the title screen. This will communicate your current settings to the game.
 - Start a new game in the title screen, and play through the cutscenes.
-- Once you reach Geyser Rock, you can connect to the Archipelago server.
-  - Provide your slot/player name and hit Enter, and then start the game!
+- Once you reach Geyser Rock, you can start the game!
   - You can leave Geyser Rock immediately if you so choose - just step on the warp gate button.
 
 ***Returning / Async Game***
 
-- One important note is to connect to the Archipelago server **AFTER** you load your save file. This is to allow AP to give you all the items you had previously.
-- Otherwise, the same steps as New Game apply.
+- The same steps as New Game apply, with some exceptions: 
+  - Connect to the Archipelago server **BEFORE** you load your save file. This is to allow AP to give the game your current settings and all the items you had previously.
+  - **THESE SETTINGS AFFECT LOADING AND SAVING OF SAVE FILES, SO IT IS IMPORTANT TO DO THIS FIRST.**
+  - Then, instead of choosing `New Game` in the title menu, choose `Load Game`, then choose the save file **CORRESPONDING TO YOUR CURRENT ARCHIPELAGO CONNECTION.** 
 
 ## Troubleshooting
 
@@ -105,3 +121,4 @@ Input file iso_data/jak1/MUS/TWEAKVAL.MUS does not exist.
 - The game needs to run in debug mode in order to allow the repl to connect to it. We hide the debug text on screen and play the game's introductory cutscenes properly.
 - The powershell windows cannot be run as background processes due to how the repl works, so the best we can do is minimize them.
 - The client is currently not very robust and doesn't handle failures gracefully. This may result in items not being delivered to the game, or location checks not being delivered to the server.
+- Orbsanity checks may show up out of order in the text client.

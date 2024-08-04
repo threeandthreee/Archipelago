@@ -9,6 +9,8 @@ db $80, $03                     ;Sprite 080 do event: Move Down
 db $80, $03                     ;Sprite 080 do event: Move Down
 db $80, $03                     ;Sprite 080 do event: Move Down
 db $BD, $4A, $FF                ;Start Event Battle 4A
+db $DE, $A5 ; custom reward
+db $DF
 db $80, $12                     ;Sprite 080 do event: face right, standing
 db $CE, $05, $02                ;Play next 02 bytes 05 times
 db $80, $01                     ;Sprite 080 do event: Move Up

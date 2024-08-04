@@ -769,6 +769,9 @@ CMP !unusedram2
 BCC RiftTabletFailureCase
 
 ; Success case - A42 to 01
+LDA #$00
+STA !unusedram1
+STA !unusedram2
 LDA #$01
 LDX #$0041
 JSL SetKeyItemBits
@@ -779,6 +782,9 @@ JSL SetKeyItemBits
 JML $C0A628 ; end event function
 
 RiftTabletFailureCase:
+LDA #$00
+STA !unusedram1
+STA !unusedram2
 LDA #$01
 TRB $0A41
 ; Failure case - A42 set to 02 only

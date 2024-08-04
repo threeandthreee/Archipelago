@@ -264,5 +264,54 @@
         "area": "Ruined City",
         "description": "Crayclaw",
         "reward_style": "event"
+    },
+    "1039": {
+        "address": "C0FBF0",
+        "original_reward": "New Key Item",
+        "area": "Rift (2 Tablets)",
+        "description": "Calofisteri",
+        "reward_style": "event"
+    },
+    "1040": {
+        "address": "C0FBF2",
+        "original_reward": "New Key Item",
+        "area": "Rift (3 Tablets)",
+        "description": "Apanda",
+        "reward_style": "event"
+    },
+    "1041": {
+        "address": "C0FBF4",
+        "original_reward": "New Key Item",
+        "area": "Rift (3 Tablets)",
+        "description": "Apocalypse",
+        "reward_style": "event"
+    },
+    "1042": {
+        "address": "C0FBF6",
+        "original_reward": "New Key Item",
+        "area": "Rift (3 Tablets)",
+        "description": "Catastroph",
+        "reward_style": "event"
+    },
+    "1043": {
+        "address": "C0FBF8",
+        "original_reward": "New Key Item",
+        "area": "Rift (4 Tablets)",
+        "description": "Halicarnaso",
+        "reward_style": "event"
+    },
+    "1044": {
+        "address": "C0FBFA",
+        "original_reward": "New Key Item",
+        "area": "Rift (4 Tablets)",
+        "description": "Twintania",
+        "reward_style": "event"
+    },
+    "1045": {
+        "address": "C0FBFC",
+        "original_reward": "New Key Item",
+        "area": "Void",
+        "description": "Necrofobia",
+        "reward_style": "event"
     }
 }

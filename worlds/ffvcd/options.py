@@ -37,8 +37,8 @@ class WorldLock(Choice):
 
 class ProgressionChecks(Choice):
     """Determines where progression checks are in the game for the multiworld.
-    1: All boss locations (before the Rift only) are valid checks for progression
-    2: All bosses (before the Rift only), all events & all chests are valid checks for progression
+    1: All boss locations are valid checks for progression
+    2: All bosses, all events, & all chests are valid checks for progression
     """
     display_name = "Progression Checks"
     option_bosses = 0
@@ -57,11 +57,13 @@ class TrappedChestsSetting(Choice):
     Any: Any items in the multiworld can appear in the chests.
 
     If progression checks are set to bosses then options 2 and 3 will not add progression to trapped chests.
+    If set to "Any" gil cannot land in trapped chests, due to how the world is built gil landing in trapped locations
+    will result in one fewer trapped chests per.
     """
     display_name = "Enable Trapped Chests"
     option_local_high_value = 0
     option_local_high_value_and_progression = 1
-    #option_any = 2
+    option_any = 2
     default = 0
 
 class JobsIncluded(OptionSet):
@@ -128,7 +130,7 @@ class RandomJobCount(Range):
     This setting only applies when "Four Job Mode" is off.
     """
     display_name = "Job Crystals Available"
-    range_start = 1
+    range_start = 4
     range_end = 22
     default = 22
 
@@ -137,7 +139,7 @@ class AbilitySettings(Choice):
     All job abilities from "Job and Groups in World" list are placed by default.
     
     Only for Available Jobs: Places only abilities for whichever jobs crystals are in the world
-    (controlled by the Jobs Available and "Job and Groups in World" setting or Four Job Mode).
+    (controlled by the Jobs Available and "Job and Groups in World" setting or "Four Job Mode").
 
     Available Jobs Plus Extra: Places abilities for whichever job crystals are in the world plus a small amount extra, 
     controlled by the "Job Group Abilities Number" setting.
@@ -173,7 +175,7 @@ class JobGroupAbilitiesNumber(Range):
     If this number plus "Job Crystals Available" exceeds items in "Job and Groups in World" then it will place all from "Job and Groups in World" list.
     """
     display_name = "Job Group Abilities Number"
-    range_start = 1
+    range_start = 4
     range_end = 22
     default = 22
 
@@ -210,6 +212,21 @@ class DisableTier3Magic(Toggle):
     This applies to Black, White, Time, and Red Mages, Summoner, and Mystic Knight.
     """
     display_name = "Disable Tier 3 Magic"
+
+class KuzarProgression(Toggle):
+    """
+    When enabled, allows Kuzar to have progression items. 
+
+    Items in Kuzar logically require all 4 tablets.
+    """
+    display_name = "Enable Kuzar Progression"
+
+class RiftAndVoidProgression(Toggle):
+    """
+    When enabled, allows areas within the Rift and Void to have progression. 
+
+    """
+    display_name = "Enable Rift and Void Progression"
 
 class LennaName(FreeText):
     """
@@ -266,6 +283,8 @@ class ffvcd_options(PerGameCommonOptions):
     disable_tier_1_magic: DisableTier1Magic
     disable_tier_2_magic: DisableTier2Magic
     disable_tier_3_magic: DisableTier3Magic
+    kuzar_progression: KuzarProgression
+    rift_and_void_progression: RiftAndVoidProgression
     lenna_name: LennaName
     galuf_name: GalufName
     krile_name: KrileName

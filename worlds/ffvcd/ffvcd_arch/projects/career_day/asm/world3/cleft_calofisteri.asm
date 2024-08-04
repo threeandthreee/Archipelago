@@ -12,13 +12,12 @@ db $06                          ;Player Bounce in Place
 db $03                          ;Player Move Down
 db $0B                          ;<Unknown>
 db $10                          ;Player pose: face up, left hand forward
-db $70
 db $81, $09                     ;Sprite 081 do event: Show
-db $71
 db $81, $03                     ;Sprite 081 do event: Move Down
-db $70
 db $81, $0A                     ;Sprite 081 do event: Hide
 db $BD, $47, $FF                ;Start Event Battle 47
+db $DE, $A0 ; custom reward
+db $DF
 db $0B                          ;<Unknown>
 db $10                          ;Player pose: face up, left hand forward
 db $A4, $79                     ;Set Event Flag 179

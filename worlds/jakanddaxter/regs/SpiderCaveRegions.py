@@ -1,10 +1,11 @@
 from typing import List
 from BaseClasses import CollectionState, MultiWorld
 from .RegionBase import JakAndDaxterRegion
-from ..Rules import can_free_scout_flies, can_fight
+from .. import JakAndDaxterOptions, EnableOrbsanity
+from ..Rules import can_free_scout_flies, can_fight, can_reach_orbs
 
 
-def build_regions(level_name: str, player: int, multiworld: MultiWorld) -> List[JakAndDaxterRegion]:
+def build_regions(level_name: str, multiworld: MultiWorld, options: JakAndDaxterOptions, player: int) -> List[JakAndDaxterRegion]:
 
     # A large amount of this area can be covered by single jump, floating platforms, web trampolines, and goggles.
     main_area = JakAndDaxterRegion("Main Area", player, multiworld, level_name, 63)
@@ -21,18 +22,18 @@ def build_regions(level_name: str, player: int, multiworld: MultiWorld) -> List[
     # The rest of the crystals can be destroyed with yellow eco in main_area.
     dark_crystals.add_cell_locations([79], access_rule=lambda state:
                                      can_fight(state, player)
-                                     and (state.has("Roll", player) and state.has("Roll Jump", player)))
+                                     and state.has_all({"Roll", "Roll Jump"}, player))
 
     dark_cave = JakAndDaxterRegion("Dark Cave", player, multiworld, level_name, 5)
     dark_cave.add_cell_locations([80], access_rule=lambda state:
                                  can_fight(state, player)
-                                 and ((state.has("Crouch", player) and state.has("Crouch Jump", player))
-                                      or state.has("Double Jump", player)))
+                                 and (state.has("Double Jump", player)
+                                      or state.has_all({"Crouch", "Crouch Jump"}, player)))
     dark_cave.add_fly_locations([262229], access_rule=lambda state:
                                 can_fight(state, player)
                                 and can_free_scout_flies(state, player)
-                                and ((state.has("Crouch", player) and state.has("Crouch Jump", player))
-                                     or state.has("Double Jump", player)))
+                                and (state.has("Double Jump", player)
+                                     or state.has_all({"Crouch", "Crouch Jump"}, player)))
 
     robot_cave = JakAndDaxterRegion("Robot Cave", player, multiworld, level_name, 0)
 
@@ -106,5 +107,22 @@ def build_regions(level_name: str, player: int, multiworld: MultiWorld) -> List[
     multiworld.regions.append(pole_course)
     multiworld.regions.append(spider_tunnel)
     multiworld.regions.append(spider_tunnel_crates)
+
+    # If Per-Level Orbsanity is enabled, build the special Orbsanity Region. This is a virtual region always
+    # accessible to Main Area. The Locations within are automatically checked when you collect enough orbs.
+    if options.enable_orbsanity == EnableOrbsanity.option_per_level:
+        orbs = JakAndDaxterRegion("Orbsanity", player, multiworld, level_name)
+
+        bundle_size = options.level_orbsanity_bundle_size.value
+        bundle_count = int(200 / bundle_size)
+        for bundle_index in range(bundle_count):
+            orbs.add_orb_locations(13,
+                                   bundle_index,
+                                   bundle_size,
+                                   access_rule=lambda state, bundle=bundle_index:
+                                   can_reach_orbs(state, player, multiworld, options, level_name)
+                                   >= (bundle_size * (bundle + 1)))
+        multiworld.regions.append(orbs)
+        main_area.connect(orbs)
 
     return [main_area]

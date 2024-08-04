@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 
-from Options import NamedRange, Choice, Range, Option, Toggle, DeathLink, DefaultOnToggle, OptionSet, PerGameCommonOptions, StartInventoryPool
+from Options import NamedRange, Choice, Range, Toggle, DefaultOnToggle, PerGameCommonOptions, StartInventoryPool
 
 class StrengthIncrease(Range):
     """
-    Number of Strength Increases to Add to the Level Up Rewards
+    Determines the number of Strength Increases to add to the multiworld.
     
-    The randomizer will add all stat up defined here into a pool and choose up to 100 to add to the multiworld.
+    The randomizer will add all stat ups defined here into a pool and choose up to 100 to add to the multiworld.
     Accessory Slot Increases and Item Slot Increases are prioritized first, then the remaining items (up to 100 total) are chosen at random.
     """
     display_name = "STR Increases"
@@ -16,9 +16,9 @@ class StrengthIncrease(Range):
 
 class DefenseIncrease(Range):
     """
-    Number of Defense Increases to Add to the Level Up Rewards
+    Determines the number of Defense Increases to add to the multiworld.
     
-    The randomizer will add all stat up defined here into a pool and choose up to 100 to add to the multiworld.
+    The randomizer will add all stat ups defined here into a pool and choose up to 100 to add to the multiworld.
     Accessory Slot Increases and Item Slot Increases are prioritized first, then the remaining items (up to 100 total) are chosen at random.
     """
     display_name = "DEF Increases"
@@ -28,9 +28,9 @@ class DefenseIncrease(Range):
 
 class HPIncrease(Range):
     """
-    Number of HP Increases to Add to the Level Up Rewards
+    Determines the number of HP Increases to add to the multiworld.
     
-    The randomizer will add all stat up defined here into a pool and choose up to 100 to add to the multiworld.
+    The randomizer will add all stat ups defined here into a pool and choose up to 100 to add to the multiworld.
     Accessory Slot Increases and Item Slot Increases are prioritized first, then the remaining items (up to 100 total) are chosen at random.
     """
     display_name = "HP Increases"
@@ -40,9 +40,9 @@ class HPIncrease(Range):
 
 class APIncrease(Range):
     """
-    Number of AP Increases to Add to the Level Up Rewards
+    Determines the number of AP Increases to add to the multiworld.
     
-    The randomizer will add all stat up defined here into a pool and choose up to 100 to add to the multiworld.
+    The randomizer will add all stat ups defined here into a pool and choose up to 100 to add to the multiworld.
     Accessory Slot Increases and Item Slot Increases are prioritized first, then the remaining items (up to 100 total) are chosen at random.
     """
     display_name = "AP Increases"
@@ -52,9 +52,9 @@ class APIncrease(Range):
 
 class MPIncrease(Range):
     """
-    Number of MP Increases to Add to the Level Up Rewards
+    Determines the number of MP Increases to add to the multiworld.
     
-    The randomizer will add all stat up defined here into a pool and choose up to 100 to add to the multiworld.
+    The randomizer will add all stat ups defined here into a pool and choose up to 100 to add to the multiworld.
     Accessory Slot Increases and Item Slot Increases are prioritized first, then the remaining items (up to 100 total) are chosen at random.
     """
     display_name = "MP Increases"
@@ -64,9 +64,9 @@ class MPIncrease(Range):
 
 class AccessorySlotIncrease(Range):
     """
-    Number of Accessory Slot Increases to Add to the Level Up Rewards
+    Determines the number of Accessory Slot Increases to add to the multiworld.
     
-    The randomizer will add all stat up defined here into a pool and choose up to 100 to add to the multiworld.
+    The randomizer will add all stat ups defined here into a pool and choose up to 100 to add to the multiworld.
     Accessory Slot Increases and Item Slot Increases are prioritized first, then the remaining items (up to 100 total) are chosen at random.
     """
     display_name = "Accessory Slot Increases"
@@ -76,9 +76,9 @@ class AccessorySlotIncrease(Range):
 
 class ItemSlotIncrease(Range):
     """
-    Number of Item Slot Increases to Add to the Level Up Rewards
+    Determines the number of Item Slot Increases to add to the multiworld.
     
-    The randomizer will add all stat up defined here into a pool and choose up to 100 to add to the multiworld.
+    The randomizer will add all stat ups defined here into a pool and choose up to 100 to add to the multiworld.
     Accessory Slot Increases and Item Slot Increases are prioritized first, then the remaining items (up to 100 total) are chosen at random.
     """
     display_name = "Item Slot Increases"
@@ -88,13 +88,13 @@ class ItemSlotIncrease(Range):
 
 class Atlantica(Toggle):
     """
-    Toggle whether Atlantica locations/items should be included.
+    Toggle whether to include checks in Atlantica.
     """
     display_name = "Atlantica"
 
 class HundredAcreWood(Toggle):
     """
-    Toggle whether to include checks in the 100 Acre Wood
+    Toggle whether to include checks in the 100 Acre Wood.
     """
     display_name = "100 Acre Wood"
 
@@ -106,7 +106,8 @@ class SuperBosses(Toggle):
 
 class Cups(Toggle):
     """
-    Toggle whether to include checks behind completing Phil, Pegasus, Hercules, or Hades cups.  Please note that the items will still appear in the multiworld, as they are required to challenge Sephiroth.
+    Toggle whether to include checks behind completing Phil, Pegasus, Hercules, or Hades cups.
+    Please note that the cup items will still appear in the multiworld even if toggled off, as they are required to challenge Sephiroth.
     """
     display_name = "Cups"
 
@@ -114,11 +115,11 @@ class Goal(Choice):
     """
     Determines when victory is achieved in your playthrough.
     
-    Sephiroth: Defeat Sephiroth.
-    Unknown: Defeat Unknown.
+    Sephiroth: Defeat Sephiroth
+    Unknown: Defeat Unknown
     Postcards: Turn in all 10 postcards in Traverse Town
     Final Ansem: Enter End of the World and defeat Ansem as normal
-    Puppies: Rescue and return all 99 puppies in Traverse Town.
+    Puppies: Rescue and return all 99 puppies in Traverse Town
     Final Rest: Open the chest in End of the World Final Rest
     """
     display_name = "Goal"
@@ -131,19 +132,22 @@ class Goal(Choice):
     default = 3
 
 class EndoftheWorldUnlock(Choice):
-    """Determines how End of the World is Unlocked"""
+    """Determines how End of the World is Unlocked.
+    
+    Item: You can receive an item called "End of the World" which unlocks the world
+    Reports: A certain amount of reports are required to unlock End of the World, which is defined in your options"""
     display_name = "End of the World Unlock"
     option_item = 0
     option_reports = 1
     default = 1
 
 class FinalRestDoor(Choice):
-    """Determines what conditions need to be met to manifest the door in Final Rest, allowing the player to challenge Ansem
+    """Determines what conditions need to be met to manifest the door in Final Rest, allowing the player to challenge Ansem.
     
-    Reports: A certain number of Ansem's Reports are required.  That number is defined in another setting.
-    Puppies: Having all 99 puppies is required.
-    Postcards: Turning in all 10 postcards is required.
-    Superbosses: Defeating Sephiroth, Unknown, Kurt Zisa, and Phantom are required.
+    Reports: A certain number of Ansem's Reports are required, determined by the "Reports to Open Final Rest Door" option
+    Puppies: Having all 99 puppies is required
+    Postcards: Turning in all 10 postcards is required
+    Superbosses: Defeating Sephiroth, Unknown, Kurt Zisa, and Phantom are required
     """
     display_name = "Final Rest Door"
     option_reports = 0
@@ -153,7 +157,7 @@ class FinalRestDoor(Choice):
 
 class Puppies(Choice):
     """
-    Determines how dalmation puppies are shuffled into the pool.
+    Determines how dalmatian puppies are shuffled into the pool.
     Full: All puppies are in one location
     Triplets: Puppies are found in triplets just as they are in the base game
     Individual: One puppy can be found per location
@@ -166,15 +170,15 @@ class Puppies(Choice):
 
 class EXPMultiplier(NamedRange):
     """
-    Determines the multiplier to apply to EXP gained
+    Determines the multiplier to apply to EXP gained.
     """
     display_name = "EXP Multiplier"
     default = 16
-    range_start = default / 4
+    range_start = default // 4
     range_end = 128
     special_range_names = {
-        "0.25x": default / 4,
-        "0.5x": default / 2,
+        "0.25x": int(default // 4),
+        "0.5x": int(default // 2),
         "1x": default,
         "2x": default * 2,
         "3x": default * 3,
@@ -211,13 +215,13 @@ class ReportsInPool(Range):
 
 class RandomizeKeybladeStats(DefaultOnToggle):
     """
-    Determines whether Keyblade stats should be randomized
+    Determines whether Keyblade stats should be randomized.
     """
     display_name = "Randomize Keyblade Stats"
 
 class KeybladeMinStrength(Range):
     """
-    Determines the lowest STR bonus a keyblade can have
+    Determines the minimum STR bonus a keyblade can have.
     """
     display_name = "Keyblade Minimum STR Bonus"
     default = 3
@@ -226,7 +230,7 @@ class KeybladeMinStrength(Range):
 
 class KeybladeMaxStrength(Range):
     """
-    Determines the maximum STR bonus a keyblade can have
+    Determines the maximum STR bonus a keyblade can have.
     """
     display_name = "Keyblade Maximum STR Bonus"
     default = 14
@@ -235,7 +239,7 @@ class KeybladeMaxStrength(Range):
 
 class KeybladeMinMP(Range):
     """
-    Determines the minimum MP bonus a keyblade can have
+    Determines the minimum MP bonus a keyblade can have.
     """
     display_name = "Keyblade Minimum MP Bonus"
     default = -2
@@ -244,7 +248,7 @@ class KeybladeMinMP(Range):
 
 class KeybladeMaxMP(Range):
     """
-    Determines the maximum MP bonus a keyblade can have
+    Determines the maximum MP bonus a keyblade can have.
     """
     display_name = "Keyblade Maximum MP Bonus"
     default = 3
@@ -262,7 +266,7 @@ class LevelChecks(Range):
 
 class ForceStatsOnLevels(NamedRange):
     """
-    If this value is less than the value for Level Checks, this determines the minimum level from which only stat ups are obtained at level up locations
+    If this value is less than the value for Level Checks, this determines the minimum level from which only stat ups are obtained at level up locations.
     For example, if you want to be able to find any multiworld item from levels 1-50, then just stat ups for levels 51-100, set this value to 51.
     """
     display_name = "Force Stats on Level Starting From"
@@ -277,7 +281,7 @@ class ForceStatsOnLevels(NamedRange):
 
 class BadStartingWeapons(Toggle):
     """
-    Forces Kingdom Key, Dream Sword, Dream Shield, and Dream Staff to have bad stats
+    Forces Kingdom Key, Dream Sword, Dream Shield, and Dream Staff to have bad stats.
     """
     display_name = "Bad Starting Weapons"
 
@@ -314,13 +318,13 @@ class KeybladesUnlockChests(Toggle):
 
 class InteractInBattle(Toggle):
     """
-    Allow Sora to talk, examine, and open chests in battle
+    Allow Sora to talk to people, examine objects, and open chests in battle.
     """
     display_name = "Interact in Battle"
 
 class AdvancedLogic(Toggle):
     """
-    If on, logic may expect you to do advanced skips like combo master, dumbo, and other unusual methods for reaching locations.
+    If on, logic may expect you to do advanced skips like using Combo Master, Dumbo, and other unusual methods to reach locations.
     """
     display_name = "Advanced Logic"
 
@@ -341,17 +345,6 @@ class VanillaEmblemPieces(DefaultOnToggle):
     If on, the Hollow Bastion emblem pieces are in their vanilla locations.
     """
     display_name = "Vanilla Emblem Pieces"
-
-class JunkInMissableLocations(DefaultOnToggle):
-    """
-    If on, will place Elixirs in missable locations.  If turned off, there is a chance you will need to play the game multiple times to get the missed items.
-    Locations include:
-        Leon Gift
-        Aerith Gift
-        Clock Tower Doors
-        World Terminus Hollow Bastion Chest
-    """
-    display_name = "Junk in Missable Locations"
 
 class StartingWorlds(Range):
     """
@@ -383,7 +376,6 @@ class KH1Options(PerGameCommonOptions):
     extra_shared_abilities: ExtraSharedAbilities
     exp_zero_in_pool: EXPZeroInPool
     vanilla_emblem_pieces: VanillaEmblemPieces
-    junk_in_missable_locations: JunkInMissableLocations
     donald_death_link: DonaldDeathLink
     goofy_death_link: GoofyDeathLink
     randomize_keyblade_stats: RandomizeKeybladeStats

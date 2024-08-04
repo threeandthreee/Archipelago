@@ -4,6 +4,7 @@ from typing import Dict, List, NamedTuple, Optional, Set
 
 from BaseClasses import Item, ItemClassification
 from . import jsonc
+from .Options import EarlyKeyItem, Spawn
 
 if typing.TYPE_CHECKING:
     from . import OuterWildsWorld
@@ -130,7 +131,7 @@ def create_items(world: "OuterWildsWorld") -> None:
                 multiworld.push_precollected(create_item(player, "Spacesuit"))
             else:
                 prog_and_useful_items.append(create_item(player, "Spacesuit"))
-        elif name == "Launch Codes":  # in a future version this should say `and options.spawn == "vanilla"`
+        elif name == "Launch Codes" and world.spawn == Spawn.option_vanilla:
             # in vanilla spawn, Launch Codes is locked to Hornfels to ensure the player starts the time loop
             multiworld.get_location("TH: Talk to Hornfels", player).place_locked_item(create_item(player, name))
         elif item.type == ItemClassification.filler:
@@ -185,3 +186,15 @@ def create_items(world: "OuterWildsWorld") -> None:
 
     itempool = prog_and_useful_items + unique_filler_with_traps + repeatable_filler_with_traps
     multiworld.itempool += itempool
+
+    if options.early_key_item:
+        key_item = None
+        if options.early_key_item == EarlyKeyItem.option_any:
+            key_item = random.choice(["Translator", "Nomai Warp Codes", "Launch Codes"])
+        elif options.early_key_item == EarlyKeyItem.option_translator:
+            key_item = "Translator"
+        elif options.early_key_item == EarlyKeyItem.option_nomai_warp_codes:
+            key_item = "Nomai Warp Codes"
+        elif options.early_key_item == EarlyKeyItem.option_launch_codes:
+            key_item = "Launch Codes"
+        multiworld.local_early_items[player][key_item] = 1

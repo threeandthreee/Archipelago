@@ -1,22 +1,25 @@
 import os
 import threading
 import base64
+from typing import ClassVar
 from BaseClasses import MultiWorld, Tutorial, ItemClassification
 from worlds.AutoWorld import World, WebWorld
+from worlds.generic.Rules import add_rule, add_item_rule
 from .items import item_table, item_groups, create_item, create_world_items, arch_item_offset, \
-    WORLD2_ACCESS_ITEM_ID, WORLD3_ACCESS_ITEM_ID, ITEM_CODE_GIL
+    WORLD2_ACCESS_ITEM_ID, WORLD3_ACCESS_ITEM_ID, ITEM_CODE_GIL, ITEM_CODE_FUNGIBLE
 from .locations import location_data, loc_id_start
 from .options import ffvcd_options
 from .regions import create_regions
 from .rules import set_rules
-from worlds.ffvcd.ffvcd_arch.utilities.data import conductor
-from worlds.ffvcd.ffvcd_arch.utilities.data import collectible
+from .ffvcd_arch.utilities.data import conductor
+from .ffvcd_arch.utilities.data import collectible
 from .client import FFVCDSNIClient
-from .rom import LocalRom, get_base_rom_path, patch_rom, FFVCDDeltaPatch
+from .rom import LocalRom, get_base_rom_path, patch_rom, FFVCDDeltaPatch, USHASH
 from collections import Counter
 import shutil
 import logging
 import pkgutil
+import settings
 from Fill import fill_restrictive
 
 logger = logging.getLogger("Final Fantasy V Career Day")
@@ -24,6 +27,15 @@ logger = logging.getLogger("Final Fantasy V Career Day")
 THIS_FILEPATH = os.path.dirname(__file__)
 
 # lots of credit to others in the repository, such as pokemonrb, dkc3 and tloz
+
+class FFVCDSettings(settings.Group):
+    class RomFile(settings.SNESRomPath):
+        """File name of the FFV J(1.0) rom with RPGe patch applied"""
+        description = "Final Fantasy V ROM File"
+        copy_to = "Final Fantasy V (J).sfc"
+        md5s = [USHASH]
+
+    rom_file: RomFile = RomFile(RomFile.copy_to)
 
 class FFVCDWebWorld(WebWorld):
     setup_en = Tutorial(
@@ -46,7 +58,7 @@ class FFVCDWorld(World):
     options_dataclass = ffvcd_options
     options: ffvcd_options
 
-    settings: None
+    settings: ClassVar[FFVCDSettings]
     
     
     topology_present = False
@@ -82,7 +94,6 @@ class FFVCDWorld(World):
             cls.rom_file = rom_file
             cls.source_rom_abs_path = os.path.abspath(Utils.user_path(rom_file))
 
-
     def generate_early(self):
         self.starting_items = Counter()
         self.world_lock = self.options.world_lock.value + 1
@@ -107,10 +118,13 @@ class FFVCDWorld(World):
                         self.player, ['World Access'])
             self.starting_items[new_item] = 1
             self.multiworld.push_precollected(new_item)
-
             
+    def create_item(self, name: str):
+        item_data = item_table[name]
+        return create_item(name, item_data.classification, item_data.id, self.player, item_data.groups)
 
-
+    def get_filler_item_name(self):
+        return self.random.choice([*item_groups[ITEM_CODE_FUNGIBLE], *item_groups[ITEM_CODE_GIL]])
 
     def create_items(self):
         
@@ -136,13 +150,13 @@ class FFVCDWorld(World):
                 locations_rank = [i for i2 in locations_rank for i in i2] # flatten
                 locations_rank = [i for i in locations_rank if i.location_data.location_type == LOC_TYPE_CHEST]
     
-                self.multiworld.per_slot_randoms[self.player].shuffle(locations_rank)
-                chosen_locations_rank = self.multiworld.per_slot_randoms[self.player].sample(locations_rank, min(3, len(locations_rank)))
+                self.random.shuffle(locations_rank)
+                chosen_locations_rank = self.random.sample(locations_rank, min(3, len(locations_rank)))
                 for i in chosen_locations_rank:
                     i.mib_flag = True
                     self.chosen_mib_locations.append(i)
                     
-        self.starting_crystals, placed_items, self.mib_items_to_place = create_world_items(self, trapped_chests_flag =\
+        self.starting_crystals, self.placed_items, self.mib_items_to_place = create_world_items(self, trapped_chests_flag =\
                                                                   self.options.trapped_chests,\
                                                                   chosen_mib_locations = self.chosen_mib_locations)
         
@@ -150,27 +164,32 @@ class FFVCDWorld(World):
         ITEM_CODE_CRYSTALS = '3'
         ITEM_CODE_MAGIC = '8'
 
-        for magic in [i for i in placed_items if ITEM_CODE_MAGIC in getattr(i, "groups")]: self.placed_magic.append(getattr(magic,"name"))
-        for ability in [i for i in placed_items if ITEM_CODE_ABILITIES in getattr(i, "groups")]: self.placed_abilities.append(getattr(ability,"name"))
-        for crystal in [i for i in placed_items if ITEM_CODE_CRYSTALS in getattr(i, "groups")]: self.placed_crystals.append(getattr(crystal,"name"))
+        for magic in [i for i in self.placed_items if ITEM_CODE_MAGIC in getattr(i, "groups")]: self.placed_magic.append(getattr(magic,"name"))
+        for ability in [i for i in self.placed_items if ITEM_CODE_ABILITIES in getattr(i, "groups")]: self.placed_abilities.append(getattr(ability,"name"))
+        for crystal in [i for i in self.placed_items if ITEM_CODE_CRYSTALS in getattr(i, "groups")]: self.placed_crystals.append(getattr(crystal,"name"))
 
-        self.multiworld.get_location("Kelb - CornaJar at Kelb (CornaJar)", self.player).access_rule(\
-        lambda state: state.has("Catch Ability", self.player, 1) or state.has("Trainer Crystal", self.player, 1))
+        if "Trainer Crystal" not in self.starting_crystals:
+            if "Catch Ability" in self.placed_abilities or "Trainer Crystal" in self.placed_crystals:
+                add_rule(self.multiworld.get_location("Kelb - CornaJar at Kelb (CornaJar)", self.player),
+                lambda state: state.has("Catch Ability", self.player, 1) or state.has("Trainer Crystal", self.player, 1))
+            else:
+                add_item_rule(self.multiworld.get_location("Kelb - CornaJar at Kelb (CornaJar)", self.player), \
+                lambda item: not (item.classification & (ItemClassification.progression or ItemClassification.useful)) and item.player == self.player)
 
-        self.multiworld.get_location("Crescent Island - Power Song from Crescent Town (Power)", self.player).access_rule(\
+        add_rule(self.multiworld.get_location("Crescent Island - Power Song from Crescent Town (Power)", self.player),
         lambda state: state.has("Adamantite", self.player, 1) or state.has("World 2 Access (Item)", self.player, 1))
 
-        self.multiworld.get_location("Piano (Mua)", self.player).access_rule(\
-        lambda state: state.has("Adamantite", self.player, 1) or state.has("World 2 Access (Item)", self.player, 1))
+        add_rule(self.multiworld.get_location("Piano (Mua)", self.player), \
+        lambda state: state.can_reach("Mua", "Region", self.player))
 
-        self.multiworld.get_location("Piano (Rugor)", self.player).access_rule(\
-        lambda state: state.has("Adamantite", self.player, 1) or state.has("World 2 Access (Item)", self.player, 1))
+        add_rule(self.multiworld.get_location("Piano (Rugor)", self.player),
+        lambda state: state.can_reach("Rugor", "Region", self.player))
 
-        self.multiworld.get_location("Crescent Island - Hero Song from Crescent Town (Hero)", self.player).access_rule(\
-        lambda state: state.has("World 3 Access (Item)", self.player, 1) and state.has("Mirage Radar", self.player, 1))
+        add_rule(self.multiworld.get_location("Crescent Island - Hero Song from Crescent Town (Hero)", self.player), \
+        lambda state: state.can_reach("Mirage Village", "Region", self.player))
 
-        self.multiworld.get_location("Piano (Mirage)", self.player).access_rule(\
-        lambda state: state.has("World 3 Access (Item)", self.player, 1) and state.has("Mirage Radar", self.player, 1))
+        add_rule(self.multiworld.get_location("Piano (Mirage)", self.player), \
+        lambda state: state.can_reach("Mirage Village", "Region", self.player))
  
     def parse_options_for_conductor(self):
         # this sets up a config file from archipelago's options
@@ -224,7 +243,6 @@ class FFVCDWorld(World):
             state = self.multiworld.get_all_state(False)
             fill_restrictive(self.multiworld, state, self.chosen_mib_locations, self.mib_items_to_place,
                                single_player_placement=True, lock=True, allow_excluded=True)
-        
 
     def create_regions(self):
         create_regions(self.multiworld, self.player)
@@ -253,7 +271,7 @@ class FFVCDWorld(World):
 
 
         
-        self.cond = conductor.Conductor(self.multiworld.per_slot_randoms[self.player], options_conductor, arch_data = data, \
+        self.cond = conductor.Conductor(self.random, options_conductor, arch_data = data, \
                                         player = self.player, seed = self.multiworld.seed, placed_crystals = self.placed_crystals,\
                                         placed_abilities = self.placed_abilities, placed_magic = self.placed_magic)
         self.cond.randomize()
@@ -342,6 +360,5 @@ class FFVCDWorld(World):
             new_name = base64.b64encode(bytes(self.rom_name)).decode()
             multidata["connect_names"][new_name] = multidata["connect_names"][self.multiworld.player_name[self.player]]
             
-        
     def write_spoiler(self, spoiler_handle) -> None:
         spoiler_handle.write(self.cond.spoiler)

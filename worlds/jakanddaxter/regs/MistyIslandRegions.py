@@ -1,10 +1,11 @@
 from typing import List
 from BaseClasses import CollectionState, MultiWorld
 from .RegionBase import JakAndDaxterRegion
-from ..Rules import can_free_scout_flies, can_fight
+from .. import JakAndDaxterOptions, EnableOrbsanity
+from ..Rules import can_free_scout_flies, can_fight, can_reach_orbs
 
 
-def build_regions(level_name: str, player: int, multiworld: MultiWorld) -> List[JakAndDaxterRegion]:
+def build_regions(level_name: str, multiworld: MultiWorld, options: JakAndDaxterOptions, player: int) -> List[JakAndDaxterRegion]:
     
     main_area = JakAndDaxterRegion("Main Area", player, multiworld, level_name, 9)
 
@@ -58,9 +59,7 @@ def build_regions(level_name: str, player: int, multiworld: MultiWorld) -> List[
     muse_course.connect(main_area)             # Run and jump down.
 
     # The zoomer pad is low enough that it requires Crouch Jump specifically.
-    zoomer.connect(main_area, rule=lambda state:
-                   (state.has("Crouch", player)
-                    and state.has("Crouch Jump", player)))
+    zoomer.connect(main_area, rule=lambda state: state.has_all({"Crouch", "Crouch Jump"}, player))
 
     ship.connect(main_area)                    # Run and jump down.
     ship.connect(far_side)                     # Run and jump down.
@@ -71,9 +70,8 @@ def build_regions(level_name: str, player: int, multiworld: MultiWorld) -> List[
 
     # Only if you can use the seesaw or Crouch Jump from the seesaw's edge.
     far_side.connect(far_side_cliff, rule=lambda state:
-                     (state.has("Crouch", player)
-                      and state.has("Crouch Jump", player))
-                     or state.has("Jump Dive", player))
+                     state.has("Jump Dive", player)
+                     or state.has_all({"Crouch", "Crouch Jump"}, player))
 
     # Only if you can break the bone bridges to carry blue eco over the mud pit.
     far_side.connect(far_side_cache, rule=lambda state: can_fight(state, player))
@@ -90,9 +88,7 @@ def build_regions(level_name: str, player: int, multiworld: MultiWorld) -> List[
     upper_approach.connect(arena)              # Jump down.
 
     # One cliff is accessible, but only via Crouch Jump.
-    lower_approach.connect(upper_approach, rule=lambda state:
-                           (state.has("Crouch", player)
-                            and state.has("Crouch Jump", player)))
+    lower_approach.connect(upper_approach, rule=lambda state: state.has_all({"Crouch", "Crouch Jump"}, player))
 
     # Requires breaking bone bridges.
     lower_approach.connect(arena, rule=lambda state: can_fight(state, player))
@@ -112,5 +108,22 @@ def build_regions(level_name: str, player: int, multiworld: MultiWorld) -> List[
     multiworld.regions.append(upper_approach)
     multiworld.regions.append(lower_approach)
     multiworld.regions.append(arena)
+
+    # If Per-Level Orbsanity is enabled, build the special Orbsanity Region. This is a virtual region always
+    # accessible to Main Area. The Locations within are automatically checked when you collect enough orbs.
+    if options.enable_orbsanity == EnableOrbsanity.option_per_level:
+        orbs = JakAndDaxterRegion("Orbsanity", player, multiworld, level_name)
+
+        bundle_size = options.level_orbsanity_bundle_size.value
+        bundle_count = int(150 / bundle_size)
+        for bundle_index in range(bundle_count):
+            orbs.add_orb_locations(4,
+                                   bundle_index,
+                                   bundle_size,
+                                   access_rule=lambda state, bundle=bundle_index:
+                                   can_reach_orbs(state, player, multiworld, options, level_name)
+                                   >= (bundle_size * (bundle + 1)))
+        multiworld.regions.append(orbs)
+        main_area.connect(orbs)
 
     return [main_area]

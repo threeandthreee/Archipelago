@@ -34,9 +34,9 @@ ply
 JML $c00e74
 
 IntermediateBranchToMagicReward:
-if !vanillarewards = 1
+if !vanillarewards == 1
 	JML $C00E67
-elseif !progressive = 0
+elseif !progressive == 0
 	JML $C00E67
 else	
 	phy
@@ -48,6 +48,7 @@ else
 	ply
 	JML $C00E69
 endif
+
 IntermediateBranchToKeyItemReward:
 JSL BranchToKeyItemReward
 JML $c00e74
@@ -730,66 +731,175 @@ sta !unusedram3
 
 ; first check if 0xB was present
 lda $11
-and #$B0
+and #$F0
 cmp #$B0
 beq MIBKeyItemPass
+lda $11
+and #$F0
+cmp #$C0
+beq MIBAbilityPass
+lda $11
+and #$F0
+cmp #$D0
+beq MIBMagicPass
+lda $11
+and #$F0
+cmp #$E0
+beq IntermediateMIBBranchToJobReward
 
 ; fail case
-bra MIBKeyItemResume
+JMP MIBItemResume
 
-; pass case
+IntermediateMIBBranchToJobReward:
+JMP MIBJobCrystalPass
+
+; pass key item case =============================
 MIBKeyItemPass:
-
-lda $12
-cmp #$1D
-;;bcs BranchToMIBAbilityReward
 
 lda #$88 ; #$88 custom flag for MIB in chests
 sta !unusedram3
 
-
 lda $11
 ; give access to flags 
 pha
-JSL BranchToKeyItemReward
+lda $12
+sta !rewardid
+lda #$16
+sta !unusedram1
 
 ; store key item
 lda #$30
 sta $11
 ldx $11
 
+; pull original $11 and adjust down by $11
+pla
+clc
+and #$0F
+sta !unusedram2
+lda #$60
+clc
+adc !unusedram2
+ldx $11
 
+JMP MIBItemFinish
+
+; pass ability case =============================
+MIBAbilityPass:
+
+lda #$88 ; #$88 custom flag for MIB in chests
+sta !unusedram3
+
+lda $11
+; give access to flags 
+pha
+lda !rewardid
+sta !currentability
+sta !nonmagicrewardindex
+lda #$04
+sta !unusedram1
+
+; store ability item
+lda #$60
+sta $11
+ldx $11
 
 ; pull original $11 and adjust down by $11
 pla
 clc
-sbc #$0F
-and #$3f
-ora #$40
-
-
-bra MIBKeyItemFinish
-
-MIBKeyItemResume:
-
-lda $11
-and #$3f
-ora #$40
+and #$0F
+sta !unusedram2
+lda #$60
+clc
+adc !unusedram2
 ldx $11
 
+JMP MIBItemFinish
+
+; pass magic case =============================
+MIBMagicPass:
+
+lda #$88 ; #$88 custom flag for MIB in chests
+sta !unusedram3
+
+lda $11
+; give access to flags 
+pha
+lda $12
+sta !magicrewardindex
+lda #$01
+sta !unusedram1
+
+; store magic item
+lda #$20
+sta $11
+ldx $11
+
+; pull original $11 and adjust down by $11
+pla
+clc
+and #$0F
+sta !unusedram2
+lda #$60
+clc
+adc !unusedram2
+ldx $11
+
+JMP MIBItemFinish
+
+; pass job crystal case =============================
+MIBJobCrystalPass:
+
+lda #$88 ; #$88 custom flag for MIB in chests
+sta !unusedram3
+
+lda $11
+; give access to flags 
+pha
+lda $12
+sta !rewardid
+lda #$08
+sta !unusedram1
+
+; store job crystal
+lda #$50
+sta $11
+ldx $11
+
+; pull original $11 and adjust down by $11
+pla
+clc
+and #$0F
+sta !unusedram2
+lda #$60
+clc
+adc !unusedram2
+ldx $11
+
+JMP MIBItemFinish
+
+; fail case - standard item =============================
+MIBItemResume:
+
+lda $11
+and #$0F
+sta !unusedram2
+lda #$60
+clc
+adc !unusedram2
+ldx $11
 
 ; original code
 ; lda $11
 ; and #$3f
 ; ora #$40
 ; ldx $11
-MIBKeyItemFinish:
+
+; MIB Reward Finish =============================
+MIBItemFinish:
 jml $c00ed1
 
-;;BranchToMIBAbilityReward:
-;;SBC #$40
-;;sta $12
-;;JSL BranchToAbilityReward
+
 
 ;; new code to disable giving prior item
 
@@ -818,7 +928,8 @@ stx $af
 
 
 ChestMIBTextFinish:
-lda #$00  
+lda #$00
+sta !unusedram2
 sta !unusedram3 ; reset this address so others don't trip the flag
 jml $c00eb2
 
@@ -855,6 +966,141 @@ JML $c00e93
 
 ChestBranchFinish2:
 lda #$00  
+sta !unusedram2
 sta !unusedram3 ; reset this address so others don't trip the flag
 JML $c00ead
 
+
+
+org $c00e80
+JML !ADDRESS_chesthook_new_reward_had_prior_item2
+
+org !ADDRESS_chesthook_new_reward_had_prior_item2
+; same checks as above for key item stuff
+lda !unusedram3
+and #$88 ; custom code for if MIB is placed
+cmp #$88
+bne ChestPlaceRegularItem3 ; if MIB, then do NOT place a corresponding item 
+bra ChestBranchFinish3
+
+ChestPlaceRegularItem3:
+; then resume 
+lda $12
+sta !nonmagicrewardindex
+ldy $06
+ChestPlaceRegularItem3LoopStart:
+lda $0640, y
+cmp !nonmagicrewardindex
+beq ChestPlaceRegularItem3LoopEnd
+iny
+cpy #$0100
+bne ChestPlaceRegularItem3LoopStart
+ChestPlaceRegularItem3LoopEnd:
+cpy #$0100
+beq ChestPlaceRegularItem3returnbranch
+JML $c00e88
+ChestPlaceRegularItem3returnbranch:
+JML $c00e98
+
+ChestBranchFinish3:
+lda !unusedram1
+cmp #$01
+beq ChangeToMagicReward
+cmp #$16
+beq GiveKeyItemReward
+lda #$00
+sta !unusedram2
+sta !unusedram3 ; reset this address so others don't trip the flag
+JML $c00ead
+
+ChangeToMagicReward:
+lda #$02
+sta !unusedram1
+JML !ADDRESS_chesthook_new_reward_had_prior_item3
+
+GiveKeyItemReward:
+lda #$00
+sta !unusedram1
+sta !unusedram2
+sta !unusedram3 ; reset this address so others don't trip the flag
+JSL BranchToKeyItemReward
+JML $c00e74
+
+org $c00e6c
+JML !ADDRESS_chesthook_new_reward_had_prior_item3
+
+org !ADDRESS_chesthook_new_reward_had_prior_item3
+lda !unusedram1
+cmp #$04
+beq GiveAbilityRewardAndFinish
+; same checks as above for key item stuff
+lda !unusedram3
+and #$88 ; custom code for if MIB is placed
+cmp #$88
+bne ChestPlaceRegularItem4 ; if MIB, then do NOT place a corresponding item 
+bra CheckIfSentFromMIB
+
+CheckIfSentFromMIB:
+lda !unusedram1
+cmp #$02
+beq MIBGiveMagicAndFinish
+cmp #$08
+beq MIBGiveJobAndFinish
+bra ChestBranchFinish4
+ 
+
+ChestPlaceRegularItem4:
+; then resume
+lda $12
+pha
+lsr
+lsr
+lsr
+tay
+pla
+and #$07
+tax
+lda !unlockedmagic, y
+ora $c0c9b9, x
+sta !unlockedmagic, y
+ldx #$0004
+JML $c00e72
+
+MIBGiveMagicAndFinish:
+; then resume
+lda $12
+pha
+lsr
+lsr
+lsr
+tay
+pla
+and #$07
+tax
+lda !unlockedmagic, y
+ora $c0c9b9, x
+sta !unlockedmagic, y
+ldx #$0004
+
+ChestBranchFinish4:
+lda #$00
+sta !unusedram1
+sta !unusedram2
+sta !unusedram3 ; reset this address so others don't trip the flag
+JML $c00e72
+
+MIBGiveJobAndFinish:
+lda #$00
+sta !unusedram1
+sta !unusedram2
+sta !unusedram3 ; reset this address so others don't trip the flag
+JSL BranchToJobReward
+JML $c00e74
+
+GiveAbilityRewardAndFinish:
+lda #$00
+sta !unusedram1
+sta !unusedram2
+sta !unusedram3 ; reset this address so others don't trip the flag
+JSL BranchToAbilityReward
+JML $c00e74

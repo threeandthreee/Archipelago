@@ -111,8 +111,8 @@ class LocalRom(object):
 
 
 
-def patch_rom(world, rom, player):
-    rom.name = bytearray(f'K7{__version__.replace(".", "")[0:3]}_{player}_{world.seed:11}\0', 'utf8')[:21]
+def patch_rom(multiworld, rom, player):
+    rom.name = bytearray(f'K7{__version__.replace(".", "")[0:3]}_{player}_{multiworld.seed:11}\0', 'utf8')[:21]
     rom.name.extend([0] * (21 - len(rom.name)))
     rom.write_bytes(0x7FC0, rom.name)
     
@@ -1098,6 +1098,34 @@ event_flag_dict = {0xC0FAB2: {'name': 'Wind Crystal (Knight)',
  0xC0FBB4: {'name': 'Bahamut (Boss)',
   'ram_address': 0xA2E,
   'bit': 4,
+  'direction': 1},
+ 0xC0FBF0: {'name': 'Calofisteri (Boss)',
+  'ram_address': 0xA43,
+  'bit': 1,
+  'direction': 1},
+ 0xC0FBF2: {'name': 'Apanda (Boss)',
+  'ram_address': 0xA42,
+  'bit': 4,
+  'direction': 1},
+ 0xC0FBF4: {'name': 'Apocalypse (Boss)',
+  'ram_address': 0xA42,
+  'bit': 3,
+  'direction': 1},
+ 0xC0FBF6: {'name': 'Catastroph (Boss)',
+  'ram_address': 0xA42,
+  'bit': 2,
+  'direction': 1},
+ 0xC0FBF8: {'name': 'Halicarnaso (Boss)',
+  'ram_address': 0xA42,
+  'bit': 5,
+  'direction': 1},
+ 0xC0FBFA: {'name': 'Twintania (Boss)',
+  'ram_address': 0xA42,
+  'bit': 7,
+  'direction': 1},
+ 0xC0FBFC: {'name': 'Necrofobia (Boss)',
+  'ram_address': 0xA43,
+  'bit': 0,
   'direction': 1},
  0xC0FFF6: {'name': 'Piano (Tule)',
   'ram_address': 0xA45,

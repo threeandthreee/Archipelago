@@ -1,25 +1,25 @@
 from typing import List
 from BaseClasses import CollectionState, MultiWorld
 from .RegionBase import JakAndDaxterRegion
-from ..Rules import can_fight
+from .. import JakAndDaxterOptions, EnableOrbsanity
+from ..Rules import can_fight, can_reach_orbs
 
 
-def build_regions(level_name: str, player: int, multiworld: MultiWorld) -> List[JakAndDaxterRegion]:
+def build_regions(level_name: str, multiworld: MultiWorld, options: JakAndDaxterOptions, player: int) -> List[JakAndDaxterRegion]:
 
     # This level is full of short-medium gaps that cannot be crossed by single jump alone.
     # These helper functions list out the moves that can cross all these gaps (painting with a broad brush but...)
     def can_jump_farther(state: CollectionState, p: int) -> bool:
-        return (state.has("Double Jump", p)
-                or state.has("Jump Kick", p)
-                or (state.has("Punch", p) and state.has("Punch Uppercut", p)))
+        return state.has_any({"Double Jump", "Jump Kick"}, p) or state.has_all({"Punch", "Punch Uppercut"}, p)
 
     def can_jump_higher(state: CollectionState, p: int) -> bool:
         return (state.has("Double Jump", p)
-                or (state.has("Crouch", p) and state.has("Crouch Jump", p))
-                or (state.has("Crouch", p) and state.has("Crouch Uppercut", p))
-                or (state.has("Punch", p) and state.has("Punch Uppercut", p)))
+                or state.has_all({"Crouch", "Crouch Jump"}, p)
+                or state.has_all({"Crouch", "Crouch Uppercut"}, p)
+                or state.has_all({"Punch", "Punch Uppercut"}, p))
 
     # Orb crates and fly box in this area can be gotten with yellow eco and goggles.
+    # Start with the first yellow eco cluster near first_bats and work your way backward toward the entrance.
     main_area = JakAndDaxterRegion("Main Area", player, multiworld, level_name, 23)
     main_area.add_fly_locations([43])
 
@@ -91,9 +91,8 @@ def build_regions(level_name: str, player: int, multiworld: MultiWorld) -> List[
 
     first_tether.connect(first_bats)
     first_tether.connect(first_tether_rat_colony, rule=lambda state:
-                         (state.has("Roll", player) and state.has("Roll Jump", player))
-                         or (state.has("Double Jump", player)
-                             and state.has("Jump Kick", player)))
+                         (state.has_all({"Roll", "Roll Jump"}, player)
+                          or state.has_all({"Double Jump", "Jump Kick"}, player)))
     first_tether.connect(second_jump_pad)
     first_tether.connect(first_pole_course)
 
@@ -150,5 +149,22 @@ def build_regions(level_name: str, player: int, multiworld: MultiWorld) -> List[
     multiworld.regions.append(box_field)
     multiworld.regions.append(last_tar_pit)
     multiworld.regions.append(fourth_tether)
+
+    # If Per-Level Orbsanity is enabled, build the special Orbsanity Region. This is a virtual region always
+    # accessible to Main Area. The Locations within are automatically checked when you collect enough orbs.
+    if options.enable_orbsanity == EnableOrbsanity.option_per_level:
+        orbs = JakAndDaxterRegion("Orbsanity", player, multiworld, level_name)
+
+        bundle_size = options.level_orbsanity_bundle_size.value
+        bundle_count = int(200 / bundle_size)
+        for bundle_index in range(bundle_count):
+            orbs.add_orb_locations(8,
+                                   bundle_index,
+                                   bundle_size,
+                                   access_rule=lambda state, bundle=bundle_index:
+                                   can_reach_orbs(state, player, multiworld, options, level_name)
+                                   >= (bundle_size * (bundle + 1)))
+        multiworld.regions.append(orbs)
+        main_area.connect(orbs)
 
     return [main_area]

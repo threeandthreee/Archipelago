@@ -35,6 +35,8 @@ FFVCD_CURRENT_WORLD = 0xA2D #offset from RAM start that stores current world
 FFVCD_LOADED_GAME_FLAG = WRAM_START + 0x30
 FFVCD_LOADED_GAME_FLAG2 = WRAM_START + 0x6F
 
+FFVCD_LOAD_CHECK = WRAM_START + 0x000AC3
+
 FFVCD_RECV_PROGRESS_ADDR = WRAM_START + 0x9F4
 FFVCD_FILE_NAME_ADDR = WRAM_START + 0x5D9
 
@@ -122,7 +124,11 @@ class FFVCDSNIClient(SNIClient):
             return
         elif loaded_game_flag2[0] != 0x00 or loaded_game_flag3[0] != 0x00:
             return
-
+        
+        load_game_check = await snes_read(ctx, FFVCD_LOAD_CHECK, 0x1)
+        if not (load_game_check[0] & 0x80) == 0x80:
+            return
+        
         new_checks = []
         
         def check_status_bits(ram_byte, loc_bit, direction):
