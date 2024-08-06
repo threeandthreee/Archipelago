@@ -178,6 +178,7 @@ incsrc world3/kuzar.asm
 
 incsrc world3/cleft_apanda.asm
 incsrc world3/cleft_calofisteri.asm
+incsrc world3/cleft_catastroph.asm
 incsrc world3/cleft_enter.asm
 incsrc world3/cleft_apocalypse.asm
 incsrc world3/cleft_halicarnaso.asm

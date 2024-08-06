@@ -65,7 +65,10 @@ class Logsanity(Toggle):
 
 
 class ShuffleSpacesuit(Toggle):
-    """Puts the spacesuit into the Archipelago item pool, forcing you to play suitless until it's found."""
+    """
+    Puts the spacesuit into the Archipelago item pool, forcing you to play suitless until it's found.
+    This option is not compatible with non-vanilla spawns.
+    """
     display_name = "Shuffle Spacesuit"
 
 
@@ -88,12 +91,61 @@ class RandomizeOrbits(DefaultOnToggle):
     display_name = "Randomize Orbits"
 
 
+class Spawn(Choice):
+    """
+    Where you start the game.
+    'vanilla' is the same as the base game: you wake up in TH Village, talk to Hornfels to get the Launch Codes, then walk by the Nomai statue to start the time loop.
+    All other options (including timber_hearth) will spawn you in your spacesuit, with the time loop already started, and the Launch Codes item placed randomly like any other AP item.
+    The idea is that non-vanilla spawns will require you to play "shipless" for a while, possibly using Nomai Warp Codes to visit other planets. The ship will still spawn nearby, so you can use the ship log/tracker right away.
+    When playing with non-vanilla spawns, we recommend:
+    - Consider enabling randomize_warp_pads for greater variety if you get warp codes early
+    - Consider enabling early_key_item in non-solo games, or else your first session may end after only 4-10 checks
+    - Install a fast-forward mod such as Alter Time or Cheat And Debug Mod, since you may need to do a lot of waiting for e.g. Ash Twin sand or Giant's Deep islands
+    """
+    display_name = "Spawn"
+    option_vanilla = 0
+    option_hourglass_twins = 1
+    option_timber_hearth = 2
+    option_brittle_hollow = 3
+    option_giants_deep = 4
+    default = 0
+
+
+class EarlyKeyItem(Choice):
+    """
+    Ensure that either Translator, Nomai Warp Codes, or Launch Codes will be somewhere in sphere 1 and
+    in your own world, guaranteeing you can find it without waiting on other players.
+    `any` randomly selects one of these items to place early.
+
+    Recommended for games with non-vanilla spawns, especially async games.
+    In addition, without this AP seems to almost always put Launch Codes in sphere 1, so `any` also helps increase variety.
+    """
+    display_name = "Early Key Item"
+    option_off = 0
+    option_any = 1
+    option_translator = 2
+    option_nomai_warp_codes = 3
+    option_launch_codes = 4
+
+
+class RandomizeWarpPlatforms(Toggle):
+    """
+    Randomize which Nomai warp platforms are connected to each other.
+    Warp connections are still 'coupled', i.e. if platform A warps to platform B, then B will take you back to A.
+    Highly recommended when playing with non-vanilla spawns.
+    """
+    display_name = "Randomize Warp Platforms"
+
+
 @dataclass
 class OuterWildsGameOptions(PerGameCommonOptions):
     start_inventory_from_pool: StartInventoryPool
     goal: Goal
+    spawn: Spawn
+    early_key_item: EarlyKeyItem
     randomize_coordinates: RandomizeCoordinates
     randomize_orbits: RandomizeOrbits
+    randomize_warp_platforms: RandomizeWarpPlatforms
     randomize_dark_bramble_layout: RandomizeDarkBrambleLayout
     trap_chance: TrapChance
     trap_type_weights: TrapTypeWeights

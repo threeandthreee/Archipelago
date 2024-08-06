@@ -1,4 +1,4 @@
-from BaseClasses import MultiWorld, Region, Entrance
+from BaseClasses import MultiWorld, Region, Entrance, CollectionState
 from .locations import location_data, create_location
 from worlds.generic.Rules import add_rule
 
@@ -26,9 +26,6 @@ def setup_region_and_entrance(multiworld, player, region_name, parent_region_nam
         new_entrance.access_rule = access_rule
     parent_region.exits.append(new_entrance)
     multiworld.regions.append(new_region)
-    
-    
-    
 
 def create_regions(multiworld, player: int):
     menu_region = create_region(multiworld, player, 'Menu')
@@ -99,6 +96,7 @@ def create_regions(multiworld, player: int):
                                                         region_rank = 8)
     setup_region_and_entrance(multiworld, player, "Jacole", "World 1 Access", access_rule = None,
                               region_rank = 5)
+    setup_region_and_entrance(multiworld, player, "Karnak (On Fire)", "World 1 Access", access_rule = None)
     setup_region_and_entrance(multiworld, player, "Karnak", "World 1 Access", access_rule = \
                               lambda state: state.has("Steamship Key", player),
                                                         region_rank = 3)
@@ -219,6 +217,7 @@ def create_regions(multiworld, player: int):
 
     add_rule(exdeath, lambda state: state.has("1st Tablet", player) and state.has("2nd Tablet", player) \
              and state.has("3rd Tablet", player) and state.has("4th Tablet", player))
+         
 
 class FFVCDRegion(Region):
     def __init__(self, name, player, multiworld, region_rank):

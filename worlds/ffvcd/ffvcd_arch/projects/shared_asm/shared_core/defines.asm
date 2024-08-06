@@ -4,10 +4,12 @@
 !ADDRESS_abpmod = $F00100
 !ADDRESS_progressiverewards = $F02000
 !ADDRESS_chesthook = $F03000
-!ADDRESS_chesthook_mib = $F03200
-!ADDRESS_chesthook_mib_disable_on_reward_new_regular_item = $F03280
+!ADDRESS_chesthook_mib = $F031A0
+!ADDRESS_chesthook_mib_disable_on_reward_new_regular_item = $F032A0
 !ADDRESS_chesthook_new_reward_had_prior_item = $F03300
-!ADDRESS_reset_unusedram3 = $F03380
+!ADDRESS_chesthook_new_reward_had_prior_item2 = $F03350
+!ADDRESS_chesthook_new_reward_had_prior_item3 = $F03400
+!ADDRESS_reset_unusedram3 = $F03500
 
 
 !ADDRESS_jobindexing = $F00400

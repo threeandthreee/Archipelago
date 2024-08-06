@@ -20,9 +20,8 @@
     { "from": "Quantum Moon", "to": "Quantum Shrine", "requires": [ { "item": "Shrine Door Codes" } ] },
     { "from": "Quantum Shrine", "to": "Sixth Location", "requires": [ { "item": "Entanglement Rule" } ] },
 
-    // these will become dynamic after we implement random spawn
-    { "from": "Menu", "to": "Timber Hearth Village", "requires": [] },
     { "from": "Timber Hearth Village", "to": "Timber Hearth", "requires": [ { "item": "Launch Codes" } ] },
+    { "from": "Timber Hearth", "to": "Timber Hearth Village", "requires": [] },
 
     // you can simply fall into the black hole inside BH instead of using the warp pad
     { "from": "Brittle Hollow", "to": "White Hole Station", "requires": [
@@ -104,20 +103,5 @@
     { "from": "Nomai Grave", "to": "The Vessel", "requires": [
         { "item": "Scout" }, // to launch into the DB seed at Nomai Grave
         { "item": "Spacesuit" } // to enter the Vessel
-    ] },
-
-    // these will become dynamic after we implement warp pad randomization
-    { "from": "Hourglass Twins", "to": "Sun Station", "requires": [ { "item": "Nomai Warp Codes" }, { "item": "Spacesuit" } ] },
-    { "from": "Hourglass Twins", "to": "Ash Twin Interior", "requires": [ { "item": "Nomai Warp Codes" } ] },
-    { "from": "Hourglass Twins", "to": "Timber Hearth", "requires": [ { "item": "Nomai Warp Codes" } ] },
-    { "from": "Hourglass Twins", "to": "Hanging City Ceiling", "requires": [ { "item": "Nomai Warp Codes" } ] },
-    { "from": "Hourglass Twins", "to": "Giant's Deep", "requires": [ { "item": "Nomai Warp Codes" } ] },
-
-    { "from": "Sun Station", "to": "Hourglass Twins", "requires": [ { "item": "Nomai Warp Codes" }, { "item": "Spacesuit" } ] },
-    { "from": "Ash Twin Interior", "to": "Hourglass Twins", "requires": [ { "item": "Nomai Warp Codes" } ] },
-    { "from": "Timber Hearth", "to": "Hourglass Twins", "requires": [ { "item": "Nomai Warp Codes" } ] },
-    { "from": "Hanging City Ceiling", "to": "Hourglass Twins", "requires": [ { "item": "Nomai Warp Codes" } ] },
-    { "from": "Giant's Deep", "to": "Hourglass Twins", "requires": [ { "item": "Nomai Warp Codes" } ] },
-
-    { "from": "White Hole Station", "to": "Brittle Hollow", "requires": [ { "item": "Nomai Warp Codes" } ] }
+    ] }
 ]

@@ -283,6 +283,7 @@ def run_server_process(name: str, ponyconfig: dict, static_server_data: dict,
                         room.last_port = port
                         ctx.room_url = urlsafe_b64encode(room.id.bytes).rstrip(b'=').decode('ascii')
                         ctx.seed_url = urlsafe_b64encode(room.seed.id.bytes).rstrip(b'=').decode('ascii')
+
                         if room.is_new:
                             _push_player_list(ctx)
                             ctx.push_item_information()

@@ -2,11 +2,12 @@ import pkgutil
 import typing
 from typing import Callable, Dict, List, NamedTuple, Optional, Set
 
-from BaseClasses import Location, MultiWorld, Region
+from BaseClasses import CollectionState, Location, MultiWorld, Region
 from worlds.generic.Rules import set_rule
 from . import jsonc
-from .Options import OuterWildsGameOptions
+from .Options import OuterWildsGameOptions, Spawn
 from .RuleEval import eval_rule
+from .WarpPlatforms import warp_platform_to_logical_region, warp_platform_required_items
 
 if typing.TYPE_CHECKING:
     from . import OuterWildsWorld
@@ -133,3 +134,61 @@ def create_regions(world: "OuterWildsWorld") -> None:
         if ld["name"] in locations_to_create and len(ld["requires"]) > 0:
             set_rule(mw.get_location(ld["name"], p),
                      lambda state, r=ld["requires"]: eval_rule(state, p, r))
+
+    # add dynamic logic, i.e. connections based on player options
+    menu = mw.get_region("Menu", p)
+    if world.spawn == Spawn.option_vanilla:
+        menu.add_exits(["Timber Hearth Village"])
+    elif world.spawn == Spawn.option_hourglass_twins:
+        menu.add_exits(["Hourglass Twins"])
+    elif world.spawn == Spawn.option_timber_hearth:
+        menu.add_exits(["Timber Hearth"])
+    elif world.spawn == Spawn.option_brittle_hollow:
+        menu.add_exits(["Brittle Hollow"])
+    elif world.spawn == Spawn.option_giants_deep:
+        menu.add_exits(["Giant's Deep"])
+
+    if world.warps == 'vanilla':
+        def has_codes(state): return state.has("Nomai Warp Codes", p)
+
+        hgt = mw.get_region("Hourglass Twins", p)
+        hgt.add_exits([
+            "Sun Station",
+            "Ash Twin Interior",
+            "Timber Hearth",
+            "Hanging City Ceiling",
+            "Giant's Deep",
+        ], {
+            "Sun Station": lambda state: state.has_all(["Nomai Warp Codes", "Spacesuit"], p),
+            "Ash Twin Interior": has_codes,
+            "Timber Hearth": has_codes,
+            "Hanging City Ceiling": has_codes,
+            "Giant's Deep": has_codes,
+        })
+
+        mw.get_region("Sun Station", p).connect(
+            hgt, "SS vanilla warp",
+            lambda state: state.has_all(["Nomai Warp Codes", "Spacesuit"], p))
+        mw.get_region("Ash Twin Interior", p).connect(hgt, "ATP vanilla warp", has_codes)
+        mw.get_region("Timber Hearth", p).connect(hgt, "TH vanilla warp", has_codes)
+        mw.get_region("Hanging City Ceiling", p).connect(hgt, "BHF vanilla warp", has_codes)
+        mw.get_region("Giant's Deep", p).connect(hgt, "GD vanilla warp", has_codes)
+
+        mw.get_region("White Hole Station", p).add_exits(["Brittle Hollow"], {"Brittle Hollow": has_codes})
+    else:
+        for (platform_1, platform_2) in world.warps:
+            region_name_1 = warp_platform_to_logical_region[platform_1]
+            region_name_2 = warp_platform_to_logical_region[platform_2]
+            if region_name_1 == region_name_2:
+                continue
+            required_items = ["Nomai Warp Codes"]
+            required_items.extend(warp_platform_required_items.get(platform_1, []))
+            required_items.extend(warp_platform_required_items.get(platform_2, []))
+
+            def rule(state: CollectionState) -> bool:
+                nonlocal required_items
+                return state.has_all(required_items, p)
+            r1 = mw.get_region(region_name_1, p)
+            r2 = mw.get_region(region_name_2, p)
+            r1.connect(r2, "%s->%s warp" % (region_name_1, region_name_2), rule)
+            r2.connect(r1, "%s->%s warp" % (region_name_2, region_name_1), rule)

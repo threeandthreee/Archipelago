@@ -1,10 +1,11 @@
 from typing import List
 from BaseClasses import CollectionState, MultiWorld
 from .RegionBase import JakAndDaxterRegion
-from ..Rules import can_free_scout_flies, can_fight
+from .. import JakAndDaxterOptions, EnableOrbsanity
+from ..Rules import can_free_scout_flies, can_fight, can_reach_orbs
 
 
-def build_regions(level_name: str, player: int, multiworld: MultiWorld) -> List[JakAndDaxterRegion]:
+def build_regions(level_name: str, multiworld: MultiWorld, options: JakAndDaxterOptions, player: int) -> List[JakAndDaxterRegion]:
 
     # Just the starting area.
     main_area = JakAndDaxterRegion("Main Area", player, multiworld, level_name, 4)
@@ -18,8 +19,7 @@ def build_regions(level_name: str, player: int, multiworld: MultiWorld) -> List[
 
     # Need jump dive to activate button, double jump to reach blue eco to unlock cache.
     first_room_orb_cache.add_cache_locations([14507], access_rule=lambda state:
-                                             state.has("Jump Dive", player)
-                                             and state.has("Double Jump", player))
+                                             state.has_all({"Jump Dive", "Double Jump"}, player))
 
     first_hallway = JakAndDaxterRegion("First Hallway", player, multiworld, level_name, 10)
     first_hallway.add_fly_locations([131121], access_rule=lambda state: can_free_scout_flies(state, player))
@@ -56,16 +56,18 @@ def build_regions(level_name: str, player: int, multiworld: MultiWorld) -> List[
     capsule_room = JakAndDaxterRegion("Capsule Chamber", player, multiworld, level_name, 6)
 
     # Use jump dive to activate button inside the capsule. Blue eco vent can ready the chamber and get the scout fly.
-    capsule_room.add_cell_locations([47], access_rule=lambda state: state.has("Jump Dive", player))
+    capsule_room.add_cell_locations([47], access_rule=lambda state:
+                                    state.has("Jump Dive", player)
+                                    and (state.has_any({"Double Jump", "Jump Kick"}, player)
+                                         or state.has_all({"Punch", "Punch Uppercut"}, player)))
     capsule_room.add_fly_locations([327729])
 
     second_slide = JakAndDaxterRegion("Second Slide", player, multiworld, level_name, 31)
 
     helix_room = JakAndDaxterRegion("Helix Chamber", player, multiworld, level_name, 30)
     helix_room.add_cell_locations([46], access_rule=lambda state:
-                                  state.has("Double Jump", player)
-                                  or state.has("Jump Kick", player)
-                                  or (state.has("Punch", player) and state.has("Punch Uppercut", player)))
+                                  state.has_any({"Double Jump", "Jump Kick"}, player)
+                                  or state.has_all({"Punch", "Punch Uppercut"}, player))
     helix_room.add_cell_locations([50], access_rule=lambda state:
                                   state.has("Double Jump", player)
                                   or can_fight(state, player))
@@ -80,11 +82,9 @@ def build_regions(level_name: str, player: int, multiworld: MultiWorld) -> List[
 
     # Needs some movement to reach these orbs and orb cache.
     first_room_lower.connect(first_room_orb_cache, rule=lambda state:
-                             state.has("Jump Dive", player)
-                             and state.has("Double Jump", player))
+                             state.has_all({"Jump Dive", "Double Jump"}, player))
     first_room_orb_cache.connect(first_room_lower, rule=lambda state:
-                                 state.has("Jump Dive", player)
-                                 and state.has("Double Jump", player))
+                                 state.has_all({"Jump Dive", "Double Jump"}, player))
 
     first_hallway.connect(first_room_upper)                         # Run and jump down.
     first_hallway.connect(second_room)                              # Run and jump (floating platforms).
@@ -126,5 +126,22 @@ def build_regions(level_name: str, player: int, multiworld: MultiWorld) -> List[
     multiworld.regions.append(capsule_room)
     multiworld.regions.append(second_slide)
     multiworld.regions.append(helix_room)
+
+    # If Per-Level Orbsanity is enabled, build the special Orbsanity Region. This is a virtual region always
+    # accessible to Main Area. The Locations within are automatically checked when you collect enough orbs.
+    if options.enable_orbsanity == EnableOrbsanity.option_per_level:
+        orbs = JakAndDaxterRegion("Orbsanity", player, multiworld, level_name)
+
+        bundle_size = options.level_orbsanity_bundle_size.value
+        bundle_count = int(200 / bundle_size)
+        for bundle_index in range(bundle_count):
+            orbs.add_orb_locations(7,
+                                   bundle_index,
+                                   bundle_size,
+                                   access_rule=lambda state, bundle=bundle_index:
+                                   can_reach_orbs(state, player, multiworld, options, level_name)
+                                   >= (bundle_size * (bundle + 1)))
+        multiworld.regions.append(orbs)
+        main_area.connect(orbs)
 
     return [main_area]

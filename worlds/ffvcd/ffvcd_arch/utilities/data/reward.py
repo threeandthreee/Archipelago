@@ -111,9 +111,8 @@ class RewardManager:
         output = output + "\n;Chests and Events"
         output = output + "\n;=================\n"
         for i in self.rewards:
-
             output = output + i.asar_output + "\n"
-
+        
         return output
 
     def get_spoiler(self, world_lock, free_tablets, trapped_chests):

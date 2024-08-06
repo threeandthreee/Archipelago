@@ -10,6 +10,8 @@ db $C5, $E0			;<unknown>
 db $B5, $93			;Play Sound Effect Evil appears
 db $73
 db $BD, $4B, $FF	;Start Event Battle 4B
+db $DE, $A6 ; custom reward
+db $DF
 db $CD, $A6, $06	;Run event index 06A6
 db $CD, $A5, $06	;Run event index 06A5
 db $CB, $94, $03	;Turn off bit 10 at address  0x7e0ac6

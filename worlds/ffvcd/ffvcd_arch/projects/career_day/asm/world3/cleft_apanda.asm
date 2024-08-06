@@ -15,6 +15,8 @@ db $80, $09                     ;Sprite 080 do event: Show
 db $73                          ;Long pause
 db $80, $0A                     ;Sprite 080 do event: Hide
 db $BD, $36, $FF                ;Start Event Battle 36
+db $DE, $A1 ; custom reward
+db $DF
 db $7D                          ;<Unknown>
 db $A4, $71                     ;Set Event Flag 171
 db $A4, $74                     ;Set Event Flag 174

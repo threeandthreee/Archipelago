@@ -14,8 +14,9 @@ def generate_random_orbits(random: Random) -> (List[str], Dict[str, int], Dict[s
     # We want vanilla/flat orbits, angled orbits and vertical orbits to all be reasonably likely,
     # and we want to avoid collisions that would potentially make a location unreachable
     # or kill the player in sudden, unpredictable ways. Specific tests we did include:
-    # - While not exhaustively tested, since I'm not changing The Interloper's orbit, only angles of
-    # 0 or 180 might collide with it. So far the only known problem is GD in the last lane at angle 0.
+    # - There are 4 orbits (listed below) known to collide with The Interloper, so we exclude them.
+    # All planet orders were tested at angles 0 and 180, which should cover everything since we
+    # aren't editing The Interloper's own orbit.
     # - The Stranger and Dreamworld have a fixed position 45 degrees above the vanilla orbital plane,
     # about the same distance from the sun as Brittle Hollow's vanilla orbit. A planet at 60 degrees
     # may become visible in the Dreamworld "sky", but won't cause any problems.
@@ -29,13 +30,22 @@ def generate_random_orbits(random: Random) -> (List[str], Dict[str, int], Dict[s
     orbit_angles: Dict[str, int] = {}
     for index, planet in enumerate(planet_order):
         possible_angles = all_possible_angles.copy()
+
+        # The 2 outermost orbits need to be non-vertical to avoid the DB void.
         if index > 2:
-            # The 2 outermost orbits need to be non-vertical to avoid the DB void.
             possible_angles.remove(90)
             possible_angles.remove(270)
-        if index == 4 and planet == "GD":
-            # If GD is the farthest from the sun, then angle 0 would collide with The Interloper.
+
+        # Avoid known collisions with The Interloper.
+        if index == 4 and planet == "TH":
             possible_angles.remove(0)
+        if index == 3 and planet == "TH":
+            possible_angles.remove(180)
+        if index == 4 and planet == "GD":
+            possible_angles.remove(0)
+        if index == 3 and planet == "GD":
+            possible_angles.remove(180)
+
         orbit_angles[planet] = random.choice(possible_angles)
 
     # No subtle constraints for the satellite orbits

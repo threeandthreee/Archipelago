@@ -32,6 +32,8 @@ db $80, $01                     ;Sprite 080 do event: Move Up
 db $80, $01                     ;Sprite 080 do event: Move Up
 db $80, $0A                     ;Sprite 080 do event: Hide
 db $BD, $38, $FF                ;Start Event Battle 38
+db $DE, $A4 ; custom reward
+db $DF
 db $7D                          ;<Unknown>
 db $CB, $90, $03                ;Clear Flag 2/3/4/5/90 03
 db $A4, $75                     ;Set Event Flag 175

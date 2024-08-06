@@ -22,8 +22,8 @@ class KH1Web(WebWorld):
     theme = "ocean"
     tutorials = [Tutorial(
             "Multiworld Setup Guide",
-            "A guide to setting up the Kingdom Hearts Randomizer software on your computer. This guide covers single-player, "
-            "multiworld, and related software.",
+            "A guide to setting up the Kingdom Hearts Randomizer software on your computer."
+            "This guide covers single-player, multiworld, and related software.",
             "English",
             "kh1_en.md",
             "kh1/en",
@@ -47,6 +47,10 @@ class KH1World(World):
     location_name_to_id = {name: data.code for name, data in location_table.items()}
     item_name_groups = item_name_groups
     location_name_groups = location_name_groups
+    fillers = {}
+    fillers.update(get_items_by_category("Item"))
+    fillers.update(get_items_by_category("Camping"))
+    fillers.update(get_items_by_category("Stat Ups"))
 
     def create_items(self):
         #Handle starting worlds
@@ -55,9 +59,9 @@ class KH1World(World):
             possible_starting_worlds = ["Wonderland", "Olympus Coliseum", "Deep Jungle", "Agrabah", "Monstro", "Halloween Town", "Neverland", "Hollow Bastion"]
             if self.options.atlantica:
                 possible_starting_worlds.append("Atlantica")
-            if self.options.end_of_the_world_unlock.current_key == "item":
+            if self.options.end_of_the_world_unlock == "item":
                 possible_starting_worlds.append("End of the World")
-            starting_worlds = self.random.sample(possible_starting_worlds, min(self.options.starting_worlds, len(possible_starting_worlds)))
+            starting_worlds = self.random.sample(possible_starting_worlds, min(self.options.starting_worlds.value, len(possible_starting_worlds)))
             for starting_world in starting_worlds:
                 self.multiworld.push_precollected(self.create_item(starting_world))
         
@@ -68,21 +72,21 @@ class KH1World(World):
         #Calculate Level Up Items
         if True: #Allow notepad++ to collapse this section
             # Fill pool with mandatory items
-            for i in range(self.options.item_slot_increase):
+            for _ in range(self.options.item_slot_increase):
                 level_up_item_pool.append("Item Slot Increase")
-            for i in range(self.options.accessory_slot_increase):
+            for _ in range(self.options.accessory_slot_increase):
                 level_up_item_pool.append("Accessory Slot Increase")
 
             # Create other pool
-            for i in range(self.options.strength_increase):
+            for _ in range(self.options.strength_increase):
                 possible_level_up_item_pool.append("Strength Increase")
-            for i in range(self.options.defense_increase):
+            for _ in range(self.options.defense_increase):
                 possible_level_up_item_pool.append("Defense Increase")
-            for i in range(self.options.hp_increase):
+            for _ in range(self.options.hp_increase):
                 possible_level_up_item_pool.append("Max HP Increase")
-            for i in range(self.options.mp_increase):
+            for _ in range(self.options.mp_increase):
                 possible_level_up_item_pool.append("Max MP Increase")
-            for i in range(self.options.ap_increase):
+            for _ in range(self.options.ap_increase):
                 possible_level_up_item_pool.append("Max AP Increase")
 
             # Fill remaining pool with items from other pool
@@ -91,17 +95,15 @@ class KH1World(World):
 
             level_up_locations = list(get_locations_by_category("Levels").keys())
             self.random.shuffle(level_up_item_pool)
-            i = self.options.force_stats_on_levels - 1
-            while len(level_up_item_pool) > 0 and i < self.options.level_checks:
-                self.multiworld.get_location(level_up_locations[i], self.player).place_locked_item(self.create_item(level_up_item_pool.pop()))
-                i = i + 1
+            starting_level_for_stats_only = self.options.force_stats_on_levels.value - 1
+            while len(level_up_item_pool) > 0 and starting_level_for_stats_only < self.options.level_checks:
+                self.multiworld.get_location(level_up_locations[starting_level_for_stats_only], self.player).place_locked_item(self.create_item(level_up_item_pool.pop()))
+                starting_level_for_stats_only += 1
         
         #Calculate prefilled locations and items
-        if True: #Allow notepad++ to collpase this section
+        if True: #Allow notepad++ to collapse this section
             prefilled_items = []
             prefilled_locations = 1 #Victory
-            if self.options.junk_in_missable_locations:
-                prefilled_locations = prefilled_locations + 15
             if self.options.vanilla_emblem_pieces:
                 prefilled_locations = prefilled_locations + 4
                 prefilled_items = prefilled_items + ["Emblem Piece (Flame)", "Emblem Piece (Chest)", "Emblem Piece (Fountain)", "Emblem Piece (Statue)"]
@@ -119,7 +121,7 @@ class KH1World(World):
                 continue
             if data.category == "Puppies":
                 if self.options.puppies == "triplets" and "-" in name:
-                    item_pool += [self.create_item(name) for _ in range(0, quantity)]
+                    item_pool += [self.create_item(name) for _ in range(quantity)]
                 if self.options.puppies == "individual" and "Puppy" in name:
                     item_pool += [self.create_item(name) for _ in range(0, quantity)]
                 if self.options.puppies == "full" and name == "All Puppies":
@@ -191,22 +193,6 @@ class KH1World(World):
             "final_rest":      "End of the World Final Rest Chest"
         }
         self.multiworld.get_location(goal_dict[self.options.goal.current_key], self.player).place_locked_item(self.create_item("Victory"))
-        if self.options.junk_in_missable_locations:
-            self.multiworld.get_location("Traverse Town 1st District Leon Gift", self.player).place_locked_item(self.create_item("Elixir"))
-            self.multiworld.get_location("Traverse Town 1st District Aerith Gift", self.player).place_locked_item(self.create_item("Elixir"))
-            self.multiworld.get_location("End of the World World Terminus Hollow Bastion Chest", self.player).place_locked_item(self.create_item("Elixir"))
-            self.multiworld.get_location("Neverland Clock Tower 01:00 Door", self.player).place_locked_item(self.create_item("Elixir"))
-            self.multiworld.get_location("Neverland Clock Tower 02:00 Door", self.player).place_locked_item(self.create_item("Elixir"))
-            self.multiworld.get_location("Neverland Clock Tower 03:00 Door", self.player).place_locked_item(self.create_item("Elixir"))
-            self.multiworld.get_location("Neverland Clock Tower 04:00 Door", self.player).place_locked_item(self.create_item("Elixir"))
-            self.multiworld.get_location("Neverland Clock Tower 05:00 Door", self.player).place_locked_item(self.create_item("Elixir"))
-            self.multiworld.get_location("Neverland Clock Tower 06:00 Door", self.player).place_locked_item(self.create_item("Elixir"))
-            self.multiworld.get_location("Neverland Clock Tower 07:00 Door", self.player).place_locked_item(self.create_item("Elixir"))
-            self.multiworld.get_location("Neverland Clock Tower 08:00 Door", self.player).place_locked_item(self.create_item("Elixir"))
-            self.multiworld.get_location("Neverland Clock Tower 09:00 Door", self.player).place_locked_item(self.create_item("Elixir"))
-            self.multiworld.get_location("Neverland Clock Tower 10:00 Door", self.player).place_locked_item(self.create_item("Elixir"))
-            self.multiworld.get_location("Neverland Clock Tower 11:00 Door", self.player).place_locked_item(self.create_item("Elixir"))
-            self.multiworld.get_location("Neverland Clock Tower 12:00 Door", self.player).place_locked_item(self.create_item("Elixir"))
         if self.options.vanilla_emblem_pieces:
             self.multiworld.get_location("Hollow Bastion Entrance Hall Emblem Piece (Flame)", self.player).place_locked_item(self.create_item("Emblem Piece (Flame)"))
             self.multiworld.get_location("Hollow Bastion Entrance Hall Emblem Piece (Statue)", self.player).place_locked_item(self.create_item("Emblem Piece (Statue)"))
@@ -214,44 +200,31 @@ class KH1World(World):
             self.multiworld.get_location("Hollow Bastion Entrance Hall Emblem Piece (Chest)", self.player).place_locked_item(self.create_item("Emblem Piece (Chest)"))
 
     def get_filler_item_name(self) -> str:
-        fillers = {}
-        disclude = []
-        fillers.update(get_items_by_category("Item", disclude))
-        fillers.update(get_items_by_category("Camping", disclude))
-        fillers.update(get_items_by_category("Stat Ups", disclude))
-        weights = [data.weight for data in fillers.values()]
-        return self.random.choices([filler for filler in fillers.keys()], weights, k=1)[0]
+        weights = [data.weight for data in self.fillers.values()]
+        return self.random.choices([filler for filler in self.fillers.keys()], weights, k=1)[0]
 
     def fill_slot_data(self) -> dict:
-        required_reports_eotw = self.determine_reports_required_to_open_end_of_the_world()
-        required_reports_door = self.determine_reports_required_to_open_final_rest_door()
-        slot_data = {"xpmult": int(self.options.exp_multiplier)/16
-                    ,"required_reports_eotw": int(required_reports_eotw)
-                    ,"required_reports_door": int(required_reports_door)
-                    ,"door": self.options.final_rest_door.current_key
-                    ,"seed": self.multiworld.seed_name
-                    ,"advanced_logic": bool(self.options.advanced_logic)
-                    ,"hundred_acre_wood": bool(self.options.hundred_acre_wood)
-                    ,"atlantica": bool(self.options.atlantica)
-                    ,"goal": str(self.options.goal.current_key)}
+        slot_data = {"xpmult": int(self.options.exp_multiplier)/16,
+                    "required_reports_eotw": self.determine_reports_required_to_open_end_of_the_world(),
+                    "required_reports_door": self.determine_reports_required_to_open_final_rest_door(),
+                    "door": self.options.final_rest_door.current_key,
+                    "seed": self.multiworld.seed_name,
+                    "advanced_logic": bool(self.options.advanced_logic),
+                    "hundred_acre_wood": bool(self.options.hundred_acre_wood),
+                    "atlantica": bool(self.options.atlantica),
+                    "goal": str(self.options.goal.current_key)}
         if self.options.randomize_keyblade_stats:
-            min_str_bonus = min(self.options.keyblade_min_str, self.options.keyblade_max_str)
-            max_str_bonus = max(self.options.keyblade_min_str, self.options.keyblade_max_str)
-            min_mp_bonus = min(self.options.keyblade_min_mp, self.options.keyblade_max_mp)
-            max_mp_bonus = max(self.options.keyblade_min_mp, self.options.keyblade_max_mp)
+            min_str_bonus = min(self.options.keyblade_min_str.value, self.options.keyblade_max_str.value)
+            max_str_bonus = max(self.options.keyblade_min_str.value, self.options.keyblade_max_str.value)
+            min_mp_bonus = min(self.options.keyblade_min_mp.value, self.options.keyblade_max_mp.value)
+            max_mp_bonus = max(self.options.keyblade_min_mp.value, self.options.keyblade_max_mp.value)
             slot_data["keyblade_stats"] = ""
             for i in range(22):
                 if i < 4 and self.options.bad_starting_weapons:
                     slot_data["keyblade_stats"] = slot_data["keyblade_stats"] + "1,0,"
                 else:
-                    if min_str_bonus != max_str_bonus:
-                        str_bonus = int(self.random.randrange(min_str_bonus,max_str_bonus))
-                    else:
-                        str_bonus = int(min_str_bonus)
-                    if min_mp_bonus != max_mp_bonus:
-                        mp_bonus = int(self.random.randrange(min_mp_bonus,max_mp_bonus))
-                    else:
-                        mp_bonus = int(min_mp_bonus)
+                    str_bonus = int(self.random.randint(min_str_bonus, max_str_bonus))
+                    mp_bonus = int(self.random.randint(min_mp_bonus, max_mp_bonus))
                     slot_data["keyblade_stats"] = slot_data["keyblade_stats"] + str(str_bonus) + "," + str(mp_bonus) + ","
             slot_data["keyblade_stats"] = slot_data["keyblade_stats"][:-1]
         if self.options.donald_death_link:
@@ -275,37 +248,34 @@ class KH1World(World):
         return KH1Item(name, data.classification, data.code, self.player)
 
     def set_rules(self):
-        set_rules(self.multiworld, self.player, self.options, self.determine_reports_required_to_open_end_of_the_world(), self.determine_reports_required_to_open_final_rest_door(), self.options.final_rest_door.current_key)
+        set_rules(self)
 
     def create_regions(self):
         create_regions(self.multiworld, self.player, self.options)
     
-    def get_numbers_of_reports_to_consider(self) -> int:
+    def get_numbers_of_reports_to_consider(self) -> List[int]:
         numbers_to_consider = []
         if self.options.end_of_the_world_unlock.current_key == "reports":
-            numbers_to_consider.append(self.options.required_reports_eotw)
+            numbers_to_consider.append(self.options.required_reports_eotw.value)
         if self.options.final_rest_door.current_key == "reports":
-            numbers_to_consider.append(self.options.required_reports_door)
+            numbers_to_consider.append(self.options.required_reports_door.value)
         if self.options.final_rest_door.current_key == "reports" or self.options.end_of_the_world_unlock.current_key == "reports":
-            numbers_to_consider.append(self.options.reports_in_pool)
+            numbers_to_consider.append(self.options.reports_in_pool.value)
         numbers_to_consider.sort()
         return numbers_to_consider
     
-    def determine_reports_in_pool(self):
+    def determine_reports_in_pool(self) -> int:
         numbers_to_consider = self.get_numbers_of_reports_to_consider()
-        if len(numbers_to_consider) > 0:
-            return max(numbers_to_consider)
-        else:
-            return 0
+        return max(numbers_to_consider, default=0)
     
-    def determine_reports_required_to_open_end_of_the_world(self):
+    def determine_reports_required_to_open_end_of_the_world(self) -> int:
         if self.options.end_of_the_world_unlock.current_key == "reports":
             numbers_to_consider = self.get_numbers_of_reports_to_consider()
             if len(numbers_to_consider) > 0:
                 return numbers_to_consider[0]
         return 14
     
-    def determine_reports_required_to_open_final_rest_door(self):
+    def determine_reports_required_to_open_final_rest_door(self) -> int:
         if self.options.final_rest_door.current_key == "reports":
             numbers_to_consider = self.get_numbers_of_reports_to_consider()
             if len(numbers_to_consider) == 3:
@@ -313,3 +283,4 @@ class KH1World(World):
             elif len(numbers_to_consider) == 2:
                 return numbers_to_consider[0]
         return 14
+        

@@ -1,30 +1,29 @@
 from typing import List
 from BaseClasses import CollectionState, MultiWorld
 from .RegionBase import JakAndDaxterRegion
-from ..Rules import can_free_scout_flies, can_fight
+from .. import JakAndDaxterOptions, EnableOrbsanity
+from ..Rules import can_free_scout_flies, can_fight, can_reach_orbs
 
 
 # God help me... here we go.
-def build_regions(level_name: str, player: int, multiworld: MultiWorld) -> List[JakAndDaxterRegion]:
+def build_regions(level_name: str, multiworld: MultiWorld, options: JakAndDaxterOptions, player: int) -> List[JakAndDaxterRegion]:
 
     # We need a few helper functions.
     def can_cross_main_gap(state: CollectionState, p: int) -> bool:
-        return ((state.has("Roll", player)
-                 and state.has("Roll Jump", player))
-                or (state.has("Double Jump", player)
-                    and state.has("Jump Kick", player)))
+        return (state.has_all({"Roll", "Roll Jump"}, p)
+                or state.has_all({"Double Jump", "Jump Kick"}, p))
 
     def can_cross_frozen_cave(state: CollectionState, p: int) -> bool:
         return (state.has("Jump Kick", p)
                 and (state.has("Double Jump", p)
-                     or (state.has("Roll", p) and state.has("Roll Jump", p))))
+                     or state.has_all({"Roll", "Roll Jump"}, p)))
 
     def can_jump_blockers(state: CollectionState, p: int) -> bool:
         return (state.has("Double Jump", p)
-                or (state.has("Crouch", p) and state.has("Crouch Jump", p))
-                or (state.has("Crouch", p) and state.has("Crouch Uppercut", p))
-                or (state.has("Punch", p) and state.has("Punch Uppercut", p))
-                or state.has("Jump Dive", p))
+                or state.has("Jump Dive", p)
+                or state.has_all({"Crouch", "Crouch Jump"}, p)
+                or state.has_all({"Crouch", "Crouch Uppercut"}, p)
+                or state.has_all({"Punch", "Punch Uppercut"}, p))
 
     main_area = JakAndDaxterRegion("Main Area", player, multiworld, level_name, 0)
     main_area.add_fly_locations([65], access_rule=lambda state: can_free_scout_flies(state, player))
@@ -144,25 +143,22 @@ def build_regions(level_name: str, player: int, multiworld: MultiWorld) -> List[
                           can_jump_blockers(state, player))
 
     fort_interior.connect(fort_interior_caches, rule=lambda state:              # Just need a little height.
-                          (state.has("Crouch", player)
-                           and state.has("Crouch Jump", player))
-                          or state.has("Double Jump", player))
+                          state.has("Double Jump", player)
+                          or state.has_all({"Crouch", "Crouch Jump"}, player))
     fort_interior.connect(fort_interior_base, rule=lambda state:                # Just need a little height.
-                          (state.has("Crouch", player)
-                           and state.has("Crouch Jump", player))
-                          or state.has("Double Jump", player))
+                          state.has("Double Jump", player)
+                          or state.has_all({"Crouch", "Crouch Jump"}, player))
     fort_interior.connect(fort_interior_course_end, rule=lambda state:          # Just need a little distance.
-                          (state.has("Punch", player)
-                           and state.has("Punch Uppercut", player))
-                          or state.has("Double Jump", player))
+                          state.has("Double Jump", player)
+                          or state.has_all({"Punch", "Punch Uppercut"}, player))
 
     flut_flut_course.connect(fort_exterior)                                     # Ride the elevator.
 
     # Must fight way through cave, but there is also a grab-less ledge we must jump over.
     bunny_cave_start.connect(bunny_cave_end, rule=lambda state:
                              can_fight(state, player)
-                             and ((state.has("Crouch", player) and state.has("Crouch Jump", player))
-                                  or state.has("Double Jump", player)))
+                             and (state.has("Double Jump", player)
+                                  or state.has_all({"Crouch", "Crouch Jump"}, player)))
 
     # All jump down.
     fort_interior_caches.connect(fort_interior)
@@ -188,5 +184,22 @@ def build_regions(level_name: str, player: int, multiworld: MultiWorld) -> List[
     multiworld.regions.append(fort_interior_caches)
     multiworld.regions.append(fort_interior_base)
     multiworld.regions.append(fort_interior_course_end)
+
+    # If Per-Level Orbsanity is enabled, build the special Orbsanity Region. This is a virtual region always
+    # accessible to Main Area. The Locations within are automatically checked when you collect enough orbs.
+    if options.enable_orbsanity == EnableOrbsanity.option_per_level:
+        orbs = JakAndDaxterRegion("Orbsanity", player, multiworld, level_name)
+
+        bundle_size = options.level_orbsanity_bundle_size.value
+        bundle_count = int(200 / bundle_size)
+        for bundle_index in range(bundle_count):
+            orbs.add_orb_locations(12,
+                                   bundle_index,
+                                   bundle_size,
+                                   access_rule=lambda state, bundle=bundle_index:
+                                   can_reach_orbs(state, player, multiworld, options, level_name)
+                                   >= (bundle_size * (bundle + 1)))
+        multiworld.regions.append(orbs)
+        main_area.connect(orbs)
 
     return [main_area]

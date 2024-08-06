@@ -2472,6 +2472,7 @@ class Conductor():
                 logger.debug("Skipping Exdeath at C0FFFF")
                 continue
             
+            
             arch_player = arch_item_data['loc_player']
             arch_item_name = arch_item_data['loc_name']
             arch_item_progression = arch_item_data['loc_progression']
@@ -2497,8 +2498,8 @@ class Conductor():
                     reward.set_collectible(collectible)
                     setattr(reward, 'reward_arch', arch_item_name)
                     setattr(reward, 'reward_arch_player', arch_player)
-                    collectible
-                    if arch_mib_flag and self.arch_options['trapped_chests']:
+                    
+                    if arch_mib_flag and self.arch_options['trapped_chests'] and collectible.name != 'Gil':
                         
                         # update chest flag - Ax will change it to MIB for items 
                         setattr(reward, 'reward_arch_mib_flag', arch_mib_flag)
@@ -2507,10 +2508,17 @@ class Conductor():
                         if mib_modifier == '10':
                             mib_modifier = 'A'
                         
-                        if collectible.reward_type == '40':
+                        if collectible.reward_type in ['70','40']:
                             new_reward_type = "A%s" % mib_modifier
-                        elif collectible.reward_type in ['60','30']:
+                        elif collectible.reward_type == '30':
                             new_reward_type = "B%s" % mib_modifier 
+                        elif collectible.reward_type == '60':
+                            new_reward_type = "C%s" % mib_modifier 
+                        elif collectible.reward_type == '20':
+                            new_reward_type = "D%s" % mib_modifier 
+                        elif collectible.reward_type == '50':
+                            new_reward_type = "E%s" % mib_modifier 
+                        
                         #    if collectible.reward_type == '60':
                         #        collectible.ability_id = str(hex(int(("0x" + collectible.ability_id),16) + int("0x40",16)))
 

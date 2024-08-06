@@ -1033,11 +1033,23 @@
     },
     {
         "creation_settings": [ "logsanity" ], "address": 1085039152, "name": "Ship Log: WHS 2 - Alignment",
-        "region": "White Hole Station", "requires": [ { "item": "Translator" } ] // projection stone text, requires carrying it out of WHS
+        "region": "White Hole Station", "requires": [
+            { "item": "Translator" },
+            { "anyOf": [ // projection stone text, requires carrying it out of WHS
+                { "item": "Launch Codes" },
+                { "item": "Nomai Warp Codes" }
+            ] }
+        ]
     },
     {
         "creation_settings": [ "logsanity" ], "address": 1085039153, "name": "Ship Log: WHS 3 - Temporal Anomaly",
-        "region": "White Hole Station", "requires": [ { "item": "Translator" } ] // projection stone text, requires carrying it out of WHS
+        "region": "White Hole Station", "requires": [
+            { "item": "Translator" },
+            { "anyOf": [ // projection stone text, requires carrying it out of WHS
+                { "item": "Launch Codes" },
+                { "item": "Nomai Warp Codes" }
+            ] }
+        ]
     },
     {
         "creation_settings": [ "logsanity" ], "address": 1085039154, "name": "Ship Log: WHS 4 - Miniscule Interval",

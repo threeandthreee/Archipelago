@@ -2,6 +2,7 @@ from BaseClasses import Location
 from BaseClasses import ItemClassification
 from worlds.generic.Rules import add_item_rule
 from .items import arch_item_offset
+from .options import ffvcd_options
 loc_id_start = 342000000
 
 LOC_TYPE_CHEST = 1
@@ -13,6 +14,7 @@ LOC_TYPE_TRACKER_EVENT = 4
 class LocationData:
     def __init__(self, name, address = None, parent = None, area = None, location_type="", type="Item"):
         self.name = name
+    
         self.address = address + loc_id_start
         self.address_hex = address
         self.parent = parent
@@ -25,7 +27,7 @@ class LocationData:
 class FFVCDLocation(Location):
     game = "ffvcd"
 
-    def __init__(self, player, location_data, parent=None, progression_checks_setting = 0):
+    def __init__(self, player, location_data, parent=None, progression_checks_setting = 0, kuzar_progression = False, rift_and_void_progression = False):
         super(FFVCDLocation, self).__init__(
             player, location_data.name,
             location_data.address,
@@ -45,12 +47,12 @@ class FFVCDLocation(Location):
             if location_data.location_type != LOC_TYPE_KEY:
                 add_item_rule(self, lambda item: not (item.classification & ItemClassification.progression))
 
-
-        # kuzar shouldn't have key items because of the permanent choice of using tablets
-        #if location_data.area in ["Kuzar"]:
-        #    add_item_rule(self, lambda item: not (item.classification & ItemClassification.progression))
+        if not kuzar_progression and location_data.area in ["Kuzar"]:
+            add_item_rule(self, lambda item: not (item.classification & ItemClassification.progression))
         # other player's progression can land here or other key items relevant to other's progression just not the FFV player's progression
         # so there shouldn't be a reason to block this location as it already requires all 4 tablets in the region rules
+        if not rift_and_void_progression and location_data.area in ["Rift (1 Tablet)","Rift (2 Tablets)","Rift (3 Tablets)","Rift (4 Tablets)","Void"]:
+            add_item_rule(self, lambda item: not (item.classification & ItemClassification.progression))
 
             
 
@@ -69,7 +71,9 @@ class FFVCDLocation(Location):
 
 def create_location(world, player, location_data, parent=None):
     progression_checks_setting = world.worlds[player].options.progression_checks.value
-    return_location = FFVCDLocation(player, location_data, parent, progression_checks_setting)
+    kuzar_progression = world.worlds[player].options.kuzar_progression.value
+    rift_and_void_progression = world.worlds[player].options.rift_and_void_progression.value
+    return_location = FFVCDLocation(player, location_data, parent, progression_checks_setting, kuzar_progression, rift_and_void_progression)
     return return_location
 
 location_data = [
@@ -434,16 +438,16 @@ LocationData("Istory Falls - Leviathan (Boss)", address = 0xC0FBAE, area = "Isto
 LocationData("Solitary Island - Stalker (Boss)", address = 0xC0FBB0, area = "Solitary Island",location_type=LOC_TYPE_KEY),
 LocationData("Walse Tower Sunken - GoGo (Boss)", address = 0xC0FBB2, area = "Walse Tower Sunken",location_type=LOC_TYPE_KEY),
 LocationData("North Mountain (World 3) - Bahamut (Boss)", address = 0xC0FBB4, area = "North Mountain (World 3)", location_type=LOC_TYPE_KEY),
-#LocationData("Rift (2 Tablets) - Calofisteri (Boss)", address = 0xC0FBB5, area =  "Rift (2 Tablets)", location_type=LOC_TYPE_KEY),
-#LocationData("Rift (3 Tablets) - Apanda (Boss)", address = 0xC0FBB7, area =  "Rift (3 Tablets)", location_type=LOC_TYPE_KEY),
-#LocationData("Rift (3 Tablets) - Apocalypse (Boss)", address = 0xC0FBB9, area =  "Rift (3 Tablets)", location_type=LOC_TYPE_KEY),
-#LocationData("Rift (3 Tablets) - Catastroph (Boss)", address = 0xC0FBBB, area =  "Rift (3 Tablets)", location_type=LOC_TYPE_KEY),
-#LocationData("Rift (4 Tablets) - Halicarnaso (Boss)", address = 0xC0FBBC, area =  "Rift (4 Tablets)", location_type=LOC_TYPE_KEY),
-#LocationData("Rift (4 Tablets) - Twintania (Boss)", address = 0xC0FBBD, area =  "Rift (4 Tablets)", location_type=LOC_TYPE_KEY),
-#LocationData("Void - Necrofobia (Boss)", address = 0xC0FBBE, area = "Void", location_type=LOC_TYPE_CHEST),
+LocationData("Rift (2 Tablets) - Calofisteri (Boss)", address = 0xC0FBF0, area =  "Rift (2 Tablets)", location_type=LOC_TYPE_KEY),
+LocationData("Rift (3 Tablets) - Apanda (Boss)", address = 0xC0FBF2, area =  "Rift (3 Tablets)", location_type=LOC_TYPE_KEY),
+LocationData("Rift (3 Tablets) - Apocalypse (Boss)", address = 0xC0FBF4, area =  "Rift (3 Tablets)", location_type=LOC_TYPE_KEY),
+LocationData("Rift (3 Tablets) - Catastroph (Boss)", address = 0xC0FBF6, area =  "Rift (3 Tablets)", location_type=LOC_TYPE_KEY),
+LocationData("Rift (4 Tablets) - Halicarnaso (Boss)", address = 0xC0FBF8, area =  "Rift (4 Tablets)", location_type=LOC_TYPE_KEY),
+LocationData("Rift (4 Tablets) - Twintania (Boss)", address = 0xC0FBFA, area =  "Rift (4 Tablets)", location_type=LOC_TYPE_KEY),
+LocationData("Void - Necrofobia (Boss)", address = 0xC0FBFC, area = "Void", location_type=LOC_TYPE_KEY),
 LocationData("Piano (Tule)", address = 0xC0FFF6, area = "Tule", location_type=LOC_TYPE_TRACKER_EVENT),
 LocationData("Piano (Carwen)", address = 0xC0FFF7, area = "Carwen", location_type=LOC_TYPE_TRACKER_EVENT),
-LocationData("Piano (Karnak)", address = 0xC0FFF8, area = "Karnak", location_type=LOC_TYPE_TRACKER_EVENT),
+LocationData("Piano (Karnak)", address = 0xC0FFF8, area = "Karnak (On Fire)", location_type=LOC_TYPE_TRACKER_EVENT),
 LocationData("Piano (Jacole)", address = 0xC0FFF9, area = "Jacole", location_type=LOC_TYPE_TRACKER_EVENT),
 LocationData("Piano (Crescent)", address = 0xC0FFFA, area = "Crescent Island", location_type=LOC_TYPE_TRACKER_EVENT),
 LocationData("Piano (Mua)", address = 0xC0FFFB, area = "Mua", location_type=LOC_TYPE_TRACKER_EVENT),
