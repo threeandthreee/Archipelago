@@ -60,6 +60,7 @@ class DBCommandProcessor(ServerCommandProcessor):
 
 class WebHostContext(Context):
     room_id: int
+    room_is_tracked: bool
 
     def __init__(self, static_server_data: dict, logger: logging.Logger):
         # static server data is used during _load_game_data to load required data,
@@ -111,6 +112,7 @@ class WebHostContext(Context):
         self.item_name_groups = {"Archipelago": static_item_name_groups.get("Archipelago", {})}
         self.location_name_groups = {"Archipelago": static_location_name_groups.get("Archipelago", {})}
 
+        self.room_is_tracked = multidata["server_options"]["track_in_discord"]
         for game in list(multidata.get("datapackage", {})):
             game_data = multidata["datapackage"][game]
             if "checksum" in game_data:
@@ -273,10 +275,7 @@ def run_server_process(name: str, ponyconfig: dict, static_server_data: dict,
                 if port:
                     ctx.logger.info(f'Hosting game at {host}:{port}')
                     ctx.admin_password = admin_password
-                    # Setup Webhook settings with the current context
-                    if webhook["WEBHOOK_AUTO_START"]:
-                        ctx.webhook_active = True
-                        ctx.WebhookThread(ctx, webhook["WEBHOOK_URL"], webhook["WEBHOOK_DEBUG"]).start()
+
 
                     with db_session:
                         room = Room.get(id=ctx.room_id)
@@ -284,10 +283,15 @@ def run_server_process(name: str, ponyconfig: dict, static_server_data: dict,
                         ctx.room_url = urlsafe_b64encode(room.id.bytes).rstrip(b'=').decode('ascii')
                         ctx.seed_url = urlsafe_b64encode(room.seed.id.bytes).rstrip(b'=').decode('ascii')
 
-                        if room.is_new:
-                            _push_player_list(ctx)
-                            ctx.push_item_information()
-                            room.is_new = webhook["WEBHOOK_DEBUG"]
+                        if ctx.room_is_tracked:
+                            if webhook["WEBHOOK_AUTO_START"]:
+                                ctx.webhook_active = True
+                                ctx.WebhookThread(ctx, webhook["WEBHOOK_URL"], webhook["WEBHOOK_DEBUG"]).start()
+
+                            if room.is_new:
+                                _push_player_list(ctx)
+                                ctx.push_item_information()
+                                room.is_new = webhook["WEBHOOK_DEBUG"]
                 else:
                     ctx.logger.exception("Could not determine port. Likely hosting failure.")
                 with db_session:

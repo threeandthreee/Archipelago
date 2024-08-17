@@ -4,7 +4,7 @@ This module provides the options and option dataclass for the Options dataclass.
 
 from dataclasses import dataclass
 
-from Options import Choice, DefaultOnToggle, PerGameCommonOptions, Toggle, Range
+from Options import Choice, DefaultOnToggle, OptionGroup, PerGameCommonOptions, Toggle, Range
 
 class LogicMode(Choice):
     """
@@ -52,7 +52,7 @@ class VTSkip(DefaultOnToggle):
 
 class QuestRando(Toggle):
     """
-    If enabled, all quests will be randomized along with chests and cutscene locations.
+    If enabled, all quest rewards will be added to the location list.
     """
     display_name = "Quest Randomization"
 
@@ -93,6 +93,55 @@ class QuestDialogHints(DefaultOnToggle):
     to the archipelago server.
     """
     display_name = "Quest Dialog Hints"
+
+class ShopRando(Toggle):
+    """
+    If enabled, all shops will be added to the location list.
+    """
+    display_name = "Shop Randomization"
+
+class ShopSendMode(Choice):
+    """
+    Controls what exactly counts as a check when shop randomization is enabled.
+    [Per Item Type] A check is added for each type of item (for example, Sandwich). Therefore, purchasing a sandwich
+    from any shop in the game clears the same check.
+    [Per Slot] A check is added for each item slot in each shop. Therefore, purchasing a Sandwich in Rookie Harbor
+    clears a separate check than purchasing a Sandwich in Bergen Village.
+    """
+
+    display_name = "Shop Send Mode"
+
+    option_per_item_type = 1
+    option_per_slot = 3
+
+    default = option_per_item_type
+
+class ShopReceiveMode(Choice):
+    """
+    Controls how shops are unlocked when shop randomization is enabled.
+    [None] All shop slots are able to be purchased as soon as the player can access the shop.
+    [Per Item Type] A check is added for each type of item (for example, Sandwich) which unlocks the ability to purchase
+    that item from any shop.
+    [Per Shop] A check is added for each shop (for example, Rookie Harbor Items) which unlocks the ability to purchase
+    items from that shop.
+    [Per Slot] A check is added for each item slot in each shop which unlocks the ability to purchase that item from
+    that shop (this may lead to tedious playthroughs).
+    """
+
+    display_name = "Shop Receive Mode"
+
+    option_none = 0
+    option_per_item_type = 1
+    option_per_shop = 2
+    option_per_slot = 3
+
+    default = option_per_item_type
+
+class ShopDialogHints(DefaultOnToggle):
+    """
+    If enabled, upon opening the dialog for a shop, corresponding hints are sent to the Archipelago server.
+    """
+    display_name = "Shop Dialog Hints"
 
 class StartWithGreenLeafShade(DefaultOnToggle):
     """
@@ -145,7 +194,6 @@ class ProgressiveAreaUnlocks(Choice):
     [Split] both dungeons and overworld areas are unlocked progressively in separate progressive chains.
     [Combined] both dungeons and overworld areas are unlocked progressively from the same progressive chain.
     """
-
     display_name = "Progressive Area Unlocks"
 
     # treat this option as a bitmask
@@ -163,6 +211,13 @@ class ProgressiveAreaUnlocks(Choice):
     option_combined = COMBINE_POOLS | DUNGEONS | OVERWORLD
 
     default = 0
+
+class ProgressiveEquipment(Toggle):
+    """
+    If enabled, equipment will be progressive, sorted into different categories according to playstyle depending on
+    which of the other location-adding options are enabled.
+    """
+    display_name = "Progressive Equipment"
 
 class Reachability(Choice):
     """
@@ -282,6 +337,52 @@ class ChestKeyShuffle(DungeonReachability):
         "wave-dng": { "Radiant Key" },
     }
 
+class ChestLockRandomization(Toggle):
+    """
+    If enabled, the lock on all chests (Bronze, Silver, Gold, or None) will be randomized.
+    """
+    display_name = "Chest Lock Randomization"
+
+class NoChestLockWeight(Range):
+    """
+    Controls the likelihood of giving a chest no lock (if chest lock randomization is enabled).
+    """
+    display_name = "Unlocked Chest Weight"
+
+    range_start = 0
+    range_end = 100
+    default = 60
+
+class BronzeChestLockWeight(Range):
+    """
+    Controls the likelihood of giving a chest bronze lock, requiring Thief's Key to open (if chest lock randomization is enabled).
+    """
+    display_name = "Bronze Chest Lock Weight"
+
+    range_start = 0
+    range_end = 100
+    default = 15
+
+class SilverChestLockWeight(Range):
+    """
+    Controls the likelihood of giving a chest silver lock, requiring White Key to open (if chest lock randomization is enabled).
+    """
+    display_name = "Silver Chest Lock Weight"
+
+    range_start = 0
+    range_end = 100
+    default = 15
+
+class GoldChestLockWeight(Range):
+    """
+    Controls the likelihood of giving a chest gild lock, requiring Radiant Key to open (if chest lock randomization is enabled).
+    """
+    display_name = "Gold Chest Lock Weight"
+
+    range_start = 0
+    range_end = 100
+    default = 10
+
 class CommonPoolWeight(Range):
     """
     Controls the likelihood of choosing a common filler item when filling the world.
@@ -357,12 +458,18 @@ class CrossCodeOptions(PerGameCommonOptions):
     hidden_quest_obfuscation_level: HiddenQuestObfuscationLevel
     quest_dialog_hints: QuestDialogHints
 
+    shop_rando: ShopRando
+    shop_dialog_hints: ShopDialogHints
+    shop_send_mode: ShopSendMode
+    shop_receive_mode: ShopReceiveMode
+
     start_with_green_leaf_shade: StartWithGreenLeafShade
     start_with_chest_detector: StartWithChestDetector
     start_with_discs: StartWithDiscs
     start_with_pet: StartWithPet
 
     progressive_area_unlocks: ProgressiveAreaUnlocks
+    progressive_equipment: ProgressiveEquipment
     keyrings: Keyrings
 
     shade_shuffle: ShadeShuffle
@@ -370,6 +477,12 @@ class CrossCodeOptions(PerGameCommonOptions):
     small_key_shuffle: SmallKeyShuffle
     master_key_shuffle: MasterKeyShuffle
     chest_key_shuffle: ChestKeyShuffle
+
+    chest_lock_randomization: ChestLockRandomization
+    no_chest_lock_weight: NoChestLockWeight
+    bronze_chest_lock_weight: BronzeChestLockWeight
+    silver_chest_lock_weight: SilverChestLockWeight
+    gold_chest_lock_weight: GoldChestLockWeight
 
     common_pool_weight: CommonPoolWeight
     rare_pool_weight: RarePoolWeight
@@ -379,3 +492,64 @@ class CrossCodeOptions(PerGameCommonOptions):
     drop_weight: DropWeight
 
 addon_options = ["quest_rando"]
+
+option_groups: list[OptionGroup] = [
+    OptionGroup(
+        name="Quests",
+        options=[
+            QuestRando,
+            HiddenQuestRewardMode,
+            HiddenQuestObfuscationLevel,
+            QuestDialogHints,
+        ]
+    ),
+    OptionGroup(
+        name="Shops",
+        options=[
+            ShopRando,
+            ShopDialogHints,
+            ShopSendMode,
+            ShopReceiveMode
+        ]
+    ),
+    OptionGroup(
+        name="Starting Inventory",
+        options=[
+            StartWithGreenLeafShade,
+            StartWithChestDetector,
+            StartWithDiscs,
+            StartWithPet,
+        ]
+    ),
+    OptionGroup(
+        name="Item Locations",
+        options=[
+            ShadeShuffle,
+            ElementShuffle,
+            SmallKeyShuffle,
+            MasterKeyShuffle,
+            ChestKeyShuffle,
+        ]
+    ),
+    OptionGroup(
+        name="Chest Locks",
+        options=[
+            ChestLockRandomization,
+            NoChestLockWeight,
+            BronzeChestLockWeight,
+            SilverChestLockWeight,
+            GoldChestLockWeight,
+        ]
+    ),
+    OptionGroup(
+        name="Pools",
+        options=[
+            CommonPoolWeight,
+            RarePoolWeight,
+            EpicPoolWeight,
+            LegendaryPoolWeight,
+            ConsumableWeight,
+            DropWeight
+        ]
+    ),
+]

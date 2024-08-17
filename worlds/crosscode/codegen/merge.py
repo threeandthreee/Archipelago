@@ -1,9 +1,23 @@
+"""
+Provides the merge function, to combine JSON objects.
+"""
+
 import re
 import typing
 
-T = typing.TypeVar("T", dict[str, typing.Any], list)
+T = typing.TypeVar("T", dict[str, typing.Any], list[typing.Any])
 
-def merge(original: T, addon: T, patch=True) -> T:
+def merge(original: T, addon: T, patch: bool = True) -> T:
+    """
+    Merge an original with an addon.
+
+    If both are dicts, copy the keys from addon to original and return original, failing on a duplicate key.
+
+    If both are lists, append all elements from addon to original and return original.
+
+    If either argument is of any other type, fail.
+    """
+
     if isinstance(original, dict):
         if not isinstance(addon, dict):
             raise RuntimeError(f"Cannot merge type {type(original)} with {type(addon)}")
@@ -21,7 +35,7 @@ def merge(original: T, addon: T, patch=True) -> T:
                 for key2, value2 in original.items():
                     if pattern.match(key2):
                         merge(value2, value, patch)
-            
+
             # normal key. we just want to get that key and merge it.
             elif key not in original:
                 original[key] = value
@@ -37,5 +51,4 @@ def merge(original: T, addon: T, patch=True) -> T:
 
         return original
 
-    else:
-        raise RuntimeError(f"Type {type(original)} cannot be merged")
+    raise RuntimeError(f"Type {type(original)} cannot be merged")

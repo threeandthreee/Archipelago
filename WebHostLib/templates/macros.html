@@ -52,7 +52,7 @@
                                 Download Patch File...</a>
                             {% elif patch.game == "Final Fantasy Mystic Quest" %}
                             <a href="{{ url_for("download_slot_file", room_id=room.id, player_id=patch.player_id) }}" download>
-                                Download APMQ File...</a>
+                                Download APMQ Patch File...</a>
                             {% elif patch.game == "The Legend of Zelda - Oracle of Seasons" %}
                             <a href="{{ url_for("download_slot_file", room_id=room.id, player_id=patch.player_id) }}" download>
                                 Download PatcherData File...</a>
@@ -60,7 +60,7 @@
                             <a href="{{ url_for("download_slot_file", room_id=room.id, player_id=patch.player_id) }}" download>
                                 Download JSON File...</a>
                             {% else %}
-                                No file to download for this game.
+                                Unsupported game patch file for this game.
                             {% endif %}
                         {% else %}
                             No file to download for this game.

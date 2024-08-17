@@ -13,18 +13,19 @@ from Fill import fill_restrictive
 from worlds.AutoWorld import WebWorld, World
 from worlds.generic.Rules import add_rule
 
-from .common import NAME, BASE_ID
-from .logic import condition_satisfied, has_clearance
+from .common import NAME
+from .logic import condition_satisfied
 from .world_data import static_world_data
 
 from .types.items import ItemData, CrossCodeItem
-from .types.locations import CrossCodeLocation
-from .types.condition import Condition, LocationCondition
+from .types.locations import CrossCodeLocation, LocationData
+from .types.condition import LogicDict, Condition, LocationCondition
 from .types.world import WorldData
 from .types.regions import RegionsData
 from .types.metadata import IncludeOptions
 from .types.pools import Pools
-from .options import CrossCodeOptions, StartWithDiscs, ProgressiveAreaUnlocks
+from .types.slot import SlotData
+from .options import CrossCodeOptions, ShopReceiveMode, ShopSendMode, StartWithDiscs, ProgressiveAreaUnlocks, option_groups
 
 cclogger = logging.getLogger(__name__)
 
@@ -40,6 +41,8 @@ class CrossCodeWebWorld(WebWorld):
     tutorials = []
 
     bug_report_page = "https://github.com/CodeTriangle/CCMultiworldRandomizer/blob/master/README.md#how-to-get-support"
+
+    option_groups=option_groups
 
 class CrossCodeWorld(World):
     """CrossCode is a retro-inspired 2D Action RPG set in the distant future,
@@ -59,7 +62,7 @@ class CrossCodeWorld(World):
 
     # ID of first item and location, could be hard-coded but code may be easier
     # to read with this as a propery.
-    base_id = BASE_ID
+    base_id = world_data.base_id
     # Instead of dynamic numbering, IDs could be part of data.
 
     # The following two dicts are required for the generation to know which
@@ -89,7 +92,7 @@ class CrossCodeWorld(World):
     dungeon_location_list: dict[str, set[CrossCodeLocation]]
     dungeon_areas: typing.ClassVar[set[str]] = {"cold-dng", "heat-dng", "shock-dng", "wave-dng", "tree-dng"}
 
-    logic_dict: dict[str, typing.Any]
+    logic_dict: LogicDict
 
     location_events: dict[str, Location]
 
@@ -111,7 +114,36 @@ class CrossCodeWorld(World):
 
     _filler_pool_weights: list[int]
 
+    _chest_level_names: list[str] = [ "Default", "Bronze", "Silver", "Gold" ]
+
+    _chest_lock_weights: list[int]
+
     enabled_chain_names: set[str]
+
+    _equip_chain_names = {
+        'headsAllPurpose',
+        'headsDefensive',
+        'headsOffensive',
+        'heads',
+        'armsAllPurpose',
+        'armsDefensive',
+        'armsMelee',
+        'armsRanged',
+        'armsSpecial',
+        'armsClassBased',
+        'arms',
+        'torsosAllPurpose',
+        'torsosDefensive',
+        'torsosMixed',
+        'torsosOffensive',
+        'torsos',
+        'torsosClassBased',
+        'legsAllPurpose',
+        'legsDefensive',
+        'legsOffensive',
+        'legs'
+    }
+
 
     def get_include_options(self) -> IncludeOptions:
         """
@@ -119,7 +151,11 @@ class CrossCodeWorld(World):
         classes to check for inclusion.
         """
         return {
-            "questRandoOnly": bool(self.options.quest_rando.value),
+            "trade": False,
+            "shop": bool(self.options.shop_rando.value),
+            "arena": False,
+            "chest": True,
+            "quest": bool(self.options.quest_rando.value),
         }
 
     def create_location(self, location: str, event_from_location: bool = False) -> CrossCodeLocation:
@@ -224,6 +260,9 @@ class CrossCodeWorld(World):
 
         green_leaf_shade_name = "Green Leaf Shade"
 
+        self.required_items = Counter()
+        self.required_items.update(self.pools.item_pools["required"])
+
         area_unlocks = self.options.progressive_area_unlocks.value
         if area_unlocks & ProgressiveAreaUnlocks.COMBINE_POOLS:
             self.enabled_chain_names.add("areaItemsAll")
@@ -235,12 +274,22 @@ class CrossCodeWorld(World):
                 self.enabled_chain_names.add("areaItemsOverworld")
                 green_leaf_shade_name = "Progressive Overworld Area Unlock"
 
+        if self.options.progressive_equipment.value:
+            self.enabled_chain_names |= self._equip_chain_names
+
         self.required_items = Counter()
         self.required_items.update(self.pools.item_pools["required"])
-        self.required_items.update(self.pools.item_pools["equipChests"])
 
-        if self.options.quest_rando.value:
-            self.required_items.update(self.pools.item_pools["equipQuests"])
+        for name in self._equip_chain_names:
+            self.required_items.update(self.pools.item_pools[f"pool:{name}"])
+
+        if self.options.shop_rando.value:
+            if self.options.shop_receive_mode == ShopReceiveMode.option_per_item_type:
+                self.required_items.update(self.world_data.shop_unlock_by_id.values())
+            if self.options.shop_receive_mode == ShopReceiveMode.option_per_shop:
+                self.required_items.update(self.world_data.shop_unlock_by_shop.values())
+            if self.options.shop_receive_mode == ShopReceiveMode.option_per_slot:
+                self.required_items.update(self.world_data.shop_unlock_by_shop_and_id.values())
 
         if self.options.vt_shade_lock.value in [1, 2]:
             self.variables["vtShadeLock"].append("shades")
@@ -248,6 +297,8 @@ class CrossCodeWorld(World):
             self.variables["vtShadeLock"].append("bosses")
         if self.options.vw_meteor_passage.value:
             self.variables["vwPassage"].append("meteor")
+
+        self.variables["canGrind"].append("noShadeWarp")
 
         if self.options.start_with_green_leaf_shade.value:
             self.multiworld.push_precollected(self.create_item(green_leaf_shade_name))
@@ -263,6 +314,14 @@ class CrossCodeWorld(World):
         if self.options.start_with_pet.value:
             chosen_pet = self.pools.pull_items_from_pool("pets", self.random)[0]
             start_inventory[chosen_pet.name] = 1
+
+        if self.options.chest_lock_randomization.value:
+            self._chest_lock_weights = list(itertools.accumulate([
+                self.options.no_chest_lock_weight.value,
+                self.options.bronze_chest_lock_weight.value,
+                self.options.silver_chest_lock_weight.value,
+                self.options.gold_chest_lock_weight.value,
+            ]))
 
         self.pre_fill_any_dungeon_names = set()
         self.pre_fill_specific_dungeons_names = defaultdict(set)
@@ -284,47 +343,81 @@ class CrossCodeWorld(World):
                 self.pre_fill_any_dungeon_names
             )
 
-        self.logic_dict = {
+        self.logic_dict: LogicDict = {
             "mode": self.logic_mode,
             "variables": self.variables,
             "variable_definitions": self.world_data.variable_definitions,
-            "keyrings": self.world_data.keyring_items if self.options.keyrings.value else [],
+            "keyrings": self.world_data.keyring_items if self.options.keyrings.value else set(),
             "item_progressive_replacements": self.pools.item_progressive_replacements,
+            "chest_clearance_levels": {},
+            "shop_receive_mode": self.options.shop_receive_mode.value,
+            "shop_unlock_by_id": self.world_data.shop_unlock_by_id,
+            "shop_unlock_by_shop": self.world_data.shop_unlock_by_shop,
+            "shop_unlock_by_shop_and_id": self.world_data.shop_unlock_by_shop_and_id,
         }
 
+        # Universal Tracker support
+        # Anything that is generated in a non-standard fashion on my end has to be brought back into scope here from slot data.
+        if hasattr(self.multiworld, "re_gen_passthrough"):
+            slot_data: SlotData = self.multiworld.re_gen_passthrough["CrossCode"]
+            # Reinterpret the JSON chest clearance levels dict (a string -> string mapping) as an int -> int mapping instead.
+            self.logic_dict["chest_clearance_levels"] = {int(combo_id): clearance for combo_id, clearance in slot_data["options"]["chestClearanceLevels"].items()}
+
+    def add_location(self, data: LocationData, region: Region):
+        location = CrossCodeLocation(self.player, data, self.logic_mode, self.region_dict)
+        if location.data.area is not None:
+            self.dungeon_location_list[location.data.area].add(location)
+        region.locations.append(location)
+        self.create_event_conditions(data.access.cond)
+
+        if hasattr(self.multiworld, "generation_is_fake") or hasattr(self.multiworld, "re_gen_passthrough"):
+            return
+
+        if self.options.chest_lock_randomization.value and data.code in self.world_data.locked_locations:
+            clearance = self.random.choices(
+                self._chest_level_names,
+                cum_weights=self._chest_lock_weights
+            )[0]
+
+            self.logic_dict["chest_clearance_levels"][data.code] = clearance
+
+    def create_shops(self):
+        for shop_name, shop in self.world_data.shops_dict.items():
+            region = Region(shop_name, self.player, self.multiworld)
+            self.multiworld.regions.append(region)
+            for mode, from_region in shop.access.region.items():
+                if self.logic_mode == mode:
+                    self.region_dict[from_region].connect(
+                        region,
+                        f"{from_region} => {shop_name}",
+                        condition_satisfied(self.player, shop.access.cond, None, self.logic_dict) if shop.access.cond else None
+                    )
+
+                    if self.options.shop_send_mode == ShopSendMode.option_per_slot:
+                        for data in self.world_data.per_shop_locations[shop_name].values():
+                            self.add_location(data, region)
+
+        if self.options.shop_send_mode.value == ShopSendMode.option_per_item_type:
+            for data in self.world_data.global_shop_locations.values():
+                self.add_location(data, self.region_dict["Menu"])
+
     def create_regions(self):
-        self.region_dict = {
-            name: Region(name, self.player, self.multiworld)
+        self.multiworld.regions.extend(
+            Region(name, self.player, self.multiworld)
             for name in self.region_pack.region_list
             if name not in self.region_pack.excluded_regions
-        }
-        self.multiworld.regions.extend(self.region_dict.values())
+        )
+        self.region_dict = self.multiworld.regions.region_cache[self.player]
         self.location_events = {}
 
         for conn in self.region_pack.region_connections:
             self.region_dict[conn.region_from].connect(
                 self.region_dict[conn.region_to],
                 f"{conn.region_from} => {conn.region_to}",
-                condition_satisfied(self.player, conn.cond, **self.logic_dict) if conn.cond is not None else None
+                condition_satisfied(self.player, conn.cond, None, self.logic_dict) if conn.cond is not None else None
             )
 
             self.create_event_conditions(conn.cond)
-
-            connection_event = Location(
-                self.player,
-                f"{conn.region_from} => {conn.region_to} (Event)",
-                None,
-                self.region_dict[conn.region_from]
-            )
-
-            connection_event.place_locked_item(Item(
-                f"{conn.region_to} (Event)",
-                ItemClassification.progression,
-                None,
-                self.player
-            ))
-
-            self.region_dict[conn.region_from].locations.append(connection_event)
 
         menu_region = Region("Menu", self.player, self.multiworld)
         menu_region.add_exits({self.region_pack.starting_region: "login"})
@@ -333,11 +426,7 @@ class CrossCodeWorld(World):
         for name, region in self.region_dict.items():
             for data in self.pools.location_pool:
                 if self.logic_mode in data.access.region and data.access.region[self.logic_mode] == name:
-                    location = CrossCodeLocation(self.player, data, self.logic_mode, self.region_dict)
-                    if location.data.area is not None:
-                        self.dungeon_location_list[location.data.area].add(location)
-                    region.locations.append(location)
-                    self.create_event_conditions(data.access.cond)
+                    self.add_location(data, region)
 
             for data in self.pools.event_pool:
                 if self.logic_mode in data.access.region and data.access.region[self.logic_mode] == name:
@@ -359,6 +448,9 @@ class CrossCodeWorld(World):
             for cond in conds.values():
                 self.create_event_conditions(cond)
 
+        if self.options.shop_rando:
+            self.create_shops()
+
         goal_region = self.region_dict[self.region_pack.goal_region]
         goal = Location(self.player, "The Creator", parent=goal_region)
         goal.place_locked_item(Item("Victory", ItemClassification.progression, None, self.player))
@@ -370,6 +462,12 @@ class CrossCodeWorld(World):
 
         # initially, we need as many items as there are locations
         num_needed_items = len(self.pools.location_pool)
+
+        if self.options.shop_rando.value:
+            if self.options.shop_send_mode.value == ShopSendMode.option_per_item_type:
+                num_needed_items += len(self.world_data.global_shop_locations)
+            elif self.options.shop_send_mode == ShopSendMode.option_per_slot:
+                num_needed_items += sum(len(shop) for shop in self.world_data.per_shop_locations.values())
 
         # items that have been replaced by progressive items
         replaced: dict[str, list[CrossCodeItem]] = defaultdict(list)
@@ -439,9 +537,7 @@ class CrossCodeWorld(World):
                 if not isinstance(loc, CrossCodeLocation):
                     continue
                 if loc.data.access.cond is not None:
-                    add_rule(loc, condition_satisfied(self.player, loc.data.access.cond, **self.logic_dict))
-                if loc.data.access.clearance != "Default":
-                    add_rule(loc, has_clearance(self.player, loc.data.access.clearance))
+                    add_rule(loc, condition_satisfied(self.player, loc.data.access.cond, loc.data.code, self.logic_dict))
 
     def pre_fill(self):
         allowed_locations_by_item: dict[Item, set[CrossCodeLocation]] = {}
@@ -524,23 +620,52 @@ class CrossCodeWorld(World):
             allow_partial=False,
         )
 
-    def fill_slot_data(self) -> typing.Mapping[str, typing.Any]:
+    def extend_hint_information(self, hint_data: dict[int, dict[int, str]]):
+        ours = hint_data.setdefault(self.player, {})
+
+        for loc, clearance in self.logic_dict["chest_clearance_levels"].items():
+            ours[loc] = clearance
+
+    def fill_slot_data(self) -> SlotData:
         prog_chains = {}
         for name in self.enabled_chain_names:
             key = self.world_data.progressive_items[name].combo_id
             prog_chains[key] = [data.combo_id for data in self.pools.progressive_chains[name]]
 
+        if self.options.shop_send_mode.value == ShopSendMode.option_per_item_type:
+            shop_send_mode_string = "itemType"
+        else:
+            shop_send_mode_string = "slot"
+
+        if self.options.shop_receive_mode.value == ShopReceiveMode.option_per_item_type:
+            shop_receive_mode_string = "itemType"
+        elif self.options.shop_receive_mode.value == ShopReceiveMode.option_per_shop:
+            shop_receive_mode_string = "shop"
+        elif self.options.shop_receive_mode.value == ShopReceiveMode.option_per_slot:
+            shop_receive_mode_string = "slot"
+        else:
+            shop_receive_mode_string = "none"
+
         return {
             "mode": self.logic_mode,
+            "dataVersion": self.world_data.data_version,
             "options": {
                 "vtShadeLock": self.options.vt_shade_lock.value,
-                "meteorPassage": self.options.vw_meteor_passage.value,
-                "vtSkip": self.options.vt_skip.value,
+                "meteorPassage": bool(self.options.vw_meteor_passage.value),
+                "vtSkip": bool(self.options.vt_skip.value),
                 "keyrings": [self.world_data.single_items_dict[name].item_id for name in self.logic_dict["keyrings"]],
-                "questRando": self.options.quest_rando.value,
+                "questRando": bool(self.options.quest_rando.value),
                 "hiddenQuestRewardMode": self.options.hidden_quest_reward_mode.current_key,
                 "hiddenQuestObfuscationLevel": self.options.hidden_quest_obfuscation_level.current_key,
-                "questDialogHints": self.options.quest_dialog_hints.value,
+                "questDialogHints": bool(self.options.quest_dialog_hints.value),
                 "progressiveChains": prog_chains,
+                "shopSendMode": shop_send_mode_string,
+                "shopReceiveMode": shop_receive_mode_string,
+                "shopDialogHints": bool(self.options.shop_dialog_hints.value),
+                "chestClearanceLevels": self.logic_dict["chest_clearance_levels"],
             }
         }
+
+    @staticmethod
+    def interpret_slot_data(slot_data: SlotData) -> SlotData:
+        return slot_data

@@ -1,12 +1,14 @@
+import logging
 from typing import List
 
 from BaseClasses import Tutorial
 from worlds.AutoWorld import WebWorld, World
 from .Items import KH1Item, KH1ItemData, event_item_table, get_items_by_category, item_table, item_name_groups
 from .Locations import KH1Location, location_table, get_locations_by_category, location_name_groups
-from .Options import KH1Options
+from .Options import KH1Options, kh1_option_groups
 from .Regions import create_regions
 from .Rules import set_rules
+from .Presets import kh1_option_presets
 from worlds.LauncherComponents import Component, components, Type, launch_subprocess
 
 
@@ -29,6 +31,8 @@ class KH1Web(WebWorld):
             "kh1/en",
             ["Gicu"]
     )]
+    option_groups = kh1_option_groups
+    options_presets = kh1_option_presets
 
 
 class KH1World(World):
@@ -201,7 +205,7 @@ class KH1World(World):
 
     def get_filler_item_name(self) -> str:
         weights = [data.weight for data in self.fillers.values()]
-        return self.random.choices([filler for filler in self.fillers.keys()], weights, k=1)[0]
+        return self.random.choices([filler for filler in self.fillers.keys()], weights)[0]
 
     def fill_slot_data(self) -> dict:
         slot_data = {"xpmult": int(self.options.exp_multiplier)/16,
@@ -216,8 +220,12 @@ class KH1World(World):
         if self.options.randomize_keyblade_stats:
             min_str_bonus = min(self.options.keyblade_min_str.value, self.options.keyblade_max_str.value)
             max_str_bonus = max(self.options.keyblade_min_str.value, self.options.keyblade_max_str.value)
+            self.options.keyblade_min_str.value = min_str_bonus
+            self.options.keyblade_max_str.value = max_str_bonus
             min_mp_bonus = min(self.options.keyblade_min_mp.value, self.options.keyblade_max_mp.value)
             max_mp_bonus = max(self.options.keyblade_min_mp.value, self.options.keyblade_max_mp.value)
+            self.options.keyblade_min_mp.value = min_mp_bonus
+            self.options.keyblade_max_mp.value = max_mp_bonus
             slot_data["keyblade_stats"] = ""
             for i in range(22):
                 if i < 4 and self.options.bad_starting_weapons:
@@ -253,34 +261,40 @@ class KH1World(World):
     def create_regions(self):
         create_regions(self.multiworld, self.player, self.options)
     
-    def get_numbers_of_reports_to_consider(self) -> List[int]:
-        numbers_to_consider = []
-        if self.options.end_of_the_world_unlock.current_key == "reports":
-            numbers_to_consider.append(self.options.required_reports_eotw.value)
-        if self.options.final_rest_door.current_key == "reports":
-            numbers_to_consider.append(self.options.required_reports_door.value)
-        if self.options.final_rest_door.current_key == "reports" or self.options.end_of_the_world_unlock.current_key == "reports":
-            numbers_to_consider.append(self.options.reports_in_pool.value)
-        numbers_to_consider.sort()
-        return numbers_to_consider
+    def generate_early(self):
+        value_names = ["Reports to Open End of the World", "Reports to Open Final Rest Door", "Reports in Pool"]
+        initial_report_settings = [self.options.required_reports_eotw.value, self.options.required_reports_door.value, self.options.reports_in_pool.value]
+        self.change_numbers_of_reports_to_consider()
+        new_report_settings = [self.options.required_reports_eotw.value, self.options.required_reports_door.value, self.options.reports_in_pool.value]
+        for i in range(3):
+            if initial_report_settings[i] != new_report_settings[i]:
+                logging.info(f"{self.player_name}'s value {initial_report_settings[i]} for \"{value_names[i]}\" was invalid\n"
+                             f"Setting \"{value_names[i]}\" value to {new_report_settings[i]}")
     
+    def change_numbers_of_reports_to_consider(self) -> None:
+        if self.options.end_of_the_world_unlock == "reports" and self.options.final_rest_door == "reports":
+            self.options.required_reports_eotw.value, self.options.required_reports_door.value, self.options.reports_in_pool.value = sorted(
+                [self.options.required_reports_eotw.value, self.options.required_reports_door.value, self.options.reports_in_pool.value])
+
+        elif self.options.end_of_the_world_unlock == "reports":
+            self.options.required_reports_eotw.value, self.options.reports_in_pool.value = sorted(
+                [self.options.required_reports_eotw.value, self.options.reports_in_pool.value])
+
+        elif self.options.final_rest_door == "reports":
+            self.options.required_reports_door.value, self.options.reports_in_pool.value = sorted(
+                [self.options.required_reports_door.value, self.options.reports_in_pool.value])
+
     def determine_reports_in_pool(self) -> int:
-        numbers_to_consider = self.get_numbers_of_reports_to_consider()
-        return max(numbers_to_consider, default=0)
+        if self.options.end_of_the_world_unlock == "reports" or self.options.final_rest_door == "reports":
+            return self.options.reports_in_pool.value
+        return 0
     
     def determine_reports_required_to_open_end_of_the_world(self) -> int:
-        if self.options.end_of_the_world_unlock.current_key == "reports":
-            numbers_to_consider = self.get_numbers_of_reports_to_consider()
-            if len(numbers_to_consider) > 0:
-                return numbers_to_consider[0]
+        if self.options.end_of_the_world_unlock == "reports":
+            return self.options.required_reports_eotw.value
         return 14
     
     def determine_reports_required_to_open_final_rest_door(self) -> int:
-        if self.options.final_rest_door.current_key == "reports":
-            numbers_to_consider = self.get_numbers_of_reports_to_consider()
-            if len(numbers_to_consider) == 3:
-                return numbers_to_consider[1]
-            elif len(numbers_to_consider) == 2:
-                return numbers_to_consider[0]
-        return 14
-        
+        if self.options.final_rest_door == "reports":
+            return self.options.required_reports_door.value
+        return 14     

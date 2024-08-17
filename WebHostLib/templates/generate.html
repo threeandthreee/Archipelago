@@ -179,6 +179,25 @@ Warning: playthrough can take a significant amount of time for larger multiworld
                                     </tr>
                                     <tr>
                                         <td>
+                                        <label for="track_in_discord">Track Room in Discord
+                                            <span class="interactive" data-tooltip="Allows for the room to be tracked via DynxBot in the Aces Wilds server.">
+                                                    (?)
+                                            </span>
+                                        </label>
+                                    </td>
+                                        <td>
+                                            <select name="track_in_discord" id="track_in_discord">
+                                            {% if race -%}
+                                                <option value="0">Disabled in Race mode</option>
+                                            {%- else -%}
+                                                <option value="0">Disabled</option>
+                                                <option value="1">Enabled</option>
+                                            {%- endif -%}
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
                                             Plando Options:
                                             <span class="interactive" data-tooltip="Allows players to plan some of the randomization. See the 'Archipelago Plando Guide' in 'Setup Guides' for more information.">
                                                 (?)

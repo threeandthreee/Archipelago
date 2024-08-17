@@ -1,4 +1,6 @@
 import re
+from typing_extensions import Union
+from .metadata import IncludeOptions
 from ..codegen.util import BASE_ID, NUM_ITEMS, RESERVED_ITEM_IDS
 from dataclasses import dataclass, field
 import typing
@@ -43,17 +45,29 @@ class ItemData:
 class ItemPoolEntry:
     item: ItemData
     quantity: int
-    metadata: typing.Optional[dict[str, str | int | bool | None]] = None
+    metadata: typing.Optional[IncludeOptions] = None
 
 @dataclass
 class ProgressiveChainEntry:
     item: ItemData
-    metadata: typing.Optional[dict[str, str | int | bool | None]] = None
+    metadata: typing.Optional[IncludeOptions] = None
 
 @dataclass
-class ProgressiveItemChain:
+class ProgressiveItemChainSingle:
     display_name: str
     items: list[ProgressiveChainEntry]
+
+@dataclass
+class ProgressiveItemSubchain:
+    metadata: IncludeOptions | None
+    chain: list[ProgressiveChainEntry]
+
+@dataclass
+class ProgressiveItemChainMulti:
+    display_name: str
+    subchains: list[ProgressiveItemSubchain]
+
+ProgressiveItemChain = Union[ProgressiveItemChainSingle, ProgressiveItemChainMulti]
 
 class CrossCodeItem(Item):
     game: str = "CrossCode"
