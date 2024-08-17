@@ -24,4 +24,9 @@ variable_definitions: dict[str, dict[str, list[Condition]]] = {
             ItemCondition(item_name='Meteor Shade', amount=1),
         ],
     },
+    "canGrind": {
+        "noShadeWarp": [
+            OrCondition(subconditions=[ItemCondition(item_name='Green Leaf Shade', amount=1), ItemCondition(item_name='Red Flame Shade', amount=1)]),
+        ],
+    },
 }

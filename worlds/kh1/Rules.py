@@ -3,15 +3,15 @@ from BaseClasses import CollectionState
 SINGLE_PUPPIES = ["Puppy " + str(i).rjust(2,"0") for i in range(1,100)]
 TRIPLE_PUPPIES = ["Puppies " + str(3*(i-1)+1).rjust(2, "0") + "-" + str(3*(i-1)+3).rjust(2, "0") for i in range(1,34)]
 TORN_PAGES = ["Torn Page " + str(i) for i in range(1,6)]
+WORLDS =    ["Wonderland", "Olympus Coliseum", "Deep Jungle", "Agrabah",      "Monstro",      "Atlantica", "Halloween Town", "Neverland",  "Hollow Bastion", "End of the World"]
+KEYBLADES = ["Lady Luck",  "Olympia",          "Jungle King", "Three Wishes", "Wishing Star", "Crabclaw",  "Pumpkinhead",    "Fairy Harp", "Divine Rose",    "Oblivion"]
 
 def has_x_worlds(state: CollectionState, player: int, num_of_worlds: int, keyblades_unlock_chests: bool) -> bool:
     worlds_acquired = 0.0
-    worlds =    ["Wonderland", "Olympus Coliseum", "Deep Jungle", "Agrabah",      "Monstro",      "Atlantica", "Halloween Town", "Neverland",  "Hollow Bastion", "End of the World"]
-    keyblades = ["Lady Luck",  "Olympia",          "Jungle King", "Three Wishes", "Wishing Star", "Crabclaw",  "Pumpkinhead",    "Fairy Harp", "Divine Rose",    "Oblivion"]
-    for i in range(len(worlds)):
-        if state.has(worlds[i], player):
+    for i in range(len(WORLDS)):
+        if state.has(WORLDS[i], player):
             worlds_acquired = worlds_acquired + 0.5
-        if (state.has(worlds[i], player) and has_keyblade(state, player, keyblades_unlock_chests, keyblades[i])) or (state.has(worlds[i], player) and worlds[i] == "Atlantica"):
+        if (state.has(WORLDS[i], player) and has_keyblade(state, player, keyblades_unlock_chests, KEYBLADES[i])) or (state.has(WORLDS[i], player) and WORLDS[i] == "Atlantica"):
             worlds_acquired = worlds_acquired + 0.5
     return worlds_acquired >= num_of_worlds
 
@@ -662,19 +662,19 @@ def set_rules(kh1world):
                 or options.advanced_logic
             )
         )
-    multiworld.get_location("Halloween Town Cemetary Behind Grave Chest"                                   , player).access_rule = lambda state: (
+    multiworld.get_location("Halloween Town Cemetery Behind Grave Chest"                                   , player).access_rule = lambda state: (
             has_keyblade(state, player, options.keyblades_unlock_chests, "Pumpkinhead")
             and state.has("Jack-In-The-Box", player)
             and state.has("Forget-Me-Not", player)
             and has_oogie_manor(state, player, options.advanced_logic)
         )
-    multiworld.get_location("Halloween Town Cemetary By Cat Shape Chest"                                   , player).access_rule = lambda state: (
+    multiworld.get_location("Halloween Town Cemetery By Cat Shape Chest"                                   , player).access_rule = lambda state: (
             has_keyblade(state, player, options.keyblades_unlock_chests, "Pumpkinhead")
             and state.has("Jack-In-The-Box", player)
             and state.has("Forget-Me-Not", player)
             and has_oogie_manor(state, player, options.advanced_logic)
         )
-    multiworld.get_location("Halloween Town Cemetary Between Graves Chest"                                 , player).access_rule = lambda state: (
+    multiworld.get_location("Halloween Town Cemetery Between Graves Chest"                                 , player).access_rule = lambda state: (
             has_keyblade(state, player, options.keyblades_unlock_chests, "Pumpkinhead")
             and state.has("Jack-In-The-Box", player)
             and state.has("Forget-Me-Not", player)
@@ -748,7 +748,7 @@ def set_rules(kh1world):
                 or options.advanced_logic
             )
         )
-    multiworld.get_location("Halloween Town Cemetary By Striped Grave Chest"                               , player).access_rule = lambda state: (
+    multiworld.get_location("Halloween Town Cemetery By Striped Grave Chest"                               , player).access_rule = lambda state: (
             has_keyblade(state, player, options.keyblades_unlock_chests, "Pumpkinhead")
             and state.has("Jack-In-The-Box", player)
             and state.has("Forget-Me-Not", player)
@@ -962,10 +962,9 @@ def set_rules(kh1world):
             and
             (
                 state.has("Progressive Glide", player)
-                or state.has("Progressive Blizzard", player)
+                or (state.has("Progressive Blizzard", player) and has_emblems(state, player, options.keyblades_unlock_chests))
                 or (options.advanced_logic and state.has("Combo Master", player))
             )
-            and has_emblems(state, player, options.keyblades_unlock_chests)
         )
     multiworld.get_location("Hollow Bastion Castle Gates Gravity Chest"                                    , player).access_rule = lambda state: (
             has_keyblade(state, player, options.keyblades_unlock_chests, "Divine Rose")
@@ -1577,6 +1576,7 @@ def set_rules(kh1world):
                 state.has("High Jump", player)
                 or (options.advanced_logic and state.has("Progressive Glide", player))
             )
+            and has_x_worlds(state, player, 2, options.keyblades_unlock_chests)
         )
     multiworld.get_location("Hollow Bastion Entrance Hall Emblem Piece (Flame)"                            , player).access_rule = lambda state: (
             (

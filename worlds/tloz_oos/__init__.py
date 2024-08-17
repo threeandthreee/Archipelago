@@ -460,7 +460,7 @@ class OracleOfSeasonsWorld(World):
             item_name = loc_data['vanilla_item']
             if "Ring" in item_name:
                 item_name = "Random Ring"
-            if item_name in removed_item_quantities:
+            if item_name in removed_item_quantities and removed_item_quantities[item_name] > 0:
                 # If item was put in the "remove_items_from_pool" option, replace it with a random filler item
                 removed_item_quantities[item_name] -= 1
                 filler_item_count += 1
@@ -571,7 +571,7 @@ class OracleOfSeasonsWorld(World):
             dungeon_location_names = [name for name, loc in LOCATIONS_DATA.items()
                                       if "dungeon" in loc and loc["dungeon"] == i]
             dungeon_locations = [loc for loc in self.multiworld.get_locations(self.player)
-                                 if loc.name in dungeon_location_names]
+                                 if loc.name in dungeon_location_names and not loc.locked]
 
             # From the list of all dungeon items that needs to be placed restrictively, only filter the ones for the
             # dungeon we are currently processing.

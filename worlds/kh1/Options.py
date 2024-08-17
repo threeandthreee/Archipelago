@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from Options import NamedRange, Choice, Range, Toggle, DefaultOnToggle, PerGameCommonOptions, StartInventoryPool
+from Options import NamedRange, Choice, Range, Toggle, DefaultOnToggle, PerGameCommonOptions, StartInventoryPool, OptionGroup
 
 class StrengthIncrease(Range):
     """
@@ -132,7 +132,7 @@ class Goal(Choice):
     default = 3
 
 class EndoftheWorldUnlock(Choice):
-    """Determines how End of the World is Unlocked.
+    """Determines how End of the World is unlocked.
     
     Item: You can receive an item called "End of the World" which unlocks the world
     Reports: A certain amount of reports are required to unlock End of the World, which is defined in your options"""
@@ -380,10 +380,10 @@ class KH1Options(PerGameCommonOptions):
     goofy_death_link: GoofyDeathLink
     randomize_keyblade_stats: RandomizeKeybladeStats
     bad_starting_weapons: BadStartingWeapons
-    keyblade_max_str: KeybladeMaxStrength
     keyblade_min_str: KeybladeMinStrength
-    keyblade_max_mp: KeybladeMaxMP
+    keyblade_max_str: KeybladeMaxStrength
     keyblade_min_mp: KeybladeMinMP
+    keyblade_max_mp: KeybladeMaxMP
     level_checks: LevelChecks
     force_stats_on_levels: ForceStatsOnLevels
     strength_increase: StrengthIncrease
@@ -395,3 +395,51 @@ class KH1Options(PerGameCommonOptions):
     item_slot_increase: ItemSlotIncrease
     start_inventory_from_pool: StartInventoryPool
     
+kh1_option_groups = [
+    OptionGroup("Goal", [
+        Goal,
+        EndoftheWorldUnlock,
+        FinalRestDoor,
+        RequiredReportsDoor,
+        RequiredReportsEotW,
+        ReportsInPool,
+    ]),
+    OptionGroup("Locations", [
+        SuperBosses,
+        Atlantica,
+        Cups,
+        HundredAcreWood,
+        VanillaEmblemPieces,
+    ]),
+    OptionGroup("Levels", [
+        EXPMultiplier,
+        LevelChecks,
+        ForceStatsOnLevels,
+        StrengthIncrease,
+        DefenseIncrease,
+        HPIncrease,
+        APIncrease,
+        MPIncrease,
+        AccessorySlotIncrease,
+        ItemSlotIncrease,
+    ]),
+    OptionGroup("Keyblades", [
+        KeybladesUnlockChests,
+        RandomizeKeybladeStats,
+        BadStartingWeapons,
+        KeybladeMaxStrength,
+        KeybladeMinStrength,
+        KeybladeMaxMP,
+        KeybladeMinMP,
+    ]),
+    OptionGroup("Misc", [
+        StartingWorlds,
+        Puppies,
+        InteractInBattle,
+        AdvancedLogic,
+        ExtraSharedAbilities,
+        EXPZeroInPool,
+        DonaldDeathLink,
+        GoofyDeathLink,
+    ])
+]

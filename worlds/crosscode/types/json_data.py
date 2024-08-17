@@ -25,6 +25,21 @@ class ExportRoomInfo(TypedDict):
     elements: NotRequired[dict[str, ExportElementInfo]]
     quests: NotRequired[dict[str, ExportQuestInfo]]
 
+class ExportShopLocationsInfo(TypedDict):
+    perItemType: dict[int, int]
+    perShop: dict[str, dict[int, int]]
+
+class ExportShopUnlocksInfo(TypedDict):
+    byId: dict[int, int]
+    byShop: dict[str, int]
+    byShopAndId: dict[str, dict[int, int]]
+
+class ExportShopInfo(TypedDict):
+    locations: ExportShopLocationsInfo
+    unlocks: ExportShopUnlocksInfo
+
 class ExportInfo(TypedDict):
     items: dict[str, ExportRoomInfo]
     quests: dict[str, typing.Any]
+    shops: ExportShopInfo
+    descriptions: dict[int, dict[str, str]]

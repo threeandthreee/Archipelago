@@ -67,7 +67,8 @@ class Logsanity(Toggle):
 class ShuffleSpacesuit(Toggle):
     """
     Puts the spacesuit into the Archipelago item pool, forcing you to play suitless until it's found.
-    This option is not compatible with non-vanilla spawns.
+
+    This option is incompatible with non-vanilla spawns (i.e. generation will fail), since those imply playing "shipless" at first, and almost nothing can be done both shipless and suitless.
     """
     display_name = "Shuffle Spacesuit"
 
@@ -93,9 +94,11 @@ class RandomizeOrbits(DefaultOnToggle):
 
 class Spawn(Choice):
     """
-    Where you start the game.
+    Where you wake up at the start of each loop.
+
     'vanilla' is the same as the base game: you wake up in TH Village, talk to Hornfels to get the Launch Codes, then walk by the Nomai statue to start the time loop.
     All other options (including timber_hearth) will spawn you in your spacesuit, with the time loop already started, and the Launch Codes item placed randomly like any other AP item.
+
     The idea is that non-vanilla spawns will require you to play "shipless" for a while, possibly using Nomai Warp Codes to visit other planets. The ship will still spawn nearby, so you can use the ship log/tracker right away.
     When playing with non-vanilla spawns, we recommend:
     - Consider enabling randomize_warp_pads for greater variety if you get warp codes early
