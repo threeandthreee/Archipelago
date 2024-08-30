@@ -100,8 +100,49 @@ class LinksAwakeningWorld(World):
     # from that group has been collected. Group names can also be used for !hint
     item_name_groups = {
         "Instruments": {
-            "Full Moon Cello", "Conch Horn", "Sea Lily's Bell", "Surf Harp",
-            "Wind Marimba", "Coral Triangle", "Organ of Evening Calm", "Thunder Drum"
+            "Full Moon Cello", "Conch Horn",     "Sea Lily's Bell",       "Surf Harp",
+            "Wind Marimba",    "Coral Triangle", "Organ of Evening Calm", "Thunder Drum",
+        },
+        "Entrance Keys": {
+            "Tail Key", "Angler Key", "Face Key", "Bird Key", "Slime Key",
+        },
+        "Nightmare Keys": {
+            "Nightmare Key",                 "Nightmare Key (Angler's Tunnel)",
+            "Nightmare Key (Bottle Grotto)", "Nightmare Key (Catfish's Maw)",
+            "Nightmare Key (Color Dungeon)", "Nightmare Key (Eagle's Tower)",
+            "Nightmare Key (Face Shrine)",   "Nightmare Key (Key Cavern)",
+            "Nightmare Key (Tail Cave)",     "Nightmare Key (Turtle Rock)",
+        },
+        "Small Keys": {
+            "Key",                       "Small Key (Angler's Tunnel)",
+            "Small Key (Bottle Grotto)", "Small Key (Catfish's Maw)",
+            "Small Key (Color Dungeon)", "Small Key (Eagle's Tower)",
+            "Small Key (Face Shrine)",   "Small Key (Key Cavern)",
+            "Small Key (Tail Cave)",     "Small Key (Turtle Rock)",
+        },
+        "Compasses": {
+            "Compass",                 "Compass (Angler's Tunnel)",
+            "Compass (Bottle Grotto)", "Compass (Catfish's Maw)",
+            "Compass (Color Dungeon)", "Compass (Eagle's Tower)",
+            "Compass (Face Shrine)",   "Compass (Key Cavern)",
+            "Compass (Tail Cave)",     "Compass (Turtle Rock)",
+        },
+        "Maps": {
+            "Map",                         "Dungeon Map (Angler's Tunnel)",
+            "Dungeon Map (Bottle Grotto)", "Dungeon Map (Catfish's Maw)",
+            "Dungeon Map (Color Dungeon)", "Dungeon Map (Eagle's Tower)",
+            "Dungeon Map (Face Shrine)",   "Dungeon Map (Key Cavern)",
+            "Dungeon Map (Tail Cave)",     "Dungeon Map (Turtle Rock)",
+        },
+        "Stone Beaks": {
+            "Stone Beak",                 "Stone Beak (Angler's Tunnel)",
+            "Stone Beak (Bottle Grotto)", "Stone Beak (Catfish's Maw)",
+            "Stone Beak (Color Dungeon)", "Stone Beak (Eagle's Tower)",
+            "Stone Beak (Face Shrine)",   "Stone Beak (Key Cavern)",
+            "Stone Beak (Tail Cave)",     "Stone Beak (Turtle Rock)",
+        },
+        "Movement": {
+            "Feather", "Flippers", "Hookshot", "Pegasus Boots", "Rooster",
         },
     }
 
