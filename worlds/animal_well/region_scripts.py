@@ -4,7 +4,7 @@ from worlds.generic.Rules import CollectionRule, add_rule
 from .region_data import AWType, LocType
 from .names import ItemNames as iname, LocationNames as lname, RegionNames as rname
 from .items import AWItem
-from .options import AnimalWellOptions, BunniesAsChecks, BubbleJumping, DiscHopping, WheelHopping
+from .options import AnimalWellOptions, BunniesAsChecks, BubbleJumping, DiscHopping, WheelTricks
 
 if TYPE_CHECKING:
     from . import AnimalWellWorld
@@ -86,17 +86,17 @@ def convert_tech_reqs(reqs: List[List[str]], options: AnimalWellOptions) -> List
     reqs = [
         [iname.wheel if item == iname.wheel_hop else item for item in sublist]
         for sublist in reqs
-        if not (iname.wheel_hop in sublist and not options.wheel_hopping)  
+        if not (iname.wheel_hop in sublist and not options.wheel_tricks)  
     ]
     reqs = [
         [iname.wheel if item == iname.wheel_climb else item for item in sublist]
         for sublist in reqs
-        if not (iname.wheel_climb in sublist and not options.wheel_hopping)
+        if not (iname.wheel_climb in sublist and not options.wheel_tricks)
     ]
     reqs = [
         [iname.wheel if item == iname.wheel_hard else item for item in sublist]
         for sublist in reqs
-        if not (iname.wheel_hard in sublist and not options.wheel_hopping == WheelHopping.option_advanced)
+        if not (iname.wheel_hard in sublist and not options.wheel_tricks == WheelTricks.option_advanced)
     ]
     reqs = [
         [iname.disc if item == iname.disc_hop else item for item in sublist]
@@ -213,6 +213,6 @@ def create_regions_and_set_rules(world: "AnimalWellWorld") -> None:
     world.multiworld.get_entrance(rname.dog_bat_room.value + " -> " + rname.kangaroo_room.value, player).access_rule = \
         lambda state: (state.has(iname.k_shard.value, player, 3) 
                        and (state.has_any({iname.disc.value, iname.bubble.value}, player)
-                            or (state.has(iname.wheel.value, player) and options.wheel_hopping)))
+                            or (state.has(iname.wheel.value, player) and options.wheel_tricks)))
 
     world.multiworld.completion_condition[world.player] = lambda state: state.has("Victory", world.player)

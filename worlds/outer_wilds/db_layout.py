@@ -1,7 +1,7 @@
 from enum import Enum
 from random import Random
 from typing import List
-from .Options import RandomizeDarkBrambleLayout
+from .options import RandomizeDarkBrambleLayout
 
 
 # In the stringified layout format we want to output for slot data, the vanilla DB layout is:

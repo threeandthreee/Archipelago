@@ -1,13 +1,14 @@
+from io import BytesIO
+import pickle
 import pkgutil
 import typing
 from typing import Callable, Dict, List, NamedTuple, Optional, Set
 
 from BaseClasses import CollectionState, Location, MultiWorld, Region
 from worlds.generic.Rules import set_rule
-from . import jsonc
-from .Options import OuterWildsGameOptions, Spawn
-from .RuleEval import eval_rule
-from .WarpPlatforms import warp_platform_to_logical_region, warp_platform_required_items
+from .options import OuterWildsGameOptions, Spawn
+from .rule_eval import eval_rule
+from .warp_platforms import warp_platform_to_logical_region, warp_platform_required_items
 
 if typing.TYPE_CHECKING:
     from . import OuterWildsWorld
@@ -28,11 +29,11 @@ class OuterWildsRegionData(NamedTuple):
     connecting_regions: List[str] = []
 
 
-jsonc_locations_data = pkgutil.get_data(__name__, 'shared_static_logic/locations.jsonc')
-locations_data = jsonc.loads(jsonc_locations_data.decode('utf-8'))
+pickled_data = pkgutil.get_data(__name__, "shared_static_logic/static_logic.pickle")
+locations_data = pickle.load(BytesIO(pickled_data))["LOCATIONS"]
 
-jsonc_connections_data = pkgutil.get_data(__name__, 'shared_static_logic/connections.jsonc')
-connections_data = jsonc.loads(jsonc_connections_data.decode('utf-8'))
+pickled_data = pkgutil.get_data(__name__, "shared_static_logic/static_logic.pickle")
+connections_data = pickle.load(BytesIO(pickled_data))["CONNECTIONS"]
 
 
 location_data_table: Dict[str, OuterWildsLocationData] = {}

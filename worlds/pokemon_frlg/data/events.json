@@ -1,111 +1,4 @@
 {
-  "EVENT_FREE_FLY_LOCATION": {
-    "name": "Free Fly Location",
-    "item": "Fly Pallet Town",
-    "tags": ["Event"]
-  },
-
-  "EVENT_FLY_PALLET_TOWN": {
-    "name": "Pallet Town - Visit Pallet Town",
-    "item": "Fly Pallet Town",
-    "tags": ["Event"]
-  },
-  "EVENT_FLY_VIRIDIAN_CITY": {
-    "name": "Viridian City - Visit Viridian City",
-    "item": "Fly Viridian City",
-    "tags": ["Event"]
-  },
-  "EVENT_FLY_PEWTER_CITY": {
-    "name": "Pewter City - Visit Pewter City",
-    "item": "Fly Pewter City",
-    "tags": ["Event"]
-  },
-  "EVENT_FLY_ROUTE4": {
-    "name": "Route 4 Pokemon Center 1F - Visit Route 4",
-    "item": "Fly Route 4",
-    "tags": ["Event"]
-  },
-  "EVENT_FLY_CERULEAN_CITY": {
-    "name": "Cerulean City - Visit Cerulean City",
-    "item": "Fly Cerulean City",
-    "tags": ["Event"]
-  },
-  "EVENT_FLY_VERMILION_CITY": {
-    "name": "Vermilion City - Visit Vermilion City",
-    "item": "Fly Vermilion City",
-    "tags": ["Event"]
-  },
-  "EVENT_FLY_ROUTE10": {
-    "name": "Route 10 Pokemon Center 1F - Visit Route 10",
-    "item": "Fly Route 10",
-    "tags": ["Event"]
-  },
-  "EVENT_FLY_LAVENDER_TOWN": {
-    "name": "Lavender Town - Visit Lavender Town",
-    "item": "Fly Lavender Town",
-    "tags": ["Event"]
-  },
-  "EVENT_FLY_CELADON_CITY": {
-    "name": "Celadon City - Visit Celadon City",
-    "item": "Fly Celadon City",
-    "tags": ["Event"]
-  },
-  "EVENT_FLY_FUCHSIA_CITY": {
-    "name": "Fuchsia City - Visit Fuchsia City",
-    "item": "Fly Fuchsia City",
-    "tags": ["Event"]
-  },
-  "EVENT_FLY_SAFFRON_CITY": {
-    "name": "Saffron City - Visit Saffron City",
-    "item": "Fly Saffron City",
-    "tags": ["Event"]
-  },
-  "EVENT_FLY_CINNABAR_ISLAND": {
-    "name": "Cinnabar Island - Visit Cinnabar Island",
-    "item": "Fly Cinnabar Island",
-    "tags": ["Event"]
-  },
-  "EVENT_FLY_INDIGO_PLATEAU": {
-    "name": "Indigo Plateau Exterior - Visit Indigo Plateau",
-    "item": "Fly Indigo Plateau",
-    "tags": ["Event"]
-  },
-  "EVENT_FLY_ONE_ISLAND": {
-    "name": "One Island - Visit One Island",
-    "item": "Fly One Island",
-    "tags": ["Event"]
-  },
-  "EVENT_FLY_TWO_ISLAND": {
-    "name": "Two Island - Visit Two Island",
-    "item": "Fly Two Island",
-    "tags": ["Event"]
-  },
-  "EVENT_FLY_THREE_ISLAND": {
-    "name": "Three Island - Visit Three Island",
-    "item": "Fly Three Island",
-    "tags": ["Event"]
-  },
-  "EVENT_FLY_FOUR_ISLAND": {
-    "name": "Four Island - Visit Four Island",
-    "item": "Fly Four Island",
-    "tags": ["Event"]
-  },
-  "EVENT_FLY_FIVE_ISLAND": {
-    "name": "Five Island - Visit Five Island",
-    "item": "Fly Five Island",
-    "tags": ["Event"]
-  },
-  "EVENT_FLY_SIX_ISLAND": {
-    "name": "Six Island - Visit Six Island",
-    "item": "Fly Six Island",
-    "tags": ["Event"]
-  },
-  "EVENT_FLY_SEVEN_ISLAND": {
-    "name": "Seven Island - Visit Seven Island",
-    "item": "Fly Seven Island",
-    "tags": ["Event"]
-  },
-
   "EVENT_DEFEAT_ROUTE22_RIVAL": {
     "name": "Route 22 - Early Rival Battle",
     "item": "Defeat Route 22 Rival",
@@ -188,17 +81,17 @@
     "tags": ["Event"]
   },
   "EVENT_RESTORE_POKEMON_NETWORK_MACHINE": {
-    "name": "One Island - Help Celio",
+    "name": "One Island Pokemon Center 1F - Help Celio",
     "item": "Restore Pokemon Network Machine",
     "tags": ["Event"]
   },
   "EVENT_BUY_MARKET_LEMONADE": {
-    "name": "Two Island - Market Stall",
+    "name": "Two Island Town - Market Stall",
     "item": "Buy Lemonade",
     "tags": ["Event"]
   },
   "EVENT_DELIVER_METEORITE": {
-    "name": "Two Island Game Corner - Gift for Lostelle's Father",
+    "name": "Two Island Game Corner - Lostelle's Dad's Delivery",
     "item": "Deliver Meteorite",
     "tags": ["Event"]
   },
@@ -208,7 +101,7 @@
     "tags": ["Event"]
   },
   "EVENT_HELP_LORELEI": {
-    "name": "Icefall Cave Back - Battle Team Rocket Grunt",
+    "name": "Icefall Cave Back - Team Rocket Grunt Battle",
     "item": "Help Lorelei",
     "tags": ["Event"]
   },
@@ -256,8 +149,8 @@
   },
   "TRADE_POKEMON_NIDORINOA": {
     "name": [
-      "Route 11 East Entrance 2F - Trade Nidorino",
-      "Route 11 East Entrance 2F - Trade Nidorina"
+      "Route 11 Gate 2F - Trade Nidorino",
+      "Route 11 Gate 2F - Trade Nidorina"
     ],
     "item": [
       "Static Nidorina",
@@ -333,8 +226,8 @@
   },
   "TRADE_POKEMON_LICKITUNG": {
     "name": [
-      "Route 18 East Entrance 2F - Trade Golduck",
-      "Route 18 East Entrance 2F - Trade Slowbro"
+      "Route 18 Gate 2F - Trade Golduck",
+      "Route 18 Gate 2F - Trade Slowbro"
     ],
     "item": "Static Lickitung",
     "tags": ["Pokemon", "Misc"]
@@ -360,32 +253,32 @@
     "tags": ["Pokemon", "Legendary"]
   },
   "TRADE_POKEMON_ELECTRODE": {
-    "name": "Cinnabar Pokemon Lab Lounge - Trade Raichu",
+    "name": "Pokemon Lab Lounge - Trade Raichu",
     "item": "Static Electrode",
     "tags": ["Pokemon", "Misc"]
   },
   "TRADE_POKEMON_TANGELA": {
-    "name": "Cinnabar Pokemon Lab Lounge - Trade Venonat",
+    "name": "Pokemon Lab Lounge - Trade Venonat",
     "item": "Static Tangela",
     "tags": ["Pokemon", "Misc"]
   },
   "GIFT_POKEMON_OMANYTE": {
-    "name": "Cinnabar Pokemon Lab Experiment Room - Revive Helix Fossil",
+    "name": "Pokemon Lab Experiment Room - Revive Helix Fossil",
     "item": "Static Omanyte",
     "tags": ["Pokemon", "Misc"]
   },
   "GIFT_POKEMON_KABUTO": {
-    "name": "Cinnabar Pokemon Lab Experiment Room - Revive Dome Fossil",
+    "name": "Pokemon Lab Experiment Room - Revive Dome Fossil",
     "item": "Static Kabuto",
     "tags": ["Pokemon", "Misc"]
   },
   "GIFT_POKEMON_AERODACTYL": {
-    "name": "Cinnabar Pokemon Lab Experiment Room - Revive Old Amber",
+    "name": "Pokemon Lab Experiment Room - Revive Old Amber",
     "item": "Static Aerodactyl",
     "tags": ["Pokemon", "Misc"]
   },
   "TRADE_POKEMON_SEEL": {
-    "name": "Cinnabar Pokemon Lab Experiment Room - Trade Ponyta",
+    "name": "Pokemon Lab Experiment Room - Trade Ponyta",
     "item": "Static Seel",
     "tags": ["Pokemon", "Misc"]
   },

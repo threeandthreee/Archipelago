@@ -1,6 +1,7 @@
 from typing import Dict
 from logging import warning
 import struct
+import math
 
 
 class EarthBoundEnemy:
@@ -28,7 +29,7 @@ def initialize_enemies(world):
         "Black Antoid": EarthBoundEnemy("Black Antoid", 0x15975f, 34, 25, 37, 7, 4, 14, 13, 7, False),
         "Red Antoid": EarthBoundEnemy("Red Antoid", 0x1597bd, 112, 30, 1175, 35, 10, 29, 27, 20, False),
         "Ramblin' Evil Mushroom": EarthBoundEnemy("Ramblin' Evil Mushroom", 0x15981b, 60, 0, 95, 15, 5, 15, 10, 7, False),
-        "Struttin' Evil Mushroom (2)": EarthBoundEnemy("Struttin' Evil Mushroom", 0x159879, 157, 0, 1492, 95, 28, 29, 22, 17, False),
+        "Struttin' Evil Mushroom": EarthBoundEnemy("Struttin' Evil Mushroom", 0x159879, 157, 0, 1492, 95, 28, 29, 22, 17, False),
         "Mobile Sprout": EarthBoundEnemy("Mobile Sprout", 0x1598d7, 79, 9, 133, 13, 6, 17, 12, 10, False),
         "Tough Mobile Sprout": EarthBoundEnemy("Tough Mobile Sprout", 0x159935, 179, 13, 1865, 119, 18, 33, 27, 21, False),
         "Enraged Fire Plug": EarthBoundEnemy("Enraged Fire Plug", 0x159993, 309, 0, 4321, 346, 14, 60, 81, 32, False),
@@ -221,7 +222,7 @@ def initialize_enemies(world):
         #"Foppy": EarthBoundEnemy("Foppy", 0x15e18b, 120, 10, 1311, 93, 1, 29, 9, 16, False),
         "Guardian General (2)": EarthBoundEnemy("Guardian General (2)", 0x15e1e9, 831, 6, 95390, 3235, 21, 109, 214, 55, False),
         "Black Antoid (2)": EarthBoundEnemy("Black Antoid (2)", 0x15e247, 34, 25, 37, 7, 4, 14, 13, 7, False), #Separate enemy used in the titanic ant fight
-        "Struttin' Evil Mushroom": EarthBoundEnemy("Struttin' Evil Mushroom (2)", 0x15e2a5, 60, 0, 95, 15, 5, 15, 10, 7, False),
+        "Struttin' Evil Mushroom (2)": EarthBoundEnemy("Struttin' Evil Mushroom (2)", 0x15e2a5, 60, 0, 95, 15, 5, 15, 10, 7, False),
         #"Runaway Dog (2)": EarthBoundEnemy("Runaway Dog", 0x15e303, 21, 0, 4, 3, 26, 4, 5, 73, False),
         "Cave Boy (2)": EarthBoundEnemy("Cave Boy (2)", 0x15e361, 314, 0, 618, 17, 5, 21, 33, 11, False),
         "Tiny Li'l Ghost": EarthBoundEnemy("Tiny Li'l Ghost", 0x15e3bf, 90, 0, 1, 162, 100, 19, 7, 18, False),
@@ -347,12 +348,12 @@ def initialize_enemies(world):
                               "Happy-Happy Village": {world.enemies["Coil Snake"], world.enemies["Insane Cultist"], world.enemies["Spiteful Crow"], world.enemies["Unassuming Local Guy"], world.enemies["Mr. Carpainter"], world.enemies["Mr. Carpainter (2)"]},
                               "Lilliput Steps": {world.enemies["Mighty Bear"], world.enemies["Mole Playing Rough"], world.enemies["Mr. Batty"], world.enemies["Mondo Mole"]},
                               "Threed": {world.enemies["Coil Snake"], world.enemies["Handsome Tom"], world.enemies["Smilin' Sam"], world.enemies["Trick or Trick Kid"],
-                                         world.enemies["Boogey Tent"], world.enemies["Zombie Dog"], world.enemies["Putrid Moldyman"], world.enemies["Smelly Ghost"], world.enemies["Boogey Tent (2)"]},
-                              "Threed Underground": {world.enemies["No Good Fly"], world.enemies["Urban Zombie"], world.enemies["Zombie Possessor"], world.enemies["Mini Barf"]},
+                                         world.enemies["Zombie Dog"], world.enemies["Putrid Moldyman"], world.enemies["Smelly Ghost"]},
+                              "Threed Underground": {world.enemies["No Good Fly"], world.enemies["Urban Zombie"], world.enemies["Zombie Possessor"], world.enemies["Mini Barf"], world.enemies["Zombie Dog"]},
                               "Grapefruit Falls": {world.enemies["Armored Frog"], world.enemies["Black Antoid"], world.enemies["Coil Snake"], world.enemies["Farm Zombie"],
                                                    world.enemies["Plain Crocodile"], world.enemies["Red Antoid"], world.enemies["Violent Roach"], world.enemies["Mad Duck"], world.enemies["Black Antoid (2)"]},
                               "Belch's Factory": {world.enemies["Farm Zombie"], world.enemies["Foppy"], world.enemies["Mostly Bad Fly"], world.enemies["Slimy Little Pile"], world.enemies["Master Belch"], world.enemies["Master Belch (2)"]},
-                              "Milky Well": {world.enemies["Mad Duck"], world.enemies["Ranboob"], world.enemies["Struttin' Evil Mushroom (2)"], world.enemies["Tough Mobile Sprout"], world.enemies["Trillionage Sprout"]},
+                              "Milky Well": {world.enemies["Mad Duck"], world.enemies["Ranboob"], world.enemies["Struttin' Evil Mushroom"], world.enemies["Tough Mobile Sprout"], world.enemies["Trillionage Sprout"], world.enemies["Trillionage Sprout (2)"]},
                               "Dusty Dunes Desert": {world.enemies["Bad Buffalo"], world.enemies["Crested Booka"], world.enemies["Criminal Caterpillar"], world.enemies["Cute Li'l UFO"], world.enemies["Desert Wolf"], world.enemies["Mole Playing Rough"],
                                                      world.enemies["Skelpion"], world.enemies["Smilin' Sphere"]},
                               "Fourside": {world.enemies["Annoying Reveler"], world.enemies["Crazed Sign"], world.enemies["Extra Cranky Lady"], world.enemies["Mad Taxi"],
@@ -372,14 +373,16 @@ def initialize_enemies(world):
                               "Southern Scaraba": {world.enemies["Beautiful UFO"], world.enemies["High-class UFO"], world.enemies["Marauder Octobot"]},
                               "Dungeon Man": {world.enemies["Dali's Clock"], world.enemies["Mystical Record"], world.enemies["Lesser Mook"], world.enemies["Mystical Record"], world.enemies["Scalding Coffee Cup"], world.enemies["Worthless Protoplasm"]},
                               "Deep Darkness": {world.enemies["Mole Playing Rough"]},
+                              "Winters": {world.enemies["Lesser Mook"], world.enemies["Whirling Robo"], world.enemies["Wooly Shambler"]},
                               "Deep Darkness Darkness": {world.enemies["Big Pile of Puke"], world.enemies["Demonic Petunia"], world.enemies["Even Slimier Little Pile"], world.enemies["Hard Crocodile"], world.enemies["Hostile Elder Oak"],
                                                          world.enemies["Manly Fish"], world.enemies["Manly Fish's Brother"], world.enemies["Pit Bull Slug"], world.enemies["Zap Eel"], world.enemies["Master Barf"]},
-                              "Winters": {world.enemies["Lesser Mook"], world.enemies["Whirling Robo"], world.enemies["Wooly Shambler"]},
-                              "Southern Winters": {world.enemies["Rowdy Mouse"], world.enemies["Worthless Protoplasm"], world.enemies["Mad Duck"]},
+                              "Boogey Tent": {world.enemies["Boogey Tent"], world.enemies["Boogey Tent (2)"]},
+                              "Southern Winters": {world.enemies["Rowdy Mouse"], world.enemies["Worthless Protoplasm"], world.enemies["Mad Duck"],
+                                                   world.enemies["Lesser Mook"], world.enemies["Whirling Robo"], world.enemies["Wooly Shambler"]},
                               "Stonehenge Base": {world.enemies["Atomic Power Robot"], world.enemies["Military Octobot"], world.enemies["Mook Senior"], world.enemies["Starman"], world.enemies["Starman Super"], world.enemies["Starman Deluxe"], world.enemies["Starman Super (2)"]},
                               "Lumine Hall": {world.enemies["Conducting Spirit"], world.enemies["Fobby"], world.enemies["Hyper Spinning Robo"], world.enemies["Uncontrollable Sphere"], world.enemies["Electro Specter"]},
                               "Lost Underworld": {world.enemies["Chomposaur"], world.enemies["Chomposaur (2)"], world.enemies["Ego Orb"], world.enemies["Wetnosaur"]},
-                              "Fire Spring": {world.enemies["Evil Elemental"], world.enemies["Major Psychic Psycho"], world.enemies["Psychic Psycho"], world.enemies["Soul Consuming Flame"], world.enemies["Carbon Dog"], world.enemies["Diamond Dog"]},
+                              "Fire Spring": {world.enemies["Evil Elemental"], world.enemies["Major Psychic Psycho"], world.enemies["Psychic Psycho"], world.enemies["Soul Consuming Flame"], world.enemies["Carbon Dog"], world.enemies["Diamond Dog"], world.enemies["Diamond Dog (2)"]},
                               "Magicant": {world.enemies["Care Free Bomb"], world.enemies["Electro Swoosh"], world.enemies["French Kiss of Death"], world.enemies["Loaded Dice"], world.enemies["Mr. Molecule"], world.enemies["Uncontrollable Sphere"],
                                            world.enemies["Fobby"], world.enemies["Beautiful UFO"], world.enemies["High-class UFO"], world.enemies["Kraken"], world.enemies["Ness's Nightmare"], world.enemies["Ness's Nightmare (2)"], world.enemies["Kraken (2)"],
                                            world.enemies["Loaded Dice (2)"]},
@@ -397,8 +400,8 @@ combat_regions = [
     "Twoson",
     "Happy-Happy Village",
     "Lilliput Steps",
-    "Threed",
     "Winters",
+    "Threed",
     "Milky Well",
     "Dusty Dunes Desert",
     "Fourside",
@@ -429,7 +432,8 @@ combat_regions = [
     "Southern Winters",
     "Summers Museum",
     "Fourside Dept. Store",
-    "Threed Underground"
+    "Threed Underground",
+    "Boogey Tent"
 ]
 
 levels = [
@@ -468,20 +472,99 @@ levels = [
     52, #stonehenge
     56, #lumine hall
     59, #lost underworld
-    65, #fire spring
-    69, #magicant
-    70, #cave of the past
+    61, #fire spring
+    63, #magicant
+    65, #cave of the past
+    70,
     73] #gigyas
 
+average_exp = [
+    3,  #north onett
+    13, #south onett
+    32, #giant step
+    144, #twoson
+    292, #everdred
+    350, #peaceful rest
+    456, #happy happy
+    625, #lilliput steps
+    831, #threed
+    1425, #threed caverns
+    1468, #grapefruit falls
+    1947, #belch base
+    2736, #milky well
+    2994, #duty dunes
+    3032, #fourside
+    3316,
+    3540, #gold mine
+    3995, #dept store
+    4200,
+    4643,
+    5034, #monkey cabves
+    5532,
+    6273,
+    6410, #monotoli building
+    7587,
+    8379, #winters
+    10982, #southern winters
+    12278, #rainy circle
+    12665, #summers
+    14121,
+    15242, #museum
+    15657, #magnet hill
+    17672,
+    20164,
+    22534, #scaraba
+    25383,
+    33885, #pyramid
+    35674, #scaraba south
+    40226, #dungeon man
+    49230
+]
+
 spell_breaks: Dict[str, Dict[int, str]] = {
-    "freeze": {30: "alpha", 50: "beta", 70: "gamma", 100: "omega"},
-    "fire": {20: "alpha", 30: "beta", 40: "gamma", 100: "omega"},
+    "freeze": {8: "zeta", 12: "epsilon", 20: "delta", 25: "lambda", 40: "alpha", 65: "beta", 70: "gamma", 100: "omega"},
+    "fire": {5: "zeta", 10: "epsilon", 20: "alpha", 30: "beta", 40: "gamma", 100: "omega"},
     "lifeup": {20: "alpha", 50: "beta", 70: "gamma", 100: "omega"},
-    "thunder": {20: "alpha", 30: "beta", 50: "gamma", 100: "omega"},
+    "thunder": {5: "zeta", 10: "epsilon", 15: "delta", 20: "lambda", 35: "alpha", 45: "beta", 60: "gamma", 100: "omega"},
     "flash": {25: "alpha", 45: "beta", 60: "gamma", 100: "omega"},
-    "special": {25: "alpha", 30: "beta", 40: "gamma", 100: "omega"},
+    "special": {5: "zeta", 10: "epsilon", 20: "alpha", 30: "beta", 70: "gamma", 100: "omega"},
     "healing": {20: "alpha", 40: "beta", 60: "gamma", 100: "omega"},
-    "starstorm": {50: "alpha", 100: "beta"},
+    "starstorm": {5: "zeta", 12: "epsilon", 20: "delta", 45: "lambda", 70: "alpha", 100: "beta"},
+    "diamond_eyes": {35: "alpha", 40: "beta", 100: "gamma"},
+    "nauseous_breath": {25: "alpha", 100: "beta"},
+    "poison_stinger": {25: "alpha", 100: "beta"},
+    "kiss_of_death": {25: "alpha", 100: "beta"},
+    "summon_storm": {25: "alpha", 45: "beta", 60: "gamma", 100: "omega"},
+    "scalding_espresso": {5: "zeta", 10: "epsilon", 20: "alpha", 30: "beta", 40: "gamma", 100: "omega"},
+    "extinguishing_blast": {5: "zeta", 10: "epsilon", 20: "alpha", 30: "beta", 40: "gamma", 100: "omega"},
+    "spray_fire": {5: "zeta", 10: "epsilon", 20: "alpha", 30: "beta", 40: "gamma", 100: "omega"},
+    "breathe_fire": {5: "zeta", 10: "epsilon", 20: "alpha", 30: "beta", 40: "gamma", 100: "omega"},
+    "poisonous_fangs": {25: "alpha", 100: "beta"},
+    "flaming_fireball": {5: "zeta", 10: "epsilon", 20: "alpha", 30: "beta", 40: "gamma", 100: "omega"},
+    "glorious_light": {25: "alpha", 45: "beta", 60: "gamma", 100: "omega"},
+    "poison_flute": {25: "alpha", 100: "beta"},
+    "diamond_bite": {35: "alpha", 40: "beta", 100: "gamma"},
+    "scatter_spores": {25: "alpha", 100: "beta"},
+    "hacking_cough": {25: "alpha", 100: "beta"},
+    "stuffiness_beam": {25: "alpha", 100: "beta"},
+    "crashing_boom_bang": {5: "zeta", 10: "epsilon", 15: "delta", 20: "lambda", 35: "alpha", 45: "beta", 60: "gamma", 100: "omega"},
+    "paralysis": {30: "lambda", 60: "alpha", 100: "omega"},
+    "electrical_shock": {5: "zeta", 10: "epsilon", 15: "delta", 20: "lambda", 35: "alpha", 45: "beta", 60: "gamma", 100: "omega"},
+    "giygas_phase2_thunder": {5: "zeta", 10: "epsilon", 15: "delta", 20: "lambda", 35: "alpha", 100: "beta"},
+    "giygas_phase3_thunder": {5: "zeta", 10: "epsilon", 15: "delta", 20: "lambda", 35: "alpha", 100: "beta"},
+    "giygas_phase4_thunder": {5: "zeta", 10: "epsilon", 15: "delta", 20: "lambda", 35: "alpha", 100: "beta"},
+    "giygas_phase2_freeze": {8: "zeta", 12: "epsilon", 20: "delta", 25: "lambda", 100: "alpha"},
+    "giygas_phase3_freeze": {8: "zeta", 12: "epsilon", 20: "delta", 25: "lambda", 100: "alpha"},
+    "giygas_phase4_freeze": {8: "zeta", 12: "epsilon", 20: "delta", 25: "lambda", 100: "alpha"},
+    "giygas_phase2_flash": {25: "alpha", 45: "beta", 100: "gamma"},
+    "giygas_phase3_flash": {25: "alpha", 45: "beta", 100: "gamma"},
+    "giygas_phase4_flash": {25: "alpha", 45: "beta", 100: "gamma"},
+    "thunder_minus": {10: "zeta", 15: "epsilon", 20: "delta", 35: "lambda", 45: "alpha", 60: "beta", 100: "gamma", 100: "omega"},
+    "starstorm_minus": {12: "zeta", 20: "epsilon", 45: "delta", 70: "lambda", 100: "alpha", 100: "beta"},
+    "flash_minus": {45: "alpha", 60: "beta", 100: "gamma", 100: "omega"},
+
+
+    #bombs and bottle rockets too? Also missile maybe? hmmm
 }
 
 def get_psi_levels(level: int, breaks: Dict[int, str]) -> str:
@@ -494,100 +577,372 @@ enemy_psi = {
     "Dept. Store Spook": ["freeze", "fire", "lifeup", "null"],
     "Dept. Store Spook (2)": ["null", "null", "freeze", "null"],
     "Black Antoid": ["null", "null", "null", "lifeup"],
+    "Struttin' Evil Mushroom": ["null", "null", "null", "scatter_spores"],
     "Mobile Sprout": ["null", "null", "null", "lifeup"],
     "Tough Mobile Sprout": ["null", "null", "null", "lifeup"],
     "Mystical Record": ["null", "null", "lifeup", "null"],
-    "Guardian Hieroglyph": ["null", "thunder", "flash", "thunder"],
-    "Conducting Menace": ["flash", "flash", "thunder", "thunder"],
-    "Conducting Spirit": ["flash", "flash", "thunder", "thunder"],
-    "Ness's Nightmare": ["null", "special", "null", "null"],
-    "Mr. Carpainter": ["null", "lifeup", "null", "null"],
-    "Thunder Mite": ["thunder", "thunder", "thunder", "thunder"],
+    "Guardian Hieroglyph": ["hacking_cough", "thunder_minus", "flash", "thunder"],
+    "Electro Swoosh": ["null", "electrical_shock", "electrical_shock", "null"],
+    "Conducting Menace": ["flash_minus", "flash", "thunder_minus", "thunder"],
+    "Conducting Spirit": ["flash_minus", "flash", "thunder_minus", "thunder"],
+    "Ness's Nightmare": ["null", "special", "glorious_light", "null"],
+    "Mr. Carpainter": ["crashing_boom_bang", "lifeup", "null", "null"],
+    "Carbon Dog": ["flaming_fireball", "null", "null", "null"],
+    "Thunder Mite": ["thunder_minus", "thunder_minus", "thunder", "thunder"],
     "Chomposaur": ["fire", "fire", "null", "null"],
-    "Shrooom!": ["null", "lifeup", "null", "null"],
+    "Gigantic Ant": ["null", "poison_stinger", "null", "null"],
+    "Shrooom!": ["null", "lifeup", "scatter_spores", "null"],
+    "Plague Rat of Doom": ["poisonous_fangs", "null", "null", "null"],
     "Mondo Mole": ["lifeup", "null", "null", "null"],
+    "Scalding Coffee Cup": ["scalding_espresso", "scalding_espresso", "scalding_espresso", "scalding_espresso"],
+    "Arachnid!": ["null", "null", "null", "poison_stinger"],
+    "Arachnid!!!": ["poison_stinger", "null", "null", "null"],
+    "Slimy Little Pile": ["hacking_cough", "null", "null", "null"],
+    "Even Slimier Little Pile": ["null", "null", "null", "hacking_cough"],
+    "Kraken": ["breathe_fire", "null", "crashing_boom_bang", "null"],
+    "Bionic Kraken": ["null", "crashing_boom_bang", "breathe_fire", "null"], #Generate tornado?
+    "Spinning Robo": ["null", "null", "stuffiness_beam", "null"],
+    "Whirling Robo": ["null", "stuffiness_beam", "null", "null"],
+    "Thirsty Coil Snake": ["poisonous_fangs", "null", "null", "null"],
+    "Crazed Sign": ["null", "null", "paralysis", "null"],
     "Wooly Shambler": ["null", "null", "null", "flash"],
     "Wild 'n Wooly Shambler": ["null", "null", "null", "flash"],
-    "Skelpion": ["null", "null", "null", "thunder"],
-    "Dread Skelpion": ["null", "null", "thunder", "thunder"],
-    "Ghost of Starman": ["starstorm", "null", "null", "null"],
+    "Skelpion": ["null", "poison_stinger", "null", "thunder"],
+    "Dread Skelpion": ["poison_stinger", "null", "thunder", "thunder"],
+    "Ghost of Starman": ["starstorm_minus", "null", "null", "null"],
     "Smilin' Sphere": ["null", "fire", "null", "null"],
     "Uncontrollable Sphere": ["null", "fire", "fire", "null"],
     "Starman Deluxe": ["null", "null", "starstorm", "null"],
     "Final Starman": ["null", "null", "starstorm", "null"],
-    "Trillionage Sprout": ["null", "null", "flash", "null"],
-    "Lesser Mook": ["freeze", "freeze", "null", "null"],
-    "Mook Senior": ["freeze", "fire", "lifeup", "null"],
+    "Urban Zombie": ["null", "null", "nauseous_breath", "null"],
+    "Zombie Dog": ["null", "null", "null", "poisonous_fangs"],
+    "Diamond Dog": ["null", "null", "null", "glorious_light"],
+    "Trillionage Sprout": ["null", "null", "flash", "paralysis"],
+    "Musica": ["electrical_shock", "null", "null", "electrical_shock"],
+    "Desert Wolf": ["null", "null", "null", "poisonous_fangs"],
+    "Master Belch": ["nauseous_breath", "nauseous_breath", "null", "null"],
+    "Big Pile of Puke": ["null", "hacking_cough", "null", "nauseous_breath"],
+    "Master Barf": ["nauseous_breath", "null", "null", "null"],
+    "Kiss of Death": ["null", "null", "kiss_of_death", "null"],
+    "French Kiss of Death": ["kiss_of_death", "kiss_of_death", "kiss_of_death", "kiss_of_death"],
+    "Zap Eel": ["electrical_shock", "electrical_shock", "electrical_shock", "electrical_shock"],
+    "Tangoo": ["null", "null", "poison_flute", "null"],
+    "Squatter Demon": ["poisonous_fangs", "diamond_bite", "null", "null"],
+    "Lesser Mook": ["freeze", "freeze", "null", "diamond_eyes"],
+    "Mook Senior": ["freeze", "fire", "lifeup", "diamond_eyes"],
     "Smelly Ghost": ["null", "null", "lifeup", "null"],
+    "Deadly Mouse": ["poisonous_fangs", "null", "null", "null"],
+    "Electro Specter": ["electrical_shock", "null", "electrical_shock", "null"],
     "Smilin' Sam": ["null", "null", "null", "lifeup"],
     "Manly Fish's Brother": ["null", "null", "freeze", "healing"],
+    "Thunder and Storm": ["crashing_boom_bang", "null", "null", "null"],
     "Cute Li'l UFO": ["null", "null", "null", "lifeup"],
     "Beautiful UFO": ["null", "null", "null", "lifeup"],
+    "Evil Mani-Mani": ["null", "paralysis", "null", "null"],
     "Mr. Molecule": ["thunder", "flash", "fire", "freeze"],
     "Heavily Armed Pokey": ["null", "fire", "null", "null"],
     "Psychic Psycho": ["fire", "fire", "fire", "fire"],
-    "Major Psychic Psycho": ["fire", "null", "null", "fire"],
+    "Major Psychic Psycho": ["fire", "null", "paralysis", "fire"],
+    "Soul Consuming Flame": ["null", "breathe_fire", "flaming_fireball", "spray_fire"],
+    "Demonic Petunia": ["null", "extinguishing_blast", "null", "null"],
+    "Li'l UFO": ["null", "null", "stuffiness_beam", "null"],
     "Ness's Nightmare (2)": ["special", "lifeup", "special", "null"],
+    "Mr. Carpainter (2)": ["crashing_boom_bang", "null", "null", "null"],
+    "Carbon Dog (2)": ["fire_spray", "null", "null", "null"],
+    "Gigantic Ant (2)": ["paralysis", "null", "null", "null"],
     "Chomposaur (2)": ["null", "null", "fire", "fire"],
     "Guardian Digger (2)": ["null", "null", "null", "lifeup"],
-    "Kraken (2)": ["flash", "null", "null", "null"],
+    "Kraken (2)": ["flash", "breathe_fire", "null", "null"], #tornado?
     "Starman Super (2)": ["null", "healing", "null", "null"],
     "Ghost of Starman (2)": ["null", "null", "starstorm", "null"],
     "Final Starman (2)": ["starstorm", "null", "healing", "null"],
+    "Diamond Dog (2)": ["null", "null", "null", "diamond_bite"],
+    "Trillionage Sprout (2)": ["null", "null", "diamond_eyes", "null"],
+    "Master Belch (2)": ["nauseous_breath", "null", "null", "null"],
+    "Master Barf (2)": ["null", "null", "nauseous_breath", "null"],
     "Boogey Tent (2)": ["null", "null", "flash", "null"],
+    "Electro Specter (2)": ["null", "null", "electrical_shock", "null"],
+    "Thunder and Storm (2)": ["summon_storm", "null", "crashing_boom_bang", "null"],
+    "Evil Mani-Mani (2)": ["null", "null", "glorious_light", "null"],
     "Black Antoid (2)": ["lifeup", "lifeup", "lifeup", "lifeup"],
     "Giygas (1)": ["special", "special", "special", "special"],
+    "Farm Zombie": ["null", "null", "nauseous_breath", "null"],
     "Criminal Caterpillar": ["fire", "fire", "fire", "fire"],
-    "Master Criminal Worm": ["fire", "fire", "fire", "fire"]
+    "Evil Eye": ["null", "diamond_eyes", "paralysis", "null"],
+    "Master Criminal Worm": ["fire", "fire", "fire", "fire"],
+    "Giygas (4)": ["giygas_phase2_thunder", "giygas_phase2_freeze", "giygas_phase2_flash", "null"],
+    "Giygas (5)": ["giygas_phase3_thunder", "giygas_phase3_freeze", "giygas_phase3_flash", "null"],
+    "Giygas (6)": ["giygas_phase4_thunder", "giygas_phase4_freeze", "giygas_phase4_flash", "null"]
 }
 
 spell_data = {
     "freeze": {
-        "alpha": [0x12, 0x09],
-        "beta": [0x13, 0x0A],
-        "gamma": [0x14, 0x0B],
-        "omega": [0x15, 0x0C]
+        "zeta": [0x62, 0x01, 0x37],
+        "epsilon": [0x63, 0x01, 0x38],
+        "delta": [0x64, 0x01, 0x39],
+        "lambda": [0x65, 0x01, 0x3A],
+        "alpha": [0x12, 0x00, 0x09],
+        "beta": [0x13, 0x00, 0x0A],
+        "gamma": [0x14, 0x00, 0x0B],
+        "omega": [0x15, 0x00, 0x0C]
     },
     "fire": {
-        "alpha": [0x0E, 0x05],
-        "beta": [0x0F, 0x06],
-        "gamma": [0x10, 0x07],
-        "omega": [0x11, 0x08]
+        "zeta": [0x60, 0x01, 0x35],
+        "epsilon": [0x61, 0x01, 0x36],
+        "alpha": [0x0E, 0x00, 0x05],
+        "beta": [0x0F, 0x00, 0x06],
+        "gamma": [0x10, 0x00, 0x07],
+        "omega": [0x11, 0x00, 0x08]
     },
     "lifeup": {
-        "alpha": [0x20, 0x17],
-        "beta": [0x21, 0x18],
-        "gamma": [0x22, 0x19],
-        "omega": [0x23, 0x1A]
+        "alpha": [0x20, 0x00, 0x17],
+        "beta": [0x21, 0x00, 0x18],
+        "gamma": [0x22, 0x00, 0x19],
+        "omega": [0x23, 0x00, 0x1A]
     },
     "flash": {
-        "alpha": [0x1A, 0x11],
-        "beta": [0x1B, 0x12],
-        "gamma": [0x1C, 0x13],
-        "omega": [0x1D, 0x14]
+        "alpha": [0x1A, 0x00, 0x11],
+        "beta": [0x1B, 0x00, 0x12],
+        "gamma": [0x1C, 0x00, 0x13],
+        "omega": [0x1D, 0x00, 0x14]
     },
     "thunder": {
-        "alpha": [0x16, 0x0D],
-        "beta": [0x17, 0x0E],
-        "gamma": [0x18, 0x0F],
-        "omega": [0x19, 0x10]
+        "zeta": [0x69, 0x01, 0x3E],
+        "epsilon": [0x6A, 0x01, 0x3F],
+        "delta": [0x6B, 0x01, 0x40],
+        "lambda": [0x6C, 0x01, 0x41],
+        "alpha": [0x16, 0x00, 0x0D],
+        "beta": [0x17, 0x00, 0x0E],
+        "gamma": [0x18, 0x00, 0x0F],
+        "omega": [0x19, 0x00, 0x10]
     },
     "special": {
-        "alpha": [0x0A, 0x01],
-        "beta": [0x0B, 0x02],
-        "gamma": [0x0C, 0x03],
-        "omega": [0x0D, 0x04]
+        "zeta": [0x66, 0x01, 0x3B],
+        "epsilon": [0x67, 0x01, 0x3C],
+        "alpha": [0x0A, 0x00, 0x01],
+        "beta": [0x0B, 0x00, 0x02],
+        "gamma": [0x0C, 0x00, 0x03],
+        "omega": [0x0D, 0x00, 0x04]
     },
     "healing": {
-        "alpha": [0x24, 0x1B],
-        "beta": [0x25, 0x1C],
-        "gamma": [0x26, 0x1D],
-        "omega": [0x27, 0x1E]
+        "alpha": [0x24, 0x00, 0x1B],
+        "beta": [0x25, 0x00, 0x1C],
+        "gamma": [0x26, 0x00, 0x1D],
+        "omega": [0x27, 0x00, 0x1E]
     },
     "starstorm": {
-        "alpha": [0x1E, 0x15],
-        "beta": [0x1F, 0x16]
-    }
+        "zeta": [0x6D, 0x01, 0x42],
+        "epsilon": [0x6E, 0x01, 0x43],
+        "delta": [0x6F, 0x01, 0x44],
+        "lambda": [0x70, 0x01, 0x45],
+        "alpha": [0x1E, 0x00, 0x15],
+        "beta": [0x1F, 0x00, 0x16]
+    },
+    "scatter_spores": {
+        "alpha": [0xED, 0x00, 0x00],
+        "beta": [0x3F, 0x01, 0x00]
+    },
+    "nauseous_breath": {
+        "alpha": [0x4A, 0x00, 0x00],
+        "beta": [0x47, 0x00, 0x00]
+    },
+    "diamond_eyes": {
+        "alpha": [0x40, 0x01, 0x00],
+        "beta": [0x41, 0x01, 0x00],
+        "gamma": [0x44, 0x00, 0x00]
+    },
+    "glorious_light": {
+        "alpha": [0x42, 0x01, 0x00],
+        "beta": [0x43, 0x01, 0x00],
+        "gamma": [0xC9, 0x00, 0x00],
+        "omega": [0x44, 0x01, 0x00],
+    },
+    "flaming_fireball": {
+        "zeta": [0x73, 0x01, 0x00],
+        "epsilon": [0x74, 0x01, 0x00],
+        "alpha": [0x47, 0x01, 0x00],
+        "beta": [0x46, 0x01, 0x00],
+        "gamma": [0x45, 0x01, 0x00],
+        "omega": [0x68, 0x00, 0x00],
+    },
+    "breathe_fire": {
+        "zeta": [0x71, 0x01, 0x00],
+        "epsilon": [0x72, 0x01, 0x00],
+        "alpha": [0x48, 0x01, 0x00],
+        "beta": [0x49, 0x01, 0x00],
+        "gamma": [0x5E, 0x00, 0x00],
+        "omega": [0x4A, 0x00, 0x00],
+    },
+    "spray_fire": {
+        "zeta": [0x75, 0x01, 0x00],
+        "epsilon": [0x76, 0x01, 0x00],
+        "alpha": [0x4B, 0x01, 0x00],
+        "beta": [0x4C, 0x01, 0x00],
+        "gamma": [0x4D, 0x01, 0x00],
+        "omega": [0x5D, 0x00, 0x00],
+    },
+    "paralysis": {
+        "lambda": [0x68, 0x01, 0x3D],
+        "alpha": [0x38, 0x00, 0x2F],
+        "omega": [0x39, 0x00, 0x30]
+    },
+    "poisonous_fangs": {
+        "alpha": [0x4E, 0x01, 0x00],
+        "beta": [0x64, 0x00, 0x00]
+    },
+    "poison_stinger": {
+        "alpha": [0x4F, 0x01, 0x00],
+        "beta": [0x48, 0x00, 0x00]
+    },
+    "crashing_boom_bang": {
+        "zeta": [0x7D, 0x01, 0x00],
+        "epsilon": [0x7E, 0x01, 0x00],
+        "delta": [0x7F, 0x01, 0x00],
+        "lambda": [0x80, 0x01, 0x00],
+        "alpha": [0x50, 0x01, 0x00],
+        "beta": [0x5C, 0x00, 0x00],
+        "gamma": [0x51, 0x01, 0x00],
+        "omega": [0x52, 0x01, 0x00]
+    },
+
+    "electrical_shock": {
+        "zeta": [0x79, 0x01, 0x00],
+        "epsilon": [0x7A, 0x01, 0x00],
+        "delta": [0x7C, 0x01, 0x00],
+        "lambda": [0x7B, 0x01, 0x00],
+        "alpha": [0x53, 0x01, 0x00],
+        "beta": [0xCA, 0x00, 0x00],
+        "gamma": [0x54, 0x01, 0x00],
+        "omega": [0x55, 0x01, 0x00]
+    },
+    "scalding_espresso": {
+        "zeta": [0x77, 0x01, 0x00],
+        "epsilon": [0x78, 0x01, 0x00],
+        "alpha": [0x59, 0x00, 0x00],
+        "beta": [0x56, 0x01, 0x00],
+        "gamma": [0x57, 0x01, 0x00],
+        "omega": [0x58, 0x01, 0x00]
+    },
+    "extinguishing_blast": {
+        "zeta": [0x81, 0x01, 0x00],
+        "epsilon": [0x82, 0x01, 0x00],
+        "alpha": [0x59, 0x01, 0x00],
+        "beta": [0x5A, 0x01, 0x00],
+        "gamma": [0x5B, 0x00, 0x00],
+        "omega": [0x5B, 0x01, 0x00]
+    },
+    "diamond_bite": {
+        "alpha": [0x5C, 0x01, 0x00],
+        "beta": [0x5D, 0x01, 0x00],
+        "gamma": [0xE4, 0x00, 0x00]
+    },
+    "poison_flute": {
+        "alpha": [0x5E, 0x01, 0x00],
+        "beta": [0xCD, 0x00, 0x00]
+    },
+    "kiss_of_death": {
+        "alpha": [0x5F, 0x01, 0x00],
+        "beta": [0x49, 0x00, 0x00]
+    },
+    "stuffiness_beam": {
+        "alpha": [0xF1, 0x00, 0x00],
+        "beta": [0x45, 0x00, 0x00]
+    },
+        "hacking_cough": {
+        "alpha": [0xD5, 0x00, 0x00],
+        "beta": [0x57, 0x00, 0x00]
+    },
+    "giygas_phase2_thunder": {
+        "zeta": [0x87, 0x01, 0x00],
+        "epsilon": [0x86, 0x01, 0x00],
+        "delta": [0x85, 0x01, 0x00],
+        "lambda": [0x84, 0x01, 0x00],
+        "alpha": [0x83, 0x01, 0x00],
+        "beta": [0x12, 0x01, 0x00]
+    },
+    "giygas_phase3_thunder": {
+        "zeta": [0x8C, 0x01, 0x00],
+        "epsilon": [0x8B, 0x01, 0x00],
+        "delta": [0x8A, 0x01, 0x00],
+        "lambda": [0x89, 0x01, 0x00],
+        "alpha": [0x88, 0x01, 0x00],
+        "beta": [0x2E, 0x01, 0x00]
+    },
+    "giygas_phase4_thunder": {
+        "zeta": [0x91, 0x01, 0x00],
+        "epsilon": [0x90, 0x01, 0x00],
+        "delta": [0x8F, 0x01, 0x00],
+        "lambda": [0x8E, 0x01, 0x00],
+        "alpha": [0x8D, 0x01, 0x00],
+        "beta": [0x31, 0x01, 0x00]
+    },
+
+    "giygas_phase2_freeze": {
+        "zeta": [0x92, 0x01, 0x00],
+        "epsilon": [0x93, 0x01, 0x00],
+        "delta": [0x94, 0x01, 0x00],
+        "lambda": [0x95, 0x01, 0x00],
+        "alpha": [0x2C, 0x01, 0x00]
+    },
+    "giygas_phase3_freeze": {
+        "zeta": [0x96, 0x01, 0x00],
+        "epsilon": [0x97, 0x01, 0x00],
+        "delta": [0x98, 0x01, 0x00],
+        "lambda": [0x99, 0x01, 0x00],
+        "alpha": [0x2F, 0x01, 0x00]
+    },
+    "giygas_phase4_freeze": {
+        "zeta": [0x9A, 0x01, 0x00],
+        "epsilon": [0x9B, 0x01, 0x00],
+        "delta": [0x9C, 0x01, 0x00],
+        "lambda": [0x9D, 0x01, 0x00],
+        "alpha": [0x32, 0x01, 0x00]
+    },
+
+    "giygas_phase2_flash": {
+        "alpha": [0x9E, 0x01, 0x00],
+        "beta": [0x9F, 0x01, 0x00],
+        "gamma": [0x2D, 0x01, 0x00]
+    },
+    "giygas_phase3_flash": {
+        "alpha": [0xA0, 0x01, 0x00],
+        "beta": [0xA1, 0x01, 0x00],
+        "gamma": [0x30, 0x01, 0x00]
+    },
+    "giygas_phase4_flash": {
+        "alpha": [0xA2, 0x01, 0x00],
+        "beta": [0xA3, 0x01, 0x00],
+        "gamma": [0x33, 0x01, 0x00]
+    },
+    "explosion_damage": {
+        "alpha": [0xA7, 0x00, 0x00],
+        "beta": [0xA3, 0x01, 0x00],
+        "gamma": [0x33, 0x01, 0x00]
+    },
+    "thunder_minus": {
+        "zeta": [0x69, 0x01, 0x3E],
+        "epsilon": [0x6A, 0x01, 0x3F],
+        "delta": [0x6B, 0x01, 0x40],
+        "lambda": [0x6C, 0x01, 0x41],
+        "alpha": [0x16, 0x00, 0x0D],
+        "beta": [0x17, 0x00, 0x0E],
+        "gamma": [0x18, 0x00, 0x0F],
+        "omega": [0x19, 0x00, 0x10]
+    },
+    "flash_minus": {
+        "alpha": [0x1A, 0x00, 0x11],
+        "beta": [0x1B, 0x00, 0x12],
+        "gamma": [0x1C, 0x00, 0x13],
+        "omega": [0x1D, 0x00, 0x14]
+    },
+    "starstorm_minus": {
+        "zeta": [0x6D, 0x01, 0x42],
+        "epsilon": [0x6E, 0x01, 0x43],
+        "delta": [0x6F, 0x01, 0x44],
+        "lambda": [0x70, 0x01, 0x45],
+        "alpha": [0x1E, 0x00, 0x15],
+        "beta": [0x1F, 0x00, 0x16]
+    },
 
 }
 
@@ -611,6 +966,21 @@ def scale_enemy_speed(enemy, new_level):
 def scale_exp(base_exp, base_level, new_level, k):
     new_exp = base_exp * (new_level / base_level) ** k
     return new_exp
+
+def scale_exp_2(base_exp, base_level, new_level, world):
+    base_scaled_exp = calculate_exp(base_level)
+    scaled_exp = calculate_exp(new_level)
+    new_exp = base_exp * scaled_exp / base_scaled_exp
+    new_exp = math.ceil(new_exp * world.options.experience_modifier / 100)
+    return new_exp
+
+def calculate_exp(level):
+    if level > 30:
+        return 1000 * math.exp(0.05 * level)
+    else:
+        return 10 * math.exp(0.2 * level)
+
+    
 
 def scale_shield(level, shield):
     if shield != None:
@@ -669,17 +1039,16 @@ def scale_enemies(world, rom):
         locs = [loc for loc in sphere if loc.player == world.player and loc.parent_region.name in combat_regions and loc.parent_region.name not in world.location_order]
         regions = {loc.parent_region.name for loc in locs}
         for region in sorted(regions, key=lambda x: distances.get(x, float('inf'))):
-            #if region not in distances:
-                #warning(f"Warning: {region} is not in distances. for player {world.player}")
-                #if world.scale_warning == False:
-                    #warning(f"{distances}")
-                    #world.scale_warning = True
+            if region not in distances:
+                warning(f"Warning: {region} is not in distances. for player {world.player}")
+                if world.scale_warning == False:
+                    warning(f"{distances}")
+                    world.scale_warning = True
             world.location_order.append(region)
     if world.options.magicant_mode == 2 and world.options.giygas_required:
         world.location_order.remove("Magicant")
         world.location_order.insert(world.location_order.index("Endgame") + 1, "Magicant")
     elif world.options.magicant_mode == 3:
-        world.location_order.remove("Magicant")
         world.location_order.insert(world.location_order.index("Endgame") - 1, "Magicant")
 
     #if world.scale_warning == True:
@@ -698,10 +1067,11 @@ def scale_enemies(world, rom):
     for region, level in zip(world.location_order, levels):
         for enemy in world.regional_enemies[region]:
             if enemy.is_scaled is False:
+                #gprint(f"{enemy.name} {level}")
                 enemy_hp = int(enemy.hp * level / enemy.level)
                 enemy_pp = int(enemy.pp * level / enemy.level)
                 k = 2.258
-                #enemy_exp = int(scale_exp(enemy.exp, enemy.level, level, k))
+                #enemy_exp = int(scale_exp_2(enemy.exp, enemy.level, level, world))
                 enemy_exp = int(enemy.exp * level / enemy.level)
                 enemy_exp = int(enemy_exp * world.options.experience_modifier.value / 100)
                 enemy_money = int(enemy.money * level / enemy.level)
@@ -711,7 +1081,8 @@ def scale_enemies(world, rom):
                 enemy_level = int(enemy.level * level / enemy.level)
                 enemy_shield = scale_shield(level, enemy.shield)
 
-                #print(f"\nEnemy: {enemy.name}\nLevel: {enemy_level}\nHP: {enemy_hp}\nPP: {enemy_pp}\nEXP: {enemy_exp}\n${enemy_money}\nSpeed: {enemy_speed}\nOffense: {enemy_offense}\nDefense: {enemy_defense}\nSpeed: {enemy_speed} {enemy.shield}")
+                #if world.multiworld.get_player_name(world.player) == "Pink":
+                    #print(f"\nEnemy: {enemy.name}\nLevel: {enemy_level}\nHP: {enemy_hp}\nPP: {enemy_pp}\nEXP: {enemy_exp}\n${enemy_money}\nSpeed: {enemy_speed}\nOffense: {enemy_offense}\nDefense: {enemy_defense}\nSpeed: {enemy_speed} {enemy.shield}")
                 enemy_hp = struct.pack('<H', enemy_hp)
                 enemy_pp = struct.pack('<H', enemy_pp)
                 enemy_exp = struct.pack('<I', enemy_exp)
@@ -730,11 +1101,12 @@ def scale_enemies(world, rom):
                     rom.write_bytes(enemy.address + 89, bytearray([shield_table[enemy_shield]]))
                 
                 if enemy.name in enemy_psi:
-                    for index, spell in enumerate([i for i in enemy_psi[enemy.name] if i != "null"]):
+                    for index, spell in [(i, s) for i, s in enumerate(enemy_psi[enemy.name]) if s != "null"]:
+                        #print(enemy.name)
+                        #print(index, spell)
                         psi_level = get_psi_levels(level, spell_breaks[spell])
-                        rom.write_bytes(enemy.address + 70 + (index * 2), bytearray([spell_data[spell][psi_level][0]]))
-                        rom.write_bytes(enemy.address + 80 + index, bytearray([spell_data[spell][psi_level][1]]))
-                        #print(f"{spell} {psi_level} at {hex(enemy.address + 70 + (index * 2))}")
+                        rom.write_bytes(enemy.address + 70 + (index * 2), bytearray(spell_data[spell][psi_level][0:2]))
+                        rom.write_bytes(enemy.address + 80 + index, bytearray([spell_data[spell][psi_level][2]]))
                 if world.options.shuffle_enemy_drops:
                     rom.write_bytes(enemy.address + 88, bytearray([world.random.choice(world.filler_drops)]))
                 enemy.is_scaled = True

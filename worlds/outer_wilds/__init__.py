@@ -4,13 +4,13 @@ from typing import Any, Dict, TextIO
 from BaseClasses import Tutorial
 from Options import OptionError
 from worlds.AutoWorld import WebWorld, World
-from .Coordinates import coordinate_description, generate_random_coordinates
-from .DBLayout import generate_random_db_layout
-from .Orbits import generate_random_orbits
-from .WarpPlatforms import generate_random_warp_platform_mapping
-from .Items import OuterWildsItem, all_non_event_items_table, item_name_groups, create_item, create_items
-from .LocationsAndRegions import all_non_event_locations_table, location_name_groups, create_regions
-from .Options import OuterWildsGameOptions, RandomizeDarkBrambleLayout, Spawn
+from .coordinates import coordinate_description, generate_random_coordinates
+from .db_layout import generate_random_db_layout
+from .orbits import generate_random_orbits
+from .warp_platforms import generate_random_warp_platform_mapping
+from .items import OuterWildsItem, all_non_event_items_table, item_name_groups, create_item, create_items
+from .locations_and_regions import all_non_event_locations_table, location_name_groups, create_regions
+from .options import OuterWildsGameOptions, RandomizeDarkBrambleLayout, Spawn
 
 
 class OuterWildsWebWorld(WebWorld):
@@ -73,7 +73,7 @@ class OuterWildsWorld(World):
         self.db_layout = generate_random_db_layout(self.random, db_option) \
             if db_option != RandomizeDarkBrambleLayout.option_false else "vanilla"
 
-    # members and methods implemented by LocationsAndRegions.py, locations.jsonc and connections.jsonc
+    # members and methods implemented by locations_and_regions.py, locations.jsonc and connections.jsonc
 
     location_name_to_id = all_non_event_locations_table
     location_name_groups = location_name_groups
@@ -81,7 +81,7 @@ class OuterWildsWorld(World):
     def create_regions(self) -> None:
         create_regions(self)
 
-    # members and methods implemented by Items.py and items.jsonc
+    # members and methods implemented by items.py and items.jsonc
 
     item_name_to_id = all_non_event_items_table
     item_name_groups = item_name_groups
@@ -99,7 +99,7 @@ class OuterWildsWorld(World):
         # the world is configured to have, but it's not worth that much effort.
         return "Marshmallow"
 
-    # members and methods related to Options.py
+    # members and methods related to options.py
 
     options_dataclass = OuterWildsGameOptions
     options: OuterWildsGameOptions
@@ -126,7 +126,7 @@ class OuterWildsWorld(World):
         slot_data["warps"] = self.warps
         # Archipelago does not yet have apworld versions (data_version is deprecated),
         # so we have to roll our own with slot_data for the time being
-        slot_data["apworld_version"] = "0.2.6"
+        slot_data["apworld_version"] = "0.2.7"
         return slot_data
 
     def write_spoiler(self, spoiler_handle: TextIO) -> None:

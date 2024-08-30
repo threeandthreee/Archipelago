@@ -1,10 +1,11 @@
+from io import BytesIO
+import pickle
 import pkgutil
 import typing
 from typing import Dict, List, NamedTuple, Optional, Set
 
 from BaseClasses import Item, ItemClassification
-from . import jsonc
-from .Options import EarlyKeyItem, Spawn
+from .options import EarlyKeyItem, Spawn
 
 if typing.TYPE_CHECKING:
     from . import OuterWildsWorld
@@ -19,8 +20,8 @@ class OuterWildsItemData(NamedTuple):
     type: ItemClassification = ItemClassification.filler
 
 
-jsonc_data = pkgutil.get_data(__name__, 'shared_static_logic/items.jsonc')
-items_data = jsonc.loads(jsonc_data.decode('utf-8'))
+pickled_data = pkgutil.get_data(__name__, "shared_static_logic/static_logic.pickle")
+items_data = pickle.load(BytesIO(pickled_data))["ITEMS"]
 
 item_types_map = {
     "progression": ItemClassification.progression,

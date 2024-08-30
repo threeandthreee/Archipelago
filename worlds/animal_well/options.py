@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Dict, Any
-from Options import DefaultOnToggle, Toggle, StartInventoryPool, Choice, Range, PerGameCommonOptions, OptionGroup
+from Options import (DefaultOnToggle, Toggle, StartInventoryPool, Choice, Range, PerGameCommonOptions, OptionGroup,
+                     Visibility, DeathLink)
 
 
 class Goal(Choice):
@@ -62,15 +63,12 @@ class BunnyWarpsInLogic(Toggle):
     display_name = "Bunny Warps in Logic"
 
 
-class CandleChecks(Choice):  # choice so we can comment out non-working ones then readd them later
+class CandleChecks(Toggle):
     """
     Lighting each of the candles sends a check.
     """
     internal_name = "candle_checks"
     display_name = "Candle Checks"
-    option_off = 0
-    option_on = 1
-    default = 0
 
 
 class KeyRing(DefaultOnToggle):
@@ -119,7 +117,7 @@ class DiscHopping(Choice):
     default = 0
 
 
-class WheelHopping(Choice):
+class WheelTricks(Choice):
     """
     Include some tricks that involve using the wheel in unconventional ways.
     Simple means toggling wheel midair to "double jump", or mashing against walls to climb them.
@@ -153,29 +151,48 @@ class ExcludeSongChests(DefaultOnToggle):
     display_name = "Exclude Song Chests"
 
 
+class WheelHopping(Choice):
+    """
+    Included temporarily for backwards compatibility.
+    """
+    internal_name = "wheel_hopping"
+    display_name = "Wheel Hopping"
+    option_off = 0
+    option_simple = 1
+    option_advanced = 2
+    default = 0
+    visibility = Visibility.none
+
+
 @dataclass
 class AnimalWellOptions(PerGameCommonOptions):
-    start_inventory_from_pool: StartInventoryPool
     goal: Goal
     eggs_needed: EggsNeeded
     key_ring: KeyRing
     matchbox: Matchbox
-    random_final_egg_location: FinalEggLocation
+    
+    candle_checks: CandleChecks
     bunnies_as_checks: BunniesAsChecks
     bunny_warps_in_logic: BunnyWarpsInLogic
-    candle_checks: CandleChecks
+    exclude_song_chests: ExcludeSongChests
+    random_final_egg_location: FinalEggLocation
+    
     bubble_jumping: BubbleJumping
     disc_hopping: DiscHopping
-    wheel_hopping: WheelHopping
+    wheel_tricks: WheelTricks
     weird_tricks: WeirdTricks
-    exclude_song_chests: ExcludeSongChests
+    
+    death_link: DeathLink
+    start_inventory_from_pool: StartInventoryPool
+
+    wheel_hopping: WheelHopping  # superseded by wheel_tricks, will be removed in a later update
 
 
 aw_option_groups = [
     OptionGroup("Logic Options", [
         BubbleJumping,
         DiscHopping,
-        WheelHopping,
+        WheelTricks,
         WeirdTricks,
     ])
 ]
@@ -185,8 +202,8 @@ aw_option_presets: Dict[str, Dict[str, Any]] = {
         "eggs_needed": 64,
         "bubble_jumping": BubbleJumping.option_on,
         "disc_hopping": DiscHopping.option_multiple,
-        "wheel_tricks": WheelHopping.option_advanced,
+        "wheel_tricks": WheelTricks.option_advanced,
         "weird_tricks": True,
-        "bunnies_as_checks": BunniesAsChecks.option_all_bunnies
+        "bunnies_as_checks": BunniesAsChecks.option_all_bunnies,
     },
 }

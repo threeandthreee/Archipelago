@@ -6,6 +6,7 @@ class Patch:
     byte_list = b''
     original_bytes = b''
     patch_applied = False
+
     def __init__(self, name, base_address, process=None):
         self.name = name
         self.base_address = base_address
@@ -246,6 +247,13 @@ class Patch:
         """
         return self.add_bytes(b'\x49\xb8' + value.to_bytes(8, 'little'))
 
+    def mov_rdi(self, value):
+        """
+        Moves a 64-bit value to RDI
+        10 bytes
+        """
+        return self.add_bytes(b'\x48\xbf' + value.to_bytes(8, 'little'))
+
     def mov_from_absolute_address_to_r8(self, address):
         """
         Moves a 64-bit value from the absolute 64-bit address to R8
@@ -431,6 +439,20 @@ class Patch:
         """
         return self.je_near(7).jmp_near_offset(0x0e).jmp_far(address)
 
+    def mov_to_al(self, value):
+        """
+        Moves an 8-bit value to AL
+        2 bytes
+        """
+        return self.add_bytes(b'\xb0' + value.to_bytes(1, 'little'))
+
+    def mov_to_ax(self, value):
+        """
+        Moves a 16-bit value to EAX
+        4 bytes
+        """
+        return self.add_bytes(b'\x66\xb8' + value.to_bytes(2, 'little'))
+
     def mov_to_eax(self, value):
         """
         Moves a 32-bit value to EAX
@@ -486,6 +508,27 @@ class Patch:
         3 bytes
         """
         return self.add_bytes(b'\x48\x8b\x10')
+
+    def mov_al_to_address_in_rbx(self):
+        """
+        Moves an 8-bit value from AL to the address specified in RBX
+        2 bytes
+        """
+        return self.add_bytes(b'\x88\x03')
+
+    def mov_ax_to_address_in_rbx(self):
+        """
+        Moves a 16-bit value from AX to the address specified in RBX
+        3 bytes
+        """
+        return self.add_bytes(b'\x66\x89\x03')
+
+    def mov_eax_to_address_in_rbx(self):
+        """
+        Moves a 32-bit value from EAX to the address specified in RBX
+        2 bytes
+        """
+        return self.add_bytes(b'\x89\x03')
 
     def mov_rax_to_address_in_rbx(self):
         """

@@ -1,11 +1,185 @@
 import struct
-from .Items import common_items, uncommon_items, rare_items, common_gear, uncommon_gear, rare_gear
 from .flavor_data import random_flavors
 from .text_data import lumine_hall_text, eb_text_table
 from .local_data import item_id_table
+#from .psi_shuffle import shuffle_psi
 
 
 def setup_gamevars(world):
+    world.common_items = [
+        "Cookie",
+        "Bag of Fries",
+        "Teddy Bear",
+        "Hamburger",
+        "Boiled Egg",
+        "Fresh Egg",
+        "Picnic Lunch",
+        "Croissant",
+        "Bread Roll",
+        "Can of Fruit Juice",
+        "Royal Iced Tea",
+        "Protein Drink",
+        "Bottle of Water",
+        "Cold Remedy",
+        "Vial of Serum",
+        "Ketchup Packet",
+        "Sugar Packet",
+        "Tin of Cocoa",
+        "Carton of Cream",
+        "Sprig of Parsley",
+        "Jar of Hot Sauce",
+        "Salt Packet",
+        "Wet Towel",
+        "Refreshing Herb",
+        "Ruler",
+        "Protractor",
+        "Insecticide Spray",
+        "Rust Promoter",
+        "Stag Beetle",
+        "Toothbrush",
+        "Handbag Strap",
+        "Chick",
+        "Chicken",
+        "Trout Yogurt",
+        "Banana",
+        "Calorie Stick",
+        "Gelato de Resort",
+        "Snake",
+        "Cup of Noodles",
+        "Cup of Coffee",
+        "Double Burger",
+        "Bean Croquette",
+        "Molokheiya Soup",
+        "Plain Roll",
+        "Magic Tart",
+        "Popsicle",
+        "Bottle Rocket"
+    ]
+
+    world.common_gear = [
+        "Cracked Bat",
+        "Tee Ball Bat",
+        "Sand Lot Bat",
+        "Minor League Bat",
+        "Fry Pan",
+        "Thick Fry Pan",
+        "Deluxe Fry Pan",
+        "Toy Air Gun",
+        "Zip Gun",
+        "Yo-yo",
+        "Slingshot",
+        "Travel Charm",
+        "Great Charm",
+        "Cheap Bracelet",
+        "Copper Bracelet",
+        "Baseball Cap",
+        "Mr. Baseball Cap",
+        "Holmes Hat",
+        "Hard Hat",
+        "Ribbon",
+        "Red Ribbon",
+        "Coin of Defense"
+    ]
+
+    world.uncommon_items = [
+        "Pasta di Summers",
+        "Pizza",
+        "Chef's Special",
+        "Super Plush Bear",
+        "PSI Caramel",
+        "Jar of Delisauce",
+        "Secret Herb",
+        "Xterminator Spray",
+        "Snake Bag",
+        "Bomb",
+        "Rust Promoter DX",
+        "Pair of Dirty Socks",
+        "Mummy Wrap",
+        "Pharaoh's Curse",
+        "Sudden Guts Pill",
+        "Picture Postcard",
+        "Viper",
+        "Repel Sandwich",
+        "Lucky Sandwich",
+        "Peanut Cheese Bar",
+        "Bowl of Rice Gruel",
+        "Kabob",
+        "Plain Yogurt",
+        "Beef Jerky",
+        "Mammoth Burger",
+        "Bottle of DXwater",
+        "Magic Pudding",
+        "Big Bottle Rocket",
+        "Bazooka"
+
+    ]
+
+    world.uncommon_gear = [
+        "Mr. Baseball Bat",
+        "T-Rex's Bat",
+        "Big League Bat",
+        "Chef's Fry Pan",
+        "Non-Stick Frypan",
+        "French Fry Pan",
+        "Hyper Beam",
+        "Crusher Beam",
+        "Trick Yo-yo",
+        "Bionic Slingshot",
+        "Crystal Charm",
+        "Platinum Band",
+        "Diamond Band",
+        "Defense Ribbon",
+        "Earth Pendant",
+        "Flame Pendant",
+        "Rain Pendant",
+        "Night Pendant",
+        "Lucky Coin",
+        "Silver Bracelet",
+        "Gold Bracelet",
+        "Coin of Slumber",
+        "Coin of Silence",
+    ]
+
+    world.rare_items = [
+        "Large Pizza",
+        "Magic Truffle",
+        "Brain Food Lunch",
+        "Rock Candy",
+        "Kraken Soup",
+        "IQ Capsule",
+        "Guts Capsule",
+        "Speed Capsule",
+        "Vital Capsule",
+        "Luck Capsule",
+        "Horn of Life",
+        "Multi Bottle Rocket",
+        "Super Bomb",
+        "Bag of Dragonite",
+        "Meteotite",
+        "Repel Superwich",
+        "Piggy Jelly",
+        "Spicy Jerky",
+        "Luxury Jerky",
+        "Cup of Lifenoodles"
+    ]
+
+    world.rare_gear = [
+        "Hall of Fame Bat",
+        "Ultimate Bat",
+        "Gutsy Bat",
+        "Casey Bat",
+        "Holy Fry Pan",
+        "Magic Fry Pan",
+        "Combat Yo-yo",
+        "Sword of Kings",
+        "Sea Pendant",
+        "Star Pendant",
+        "Goddess Ribbon",
+        "Talisman Coin",
+        "Shiny Coin",
+        "Charm Coin"
+    ]
+
     valid_starts = 14
     if world.options.magicant_mode != 00:
         valid_starts -= 1
@@ -169,6 +343,7 @@ def setup_gamevars(world):
         else:
             world.prayer_player.extend([0x6F])
     world.prayer_player.extend([0x00])
+    #shuffle_psi(world)
 
 
 def place_static_items(world):
@@ -186,18 +361,18 @@ def place_static_items(world):
     world.get_location("Fire Spring Sanctuary").place_locked_item(world.create_item("Melody"))
 
     if world.options.giygas_required == 1:
-        world.get_location("Giygas").place_locked_item(world.create_item("Saved Earth"))#Normal final boss
+        world.get_location("Giygas").place_locked_item(world.create_item("Saved Earth"))  #Normal final boss
         if world.options.magicant_mode == 1:
-            world.get_location("Ness's Nightmare").place_locked_item(world.create_item("Power of the Earth"))#If required magicant
+            world.get_location("Ness's Nightmare").place_locked_item(world.create_item("Power of the Earth"))  #If required magicant
             world.get_location("Sanctuary Goal").place_locked_item(world.create_item("Magicant Unlock"))
         else:
-            world.get_location("Sanctuary Goal").place_locked_item(world.create_item("Power of the Earth"))#If not required, place this condition on sanctuary goal
+            world.get_location("Sanctuary Goal").place_locked_item(world.create_item("Power of the Earth"))  #If not required, place this condition on sanctuary goal
     else:
         if world.options.magicant_mode == 1:
-            world.get_location("Ness's Nightmare").place_locked_item(world.create_item("Saved Earth"))#If Magicant required but not Giygas, place goal
+            world.get_location("Ness's Nightmare").place_locked_item(world.create_item("Saved Earth"))  #If Magicant required but not Giygas, place goal
             world.get_location("Sanctuary Goal").place_locked_item(world.create_item("Magicant Unlock"))
         else:
-            world.get_location("Sanctuary Goal").place_locked_item(world.create_item("Saved Earth"))# If neither final boss, place goal
+            world.get_location("Sanctuary Goal").place_locked_item(world.create_item("Saved Earth"))  # If neither final boss, place goal
 
     if world.options.alternate_sanctuary_goal:
         world.get_location("+2 Sanctuaries").place_locked_item(world.create_item("Alternate Goal"))
@@ -205,11 +380,14 @@ def place_static_items(world):
     if world.options.magicant_mode == 2:
         world.get_location("+1 Sanctuary").place_locked_item(world.create_item("Magicant Unlock"))
         world.get_location("Ness's Nightmare").place_locked_item(world.create_item("Alternate Goal"))
-    elif world.options.magicant_mode == 3:
-        world.get_location("Ness's Nightmare").place_locked_item(world.create_item("Magicant Boost"))
 
     if world.options.random_start_location:
         world.multiworld.push_precollected(world.create_item(world.starting_teleport))
+
+    #if not world.options.shuffle_sound_stone:
+     #   world.multiworld.push_precollected(world.create_item("Sound Stone"))
+    #else:
+     #   world.multiworld.itempool.append(world.create_item("Sound Stone"))
 
     if not world.options.monkey_caves_mode:
         world.get_location("Monkey Caves - 1F Right Chest").place_locked_item(world.create_item("Wet Towel"))
@@ -222,8 +400,7 @@ def place_static_items(world):
         world.get_location("Monkey Caves - East West 3F Right Chest #1").place_locked_item(world.create_item("Hamburger"))
         world.get_location("Monkey Caves - East West 3F Right Chest #2").place_locked_item(world.create_item("Picnic Lunch"))
 
-
         #Add magicant, add sanc stuff, add alt goals...
             
 
-##TOdo; client, rules, static location stuff
+#TOdo; client, rules, static location stuff

@@ -10,7 +10,7 @@ def set_location_rules(world: "EarthBoundWorld") -> None:
     can_buy_pizza = world.get_location("Threed - Downtown Trashcan")
 
     set_rule(world.multiworld.get_location("Onett - Traveling Entertainer", player), lambda state: state.has("Key to the Shack", player))
-    set_rule(world.multiworld.get_location("Onett - South Road Present", player), lambda state: twoson_paula_room_present.can_reach(state))
+    set_rule(world.multiworld.get_location("Onett - South Road Present", player), lambda state: state.has("Police Badge", player))
     set_rule(world.multiworld.get_location("Twoson - Paula's Mother", player), lambda state: state.has("Paula", player))
     set_rule(world.multiworld.get_location("Twoson - Everdred Meeting", player), lambda state: state.has("Paula", player))
     set_rule(world.multiworld.get_location("Twoson - Insignificant Location", player), lambda state: state.has("Insignificant Item", player))
@@ -42,8 +42,7 @@ def set_location_rules(world: "EarthBoundWorld") -> None:
     set_rule(world.multiworld.get_location("Lost Underworld - Talking Rock", player), lambda state: state.has("Tendakraut", player))
     set_rule(world.multiworld.get_location("Sanctuary Goal", player), lambda state: state.has("Melody", player, world.options.sanctuaries_required.value))
     forbid_items_for_player(world.multiworld.get_location("Poo Starting Item", player), {"Poo"}, player)
-    
-    
+
     if world.options.giygas_required:
         set_rule(world.multiworld.get_location("Giygas", player), lambda state: state.has("Paula", player))
 

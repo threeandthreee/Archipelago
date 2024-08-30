@@ -1,5 +1,5 @@
 from . import OuterWildsTestBase
-from ..Items import repeatable_filler_weights
+from ..items import repeatable_filler_weights
 
 trap_names = [
     "Ship Damage Trap",

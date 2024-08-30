@@ -25,8 +25,6 @@ It is recommended you follow the setup guide for Bizhawk in the [Pokémon Emeral
 2. Launch `ArchipelagoGenerate.exe`. This will generate an output file for you. Your patch file will have one of the following file extensions:
    * `.apfirered`
    * `.apleafgreen`
-   * `.apfireredrev1`
-   * `.apleafgreenrev1`
 3. Open `ArchipelagoLauncher.exe`
 4. Select "Open Patch" on the left side and select your patch file.
 5. If this is your first time patching, you will be prompted to locate your vanilla ROM.
