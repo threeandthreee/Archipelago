@@ -1,9 +1,28 @@
-# Setup Guide for Shapez: Archipelago
+# Setup Guide for shapez: Archipelago
+
+## Quick Links
+
+- Game Info Page
+    * [English](/games/shapez/info/en)
+    * [Deutsch](/games/shapez/info/de)
+- [Player Options Page](/games/shapez/player-options)
 
 ## Required Software
 
-- Shapezipelago Mod: [Mod](https://github.com/BlastSlimey/shapezipelago/releases)
-  - As the game has a built-in mod loader, you just need to put the "shapezipelago@XXX.js" into the mods folder. If you don't know where that is: Open the game, click on "Mods", and then "Open mods folder". After restarting the game, "shapezipelago" should be listed under "Mods"
+- An installable, up-to-date PC version of shapez ([Steam](https://store.steampowered.com/app/1318690/shapez/)).
+- The shapezipelago mod from the [GitHub page](https://github.com/BlastSlimey/shapezipelago/releases) or the [mod.io page](https://mod.io/g/shapez/m/shapezipelago).
+
+## Optional Software
+
+- Archipelago from the [Archipelago Releases Page](https://github.com/ArchipelagoMW/Archipelago/releases)
+    * (Only for the TextClient)
+    * (If you want, you can use the built-in console as a read-only text client by launching the game 
+  with the "-dev" parameter)
+
+## Installation
+
+As the game has a built-in mod loader, all you need to do is copy the "shapezipelago@X.X.X.js" mod file into the mods
+folder. If you don't know where that is, open the game, click on "MODS", and then "OPEN MODS FOLDER".
 
 ## Configuring your YAML file
 
@@ -12,3 +31,16 @@
 Your YAML file contains a set of configuration options which provide the generator with information about how it should
 generate your game. Each player of a multiworld will provide their own YAML file. This setup allows each player to enjoy
 an experience customized for their taste, and different players in the same multiworld can all have different options.
+
+### Where do I get a YAML file?
+
+You can generate a yaml or download a template by visiting the [shapez Player Options Page](/games/shapez/player-options)
+
+## Joining a MultiWorld Game
+
+1. Open the game.
+2. In the main menu, type the slot name, address, port, and password (optional) into the input box.
+3. Click "Connect".
+   - To disconnect, just press this button again.
+   - The status of your connection is shown right next to the button.
+4. Create a new game or load the already created save file.

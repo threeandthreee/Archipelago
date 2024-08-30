@@ -101,7 +101,7 @@ class Spawn(Choice):
 
     The idea is that non-vanilla spawns will require you to play "shipless" for a while, possibly using Nomai Warp Codes to visit other planets. The ship will still spawn nearby, so you can use the ship log/tracker right away.
     When playing with non-vanilla spawns, we recommend:
-    - Consider enabling randomize_warp_pads for greater variety if you get warp codes early
+    - Consider enabling randomize_warp_platforms for greater variety if you get warp codes early
     - Consider enabling early_key_item in non-solo games, or else your first session may end after only 4-10 checks
     - Install a fast-forward mod such as Alter Time or Cheat And Debug Mod, since you may need to do a lot of waiting for e.g. Ash Twin sand or Giant's Deep islands
     """

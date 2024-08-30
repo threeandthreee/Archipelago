@@ -838,8 +838,10 @@ traversal_requirements: Dict[Union[lname, rname], Dict[Union[lname, rname], AWDa
             AWData(AWType.location),
         rname.bird_capybara_waterfall:  # fish pipe to the sweet egg room
             AWData(AWType.region, [[iname.bubble]]),
+        # wake the frog or just jump up there, can use flute or firecrackers to get the frog jumping
         rname.frog_ruby_egg_ledge:
-            AWData(AWType.region, [[iname.bubble_short], [iname.disc], [iname.top, iname.flute]]),
+            AWData(AWType.region, [[iname.bubble_short], [iname.disc], [iname.top, iname.flute],
+                                   [iname.top, iname.firecrackers]]),
         rname.frog_elevator_and_ostrich_wheel:  # you need these two items to avoid locking checks
             AWData(AWType.region, [[iname.yoyo, iname.bubble]]),
         rname.fast_travel:

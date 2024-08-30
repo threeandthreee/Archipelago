@@ -49,6 +49,31 @@ TRACKER_EVENT_FLAGS = [
 EVENT_FLAG_MAP = {data.constants[flag_name]: flag_name for flag_name in TRACKER_EVENT_FLAGS}
 
 
+TRACKER_FLY_UNLOCK_FLAGS = [
+    "FLAG_WORLD_MAP_PALLET_TOWN",
+    "FLAG_WORLD_MAP_VIRIDIAN_CITY",
+    "FLAG_WORLD_MAP_PEWTER_CITY",
+    "FLAG_WORLD_MAP_ROUTE4_POKEMON_CENTER_1F",
+    "FLAG_WORLD_MAP_CERULEAN_CITY",
+    "FLAG_WORLD_MAP_VERMILION_CITY",
+    "FLAG_WORLD_MAP_ROUTE10_POKEMON_CENTER_1F",
+    "FLAG_WORLD_MAP_LAVENDER_TOWN",
+    "FLAG_WORLD_MAP_CELADON_CITY",
+    "FLAG_WORLD_MAP_FUCHSIA_CITY",
+    "FLAG_WORLD_MAP_SAFFRON_CITY",
+    "FLAG_WORLD_MAP_CINNABAR_ISLAND",
+    "FLAG_WORLD_MAP_INDIGO_PLATEAU_EXTERIOR",
+    "FLAG_WORLD_MAP_ONE_ISLAND",
+    "FLAG_WORLD_MAP_TWO_ISLAND",
+    "FLAG_WORLD_MAP_THREE_ISLAND",
+    "FLAG_WORLD_MAP_FOUR_ISLAND",
+    "FLAG_WORLD_MAP_FIVE_ISLAND",
+    "FLAG_WORLD_MAP_SIX_ISLAND",
+    "FLAG_WORLD_MAP_SEVEN_ISLAND"
+]
+FLY_UNLOCK_FLAG_MAP = {data.constants[flag_name]: flag_name for flag_name in TRACKER_FLY_UNLOCK_FLAGS}
+
+
 MAP_SECTION_EDGES: Dict[str, List[Tuple[int, int]]] = {
     "MAP_ROUTE2": [(23, 39)],
     "MAP_ROUTE3": [(41, 19)],
@@ -92,6 +117,7 @@ class PokemonFRLGClient(BizHawkClient):
     game_version: str
     local_checked_locations: Set[int]
     local_set_events: Dict[str, bool]
+    local_set_fly_unlocks: Dict[str, bool]
     caught_pokemon: int
     current_map: Tuple[int, int]
 
@@ -100,6 +126,7 @@ class PokemonFRLGClient(BizHawkClient):
         self.game_version = None
         self.local_checked_locations = set()
         self.local_set_events = {}
+        self.local_set_fly_unlocks = {}
         self.caught_pokemon = 0
         self.current_map = (0, 0)
 
@@ -218,6 +245,7 @@ class PokemonFRLGClient(BizHawkClient):
 
             game_clear = False
             local_set_events = {flag_name: False for flag_name in TRACKER_EVENT_FLAGS}
+            local_set_fly_unlocks = {flag_name: False for flag_name in TRACKER_FLY_UNLOCK_FLAGS}
             local_checked_locations = set()
             caught_pokemon = 0
 
@@ -236,6 +264,9 @@ class PokemonFRLGClient(BizHawkClient):
 
                         if flag_id in EVENT_FLAG_MAP:
                             local_set_events[EVENT_FLAG_MAP[flag_id]] = True
+
+                        if flag_id in FLY_UNLOCK_FLAG_MAP:
+                            local_set_fly_unlocks[FLY_UNLOCK_FLAG_MAP[flag_id]] = True
 
             # Get caught Pokémon count
             for byte_i, byte in enumerate(pokemon_caught_bytes):
@@ -275,6 +306,22 @@ class PokemonFRLGClient(BizHawkClient):
                     "operations": [{"operation": "or", "value": event_bitfield}],
                 }])
                 self.local_set_events = local_set_events
+
+            # Send tracker fly unlock flags
+            if local_set_fly_unlocks != self.local_set_fly_unlocks and ctx.slot is not None:
+                event_bitfield = 0
+                for i, flag_name in enumerate(TRACKER_FLY_UNLOCK_FLAGS):
+                    if local_set_fly_unlocks[flag_name]:
+                        event_bitfield |= 1 << i
+
+                await ctx.send_msgs([{
+                    "cmd": "Set",
+                    "key": f"pokemon_frlg_fly_unlocks_{ctx.team}_{ctx.slot}",
+                    "default": 0,
+                    "want_reply": False,
+                    "operations": [{"operation": "or", "value": event_bitfield}],
+                }])
+                self.local_set_fly_unlocks = local_set_fly_unlocks
 
             # Send caught Pokémon amount
             if caught_pokemon != self.caught_pokemon and ctx.slot is not None:

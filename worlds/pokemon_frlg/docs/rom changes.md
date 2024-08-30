@@ -20,7 +20,6 @@ predetermined priority
 * You can fly between Kanto and the Sevii Islands
 * Trainers will not approach the player if Blind Trainers is on
 * The text displayed when a Trainer is about to send out a new pokémon has been shortened so that you can still see the name of the pokémon when deciding if you want to swap
-* Any cutscene that would warp the player somewhere no longer does so
 * Added a GO HOME option to the menu that teleports you to Pallet Town
 * The Old Man catching tutorial is skipped
 * Miguel's position in Mt. Moon will change based on which side you enter from
@@ -33,13 +32,13 @@ predetermined priority
 * Only the last guard on Route 23 will check for badges or gyms
 * Professor Oak will give you the Mystic and Aurora Ticket in Pallet Town after beating the game
 * Much of the Sevii Islands has been reworked:
-  * The cutscene after Cinnabar Gym where Bill takes you to the Sevii Islands has been removed. Instead, Bill can be found in the Pokémon Center after beating the Gym and will give you the Tri Pass
+  * The cutscene after Cinnabar Gym where Bill takes you to the Sevii Islands has been removed. Instead, Bill will immediately be waiting in the Pokémon Center to take you to One Island
   * The Tri Pass allows you to sail to the 1-3 Islands and the Rainbow Pass allows you to sail to the 4-7 Islands from Vermilion City
   * You will never be trapped on the Sevii Islands and your PC will never be disabled there
   * Several cutscenes in the One Island Pokémon Center have been reworked or removed
   * You must deliver the Meteorite to Lostelle's dad before you can give Celio the Ruby and before the Team Rocket Grunts at Mt. Ember can be fought
   * The initial cutscene with the biker at the Two Island Game Corner has been removed
-  * The Dunsparce Tunnel at the start of Three Island is open immediately
+  * Three Isle Path is open immediately
 * Evolutions that would be impossible have been changed:
   * Regular trade evolutions now evolve at Level 37
   * Held item trade evolutions now evolve by using the item on the pokémon from the bag

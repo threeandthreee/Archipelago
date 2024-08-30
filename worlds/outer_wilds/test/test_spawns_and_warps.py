@@ -1,5 +1,5 @@
 from . import OuterWildsTestBase
-from ..Options import EarlyKeyItem, Spawn
+from ..options import EarlyKeyItem, Spawn
 
 
 class TestRandomWarpDeterminism(OuterWildsTestBase):

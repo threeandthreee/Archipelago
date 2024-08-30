@@ -63,11 +63,16 @@ class RegionCondition(Condition):
     region_name: str
 
     def satisfied(self, state: CollectionState, player: int, location: int | None, args: LogicDict) -> bool:
-        mode: str = args["mode"]
-        if self.target_mode != None:
-            mode = self.target_mode
+        # target_mode == None means that it matches in all modes.
+        # so if target_mode == None, check if we can reach that region.
+        # else, if the target mode matches, also check if we can reach that region.
+        # otherwise, if the target mode does not match, return true (assume that it's being ANDed with other conditions)
 
-        return mode != self.target_mode or state.can_reach_region(self.region_name, player)
+        mode: str = args["mode"]
+        if self.target_mode is None or mode == self.target_mode:
+            return state.can_reach_region(self.region_name, player)
+
+        return True
 
 @dataclass
 class AnyElementCondition(Condition):

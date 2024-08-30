@@ -1,5 +1,5 @@
 from time import time
-from typing import List, Optional
+from typing import List, Optional, Callable, Any, Awaitable, Dict
 
 from .patch import *
 
@@ -133,6 +133,12 @@ class Patch(Patch):
         """
         return self.mov_cl(sprite_id).call_via_rax(get_sprite)
 
+    def update_player_state(self, player, state, save):
+        """
+        Updates the player's state
+        """
+        return self.mov_rcx(player).mov_rdx(state).mov_r8(save).call_far(update_player_state)
+
 
 # region FunctionOffsets
 # Accurate as of AW file version 1.0.0.18
@@ -152,6 +158,7 @@ get_key_pressed: int = 0x140011C70
 get_gamepad_button_pressed: int = 0x140011EA0
 get_an_item: int = 0x1400C15C0
 warp: int = 0x140074DD0
+update_player_state: int = 0x1400662F0
 # endregion
 
 # region OtherOffsets
@@ -192,7 +199,10 @@ STEP_AND_TIME_DISPLAY_UPDATED_VALUES = {
 # region Other Constants
 HEADER_LENGTH = 0x18
 SAVE_SLOT_LENGTH = 0x27010
-CUSTOM_MEMORY_SIZE = 0x20000
+CUSTOM_MEMORY_SIZE = 0x40000
+CUSTOM_STAMPS = 255
+TITLE_SCREEN_TEXT_TEMPLATE: str = "AP Randomizer {version}"
+TITLE_SCREEN_MAX_TEXT_LENGTH: int = 80
 # endregion
 
 
@@ -209,6 +219,11 @@ class BeanPatcher:
         self.name = name
         return self
 
+    def set_version_string(self, version):
+        self.version_string = version
+        self.set_title_text(TITLE_SCREEN_TEXT_TEMPLATE.replace("{version}", self.version_string))
+        return self
+
     def log_info(self, text):
         if self.logger is not None:
             self.logger.info(text)
@@ -219,10 +234,15 @@ class BeanPatcher:
             self.logger.error(text)
         return self
 
+    def set_bean_death_function(self, function: Callable):
+        self.on_bean_death_function = function
+        return self
+
     def __init__(self, process=None, logger=None):
         self.process = process
         self.attached_to_process = False
         self.name = None
+        self.version_string = ""
 
         self.logger = logger
         self.log_debug_info = True
@@ -233,12 +253,16 @@ class BeanPatcher:
         self.last_game_state = 0
         self.custom_memory_base = None
         self.custom_memory_current_offset: Optional[int] = None
+
         self.main_menu_draw_string_addr: Optional[int] = None
 
         self.revertable_patches: List[Patch] = []
         self.fullbright_patch: Patch
         self.room_palette_override_patch: Optional[Patch] = None
         self.room_palette_override_shader: int = 0x16
+
+        self.bean_has_died_address: int = 0
+        self.on_bean_death_function: Optional[Callable[[Any], Awaitable[Any]]] = None
 
         self.draw_routine_string_size: int = 0
         self.game_draw_routine_string_addr = None
@@ -264,7 +288,23 @@ class BeanPatcher:
 
         self.fullbright_patch: Optional[Patch] = None
 
-    def get_current_save_slot(self):
+        self.revertable_tracker_patches: Dict[str, Patch] = {}
+        self.tracker_original_stamp_count: Optional[int] = None
+        self.tracker_stamps_addr: Optional[int] = None
+        self.tracker_icons_addr: Optional[int] = None
+        self.tracker_text_addr: Optional[int] = None
+        self.tracker_draw_routine_addr: Optional[int] = None
+        self.tracker_color_routine_addr: Optional[int] = None
+        self.tracker_total: int = 0
+        self.tracker_in_logic: int = 0
+        self.tracker_checked: int = 0
+        self.tracker_missing: int = 0
+        self.tracker_candles: int = 0
+        self.tracker_goal: str = ""
+        self.tracker_initialized = False
+
+    @property
+    def current_save_slot(self):
         if not self.attached_to_process:
             self.log_error("Can't get current save slot without being attached to a process.")
             return None
@@ -274,8 +314,9 @@ class BeanPatcher:
 
         return self.process.read_uchar(self.application_state_address + 0x40C)
 
-    def get_current_save_address(self):
-        current_save_slot = self.get_current_save_slot()
+    @property
+    def current_save_address(self):
+        current_save_slot = self.current_save_slot
 
         if current_save_slot is None:
             self.log_error("Failed to get the current save slot.")
@@ -293,6 +334,16 @@ class BeanPatcher:
             return None
 
         return self.application_state_address + 0x93670
+
+    @property
+    def stamps_address(self):
+        if not self.attached_to_process:
+            self.log_error("Can't get stamps address without being attached to a process.")
+            return None
+        if self.tracker_stamps_addr is None or self.tracker_stamps_addr == 0:
+            return None
+
+        return self.tracker_stamps_addr
 
     def attach_to_process(self, process=None) -> bool:
         if process is not None:
@@ -367,6 +418,8 @@ class BeanPatcher:
 
         self.apply_skip_credits_patch()
 
+        self.apply_deathlink_patch()
+
         # mural bytes at slot + 0x26eaf
         # default mural bytes at 0x142094600
         # solved bunny bytes = bytearray.fromhex("37 00 00 00 40 01 05 00 00 00 0C 00 40 00 40 46 05 0C 18 09 08 01 90 31 40 46 05 37 F4 07 48 04 40 0E 40 19 01 0C F0 03 32 09 00 02 00 59 00 18 F4 07 02 48 00 02 00 54 05 44 98 09 02 98 01 08 00 55 14 10 80 00 0E 42 00 58 05 15 52 20 8C 00 32 82 00 55 55 55 50 82 8C 08 82 80 40 55 55 55 55 81 88 32 88 80 50 55 55 55 55 81 88 C0 88 80 54 55 55 55 55 20 20 88 88 20 54 55 55 55 15 20 20 20 8C 23 54 55 55 55 E5 EF 23 2C EF FE 56 55 55 55 E5 FF EF EF BE FD 56 55 55 55 E5 FF FF BB 7B F6 54 55 55 55 01 FC E7 EE EF F9 50 55 55 55 00 F0 99 BB BE EF 43 55 55 15 00 FF E6 EE FB BE 0F 00 00 00 FC BF BB BB")
@@ -375,18 +428,55 @@ class BeanPatcher:
 
         return True
 
+    def apply_tracker_patches(self):
+        if not self.attached_to_process:
+            self.log_error("Cannot apply tracker patches, not attached to Animal Well process!")
+            return False
+
+        if self.log_debug_info:
+            self.log_info("Applying tracker patches...")
+
+        if self.tracker_original_stamp_count is None:
+            self.tracker_original_stamp_count = self.process.read_bytes(self.current_save_address + 0x225, 1)[0]
+        self.apply_redirect_stamps_patch()
+        self.apply_colored_stamps_patch()
+        self.apply_tracker_draw_text_patch()
+        self.tracker_initialized = True
+
+        if self.log_debug_info:
+            self.log_info("Tracker patches applied successfully!")
+
+    def revert_tracker_patches(self):
+        if not self.tracker_initialized or not self.revertable_tracker_patches:
+            return True
+        if not self.attached_to_process:
+            self.log_error("Cannot revert tracker patches, not attached to Animal Well process!")
+            return False
+
+        for name,patch in self.revertable_tracker_patches.items():
+            if patch.patch_applied:
+                patch.revert()
+
+        self.revertable_tracker_patches.clear()
+
+        if self.tracker_original_stamp_count is not None:
+            self.process.write_bytes(self.current_save_address + 0x225, self.tracker_original_stamp_count.to_bytes(1, "little", signed=False), 1)
+            self.tracker_original_stamp_count = None
+
+        if self.log_debug_info:
+            self.log_info("Tracker patches reverted successfully!")
+
     def apply_main_menu_draw_patch(self):
         """
             This patch displays the text "AP Randomizer" on the title screen.
         """
-        title_screen_text = "AP Randomizer".encode("utf-16le") + b"\x00"
         main_menu_draw_injection_address = self.module_base + 0x1f025
         self.main_menu_draw_string_addr = self.custom_memory_current_offset
-        self.custom_memory_current_offset += len(title_screen_text)
+        self.custom_memory_current_offset += TITLE_SCREEN_MAX_TEXT_LENGTH
         main_menu_draw_routine_address = self.custom_memory_current_offset
         main_menu_draw_trampoline = (Patch("main_menu_draw_trampoline", main_menu_draw_injection_address, self.process)
                                      .mov_to_rax(main_menu_draw_routine_address).jmp_rax().nop(3))
-        title_text_x = 190  # below the right side of the ANIMAL WELL logo
+        title_text_x = 151  # below the right side of the ANIMAL WELL logo
         title_text_y = 74
         title_text_color = 0xff44ffff
         title_text_shader = 0x0f  # 07 and 0f are both good options, 07 shows more of the background through it (values over 0x34 will crash)
@@ -407,7 +497,7 @@ class BeanPatcher:
                                 .mov_to_rax(main_menu_draw_injection_address + len(main_menu_draw_trampoline.byte_list))
                                 .jmp_rax())
         self.custom_memory_current_offset += len(main_menu_draw_patch) + 0x10
-        self.process.write_bytes(self.main_menu_draw_string_addr, title_screen_text, len(title_screen_text))
+        self.set_title_text(TITLE_SCREEN_TEXT_TEMPLATE.replace("{version}", self.version_string or ""))
         if self.log_debug_info:
             self.log_info("Applying main menu draw patches...")
         main_menu_draw_patch.apply()
@@ -712,8 +802,13 @@ class BeanPatcher:
         disable_egg65_get_dialog_patch = Patch("disable_egg65_get_dialog", 0x1400c18be, self.process).nop(5)
         disable_bbwand_get_dialog_patch = Patch("disable_bbwand_get_dialog", 0x1400c1d75, self.process).nop(5)
         disable_fannypack_get_dialog_patch = Patch("disable_fannypack_get_dialog", 0x1400c1e81, self.process).nop(5)
+        disable_firecracker_get_dialog_patch = Patch("disable_firecracker_get_dialog", 0x14002cb59, self.process).nop(5)
+        disable_firecracker_selected_equipment_patch = Patch("disable_firecracker_selected_equipment", 0x14002caea, self.process).nop(5)
+        disable_mockdisc_flags_check_patch = Patch("disable_mockdisc_flags_check", 0x1400c1003, self.process).add_bytes(bytearray([0xEB]))
+        disable_sack_spawn_patch = Patch("disable_sack_spawn_patch", 0x140074710, self.process).add_bytes(bytearray([0xc3]))
+
         if self.log_debug_info:
-            self.log_info(f"Applying disable_chest_item_patch patch...\n{disable_chest_item_patch}")
+            self.log_info(f"Applying disable_chest_item_patch patch...")
         if disable_chest_item_patch.apply():
             self.revertable_patches.append(disable_chest_item_patch)
         if self.log_debug_info:
@@ -750,6 +845,14 @@ class BeanPatcher:
             self.revertable_patches.append(disable_bbwand_get_dialog_patch)
         if disable_fannypack_get_dialog_patch.apply():
             self.revertable_patches.append(disable_fannypack_get_dialog_patch)
+        if disable_firecracker_get_dialog_patch.apply():
+            self.revertable_patches.append(disable_firecracker_get_dialog_patch)
+        if disable_firecracker_selected_equipment_patch.apply():
+            self.revertable_patches.append(disable_firecracker_selected_equipment_patch)
+        if disable_mockdisc_flags_check_patch.apply():
+            self.revertable_patches.append(disable_mockdisc_flags_check_patch)
+        if disable_sack_spawn_patch.apply():
+            self.revertable_patches.append(disable_sack_spawn_patch)
 
     def apply_receive_item_patch(self):
         """
@@ -808,6 +911,198 @@ class BeanPatcher:
             self.log_info(f"Disabling credits...\n{skip_credits_patch}")
         if skip_credits_patch.apply():
             self.revertable_patches.append(skip_credits_patch)
+
+    def apply_redirect_stamps_patch(self):
+        """
+        Redirects stamps to a custom array of the in-game tracker.
+        """
+        if not self.tracker_initialized:
+            self.tracker_stamps_addr = self.custom_memory_current_offset
+            self.custom_memory_current_offset += CUSTOM_STAMPS * 6
+        redirect_stamps_address = self.module_base + 0x42AEE
+        redirect_stamps_patch = Patch(
+            "redirect_stamps", redirect_stamps_address, self.process).mov_rdi(self.tracker_stamps_addr+4).nop(3)
+        if self.log_debug_info and not self.tracker_initialized:
+            self.log_info(f"Applying in-game tracker stamps patch...")
+        if "stamps" not in self.revertable_tracker_patches and redirect_stamps_patch.apply():
+            self.revertable_tracker_patches["stamps"] = redirect_stamps_patch
+
+    def apply_colored_stamps_patch(self):
+        """
+        Reads stamp color from our custom array. Logic status is baked into high nibble of
+        stamp type in our custom stamps, used to index the color array to set the color and
+        then removed before handing the stamp type back to the game.
+        """
+        injection_address = self.module_base + 0x42ce8
+        if not self.tracker_initialized:
+            self.tracker_icons_addr = self.custom_memory_current_offset
+            tracker_icons_patch = (
+                Patch("tracker_icons", self.tracker_icons_addr, self.process)
+                .add_bytes(bytearray([
+                    # 4 custom colors for CheckStatus 0-3 respectively
+                    0xCC, 0x00, 0x00, 0xFF, # red, unreachable
+                    0xDD, 0xAA, 0x00, 0xFF, # orange, out_of_logic
+                    0x00, 0xEE, 0x00, 0xFF, # green, in_logic
+                    0x88, 0x88, 0xAA, 0xCC, # gray, checked
+
+                    # 8 custom map icons for stamp ids 0-7 respectively, u16 tile id
+                    0x5B, 0x00,
+                    0x18, 0x00, # replace heart (0x5c) with bunny head
+                    0x3E, 0x00, # replace skull (0x5d) with disc shape
+                    0x25, 0x00, # replace shard (0x5e) with candle
+                    0x5F, 0x00,
+                    0x60, 0x00,
+                    0x9D, 0x02,
+                    0x9E, 0x02
+                ])))
+            self.custom_memory_current_offset += len(tracker_icons_patch)
+
+            self.tracker_color_routine_addr = self.custom_memory_current_offset
+            tracker_color_patch = (
+                Patch("tracker_color_patch", self.tracker_color_routine_addr, self.process)
+                .add_bytes(bytearray([0x41, 0x57, 0x41, 0x56, 0x41, 0x55, 0x48, 0x0F, 0xBE, 0x07, 0x49, 0xBD]))
+                .add_bytes(self.tracker_icons_addr.to_bytes(8, "little"))
+                .add_bytes(bytearray([0x49, 0xC7, 0xC6, 0x0F, 0x00, 0x00, 0x00, 0x49, 0xC7, 0xC7, 0xF0, 0x00, 0x00, 0x00, 0x49, 0x21, 0xC7, 0x4C, 0x21, 0xF0, 0x50, 0x49, 0xC1, 0xEF, 0x02, 0x4D, 0x01, 0xFD, 0x41, 0x8B, 0x4D, 0x00]))
+                .call_via_rax(set_current_color)
+                .add_bytes(bytearray([0x58, 0x41, 0x5D, 0x41, 0x5E, 0x41, 0x5F]))
+                .add_bytes(bytearray([0x49, 0xBE]))
+                .add_bytes((self.tracker_icons_addr+16).to_bytes(8, "little"))
+                .jmp_far(self.module_base + 0x42b20)
+                )
+            self.custom_memory_current_offset += len(tracker_color_patch)
+            tracker_icons_patch.apply()
+            tracker_color_patch.apply()
+
+        if self.log_debug_info and not self.tracker_initialized:
+            self.log_info(f"Applying colored tracker stamp patches...")
+        tracker_trampoline_patch = (Patch("tracker_color_trampoline", injection_address, self.process)
+                                 .mov_to_rax(self.tracker_color_routine_addr).jmp_rax().nop())
+        if "color" not in self.revertable_tracker_patches and tracker_trampoline_patch.apply():
+            self.revertable_tracker_patches["color"] = tracker_trampoline_patch
+
+    def apply_tracker_draw_text_patch(self):
+        """
+            This patch displays various tracker stats on the map screen.
+        """
+        checked_name = "Checked:\x00"
+        in_logic_name = "In logic:\x00"
+        candles_name = "Candles lit:\x00"
+        goal_name = "Goal:\x00"
+
+        checked_text = "?".ljust(7)+"\x00"
+        in_logic_text = "?".ljust(7)+"\x00"
+        candles_text = "?".ljust(5)+"\x00"
+        goal_text = "?"+"\x00"
+
+        tracker_text = f"{checked_name}{checked_text}{in_logic_name}{in_logic_text}{candles_name}{candles_text}{goal_name}{goal_text}".encode("utf-16le")
+
+        offset_checked_name = 0
+        offset_checked_text = offset_checked_name + len(checked_name)*2
+        offset_in_logic_name = offset_checked_text + len(checked_text)*2
+        offset_in_logic_text = offset_in_logic_name + len(in_logic_name)*2
+        offset_candles_name = offset_in_logic_text + len(in_logic_text)*2
+        offset_candles_text = offset_candles_name + len(candles_name)*2
+        offset_goal_name = offset_candles_text + len(candles_text)*2
+        offset_goal_text = offset_goal_name + len(goal_name)*2
+
+        if not self.tracker_initialized:
+            self.tracker_text_addr = self.custom_memory_current_offset
+            self.custom_memory_current_offset += 256
+            self.tracker_draw_routine_addr = self.custom_memory_current_offset
+
+        tracker_draw_injection_address = self.module_base + 0x40d21
+        tracker_draw_trampoline = (Patch("tracker_draw_trampoline", tracker_draw_injection_address, self.process)
+                                     .mov_to_rax(self.tracker_draw_routine_addr).jmp_rax().nop(3))
+
+        if not self.tracker_initialized:
+            tracker_draw_text_patch = (Patch("tracker_draw_text", self.tracker_draw_routine_addr, self.process)
+                                    .push_shader_to_stack(0x29)
+                                    .push_color_to_stack(0xffffffff)
+                                    .draw_small_text(73, 162, self.tracker_text_addr+offset_in_logic_name)
+                                    .draw_small_text(103, 162, self.tracker_text_addr+offset_in_logic_text)
+                                    .draw_small_text(73, 170, self.tracker_text_addr+offset_candles_name)
+                                    .draw_small_text(113, 170, self.tracker_text_addr+offset_candles_text)
+
+                                    .draw_small_text(195, 162, self.tracker_text_addr+offset_checked_name)
+                                    .draw_small_text(223, 162, self.tracker_text_addr+offset_checked_text)
+                                    .draw_small_text(195, 170, self.tracker_text_addr+offset_goal_name)
+                                    .draw_small_text(215, 170, self.tracker_text_addr+offset_goal_text)
+                                    .pop_color_from_stack()
+                                    .pop_shader_from_stack()
+                                    .push_color_to_stack(0x645a6e82)
+                                    .mov_to_rax(tracker_draw_injection_address + len(tracker_draw_trampoline.byte_list))
+                                    .jmp_rax())
+            tracker_draw_text_patch.apply()
+            self.custom_memory_current_offset += len(tracker_draw_text_patch) + 0x10
+
+        self.process.write_bytes(self.tracker_text_addr, tracker_text, len(tracker_text))
+        if self.log_debug_info and not self.tracker_initialized:
+            self.log_info("Applying tracker draw patches...")
+        if "draw" not in self.revertable_tracker_patches and tracker_draw_trampoline.apply():
+            self.revertable_tracker_patches["draw"] = tracker_draw_trampoline
+
+    def update_tracker_text(self) -> None:
+        if self.tracker_text_addr is None:
+            return
+
+        checked_name = "Checked:\x00"
+        in_logic_name = "In logic:\x00"
+        candles_name = "Candles lit:\x00"
+        goal_name = "Goal:\x00"
+
+        checked_text = f"{self.tracker_checked}/{self.tracker_total}".ljust(7)+"\x00"
+        in_logic_text = f"{self.tracker_in_logic}/{self.tracker_missing}".ljust(7)+"\x00"
+        candles_text = f"{self.tracker_candles}/9".ljust(5)+"\x00"
+        goal_text = self.tracker_goal+"\x00"
+
+        tracker_text = f"{checked_name}{checked_text}{in_logic_name}{in_logic_text}{candles_name}{candles_text}{goal_name}{goal_text}".encode("utf-16le")
+
+        self.process.write_bytes(self.tracker_text_addr, tracker_text, len(tracker_text))
+
+    def apply_deathlink_patch(self):
+        """
+        Sends a deathlink message when the bean is killed (by another that isn't deathlink)
+
+        Original code:
+        0x14003BA8A 48 89 F1                                mov     rcx, rsi                  ; player
+        0x14003BA8D B2 05                                   mov     dl, 5                     ; newPlayerState
+        0x14003BA8F 49 89 F8                                mov     r8, rdi                   ; save
+        0x14003BA92 E8 59 A8 02 00                          call    updatePlayerState
+        """
+        bean_died_address = self.module_base + 0x3BA8A
+
+        self.bean_has_died_address = self.custom_memory_current_offset
+
+        if self.log_debug_info:
+            self.log_info(f"bean_has_died_address: {hex(self.bean_has_died_address)}")
+
+        self.custom_memory_current_offset += 1
+
+        bean_died_routine_address = self.custom_memory_current_offset
+
+        bean_died_trampoline = (Patch("bean_died_trampoline", bean_died_address, self.process)
+                           .mov_to_rax(bean_died_routine_address)
+                           .jmp_rax()
+                           )
+
+        bean_died_routine = (Patch("bean_died_routine", bean_died_routine_address, self.process)
+                             .mov_to_al(1)
+                             .mov_rbx(self.bean_has_died_address)
+                             .mov_al_to_address_in_rbx()
+                             .update_player_state(self.player_address, 5, self.current_save_address)
+                             .jmp_far(self.module_base + 0x3BA97)
+                             )
+
+        self.custom_memory_current_offset += len(bean_died_routine)
+
+        if self.log_debug_info:
+            self.log_info(f"Applying deathlink patch...\n{bean_died_routine}")
+
+        if bean_died_routine.apply():
+            self.revertable_patches.append(bean_died_routine)
+
+        if bean_died_trampoline.apply():
+            self.revertable_patches.append(bean_died_trampoline)
 
     def enable_fullbright(self) -> None:
         if self.fullbright_patch is None or self.fullbright_patch.patch_applied:
@@ -893,10 +1188,16 @@ class BeanPatcher:
             self.process.write_uint(self.game_draw_symbol_x_address, self.player_position_history[0][0])
             self.process.write_uint(self.game_draw_symbol_y_address, self.player_position_history[0][1])
 
-    def tick(self):
+    async def tick(self):
         if self.last_message_time != 0:
             if time() - self.last_message_time >= self.message_timeout:
                 self.display_to_client("")
+
+        if self.bean_has_died_address != 0:
+            if self.process.read_bool(self.bean_has_died_address):
+                self.process.write_bool(self.bean_has_died_address, False)
+                if self.on_bean_death_function is not None:
+                    await self.on_bean_death_function()
 
     def display_dialog(self, text: str, title: str = "", action_text: str = ""):
         try:
@@ -926,3 +1227,21 @@ class BeanPatcher:
                     self.last_message_time = 0
         except Exception as e:
             self.log_error(f"Error while attempting to display text to client: {e}")
+
+    def set_player_state(self, state: int):
+        try:
+            if self.attached_to_process and self.application_state_address:
+                self.process.write_uchar(self.player_address + 0x5d, state)
+        except Exception as e:
+            self.log_error(f"Error while attempting to set player state: {e}")
+
+    def set_title_text(self, text: str):
+        try:
+            if not self.attached_to_process or self.main_menu_draw_string_addr is None:
+                return
+
+            new_text_bytes = text[0:TITLE_SCREEN_MAX_TEXT_LENGTH-2].encode("utf-16le") + b"\x00\x00"
+            self.process.write_bytes(self.main_menu_draw_string_addr, new_text_bytes, len(new_text_bytes))
+            self.process.read_string(self.main_menu_draw_string_addr, TITLE_SCREEN_MAX_TEXT_LENGTH, encoding="utf-16le")
+        except Exception as e:
+            self.log_error(f"Error while attempting to update title screen text: {e}")

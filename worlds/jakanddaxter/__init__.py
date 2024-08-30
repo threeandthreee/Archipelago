@@ -32,10 +32,11 @@ icon_paths["egg"] = local_path("worlds", "jakanddaxter", "icons", "egg.png")
 
 class JakAndDaxterSettings(settings.Group):
     class RootDirectory(settings.UserFolderPath):
-        """Path to folder containing the ArchipelaGOAL mod executables (gk.exe and goalc.exe)."""
+        """Path to folder containing the ArchipelaGOAL mod executables (gk.exe and goalc.exe).
+        Ensure this path contains forward slashes (/) only."""
         description = "ArchipelaGOAL Root Directory"
 
-    root_directory: RootDirectory = RootDirectory("D:/Files/Repositories/ArchipelaGOAL/out/build/Release/bin")
+    root_directory: RootDirectory = RootDirectory("%appdata%/OpenGOAL-Mods/archipelagoal")
 
 
 class JakAndDaxterWebWorld(WebWorld):
@@ -88,6 +89,20 @@ class JakAndDaxterWorld(World):
                   if k in range(jak1_id + Caches.orb_cache_offset, jak1_id + Orbs.orb_offset)},
         "Precursor Orbs": {item_table[k]: k for k in item_table
                            if k in range(jak1_id + Orbs.orb_offset, jak1_max)},
+    }
+    location_name_groups = {
+        "Power Cells": {location_table[k]: k for k in location_table
+                        if k in range(jak1_id, jak1_id + Scouts.fly_offset)},
+        "Scout Flies": {location_table[k]: k for k in location_table
+                        if k in range(jak1_id + Scouts.fly_offset, jak1_id + Specials.special_offset)},
+        "Specials": {location_table[k]: k for k in location_table
+                     if k in range(jak1_id + Specials.special_offset, jak1_id + Caches.orb_cache_offset)},
+        "Orb Caches": {location_table[k]: k for k in location_table
+                       if k in range(jak1_id + Caches.orb_cache_offset, jak1_id + Orbs.orb_offset)},
+        "Precursor Orbs": {location_table[k]: k for k in location_table
+                           if k in range(jak1_id + Orbs.orb_offset, jak1_max)},
+        "Trades": {location_table[k]: k for k in location_table
+                   if k in {Cells.to_ap_id(t) for t in {11, 12, 31, 32, 33, 96, 97, 98, 99, 13, 14, 34, 35, 100, 101}}},
     }
 
     # This will also set Locations, Location access rules, Region access rules, etc.
@@ -185,4 +200,6 @@ class JakAndDaxterWorld(World):
                                     "fire_canyon_cell_count",
                                     "mountain_pass_cell_count",
                                     "lava_tube_cell_count",
+                                    "citizen_orb_trade_amount",
+                                    "oracle_orb_trade_amount",
                                     "jak_completion_condition")

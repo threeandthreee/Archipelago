@@ -91,6 +91,10 @@ class AutoscaleParty(Toggle):
     """If enabled, joining party members will be scaled to roughly the level of the sphere they were obtained in."""
     display_name = "Autoscale Party Members"
 
+class PresentSprites(DefaultOnToggle):
+    """If enabled, Presents, Trash cans, and chests will have their appearance modified to be indicative of the item they contain."""
+    display_name = "Match Present Sprites"
+
 class ShuffleDrops(Toggle):
     """If enabled, enemies will drop random filler items. This does not put checks on enemy drops.
        Drop rates are unchanged."""
@@ -150,6 +154,44 @@ class RandomFlavors(DefaultOnToggle):
     """Randomizes the non-plain window color options."""
     display_name = "Random Flavors"
 
+class DeathLinkMode(Choice):
+    """Controls how receiving a Deathlink functions in battle.
+       Instant: The player will be instantly defeated.
+       Mortal: All characters will receieve mortal damage. The player will not be able to heal until the battle is finished.
+       Mortal Mercy: All characters will receieve mortal damage, but the player will be able to heal it before they die.
+       Regardless of this setting, receiving a deathlink outside of battle will always instantly defeat the player."""
+    display_name = "Death Link Mode"
+    option_instant = 0
+    option_mortal = 1
+    option_mortal_mercy = 2
+    default = 1
+
+#class RandomBattleBG(Choice):
+ #   """Generates random battle backgrounds.
+  #     Normal: Battle backgrounds are not randomized.
+   #    Random Safe: Generates battle backgrounds from valid backgrounds or combining valid backgrounds.
+   #    Random Chaos: Generates random battle backgrounds. Results may look glitchy, or weird. WARNING: MAY CAUSE FLASHING OR MOVING LIGHTS, USE WITH CAUTION"""
+   # display_name = "Random Battle backgrounds"
+    #option_normal = 0
+    #option_random_safe = 1
+    #option_random_chaos = 2
+    #default = 0
+    #Broken. may fix later.
+
+class RandomBattleBG(Toggle):
+    """Generates random battle backgrounds."""
+    display_name = "Randomize Battle Backgrounds"
+
+class RemoteItems(Toggle):
+    """If enabled, you will receive your own items from the server upon collecting them, rather than locally.
+       This allows co-op within the same game, and protects against loss of save data.
+       However, you will not be able to play offline if this is enabled."""
+    display_name = "Remote Items"
+
+class SoundStoneShuffle(Toggle):
+    """Randomizes the Sound Stone. It will need to be found before Sanctuary guardians can be challenged."""
+    display_name = "Sound Stone Shuffle"
+
 
 @dataclass
 class EBOptions(PerGameCommonOptions):
@@ -162,11 +204,15 @@ class EBOptions(PerGameCommonOptions):
     monkey_caves_mode: MonkeyCavesMode
     shuffle_teleports: PSIShuffle# Better name?
     character_shuffle: CharacterShuffle
+    #shuffle_sound_stone: SoundStoneShuffle
     experience_modifier: ExperienceModifier
     starting_money: StartingMoney
     easy_deaths: EasyDeaths
     auto_scale_party_members: AutoscaleParty
+    remote_items: RemoteItems
     random_flavors: RandomFlavors
+    random_battle_backgrounds: RandomBattleBG
+    presents_match_contents: PresentSprites
     prefixed_items: PreFixItems
     randomize_franklinbadge_protection: RandomFranklinBadge
     shuffle_enemy_drops: ShuffleDrops
@@ -174,4 +220,5 @@ class EBOptions(PerGameCommonOptions):
     uncommon_filler_weight: UncommonWeight
     rare_filler_weight: RareWeight
     start_inventory_from_pool: StartInventoryPool
-    #death_link: DeathLink
+    death_link: DeathLink
+    death_link_mode: DeathLinkMode

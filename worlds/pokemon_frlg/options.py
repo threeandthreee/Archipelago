@@ -16,6 +16,16 @@ class GameVersion(Choice):
     default = "random"
 
 
+class KantoOnly(Toggle):
+    """
+    Excludes all the Sevii Island locations. Navel Rock and Birth Island are still included.
+    The Rock Smash and Waterfall HMs will still be in the item pool and their vanilla locations will have a random
+    filler item.
+    """
+    display_name = "Kanto Only"
+    default = 0
+
+
 class ShuffleBadges(Toggle):
     """
     Shuffle Gym Badges into the general item pool. If turned off, Badges will be shuffled among themselves.
@@ -60,6 +70,15 @@ class Trainersanity(Toggle):
     Trainers are no longer missable. Each trainer will add a random filler item into the pool.
     """
     display_name = "Trainersanity"
+    default = 0
+
+
+class ShuffleFlyDestinationUnlocks(Toggle):
+    """
+    Shuffles the ability to fly to Pokémon Centers into the pool. Entering the map that normally would unlock the
+    fly destination gives a random item.
+    """
+    display_name = "Shuffle Fly Destination Unlocks"
     default = 0
 
 
@@ -361,6 +380,7 @@ class WildPokemonGroups(Choice):
     - Dungeons: All Pokémon of the same species in a dungeon are randomized together
     - Species: All Pokémon of the same species are randomized together
     """
+    display_name = "Wild Pokemon Groups"
     default = 0
     option_none = 0
     option_dungeons = 1
@@ -624,6 +644,16 @@ class ExpModifier(Range):
     default = 100
 
 
+class StartingMoney(Range):
+    """
+    Sets the amount of moeny that you start with.
+    """
+    display_name = "Starting Money"
+    range_start = 0
+    range_end = 999999
+    default = 3000
+
+
 class BlindTrainers(Toggle):
     """
     Trainers will not start a battle with you unless you talk to them.
@@ -648,6 +678,18 @@ class FreeFlyLocation(Choice):
     Enables flying to one random location (excluding cities reachable with no items).
     """
     display_name = "Free Fly Location"
+    default = 0
+    option_off = 0
+    option_exclude_indigo = 1
+    option_any = 2
+
+
+class TownMapFlyLocation(Choice):
+    """
+    Enables flying to one random location once the town map has been obtained
+    (excluding cities reachable with no items).
+    """
+    display_name = "Town Map Fly Location"
     default = 0
     option_off = 0
     option_exclude_indigo = 1
@@ -681,10 +723,13 @@ class ReceiveItemMessages(Choice):
 class PokemonFRLGOptions(PerGameCommonOptions):
     game_version: GameVersion
 
+    kanto_only: KantoOnly
+
     shuffle_badges: ShuffleBadges
     shuffle_hidden: ShuffleHiddenItems
     extra_key_items: ExtraKeyItems
     trainersanity: Trainersanity
+    shuffle_fly_destination_unlocks: ShuffleFlyDestinationUnlocks
 
     itemfinder_required: ItemfinderRequired
     flash_required: FlashRequired
@@ -726,17 +771,19 @@ class PokemonFRLGOptions(PerGameCommonOptions):
     ability_blacklist: AbilityBlacklist
     moves: RandomizeMoves
     move_blacklist: MoveBlacklist
-    hm_compatability: HmCompatibility
-    tm_tutor_compatability: TmTutorCompatibility
+    hm_compatibility: HmCompatibility
+    tm_tutor_compatibility: TmTutorCompatibility
     tm_tutor_moves: TmTutorMoves
 
     reusable_tm_tutors: ReusableTmsTutors
     min_catch_rate: MinCatchRate
     guaranteed_catch: GuaranteedCatch
     exp_modifier: ExpModifier
+    starting_money: StartingMoney
     blind_trainers: BlindTrainers
     better_shops: BetterShops
     free_fly_location: FreeFlyLocation
+    town_map_fly_location: TownMapFlyLocation
 
     turbo_a: TurboA
     receive_item_messages: ReceiveItemMessages

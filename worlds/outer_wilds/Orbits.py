@@ -49,7 +49,7 @@ def generate_random_orbits(random: Random) -> (List[str], Dict[str, int], Dict[s
         orbit_angles[planet] = random.choice(possible_angles)
 
     # No subtle constraints for the satellite orbits
-    for satellite in ["SS", "AR", "HL", "OPC"]:
+    for satellite in ("SS", "AR", "HL", "OPC"):
         orbit_angles[satellite] = random.choice(all_possible_angles)
 
     # Rotations could be generated separately from order and angles, but since we have to
@@ -63,7 +63,7 @@ def generate_random_orbits(random: Random) -> (List[str], Dict[str, int], Dict[s
     # GD and DB do not rotate, and I've heard GD's islands would stop working if it did rotate.
     # The satellites' axes can also be changed, but it's not noticeable enough to bother.
     rotation_axes: Dict[str, str] = {}
-    for planet in ["ET", "AT", "TH", "BH"]:
+    for planet in ("ET", "AT", "TH", "BH"):
         rotation_axes[planet] = random.choice(possible_axis_directions)
 
     return planet_order, orbit_angles, rotation_axes

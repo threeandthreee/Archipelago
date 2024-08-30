@@ -238,7 +238,7 @@
   },
   "ITEM_TOWN_MAP": {
     "name": "Town Map",
-    "classification": "FILLER",
+    "classification": "PROGRESSION",
     "tags": ["Unique"]
   },
   "ITEM_TRI_PASS": {
@@ -249,6 +249,107 @@
   "ITEM_VS_SEEKER": {
     "name": "Vs. Seeker",
     "classification": "FILLER",
+    "tags": ["Unique"]
+  },
+
+  "ITEM_FLY_PALLET": {
+    "name": "Fly Pallet Town",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
+  "ITEM_FLY_VIRIDIAN": {
+    "name": "Fly Viridian City",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
+  "ITEM_FLY_PEWTER": {
+    "name": "Fly Pewter City",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
+  "ITEM_FLY_CERULEAN": {
+    "name": "Fly Cerulean City",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
+  "ITEM_FLY_LAVENDER": {
+    "name": "Fly Lavender Town",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
+  "ITEM_FLY_VERMILION": {
+    "name": "Fly Vermilion City",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
+  "ITEM_FLY_CELADON": {
+    "name": "Fly Celadon City",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
+  "ITEM_FLY_FUCHSIA": {
+    "name": "Fly Fuchsia City",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
+  "ITEM_FLY_CINNABAR": {
+    "name": "Fly Cinnabar Island",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
+  "ITEM_FLY_INDIGO": {
+    "name": "Fly Indigo Plateau",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
+  "ITEM_FLY_SAFFRON": {
+    "name": "Fly Saffron City",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
+  "ITEM_FLY_ONE_ISLAND": {
+    "name": "Fly One Island",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
+  "ITEM_FLY_TWO_ISLAND": {
+    "name": "Fly Two Island",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
+  "ITEM_FLY_THREE_ISLAND": {
+    "name": "Fly Three Island",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
+  "ITEM_FLY_FOUR_ISLAND": {
+    "name": "Fly Four Island",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
+  "ITEM_FLY_FIVE_ISLAND": {
+    "name": "Fly Five Island",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
+  "ITEM_FLY_SEVEN_ISLAND": {
+    "name": "Fly Seven Island",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
+  "ITEM_FLY_SIX_ISLAND": {
+    "name": "Fly Six Island",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
+  "ITEM_FLY_ROUTE4": {
+    "name": "Fly Route 4",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
+  "ITEM_FLY_ROUTE10": {
+    "name": "Fly Route 10",
+    "classification": "PROGRESSION",
     "tags": ["Unique"]
   },
 

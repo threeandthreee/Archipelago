@@ -4,16 +4,18 @@ import Utils
 import typing
 import bsdiff4
 import struct
-from worlds.Files import APProcedurePatch, APTokenMixin, APTokenTypes
+from worlds.Files import APProcedurePatch, APTokenMixin, APTokenTypes, APPatchExtension
 from .local_data import (item_id_table, location_dialogue, present_locations, psi_item_table, npc_locations, psi_locations, 
                          special_name_table, character_item_table, character_locations, locker_locations, starting_psi_table, item_space_checks,
-                         special_name_overrides, protection_checks, badge_names, protection_text)
+                         special_name_overrides, protection_checks, badge_names, protection_text, local_present_types, nonlocal_present_types,
+                         present_text_pointers, ap_text_pntrs, party_id_nums)
+from .battle_bg_data import battle_bg_bpp
 from .text_data import barf_text, eb_text_table, text_encoder
 from .flavor_data import flavor_data
 from .enemy_data import combat_regions, scale_enemies
 from BaseClasses import ItemClassification, CollectionState
 from settings import get_settings
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 from logging import warning
 #from .local_data import local_locations
 
@@ -25,40 +27,26 @@ valid_hashes = ["a864b2e5c141d2dec1c4cbed75a42a85", #Cartridge
 
 class LocalRom(object):
 
-    def __init__(self, file: str) -> None:
-        self.name = None
-        self.hash = hash
-        self.orig_buffer = None
+    def __init__(self, file: bytes, name: Optional[str] = None) -> None:
+        self.file = bytearray(file)
+        self.name = name
 
-        with open(file, "rb") as stream:
-            self.buffer = Utils.read_snes_rom(stream)
+    def read_byte(self, offset: int) -> int:
+        return self.file[offset]
 
-    def read_bit(self, address: int, bit_number: int) -> bool:
-        bitflag = 1 << bit_number
-        return (self.buffer[address] & bitflag) != 0
+    def read_bytes(self, offset: int, length: int) -> bytes:
+        return self.file[offset:offset + length]
 
-    def read_byte(self, address: int) -> int:
-        return self.buffer[address]
+    def write_byte(self, offset: int, value: int) -> None:
+        self.file[offset] = value
 
-    def read_bytes(self, startaddress: int, length: int) -> bytes:
-        return self.buffer[startaddress:startaddress + length]
+    def write_bytes(self, offset: int, values) -> None:
+        self.file[offset:offset + len(values)] = values
 
-    def write_byte(self, address: int, value: int) -> None:
-        self.buffer[address] = value
+    def get_bytes(self) -> bytes:
+        return bytes(self.file)
 
-    def write_bytes(self, startaddress: int, values: bytearray) -> None:
-        self.buffer[startaddress:startaddress + len(values)] = values
 
-    def write_to_file(self, file: str) -> None:
-        with open(file, "wb") as outfile:
-            outfile.write(self.buffer)
-
-    def read_from_file(self, file: str) -> None:
-        with open(file, "rb") as stream:
-            self.buffer = bytearray(stream.read())
-
-    def apply_patch(self, patch: bytes):
-        self.file = bytearray(bsdiff4.patch(bytes(self.file), patch))
 
 
 def patch_rom(world, rom, player: int, multiworld):
@@ -118,20 +106,32 @@ def patch_rom(world, rom, player: int, multiworld):
     elif world.options.magicant_mode == 3:
         rom.write_bytes(0x2EA26A, bytearray([0x08, 0x0F, 0x9C, 0xEE]))# Give only stat boost if set to boost
 
-    rom.write_bytes(0x04FD70, bytearray([world.options.sanctuaries_required.value]))
+    rom.write_bytes(0x04FD74, bytearray([world.options.death_link.value]))
+    rom.write_bytes(0x04FD75, bytearray([world.options.death_link_mode.value]))
+    rom.write_bytes(0x04FD76, bytearray([world.options.remote_items.value]))
+
+    if world.options.death_link_mode != 1:
+        rom.write_bytes(0x2FFDFE, bytearray([0x80]))#Mercy healing
+        rom.write_bytes(0x2FFE30, bytearray([0x80]))#Mercy text
+        rom.write_bytes(0x2FFE59, bytearray([0x80]))#Mercy revive
+        #IF YOU ADD ASM, CHANGE THESE OR THE GAME WILL CRASH
+
 
     if world.options.monkey_caves_mode == 2:
         rom.write_bytes(0x062B87, bytearray([0x0A, 0x28, 0xCA, 0xEE]))
     elif world.options.monkey_caves_mode == 3:
         rom.write_bytes(0x0F1388, bytearray([0x03, 0xCA, 0xEE]))
 
-    #Todo: sanc alt goal, change sanc script
+    rom.write_bytes(0x04FD70, bytearray([world.options.sanctuaries_required.value]))
 
     for location in world.multiworld.get_locations(player):
         if location.address:
             receiver_name = world.multiworld.get_player_name(location.item.player)
             name = location.name
-            item = location.item.name
+            if world.options.remote_items:
+                item = "Remote Item"
+            else:
+                item = location.item.name
             item_name_loc = (((location.address - 0xEB0000) * 128) + 0x3F0000)
             item_text = bytearray(0)
             player_text = bytearray(0)
@@ -160,7 +160,7 @@ def patch_rom(world, rom, player: int, multiworld):
 
             if name in location_dialogue:
                 for i in range(len(location_dialogue[name])):
-                    if location.item.player != location.player:
+                    if location.item.player != location.player or item == "Remote Item":
                         rom.write_bytes(location_dialogue[name][i] - 1, bytearray([0x17, location.address - 0xEB0000]))
                     elif item in item_id_table:
                         rom.write_bytes(location_dialogue[name][i], bytearray([item_id]))
@@ -171,7 +171,7 @@ def patch_rom(world, rom, player: int, multiworld):
                 world.handled_locations.append(name)
                 if item == "Nothing": #I can change this to "In nothing_table" later todo: make it so nonlocal items do not follow this table
                     rom.write_bytes(present_locations[name], bytearray([0x00, 0x00, 0x01]))
-                elif location.item.player != location.player:
+                elif location.item.player != location.player or item == "Remote Item":
                     rom.write_bytes(present_locations[name], bytearray([item_id, 0x00, 0x00, (location.address - 0xEB0000)]))
                 elif item in item_id_table:
                     rom.write_bytes(present_locations[name], bytearray([item_id, 0x00]))
@@ -183,7 +183,7 @@ def patch_rom(world, rom, player: int, multiworld):
             if name in npc_locations:
                 world.handled_locations.append(name)
                 for i in range(len(npc_locations[name])):
-                    if item in item_id_table or location.item.player != location.player:
+                    if item in item_id_table or location.item.player != location.player or item == "Remote Item":
                         rom.write_bytes(npc_locations[name][i], bytearray([item_id]))
                     elif item in psi_item_table or item in character_item_table:
                         rom.write_bytes(npc_locations[name][i] - 3, bytearray([0x0E, 0x00, 0x0E, special_name_table[item][4]]))
@@ -191,7 +191,7 @@ def patch_rom(world, rom, player: int, multiworld):
 
             if name in psi_locations:
                 world.handled_locations.append(name)
-                if item in special_name_table and location.item.player == location.player:
+                if item in special_name_table and location.item.player == location.player and item != "Remote Item":
                     rom.write_bytes(psi_locations[name][0], bytearray(special_name_table[item][1:4]))
                     rom.write_bytes(psi_locations[name][0] + 4, bytearray([0x00, 0x00, 0x00, 0x00, 0x00, 0x00]))
                 else:
@@ -200,7 +200,7 @@ def patch_rom(world, rom, player: int, multiworld):
 
             if name in character_locations:
                 world.handled_locations.append(name)
-                if item in character_item_table and location.item.player == location.player:
+                if item in character_item_table and location.item.player == location.player and item != "Remote Item":
                     rom.write_bytes(character_locations[name][0], bytearray(special_name_table[item][1:4]))
                     if name == "Snow Wood - Bedroom": #Use lying down sprites for the bedroom check
                         rom.write_bytes(character_locations[name][1], bytearray(character_item_table[item][2:4]))
@@ -229,7 +229,7 @@ def patch_rom(world, rom, player: int, multiworld):
             
             if name in locker_locations:
                 world.handled_locations.append(name)
-                if item in item_id_table or location.item.player != location.player:
+                if item in item_id_table or location.item.player != location.player or item == "Remote Item":
                     rom.write_bytes(locker_locations[name][0], bytearray([0xFF]))
                     rom.write_bytes(locker_locations[name][1], bytearray([item_id]))
                 elif item in psi_item_table:
@@ -241,7 +241,7 @@ def patch_rom(world, rom, player: int, multiworld):
 
             if name == "Poo Starting Item":
                 world.handled_locations.append(name)
-                if item in item_id_table and location.item.player == location.player:
+                if item in item_id_table and location.item.player == location.player and item != "Remote Item":
                     rom.write_bytes(0x15F63C, bytearray([item_id]))
                 else:
                     rom.write_bytes(0x15F63C, bytearray([0x00])) #Don't give anything if the item doesn't have a tangible ID
@@ -267,6 +267,29 @@ def patch_rom(world, rom, player: int, multiworld):
                 else:
                     rom.write_bytes(special_name_overrides[name], bytearray([0x01, 0x01, 0x01]))
 
+            if name in present_locations and "Lost Underworld" not in name and world.options.presents_match_contents:
+                if location.item.classification & ItemClassification.trap:
+                    world.present_type = "trap"
+                elif location.item.classification & ItemClassification.progression:
+                    world.present_type = "progression"
+                elif location.item.classification & ItemClassification.useful:
+                    world.present_type = "useful"
+                else:
+                    world.present_type = "filler"
+                if location.item.player == world.player:
+                    rom.write_bytes(present_locations[name] - 12, bytearray(local_present_types[world.present_type]))
+                    if name != "Threed - Boogey Tent Trashcan":
+                        rom.write_bytes(present_locations[name] - 4, bytearray(present_text_pointers[world.present_type]))
+                else:
+                    rom.write_bytes(present_locations[name] - 12, bytearray(nonlocal_present_types[world.present_type]))
+                    if name != "Threed - Boogey Tent Trashcan":
+                        if world.present_type == "progression":
+                            rom.write_bytes(present_locations[name] - 4, bytearray(world.random.choice(ap_text_pntrs)))
+                        elif world.present_type == "trap":
+                            rom.write_bytes(present_locations[name] - 4, bytearray([0x8D, 0xce, 0xee]))
+                        else:
+                            rom.write_bytes(present_locations[name] - 4, bytearray([0xc1, 0xcd, 0xee]))
+
     if world.options.skip_prayer_sequences:
         rom.write_bytes(0x07BC96, bytearray([0x02]))
         rom.write_bytes(0x07BA2C, bytearray([0x02]))
@@ -274,7 +297,7 @@ def patch_rom(world, rom, player: int, multiworld):
         rom.write_bytes(0x07BB38, bytearray([0x02]))
         rom.write_bytes(0x07BBF3, bytearray([0x02])) 
         rom.write_bytes(0x07BC56, bytearray([0x02])) 
-        rom.write_bytes(0x07B9A1, bytearray([0x02])) 
+        rom.write_bytes(0x07B9A1, bytearray([0x1f, 0xeb, 0xff, 0x02, 0x1f, 0x1f, 0xca, 0x01, 0x06, 0x1f, 0x1f, 0x72, 0x01, 0x06, 0x02])) #Clean up overworld stuff
 
     if world.options.easy_deaths:
         rom.write_bytes(0x2EBFF9, bytearray([0x0A]))
@@ -322,6 +345,8 @@ def patch_rom(world, rom, player: int, multiworld):
     starting_psi_types = []
     starting_character_count = []
     for item in world.multiworld.precollected_items[player]:
+        if world.options.remote_items:
+            continue
         if item.name in item_id_table:
             rom.write_bytes(0x17FC70 + starting_item_address, bytearray([item_id_table[item.name]]))
             starting_item_address += 1
@@ -338,9 +363,31 @@ def patch_rom(world, rom, player: int, multiworld):
                     starting_psi += 1
         elif item.name in character_item_table:
             if item.name not in starting_character_count:
-                rom.write_bytes(0x17FC8D + starting_char, bytearray([character_item_table[item.name][1]]))
+                rom.write_bytes(0x17FC8D + starting_char, bytearray([party_id_nums[item.name]]))
                 starting_character_count.append(item.name)
                 starting_char += 1
+
+    if world.options.random_battle_backgrounds:
+        bpp2_bgs = [bg_id for bg_id, bpp in battle_bg_bpp.items() if bpp == 2]
+        bpp4_bgs = [bg_id for bg_id, bpp in battle_bg_bpp.items() if bpp == 4]
+        for i in range(483):
+            world.flipped_bg = world.random.randint(0,100)
+            if i == 480:
+                drawn_background = struct.pack("H",world.random.choice(bpp4_bgs))
+            else:
+                drawn_background = struct.pack("H",world.random.randint(0x01, 0x0146))
+
+            if battle_bg_bpp[struct.unpack("H", drawn_background)[0]] == 4:
+                drawn_background_2 = struct.pack("H",0x0000)
+            else:
+                drawn_background_2 = struct.pack("H",world.random.choice(bpp2_bgs))
+            if world.flipped_bg > 33:
+                rom.write_bytes(0x0BD89A + (i * 4), drawn_background)
+                rom.write_bytes(0x0BD89C + (i * 4), drawn_background_2)
+            else:
+                rom.write_bytes(0x0BD89A + (i * 4), drawn_background_2)
+                rom.write_bytes(0x0BD89C + (i * 4), drawn_background)
+
 
     world.Paula_placed = False
     world.Jeff_placed = False
@@ -350,6 +397,8 @@ def patch_rom(world, rom, player: int, multiworld):
             if location.item.name in ["Paula", "Jeff", "Poo"] and not getattr(world, f"{location.item.name}_placed"):
                 setattr(world, f"{location.item.name}_region", location.parent_region.name)
                 setattr(world, f"{location.item.name}_placed", True)
+            #if location.item.name == "Paula" and location.item.player == world.player:
+                #print(location.name)
 
     scale_enemies(world, rom)
     world.badge_name = badge_names[world.franklin_protection]
@@ -365,6 +414,7 @@ def patch_rom(world, rom, player: int, multiworld):
                 rom.write_bytes(address, [0xF0])
             else:
                 rom.write_bytes(address, [0x80])
+                #THIS WILL CRASH IF ADDRESS IS WRONG.
     rom.write_bytes(0x2EC909, bytearray(protection_text[world.franklin_protection][0:3])) #help text
     rom.write_bytes(0x2EC957, bytearray(protection_text[world.franklin_protection][3:6]))# battle text
     from Main import __version__
@@ -383,7 +433,8 @@ class EBProcPatch(APProcedurePatch, APTokenMixin):
     name: bytearray
     procedure = [
         ("apply_bsdiff4", ["earthbound_basepatch.bsdiff4"]),
-        ("apply_tokens", ["token_patch.bin"])
+        ("apply_tokens", ["token_patch.bin"]),
+        ("repoint_vanilla_tables", [])
     ]
 
     @classmethod
@@ -395,6 +446,39 @@ class EBProcPatch(APProcedurePatch, APTokenMixin):
 
     def write_bytes(self, offset, value: typing.Iterable[int]):
         self.write_token(APTokenTypes.WRITE, offset, bytes(value))
+
+class EBPatchExtensions(APPatchExtension):
+    game = "EarthBound"
+
+    @staticmethod
+    def repoint_vanilla_tables(caller: APProcedurePatch, rom: LocalRom) -> bytes:
+        rom = LocalRom(rom)
+        for action_number in range(0x013F):
+            current_action = rom.read_bytes(0x157B68 + (12 * action_number), 12)
+            rom.write_bytes(0x3FAFB0 + (12 * action_number), current_action)
+        
+        for psi_number in range(0x35):
+            current_action = rom.read_bytes(0x158A50 + (15 * psi_number), 15)
+            rom.write_bytes(0x350000 + (15 * psi_number), current_action)
+
+        for psi_number in range(0x32):
+            psi_anim = rom.read_bytes(0x2F8583 + (0x04 * psi_number), 4)
+            rom.write_bytes(0x3B0003 + (4 * psi_number), psi_anim)
+            rom.write_bytes(0x3B0003, bytearray([0x4C]))
+            rom.write_bytes(0x3B0002, bytearray([0x45]))
+
+        main_font_data = rom.read_bytes(0x210C7A, 96)
+        main_font_gfx = rom.read_bytes(0x210CDA, 0x0C00)
+        saturn_font_data = rom.read_bytes(0x201359, 96)
+        saturn_font_gfx = rom.read_bytes(0x2013B9, 0x0C00)
+
+        rom.write_bytes(0x3A0000, main_font_data)
+        rom.write_bytes(0x3C0000, main_font_gfx)
+
+        rom.write_bytes(0x3A0100, saturn_font_data)
+        rom.write_bytes(0x3C0D00, saturn_font_gfx)
+        return rom.get_bytes()
+
 
 
 def get_base_rom_bytes(file_name: str = "") -> bytes:

@@ -1,7 +1,14 @@
+import os
+import sys
 from typing import List
 
 from test.bases import WorldTestBase, CollectionState
-from ..Options import Goal
+from ..options import Goal
+
+path = os.path.dirname(__file__)
+path = os.path.join(path, 'shared_static_logic')
+if path not in sys.path:
+    sys.path.append(path)
 
 
 class OuterWildsTestBase(WorldTestBase):

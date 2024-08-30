@@ -25,7 +25,14 @@ ITEM_GROUPS = {
         "HM05 Flash",
         "HM06 Rock Smash",
         "HM07 Waterfall"
-    }
+    },
+    "HM01": {"HM01 Cut"},
+    "HM02": {"HM02 Fly"},
+    "HM03": {"HM03 Surf"},
+    "HM04": {"HM04 Strength"},
+    "HM05": {"HM05 Flash"},
+    "HM06": {"HM06 Rock Smash"},
+    "HM07": {"HM07 Waterfall"}
 }
 
 
@@ -68,7 +75,9 @@ def get_item_classification(item_id: int) -> ItemClassification:
     return data.items[reverse_offset_item_value(item_id)].classification
 
 
-def get_filler_item(world: "PokemonFRLGWorld") -> int:
-    filler_items = [item for item in data.items.values()
-                    if item.classification == ItemClassification.filler and "Unique" not in item.tags]
-    return world.random.choice(filler_items).name
+def get_random_item(world: "PokemonFRLGWorld", item_classification: ItemClassification = None) -> str:
+    if item_classification is None:
+        item_classification = ItemClassification.useful if world.random.random() < 0.20 else ItemClassification.filler
+    items = [item for item in data.items.values()
+             if item.classification == item_classification and "Unique" not in item.tags]
+    return world.random.choice(items).name

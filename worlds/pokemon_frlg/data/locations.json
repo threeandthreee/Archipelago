@@ -1,34 +1,34 @@
 {
   "BADGE_1": {
-    "name": "Pewter Gym - Leader Brock Prize",
+    "name": "Pewter Gym - Prize",
     "tags": ["Badge"]
   },
   "BADGE_2": {
-    "name": "Cerulean Gym - Leader Misty Prize",
+    "name": "Cerulean Gym - Prize",
     "tags": ["Badge"]
   },
   "BADGE_3": {
-    "name": "Vermilion Gym - Leader Lt. Surge Prize",
+    "name": "Vermilion Gym - Prize",
     "tags": ["Badge"]
   },
   "BADGE_4": {
-    "name": "Celadon Gym - Leader Erika Prize",
+    "name": "Celadon Gym - Prize",
     "tags": ["Badge"]
   },
   "BADGE_5": {
-    "name": "Fuchsia Gym - Leader Koga Prize",
+    "name": "Fuchsia Gym - Prize",
     "tags": ["Badge"]
   },
   "BADGE_6": {
-    "name": "Saffron Gym - Leader Sabrina Prize",
+    "name": "Saffron Gym - Prize",
     "tags": ["Badge"]
   },
   "BADGE_7": {
-    "name": "Cinnabar Gym - Leader Blaine Prize",
+    "name": "Cinnabar Gym - Prize",
     "tags": ["Badge"]
   },
   "BADGE_8": {
-    "name": "Viridian Gym - Leader Giovanni Prize",
+    "name": "Viridian Gym - Prize",
     "tags": ["Badge"]
   },
 
@@ -45,11 +45,11 @@
     "tags": ["HM"]
   },
   "NPC_GIFT_GOT_HM04": {
-    "name": "Fuchsia Warden's House - Safari Zone Warden",
+    "name": "Safari Zone Warden's House - Safari Zone Warden",
     "tags": ["HM"]
   },
   "NPC_GIFT_GOT_HM05": {
-    "name": "Route 2 East Building - Professor Oak's Aide",
+    "name": "Route 2 Gate - Oak's Aide",
     "tags": ["HM"]
   },
   "NPC_GIFT_GOT_HM06": {
@@ -62,11 +62,11 @@
   },
 
   "NPC_GIFT_GOT_BICYCLE": {
-    "name": "Cerulean Bike Shop - Owner",
+    "name": "Bike Shop - Bicycle Purchase",
     "tags": ["KeyItem"]
   },
   "NPC_GIFT_GOT_BIKE_VOUCHER": {
-    "name": "Vermilion Pokemon Fan Club - Chairman",
+    "name": "Pokemon Fan Club - Chairman",
     "tags": ["KeyItem"]
   },
   "ITEM_SILPH_CO_5F_CARD_KEY": {
@@ -98,7 +98,7 @@
     "tags": ["KeyItem"]
   },
   "NPC_GIFT_GOT_ITEMFINDER": {
-    "name": "Route 11 East Entrance 2F - Professor Oak's Aide",
+    "name": "Route 11 Gate 2F - Oak's Aide",
     "tags": ["KeyItem"]
   },
   "NPC_GIFT_CAN_USE_ROCKET_HIDEOUT_LIFT": {
@@ -122,15 +122,15 @@
     "tags": ["KeyItem"]
   },
   "NPC_GIFT_GOT_POKE_FLUTE": {
-    "name": "Lavender Volunteer Pokemon House - Mr. Fuji",
+    "name": "Volunteer Pokemon House - Mr. Fuji",
     "tags": ["KeyItem"]
   },
   "NPC_GIFT_GOT_POWDER_JAR": {
-    "name": "Cerulean Berry Powder Man's House - Berry Powder Man",
+    "name": "Berry Powder Man's House - Berry Powder Man",
     "tags": ["KeyItem"]
   },
   "NPC_GIFT_GOT_RAINBOW_PASS": {
-    "name": "One Island Pokemon Center 1F - Celio",
+    "name": "One Island Pokemon Center 1F - Celio (Deliver Ruby)",
     "tags": ["KeyItem"]
   },
   "NPC_GIFT_GOT_RUBY": {
@@ -138,7 +138,7 @@
     "tags": ["KeyItem"]
   },
   "NPC_GIFT_RECOVERED_SAPPHIRE": {
-    "name": "Rocket Warehouse - Scientist Gideon",
+    "name": "Rocket Warehouse - Recover Stolen Gem",
     "tags": ["KeyItem"]
   },
   "ITEM_POKEMON_MANSION_B1F_SECRET_KEY": {
@@ -150,7 +150,7 @@
     "tags": ["KeyItem"]
   },
   "NPC_GIFT_GOT_SS_TICKET": {
-    "name": "Route 25 Sea Cottage - Bill",
+    "name": "Sea Cottage - Bill",
     "tags": ["KeyItem"]
   },
   "NPC_GIFT_GOT_SUPER_ROD": {
@@ -170,7 +170,7 @@
     "tags": ["KeyItem"]
   },
   "NPC_GIFT_GOT_TRI_PASS": {
-    "name": "Cinnabar Pokemon Center 1F - Bill",
+    "name": "One Island Pokemon Center 1F - Celio (First Visit)",
     "tags": ["KeyItem"]
   },
   "NPC_GIFT_GOT_VS_SEEKER": {
@@ -183,16 +183,97 @@
     "tags": ["ExtraKeyItem"]
   },
   "NPC_GIFT_GOT_LETTER": {
-    "name": "Cinnabar Pokemon Lab Research Room - Scientist",
+    "name": "Pokemon Lab Research Room - Scientist",
     "tags": ["ExtraKeyItem"]
   },
   "HIDDEN_ITEM_CERULEAN_CITY_GYM_MACHINE_PART": {
-    "name": "Cerulean Gym - Hidden Item In Water",
+    "name": "Cerulean Gym - Hidden Item in Water",
     "tags": ["ExtraKeyItem"]
   },
   "NPC_GIFT_GOT_SAFARI_PASS": {
-    "name": "Fuchsia Safari Zone Office - Worker",
+    "name": "Fuchsia Safari Zone Office - Safari Zone Worker",
     "tags": ["ExtraKeyItem"]
+  },
+
+  "FLY_UNLOCK_VISITED_CELADON_CITY": {
+    "name": "Celadon City - Unlock Fly Destination",
+    "tags": ["FlyUnlock"]
+  },
+  "FLY_UNLOCK_VISITED_CERULEAN_CITY": {
+    "name": "Cerulean City - Unlock Fly Destination",
+    "tags": ["FlyUnlock"]
+  },
+  "FLY_UNLOCK_VISITED_CINNABAR_ISLAND": {
+    "name": "Cinnabar Island - Unlock Fly Destination",
+    "tags": ["FlyUnlock"]
+  },
+  "FLY_UNLOCK_VISITED_FIVE_ISLAND": {
+    "name": "Five Island Town - Unlock Fly Destination",
+    "tags": ["FlyUnlock"]
+  },
+  "FLY_UNLOCK_VISITED_FOUR_ISLAND": {
+    "name": "Four Island Town - Unlock Fly Destination",
+    "tags": ["FlyUnlock"]
+  },
+  "FLY_UNLOCK_VISITED_FUCHSIA_CITY": {
+    "name": "Fuchsia City - Unlock Fly Destination",
+    "tags": ["FlyUnlock"]
+  },
+  "FLY_UNLOCK_VISITED_INDIGO_PLATEAU": {
+    "name": "Indigo Plateau Exterior - Unlock Fly Destination",
+    "tags": ["FlyUnlock"]
+  },
+  "FLY_UNLOCK_VISITED_LAVENDER_TOWN": {
+    "name": "Lavender Town - Unlock Fly Destination",
+    "tags": ["FlyUnlock"]
+  },
+  "FLY_UNLOCK_VISITED_ONE_ISLAND": {
+    "name": "One Island Town - Unlock Fly Destination",
+    "tags": ["FlyUnlock"]
+  },
+  "FLY_UNLOCK_VISITED_PALLET_TOWN": {
+    "name": "Pallet Town - Unlock Fly Destination",
+    "tags": ["FlyUnlock"]
+  },
+  "FLY_UNLOCK_VISITED_PEWTER_CITY": {
+    "name": "Pewter City - Unlock Fly Destination",
+    "tags": ["FlyUnlock"]
+  },
+  "FLY_UNLOCK_VISITED_ROUTE10": {
+    "name": "Route 10 Pokemon Center 1F - Unlock Fly Destination",
+    "tags": ["FlyUnlock"]
+  },
+  "FLY_UNLOCK_VISITED_ROUTE4": {
+    "name": "Route 4 Pokemon Center 1F - Unlock Fly Destination",
+    "tags": ["FlyUnlock"]
+  },
+  "FLY_UNLOCK_VISITED_SAFFRON_CITY": {
+    "name": "Saffron City - Unlock Fly Destination",
+    "tags": ["FlyUnlock"]
+  },
+  "FLY_UNLOCK_VISITED_SEVEN_ISLAND": {
+    "name": "Seven Island Town - Unlock Fly Destination",
+    "tags": ["FlyUnlock"]
+  },
+  "FLY_UNLOCK_VISITED_SIX_ISLAND": {
+    "name": "Six Island Town - Unlock Fly Destination",
+    "tags": ["FlyUnlock"]
+  },
+  "FLY_UNLOCK_VISITED_THREE_ISLAND": {
+    "name": "Three Island Town - Unlock Fly Destination",
+    "tags": ["FlyUnlock"]
+  },
+  "FLY_UNLOCK_VISITED_TWO_ISLAND": {
+    "name": "Two Island Town - Unlock Fly Destination",
+    "tags": ["FlyUnlock"]
+  },
+  "FLY_UNLOCK_VISITED_VERMILION_CITY": {
+    "name": "Vermilion City - Unlock Fly Destination",
+    "tags": ["FlyUnlock"]
+  },
+  "FLY_UNLOCK_VISITED_VIRIDIAN_CITY": {
+    "name": "Viridian City - Unlock Fly Destination",
+    "tags": ["FlyUnlock"]
   },
 
   "ITEM_CELADON_CITY_ETHER": {
@@ -232,23 +313,23 @@
     "tags": ["Overworld"]
   },
   "ITEM_FIVE_ISLAND_LOST_CAVE_ROOM10_SILK_SCARF": {
-    "name": "Lost Cave Room 10 - Item",
+    "name": "Lost Cave B1F Room 10 - Item",
     "tags": ["Overworld"]
   },
   "ITEM_FIVE_ISLAND_LOST_CAVE_ROOM11_LAX_INCENSE": {
-    "name": "Lost Cave Room 11 - Item",
+    "name": "Lost Cave B1F Room 11 - Item",
     "tags": ["Overworld"]
   },
   "ITEM_FIVE_ISLAND_LOST_CAVE_ROOM12_SEA_INCENSE": {
-    "name": "Lost Cave Room 12 - Item",
+    "name": "Lost Cave B1F Room 12 - Item",
     "tags": ["Overworld"]
   },
   "ITEM_FIVE_ISLAND_LOST_CAVE_ROOM13_MAX_REVIVE": {
-    "name": "Lost Cave Room 13 - Item",
+    "name": "Lost Cave B1F Room 13 - Item",
     "tags": ["Overworld"]
   },
   "ITEM_FIVE_ISLAND_LOST_CAVE_ROOM14_RARE_CANDY": {
-    "name": "Lost Cave Room 14 - Item",
+    "name": "Lost Cave B1F Room 14 - Item",
     "tags": ["Overworld"]
   },
   "ITEM_FIVE_ISLAND_MEADOW_MAX_POTION": {
@@ -292,15 +373,15 @@
     "tags": ["Overworld"]
   },
   "ITEM_FOUR_ISLAND_STARDUST": {
-    "name": "Four Island - Northeast Island Item",
+    "name": "Four Island Town - Northeast Island Item",
     "tags": ["Overworld"]
   },
   "ITEM_FOUR_ISLAND_STAR_PIECE": {
-    "name": "Four Island - Beach Item",
+    "name": "Four Island Town - Beach Item",
     "tags": ["Overworld"]
   },
   "ITEM_FUCHSIA_CITY_WARDENS_HOUSE_RARE_CANDY": {
-    "name": "Fuchsia Warden's House - Item",
+    "name": "Safari Zone Warden's House - Item",
     "tags": ["Overworld"]
   },
   "ITEM_MT_EMBER_EXTERIOR_DIRE_HIT": {
@@ -584,47 +665,47 @@
     "tags": ["Overworld"]
   },
   "ITEM_SAFARI_ZONE_CENTER_NUGGET": {
-    "name": "Safari Zone Center - Island Item",
+    "name": "Safari Zone Center Area - Island Item",
     "tags": ["Overworld"]
   },
   "ITEM_SAFARI_ZONE_EAST_FULL_RESTORE": {
-    "name": "Safari Zone East - Item Near Rest House",
+    "name": "Safari Zone East Area - Item Near Rest House",
     "tags": ["Overworld"]
   },
   "ITEM_SAFARI_ZONE_EAST_LEAF_STONE": {
-    "name": "Safari Zone East - Southeast Plateau Item",
+    "name": "Safari Zone East Area - Southeast Plateau Item",
     "tags": ["Overworld"]
   },
   "ITEM_SAFARI_ZONE_EAST_MAX_POTION": {
-    "name": "Safari Zone East - Item Near Bush",
+    "name": "Safari Zone East Area - Item Near Bush",
     "tags": ["Overworld"]
   },
   "ITEM_SAFARI_ZONE_EAST_TM11": {
-    "name": "Safari Zone East - Tall Grass Item",
+    "name": "Safari Zone East Area - Tall Grass Item",
     "tags": ["Overworld"]
   },
   "ITEM_SAFARI_ZONE_NORTH_PROTEIN": {
-    "name": "Safari Zone North - North Item",
+    "name": "Safari Zone North Area - North Item",
     "tags": ["Overworld"]
   },
   "ITEM_SAFARI_ZONE_NORTH_QUICK_CLAW": {
-    "name": "Safari Zone North - South Item",
+    "name": "Safari Zone North Area - South Item",
     "tags": ["Overworld"]
   },
   "ITEM_SAFARI_ZONE_NORTH_TM47": {
-    "name": "Safari Zone North - Center Item",
+    "name": "Safari Zone North Area - Center Item",
     "tags": ["Overworld"]
   },
   "ITEM_SAFARI_ZONE_WEST_MAX_POTION": {
-    "name": "Safari Zone West - Southwest Item",
+    "name": "Safari Zone West Area - Southwest Item",
     "tags": ["Overworld"]
   },
   "ITEM_SAFARI_ZONE_WEST_MAX_REVIVE": {
-    "name": "Safari Zone West - Southeast Item",
+    "name": "Safari Zone West Area - Southeast Item",
     "tags": ["Overworld"]
   },
   "ITEM_SAFARI_ZONE_WEST_TM32": {
-    "name": "Safari Zone West - Northwest Item",
+    "name": "Safari Zone West Area - Northwest Item",
     "tags": ["Overworld"]
   },
   "ITEM_SEAFOAM_ISLANDS_1F_ICE_HEAL": {
@@ -792,11 +873,11 @@
     "tags": ["Overworld"]
   },
   "ITEM_THREE_ISLAND_ZINC": {
-    "name": "Three Island - Item Behind East Fence",
+    "name": "Three Island Town - Item Behind East Fence",
     "tags": ["Overworld"]
   },
   "ITEM_TWO_ISLAND_REVIVE": {
-    "name": "Two Island - Item Behind Cuttable Tree",
+    "name": "Two Island Town - Item Behind Cuttable Tree",
     "tags": ["Overworld"]
   },
   "ITEM_VICTORY_ROAD_1F_RARE_CANDY": {
@@ -905,11 +986,11 @@
     "tags": ["Hidden"]
   },
   "HIDDEN_ITEM_FOUR_ISLAND_PEARL": {
-    "name": "Four Island - Beach Southeast Hidden Item",
+    "name": "Four Island Town - Beach Southeast Hidden Item",
     "tags": ["Hidden", "Recurring"]
   },
   "HIDDEN_ITEM_FOUR_ISLAND_ULTRA_BALL": {
-    "name": "Four Island - Beach Northwest Hidden Item",
+    "name": "Four Island Town - Beach Northwest Hidden Item",
     "tags": ["Hidden", "Recurring"]
   },
   "HIDDEN_ITEM_FUCHSIA_CITY_MAX_REVIVE": {
@@ -1225,15 +1306,15 @@
     "tags": ["Hidden"]
   },
   "HIDDEN_ITEM_SAFARI_ZONE_CENTER_LEAF_STONE": {
-    "name": "Safari Zone Center - Island Hidden Item",
+    "name": "Safari Zone Center Area - Island Hidden Item",
     "tags": ["Hidden"]
   },
   "HIDDEN_ITEM_SAFARI_ZONE_WEST_REVIVE": {
-    "name": "Safari Zone West - Hidden Item Near Secret House",
+    "name": "Safari Zone West Area - Hidden Item Near Secret House",
     "tags": ["Hidden"]
   },
   "HIDDEN_ITEM_SAFFRON_CITY_COPYCATS_HOUSE_2F_NUGGET": {
-    "name": "Saffron Copycat's House 2F - Desk Hidden Item",
+    "name": "Copycat's House 2F - Desk Hidden Item",
     "tags": ["Hidden"]
   },
   "HIDDEN_ITEM_SEAFOAM_ISLANDS_B3F_NUGGET": {
@@ -1333,7 +1414,7 @@
     "tags": ["Hidden", "Recurring"]
   },
   "HIDDEN_ITEM_SIX_ISLAND_LEPPA_BERRY": {
-    "name": "Six Island - Hidden Item Behind Pokemon Center",
+    "name": "Six Island Town - Hidden Item Behind Pokemon Center",
     "tags": ["Hidden"]
   },
   "HIDDEN_ITEM_SIX_ISLAND_OUTCAST_ISLAND_NET_BALL": {
@@ -1445,7 +1526,7 @@
     "tags": ["Hidden"]
   },
   "HIDDEN_ITEM_THREE_ISLAND_PP_UP": {
-    "name": "Three Island - Hidden Item Behind West Fence",
+    "name": "Three Island Town - Hidden Item Behind West Fence",
     "tags": ["Hidden"]
   },
   "HIDDEN_ITEM_TWO_ISLAND_CAPE_BRINK_PP_MAX": {
@@ -1538,23 +1619,23 @@
   },
 
   "NPC_GIFT_GOT_AMULET_COIN_FROM_OAKS_AIDE": {
-    "name": "Route 16 North Entrance 2F - Professor Oak's Aide",
+    "name": "Route 16 Gate 2F - Oak's Aide",
     "tags": ["NPCGift"]
   },
   "NPC_GIFT_GOT_EVERSTONE_FROM_OAKS_AIDE": {
-    "name": "Route 10 Pokemon Center 1F - Professor Oak's Aide",
+    "name": "Route 10 Pokemon Center 1F - Oak's Aide",
     "tags": ["NPCGift"]
   },
   "NPC_GIFT_GOT_EXP_SHARE_FROM_OAKS_AIDE": {
-    "name": "Route 15 West Entrance 2F - Professor Oak's Aide",
+    "name": "Route 15 Gate 2F - Oak's Aide",
     "tags": ["NPCGift"]
   },
   "NPC_GIFT_GOT_FIRST_POKEBALLS": {
-    "name": "Professor Oak's Lab - Oak's Parcel Delivery Gift",
+    "name": "Professor Oak's Lab - Oak (Deliver Parcel)",
     "tags": ["NPCGift"]
   },
   "NPC_GIFT_GOT_FULL_RESTORE_FROM_THREE_ISLAND_DEFENDER": {
-    "name": "Three Island - Anti-Biker",
+    "name": "Three Island Town - Anti-Biker",
     "tags": ["NPCGift"]
   },
   "NPC_GIFT_GOT_MASTER_BALL_FROM_SILPH": {
@@ -1562,7 +1643,7 @@
     "tags": ["NPCGift"]
   },
   "NPC_GIFT_GOT_MOON_STONE_FROM_JOYFUL_GAME_CORNER": {
-    "name": "Two Island Game Corner - Lostelle's Father",
+    "name": "Two Island Game Corner - Lostelle's Dad",
     "tags": ["NPCGift"]
   },
   "NPC_GIFT_GOT_NUGGET_FROM_DUNSPARCE_TUNNEL": {
@@ -1570,11 +1651,11 @@
     "tags": ["NPCGift"]
   },
   "NPC_GIFT_GOT_NUGGET_FROM_ROCKET_GRUNT": {
-    "name": "Route 24 - Team Rocket Grunt",
+    "name": "Route 24 - Clear Nugget Bridge",
     "tags": ["NPCGift"]
   },
   "NPC_GIFT_GOT_POKEBALLS_FROM_OAK_AFTER_22_RIVAL": {
-    "name":"Professor Oak's Lab - Oak's Post Route 22 Rival Gift",
+    "name":"Professor Oak's Lab - Oak (After Route 22 Rival)",
     "tags": ["NPCGift"]
   },
   "NPC_GIFT_GOT_POTION_ON_ROUTE_1": {
@@ -1582,59 +1663,59 @@
     "tags": ["NPCGift"]
   },
   "NPC_GIFT_GOT_TM03_FROM_MISTY": {
-    "name": "Cerulean Gym - Leader Misty TM",
+    "name": "Cerulean Gym - Misty TM",
     "tags": ["NPCGift"]
   },
   "NPC_GIFT_GOT_TM04_FROM_SABRINA": {
-    "name": "Saffron Gym - Leader Sabrina TM",
+    "name": "Saffron Gym - Sabrina TM",
     "tags": ["NPCGift"]
   },
   "NPC_GIFT_GOT_TM06_FROM_KOGA": {
-    "name": "Fuchsia Gym - Leader Koga TM",
+    "name": "Fuchsia Gym - Koga TM",
     "tags": ["NPCGift"]
   },
   "NPC_GIFT_GOT_TM16_FROM_THIRSTY_GIRL": {
-    "name": "Celadon Department Store Roof - Girl's Fresh Water Gift",
+    "name": "Celadon Department Store Roof - Thirsty Girl (Give Fresh Water)",
     "tags": ["NPCGift"]
   },
   "NPC_GIFT_GOT_TM19_FROM_ERIKA": {
-    "name": "Celadon Gym - Leader Erika TM",
+    "name": "Celadon Gym - Erika TM",
     "tags": ["NPCGift"]
   },
   "NPC_GIFT_GOT_TM20_FROM_THIRSTY_GIRL": {
-    "name": "Celadon Department Store Roof - Girl's Soda Pop Gift",
+    "name": "Celadon Department Store Roof - Thirsty Girl (Give Soda Pop)",
     "tags": ["NPCGift"]
   },
   "NPC_GIFT_GOT_TM26_FROM_GIOVANNI": {
-    "name": "Viridian Gym - Leader Giovanni TM",
+    "name": "Viridian Gym - Giovanni TM",
     "tags": ["NPCGift"]
   },
   "NPC_GIFT_GOT_TM27": {
-    "name": "Route 12 North Entrance 2F - Lass",
+    "name": "Route 12 Gate 2F - Mourning Lass",
     "tags": ["NPCGift"]
   },
   "NPC_GIFT_GOT_TM28_FROM_ROCKET": {
-    "name": "Cerulean City - Team Rocket Grunt",
+    "name": "Cerulean City - Recover Stolen TM",
     "tags": ["NPCGift"]
   },
   "NPC_GIFT_GOT_TM29_FROM_MR_PSYCHIC": {
-    "name": "Saffron Mr Psychic's House - Mr. Psychic",
+    "name": "Mr. Psychic's House - Mr. Psychic",
     "tags": ["NPCGift"]
   },
   "NPC_GIFT_GOT_TM33_FROM_THIRSTY_GIRL": {
-    "name": "Celadon Department Store Roof - Girl's Lemonade Gift",
+    "name": "Celadon Department Store Roof - Thirsty Girl (Give Lemonade)",
     "tags": ["NPCGift"]
   },
   "NPC_GIFT_GOT_TM34_FROM_SURGE": {
-    "name": "Vermilion Gym - Leader Lt. Surge TM",
+    "name": "Vermilion Gym - Lt. Surge TM",
     "tags": ["NPCGift"]
   },
   "NPC_GIFT_GOT_TM38_FROM_BLAINE": {
-    "name": "Cinnabar Gym - Leader Blaine TM",
+    "name": "Cinnabar Gym - Blaine TM",
     "tags": ["NPCGift"]
   },
   "NPC_GIFT_GOT_TM39_FROM_BROCK": {
-    "name": "Pewter Gym - Leader Brock TM",
+    "name": "Pewter Gym - Brock TM",
     "tags": ["NPCGift"]
   },
   "NPC_GIFT_GOT_TM42_AT_MEMORIAL_PILLAR": {
@@ -1642,11 +1723,11 @@
     "tags": ["NPCGift"]
   },
   "NPC_GIFT_RECEIVED_MYSTIC_TICKET": {
-    "name": "Pallet Town - Oak's Post Champion Gift 1",
+    "name": "Pallet Town - Oak (First Gift)",
     "tags": ["NPCGift"]
   },
   "NPC_GIFT_RECEIVED_AURORA_TICKET": {
-    "name": "Pallet Town - Oak's Post Champion Gift 2",
+    "name": "Pallet Town - Oak (Second Gift)",
     "tags": ["NPCGift"]
   },
   "NPC_GIFT_RESCUED_LOSTELLE": {
@@ -1715,15 +1796,15 @@
     "tags": ["Trainer"]
   },
   "TRAINER_BIKER_GOON_REWARD": {
-    "name": "Three Island - Biker Goon Reward (Left)",
+    "name": "Three Island Town - Biker Goon Reward (Left)",
     "tags": ["Trainer"]
   },
   "TRAINER_BIKER_GOON_2_REWARD": {
-    "name": "Three Island - Biker Goon Reward (Right)",
+    "name": "Three Island Town - Biker Goon Reward (Right)",
     "tags": ["Trainer"]
   },
   "TRAINER_BIKER_GOON_3_REWARD": {
-    "name": "Three Island - Biker Goon Reward (Top)",
+    "name": "Three Island Town - Biker Goon Reward (Top)",
     "tags": ["Trainer"]
   },
   "TRAINER_BIKER_HIDEO_REWARD": {
@@ -2215,7 +2296,7 @@
     "tags": ["Trainer"]
   },
   "TRAINER_CUE_BALL_PAXTON_REWARD": {
-    "name": "Three Island - Cue Ball Paxton Reward",
+    "name": "Three Island Town - Cue Ball Paxton Reward",
     "tags": ["Trainer"]
   },
   "TRAINER_CUE_BALL_RAUL_REWARD": {

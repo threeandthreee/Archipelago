@@ -1,3 +1,4 @@
+from typing import Dict
 
 from BaseClasses import Item, ItemClassification
 
@@ -48,25 +49,35 @@ gameplay_unlocks = {
 }
 
 upgrades = {
-    "Big Routing Upgrade": ItemClassification.useful,
-    "Big Extraction Upgrade": ItemClassification.useful,
-    "Big Shape Processing Upgrade": ItemClassification.useful,
-    "Big Color Processing Upgrade": ItemClassification.useful,
-    "Small Routing Upgrade": ItemClassification.filler,
-    "Small Extraction Upgrade": ItemClassification.filler,
-    "Small Shape Processing Upgrade": ItemClassification.filler,
-    "Small Color Processing Upgrade": ItemClassification.filler
+    "Big Belt Upgrade": ItemClassification.useful,
+    "Big Miner Upgrade": ItemClassification.useful,
+    "Big Processors Upgrade": ItemClassification.useful,
+    "Big Painting Upgrade": ItemClassification.useful,
+    "Small Belt Upgrade": ItemClassification.filler,
+    "Small Miner Upgrade": ItemClassification.filler,
+    "Small Processors Upgrade": ItemClassification.filler,
+    "Small Painting Upgrade": ItemClassification.filler
 }
 
 bundles = {
-    "Blueprint Shapes Bundle": ItemClassification.filler
+    "Blueprint Shapes Bundle": ItemClassification.filler,
+    "Level Shapes Bundle": ItemClassification.filler,
+    "Upgrade Shapes Bundle": ItemClassification.filler
 }
 
 traps = {
-    "Inventory Draining Trap": ItemClassification.trap
+    "Inventory Draining Trap": ItemClassification.trap,
+    "Locked Building Trap": ItemClassification.trap,
+    "Throttled Building Trap": ItemClassification.trap,
+    "Malfunctioning Trap": ItemClassification.trap
 }
 
-item_table: dict[str, ItemClassification] = {
+belt_and_extractor = {
+    "Belt": ItemClassification.progression,
+    "Extractor": ItemClassification.progression
+}
+
+item_table: Dict[str, ItemClassification] = {
     **buildings_processing,
     **buildings_routing,
     **buildings_other,
@@ -75,22 +86,28 @@ item_table: dict[str, ItemClassification] = {
     **gameplay_unlocks,
     **upgrades,
     **bundles,
-    **traps
+    **traps,
+    **belt_and_extractor
 }
 
 big_upgrades = [
-    "Big Routing Upgrade",
-    "Big Extraction Upgrade",
-    "Big Shape Processing Upgrade",
-    "Big Color Processing Upgrade"
+    "Big Belt Upgrade",
+    "Big Miner Upgrade",
+    "Big Processors Upgrade",
+    "Big Painting Upgrade"
 ]
 
 small_upgrades = [
-    "Small Routing Upgrade",
-    "Small Extraction Upgrade",
-    "Small Shape Processing Upgrade",
-    "Small Color Processing Upgrade"
+    "Small Belt Upgrade",
+    "Small Miner Upgrade",
+    "Small Processors Upgrade",
+    "Small Painting Upgrade"
 ]
+
+
+def trap(random: float) -> str:
+    """Returns a random trap item."""
+    return list(traps.keys())[int(len(traps)*random)]
 
 
 def filler(random: float) -> str:
@@ -100,7 +117,7 @@ def filler(random: float) -> str:
     elif random < 0.66:
         return small_upgrades[int((random-0.16)*4/0.5)]  # Yes, I want this calculation to be written that way
     else:
-        return "Blueprint Shapes Bundle"
+        return list(bundles.keys())[int((random-0.66)*len(bundles)/0.34)]
 
 
 item_descriptions = {  # TODO
@@ -119,30 +136,42 @@ item_descriptions = {  # TODO
     "Stacker": "A processing building, that combines two shapes with missing parts or puts one on top of the other",
     "Quad Cutter": "A processing building, that cuts shapes in four quarter parts",
     "Double Painter": "A processing building, that paints two shapes in a given color",
-    "Rotator (180)": "A processing building, that rotates shapes 180 degrees",
+    "Rotator (180°)": "A processing building, that rotates shapes 180 degrees",
     "Quad Painter": "A processing building, that paint each quarter of a shape in another given color and requires " +
                     "wire inputs for each color to work",
     "Trash": "A building, that destroys unused shapes",
     "Chaining Extractor": "An upgrade to extractors, that can increase the output without balancers or mergers",
-    "Belt Reader": "TODO",
-    "Storage": "TODO",
-    "Item Filter": "TODO",
-    "Display": "TODO",
-    "Wires": "TODO",
-    "Constant Signal": "TODO",
-    "Logic Gates": "TODO",
-    "Virtual Processing": "TODO",
-    "Blueprints": "TODO",
-    "Big Routing Upgrade": "An upgrade, that adds 1 to the speed multiplier of belts, distributors, and tunnels",
-    "Big Extraction Upgrade": "TODO",
-    "Big Shape Processing Upgrade": "TODO",
-    "Big Color Processing Upgrade": "TODO",
-    "Small Routing Upgrade": "TODO",
-    "Small Extraction Upgrade": "TODO",
-    "Small Shape Processing Upgrade": "TODO",
-    "Small Color Processing Upgrade": "TODO",
-    "Blueprint Shapes Bundle": "TODO",
-    "Inventory Draining Trap": "TODO"
+    "Belt Reader": "A wired building, that shows the average amount of items passing through per second",
+    "Storage": "A building, that stores up to 5000 of a certain shape",
+    "Item Filter": "A wired building, that filters items based on wire input",
+    "Display": "A wired building, that displays a shape or color based on wire input",
+    "Wires": "The main building of the wires layer, that carries signals between other buildings",
+    "Constant Signal": "A building on the wires layer, that sends a constant shape, color, or boolean signal",
+    "Logic Gates": "Multiple buildings on the wires layer, that perform logical operations on wire signals",
+    "Virtual Processing": "Multiple buildings on the wires layer, that process wire signals like processor buildings",
+    "Blueprints": "A game mechanic, that allows copy-pasting multiple buildings at once",
+    "Big Belt Upgrade": "An upgrade, that adds 1 to the speed multiplier of belts, distributors, and tunnels",
+    "Big Miner Upgrade": "An upgrade, that adds 1 to the speed multiplier of extractors",
+    "Big Processors Upgrade": "An upgrade, that adds 1 to the speed multiplier of cutters, rotators, and stackers",
+    "Big Painting Upgrade": "An upgrade, that adds 1 to the speed multiplier of painters and color mixers",
+    "Small Belt Upgrade": "An upgrade, that adds 0.1 to the speed multiplier of belts, distributors, and tunnels",
+    "Small Miner Upgrade": "An upgrade, that adds 1 to the speed multiplier of extractors",
+    "Small Processors Upgrade": "An upgrade, that adds 1 to the speed multiplier of cutters, rotators, and stackers",
+    "Small Painting Upgrade": "An upgrade, that adds 1 to the speed multiplier of painters and color mixers",
+    "Blueprint Shapes Bundle": "A bundle with 1000 blueprint shapes, instantly delivered to the hub",
+    "Level Shapes Bundle": "A bundle with some shapes needed for the current level, " +
+                           "instantly delivered to the hub",
+    "Upgrade Shapes Bundle": "A bundle with some shapes needed for a random upgrade, " +
+                           "instantly delivered to the hub",
+    "Inventory Draining Trap": "Randomly drains either blueprint shapes, or current level requirement shapes, " +
+                               "or random upgrade requirement shapes, by half",
+    "Locked Building Trap": "Locks a random building from being placed for 15-60 seconds",
+    "Throttled Building Trap": "Halves the speed of a random building for 15-60 seconds",
+    "Malfunctioning Trap": "Makes a random building process items incorrectly for 15-60 seconds",
+    "Belt": "One of the most important buildings in the game, that transports your shapes and colors from one " +
+            "place to another",
+    "Extractor": "One of the most important buildings in the game, that extracts shapes from those randomly " +
+                 "generated patches"
 }
 
 

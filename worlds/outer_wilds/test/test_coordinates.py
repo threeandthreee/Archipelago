@@ -1,7 +1,7 @@
 import json
 import unittest
 
-from ..Coordinates import get_coordinate_for_number, total_possible_coordinates, validate_coordinate
+from ..coordinates import get_coordinate_for_number, total_possible_coordinates, validate_coordinate
 
 
 class TestCoordinateGeneration(unittest.TestCase):

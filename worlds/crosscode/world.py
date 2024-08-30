@@ -187,7 +187,7 @@ class CrossCodeWorld(World):
         """
         Generate a random filler item name based on the weighted filler pools.
         """
-        return self.pools.pull_items_from_pool(self.get_filler_pool_name(), self.random)[0].name
+        return self.pools.pull_items_from_pool(self.get_filler_pool_names()[0], self.random)[0].name
 
     def get_filler_item_data(self, k: int = 1) -> list[ItemData]:
         """

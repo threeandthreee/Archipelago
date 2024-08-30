@@ -1,4 +1,5 @@
 from random import Random
+from typing import List, Tuple, Dict
 
 from BaseClasses import Location, LocationProgressType, Region
 
@@ -6,59 +7,25 @@ location_description = {  # TODO
     "Level 1": "TODO",
     "Level 1 Additional": "TODO",
     "Level 20 Additional": "TODO",
-    "Routing Upgrade Tier II": "TODO",
-    "Extracting Upgrade Tier II": "TODO",
-    "Shape Processing Upgrade Tier II": "TODO",
-    "Color Processing Upgrade Tier II": "TODO",
-    "Painter": "TODO",
-    "Cutter": "TODO",
-    "Rotater": "TODO",
-    "Wait, they stack?": "TODO",
-    "Wires": "TODO",
-    "Storage": "TODO",
-    "Freedom": "TODO",
-    "The logo!": "TODO",
-    "To the moon": "TODO",
-    "It's piling up": "TODO",
-    "I'll use it later": "TODO",
-    "Efficiency 1": "TODO",
-    "Preparing to launch": "TODO",
-    "SpaceY": "TODO",
-    "Stack overflow": "TODO",
-    "It's a mess": "TODO",
-    "Faster": "TODO",
-    "Even faster": "TODO",
-    "Get rid of them": "TODO",
-    "It's been a long time": "TODO",
-    "Addicted": "TODO",
-    "Can't stop": "TODO",
-    "Is this the end?": "TODO",
-    "Getting into it": "TODO",
-    "Now it's easy": "TODO",
-    "Computer Guy": "TODO",
-    "Speedrun Master": "TODO",
-    "Speedrun Novice": "TODO",
-    "Not an idle game": "TODO",
-    "Efficiency 2": "TODO",
-    "Branding specialist 1": "TODO",
-    "Branding specialist 2": "TODO",
-    "King of Inefficiency": "TODO",
-    "It's so slow": "TODO",
-    "MAM (Make Anything Machine)": "TODO",
-    "Perfectionist": "TODO",
-    "The next dimension": "TODO",
-    "Oops": "TODO",
-    "Copy-Pasta": "TODO",
-    "I've seen that before ...": "TODO",
-    "Memories from the past": "TODO",
-    "I need trains": "TODO",
-    "A bit early?": "TODO",
-    "GPS": "TODO"
+    "Level 26": "TODO",
+    "Level 1000": "TODO",
+    "Belt Upgrade Tier II": "TODO",
+    "Miner Upgrade Tier II": "TODO",
+    "Processors Upgrade Tier II": "TODO",
+    "Painting Upgrade Tier II": "TODO",
+    "Belt Upgrade Tier VIII": "TODO",
+    "Miner Upgrade Tier VIII": "TODO",
+    "Processors Upgrade Tier VIII": "TODO",
+    "Painting Upgrade Tier VIII": "TODO",
+    "Belt Upgrade Tier M": "TODO",
+    "Miner Upgrade Tier M": "TODO",
+    "Processors Upgrade Tier M": "TODO",
+    "Painting Upgrade Tier M": "TODO"
 }
 
-categories = ["Routing", "Extracting", "Shape Processing", "Color Processing"]
+categories = ["Belt", "Miner", "Processors", "Painting"]
 
-translate: list[tuple[int, str]] = [
+translate: List[Tuple[int, str]] = [
     (1000, "M"),
     (900, "CM"),
     (500, "D"),
@@ -95,40 +62,80 @@ def color_to_needed_building(color1: str, color2: str = "Uncolored") -> str:
         return "Painted"
 
 
-shapesanity_simple: dict[str, str] = {}
-shapesanity_complex: dict[str, str] = {}
+def color_list_to_needed_building(color_list: List[str]) -> str:
+    for next_color in color_list:
+        if next_color in ["y", "p", "c", "w"]:
+            return "Mixed"
+    return "Painted"
+
+
+shapesanity_simple: Dict[str, str] = {}
+shapesanity_medium: Dict[str, str] = {}
+shapesanity_complex: Dict[str, str] = {}
 
 for shape in ["Circle", "Square", "Star"]:
     for color in ["Red", "Blue", "Green", "Yellow", "Purple", "Cyan", "White", "Uncolored"]:
-        shapesanity_simple[f"Shapesanity {color} {shape}"] = f"Shapesanity Unprocessed {color_to_needed_building(color)}"
-        shapesanity_simple[f"Shapesanity Half {color} {shape}"] = f"Shapesanity Cut {color_to_needed_building(color)}"
-        shapesanity_simple[f"Shapesanity {color} {shape} Piece"] = f"Shapesanity Cut Rotated {color_to_needed_building(color)}"
+        # same shapes && same color
+        shapesanity_simple[f"Shapesanity {color} {shape}"] \
+            = f"Shapesanity Unprocessed {color_to_needed_building(color)}"
+        shapesanity_simple[f"Shapesanity Half {color} {shape}"] \
+            = f"Shapesanity Cut {color_to_needed_building(color)}"
+        shapesanity_simple[f"Shapesanity {color} {shape} Piece"] \
+            = f"Shapesanity Cut Rotated {color_to_needed_building(color)}"
         shapesanity_simple[f"Shapesanity Cut Out {color} {shape}"] \
             = f"Shapesanity Stitched {color_to_needed_building(color)}"
         shapesanity_simple[f"Shapesanity Cornered {color} {shape}"] \
             = f"Shapesanity Stitched {color_to_needed_building(color)}"
 for color in ["Red", "Blue", "Green", "Yellow", "Purple", "Cyan", "White", "Uncolored"]:
-    shapesanity_simple[f"Shapesanity {color} Windmill"] = f"Shapesanity Stitched {color_to_needed_building(color)}"
-    shapesanity_simple[f"Shapesanity Half {color} Windmill"] = f"Shapesanity Cut {color_to_needed_building(color)}"
-    shapesanity_simple[f"Shapesanity {color} Windmill Piece"] = f"Shapesanity Cut Rotated {color_to_needed_building(color)}"
+    shapesanity_simple[f"Shapesanity {color} Windmill"] \
+        = f"Shapesanity Stitched {color_to_needed_building(color)}"
+    shapesanity_simple[f"Shapesanity Half {color} Windmill"] \
+        = f"Shapesanity Cut {color_to_needed_building(color)}"
+    shapesanity_simple[f"Shapesanity {color} Windmill Piece"] \
+        = f"Shapesanity Cut Rotated {color_to_needed_building(color)}"
     shapesanity_simple[f"Shapesanity Cut Out {color} Windmill"] \
         = f"Shapesanity Stitched {color_to_needed_building(color)}"
     shapesanity_simple[f"Shapesanity Cornered {color} Windmill"] \
         = f"Shapesanity Stitched {color_to_needed_building(color)}"
+for shape in ["Circle", "Square", "Windmill", "Star"]:
+    for first_color in ["r", "g", "b", "y", "p", "c"]:
+        for second_color in ["g", "b", "y", "p", "c", "w"]:
+            if not first_color == second_color:
+                for third_color in ["b", "y", "p", "c", "w", "u"]:
+                    if third_color not in [first_color, second_color]:
+                        for fourth_color in ["y", "p", "c", "w", "u", "-"]:
+                            if fourth_color not in [first_color, second_color, third_color]:
+                                colors = [first_color, second_color, third_color, fourth_color]
+                                # one color && 4 shapes (including empty)
+                                shapesanity_medium[f"Shapesanity {''.join(sorted(colors))} {shape}"] \
+                                    = f"Shapesanity Stitched {color_list_to_needed_building(colors)}"
+for color in ["Red", "Blue", "Green", "Yellow", "Purple", "Cyan", "White", "Uncolored"]:
+    for first_shape in ["C", "R"]:
+        for second_shape in ["R", "W"]:
+            if not first_shape == second_shape:
+                for third_shape in ["W", "S"]:
+                    if third_shape not in [first_shape, second_shape]:
+                        for fourth_shape in ["S", "-"]:
+                            if fourth_shape not in [first_shape, second_shape, third_shape]:
+                                shapes = [first_shape, second_shape, third_shape, fourth_shape]
+                                # one shape && 4 colors (including empty)
+                                shapesanity_medium[f"Shapesanity {color} {''.join(sorted(shapes))}"] \
+                                    = f"Shapesanity Stitched {color_to_needed_building(color)}"
 for first_shape in ["C", "R", "W", "S"]:
     for second_shape in ["C", "R", "W", "S"]:
         for first_color in ["r", "g", "b", "y", "p", "c", "w", "u"]:
             for second_color in ["r", "g", "b", "y", "p", "c", "w", "u"]:
                 first_combo = first_shape+first_color
                 second_combo = second_shape+second_color
-                if not first_combo == second_combo:
+                if not first_combo == second_combo:  # 2 different shapes || 2 different colors
                     if first_combo < second_combo:
                         ordered_combo = f"{first_combo} {second_combo}"
                     else:
                         ordered_combo = f"{second_combo} {first_combo}"
+                    # No empty corner && (2 different shapes || 2 different colors)
                     shapesanity_complex[f"Shapesanity 3-1 {first_combo} {second_combo}"] \
                         = f"Shapesanity Stitched {color_to_needed_building(first_color, second_color)}"
-                    if first_shape == "W" and second_shape == "W":
+                    if first_shape == "W" and second_shape == "W":  # Full windmill
                         shapesanity_complex[f"Shapesanity Half-Half {ordered_combo}"] \
                             = f"Shapesanity Stitched {color_to_needed_building(first_color, second_color)}"
                     else:
@@ -136,9 +143,19 @@ for first_shape in ["C", "R", "W", "S"]:
                             = f"Shapesanity Half-Half {color_to_needed_building(first_color, second_color)}"
                     shapesanity_complex[f"Shapesanity Checkered {ordered_combo}"] \
                         = f"Shapesanity Stitched {color_to_needed_building(first_color, second_color)}"
+                    # 2 empty corners && (2 different shapes || 2 different colors)
+                    shapesanity_complex[f"Shapesanity Cornered Singles {ordered_combo}"] \
+                        = f"Shapesanity Stitched {color_to_needed_building(first_color, second_color)}"
+                    shapesanity_complex[f"Shapesanity Adjacent Singles {ordered_combo}"] \
+                        = f"Shapesanity Stitched {color_to_needed_building(first_color, second_color)}"
+                    # 1 empty corner && (2 different shapes || 2 different colors)
+                    shapesanity_complex[f"Shapesanity Adjacent 2-1 {first_combo} {second_combo}"] \
+                        = f"Shapesanity Stitched {color_to_needed_building(first_color, second_color)}"
+                    shapesanity_complex[f"Shapesanity Cornered 2-1 {first_combo} {second_combo}"] \
+                        = f"Shapesanity Stitched {color_to_needed_building(first_color, second_color)}"
 
 
-achievement_locations: list[str] = ["Painter", "Cutter", "Rotater", "Wait, they stack?", "Wires", "Storage", "Freedom",
+achievement_locations: List[str] = ["Painter", "Cutter", "Rotater", "Wait, they stack?", "Wires", "Storage", "Freedom",
                                     "The logo!", "To the moon", "It's piling up", "I'll use it later",
                                     "Efficiency 1", "Preparing to launch", "SpaceY", "Stack overflow", "It's a mess",
                                     "Faster", "Even faster", "Get rid of them", "It's been a long time", "Addicted",
@@ -150,25 +167,27 @@ achievement_locations: list[str] = ["Painter", "Cutter", "Rotater", "Wait, they 
                                     "I've seen that before ...", "Memories from the past", "I need trains",
                                     "A bit early?", "GPS"]
 
-all_locations: list[str] = (["Level 1 Additional", "Level 20 Additional"]
+all_locations: List[str] = (["Level 1 Additional", "Level 20 Additional"]
                             + [f"Level {x}" for x in range(1, 1001)]
                             + [f"{cat} Upgrade Tier {roman(x)}" for cat in categories for x in range(2, 1001)]
                             # + achievement_locations
                             + list(shapesanity_simple)
+                            + list(shapesanity_medium)
                             + list(shapesanity_complex))
 all_locations.sort()
 
 
-def addlevels(maxlevel: int, logictype: int) -> dict[str, tuple[str, LocationProgressType]]:
+def addlevels(maxlevel: int, logictype: str,
+              random_logic_phase_length: List[int]) -> Dict[str, Tuple[str, LocationProgressType]]:
     """Returns a dictionary with all level locations based on player options (maxlevel INCLUDED).
     If shape requirements are not randomized, give logic type 0."""
 
     # Level 1 is always directly accessible
-    locations: dict[str, tuple[str, LocationProgressType]] = {"Level 1": ("Main", LocationProgressType.PRIORITY),
+    locations: Dict[str, Tuple[str, LocationProgressType]] = {"Level 1": ("Main", LocationProgressType.PRIORITY),
                                                               "Level 1 Additional": (
                                                               "Main", LocationProgressType.PRIORITY)}
 
-    if logictype == 0 or logictype == 1:  # Vanilla or shuffled
+    if logictype.startswith("vanilla"):
         locations["Level 20 Additional"] = ("Levels with 5 Buildings", LocationProgressType.DEFAULT)
         locations["Level 2"] = ("Levels with 1 Building", LocationProgressType.DEFAULT)
         locations["Level 3"] = ("Levels with 1 Building", LocationProgressType.DEFAULT)
@@ -181,7 +200,8 @@ def addlevels(maxlevel: int, logictype: int) -> dict[str, tuple[str, LocationPro
         locations["Level 10"] = ("Levels with 4 Buildings", LocationProgressType.DEFAULT)
         for x in range(11, maxlevel+1):
             locations[f"Level {x}"] = ("Levels with 5 Buildings", LocationProgressType.DEFAULT)
-    elif logictype == 2 or logictype == 3:  # Both stretched variants
+
+    elif logictype.startswith("stretched"):
         phaselength = maxlevel//6
         l20phase = 20//phaselength
         if l20phase == 0:
@@ -203,7 +223,55 @@ def addlevels(maxlevel: int, logictype: int) -> dict[str, tuple[str, LocationPro
             locations[f"Level {x}"] = ("Levels with 4 Buildings", LocationProgressType.DEFAULT)
         for x in range(phaselength*5, maxlevel+1):
             locations[f"Level {x}"] = ("Levels with 5 Buildings", LocationProgressType.DEFAULT)
-    else:  # logictype == 4 aka hardcore
+
+    elif logictype.startswith("quick"):
+        locations["Level 20 Additional"] = ("Levels with 5 Buildings", LocationProgressType.DEFAULT)
+        locations["Level 2"] = ("Levels with 1 Building", LocationProgressType.DEFAULT)
+        locations["Level 3"] = ("Levels with 2 Buildings", LocationProgressType.DEFAULT)
+        locations["Level 4"] = ("Levels with 3 Buildings", LocationProgressType.DEFAULT)
+        locations["Level 5"] = ("Levels with 4 Buildings", LocationProgressType.DEFAULT)
+        for x in range(6, maxlevel+1):
+            locations[f"Level {x}"] = ("Levels with 5 Buildings", LocationProgressType.DEFAULT)
+
+    elif logictype.startswith("random_steps"):
+        nextlevel = 2
+        l20set = False
+        for _ in range(0, random_logic_phase_length[0]):
+            locations[f"Level {nextlevel}"] = ("Main", LocationProgressType.DEFAULT)
+            nextlevel += 1
+        if nextlevel > 20 and not l20set:
+            locations["Level 20 Additional"] = ("Main", LocationProgressType.DEFAULT)
+            l20set = True
+        for _ in range(0, random_logic_phase_length[1]):
+            locations[f"Level {nextlevel}"] = ("Levels with 1 Building", LocationProgressType.DEFAULT)
+            nextlevel += 1
+        if nextlevel > 20 and not l20set:
+            locations["Level 20 Additional"] = ("Levels with 1 Building", LocationProgressType.DEFAULT)
+            l20set = True
+        for _ in range(0, random_logic_phase_length[2]):
+            locations[f"Level {nextlevel}"] = ("Levels with 2 Buildings", LocationProgressType.DEFAULT)
+            nextlevel += 1
+        if nextlevel > 20 and not l20set:
+            locations["Level 20 Additional"] = ("Levels with 2 Buildings", LocationProgressType.DEFAULT)
+            l20set = True
+        for _ in range(0, random_logic_phase_length[3]):
+            locations[f"Level {nextlevel}"] = ("Levels with 3 Buildings", LocationProgressType.DEFAULT)
+            nextlevel += 1
+        if nextlevel > 20 and not l20set:
+            locations["Level 20 Additional"] = ("Levels with 3 Buildings", LocationProgressType.DEFAULT)
+            l20set = True
+        for _ in range(0, random_logic_phase_length[4]):
+            locations[f"Level {nextlevel}"] = ("Levels with 4 Buildings", LocationProgressType.DEFAULT)
+            nextlevel += 1
+        if nextlevel > 20 and not l20set:
+            locations["Level 20 Additional"] = ("Levels with 4 Buildings", LocationProgressType.DEFAULT)
+            l20set = True
+        for x in range(nextlevel, maxlevel+1):
+            locations[f"Level {x}"] = ("Levels with 5 Buildings", LocationProgressType.DEFAULT)
+        if not l20set:
+            locations["Level 20 Additional"] = ("Levels with 5 Buildings", LocationProgressType.DEFAULT)
+
+    else:  # logictype == hardcore
         locations["Level 20 Additional"] = ("Levels with 5 Buildings", LocationProgressType.DEFAULT)
         for x in range(2, maxlevel+1):
             locations[f"Level {x}"] = ("Levels with 5 Buildings", LocationProgressType.DEFAULT)
@@ -211,26 +279,27 @@ def addlevels(maxlevel: int, logictype: int) -> dict[str, tuple[str, LocationPro
     return locations
 
 
-def addupgrades(finaltier: int, logictype: int) -> dict[str, tuple[str, LocationProgressType]]:
+def addupgrades(finaltier: int, logictype: str,
+                category_random_logic_amounts: Dict[str, int]) -> Dict[str, Tuple[str, LocationProgressType]]:
     """Returns a dictionary with all upgrade locations based on player options (finaltier INCLUDED).
     If shape requirements are not randomized, give logic type 0."""
 
-    locations: dict[str, tuple[str, LocationProgressType]] = {}
+    locations: Dict[str, Tuple[str, LocationProgressType]] = {}
 
-    if logictype == 0:  # vanilla-like, Tier III is a special case here
-        locations["Routing Upgrade Tier II"] = ("Main", LocationProgressType.DEFAULT)
-        locations["Extracting Upgrade Tier II"] = ("Main", LocationProgressType.DEFAULT)
-        locations["Shape Processing Upgrade Tier II"] = ("Main", LocationProgressType.DEFAULT)
-        locations["Color Processing Upgrade Tier II"] = ("Upgrades with 3 Buildings", LocationProgressType.DEFAULT)
-        locations["Routing Upgrade Tier III"] = ("Upgrades with 2 Buildings", LocationProgressType.DEFAULT)
-        locations["Extracting Upgrade Tier III"] = ("Upgrades with 2 Buildings", LocationProgressType.DEFAULT)
-        locations["Shape Processing Upgrade Tier III"] = ("Upgrades with 1 Building", LocationProgressType.DEFAULT)
-        locations["Color Processing Upgrade Tier III"] = ("Upgrades with 3 Buildings", LocationProgressType.DEFAULT)
+    if logictype == "vanilla_like":
+        locations["Belt Upgrade Tier II"] = ("Main", LocationProgressType.DEFAULT)
+        locations["Miner Upgrade Tier II"] = ("Main", LocationProgressType.DEFAULT)
+        locations["Processors Upgrade Tier II"] = ("Main", LocationProgressType.DEFAULT)
+        locations["Painting Upgrade Tier II"] = ("Upgrades with 3 Buildings", LocationProgressType.DEFAULT)
+        locations["Belt Upgrade Tier III"] = ("Upgrades with 2 Buildings", LocationProgressType.DEFAULT)
+        locations["Miner Upgrade Tier III"] = ("Upgrades with 2 Buildings", LocationProgressType.DEFAULT)
+        locations["Processors Upgrade Tier III"] = ("Upgrades with 1 Building", LocationProgressType.DEFAULT)
+        locations["Painting Upgrade Tier III"] = ("Upgrades with 3 Buildings", LocationProgressType.DEFAULT)
         for x in range(4, finaltier+1):
             for cat in categories:
                 locations[f"{cat} Upgrade Tier {roman(x)}"] = ("Upgrades with 5 Buildings",
                                                                LocationProgressType.DEFAULT)
-    elif logictype == 1:  # linear
+    elif logictype == "linear":
         for cat in categories:
             locations[f"{cat} Upgrade Tier II"] = ("Main", LocationProgressType.DEFAULT)
         for cat in categories:
@@ -243,7 +312,59 @@ def addupgrades(finaltier: int, logictype: int) -> dict[str, tuple[str, Location
             for cat in categories:
                 locations[f"{cat} Upgrade Tier {roman(x)}"] = ("Upgrades with 5 Buildings",
                                                                LocationProgressType.DEFAULT)
-    else: # logictype == 2 aka hardcore
+
+    elif logictype == "category":
+        for x in range(2, 7):
+            locations[f"Belt Upgrade Tier {roman(x)}"] = ("Main", LocationProgressType.DEFAULT)
+        for x in range(7, finaltier+1):
+            locations[f"Belt Upgrade Tier {roman(x)}"] = ("Upgrades with 5 Buildings", LocationProgressType.DEFAULT)
+        for x in range(2, 7):
+            locations[f"Miner Upgrade Tier {roman(x)}"] = ("Main", LocationProgressType.DEFAULT)
+        for x in range(7, finaltier+1):
+            locations[f"Miner Upgrade Tier {roman(x)}"] = ("Upgrades with 5 Buildings", LocationProgressType.DEFAULT)
+        locations["Processors Upgrade Tier II"] = ("Upgrades with 1 Building", LocationProgressType.DEFAULT)
+        locations["Processors Upgrade Tier III"] = ("Upgrades with 1 Building", LocationProgressType.DEFAULT)
+        locations["Processors Upgrade Tier IV"] = ("Upgrades with 2 Buildings", LocationProgressType.DEFAULT)
+        locations["Processors Upgrade Tier V"] = ("Upgrades with 2 Buildings", LocationProgressType.DEFAULT)
+        locations["Processors Upgrade Tier VI"] = ("Upgrades with 3 Buildings", LocationProgressType.DEFAULT)
+        for x in range(7, finaltier+1):
+            locations[f"Processors Upgrade Tier {roman(x)}"] = ("Upgrades with 5 Buildings",
+                                                                LocationProgressType.DEFAULT)
+        locations["Painting Upgrade Tier II"] = ("Upgrades with 4 Buildings", LocationProgressType.DEFAULT)
+        locations["Painting Upgrade Tier III"] = ("Upgrades with 4 Buildings", LocationProgressType.DEFAULT)
+        locations["Painting Upgrade Tier IV"] = ("Upgrades with 4 Buildings", LocationProgressType.DEFAULT)
+        for x in range(5, finaltier+1):
+            locations[f"Painting Upgrade Tier {roman(x)}"] = ("Upgrades with 5 Buildings", LocationProgressType.DEFAULT)
+
+    elif logictype == "category_random":
+        regions = ["Main", "Upgrades with 1 Building", "Upgrades with 2 Buildings", "Upgrades with 3 Buildings",
+                   "Upgrades with 4 Buildings", "Upgrades with 5 Buildings"]
+        for x in range(2, 7):
+            locations[f"Belt Upgrade Tier {roman(x)}"] = (regions[category_random_logic_amounts["belt"]],
+                                                          LocationProgressType.DEFAULT)
+        for x in range(7, finaltier+1):
+            locations[f"Belt Upgrade Tier {roman(x)}"] = ("Upgrades with 5 Buildings",
+                                                          LocationProgressType.DEFAULT)
+        for x in range(2, 7):
+            locations[f"Miner Upgrade Tier {roman(x)}"] = (regions[category_random_logic_amounts["miner"]],
+                                                           LocationProgressType.DEFAULT)
+        for x in range(7, finaltier+1):
+            locations[f"Miner Upgrade Tier {roman(x)}"] = ("Upgrades with 5 Buildings",
+                                                           LocationProgressType.DEFAULT)
+        for x in range(2, 7):
+            locations[f"Processors Upgrade Tier {roman(x)}"] = (regions[category_random_logic_amounts["processors"]],
+                                                                LocationProgressType.DEFAULT)
+        for x in range(7, finaltier+1):
+            locations[f"Processors Upgrade Tier {roman(x)}"] = ("Upgrades with 5 Buildings",
+                                                                LocationProgressType.DEFAULT)
+        for x in range(2, 7):
+            locations[f"Painting Upgrade Tier {roman(x)}"] = (regions[category_random_logic_amounts["painting"]],
+                                                              LocationProgressType.DEFAULT)
+        for x in range(7, finaltier+1):
+            locations[f"Painting Upgrade Tier {roman(x)}"] = ("Upgrades with 5 Buildings",
+                                                              LocationProgressType.DEFAULT)
+
+    else: # logictype == hardcore
         for cat in categories:
             locations[f"{cat} Upgrade Tier II"] = ("Main", LocationProgressType.DEFAULT)
         for x in range(3, finaltier+1):
@@ -255,11 +376,11 @@ def addupgrades(finaltier: int, logictype: int) -> dict[str, tuple[str, Location
 
 
 def addachievements(include: bool, excludesoftlock: bool, excludelong: bool, excludeprogressive: bool,
-                    maxlevel: int, levellogictype: int, upgradelogictype: int,
-                    goal: int) -> dict[str, tuple[str, LocationProgressType]]:
+                    maxlevel: int, levellogictype: str, upgradelogictype: str,
+                    goal: int) -> Dict[str, Tuple[str, LocationProgressType]]:
     """Returns a dictionary with all achievement locations based on player options."""
 
-    locations: dict[str, tuple[str, LocationProgressType]] = {}
+    locations: Dict[str, Tuple[str, LocationProgressType]] = {}
 
     if not include:
         return locations
@@ -305,12 +426,12 @@ def addachievements(include: bool, excludesoftlock: bool, excludelong: bool, exc
     locations["Memories from the past"] = ("All Buildings Shapes", LocationProgressType.DEFAULT)
     locations["I need trains"] = ("Main", LocationProgressType.DEFAULT)
     locations["GPS"] = ("Main", LocationProgressType.DEFAULT)
-    if upgradelogictype == 1:
+    if upgradelogictype == "linear":
         locations["Faster"] = ("Upgrades with 3 Buildings", LocationProgressType.DEFAULT)
     else:
         locations["Faster"] = ("Upgrades with 5 Buildings", LocationProgressType.DEFAULT)
     # Achievements that depend on the level
-    if levellogictype in [0, 1, 4]:
+    if levellogictype in ["vanilla", "shuffled", "hardcore"]:
         locations["Wires"] = ("Levels with 5 Buildings", LocationProgressType.DEFAULT)
         if goal: # not goal == 0
             locations["Freedom"] = ("Levels with 5 Buildings", LocationProgressType.DEFAULT)
@@ -362,7 +483,7 @@ def addachievements(include: bool, excludesoftlock: bool, excludelong: bool, exc
         unreasonable_type = LocationProgressType.DEFAULT
 
     if not excludesoftlock:
-        if levellogictype in [0, 1, 4]:
+        if levellogictype in ["vanilla", "shuffled", "hardcore"]:
             locations["Speedrun Master"] = ("Levels with 5 Buildings", unreasonable_type)
             locations["Speedrun Novice"] = ("Levels with 5 Buildings", unreasonable_type)
             locations["Not an idle game"] = ("Levels with 5 Buildings", unreasonable_type)
@@ -399,25 +520,29 @@ def addachievements(include: bool, excludesoftlock: bool, excludelong: bool, exc
     return locations
 
 
-def addshapesanity(amount: int, random: Random, included: int) -> dict[str, tuple[str, LocationProgressType]]:
+def addshapesanity(amount: int, random: Random) -> Dict[str, Tuple[str, LocationProgressType]]:
     """Returns a dictionary with a given number of random shapesanity locations."""
-    included_shapes: dict[str, tuple[str, LocationProgressType]] = {}
-    if not included:
-        return included_shapes
+
+    included_shapes: Dict[str, Tuple[str, LocationProgressType]] = {}
+    # if not included:
+    #     return included_shapes
     shapes_list = list(shapesanity_simple.items())
-    if amount >= 4:
-        for basic_shape in ["Circle", "Square", "Star"]:
-            included_shapes[f"Shapesanity Uncolored {basic_shape}"] = ("Shapesanity Unprocessed Uncolored",
-                                                                       LocationProgressType.DEFAULT)
-            shapes_list.remove((f"Shapesanity Uncolored {basic_shape}", "Shapesanity Unprocessed Uncolored"))
-        included_shapes[f"Shapesanity Uncolored Windmill"] = ("Shapesanity Stitched Uncolored",
+    # Always have at least 4 shapesanity checks because of sphere 1 usefulls + both hardcore logic
+    for basic_shape in ["Circle", "Square", "Star"]:
+        included_shapes[f"Shapesanity Uncolored {basic_shape}"] = ("Shapesanity Unprocessed Uncolored",
                                                                    LocationProgressType.DEFAULT)
-        shapes_list.remove((f"Shapesanity Uncolored Windmill", "Shapesanity Stitched Uncolored"))
-    switched = False
+        shapes_list.remove((f"Shapesanity Uncolored {basic_shape}", "Shapesanity Unprocessed Uncolored"))
+    included_shapes[f"Shapesanity Uncolored Windmill"] = ("Shapesanity Stitched Uncolored",
+                                                          LocationProgressType.DEFAULT)
+    shapes_list.remove((f"Shapesanity Uncolored Windmill", "Shapesanity Stitched Uncolored"))
+    switched = 0
     for counting in range(4, amount):
-        if (len(shapes_list) == 0 or counting == amount//2) and not switched:
+        if switched == 0 and (len(shapes_list) == 0 or counting == amount//2):
+            shapes_list = list(shapesanity_medium.items())
+            switched = 1
+        if switched == 1 and (len(shapes_list) == 0 or counting == amount*3//4):
             shapes_list = list(shapesanity_complex.items())
-            switched = True
+            switched = 2
         x = random.randint(0, len(shapes_list)-1)
         next_shape = shapes_list.pop(x)
         included_shapes[next_shape[0]] = (next_shape[1], LocationProgressType.DEFAULT)

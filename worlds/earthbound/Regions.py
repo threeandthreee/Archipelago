@@ -31,6 +31,7 @@ def init_areas(world: "EarthBoundWorld", locations: List[LocationData]) -> None:
         create_region(world, player, locations_per_region, "Lilliput Steps"),
         create_region(world, player, locations_per_region, "Threed"),
         create_region(world, player, locations_per_region, "Threed Underground"),
+        create_region(world, player, locations_per_region, "Boogey Tent"),
         create_region(world, player, locations_per_region, "Grapefruit Falls"),
         create_region(world, player, locations_per_region, "Belch's Factory"),
         create_region(world, player, locations_per_region, "Saturn Valley"),
@@ -104,15 +105,16 @@ def init_areas(world: "EarthBoundWorld", locations: List[LocationData]) -> None:
                                                        "Everdred's House": lambda state: state.has("Paula", player)})
 
     multiworld.get_region("Peaceful Rest Valley", player).add_exits(["Twoson", "Happy-Happy Village",],
-                                                                    {"Twoson": lambda state: state.has_any({"Pencil Eraser", "Franklin Badge"}, player)})#Change to franklin badge
+                                                                    {"Twoson": lambda state: state.has_any({"Pencil Eraser", "Franklin Badge"}, player)})  #Change to franklin badge
 
     multiworld.get_region("Happy-Happy Village", player).add_exits(["Peaceful Rest Valley", "Lilliput Steps"])
     
-    multiworld.get_region("Threed", player).add_exits(["Twoson", "Dusty Dunes Desert", "Summers", "Threed Underground"],
-        {"Twoson": lambda state: state.has("Threed Tunnels Clear", player),
-         "Dusty Dunes Desert": lambda state: state.has("Threed Tunnels Clear", player),
-         "Summers": lambda state: state.has_all({"Jeff", "UFO Engine", "Bad Key Machine"}, player),
-         "Threed Underground": lambda state: state.has("Zombie Paper", player)})
+    multiworld.get_region("Threed", player).add_exits(["Twoson", "Dusty Dunes Desert", "Summers", "Threed Underground", "Boogey Tent"],
+                                                      {"Twoson": lambda state: state.has("Threed Tunnels Clear", player),
+                                                      "Dusty Dunes Desert": lambda state: state.has("Threed Tunnels Clear", player),
+                                                       "Summers": lambda state: state.has_all({"Jeff", "UFO Engine", "Bad Key Machine"}, player),
+                                                       "Threed Underground": lambda state: state.has("Zombie Paper", player),
+                                                       "Boogey Tent": lambda state: state.has("Jeff", player)})
 
     multiworld.get_region("Threed Underground", player).add_exits(["Grapefruit Falls"])
 
@@ -150,7 +152,7 @@ def init_areas(world: "EarthBoundWorld", locations: List[LocationData]) -> None:
         {"Stonehenge Base": lambda state: state.has("Eraser Eraser", player)})
 
     multiworld.get_region("Dalaam", player).add_exits(["Pink Cloud"],
-        {"Pink Cloud": lambda state: state.has("Carrot Key", player)})
+                                                      {"Pink Cloud": lambda state: state.has("Carrot Key", player)})
 
     multiworld.get_region("Scaraba", player).add_exits(["Pyramid"],
                                                        {"Pyramid": lambda state: state.has("Hieroglyph Copy", player)})
@@ -178,10 +180,10 @@ def init_areas(world: "EarthBoundWorld", locations: List[LocationData]) -> None:
 
     if world.options.giygas_required:
         multiworld.get_region("Cave of the Present", player).add_exits(["Cave of the Past"],
-                             {"Cave of the Past": lambda state: state.has("Power of the Earth", player)})
+                                                                       {"Cave of the Past": lambda state: state.has("Power of the Earth", player)})
 
         multiworld.get_region("Cave of the Past", player).add_exits(["Endgame"],
-                             {"Endgame": lambda state: state.has("Paula", player)})
+                                                                    {"Endgame": lambda state: state.has("Paula", player)})
 
 
 def create_location(player: int, location_data: LocationData, region: Region) -> Location:

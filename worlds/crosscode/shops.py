@@ -39,6 +39,8 @@ shop_dict: dict[str, ShopData] = {
     'Rhombus Items': ShopData(internal_name='rhombusItems1', name='Rhombus Items', metadata={'shops': True}, access=AccessInfo(region={'linear': '33', 'open': 'open16'}, cond=[VariableCondition(name='canGrind')])),
     'Rhombus Curios': ShopData(internal_name='rhombusCurios', name='Rhombus Curios', metadata={'shops': True}, access=AccessInfo(region={'linear': '33', 'open': 'open16'}, cond=[VariableCondition(name='canGrind')])),
     'Rhombus Backer Items': ShopData(internal_name='rhombusBacker', name='Rhombus Backer Items', metadata={'shops': True}, access=AccessInfo(region={'linear': '33', 'open': 'open16'})),
+    'Vermillion Weapons': ShopData(internal_name='aridWeapons', name='Vermillion Weapons', metadata={'shops': True}, access=AccessInfo(region={'linear': '22', 'open': 'open18'})),
+    'Vermillion Items': ShopData(internal_name='aridItems', name='Vermillion Items', metadata={'shops': True}, access=AccessInfo(region={'linear': '22', 'open': 'open18'})),
 }
 
 per_shop_locations: dict[str, dict[int, LocationData]] = {
@@ -287,6 +289,26 @@ per_shop_locations: dict[str, dict[int, LocationData]] = {
         551: locations_dict['Shop Slot: Willis Waldmahl (Rhombus Backer Items)'],
         637: locations_dict['Shop Slot: Pumpkin Spice Cof. (Rhombus Backer Items)'],
     },
+    "Vermillion Weapons": {
+        204: locations_dict['Shop Slot: Steel Goggles (Vermillion Weapons)'],
+        205: locations_dict['Shop Slot: Steel Edge (Vermillion Weapons)'],
+        206: locations_dict['Shop Slot: Steel Mail (Vermillion Weapons)'],
+        207: locations_dict['Shop Slot: Steel Boots (Vermillion Weapons)'],
+        264: locations_dict['Shop Slot: Silver Goggles (Vermillion Weapons)'],
+        266: locations_dict['Shop Slot: Silver Edge (Vermillion Weapons)'],
+        268: locations_dict['Shop Slot: Silver Mail (Vermillion Weapons)'],
+        270: locations_dict['Shop Slot: Silver Boots (Vermillion Weapons)'],
+    },
+    "Vermillion Items": {
+        1: locations_dict['Shop Slot: Sandwich (Vermillion Items)'],
+        27: locations_dict['Shop Slot: Hi-Sandwich (Vermillion Items)'],
+        2: locations_dict['Shop Slot: Green Leaf Tea (Vermillion Items)'],
+        366: locations_dict['Shop Slot: Just Water (Vermillion Items)'],
+        64: locations_dict['Shop Slot: Spicy Bun (Vermillion Items)'],
+        70: locations_dict['Shop Slot: Fruit Drink (Vermillion Items)'],
+        73: locations_dict['Shop Slot: Rice Cracker (Vermillion Items)'],
+        67: locations_dict['Shop Slot: Veggie Sticks (Vermillion Items)'],
+    },
     
 }
 
@@ -435,6 +457,8 @@ shop_unlock_by_shop = {
     'rhombusItems1': items_dict['Shop Unlock: Rhombus Items', 1],
     'rhombusCurios': items_dict['Shop Unlock: Rhombus Curios', 1],
     'rhombusBacker': items_dict['Shop Unlock: Rhombus Backer Items', 1],
+    'aridWeapons': items_dict['Shop Unlock: Vermillion Weapons', 1],
+    'aridItems': items_dict['Shop Unlock: Vermillion Items', 1],
 }
 
 shop_unlock_by_shop_and_id = {
@@ -625,4 +649,20 @@ shop_unlock_by_shop_and_id = {
     ('rhombusBacker', 496): items_dict['Slot Unlock: Guacamole Toast (Rhombus Backer Items)', 1],
     ('rhombusBacker', 551): items_dict['Slot Unlock: Willis Waldmahl (Rhombus Backer Items)', 1],
     ('rhombusBacker', 637): items_dict['Slot Unlock: Pumpkin Spice Cof. (Rhombus Backer Items)', 1],
+    ('aridWeapons', 204): items_dict['Slot Unlock: Steel Goggles (Vermillion Weapons)', 1],
+    ('aridWeapons', 205): items_dict['Slot Unlock: Steel Edge (Vermillion Weapons)', 1],
+    ('aridWeapons', 206): items_dict['Slot Unlock: Steel Mail (Vermillion Weapons)', 1],
+    ('aridWeapons', 207): items_dict['Slot Unlock: Steel Boots (Vermillion Weapons)', 1],
+    ('aridWeapons', 264): items_dict['Slot Unlock: Silver Goggles (Vermillion Weapons)', 1],
+    ('aridWeapons', 266): items_dict['Slot Unlock: Silver Edge (Vermillion Weapons)', 1],
+    ('aridWeapons', 268): items_dict['Slot Unlock: Silver Mail (Vermillion Weapons)', 1],
+    ('aridWeapons', 270): items_dict['Slot Unlock: Silver Boots (Vermillion Weapons)', 1],
+    ('aridItems', 1): items_dict['Slot Unlock: Sandwich (Vermillion Items)', 1],
+    ('aridItems', 27): items_dict['Slot Unlock: Hi-Sandwich (Vermillion Items)', 1],
+    ('aridItems', 2): items_dict['Slot Unlock: Green Leaf Tea (Vermillion Items)', 1],
+    ('aridItems', 366): items_dict['Slot Unlock: Just Water (Vermillion Items)', 1],
+    ('aridItems', 64): items_dict['Slot Unlock: Spicy Bun (Vermillion Items)', 1],
+    ('aridItems', 70): items_dict['Slot Unlock: Fruit Drink (Vermillion Items)', 1],
+    ('aridItems', 73): items_dict['Slot Unlock: Rice Cracker (Vermillion Items)', 1],
+    ('aridItems', 67): items_dict['Slot Unlock: Veggie Sticks (Vermillion Items)', 1],
 }
