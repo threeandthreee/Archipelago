@@ -3,7 +3,7 @@ palette_list = [
     0x00, #Pyramid
     0x01, #Underworld
     0x02, #Cave of the Past
-    0x03 #Giygas's lair
+    0x03, #Giygas's lair
 
 
     0x04, #Onett daytime
@@ -67,7 +67,7 @@ palette_list = [
     0x33, #Hospital 1
     0x34, #Apple kid house
     0x35, #?
-    0x36 #Orange kid house
+    0x36, #Orange kid house
     0x37, #Everdred's House
     0x38, #?
     0x39, #Ness's room
@@ -99,7 +99,7 @@ palette_list = [
     0x4F, #Monotoli lobby
     0x50,
     0x51,
-    0x52
+    0x52,
 
     0x53,
     0x54,
