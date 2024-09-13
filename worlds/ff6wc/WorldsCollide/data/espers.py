@@ -44,7 +44,7 @@ class Espers():
             esper = Esper(esper_index, self.spells_bonus_data[esper_index], self.name_data[esper_index], self.ability_data[esper_index])
             self.espers.append(esper)
 
-        self.available_espers = set(range(self.ESPER_COUNT))
+        self.available_espers = list(range(self.ESPER_COUNT))
         self.starting_espers = []
 
         if args.starting_espers_min > 0:
@@ -172,6 +172,10 @@ class Espers():
         for esper in self.espers:
             esper.randomize_rates()
 
+    def randomize_rates_tiered(self):
+        for esper in self.espers:
+            esper.randomize_rates_tiered()
+
     def shuffle_bonuses(self):
         bonuses = []
         for esper in self.espers:
@@ -273,18 +277,25 @@ class Espers():
     def mod(self, dialogs):
         self.receive_dialogs_mod(dialogs)
 
-        if self.args.esper_spells_random_rates or self.args.esper_spells_shuffle_random_rates:
-            self.randomize_rates()
-
-        if len(self.starting_espers):
-            self.randomize_rates()
-
         if self.args.esper_spells_shuffle or self.args.esper_spells_shuffle_random_rates:
             self.shuffle_spells()
         elif self.args.esper_spells_random:
             self.randomize_spells()
         elif self.args.esper_spells_random_tiered:
             self.randomize_spells_tiered()
+
+        if self.args.esper_spells_random or self.args.esper_spells_random_tiered:
+            # if random, replace the spells
+            self.replace_flagged_learnables()
+        else:
+            # otherwise (original or shuffled), remove them
+            self.remove_flagged_learnables()
+
+        if self.args.esper_learnrates_random:
+            self.randomize_rates()
+
+        if self.args.esper_learnrates_random_tiered:
+            self.randomize_rates_tiered()
 
         if self.args.esper_bonuses_shuffle:
             self.shuffle_bonuses()
@@ -304,15 +315,11 @@ class Espers():
             self.equipable_balanced_random()
         espers_asm.equipable_mod(self)
 
+        if self.args.esper_mastered_icon:
+            espers_asm.mastered_mod(self)
+
         if self.args.permadeath:
             self.phoenix_life3()
-
-        if self.args.esper_spells_random or self.args.esper_spells_random_tiered:
-            # if random, replace the spells
-            self.replace_flagged_learnables()
-        else:
-            # otherwise (original or shuffled), remove them
-            self.remove_flagged_learnables()
 
         if self.args.esper_multi_summon:
             self.multi_summon()
@@ -339,9 +346,8 @@ class Espers():
 
         rand_esper = random.sample(self.available_espers, 1)[0]
         self.available_espers.remove(rand_esper)
-        print(rand_esper)
         return rand_esper
-
+    
     def get_specific_esper(self, name):
         chosen_esper = None
         for index, esper in enumerate(self.espers):

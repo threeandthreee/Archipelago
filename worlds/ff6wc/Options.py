@@ -1,12 +1,13 @@
 from dataclasses import dataclass
+import logging
 import math
 from random import Random
 import random
-from typing import Any, List, Sequence
+from typing import Any, Dict, List, Sequence, Union
 
 from typing_extensions import override
 
-from Options import DefaultOnToggle, PerGameCommonOptions, Range, Choice, FreeText
+from Options import DefaultOnToggle, PerGameCommonOptions, Range, Choice, FreeText, Removed
 
 
 class CharacterCount(Range):
@@ -152,9 +153,17 @@ class StartingCharacter4(Choice):
     default = 14
 
 
+class StartAverageLevel(DefaultOnToggle):
+    """ Recruited characters start at the average character level """
+    display_name = "Start Average Level"
+
+    def flags(self) -> List[str]:
+        return ["-sal"] if self.value else []
+
+
 class RandomizedStats(Choice):
     """Modify character base stats, as a range of percentages applied to their vanilla stats.
-    Options include vanilla (100%), Light (85-125%), Moderate (50-150%), Boosted (100-1750%) and Wild (0-200%)"""
+    Options include vanilla (100%), Light (85-125%), Moderate (50-150%), Boosted (100-175%) and Wild (0-200%)"""
     display_name = "Randomized Stats"
     option_vanilla = 0
     option_light = 1
@@ -291,9 +300,22 @@ class AllowStrongestItems(DefaultOnToggle):
     display_name = "Allow Strongest Items"
 
 
-class RandomizeZozoClock(DefaultOnToggle):
-    """Randomize the clock puzzle in Zozo."""
+class RandomizeZozoClock(Removed):
+    """ This option has been removed. You can use `ZozoClockChestExclude` instead. """
     display_name = "Randomize Zozo Clock"
+
+    def __init__(self, value: str):
+        if value:
+            # TODO: after some deprecation time, change this to raise an exception
+            logging.warning("`RandomizeZozoClock` removed in WC 1.4.2, please update your options file. "
+                            "If you would like to make sure you don't have to do the clock puzzle, "
+                            "you can use `ZozoClockChestExclude`")
+        super().__init__("")
+
+
+class ZozoClockChestExclude(DefaultOnToggle):
+    """Whether to exclude the Zozo Clock Puzzle Chest from progression."""
+    display_name = "Exclude Zozo Clock Puzzle Chest"
 
 
 class Treasuresanity(Choice):
@@ -310,6 +332,47 @@ class Flagstring(FreeText):
     display_name = "Flagstring"
     default = "False"
 
+    _cache: Union[Dict[str, Dict[str, str]], None] = None
+    """ `{full_flagstring_value: {flag: value}}` """
+
+    def _parse(self) -> Dict[str, str]:
+        parsed: Dict[str, str] = {}
+        space_split = self.value.split(" ")
+        i = 0
+        while i < len(space_split):
+            if space_split[i].startswith("-"):
+                if len(space_split[i]) < 2:
+                    raise ValueError(f"invalid {self.display_name} at symbol {i}")
+                key = space_split[i]
+                values: List[str] = []
+                i += 1
+                while i < len(space_split) and not space_split[i].startswith("-"):
+                    values.append(space_split[i])
+                    i += 1
+                value = " ".join(values)
+                parsed[key] = value
+            else:
+                i += 1
+        return parsed
+
+    def _get_from_cache(self) -> Dict[str, str]:
+        if self._cache is None:
+            self._cache = {}
+
+        parsed = self._cache.get(self.value)
+        if parsed is None:
+            parsed = self._parse()
+            self._cache[self.value] = parsed
+        return parsed
+
+    def has_flag(self, key: str) -> bool:
+        parsed = self._get_from_cache()
+        return key in parsed
+
+    def get_flag(self, key: str) -> str:
+        parsed = self._get_from_cache()
+        return parsed[key]
+
 
 @dataclass
 class FF6WCOptions(PerGameCommonOptions):
@@ -322,6 +385,7 @@ class FF6WCOptions(PerGameCommonOptions):
     StartingCharacter2: StartingCharacter2
     StartingCharacter3: StartingCharacter3
     StartingCharacter4: StartingCharacter4
+    StartAverageLevel: StartAverageLevel
     RandomizedStats: RandomizedStats
     RandomizedCommands: RandomizedCommands
     BattleRewardMultiplier: BattleRewardMultiplier
@@ -336,18 +400,30 @@ class FF6WCOptions(PerGameCommonOptions):
     SpellcastingItems: SpellcastingItems
     Equipment: Equipment
     AllowStrongestItems: AllowStrongestItems
-    RandomizeZozoClock: RandomizeZozoClock
+    RandomizeZozoClock: RandomizeZozoClock  # TODO: some time after the above TODO raises an exception, remove this
+    ZozoClockChestExclude: ZozoClockChestExclude
     Treasuresanity: Treasuresanity
     Flagstring: Flagstring
+
+    def no_paladin_shields(self) -> bool:
+        return (not self.AllowStrongestItems.value) or self.Flagstring.has_flag("-nfps")
+
+    def no_exp_eggs(self) -> bool:
+        return (not self.AllowStrongestItems.value) or self.Flagstring.has_flag("-nee")
+
+    def no_illuminas(self) -> bool:
+        return (not self.AllowStrongestItems.value) or self.Flagstring.has_flag("-nil")
 
 
 def verify_flagstring(flags: Sequence[str]) -> None:
     """ raises exception (`ValueError`) if flagstring is invalid """
     from .WorldsCollide.args.arguments import Arguments
+    from . import FF6WCWorld
     assert not isinstance(flags, str)
     if "-i" not in flags:
         flags = ["-i", "x"] + list(flags)
-    Arguments(flags)
+    with FF6WCWorld.wc_ready:
+        Arguments(flags)
 
 
 def generate_flagstring(options: FF6WCOptions, starting_characters: List[str]) -> List[str]:
@@ -446,6 +522,8 @@ def generate_party_string(options: FF6WCOptions, starting_characters: List[str])
     character_three = "-sc3=" + str.lower(character_three) if character_count >= 3 else ""
     character_four = "-sc4=" + str.lower(character_four) if character_count == 4 else ""
 
+    sal = options.StartAverageLevel.flags()
+
     stat_min = 100
     stat_max = 100
     if options.RandomizedStats == 1:  # Light
@@ -465,7 +543,7 @@ def generate_party_string(options: FF6WCOptions, starting_characters: List[str])
 
     equipable_umaro = "-eu"
 
-    return [character_one, character_two, character_three, character_four, *stat_string, equipable_umaro]
+    return [character_one, character_two, character_three, character_four, *sal, *stat_string, equipable_umaro]
 
 
 def generate_commands_string(options: FF6WCOptions) -> List[str]:
@@ -591,8 +669,9 @@ def generate_gameplay_string(options: FF6WCOptions) -> List[str]:
     gameplay_strings = ["-move=bd", "-cor", "-crr", "-crvr", "50", "250", "-crm", "-ari"]
     if not options.AllowStrongestItems.value:
         gameplay_strings.extend(["-cnee", "-cnil"])
-    if options.RandomizeZozoClock.value:
-        gameplay_strings.extend(["-rc"])
+    # Zozo Clock is always randomized as of version 1.4.2, so do not need to add this into flagstring anymore
+    # if options.RandomizeZozoClock.value:
+    #    gameplay_strings.extend(["-rc"])
     return gameplay_strings
 
 

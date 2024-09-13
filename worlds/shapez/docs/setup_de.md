@@ -10,7 +10,8 @@
 ## Benötigte Software
 
 - Eine installierbare und aktuelle PC-Version von shapez ([Steam](https://store.steampowered.com/app/1318690/shapez/)).
-- Die shapezipelago Mod von der [GitHub-Seite](https://github.com/BlastSlimey/shapezipelago/releases) oder der [mod.io-Seite](https://mod.io/g/shapez/m/shapezipelago).
+- Die shapezipelago Mod von der [GitHub-Seite](https://github.com/BlastSlimey/shapezipelago/releases) oder der 
+[mod.io-Seite](https://mod.io/g/shapez/m/shapezipelago).
 
 ## Optionale Software
 
@@ -36,12 +37,13 @@ wählen können!
 
 ### Wo bekomme ich so eine YAML-Datei her?
 
-Du kannst auf der [shapez-Spieler-Optionen-Seite](/games/shapez/player-options) eine YAML-Datei generieren oder ein Template herunterladen.
+Du kannst auf der [shapez-Spieler-Optionen-Seite](/games/shapez/player-options) eine YAML-Datei generieren oder ein 
+Template herunterladen.
 
 ## Einem MultiWorld-Spiel beitreten
 
 1. Öffne das Spiel.
-2. Gib den Slot-Namen, die Adresse, den Port und das Password (optional) in die dafür vorgesehene Box im Hauptmenü ein.
+2. Gib im Hauptmenü den Slot-Namen, die Adresse, den Port und das Passwort (optional) in die dafür vorgesehene Box ein.
 3. Drücke auf "Connect".
    - Erneutes Drücken trennt die Verbindung zum Server.
    - Ob du verbunden bist, steht direkt daneben.

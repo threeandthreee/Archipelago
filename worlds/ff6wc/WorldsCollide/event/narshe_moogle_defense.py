@@ -67,7 +67,7 @@ class NarsheMoogleDefense(Event):
                 field.SetPalette(character_idx, self.characters.get_palette(self.characters.MOG)),
                 # Give it the name and properties of the moogle
                 field.SetName(character_idx, moogle_id),
-                field.SetProperties(character_idx, moogle_id),
+                field.SetEquipmentAndCommands(character_idx, moogle_id),
             ]
             if self.args.start_average_level:
                 src += [
@@ -141,6 +141,7 @@ class NarsheMoogleDefense(Event):
         space = Reserve(0xca905, 0xcaa03, "moogle defense party creation", field.NOP())
         space.write(
             src,
+            field.SetEventBit(event_bit.CONTINUE_MUSIC_DURING_BATTLE), # cause locke's theme to keep playing through battles
             field.Branch(space.end_address + 1), # skip nops
         )
 
@@ -457,7 +458,7 @@ class NarsheMoogleDefense(Event):
                 field.SetSprite(character_idx, self.characters.get_sprite(character_idx)),
                 field.SetPalette(character_idx, self.characters.get_palette(character_idx)),
                 field.SetName(character_idx, character_idx),
-                field.SetProperties(character_idx, character_idx),
+                field.SetEquipmentAndCommands(character_idx, character_idx),
                 f"SKIP_{character_idx}",
             ]
         src += [
@@ -497,7 +498,7 @@ class NarsheMoogleDefense(Event):
             field.SetSprite(character, self.characters.get_sprite(character)),
             field.SetPalette(character, self.characters.get_palette(character)),
             field.SetName(character, character),
-            field.SetProperties(character, character),
+            field.SetEquipmentAndCommands(character, character),
             field.RemoveStatusEffects(character, field.Status.FLOAT | field.Status.DARKNESS | field.Status.ZOMBIE | field.Status.POISON | field.Status.VANISH | field.Status.IMP | field.Status.PETRIFY | field.Status.DEATH),
             field.RemoveDeath(character), # added due to permadeath situations to make sure the corresponding party member is alive
             field.RestoreHp(character, 0x7f), # restore all HP
@@ -506,8 +507,12 @@ class NarsheMoogleDefense(Event):
         ])
 
     def esper_item_mod(self, esper_item_instructions):
-        #Using thematic Moogle sprite for Esper/Items
-        esper_item_sprite = self.characters.get_sprite(self.characters.MOG)
+        if self.args.character_gating:
+            #Using thematic Moogle sprite for Esper/Items
+            esper_item_sprite = self.characters.get_sprite(self.characters.MOG)
+        else:
+            # Open world -- use standard sprites
+            esper_item_sprite = self.characters.get_random_esper_item_sprite()
         self.terra_npc.sprite = esper_item_sprite
         self.terra_npc.palette = self.characters.get_palette(self.terra_npc.sprite)
         self.terra_collapsed_npc.sprite = esper_item_sprite

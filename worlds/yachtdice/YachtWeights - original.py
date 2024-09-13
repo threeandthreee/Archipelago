@@ -9514,6 +9514,14 @@ yacht_weights = {
 }
 
 print("/////////////////////////////////////////////////////////////////")
+
+# 2.1.1 release:
+# pars = [8000, 20000, 13000]
+
+#also possible: 
+pars = [32000, 150000, 61000]
+
+
 sumproduct = 0
 # Iterate through each key-value pair in the dictionary
 for outer_key, inner_dict in yacht_weights.items():
@@ -9538,7 +9546,7 @@ for key, value_dict in yacht_weights.items():
     for i in range(len(sorted_values) - 1, 0, -1):
         #sorted_keys[i-1]: sorted_values[i-1] 
         #sorted_keys[i]  : sorted_values[i]
-        if sorted_values[i] * (sorted_keys[i] - sorted_keys[i-1]) < 8000:
+        if sorted_values[i] * (sorted_keys[i] - sorted_keys[i-1]) < pars[0]:
             total_changed += sorted_values[i] * (sorted_keys[i] - sorted_keys[i-1])
             per_cat_changed += sorted_values[i] * (sorted_keys[i] - sorted_keys[i-1])
             sorted_values[i-1] += sorted_values[i]
@@ -9549,7 +9557,7 @@ for key, value_dict in yacht_weights.items():
     while i < len(sorted_values) - 1:
         #sorted_keys[i-1]: sorted_values[i-1] 
         #sorted_keys[i]  : sorted_values[i]
-        if sorted_values[i] * (- sorted_keys[i] + sorted_keys[i+1]) < 20000:
+        if sorted_values[i] * (- sorted_keys[i] + sorted_keys[i+1]) < pars[1]:
             total_changed += sorted_values[i] * (- sorted_keys[i] + sorted_keys[i+1])
             per_cat_changed += sorted_values[i] * (- sorted_keys[i] + sorted_keys[i+1])
             sorted_values[i+1] += sorted_values[i]
@@ -9561,7 +9569,7 @@ for key, value_dict in yacht_weights.items():
     for i in range(len(sorted_values) - 1, 0, -1):
         #sorted_keys[i-1]: sorted_values[i-1] 
         #sorted_keys[i]  : sorted_values[i]
-        if sorted_values[i] * (sorted_keys[i] - sorted_keys[i-1]) < 13000:
+        if sorted_values[i] * (sorted_keys[i] - sorted_keys[i-1]) < pars[2]:
             total_changed += sorted_values[i] * (sorted_keys[i] - sorted_keys[i-1])
             per_cat_changed += sorted_values[i] * (sorted_keys[i] - sorted_keys[i-1])
             sorted_values[i-1] += sorted_values[i]
@@ -9572,8 +9580,8 @@ for key, value_dict in yacht_weights.items():
     leng = len(sorted_values)
     new_size += leng
     yacht_weights[key] = {sorted_keys[i]: sorted_values[i] for i in range(leng)}
-    if per_cat_changed > 100000:
-        print(f"{key}: {per_cat_changed}")
+    # if per_cat_changed > 100000:
+        # print(f"{key}: {per_cat_changed}")
         
 print(original_size)
 print(new_size)

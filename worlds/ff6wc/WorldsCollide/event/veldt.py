@@ -302,7 +302,7 @@ class Veldt(Event):
                 asm.PLB(),                  # restore data bank register
                 asm.RTS(),
             )
-        else:
+        elif self.reward.type == RewardType.ESPER:
             espers_found_address = event_word.address(event_word.ESPERS_FOUND)
             space.write(
                 asm.LDA(ram_event_bit(event_bit.VELDT_REWARD_OBTAINED), asm.IMM8),
@@ -313,6 +313,14 @@ class Veldt(Event):
 
                 # load 0xff into a to let calling function know esper was obtained
                 asm.LDA(0xff, asm.IMM8),
+                asm.RTS(),
+            )
+        # else it's an item reward (in multi-world, this would be an AP item for someone else)
+        # do NOT increment either character or esper counter, see https://github.com/Rosalie-A/Archipelago/issues/38
+        else:
+            space.write(
+                asm.LDA(ram_event_bit(event_bit.VELDT_REWARD_OBTAINED), asm.IMM8),
+                asm.TSB(ram_event_byte(event_bit.VELDT_REWARD_OBTAINED), asm.ABS),
                 asm.RTS(),
             )
 

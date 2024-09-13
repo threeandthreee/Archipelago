@@ -2,7 +2,7 @@ import json
 import time
 import struct
 import random
-from typing import Dict, Callable
+from typing import Dict, Optional
 
 import pymem
 from pymem.exception import ProcessNotFound, ProcessError
@@ -41,10 +41,10 @@ class JakAndDaxterReplClient:
     item_inbox: Dict[int, NetworkItem] = {}
     inbox_index = 0
 
-    my_item_name: str = None
-    my_item_finder: str = None
-    their_item_name: str = None
-    their_item_owner: str = None
+    my_item_name: Optional[str] = None
+    my_item_finder: Optional[str] = None
+    their_item_name: Optional[str] = None
+    their_item_owner: Optional[str] = None
 
     def __init__(self, ip: str = "127.0.0.1", port: int = 8181):
         self.ip = ip
@@ -79,10 +79,6 @@ class JakAndDaxterReplClient:
 
         if self.received_deathlink:
             await self.receive_deathlink()
-
-            # Reset all flags.
-            # As a precaution, we should reset our own deathlink flag as well.
-            await self.reset_deathlink()
             self.received_deathlink = False
 
     # This helper function formats and sends `form` as a command to the REPL.
@@ -331,14 +327,6 @@ class JakAndDaxterReplClient:
             logger.error(f"Unable to receive deathlink signal!")
         return ok
 
-    async def reset_deathlink(self) -> bool:
-        ok = await self.send_form("(set! (-> *ap-info-jak1* died) 0)")
-        if ok:
-            logger.debug(f"Reset deathlink flag!")
-        else:
-            logger.error(f"Unable to reset deathlink flag!")
-        return ok
-
     async def subtract_traded_orbs(self, orb_count: int) -> bool:
 
         # To protect against momentary server disconnects,
@@ -352,6 +340,8 @@ class JakAndDaxterReplClient:
             else:
                 logger.error(f"Unable to subtract {orb_count} traded orbs!")
             return ok
+
+        return True
 
     async def setup_options(self,
                             os_option: int, os_bundle: int,

@@ -32,7 +32,13 @@ def parse(parser):
                               nargs = 2, metavar = ("MIN", "MAX"), choices = range(Esper.SPELL_COUNT + 1),
                               help = "Esper spells and learn rates randomized")
     esper_spells.add_argument("-esrt", "--esper-spells-random-tiered", action = "store_true",
-                              help = "Esper spells and learn rates randomized by tier")
+                              help = "Esper spells randomized by tier")
+
+    esper_learnrates = espers.add_mutually_exclusive_group()
+    esper_learnrates.add_argument("-elr", "--esper-learnrates-random", action = "store_true",
+                                  help = "Esper learn rates randomized")
+    esper_learnrates.add_argument("-elrt", "--esper-learnrates-random-tiered", action="store_true",
+                                  help="Esper learn rates randomized by tier")
 
     esper_bonuses = espers.add_mutually_exclusive_group()
     esper_bonuses.add_argument("-ebs", "--esper-bonuses-shuffle", action = "store_true",
@@ -64,12 +70,27 @@ def parse(parser):
     espers.add_argument("-ems", "--esper-multi-summon", action = "store_true",
                         help = "Espers can be summoned multiple times in battle")
 
+    espers.add_argument("-emi", "--esper-mastered-icon", action = "store_true",
+                        help = "Add an icon to show when all spells have been learned from an esper")
+
 def process(args):
     args._process_min_max("starting_espers")
     args._process_min_max("esper_spells_random")
     args._process_min_max("esper_mp_random_value")
     args._process_min_max("esper_mp_random_percent")
     args._process_min_max("esper_equipable_random")
+
+    # Forces random learnrates if espers are not original/shuffled and learnrates are not set to tiered
+    randomized_espers = args.esper_spells_random or args.esper_spells_random_tiered
+    if randomized_espers and args.esper_learnrates_random_tiered != True:
+        args.esper_learnrates_random = True
+
+    # Converts deprecated combined esper/learnrate flags to separate args
+    if args.esper_spells_random_rates:
+        args.esper_learnrates_random = True
+    elif args.esper_spells_shuffle_random_rates:
+        args.esper_spells_shuffle = True
+        args.esper_learnrates_random = True
 
     if args.esper_bonuses_random is not None:
         args.esper_bonuses_random_percent = args.esper_bonuses_random
@@ -85,16 +106,17 @@ def flags(args):
     if args.starting_espers_min or args.starting_espers_max:
         flags += f" -stesp {args.starting_espers_min} {args.starting_espers_max}"
 
-    if args.esper_spells_random_rates:
-        flags += " -esrr"
-    elif args.esper_spells_shuffle:
+    if args.esper_spells_shuffle:
         flags += " -ess"
-    elif args.esper_spells_shuffle_random_rates:
-        flags += " -essrr"
     elif args.esper_spells_random:
         flags += f" -esr {args.esper_spells_random_min} {args.esper_spells_random_max}"
     elif args.esper_spells_random_tiered:
         flags += " -esrt"
+
+    if args.esper_learnrates_random:
+        flags += " -elr"
+    elif args.esper_learnrates_random_tiered:
+        flags += " -elrt"
 
     if args.esper_bonuses_shuffle:
         flags += " -ebs"
@@ -116,20 +138,25 @@ def flags(args):
     if args.esper_multi_summon:
         flags += " -ems"
 
+    if args.esper_mastered_icon:
+        flags += " -emi"
+
     return flags
 
 def options(args):
     spells = "Original"
-    if args.esper_spells_random_rates:
-        spells = "Original (Random Rates)"
-    elif args.esper_spells_shuffle:
+    if args.esper_spells_shuffle:
         spells = "Shuffle"
-    elif args.esper_spells_shuffle_random_rates:
-        spells = "Shuffle (Random Rates)"
     elif args.esper_spells_random:
         spells = f"Random {args.esper_spells_random_min}-{args.esper_spells_random_max}"
     elif args.esper_spells_random_tiered:
         spells = "Random Tiered"
+
+    learnrates = "Original"
+    if args.esper_learnrates_random:
+        learnrates = "Random"
+    elif args.esper_learnrates_random_tiered:
+        learnrates = "Random Tiered"
 
     bonuses = "Original"
     if args.esper_bonuses_shuffle:
@@ -154,12 +181,14 @@ def options(args):
     result = []
     result.append(("Starting Espers", f"{args.starting_espers_min}-{args.starting_espers_max}"))
     result.append(("Spells", spells))
+    result.append(("Rates", learnrates))
     result.append(("Bonuses", bonuses))
     if args.esper_bonuses_random:
         result.append(("Bonus Chance", f"{args.esper_bonuses_random_percent}%"))
     result.append(("MP", mp))
     result.append(("Equipable", equipable))
     result.append(("Multi Summon", args.esper_multi_summon))
+    result.append(("Mastered Icon", args.esper_mastered_icon))
     return result
 
 def menu(args):

@@ -386,7 +386,7 @@ def set_free_fly(world: "PokemonFRLGWorld") -> None:
         menu_region.locations.append(free_fly_location)
 
     if world.options.town_map_fly_location != TownMapFlyLocation.option_off:
-        town_map_fly_location_id = world.random.choice(free_fly_list)
+        town_map_fly_location_id = world.random.choice(town_map_fly_list)
         world.town_map_fly_location_id = FLY_ITEM_ID_MAP[town_map_fly_location_id]
 
         menu_region = world.multiworld.get_region("Menu", world.player)

@@ -19,13 +19,15 @@ orb_cache_offset = 4096
 # special check and translate its ID between AP and OpenGOAL. Similar to Scout Flies, these large numbers are not
 # necessary, and we can flatten out the range in which these numbers lie.
 def to_ap_id(game_id: int) -> int:
-    assert game_id < jak1_id, f"Attempted to convert {game_id} to an AP ID, but it already is one."
+    if game_id >= jak1_id:
+        raise ValueError(f"Attempted to convert {game_id} to an AP ID, but it already is one.")
     uncompressed_id = jak1_id + orb_cache_offset + game_id   # Add the offsets and the orb cache Actor ID.
     return uncompressed_id - 10344                           # Subtract the smallest Actor ID.
 
 
 def to_game_id(ap_id: int) -> int:
-    assert ap_id >= jak1_id, f"Attempted to convert {ap_id} to a Jak 1 ID, but it already is one."
+    if ap_id < jak1_id:
+        raise ValueError(f"Attempted to convert {ap_id} to a Jak 1 ID, but it already is one.")
     uncompressed_id = ap_id + 10344                          # Reverse process, add back the smallest Actor ID.
     return uncompressed_id - jak1_id - orb_cache_offset      # Subtract the offsets.
 
@@ -44,7 +46,7 @@ loc_orbCacheTable = {
     23348: "Orb Cache in Snowy Fort (1)",
     23349: "Orb Cache in Snowy Fort (2)",
     23350: "Orb Cache in Snowy Fort (3)",
-    # 24038: "Orb Cache at End of Blast Furnace",  # TODO - IDK, we didn't need all of the orb caches for move rando.
-    # 24039: "Orb Cache at End of Launch Pad Room",
+    # 24038: "Orb Cache at End of Blast Furnace",     # TODO - We didn't need all of the orb caches for move rando.
+    # 24039: "Orb Cache at End of Launch Pad Room",   #  In future, could add/fill these with filler items?
     # 24040: "Orb Cache at Start of Launch Pad Room",
 }

@@ -6,11 +6,11 @@ from Options import OptionError
 from worlds.AutoWorld import WebWorld, World
 from .coordinates import coordinate_description, generate_random_coordinates
 from .db_layout import generate_random_db_layout
-from .Orbits import generate_random_orbits
+from .orbits import generate_random_orbits
 from .warp_platforms import generate_random_warp_platform_mapping
-from .Items import OuterWildsItem, all_non_event_items_table, item_name_groups, create_item, create_items
+from .items import OuterWildsItem, all_non_event_items_table, item_name_groups, create_item, create_items
 from .locations_and_regions import all_non_event_locations_table, location_name_groups, create_regions
-from .Options import OuterWildsGameOptions, RandomizeDarkBrambleLayout, Spawn
+from .options import OuterWildsGameOptions, RandomizeDarkBrambleLayout, Spawn
 
 
 class OuterWildsWebWorld(WebWorld):

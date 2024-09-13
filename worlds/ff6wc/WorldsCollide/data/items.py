@@ -1,8 +1,9 @@
 from .. import args as args
 import random
 from ..data.item import Item
+from ..data.structures import DataList
 
-from ..constants.items import good_items
+from ..constants.items import good_items, stronger_items, premium_items
 from ..constants.items import id_name, name_id
 
 from ..data import items_asm as items_asm
@@ -15,21 +16,23 @@ class Items():
     BREAKABLE_RODS = range(53, 59)
     ELEMENTAL_SHIELDS = range(96, 99)
 
-    GOOD = [name_id[name] for name in good_items]
-    if args.stronger_atma_weapon:
-        GOOD.append(name_id["Atma Weapon"])
-    if args.no_free_paladin_shields:
-        GOOD.remove(name_id["Paladin Shld"])
-    if args.no_exp_eggs:
-        GOOD.remove(name_id["Exp. Egg"])
-    if args.no_illuminas:
-        GOOD.remove(name_id["Illumina"])
+    DESC_PTRS_START = 0x2d7aa0
+    DESC_PTRS_END = 0x2d7c9f
+
+    DESC_START = 0x2d6400
+    DESC_END = 0x2d779f
+
+    GOOD = args.item_rewards_ids
 
     def __init__(self, rom, args, dialogs, characters):
         self.rom = rom
         self.args = args
         self.dialogs = dialogs
         self.characters = characters
+
+        self.desc_data = DataList(self.rom, self.DESC_PTRS_START, self.DESC_PTRS_END,
+                                  self.rom.SHORT_PTR_SIZE, self.DESC_START,
+                                  self.DESC_START, self.DESC_END)
 
         self.read()
 
@@ -39,7 +42,7 @@ class Items():
                            Item.SHIELD : [], Item.HELMET : [], Item.RELIC : [], Item.ITEM : []}
 
         for item_index in range(self.ITEM_COUNT):
-            item = Item(item_index, self.rom)
+            item = Item(item_index, self.rom, self.desc_data[item_index])
 
             self.items.append(item)
 
@@ -90,6 +93,34 @@ class Items():
                     for character in character_group:
                         possible_characters.remove(character)
                         item.add_equipable_character(self.characters.playable[character])
+
+    def equipable_tiered(self, type_condition):
+        from ..data.chest_item_tiers import tiers
+
+        tier_mins = [13, 11, 7, 4, 1]
+        tier_maxes = [14, 12, 10, 6, 3]
+
+        for item in self.items:
+            if item.is_equipable() and item.id != self.EMPTY and item.id != 102 and type_condition(item.type):
+                for i, tier in enumerate(tiers):
+                    if item.id in tier:
+                        item_tier = i - 5
+                        break
+
+                item.remove_all_equipable_characters()
+
+                num_chars = random.randint(tier_mins[item_tier], tier_maxes[item_tier])
+                rand_chars = random.sample(self.characters.playable, num_chars)
+
+                # if Paladin Shld is only equipable by Gogo and/or Umaro, instead reroll for 3 characters
+                if item.id == 103 and all(obj.id in [13, 14] for obj in rand_chars):
+                    rand_chars = random.sample(self.characters.playable, 3)
+
+                for character in rand_chars:
+                    item.add_equipable_character(character)
+
+        # force Cursed Shld equips to match Paladin Shld equips
+        self.items[102].equipable_characters = self.items[103].equipable_characters
 
     def equipable_original_random(self, type_condition, percent):
         if percent == 0:
@@ -196,6 +227,8 @@ class Items():
                                                        self.args.item_equipable_random_max)
         elif self.args.item_equipable_balanced_random:
             self.equipable_balanced_random(not_relic_condition, self.args.item_equipable_balanced_random_value)
+        elif self.args.item_equipable_tiered_random:
+            self.equipable_tiered(not_relic_condition)
         elif self.args.item_equipable_original_random:
             self.equipable_original_random(not_relic_condition, self.args.item_equipable_original_random_percent)
         elif self.args.item_equipable_shuffle_random:
@@ -207,6 +240,8 @@ class Items():
                                                    self.args.item_equipable_relic_random_max)
         elif self.args.item_equipable_relic_balanced_random:
             self.equipable_balanced_random(relic_condition, self.args.item_equipable_relic_balanced_random_value)
+        elif self.args.item_equipable_relic_tiered_random:
+            self.equipable_tiered(relic_condition)
         elif self.args.item_equipable_relic_original_random:
             self.equipable_original_random(relic_condition, self.args.item_equipable_relic_original_random_percent)
         elif self.args.item_equipable_relic_shuffle_random:
@@ -266,6 +301,8 @@ class Items():
     def write(self):
         for item in self.items:
             item.write()
+            self.desc_data[item.id] = item.get_desc_data()
+        self.desc_data.write()
 
     def get_id(self, name):
         return name_id[name]

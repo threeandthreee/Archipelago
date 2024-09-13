@@ -6,7 +6,7 @@ from .items import item_descriptions, item_table, ShapezItem, \
     buildings_top_row, buildings_wires, gameplay_unlocks, upgrades, \
     big_upgrades, filler, trap
 from .locations import ShapezLocation, addlevels, all_locations, addupgrades, addachievements, location_description, \
-    addshapesanity
+    addshapesanity, addshapesanity_ut
 from .presets import options_presets
 from .options import ShapezOptions
 from worlds.AutoWorld import World, WebWorld
@@ -62,7 +62,24 @@ class ShapezWorld(World):
     item_name_to_id = {name: id for id, name in enumerate(item_table.keys(), base_id)}
     location_name_to_id = {name: id for id, name in enumerate(all_locations, base_id)}
 
+    ut_active: bool = False
+    passthrough: Dict[str, any] = {}
+
     def generate_early(self) -> None:
+        if hasattr(self.multiworld, "re_gen_passthrough"):
+            if "shapez" in self.multiworld.re_gen_passthrough:
+                self.ut_active = True
+                self.passthrough = self.multiworld.re_gen_passthrough["shapez"]
+                self.maxlevel = self.passthrough["maxlevel"]
+                self.finaltier = self.passthrough["finaltier"]
+                self.client_seed = self.passthrough["seed"]
+                self.level_logic = [self.passthrough[f"Level building {i+1}"] for i in range(5)]
+                self.upgrade_logic = [self.passthrough[f"Upgrade building {i+1}"] for i in range(5)]
+                self.random_logic_phase_length = [self.passthrough[f"Phase {i} length"] for i in range(5)]
+                self.category_random_logic_amounts = {cat: self.passthrough[f"{cat} category buildings amount"]
+                                                      for cat in ["belt", "miner", "processors", "painting"]}
+                return
+
         # "MAM" goal is supposed to be longer than vanilla, but to not have more options than necessary,
         # both goal amounts for "MAM" and "Even fasterer" are set in a single option.
         if self.options.goal == "mam" and self.options.goal_amount < 27:
@@ -83,7 +100,7 @@ class ShapezWorld(World):
             self.finaltier = 8
 
         # Setting the seed for the game before any other randomization call is done
-        self.client_seed = self.random.randint(0, 2**32)
+        self.client_seed = self.random.randint(0, 100000)
 
         # Determines the order of buildings for levels und upgrades logic
         if self.options.randomize_level_requirements:
@@ -137,23 +154,37 @@ class ShapezWorld(World):
             self.category_random_logic_amounts[nextcat] = 0
             cats.remove(nextcat)
             for cat in cats:
-                self.category_random_logic_amounts[cat] = self.random.randint(0, 6)
+                self.category_random_logic_amounts[cat] = self.random.randint(0, 5)
 
     def create_item(self, name: str) -> Item:
         return ShapezItem(name, item_table[name], self.item_name_to_id[name], self.player)
 
     def create_regions(self) -> None:
-        # Create Menu region like in docs
         menu_region = Region("Menu", self.player, self.multiworld)
-        self.multiworld.regions.append(menu_region)
 
         # Create list of all included locations based on player options
-        self.included_locations = {**addlevels(self.maxlevel, self.options.randomize_level_logic.current_key,
-                                               self.random_logic_phase_length),
-                                   **addupgrades(self.finaltier, self.options.randomize_upgrade_logic.current_key,
-                                                 self.category_random_logic_amounts),
-                                   # **addachievements
-                                   **addshapesanity(self.options.shapesanity_amount.value, self.random)}
+        if self.ut_active:
+            self.included_locations = {**addlevels(self.maxlevel, self.options.randomize_level_logic.current_key,
+                                                   self.random_logic_phase_length),
+                                       **addupgrades(self.finaltier, self.options.randomize_upgrade_logic.current_key,
+                                                     self.category_random_logic_amounts),
+                                       **addshapesanity_ut(self.passthrough["shapesanity"])}
+        else:
+            self.included_locations = {**addlevels(self.maxlevel, self.options.randomize_level_logic.current_key,
+                                                   self.random_logic_phase_length),
+                                       **addupgrades(self.finaltier, self.options.randomize_upgrade_logic.current_key,
+                                                     self.category_random_logic_amounts),
+                                       **addshapesanity(self.options.shapesanity_amount.value, self.random)}
+        if self.options.include_achievements:
+            self.included_locations.update(addachievements(bool(self.options.exclude_softlock_achievements),
+                                                           bool(self.options.exclude_long_playtime_achievements),
+                                                           bool(self.options.exclude_progression_unreasonable),
+                                                           self.maxlevel,
+                                                           self.options.randomize_upgrade_logic.current_key,
+                                                           self.category_random_logic_amounts,
+                                                           self.options.goal.current_key,
+                                                           self.included_locations))
+
         self.location_count = len(self.included_locations)
 
         # Create regions and entrances based on included locations and player options
@@ -161,7 +192,7 @@ class ShapezWorld(World):
                                                              self.location_name_to_id,
                                                              self.level_logic, self.upgrade_logic,
                                                              self.options.early_balancer_tunnel_and_trash.current_key,
-                                                             self.options.goal.current_key))
+                                                             self.options.goal.current_key, menu_region))
 
         # Connect Menu to rest of regions
         main_region = self.multiworld.get_region("Main", self.player)
@@ -186,11 +217,12 @@ class ShapezWorld(World):
 
         # Get value from traps probability option and convert to float
         traps_probability = self.options.traps_percentage/100
+        split_draining = bool(self.options.split_inventory_draining_trap.value)
         # Fill remaining locations with fillers
         for x in range(self.location_count - len(included_items)):
             if self.random.random() < traps_probability:
                 # Fill with trap
-                included_items.append(self.create_item(trap(self.random.random())))
+                included_items.append(self.create_item(trap(self.random.random(), split_draining)))
             else:
                 # Fil with random filler item
                 included_items.append(self.create_item(filler(self.random.random())))
@@ -224,9 +256,16 @@ class ShapezWorld(World):
             "randomize_upgrade_logic": self.options.randomize_upgrade_logic.current_key,
             "throughput_levels_ratio": self.options.throughput_levels_ratio.value,
             "same_late_upgrade_requirements": bool(self.options.same_late_upgrade_requirements.value),
-            "lock_belt_and_extractor": bool(self.options.lock_belt_and_extractor.value)
+            "lock_belt_and_extractor": bool(self.options.lock_belt_and_extractor.value),
+            "include_achievements": bool(self.options.include_achievements.value),
+            "exclude_softlock_achievements": bool(self.options.exclude_softlock_achievements),
+            "exclude_long_playtime_achievements": bool(self.options.exclude_long_playtime_achievements)
         }
 
-        return {**level_logic_data, **upgrade_logic_data, **option_data, **logic_type_random_data,
-                **logic_type_cat_random_data, "seed": self.client_seed}
+        shapesanity_list = [k for k in self.included_locations.keys() if "Shapesanity" in k]
 
+        return {**level_logic_data, **upgrade_logic_data, **option_data, **logic_type_random_data,
+                **logic_type_cat_random_data, "seed": self.client_seed, "shapesanity": shapesanity_list}
+
+    def interpret_slot_data(self, slot_data: Dict[str, Any]) -> Dict[str, Any]:
+        return slot_data

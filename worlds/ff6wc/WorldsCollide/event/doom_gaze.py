@@ -99,8 +99,12 @@ class DoomGaze(Event):
     def character_mod(self, character):
         self.magicite_npc.sprite = character
         self.magicite_npc.palette = self.characters.get_palette(character)
-        self.magicite_npc.split_sprite = 1
+        # characters are NOT splite sprites
+        self.magicite_npc.split_sprite = 0
         self.magicite_npc.direction = direction.DOWN
+        # clear unknown bits that cause a glitchy sprite if reward is a character (Archipelago)
+        self.magicite_npc.unknown1 = 0
+        self.magicite_npc.unknown2 = 0
 
         space = Reserve(0xa00d6, 0xa00d7, "doom gaze flash screen white when receiving esper", field.NOP())
 

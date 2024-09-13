@@ -8,8 +8,8 @@ class TestVerifyFlags(unittest.TestCase):
         verify_flagstring([])
 
     def test_new_flags(self) -> None:
-        """ These flags are from a newer version of Worlds Collide that isn't supported yet. """
-        self.assertRaises(ValueError, verify_flagstring, ["-i", "x", "-chrm", "0", "0"])
+        """ some new flags from Worlds Collide 1.4.2 """
+        verify_flagstring(["-i", "x", "-chrm", "0", "0"])
 
     def test_bad_flags(self) -> None:
         self.assertRaises(ValueError, verify_flagstring, ["-i", "x", "-bkbkb00"])

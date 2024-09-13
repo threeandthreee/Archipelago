@@ -1,18 +1,35 @@
-from typing import Dict, Any, ClassVar
+from typing import Dict, Any, ClassVar, Tuple, Callable, Optional, Union
+
+import Utils
 import settings
 
-from Utils import local_path, visualize_regions
-from BaseClasses import Item, ItemClassification, Tutorial
+from Utils import local_path
+from BaseClasses import (Item,
+                         ItemClassification as ItemClass,
+                         Tutorial,
+                         CollectionState)
 from .GameID import jak1_id, jak1_name, jak1_max
 from .JakAndDaxterOptions import JakAndDaxterOptions, EnableOrbsanity
-from .Locations import JakAndDaxterLocation, location_table
-from .Items import JakAndDaxterItem, item_table
+from .Locations import (JakAndDaxterLocation,
+                        location_table,
+                        cell_location_table,
+                        scout_location_table,
+                        special_location_table,
+                        cache_location_table,
+                        orb_location_table)
+from .Items import (JakAndDaxterItem,
+                    item_table,
+                    cell_item_table,
+                    scout_item_table,
+                    special_item_table,
+                    move_item_table,
+                    orb_item_table)
+from .Levels import level_table, level_table_with_global
 from .locs import (CellLocations as Cells,
                    ScoutLocations as Scouts,
                    SpecialLocations as Specials,
                    OrbCacheLocations as Caches,
                    OrbLocations as Orbs)
-from .Regions import create_regions
 from worlds.AutoWorld import World, WebWorld
 from worlds.LauncherComponents import components, Component, launch_subprocess, Type, icon_paths
 
@@ -36,7 +53,13 @@ class JakAndDaxterSettings(settings.Group):
         Ensure this path contains forward slashes (/) only."""
         description = "ArchipelaGOAL Root Directory"
 
-    root_directory: RootDirectory = RootDirectory("%appdata%/OpenGOAL-Mods/archipelagoal")
+    class EnforceFriendlyOptions(settings.Bool):
+        """Enforce friendly player options in both single and multiplayer seeds. Disabling this allows for
+        more disruptive and challenging options, but may impact seed generation. Use at your own risk!"""
+        description = "ArchipelaGOAL Enforce Friendly Options"
+
+    root_directory: RootDirectory = RootDirectory("%programfiles%/OpenGOAL-Launcher/features/jak1/mods/JakMods/archipelagoal")
+    enforce_friendly_options: Union[EnforceFriendlyOptions, bool] = True
 
 
 class JakAndDaxterWebWorld(WebWorld):
@@ -79,78 +102,103 @@ class JakAndDaxterWorld(World):
     item_name_to_id = {item_table[k]: k for k in item_table}
     location_name_to_id = {location_table[k]: k for k in location_table}
     item_name_groups = {
-        "Power Cells": {item_table[k]: k for k in item_table
-                        if k in range(jak1_id, jak1_id + Scouts.fly_offset)},
-        "Scout Flies": {item_table[k]: k for k in item_table
-                        if k in range(jak1_id + Scouts.fly_offset, jak1_id + Specials.special_offset)},
-        "Specials": {item_table[k]: k for k in item_table
-                     if k in range(jak1_id + Specials.special_offset, jak1_id + Caches.orb_cache_offset)},
-        "Moves": {item_table[k]: k for k in item_table
-                  if k in range(jak1_id + Caches.orb_cache_offset, jak1_id + Orbs.orb_offset)},
-        "Precursor Orbs": {item_table[k]: k for k in item_table
-                           if k in range(jak1_id + Orbs.orb_offset, jak1_max)},
+        "Power Cells": set(cell_item_table.values()),
+        "Scout Flies": set(scout_item_table.values()),
+        "Specials": set(special_item_table.values()),
+        "Moves": set(move_item_table.values()),
+        "Precursor Orbs": set(orb_item_table.values()),
     }
     location_name_groups = {
-        "Power Cells": {location_table[k]: k for k in location_table
-                        if k in range(jak1_id, jak1_id + Scouts.fly_offset)},
-        "Scout Flies": {location_table[k]: k for k in location_table
-                        if k in range(jak1_id + Scouts.fly_offset, jak1_id + Specials.special_offset)},
-        "Specials": {location_table[k]: k for k in location_table
-                     if k in range(jak1_id + Specials.special_offset, jak1_id + Caches.orb_cache_offset)},
-        "Orb Caches": {location_table[k]: k for k in location_table
-                       if k in range(jak1_id + Caches.orb_cache_offset, jak1_id + Orbs.orb_offset)},
-        "Precursor Orbs": {location_table[k]: k for k in location_table
-                           if k in range(jak1_id + Orbs.orb_offset, jak1_max)},
-        "Trades": {location_table[k]: k for k in location_table
-                   if k in {Cells.to_ap_id(t) for t in {11, 12, 31, 32, 33, 96, 97, 98, 99, 13, 14, 34, 35, 100, 101}}},
+        "Power Cells": set(cell_location_table.values()),
+        "Scout Flies": set(scout_location_table.values()),
+        "Specials": set(special_location_table.values()),
+        "Orb Caches": set(cache_location_table.values()),
+        "Precursor Orbs": set(orb_location_table.values()),
+        "Trades": {location_table[Cells.to_ap_id(k)] for k in
+                   {11, 12, 31, 32, 33, 96, 97, 98, 99, 13, 14, 34, 35, 100, 101}},
+        "'Free 7 Scout Flies' Power Cells": set(Cells.loc7SF_cellTable.values()),
     }
+
+    # These functions and variables are Options-driven, keep them as instance variables here so that we don't clog up
+    # the seed generation routines with options checking. So we set these once, and then just use them as needed.
+    can_trade: Callable[[CollectionState, int, Optional[int]], bool]
+    orb_bundle_item_name: str = ""
+    orb_bundle_size: int = 0
+    total_trade_orbs: int = 0
+
+    # Handles various options validation, rules enforcement, and caching of important information.
+    def generate_early(self) -> None:
+        # For the fairness of other players in a multiworld game, enforce some friendly limitations on our options,
+        # so we don't cause chaos during seed generation. These friendly limits should **guarantee** a successful gen.
+        enforce_friendly_options = Utils.get_settings()["jakanddaxter_options"]["enforce_friendly_options"]
+        if enforce_friendly_options:
+            if self.multiworld.players > 1:
+                from .Rules import enforce_multiplayer_limits
+                enforce_multiplayer_limits(self)
+            else:
+                from .Rules import enforce_singleplayer_limits
+                enforce_singleplayer_limits(self)
+
+        # Verify that we didn't overload the trade amounts with more orbs than exist in the world.
+        # This is easy to do by accident even in a singleplayer world.
+        self.total_trade_orbs = (9 * self.options.citizen_orb_trade_amount) + (6 * self.options.oracle_orb_trade_amount)
+        from .Rules import verify_orb_trade_amounts
+        verify_orb_trade_amounts(self)
+
+        # Cache the orb bundle size and item name for quicker reference.
+        if self.options.enable_orbsanity == EnableOrbsanity.option_per_level:
+            self.orb_bundle_size = self.options.level_orbsanity_bundle_size.value
+            self.orb_bundle_item_name = orb_item_table[self.orb_bundle_size]
+        elif self.options.enable_orbsanity == EnableOrbsanity.option_global:
+            self.orb_bundle_size = self.options.global_orbsanity_bundle_size.value
+            self.orb_bundle_item_name = orb_item_table[self.orb_bundle_size]
+
+        # Options drive which trade rules to use, so they need to be setup before we create_regions.
+        from .Rules import set_orb_trade_rule
+        set_orb_trade_rule(self)
 
     # This will also set Locations, Location access rules, Region access rules, etc.
     def create_regions(self) -> None:
-        create_regions(self.multiworld, self.options, self.player)
-        visualize_regions(self.multiworld.get_region("Menu", self.player), "jakanddaxter.puml")
+        from .Regions import create_regions
+        create_regions(self)
 
-    # Helper function to get the correct orb bundle size.
-    def get_orb_bundle_size(self) -> int:
-        if self.options.enable_orbsanity == EnableOrbsanity.option_per_level:
-            return self.options.level_orbsanity_bundle_size.value
-        elif self.options.enable_orbsanity == EnableOrbsanity.option_global:
-            return self.options.global_orbsanity_bundle_size.value
-        else:
-            return 0
+        # from Utils import visualize_regions
+        # visualize_regions(self.multiworld.get_region("Menu", self.player), "jakanddaxter.puml")
 
     # Helper function to reuse some nasty if/else trees.
-    def item_type_helper(self, item) -> (int, ItemClassification):
+    def item_type_helper(self, item) -> Tuple[int, ItemClass]:
         # Make 101 Power Cells.
         if item in range(jak1_id, jak1_id + Scouts.fly_offset):
-            classification = ItemClassification.progression_skip_balancing
+            classification = ItemClass.progression_skip_balancing
             count = 101
 
         # Make 7 Scout Flies per level.
         elif item in range(jak1_id + Scouts.fly_offset, jak1_id + Specials.special_offset):
-            classification = ItemClassification.progression_skip_balancing
+            classification = ItemClass.progression_skip_balancing
             count = 7
 
         # Make only 1 of each Special Item.
         elif item in range(jak1_id + Specials.special_offset, jak1_id + Caches.orb_cache_offset):
-            classification = ItemClassification.progression
+            classification = ItemClass.progression | ItemClass.useful
             count = 1
 
         # Make only 1 of each Move Item.
         elif item in range(jak1_id + Caches.orb_cache_offset, jak1_id + Orbs.orb_offset):
-            classification = ItemClassification.progression
+            classification = ItemClass.progression | ItemClass.useful
             count = 1
 
         # Make N Precursor Orb bundles, where N is 2000 / bundle size.
         elif item in range(jak1_id + Orbs.orb_offset, jak1_max):
-            classification = ItemClassification.progression_skip_balancing
-            size = self.get_orb_bundle_size()
-            count = int(2000 / size) if size > 0 else 0  # Don't divide by zero!
+            if self.total_trade_orbs == 0:
+                classification = ItemClass.filler  # If you don't need orbs to do trades, they are useless.
+            else:
+                classification = ItemClass.progression_skip_balancing
+            count = 2000 // self.orb_bundle_size if self.orb_bundle_size > 0 else 0  # Don't divide by zero!
 
         # Under normal circumstances, we will create 0 filler items.
         # We will manually create filler items as needed.
         elif item == jak1_max:
-            classification = ItemClassification.filler
+            classification = ItemClass.filler
             count = 0
 
         # If we try to make items with ID's higher than we've defined, something has gone wrong.
@@ -168,15 +216,15 @@ class JakAndDaxterWorld(World):
             # then fill the item pool with a corresponding amount of filler items.
             if item_name in self.item_name_groups["Moves"] and not self.options.enable_move_randomizer:
                 self.multiworld.push_precollected(self.create_item(item_name))
-                self.multiworld.itempool += [self.create_item(self.get_filler_item_name())]
+                self.multiworld.itempool.append(self.create_filler())
                 continue
 
             # Handle Orbsanity option.
-            # If it is OFF, don't add any orbs to the item pool.
+            # If it is OFF, don't add any orb bundles to the item pool, period.
             # If it is ON, don't add any orb bundles that don't match the chosen option.
             if (item_name in self.item_name_groups["Precursor Orbs"]
-                and ((self.options.enable_orbsanity == EnableOrbsanity.option_off
-                      or Orbs.to_game_id(item_id) != self.get_orb_bundle_size()))):
+                and (self.options.enable_orbsanity == EnableOrbsanity.option_off
+                     or item_name != self.orb_bundle_item_name)):
                 continue
 
             # In every other scenario, do this.
@@ -191,6 +239,45 @@ class JakAndDaxterWorld(World):
 
     def get_filler_item_name(self) -> str:
         return "Green Eco Pill"
+
+    def collect(self, state: CollectionState, item: Item) -> bool:
+        change = super().collect(state, item)
+        if change:
+            # Orbsanity as an option is no-factor to these conditions. Matching the item name implies Orbsanity is ON,
+            # so we don't need to check the option. When Orbsanity is OFF, there won't even be any orb bundle items
+            # to collect.
+
+            # Orb items do not intrinsically unlock anything that contains more Reachable Orbs, so they do not need to
+            # set the cache to stale. They just change how many orbs you have to trade with.
+            if item.name == self.orb_bundle_item_name:
+                state.prog_items[self.player]["Tradeable Orbs"] += self.orb_bundle_size  # Give a bundle of Trade Orbs
+
+            # However, every other item that changes the CollectionState should set the cache to stale, because they
+            # likely made it possible to reach more orb locations (level unlocks, region unlocks, etc.).
+            else:
+                state.prog_items[self.player]["Reachable Orbs Fresh"] = False
+        return change
+
+    def remove(self, state: CollectionState, item: Item) -> bool:
+        change = super().remove(state, item)
+        if change:
+
+            # Do the same thing we did in collect, except subtract trade orbs instead of add.
+            if item.name == self.orb_bundle_item_name:
+                state.prog_items[self.player]["Tradeable Orbs"] -= self.orb_bundle_size  # Take a bundle of Trade Orbs
+            else:
+                state.prog_items[self.player]["Reachable Orbs Fresh"] = False
+
+            # TODO - 3.8 compatibility, remove this block when no longer required.
+            if state.prog_items[self.player]["Tradeable Orbs"] < 1:
+                del state.prog_items[self.player]["Tradeable Orbs"]
+            if state.prog_items[self.player]["Reachable Orbs"] < 1:
+                del state.prog_items[self.player]["Reachable Orbs"]
+            for level in level_table:
+                if state.prog_items[self.player][f"{level} Reachable Orbs".strip()] < 1:
+                    del state.prog_items[self.player][f"{level} Reachable Orbs".strip()]
+
+        return change
 
     def fill_slot_data(self) -> Dict[str, Any]:
         return self.options.as_dict("enable_move_randomizer",

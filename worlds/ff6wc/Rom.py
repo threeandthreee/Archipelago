@@ -542,8 +542,10 @@ treasure_chest_data: Dict[str, Tuple[int, int, int]] = {
     "Phantom Train Third Car Far Right Chest": (0x1E47, 2, 111),
     "Phoenix Cave Lower Cavern East Pool Island": (0x1E56, 0, 192),
     "Phoenix Cave Lower Cavern East Pool Bridge": (0x1E55, 6, 193),
-    "Phoenix Cave Lower Cavern Spikes": (0x1E55, 7, 194),
-    "Phoenix Cave Lower Cavern Rock Jumping": (0x1E57, 6, 195),
+    # In a previous version of this apworld,
+    # there was a bug with Lower Cavern Spikes and Lower Cavern Rock Jumping swapped.
+    "Phoenix Cave Lower Cavern Spikes": (0x1E57, 6, 195),
+    "Phoenix Cave Lower Cavern Rock Jumping": (0x1E55, 7, 194),
     "Phoenix Cave Lower Cavern Cool Lava": (0x1E55, 3, 191),
     "Phoenix Cave Upper Cavern Spikes": (0x1E55, 5, 197),
     "Phoenix Cave Upper Cavern Hidden Room": (0x1E58, 3, 199),

@@ -35,12 +35,19 @@ class PhantomTrain(Event):
         if self.args.character_gating:
             self.add_gating_condition()
 
+        # remove the NPC that grants the Phantom Train reward in caboose
+        ghost_npc_id = 0x10
+        ghost_npc = self.maps.remove_npc(0x98, ghost_npc_id)
+
+        # comment out code that will give player the reward in caboose for interacting with NPC
+        '''
         if self.reward.type == RewardType.CHARACTER:
             self.character_mod(self.reward.id)
         elif self.reward.type == RewardType.ESPER:
             self.esper_mod(self.reward.id)
         elif self.reward.type == RewardType.ITEM:
             self.item_mod(self.reward.id)
+        '''
 
         self.log_reward(self.reward)
 
@@ -118,7 +125,7 @@ class PhantomTrain(Event):
 
     def character_mod(self, character):
         ghost_npc_id = 0x10
-        ghost_npc = self.maps.get_npc(0x98, ghost_npc_id)
+        ghost_npc = self.maps.remove_npc(0x98, ghost_npc_id)
         ghost_npc.sprite = character
         ghost_npc.palette = self.characters.get_palette(character)
 

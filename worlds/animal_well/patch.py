@@ -7,10 +7,11 @@ class Patch:
     original_bytes = b''
     patch_applied = False
 
-    def __init__(self, name, base_address, process=None):
+    def __init__(self, name, base_address, process=None, quiet=False):
         self.name = name
         self.base_address = base_address
         self.process = process
+        self.quiet = quiet
 
     def __str__(self):
         return f'Patch {self.name} from {hex(self.base_address)} to {hex(self.get_patch_end())} ({len(self)} bytes): {self.byte_list.hex(" ")}'
@@ -37,7 +38,8 @@ class Patch:
             print(f'Failed to apply patch {self.name} ({len(self)} length) at {hex(self.base_address)}!')
             return False
 
-        print(f'Patch {self.name} ({len(self)} length) applied at {hex(self.base_address)} successfully!')
+        if not self.quiet:
+            print(f'Patch {self.name} ({len(self)} length) applied at {hex(self.base_address)} successfully!')
         self.patch_applied = True
         return True
 
@@ -59,8 +61,8 @@ class Patch:
         if self.process.read_bytes(self.base_address, len(self.original_bytes)) != self.original_bytes:
             print(f'Failed to revert patch {self.name} ({len(self)} length) at {hex(self.base_address)}!')
             return False
-
-        print(f'Patch {self.name} ({len(self)} length) at {hex(self.base_address)} reverted successfully!')
+        if not self.quiet:
+            print(f'Patch {self.name} ({len(self)} length) at {hex(self.base_address)} reverted successfully!')
         self.patch_applied = False
         self.original_bytes = b''
         return True
@@ -309,6 +311,13 @@ class Patch:
         3 bytes
         """
         return self.add_bytes(b'\x8d\x47\xff')
+
+    def lea_rax_addr(self, address):
+        """
+        Loads absolute address to RAX
+        7 bytes
+        """
+        return self.add_bytes(b'\x48\x8d\x05' + (address - self.base_address - 7).to_bytes(4, 'little'))
 
     def cmp_al_al(self):
         """

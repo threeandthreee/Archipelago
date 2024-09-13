@@ -285,8 +285,8 @@ class AnimalWellContext(CommonContext):
         # used to delay starting the loop until we can see the data storage values
         self.got_data_storage: bool = False
         self.first_m_disc = True
-        self.used_firecrackers = 0
-        self.used_berries = 0
+        self.used_firecrackers: int
+        self.used_berries: int
 
         from . import AnimalWellWorld
         self.bean_patcher = BeanPatcher().set_logger(logger).set_version_string(AnimalWellWorld.version_string)
@@ -296,6 +296,7 @@ class AnimalWellContext(CommonContext):
         self.stamps = []
         self.tiles = {}
         self.logic_tracker = AnimalWellTracker()
+        self.console_task = None
 
     def display_dialog(self, text: str, title: str, action_text: str = ""):
         if self.bean_patcher is not None and self.bean_patcher.attached_to_process:
@@ -323,6 +324,11 @@ class AnimalWellContext(CommonContext):
         self.tags = set()
         await self.get_username()
         await self.send_connect()
+
+    async def disconnect(self, allow_autoreconnect: bool = False):
+        # this is to fix resending firecrackers/big blue fruit when disconnecting and reconnecting
+        self.got_data_storage = False
+        await super().disconnect(allow_autoreconnect)
 
     def run_gui(self):
         """
@@ -365,15 +371,16 @@ class AnimalWellContext(CommonContext):
             else:
                 self.bean_patcher.revert_tracker_patches()
 
-            used_berries_string = f"{self.slot}|used_berries"
-            used_firecrackers_string = f"{self.slot}|used_firecrackers"
             death_link_key = f"{self.slot}|death_link"
             Utils.async_start(self.update_death_link(self.slot_data.get("death_link", None) == 1))
             self.set_notify(death_link_key)
             Utils.async_start(self.send_msgs([{
                 "cmd": "Get",
-                "keys": [used_berries_string, used_firecrackers_string, death_link_key]
+                "keys": [death_link_key]
             }]))
+            self.bean_patcher.save_team = args["team"]
+            self.bean_patcher.save_slot = args["slot"]
+            self.bean_patcher.apply_seeded_save_patch()
         try:
             if cmd == "PrintJSON":
                 msg_type = args.get("type")
@@ -462,7 +469,7 @@ class AnimalWellContext(CommonContext):
                         location_name = self.location_names.lookup_in_slot(location_id)
                         self.logic_tracker.check_logic_status[location_name] = CheckStatus.checked
             elif cmd == "RoomInfo":
-                pass
+                self.bean_patcher.save_seed = args["seed_name"]
             elif cmd == "SetReply":
                 pass
             elif cmd == "Retrieved":
@@ -1234,6 +1241,11 @@ class AWItems:
                 used_firecrackers_string = f"{ctx.slot_number}|used_firecrackers"
 
                 if not ctx.got_data_storage:
+                    Utils.async_start(ctx.send_msgs([{
+                        "cmd": "Get",
+                        "keys": [used_berries_string,
+                                 used_firecrackers_string,]
+                    }]))
                     if used_berries_string in ctx.stored_data:
                         ctx.got_data_storage = True
                         self.big_blue_fruit = ctx.used_berries = ctx.stored_data[used_berries_string]
@@ -1241,9 +1253,9 @@ class AWItems:
                 else:
                     # Berries
                     # null checking since it caused issues before
-                    if not self.big_blue_fruit:
+                    if self.big_blue_fruit is None:
                         self.big_blue_fruit = 0
-                    if not ctx.used_berries:
+                    if ctx.used_berries is None:
                         ctx.used_berries = 0
 
                     # sometimes used_berries ends up bigger than big_blue_fruit, same with firecrackers
@@ -1268,9 +1280,9 @@ class AWItems:
 
                     # Firecrackers
                     # null checking since it caused issues before
-                    if not self.firecracker_refill:
+                    if self.firecracker_refill is None:
                         self.firecracker_refill = 0
-                    if not ctx.used_firecrackers:
+                    if ctx.used_firecrackers is None:
                         ctx.used_firecrackers = 0
 
                     firecrackers_to_use = max(self.firecracker_refill - ctx.used_firecrackers, 0)
@@ -1402,6 +1414,13 @@ async def get_animal_well_process_handle(ctx: AnimalWellContext):
 
             ctx.bean_patcher.apply_patches()
 
+            host = get_settings()
+            tracker_enum = AWSettings.TrackerSetting
+            if host.animal_well_settings["in_game_tracker"] > tracker_enum.no_tracker:
+                ctx.bean_patcher.apply_tracker_patches()
+            else:
+                ctx.bean_patcher.revert_tracker_patches()
+
             ctx.display_dialog("Connected to client!", "")
         else:
             raise NotImplementedError("Only Windows is implemented right now")
@@ -1445,7 +1464,8 @@ async def process_sync_task(ctx: AnimalWellContext):
             ctx.connection_status = CONNECTION_TENTATIVE_STATUS
             logger.info(f"Animal Well Connection Status: {ctx.connection_status}")
 
-        elif ctx.process_handle and ctx.start_address and ctx.get_animal_well_process_handle_task.done():
+        elif (ctx.process_handle and ctx.start_address and ctx.get_animal_well_process_handle_task.done()
+              and ctx.bean_patcher.save_file and ctx.current_game_state != 1):
             if ctx.connection_status == CONNECTION_TENTATIVE_STATUS:
                 logger.info("Successfully Connected to Animal Well")
                 ctx.connection_status = CONNECTION_CONNECTED_STATUS
@@ -1460,6 +1480,18 @@ async def process_sync_task(ctx: AnimalWellContext):
                 await ctx.bean_patcher.tick()
 
         await asyncio.sleep(0.1)
+
+
+async def console_task(ctx: AnimalWellContext):
+    while not ctx.exit_event.is_set():
+        if ctx.bean_patcher is not None and ctx.bean_patcher.attached_to_process:
+            ctx.bean_patcher.run_cmd_prompt()
+            if cmd := ctx.bean_patcher.get_cmd():
+                if cmd[0] == '/':
+                    ctx.command_processor(ctx)(cmd)
+                else:
+                    ctx.command_processor(ctx).default(cmd)
+        await asyncio.sleep(1/120)
 
 
 def launch():
@@ -1478,7 +1510,6 @@ def launch():
         parser = get_base_parser()
         args = parser.parse_args(args)
 
-        # todo: figure out where to modify the tags, remove the AP tag
         ctx = AnimalWellContext(args.connect, args.password)
         ctx.server_task = asyncio.create_task(server_loop(ctx), name="ServerLoop")
 
@@ -1487,6 +1518,7 @@ def launch():
         ctx.run_cli()
 
         ctx.process_sync_task = asyncio.create_task(process_sync_task(ctx), name="Animal Well Process Sync")
+        ctx.console_task = asyncio.create_task(console_task(ctx), name="Animal Well Console")
 
         await ctx.exit_event.wait()
         ctx.server_address = None
@@ -1498,12 +1530,18 @@ def launch():
         if ctx.bean_patcher is not None and len(ctx.bean_patcher.revertable_tracker_patches) > 0:
             ctx.bean_patcher.revert_tracker_patches()
 
+        if ctx.bean_patcher is not None:
+            ctx.bean_patcher.revert_seeded_save_patch()
+
         if ctx.process_sync_task:
             ctx.process_sync_task.cancel()
             ctx.process_sync_task = None
         if ctx.get_animal_well_process_handle_task:
             ctx.get_animal_well_process_handle_task.cancel()
             ctx.get_animal_well_process_handle_task = None
+        if ctx.console_task:
+            ctx.console_task.cancel()
+            ctx.console_task = None
 
     Utils.init_logging("AnimalWellClient")
 

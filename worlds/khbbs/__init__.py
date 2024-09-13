@@ -27,7 +27,7 @@ class KHBBSWeb(WebWorld):
             "multiworld, and related software.",
             "English",
             "kh1_en.md",
-            "setup/en",
+            "kh1/en",
             ["Gicu"]
     )]
 
@@ -50,9 +50,10 @@ class KHBBSWorld(World):
     location_name_groups = location_name_groups
 
     def create_items(self):
+        self.place_predetermined_items()
+        
         character_letters = ["V", "A", "T"]
-        prefilled_items = ["Victory"]
-        #Handle starting worlds
+        # Handle starting worlds
         starting_worlds = []
         if self.options.starting_worlds > 0:
             possible_starting_worlds = ["Dwarf Woodlands", 
@@ -64,9 +65,9 @@ class KHBBSWorld(World):
                 self.multiworld.push_precollected(self.create_item(starting_world))
         item_pool: List[KHBBSItem] = []
         
-        total_locations = len(self.multiworld.get_unfilled_locations(self.player)) - 1
+        total_locations = len(self.multiworld.get_unfilled_locations(self.player))
         
-        non_filler_item_categories = ["Movement Command", "Defense Command", "Reprisal Command", 
+        non_filler_item_categories = ["Movement Command", "Defense Command", "Reprisal Command", "Command Board",
             "Shotlock Command", "Command Style", "Ability", "Key Item", "World", "Stat Up", "D-Link"]
         for name, data in item_table.items():
             quantity = data.max_quantity
@@ -74,48 +75,56 @@ class KHBBSWorld(World):
                 continue
             if name in starting_worlds:
                 continue
-            if character_letters[self.options.character] in data.characters and name not in prefilled_items:
+            if name == "Mirage Arena" and not self.options.mirage_arena:
+                continue
+            if name == "HP Increase":
+                item_pool += [self.create_item(name) for _ in range(0, self.options.max_hp_increases.value)]
+            elif character_letters[self.options.character] in data.characters:
                 item_pool += [self.create_item(name) for _ in range(0, quantity)]
+        
         # Fill any empty locations with filler items.
-        item_names = []
-        attempts = 0  # If we ever try to add items 200 times, and all the items are used up, lets clear the item_names array, we probably don't have enough items
         while len(item_pool) < total_locations:
-            item_name = self.get_filler_item_name()
-            if item_name not in item_names:
-                item_names.append(item_name)
-                item_pool.append(self.create_item(item_name))
-                attempts = 0
-            elif attempts >= 200:
-                item_names = []
-                attempts = 0
-            else:
-                attempts = attempts + 1
-
+            item_pool.append(self.create_item(self.get_filler_item_name()))
+        
         self.multiworld.itempool += item_pool
 
-    def pre_fill(self) -> None:
+    def place_predetermined_items(self) -> None:
         goal_locations = ["(V) The Keyblade Graveyard Defeat Final Vanitas",
             "(A) The Keyblade Graveyard Defeat Ventus-Vanitas",
             "(T) The Keyblade Graveyard Defeat Terra-Xehanort"]
         if self.options.character == 1 and self.options.final_terra_xehanort_ii:
-             self.multiworld.get_location("(A) Radiant Garden Defeat Final Terra-Xehanort II", self.player).place_locked_item(self.create_item("Victory"))
+             self.get_location("(A) Radiant Garden Defeat Final Terra-Xehanort II").place_locked_item(self.create_item("Victory"))
         else:
-            self.multiworld.get_location(goal_locations[self.options.character], self.player).place_locked_item(self.create_item("Victory"))
+            self.get_location(goal_locations[self.options.character]).place_locked_item(self.create_item("Victory"))
 
     def get_filler_item_name(self) -> str:
         fillers = {}
         exclude = []
         characters = ["V","A","T"]
-        fillers.update(get_items_by_category("Attack Command",     exclude, characters[self.options.character]))
-        fillers.update(get_items_by_category("Magic Command",      exclude, characters[self.options.character]))
-        fillers.update(get_items_by_category("Item Command",       exclude, characters[self.options.character]))
-        fillers.update(get_items_by_category("Friendship Command", exclude, characters[self.options.character]))
-        weights = [data.weight for data in fillers.values()]
-        return self.random.choices([filler for filler in fillers.keys()], weights, k=1)[0]
+        fillers.update(get_items_by_category("Attack Command",     characters[self.options.character]))
+        fillers.update(get_items_by_category("Magic Command",      characters[self.options.character]))
+        fillers.update(get_items_by_category("Item Command",       characters[self.options.character]))
+        fillers.update(get_items_by_category("Friendship Command", characters[self.options.character]))
+        return self.random.choices([filler for filler in fillers.keys()])[0]
 
     def fill_slot_data(self) -> dict:
         slot_data = {"xpmult":                  int(self.options.exp_multiplier)/16,
                      "non_remote_location_ids": self.get_non_remote_location_ids()}
+        if self.options.randomize_keyblade_stats:
+            min_str_bonus = min(self.options.keyblade_min_str.value, self.options.keyblade_max_str.value)
+            max_str_bonus = max(self.options.keyblade_min_str.value, self.options.keyblade_max_str.value)
+            self.options.keyblade_min_str.value = min_str_bonus
+            self.options.keyblade_max_str.value = max_str_bonus
+            min_mgc_bonus = min(self.options.keyblade_min_mgc.value, self.options.keyblade_max_mgc.value)
+            max_mgc_bonus = max(self.options.keyblade_min_mgc.value, self.options.keyblade_max_mgc.value)
+            self.options.keyblade_min_mgc.value = min_mgc_bonus
+            self.options.keyblade_max_mgc.value = max_mgc_bonus
+            slot_data["keyblade_stats"] = ""
+            for i in range(49):
+                str_bonus = int(self.random.randint(min_str_bonus, max_str_bonus))
+                mgc_bonus = int(self.random.randint(min_mgc_bonus, max_mgc_bonus))
+                slot_data["keyblade_stats"] = slot_data["keyblade_stats"] + str(str_bonus) + "," + str(mgc_bonus) + ","
+            slot_data["keyblade_stats"] = slot_data["keyblade_stats"][:-1]
         return slot_data
     
     def create_item(self, name: str) -> KHBBSItem:
@@ -145,9 +154,9 @@ class KHBBSWorld(World):
             if self.player == location.item.player:
                 item_data = item_table[location.item.name]
                 if location_data.type == "Chest":
-                    if item_data.category in ["Attack Command", "Magic Command", "Item Command", "Friendship Command", "Movement Command", "Defense Command", "Reprisal Command", "Shotlock Command", "Key Item"] and not location_data.forced_remote:
+                    if item_data.category in ["Attack Command", "Magic Command", "Item Command", "Friendship Command", "Movement Command", "Defense Command", "Reprisal Command", "Shotlock Command", "Key Item"] and not location_data.forced_remote and "Wayfinder" not in location.item.name:
                         non_remote_location_ids.append(location_data.code)
                 if location_data.type == "Sticker":
-                    if item_data.category in ["Key Item"]:
+                    if item_data.category in ["Key Item"] and "Wayfinder" not in location.item.name:
                         non_remote_location_ids.append(location_data.code)
         return non_remote_location_ids

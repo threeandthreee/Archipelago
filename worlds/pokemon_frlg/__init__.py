@@ -174,8 +174,8 @@ class PokemonFRLGWorld(World):
         self.blacklisted_moves = {frlg_data.moves[name] for name in self.options.move_blacklist.value}
 
         if (self.options.kanto_only and
-                self.options.cerulean_cave_requirement == CeruleanCaveRequirement.option_vanilla or
-                self.options.cerulean_cave_requirement == CeruleanCaveRequirement.option_restore_network):
+                (self.options.cerulean_cave_requirement == CeruleanCaveRequirement.option_vanilla or
+                self.options.cerulean_cave_requirement == CeruleanCaveRequirement.option_restore_network)):
             logging.warning("Pokemon FRLG: Cerulean Cave Requirement for Player %s (%s) incompatible with Kanto Only. "
                             "Setting requirement to Defeat Champion.", self.player, self.player_name)
             self.options.cerulean_cave_requirement.value = CeruleanCaveRequirement.option_champion

@@ -237,6 +237,9 @@ class NarsheWOR(Event):
         magicite_npc.palette = self.characters.get_palette(character)
         magicite_npc.split_sprite = 0
         magicite_npc.direction = direction.DOWN
+        # clear unknown bits that cause a glitchy sprite if reward is a character (Archipelago)
+        magicite_npc.unknown1 = 0
+        magicite_npc.unknown2 = 0
 
         from ..data import text
         item_name = data.text.convert(self.characters.get_name(character), data.text.TEXT1) # item names are stored as TEXT2, dialogs are TEXT1
@@ -255,6 +258,7 @@ class NarsheWOR(Event):
         ])
 
     def cursed_shield_mod(self):
+        self.dialogs.set_text(919, f"G'ho! Everyone knows that these days, curses only last for {self.items.cursed_shield_battles} battles.<end>")
         self.dialogs.set_text(1523, f"“Cursed Shld”…{self.items.cursed_shield_battles}<end>")
         if not self.args.cursed_shield_battles_original:
             self.log_change("Cursed Shield 256", self.items.cursed_shield_battles)

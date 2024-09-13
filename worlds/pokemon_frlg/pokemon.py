@@ -653,12 +653,12 @@ def randomize_misc_pokemon(world: "PokemonFRLGWorld") -> None:
     game_version = world.options.game_version.current_key
 
     should_match_bst = world.options.misc_pokemon in {
-        RandomizeLegendaryPokemon.option_match_base_stats,
-        RandomizeLegendaryPokemon.option_match_base_stats_and_type
+        RandomizeMiscPokemon.option_match_base_stats,
+        RandomizeMiscPokemon.option_match_base_stats_and_type
     }
     should_match_type = world.options.misc_pokemon in {
-        RandomizeLegendaryPokemon.option_match_type,
-        RandomizeLegendaryPokemon.option_match_base_stats_and_type
+        RandomizeMiscPokemon.option_match_type,
+        RandomizeMiscPokemon.option_match_base_stats_and_type
     }
 
     for name, misc_pokemon in data.misc_pokemon.items():

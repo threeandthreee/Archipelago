@@ -991,22 +991,23 @@ def level_scaling(multiworld):
 
             if sphere:
                 new_spheres.append(sphere)
-            else:
-                new_spheres.append(locations)
-                locations -= locations
 
             for event in new_battle_events:
                 if event.item and event not in collected_locations:
                     collected_locations.add(event)
                     state.collect(event.item, True, event)
 
-        for sphere in new_spheres:
-            spheres.append(sphere)
+        if len(new_spheres) > 0:
+            for sphere in new_spheres:
+                spheres.append(sphere)
 
-            for location in sphere:
-                if location.item and location not in collected_locations:
-                    collected_locations.add(location)
-                    state.collect(location.item, True, location)
+                for location in sphere:
+                    if location.item and location not in collected_locations:
+                        collected_locations.add(location)
+                        state.collect(location.item, True, location)
+        else:
+            spheres.append(locations)
+            break
 
     for world in multiworld.get_game_worlds("Pokemon FireRed and LeafGreen"):
         if not world.options.level_scaling:
