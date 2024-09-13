@@ -524,7 +524,7 @@ class FE8Randomizer:
         job: JobData,
         unpromoted_pool: Iterable[JobData],
         promoted_pool: Iterable[JobData],
-        job_valid: Callable[[JobData], [bool]],
+        job_valid: Callable[[JobData], bool],
     ) -> JobData:
         new_job_pool = promoted_pool if job.is_promoted else unpromoted_pool
         return self.random.choice([job for job in new_job_pool if job_valid(job)])

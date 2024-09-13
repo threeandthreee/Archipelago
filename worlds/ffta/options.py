@@ -293,7 +293,7 @@ class AbilityRandom(Choice):
     default = 0
     option_vanilla = 0
     option_race = 1
-    option_random = 2
+    option_random_abilities = 2
     option_random_with_special = 3
 
 

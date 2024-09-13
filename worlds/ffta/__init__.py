@@ -978,7 +978,7 @@ class FFTAWorld(World):
             while len(self.all_abilities) < length_abilities:
                 self.all_abilities.append(self.random.choice(self.all_abilities))
 
-        elif self.options.randomize_abilities == AbilityRandom.option_random:
+        elif self.options.randomize_abilities == AbilityRandom.option_random_abilities:
             self.random.shuffle(self.all_abilities)
 
         last_index = 0
