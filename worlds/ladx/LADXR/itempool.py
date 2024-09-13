@@ -71,7 +71,7 @@ class ItemPool:
     def __init__(self, logic, settings, rnd):
         self.__pool = {}
         self.__setup(logic, settings)
-        self.__randomizeRupees(settings, rnd)
+        # self.__randomizeRupees(settings, rnd)
 
     def add(self, item, count=1):
         self.__pool[item] = self.__pool.get(item, 0) + count
