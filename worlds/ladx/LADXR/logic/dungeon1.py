@@ -24,7 +24,7 @@ class Dungeon1:
         dungeon1_boss = Location(dungeon=1).connect(dungeon1_miniboss, NIGHTMARE_KEY1)
         Location(dungeon=1).add(HeartContainer(0x106), Instrument(0x102)).connect(dungeon1_boss, r.boss_requirements[world_setup.boss_mapping[0]])
 
-        if options.logic not in ('normal', 'casual'):
+        if options.logic == 'hard' or options.logic == 'glitched' or options.logic == 'hell':
             stalfos_keese_room.connect(entrance, r.attack_hookshot_powder) # stalfos jump away when you press a button.
 
         if options.logic == 'glitched' or options.logic == 'hell':
