@@ -520,6 +520,15 @@ class InGameHints(DefaultOnToggle):
     display_name = "In-game Hints"
 
 
+class TarinGiftsYourItem(DefaultOnToggle):
+    """
+    Forces Tarin's gift to be one of your own items.
+    This is to ensure local progress is available at the start of the game.
+    Has little effect in single player games, and isn't always necessary with randomized entrances.
+    """
+    display_name = "Tarin Gifts Your Item"
+
+
 ladx_option_groups = [
     OptionGroup("Goal Options", [
         Goal,
@@ -540,6 +549,7 @@ ladx_option_groups = [
     OptionGroup("Miscellaneous", [
         TradeQuest,
         Rooster,
+        TarinGiftsYourItem,
         TrendyGame,
         InGameHints,
         NagMessages,
@@ -604,3 +614,4 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     boots_controls: BootsControls
     death_link: DeathLink
     in_game_hints: InGameHints
+    tarin_gifts_your_item: TarinGiftsYourItem
