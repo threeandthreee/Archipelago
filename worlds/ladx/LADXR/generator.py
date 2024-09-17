@@ -58,6 +58,7 @@ from . import hints
 
 from .patches import bank34
 from .utils import formatText
+
 from .roomEditor import RoomEditor, Object
 from .patches.aesthetics import rgb_to_bin, bin_to_rgb
 
@@ -65,7 +66,7 @@ from .locations.keyLocation import KeyLocation
 
 from BaseClasses import ItemClassification
 from ..Locations import LinksAwakeningLocation
-from ..Options import TrendyGame, Palette, MusicChangeCondition, BootsControls, OpenMabe
+from ..Options import TrendyGame, Palette, MusicChangeCondition, BootsControls, OpenMabe, Warps
 
 if TYPE_CHECKING:
     from .. import LinksAwakeningWorld
@@ -455,8 +456,8 @@ def generateRom(args, world: "LinksAwakeningWorld"):
             for channel in range(3):
                 color[channel] = color[channel] * 31 // 0xbc
 
-    if world.options.warp_improvements:
-        patches.core.addWarpImprovements(rom, world.options.additional_warp_points)
+    if world.options.warps != Warps.option_vanilla:
+        patches.core.addWarpImprovements(rom, world.options.warps == Warps.option_improved_additional)
 
     palette = world.options.palette
     if palette != Palette.option_normal:

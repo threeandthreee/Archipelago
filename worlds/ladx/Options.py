@@ -507,12 +507,16 @@ class Music(Choice, LADXROption):
         return self.ladxr_name, s
 
 
-class WarpImprovements(DefaultOffToggle):
+class Warps(Choice):
     """
-    [On] Adds remake style warp screen to the game. Choose your warp destination on the map after jumping in a portal and press B to select.
-    [Off] No change
+    [Improved] Adds remake style warp screen to the game. Choose your warp destination on the map after jumping in a portal and press B to select.
+    [Improved Additonal] Improved warps, and adds a warp point at Crazy Tracy's house (the Mambo teleport spot) and Eagle's Tower.
     """
-    display_name = "Warp Improvements"
+    display_name = "Warps"
+    option_vanilla = 0
+    option_improved = 1
+    option_improved_additional = 2
+    default = option_vanilla
 
 
 class AdditionalWarpPoints(DefaultOffToggle):
@@ -575,8 +579,7 @@ ladx_option_groups = [
         ShuffleStoneBeaks
     ]),
     OptionGroup("Warp Points", [
-        WarpImprovements,
-        AdditionalWarpPoints,
+        Warps,
     ]),
     OptionGroup("Miscellaneous", [
         TradeQuest,
@@ -631,8 +634,7 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     # 'bowwow': Bowwow,
     # 'overworld': Overworld,
     link_palette: LinkPalette
-    warp_improvements: WarpImprovements
-    additional_warp_points: AdditionalWarpPoints
+    warps: Warps
     trendy_game: TrendyGame
     gfxmod: GfxMod
     palette: Palette
