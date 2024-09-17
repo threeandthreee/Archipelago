@@ -308,7 +308,7 @@ links_awakening_items_by_name = {
     item.item_name : item for item in links_awakening_items
 }
 
-links_awakening_item_name_groups = {
+links_awakening_item_name_groups: typing.Dict[str, typing.Set[str]] = {
     "Instruments": {
         "Full Moon Cello",
         "Conch Horn",
@@ -422,5 +422,17 @@ links_awakening_item_name_groups = {
     "Tunics": {
         "Red Tunic",
         "Blue Tunic",
+    },
+    "Sword": {
+        "Progressive Sword",
+    },
+    "Shield": {
+        "Progressive Shield",
+    },
+    "Power Bracelet": {
+        "Progressive Power Bracelet",
+    },
+    "Bracelet": {
+        "Progressive Power Bracelet",
     },
 }
