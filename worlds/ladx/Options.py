@@ -550,6 +550,15 @@ class TarinGiftsYourItem(DefaultOnToggle):
     display_name = "Tarin Gifts Your Item"
 
 
+
+class OpenMabe(DefaultOffToggle, LADXROption):
+    """
+    Replaces rock on the east side of Mabe Village with bushes, allowing access to Ukuku Prairie without Power Bracelet.
+    """
+    display_name = "Open Mabe"
+    ladxr_name = "openmabe"
+
+
 ladx_option_groups = [
     OptionGroup("Goal Options", [
         Goal,
@@ -572,6 +581,7 @@ ladx_option_groups = [
         Rooster,
         TarinGiftsYourItem,
         StealingInLogic,
+        OpenMabe,
         TrendyGame,
         InGameHints,
         NagMessages,
@@ -644,3 +654,4 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     hard_mode: HardMode
     low_hp_beep: LowHpBeep
     stealing_in_logic: StealingInLogic
+    open_mabe: OpenMabe
