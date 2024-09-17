@@ -541,14 +541,16 @@ class InGameHints(DefaultOnToggle):
     display_name = "In-game Hints"
 
 
-class TarinGiftsYourItem(DefaultOnToggle):
+class TarinsGift(Choice):
+
     """
-    Forces Tarin's gift to be one of your own items.
-    This is to ensure local progress is available at the start of the game.
+    [Local Progression] Forces Tarin's gift to be an item that immediately opens up local checks.
     Has little effect in single player games, and isn't always necessary with randomized entrances.
     """
-    display_name = "Tarin Gifts Your Item"
-
+    display_name = "Tarin's Gift"
+    option_local_progression = 0
+    option_any_item = 1
+    default = option_local_progression
 
 
 class OpenMabe(DefaultOffToggle, LADXROption):
@@ -579,9 +581,9 @@ ladx_option_groups = [
     OptionGroup("Miscellaneous", [
         TradeQuest,
         Rooster,
-        TarinGiftsYourItem,
         StealingInLogic,
         OpenMabe,
+        TarinsGift,
         TrendyGame,
         InGameHints,
         NagMessages,
@@ -649,9 +651,9 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     boots_controls: BootsControls
     death_link: DeathLink
     in_game_hints: InGameHints
-    tarin_gifts_your_item: TarinGiftsYourItem
     quickswap: Quickswap
     hard_mode: HardMode
     low_hp_beep: LowHpBeep
     stealing_in_logic: StealingInLogic
     open_mabe: OpenMabe
+    tarins_gift: TarinsGift
