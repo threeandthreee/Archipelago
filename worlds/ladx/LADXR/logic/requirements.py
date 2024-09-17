@@ -343,6 +343,8 @@ class RequirementsSettings:
         if options.bowwow != 'normal':
             # We cheat in bowwow mode, we pretend we have the sword, as bowwow can pretty much do all what the sword ca$            # Except for taking out bushes (and crystal pillars are removed)
             self.bush.remove(SWORD)
+        if options.hardmode == "ohko":
+            self.miniboss_requirements["ROLLING_BONES"] = OR(BOW, MAGIC_ROD, BOOMERANG, AND(FEATHER, self.attack_hookshot)) # should not deal with roller damage
         if options.logic == "casual":
             # In casual mode, remove the more complex kill methods
             self.bush.remove(MAGIC_POWDER)
