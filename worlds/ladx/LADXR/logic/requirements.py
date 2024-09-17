@@ -271,6 +271,8 @@ class RequirementsSettings:
         self.rear_attack_range = OR(MAGIC_ROD, BOW) # mimic
         self.fire = OR(MAGIC_POWDER, MAGIC_ROD) # torches
         self.push_hardhat = OR(SHIELD, SWORD, HOOKSHOT, BOOMERANG)
+        self.shuffled_magnifier = TRADING_ITEM_MAGNIFYING_GLASS
+        # add trick directory here
         self.throw_pot = POWER_BRACELET # grab pots to kill enemies
         self.throw_enemy = POWER_BRACELET # grab stunned enemies to kill enemies
         self.tight_jump = FEATHER # jumps that are possible but are tight to make it across
@@ -308,7 +310,7 @@ class RequirementsSettings:
         self.text_clip = False & options.nagmessages # trigger a text box on keyblock or rock or obstacle while holding diagonal to clip into the side. Removed from logic for now
         self.jesus_rooster = AND(ROOSTER, options.hardmode != "oracle") # when transitioning on top of water, buffer the rooster out of sq menu to spawn it. Then do an unbuffered pickup of the rooster as soon as you spawn again to pick it up
         self.zoomerang = AND(PEGASUS_BOOTS, FEATHER, BOOMERANG) # after starting a boots dash, buffer boomerang (on b), feather and the direction you're dashing in to get boosted in certain directions
-        
+
         self.boss_requirements = [
             SWORD,  # D1 boss
             AND(OR(SWORD, MAGIC_ROD), POWER_BRACELET),  # D2 boss
@@ -336,6 +338,11 @@ class RequirementsSettings:
         }
 
         # Adjust for options
+        if not options.tradequest:
+            self.shuffled_magnifier = True
+        if options.bowwow != 'normal':
+            # We cheat in bowwow mode, we pretend we have the sword, as bowwow can pretty much do all what the sword ca$            # Except for taking out bushes (and crystal pillars are removed)
+            self.bush.remove(SWORD)
         if options.logic == "casual":
             # In casual mode, remove the more complex kill methods
             self.bush.remove(MAGIC_POWDER)
@@ -351,7 +358,7 @@ class RequirementsSettings:
             self.boss_requirements[6] = OR(MAGIC_ROD, AND(BOMB, BOW), COUNT(SWORD, 2), AND(OR(SWORD, HOOKSHOT, BOW), SHIELD))  # evil eagle 3 cycle magic rod / bomb arrows / l2 sword, and bow kill
             self.attack_pols_voice = OR(BOMB, MAGIC_ROD, AND(OCARINA, SONG1), AND(self.stun_wizrobe, self.throw_enemy, BOW)) # wizrobe stun has same req as pols voice stun
             self.attack_wizrobe = OR(BOMB, MAGIC_ROD, AND(self.stun_wizrobe, self.throw_enemy, BOW))
-            
+
         if options.logic == 'glitched' or options.logic == 'hell':
             self.boss_requirements[6] = OR(MAGIC_ROD, BOMB, BOW, HOOKSHOT, COUNT(SWORD, 2), AND(SWORD, SHIELD))  # evil eagle off screen kill or 3 cycle with bombs
 

@@ -152,7 +152,9 @@ def generateRom(args, world: "LinksAwakeningWorld"):
     if world.ladxr_settings.witch:
         patches.witch.updateWitch(rom)
     patches.softlock.fixAll(rom)
-    patches.maptweaks.tweakMap(rom)
+    if not world.ladxr_settings.rooster:
+        patches.maptweaks.tweakMap(rom)
+        patches.maptweaks.tweakBirdKeyRoom(rom)
     if world.options.open_mabe:
         patches.maptweaks.openMabe(rom)
     patches.chest.fixChests(rom)
@@ -177,11 +179,7 @@ def generateRom(args, world: "LinksAwakeningWorld"):
     patches.songs.upgradeMarin(rom)
     patches.songs.upgradeManbo(rom)
     patches.songs.upgradeMamu(rom)
-    if world.ladxr_settings.tradequest:
-        patches.tradeSequence.patchTradeSequence(rom, world.ladxr_settings.boomerang)
-    else:
-        # Monkey bridge patch, always have the bridge there.
-        rom.patch(0x00, 0x333D, assembler.ASM("bit 4, e\njr Z, $05"), b"", fill_nop=True)
+    patches.tradeSequence.patchTradeSequence(rom, world.ladxr_settings)
     patches.bowwow.fixBowwow(rom, everywhere=world.ladxr_settings.bowwow != 'normal')
     if world.ladxr_settings.bowwow != 'normal':
         patches.bowwow.bowwowMapPatches(rom)
