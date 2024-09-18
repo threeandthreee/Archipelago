@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import os.path
 import typing
 import logging
-from Options import Choice, Toggle, DefaultOnToggle, Range, FreeText, PerGameCommonOptions, OptionGroup, DeathLink
+from Options import Choice, Toggle, DefaultOnToggle, Range, FreeText, PerGameCommonOptions, OptionGroup, DeathLink, Visibility
 from collections import defaultdict
 import Utils
 
@@ -343,9 +343,18 @@ class Quickswap(Choice, LADXROption):
     default = option_none
 
 
-#             Setting('textmode', 'User options', 'f', 'Text mode', options=[('fast', '', 'Fast'), ('default', 'd', 'Normal'), ('none', 'n', 'No-text')], default='fast',
-#                 description="""[Fast] makes text appear twice as fast.
-# [No-Text] removes all text from the game""", aesthetic=True),
+class TextMode(Choice, LADXROption):
+    """
+    [Fast] Makes text appear twice as fast
+    [No-Text] Removes all text from the game
+    """
+    display_name = "Text Mode"
+    ladxr_name = "textmode"
+    option_default = 0
+    option_fast = 1
+    option_none = 2
+    default = option_default
+    visibility = Visibility.none
 
 
 class LowHpBeep(Choice, LADXROption):
@@ -366,6 +375,7 @@ class NoFlash(DefaultOnToggle, LADXROption):
     """
     display_name = "No Flash"
     ladxr_name = "noflash"
+    visibility = Visibility.none
 
 
 class BootsControls(Choice):
@@ -645,3 +655,5 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     text_shuffle: TextShuffle
     music: Music
     music_change_condition: MusicChangeCondition
+    text_mode: TextMode
+    no_flash: NoFlash
