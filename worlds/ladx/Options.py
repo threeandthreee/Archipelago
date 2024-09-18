@@ -567,6 +567,14 @@ class OpenMabe(DefaultOffToggle, LADXROption):
     ladxr_name = "openmabe"
 
 
+
+class StabilizeItemPool(DefaultOffToggle):
+    """
+    From vanilla quantities, the default behavior is to randomly swap some number of rupees for bombs, arrows, powder, and capacity upgrades. This disables that swapping, useful for plando.
+    """
+    display_name = "Stabilize Item Pool"
+
+
 ladx_option_groups = [
     OptionGroup("Goal Options", [
         Goal,
@@ -595,6 +603,7 @@ ladx_option_groups = [
         OpenMabe,
         InGameHints,
         DeathLink,
+        StabilizeItemPool,
     ]),
     OptionGroup("Quality of Life", [
         NagMessages,
@@ -657,3 +666,4 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     music_change_condition: MusicChangeCondition
     text_mode: TextMode
     no_flash: NoFlash
+    stabilize_item_pool: StabilizeItemPool
