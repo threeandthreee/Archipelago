@@ -519,7 +519,10 @@ class LinksAwakeningWorld(World):
         return "Nothing"
 
     def fill_slot_data(self):
-        slot_data = { "death_link": self.options.death_link.value }
+        slot_data = {
+            "death_link": self.options.death_link.value,
+            "prerelease": True,
+        }
 
         if not self.multiworld.is_race:
             # all of these option are NOT used by the LADX- or Text-Client.
