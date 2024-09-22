@@ -545,6 +545,7 @@ class LinksAwakeningWorld(World):
                 "shuffle_instruments",
                 "nag_messages",
                 "hard_mode",
+                "open_mabe",
             ]
 
             # use the default behaviour to grab options
