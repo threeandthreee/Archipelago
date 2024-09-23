@@ -456,6 +456,11 @@ class LinksAwakeningCommandProcessor(ClientCommandProcessor):
         if isinstance(self.ctx, LinksAwakeningContext):
             Utils.async_start(self.ctx.update_death_link("DeathLink" not in self.ctx.tags))
 
+    def _cmd_slotdata(self):
+        """Display slot data."""
+        if isinstance(self.ctx, LinksAwakeningContext):
+            self.output(self.ctx.slot_data)
+
 class LinksAwakeningContext(CommonContext):
     tags = {"AP"}
     game = "Links Awakening DX"
