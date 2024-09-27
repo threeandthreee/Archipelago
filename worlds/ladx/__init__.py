@@ -228,7 +228,7 @@ class LinksAwakeningWorld(World):
             for _ in range(count):
                 if item_name in exclude:
                     exclude.remove(item_name)  # this is destructive. create unique list above
-                    itempool.append(self.create_item("Nothing"))
+                    self.multiworld.itempool.append(self.create_item("Nothing"))
                 else:
                     item = self.create_item(item_name)
 
