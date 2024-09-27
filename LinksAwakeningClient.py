@@ -508,6 +508,23 @@ class LinksAwakeningCommandProcessor(ClientCommandProcessor):
         if isinstance(self.ctx, LinksAwakeningContext):
             Utils.async_start(self.ctx.update_death_link("DeathLink" not in self.ctx.tags))
 
+    def _cmd_senddeathlink(self):
+        """Sends deathlink."""
+        if isinstance(self.ctx, LinksAwakeningContext):
+            Utils.async_start(self.ctx.send_msgs([{
+                "cmd": "Bounce", "tags": ["DeathLink"],
+                "data": {
+                    "time": time.time(),
+                    "source": "self.ctx.slot_info[self.ctx.slot].name",
+                    "cause": self.ctx.slot_info[self.ctx.slot].name + " killed you with the dev client."
+                }
+            }]))
+
+    def _cmd_die(self):
+        """Die."""
+        if isinstance(self.ctx, LinksAwakeningContext):
+            self.ctx.client.deathlink_status = 'pending'
+
     def _cmd_slotdata(self):
         """Display slot data."""
         if isinstance(self.ctx, LinksAwakeningContext):
