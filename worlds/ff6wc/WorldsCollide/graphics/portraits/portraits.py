@@ -1,3 +1,6 @@
+import pkgutil
+
+
 ORIGINAL_COUNT = 19
 
 id_portrait = {
@@ -313,19 +316,23 @@ id_portrait = {
     404 : "Lenna (Beastmaster)-JamesWhite89-FF5",
 }
 
-def get_bin_path(id_):
-    import os
 
+def get_bin_path(id_: int) -> str:
     if id_ < ORIGINAL_COUNT:
         subdir = "original"
     else:
         subdir = "custom"
 
     name = id_portrait[id_]
-    return os.path.join(os.path.dirname(os.path.abspath(__file__)), subdir, name + ".bin")
+    return f"{subdir}/{name}.bin"
 
-def get_pal_path(id_):
-    import os
 
+def get_pal_path(id_: int) -> str:
     bin_path = get_bin_path(id_)
-    return os.path.splitext(bin_path)[0] + ".pal"
+    return bin_path[:-4] + ".pal"
+
+
+def get_portrait_data(path: str) -> bytes:
+    data = pkgutil.get_data(__name__, path)
+    assert data, f"no portrait data {path=} {__name__=}"
+    return data

@@ -114,7 +114,7 @@ def initialize_enemies(world):
         "Trillionage Sprout": EarthBoundEnemy("Trillionage Sprout", 0x15b695, 1048, 240, 30303, 1358, 16, 54, 88, 29, False),
         "Musica": EarthBoundEnemy("Musica", 0x15b6f3, 292, 0, 3748, 341, 21, 69, 85, 35, False),
         "Desert Wolf": EarthBoundEnemy("Desert Wolf", 0x15b751, 247, 0, 3740, 114, 33, 57, 67, 30, False),
-        "Master Belch": EarthBoundEnemy("Master Belch", 0x15b7af, 650, 0, 12509, 664, 16, 50, 88, 27, False), #Real one
+        "Master Belch": EarthBoundEnemy("Master Belch", 0x15b7af, 650, 0, 12509, 664, 16, 50, 88, 27, False),  # Real one
         "Big Pile of Puke": EarthBoundEnemy("Big Pile of Puke", 0x15b80d, 631, 0, 19659, 728, 16, 120, 158, 57, False),
         "Master Barf": EarthBoundEnemy("Master Barf", 0x15b86b, 1319, 0, 125056, 3536, 24, 136, 177, 60, False),
         "Kiss of Death": EarthBoundEnemy("Kiss of Death", 0x15b8c9, 333, 0, 10354, 528, 19, 91, 100, 46, False),
@@ -162,7 +162,7 @@ def initialize_enemies(world):
         "Mr. Molecule": EarthBoundEnemy("Mr. Molecule", 0x15c835, 280, 21, 8708, 659, 18, 118, 97, 56, False),
         "Worthless Protoplasm": EarthBoundEnemy("Worthless Protoplasm", 0x15c893, 38, 0, 17, 11, 27, 11, 21, 7, False),
         "Sentry Robot": EarthBoundEnemy("Sentry Robot", 0x15c8f1, 372, 0, 5034, 392, 17, 77, 105, 39, False),
-        #"Heavily Armed Pokey": EarthBoundEnemy("Heavily Armed Pokey", 0x15c94f, 1746, 999, 0, 0, 51, 150, 274, 72, False),
+        # "Heavily Armed Pokey": EarthBoundEnemy("Heavily Armed Pokey", 0x15c94f, 1746, 999, 0, 0, 51, 150, 274, 72, False),
         "Psychic Psycho": EarthBoundEnemy("Psychic Psycho", 0x15c9ad, 591, 252, 30094, 682, 30, 124, 144, 58, False),
         "Major Psychic Psycho": EarthBoundEnemy("Major Psychic Psycho", 0x15ca0b, 618, 574, 39247, 862, 31, 145, 152, 65, False),
         "Mole Playing Rough": EarthBoundEnemy("Mole Playing Rough", 0x15ca69, 103, 0, 456, 36, 9, 22, 28, 14, False),
@@ -181,8 +181,8 @@ def initialize_enemies(world):
         "No Good Fly": EarthBoundEnemy("No Good Fly", 0x15cf2f, 100, 0, 415, 26, 10, 23, 13, 15, False),
         "Mostly Bad Fly": EarthBoundEnemy("Mostly Bad Fly", 0x15cf8d, 141, 0, 1116, 84, 15, 32, 16, 19, False),
         "Spiteful Crow": EarthBoundEnemy("Spiteful Crow", 0x15cfeb, 24, 0, 3, 5, 77, 5, 3, 3, False),
-        #"Master Belch": EarthBoundEnemy("Master Belch", 0x15d397, 650, 0, 12509, 664, 16, 50, 88, 27, False), Unused
-        #"Insane Cultist (2)": EarthBoundEnemy("Insane Cultist", 0x15d3f5, 94, 0, 353, 33, 8, 19, 25, 13, False),
+        # "Master Belch": EarthBoundEnemy("Master Belch", 0x15d397, 650, 0, 12509, 664, 16, 50, 88, 27, False), Unused
+        # "Insane Cultist (2)": EarthBoundEnemy("Insane Cultist", 0x15d3f5, 94, 0, 353, 33, 8, 19, 25, 13, False),
         "Dept. Store Spook (2)": EarthBoundEnemy("Dept. Store Spook (2)", 0x15d453, 610, 290, 24291, 1648, 19, 82, 135, 42, False),
         "Ness's Nightmare (2)": EarthBoundEnemy("Ness's Nightmare (2)", 0x15d4b1, 1654, 882, 89004, 4442, 31, 172, 253, 71, False),
         "Mr. Carpainter (2)": EarthBoundEnemy("Mr. Carpainter (2)", 0x15d50f, 262, 70, 1412, 195, 8, 33, 45, 21, False),
@@ -195,41 +195,41 @@ def initialize_enemies(world):
         "Mondo Mole (2)": EarthBoundEnemy("Mondo Mole (2)", 0x15d7a1, 498, 161, 5791, 400, 9, 37, 50, 23, False),
         "Guardian Digger (2)": EarthBoundEnemy("Guardian Digger (2)", 0x15d7ff, 386, 110, 17301, 1467, 17, 59, 129, 32, False),
         "Kraken (2)": EarthBoundEnemy("Kraken (2)", 0x15d85d, 1097, 176, 79267, 3049, 21, 105, 166, 54, False),
-        #"Bionic Kraken (2)": EarthBoundEnemy("Bionic Kraken", 0x15d8bb, 900, 60, 50308, 960, 42, 155, 195, 70, False),
+        # "Bionic Kraken (2)": EarthBoundEnemy("Bionic Kraken", 0x15d8bb, 900, 60, 50308, 960, 42, 155, 195, 70, False),
         "Starman (2)": EarthBoundEnemy("Starman (2)", 0x15d919, 545, 155, 23396, 720, 24, 103, 126, 55, False),
         "Starman Super (2)": EarthBoundEnemy("Starman Super (2)", 0x15d977, 568, 310, 30145, 735, 24, 112, 129, 56, False),
         "Ghost of Starman (2)": EarthBoundEnemy("Ghost of Starman (2)", 0x15d9d5, 750, 462, 48695, 807, 46, 152, 170, 68, False),
         "Starman Deluxe (2)": EarthBoundEnemy("Starman Deluxe (2)", 0x15da33, 1400, 418, 160524, 3827, 27, 143, 186, 65, False),
         "Final Starman (2)": EarthBoundEnemy("Final Starman (2)", 0x15da91, 840, 860, 61929, 915, 47, 178, 187, 71, False),
-        #"Urban Zombie": EarthBoundEnemy("Urban Zombie", 0x15daef, 171, 0, 700, 58, 10, 31, 24, 19, False),
+        # "Urban Zombie": EarthBoundEnemy("Urban Zombie", 0x15daef, 171, 0, 700, 58, 10, 31, 24, 19, False),
         "Diamond Dog (2)": EarthBoundEnemy("Diamond Dog (2)", 0x15db4d, 3344, 154, 337738, 6968, 31, 167, 230, 70, False),
         "Trillionage Sprout (2)": EarthBoundEnemy("Trillionage Sprout (2)", 0x15dbab, 1048, 240, 30303, 1358, 16, 54, 88, 29, False),
         "Master Belch (2)": EarthBoundEnemy("Master Belch (2)", 0x15dc09, 650, 0, 12509, 664, 16, 50, 88, 27, False),
-        #"Big Pile of Puke": EarthBoundEnemy("Big Pile of Puke", 0x15dc67, 609, 76, 17567, 690, 14, 134, 146, 59, False),
+        # "Big Pile of Puke": EarthBoundEnemy("Big Pile of Puke", 0x15dc67, 609, 76, 17567, 690, 14, 134, 146, 59, False),
         "Master Barf (2)": EarthBoundEnemy("Master Barf (2)", 0x15dcc5, 1319, 0, 125056, 3536, 24, 136, 177, 60, False),
         "Loaded Dice (2)": EarthBoundEnemy("Loaded Dice (2)", 0x15dd23, 307, 0, 10672, 703, 77, 146, 113, 59, False),
-        #"Tangoo": EarthBoundEnemy("Tangoo", 0x15dd81, 371, 5, 14718, 572, 19, 96, 99, 48, False),
+        # "Tangoo": EarthBoundEnemy("Tangoo", 0x15dd81, 371, 5, 14718, 572, 19, 96, 99, 48, False),
         "Boogey Tent (2)": EarthBoundEnemy("Boogey Tent (2)", 0x15dddf, 579, 56, 5500, 407, 10, 43, 69, 25, False),
-        #"Squatter Demon": EarthBoundEnemy("Squatter Demon", 0x15de3d, 774, 60, 48311, 897, 45, 158, 192, 69, False),
+        # "Squatter Demon": EarthBoundEnemy("Squatter Demon", 0x15de3d, 774, 60, 48311, 897, 45, 158, 192, 69, False),
         "Everdred (2)": EarthBoundEnemy("Everdred (2)", 0x15de9b, 182, 0, 986, 171, 6, 25, 35, 15, False),
         "Electro Specter (2)": EarthBoundEnemy("Electro Specter (2)", 0x15def9, 3092, 80, 261637, 6564, 29, 148, 203, 67, False),
         "Thunder and Storm (2)": EarthBoundEnemy("Thunder and Storm (2)", 0x15df57, 2065, 70, 129026, 4736, 21, 111, 178, 56, False),
         "Frankystein Mark II (2)": EarthBoundEnemy("Frankystein Mark II (2)", 0x15dfb5, 91, 0, 76, 31, 4, 15, 18, 7, False),
         "Evil Mani-Mani (2)": EarthBoundEnemy("Evil Mani-Mani (2)", 0x15e013, 860, 88, 28139, 1852, 15, 86, 145, 45, False),
-        #"Heavily Armed Pokey": EarthBoundEnemy("Heavily Armed Pokey", 0x15e071, 1746, 999, 0, 0, 51, 150, 274, 72, False),
+        # "Heavily Armed Pokey": EarthBoundEnemy("Heavily Armed Pokey", 0x15e071, 1746, 999, 0, 0, 51, 150, 274, 72, False),
         "Clumsy Robot (2)": EarthBoundEnemy("Clumsy Robot (2)", 0x15e0cf, 962, 0, 32378, 2081, 83, 88, 137, 46, False),
         "Robo-pump (2)": EarthBoundEnemy("Robo-pump (2)", 0x15e12d, 431, 0, 4797, 349, 19, 70, 113, 36, False),
-        #"Foppy": EarthBoundEnemy("Foppy", 0x15e18b, 120, 10, 1311, 93, 1, 29, 9, 16, False),
+        # "Foppy": EarthBoundEnemy("Foppy", 0x15e18b, 120, 10, 1311, 93, 1, 29, 9, 16, False),
         "Guardian General (2)": EarthBoundEnemy("Guardian General (2)", 0x15e1e9, 831, 6, 95390, 3235, 21, 109, 214, 55, False),
-        "Black Antoid (2)": EarthBoundEnemy("Black Antoid (2)", 0x15e247, 34, 25, 37, 7, 4, 14, 13, 7, False), #Separate enemy used in the titanic ant fight
+        "Black Antoid (2)": EarthBoundEnemy("Black Antoid (2)", 0x15e247, 34, 25, 37, 7, 4, 14, 13, 7, False), # Separate enemy used in the titanic ant fight
         "Struttin' Evil Mushroom (2)": EarthBoundEnemy("Struttin' Evil Mushroom (2)", 0x15e2a5, 60, 0, 95, 15, 5, 15, 10, 7, False),
-        #"Runaway Dog (2)": EarthBoundEnemy("Runaway Dog", 0x15e303, 21, 0, 4, 3, 26, 4, 5, 73, False),
+        # "Runaway Dog (2)": EarthBoundEnemy("Runaway Dog", 0x15e303, 21, 0, 4, 3, 26, 4, 5, 73, False),
         "Cave Boy (2)": EarthBoundEnemy("Cave Boy (2)", 0x15e361, 314, 0, 618, 17, 5, 21, 33, 11, False),
         "Tiny Li'l Ghost": EarthBoundEnemy("Tiny Li'l Ghost", 0x15e3bf, 90, 0, 1, 162, 100, 19, 7, 18, False),
         "Starman Junior": EarthBoundEnemy("Starman Junior", 0x15e41d, 200, 999, 16, 20, 1, 11, 10, 6, False),
         "Buzz Buzz": EarthBoundEnemy("Buzz Buzz", 0x15e47b, 2000, 999, 0, 0, 100, 40, 92, 20, False),
         "Heavily Armed Pokey": EarthBoundEnemy("Heavily Armed Pokey", 0x15e4d9, 2000, 999, 0, 0, 60, 145, 255, 80, False),
-        #"Heavily Armed Pokey": EarthBoundEnemy("Heavily Armed Pokey", 0x15e537, 1746, 999, 0, 0, 51, 150, 274, 72, False), Cutscene?
+        # "Heavily Armed Pokey": EarthBoundEnemy("Heavily Armed Pokey", 0x15e537, 1746, 999, 0, 0, 51, 150, 274, 72, False), Cutscene?
         "Giygas (2)": EarthBoundEnemy("Giygas (2)", 0x15e595, 9999, 999, 0, 0, 80, 255, 255, 80, False),
         "Giygas (3)": EarthBoundEnemy("Giygas (3)", 0x15e5f3, 9999, 0, 0, 0, 80, 255, 255, 80, False),
         "Giygas (4)": EarthBoundEnemy("Giygas (4)", 0x15e651, 2000, 0, 0, 0, 80, 255, 255, 80, False),
@@ -237,7 +237,7 @@ def initialize_enemies(world):
         "Farm Zombie": EarthBoundEnemy("Farm Zombie", 0x15e70d, 171, 0, 700, 58, 10, 31, 24, 19, False),
         "Criminal Caterpillar": EarthBoundEnemy("Criminal Caterpillar", 0x15e76b, 250, 168, 30384, 0, 134, 37, 16, 23, False),
         "Evil Eye": EarthBoundEnemy("Evil Eye", 0x15e7c9, 720, 400, 46376, 896, 38, 141, 162, 63, False),
-        #"Magic Butterfly": EarthBoundEnemy("Magic Butterfly", 0x15e827, 16, 0, 1, 0, 25, 2, 2, 0, False),
+        # "Magic Butterfly": EarthBoundEnemy("Magic Butterfly", 0x15e827, 16, 0, 1, 0, 25, 2, 2, 0, False),
         "Mini Barf": EarthBoundEnemy("Mini Barf", 0x15e885, 616, 0, 7521, 460, 10, 45, 71, 26, False),
         "Master Criminal Worm": EarthBoundEnemy("Master Criminal Worm", 0x15e8e3, 377, 300, 82570, 0, 136, 73, 40, 37, False),
         "Captain Strong": EarthBoundEnemy("Captain Strong", 0x15e941, 140, 0, 492, 159, 15, 20, 24, 13, False),
@@ -322,7 +322,7 @@ def initialize_enemies(world):
         "Guardian General": [],
         "Master Barf": [],
         "Ness's Nightmare": [],
-        #"Starman Junior": [0x2F, 0x01],
+        # "Starman Junior": [0x2F, 0x01],
         "Mini Barf": [],
         "Heavily Armed Pokey": [],
     }
@@ -335,7 +335,6 @@ def initialize_enemies(world):
         "Starman Deluxe": ["Starman Super", "Starman"],
         "Carbon Dog": ["Diamond Dog"]
     }
-
 
     world.regional_enemies = {"Northern Onett": {world.enemies["Spiteful Crow"], world.enemies["Runaway Dog"], world.enemies["Coil Snake"]},
                               "Onett": {world.enemies["Pogo Punk"], world.enemies["Skate Punk"], world.enemies["Yes Man Junior"], world.enemies["Frank"], world.enemies["Frankystein Mark II"]},
@@ -358,7 +357,7 @@ def initialize_enemies(world):
                                                      world.enemies["Skelpion"], world.enemies["Smilin' Sphere"]},
                               "Fourside": {world.enemies["Annoying Reveler"], world.enemies["Crazed Sign"], world.enemies["Extra Cranky Lady"], world.enemies["Mad Taxi"],
                                            world.enemies["Abstract Art"], world.enemies["Dali's Clock"], world.enemies["Enraged Fire Plug"], world.enemies["Robo-pump"], world.enemies["Evil Mani-Mani"]},
-                              "Gold Mine": {world.enemies["Gigantic Ant"], world.enemies["Mad Duck"], world.enemies["Noose Man"], world.enemies["Thirsty Coil Snake"], world.enemies["Guardian Digger"], world.enemies["Guardian Digger (2)"]},
+                              "Gold Mine": {world.enemies["Gigantic Ant"], world.enemies["Mad Duck"], world.enemies["Noose Man"], world.enemies["Thirsty Coil Snake"], world.enemies["Guardian Digger"], world.enemies["Guardian Digger (2)"], world.enemies["Gigantic Ant (2)"]},
                               "Fourside Dept. Store": {world.enemies["Musica"], world.enemies["Mystical Record"], world.enemies["Scalding Coffee Cup"], world.enemies["Dept. Store Spook"], world.enemies["Dept. Store Spook (2)"]},
                               "Monkey Caves": {world.enemies["Struttin' Evil Mushroom (2)"], world.enemies["Tough Mobile Sprout"], world.enemies["Struttin' Evil Mushroom"]},
                               "Monotoli Building": {world.enemies["Sentry Robot"], world.enemies["Clumsy Robot"], world.enemies["Clumsy Robot (2)"], world.enemies["Clumsy Robot (3)"]},
@@ -366,7 +365,7 @@ def initialize_enemies(world):
                               "Summers": {world.enemies["Crazed Sign"], world.enemies["Mad Taxi"], world.enemies["Mole Playing Rough"], world.enemies["Over Zealous Cop"], world.enemies["Tough Guy"], world.enemies["Kraken"], world.enemies["Kraken (2)"]},
                               "Summers Museum": {world.enemies["Shattered Man"]},
                               "Magnet Hill": {world.enemies["Deadly Mouse"], world.enemies["Filthy Attack Roach"], world.enemies["Stinky Ghost"], world.enemies["Plague Rat of Doom"]},
-                              "Pink Cloud": {world.enemies["Conducting Menace"], world.enemies["Kiss of Death"], world.enemies["Tangoo"], world.enemies["Thunder Mite"], world.enemies["Thunder and Storm"]},
+                              "Pink Cloud": {world.enemies["Conducting Menace"], world.enemies["Kiss of Death"], world.enemies["Tangoo"], world.enemies["Thunder Mite"], world.enemies["Thunder and Storm"], world.enemies["Thunder and Storm (2)"]},
                               "Scaraba": {world.enemies["Beautiful UFO"], world.enemies["Dread Skelpion"], world.enemies["Great Crested Booka"], world.enemies["High-class UFO"], world.enemies["Master Criminal Worm"]},
                               "Pyramid": {world.enemies["Arachnid!!!"], world.enemies["Fierce Shattered Man"], world.enemies["Guardian Hieroglyph"], world.enemies["Lethal Asp Hieroglyph"], world.enemies["Petrified Royal Guard"],
                                           world.enemies["Guardian General"], world.enemies["Guardian General (2)"]},
@@ -390,7 +389,7 @@ def initialize_enemies(world):
                                                    world.enemies["Ultimate Octobot"], world.enemies["Wild 'n Wooly Shambler"], world.enemies["Final Starman (2)"], world.enemies["Ghost of Starman (2)"]},
                               "Endgame": {world.enemies["Heavily Armed Pokey"], world.enemies["Giygas (1)"], world.enemies["Giygas (2)"], world.enemies["Giygas (3)"], world.enemies["Giygas (4)"], world.enemies["Giygas (5)"], world.enemies["Giygas (6)"]},
                         
-    }
+                              }
 
 
 combat_regions = [
@@ -437,89 +436,46 @@ combat_regions = [
 ]
 
 levels = [
-    1,  #north onett
-    2, #south onett
-    3, #giant step
-    5, #twoson
-    7, #everdred
-    9, #peaceful rest
-    10, #happy happy
-    12, #lilliput steps
-    13, #threed
-    14, #threed caverns
-    15, #grapefruit falls
-    17, #belch base
-    18, #milky well
-    19, #duty dunes
-    21, #fourside
-    23, #gold mine
-    24, #dept store
-    25, #monkey cabves
-    26, #monotoli building
-    28, #winters
-    29, #southern winters
-    31, #rainy circle
-    32, #summers
-    33, #museum
-    36, #magnet hill
-    38, #pink cloud
-    39, #scaraba
-    42, #pyramid
-    43, #scaraba south
-    45, #dungeon man
-    47, #deep darkness
-    49, #deep darkness swamp
-    52, #stonehenge
-    56, #lumine hall
-    59, #lost underworld
-    61, #fire spring
-    63, #magicant
-    65, #cave of the past
+    1,  # north onett
+    2,  # south onett
+    3,  # giant step
+    5,  # twoson
+    7,  # everdred
+    9,  # peaceful rest
+    10,  # happy happy
+    12,  # lilliput steps
+    13,  # threed
+    14,  # threed caverns
+    15,  # grapefruit falls
+    17,  # belch base
+    18,  # milky well
+    19,  # duty dunes
+    21, # fourside
+    23, # gold mine
+    24, # dept store
+    25, # monkey cabves
+    26, # monotoli building
+    28, # winters
+    29, # southern winters
+    31, # rainy circle
+    32, # summers
+    33, # museum
+    36, # magnet hill
+    38, # pink cloud
+    39, # scaraba
+    42, # pyramid
+    43, # scaraba south
+    45, # dungeon man
+    47, # deep darkness
+    49, # deep darkness swamp
+    52, # stonehenge
+    56, # lumine hall
+    59, # lost underworld
+    61, # fire spring
+    63, # magicant
+    65, # cave of the past
     70,
-    73] #gigyas
-
-average_exp = [
-    3,  #north onett
-    13, #south onett
-    32, #giant step
-    144, #twoson
-    292, #everdred
-    350, #peaceful rest
-    456, #happy happy
-    625, #lilliput steps
-    831, #threed
-    1425, #threed caverns
-    1468, #grapefruit falls
-    1947, #belch base
-    2736, #milky well
-    2994, #duty dunes
-    3032, #fourside
-    3316,
-    3540, #gold mine
-    3995, #dept store
-    4200,
-    4643,
-    5034, #monkey cabves
-    5532,
-    6273,
-    6410, #monotoli building
-    7587,
-    8379, #winters
-    10982, #southern winters
-    12278, #rainy circle
-    12665, #summers
-    14121,
-    15242, #museum
-    15657, #magnet hill
-    17672,
-    20164,
-    22534, #scaraba
-    25383,
-    33885, #pyramid
-    35674, #scaraba south
-    40226, #dungeon man
-    49230
-]
+    73] # gigyas
 
 spell_breaks: Dict[str, Dict[int, str]] = {
     "freeze": {8: "zeta", 12: "epsilon", 20: "delta", 25: "lambda", 40: "alpha", 65: "beta", 70: "gamma", 100: "omega"},
@@ -562,9 +518,13 @@ spell_breaks: Dict[str, Dict[int, str]] = {
     "thunder_minus": {10: "zeta", 15: "epsilon", 20: "delta", 35: "lambda", 45: "alpha", 60: "beta", 100: "gamma", 100: "omega"},
     "starstorm_minus": {12: "zeta", 20: "epsilon", 45: "delta", 70: "lambda", 100: "alpha", 100: "beta"},
     "flash_minus": {45: "alpha", 60: "beta", 100: "gamma", 100: "omega"},
+    "blast": {30: "alpha", 40: "beta", 50: "gamma", 100: "omega"},
+    "missile": {20: "alpha", 50: "beta", 73: "gamma", 100: "omega"},
+    #Todo; blast/missile delta and lambda
+    #"blast": {00: "delta", 20: "lambda", 20: "alpha", 35: "beta", 45: "gamma", 100: "omega"},
 
 
-    #bombs and bottle rockets too? Also missile maybe? hmmm
+    # bombs and bottle rockets too? Also missile maybe? hmmm
 }
 
 def get_psi_levels(level: int, breaks: Dict[int, str]) -> str:
@@ -600,7 +560,7 @@ enemy_psi = {
     "Slimy Little Pile": ["hacking_cough", "null", "null", "null"],
     "Even Slimier Little Pile": ["null", "null", "null", "hacking_cough"],
     "Kraken": ["breathe_fire", "null", "crashing_boom_bang", "null"],
-    "Bionic Kraken": ["null", "crashing_boom_bang", "breathe_fire", "null"], #Generate tornado?
+    "Bionic Kraken": ["null", "crashing_boom_bang", "breathe_fire", "null"],  # Generate tornado?
     "Spinning Robo": ["null", "null", "stuffiness_beam", "null"],
     "Whirling Robo": ["null", "stuffiness_beam", "null", "null"],
     "Thirsty Coil Snake": ["poisonous_fangs", "null", "null", "null"],
@@ -652,7 +612,7 @@ enemy_psi = {
     "Gigantic Ant (2)": ["paralysis", "null", "null", "null"],
     "Chomposaur (2)": ["null", "null", "fire", "fire"],
     "Guardian Digger (2)": ["null", "null", "null", "lifeup"],
-    "Kraken (2)": ["flash", "breathe_fire", "null", "null"], #tornado?
+    "Kraken (2)": ["flash", "breathe_fire", "null", "null"],  # tornado?
     "Starman Super (2)": ["null", "healing", "null", "null"],
     "Ghost of Starman (2)": ["null", "null", "starstorm", "null"],
     "Final Starman (2)": ["starstorm", "null", "healing", "null"],
@@ -848,7 +808,7 @@ spell_data = {
         "alpha": [0xF1, 0x00, 0x00],
         "beta": [0x45, 0x00, 0x00]
     },
-        "hacking_cough": {
+    "hacking_cough": {
         "alpha": [0xD5, 0x00, 0x00],
         "beta": [0x57, 0x00, 0x00]
     },
@@ -943,6 +903,28 @@ spell_data = {
         "alpha": [0x1E, 0x00, 0x15],
         "beta": [0x1F, 0x00, 0x16]
     },
+    "blast": {
+        "zeta": [0x00, 0x00, 0x00],
+        "epsilon": [0x00, 0x00, 0x00],
+        "alpha": [0xA4, 0x01, 0x46],
+        "beta": [0xA5, 0x01, 0x47],
+        "gamma": [0xA6, 0x01, 0x48],
+        "omega": [0xA7, 0x01, 0x48]
+    },
+    "missile": {
+        "zeta": [0x00, 0x00, 0x00],
+        "epsilon": [0x00, 0x00, 0x00],
+        "alpha": [0xA8, 0x01, 0x4A],
+        "beta": [0xA9, 0x01, 0x4B],
+        "gamma": [0xAA, 0x01, 0x4C],
+        "omega": [0xAB, 0x01, 0x4D]
+    },
+    "summon_storm": {
+        "alpha": [0xF4, 0x01, 0x00],
+        "beta": [0xF5, 0x01, 0x00],
+        "gamma": [0x58, 0x00, 0x00],
+        "omega": [0xF6, 0x01, 0x00]
+    }
 
 }
 
@@ -971,6 +953,7 @@ def scale_exp_2(base_exp, base_level, new_level, world):
     base_scaled_exp = calculate_exp(base_level)
     scaled_exp = calculate_exp(new_level)
     new_exp = base_exp * scaled_exp / base_scaled_exp
+    new_exp  = max(new_exp, scaled_exp)#maybe remove? if early scaled
     new_exp = math.ceil(new_exp * world.options.experience_modifier / 100)
     return new_exp
 
@@ -978,7 +961,8 @@ def calculate_exp(level):
     if level > 30:
         return 1000 * math.exp(0.05 * level)
     else:
-        return 10 * math.exp(0.2 * level)
+        return 50 * math.exp(0.15 * level)
+        #return 10 * math.exp(0.2 * level) if not boosted
 
     
 
@@ -1024,16 +1008,16 @@ def scale_enemies(world, rom):
     for i, sphere in enumerate(world.multiworld.get_spheres()):
         all_locs = [loc for loc in sphere]
         for loc in all_locs:
-            if loc.parent_region.name in combat_regions:
+            if loc.parent_region.name in combat_regions and loc.player == world.player:
                 world.last_combat_region = loc.parent_region.name
-            if (loc.parent_region.name in [world.Paula_region, world.Jeff_region, world.Poo_region] and loc.parent_region.name not in combat_regions) and world.options.auto_scale_party_members:
-                if loc.parent_region.name == world.Paula_region and world.Paula_scaled == False:
+            if (loc.parent_region in [world.Paula_region, world.Jeff_region, world.Poo_region]) and world.options.auto_scale_party_members:
+                if loc.parent_region == world.Paula_region and world.Paula_scaled == False:
                     world.Paula_region = world.last_combat_region
                     world.Paula_scaled = True
-                elif loc.parent_region.name == world.Jeff_region and world.Jeff_scaled == False:
+                elif loc.parent_region == world.Jeff_region and world.Jeff_scaled == False:
                     world.Jeff_region = world.last_combat_region
                     world.Jeff_scaled = True
-                if loc.parent_region.name == world.Poo_region and world.Poo_scaled == False:
+                if loc.parent_region == world.Poo_region and world.Poo_scaled == False:
                     world.Poo_region = world.last_combat_region
                     world.Poo_scaled = True
         locs = [loc for loc in sphere if loc.player == world.player and loc.parent_region.name in combat_regions and loc.parent_region.name not in world.location_order]
@@ -1048,11 +1032,13 @@ def scale_enemies(world, rom):
     if world.options.magicant_mode == 2 and world.options.giygas_required:
         world.location_order.remove("Magicant")
         world.location_order.insert(world.location_order.index("Endgame") + 1, "Magicant")
-    elif world.options.magicant_mode == 3:
+    elif world.options.magicant_mode == 3 and world.options.giygas_required:
         world.location_order.insert(world.location_order.index("Endgame") - 1, "Magicant")
+    elif world.options.magicant_mode == 3 and not world.options.giygas_required:
+        world.location_order.append("Magicant")
 
-    #if world.scale_warning == True:
-        #warning(f"{world.location_order}")
+    # if world.scale_warning == True:
+        # warning(f"{world.location_order}")
     if world.options.auto_scale_party_members:
         if "Paula" in world.start_items or world.Paula_region == None:
             world.Paula_region = world.location_order[0]
@@ -1060,20 +1046,20 @@ def scale_enemies(world, rom):
             world.Jeff_region = world.location_order[0]
         if "Poo" in world.start_items or world.Poo_region == None:
             world.Poo_region = world.location_order[0]
-        rom.write_bytes(0x15F60F, bytearray([max(levels[world.location_order.index(world.Paula_region)] + world.random.randint(-3, 3), 1)])) #Paula starting level
-        rom.write_bytes(0x15F623, bytearray([max(levels[world.location_order.index(world.Jeff_region)] + world.random.randint(-3, 3), 1)])) #Jeff starting level
-        rom.write_bytes(0x15F637, bytearray([max(levels[world.location_order.index(world.Poo_region)] + world.random.randint(-3, 3), 1)])) #Poo starting level
+        rom.write_bytes(0x15F60F, bytearray([max(levels[world.location_order.index(world.Paula_region)] + world.random.randint(-3, 3), 1)])) # Paula starting level
+        rom.write_bytes(0x15F623, bytearray([max(levels[world.location_order.index(world.Jeff_region)] + world.random.randint(-3, 3), 1)])) # Jeff starting level
+        rom.write_bytes(0x15F637, bytearray([max(levels[world.location_order.index(world.Poo_region)] + world.random.randint(-3, 3), 1)])) # Poo starting level
 
     for region, level in zip(world.location_order, levels):
         for enemy in world.regional_enemies[region]:
             if enemy.is_scaled is False:
-                #gprint(f"{enemy.name} {level}")
+                # gprint(f"{enemy.name} {level}")
                 enemy_hp = int(enemy.hp * level / enemy.level)
                 enemy_pp = int(enemy.pp * level / enemy.level)
                 k = 2.258
-                #enemy_exp = int(scale_exp_2(enemy.exp, enemy.level, level, world))
-                enemy_exp = int(enemy.exp * level / enemy.level)
-                enemy_exp = int(enemy_exp * world.options.experience_modifier.value / 100)
+                enemy_exp = int(scale_exp_2(enemy.exp, enemy.level, level, world))
+                #enemy_exp = int(enemy.exp * level / enemy.level)
+                #enemy_exp = int(enemy_exp * world.options.experience_modifier.value / 100)
                 enemy_money = int(enemy.money * level / enemy.level)
                 enemy_speed = max(2, int(scale_enemy_speed(enemy, level)))
                 enemy_offense = int(enemy.offense * level / enemy.level)
@@ -1081,8 +1067,8 @@ def scale_enemies(world, rom):
                 enemy_level = int(enemy.level * level / enemy.level)
                 enemy_shield = scale_shield(level, enemy.shield)
 
-                #if world.multiworld.get_player_name(world.player) == "Pink":
-                    #print(f"\nEnemy: {enemy.name}\nLevel: {enemy_level}\nHP: {enemy_hp}\nPP: {enemy_pp}\nEXP: {enemy_exp}\n${enemy_money}\nSpeed: {enemy_speed}\nOffense: {enemy_offense}\nDefense: {enemy_defense}\nSpeed: {enemy_speed} {enemy.shield}")
+                # if world.multiworld.get_player_name(world.player) == "Pink":
+                    # print(f"\nEnemy: {enemy.name}\nLevel: {enemy_level}\nHP: {enemy_hp}\nPP: {enemy_pp}\nEXP: {enemy_exp}\n${enemy_money}\nSpeed: {enemy_speed}\nOffense: {enemy_offense}\nDefense: {enemy_defense}\nSpeed: {enemy_speed} {enemy.shield}")
                 enemy_hp = struct.pack('<H', enemy_hp)
                 enemy_pp = struct.pack('<H', enemy_pp)
                 enemy_exp = struct.pack('<I', enemy_exp)
@@ -1102,8 +1088,10 @@ def scale_enemies(world, rom):
                 
                 if enemy.name in enemy_psi:
                     for index, spell in [(i, s) for i, s in enumerate(enemy_psi[enemy.name]) if s != "null"]:
-                        #print(enemy.name)
-                        #print(index, spell)
+                        if spell == "special":
+                            spell = world.offensive_psi_slots[0].lower()
+                        # print(enemy.name)
+                        # print(index, spell)
                         psi_level = get_psi_levels(level, spell_breaks[spell])
                         rom.write_bytes(enemy.address + 70 + (index * 2), bytearray(spell_data[spell][psi_level][0:2]))
                         rom.write_bytes(enemy.address + 80 + index, bytearray([spell_data[spell][psi_level][2]]))

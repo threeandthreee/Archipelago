@@ -9,13 +9,15 @@ def parse(parser):
     misc.add_argument("-ond", "--original-name-display", action = "store_true",
                       help = "Display original character names in party and party select menus")
     misc.add_argument("-rr", "--random-rng", action = "store_true",
-                      help = "Randomize in-game RNG table. Affects Setzer's Slots, Auction House, Ebot's Rock, ...")
+                      help = "(DEPRECATED -- Always On) Randomize in-game RNG table. Affects Setzer's Slots, Auction House, Ebot's Rock, ...")
     misc.add_argument("-rc", "--random-clock", action = "store_true",
-                      help = "Randomize clock's correct time and NPC clues in Zozo")
+                      help = "(DEPRECATED -- Always On) Randomize clock's correct time and NPC clues in Zozo")
     misc.add_argument("-scan", "--scan-all", action = "store_true",
                       help = "All enemies scannable. All characters start with scan learned. Scan costs 0 MP. Useful for testing/debugging")
     misc.add_argument("-warp", "--warp-all", action = "store_true",
                       help = "All characters start with Warp learned. Warp costs 0 MP. Useful for seeds that limit Warp Stone access")
+    misc.add_argument("-npctips", "--npc-dialog-tips", action = "store_true",
+                      help = "NPC provide general game tips")
 
     from ..data.movement import ALL
     movement = misc.add_mutually_exclusive_group()
@@ -71,14 +73,16 @@ def flags(args):
         flags += f" -move {args.movement}"
     if args.original_name_display:
         flags += " -ond"
-    if args.random_rng:
-        flags += " -rr"
-    if args.random_clock:
-        flags += " -rc"
     if args.scan_all:
         flags += " -scan"
     if args.warp_all:
         flags += " -warp"
+    if args.npc_dialog_tips:
+        flags += " -npctips"
+
+    ### NPC tips
+    if args.npc_dialog_tips:
+        flags += " -npctips"
 
     if args.event_timers_random:
         flags += " -etr"
@@ -147,12 +151,11 @@ def options(args):
     return [
         ("Movement", movement),
         ("Original Name Display", args.original_name_display),
-        ("Random RNG", args.random_rng),
-        ("Random Clock", args.random_clock),
         ("Scan All", args.scan_all),
         ("Warp All", args.warp_all),
         ("Event Timers", event_timers),
         ("Y NPC", y_npc),
+        ("NPC Tips", args.npc_dialog_tips),
     ]
 
 def menu(args):

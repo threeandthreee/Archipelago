@@ -45,8 +45,13 @@
     "tags": ["Event"]
   },
   "EVENT_DEFEAT_CHAMPION": {
-    "name": "Pokemon League - Champion Battle",
+    "name": "Champion's Room - Champion Battle",
     "item": "Defeat Champion",
+    "tags": ["Event"]
+  },
+  "EVENT_DEFEAT_CHAMPION_REMATCH": {
+    "name": "Champion's Room - Champion Rematch Battle",
+    "item": "Defeat Champion (Rematch)",
     "tags": ["Event"]
   },
 
@@ -100,14 +105,29 @@
     "item": "Rescue Lostelle",
     "tags": ["Event"]
   },
+  "EVENT_LEARN_ROCKET_WAREHOUSE_PASSWORD": {
+    "name": "Mt. Ember Exterior - Eavesdrop on Team Rocket Grunts",
+    "item": "Learn Goldeen Need Log",
+    "tags": ["Event"]
+  },
   "EVENT_HELP_LORELEI": {
     "name": "Icefall Cave Back - Team Rocket Grunt Battle",
     "item": "Help Lorelei",
     "tags": ["Event"]
   },
-  "EVENT_LEARN_ROCKET_WAREHOUSE_PASSWORD": {
+  "EVENT_RESCUE_SELPHY": {
+    "name": "Lost Cave B1F Room 10 - Lady Selphy Battle",
+    "item": "Rescue Selphy",
+    "tags": ["Event"]
+  },
+  "EVENT_LEARN_ROCKET_WAREHOUSE_PASSWORD_2": {
     "name": "Dotted Hole Sapphire Room - Gideon Steals Sapphire",
-    "item": "Learn Rocket Warehouse Password",
+    "item": "Learn Yes Nah Chansey",
+    "tags": ["Event"]
+  },
+  "EVENT_DEFEAT_TEAM_ROCKET_ADMIN": {
+    "name": "Rocket Warehouse - Team Rocket Admin Battle",
+    "item": "Free Captured Pokemon",
     "tags": ["Event"]
   },
   "EVENT_SPAWN_UNOWN": {

@@ -71,7 +71,16 @@ class LoneWolf(Event):
         space = Reserve(0xcd402, 0xcd402, "lone wolf pauses before turning right")
         space.write(field.Pause(0.5)) # shorten from 2 seconds
 
+    def character_music_mod(self, character):
+        from ..music.song_utils import get_character_theme
+        src = [
+            field.StartSong(get_character_theme(character)),
+        ]
+        space = Reserve(0xcd606, 0xcd607, "Play Song Mog")
+        space.write(src)
+
     def character_mod(self, character):
+        self.character_music_mod(character)
         self.mog_npc.sprite = character
         self.mog_npc.palette = self.characters.get_palette(character)
 

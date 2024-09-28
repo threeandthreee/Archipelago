@@ -4,7 +4,7 @@ from worlds.generic.Rules import CollectionRule, add_rule
 from .region_data import AWType, LocType
 from .names import ItemNames as iname, LocationNames as lname, RegionNames as rname
 from .items import AWItem
-from .options import AnimalWellOptions, BunniesAsChecks, BubbleJumping, DiscHopping, WheelTricks
+from .options import AnimalWellOptions, BunniesAsChecks, BubbleJumping, DiscHopping, WheelTricks, BallThrowing
 
 if TYPE_CHECKING:
     from . import AnimalWellWorld
@@ -84,14 +84,9 @@ def convert_tech_reqs(reqs: List[List[str]], options: AnimalWellOptions) -> List
     # these convert [[wheel_hop], [disc]] to either [[wheel], [disc]] or [[disc]]
     # and convert [[disc_hop_hard]] to either [[disc]] or []
     reqs = [
-        [iname.wheel if item == iname.wheel_hop else item for item in sublist]
+        [iname.wheel if item in [iname.wheel_hop, iname.wheel_climb] else item for item in sublist]
         for sublist in reqs
-        if not (iname.wheel_hop in sublist and not options.wheel_tricks)  
-    ]
-    reqs = [
-        [iname.wheel if item == iname.wheel_climb else item for item in sublist]
-        for sublist in reqs
-        if not (iname.wheel_climb in sublist and not options.wheel_tricks)
+        if not (iname.wheel_hop in sublist and not options.wheel_tricks)
     ]
     reqs = [
         [iname.wheel if item == iname.wheel_hard else item for item in sublist]
@@ -109,15 +104,39 @@ def convert_tech_reqs(reqs: List[List[str]], options: AnimalWellOptions) -> List
         if not (iname.disc_hop_hard in sublist and not options.disc_hopping == DiscHopping.option_multiple)
     ]
     reqs = [
-        [None if item == iname.weird_tricks else item for item in sublist]
+        [iname.ball if item == iname.ball_trick_easy else item for item in sublist]
         for sublist in reqs
-        if not (iname.weird_tricks in sublist and not options.weird_tricks)
+        if not (iname.ball_trick_easy in sublist and not options.ball_throwing)
     ]
-    # convert tanking damage to weird tricks for now
+    reqs = [
+        [iname.ball if item == iname.ball_trick_medium else item for item in sublist]
+        for sublist in reqs
+        if not (iname.ball_trick_medium in sublist and options.ball_throwing < BallThrowing.option_advanced)
+    ]
+    reqs = [
+        [iname.ball if item == iname.ball_trick_hard else item for item in sublist]
+        for sublist in reqs
+        if not (iname.ball_trick_hard in sublist and not options.ball_throwing == BallThrowing.option_expert)
+    ]
+    reqs = [
+        [None if item == iname.precise_tricks else item for item in sublist]
+        for sublist in reqs
+        if not (iname.precise_tricks in sublist and not options.precise_tricks)
+    ]
     reqs = [
         [None if item == iname.tanking_damage else item for item in sublist]
         for sublist in reqs
-        if not (iname.tanking_damage in sublist and not options.weird_tricks)
+        if not (iname.tanking_damage in sublist and not options.tanking_damage)
+    ]
+    reqs = [
+        [None if item == iname.obscure_tricks else item for item in sublist]
+        for sublist in reqs
+        if not (iname.obscure_tricks in sublist and not options.obscure_tricks)
+    ]
+    reqs = [
+        [None if item == iname.water_bounce else item for item in sublist]
+        for sublist in reqs
+        if not (iname.water_bounce in sublist and not options.obscure_tricks)
     ]
     return reqs
 

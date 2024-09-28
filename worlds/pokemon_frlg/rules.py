@@ -6,9 +6,10 @@ from typing import TYPE_CHECKING, Dict, List
 from BaseClasses import CollectionState
 from worlds.generic.Rules import add_rule, set_rule
 from .data import data
-from .options import (ViridianCityRoadblock, ViridianGymRequirement, Route22GateRequirement, ItemfinderRequired,
-                      PewterCityRoadblock, CeruleanCaveRequirement, Route23GuardRequirement, EliteFourRequirement,
-                      ShuffleHiddenItems, GameVersion)
+from .options import (CeruleanCaveRequirement, EliteFourRequirement, FlashRequired, GameVersion, Goal,
+                      ItemfinderRequired, LevelScaling, PewterCityRoadblock, Route22GateRequirement,
+                      Route23GuardRequirement, SeviiIslandPasses, ShuffleHiddenItems, SilphCoCardKey,
+                      ViridianCityRoadblock, ViridianGymRequirement)
 
 if TYPE_CHECKING:
     from . import PokemonFRLGWorld
@@ -29,8 +30,41 @@ def set_rules(world: "PokemonFRLGWorld") -> None:
         "Waterfall": "Volcano Badge"
     }
 
+    kanto_rematchable_trainer_regions: List[str] = [
+        "Route 3", "Route 4 Northeast", "Route 6", "Route 8", "Route 9", "Route 10 North", "Route 10 South",
+        "Route 10 Near Power Plant", "Route 11 West", "Route 12 Center", "Route 12 South", "Route 12 Behind North Tree",
+        "Route 13", "Route 14", "Route 15 South", "Route 15 North", "Route 16 Northeast", "Route 16 Southwest",
+        "Route 17", "Route 18 East", "Route 19", "Route 19 Water", "Route 20 East", "Route 20 Near South Cave",
+        "Route 20 West", "Route 21", "Route 24", "Route 25"
+    ]
+
+    sevii_rematchable_trainer_regions: List[str] = [
+        "Treasure Beach Water", "Kindle Road South Water", "Kindle Road Center", "Kindle Road North Water",
+        "Bond Bridge", "Bond Bridge Water", "Memorial Pillar", "Water Labyrinth", "Resort Gorgeous Water",
+        "Resort Gorgeous Near Resort", "Water Path South", "Water Path South Water", "Water Path North", "Ruin Valley",
+        "Green Path Water", "Outcast Island Water", "Canyon Entrance", "Sevault Canyon", "Tanoby Ruins Scufib Island",
+        "Tanoby Ruins Weepth Island", "Tanoby Ruins Monean Island", "Trainer Tower Exterior South"
+    ]
+
+    island_passes: Dict[int, List[str]] = {
+        1: ["Tri Pass", "One Pass"],
+        2: ["Tri Pass", "Two Pass"],
+        3: ["Tri Pass", "Three Pass"],
+        4: ["Rainbow Pass", "Four Pass"],
+        5: ["Rainbow Pass", "Five Pass"],
+        6: ["Rainbow Pass", "Six Pass"],
+        7: ["Rainbow Pass", "Seven Pass"]
+    }
+
+    rematchable_trainer_regions = kanto_rematchable_trainer_regions
+    if not options.kanto_only:
+        rematchable_trainer_regions.extend(sevii_rematchable_trainer_regions)
+
     def has_badge_requirement(hm: str, state: CollectionState):
         return hm in options.remove_badge_requirement.value or state.has(badge_requirements[hm], player)
+
+    def can_reach_any_region(regions: List[str], state: CollectionState):
+        return any([state.can_reach_region(region, player) for region in regions])
 
     def can_cut(state: CollectionState):
         return (state.has("HM01 Cut", player)
@@ -152,16 +186,15 @@ def set_rules(world: "PokemonFRLGWorld") -> None:
         return True
 
     def can_pass_cerulean_city_roadblocks(state: CollectionState):
-        if options.cerulean_city_roadblocks:
-            return state.has("Save Bill", player)
-        return True
+        if "Remove Cerulean Roadblocks" in options.modify_world_state.value:
+            return True
+        return state.has("Save Bill", player)
 
     def can_enter_cerulean_cave(state: CollectionState):
         requirement = options.cerulean_cave_requirement
         count = options.cerulean_cave_count.value
         if requirement == CeruleanCaveRequirement.option_vanilla:
-            return (state.has("Defeat Champion", player) and
-                    state.has("Restore Pokemon Network Machine", player))
+            return state.has_all(["Defeat Champion", "Restore Pokemon Network Machine"], player)
         elif requirement == CeruleanCaveRequirement.option_champion:
             return state.has("Defeat Champion", player)
         elif requirement == CeruleanCaveRequirement.option_restore_network:
@@ -171,8 +204,8 @@ def set_rules(world: "PokemonFRLGWorld") -> None:
         elif requirement == CeruleanCaveRequirement.option_gyms:
             return has_n_gyms(state, count)
 
-    def rock_tunnel(state: CollectionState):
-        if options.flash_required:
+    def dark_cave(state: CollectionState):
+        if options.flash_required != FlashRequired.option_off:
             return can_flash(state)
         return True
 
@@ -195,13 +228,46 @@ def set_rules(world: "PokemonFRLGWorld") -> None:
     def evolve_level(state: CollectionState, level: int):
         return gyms_beaten(state) >= level / 7
 
+    def can_grind_money(state: CollectionState):
+        return ((state.has("Vs. Seeker", player) and can_reach_any_region(rematchable_trainer_regions, state)) or
+                state.has_all(["Defeat Champion", "Restore Pokemon Network Machine"], player))
+
+    def can_open_silph_door(floor: int, state: CollectionState):
+        return (state.has_any(["Card Key", f"Card Key {floor}F"], player) or
+                state.has("Progressive Card Key", player, floor - 1))
+
+    def can_sail_island(island: int, state: CollectionState):
+        progressives_needed = {
+            1: (1, 1),
+            2: (1, 2),
+            3: (1, 3),
+            4: (2, 4),
+            5: (2, 5),
+            6: (2, 6),
+            7: (2, 7)
+        }
+        if any(options.island_passes == option
+               for option in [SeviiIslandPasses.option_vanilla, SeviiIslandPasses.option_progressive]):
+            progressives_count = progressives_needed[island][0]
+        else:
+            progressives_count = progressives_needed[island][1]
+        return state.has_any(island_passes[island], player) or state.has("Progressive Pass", player, progressives_count)
+
+    def post_game_gossipers(state: CollectionState):
+        if "Early Gossipers" in options.modify_world_state.value:
+            return True
+        return state.has("Defeat Champion", player)
+
     def get_entrance(entrance: str):
         return multiworld.get_entrance(entrance, player)
 
     def get_location(location: str):
         return multiworld.get_location(location, player)
 
-    multiworld.completion_condition[player] = lambda state: state.has("Defeat Champion", player)
+    if options.goal == Goal.option_elite_four:
+        multiworld.completion_condition[player] = lambda state: state.has("Defeat Champion", player)
+    elif options.goal == Goal.option_elite_four_rematch:
+        multiworld.completion_condition[player] = lambda state: state.has("Defeat Champion (Rematch)", player)
 
     # Sky
     set_rule(get_entrance("Flying"), lambda state: can_fly(state))
@@ -224,18 +290,16 @@ def set_rules(world: "PokemonFRLGWorld") -> None:
     set_rule(get_entrance("Birth Island Arrival"), lambda state: state.has("Aurora Ticket", player))
 
     # Pallet Town
-    set_rule(get_location("Pallet Town - Oak (First Gift)"), lambda state: state.has("Defeat Champion", player))
-    set_rule(get_location("Pallet Town - Oak (Second Gift)"), lambda state: state.has("Defeat Champion", player))
-    set_rule(get_location("Rival's House - Daisy"), lambda state: state.has("Deliver Oak's Parcel", player))
-    set_rule(get_location("Professor Oak's Lab - Oak (Deliver Parcel)"),
+    set_rule(get_location("Rival's House - Daisy's Gift"), lambda state: state.has("Deliver Oak's Parcel", player))
+    set_rule(get_location("Professor Oak's Lab - Oak's Gift (Deliver Parcel)"),
              lambda state: state.has("Oak's Parcel", player))
-    set_rule(get_location("Professor Oak's Lab - Oak (After Route 22 Rival)"),
+    set_rule(get_location("Professor Oak's Lab - Oak's Gift (After Route 22 Rival)"),
              lambda state: state.has("Defeat Route 22 Rival", player))
     set_rule(get_location("Professor Oak's Lab - Oak's Delivery"), lambda state: state.has("Oak's Parcel", player))
     set_rule(get_entrance("Pallet Town Surfing Spot"), lambda state: can_surf(state))
 
     # Viridian City
-    set_rule(get_location("Viridian City - Old Man"), lambda state: can_pass_viridian_city_roadblock(state))
+    set_rule(get_location("Viridian City - Old Man's Gift"), lambda state: can_pass_viridian_city_roadblock(state))
     set_rule(get_entrance("Viridian City South Roadblock"),
              lambda state: can_pass_viridian_city_roadblock(state) or can_cut(state))
     set_rule(get_entrance("Viridian City South Surfing Spot"), lambda state: can_surf(state))
@@ -247,26 +311,73 @@ def set_rules(world: "PokemonFRLGWorld") -> None:
     set_rule(get_entrance("Route 22 Gate Exit (North)"), lambda state: can_pass_route_22_gate(state))
 
     # Route 2
-    set_rule(get_location("Route 2 Gate - Oak's Aide"),
+    set_rule(get_location("Route 2 Gate - Oak's Aide's Gift"),
              lambda state: has_n_pokemon(state, math.ceil(options.oaks_aide_route_2.value * 1.2)))
+    set_rule(get_location("Route 2 Trade House - Trade Abra"), lambda state: state.has("Abra", player))
     set_rule(get_entrance("Route 2 Southwest Cuttable Trees"), lambda state: can_cut(state))
-    set_rule(get_entrance("Route 2 Northwest Cuttable Tree"), lambda state: can_cut(state))
-    set_rule(get_entrance("Route 2 Northeast Cuttable Tree (North)"), lambda state: can_cut(state))
-    set_rule(get_entrance("Route 2 Northeast Cuttable Tree (South)"), lambda state: can_cut(state))
     set_rule(get_entrance("Route 2 East Cuttable Tree"), lambda state: can_cut(state))
+
+    if "Modify Route 2" in options.modify_world_state.value:
+        set_rule(get_entrance("Route 2 Northwest Smashable Rock"), lambda state: can_rock_smash(state))
+        set_rule(get_entrance("Route 2 Northeast Smashable Rock"), lambda state: can_rock_smash(state))
+        set_rule(get_entrance("Route 2 Northeast Cuttable Tree"), lambda state: can_cut(state))
+    else:
+        set_rule(get_entrance("Route 2 Northwest Cuttable Tree"), lambda state: can_cut(state))
+        set_rule(get_entrance("Route 2 Northeast Cuttable Tree (North)"), lambda state: can_cut(state))
+        set_rule(get_entrance("Route 2 Northeast Cuttable Tree (South)"), lambda state: can_cut(state))
 
     # Pewter City
     set_rule(get_entrance("Pewter City Cuttable Tree"), lambda state: can_cut(state))
     set_rule(get_entrance("Pewter City Exit (East)"), lambda state: can_pass_pewter_city_roadblock(state))
 
+    # Route 4
+    set_rule(get_location("Route 4 Pokemon Center 1F - Salesman Purchase"), lambda state: can_grind_money(state))
+
+    # Mt. Moon
+    if "Mt. Moon" in options.additional_dark_caves.value:
+        set_rule(get_entrance("Mt. Moon 1F Leave South Entry"), lambda state: dark_cave(state))
+        set_rule(get_entrance("Mt. Moon 1F Leave Center-Right Entry"), lambda state: dark_cave(state))
+        set_rule(get_entrance("Mt. Moon 1F Leave Center-Left Entry"), lambda state: dark_cave(state))
+        set_rule(get_entrance("Mt. Moon 1F Leave Northwest Entry"), lambda state: dark_cave(state))
+        set_rule(get_entrance("Mt. Moon B1F Leave First Tunnel Northeast Entry"), lambda state: dark_cave(state))
+        set_rule(get_entrance("Mt. Moon B1F Leave First Tunnel Southeast Entry"), lambda state: dark_cave(state))
+        set_rule(get_entrance("Mt. Moon B1F Leave Second Tunnel East Entry"), lambda state: dark_cave(state))
+        set_rule(get_entrance("Mt. Moon B1F Leave Second Tunnel West Entry"), lambda state: dark_cave(state))
+        set_rule(get_entrance("Mt. Moon B1F Leave Third Tunnel Northwest Entry"), lambda state: dark_cave(state))
+        set_rule(get_entrance("Mt. Moon B1F Leave Third Tunnel Southeast Entry"), lambda state: dark_cave(state))
+        set_rule(get_entrance("Mt. Moon B1F Leave Fourth Tunnel West Entry"), lambda state: dark_cave(state))
+        set_rule(get_entrance("Mt. Moon B1F Leave Fourth Tunnel East Entry"), lambda state: dark_cave(state))
+        set_rule(get_entrance("Mt. Moon B2F Leave South Entry"), lambda state: dark_cave(state))
+        set_rule(get_entrance("Mt. Moon B2F Leave Northeast Entry"), lambda state: dark_cave(state))
+        set_rule(get_entrance("Mt. Moon B2F Leave Center Entry"), lambda state: dark_cave(state))
+        set_rule(get_entrance("Mt. Moon B2F Leave Northwest Entry"), lambda state: dark_cave(state))
+
+        for i in range(1, 5):
+            set_rule(get_location(f"Mt. Moon 1F - Land Encounter {i}"), lambda state: dark_cave(state))
+            set_rule(get_location(f"Mt. Moon B2F - Land Encounter {i}"), lambda state: dark_cave(state))
+            if (options.flash_required == FlashRequired.option_required and
+                    options.level_scaling != LevelScaling.option_off):
+                set_rule(get_location(f"Mt. Moon 1F Land Scaling {i}"), lambda state: dark_cave(state))
+                set_rule(get_location(f"Mt. Moon B2F Land Scaling {i}"), lambda state: dark_cave(state))
+
+        set_rule(get_location("Mt. Moon B1F - Land Encounter 1"), lambda state: dark_cave(state))
+        if options.flash_required == FlashRequired.option_required and options.level_scaling != LevelScaling.option_off:
+            set_rule(get_location("Mt. Moon B1F Land Scaling 1"), lambda state: dark_cave(state))
+
     # Cerulean City
     set_rule(get_location("Bike Shop - Bicycle Purchase"), lambda state: state.has("Bike Voucher", player))
+    set_rule(get_location("Cerulean Trade House - Trade Poliwhirl"), lambda state: state.has("Poliwhirl", player))
     set_rule(get_entrance("Cerulean City Cuttable Tree"),
              lambda state: can_pass_cerulean_city_roadblocks(state) and can_cut(state))
     set_rule(get_entrance("Robbed House (Front)"), lambda state: can_pass_cerulean_city_roadblocks(state))
     set_rule(get_entrance("Cerulean City Outskirts Exit (East)"), lambda state: can_cut(state))
     set_rule(get_entrance("Cerulean City Near Cave Surfing Spot"), lambda state: can_surf(state))
     set_rule(get_entrance("Cerulean Cave"), lambda state: can_enter_cerulean_cave(state))
+
+    if "Modify Route 9" in options.modify_world_state.value:
+        set_rule(get_entrance("Cerulean City Outskirts Exit (East)"), lambda state: can_rock_smash(state))
+    else:
+        set_rule(get_entrance("Cerulean City Outskirts Exit (East)"), lambda state: can_cut(state))
 
     # Route 24
     set_rule(get_entrance("Route 24 Surfing Spot"), lambda state: can_surf(state))
@@ -279,12 +390,29 @@ def set_rules(world: "PokemonFRLGWorld") -> None:
     set_rule(get_entrance("Route 5 Gate North Guard Checkpoint"), lambda state: state.has("Tea", player))
     set_rule(get_entrance("Route 5 Gate South Guard Checkpoint"), lambda state: state.has("Tea", player))
 
+    if "Block Tunnels" in options.modify_world_state.value:
+        set_rule(get_entrance("Route 5 Smashable Rocks"), lambda state: can_rock_smash(state))
+        set_rule(get_entrance("Route 5 Near Tunnel Smashable Rocks"), lambda state: can_rock_smash(state))
+
+    # Underground Path North-South Tunnel
+    if options.game_version == GameVersion.option_firered:
+        set_rule(get_location("Underground Path North Entrance - Trade Nidoran M"),
+                 lambda state: state.has("Nidoran M", player))
+    elif options.game_version == GameVersion.option_leafgreen:
+        set_rule(get_location("Underground Path North Entrance - Trade Nidoran F"),
+                 lambda state: state.has("Nidoran F", player))
+
     # Route 6
     set_rule(get_entrance("Route 6 Surfing Spot"), lambda state: can_surf(state))
     set_rule(get_entrance("Route 6 Gate South Guard Checkpoint"), lambda state: state.has("Tea", player))
     set_rule(get_entrance("Route 6 Gate North Guard Checkpoint"), lambda state: state.has("Tea", player))
 
+    if "Block Tunnels" in options.modify_world_state.value:
+        set_rule(get_entrance("Route 6 Smashable Rocks"), lambda state: can_rock_smash(state))
+        set_rule(get_entrance("Route 6 Near Tunnel Smashable Rocks"), lambda state: can_rock_smash(state))
+
     # Vermilion City
+    set_rule(get_location("Vermilion Trade House - Trade Spearow"), lambda state: state.has("Spearow", player))
     set_rule(get_entrance("Vermilion City Cuttable Tree"), lambda state: can_cut(state))
     set_rule(get_entrance("Vermilion City Surfing Spot"), lambda state: can_surf(state))
     set_rule(get_entrance("Vermilion City Near Gym Cuttable Tree"), lambda state: can_cut(state))
@@ -295,36 +423,113 @@ def set_rules(world: "PokemonFRLGWorld") -> None:
     set_rule(get_entrance("S.S. Anne Exterior Surfing Spot"), lambda state: can_surf(state))
 
     # Route 11
-    set_rule(get_location("Route 11 Gate 2F - Oak's Aide"),
+    set_rule(get_location("Route 11 Gate 2F - Oak's Aide's Gift"),
              lambda state: has_n_pokemon(state, math.ceil(options.oaks_aide_route_11.value * 1.2)))
     set_rule(get_entrance("Route 11 West Surfing Spot"), lambda state: can_surf(state))
 
+    if "Route 12 Boulders" in options.modify_world_state.value:
+        set_rule(get_entrance("Route 11 East Exit"), lambda state: can_strength(state))
+
+    if options.game_version == GameVersion.option_firered:
+        set_rule(get_location("Route 11 Gate 2F - Trade Nidorino"), lambda state: state.has("Nidorino", player))
+    elif options.game_version == GameVersion.option_leafgreen:
+        set_rule(get_location("Route 11 Gate 2F - Trade Nidorina"), lambda state: state.has("Nidorina", player))
+
+    # Diglett's Cave
+    if "Diglett's Cave" in options.additional_dark_caves.value:
+        set_rule(get_entrance("Diglett's Cave B1F Leave Northwest Entry"), lambda state: dark_cave(state))
+        set_rule(get_entrance("Diglett's Cave B1F Leave Southeast Entry"), lambda state: dark_cave(state))
+
+        for i in range(1, 3):
+            set_rule(get_location(f"Diglett's Cave B1F - Land Encounter {i}"), lambda state: dark_cave(state))
+            if (options.flash_required == FlashRequired.option_required and
+                    options.level_scaling != LevelScaling.option_off):
+                set_rule(get_location(f"Diglett's Cave B1F Land Scaling {i}"), lambda state: dark_cave(state))
+
     # Route 9
-    set_rule(get_entrance("Route 9 Exit (West)"), lambda state: can_cut(state))
+    if "Modify Route 9" in options.modify_world_state.value:
+        set_rule(get_entrance("Route 9 Exit (West)"), lambda state: can_rock_smash(state))
+    else:
+        set_rule(get_entrance("Route 9 Exit (West)"), lambda state: can_cut(state))
 
     # Route 10
-    set_rule(get_location("Route 10 Pokemon Center 1F - Oak's Aide"),
+    set_rule(get_location("Route 10 Pokemon Center 1F - Oak's Aide's Gift"),
              lambda state: has_n_pokemon(state, math.ceil(options.oaks_aide_route_10.value * 1.2)))
     set_rule(get_entrance("Route 10 North Surfing Spot"), lambda state: can_surf(state))
     set_rule(get_entrance("Route 10 Near Power Plant Surfing Spot"), lambda state: can_surf(state))
-    set_rule(get_entrance("Rock Tunnel (North)"), lambda state: rock_tunnel(state))
-    set_rule(get_entrance("Rock Tunnel (South)"), lambda state: rock_tunnel(state))
     set_rule(get_entrance("Power Plant (Front)"),
              lambda state: state.has("Machine Part", player) or not options.extra_key_items)
+    set_rule(get_entrance("Route 10 Waterfall Drop"), lambda state: can_waterfall(state))
+    set_rule(get_entrance("Route 10 Waterfall Ascend"), lambda state: can_waterfall(state))
+
+    if "Modify Route 10" in options.modify_world_state.value:
+        set_rule(get_entrance("Route 10 South Surfing Spot"), lambda state: can_surf(state))
+    else:
+        set_rule(get_entrance("Route 10 South Surfing Spot"), lambda state: False)
+        set_rule(get_entrance("Route 10 South Landing"), lambda state: False)
+        set_rule(get_entrance("Route 10 South (Fishing Battle)"), lambda state: False)
+
+    # Rock Tunnel
+    set_rule(get_entrance("Rock Tunnel 1F Leave Northeast Entry (Northeast)"), lambda state: dark_cave(state))
+    set_rule(get_entrance("Rock Tunnel 1F Leave Northeast Entry (Northwest)"), lambda state: dark_cave(state))
+    set_rule(get_entrance("Rock Tunnel 1F Leave Northwest Entry (Northwest)"), lambda state: dark_cave(state))
+    set_rule(get_entrance("Rock Tunnel 1F Leave Northwest Entry (East)"), lambda state: dark_cave(state))
+    set_rule(get_entrance("Rock Tunnel 1F Leave South Entry (Northeast)"), lambda state: dark_cave(state))
+    set_rule(get_entrance("Rock Tunnel 1F Leave South Entry (South)"), lambda state: dark_cave(state))
+    set_rule(get_entrance("Rock Tunnel B1F Leave Southeast Entry (Southeast)"), lambda state: dark_cave(state))
+    set_rule(get_entrance("Rock Tunnel B1F Leave Southeast Entry (Northeast)"), lambda state: dark_cave(state))
+    set_rule(get_entrance("Rock Tunnel B1F Leave Northwest Entry (East)"), lambda state: dark_cave(state))
+    set_rule(get_entrance("Rock Tunnel B1F Leave Northwest Entry (Northwest)"), lambda state: dark_cave(state))
+
+    for i in range(1, 6):
+        set_rule(get_location(f"Rock Tunnel 1F - Land Encounter {i}"), lambda state: dark_cave(state))
+        set_rule(get_location(f"Rock Tunnel B1F - Land Encounter {i}"), lambda state: dark_cave(state))
+        if options.flash_required == FlashRequired.option_required and options.level_scaling != LevelScaling.option_off:
+            set_rule(get_location(f"Rock Tunnel 1F Land Scaling {i}"), lambda state: dark_cave(state))
+            set_rule(get_location(f"Rock Tunnel B1F Land Scaling {i}"), lambda state: dark_cave(state))
 
     # Lavender Town
-    set_rule(get_location("Volunteer Pokemon House - Mr. Fuji"), lambda state: state.has("Rescue Mr. Fuji", player))
+    set_rule(get_location("Volunteer Pokemon House - Mr. Fuji's Gift"),
+             lambda state: state.has("Rescue Mr. Fuji", player))
 
     # Route 8
     set_rule(get_entrance("Route 8 Cuttable Trees"), lambda state: can_cut(state))
     set_rule(get_entrance("Route 8 Gate East Guard Checkpoint"), lambda state: state.has("Tea", player))
     set_rule(get_entrance("Route 8 Gate West Guard Checkpoint"), lambda state: state.has("Tea", player))
 
+    if "Block Tunnels" in options.modify_world_state.value:
+        set_rule(get_entrance("Route 8 Smashable Rocks"), lambda state: can_rock_smash(state))
+        set_rule(get_entrance("Route 8 Near Tunnel Smashable Rocks"), lambda state: can_rock_smash(state))
+
     # Route 7
     set_rule(get_entrance("Route 7 Gate West Guard Checkpoint"), lambda state: state.has("Tea", player))
     set_rule(get_entrance("Route 7 Gate East Guard Checkpoint"), lambda state: state.has("Tea", player))
 
+    if "Block Tunnels" in options.modify_world_state.value:
+        set_rule(get_entrance("Route 7 Smashable Rocks"), lambda state: can_rock_smash(state))
+        set_rule(get_entrance("Route 7 Near Tunnel Smashable Rocks"), lambda state: can_rock_smash(state))
+
     # Celadon City
+    set_rule(get_location("Celadon Department Store Roof - Thirsty Girl's Gift (Give Fresh Water)"),
+             lambda state: can_grind_money(state))
+    set_rule(get_location("Celadon Department Store Roof - Thirsty Girl's Gift (Give Soda Pop)"),
+             lambda state: can_grind_money(state))
+    set_rule(get_location("Celadon Department Store Roof - Thirsty Girl's Gift (Give Lemonade)"),
+             lambda state: can_grind_money(state))
+    set_rule(get_location("Celadon Game Corner - Fisherman's Gift"), lambda state: state.has("Coin Case", player))
+    set_rule(get_location("Celadon Game Corner - Scientist's Gift"), lambda state: state.has("Coin Case", player))
+    set_rule(get_location("Celadon Game Corner - Gentleman's Gift"), lambda state: state.has("Coin Case", player))
+    set_rule(get_location("Celadon Department Store Roof - Vending Machine"), lambda state: can_grind_money(state))
+    set_rule(get_location("Celadon Game Corner Prize Room - Prize Pokemon 1"),
+             lambda state: state.has("Coin Case", player) and can_grind_money(state))
+    set_rule(get_location("Celadon Game Corner Prize Room - Prize Pokemon 2"),
+             lambda state: state.has("Coin Case", player) and can_grind_money(state))
+    set_rule(get_location("Celadon Game Corner Prize Room - Prize Pokemon 3"),
+             lambda state: state.has("Coin Case", player) and can_grind_money(state))
+    set_rule(get_location("Celadon Game Corner Prize Room - Prize Pokemon 4"),
+             lambda state: state.has("Coin Case", player) and can_grind_money(state))
+    set_rule(get_location("Celadon Game Corner Prize Room - Prize Pokemon 5"),
+             lambda state: state.has("Coin Case", player) and can_grind_money(state))
     set_rule(get_entrance("Celadon City Cuttable Tree"), lambda state: can_cut(state))
     set_rule(get_entrance("Celadon City Surfing Spot"), lambda state: can_surf(state))
     set_rule(get_entrance("Celadon City Near Gym Cuttable Tree"), lambda state: can_cut(state))
@@ -338,8 +543,23 @@ def set_rules(world: "PokemonFRLGWorld") -> None:
     set_rule(get_entrance("Rocket Hideout Elevator B4F Stop"), lambda state: state.has("Lift Key", player))
 
     # Pokemon Tower
-    set_rule(get_location("Pokemon Tower 6F - Ghost Pokemon"), lambda state: state.has("Silph Scope", player))
-    set_rule(get_entrance("Pokemon Tower 6F Stairs (South)"), lambda state: state.has("Silph Scope", player))
+    set_rule(get_entrance("Pokemon Tower 6F (Ghost Battle)"), lambda state: state.has("Silph Scope", player))
+    set_rule(get_entrance("Pokemon Tower 6F Near Stairs (Ghost Battle)"), lambda state: state.has("Silph Scope", player))
+    set_rule(get_entrance("Pokemon Tower 6F Reveal Ghost"), lambda state: state.has("Silph Scope", player))
+
+    if "Block Tower" in options.modify_world_state.value:
+        set_rule(get_entrance("Pokemon Tower 1F (Ghost Battle)"), lambda state: state.has("Silph Scope", player))
+        set_rule(get_entrance("Pokemon Tower 1F Near Stairs (Ghost Battle)"),
+                 lambda state: state.has("Silph Scope", player))
+        set_rule(get_entrance("Pokemon Tower 1F Reveal Ghost"), lambda state: state.has("Silph Scope", player))
+    else:
+        set_rule(get_entrance("Pokemon Tower 1F (Ghost Battle)"), lambda state: False)
+        set_rule(get_entrance("Pokemon Tower 1F Near Stairs (Ghost Battle)"), lambda state: False)
+
+    for i in range(3, 8):
+        for j in range(1, 4):
+            set_rule(get_location(f"Pokemon Tower {i}F - Land Encounter {j}"),
+                     lambda state: state.has("Silph Scope", player))
 
     # Route 12
     set_rule(get_entrance("Route 12 West Play Poke Flute"), lambda state: state.has("Poke Flute", player))
@@ -351,20 +571,31 @@ def set_rules(world: "PokemonFRLGWorld") -> None:
     set_rule(get_entrance("Route 12 South Cuttable Tree (South)"), lambda state: can_cut(state))
     set_rule(get_entrance("Route 12 South Play Poke Flute"), lambda state: state.has("Poke Flute", player))
 
+    if "Route 12 Boulders" in options.modify_world_state.value:
+        set_rule(get_entrance("Route 12 West Exit"), lambda state: can_strength(state))
+        set_rule(get_entrance("Route 12 South Exit"), lambda state: can_strength(state))
+
+    if "Modify Route 12" in options.modify_world_state.value:
+        set_rule(get_entrance("Route 12 Center Water Unobstructed Path"), lambda state: False)
+        set_rule(get_entrance("Route 12 South Water Unobstructed Path"), lambda state: False)
+
     # Route 13
     set_rule(get_entrance("Route 13 Surfing Spot"), lambda state: can_surf(state))
     set_rule(get_entrance("Route 13 Cuttable Tree"), lambda state: can_cut(state))
+
+    if "Route 12 Boulders" in options.modify_world_state.value:
+        set_rule(get_entrance("Route 13 Exit (East)"), lambda state: can_strength(state))
 
     # Route 14
     set_rule(get_entrance("Route 14 Cuttable Tree (North)"), lambda state: can_cut(state))
     set_rule(get_entrance("Route 14 Cuttable Tree (South)"), lambda state: can_cut(state))
 
     # Route 15
-    set_rule(get_location("Route 15 Gate 2F - Oak's Aide"),
+    set_rule(get_location("Route 15 Gate 2F - Oak's Aide's Gift"),
              lambda state: has_n_pokemon(state, math.ceil(options.oaks_aide_route_15.value * 1.2)))
 
     # Route 16
-    set_rule(get_location("Route 16 Gate 2F - Oak's Aide"),
+    set_rule(get_location("Route 16 Gate 2F - Oak's Aide's Gift"),
              lambda state: has_n_pokemon(state, math.ceil(options.oaks_aide_route_16.value * 1.2)))
     set_rule(get_entrance("Route 16 Southeast Cuttable Tree"), lambda state: can_cut(state))
     set_rule(get_entrance("Route 16 Southeast Play Poke Flute"), lambda state: state.has("Poke Flute", player))
@@ -372,11 +603,23 @@ def set_rules(world: "PokemonFRLGWorld") -> None:
     set_rule(get_entrance("Route 16 Center Play Poke Flute"), lambda state: state.has("Poke Flute", player))
     set_rule(get_entrance("Route 16 Gate 1F Southeast Bike Checkpoint"), lambda state: state.has("Bicycle", player))
 
+    if "Modify Route 16" in options.modify_world_state.value:
+        set_rule(get_entrance("Route 16 Northeast Smashable Rock"), lambda state: can_rock_smash(state))
+        set_rule(get_entrance("Route 16 Center Smashable Rock"), lambda state: can_rock_smash(state))
+    else:
+        set_rule(get_entrance("Route 16 Northeast Smashable Rock"), lambda state: False)
+        set_rule(get_entrance("Route 16 Center Smashable Rock"), lambda state: False)
+
     # Route 18
     set_rule(get_entrance("Route 18 Gate 1F East Bike Checkpoint"), lambda state: state.has("Bicycle", player))
 
+    if options.game_version == GameVersion.option_firered:
+        set_rule(get_location("Route 18 Gate 2F - Trade Golduck"), lambda state: state.has("Golduck", player))
+    elif options.game_version == GameVersion.option_leafgreen:
+        set_rule(get_location("Route 18 Gate 2F - Trade Slowbro"), lambda state: state.has("Slowbro", player))
+
     # Fuchsia City
-    set_rule(get_location("Safari Zone Warden's House - Safari Zone Warden"),
+    set_rule(get_location("Safari Zone Warden's House - Safari Zone Warden's Gift"),
              lambda state: state.has("Gold Teeth", player))
     set_rule(get_location("Safari Zone Warden's House - Item"), lambda state: can_strength(state))
     set_rule(get_entrance("Fuchsia City Backyard Surfing Spot"), lambda state: can_surf(state))
@@ -392,42 +635,42 @@ def set_rules(world: "PokemonFRLGWorld") -> None:
     set_rule(get_entrance("Safari Zone West Area South Surfing Spot"), lambda state: can_surf(state))
 
     # Saffron City
-    set_rule(get_entrance("Silph Co."), lambda state: state.has("Rescue Mr. Fuji", player))
+    set_rule(get_entrance("Silph Co."), lambda state: state.has_any(["Rescue Mr. Fuji", "Liberate Silph Co."], player))
     set_rule(get_entrance("Copycat's House"), lambda state: state.has("Liberate Silph Co.", player))
     set_rule(get_entrance("Saffron Gym"), lambda state: state.has("Liberate Silph Co.", player))
     set_rule(get_entrance("Saffron Pidgey House"), lambda state: state.has("Liberate Silph Co.", player))
 
     # Silph Co.
-    set_rule(get_entrance("Silph Co. 2F Barrier (Northwest)"), lambda state: state.has("Card Key", player))
-    set_rule(get_entrance("Silph Co. 2F Barrier (Southwest)"), lambda state: state.has("Card Key", player))
-    set_rule(get_entrance("Silph Co. 2F Northwest Room Barrier"), lambda state: state.has("Card Key", player))
-    set_rule(get_entrance("Silph Co. 2F Southwest Room Barrier"), lambda state: state.has("Card Key", player))
-    set_rule(get_entrance("Silph Co. 3F Barrier"), lambda state: state.has("Card Key", player))
-    set_rule(get_entrance("Silph Co. 3F Center Room Barrier (East)"), lambda state: state.has("Card Key", player))
-    set_rule(get_entrance("Silph Co. 3F Center Room Barrier (West)"), lambda state: state.has("Card Key", player))
-    set_rule(get_entrance("Silph Co. 3F West Room Barrier"), lambda state: state.has("Card Key", player))
-    set_rule(get_entrance("Silph Co. 4F Barrier (West)"), lambda state: state.has("Card Key", player))
-    set_rule(get_entrance("Silph Co. 4F Barrier (Center)"), lambda state: state.has("Card Key", player))
-    set_rule(get_entrance("Silph Co. 4F North Room Barrier"), lambda state: state.has("Card Key", player))
-    set_rule(get_entrance("Silph Co. 5F Barrier (Northwest)"), lambda state: state.has("Card Key", player))
-    set_rule(get_entrance("Silph Co. 5F Barrier (Center)"), lambda state: state.has("Card Key", player))
-    set_rule(get_entrance("Silph Co. 5F Barrier (Southwest)"), lambda state: state.has("Card Key", player))
-    set_rule(get_entrance("Silph Co. 5F Southwest Room Barrier"), lambda state: state.has("Card Key", player))
-    set_rule(get_entrance("Silph Co. 6F Barrier"), lambda state: state.has("Card Key", player))
-    set_rule(get_entrance("Silph Co. 7F Barrier (Center)"), lambda state: state.has("Card Key", player))
-    set_rule(get_entrance("Silph Co. 7F Barrier (East)"), lambda state: state.has("Card Key", player))
-    set_rule(get_entrance("Silph Co. 7F East Room Barrier (North)"), lambda state: state.has("Card Key", player))
-    set_rule(get_entrance("Silph Co. 7F East Room Barrier (South)"), lambda state: state.has("Card Key", player))
-    set_rule(get_entrance("Silph Co. 7F Southeast Room Barrier"), lambda state: state.has("Card Key", player))
-    set_rule(get_entrance("Silph Co. 8F Barrier"), lambda state: state.has("Card Key", player))
-    set_rule(get_entrance("Silph Co. 8F West Room Barrier"), lambda state: state.has("Card Key", player))
-    set_rule(get_entrance("Silph Co. 9F Barrier"), lambda state: state.has("Card Key", player))
-    set_rule(get_entrance("Silph Co. 9F Northwest Room Barrier"), lambda state: state.has("Card Key", player))
-    set_rule(get_entrance("Silph Co. 9F Southwest Room Barrier (East)"), lambda state: state.has("Card Key", player))
-    set_rule(get_entrance("Silph Co. 9F Southwest Room Barrier (West)"), lambda state: state.has("Card Key", player))
-    set_rule(get_entrance("Silph Co. 10F Barrier"), lambda state: state.has("Card Key", player))
-    set_rule(get_entrance("Silph Co. 10F Southeast Room Barrier"), lambda state: state.has("Card Key", player))
-    set_rule(get_entrance("Silph Co. 11F West Barrier"), lambda state: state.has("Card Key", player))
+    set_rule(get_entrance("Silph Co. 2F Barrier (Northwest)"), lambda state: can_open_silph_door(2, state))
+    set_rule(get_entrance("Silph Co. 2F Barrier (Southwest)"), lambda state: can_open_silph_door(2, state))
+    set_rule(get_entrance("Silph Co. 2F Northwest Room Barrier"), lambda state: can_open_silph_door(2, state))
+    set_rule(get_entrance("Silph Co. 2F Southwest Room Barrier"), lambda state: can_open_silph_door(2, state))
+    set_rule(get_entrance("Silph Co. 3F Barrier"), lambda state: can_open_silph_door(3, state))
+    set_rule(get_entrance("Silph Co. 3F Center Room Barrier (East)"), lambda state: can_open_silph_door(3, state))
+    set_rule(get_entrance("Silph Co. 3F Center Room Barrier (West)"), lambda state: can_open_silph_door(3, state))
+    set_rule(get_entrance("Silph Co. 3F West Room Barrier"), lambda state: can_open_silph_door(3, state))
+    set_rule(get_entrance("Silph Co. 4F Barrier (West)"), lambda state: can_open_silph_door(4, state))
+    set_rule(get_entrance("Silph Co. 4F Barrier (Center)"), lambda state: can_open_silph_door(4, state))
+    set_rule(get_entrance("Silph Co. 4F North Room Barrier"), lambda state: can_open_silph_door(4, state))
+    set_rule(get_entrance("Silph Co. 5F Barrier (Northwest)"), lambda state: can_open_silph_door(5, state))
+    set_rule(get_entrance("Silph Co. 5F Barrier (Center)"), lambda state: can_open_silph_door(5, state))
+    set_rule(get_entrance("Silph Co. 5F Barrier (Southwest)"), lambda state: can_open_silph_door(5, state))
+    set_rule(get_entrance("Silph Co. 5F Southwest Room Barrier"), lambda state: can_open_silph_door(5, state))
+    set_rule(get_entrance("Silph Co. 6F Barrier"), lambda state: can_open_silph_door(6, state))
+    set_rule(get_entrance("Silph Co. 7F Barrier (Center)"), lambda state: can_open_silph_door(7, state))
+    set_rule(get_entrance("Silph Co. 7F Barrier (East)"), lambda state: can_open_silph_door(7, state))
+    set_rule(get_entrance("Silph Co. 7F East Room Barrier (North)"), lambda state: can_open_silph_door(7, state))
+    set_rule(get_entrance("Silph Co. 7F East Room Barrier (South)"), lambda state: can_open_silph_door(7, state))
+    set_rule(get_entrance("Silph Co. 7F Southeast Room Barrier"), lambda state: can_open_silph_door(7, state))
+    set_rule(get_entrance("Silph Co. 8F Barrier"), lambda state: can_open_silph_door(8, state))
+    set_rule(get_entrance("Silph Co. 8F West Room Barrier"), lambda state: can_open_silph_door(8, state))
+    set_rule(get_entrance("Silph Co. 9F Barrier"), lambda state: can_open_silph_door(9, state))
+    set_rule(get_entrance("Silph Co. 9F Northwest Room Barrier"), lambda state: can_open_silph_door(9, state))
+    set_rule(get_entrance("Silph Co. 9F Southwest Room Barrier (East)"), lambda state: can_open_silph_door(9, state))
+    set_rule(get_entrance("Silph Co. 9F Southwest Room Barrier (West)"), lambda state: can_open_silph_door(9, state))
+    set_rule(get_entrance("Silph Co. 10F Barrier"), lambda state: can_open_silph_door(10, state))
+    set_rule(get_entrance("Silph Co. 10F Southeast Room Barrier"), lambda state: can_open_silph_door(10, state))
+    set_rule(get_entrance("Silph Co. 11F West Barrier"), lambda state: can_open_silph_door(11, state))
 
     # Route 19
     set_rule(get_entrance("Route 19 Surfing Spot"), lambda state: can_surf(state))
@@ -453,28 +696,87 @@ def set_rules(world: "PokemonFRLGWorld") -> None:
     set_rule(get_entrance("Seafoam Islands B4F Near Articuno Landing"),
              lambda state: can_strength(state) and state.can_reach_region("Seafoam Islands B3F West", player))
 
+    for i in range(1, 6):
+        set_rule(get_location(f"Seafoam Islands B3F - Water Encounter {i}"),
+                 lambda state: can_strength(state) and state.can_reach_region("Seafoam Islands 1F", player))
+
     # Cinnabar Island
+    set_rule(get_location("Pokemon Lab Lounge - Trade Raichu"), lambda state: state.has("Raichu", player))
+    set_rule(get_location("Pokemon Lab Lounge - Trade Venonat"), lambda state: state.has("Venonat", player))
+    set_rule(get_location("Pokemon Lab Experiment Room - Revive Helix Fossil"),
+             lambda state: state.has("Helix Fossil", player))
+    set_rule(get_location("Pokemon Lab Experiment Room - Revive Dome Fossil"),
+             lambda state: state.has("Dome Fossil", player))
+    set_rule(get_location("Pokemon Lab Experiment Room - Revive Old Amber"),
+             lambda state: state.has("Old Amber", player))
+    set_rule(get_location("Pokemon Lab Experiment Room - Trade Ponyta"),
+             lambda state: state.has("Ponyta", player))
     set_rule(get_entrance("Cinnabar Island Surfing Spot"), lambda state: can_surf(state))
     set_rule(get_entrance("Cinnabar Gym"), lambda state: state.has("Secret Key", player))
     set_rule(get_entrance("Pokemon Mansion"), lambda state: state.has("Letter", player) or not options.extra_key_items)
 
     # Route 23
     set_rule(get_entrance("Route 23 South Surfing Spot"), lambda state: can_surf(state))
-    set_rule(get_entrance("Route 23 Center Surfing Spot"), lambda state: can_surf(state))
+    set_rule(get_entrance("Route 23 Near Water Surfing Spot"), lambda state: can_surf(state))
     set_rule(get_entrance("Route 23 Center Guard Checkpoint"), lambda state: can_pass_route_23_guard(state))
+
+    if "Route 23 Trees" in options.modify_world_state.value:
+        set_rule(get_entrance("Route 23 Near Water Cuttable Trees"), lambda state: can_cut(state))
+        set_rule(get_entrance("Route 23 Center Cuttable Trees"), lambda state: can_cut(state))
+
+    if "Modify Route 23" in options.modify_world_state.value:
+        set_rule(get_entrance("Route 23 Waterfall Ascend"), lambda state: can_waterfall(state))
+        set_rule(get_entrance("Route 23 Waterfall Drop"), lambda state: can_waterfall(state))
 
     # Victory Road
     set_rule(get_location("Victory Road 1F - North Item (Left)"), lambda state: can_strength(state))
     set_rule(get_location("Victory Road 1F - North Item (Right)"), lambda state: can_strength(state))
-    set_rule(get_entrance("Victory Road 1F South Rock Barrier"), lambda state: can_strength(state))
     set_rule(get_entrance("Victory Road 1F North Strength Boulder"), lambda state: can_strength(state))
-    set_rule(get_entrance("Victory Road 2F Southwest Rock Barrier"), lambda state: can_strength(state))
     set_rule(get_entrance("Victory Road 2F Center Rock Barrier"),
              lambda state: can_strength(state) and state.can_reach_region("Victory Road 3F Southwest", player))
     set_rule(get_entrance("Victory Road 2F Northwest Strength Boulder"), lambda state: can_strength(state))
-    set_rule(get_entrance("Victory Road 3F North Rock Barrier"), lambda state: can_strength(state))
     set_rule(get_entrance("Victory Road 3F Southwest Strength Boulder"), lambda state: can_strength(state))
     set_rule(get_entrance("Victory Road 3F Southeast Strength Boulder"), lambda state: can_strength(state))
+
+    if "Victory Road Rocks" in options.modify_world_state.value:
+        set_rule(get_entrance("Victory Road 1F South Rock Barrier"),
+                 lambda state: can_strength(state) and can_rock_smash(state))
+        set_rule(get_entrance("Victory Road 2F Southwest Rock Barrier"),
+                 lambda state: can_strength(state) and can_rock_smash(state))
+        set_rule(get_entrance("Victory Road 3F North Rock Barrier"),
+                 lambda state: can_strength(state) and can_rock_smash(state))
+    else:
+        set_rule(get_entrance("Victory Road 1F South Rock Barrier"), lambda state: can_strength(state))
+        set_rule(get_entrance("Victory Road 2F Southwest Rock Barrier"), lambda state: can_strength(state))
+        set_rule(get_entrance("Victory Road 3F North Rock Barrier"), lambda state: can_strength(state))
+
+    if "Victory Road" in options.additional_dark_caves.value:
+        set_rule(get_entrance("Victory Road 1F Leave South Entry"), lambda state: dark_cave(state))
+        set_rule(get_entrance("Victory Road 1F Leave North Entry"), lambda state: dark_cave(state))
+        set_rule(get_entrance("Victory Road 2F Leave Southwest Entry"), lambda state: dark_cave(state))
+        set_rule(get_entrance("Victory Road 2F Leave Center Entry"), lambda state: dark_cave(state))
+        set_rule(get_entrance("Victory Road 2F Leave Northwest Entry"), lambda state: dark_cave(state))
+        set_rule(get_entrance("Victory Road 2F Leave Southeast Entry"), lambda state: dark_cave(state))
+        set_rule(get_entrance("Victory Road 2F Leave East Entry (West)"), lambda state: dark_cave(state))
+        set_rule(get_entrance("Victory Road 2F Leave East Entry (East)"), lambda state: dark_cave(state))
+        set_rule(get_entrance("Victory Road 3F Leave North Entry (West)"), lambda state: dark_cave(state))
+        set_rule(get_entrance("Victory Road 3F Leave North Entry (East)"), lambda state: dark_cave(state))
+        set_rule(get_entrance("Victory Road 3F Leave Southeast Entry (North)"), lambda state: dark_cave(state))
+        set_rule(get_entrance("Victory Road 3F Leave Southeast Entry (South)"), lambda state: dark_cave(state))
+
+        for i in range(1, 9):
+            set_rule(get_location(f"Victory Road 1F - Land Encounter {i}"), lambda state: dark_cave(state))
+            set_rule(get_location(f"Victory Road 2F - Land Encounter {i}"), lambda state: dark_cave(state))
+            set_rule(get_location(f"Victory Road 3F - Land Encounter {i}"), lambda state: dark_cave(state))
+            if (options.flash_required == FlashRequired.option_required and
+                    options.level_scaling != LevelScaling.option_off):
+                set_rule(get_location(f"Victory Road 1F Land Scaling {i}"), lambda state: dark_cave(state))
+                set_rule(get_location(f"Victory Road 2F Land Scaling {i}"), lambda state: dark_cave(state))
+                set_rule(get_location(f"Victory Road 3F Land Scaling {i}"), lambda state: dark_cave(state))
+
+        set_rule(get_location("Victory Road 2F - Land Encounter 9"), lambda state: dark_cave(state))
+        if options.flash_required == FlashRequired.option_required and options.level_scaling != LevelScaling.option_off:
+            set_rule(get_location("Victory Road 2F Land Scaling 9"), lambda state: dark_cave(state))
 
     # Indigo Plateau
     set_rule(get_entrance("Pokemon League"), lambda state: can_challenge_elite_four(state))
@@ -488,91 +790,6 @@ def set_rules(world: "PokemonFRLGWorld") -> None:
     set_rule(get_entrance("Cerulean Cave 1F Surfing Spot"), lambda state: can_surf(state))
     set_rule(get_entrance("Cerulean Cave B1F Surfing Spot"), lambda state: can_surf(state))
 
-    # Hidden Items
-    if options.shuffle_hidden != ShuffleHiddenItems.option_off:
-        # Viridian Gym
-        set_rule(get_location("Viridian Gym - Hidden Item Under Giovanni"),
-                 lambda state: state.has("Itemfinder", player))
-
-        # Pokemon Tower
-        set_rule(get_location("Pokemon Tower 7F - Hidden Item Under Mr. Fuji"),
-                 lambda state: state.has("Itemfinder", player))
-
-        # Route 12
-        set_rule(get_location("Route 12 - Hidden Item Under Snorlax"), lambda state: state.has("Itemfinder", player))
-
-        # Route 16
-        set_rule(get_location("Route 16 - Hidden Item Under Snorlax"), lambda state: state.has("Itemfinder", player))
-
-        # Navel Rock
-        set_rule(get_location("Navel Rock - Hidden Item Near Ho-Oh"), lambda state: state.has("Itemfinder", player))
-
-        # Add rules for hidden items
-        if world.options.itemfinder_required != ItemfinderRequired.option_off:
-            for location in multiworld.get_locations(player):
-                if location.tags is not None and ("Hidden" in location.tags):
-                    add_rule(location, lambda state: state.has("Itemfinder", player))
-
-    # Extra Key Items
-    if options.extra_key_items:
-        # Cerulean City
-        set_rule(get_location("Cerulean Gym - Hidden Item in Water"),
-                 lambda state: can_surf(state) and state.has("Itemfinder", player))
-
-    # Trainersanity
-    if options.trainersanity:
-        # Route 22
-        set_rule(get_location("Route 22 - Early Rival Reward"), lambda state: state.has("Deliver Oak's Parcel", player))
-        set_rule(get_location("Route 22 - Late Rival Reward"),
-                 lambda state: state.has_all(["Defeat Route 22 Rival", "Defeat Giovanni"], player))
-
-    # Static Pokémon
-    set_rule(get_location("Route 2 Trade House - Trade Abra"), lambda state: state.has("Abra", player))
-    set_rule(get_location("Cerulean Trade House - Trade Poliwhirl"), lambda state: state.has("Poliwhirl", player))
-    set_rule(get_location("Vermilion Trade House - Trade Spearow"), lambda state: state.has("Spearow", player))
-    set_rule(get_location("Celadon Game Corner Prize Room - Prize Pokemon 1"),
-             lambda state: state.has("Coin Case", player))
-    set_rule(get_location("Celadon Game Corner Prize Room - Prize Pokemon 2"),
-             lambda state: state.has("Coin Case", player))
-    set_rule(get_location("Celadon Game Corner Prize Room - Prize Pokemon 3"),
-             lambda state: state.has("Coin Case", player))
-    set_rule(get_location("Celadon Game Corner Prize Room - Prize Pokemon 4"),
-             lambda state: state.has("Coin Case", player))
-    set_rule(get_location("Celadon Game Corner Prize Room - Prize Pokemon 5"),
-             lambda state: state.has("Coin Case", player))
-    set_rule(get_location("Pokemon Lab Lounge - Trade Raichu"), lambda state: state.has("Raichu", player))
-    set_rule(get_location("Pokemon Lab Lounge - Trade Venonat"), lambda state: state.has("Venonat", player))
-    set_rule(get_location("Pokemon Lab Experiment Room - Revive Helix Fossil"),
-             lambda state: state.has("Helix Fossil", player))
-    set_rule(get_location("Pokemon Lab Experiment Room - Revive Dome Fossil"),
-             lambda state: state.has("Dome Fossil", player))
-    set_rule(get_location("Pokemon Lab Experiment Room - Revive Old Amber"),
-             lambda state: state.has("Old Amber", player))
-    set_rule(get_location("Pokemon Lab Experiment Room - Trade Ponyta"),
-             lambda state: state.has("Ponyta", player))
-
-    if options.game_version == GameVersion.option_firered:
-        set_rule(get_location("Underground Path North Entrance - Trade Nidoran M"),
-                 lambda state: state.has("Nidoran M", player))
-        set_rule(get_location("Route 11 Gate 2F - Trade Nidorino"), lambda state: state.has("Nidorino", player))
-        set_rule(get_location("Route 18 Gate 2F - Trade Golduck"), lambda state: state.has("Golduck", player))
-    elif options.game_version == GameVersion.option_leafgreen:
-        set_rule(get_location("Underground Path North Entrance - Trade Nidoran F"),
-                 lambda state: state.has("Nidoran F", player))
-        set_rule(get_location("Route 11 Gate 2F - Trade Nidorina"), lambda state: state.has("Nidorina", player))
-        set_rule(get_location("Route 18 Gate 2F - Trade Slowbro"), lambda state: state.has("Slowbro", player))
-
-    # Pokémon Tower encounters
-    for i in range(3, 8):
-        for j in range(1, 4):
-            set_rule(get_location(f"Pokemon Tower {i}F - Land Encounter {j}"),
-                     lambda state: state.has("Silph Scope", player))
-
-    # Seafoam Islands B3F water encounters
-    for i in range(1, 6):
-        set_rule(get_location(f"Seafoam Islands B3F - Water Encounter {i}"),
-                 lambda state: can_strength(state) and state.can_reach_region("Seafoam Islands 1F", player))
-
     # Sevii Islands
     if not options.kanto_only:
         # Sky
@@ -585,22 +802,23 @@ def set_rules(world: "PokemonFRLGWorld") -> None:
         set_rule(get_entrance("Seven Island Fly Destination"), lambda state: state.has("Fly Seven Island", player))
 
         # Seagallop
-        set_rule(get_entrance("One Island Arrival"), lambda state: state.has("Tri Pass", player))
-        set_rule(get_entrance("Two Island Arrival"), lambda state: state.has("Tri Pass", player))
-        set_rule(get_entrance("Three Island Arrival"), lambda state: state.has("Tri Pass", player))
-        set_rule(get_entrance("Four Island Arrival"), lambda state: state.has("Rainbow Pass", player))
-        set_rule(get_entrance("Five Island Arrival"), lambda state: state.has("Rainbow Pass", player))
-        set_rule(get_entrance("Six Island Arrival"), lambda state: state.has("Rainbow Pass", player))
-        set_rule(get_entrance("Seven Island Arrival"), lambda state: state.has("Rainbow Pass", player))
+        set_rule(get_entrance("One Island Arrival"), lambda state: can_sail_island(1, state))
+        set_rule(get_entrance("Two Island Arrival"), lambda state: can_sail_island(2, state))
+        set_rule(get_entrance("Three Island Arrival"), lambda state: can_sail_island(3, state))
+        set_rule(get_entrance("Four Island Arrival"), lambda state: can_sail_island(4, state))
+        set_rule(get_entrance("Five Island Arrival"), lambda state: can_sail_island(5, state))
+        set_rule(get_entrance("Six Island Arrival"), lambda state: can_sail_island(6, state))
+        set_rule(get_entrance("Seven Island Arrival"), lambda state: can_sail_island(7, state))
 
         # Cinnabar Island
         set_rule(get_entrance("Follow Bill"), lambda state: state.has("Defeat Blaine", player))
 
         # One Island Town
-        set_rule(get_location("One Island Pokemon Center 1F - Celio (Deliver Ruby)"),
+        set_rule(get_location("One Island Pokemon Center 1F - Celio's Gift (Deliver Ruby)"),
                  lambda state: state.has_all(["Deliver Meteorite", "Ruby"], player))
         set_rule(get_location("One Island Pokemon Center 1F - Help Celio"),
-                 lambda state: state.has_all(["Deliver Meteorite", "Ruby", "Sapphire"], player))
+                 lambda state: state.has_all(["Deliver Meteorite", "Ruby", "Free Captured Pokemon", "Sapphire"],
+                                             player))
         set_rule(get_entrance("One Island Town Surfing Spot"), lambda state: can_surf(state))
 
         # Kindle Road
@@ -614,6 +832,8 @@ def set_rules(world: "PokemonFRLGWorld") -> None:
         # Mt. Ember
         set_rule(get_location("Mt. Ember Exterior - Item Near Summit"),
                  lambda state: can_strength(state) and can_rock_smash(state))
+        set_rule(get_location("Mt. Ember Exterior - Eavesdrop on Team Rocket Grunts"),
+                 lambda state: state.has("Deliver Meteorite", player))
         set_rule(get_entrance("Mt. Ember Exterior South Strength Boulders"), lambda state: can_strength(state))
         set_rule(get_entrance("Mt. Ember Ruby Path"), lambda state: state.has("Deliver Meteorite", player))
         set_rule(get_entrance("Mt. Ember Summit Strength Boulders"), lambda state: can_strength(state))
@@ -634,9 +854,10 @@ def set_rules(world: "PokemonFRLGWorld") -> None:
 
         # Two Island Town
         set_rule(get_location("Two Island Town - Item Behind Cuttable Tree"), lambda state: can_cut(state))
-        set_rule(get_location("Two Island Game Corner - Lostelle's Dad"),
+        set_rule(get_location("Two Island Game Corner - Lostelle's Dad's Gift"),
                  lambda state: state.has_all(["Rescue Lostelle", "Meteorite"], player))
-        set_rule(get_location("Two Island Town - Market Stall"), lambda state: state.has("Defeat Champion", player))
+        set_rule(get_location("Two Island Town - Market Stall"),
+                 lambda state: state.has_all(["Rescue Lostelle", "Defeat Champion"], player) and can_grind_money(state))
         set_rule(get_location("Two Island Game Corner - Lostelle's Dad's Delivery"),
                  lambda state: state.has_all(["Rescue Lostelle", "Meteorite"], player))
 
@@ -662,6 +883,7 @@ def set_rules(world: "PokemonFRLGWorld") -> None:
         # Icefall Cave
         set_rule(get_entrance("Icefall Cave Front South Surfing Spot"), lambda state: can_surf(state))
         set_rule(get_entrance("Icefall Cave Front Waterfall Ascend"), lambda state: can_waterfall(state))
+        set_rule(get_entrance("Icefall Cave Front Waterfall Drop"), lambda state: can_waterfall(state))
         set_rule(get_entrance("Icefall Cave Front Center Surfing Spot"), lambda state: can_surf(state))
         set_rule(get_entrance("Icefall Cave Front North Surfing Spot"), lambda state: can_surf(state))
         set_rule(get_entrance("Icefall Cave Back Surfing Spot"), lambda state: can_surf(state))
@@ -672,10 +894,11 @@ def set_rules(world: "PokemonFRLGWorld") -> None:
         # Five Isle Meadow
         set_rule(get_location("Five Isle Meadow - Item Behind Cuttable Tree"), lambda state: can_cut(state))
         set_rule(get_entrance("Five Isle Meadow Surfing Spot"), lambda state: can_surf(state))
-        set_rule(get_entrance("Rocket Warehouse"), lambda state: state.has("Learn Rocket Warehouse Password", player))
+        set_rule(get_entrance("Rocket Warehouse"),
+                 lambda state: state.has_all(["Learn Goldeen Need Log", "Learn Yes Nah Chansey"], player))
 
         # Memorial Pillar
-        set_rule(get_location("Memorial Pillar - Memorial Man"),
+        set_rule(get_location("Memorial Pillar - Memorial Man's Gift"),
                  lambda state: state.has("Buy Lemonade", player))
 
         # Resort Gorgeous
@@ -708,6 +931,13 @@ def set_rules(world: "PokemonFRLGWorld") -> None:
         set_rule(get_location("Tanoby Key - Solve Puzzle"), lambda state: can_strength(state))
 
         # Tanoby Ruins
+        set_rule(get_location("Monean Chamber - Land Encounter 1"), lambda state: state.has("Spawn Unown", player))
+        set_rule(get_location("Liptoo Chamber - Land Encounter 1"), lambda state: state.has("Spawn Unown", player))
+        set_rule(get_location("Weepth Chamber - Land Encounter 1"), lambda state: state.has("Spawn Unown", player))
+        set_rule(get_location("Dilford Chamber - Land Encounter 1"), lambda state: state.has("Spawn Unown", player))
+        set_rule(get_location("Scufib Chamber - Land Encounter 1"), lambda state: state.has("Spawn Unown", player))
+        set_rule(get_location("Rixy Chamber - Land Encounter 1"), lambda state: state.has("Spawn Unown", player))
+        set_rule(get_location("Viapos Chamber - Land Encounter 1"), lambda state: state.has("Spawn Unown", player))
         set_rule(get_entrance("Tanoby Ruins Surfing Spot"), lambda state: can_surf(state))
         set_rule(get_entrance("Tanoby Ruins Viapois Island Surfing Spot"), lambda state: can_surf(state))
         set_rule(get_entrance("Tanoby Ruins Rixy Island Surfing Spot"), lambda state: can_surf(state))
@@ -721,28 +951,204 @@ def set_rules(world: "PokemonFRLGWorld") -> None:
         set_rule(get_entrance("Trainer Tower Exterior South Surfing Spot"), lambda state: can_surf(state))
         set_rule(get_entrance("Trainer Tower Exterior North Surfing Spot"), lambda state: can_surf(state))
 
-        # Hidden Items
-        if options.shuffle_hidden != ShuffleHiddenItems.option_off:
+        # Indigo Plateau
+        set_rule(get_location("Champion's Room - Champion Rematch Battle"),
+                 lambda state: state.has_all(["Defeat Champion", "Restore Pokemon Network Machine"], player))
+
+    # Hidden Items
+    if options.shuffle_hidden != ShuffleHiddenItems.option_off:
+        # Viridian Gym
+        set_rule(get_location("Viridian Gym - Hidden Item Under Giovanni"),
+                 lambda state: state.has("Itemfinder", player))
+
+        # Pokemon Tower
+        set_rule(get_location("Pokemon Tower 7F - Hidden Item Under Mr. Fuji"),
+                 lambda state: state.has("Itemfinder", player))
+
+        # Route 12
+        set_rule(get_location("Route 12 - Hidden Item Under Snorlax"), lambda state: state.has("Itemfinder", player))
+
+        # Route 16
+        set_rule(get_location("Route 16 - Hidden Item Under Snorlax"), lambda state: state.has("Itemfinder", player))
+
+        # Navel Rock
+        set_rule(get_location("Navel Rock - Hidden Item Near Ho-Oh"), lambda state: state.has("Itemfinder", player))
+
+        # Sevii Islands
+        if not options.kanto_only:
             # Cape Brink
             set_rule(get_location("Cape Brink - Hidden Item Across Pond"),
                      lambda state: state.has("Itemfinder", player))
 
-        # Trainersanity
-        if options.trainersanity:
+        # Add rules for hidden items
+        if world.options.itemfinder_required != ItemfinderRequired.option_off:
+            for location in multiworld.get_locations(player):
+                if location.tags is not None and ("Hidden" in location.tags):
+                    add_rule(location, lambda state: state.has("Itemfinder", player))
+
+    # Extra Key Items
+    if options.extra_key_items:
+        # Cerulean City
+        set_rule(get_location("Cerulean Gym - Hidden Item in Water"),
+                 lambda state: can_surf(state) and state.has("Itemfinder", player))
+
+    # Trainersanity
+    if options.trainersanity:
+        # Route 22
+        set_rule(get_location("Route 22 - Early Rival Reward"), lambda state: state.has("Deliver Oak's Parcel", player))
+        set_rule(get_location("Route 22 - Late Rival Reward"),
+                 lambda state: state.has_all(["Defeat Route 22 Rival", "Defeat Giovanni"], player))
+
+        # Sevii Islands
+        if not options.kanto_only:
             # Mt. Ember
             set_rule(get_location("Mt. Ember Exterior - Team Rocket Grunt Reward (Left)"),
                      lambda state: state.has("Deliver Meteorite", player))
             set_rule(get_location("Mt. Ember Exterior - Team Rocket Grunt Reward (Right)"),
                      lambda state: state.has("Deliver Meteorite", player))
 
-        # Tanoby Ruins encounters
-        set_rule(get_location("Monean Chamber - Land Encounter 1"), lambda state: state.has("Spawn Unown", player))
-        set_rule(get_location("Liptoo Chamber - Land Encounter 1"), lambda state: state.has("Spawn Unown", player))
-        set_rule(get_location("Weepth Chamber - Land Encounter 1"), lambda state: state.has("Spawn Unown", player))
-        set_rule(get_location("Dilford Chamber - Land Encounter 1"), lambda state: state.has("Spawn Unown", player))
-        set_rule(get_location("Scufib Chamber - Land Encounter 1"), lambda state: state.has("Spawn Unown", player))
-        set_rule(get_location("Rixy Chamber - Land Encounter 1"), lambda state: state.has("Spawn Unown", player))
-        set_rule(get_location("Viapos Chamber - Land Encounter 1"), lambda state: state.has("Spawn Unown", player))
+            # Indigo Plateau
+            set_rule(get_location("Lorelei's Room - Elite Four Lorelei Rematch Reward"),
+                     lambda state: state.has_all(["Defeat Champion", "Restore Pokemon Network Machine"], player))
+            set_rule(get_location("Bruno's Room - Elite Four Bruno Rematch Reward"),
+                     lambda state: state.has_all(["Defeat Champion", "Restore Pokemon Network Machine"], player))
+            set_rule(get_location("Agatha's Room - Elite Four Agatha Rematch Reward"),
+                     lambda state: state.has_all(["Defeat Champion", "Restore Pokemon Network Machine"], player))
+            set_rule(get_location("Lance's Room - Elite Four Lance Rematch Reward"),
+                     lambda state: state.has_all(["Defeat Champion", "Restore Pokemon Network Machine"], player))
+            set_rule(get_location("Champion's Room - Champion Rematch Reward"),
+                     lambda state: state.has_all(["Defeat Champion", "Restore Pokemon Network Machine"], player))
+
+    # Famesanity
+    if options.famesanity:
+        # Pallet Town
+        set_rule(get_location("Professor Oak's Lab - Oak's Aide's Info (Daisy 1)"),
+                 lambda state: post_game_gossipers(state))
+        set_rule(get_location("Professor Oak's Lab - Oak's Info (Oak 2)"),
+                 lambda state: state.has("Oak's Parcel", player))
+        set_rule(get_location("Professor Oak's Lab - Oak's Aide's Info (Oak 6)"),
+                 lambda state: post_game_gossipers(state))
+
+        # Viridian City
+        set_rule(get_location("Viridian Gym - Gym Guy's Info (Giovanni 5)"),
+                 lambda state: state.has("Defeat Giovanni", player))
+
+        # Cerulean City
+        set_rule(get_location("Cerulean Pokemon Center 1F - Bookshelf's Info (Misty 6)"),
+                 lambda state: post_game_gossipers(state))
+
+        # Vermilion City
+        set_rule(get_location("Pokemon Fan Club - Worker's Info (Daisy 2)"),
+                 lambda state: post_game_gossipers(state))
+        set_rule(get_location("Vermilion Pokemon Center 1F - Bookshelf's Info (Lt. Surge 6)"),
+                 lambda state: state.has("Defeat Lt. Surge", player))
+
+        # Lavender Town
+        set_rule(get_location("Lavender Pokemon Center 1F - Balding Man's Info (Mr. Fuji 4)"),
+                 lambda state: post_game_gossipers(state))
+
+        # Celadon City
+        set_rule(get_location("Celadon Condominiums 1F - Tea Woman's Info (Daisy 5)"),
+                 lambda state: post_game_gossipers(state))
+        set_rule(get_location("Celadon Condominiums 2F - Bookshelf's Info (Erika 6)"),
+                 lambda state: state.has("Defeat Erika", player))
+        set_rule(get_location("Celadon Department Store 2F - Woman's Info (Lance 4)"),
+                 lambda state: post_game_gossipers(state))
+
+        # Fuchsia City
+        set_rule(get_location("Fuchsia City - Koga's Daughter's Info (Koga 4)"),
+                 lambda state: post_game_gossipers(state))
+        set_rule(get_location("Safari Zone Warden's House - Bookshelf's Info (Koga 5)"),
+                 lambda state: state.has("Defeat Koga", player))
+
+        # Saffron City
+        set_rule(get_location("Pokemon Trainer Fan Club - Bookshelf's Info (Bruno 3)"),
+                 lambda state: post_game_gossipers(state))
+        set_rule(get_location("Saffron City - Battle Girl's Info (Lance 3)"),
+                 lambda state: post_game_gossipers(state))
+        set_rule(get_location("Saffron Pokemon Center 1F - Bookshelf's Info (Sabrina 5)"),
+                 lambda state: state.has("Defeat Sabrina", player))
+
+        # Cinnabar Island
+        set_rule(get_location("Cinnabar Pokemon Center 1F - Bookshelf's Info (Mr. Fuji 6)"),
+                 lambda state: post_game_gossipers(state))
+
+        # Indigo Plateau
+        set_rule(get_location("Indigo Plateau Pokemon Center 1F - Black Belt's Info (Agatha 2)"),
+                 lambda state: post_game_gossipers(state))
+        set_rule(get_location("Indigo Plateau Pokemon Center 1F - Black Belt's Info (Agatha 3)"),
+                 lambda state: post_game_gossipers(state))
+        set_rule(get_location("Indigo Plateau Pokemon Center 1F - Bookshelf's Info (Lance 5)"),
+                 lambda state: post_game_gossipers(state))
+        set_rule(get_location("Indigo Plateau Pokemon Center 1F - Cooltrainer's Info (Lance 6)"),
+                 lambda state: post_game_gossipers(state))
+
+        # Sevii Islands
+        if not options.kanto_only:
+            # One Island Town
+            set_rule(get_location("One Island Pokemon Center 1F - Celio's Info (Bill 3)"),
+                     lambda state: state.has("Restore Pokemon Network Machine", player))
+            set_rule(get_location("One Island Pokemon Center 1F - Celio's Info (Bill 4)"),
+                     lambda state: state.has("Restore Pokemon Network Machine", player))
+            set_rule(get_location("One Island Pokemon Center 1F - Celio's Info (Bill 5)"),
+                     lambda state: state.has("Restore Pokemon Network Machine", player))
+
+            # Ember Spa
+            set_rule(get_location("Ember Spa - Black Belt's Info (Bruno 4)"),
+                     lambda state: post_game_gossipers(state))
+
+            # Two Island Town
+            set_rule(get_location("Two Island Town - Beauty's Info (Bruno 5)"),
+                     lambda state: state.has_all(["Rescue Lostelle", "Defeat Champion"], player))
+
+            # Four Island Town
+            set_rule(get_location("Four Island Town - Old Woman's Info (Lorelei 6)"),
+                     lambda state: state.has("Restore Pokemon Network Machine", player))
+
+            # Five Island Town
+            set_rule(get_location("Five Island Pokemon Center 1F - Bookshelf's Info (Lorelei 4)"),
+                     lambda state: post_game_gossipers(state))
+
+            # Rocket Warehouse
+            set_rule(get_location("Rocket Warehouse - Scientist Gideon's Info (Giovanni 6)"),
+                     lambda state: state.has("Restore Pokemon Network Machine", player))
+
+            # Water Labyrinth
+            if options.pokemon_request_locations:
+                set_rule(get_location("Water Labyrinth - Gentleman's Info (Daisy 3)"),
+                         lambda state: state.has_any(["Togepi", "Togetic"], player))
+
+            # Seven Island
+            set_rule(get_location("Seven Island Pokemon Center 1F - Bookshelf's Info (Agatha 4)"),
+                     lambda state: post_game_gossipers(state))
+
+        # Add rules for fame checker locations
+        if world.options.fame_checker_required:
+            for location in multiworld.get_locations(player):
+                if location.tags is not None and ("FameChecker" in location.tags):
+                    add_rule(location, lambda state: state.has("Fame Checker", player))
+
+    # Pokemon Requests
+    if options.pokemon_request_locations:
+        # Route 12
+        set_rule(get_location("Route 12 Fishing House - Fishing Guru's Brother's Gift (Show Magikarp)"),
+                 lambda state: state.has("Magikarp", player))
+
+        # Sevii Islands
+        if not options.kanto_only:
+            # Resort Gorgeous
+            set_rule(get_location("Resort Gorgeous House - Selphy's Gift"),
+                     lambda state: state.has_all(["Rescue Selphy", world.resort_gorgeous_mon[1]], player))
+
+            # Water Path
+            set_rule(get_location("Water Path Heracross Woman's House - Heracross Woman's Gift"),
+                     lambda state: state.has("Heracross", player))
+
+    # Split Card Key
+    if options.card_key != SilphCoCardKey.option_vanilla:
+        # Silph Co.
+        set_rule(get_location("Silph Co. 1F - Receptionist's Gift"),
+                 lambda state: state.has("Liberate Silph Co.", player))
 
     # Evolutions
     set_rule(get_location("Evolution - Bulbasaur"),
@@ -776,7 +1182,9 @@ def set_rules(world: "PokemonFRLGWorld") -> None:
     set_rule(get_location("Evolution - Ekans"),
              lambda state: state.has("Ekans", player) and evolve_level(state, 22))
     set_rule(get_location("Evolution - Pikachu"),
-             lambda state: state.has("Pikachu", player) and state.has("Buy Evo Stones", player))
+             lambda state: state.has("Pikachu", player) and
+                           state.has("Buy Evo Stones", player) and
+                           can_grind_money(state))
     set_rule(get_location("Evolution - Sandshrew"),
              lambda state: state.has("Sandshrew", player) and evolve_level(state, 22))
     set_rule(get_location("Evolution - Nidoran F"),
@@ -784,7 +1192,9 @@ def set_rules(world: "PokemonFRLGWorld") -> None:
     set_rule(get_location("Evolution - Nidoran M"),
              lambda state: state.has("Nidoran M", player) and evolve_level(state, 16))
     set_rule(get_location("Evolution - Vulpix"),
-             lambda state: state.has("Vulpix", player) and state.has("Buy Evo Stones", player))
+             lambda state: state.has("Vulpix", player) and
+                           state.has("Buy Evo Stones", player) and
+                           can_grind_money(state))
     set_rule(get_location("Evolution - Zubat"),
              lambda state: state.has("Zubat", player) and evolve_level(state, 22))
     set_rule(get_location("Evolution - Golbat"),
@@ -792,7 +1202,9 @@ def set_rules(world: "PokemonFRLGWorld") -> None:
     set_rule(get_location("Evolution - Oddish"),
              lambda state: state.has("Oddish", player) and evolve_level(state, 21))
     set_rule(get_location("Evolution - Gloom"),
-             lambda state: state.has("Gloom", player) and state.has("Buy Evo Stones", player))
+             lambda state: state.has("Gloom", player) and
+                           state.has("Buy Evo Stones", player) and
+                           can_grind_money(state))
     set_rule(get_location("Evolution - Paras"),
              lambda state: state.has("Paras", player) and evolve_level(state, 24))
     set_rule(get_location("Evolution - Venonat"),
@@ -806,11 +1218,15 @@ def set_rules(world: "PokemonFRLGWorld") -> None:
     set_rule(get_location("Evolution - Mankey"),
              lambda state: state.has("Mankey", player) and evolve_level(state, 28))
     set_rule(get_location("Evolution - Growlithe"),
-             lambda state: state.has("Growlithe", player) and state.has("Buy Evo Stones", player))
+             lambda state: state.has("Growlithe", player) and
+                           state.has("Buy Evo Stones", player) and
+                           can_grind_money(state))
     set_rule(get_location("Evolution - Poliwag"),
              lambda state: state.has("Poliwag", player) and evolve_level(state, 25))
     set_rule(get_location("Evolution - Poliwhirl"),
-             lambda state: state.has("Poliwhirl", player) and state.has("Buy Evo Stones", player))
+             lambda state: state.has("Poliwhirl", player) and
+                           state.has("Buy Evo Stones", player) and
+                           can_grind_money(state))
     set_rule(get_location("Evolution - Abra"),
              lambda state: state.has("Abra", player) and evolve_level(state, 16))
     set_rule(get_location("Evolution - Kadabra"),
@@ -822,7 +1238,9 @@ def set_rules(world: "PokemonFRLGWorld") -> None:
     set_rule(get_location("Evolution - Bellsprout"),
              lambda state: state.has("Bellsprout", player) and evolve_level(state, 21))
     set_rule(get_location("Evolution - Weepinbell"),
-             lambda state: state.has("Weepinbell", player) and state.has("Buy Evo Stones", player))
+             lambda state: state.has("Weepinbell", player) and
+                           state.has("Buy Evo Stones", player) and
+                           can_grind_money(state))
     set_rule(get_location("Evolution - Tentacool"),
              lambda state: state.has("Tentacool", player) and evolve_level(state, 30))
     set_rule(get_location("Evolution - Geodude"),
@@ -842,7 +1260,9 @@ def set_rules(world: "PokemonFRLGWorld") -> None:
     set_rule(get_location("Evolution - Grimer"),
              lambda state: state.has("Grimer", player) and evolve_level(state, 38))
     set_rule(get_location("Evolution - Shellder"),
-             lambda state: state.has("Shellder", player) and state.has("Buy Evo Stones", player))
+             lambda state: state.has("Shellder", player) and
+                           state.has("Buy Evo Stones", player) and
+                           can_grind_money(state))
     set_rule(get_location("Evolution - Gastly"),
              lambda state: state.has("Gastly", player) and evolve_level(state, 25))
     set_rule(get_location("Evolution - Haunter"),
@@ -854,7 +1274,9 @@ def set_rules(world: "PokemonFRLGWorld") -> None:
     set_rule(get_location("Evolution - Voltorb"),
              lambda state: state.has("Voltorb", player) and evolve_level(state, 30))
     set_rule(get_location("Evolution - Exeggcute"),
-             lambda state: state.has("Exeggcute", player) and state.has("Buy Evo Stones", player))
+             lambda state: state.has("Exeggcute", player) and
+                           state.has("Buy Evo Stones", player) and
+                           can_grind_money(state))
     set_rule(get_location("Evolution - Cubone"),
              lambda state: state.has("Cubone", player) and evolve_level(state, 28))
     set_rule(get_location("Evolution - Koffing"),
@@ -868,15 +1290,23 @@ def set_rules(world: "PokemonFRLGWorld") -> None:
     set_rule(get_location("Evolution - Goldeen"),
              lambda state: state.has("Goldeen", player) and evolve_level(state, 33))
     set_rule(get_location("Evolution - Staryu"),
-             lambda state: state.has("Staryu", player) and state.has("Buy Evo Stones", player))
+             lambda state: state.has("Staryu", player) and
+                           state.has("Buy Evo Stones", player) and
+                           can_grind_money(state))
     set_rule(get_location("Evolution - Magikarp"),
              lambda state: state.has("Magikarp", player) and evolve_level(state, 20))
     set_rule(get_location("Evolution - Eevee (Thunder Stone)"),
-             lambda state: state.has("Eevee", player) and state.has("Buy Evo Stones", player))
+             lambda state: state.has("Eevee", player) and
+                           state.has("Buy Evo Stones", player) and
+                           can_grind_money(state))
     set_rule(get_location("Evolution - Eevee (Water Stone)"),
-             lambda state: state.has("Eevee", player) and state.has("Buy Evo Stones", player))
+             lambda state: state.has("Eevee", player) and
+                           state.has("Buy Evo Stones", player) and
+                           can_grind_money(state))
     set_rule(get_location("Evolution - Eevee (Fire Stone)"),
-             lambda state: state.has("Eevee", player) and state.has("Buy Evo Stones", player))
+             lambda state: state.has("Eevee", player) and
+                           state.has("Buy Evo Stones", player) and
+                           can_grind_money(state))
     set_rule(get_location("Evolution - Omanyte"),
              lambda state: state.has("Omanyte", player) and evolve_level(state, 40))
     set_rule(get_location("Evolution - Kabuto"),
@@ -988,11 +1418,15 @@ def set_rules(world: "PokemonFRLGWorld") -> None:
     set_rule(get_location("Evolution - Lotad"),
              lambda state: state.has("Lotad", player) and evolve_level(state, 14))
     set_rule(get_location("Evolution - Lombre"),
-             lambda state: state.has("Lombre", player) and state.has("Buy Evo Stones", player))
+             lambda state: state.has("Lombre", player) and
+                           state.has("Buy Evo Stones", player) and
+                           can_grind_money(state))
     set_rule(get_location("Evolution - Seedot"),
              lambda state: state.has("Seedot", player) and evolve_level(state, 14))
     set_rule(get_location("Evolution - Nuzleaf"),
-             lambda state: state.has("Nuzleaf", player) and state.has("Buy Evo Stones", player))
+             lambda state: state.has("Nuzleaf", player) and
+                           state.has("Buy Evo Stones", player) and
+                           can_grind_money(state))
     set_rule(get_location("Evolution - Nincada"),
              lambda state: state.has("Nincada", player) and evolve_level(state, 20))
     set_rule(get_location("Evolution - Nincada (Extra)"),

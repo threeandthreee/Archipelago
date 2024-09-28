@@ -6,11 +6,11 @@ from Options import OptionError
 from worlds.AutoWorld import WebWorld, World
 from .coordinates import coordinate_description, generate_random_coordinates
 from .db_layout import generate_random_db_layout
-from .Orbits import generate_random_orbits
+from .orbits import generate_random_orbits
 from .warp_platforms import generate_random_warp_platform_mapping
-from .Items import OuterWildsItem, all_non_event_items_table, item_name_groups, create_item, create_items
+from .items import OuterWildsItem, all_non_event_items_table, item_name_groups, create_item, create_items
 from .locations_and_regions import all_non_event_locations_table, location_name_groups, create_regions
-from .Options import OuterWildsGameOptions, RandomizeDarkBrambleLayout, Spawn
+from .options import OuterWildsGameOptions, RandomizeDarkBrambleLayout, Spawn, Goal, EnableEchoesOfTheEyeDLC
 
 
 class OuterWildsWebWorld(WebWorld):
@@ -45,7 +45,28 @@ class OuterWildsWorld(World):
         return slot_data
 
     def generate_early(self) -> None:
+        # apply options that edit other options or themselves
+        if self.options.dlc_only:
+            self.options.enable_eote_dlc = EnableEchoesOfTheEyeDLC(1)
+            self.options.spawn = Spawn(Spawn.option_stranger)
+            self.options.goal = Goal(Goal.option_echoes_of_the_eye)
+
+        if self.options.spawn == Spawn.option_random_non_vanilla:
+            max_spawn = Spawn.option_stranger if self.options.enable_eote_dlc else Spawn.option_giants_deep
+            self.options.spawn = Spawn(self.random.choice(range(Spawn.option_hourglass_twins, max_spawn)))
+
         # validate options
+        if not self.options.enable_eote_dlc:
+            if self.options.spawn == Spawn.option_stranger:
+                raise OptionError('Incompatible options: stranger spawn requires enable_eote_dlc to be true')
+            if self.options.goal in [
+                Goal.option_song_of_the_stranger,
+                Goal.option_song_of_six,
+                Goal.option_song_of_seven,
+                Goal.option_echoes_of_the_eye
+            ]:
+                raise OptionError('Incompatible options: goal %s requires enable_eote_dlc to be true', self.options.goal)
+
         if self.options.shuffle_spacesuit and self.options.spawn != Spawn.option_vanilla:
             raise OptionError('Incompatible options: shuffle_spacesuit is true and spawn is non-vanilla (%s)', self.options.spawn)
 
@@ -109,15 +130,19 @@ class OuterWildsWorld(World):
     def set_rules(self) -> None:
         # here we only set the completion condition; all the location/region rules were set in create_regions()
         option_key_to_item_name = {
-            'song_of_five': "Victory - Song of Five",
-            'song_of_six': "Victory - Song of Six",
+            'song_of_five':         "Victory - Song of Five",
+            'song_of_the_nomai':    "Victory - Song of the Nomai",
+            'song_of_the_stranger': "Victory - Song of the Stranger",
+            'song_of_six':          "Victory - Song of Six",
+            'song_of_seven':        "Victory - Song of Seven",
+            'echoes_of_the_eye':    "Victory - Echoes of the Eye",
         }
 
         goal_item = option_key_to_item_name[self.options.goal.current_key]
         self.multiworld.completion_condition[self.player] = lambda state: state.has(goal_item, self.player)
 
     def fill_slot_data(self):
-        slot_data = self.options.as_dict("goal", "death_link", "logsanity", "spawn")
+        slot_data = self.options.as_dict("goal", "death_link", "logsanity", "spawn", "enable_eote_dlc", "dlc_only")
         slot_data["eotu_coordinates"] = self.eotu_coordinates
         slot_data["db_layout"] = self.db_layout
         slot_data["planet_order"] = self.planet_order
@@ -126,7 +151,7 @@ class OuterWildsWorld(World):
         slot_data["warps"] = self.warps
         # Archipelago does not yet have apworld versions (data_version is deprecated),
         # so we have to roll our own with slot_data for the time being
-        slot_data["apworld_version"] = "0.2.7"
+        slot_data["apworld_version"] = "0.3.1"
         return slot_data
 
     def write_spoiler(self, spoiler_handle: TextIO) -> None:

@@ -72,7 +72,7 @@ class Characters():
         random_character = random.choice(possible_characters)
         self.set_unavailable(random_character)
         return random_character
-
+    
     def get_specific_character(self, name):
         character = int(self.get_by_name(name).id)
         self.set_unavailable(character)

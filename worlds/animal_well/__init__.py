@@ -76,7 +76,7 @@ class AnimalWellWorld(World):
     """
     game = "ANIMAL WELL"
     web = AnimalWellWeb()
-    version_string: str = "v0.4.0 - hotfix 1"
+    version_string: str = "v0.4.2"
 
     options: AnimalWellOptions
     options_dataclass = AnimalWellOptions
@@ -97,26 +97,15 @@ class AnimalWellWorld(World):
         # temporarily here to not break older yamls
         if self.options.wheel_hopping:
             self.options.wheel_tricks.value = self.options.wheel_hopping.value
+        if self.options.weird_tricks:
+            self.options.ball_throwing = self.options.ball_throwing.option_expert
+            self.options.tanking_damage = self.options.tanking_damage.option_true
+            self.options.precise_tricks = self.options.precise_tricks.option_true
+            self.options.obscure_tricks = self.options.obscure_tricks.option_true
 
         # if these options conflict, override -- player is warned in the option description
         if not self.options.bunny_warps_in_logic and self.options.bunnies_as_checks:
             self.options.bunny_warps_in_logic.value = True
-
-        # Universal tracker stuff, shouldn't do anything in standard gen
-        # if hasattr(self.multiworld, "re_gen_passthrough"):
-        #     if "ANIMAL WELL" in self.multiworld.re_gen_passthrough:
-        #         passthrough = self.multiworld.re_gen_passthrough["ANIMAL WELL"]
-        #         self.options.goal.value = passthrough["goal"]
-        #         self.options.eggs_needed.value = passthrough["eggs_needed"]
-        #         self.options.key_ring.value = passthrough["key_ring"]
-        #         self.options.matchbox.value = passthrough["matchbox"]
-        #         self.options.random_final_egg_location = FinalEggLocation.option_true
-        #         self.options.bunnies_as_checks.value = passthrough["bunnies_as_checks"]
-        #         self.options.candle_checks.value = passthrough["candle_checks"]
-        #         self.options.bubble_jumping.value = passthrough["bubble_jumping"]
-        #         self.options.disc_hopping.value = passthrough["disc_hopping"]
-        #         self.options.wheel_tricks.value = passthrough["wheel_tricks"]
-        #         self.options.weird_tricks.value = passthrough["weird_tricks"]
 
     def create_regions(self) -> None:
         self.traversal_requirements = deepcopy(traversal_requirements)
@@ -186,19 +175,19 @@ class AnimalWellWorld(World):
             "eggs_needed",
             "key_ring",
             "matchbox",
+
+            "candle_checks",
             "bunnies_as_checks",
             "bunny_warps_in_logic",
-            "candle_checks",
+            "exclude_song_chests",
+
             "bubble_jumping",
             "disc_hopping",
             "wheel_tricks",
-            "weird_tricks",
-            "exclude_song_chests",
+            "ball_throwing",
+            "obscure_tricks",
+            "precise_tricks",
+            "tanking_damage",
+
             "death_link",
         )
-
-    # for the universal tracker, doesn't get called in standard gen
-    @staticmethod
-    def interpret_slot_data(slot_data: Dict[str, Any]) -> Dict[str, Any]:
-        # returning slot_data so it regens, giving it back in multiworld.re_gen_passthrough
-        return slot_data

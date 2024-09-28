@@ -1,16 +1,19 @@
-import logging
 import os
 import subprocess
-import typing
-import asyncio
 import colorama
+
+import asyncio
+from asyncio import Task
+
+from typing import Set, Awaitable, Optional, List
+
 import pymem
-from pymem.exception import ProcessNotFound, ProcessError
+from pymem.exception import ProcessNotFound
 
 import Utils
-from NetUtils import ClientStatus, NetworkItem
+from NetUtils import ClientStatus
 from CommonClient import ClientCommandProcessor, CommonContext, logger, server_loop, gui_enabled
-from .JakAndDaxterOptions import EnableOrbsanity
+from .Options import EnableOrbsanity
 
 from .GameID import jak1_name
 from .client.ReplClient import JakAndDaxterReplClient
@@ -20,10 +23,10 @@ import ModuleUpdate
 ModuleUpdate.update()
 
 
-all_tasks = set()
+all_tasks: Set[Task] = set()
 
 
-def create_task_log_exception(awaitable: typing.Awaitable) -> asyncio.Task:
+def create_task_log_exception(awaitable: Awaitable) -> asyncio.Task:
     async def _log_exception(a):
         try:
             return await a
@@ -81,7 +84,7 @@ class JakAndDaxterContext(CommonContext):
     repl_task: asyncio.Task
     memr_task: asyncio.Task
 
-    def __init__(self, server_address: typing.Optional[str], password: typing.Optional[str]) -> None:
+    def __init__(self, server_address: Optional[str], password: Optional[str]) -> None:
         self.repl = JakAndDaxterReplClient()
         self.memr = JakAndDaxterMemoryReader()
         # self.repl.load_data()
@@ -104,6 +107,7 @@ class JakAndDaxterContext(CommonContext):
         if password_requested and not self.password:
             await super(JakAndDaxterContext, self).server_auth(password_requested)
         await self.get_username()
+        self.tags = set()
         await self.send_connect()
 
     def on_package(self, cmd: str, args: dict):
@@ -118,12 +122,6 @@ class JakAndDaxterContext(CommonContext):
             else:
                 orbsanity_bundle = 1
 
-            # Keep compatibility with 0.0.8 at least for now - TODO: Remove this.
-            if "completion_condition" in slot_data:
-                goal_id = slot_data["completion_condition"]
-            else:
-                goal_id = slot_data["jak_completion_condition"]
-
             create_task_log_exception(
                 self.repl.setup_options(orbsanity_option,
                                         orbsanity_bundle,
@@ -132,7 +130,7 @@ class JakAndDaxterContext(CommonContext):
                                         slot_data["lava_tube_cell_count"],
                                         slot_data["citizen_orb_trade_amount"],
                                         slot_data["oracle_orb_trade_amount"],
-                                        goal_id))
+                                        slot_data["jak_completion_condition"]))
 
             # Because Orbsanity and the orb traders in the game are intrinsically linked, we need the server
             # to track our trades at all times to support async play. "Retrieved" will tell us the orbs we lost,
@@ -156,31 +154,36 @@ class JakAndDaxterContext(CommonContext):
 
     async def json_to_game_text(self, args: dict):
         if "type" in args and args["type"] in {"ItemSend"}:
+            my_item_name: Optional[str] = None
+            my_item_finder: Optional[str] = None
+            their_item_name: Optional[str] = None
+            their_item_owner: Optional[str] = None
+
             item = args["item"]
             recipient = args["receiving"]
 
             # Receiving an item from the server.
             if self.slot_concerns_self(recipient):
-                self.repl.my_item_name = self.item_names.lookup_in_game(item.item)
+                my_item_name = self.item_names.lookup_in_game(item.item)
 
                 # Did we find it, or did someone else?
                 if self.slot_concerns_self(item.player):
-                    self.repl.my_item_finder = "MYSELF"
+                    my_item_finder = "MYSELF"
                 else:
-                    self.repl.my_item_finder = self.player_names[item.player]
+                    my_item_finder = self.player_names[item.player]
 
             # Sending an item to the server.
             if self.slot_concerns_self(item.player):
-                self.repl.their_item_name = self.item_names.lookup_in_slot(item.item, recipient)
+                their_item_name = self.item_names.lookup_in_slot(item.item, recipient)
 
                 # Does it belong to us, or to someone else?
                 if self.slot_concerns_self(recipient):
-                    self.repl.their_item_owner = "MYSELF"
+                    their_item_owner = "MYSELF"
                 else:
-                    self.repl.their_item_owner = self.player_names[recipient]
+                    their_item_owner = self.player_names[recipient]
 
             # Write to game display.
-            await self.repl.write_game_text()
+            self.repl.queue_game_text(my_item_name, my_item_finder, their_item_name, their_item_owner)
 
     def on_print_json(self, args: dict) -> None:
 
@@ -195,11 +198,11 @@ class JakAndDaxterContext(CommonContext):
             self.repl.received_deathlink = True
             super().on_deathlink(data)
 
-    async def ap_inform_location_check(self, location_ids: typing.List[int]):
+    async def ap_inform_location_check(self, location_ids: List[int]):
         message = [{"cmd": "LocationChecks", "locations": location_ids}]
         await self.send_msgs(message)
 
-    def on_location_check(self, location_ids: typing.List[int]):
+    def on_location_check(self, location_ids: List[int]):
         create_task_log_exception(self.ap_inform_location_check(location_ids))
 
     async def ap_inform_finished_game(self):
@@ -218,10 +221,9 @@ class JakAndDaxterContext(CommonContext):
             await self.send_death(death_text)
             logger.info(death_text)
 
-        # Reset all flags.
+        # Reset all flags, but leave the death count alone.
         self.memr.send_deathlink = False
         self.memr.cause_of_death = ""
-        await self.repl.reset_deathlink()
 
     def on_deathlink_check(self):
         create_task_log_exception(self.ap_inform_deathlink())
@@ -288,8 +290,9 @@ async def run_game(ctx: JakAndDaxterContext):
             return
 
         if gk_path:
+            # Prefixing ampersand and wrapping gk_path in quotes is necessary for paths with spaces in them.
             gk_process = subprocess.Popen(
-                ["powershell.exe", gk_path, "--game jak1", "--", "-v", "-boot", "-fakeiso", "-debug"],
+                ["powershell.exe", f"& \"{gk_path}\"", "--game jak1", "--", "-v", "-boot", "-fakeiso", "-debug"],
                 creationflags=subprocess.CREATE_NEW_CONSOLE)  # These need to be new consoles for stability.
 
     if not goalc_running:
@@ -302,8 +305,9 @@ async def run_game(ctx: JakAndDaxterContext):
             return
 
         if goalc_path:
+            # Prefixing ampersand and wrapping goalc_path in quotes is necessary for paths with spaces in them.
             goalc_process = subprocess.Popen(
-                ["powershell.exe", goalc_path, "--game jak1"],
+                ["powershell.exe", f"& \"{goalc_path}\"", "--game jak1"],
                 creationflags=subprocess.CREATE_NEW_CONSOLE)  # These need to be new consoles for stability.
 
     # Auto connect the repl and memr agents. Sleep 5 because goalc takes just a little bit of time to load,

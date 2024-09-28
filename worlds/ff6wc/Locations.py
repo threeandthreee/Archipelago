@@ -548,13 +548,19 @@ major_checks = [
     *major_generic_checks, *major_kefka_checks
 ]
 
+checks_that_need_dialog_for_items = [
+    check for check in major_checks if not check.endswith('(Boss)') and not check.endswith('Dragon Status')
+]
+assert len(checks_that_need_dialog_for_items) == 62, f"{len(checks_that_need_dialog_for_items)=}"
+
 fanatics_tower_checks = [
     "Fanatics' Tower Seventeenth Floor",
     "Fanatics' Tower Twenty-sixth Floor",
     "Fanatics' Tower Thirty-fifth Floor",
     "Fanatics' Tower Seventh Floor",
     "Fanatics' Tower Eighth Floor",
-    "Gem Box"
+    "Gem Box",
+    "White Dragon",
 ]
 
 accomplishment_data = [

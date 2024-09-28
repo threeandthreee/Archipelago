@@ -6,7 +6,8 @@ from .region_data import AWType, LocType, traversal_requirements
 from .region_scripts import helper_reference
 from .names import ItemNames as iname, LocationNames as lname, RegionNames as rname
 from .options import (Goal, EggsNeeded, KeyRing, Matchbox, BunniesAsChecks, BunnyWarpsInLogic, CandleChecks,
-                      BubbleJumping, DiscHopping, WheelTricks, WeirdTricks, ExcludeSongChests)
+                      BubbleJumping, DiscHopping, WheelTricks, ExcludeSongChests, BallThrowing, TankingDamage,
+                      ObscureTricks, PreciseTricks)
 
 
 class CheckStatus(IntEnum):
@@ -43,8 +44,11 @@ class AnimalWellTracker:
         BubbleJumping.internal_name: 1,
         DiscHopping.internal_name: 0,
         WheelTricks.internal_name: 0,
-        WeirdTricks.internal_name: 0,
         ExcludeSongChests.internal_name: 0,
+        BallThrowing.internal_name: 0,
+        ObscureTricks.internal_name: 0,
+        PreciseTricks.internal_name: 0,
+        TankingDamage.internal_name: 0,
     }
 
     # key is location name, value is its spot status. Can change the key later to something else if wanted
@@ -171,10 +175,27 @@ class AnimalWellTracker:
             if self.player_options[DiscHopping.internal_name] >= DiscHopping.option_multiple:
                 self.full_inventory.add(iname.disc_hop_hard)
 
-        self.out_of_logic_full_inventory.add(iname.weird_tricks)
+        if iname.ball in self.full_inventory:
+            self.full_inventory.add(iname.ball)
+            self.out_of_logic_full_inventory.update({iname.ball, iname.ball_trick_easy, iname.ball_trick_medium,
+                                                     iname.ball_trick_hard})
+            if self.player_options[BallThrowing.internal_name] >= BallThrowing.option_simple:
+                self.full_inventory.add(iname.ball_trick_easy)
+            if self.player_options[BallThrowing.internal_name] >= BallThrowing.option_advanced:
+                self.full_inventory.add(iname.ball_trick_medium)
+            if self.player_options[BallThrowing.internal_name] >= BallThrowing.option_expert:
+                self.full_inventory.add(iname.ball_trick_hard)
+
+        self.out_of_logic_full_inventory.add(iname.precise_tricks)
+        if self.player_options[PreciseTricks.internal_name]:
+            self.full_inventory.add(iname.precise_tricks)
+
+        self.out_of_logic_full_inventory.add(iname.obscure_tricks)
+        if self.player_options[ObscureTricks.internal_name]:
+            self.full_inventory.add(iname.obscure_tricks)
+
         self.out_of_logic_full_inventory.add(iname.tanking_damage)
-        if self.player_options[WeirdTricks.internal_name]:
-            self.full_inventory.add(iname.weird_tricks)
+        if self.player_options[TankingDamage.internal_name]:
             self.full_inventory.add(iname.tanking_damage)
 
         for helper_name, items in helper_reference.items():

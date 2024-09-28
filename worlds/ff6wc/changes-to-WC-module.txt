@@ -5,3 +5,17 @@ in case we need to reapply them after an update.
 c8bbc62771768eff7e00f4ea6247c91bb437d207 args/arguments.py seed for determinism
 66ed9777c4258a0c3e0fdaa1bf15366c32ce38e2 raise exception instead of exit in argparse
 b791c84934cbe70f9cbb7f96ee5f9a3d27241405 add newer sprites from upstream
+775086a7d787ee831dfb1f51a5c56090e19dcf92 fix random starting espers (Python 3.11 change to `random.sample`)
+
+integrate changes from 1.2.2 to 1.4.2 in WorldsCollide base
+in args/items.py always add ArchplgoItem to the reward IDs
+in event/doom_gaze.py, event/narshe_wor.py, and event/tritoch.py, clear unknown npc bits that cause sprite glitches (#2 of https://github.com/Rosalie-A/Archipelago/issues/58)
+in event/tritoch.py, update the handling of character reward events to not load wrong map after party reform screen
+in event/floating_continent.py, update the sprite for item reward to sparkle from magicite
+in data/chests.py, only process the random monster in a chest flags (-chrm) if treasuresanity is OFF
+
+a13856eb295804ea8fda1acdd360f4c39436fb7f remove unreachable reference to undefined variable
+event/auction_house.py remove code for -nfp and -ame flags as they only make sense in non-multiworld environments like the base game
+event/veldt.py add an else clause for an item reward in the case of an AP item since that check can be char/esper/item reward now instead of char/esper like in base game
+72a2792f1034e1b3fd4b76b9e3d94cda43ea6c98 fix portraits/sprites/colors/palettes for linux apworld
+98d78981f7d86b32fd64c0aba30e28e060082869 rework portraits/sprites/colors/palettes again

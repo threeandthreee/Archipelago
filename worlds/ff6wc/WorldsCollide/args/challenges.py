@@ -24,10 +24,12 @@ def parse(parser):
                             help = "Life spells cannot be learned. Fenix Downs unavailable (except from starting items). Buckets/inns/tents/events do not revive characters. Phoenix casts Life 3 on party instead of Life")
     challenges.add_argument("-rls", "--remove-learnable-spells", type = str,
                             help = "Remove spells from learnable sources: Items, Espers, Natural Magic, and Objectives")
+    challenges.add_argument("-nosaves", "--no-saves", action = "store_true",
+                            help = "Ironmog Mode: You cannot save (but save points still work for Tents/Sleeping Bags)")
 
 def process(args):
     from ..constants.spells import black_magic_ids, white_magic_ids, gray_magic_ids, spell_id
-
+    from ..data.esper_spell_tiers import top_spells
     # If no_ultima is on, add it to our exclude list for downstream use
     # If permadeath is on, add it to our exclude list for downstream use
     args.remove_learnable_spell_ids = []
@@ -50,6 +52,8 @@ def process(args):
                 args.remove_learnable_spell_ids.extend(black_magic_ids)
             elif a_spell_id == 'gray' or a_spell_id == 'grey':
                 args.remove_learnable_spell_ids.extend(gray_magic_ids)
+            elif a_spell_id == 'top':
+                args.remove_learnable_spell_ids.extend(top_spells)
             else:
                 spell_ids_lower = {k.lower():v for k,v in spell_id.items()}
                 if a_spell_id in spell_ids_lower:
@@ -86,6 +90,8 @@ def flags(args):
         flags += " -pd"
     if args.remove_learnable_spells:
         flags += f" -rls {args.remove_learnable_spells}"
+    if args.no_saves:
+        flags += " -nosaves"
 
     return flags
 
@@ -106,9 +112,17 @@ def options(args):
         ("Permadeath", args.permadeath),
         ("Ultima", ultima),
         ("Remove Learnable Spells", args.remove_learnable_spell_ids),
+        ("No Saves", args.no_saves),
     ]
-        
-    return opts
+
+
+def _format_spells_log_entries(spell_ids):
+    from ..constants.spells import id_spell
+    spell_entries = []
+    for i, spell_id in enumerate(spell_ids):
+        spell_entries.append(("", id_spell[spell_id], f"rls_{i}"))
+    return spell_entries
+
 def _format_spells_log_entries(spell_ids):
     from ..constants.spells import id_spell
     spell_entries = []

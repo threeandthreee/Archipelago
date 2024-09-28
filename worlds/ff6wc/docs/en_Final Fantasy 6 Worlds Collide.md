@@ -26,6 +26,10 @@ All items from other games will display as "ArchplgoItem", including those from 
 
 When the player receives an item, it will go into your inventory. However, items are not received while in battle or while walking on the overworld. Currently, there is no notification when an item is received, so it is recommended to keep a text client open.
 
+- Note: You cannot receive items from the multiworld while in the Moogle Defense event room until after the event is complete.
+  So, just in case that room happens to be your favorite grinding spot, be aware that you might not receive items until you leave the room.
+  - (This is because receiving some items (characters) during the Moogle Defense event could be buggy.)
+
 ## I received an item from another player, but it has not appeared in my inventory yet, what can I do?
 
 If you are in the overworld, try returning to the waiting area of the airship. Items are not received while in battle or while walking on the overworld.
@@ -41,4 +45,4 @@ Visit the [Worlds Collide Wiki](https://wiki.ff6worldscollide.com/).
 
 ## What version of Worlds Collide is this based on?
 
-Currently, we are using version 1.2.2.
+Currently, we are using version 1.4.2.

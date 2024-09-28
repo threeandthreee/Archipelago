@@ -1,4 +1,4 @@
-from typing import Dict, Set, List, NamedTuple, Optional
+from typing import Dict, Set, NamedTuple, Optional
 from BaseClasses import ItemClassification
 
 
@@ -15,18 +15,18 @@ item_table: Dict[str, ItemData] = {
     "Super Plush Bear": ItemData("Characters", 0xEB0003, ItemClassification.useful, 0),
 
     "Broken Machine": ItemData("Broken Items", 0xEB0004, ItemClassification.useful, 0),
-    "Broken Gadget": ItemData("Broken Items", 0xEB0005, ItemClassification.useful, 0),
-    "Broken Air Gun": ItemData("Broken Items", 0xEB0006, ItemClassification.filler, 0),
+    "Broken Gadget": ItemData("Jeff Weapons", 0xEB0005, ItemClassification.useful, 0),
+    "Broken Air Gun": ItemData("Jeff Weapons", 0xEB0006, ItemClassification.filler, 0),
     "Broken Spray Can": ItemData("Broken Items", 0xEB0007, ItemClassification.filler, 0),
-    "Broken Laser": ItemData("Broken Items", 0xEB0008, ItemClassification.useful, 0),
+    "Broken Laser": ItemData("Jeff Weapons", 0xEB0008, ItemClassification.useful, 0),
     "Broken Iron": ItemData("Broken Items", 0xEB0009, ItemClassification.filler, 0),
     "Broken Pipe": ItemData("Broken Items", 0xEB000A, ItemClassification.useful, 0),
-    "Broken Cannon": ItemData("Broken Items", 0xEB000B, ItemClassification.useful, 0),
+    "Broken Cannon": ItemData("Jeff Weapons", 0xEB000B, ItemClassification.useful, 0),
     "Broken Tube": ItemData("Broken Items", 0xEB000C, ItemClassification.useful, 0),
     "Broken Bazooka": ItemData("Broken Items", 0xEB000D, ItemClassification.useful, 0),
     "Broken Trumpet": ItemData("Broken Items", 0xEB000E, ItemClassification.filler, 0),
-    "Broken Harmonica": ItemData("Broken Items", 0xEB000F, ItemClassification.useful, 0),
-    "Broken Antenna": ItemData("Broken Items", 0xEB0010, ItemClassification.useful, 0),
+    "Broken Harmonica": ItemData("Jeff Weapons", 0xEB000F, ItemClassification.useful, 0),
+    "Broken Antenna": ItemData("Jeff Weapons", 0xEB0010, ItemClassification.useful, 0),
 
     "Cracked Bat": ItemData("Ness Weapons", 0xEB0011, ItemClassification.filler, 0),
     "Tee Ball Bat": ItemData("Ness Weapons", 0xEB0012, ItemClassification.filler, 0),
@@ -90,22 +90,22 @@ item_table: Dict[str, ItemData] = {
     "Pixie's Bracelet": ItemData("Arm Equipment", 0xEB0046, ItemClassification.useful),
     "Cherub's Band": ItemData("Arm Equipment", 0xEB0047, ItemClassification.useful),
     "Goddess Band": ItemData("Arm Equipment", 0xEB0048, ItemClassification.useful),
-    "Bracer of Kings": ItemData("Arm Equipment", 0xEB0049, ItemClassification.useful),
+    "Bracer of Kings": ItemData("Poo Equipment", 0xEB0049, ItemClassification.useful),
 
     "Baseball Cap": ItemData("Other Equipment", 0xEB004A, ItemClassification.filler, 0),
     "Holmes Hat": ItemData("Other Equipment", 0xEB004B, ItemClassification.filler, 0),
     "Mr. Baseball Cap": ItemData("Other Equipment", 0xEB004C, ItemClassification.filler, 0),
     "Hard Hat": ItemData("Other Equipment", 0xEB004D, ItemClassification.filler, 0),
-    "Ribbon": ItemData("Other Equipment", 0xEB004E, ItemClassification.filler, 0),
-    "Red Ribbon": ItemData("Other Equipment", 0xEB004F, ItemClassification.filler, 0),
-    "Goddess Ribbon": ItemData("Other Equipment", 0xEB0050, ItemClassification.useful, 0),
+    "Ribbon": ItemData("Ribbons", 0xEB004E, ItemClassification.filler, 0),
+    "Red Ribbon": ItemData("Ribbons", 0xEB004F, ItemClassification.filler, 0),
+    "Goddess Ribbon": ItemData("Ribbons", 0xEB0050, ItemClassification.useful, 0),
     "Coin of Slumber": ItemData("Other Equipment", 0xEB0051, ItemClassification.useful),
     "Coin of Defense": ItemData("Other Equipment", 0xEB0052, ItemClassification.useful, 0),
     "Lucky Coin": ItemData("Other Equipment", 0xEB0053, ItemClassification.useful, 0),
     "Talisman Coin": ItemData("Other Equipment", 0xEB0054, ItemClassification.useful, 0),
     "Shiny Coin": ItemData("Other Equipment", 0xEB0055, ItemClassification.useful, 0),
     "Souvenir Coin": ItemData("Other Equipment", 0xEB0056, ItemClassification.useful),
-    "Diadem of Kings": ItemData("Other Equipment", 0xEB0057, ItemClassification.useful),
+    "Diadem of Kings": ItemData("Poo Equipment", 0xEB0057, ItemClassification.useful),
 
     "Cookie": ItemData("Food", 0xEB0058, ItemClassification.filler, 0),
     "Bag of Fries": ItemData("Food", 0xEB0059, ItemClassification.filler, 0),
@@ -247,9 +247,9 @@ item_table: Dict[str, ItemData] = {
     "Double Beam": ItemData("Jeff Weapons", 0xEB00D7, ItemClassification.useful, 0),
     #"Platinum Band": ItemData("Arm Equipment", 0xEB00D8, ItemClassification.useful, 0), Summers copy
     #"Diamond Band": ItemData("Arm Equipment", 0xEB00D9, ItemClassification.useful, 0), Summers Copy
-    "Defense Ribbon": ItemData("Other Equipment", 0xEB00DA, ItemClassification.useful, 0),
-    "Talisman Ribbon": ItemData("Other Equipment", 0xEB00DB, ItemClassification.useful),
-    "Saturn Ribbon": ItemData("Other Equipment", 0xEB00DC, ItemClassification.useful),
+    "Defense Ribbon": ItemData("Ribbons", 0xEB00DA, ItemClassification.useful, 0),
+    "Talisman Ribbon": ItemData("Ribbons", 0xEB00DB, ItemClassification.useful),
+    "Saturn Ribbon": ItemData("Ribbons", 0xEB00DC, ItemClassification.useful),
     "Coin of Silence": ItemData("Other Equipment", 0xEB00DD, ItemClassification.useful, 0),
     "Charm Coin": ItemData("Other Equipment", 0xEB00DE, ItemClassification.useful, 0),
 
@@ -257,11 +257,11 @@ item_table: Dict[str, ItemData] = {
     "Repel Sandwich": ItemData("Food", 0xEB00E0, ItemClassification.useful, 0),
     "Repel Superwich": ItemData("Food", 0xEB00E1, ItemClassification.useful, 0),
     "Lucky Sandwich": ItemData("Food", 0xEB00E2, ItemClassification.useful, 0),
-    #"Progressive Bat": ItemData("Progressive Equipment", 0xEB00E3, ItemClassification.useful, 0), 
-    #"Progressive Fry Pan": ItemData("Progressive Equipment", 0xEB00E4, ItemClassification.filler, 0),
-    #"Progressive Gun": ItemData("Progressive Equipment", 0xEB00E5, ItemClassification.useful, 0),
-    #"Progressive Bracelet": ItemData("Progressive Equipment", 0xEB00E6, ItemClassification.useful, 0),
-    #"Progressive Other": ItemData("Progressive Equipment", 0xEB00E7, ItemClassification.useful, 0),
+    "Progressive Bat": ItemData("Progressive Equipment", 0xEB00E3, ItemClassification.useful, 0), 
+    "Progressive Fry Pan": ItemData("Progressive Equipment", 0xEB00E4, ItemClassification.useful, 0),
+    "Progressive Gun": ItemData("Progressive Equipment", 0xEB00E5, ItemClassification.useful, 0),
+    "Progressive Bracelet": ItemData("Progressive Equipment", 0xEB00E6, ItemClassification.useful, 0),
+    "Progressive Other": ItemData("Progressive Equipment", 0xEB00E7, ItemClassification.useful, 0),
 
     "Cup of Coffee": ItemData("Food", 0xEB00E8, ItemClassification.filler, 0),
     "Double Burger": ItemData("Food", 0xEB00E9, ItemClassification.filler, 0),

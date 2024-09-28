@@ -13,6 +13,7 @@ from typing import Dict, List, NamedTuple, Optional, Set, FrozenSet, Any, Union,
 from BaseClasses import ItemClassification
 
 BASE_OFFSET = 6420000
+FAMESANITY_OFFSET = 10000
 NUM_REAL_SPECIES = 386
 
 
@@ -106,6 +107,7 @@ class MapData:
     land_encounters: Optional[EncounterTableData]
     water_encounters: Optional[EncounterTableData]
     fishing_encounters: Optional[EncounterTableData]
+    kanto: bool
 
 
 class EventData(NamedTuple):
@@ -776,7 +778,8 @@ def _init() -> None:
             map_json["header_address"],
             land_encounters,
             water_encounters,
-            fishing_encounters
+            fishing_encounters,
+            True
         )
 
     # Load/merge region json files
@@ -799,6 +802,9 @@ def _init() -> None:
     data.regions = {}
     for region_id, region_json in regions_json.items():
         parent_map = data.maps[region_json["parent_map"]] if region_json["parent_map"] is not None else None
+
+        if parent_map is not None:
+            parent_map.kanto = region_json["kanto"]
 
         new_region = RegionData(
             region_id,
@@ -860,8 +866,6 @@ def _init() -> None:
             data.locations[location_id] = new_location
             claimed_locations.add(location_id)
 
-        new_region.locations.sort(key=lambda loc: data.locations[loc].name)
-
         # Events
         for event_id in region_json["events"]:
             new_event = EventData(
@@ -873,8 +877,6 @@ def _init() -> None:
             )
             new_region.events.append(event_id)
             data.events[event_id] = new_event
-
-        new_region.events.sort(key=lambda event: data.events[event].name)
 
         # Exits
         new_region.exits = region_json["exits"]

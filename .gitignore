@@ -39,6 +39,8 @@ dist
 README.html
 .vs/
 EnemizerCLI/
+enemizer.zip
+VC_redist.x64.exe
 /Players/
 /SNI/
 /sni-*/

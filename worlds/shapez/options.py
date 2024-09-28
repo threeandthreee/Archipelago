@@ -7,10 +7,9 @@ class Goal(Choice):
     """Sets the goal of your world.
 
     - **Vanilla:** Complete level 26.
-    - **MAM:** Complete a specified level after level 26. Every level before that and a few additional options will be a
-    location. It's recommended to build a Make-Anything-Machine (MAM).
+    - **MAM:** Complete a specified level after level 26. Every level before that and a few additional options will be a location. It's recommended to build a Make-Anything-Machine (MAM).
     - **Even fasterer:** Upgrade everything to a specified tier after tier 8. Every upgrade before that will be a location.
-    - **Efficiency III:** Deliver 500 blueprint shapes per second to the hub."""
+    - **Efficiency III:** Deliver 256 blueprint shapes per second to the hub."""
     display_name = "Goal"
     rich_text_doc = True
     option_vanilla = 0
@@ -20,13 +19,16 @@ class Goal(Choice):
     default = 0
 
 
+max_levels_and_upgrades = 500
+
+
 class GoalAmount(Range):
     """Specify, what level or tier (when either MAM or even fasterer is chosen as goal) is required to reach the goal.
     If MAM is set as the goal and this is set to less than 27, it will raise an OptionError."""
     display_name = "Goal amount"
     rich_text_doc = True
     range_start = 9
-    range_end = 1000
+    range_end = max_levels_and_upgrades
     default = 27
 
 
@@ -60,15 +62,11 @@ class RandomizeLevelLogic(Choice):
     levels. The shuffled variants shuffle the order of progression buildings obtained in the multiworld. The standard
     order is cutter, rotator, painter, color mixer, and stacker.
 
-    - **Vanilla:** Level 1 requires nothing, 2-4 require the first building, 5-6 require also the second, 7-8 the
-    third, 9-10 the fourth, and 11 and onwards all buildings.
+    - **Vanilla:** Level 1 requires nothing, 2-4 require the first building, 5-6 require also the second, 7-8 the third, 9-10 the fourth, and 11 and onwards all buildings.
     - **Stretched:** After every floor(maxlevel/6) levels, another building is required.
-    - **Quick:** Every Level, except level 1, requires another building, with level 6 and onwards requiring all
-    buildings.
-    - **Random steps:** After a random amount of levels, another building is required, with level 1 always requiring none.
-    This can potentially behave like any other option.
-    - **Hardcore:** All levels (except level 1) have completely random shape requirements and thus require all
-    buildings. Expect early BKs."""
+    - **Quick:** Every Level, except level 1, requires another building, with level 6 and onwards requiring all buildings.
+    - **Random steps:** After a random amount of levels, another building is required, with level 1 always requiring none. This can potentially behave like any other option.
+    - **Hardcore:** All levels (except level 1) have completely random shape requirements and thus require all buildings. Expect early BKs."""
     display_name = "Randomize level logic"
     rich_text_doc = True
     option_vanilla = 0
@@ -87,16 +85,10 @@ class RandomizeUpgradeLogic(Choice):
     """If upgrade requirements are randomized, this sets how those random shapes are generated
     and how logic works for upgrades. All four categories will have the same logic.
 
-    - **Vanilla-like:** Tier II requires up to two random buildings, III requires up to three random buildings,
-    and IV and onwards require all processing buildings.
-    - **Linear:** Tier II requires nothing, III-VI require another random building each,
-    and VII and onwards require all buildings.
-    - **Category:** Belt and miner upgrades require no building, processors upgrades require the cutter (all tiers),
-    rotator (tier IV and onwards), and stacker (tier VI and onwards, and painting upgrades require the cutter, rotator,
-    stacker, painter (all tiers) and color mixer (tiers V and onwards). Tier VII and onwards will always require all
-    buildings.
-    - **Category random:** Each upgrades category (all tiers each) requires a random amount of buildings (in order),
-    with one category always requiring no buildings.Tier VII and onwards will always require all buildings.
+    - **Vanilla-like:** Tier II requires up to two random buildings, III requires up to three random buildings, and IV and onwards require all processing buildings.
+    - **Linear:** Tier II requires nothing, III-VI require another random building each, and VII and onwards require all buildings.
+    - **Category:** Belt and miner upgrades require no building (up to tier IV), processors upgrades require the cutter (all tiers), rotator (tier IV and onwards), and stacker (tier VI and onwards, and painting upgrades require the cutter, rotator, stacker, painter (all tiers) and color mixer (tiers V and onwards). Tier VII and onwards will always require all buildings.
+    - **Category random:** Each upgrades category (up to tier IV) requires a random amount of buildings (in order), with one category always requiring no buildings. Tier V and onwards will always require all buildings.
     - **Hardcore:** All tiers (except each tier II) have completely random shape requirements. Expect early BKs."""
     display_name = "Randomize upgrade logic"
     rich_text_doc = True
@@ -122,7 +114,7 @@ class ThroughputLevelsRatio(Range):
 
 class SameLateUpgradeRequirements(Toggle):
     """If upgrade requirements are randomized, should the last 3 shapes for each category be the same,
-    like in vanilla?"""
+    as in vanilla?"""
     display_name = "Same late upgrade requirements"
     rich_text_doc = True
     default = True
@@ -146,47 +138,50 @@ class EarlyBalancerTunnelAndTrash(Choice):
 
 class LockBeltAndExtractor(Toggle):
     """Locks Belts and Extractors and adds them into the item pool.
-    **Be careful with this option, as every single location in this game needs both of them.**"""
+    **Be careful with this option, as almost every single location in this game needs both of them.**"""
     display_name = "Lock Belt and Extractor"
     rich_text_doc = True
     default = False
 
 
-# class AdditionalLocations(Choice):
-#    """Achievements: Include up to 44 achievements (depending on other options) as additional locations.
-#    Shapesanity: Include up to 5664 shapes as additional locations."""
-#    display_name = "Additional locations"
-#    option_achievements = 0
-#    option_shapesanity = 1
-#    option_both = 2
-#    default = 0
+class IncludeAchievements(Toggle):
+    """Include up to 45 achievements (depending on other options) as additional locations."""
+    display_name = "Include Achievements"
+    rich_text_doc = True
+    default = True
 
 
-# class ExcludeSoftlockAchievements(Toggle):
-#    """Exclude 6 achievements, that can become unreachable in a save file, if not achieved until a certain level."""
-#    display_name = "Exclude softlock achievements"
-#    default = True
+class ExcludeSoftlockAchievements(Toggle):
+    """Exclude 6 achievements, that can become unreachable in a save file, if not achieved until a certain level."""
+    display_name = "Exclude softlock achievements"
+    rich_text_doc = True
+    default = True
 
 
-# class ExcludeLongPlaytimeAchievements(Toggle):
-#    """Exclude 2 achievements, that require actively playing for a really long time."""
-#    display_name = "Exclude long playtime achievements"
-#    default = True
+class ExcludeLongPlaytimeAchievements(Toggle):
+    """Exclude 2 achievements, that require actively playing for a really long time."""
+    display_name = "Exclude long playtime achievements"
+    rich_text_doc = True
+    default = True
 
 
-# class ExcludeProgressionUnreasonable(Toggle):
-#    """Exclude progression and useful items from being placed into softlock and long playtime achievements."""
-#    display_name = "Exclude progression items in softlock and long playtime achievements"
-#    default = True
+class ExcludeProgressionUnreasonable(Toggle):
+    """Exclude progression and useful items from being placed into softlock and long playtime achievements."""
+    display_name = "Exclude progression items in softlock and long playtime achievements"
+    rich_text_doc = True
+    default = True
+
+
+max_shapesanity = 1000
 
 
 class ShapesanityAmount(Range):
-    """Amount of one-layer-shapes that will be included as locations."""
+    """Amount of single-layer shapes that will be included as locations."""
     display_name = "Shapesanity amount"
     rich_text_doc = True
     range_start = 4
-    range_end = 5664
-    default = 100
+    range_end = max_shapesanity
+    default = 50
 
 
 class TrapsProbability(Range):
@@ -196,6 +191,14 @@ class TrapsProbability(Range):
     range_start = 0
     range_end = 100
     default = 0
+
+
+class SplitInventoryDrainingTrap(Toggle):
+    """If set to true, the inventory draining trap will be split into level, upgrade, and blueprint draining traps
+    instead of executing as one of those 3 randomly."""
+    display_name = "Split Inventory Draining Trap"
+    rich_text_doc = True
+    default = False
 
 
 @dataclass
@@ -211,11 +214,10 @@ class ShapezOptions(PerGameCommonOptions):
     same_late_upgrade_requirements: SameLateUpgradeRequirements
     early_balancer_tunnel_and_trash: EarlyBalancerTunnelAndTrash
     lock_belt_and_extractor: LockBeltAndExtractor
-    # additional_locations: AdditionalLocations
-    # exclude_softlock_achievements: ExcludeSoftlockAchievements
-    # exclude_long_playtime_achievements: ExcludeLongPlaytimeAchievements
-    # exclude_progression_unreasonable: ExcludeProgressionUnreasonable
+    include_achievements: IncludeAchievements
+    exclude_softlock_achievements: ExcludeSoftlockAchievements
+    exclude_long_playtime_achievements: ExcludeLongPlaytimeAchievements
+    exclude_progression_unreasonable: ExcludeProgressionUnreasonable
     shapesanity_amount: ShapesanityAmount
     traps_percentage: TrapsProbability
-#    include_background_music: IncludeBackgroundMusic
-
+    split_inventory_draining_trap: SplitInventoryDrainingTrap

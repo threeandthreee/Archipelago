@@ -1,3 +1,4 @@
+from ..constants.entities import SETZER
 from ..event.event import *
 
 class OperaHouseWOB(Event):
@@ -53,12 +54,18 @@ class OperaHouseWOB(Event):
         self.ultros_battle_mod()
         self.after_battle_mod()
 
+        if not self.args.fixed_encounters_original:
+            self.fixed_battles_mod()
+
         if self.reward.type == RewardType.CHARACTER:
             self.character_mod(self.reward.id)
+            self.character_music_mod(self.reward.id)
         elif self.reward.type == RewardType.ESPER:
             self.esper_mod(self.reward.id)
+            self.character_music_mod(SETZER)
         elif self.reward.type == RewardType.ITEM:
             self.item_mod(self.reward.id)
+            self.character_music_mod(SETZER)
 
         self.log_reward(self.reward)
 
@@ -93,6 +100,25 @@ class OperaHouseWOB(Event):
             "BEGIN",
             field.Call(initialize),
         )
+
+    def fixed_battles_mod(self):
+        # The rafters have 5 fixed battles, all with the same pack (281)
+        # to increase the variety of encounters, we are adding 1 more and swapping 2 of the rats to it
+        # 414 is an otherwise unused encounter
+
+        replaced_encounters = [
+            (414, 0xAC37B), 
+            (414, 0xAC3B4),
+        ]
+        for pack_id_address in replaced_encounters:
+            pack_id = pack_id_address[0]
+            # first byte of the command is the pack_id
+            invoke_encounter_pack_address = pack_id_address[1]+1
+            space = Reserve(invoke_encounter_pack_address, invoke_encounter_pack_address, "rat invoke fixed battle (battle byte)")
+            space.write(
+                # subtrack 256 since WC stores fixed encounter IDs starting at 256
+                pack_id - 0x100
+            )
 
     def performance_mod(self):
         # change celes to party leader
@@ -254,7 +280,9 @@ class OperaHouseWOB(Event):
         space.write(
             # game over if die to ultros instead of getting more chances
             # use the original game over so party is not refreshed (otherwise their stage positions are broken)
+            field.SetEventBit(event_bit.CONTINUE_MUSIC_DURING_BATTLE),
             field.InvokeBattle(boss_pack_id, check_game_over = False),
+            field.ClearEventBit(event_bit.CONTINUE_MUSIC_DURING_BATTLE),
             field.Call(field.ORIGINAL_CHECK_GAME_OVER),
         )
 
@@ -276,8 +304,10 @@ class OperaHouseWOB(Event):
         # hide party leader to prevent possible conflict between celes being party leader and the person on stage at
         # the same time. also hide party leader when other npcs are hidden by shifting [0xcac16c, 0xcac26c] down
         # a few memory spaces into previous "what a performance!!" dialog code to make room for hiding party leader
-        space = Reserve(0xac16f, 0xac26f, "opera house move setzer entrance instructions")
-        space.copy_from(0xac16c, 0xac26c)
+        # bytes 0xac16c-0xac16d are inserted in character_music_mod()
+        space = Reserve(0xac171, 0xac26f, "opera house move setzer entrance instructions")
+        space.copy_from(0xac16e, 0xac26c)
+
         space = Reserve(0xac16c, 0xac16e, "opera house hide party leader", field.NOP())
         space.write(
             field.HideEntity(field_entity.PARTY0),
@@ -336,6 +366,14 @@ class OperaHouseWOB(Event):
         space.write(
             field.Branch(end_event),
         )
+
+    def character_music_mod(self, character):
+        from ..music.song_utils import get_character_theme
+        # 0xac16c-0xac16d typically play setzer's theme,
+        # but in the after_battle_mod() 0xac16c-0xac26c are shifted 3 bytes to the right,
+        # so the theme now occupies 0xac16f-0xac170
+        space = Reserve(0xac16f, 0xac170, "Play Song Setzer")
+        space.write(field.StartSong(get_character_theme(character)))
 
     def character_mod(self, character):
         self.setzer_npc.sprite = character

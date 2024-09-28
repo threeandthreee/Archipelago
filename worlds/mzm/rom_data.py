@@ -4,17 +4,26 @@ import struct
 from typing import Callable, Mapping, NamedTuple, Optional, Sequence, Set, Tuple, Union
 
 from . import lz10, rle, iterators
+from .data import get_rom_address, get_symbol
 
 
 ByteString = Union[bytes, bytearray, memoryview]
 
 
-def decompress_data(rom: bytes, src: int):
-    return bytes(lz10.decompress(memoryview(rom)[src:]))
+def decompress_data(rom: bytes, src: Union[str, int]):
+    if isinstance(src, str):
+        address = get_rom_address(src)
+    else:
+        address = src
+    return bytes(lz10.decompress(memoryview(rom)[address:]))
 
 
-def write_data(rombuffer: bytearray, data: bytes, dst: int):
-    rombuffer[dst:dst + len(data)] = data
+def write_data(rombuffer: bytearray, data: bytes, dst: Union[str, int]):
+    if isinstance(dst, str):
+        address = get_rom_address(dst)
+    else:
+        address = dst
+    rombuffer[address:address + len(data)] = data
 
 
 def get_tile(tiledata: bytes, x: int, y: int) -> bytes:
@@ -50,55 +59,54 @@ def extract_unknown_chozo_statue_sprite(statue: bytes, y_offset: int):
     return 4 * shifted
 
 
-def add_item_sprites(rom: bytes, item_gfx_addresses: Sequence[Tuple[int, int]]) -> bytes:
+def write_palette_pointer(rombuffer: bytearray, palette_name: str, index: int):
+    palette = get_symbol(palette_name)
+    write_data(rombuffer,
+               palette.to_bytes(4, "little"),
+               get_symbol("sItemGfxPointers", 8 * index + 4))  # sItemGfxPointers[index].palette
+
+
+def add_item_sprites(rom: bytes) -> bytes:
     rombuffer = bytearray(rom)
-    item_gfx_addresses = iter(item_gfx_addresses)
 
     # Tanks are already in needed format
     # Plasma Beam, Gravity Suit, and Space Jump are by default custom and already in ROM
 
     # Long Beam
-    src, dst = next(item_gfx_addresses)
-    long_statue = decompress_data(rom, src)
+    long_statue = decompress_data(rom, "sChozoStatueLongBeamGfx")
     long = extract_chozo_statue_sprite(long_statue)
-    write_data(rombuffer, long, dst)
+    write_data(rombuffer, long, "sRandoLongBeamGfx")
 
     # Charge Beam
-    src, dst = next(item_gfx_addresses)
-    charge = decompress_data(rom, src)
+    charge = decompress_data(rom, "sChargeBeamGfx")
     charge1 = get_sprites(charge, 18, 0, 1)
     charge2 = get_sprites(charge, 20, 0, 1)
     charge3 = bytearray(charge1)
     charge3[0x20:0x40] = get_tile(charge, 22, 0)
-    write_data(rombuffer, bytes(charge1 + charge2 + charge3 + charge2), dst)
+    write_data(rombuffer, bytes(charge1 + charge2 + charge3 + charge2), "sRandoChargeBeamGfx")
 
     # Ice Beam
-    src, dst = next(item_gfx_addresses)
-    ice_statue = decompress_data(rom, src)
+    ice_statue = decompress_data(rom, "sChozoStatueIceBeamGfx")
     ice = extract_chozo_statue_sprite(ice_statue)
-    write_data(rombuffer, ice, dst)
+    write_data(rombuffer, ice, "sRandoIceBeamGfx")
 
     # Wave Beam
-    src, dst = next(item_gfx_addresses)
-    wave_statue = decompress_data(rom, src)
+    wave_statue = decompress_data(rom, "sChozoStatueWaveBeamGfx")
     wave = extract_chozo_statue_sprite(wave_statue)
-    write_data(rombuffer, wave, dst)
+    write_data(rombuffer, wave, "sRandoWaveBeamGfx")
 
     # Bomb
-    src, dst = next(item_gfx_addresses)
-    bomb_statue = decompress_data(rom, src)
+    bomb_statue = decompress_data(rom, "sChozoStatueBombsGfx")
     bomb = extract_chozo_statue_sprite(bomb_statue)
-    write_data(rombuffer, bomb, dst)
+    write_data(rombuffer, bomb, "sRandoBombGfx")
 
     # Varia Suit
-    src, dst = next(item_gfx_addresses)
-    varia_statue = decompress_data(rom, src)
+    varia_statue = decompress_data(rom, "sChozoStatueVariaGfx")
     varia = extract_chozo_statue_sprite(varia_statue)
-    write_data(rombuffer, varia, dst)
+    write_data(rombuffer, varia, "sRandoVariaSuitGfx")
 
     # Morph Ball
-    src, dst = next(item_gfx_addresses)
-    morph = decompress_data(rom, src)
+    morph = decompress_data(rom, "sMorphBallGfx")
     morph_core = get_sprites(morph, 0, 0, 3)
     morph_glass = get_sprites(morph, 6, 0, 1)
     morph_composited = bytearray(len(morph_core))
@@ -115,66 +123,51 @@ def add_item_sprites(rom: bytes, item_gfx_addresses: Sequence[Tuple[int, int]]) 
                     ball_right = glass_right
                 combined = ball_right << 4 | ball_left
                 morph_composited[i + 0x40 * y + 0x80 * t] = combined
-    write_data(rombuffer, make_4_frame_animation(morph_composited), dst)
+    write_data(rombuffer, make_4_frame_animation(morph_composited), "sRandoMorphBallGfx")
 
     # Speed Booster
-    src, dst = next(item_gfx_addresses)
-    speed_statue = decompress_data(rom, src)
+    speed_statue = decompress_data(rom, "sChozoStatueSpeedboosterGfx")
     speed = extract_chozo_statue_sprite(speed_statue)
-    write_data(rombuffer, speed, dst)
+    write_data(rombuffer, speed, "sRandoSpeedBoosterGfx")
 
     # Hi-Jump Boots
-    src, dst = next(item_gfx_addresses)
-    hijump_statue = decompress_data(rom, src)
+    hijump_statue = decompress_data(rom, "sChozoStatueHighJumpGfx")
     hijump = extract_chozo_statue_sprite(hijump_statue)
-    write_data(rombuffer, hijump, dst)
+    write_data(rombuffer, hijump, "sRandoHiJumpGfx")
 
     # Screw Attack
-    src, dst = next(item_gfx_addresses)
-    screw_statue = decompress_data(rom, src)
+    screw_statue = decompress_data(rom, "sChozoStatueScrewAttackGfx")
     screw = extract_chozo_statue_sprite(screw_statue)
-    write_data(rombuffer, screw, dst)
+    write_data(rombuffer, screw, "sRandoScrewAttackGfx")
 
     # Power Grip
-    src, dst = next(item_gfx_addresses)
-    powergrip = decompress_data(rom, src)
+    powergrip = decompress_data(rom, "sPowerGripGfx")
     powergrip = get_sprites(powergrip, 0, 0, 3)
-    write_data(rombuffer, make_4_frame_animation(powergrip), dst)
+    write_data(rombuffer, make_4_frame_animation(powergrip), "sRandoPowerGripGfx")
 
     return bytes(rombuffer)
 
 
-def use_unknown_item_sprites(rom: bytes,
-                             gfx_ptr_address: int,
-                             item_gfx_addresses: Sequence[Tuple[int, int, int]]) -> bytes:
-    def write_palette_pointer(rombuffer: bytearray, palette_ptr: int, index: int):
-        write_data(rombuffer,
-                   palette_ptr.to_bytes(4, "little"),
-                   gfx_ptr_address + 8 * index + 4)  # sItemGfxPointers[index].palette
-
+def use_unknown_item_sprites(rom: bytes) -> bytes:
     rombuffer = bytearray(rom)
-    item_gfx_addresses = iter(item_gfx_addresses)
 
     # Plasma Beam
-    src, dst, pal = next(item_gfx_addresses)
-    plasma_statue = decompress_data(rom, src)
+    plasma_statue = decompress_data(rom, "sChozoStatuePlasmaBeamGfx")
     plasma = extract_unknown_chozo_statue_sprite(plasma_statue, 4)
-    write_data(rombuffer, plasma, dst)
-    write_palette_pointer(rombuffer, pal, 8)
+    write_data(rombuffer, plasma, "sRandoPlasmaBeamGfx")
+    write_palette_pointer(rombuffer, "sChozoStatuePlasmaBeamPal", 8)
 
     # Gravity Suit
-    src, dst, pal = next(item_gfx_addresses)
-    gravity_statue = decompress_data(rom, src)
+    gravity_statue = decompress_data(rom, "sChozoStatueGravitySuitGfx")
     gravity = extract_unknown_chozo_statue_sprite(gravity_statue, 2)
-    write_data(rombuffer, gravity, dst)
-    write_palette_pointer(rombuffer, pal, 11)
+    write_data(rombuffer, gravity, "sRandoGravitySuitGfx")
+    write_palette_pointer(rombuffer, "sChozoStatueGravitySuitPal", 11)
 
     # Space Jump
-    src, dst, pal = next(item_gfx_addresses)
-    space_statue = decompress_data(rom, src)
+    space_statue = decompress_data(rom, "sChozoStatueSpaceJumpGfx")
     spacejump = extract_unknown_chozo_statue_sprite(space_statue, 2)
-    write_data(rombuffer, spacejump, dst)
-    write_palette_pointer(rombuffer, pal, 16)
+    write_data(rombuffer, spacejump, "sRandoSpaceJumpGfx")
+    write_palette_pointer(rombuffer, "sChozoStatueSpaceJumpPal", 16)
 
     return bytes(rombuffer)
 
@@ -281,6 +274,7 @@ class Clipdata(IntEnum):
     BEAM_BLOCK_REFORM = 0x62
     LARGE_BEAM_BLOCK_SW_NO_REFORM = 0x63
     LARGE_BEAM_BLOCK_SE_NO_REFORM = 0x64
+    PITFALL_BLOCK_SLOW = 0x66
     BOMB_BLOCK_REFORM = 0x67
     SPEED_BOOSTER_BLOCK_REFORM = 0x6A
     SCREW_ATTACK_BLOCK_NO_REFORM = 0x6B
@@ -349,9 +343,10 @@ def read_u32(rom, addr):
     return int.from_bytes(rom[addr:addr + 4], "little")
 
 
-def background_extraction_function(rom: ByteString, room_entry_table_addr: int) -> Callable[[int, int], RoomInfo]:
+def background_extraction_function(rom: ByteString) -> Callable[[int, int], RoomInfo]:
     def get_backgrounds(area, room):
-        room_entry_array_addr = read_u32(rom, (room_entry_table_addr + 4 * area) & (0x8000000 - 1))
+        room_entry_pointer_array_addr = get_rom_address("sAreaRoomEntryPointers")
+        room_entry_array_addr = read_u32(rom, (room_entry_pointer_array_addr + 4 * area) & (0x8000000 - 1))
         room_entry_addr = (room_entry_array_addr + 60 * room) & (0x8000000 - 1)
         return RoomInfo.from_pointer(rom, room_entry_addr)
     return get_backgrounds
@@ -453,9 +448,9 @@ item_clipdata_and_gfx: Mapping[Area, Mapping[int, Sequence[Tuple[Optional[int], 
 }
 
 
-def apply_always_background_patches(rom: bytes, room_entry_table_addr: int) -> bytes:
+def apply_always_background_patches(rom: bytes) -> bytes:
     rombuffer = bytearray(rom)
-    get_backgrounds = background_extraction_function(rom, room_entry_table_addr)
+    get_backgrounds = background_extraction_function(rom)
 
     # Item graphics and clipdata
     for area, rooms in item_clipdata_and_gfx.items():
@@ -495,13 +490,14 @@ expansion_required_patches = {
     "brinstar_top",
     "norfair_brinstar_elevator",
     "crateria_water_speedway",
+    "crateria_left_of_grip",
 }
 
 
-def apply_layout_patches(rom: bytes, room_entry_table_addr: int, patches: Set[str]) -> bytes:
+def apply_layout_patches(rom: bytes, patches: Set[str]) -> bytes:
     rom = memoryview(rom)
     rombuffer = bytearray(rom)
-    get_backgrounds = background_extraction_function(rom, room_entry_table_addr)
+    get_backgrounds = background_extraction_function(rom)
 
     # Change the three beam blocks to never reform
     long_beam_hall = get_backgrounds(Area.BRINSTAR, 4)
@@ -602,5 +598,38 @@ def apply_layout_patches(rom: bytes, room_entry_table_addr: int, patches: Set[st
     kraid_right_shaft_clipdata.set(0xB, 0x38,
                                          Clipdata.LARGE_BEAM_BLOCK_SE_NO_REFORM, Clipdata.SPEED_BOOSTER_BLOCK_NO_REFORM)
     write_data(rombuffer, kraid_right_shaft_clipdata.to_compressed_data(), kraid_right_shaft.clipdata.rom_address())
+
+    # Change Ridley ballcannon room to allow escape from the bottom without needing the ballcannon
+    ridley_ballcannon = get_backgrounds(Area.RIDLEY, 23)
+    ridley_ballcannon_clipdata = BackgroundTilemap.from_info(ridley_ballcannon.clipdata, 186)
+    ridley_ballcannon_bg1 = BackgroundTilemap.from_info(ridley_ballcannon.bg1, 488)
+    for x in range(3, 5):
+        ridley_ballcannon_clipdata.set(x, 0xD, Clipdata.AIR, Clipdata.PITFALL_BLOCK)
+    ridley_ballcannon_bg1.set(3, 0xD, 0x0000, 0x00A6)
+    ridley_ballcannon_bg1.set(4, 0xD, 0x0000, 0x00A7)
+    ridley_ballcannon_clipdata.set(4, 0xF, Clipdata.PITFALL_BLOCK_SLOW, Clipdata.AIR)
+    ridley_ballcannon_bg1.set(4, 0xF, 0x00B9, 0x0000)
+    write_data(rombuffer, ridley_ballcannon_clipdata.to_compressed_data(), ridley_ballcannon.clipdata.rom_address())
+    write_data(rombuffer, ridley_ballcannon_bg1.to_compressed_data(), ridley_ballcannon.bg1.rom_address())
+
+    if "crateria_left_of_grip" in patches:
+        crateria_left_of_grip = get_backgrounds(Area.CRATERIA, 15)
+        crateria_left_of_grip_clipdata = BackgroundTilemap.from_info(crateria_left_of_grip.clipdata, 237)
+        crateria_left_of_grip_bg1 = BackgroundTilemap.from_info(crateria_left_of_grip.bg1, 515)
+        crateria_left_of_grip_clipdata.set(6, 0xD, Clipdata.BEAM_BLOCK_REFORM, Clipdata.SOLID)
+        crateria_left_of_grip_clipdata.set(7, 0xD, Clipdata.BEAM_BLOCK_REFORM, Clipdata.SOLID)
+        crateria_left_of_grip_bg1.set(6, 0xD, 0x0130, 0x00A9)
+        crateria_left_of_grip_bg1.set(7, 0xD, 0x0130, 0x00AA)
+        crateria_left_of_grip_bg1.set(6, 0xE, 0x00A9, 0x00B9)
+        crateria_left_of_grip_bg1.set(7, 0xE, 0x00AA, 0x00BA)
+        crateria_left_of_grip_bg1.set(6, 0xF, 0x00B9, 0x00C9)
+        crateria_left_of_grip_bg1.set(7, 0xF, 0x00BA, 0x00CA)
+        crateria_left_of_grip_bg1.set(6, 0x10, 0x00C9, 0x00D9)
+        crateria_left_of_grip_bg1.set(7, 0x10, 0x00CA, 0x00DA)
+        crateria_left_of_grip_bg1.set(6, 0x11, 0x00D9, 0x00E9)
+        crateria_left_of_grip_bg1.set(7, 0x11, 0x00DA, 0x00EA)
+        write_data(rombuffer, crateria_left_of_grip_clipdata.to_compressed_data(),
+                   crateria_left_of_grip.clipdata.rom_address())
+        write_data(rombuffer, crateria_left_of_grip_bg1.to_compressed_data(), crateria_left_of_grip.bg1.rom_address())
 
     return bytes(rombuffer)

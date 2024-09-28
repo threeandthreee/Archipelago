@@ -1,5 +1,6 @@
-from typing import Dict, List, Callable, TYPE_CHECKING
-from BaseClasses import CollectionState
+from typing import Dict, Callable, TYPE_CHECKING
+from BaseClasses import CollectionState, LocationProgressType
+from .Options import Goal, PaintingChecksBalancing
 
 if TYPE_CHECKING:
     from . import InscryptionWorld
@@ -67,11 +68,11 @@ class InscryptionRules:
             "Act 3 - Forest Holo Pelt": self.has_inspectometer_battery,
             "Act 3 - Crypt Holo Pelt": self.has_inspectometer_battery,
             "Act 3 - Tower Holo Pelt": self.has_gems_and_battery,
-            "Act 3 - Trader 1": self.has_one_pelt,
-            "Act 3 - Trader 2": self.has_two_pelt,
-            "Act 3 - Trader 3": self.has_three_pelt,
-            "Act 3 - Trader 4": self.has_four_pelt,
-            "Act 3 - Trader 5": self.has_five_pelt,
+            "Act 3 - Trader 1": self.has_pelts(1),
+            "Act 3 - Trader 2": self.has_pelts(2),
+            "Act 3 - Trader 3": self.has_pelts(3),
+            "Act 3 - Trader 4": self.has_pelts(4),
+            "Act 3 - Trader 5": self.has_pelts(5),
             "Act 3 - Goobert's Painting": self.has_gems_and_battery,
             "Act 3 - The Great Transcendence": self.has_transcendence_requirements,
             "Act 3 - Boss Mycologists": self.has_mycologists_boss_requirements,
@@ -103,18 +104,13 @@ class InscryptionRules:
         return state.has("Magnificus Eye", self.player)
 
     def has_useful_act1_items(self, state: CollectionState) -> bool:
-        return state.has("Oil Painting's Clover Plant", self.player) and state.has("Squirrel Totem Head", self.player)
+        return state.has_all(("Oil Painting's Clover Plant", "Squirrel Totem Head"), self.player)
 
     def has_all_epitaph_pieces(self, state: CollectionState) -> bool:
-        if self.world.options.epitaph_pieces_randomization.value == 0:
-            return state.has("Epitaph Piece", self.player, 9)
-        elif self.world.options.epitaph_pieces_randomization.value == 1:
-            return state.has("Epitaph Pieces", self.player, 3)
-        else:
-            return state.has("Epitaph Pieces", self.player, 1)
+        return state.has(self.world.required_epitaph_pieces_name, self.player, self.world.required_epitaph_pieces_count)
 
     def has_camera_and_meat(self, state: CollectionState) -> bool:
-        return state.has("Camera Replica", self.player) and state.has("Pile Of Meat", self.player)
+        return state.has_all(("Camera Replica", "Pile Of Meat"), self.player)
 
     def has_monocle(self, state: CollectionState) -> bool:
         return state.has("Monocle", self.player)
@@ -129,7 +125,7 @@ class InscryptionRules:
         return self.has_camera_and_meat(state) or self.has_all_epitaph_pieces(state)
 
     def has_tower_requirements(self, state: CollectionState) -> bool:
-        return self.has_act2_bridge_requirements(state) and self.has_monocle(state)
+        return self.has_monocle(state) and self.has_act2_bridge_requirements(state)
 
     def has_inspectometer_battery(self, state: CollectionState) -> bool:
         return state.has("Inspectometer Battery", self.player)
@@ -137,23 +133,8 @@ class InscryptionRules:
     def has_gems_and_battery(self, state: CollectionState) -> bool:
         return state.has("Gems Module", self.player) and self.has_inspectometer_battery(state)
 
-    def has_pelts(self, state: CollectionState, count: int) -> bool:
-        return state.has("Holo Pelt", self.player, count)
-
-    def has_one_pelt(self, state: CollectionState) -> bool:
-        return self.has_pelts(state, 1) and self.has_gems_and_battery(state)
-
-    def has_two_pelt(self, state: CollectionState) -> bool:
-        return self.has_pelts(state, 2) and self.has_gems_and_battery(state)
-
-    def has_three_pelt(self, state: CollectionState) -> bool:
-        return self.has_pelts(state, 3) and self.has_gems_and_battery(state)
-
-    def has_four_pelt(self, state: CollectionState) -> bool:
-        return self.has_pelts(state, 4) and self.has_gems_and_battery(state)
-
-    def has_five_pelt(self, state: CollectionState) -> bool:
-        return self.has_pelts(state, 5) and self.has_gems_and_battery(state)
+    def has_pelts(self, count: int) -> Callable[[CollectionState], bool]:
+        return lambda state: state.has("Holo Pelt", self.player, count) and self.has_gems_and_battery(state)
 
     def has_mycologists_boss_requirements(self, state: CollectionState) -> bool:
         return state.has("Mycologists Holo Key", self.player) and self.has_transcendence_requirements(state)
@@ -179,12 +160,12 @@ class InscryptionRules:
 
     def set_all_rules(self) -> None:
         multiworld = self.world.multiworld
-        if self.world.options.goal.value <= 1:
+        if self.world.options.goal != Goal.option_first_act:
             multiworld.completion_condition[self.player] = self.has_epilogue_requirements
         else:
             multiworld.completion_condition[self.player] = self.has_act2_requirements
         for region in multiworld.get_regions(self.player):
-            if self.world.options.goal.value == 0:
+            if self.world.options.goal == Goal.option_full_story_in_order:
                 if region.name in self.region_rules:
                     for entrance in region.entrances:
                         entrance.access_rule = self.region_rules[region.name]
@@ -192,12 +173,9 @@ class InscryptionRules:
                 if loc.name in self.location_rules:
                     loc.access_rule = self.location_rules[loc.name]
 
-    def set_painting_rules(self) -> None:
-        region = self.world.multiworld.get_region("Act 1", self.player)
-        loc = next((x for x in region.locations if x.name == "Act 1 - Painting 2"), None)
-        if loc is not None:
-            loc.access_rule = self.has_useful_act1_items
-        loc = next((x for x in region.locations if x.name == "Act 1 - Painting 3"), None)
-        if loc is not None:
-            loc.access_rule = self.has_useful_act1_items
-
+        if self.world.options.painting_checks_balancing == PaintingChecksBalancing.option_balanced:
+            self.world.get_location("Act 1 - Painting 2").access_rule = self.has_useful_act1_items
+            self.world.get_location("Act 1 - Painting 3").access_rule = self.has_useful_act1_items
+        elif self.world.options.painting_checks_balancing == PaintingChecksBalancing.option_force_filler:
+            self.world.get_location("Act 1 - Painting 2").progress_type = LocationProgressType.EXCLUDED
+            self.world.get_location("Act 1 - Painting 3").progress_type = LocationProgressType.EXCLUDED

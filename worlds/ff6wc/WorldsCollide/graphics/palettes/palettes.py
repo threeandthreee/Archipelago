@@ -1,3 +1,6 @@
+import pkgutil
+
+
 ORIGINAL_COUNT = 7
 
 id_palette = {
@@ -297,13 +300,18 @@ id_palette = {
     359 : "Lenna (Beastmaster)-HoxNorf-FF5",
 }
 
-def get_path(id_):
-    import os
 
+def get_path(id_: int) -> str:
     if id_ < ORIGINAL_COUNT:
         subdir = "original"
     else:
         subdir = "custom"
 
     name = id_palette[id_]
-    return os.path.join(os.path.dirname(os.path.abspath(__file__)), subdir, name + ".pal")
+    return f"{subdir}/{name}.pal"
+
+
+def get_palette_data(path: str) -> bytes:
+    data = pkgutil.get_data(__name__, path)
+    assert data, f"no palette data {path=} {__name__=}"
+    return data

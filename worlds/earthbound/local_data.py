@@ -279,7 +279,7 @@ location_dialogue = { #Locations which just need to print the name of the item
     "Dusty Dunes - Mine Reward": [0x06038A, 0x06123A, 0x06053F],
     "Snow Wood - Maxwell Item": [0x06AB89],
     "Scaraba - Snake Bag Salesman": [0x2EA713],
-    "Winters - Drugstore Saleswoman": [0x07A223],
+    "Winters - Drugstore Saleswoman": [0x07A223, 0x06AEB8],
     "Andonuts Lab - Mouse": [0x06C840],
     "Stonehenge - Tony Item": [0x2FFA0C],
     "Stonehenge - Kidnapped Mr. Saturn": [0x06C061],
@@ -330,18 +330,18 @@ npc_locations = { #Locations given to you by an NPC
     "Onett - Library Counter": [0x07339C],
     "Onett - Library Bookshelf": [0x087E7B],
     "Onett - Treehouse Guy": [0x073F78],
-    "Onett - Mayor Pirkle": [0x072D61],
+    "Onett - Mayor Pirkle": [0x072D61, 0x072BE9],
     "Onett - Traveling Entertainer": [0x07477C],
-    "Twoson - Bike Shop Rental": [0x0801A5],
-    "Twoson - Orange Kid Donation": [0x081362],
+    "Twoson - Bike Shop Rental": [0x0801A5, 0x08008F],
+    "Twoson - Orange Kid Donation": [0x081362, 0x0813B9],
     "Twoson - Apple Kid's Mouse": [0x0819DF],
-    "Twoson - Apple Kid Invention": [0x082015],
-    "Twoson - Antique Shop": [0x2EAEFD],
+    "Twoson - Apple Kid Invention": [0x082015, 0x081FF3],
+    "Twoson - Antique Shop": [0x2EAEFD, 0x093F0A],
     "Twoson - Paula's Mother": [0x08062F, 0x08081F],
     "Twoson - Everdred Meeting": [0x096052],
     "Twoson - Insignificant Location": [0x094ED1],
     "Happy-Happy Village - Donation Lady": [0x098A97, 0x0893B6],
-    "Happy-Happy Village - Prisoner Item": [0x2F9664, 0x2EAF41],
+    "Happy-Happy Village - Prisoner Item": [0x2F9664, 0x2EAF41, 0x2F9707],
     "Happy-Happy Village - Defeat Carpainter": [0x09826F],
     "Threed - Hospital Drawer": [0x086883],
     "Saturn Valley - Post Belch Gift #1": [0x07EAB2],
@@ -350,7 +350,7 @@ npc_locations = { #Locations given to you by an NPC
     "Dusty Dunes - Shining Spot": [0x060DAD],
     "Dusty Dunes - Mine Reward": [0x06058F],
     "Snow Wood - Maxwell Item": [0x06AC73],
-    "Scaraba - Snake Bag Salesman": [0x0570AC],
+    "Scaraba - Snake Bag Salesman": [0x0570AC, 0x057116],
     "Winters - Drugstore Saleswoman": [0x06AEC7],
     "Andonuts Lab - Mouse": [0x06C898],
     "Stonehenge - Kidnapped Mr. Saturn": [0x06C076],
@@ -365,7 +365,7 @@ npc_locations = { #Locations given to you by an NPC
     "Summers - Museum Item": [0x08ABF2],
     "Pyramid - Pedestal Item": [0x0931DF],
     "Scaraba - Key Holder": [0x0576C1],
-    "Deep Darkness - Teleporting Monkey": [0x09E50F],
+    "Deep Darkness - Teleporting Monkey": [0x09E50F, 0x09E55F],
     "Deep Darkness - North Alcove Truffle": [0x2EB5BE],
     "Deep Darkness - Near Land Truffle": [0x2EB616],
     "Deep Darkness - Present Truffle": [0x2EB5EA],
@@ -816,6 +816,11 @@ item_id_table = {
     "Repel Sandwich": 0xE0,
     "Repel Superwich": 0xE1,
     "Lucky Sandwich": 0xE2,
+    "Progressive Bat": 0xE3,
+    "Progressive Fry Pan": 0xE4,
+    "Progressive Gun": 0xE5,
+    "Progressive Bracelet": 0xE6,
+    "Progressive Other": 0xE7,
     "Cup of Coffee": 0xE8,
     "Double Burger": 0xE9,
     "Peanut Cheese Bar": 0xEA,
@@ -1070,28 +1075,28 @@ present_text_pointers = {
 }
 
 ap_text_pntrs = [
-    [0xCD, 0xCD, 0xEE],#ce
-    [0xD9, 0xCD, 0xEE],#cf
-    [0xE5, 0xCD, 0xEE],#d0
-    [0xF1, 0xCD, 0xEE],#e7
-    [0xFD, 0xCD, 0xEE],#e8
-    [0x09, 0xCE, 0xEE],#e9
-    [0x15, 0xCE, 0xEE],#ea
-    [0x21, 0xCE, 0xEE],#eb
-    [0x2D, 0xCE, 0xEE],#ec
-    [0x39, 0xCE, 0xEE],#ed
-    [0x45, 0xCE, 0xEE],#ee
-    [0x51, 0xCE, 0xEE],#ef
-    [0x5D, 0xCE, 0xEE],#f0
-    [0x69, 0xCE, 0xEE],#f1
-    [0x75, 0xCE, 0xEE],#f2
-    [0x81, 0xCE, 0xEE],#f3
-    #[0x8D, 0xCE, 0xEE]#trap text
+    [0xCD, 0xCD, 0xEE], #ce
+    [0xD9, 0xCD, 0xEE], #cf
+    [0xE5, 0xCD, 0xEE], #d0
+    [0xF1, 0xCD, 0xEE], #e7
+    [0xFD, 0xCD, 0xEE], #e8
+    [0x09, 0xCE, 0xEE], #e9
+    [0x15, 0xCE, 0xEE], #ea
+    [0x21, 0xCE, 0xEE], #eb
+    [0x2D, 0xCE, 0xEE], #ec
+    [0x39, 0xCE, 0xEE], #ed
+    [0x45, 0xCE, 0xEE], #ee
+    [0x51, 0xCE, 0xEE], #ef
+    [0x5D, 0xCE, 0xEE], #f0
+    [0x69, 0xCE, 0xEE], #f1
+    [0x75, 0xCE, 0xEE], #f2
+    [0x81, 0xCE, 0xEE], #f3
+    #[0x8D, 0xCE, 0xEE] #trap text
 ]
 
-    #0: Action pointer, call the actual item being given
-    #1: Sprite ID
-    #2: Secondary routine pointer, used for items and psi
-    #3: Inventory item give
-    #4: Standard item routine address
-    #For characters
+#0: Action pointer, call the actual item being given
+#1: Sprite ID
+#2: Secondary routine pointer, used for items and psi
+#3: Inventory item give
+#4: Standard item routine address
+#For characters

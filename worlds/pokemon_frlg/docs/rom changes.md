@@ -10,8 +10,6 @@
 * The Pokédex starts in national mode
 * The Pokémon Center Nurse initial dialogue is removed
 * The fishing minigame is always successful at finding a catch, only requires one round, and will always show four dots
-* Trainer rematches using the Vs. Seeker have been disabled... for now...
-* The Elite Four Rematch has also been disabled... for now...
 * The sliding animation for trainers and wild pokémon at the start of a battle runs at double speed
 * Pokémon are never disobedient
 * When moving in the overworld, set the input priority based on the most recently pressed direction rather than by some
@@ -30,15 +28,17 @@ predetermined priority
 * The Saffron City guards will block your way from both directions (this only matters if your free fly is Saffron City)
 * The Seafoam Islands entrances on Route 20 have been swapped so that you can travel from Cinnabar to Fuchsia
 * Only the last guard on Route 23 will check for badges or gyms
-* Professor Oak will give you the Mystic and Aurora Ticket in Pallet Town after beating the game
+* Professor Oak will give you the Mystic and Aurora Ticket in the Hall of Fame
 * Much of the Sevii Islands has been reworked:
   * The cutscene after Cinnabar Gym where Bill takes you to the Sevii Islands has been removed. Instead, Bill will immediately be waiting in the Pokémon Center to take you to One Island
   * The Tri Pass allows you to sail to the 1-3 Islands and the Rainbow Pass allows you to sail to the 4-7 Islands from Vermilion City
   * You will never be trapped on the Sevii Islands and your PC will never be disabled there
   * Several cutscenes in the One Island Pokémon Center have been reworked or removed
   * You must deliver the Meteorite to Lostelle's dad before you can give Celio the Ruby and before the Team Rocket Grunts at Mt. Ember can be fought
+  * You must free the Pokémon from the Rocket Warehouse before you can give Celio the Sapphire
   * The initial cutscene with the biker at the Two Island Game Corner has been removed
   * Three Isle Path is open immediately
+  * The Rocket Warehouse requires both passwords to open
 * Evolutions that would be impossible have been changed:
   * Regular trade evolutions now evolve at Level 37
   * Held item trade evolutions now evolve by using the item on the pokémon from the bag

@@ -62,7 +62,8 @@ eb_text_table = {" ": ([0x50]), "!": ([0x51]), '"': ([0x52]), "■": ([0x53]), "
                  "o": ([0x9F]), "p": ([0xA0]), 'q': ([0xA1]), "r": ([0xA2]), 's': ([0xA3]), "t": ([0xA4]),
                  "u": ([0xA5]), "v": ([0xA6]), 'w': ([0xA7]), "x": ([0xA8]), 'y': ([0xA9]), "z": ([0xAA]),
                  "[": ([0xAB]), "♪": ([0xAC]), ']': ([0xAD]), "~": ([0xAE]), '◯': ([0xAF]), "_": ([0xB0]),
-                 "<": ([0xB1])}
+                 "<": ([0xB1]), "»": ([0x90])}
+# 0x90 is a half-width space, should only be used for excessively long names in menus, not regular item/player text
 
 
 lumine_hall_text = [
@@ -97,7 +98,7 @@ lumine_hall_text = [
     "Long ago, two races ruled over Earth: HUMANS and MONSTERS. One day, war broke out between the two races. After a long battle, the humans were victorious. They sealed the monsters underground with a magic spell.",
     "Once upon a time, a LEGEND was whispered among shadows. It was a LEGEND of HOPE. It was a LEGEND of DREAMS. It was a LEGEND of LIGHT. It was a LEGEND of DARK.",
     "OwO? What's This?",
-    "What about now it's time to rock with the Bickedy Buck Bumble! What about now it's time to rock with the Bickedy Buck Bumble! Bum to the bum to the bum to the bass to the bum to the boom to the Bumble!",
+    "What about now it's time to rock with the Bickedy Buck Buzz Buzz! What about now it's time to rock with the Bickedy Buck Buzz Buzz! Bum to the bum to the bum to the bass to the bum to the boom to the Buzz Buzz!",
     "HOW ARE YOU GENTLEMEN !! ALL YOUR BASE ARE BELONG TO US.",
     "You're just the delivery boy. Sorry, your parts over now. Here, go play hero with this.",
     "My friends are my power, and I'm theirs!",
@@ -179,9 +180,59 @@ lumine_hall_text = [
     "Phar why",
     "Tell Figment to check POD!"
 
-
-
 ]
+
+spoiler_psi = {
+    "Special": "PSI Rockin",
+    "Fire": "PSI Fire",
+    "Freeze": "PSI Freeze",
+    "Thunder": "PSI Thunder",
+    "Flash": "PSI Flash",
+    "Starstorm": "PSI Starstorm",
+    "Shield": "Shield",
+    "PSI Shield": "PSI Shield",
+    "Offense Up": "Offense up",
+    "Defense Down": "Defense down",
+    "Hypnosis": "Hypnosis",
+    "Paralysis": "Paralysis",
+    "Brainshock": "Brainshock",
+    "Blast": "PSI Blast",
+    "Missile": "PSI Missile",
+    "Stop": "Stop",
+    "Drain": "Drain",
+    "Defense up": "Defense up",
+    "Neutralize": "Neutralize",
+    "Disable": "Disable"
+}
+
+spoiler_starts = [
+    "Ness's House",
+    "Onett Downtown",
+    "Twoson",
+    "Happy-Happy Village",
+    "Threed",
+    "Saturn Valley",
+    "Fourside",
+    "Winters",
+    "Summers",
+    "Dalaam",
+    "Scaraba",
+    "Deep Darkness",
+    "Tenda Village",
+    "Lost Underworld",
+    "Magicant"
+]
+
+spoiler_badges = {
+    "special": "Rockin",
+    "fire": "Fire",
+    "freeze": "Freeze",
+    "flash": "Flash",
+    "starstorm": "Starstorm",
+    "explosive": "Bomb",
+    "thunder": "Thunder",
+}
+
 
 def text_encoder(text, eb_text_table, textcap):
     encoded_text = bytearray()

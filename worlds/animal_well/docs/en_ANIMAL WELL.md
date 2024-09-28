@@ -21,8 +21,7 @@ There are around 100 checks in ANIMAL WELL. The amount varies based on a few opt
 When we have finalized these options, this doc will be updated to reflect the actual numbers.
 
 ## What do items from other worlds look like in ANIMAL WELL?
-Currently, the appearance of items found in chests matches their vanilla contents. You will need to look at the Client to see what was in the chest.
-This will be revised later on.
+They just look like the standard chests.
 
 ## Is there a tracker pack?
 There is a [Poptracker Pack](https://github.com/SporyTike/ANIMAL-WELL-AP-Tracker/releases/latest) which was made by SporyTike.
@@ -38,3 +37,9 @@ Yes! To find what they are, type `/item_groups` or `/location_groups` into the A
 ## What are the current known issues?
 The client rarely fails for no discernable reason when opening a chest. We do not know why yet. If it fails, please let us know in the discord and send us your log file (in your `Archipelago/logs` folder). We may ask you to troubleshoot a few things as well.
 Some yaml options are missing. This is intentional. They don't work yet.
+
+## Who contributed to this?
+ScipioWright and RoobyRoo wrote a majority of the logic and apworld.
+Franklesby wrote the client. Dicene and Dregu contributed major features to the client.
+Various others helped with some bug fixes and minor additions.
+Special thanks to SporyTike for making the poptracker, GameWyrm for their help early on, and Kevin for convincing Scipio to get the game.

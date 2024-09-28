@@ -84,6 +84,9 @@ class Tritoch(Event):
         magicite_npc.palette = self.characters.get_palette(character)
         magicite_npc.split_sprite = 0
         magicite_npc.direction = direction.DOWN
+        # clear unknown bits that cause a glitchy sprite if reward is a character (Archipelago)
+        magicite_npc.unknown1 = 0
+        magicite_npc.unknown2 = 0
 
         space = Reserve(0xc3779, 0xc377e, "tritoch esper sound effect and flash screen white", field.NOP())
         space.write(
@@ -91,8 +94,24 @@ class Tritoch(Event):
         )
 
         space = Reserve(0xc3781, 0xc3781, "tritoch pause before receive dialog", field.NOP())
+        # Don't write out a dialogue for character recruit
+        space = Reserve(0xc3782, 0xc3784, "tritoch receive esper dialog", field.NOP())
+        # need to set the event bit BEFORE we recruit character so the map loads in the proper state (Umaro Hole vs. Tritoch Ice)
+        src = [
+            field.FadeOutScreen(),
+            field.WaitForFade(),
+            field.SetEventBit(event_bit.GOT_TRITOCH),
+            field.RecruitAndSelectParty(character),
+            field.FreeScreen(),
+            field.LoadMap(0x23, direction.DOWN, default_music = True,
+                          x = 9, y = 13, fade_in = True, entrance_event = True),
+            field.FinishCheck(),
+            field.Return(),
+        ]
+        space = Write(Bank.CC, src, "tritoch receive reward finish check")
+        receive_reward = space.start_address
 
-        add_item_instructions = [field.RecruitAndSelectParty(character), field.FadeInScreen(), field.WaitForFade()]
-        receive_item_dialog_id = self.items.get_receive_dialog(231)
-
-        self.esper_item_mod(add_item_instructions, receive_item_dialog_id)
+        space = Reserve(0xc37a6, 0xc37a9, "tritoch add reward", field.NOP())
+        space.write(
+            field.Call(receive_reward),
+        )

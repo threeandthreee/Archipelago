@@ -5,7 +5,6 @@ from .data import data, BASE_OFFSET
 if TYPE_CHECKING:
     from . import PokemonFRLGWorld
 
-
 ITEM_GROUPS = {
     "Badges": {
         "Boulder Badge",
@@ -25,6 +24,28 @@ ITEM_GROUPS = {
         "HM05 Flash",
         "HM06 Rock Smash",
         "HM07 Waterfall"
+    },
+    "Fly Points": {
+        "Fly Pallet Town",
+        "Fly Viridian City",
+        "Fly Pewter City",
+        "Fly Cerulean City",
+        "Fly Lavender Town",
+        "Fly Vermilion City",
+        "Fly Celadon City",
+        "Fly Fuchsia City",
+        "Fly Cinnabar Island",
+        "Fly Indigo Plateau",
+        "Fly Saffron City",
+        "Fly One Island",
+        "Fly Two Island",
+        "Fly Three Island",
+        "Fly Four Island",
+        "Fly Five Island",
+        "Fly Seven Island",
+        "Fly Six Island",
+        "Fly Route 4",
+        "Fly Route 10",
     },
     "HM01": {"HM01 Cut"},
     "HM02": {"HM02 Fly"},

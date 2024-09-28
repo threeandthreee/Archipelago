@@ -212,7 +212,7 @@ async def game_watcher(ctx: KHBBSContext):
                     st = file.split("dlsend", -1)[1]
                     if st != "nil":
                         if timegm(time.strptime(st, '%Y%m%d%H%M%S')) > ctx.last_death_link and int(time.time()) % int(timegm(time.strptime(st, '%Y%m%d%H%M%S'))) < 10:
-                            await ctx.send_death(death_text = "Sora was defeated!")
+                            await ctx.send_death(death_text = "Character defeated")
                 if file.find("insynthshop") > -1:
                     await ctx.send_msgs([{
                         "cmd": "LocationScouts",

@@ -1,3 +1,6 @@
+import pkgutil
+
+
 ORIGINAL_COUNT = 22
 
 id_sprite = {
@@ -312,13 +315,18 @@ id_sprite = {
     357 : "Lenna (Beastmaster)-HoxNorf-FF5",
 }
 
-def get_path(id_):
-    import os
 
+def get_path(id_: int) -> str:
     if id_ < ORIGINAL_COUNT:
         subdir = "original"
     else:
         subdir = "custom"
 
     name = id_sprite[id_]
-    return os.path.join(os.path.dirname(os.path.abspath(__file__)), subdir, name + ".bin")
+    return f"{subdir}/{name}.bin"
+
+
+def get_sprite_data(path: str) -> bytes:
+    data = pkgutil.get_data(__name__, path)
+    assert data, f"no sprite data {path=} {__name__=}"
+    return data

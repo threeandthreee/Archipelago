@@ -122,11 +122,17 @@ class FloatingContinent(Event):
     def airship_fixed_battles_mod(self):
         # change iaf battles to front attacks, even if the original pack id happens to be the new random one
         # because other random formations in the pack may not work with pincer attacks
-        pack_id = 382 # sky armor / spit fire
+        
+        # adding an unused pack id (416) to increase variety of encounters
         battle_background = 48 # airship, right
 
-        start_addresses = [0xa5932, 0xa59fc, 0xa5a0d]
-        for start_address in start_addresses:
+        pack_start_addresses = [
+            (382, 0xa5932), #sky armor / spit fire
+            (416, 0xa59fc), #unused
+            (382, 0xa5a0d)] #sky armor / spit fire
+        for pack_start_address in pack_start_addresses:
+            pack_id = pack_start_address[0]
+            start_address = pack_start_address[1]
             space = Reserve(start_address, start_address + 2, "floating continent iaf invoke fixed battle")
             space.write(
                 field.InvokeBattleType(pack_id, field.BattleType.FRONT, battle_background, check_game_over = False),
@@ -209,12 +215,13 @@ class FloatingContinent(Event):
         )
 
     def ground_item_mod(self, item):
-        self.ground_shadow_npc.sprite = 91
-        self.ground_shadow_npc.palette = 2
+        # use sparkle as NPC for item (or AP item)
+        self.ground_shadow_npc.sprite = 106
+        self.ground_shadow_npc.palette = 6
         self.ground_shadow_npc.split_sprite = 1
-        self.ground_shadow_npc.direction = direction.UP
+        self.ground_shadow_npc.direction = direction.DOWN
 
-        space = Reserve(0xad9b1, 0xad9ed, "floating continent add esper on ground", field.NOP())
+        space = Reserve(0xad9b1, 0xad9ed, "floating continent add item on ground", field.NOP())
         space.write(
             field.AddItem(item),
             field.Dialog(self.items.get_receive_dialog(item)),

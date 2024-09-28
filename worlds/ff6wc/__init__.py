@@ -10,6 +10,7 @@ from typing import Any, ClassVar, Dict, List, Union
 
 from BaseClasses import Item, Location, Region, MultiWorld, ItemClassification, Tutorial
 from .id_maps import item_name_to_id, location_name_to_id
+from .item_rewards import build_ir_from_placements, get_item_rewards, limit_event_items
 from .gen_data import GenData
 from . import Rom
 from .patch import FF6WCPatch, NA10HASH
@@ -18,7 +19,7 @@ from worlds.AutoWorld import World, WebWorld
 from . import Locations
 from . import Items
 from .Logic import can_beat_final_kefka
-from .Options import FF6WCOptions, Treasuresanity, generate_flagstring, resolve_character_options
+from .Options import FF6WCOptions, Treasuresanity, generate_flagstring, resolve_character_options, verify_flagstring
 import Utils
 import settings
 
@@ -61,7 +62,7 @@ class FF6WCWorld(World):
     is a role-playing game and the last in the series to feature 2D sprite based graphics.
     Worlds Collide is an open-world randomizer for Final Fantasy VI. Players begin aboard the airship
     and can travel freely between the World of Balance and the World of Ruin to discover characters and espers.
-    Once you've gathered enough, you can face off against Kefka. Currently based on Worlds Collide version 1.2.2.
+    Once you've gathered enough, you can face off against Kefka. Currently based on Worlds Collide version 1.4.2.
     """
     options_dataclass = FF6WCOptions
     options: FF6WCOptions  # type: ignore
@@ -140,9 +141,8 @@ class FF6WCWorld(World):
         super().__init__(world, player)
         self.starting_characters = None
         self.flagstring = None
-        self.no_illuminas = False
-        self.no_paladin_shields = False
-        self.no_exp_eggs = False
+        self.item_rewards = []
+        self.item_nonrewards = []
         self.generator_in_use = threading.Event()
         self.wc = None
         self.rom_name_available_event = threading.Event()
@@ -164,6 +164,10 @@ class FF6WCWorld(World):
         return return_location
 
     def generate_early(self):
+        # if requested to exclude the Zozo Clock Chest, add to exclude_locations
+        if self.options.ZozoClockChestExclude:
+            self.options.exclude_locations.value.add("Zozo Clock Puzzle")
+
         if (self.options.Flagstring.value).capitalize() != "False":
 
             self.starting_characters = []
@@ -334,19 +338,6 @@ class FF6WCWorld(World):
         self.multiworld.regions.append(final_dungeon)
 
     def create_items(self) -> None:
-        # Setting variables for item restrictions based on custom flagstring or AllowStrongestItems value
-        if (self.options.Flagstring.value).capitalize() != "False":
-            if "-nfps" in self.options.Flagstring.value.split(" "):
-                self.no_paladin_shields = True
-            if "-nee" in self.options.Flagstring.value.split(" "):
-                self.no_exp_eggs = True
-            if "-nil" in self.options.Flagstring.value.split(" "):
-                self.no_illuminas = True
-        else:
-            if not self.options.AllowStrongestItems.value:
-                self.no_paladin_shields = True
-                self.no_exp_eggs = True
-                self.no_illuminas = True
         item_pool: List[FF6WCItem] = []
         assert self.starting_characters
         for item in map(self.create_item, self.item_name_to_id):
@@ -369,6 +360,11 @@ class FF6WCWorld(World):
             self.create_event("Victory"))
         self.multiworld.completion_condition[self.player] = lambda state: state.has("Victory", self.player)
 
+        self.item_rewards = get_item_rewards(self.options)
+
+        # update the non-reward items to be everything that's not in item_rewards
+        self.item_nonrewards = [item for item in Items.items if item not in self.item_rewards]
+
         filler_pool: List[str] = []
         # Each filler item has a chest item tier weight
         filler_pool_weights: List[int] = []
@@ -376,11 +372,17 @@ class FF6WCWorld(World):
 
         for item in Items.items:
             # Skips adding an item to filler_pool and good_filler_pool if item restrictions are in place
-            if self.no_paladin_shields is True and (item == "Paladin Shld" or item == "Cursed Shld"):
+            if self.options.no_paladin_shields() and (item == "Paladin Shld" or item == "Cursed Shld"):
                 continue
-            if self.no_exp_eggs is True and item == "Exp. Egg":
+            if self.options.no_exp_eggs() and item == "Exp. Egg":
                 continue
-            if self.no_illuminas is True and item == "Illumina":
+            if self.options.no_illuminas() and item == "Illumina":
+                continue
+            # if -noshoes No SprintShoes specified, remove from list
+            if self.options.Flagstring.has_flag("-noshoes") and item == "Sprint Shoes":
+                continue
+            # if -nmc No MoogleCharms specified, remove from list
+            if self.options.Flagstring.has_flag("-nmc") and item == "Moogle Charm":
                 continue
             if item != "ArchplgoItem":
                 filler_pool.append(item)
@@ -388,7 +390,8 @@ class FF6WCWorld(World):
                 weight = Items.item_name_weight.get(item)
                 assert not (weight is None)
                 filler_pool_weights.append(weight)
-            if item in Items.good_items:
+            # update to use self.item_rewards as calculated above
+            if item in self.item_rewards:
                 good_filler_pool.append(item)
 
         major_items = len([location for location in Locations.major_checks if "(Boss)" not in location and "Status"
@@ -452,9 +455,12 @@ class FF6WCWorld(World):
             add_rule(self.get_location(check_name),
                      lambda state: state.has("Terra", self.player))
 
-        for check in Locations.major_checks:
-            add_item_rule(self.get_location(check),
-                          lambda item: item.name not in Items.okay_items)
+        # This rule was causing generation failures. (And I don't see a good reason for it to exist.)
+        # for check in Locations.major_checks:
+        #     add_item_rule(self.get_location(check),
+        #                   # add things that are NOT in the non-rewards list
+        #                   # or something for another player (based on their settings)
+        #                   lambda item: item.name not in self.item_nonrewards or item.player != self.player)
 
         for check in Locations.item_only_checks:
             if treasuresanity or (
@@ -519,27 +525,38 @@ class FF6WCWorld(World):
                     if self.multiworld.random.randint(0, upgrade_base) < current_sphere_count:
                         self.upgrade_item(location.item)
 
+        if self.options.Treasuresanity.value != Treasuresanity.option_off:
+            wc_event_locations = [
+                loc
+                for loc in self.multiworld.get_locations(self.player)
+                if loc.name in Locations.checks_that_need_dialog_for_items
+            ]
+            limit_event_items(wc_event_locations, self.random)
+
     def upgrade_item(self, item: Item):
-        if item.name in Items.okay_items:
+        if item.name in self.item_nonrewards:
             # Prevents upgrades to restricted items based on flags or AllowStrongestItems value
             nfps = nee = nil = 1
             temp_new_item = ""
             while (nfps or nee or nil) == 1:
-                temp_new_item = self.multiworld.random.choice(Items.good_items)
-                if self.no_paladin_shields is True and (temp_new_item == "Paladin Shld"
-                                                        or temp_new_item == "Cursed Shld"):
+                temp_new_item = self.multiworld.random.choice(self.item_rewards)
+                if self.options.no_paladin_shields() and (temp_new_item == "Paladin Shld"
+                                                          or temp_new_item == "Cursed Shld"):
                     nfps = 1
                 else:
                     nfps = 0
-                if self.no_exp_eggs is True and temp_new_item == "Exp. Egg":
+                if self.options.no_exp_eggs() and temp_new_item == "Exp. Egg":
                     nee = 1
                 else:
                     nee = 0
-                if self.no_illuminas is True and temp_new_item == "Illumina":
+                if self.options.no_illuminas() and temp_new_item == "Illumina":
                     nil = 1
                 else:
                     nil = 0
             assert temp_new_item
+            # if Ragnarok, translate into sword for item_name_to_id dictionary
+            if temp_new_item == "Ragnarok":
+                temp_new_item = "Ragnarok Sword"
             new_item = temp_new_item
             new_item_id = self.item_name_to_id[new_item]
             item.name = new_item
@@ -550,21 +567,19 @@ class FF6WCWorld(World):
     def generate_output(self, output_directory: str):
         locations: Dict[str, str] = dict()
         # get all locations
-        for region in self.multiworld.regions:
-            if region.player == self.player:
-                for location in region.locations:
-                    assert location.item
-                    if location.name in Locations.minor_checks:
-                        location_name = Rom.treasure_chest_data[location.name][2]
-                    elif location.name in Locations.minor_ext_checks:
-                        location_name = Rom.treasure_chest_data[location.name][2]
-                    else:
-                        location_name = location.name
-                    location_name = str(location_name)  # dict needs str keys
-                    locations[location_name] = "Archipelago Item"
-                    if location.item.player == self.player:
-                        if location_name in Locations.major_checks or location.item.name in Items.items:
-                            locations[location_name] = location.item.name
+        for location in self.multiworld.get_locations(self.player):
+            assert location.item
+            if location.name in Locations.minor_checks:
+                location_name = Rom.treasure_chest_data[location.name][2]
+            elif location.name in Locations.minor_ext_checks:
+                location_name = Rom.treasure_chest_data[location.name][2]
+            else:
+                location_name = location.name
+            location_name = str(location_name)  # dict needs str keys
+            locations[location_name] = "Archipelago Item"
+            if location.item.player == self.player:
+                if location_name in Locations.major_checks or location.item.name in Items.items:
+                    locations[location_name] = location.item.name
         self.rom_name_text = f'6WC{Utils.__version__.replace(".", "")[0:3]}_{self.player}_{self.multiworld.seed:11}'
         self.rom_name_text = self.rom_name_text[:20]
         self.romName = bytearray(self.rom_name_text, 'utf-8')
@@ -574,6 +589,22 @@ class FF6WCWorld(World):
         locations["RomName"] = self.rom_name_text
 
         assert not (self.flagstring is None), "need flagstring from earlier generation step"
+        if self.options.Treasuresanity.value != Treasuresanity.option_off:
+            wc_event_locations = [
+                loc
+                for loc in self.multiworld.get_locations(self.player)
+                if loc.name in Locations.checks_that_need_dialog_for_items
+            ]
+            ir_flag = build_ir_from_placements(wc_event_locations)
+            try:
+                ir_index = self.flagstring.index("-ir")
+            except ValueError:
+                ir_index = -1
+            if ir_index == -1:
+                self.flagstring.extend(ir_flag)
+            else:
+                self.flagstring[ir_index:ir_index+2] = ir_flag
+        verify_flagstring(self.flagstring)
         gen_data = GenData(locations, self.flagstring)
         out_file_base = self.multiworld.get_out_file_name_base(self.player)
         patch_file_name = os.path.join(output_directory, f"{out_file_base}{FF6WCPatch.patch_file_ending}")

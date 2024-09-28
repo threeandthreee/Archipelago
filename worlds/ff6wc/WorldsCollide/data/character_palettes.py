@@ -79,7 +79,8 @@ class CharacterPalettes:
 
         for palette_index, palette_file in enumerate(self.args.palette_files):
             if modified[palette_index]:
-                palette_data = list(pkgutil.get_data(__name__, palette_file))
+                from ..graphics.palettes.palettes import get_palette_data
+                palette_data = list(get_palette_data(palette_file))
 
                 self.field_palettes[palette_index].data = palette_data
                 self.battle_palettes[palette_index].data = palette_data
@@ -105,7 +106,8 @@ class CharacterPalettes:
         for index, portrait_palette_file in enumerate(self.args.portrait_palette_files):
             if self.args.portrait_ids[index] != DEFAULT_CHARACTER_PORTRAITS[index]:
                 character = PORTRAIT_CHARACTERS[index]
-                palette_data = list(pkgutil.get_data(__name__, portrait_palette_file))
+                from ..graphics.portraits.portraits import get_portrait_data
+                palette_data = list(get_portrait_data(portrait_palette_file))
                 self.portrait_palettes[character].data = palette_data
 
     def mod(self):

@@ -1,4 +1,4 @@
-from BaseClasses import Location
+from BaseClasses import Location, CollectionState
 from .GameID import jak1_name
 from .locs import (OrbLocations as Orbs,
                    CellLocations as Cells,
@@ -10,10 +10,17 @@ from .locs import (OrbLocations as Orbs,
 class JakAndDaxterLocation(Location):
     game: str = jak1_name
 
+    # In AP 0.5.0, the base Location.can_reach function had its two boolean conditions swapped for a faster
+    # short-circuit for better performance. However, Jak seeds actually generate faster using the older method,
+    # which has been re-implemented below.
+    def can_reach(self, state: CollectionState) -> bool:
+        assert self.parent_region, "Can't reach location without region"
+        return self.parent_region.can_reach(state) and self.access_rule(state)
 
-# All Locations
+
+# Different tables for location groups.
 # Each Item ID == its corresponding Location ID. While we're here, do all the ID conversions needed.
-location_table = {
+cell_location_table = {
     **{Cells.to_ap_id(k): Cells.loc7SF_cellTable[k] for k in Cells.loc7SF_cellTable},
     **{Cells.to_ap_id(k): Cells.locGR_cellTable[k] for k in Cells.locGR_cellTable},
     **{Cells.to_ap_id(k): Cells.locSV_cellTable[k] for k in Cells.locSV_cellTable},
@@ -30,7 +37,10 @@ location_table = {
     **{Cells.to_ap_id(k): Cells.locSC_cellTable[k] for k in Cells.locSC_cellTable},
     **{Cells.to_ap_id(k): Cells.locSM_cellTable[k] for k in Cells.locSM_cellTable},
     **{Cells.to_ap_id(k): Cells.locLT_cellTable[k] for k in Cells.locLT_cellTable},
-    **{Cells.to_ap_id(k): Cells.locGMC_cellTable[k] for k in Cells.locGMC_cellTable},
+    **{Cells.to_ap_id(k): Cells.locGMC_cellTable[k] for k in Cells.locGMC_cellTable}
+}
+
+scout_location_table = {
     **{Scouts.to_ap_id(k): Scouts.locGR_scoutTable[k] for k in Scouts.locGR_scoutTable},
     **{Scouts.to_ap_id(k): Scouts.locSV_scoutTable[k] for k in Scouts.locSV_scoutTable},
     **{Scouts.to_ap_id(k): Scouts.locFJ_scoutTable[k] for k in Scouts.locFJ_scoutTable},
@@ -46,8 +56,18 @@ location_table = {
     **{Scouts.to_ap_id(k): Scouts.locSC_scoutTable[k] for k in Scouts.locSC_scoutTable},
     **{Scouts.to_ap_id(k): Scouts.locSM_scoutTable[k] for k in Scouts.locSM_scoutTable},
     **{Scouts.to_ap_id(k): Scouts.locLT_scoutTable[k] for k in Scouts.locLT_scoutTable},
-    **{Scouts.to_ap_id(k): Scouts.locGMC_scoutTable[k] for k in Scouts.locGMC_scoutTable},
-    **{Specials.to_ap_id(k): Specials.loc_specialTable[k] for k in Specials.loc_specialTable},
-    **{Caches.to_ap_id(k): Caches.loc_orbCacheTable[k] for k in Caches.loc_orbCacheTable},
-    **{Orbs.to_ap_id(k): Orbs.loc_orbBundleTable[k] for k in Orbs.loc_orbBundleTable}
+    **{Scouts.to_ap_id(k): Scouts.locGMC_scoutTable[k] for k in Scouts.locGMC_scoutTable}
+}
+
+special_location_table = {Specials.to_ap_id(k): Specials.loc_specialTable[k] for k in Specials.loc_specialTable}
+cache_location_table = {Caches.to_ap_id(k): Caches.loc_orbCacheTable[k] for k in Caches.loc_orbCacheTable}
+orb_location_table = {Orbs.to_ap_id(k): Orbs.loc_orbBundleTable[k] for k in Orbs.loc_orbBundleTable}
+
+# All Locations
+location_table = {
+    **cell_location_table,
+    **scout_location_table,
+    **special_location_table,
+    **cache_location_table,
+    **orb_location_table
 }
