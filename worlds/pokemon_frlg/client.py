@@ -1,20 +1,20 @@
-from typing import TYPE_CHECKING, Dict, List, Set, Tuple
+from typing import TYPE_CHECKING, Dict, List, Optional, Set, Tuple
 from NetUtils import ClientStatus
+from Options import Toggle
 import worlds._bizhawk as bizhawk
 from worlds._bizhawk.client import BizHawkClient
-from .data import data
+from .data import data, FAMESANITY_OFFSET
 from .items import reverse_offset_item_value
 from .locations import offset_flag
+from .options import Goal
 
 if TYPE_CHECKING:
     from worlds._bizhawk.context import BizHawkClientContext
-
 
 BASE_ROM_NAME: Dict[str, str] = {
     "firered": "pokemon red version",
     "leafgreen": "pokemon green version"
 }
-
 
 EXPECTED_ROM_NAME: Dict[str, str] = {
     "firered": "pokemon red version AP",
@@ -22,7 +22,6 @@ EXPECTED_ROM_NAME: Dict[str, str] = {
     "firered_rev1": "pokemon red version AP Rev 1",
     "leafgreen_rev1": "pokemon green version AP Rev 1",
 }
-
 
 TRACKER_EVENT_FLAGS = [
     "FLAG_DEFEATED_BROCK",
@@ -38,16 +37,19 @@ TRACKER_EVENT_FLAGS = [
     "FLAG_GOT_SS_TICKET",  # Saved Bill in the Route 25 Sea Cottage
     "FLAG_RESCUED_MR_FUJI",
     "FLAG_HIDE_SAFFRON_ROCKETS",  # Liberated Silph Co.
-    "FLAG_SYS_CAN_LINK_WITH_RS",  # Restored Pokémon Network Machine
+    "FLAG_DEFEATED_CHAMP",
     "FLAG_RESCUED_LOSTELLE",
     "FLAG_SEVII_DETOUR_FINISHED",  # Gave Meteorite to Lostelle's Dad
+    "FLAG_LEARNED_GOLDEEN_NEED_LOG",
     "FLAG_HIDE_RUIN_VALLEY_SCIENTIST",  # Helped Lorelei in Icefall Cave
+    "FLAG_RESCUED_SELPHY",
     "FLAG_LEARNED_YES_NAH_CHANSEY",
-    "FLAG_DEFEATED_CHAMP",
+    "FLAG_DEFEATED_ROCKETS_IN_WAREHOUSE",  # Freed Pokémon in Rocket Warehouse
+    "FLAG_SYS_CAN_LINK_WITH_RS",  # Restored Pokémon Network Machine
+    "FLAG_DEFEATED_CHAMP_REMATCH",
     "FLAG_PURCHASED_LEMONADE"
 ]
 EVENT_FLAG_MAP = {data.constants[flag_name]: flag_name for flag_name in TRACKER_EVENT_FLAGS}
-
 
 TRACKER_FLY_UNLOCK_FLAGS = [
     "FLAG_WORLD_MAP_PALLET_TOWN",
@@ -72,7 +74,6 @@ TRACKER_FLY_UNLOCK_FLAGS = [
     "FLAG_WORLD_MAP_SEVEN_ISLAND"
 ]
 FLY_UNLOCK_FLAG_MAP = {data.constants[flag_name]: flag_name for flag_name in TRACKER_FLY_UNLOCK_FLAGS}
-
 
 MAP_SECTION_EDGES: Dict[str, List[Tuple[int, int]]] = {
     "MAP_ROUTE2": [(23, 39)],
@@ -115,6 +116,7 @@ class PokemonFRLGClient(BizHawkClient):
     system = "GBA"
     patch_suffix = (".apfirered", ".apleafgreen", ".apfireredrev1", ".apleafgreenrev1")
     game_version: str
+    goal_flag: Optional[int]
     local_checked_locations: Set[int]
     local_set_events: Dict[str, bool]
     local_set_fly_unlocks: Dict[str, bool]
@@ -124,6 +126,7 @@ class PokemonFRLGClient(BizHawkClient):
     def __init__(self) -> None:
         super().__init__()
         self.game_version = None
+        self.goal_flag = None
         self.local_checked_locations = set()
         self.local_set_events = {}
         self.local_set_fly_unlocks = {}
@@ -180,6 +183,11 @@ class PokemonFRLGClient(BizHawkClient):
         if ctx.server is None or ctx.server.socket.closed or ctx.slot_data is None:
             return
 
+        if ctx.slot_data["goal"] == Goal.option_elite_four:
+            self.goal_flag = data.constants["FLAG_DEFEATED_CHAMP"]
+        if ctx.slot_data["goal"] == Goal.option_elite_four_rematch:
+            self.goal_flag = data.constants["FLAG_DEFEATED_CHAMP_REMATCH"]
+
         try:
             guards: Dict[str, Tuple[int, bytes, str]] = {}
 
@@ -214,7 +222,7 @@ class PokemonFRLGClient(BizHawkClient):
             # Read flags in 2 chunks
             read_result = await bizhawk.guarded_read(
                 ctx.bizhawk_ctx,
-                [(sb1_address + 0x1090, 0x90, "System Bus")],  # Flags
+                [(sb1_address + 0x10E0, 0x90, "System Bus")],  # Flags
                 [guards["IN OVERWORLD"], guards["SAVE BLOCK 1"]]
             )
 
@@ -225,23 +233,25 @@ class PokemonFRLGClient(BizHawkClient):
 
             read_result = await bizhawk.guarded_read(
                 ctx.bizhawk_ctx,
-                [(sb1_address + 0x1120, 0x90, "System Bus")],  # Flags continued
+                [(sb1_address + 0x1170, 0x90, "System Bus")],  # Flags continued
                 [guards["IN OVERWORLD"], guards["SAVE BLOCK 1"]]
             )
 
             if read_result is not None:
                 flag_bytes += read_result[0]
 
+            # Read pokedex flags
+            pokemon_caught_bytes = bytes(0)
+            pokedex_read_status = False
             read_result = await bizhawk.guarded_read(
                 ctx.bizhawk_ctx,
                 [(sb2_address + 0x028, 0x34, "System Bus")],  # Caught Pokémon
                 [guards["IN OVERWORLD"], guards["SAVE BLOCK 2"]]
             )
 
-            if read_result is None:  # Not in overworld or save block moved
-                return
-
-            pokemon_caught_bytes = read_result[0]
+            if read_result is not None:
+                pokemon_caught_bytes = read_result[0]
+                pokedex_read_status = True
 
             game_clear = False
             local_set_events = {flag_name: False for flag_name in TRACKER_EVENT_FLAGS}
@@ -259,7 +269,7 @@ class PokemonFRLGClient(BizHawkClient):
                         if location_id in ctx.server_locations:
                             local_checked_locations.add(location_id)
 
-                        if flag_id == data.constants["FLAG_DEFEATED_CHAMP"]:
+                        if flag_id == self.goal_flag:
                             game_clear = True
 
                         if flag_id in EVENT_FLAG_MAP:
@@ -269,10 +279,11 @@ class PokemonFRLGClient(BizHawkClient):
                             local_set_fly_unlocks[FLY_UNLOCK_FLAG_MAP[flag_id]] = True
 
             # Get caught Pokémon count
-            for byte_i, byte in enumerate(pokemon_caught_bytes):
-                for i in range(8):
-                    if byte & (1 << i) != 0:
-                        caught_pokemon += 1
+            if pokedex_read_status:
+                for byte_i, byte in enumerate(pokemon_caught_bytes):
+                    for i in range(8):
+                        if byte & (1 << i) != 0:
+                            caught_pokemon += 1
 
             # Send locations
             if local_checked_locations != self.local_checked_locations:
@@ -286,6 +297,7 @@ class PokemonFRLGClient(BizHawkClient):
 
             # Send game clear
             if not ctx.finished_game and game_clear:
+                ctx.finished_game = True
                 await ctx.send_msgs([{
                     "cmd": "StatusUpdate",
                     "status": ClientStatus.CLIENT_GOAL,
@@ -324,15 +336,16 @@ class PokemonFRLGClient(BizHawkClient):
                 self.local_set_fly_unlocks = local_set_fly_unlocks
 
             # Send caught Pokémon amount
-            if caught_pokemon != self.caught_pokemon and ctx.slot is not None:
-                await ctx.send_msgs([{
-                    "cmd": "Set",
-                    "key": f"pokemon_frlg_pokedex_{ctx.team}_{ctx.slot}",
-                    "default": 0,
-                    "want_reply": False,
-                    "operations": [{"operation": "replace", "value": caught_pokemon},]
-                }])
-                self.caught_pokemon = caught_pokemon
+            if pokedex_read_status:
+                if caught_pokemon != self.caught_pokemon and ctx.slot is not None:
+                    await ctx.send_msgs([{
+                        "cmd": "Set",
+                        "key": f"pokemon_frlg_pokedex_{ctx.team}_{ctx.slot}",
+                        "default": 0,
+                        "want_reply": False,
+                        "operations": [{"operation": "replace", "value": caught_pokemon},]
+                    }])
+                    self.caught_pokemon = caught_pokemon
 
         except bizhawk.RequestFailedError:
             # Exit handler and return to main loop to reconnect
@@ -352,7 +365,7 @@ class PokemonFRLGClient(BizHawkClient):
         read_result = await bizhawk.guarded_read(
             ctx.bizhawk_ctx,
             [
-                (sb1_address + 0x3D88, 2, "System Bus"),
+                (sb1_address + 0x3DD8, 2, "System Bus"),
                 (received_item_address + 4, 1, "System Bus")
             ],
             [guards["IN OVERWORLD"], guards["SAVE BLOCK 1"]]

@@ -4,7 +4,7 @@ import threading
 import pkgutil
 
 
-from typing import List, Set, Dict
+from typing import List, Set, Dict, TextIO
 from BaseClasses import Item, MultiWorld, Location, Tutorial, ItemClassification
 from Fill import fill_restrictive
 from worlds.AutoWorld import World, WebWorld
@@ -17,6 +17,7 @@ from .setup_game import setup_gamevars, place_static_items
 from .enemy_data import initialize_enemies
 from .flavor_data import create_flavors
 from .local_data import item_id_table
+from .text_data import spoiler_psi, spoiler_starts, spoiler_badges
 from .Client import EarthBoundClient
 from .Rules import set_location_rules
 from .Rom import LocalRom, patch_rom, get_base_rom_path, EBProcPatch, valid_hashes
@@ -56,7 +57,7 @@ class EarthBoundWorld(World):
     game = "EarthBound"
     option_definitions = EBOptions
     data_version = 1
-    required_client_version = (0, 5, 0) #Change when 0.5.0 releases
+    required_client_version = (0, 5, 0)  # Change when 0.5.0 releases
 
     item_name_to_id = {item: item_table[item].code for item in item_table}
     location_name_to_id = {location.name: location.code for
@@ -65,7 +66,7 @@ class EarthBoundWorld(World):
 
     web = EBWeb()
     settings: typing.ClassVar[EBSettings]
-    #topology_present = True
+    # topology_present = True
 
     options_dataclass = EBOptions
     options: EBOptions
@@ -80,6 +81,7 @@ class EarthBoundWorld(World):
         self.locked_locations = []
         self.location_cache = []
         self.event_count = 8
+        self.world_version = "2.1"
 
     def fill_slot_data(self) -> Dict[str, List[int]]:
         return {
@@ -87,8 +89,43 @@ class EarthBoundWorld(World):
             "pizza_logic": self.options.monkey_caves_mode.value
         }
 
+    def write_spoiler_header(self, spoiler_handle: TextIO) -> None:
+        spoiler_handle.write(f"\nStarting Location:    {spoiler_starts[self.start_location]}\n")
+        spoiler_handle.write(f"Franklin Badge Protection:    {spoiler_badges[self.franklin_protection]}\n")
+        if self.options.psi_shuffle:
+            spoiler_handle.write(f"Favorite Thing PSI Slot:    {spoiler_psi[self.offensive_psi_slots[0]]}\n")
+            spoiler_handle.write(f"Ness Offensive PSI Middle Slot:    {spoiler_psi[self.offensive_psi_slots[1]]}\n")
+            spoiler_handle.write(f"Paula Offensive PSI Top Slot:    {spoiler_psi[self.offensive_psi_slots[2]]}\n")
+            spoiler_handle.write(f"Paula/Poo Offensive PSI Middle Slot:    {spoiler_psi[self.offensive_psi_slots[3]]}\n")
+            spoiler_handle.write(f"Paula/Poo Offensive PSI Bottom Slot:    {spoiler_psi[self.offensive_psi_slots[4]]}\n")
+            spoiler_handle.write(f"Poo Progressive PSI Slot:    {spoiler_psi[self.offensive_psi_slots[5]]}\n")
+
+            spoiler_handle.write(f"Ness/Poo Shield Slot:    {spoiler_psi[self.shield_slots[0]]}\n")
+            spoiler_handle.write(f"Paula Shield Slot:    {spoiler_psi[self.shield_slots[1]]}\n")
+
+            spoiler_handle.write(f"Ness Assist PSI Middle Slot:    {spoiler_psi[self.assist_psi_slots[0]]}\n")
+            spoiler_handle.write(f"Ness Assist PSI Bottom Slot:    {spoiler_psi[self.assist_psi_slots[1]]}\n")
+            spoiler_handle.write(f"Paula Assist PSI Middle Slot:    {spoiler_psi[self.assist_psi_slots[2]]}\n")
+            spoiler_handle.write(f"Paula Assist PSI Bottom Slot:    {spoiler_psi[self.assist_psi_slots[3]]}\n")
+            spoiler_handle.write(f"Poo Assist PSI Slot:    {spoiler_psi[self.assist_psi_slots[4]]}\n")
+        if self.options.psi_shuffle == 2:
+            spoiler_handle.write(f"Bomb/Bazooka Slot:    {spoiler_psi[self.jeff_offense_items[0]]}\n")
+            spoiler_handle.write(f"Bottle Rocket Slot:    {spoiler_psi[self.jeff_offense_items[1]]}\n")
+
+            spoiler_handle.write(f"Spray Can Slot:    {spoiler_psi[self.jeff_assist_items[0]]}\n")
+            spoiler_handle.write(f"Multi-Level Gadget Slot 1:    {spoiler_psi[self.jeff_assist_items[1]]}\n")
+            spoiler_handle.write(f"Single-Level Gadget Slot 1:    {spoiler_psi[self.jeff_assist_items[2]]}\n")
+            spoiler_handle.write(f"Single-Level Gadget Slot 2:    {spoiler_psi[self.jeff_assist_items[3]]}\n")
+            spoiler_handle.write(f"Multi-Level Gadget Slot 2:    {spoiler_psi[self.jeff_assist_items[4]]}\n")
+
+            
+
+
     def create_item(self, name: str) -> Item:
         data = item_table[name]
+        if data.category == "Jeff Weapons" and self.options.progressive_weapons:
+            name = "Progressive Gun"
+            data = item_table[name]
         return Item(name, data.classification, data.code, self.player)
 
     def create_regions(self) -> None:
@@ -97,12 +134,11 @@ class EarthBoundWorld(World):
 
     def create_items(self) -> None:
         pool = self.get_item_pool(self.get_excluded_items())
-
         self.generate_filler(pool)
 
         self.multiworld.itempool += pool
 
-    def roll_filler(self) -> str: #Todo: make this suck less
+    def roll_filler(self) -> str:  # Todo: make this suck less
         weights = {"rare": self.options.rare_filler_weight.value, "uncommon": self.options.uncommon_filler_weight.value, "common": self.options.common_filler_weight.value,
                    "rare_gear": int(self.options.rare_filler_weight.value * 0.5), "uncommon_gear": int(self.options.uncommon_filler_weight.value * 0.5),
                    "common_gear": int(self.options.common_filler_weight.value * 0.5)}
@@ -118,13 +154,13 @@ class EarthBoundWorld(World):
         }
         return self.random.choice(weight_table[filler_type])
 
-    def generate_early(self): #Todo: place locked items in generate_early
+    def generate_early(self):  # Todo: place locked items in generate_early
         self.locals = []
         local_space_count = 0
         for item_name, amount in self.options.start_inventory.items():
             if item_name in item_id_table:
                 local_space_count += amount
-                if local_space_count > 12:
+                if local_space_count > 12 and not self.options.remote_items:
                     player = self.multiworld.get_player_name(self.player)
                     raise OptionError(f"{player}: start_inventory cannot place more than 12 items into 'Goods'. Attempted to place {local_space_count} Goods items.")
         setup_gamevars(self)
@@ -173,6 +209,27 @@ class EarthBoundWorld(World):
 
     def set_classifications(self, name: str) -> Item:
         data = item_table[name]
+        if data.category == "Ness Weapons" and self.options.progressive_weapons:
+            name = "Progressive Bat"
+            data = item_table[name]
+            
+        if data.category == "Paula Weapons" and self.options.progressive_weapons:
+            name = "Progressive Fry Pan"
+            data = item_table[name]
+
+        if data.category == "Jeff Weapons" and self.options.progressive_weapons:
+            name = "Progressive Gun"
+            data = item_table[name]
+        item = Item(name, data.classification, data.code, self.player)
+
+        if data.category == "Arm Equipment" and self.options.progressive_armor:
+            name = "Progressive Bracelet"
+            data = item_table[name]
+        item = Item(name, data.classification, data.code, self.player)
+
+        if data.category == "Other Equipment" and self.options.progressive_armor:
+            name = "Progressive Other"
+            data = item_table[name]
         item = Item(name, data.classification, data.code, self.player)
 
         if name == "Magicant Teleport" and self.options.magicant_mode == 3:
@@ -180,7 +237,7 @@ class EarthBoundWorld(World):
         return item
 
     def generate_filler(self, pool: List[Item]) -> None:
-        for _ in range(len(self.multiworld.get_unfilled_locations(self.player)) - len(pool) - self.event_count): #Change to fix event count
+        for _ in range(len(self.multiworld.get_unfilled_locations(self.player)) - len(pool) - self.event_count):  # Change to fix event count
             item = self.set_classifications(self.roll_filler())
             pool.append(item)
 

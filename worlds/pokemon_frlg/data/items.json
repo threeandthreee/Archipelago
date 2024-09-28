@@ -96,6 +96,56 @@
     "classification": "PROGRESSION",
     "tags": ["Unique"]
   },
+  "ITEM_CARD_KEY_2F": {
+    "name": "Card Key 2F",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
+  "ITEM_CARD_KEY_3F": {
+    "name": "Card Key 3F",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
+  "ITEM_CARD_KEY_4F": {
+    "name": "Card Key 4F",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
+  "ITEM_CARD_KEY_5F": {
+    "name": "Card Key 5F",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
+  "ITEM_CARD_KEY_6F": {
+    "name": "Card Key 6F",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
+  "ITEM_CARD_KEY_7F": {
+    "name": "Card Key 7F",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
+  "ITEM_CARD_KEY_8F": {
+    "name": "Card Key 8F",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
+  "ITEM_CARD_KEY_9F": {
+    "name": "Card Key 9F",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
+  "ITEM_CARD_KEY_10F": {
+    "name": "Card Key 10F",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
+  "ITEM_CARD_KEY_11F": {
+    "name": "Card Key 11F",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
   "ITEM_COIN_CASE": {
     "name": "Coin Case",
     "classification": "PROGRESSION",
@@ -108,7 +158,17 @@
   },
   "ITEM_FAME_CHECKER": {
     "name": "Fame Checker",
-    "classification": "FILLER",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
+  "ITEM_FIVE_PASS": {
+    "name": "Five Pass",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
+  "ITEM_FOUR_PASS": {
+    "name": "Four Pass",
+    "classification": "PROGRESSION",
     "tags": ["Unique"]
   },
   "ITEM_GOOD_ROD": {
@@ -176,6 +236,11 @@
     "classification": "PROGRESSION",
     "tags": ["Unique"]
   },
+  "ITEM_ONE_PASS": {
+    "name": "One Pass",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
   "ITEM_POKE_FLUTE": {
     "name": "Poke Flute",
     "classification": "PROGRESSION",
@@ -184,6 +249,16 @@
   "ITEM_POWDER_JAR": {
     "name": "Powder Jar",
     "classification": "FILLER",
+    "tags": ["Unique"]
+  },
+  "ITEM_PROG_CARD_KEY": {
+    "name": "Progressive Card Key",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
+  "ITEM_PROG_PASS": {
+    "name": "Progressive Pass",
+    "classification": "PROGRESSION",
     "tags": ["Unique"]
   },
   "ITEM_RAINBOW_PASS": {
@@ -211,8 +286,18 @@
     "classification": "PROGRESSION",
     "tags": ["Unique"]
   },
+  "ITEM_SEVEN_PASS": {
+    "name": "Seven Pass",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
   "ITEM_SILPH_SCOPE": {
     "name": "Silph Scope",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
+  "ITEM_SIX_PASS": {
+    "name": "Six Pass",
     "classification": "PROGRESSION",
     "tags": ["Unique"]
   },
@@ -236,6 +321,11 @@
     "classification": "FILLER",
     "tags": ["Unique"]
   },
+  "ITEM_THREE_PASS": {
+    "name": "Three Pass",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
   "ITEM_TOWN_MAP": {
     "name": "Town Map",
     "classification": "PROGRESSION",
@@ -246,9 +336,14 @@
     "classification": "PROGRESSION",
     "tags": ["Unique"]
   },
+  "ITEM_TWO_PASS": {
+    "name": "Two Pass",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
   "ITEM_VS_SEEKER": {
     "name": "Vs. Seeker",
-    "classification": "FILLER",
+    "classification": "PROGRESSION",
     "tags": ["Unique"]
   },
 
@@ -1579,5 +1674,26 @@
     "name": "TM50",
     "classification": "USEFUL",
     "tags": ["TM"]
+  },
+
+  "ITEM_COINS_10": {
+    "name": "10 Coins",
+    "classification": "FILLER",
+    "tags": ["Coins"]
+  },
+  "ITEM_COINS_20": {
+    "name": "20 Coins",
+    "classification": "FILLER",
+    "tags": ["Coins"]
+  },
+  "ITEM_COINS_40": {
+    "name": "40 Coins",
+    "classification": "FILLER",
+    "tags": ["Coins"]
+  },
+  "ITEM_COINS_100": {
+    "name": "100 Coins",
+    "classification": "FILLER",
+    "tags": ["Coins"]
   }
 }

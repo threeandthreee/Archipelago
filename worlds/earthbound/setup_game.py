@@ -2,7 +2,7 @@ import struct
 from .flavor_data import random_flavors
 from .text_data import lumine_hall_text, eb_text_table
 from .local_data import item_id_table
-#from .psi_shuffle import shuffle_psi
+from .psi_shuffle import shuffle_psi
 
 
 def setup_gamevars(world):
@@ -228,6 +228,116 @@ def setup_gamevars(world):
         "explosive"
     ]
 
+    world.starting_progressive_bats = 0
+    world.starting_progressive_pans = 0
+    world.starting_progressive_guns = 0
+    world.starting_progressive_bracelets = 0
+    world.starting_progressive_others = 0
+
+    if world.options.prefixed_items:
+        world.broken_guns = [
+            "Magnum Air Gun",
+            "Laser Gun",
+            "Double Beam",
+            "Spectrum Beam",
+            "Baddest Beam",
+            "Gaia Beam"
+        ]
+    else:
+        world.broken_guns = [
+            "Broken Air Gun",
+            "Broken Laser",
+            "Broken Gadget",
+            "Broken Cannon",
+            "Broken Harmonica",
+            "Broken Antenna"
+        ]
+
+    world.bats = [
+        "Sand Lot Bat",
+        "Minor League Bat",
+        "Mr. Baseball Bat",
+        "T-Rex's Bat",
+        "Big League Bat",
+        "Hall of Fame Bat",
+        "Casey Bat",
+        "Magicant Bat",
+        "Legendary Bat"
+    ]
+
+    world.pans = [
+        "Fry Pan",
+        "Thick Fry Pan",
+        "Deluxe Fry Pan",
+        "Chef's Fry Pan",
+        "Non-Stick Fry Pan",
+        "French Fry Pan",
+        "Holy Fry Pan",
+        "Magic Fry Pan"
+    ]
+
+    world.guns = [
+        "Pop Gun",
+        "Stun Gun",
+        "Toy Air Gun",
+        world.broken_guns[0],
+        "Zip Gun",
+        world.broken_guns[1],
+        "Hyper Beam",
+        world.broken_guns[2],
+        "Crusher Beam",
+        world.broken_guns[3],
+        "Death Ray",
+        world.broken_guns[4],
+        "Moon Beam Gun",
+        world.broken_guns[5]
+    ]
+
+    world.bracelets = [
+        "Cheap Bracelet",
+        "Copper Bracelet",
+        "Silver Bracelet",
+        "Gold Bracelet",
+        "Platinum Band",
+        "Diamond Band",
+        "Pixie's Bracelet",
+        "Cherub's Band",
+        "Goddess Band"
+    ]
+
+    world.others = [
+        "Baseball Cap",
+        "Mr. Baseball Cap",
+        "Holmes Hat",
+        "Hard Hat",
+        "Coin of Slumber",
+        "Coin of Defense",
+        "Coin of Slience"
+        "Mr. Saturn Coin",
+        "Charm Coin",
+        "Lucky Coin",
+        "Talisman Coin",
+        "Shiny Coin",
+        "Souvenir Coin"
+
+    ]
+
+    world.progressive_item_groups = {
+        "Progressive Bat": world.bats,
+        "Progressive Fry Pan": world.pans,
+        "Progressive Gun": world.guns,
+        "Progressive Bracelet": world.bracelets,
+        "Progressive Other": world.others
+    }
+
+    world.start_prog_counts = {
+        "Progressive Bat": world.starting_progressive_bats,
+        "Progressive Fry Pan": world.starting_progressive_pans,
+        "Progressive Gun": world.starting_progressive_guns,
+        "Progressive Bracelet": world.starting_progressive_bracelets,
+        "Progressive Other": world.starting_progressive_others
+    }
+
     if world.options.randomize_franklinbadge_protection:
         world.franklin_protection = world.random.choice(world.franklinbadge_elements)
     else:
@@ -305,7 +415,7 @@ def setup_gamevars(world):
     filler_items = world.common_items + world.uncommon_items + world.rare_items + world.common_gear + world.uncommon_gear + world.rare_gear
     world.filler_drops = [item_id_table[i] for i in filler_items if i in item_id_table]
     world.filler_drops.append(0x00)
-    if not world.options.prefixed_items:
+    if world.options.prefixed_items:
         world.filler_drops.extend([0xA1, 0xD7, 0x8A, 0x2C, 0x30])
     else:
         world.filler_drops.extend([0x07, 0x05, 0x09, 0x0B, 0x10])
@@ -343,7 +453,7 @@ def setup_gamevars(world):
         else:
             world.prayer_player.extend([0x6F])
     world.prayer_player.extend([0x00])
-    #shuffle_psi(world)
+    shuffle_psi(world)
 
 
 def place_static_items(world):

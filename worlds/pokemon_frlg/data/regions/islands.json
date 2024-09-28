@@ -79,7 +79,10 @@
     "locations": [
       "NPC_GIFT_GOT_METEORITE",
       "NPC_GIFT_GOT_TRI_PASS",
-      "NPC_GIFT_GOT_RAINBOW_PASS"
+      "NPC_GIFT_GOT_RAINBOW_PASS",
+      "FAME_CHECKER_BILL_4",
+      "FAME_CHECKER_BILL_5",
+      "FAME_CHECKER_BILL_6"
     ],
     "events": [
       "EVENT_RESTORE_POKEMON_NETWORK_MACHINE"
@@ -284,7 +287,8 @@
     "has_fishing": false,
     "kanto": false,
     "locations": [
-      "NPC_GIFT_GOT_HM06"
+      "NPC_GIFT_GOT_HM06",
+      "FAME_CHECKER_BRUNO_4"
     ],
     "events": [],
     "exits": {},
@@ -333,7 +337,9 @@
     "has_fishing": false,
     "kanto": false,
     "locations": [
-      "ITEM_TWO_ISLAND_REVIVE"
+      "ITEM_TWO_ISLAND_REVIVE",
+      "NPC_GIFT_GOT_TWO_PASS",
+      "FAME_CHECKER_BRUNO_5"
     ],
     "events": [
       "EVENT_BUY_MARKET_LEMONADE"
@@ -561,7 +567,8 @@
       "TRAINER_BIKER_GOON_2_REWARD",
       "TRAINER_BIKER_GOON_3_REWARD",
       "TRAINER_CUE_BALL_PAXTON_REWARD",
-      "NPC_GIFT_GOT_FULL_RESTORE_FROM_THREE_ISLAND_DEFENDER"
+      "NPC_GIFT_GOT_FULL_RESTORE_FROM_THREE_ISLAND_DEFENDER",
+      "NPC_GIFT_GOT_THREE_PASS"
     ],
     "events": [],
     "exits": {
@@ -679,7 +686,9 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": false,
-    "locations": [],
+    "locations": [
+      "FAME_CHECKER_SABRINA_2"
+    ],
     "events": [],
     "exits": {},
     "warps": {
@@ -817,7 +826,9 @@
     "locations": [
       "HIDDEN_ITEM_FOUR_ISLAND_PEARL",
       "HIDDEN_ITEM_FOUR_ISLAND_ULTRA_BALL",
-      "ITEM_FOUR_ISLAND_STAR_PIECE"
+      "ITEM_FOUR_ISLAND_STAR_PIECE",
+      "FAME_CHECKER_LORELEI_5",
+      "FAME_CHECKER_LORELEI_6"
     ],
     "events": [],
     "exits": {
@@ -878,7 +889,9 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": false,
-    "locations": [],
+    "locations": [
+      "FAME_CHECKER_DAISY_6"
+    ],
     "events": [],
     "exits": {},
     "warps": {
@@ -969,7 +982,9 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": false,
-    "locations": [],
+    "locations": [
+      "FAME_CHECKER_LORELEI_3"
+    ],
     "events": [],
     "exits": {},
     "warps": {
@@ -1016,7 +1031,9 @@
     "has_water": false,
     "has_fishing": true,
     "kanto": false,
-    "locations": [],
+    "locations": [
+      "NPC_GIFT_GOT_FIVE_PASS"
+    ],
     "events": [],
     "exits": {
       "REGION_FIVE_ISLAND/WATER": "Five Island Town Surfing Spot",
@@ -1054,7 +1071,9 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": false,
-    "locations": [],
+    "locations": [
+      "FAME_CHECKER_LORELEI_4"
+    ],
     "events": [],
     "exits": {},
     "warps": {
@@ -1178,6 +1197,7 @@
     "has_fishing": true,
     "kanto": false,
     "locations": [
+      "FAME_CHECKER_DAISY_3",
       "TRAINER_PKMN_BREEDER_ALIZE_REWARD"
     ],
     "events": [
@@ -1261,7 +1281,10 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": false,
-    "locations": [],
+    "locations": [
+      "NPC_GIFT_GOT_LUXURY_BALL_FROM_RESORT_GORGEOUS_HOUSE",
+      "FAME_CHECKER_BLAINE_6"
+    ],
     "events": [],
     "exits": {},
     "warps": {
@@ -1309,6 +1332,7 @@
     "has_fishing": false,
     "kanto": false,
     "locations": [
+      "NPC_GIFT_GOT_SIX_PASS",
       "HIDDEN_ITEM_SIX_ISLAND_LEPPA_BERRY"
     ],
     "events": [],
@@ -1377,7 +1401,9 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": false,
-    "locations": [],
+    "locations": [
+      "FAME_CHECKER_AGATHA_6"
+    ],
     "events": [],
     "exits": {},
     "warps": {
@@ -1473,7 +1499,9 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": false,
-    "locations": [],
+    "locations": [
+      "NPC_GIFT_GOT_NEST_BALL_FROM_WATER_PATH_HOUSE_1"
+    ],
     "events": [],
     "exits": {},
     "warps": {
@@ -1671,7 +1699,9 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": false,
-    "locations": [],
+    "locations": [
+      "NPC_GIFT_GOT_SEVEN_PASS"
+    ],
     "events": [],
     "exits": {
       "REGION_SEVEN_ISLAND/VISIT": "Seven Island Town Visit",
@@ -1723,7 +1753,9 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": false,
-    "locations": [],
+    "locations": [
+      "FAME_CHECKER_AGATHA_4"
+    ],
     "events": [],
     "exits": {},
     "warps": {
@@ -1782,6 +1814,7 @@
       "ITEM_SEVEN_ISLAND_SEVAULT_CANYON_NUGGET",
       "TRAINER_TAMER_EVAN_REWARD",
       "ITEM_SEVEN_ISLAND_SEVAULT_CANYON_MAX_ELIXIR",
+      "FAME_CHECKER_BRUNO_6",
       "TRAINER_PKMN_RANGER_JACKSON_REWARD",
       "TRAINER_PKMN_RANGER_KATELYN_REWARD",
       "TRAINER_CRUSH_GIRL_CYNDY_REWARD",

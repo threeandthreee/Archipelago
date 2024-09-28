@@ -20,7 +20,7 @@
     { "from": "Quantum Moon", "to": "Quantum Shrine", "requires": [ { "item": "Shrine Door Codes" } ] },
     { "from": "Quantum Shrine", "to": "Sixth Location", "requires": [ { "item": "Entanglement Rule" } ] },
 
-    { "from": "Timber Hearth Village", "to": "Timber Hearth", "requires": [ { "item": "Launch Codes" } ] },
+    { "from": "Timber Hearth Village", "to": "Timber Hearth", "requires": [ { "item": "Spacesuit" } ] },
     { "from": "Timber Hearth", "to": "Timber Hearth Village", "requires": [] },
 
     // you can simply fall into the black hole inside BH instead of using the warp pad
@@ -103,5 +103,120 @@
     { "from": "Nomai Grave", "to": "The Vessel", "requires": [
         { "item": "Scout" }, // to launch into the DB seed at Nomai Grave
         { "item": "Spacesuit" } // to enter the Vessel
+    ] },
+
+    { "category": "dlc", "from": "Space", "to": "Stranger Sunside Hangar", "requires": [ { "item": "Spacesuit" } ] },
+    { "category": "dlc", "from": "Stranger Sunside Hangar", "to": "Space", "requires": [ { "item": "Launch Codes" } ] },
+
+    { "category": "dlc", "from": "Stranger Sunside Hangar", "to": "River Lowlands", "requires": [] },
+    { "category": "dlc", "from": "Stranger Sunside Hangar", "to": "Cinder Isles", "requires": [
+        { "item": "Stranger Light Modulator" }
+    ] },
+    { "category": "dlc", "from": "Stranger Sunside Hangar", "to": "Hidden Gorge", "requires": [
+        { "item": "Stranger Light Modulator" }
+    ] },
+    // This is the one "irl raft loop" connection where just swimming without a raft is safe, easy, and relevant to logic
+    // because you can get breach codes before SLM. Also, all Reservoir locations are reachable without a raft.
+    { "category": "dlc", "from": "Hidden Gorge", "to": "Reservoir", "requires": [] },
+    { "category": "dlc", "from": "Stranger Sunside Hangar", "to": "Reservoir", "requires": [
+        { "item": "Stranger Light Modulator" }
+    ] },
+    // this is from: Hangar instead of from: Space because from a stranger spawn you might do this suit-only, before Launch Codes
+    { "category": "dlc", "from": "Stranger Sunside Hangar", "to": "Hidden Gorge Laboratory", "requires": [
+        { "item": "Breach Override Codes" }
+    ] },
+    // the Breach Override Codes open both doors, so you can reach HG this way with no additional items
+    { "category": "dlc", "from": "Hidden Gorge Laboratory", "to": "Hidden Gorge", "requires": [] },
+
+    { "category": "dlc", "from": "River Lowlands", "to": "Shrouded Woodlands", "requires": [
+        { "item": "River Lowlands Painting Code" },
+        { "location": "EotE: Find an Artifact" }
+    ] },
+    { "category": "dlc", "from": "Cinder Isles", "to": "Starlit Cove", "requires": [
+        { "item": "Cinder Isles Painting Code" },
+        { "location": "EotE: Find an Artifact" }
+    ] },
+    { "category": "dlc", "from": "Hidden Gorge", "to": "Endless Canyon", "requires": [
+        { "item": "Hidden Gorge Painting Code" } // HG has its own artifact, so we don't need to check for that
+    ] },
+    { "category": "dlc", "from": "Reservoir", "to": "Subterranean Lake", "requires": [
+        { "location": "EotE: Find an Artifact" }
+    ] },
+
+    // we don't need e.g. "OR the RL Painting Code" here because if you can
+    // unlock the dock the vanilla way, this connection is no longer relevant
+    { "category": "dlc", "from": "Dream Raft Loop", "to": "Shrouded Woodlands", "requires": [ { "item": "Raft Docks Patch" } ] },
+    { "category": "dlc", "from": "Dream Raft Loop", "to": "Starlit Cove", "requires": [ { "item": "Raft Docks Patch" } ] },
+    { "category": "dlc", "from": "Dream Raft Loop", "to": "Endless Canyon", "requires": [ { "item": "Raft Docks Patch" } ] },
+
+    { "category": "dlc", "from": "Dream Raft Loop", "to": "Subterranean Lake (Out of Bounds)", "requires": [ { "item": "Limbo Warp Patch" } ] },
+    { "category": "dlc", "from": "Subterranean Lake (Out of Bounds)", "to": "Subterranean Lake", "requires": [] },
+
+    { "category": "dlc", "from": "Hidden Gorge", "to": "Abandoned Temple", "requires": [
+        { "item": "Ghost Matter Wavelength" },
+        { "item": "Stranger Light Modulator" }
+    ] },
+
+    { "category": "dlc", "from": "Cinder Isles", "to": "Cinder Isles Symbol Room", "requires": [
+        { "region": "Starlit Cove" }, // to extinguish the dream candles that unlock the real door
+        { "item": "Dream Totem Patch" } // project the dock
+    ] },
+
+    { "category": "dlc", "from": "Shrouded Woodlands", "to": "Dream Raft Loop", "requires": [
+        { "item": "Dream Totem Patch" } // extinguish door to dock, project raft
+    ] },
+    { "category": "dlc", "from": "Starlit Cove", "to": "Dream Raft Loop", "requires": [
+        { "item": "Dream Totem Patch" } // project dock and raft
+    ] },
+    { "category": "dlc", "from": "Endless Canyon", "to": "Dream Raft Loop", "requires": [
+        { "item": "Dream Totem Patch" } // project bridge, hand warp to project 2nd bridge, project raft
+    ] },
+
+    // The vanilla SW Archive route needs special logic because you must arrive at SW from the river loop
+    // instead of the green fire, since entering the archive requires waiting for the RL green fire to be
+    // extinguished by the dam breaking.
+    // Implementing this requires a bunch of "duplicate" (After Dam Breaks) regions to express that only
+    // dreamworld routes starting from the CI or HG green fires will work for this.
+    { "category": "dlc", "from": "Cinder Isles", "to": "Starlit Cove (After Dam Breaks)", "requires": [
+        { "item": "Cinder Isles Painting Code" },
+        { "location": "EotE: Find an Artifact" }
+    ] },
+    { "category": "dlc", "from": "Hidden Gorge", "to": "Endless Canyon (After Dam Breaks)", "requires": [
+        { "item": "Hidden Gorge Painting Code" } // HG has its own artifact, so we don't need to check for that
+    ] },
+    { "category": "dlc", "from": "Starlit Cove (After Dam Breaks)", "to": "Dream Raft Loop (After Dam Breaks)", "requires": [
+        { "item": "Dream Totem Patch" } // project dock and raft
+    ] },
+    { "category": "dlc", "from": "Endless Canyon (After Dam Breaks)", "to": "Dream Raft Loop (After Dam Breaks)", "requires": [
+        { "item": "Dream Totem Patch" } // project bridge, hand warp to project 2nd bridge, project raft
+    ] },
+    { "category": "dlc", "from": "Dream Raft Loop (After Dam Breaks)", "to": "Shrouded Woodlands Archive", "requires": [
+        { "anyOf": [
+            { "item": "River Lowlands Painting Code" }, // to open up the SW dock ahead of time
+            { "item": "Raft Docks Patch" } // to use the SW dock without opening it up ahead of time
+        ] },
+        { "item": "Dream Totem Patch" } // project covered bridge
+    ] },
+
+    // or if you have Limbo Warp Patch, you can get to SW archives right away via the lake
+    { "category": "dlc", "from": "Subterranean Lake (Out of Bounds)", "to": "Shrouded Woodlands Archive", "requires": [] },
+
+    // you can also use ^this path to reach SW itself without docks patch or RL painting, but
+    // only after dam breaks, and that's not worth the complexity of including it in logic
+
+    { "category": "dlc", "from": "Starlit Cove", "to": "Starlit Cove Archive", "requires": [
+        { "anyOf": [
+            { "item": "Dream Totem Patch" }, // hand warp to extinguish well lights
+            { "item": "Alarm Bypass Patch" } // or just walk past the alarms while dead
+        ] }
+    ] },
+
+    { "category": "dlc", "from": "Endless Canyon", "to": "Endless Canyon Archive", "requires": [
+        { "item": "Dream Totem Patch" } // extinguish lodge mural, project bridge, hand warp to project 2nd bridge
+    ] },
+
+    { "category": "dlc", "from": "Subterranean Lake (Out of Bounds)", "to": "Sealed Vault", "requires": [
+        { "item": "Projection Range Patch" },
+        { "item": "Alarm Bypass Patch" }
     ] }
 ]

@@ -211,6 +211,7 @@
     "has_fishing": false,
     "kanto": true,
     "locations": [
+      "FAME_CHECKER_BROCK_4",
       "HIDDEN_ITEM_ROUTE4_PERSIM_BERRY"
     ],
     "events": [],
@@ -349,12 +350,29 @@
     "locations": [],
     "events": [],
     "exits": {
+      "REGION_ROUTE5/NEAR_TUNNEL": "Route 5 Unobstructed Path",
       "REGION_CERULEAN_CITY/OUTSKIRTS": "Route 5 Exit"
     },
     "warps": {
-      "MAP_ROUTE5:0/MAP_UNDERGROUND_PATH_NORTH_ENTRANCE:0": "Underground Path North Entrance",
       "MAP_ROUTE5:1/MAP_ROUTE5_POKEMON_DAY_CARE:0": "Route 5 Pokemon Day Care",
       "MAP_ROUTE5:2,3/MAP_ROUTE5_SOUTH_ENTRANCE:0": "Route 5 Gate (North)"
+    }
+  },
+  "REGION_ROUTE5/NEAR_TUNNEL": {
+    "parent_map": "MAP_ROUTE5",
+    "name": "Route 5 Near Tunnel",
+    "encounter_region": null,
+    "has_land": false,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_ROUTE5/MAIN": "Route 5 Near Tunnel Unobstructed Path"
+    },
+    "warps": {
+      "MAP_ROUTE5:0/MAP_UNDERGROUND_PATH_NORTH_ENTRANCE:0": "Underground Path North Entrance"
     }
   },
   "REGION_ROUTE5_POKEMON_DAY_CARE/MAIN": {
@@ -426,12 +444,29 @@
     ],
     "events": [],
     "exits": {
+      "REGION_ROUTE6/NEAR_TUNNEL": "Route 6 Unobstructed Path",
       "REGION_ROUTE6/WATER": "Route 6 Surfing Spot",
       "REGION_VERMILION_CITY/MAIN": "Route 6 Exit"
     },
     "warps": {
-      "MAP_ROUTE6:0/MAP_UNDERGROUND_PATH_SOUTH_ENTRANCE:0": "Underground Path South Entrance",
       "MAP_ROUTE6:1,2/MAP_ROUTE6_NORTH_ENTRANCE:1": "Route 6 Gate (South)"
+    }
+  },
+  "REGION_ROUTE6/NEAR_TUNNEL": {
+    "parent_map": "MAP_ROUTE6",
+    "name": "Route 6 Near Tunnel",
+    "encounter_region": null,
+    "has_land": false,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_ROUTE6/MAIN": "Route 6 Near Tunnel Unobstructed Path"
+    },
+    "warps": {
+      "MAP_ROUTE6:0/MAP_UNDERGROUND_PATH_SOUTH_ENTRANCE:0": "Underground Path South Entrance"
     }
   },
   "REGION_ROUTE6/WATER": {
@@ -494,11 +529,28 @@
     ],
     "events": [],
     "exits": {
+      "REGION_ROUTE7/NEAR_TUNNEL": "Route 7 Unobstructed Path",
       "REGION_CELADON_CITY/MAIN": "Route 7 Exit"
     },
     "warps": {
-      "MAP_ROUTE7:0/MAP_UNDERGROUND_PATH_WEST_ENTRANCE:0": "Underground Path West Entrance",
       "MAP_ROUTE7:1/MAP_ROUTE7_EAST_ENTRANCE:0": "Route 7 Gate (West)"
+    }
+  },
+  "REGION_ROUTE7/NEAR_TUNNEL": {
+    "parent_map": "MAP_ROUTE7",
+    "name": "Route 7 Near Tunnel",
+    "encounter_region": null,
+    "has_land": false,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_ROUTE7/MAIN": "Route 7 Near Tunnel Unobstructed Path"
+    },
+    "warps": {
+      "MAP_ROUTE7:0/MAP_UNDERGROUND_PATH_WEST_ENTRANCE:0": "Underground Path West Entrance"
     }
   },
   "REGION_ROUTE7_EAST_ENTRANCE/WEST": {
@@ -560,10 +612,10 @@
     "events": [],
     "exits": {
       "REGION_ROUTE8/BEHIND_TREES": "Route 8 Cuttable Trees",
+      "REGION_ROUTE8/NEAR_TUNNEL": "Route 8 Unobstructed Path",
       "REGION_LAVENDER_TOWN/MAIN": "Route 8 Exit"
     },
     "warps": {
-      "MAP_ROUTE8:0/MAP_UNDERGROUND_PATH_EAST_ENTRANCE:0": "Underground Path East Entrance",
       "MAP_ROUTE8:1/MAP_ROUTE8_WEST_ENTRANCE:1": "Route 8 Gate (East)"
     }
   },
@@ -583,6 +635,23 @@
     "events": [],
     "exits": {},
     "warps": {}
+  },
+  "REGION_ROUTE8/NEAR_TUNNEL": {
+    "parent_map": "MAP_ROUTE8",
+    "name": "Route 8 Near Tunnel",
+    "encounter_region": null,
+    "has_land": false,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_ROUTE8/MAIN": "Route 8 Near Tunnel Unobstructed Path"
+    },
+    "warps": {
+      "MAP_ROUTE8:0/MAP_UNDERGROUND_PATH_EAST_ENTRANCE:0": "Underground Path East Entrance"
+    }
   },
   "REGION_ROUTE8_WEST_ENTRANCE/EAST": {
     "parent_map": "MAP_ROUTE8_WEST_ENTRANCE",
@@ -665,7 +734,7 @@
     ],
     "events": [],
     "exits": {
-      "REGION_ROUTE10/WATER": "Route 10 North Surfing Spot",
+      "REGION_ROUTE10/NORTH_WATER": "Route 10 North Surfing Spot",
       "REGION_ROUTE9/MAIN": "Route 10 North Exit"
     },
     "warps": {
@@ -676,10 +745,10 @@
   "REGION_ROUTE10/SOUTH": {
     "parent_map": "MAP_ROUTE10",
     "name": "Route 10 South",
-    "encounter_region": null,
+    "encounter_region": "Route 10",
     "has_land": false,
     "has_water": false,
-    "has_fishing": false,
+    "has_fishing": true,
     "kanto": true,
     "locations": [
       "TRAINER_PICNICKER_CAROL_REWARD",
@@ -690,15 +759,16 @@
     ],
     "events": [],
     "exits": {
+      "REGION_ROUTE10/SOUTH_WATER": "Route 10 South Surfing Spot",
       "REGION_LAVENDER_TOWN/MAIN": "Route 10 South Exit"
     },
     "warps": {
       "MAP_ROUTE10:1/MAP_ROCK_TUNNEL_1F:5": "Rock Tunnel (South)"
     }
   },
-  "REGION_ROUTE10/WATER": {
+  "REGION_ROUTE10/NORTH_WATER": {
     "parent_map": "MAP_ROUTE10",
-    "name": "Route 10 Water",
+    "name": "Route 10 North Water",
     "encounter_region": "Route 10",
     "has_land": false,
     "has_water": true,
@@ -708,7 +778,24 @@
     "events": [],
     "exits": {
       "REGION_ROUTE10/NORTH": "Route 10 North Landing",
+      "REGION_ROUTE10/SOUTH_WATER": "Route 10 Waterfall Drop",
       "REGION_ROUTE10/NEAR_POWER_PLANT": "Route 10 Near Power Plant Landing"
+    },
+    "warps": {}
+  },
+  "REGION_ROUTE10/SOUTH_WATER": {
+    "parent_map": "MAP_ROUTE10",
+    "name": "Route 10 South Water",
+    "encounter_region": "Route 10",
+    "has_land": false,
+    "has_water": true,
+    "has_fishing": true,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_ROUTE10/SOUTH": "Route 10 South Landing",
+      "REGION_ROUTE10/NORTH_WATER": "Route 10 Waterfall Ascend"
     },
     "warps": {}
   },
@@ -726,7 +813,7 @@
     ],
     "events": [],
     "exits": {
-      "REGION_ROUTE10/WATER": "Route 10 Near Power Plant Surfing Spot"
+      "REGION_ROUTE10/NORTH_WATER": "Route 10 Near Power Plant Surfing Spot"
     },
     "warps": {
       "MAP_ROUTE10:2/MAP_POWER_PLANT:0": "Power Plant (Front)"
@@ -910,7 +997,7 @@
     "locations": [],
     "events": [],
     "exits": {
-      "REGION_ROUTE12/UNDER_SNORLAX": "Route 12 West Play Poke Flute",
+      "REGION_ROUTE12/SNORLAX_AREA": "Route 12 West Play Poke Flute",
       "REGION_ROUTE11/EAST": "Route 12 West Exit"
     },
     "warps": {}
@@ -964,16 +1051,34 @@
     ],
     "events": [],
     "exits": {
-      "REGION_ROUTE12/SOUTH_WATER": "Route 12 Center Surfing Spot",
-      "REGION_ROUTE12/UNDER_SNORLAX": "Route 12 Center Play Poke Flute"
+      "REGION_ROUTE12/CENTER_WATER": "Route 12 Center Surfing Spot",
+      "REGION_ROUTE12/SNORLAX_AREA": "Route 12 Center Play Poke Flute"
     },
     "warps": {
       "MAP_ROUTE12:2/MAP_ROUTE12_NORTH_ENTRANCE_1F:1": "Route 12 Gate (South)"
     }
   },
-  "REGION_ROUTE12/UNDER_SNORLAX": {
+  "REGION_ROUTE12/CENTER_WATER": {
     "parent_map": "MAP_ROUTE12",
-    "name": "Route 12 Under Snorlax",
+    "name": "Route 12 Center Water",
+    "encounter_region": "Route 12",
+    "has_land": false,
+    "has_water": true,
+    "has_fishing": true,
+    "kanto": true,
+    "locations": [
+      "ITEM_ROUTE12_TM48"
+    ],
+    "events": [],
+    "exits": {
+      "REGION_ROUTE12/CENTER": "Route 12 Center Landing",
+      "REGION_ROUTE12/SOUTH_WATER": "Route 12 Center Water Unobstructed Path"
+    },
+    "warps": {}
+  },
+  "REGION_ROUTE12/SNORLAX_AREA": {
+    "parent_map": "MAP_ROUTE12",
+    "name": "Route 12 Snorlax Area",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -986,27 +1091,9 @@
       "STATIC_POKEMON_ROUTE12_SNORLAX"
     ],
     "exits": {
-      "REGION_ROUTE12/WEST": "Route 12 Under Snorlax Exit (West)",
-      "REGION_ROUTE12/CENTER": "Route 12 Under Snorlax Exit (North)",
-      "REGION_ROUTE12/SOUTH": "Route 12 Under Snorlax Exit (South)"
-    },
-    "warps": {}
-  },
-  "REGION_ROUTE12/SOUTH_WATER": {
-    "parent_map": "MAP_ROUTE12",
-    "name": "Route 12 South Water",
-    "encounter_region": "Route 12",
-    "has_land": false,
-    "has_water": true,
-    "has_fishing": true,
-    "kanto": true,
-    "locations": [
-      "ITEM_ROUTE12_TM48"
-    ],
-    "events": [],
-    "exits": {
-      "REGION_ROUTE12/CENTER": "Route 12 Center Landing",
-      "REGION_ROUTE12/SOUTH": "Route 12 South Landing"
+      "REGION_ROUTE12/WEST": "Route 12 Leave Snorlax Area (West)",
+      "REGION_ROUTE12/CENTER": "Route 12 Leave Snorlax Area (North)",
+      "REGION_ROUTE12/SOUTH": "Route 12 Leave Snorlax Area (South)"
     },
     "warps": {}
   },
@@ -1027,12 +1114,29 @@
       "REGION_ROUTE12/SOUTH_WATER": "Route 12 South Surfing Spot",
       "REGION_ROUTE12/BEHIND_NORTH_TREE": "Route 12 South Cuttable Tree (North)",
       "REGION_ROUTE12/BEHIND_SOUTH_TREE": "Route 12 South Cuttable Tree (South)",
-      "REGION_ROUTE12/UNDER_SNORLAX": "Route 12 South Play Poke Flute",
+      "REGION_ROUTE12/SNORLAX_AREA": "Route 12 South Play Poke Flute",
       "REGION_ROUTE13/MAIN": "Route 12 South Exit"
     },
     "warps": {
       "MAP_ROUTE12:0/MAP_ROUTE12_FISHING_HOUSE:0": "Route 12 Fishing House"
     }
+  },
+  "REGION_ROUTE12/SOUTH_WATER": {
+    "parent_map": "MAP_ROUTE12",
+    "name": "Route 12 South Water",
+    "encounter_region": "Route 12",
+    "has_land": false,
+    "has_water": true,
+    "has_fishing": true,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_ROUTE12/SOUTH": "Route 12 South Landing",
+      "REGION_ROUTE12/CENTER_WATER": "Route 12 South Water Unobstructed Path",
+      "REGION_ROUTE13/WATER": "Route 12 South Water Exit"
+    },
+    "warps": {}
   },
   "REGION_ROUTE12/BEHIND_NORTH_TREE": {
     "parent_map": "MAP_ROUTE12",
@@ -1074,7 +1178,8 @@
     "has_fishing": false,
     "kanto": true,
     "locations": [
-      "NPC_GIFT_GOT_SUPER_ROD"
+      "NPC_GIFT_GOT_SUPER_ROD",
+      "NPC_GIFT_GOT_NET_BALL_FROM_ROUTE12_FISHING_HOUSE"
     ],
     "events": [],
     "exits": {},
@@ -1169,7 +1274,10 @@
     "kanto": true,
     "locations": [],
     "events": [],
-    "exits": {},
+    "exits": {
+      "REGION_ROUTE13/MAIN": "Route 13 Landing",
+      "REGION_ROUTE12/SOUTH_WATER": "Route 13 Water Exit"
+    },
     "warps": {}
   },
   "REGION_ROUTE14/MAIN": {
@@ -1325,7 +1433,7 @@
     "events": [],
     "exits": {
       "REGION_ROUTE16/NORTHEAST": "Route 16 Southeast Cuttable Tree",
-      "REGION_ROUTE16/UNDER_SNORLAX": "Route 16 Southeast Play Poke Flute",
+      "REGION_ROUTE16/SNORLAX_AREA": "Route 16 Southeast Play Poke Flute",
       "REGION_CELADON_CITY/MAIN": "Route 16 Southeast Exit"
     },
     "warps": {}
@@ -1343,7 +1451,8 @@
     ],
     "events": [],
     "exits": {
-      "REGION_ROUTE16/SOUTHEAST": "Route 16 Northeast Cuttable Tree"
+      "REGION_ROUTE16/SOUTHEAST": "Route 16 Northeast Cuttable Tree",
+      "REGION_ROUTE16/CENTER": "Route 16 Northeast Smashable Rock"
     },
     "warps": {
       "MAP_ROUTE16:2/MAP_ROUTE16_NORTH_ENTRANCE_1F:1": "Route 16 Gate (Northeast)"
@@ -1365,9 +1474,9 @@
       "MAP_ROUTE16:1/MAP_ROUTE16_NORTH_ENTRANCE_1F:0": "Route 16 Gate (Northwest)"
     }
   },
-  "REGION_ROUTE16/UNDER_SNORLAX": {
+  "REGION_ROUTE16/SNORLAX_AREA": {
     "parent_map": "MAP_ROUTE16",
-    "name": "Route 16 Under Snorlax",
+    "name": "Route 16 Snorlax Area",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -1380,8 +1489,8 @@
       "STATIC_POKEMON_ROUTE16_SNORLAX"
     ],
     "exits": {
-      "REGION_ROUTE16/SOUTHEAST": "Route 16 Under Snorlax Exit (East)",
-      "REGION_ROUTE16/CENTER": "Route 16 Under Snorlax Exit (West)"
+      "REGION_ROUTE16/SOUTHEAST": "Route 16 Leave Snorlax Area (East)",
+      "REGION_ROUTE16/CENTER": "Route 16 Leave Snorlax Area (West)"
     },
     "warps": {}
   },
@@ -1396,7 +1505,8 @@
     "locations": [],
     "events": [],
     "exits": {
-      "REGION_ROUTE16/UNDER_SNORLAX": "Route 16 Center Play Poke Flute"
+      "REGION_ROUTE16/NORTHEAST": "Route 16 Center Smashable Rock",
+      "REGION_ROUTE16/SNORLAX_AREA": "Route 16 Center Play Poke Flute"
     },
     "warps": {
       "MAP_ROUTE16:4/MAP_ROUTE16_NORTH_ENTRANCE_1F:3": "Route 16 Gate (Southeast)"
@@ -1707,7 +1817,9 @@
     "has_water": false,
     "has_fishing": true,
     "kanto": true,
-    "locations": [],
+    "locations": [
+      "FAME_CHECKER_MISTY_4"
+    ],
     "events": [],
     "exits": {
       "REGION_ROUTE20/EAST": "Route 20 Near North Cave Surfing Spot"
@@ -1850,15 +1962,15 @@
     ],
     "events": [],
     "exits": {
-      "REGION_ROUTE23/WATER": "Route 23 South Surfing Spot"
+      "REGION_ROUTE23/SOUTH_WATER": "Route 23 South Surfing Spot"
     },
     "warps": {
       "MAP_ROUTE23:2/MAP_ROUTE22_NORTH_ENTRANCE:0": "Route 22 Gate (North)"
     }
   },
-  "REGION_ROUTE23/WATER": {
+  "REGION_ROUTE23/SOUTH_WATER": {
     "parent_map": "MAP_ROUTE23",
-    "name": "Route 23 Water",
+    "name": "Route 23 South Water",
     "encounter_region": "Route 23",
     "has_land": false,
     "has_water": true,
@@ -1870,7 +1982,42 @@
     "events": [],
     "exits": {
       "REGION_ROUTE23/SOUTH": "Route 23 South Landing",
-      "REGION_ROUTE23/CENTER": "Route 23 Center Landing"
+      "REGION_ROUTE23/NORTH_WATER": "Route 23 South Water Unobstructed Path"
+    },
+    "warps": {}
+  },
+  "REGION_ROUTE23/NORTH_WATER": {
+    "parent_map": "MAP_ROUTE23",
+    "name": "Route 23 North Water",
+    "encounter_region": "Route 23",
+    "has_land": false,
+    "has_water": true,
+    "has_fishing": true,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_ROUTE23/SOUTH_WATER": "Route 23 North Water Unobstructed Path",
+      "REGION_ROUTE23/NEAR_WATER": "Route 23 Near Water Landing"
+    },
+    "warps": {}
+  },
+  "REGION_ROUTE23/NEAR_WATER": {
+    "parent_map": "MAP_ROUTE23",
+    "name": "Route 23 Near Water",
+    "encounter_region": "Route 23",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": true,
+    "kanto": true,
+    "locations": [
+      "HIDDEN_ITEM_ROUTE23_ULTRA_BALL",
+      "HIDDEN_ITEM_ROUTE23_ASPEAR_BERRY"
+    ],
+    "events": [],
+    "exits": {
+      "REGION_ROUTE23/NORTH_WATER": "Route 23 Near Water Surfing Spot",
+      "REGION_ROUTE23/CENTER": "Route 23 Near Water Unobstructed Path"
     },
     "warps": {}
   },
@@ -1883,13 +2030,11 @@
     "has_fishing": true,
     "kanto": true,
     "locations": [
-      "HIDDEN_ITEM_ROUTE23_ULTRA_BALL",
-      "HIDDEN_ITEM_ROUTE23_ASPEAR_BERRY",
       "HIDDEN_ITEM_ROUTE23_FULL_RESTORE"
     ],
     "events": [],
     "exits": {
-      "REGION_ROUTE23/WATER": "Route 23 Center Surfing Spot",
+      "REGION_ROUTE23/NEAR_WATER": "Route 23 Center Unobstructed Path",
       "REGION_ROUTE23/NEAR_CAVE": "Route 23 Center Guard Checkpoint"
     },
     "warps": {}
@@ -1999,6 +2144,7 @@
       "TRAINER_YOUNGSTER_CHAD_REWARD",
       "HIDDEN_ITEM_ROUTE25_BLUK_BERRY",
       "TRAINER_LASS_HALEY_REWARD",
+      "FAME_CHECKER_MISTY_5",
       "HIDDEN_ITEM_ROUTE25_ETHER"
     ],
     "events": [],

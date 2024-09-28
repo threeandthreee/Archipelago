@@ -15,7 +15,7 @@ and export a config file.
 
 ## What does randomization do to this game?
 
-Buildings and gameplay mechanics, that you normally unlocks by completing a level, and upgrade improvements are put 
+Buildings and gameplay mechanics, that you normally unlock by completing a level, and upgrade improvements are put 
 into the item pool of the multiworld. Also, if enabled, the requirements for completing a level or buying an upgrade are
 randomized.
 
@@ -41,9 +41,9 @@ Make-Anything-Machine (MAM).
 
 ## What is considered a location check?
 
-- Levels (minimum 1-25, up to 999 depending on player options, with additional checks for levels 1 and 20)
-- Upgrades (minimum tiers II-VIII (2-8), up to M (1000) depending on player options)
-- Delivering certain shapes at least once to the hub ("shapesanity", up to 75800)
+- Levels (minimum 1-25, up to 499 depending on player options, with additional checks for levels 1 and 20)
+- Upgrades (minimum tiers II-VIII (2-8), up to D (500) depending on player options)
+- Delivering certain shapes at least once to the hub ("shapesanity", up to 1000 from a 75800 names pool)
 - Achievements (up to 45)
 
 ## When the player receives an item, what happens?
@@ -53,7 +53,7 @@ A pop-up will show, which item(s) were received, with additional information on 
 ## What do the names of all these shapesanity locations mean?
 
 Here's a cheat sheet:
-![image](https://imgur.com/a/a2XCniX)
+![image](https://i.imgur.com/lbmY1rG.png)
 
 ## Can I use other mods alongside the AP client?
 

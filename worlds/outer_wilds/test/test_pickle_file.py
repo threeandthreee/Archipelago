@@ -9,7 +9,7 @@ from ..shared_static_logic.hash_file import hash_file
 
 class TestPickleFile(unittest.TestCase):
     def test_pickle_file_hashes(self) -> None:
-        pickled_data = pkgutil.get_data(__name__, os.path.join(os.path.dirname(__file__), "..", "shared_static_logic", "static_logic.pickle"))
+        pickled_data = pkgutil.get_data(__name__, "../shared_static_logic/static_logic.pickle")
         pickled_hashes = pickle.load(BytesIO(pickled_data))["HASHES"]
 
         items_hash = hash_file(os.path.join(os.path.dirname(__file__), "..", "shared_static_logic", "items.jsonc"))

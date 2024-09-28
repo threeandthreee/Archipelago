@@ -38,6 +38,7 @@ class ItemGroup(Enum):
     UNIT = 10
     RESSOURCES = 11
     SECTOR = 12
+    FILLER = 13
 
 class ItemPlanet(Enum):
     """
@@ -226,18 +227,18 @@ item_table = {
     "Foreshadow": ItemData(MINDUSTRY_BASE_ID + 122, ItemPlanet.SERPULO, ItemType.USEFUL, ItemGroup.TURRET, 1),
     "Shock Mine": ItemData(MINDUSTRY_BASE_ID + 123, ItemPlanet.SERPULO, ItemType.USEFUL, ItemGroup.MISC, 1),
     "Ground Factory": ItemData(MINDUSTRY_BASE_ID + 124, ItemPlanet.SERPULO, ItemType.NECESSARY, ItemGroup.FACTORY, 1),
-    "Dagger": ItemData(MINDUSTRY_BASE_ID + 125, ItemPlanet.SERPULO, ItemType.NECESSARY, ItemGroup.UNIT, 1),
-    "Progressive Ground Unit Type A": ItemData(MINDUSTRY_BASE_ID + 126, ItemPlanet.SERPULO, ItemType.USEFUL, ItemGroup.UNIT, 4),
-    "Progressive Ground Unit Type B": ItemData(MINDUSTRY_BASE_ID + 127, ItemPlanet.SERPULO, ItemType.USEFUL, ItemGroup.UNIT, 5),
-    "Progressive Ground Unit Type C": ItemData(MINDUSTRY_BASE_ID + 128, ItemPlanet.SERPULO, ItemType.USEFUL, ItemGroup.UNIT, 5),
+    #"Dagger": ItemData(MINDUSTRY_BASE_ID + 125, ItemPlanet.SERPULO, ItemType.NECESSARY, ItemGroup.UNIT, 1),
+    "Progressive Offensive Ground Unit": ItemData(MINDUSTRY_BASE_ID + 126, ItemPlanet.SERPULO, ItemType.NECESSARY, ItemGroup.UNIT, 5),
+    "Progressive Support Ground Unit": ItemData(MINDUSTRY_BASE_ID + 127, ItemPlanet.SERPULO, ItemType.NECESSARY, ItemGroup.UNIT, 5),
+    "Progressive Insectoid Ground Unit": ItemData(MINDUSTRY_BASE_ID + 128, ItemPlanet.SERPULO, ItemType.NECESSARY, ItemGroup.UNIT, 5),
     "Air Factory": ItemData(MINDUSTRY_BASE_ID + 129, ItemPlanet.SERPULO, ItemType.NECESSARY, ItemGroup.FACTORY, 1),
-    "Flare": ItemData(MINDUSTRY_BASE_ID + 130, ItemPlanet.SERPULO, ItemType.NECESSARY, ItemGroup.UNIT, 1),
-    "Progressive Air Unit Type A": ItemData(MINDUSTRY_BASE_ID + 131, ItemPlanet.SERPULO, ItemType.USEFUL, ItemGroup.UNIT, 4),
-    "Progressive Air Unit Type B": ItemData(MINDUSTRY_BASE_ID + 132, ItemPlanet.SERPULO, ItemType.USEFUL, ItemGroup.UNIT, 5),
+    #"Flare": ItemData(MINDUSTRY_BASE_ID + 130, ItemPlanet.SERPULO, ItemType.NECESSARY, ItemGroup.UNIT, 1),
+    "Progressive Offensive Air Unit": ItemData(MINDUSTRY_BASE_ID + 131, ItemPlanet.SERPULO, ItemType.NECESSARY, ItemGroup.UNIT, 5),
+    "Progressive Support Air Unit": ItemData(MINDUSTRY_BASE_ID + 132, ItemPlanet.SERPULO, ItemType.NECESSARY, ItemGroup.UNIT, 5),
     "Naval Factory": ItemData(MINDUSTRY_BASE_ID + 133, ItemPlanet.SERPULO, ItemType.NECESSARY, ItemGroup.FACTORY, 1),
-    "Risso": ItemData(MINDUSTRY_BASE_ID + 134, ItemPlanet.SERPULO, ItemType.NECESSARY, ItemGroup.UNIT, 1),
-    "Progressive Naval Unit Type A": ItemData(MINDUSTRY_BASE_ID + 135, ItemPlanet.SERPULO, ItemType.USEFUL, ItemGroup.UNIT, 4),
-    "Progressive Naval Unit Type B": ItemData(MINDUSTRY_BASE_ID + 136, ItemPlanet.SERPULO, ItemType.USEFUL, ItemGroup.UNIT, 5),
+    #"Risso": ItemData(MINDUSTRY_BASE_ID + 134, ItemPlanet.SERPULO, ItemType.NECESSARY, ItemGroup.UNIT, 1),
+    "Progressive Offensive Naval Unit": ItemData(MINDUSTRY_BASE_ID + 135, ItemPlanet.SERPULO, ItemType.NECESSARY, ItemGroup.UNIT, 5),
+    "Progressive Support Naval Unit": ItemData(MINDUSTRY_BASE_ID + 136, ItemPlanet.SERPULO, ItemType.NECESSARY, ItemGroup.UNIT, 5),
     "Progressive Reconstructor": ItemData(MINDUSTRY_BASE_ID + 137, ItemPlanet.SERPULO, ItemType.USEFUL, ItemGroup.FACTORY, 4),
     #"Frozen Forest": ItemData(MINDUSTRY_BASE_ID + 138, ItemPlanet.SERPULO, ItemType.NECESSARY, ItemGroup.SECTOR, 1),
     #"The Craters": ItemData(MINDUSTRY_BASE_ID + 139, ItemPlanet.SERPULO, ItemType.NECESSARY, ItemGroup.SECTOR, 1),
@@ -368,12 +369,12 @@ item_table = {
     #"Stell": ItemData(MINDUSTRY_BASE_ID + 286, ItemPlanet.EREKIR, ItemType.USEFUL, ItemGroup.UNIT, 1),
     "Unit Repair Tower": ItemData(MINDUSTRY_BASE_ID + 287, ItemPlanet.EREKIR, ItemType.USEFUL, ItemGroup.FACTORY, 1),
     "Ship Fabricator": ItemData(MINDUSTRY_BASE_ID + 288, ItemPlanet.EREKIR, ItemType.NECESSARY, ItemGroup.FACTORY, 1),
-    "Elude": ItemData(MINDUSTRY_BASE_ID + 289, ItemPlanet.EREKIR, ItemType.NECESSARY, ItemGroup.UNIT, 1),
+    #"Elude": ItemData(MINDUSTRY_BASE_ID + 289, ItemPlanet.EREKIR, ItemType.NECESSARY, ItemGroup.UNIT, 1),
     "Mech Fabricator": ItemData(MINDUSTRY_BASE_ID + 290, ItemPlanet.EREKIR, ItemType.NECESSARY, ItemGroup.FACTORY, 1),
-    "Merui": ItemData(MINDUSTRY_BASE_ID + 291, ItemPlanet.EREKIR, ItemType.NECESSARY, ItemGroup.UNIT, 1),
-    "Tank Refabricator": ItemData(MINDUSTRY_BASE_ID + 292, ItemPlanet.EREKIR, ItemType.USEFUL, ItemGroup.FACTORY, 1),
+    #"Merui": ItemData(MINDUSTRY_BASE_ID + 291, ItemPlanet.EREKIR, ItemType.NECESSARY, ItemGroup.UNIT, 1),
+    "Tank Refabricator": ItemData(MINDUSTRY_BASE_ID + 292, ItemPlanet.EREKIR, ItemType.NECESSARY, ItemGroup.FACTORY, 1),
     #"Locus": ItemData(MINDUSTRY_BASE_ID + 293, ItemPlanet.EREKIR, ItemType.USEFUL, ItemGroup.UNIT, 1),
-    "Mech Refrabricator": ItemData(MINDUSTRY_BASE_ID + 294, ItemPlanet.EREKIR, ItemType.USEFUL, ItemGroup.FACTORY, 1),
+    "Mech Refrabricator": ItemData(MINDUSTRY_BASE_ID + 294, ItemPlanet.EREKIR, ItemType.NECESSARY, ItemGroup.FACTORY, 1),
     #"Cleroi": ItemData(MINDUSTRY_BASE_ID + 295, ItemPlanet.EREKIR, ItemType.USEFUL, ItemGroup.UNIT, 1),
     "Ship Refabricator": ItemData(MINDUSTRY_BASE_ID + 296, ItemPlanet.EREKIR, ItemType.NECESSARY, ItemGroup.FACTORY, 1),
     #"Avert": ItemData(MINDUSTRY_BASE_ID + 297, ItemPlanet.EREKIR, ItemType.USEFUL, ItemGroup.UNIT, 1),
@@ -423,7 +424,10 @@ item_table = {
     #"Phase Fabric Erekir": ItemData(MINDUSTRY_BASE_ID + 339, ItemPlanet.EREKIR, ItemType.USEFUL, ItemGroup.RESSOURCES, 1),
     #"Surge Alloy Erekir": ItemData(MINDUSTRY_BASE_ID + 340, ItemPlanet.EREKIR, ItemType.USEFUL, ItemGroup.RESSOURCES, 1),
 
-    "Progressive Tanks": ItemData(MINDUSTRY_BASE_ID + 341, ItemPlanet.EREKIR, ItemType.USEFUL, ItemGroup.UNIT, 4),
-    "Progressive Ships": ItemData(MINDUSTRY_BASE_ID + 342, ItemPlanet.EREKIR, ItemType.NECESSARY, ItemGroup.UNIT, 4),
-    "Progressive Mechs": ItemData(MINDUSTRY_BASE_ID + 343, ItemPlanet.EREKIR, ItemType.USEFUL, ItemGroup.UNIT, 4),
+    "Progressive Tanks": ItemData(MINDUSTRY_BASE_ID + 341, ItemPlanet.EREKIR, ItemType.NECESSARY, ItemGroup.UNIT, 4),
+    "Progressive Ships": ItemData(MINDUSTRY_BASE_ID + 342, ItemPlanet.EREKIR, ItemType.NECESSARY, ItemGroup.UNIT, 5),
+    "Progressive Mechs": ItemData(MINDUSTRY_BASE_ID + 343, ItemPlanet.EREKIR, ItemType.NECESSARY, ItemGroup.UNIT, 5),
+
+    #Filler Items
+    "A fistful of nothing...": ItemData(MINDUSTRY_BASE_ID + 700, ItemPlanet.ALL, ItemType.JUNK, ItemGroup.FILLER, 1)
 }

@@ -506,6 +506,11 @@ def set_rules(khbbsworld):
                 "Wayfinder Aqua",
                 "Wayfinder Terra",
                 "Realm of Darkness"}, player)
+            or
+            (
+                state.has("Realm of Darkness", player)
+                and options.realm_of_darkness_early
+            )
         ))
 
     # Win condition.

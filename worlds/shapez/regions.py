@@ -1,7 +1,7 @@
 from typing import Dict, Tuple, List
 
 from BaseClasses import Region, MultiWorld, LocationProgressType, ItemClassification, CollectionState
-from .items import ShapezItem
+from . import ShapezItem
 from .locations import ShapezLocation
 from worlds.generic.Rules import add_rule
 
@@ -98,23 +98,24 @@ def can_make_half_shape(state: CollectionState, player: int) -> bool:
 
 def has_logic_list_building(state: CollectionState, player: int, buildings: List[str], index: int,
                             includeuseful: bool) -> bool:
-    if includeuseful:
-        useful = state.has("Trash", player) and has_balancer(state, player) and has_tunnel(state, player)
-    else:
-        useful = True
+
+    # Includes balancer, tunnel, and trash in logic in order to make them appear in earlier spheres
+    if includeuseful and not (state.has("Trash", player) and has_balancer(state, player) and has_tunnel(state, player)):
+        return False
+
     if buildings[index] == "Cutter":
         if buildings.index("Stacker") < index:
-            return useful and state.has_any(["Cutter", "Quad Cutter"], player)
+            return state.has_any(["Cutter", "Quad Cutter"], player)
         else:
-            return useful and has_cutter(state, player)
+            return has_cutter(state, player)
     elif buildings[index] == "Rotator":
-        return useful and has_rotator(state, player)
+        return has_rotator(state, player)
     elif buildings[index] == "Stacker":
-        return useful and has_stacker(state, player)
+        return has_stacker(state, player)
     elif buildings[index] == "Painter":
-        return useful and has_painter(state, player)
+        return has_painter(state, player)
     elif buildings[index] == "Color Mixer":
-        return useful and has_mixer(state, player)
+        return has_mixer(state, player)
 
 
 def create_shapez_regions(player: int, multiworld: MultiWorld,
@@ -137,9 +138,8 @@ def create_shapez_regions(player: int, multiworld: MultiWorld,
         goal_region = regions["Upgrades with 5 Buildings"]
     else:
         goal_region = regions["All Buildings Shapes"]
-    goal_location = ShapezLocation(player, "Goal", None, goal_region,
-                                   LocationProgressType.DEFAULT)
-    goal_location.place_locked_item(ShapezItem("Goal", ItemClassification.progression, None, player))
+    goal_location = ShapezLocation(player, "Goal", None, goal_region, LocationProgressType.DEFAULT)
+    goal_location.place_locked_item(ShapezItem("Goal", ItemClassification.progression_skip_balancing, None, player))
     if goal == "efficiency_iii":
         add_rule(goal_location, lambda state: state.has("Big Belt Upgrade", player, 7))
     goal_region.locations.append(goal_location)

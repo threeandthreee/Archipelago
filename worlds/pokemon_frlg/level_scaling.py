@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 from BaseClasses import CollectionState
 
+from .options import FlashRequired, LevelScaling
 from .util import bound
 
 if TYPE_CHECKING:
@@ -21,10 +22,10 @@ class ScalingData:
 
 
 def create_scaling_data(world: "PokemonFRLGWorld"):
-    if not world.options.level_scaling:
+    if world.options.level_scaling == LevelScaling.option_off:
         return
 
-    trainer_data = {
+    kanto_trainer_data = {
         "Professor Oak's Lab": [{"name": "Oak's Lab Rival", "data_ids": ["TRAINER_RIVAL_OAKS_LAB_BULBASAUR",
                                                                          "TRAINER_RIVAL_OAKS_LAB_CHARMANDER",
                                                                          "TRAINER_RIVAL_OAKS_LAB_SQUIRTLE"]}],
@@ -61,7 +62,7 @@ def create_scaling_data(world: "PokemonFRLGWorld"):
         "Mt. Moon B2F": [{"name": "Team Rocket Grunt 1", "data_ids": ["TRAINER_TEAM_ROCKET_GRUNT"]},
                          {"name": "Team Rocket Grunt 4", "data_ids": ["TRAINER_TEAM_ROCKET_GRUNT_4"]},
                          {"name": "Super Nerd Miguel", "data_ids": ["TRAINER_SUPER_NERD_MIGUEL"]}],
-        "Mt. Moon B2F Center": [{"name": "Team Rocket Grunt 2", "data_ids": ["TRAINER_TEAM_ROCKET_GRUNT_2"]}],
+        "Mt. Moon B2F South": [{"name": "Team Rocket Grunt 2", "data_ids": ["TRAINER_TEAM_ROCKET_GRUNT_2"]}],
         "Mt. Moon B2F Northeast": [{"name": "Team Rocket Grunt 3", "data_ids": ["TRAINER_TEAM_ROCKET_GRUNT_3"]}],
         "Route 4 Northeast": [{"name": "Lass Crissy", "data_ids": ["TRAINER_LASS_CRISSY"]}],
         "Cerulean City": [{"name": "Cerulean City Rival", "data_ids": ["TRAINER_RIVAL_CERULEAN_BULBASAUR",
@@ -383,7 +384,10 @@ def create_scaling_data(world: "PokemonFRLGWorld"):
                         "data_ids": ["TRAINER_ELITE_FOUR_LORELEI", "TRAINER_ELITE_FOUR_BRUNO",
                                      "TRAINER_ELITE_FOUR_AGATHA", "TRAINER_ELITE_FOUR_LANCE",
                                      "TRAINER_CHAMPION_FIRST_BULBASAUR", "TRAINER_CHAMPION_FIRST_CHARMANDER",
-                                     "TRAINER_CHAMPION_FIRST_SQUIRTLE"]}],
+                                     "TRAINER_CHAMPION_FIRST_SQUIRTLE"]}]
+    }
+
+    sevii_trainer_data = {
         "Treasure Beach Water": [{"name": "Swimmer Amara", "data_ids": ["TRAINER_SWIMMER_FEMALE_AMARA"]}],
         "Kindle Road South Water": [{"name": "Swimmer Abigail", "data_ids": ["TRAINER_SWIMMER_FEMALE_ABIGAIL"]}],
         "Kindle Road Center": [{"name": "Picnicker Claire", "data_ids": ["TRAINER_PICNICKER_CLAIRE"]},
@@ -486,10 +490,22 @@ def create_scaling_data(world: "PokemonFRLGWorld"):
                                        {"name": "Painter Edna", "data_ids": ["TRAINER_PAINTER_EDNA"]}],
         "Tanoby Ruins Monean Island": [{"name": "Ruin Maniac Benjamin", "data_ids": ["TRAINER_RUIN_MANIAC_BENJAMIN"]}],
         "Trainer Tower Exterior South": [{"name": "Psychic Rodette", "data_ids": ["TRAINER_PSYCHIC_RODETTE"]},
-                                         {"name": "Psychic Dario", "data_ids": ["TRAINER_PSYCHIC_DARIO"]}]
+                                         {"name": "Psychic Dario", "data_ids": ["TRAINER_PSYCHIC_DARIO"]}],
+        "Elite Four Rematch": [{"name": "Elite Four Rematch",
+                                "rule": lambda state: state.has_all(["Defeat Champion",
+                                                                     "Restore Pokemon Network Machine"],
+                                                                    world.player),
+                                "connections": ["Pokemon League Lorelei's Room", "Pokemon League Bruno's Room",
+                                                "Pokemon League Agatha's Room", "Pokemon League Lance's Room",
+                                                "Pokemon League Champion's Room"],
+                                "data_ids": ["TRAINER_ELITE_FOUR_LORELEI_2", "TRAINER_ELITE_FOUR_BRUNO_2",
+                                             "TRAINER_ELITE_FOUR_AGATHA_2", "TRAINER_ELITE_FOUR_LANCE_2",
+                                             "TRAINER_CHAMPION_REMATCH_BULBASAUR",
+                                             "TRAINER_CHAMPION_REMATCH_CHARMANDER",
+                                             "TRAINER_CHAMPION_REMATCH_SQUIRTLE"]}]
     }
 
-    wild_encounter_data = {
+    kanto_wild_encounter_data = {
         "Route 1 Land Encounters": [{"name": "Route 1 Land Scaling", "type": "Land", "data_ids": ["MAP_ROUTE1"]}],
         "Route 22 Land Encounters": [{"name": "Route 22 Land Scaling", "type": "Land", "data_ids": ["MAP_ROUTE22"]}],
         "Route 2 Land Encounters": [{"name": "Route 2 Land Scaling", "type": "Land", "data_ids": ["MAP_ROUTE2"]}],
@@ -572,6 +588,96 @@ def create_scaling_data(world: "PokemonFRLGWorld"):
                                              "data_ids": ["MAP_VICTORY_ROAD_2F"]}],
         "Victory Road 3F Land Encounters": [{"name": "Victory Road 3F Land Scaling", "type": "Land",
                                              "data_ids": ["MAP_VICTORY_ROAD_3F"]}],
+        "Cerulean Cave 1F Land Encounters": [{"name": "Cerulean Cave 1F Land Scaling", "type": "Land",
+                                              "data_ids": ["MAP_CERULEAN_CAVE_1F"]}],
+        "Cerulean Cave 2F Land Encounters": [{"name": "Cerulean Cave 2F Land Scaling", "type": "Land",
+                                              "data_ids": ["MAP_CERULEAN_CAVE_2F"]}],
+        "Cerulean Cave B1F Land Encounters": [{"name": "Cerulean Cave B1F Land Scaling", "type": "Land",
+                                               "data_ids": ["MAP_CERULEAN_CAVE_B1F"]}],
+        "Pallet/Cinnabar/Rt 19,20,21 Water Encounters": [{"name": "Pallet/Cinnabar/Rt 19,20,21 Water Scaling",
+                                                          "type": "Water",
+                                                          "connections": ["Pallet Town Water Encounters",
+                                                                          "Cinnabar Island Water Encounters",
+                                                                          "Route 19 Water Encounters",
+                                                                          "Route 20 Water Encounters",
+                                                                          "Route 21 Water Encounters"],
+                                                          "data_ids": ["MAP_PALLET_TOWN", "MAP_CINNABAR_ISLAND",
+                                                                       "MAP_ROUTE19", "MAP_ROUTE20",
+                                                                       "MAP_ROUTE21_NORTH", "MAP_ROUTE21_SOUTH"]}],
+        "Viridian/Rt 22 Water Encounters": [{"name": "Viridian/Rt 22 Water Scaling", "type": "Water",
+                                             "connections": ["Viridian City Water Encounters",
+                                                             "Route 22 Water Encounters"],
+                                             "data_ids": ["MAP_VIRIDIAN_CITY", "MAP_ROUTE22"]}],
+        "Cerulean/Rt 4,24 Water Encounters": [{"name": "Cerulean/Rt 4,24 Water Scaling", "type": "Water",
+                                               "connections": ["Cerulean City Water Encounters",
+                                                               "Route 4 Water Encounters", "Route 24 Water Encounters"],
+                                               "data_ids": ["MAP_CERULEAN_CITY", "MAP_ROUTE4", "MAP_ROUTE24"]}],
+        "Route 25 Water Encounters": [{"name": "Route 25 Water Scaling", "type": "Water", "data_ids": ["MAP_ROUTE25"]}],
+        "Route 6 Water Encounters": [{"name": "Route 6 Water Scaling", "type": "Water", "data_ids": ["MAP_ROUTE6"]}],
+        "Vermilion/Rt 11 Water Encounters": [{"name": "Vermilion/Rt 11 Water Scaling", "type": "Water",
+                                              "connections": ["Vermilion City Water Encounters",
+                                                              "Route 11 Water Encounters"],
+                                              "data_ids": ["MAP_VERMILION_CITY", "MAP_ROUTE11"]}],
+        "S.S. Anne Exterior Water Encounters": [{"name": "S.S. Anne Exterior Water Scaling", "type": "Water",
+                                                 "data_ids": ["MAP_SSANNE_EXTERIOR"]}],
+        "Route 10 Water Encounters": [{"name": "Route 10 Water Scaling", "type": "Water", "data_ids": ["MAP_ROUTE10"]}],
+        "Celadon City Water Encounters": [{"name": "Celadon City Water Scaling", "type": "Water",
+                                           "data_ids": ["MAP_CELADON_CITY"]}],
+        "Rt 12,13 Water Encounters": [{"name": "Rt 12,13 Water Scaling", "type": "Water",
+                                       "connections": ["Route 12 Water Encounters", "Route 13 Water Encounters"],
+                                       "data_ids": ["MAP_ROUTE12", "MAP_ROUTE13"]}],
+        "Fuchsia City Water Encounters": [{"name": "Fuchsia City Water Scaling", "type": "Water",
+                                           "data_ids": ["MAP_FUCHSIA_CITY"]}],
+        "Safari Zone Center Area Water Encounters": [{"name": "Safari Zone Center Area Water Scaling", "type": "Water",
+                                                      "data_ids": ["MAP_SAFARI_ZONE_CENTER"]}],
+        "Safari Zone East Area Water Encounters": [{"name": "Safari Zone East Area Water Scaling", "type": "Water",
+                                                    "data_ids": ["MAP_SAFARI_ZONE_EAST"]}],
+        "Safari Zone North Area Water Encounters": [{"name": "Safari Zone North Area Water Scaling", "type": "Water",
+                                                     "data_ids": ["MAP_SAFARI_ZONE_NORTH"]}],
+        "Safari Zone West Area Water Encounters": [{"name": "Safari Zone West Area Water Scaling", "type": "Water",
+                                                    "data_ids": ["MAP_SAFARI_ZONE_WEST"]}],
+        "Seafoam Islands B3F Water Encounters": [{"name": "Seafoam Islands B3F Water Scaling", "type": "Water",
+                                                  "data_ids": ["MAP_SEAFOAM_ISLANDS_B3F"]}],
+        "Seafoam Islands B4F Water Encounters": [{"name": "Seafoam Islands B4F Water Scaling", "type": "Water",
+                                                  "data_ids": ["MAP_SEAFOAM_ISLANDS_B4F"]}],
+        "Route 23 Water Encounters": [{"name": "Route 23 Water Scaling", "type": "Water", "data_ids": ["MAP_ROUTE23"]}],
+        "Cerulean Cave 1F Water Encounters": [{"name": "Cerulean Cave 1F Water Scaling", "type": "Water",
+                                               "data_ids": ["MAP_CERULEAN_CAVE_1F"]}],
+        "Cerulean Cave B1F Water Encounters": [{"name": "Cerulean Cave B1F Water Scaling", "type": "Water",
+                                                "data_ids": ["MAP_CERULEAN_CAVE_B1F"]}],
+        "Fishing Encounters": [{"name": "Fishing Scaling", "type": "Fishing",
+                                "connections": ["Pallet Town Fishing Encounters", "Viridian City Fishing Encounters",
+                                                "Cerulean City Fishing Encounters", "Vermilion City Fishing Encounters",
+                                                "Celadon City Fishing Encounters", "Fuchsia City Fishing Encounters",
+                                                "Cinnabar Island Fishing Encounters",
+                                                "S.S. Anne Exterior Fishing Encounters",
+                                                "Safari Zone Center Area Fishing Encounters",
+                                                "Safari Zone East Area Fishing Encounters",
+                                                "Safari Zone North Area Fishing Encounters",
+                                                "Safari Zone West Area Fishing Encounters",
+                                                "Seafoam Islands B3F Fishing Encounters",
+                                                "Seafoam Islands B4F Fishing Encounters",
+                                                "Cerulean Cave 1F Fishing Encounters",
+                                                "Cerulean Cave B1F Fishing Encounters",
+                                                "Route 4 Fishing Encounters", "Route 6 Fishing Encounters",
+                                                "Route 10 Fishing Encounters", "Route 11 Fishing Encounters",
+                                                "Route 12 Fishing Encounters", "Route 13 Fishing Encounters",
+                                                "Route 19 Fishing Encounters", "Route 20 Fishing Encounters",
+                                                "Route 21 Fishing Encounters", "Route 22 Fishing Encounters",
+                                                "Route 23 Fishing Encounters", "Route 24 Fishing Encounters",
+                                                "Route 25 Fishing Encounters"],
+                                "data_ids": ["MAP_PALLET_TOWN", "MAP_VIRIDIAN_CITY", "MAP_CERULEAN_CITY",
+                                             "MAP_VERMILION_CITY", "MAP_CELADON_CITY", "MAP_FUCHSIA_CITY",
+                                             "MAP_CINNABAR_ISLAND", "MAP_SSANNE_EXTERIOR", "MAP_SAFARI_ZONE_CENTER",
+                                             "MAP_SAFARI_ZONE_EAST", "MAP_SAFARI_ZONE_NORTH", "MAP_SAFARI_ZONE_WEST",
+                                             "MAP_SEAFOAM_ISLANDS_B3F", "MAP_SEAFOAM_ISLANDS_B4F",
+                                             "MAP_CERULEAN_CAVE_1F", "MAP_CERULEAN_CAVE_B1F", "MAP_ROUTE4",
+                                             "MAP_ROUTE6", "MAP_ROUTE10", "MAP_ROUTE11", "MAP_ROUTE12", "MAP_ROUTE13",
+                                             "MAP_ROUTE19", "MAP_ROUTE20", "MAP_ROUTE21_NORTH", "MAP_ROUTE21_SOUTH",
+                                             "MAP_ROUTE22", "MAP_ROUTE23", "MAP_ROUTE24", "MAP_ROUTE25"]}]
+    }
+
+    sevii_wild_encounter_data = {
         "Treasure Beach Land Encounters": [{"name": "Treasure Beach Land Scaling", "type": "Land",
                                             "data_ids": ["MAP_ONE_ISLAND_TREASURE_BEACH"]}],
         "Kindle Road Land Encounters": [{"name": "Kindle Road Land Scaling", "type": "Land",
@@ -679,59 +785,6 @@ def create_scaling_data(world: "PokemonFRLGWorld"):
         "Viapos Chamber Land Encounters": [{"name": "Viapos Chamber Land Scaling", "type": "Land",
                                             "rule": lambda state: state.has("Spawn Unown", world.player),
                                             "data_ids": ["MAP_SEVEN_ISLAND_TANOBY_RUINS_VIAPOIS_CHAMBER"]}],
-        "Cerulean Cave 1F Land Encounters": [{"name": "Cerulean Cave 1F Land Scaling", "type": "Land",
-                                              "data_ids": ["MAP_CERULEAN_CAVE_1F"]}],
-        "Cerulean Cave 2F Land Encounters": [{"name": "Cerulean Cave 2F Land Scaling", "type": "Land",
-                                              "data_ids": ["MAP_CERULEAN_CAVE_2F"]}],
-        "Cerulean Cave B1F Land Encounters": [{"name": "Cerulean Cave B1F Land Scaling", "type": "Land",
-                                               "data_ids": ["MAP_CERULEAN_CAVE_B1F"]}],
-        "Pallet/Cinnabar/Rt 19,20,21 Water Encounters": [{"name": "Pallet/Cinnabar/Rt 19,20,21 Water Scaling",
-                                                          "type": "Water",
-                                                          "connections": ["Pallet Town Water Encounters",
-                                                                          "Cinnabar Island Water Encounters",
-                                                                          "Route 19 Water Encounters",
-                                                                          "Route 20 Water Encounters",
-                                                                          "Route 21 Water Encounters"],
-                                                          "data_ids": ["MAP_PALLET_TOWN", "MAP_CINNABAR_ISLAND",
-                                                                       "MAP_ROUTE19", "MAP_ROUTE20",
-                                                                       "MAP_ROUTE21_NORTH", "MAP_ROUTE21_SOUTH"]}],
-        "Viridian/Rt 22 Water Encounters": [{"name": "Viridian/Rt 22 Water Scaling", "type": "Water",
-                                             "connections": ["Viridian City Water Encounters",
-                                                             "Route 22 Water Encounters"],
-                                             "data_ids": ["MAP_VIRIDIAN_CITY", "MAP_ROUTE22"]}],
-        "Cerulean/Rt 4,24 Water Encounters": [{"name": "Cerulean/Rt 4,24 Water Scaling", "type": "Water",
-                                               "connections": ["Cerulean City Water Encounters",
-                                                               "Route 4 Water Encounters", "Route 24 Water Encounters"],
-                                               "data_ids": ["MAP_CERULEAN_CITY", "MAP_ROUTE4", "MAP_ROUTE24"]}],
-        "Route 25 Water Encounters": [{"name": "Route 25 Water Scaling", "type": "Water", "data_ids": ["MAP_ROUTE25"]}],
-        "Route 6 Water Encounters": [{"name": "Route 6 Water Scaling", "type": "Water", "data_ids": ["MAP_ROUTE6"]}],
-        "Vermilion/Rt 11 Water Encounters": [{"name": "Vermilion/Rt 11 Water Scaling", "type": "Water",
-                                              "connections": ["Vermilion City Water Encounters",
-                                                              "Route 11 Water Encounters"],
-                                              "data_ids": ["MAP_VERMILION_CITY", "MAP_ROUTE11"]}],
-        "S.S. Anne Exterior Water Encounters": [{"name": "S.S. Anne Exterior Water Scaling", "type": "Water",
-                                                 "data_ids": ["MAP_SSANNE_EXTERIOR"]}],
-        "Route 10 Water Encounters": [{"name": "Route 10 Water Scaling", "type": "Water", "data_ids": ["MAP_ROUTE10"]}],
-        "Celadon City Water Encounters": [{"name": "Celadon City Water Scaling", "type": "Water",
-                                           "data_ids": ["MAP_CELADON_CITY"]}],
-        "Rt 12,13 Water Encounters": [{"name": "Rt 12,13 Water Scaling", "type": "Water",
-                                       "connections": ["Route 12 Water Encounters", "Route 13 Water Encounters"],
-                                       "data_ids": ["MAP_ROUTE12", "MAP_ROUTE13"]}],
-        "Fuchsia City Water Encounters": [{"name": "Fuchsia City Water Scaling", "type": "Water",
-                                           "data_ids": ["MAP_FUCHSIA_CITY"]}],
-        "Safari Zone Center Area Water Encounters": [{"name": "Safari Zone Center Area Water Scaling", "type": "Water",
-                                                      "data_ids": ["MAP_SAFARI_ZONE_CENTER"]}],
-        "Safari Zone East Area Water Encounters": [{"name": "Safari Zone East Area Water Scaling", "type": "Water",
-                                                    "data_ids": ["MAP_SAFARI_ZONE_EAST"]}],
-        "Safari Zone North Area Water Encounters": [{"name": "Safari Zone North Area Water Scaling", "type": "Water",
-                                                     "data_ids": ["MAP_SAFARI_ZONE_NORTH"]}],
-        "Safari Zone West Area Water Encounters": [{"name": "Safari Zone West Area Water Scaling", "type": "Water",
-                                                    "data_ids": ["MAP_SAFARI_ZONE_WEST"]}],
-        "Seafoam Islands B3F Water Encounters": [{"name": "Seafoam Islands B3F Water Scaling", "type": "Water",
-                                                  "data_ids": ["MAP_SEAFOAM_ISLANDS_B3F"]}],
-        "Seafoam Islands B4F Water Encounters": [{"name": "Seafoam Islands B4F Water Scaling", "type": "Water",
-                                                  "data_ids": ["MAP_SEAFOAM_ISLANDS_B4F"]}],
-        "Route 23 Water Encounters": [{"name": "Route 23 Water Scaling", "type": "Water", "data_ids": ["MAP_ROUTE23"]}],
         "One Island Water Encounters": [{"name": "One Island Water Scaling", "type": "Water",
                                          "connections": ["One Island Town Water Encounters",
                                                          "Treasure Beach Water Encounters",
@@ -773,27 +826,10 @@ def create_scaling_data(world: "PokemonFRLGWorld"):
                                                            "Trainer Tower Exterior Water Encounters"],
                                            "data_ids": ["MAP_SEVEN_ISLAND_TANOBY_RUINS",
                                                         "MAP_SEVEN_ISLAND_TRAINER_TOWER"]}],
-        "Cerulean Cave 1F Water Encounters": [{"name": "Cerulean Cave 1F Water Scaling", "type": "Water",
-                                               "data_ids": ["MAP_CERULEAN_CAVE_1F"]}],
-        "Cerulean Cave B1F Water Encounters": [{"name": "Cerulean Cave B1F Water Scaling", "type": "Water",
-                                                "data_ids": ["MAP_CERULEAN_CAVE_B1F"]}],
         "Fishing Encounters": [{"name": "Fishing Scaling", "type": "Fishing",
-                                "connections": ["Pallet Town Fishing Encounters", "Viridian City Fishing Encounters",
-                                                "Cerulean City Fishing Encounters", "Vermilion City Fishing Encounters",
-                                                "Celadon City Fishing Encounters", "Fuchsia City Fishing Encounters",
-                                                "Cinnabar Island Fishing Encounters",
-                                                "S.S. Anne Exterior Fishing Encounters",
-                                                "Safari Zone Center Area Fishing Encounters",
-                                                "Safari Zone East Area Fishing Encounters",
-                                                "Safari Zone North Area Fishing Encounters",
-                                                "Safari Zone West Area Fishing Encounters",
-                                                "Seafoam Islands B3F Fishing Encounters",
-                                                "Seafoam Islands B4F Fishing Encounters",
-                                                "Berry Forest Fishing Encounters",
+                                "connections": ["Berry Forest Fishing Encounters",
                                                 "Icefall Cave Front Fishing Encounters",
                                                 "Icefall Cave Back Fishing Encounters",
-                                                "Cerulean Cave 1F Fishing Encounters",
-                                                "Cerulean Cave B1F Fishing Encounters",
                                                 "One Island Town Fishing Encounters",
                                                 "Treasure Beach Fishing Encounters",
                                                 "Kindle Road Fishing Encounters", "Cape Brink Fishing Encounters",
@@ -805,42 +841,25 @@ def create_scaling_data(world: "PokemonFRLGWorld"):
                                                 "Resort Gorgeous Fishing Encounters", "Water Path Fishing Encounters",
                                                 "Ruin Valley Fishing Encounters", "Green Path Fishing Encounters",
                                                 "Outcast Island Fishing Encounters", "Tanoby Ruins Fishing Encounters",
-                                                "Trainer Tower Exterior Fishing Encounters",
-                                                "Route 4 Fishing Encounters", "Route 6 Fishing Encounters",
-                                                "Route 10 Fishing Encounters", "Route 11 Fishing Encounters",
-                                                "Route 12 Fishing Encounters", "Route 13 Fishing Encounters",
-                                                "Route 19 Fishing Encounters", "Route 20 Fishing Encounters",
-                                                "Route 21 Fishing Encounters", "Route 22 Fishing Encounters",
-                                                "Route 23 Fishing Encounters", "Route 24 Fishing Encounters",
-                                                "Route 25 Fishing Encounters"],
-                                "data_ids": ["MAP_PALLET_TOWN", "MAP_VIRIDIAN_CITY", "MAP_CERULEAN_CITY",
-                                             "MAP_VERMILION_CITY", "MAP_CELADON_CITY", "MAP_FUCHSIA_CITY",
-                                             "MAP_CINNABAR_ISLAND", "MAP_SSANNE_EXTERIOR", "MAP_SAFARI_ZONE_CENTER",
-                                             "MAP_SAFARI_ZONE_EAST", "MAP_SAFARI_ZONE_NORTH", "MAP_SAFARI_ZONE_WEST",
-                                             "MAP_SEAFOAM_ISLANDS_B3F", "MAP_SEAFOAM_ISLANDS_B4F",
-                                             "MAP_THREE_ISLAND_BERRY_FOREST", "MAP_FOUR_ISLAND_ICEFALL_CAVE_ENTRANCE",
-                                             "MAP_FOUR_ISLAND_ICEFALL_CAVE_BACK", "MAP_CERULEAN_CAVE_1F",
-                                             "MAP_CERULEAN_CAVE_B1F", "MAP_ONE_ISLAND", "MAP_ONE_ISLAND_TREASURE_BEACH",
-                                             "MAP_ONE_ISLAND_KINDLE_ROAD", "MAP_TWO_ISLAND_CAPE_BRINK",
-                                             "MAP_THREE_ISLAND_BOND_BRIDGE", "MAP_FOUR_ISLAND", "MAP_FIVE_ISLAND",
-                                             "MAP_FIVE_ISLAND_MEADOW", "MAP_FIVE_ISLAND_MEMORIAL_PILLAR",
-                                             "MAP_FIVE_ISLAND_WATER_LABYRINTH", "MAP_FIVE_ISLAND_RESORT_GORGEOUS",
-                                             "MAP_SIX_ISLAND_WATER_PATH", "MAP_SIX_ISLAND_RUIN_VALLEY",
-                                             "MAP_SIX_ISLAND_GREEN_PATH", "MAP_SIX_ISLAND_OUTCAST_ISLAND",
-                                             "MAP_SEVEN_ISLAND_TANOBY_RUINS", "MAP_SEVEN_ISLAND_TRAINER_TOWER",
-                                             "MAP_ROUTE4", "MAP_ROUTE6", "MAP_ROUTE10", "MAP_ROUTE11", "MAP_ROUTE12",
-                                             "MAP_ROUTE13", "MAP_ROUTE19", "MAP_ROUTE20", "MAP_ROUTE21_NORTH",
-                                             "MAP_ROUTE21_SOUTH", "MAP_ROUTE22", "MAP_ROUTE23", "MAP_ROUTE24",
-                                             "MAP_ROUTE25"]}]
+                                                "Trainer Tower Exterior Fishing Encounters"],
+                                "data_ids": ["MAP_THREE_ISLAND_BERRY_FOREST", "MAP_FOUR_ISLAND_ICEFALL_CAVE_ENTRANCE",
+                                             "MAP_FOUR_ISLAND_ICEFALL_CAVE_BACK", "MAP_ONE_ISLAND",
+                                             "MAP_ONE_ISLAND_TREASURE_BEACH", "MAP_ONE_ISLAND_KINDLE_ROAD",
+                                             "MAP_TWO_ISLAND_CAPE_BRINK", "MAP_THREE_ISLAND_BOND_BRIDGE",
+                                             "MAP_FOUR_ISLAND", "MAP_FIVE_ISLAND", "MAP_FIVE_ISLAND_MEADOW",
+                                             "MAP_FIVE_ISLAND_MEMORIAL_PILLAR", "MAP_FIVE_ISLAND_WATER_LABYRINTH",
+                                             "MAP_FIVE_ISLAND_RESORT_GORGEOUS", "MAP_SIX_ISLAND_WATER_PATH",
+                                             "MAP_SIX_ISLAND_RUIN_VALLEY", "MAP_SIX_ISLAND_GREEN_PATH",
+                                             "MAP_SIX_ISLAND_OUTCAST_ISLAND", "MAP_SEVEN_ISLAND_TANOBY_RUINS",
+                                             "MAP_SEVEN_ISLAND_TRAINER_TOWER"]}]
     }
 
-    static_encounter_data = {
+    kanto_static_encounter_data = {
         "Route 4 Pokemon Center 1F": [{"name": "Gift Magikarp", "data_ids": ["GIFT_POKEMON_MAGIKARP"]}],
         "Power Plant": [{"name": "Static Electrode 1", "data_ids": ["STATIC_POKEMON_ELECTRODE_1"]},
                         {"name": "Static Electrode 2", "data_ids": ["STATIC_POKEMON_ELECTRODE_2"]},
                         {"name": "Legendary Zapdos", "data_ids": ["LEGENDARY_POKEMON_ZAPDOS"]}],
-        "Pokemon Tower 6F": [{"name": "Static Marowak", "rule": lambda state: state.has("Silph Scope", world.player),
-                              "data_ids": ["STATIC_POKEMON_MAROWAK"]}],
+        "Pokemon Tower Ghost Encounter": [{"name": "Static Marowak", "data_ids": ["STATIC_POKEMON_MAROWAK"]}],
         "Celadon Game Corner Prize Room": [{"name": "Prize Pokemon 1",
                                             "rule": lambda state: state.has("Coin Case", world.player),
                                             "data_ids": ["CELADON_PRIZE_POKEMON_1"]},
@@ -857,8 +876,8 @@ def create_scaling_data(world: "PokemonFRLGWorld"):
                                             "rule": lambda state: state.has("Coin Case", world.player),
                                             "data_ids": ["CELADON_PRIZE_POKEMON_5"]}],
         "Celadon Condominiums Roof Room": [{"name": "Gift Eevee", "data_ids": ["GIFT_POKEMON_EEVEE"]}],
-        "Route 12 Under Snorlax": [{"name": "Static Snorlax 1", "data_ids": ["STATIC_POKEMON_ROUTE12_SNORLAX"]}],
-        "Route 16 Under Snorlax": [{"name": "Static Snorlax 2", "data_ids": ["STATIC_POKEMON_ROUTE16_SNORLAX"]}],
+        "Route 12 Snorlax Area": [{"name": "Static Snorlax 1", "data_ids": ["STATIC_POKEMON_ROUTE12_SNORLAX"]}],
+        "Route 16 Snorlax Area": [{"name": "Static Snorlax 2", "data_ids": ["STATIC_POKEMON_ROUTE16_SNORLAX"]}],
         "Saffron Dojo": [{"name": "Gift Hitmonchan", "data_ids": ["GIFT_POKEMON_HITMONCHAN"]},
                          {"name": "Gift Hitmonlee", "data_ids": ["GIFT_POKEMON_HITMONLEE"]}],
         "Silph Co. 7F Northwest Room": [{"name": "Gift Lapras", "data_ids": ["GIFT_POKEMON_LAPRAS"]}],
@@ -873,52 +892,78 @@ def create_scaling_data(world: "PokemonFRLGWorld"):
                                         {"name": "Gift Aerodactyl",
                                          "rule": lambda state: state.has("Old Amber", world.player),
                                          "data_ids": ["GIFT_POKEMON_AERODACTYL"]}],
-        "Mt. Ember Summit Near Moltres": [{"name": "Legendary Moltres", "data_ids": ["LEGENDARY_POKEMON_MOLTRES"]}],
-        "Berry Forest": [{"name": "Static Hypno", "data_ids": ["STATIC_POKEMON_HYPNO"]}],
         "Cerulean Cave B1F Water": [{"name": "Legendary Mewtwo", "data_ids": ["LEGENDARY_POKEMON_MEWTWO"]}],
         "Navel Rock Summit": [{"name": "Legendary Ho-Oh", "data_ids": ["LEGENDARY_POKEMON_HO_OH"]}],
         "Navel Rock Base": [{"name": "Legendary Lugia", "data_ids": ["LEGENDARY_POKEMON_LUGIA"]}],
         "Birth Island Exterior": [{"name": "Legendary Deoxys", "data_ids": ["LEGENDARY_POKEMON_DEOXYS"]}]
     }
 
-    for region, trainers in trainer_data.items():
+    sevii_static_encounter_data = {
+        "Mt. Ember Summit Near Moltres": [{"name": "Legendary Moltres", "data_ids": ["LEGENDARY_POKEMON_MOLTRES"]}],
+        "Berry Forest": [{"name": "Static Hypno", "data_ids": ["STATIC_POKEMON_HYPNO"]}]
+    }
+
+    def create_scaling_data(region: str, data, tag: str) -> ScalingData:
+        scaling_data = ScalingData(
+            data["name"],
+            region,
+            data["type"] if "type" in data else None,
+            data["rule"] if "rule" in data else None,
+            data["connections"] if "connections" in data else None,
+            data["data_ids"],
+            frozenset([tag, "Scaling"])
+        )
+        return scaling_data
+
+    def update_scaling_data(scaling_data: ScalingData, connections: List[str], data_ids: List[str]) -> None:
+        scaling_data.connections.extend(connections)
+        scaling_data.data_ids.extend(data_ids)
+
+    for region, trainers in kanto_trainer_data.items():
         for trainer in trainers:
-            scaling_data = ScalingData(
-                trainer["name"],
-                region,
-                trainer["type"] if "type" in trainer else None,
-                trainer["rule"] if "rule" in trainer else None,
-                trainer["connections"] if "connections" in trainer else None,
-                trainer["data_ids"],
-                frozenset(["Trainer", "Scaling"])
-            )
+            scaling_data = create_scaling_data(region, trainer, "Trainer")
             world.scaling_data.append(scaling_data)
 
-    for region, wild_encounters in wild_encounter_data.items():
+    for region, wild_encounters in kanto_wild_encounter_data.items():
         for wild_encounter in wild_encounters:
-            scaling_data = ScalingData(
-                wild_encounter["name"],
-                region,
-                wild_encounter["type"] if "type" in wild_encounter else None,
-                wild_encounter["rule"] if "rule" in wild_encounter else None,
-                wild_encounter["connections"] if "connections" in wild_encounter else None,
-                wild_encounter["data_ids"],
-                frozenset(["Wild", "Scaling"])
-            )
+            scaling_data = create_scaling_data(region, wild_encounter, "Wild")
             world.scaling_data.append(scaling_data)
 
-    for region, static_encounters in static_encounter_data.items():
+    for region, static_encounters in kanto_static_encounter_data.items():
         for static_encounter in static_encounters:
-            scaling_data = ScalingData(
-                static_encounter["name"],
-                region,
-                static_encounter["type"] if "type" in static_encounter else None,
-                static_encounter["rule"] if "rule" in static_encounter else None,
-                static_encounter["connections"] if "connections" in static_encounter else None,
-                static_encounter["data_ids"],
-                frozenset(["Static", "Scaling"])
-            )
+            scaling_data = create_scaling_data(region, static_encounter, "Static")
             world.scaling_data.append(scaling_data)
+
+    if not world.options.kanto_only:
+        for region, trainers in sevii_trainer_data.items():
+            for trainer in trainers:
+                scaling_data = next((data for data in world.scaling_data
+                                     if data.name == trainer["name"]), None)
+                if scaling_data is not None:
+                    update_scaling_data(scaling_data, trainer["connections"], trainer["data_ids"])
+                else:
+                    scaling_data = create_scaling_data(region, trainer, "Trainer")
+                    world.scaling_data.append(scaling_data)
+
+        for region, wild_encounters in sevii_wild_encounter_data.items():
+            for wild_encounter in wild_encounters:
+                scaling_data = next((data for data in world.scaling_data
+                                     if data.name == wild_encounter["name"]), None)
+                if scaling_data is not None:
+                    update_scaling_data(scaling_data, wild_encounter["connections"], wild_encounter["data_ids"])
+                else:
+                    scaling_data = create_scaling_data(region, wild_encounter, "Wild")
+                    world.scaling_data.append(scaling_data)
+
+        for region, static_encounters in sevii_static_encounter_data.items():
+            for static_encounter in static_encounters:
+                scaling_data = next((data for data in world.scaling_data
+                                     if data.name == static_encounter["name"]), None)
+                if scaling_data is not None:
+                    update_scaling_data(scaling_data, static_encounter["connections"], static_encounter["data_ids"])
+                else:
+                    scaling_data = create_scaling_data(region, static_encounter, "Static")
+                    world.scaling_data.append(scaling_data)
 
 
 def level_scaling(multiworld):
@@ -926,8 +971,9 @@ def level_scaling(multiworld):
                      "Cerulean Gym - Gym Leader Battle", "Vermilion Gym - Gym Leader Battle",
                      "Celadon Gym - Gym Leader Battle", "Fuchsia Gym - Gym Leader Battle",
                      "Saffron Gym - Gym Leader Battle", "Cinnabar Gym - Gym Leader Battle",
-                     "Viridian Gym - Gym Leader Battle", "Pokemon League - Champion Battle",
-                     "Pokemon Tower 7F - Hostage", "Silph Co. 11F - Giovanni Battle", "Berry Forest - Hypno Battle",
+                     "Viridian Gym - Gym Leader Battle", "Champion's Room - Champion Battle",
+                     "Champion's Room - Champion Rematch Battle", "Pokemon Tower 7F - Hostage",
+                     "Silph Co. 11F - Giovanni Battle", "Berry Forest - Hypno Battle",
                      "Icefall Cave Back - Team Rocket Grunt Battle"]
 
     level_scaling_required = False
@@ -938,7 +984,7 @@ def level_scaling(multiworld):
     spheres = []
 
     for world in multiworld.get_game_worlds("Pokemon FireRed and LeafGreen"):
-        if world.options.level_scaling:
+        if world.options.level_scaling != LevelScaling.option_off:
             level_scaling_required = True
         else:
             world.finished_level_scaling.set()
@@ -956,23 +1002,62 @@ def level_scaling(multiworld):
             events_found = True
             sphere = set()
             old_sphere = set()
+            distances = {}
 
             while events_found:
                 events_found = False
 
+                for world in multiworld.get_game_worlds("Pokemon FireRed and LeafGreen"):
+                    if world.options.level_scaling != LevelScaling.option_spheres_and_distance:
+                        continue
+                    regions = {multiworld.get_region("Menu", world.player)}
+                    checked_regions = set()
+                    distance = 0
+                    while regions:
+                        update_regions = True
+                        while update_regions:
+                            update_regions = False
+                            same_distance_regions = set()
+                            for region in regions:
+                                keys = ["Encounter", "Encounters", "Trainers"]
+                                encounter_regions = {e.connected_region for e in region.exits
+                                                     if e.access_rule(state)
+                                                     and any(key in e.connected_region.name for key in keys)}
+                                same_distance_regions.update(encounter_regions)
+                            regions_len = len(regions)
+                            regions.update(same_distance_regions)
+                            if len(regions) > regions_len:
+                                update_regions = True
+                        next_regions = set()
+                        for region in regions:
+                            if not getattr(region, "distance"):
+                                region.distance = distance
+                            next_regions.update({e.connected_region for e in region.exits if e.connected_region not in
+                                                 checked_regions and e.access_rule(state)})
+                        checked_regions.update(regions)
+                        regions = next_regions
+                        distance += 1
+
                 for location in locations:
                     def can_reach():
+                        player = location.player
                         if location.can_reach(state):
-                            return True
-                        if ("Rock Tunnel 1F Land Scaling" in location.name and
-                                any([multiworld.get_entrance(e, location.player).connected_region.can_reach(state)
-                                     for e in ["Rock Tunnel 1F Northeast Ladder (Northeast)",
-                                               "Rock Tunnel 1F South Exit"]])):
                             return True
                         return False
 
                     if can_reach():
                         sphere.add(location)
+                        parent_region = location.parent_region
+
+                        if getattr(parent_region, "distance", None) is None:
+                            distance = 0
+                        else:
+                            distance = parent_region.distance
+
+                        if distance not in distances:
+                            distances[distance] = {location}
+                        else:
+                            distances[distance].add(location)
 
                 locations -= sphere
                 old_sphere ^= sphere
@@ -990,7 +1075,8 @@ def level_scaling(multiworld):
                 old_sphere |= sphere
 
             if sphere:
-                new_spheres.append(sphere)
+                for distance in sorted(distances.keys()):
+                    new_spheres.append(distances[distance])
 
             for event in new_battle_events:
                 if event.item and event not in collected_locations:
@@ -1010,10 +1096,12 @@ def level_scaling(multiworld):
             break
 
     for world in multiworld.get_game_worlds("Pokemon FireRed and LeafGreen"):
-        if not world.options.level_scaling:
+        if world.options.level_scaling == LevelScaling.option_off:
             continue
 
         game_version = world.options.game_version.current_key
+        e4_rematch_adjustment = 63 / 51
+        e4_base_level = 51
 
         for sphere in spheres:
             scaling_locations = [loc for loc in sphere if loc.player == world.player and "Scaling" in loc.tags]
@@ -1026,6 +1114,11 @@ def level_scaling(multiworld):
             for trainer_location in trainer_locations:
                 new_base_level = world.trainer_level_list.pop(0)
                 old_base_level = world.trainer_name_level_dict[trainer_location.name]
+
+                if trainer_location.name == "Elite Four":
+                    e4_base_level = new_base_level
+                elif trainer_location.name == "Elite Four Rematch":
+                    new_base_level = max(new_base_level, round(e4_base_level * e4_rematch_adjustment))
 
                 for data_id in trainer_location.data_ids:
                     trainer_data = world.modified_trainers[data_id]

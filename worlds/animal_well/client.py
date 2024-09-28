@@ -307,6 +307,7 @@ class AnimalWellContext(CommonContext):
             self.bean_patcher.display_to_client(text)
 
     async def on_bean_death(self):
+        # todo: put something in to modify DEATHLINK_MESSAGE based on how or where the player died, or something random
         death_link_key = f"{self.get_active_game_slot()}|death_link"
         if self.stored_data.get(death_link_key, None) is None:
             if self.slot_data.get("death_link", None) == 1:

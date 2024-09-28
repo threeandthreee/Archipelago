@@ -123,6 +123,12 @@ class KeybladeMaxMagic(Range):
     range_start = -2
     range_end = 10
 
+class RealmOfDarknessEarly(Toggle):
+    """
+    If your character is Aqua, determines if Realm of Darkness is not logically locked behind having 3 Wayfinders.
+    """
+    display_name = "Realm of Darkness Early"
+
 @dataclass
 class KHBBSOptions(PerGameCommonOptions):
     character:       Character
@@ -138,3 +144,4 @@ class KHBBSOptions(PerGameCommonOptions):
     keyblade_max_str: KeybladeMaxStrength
     keyblade_min_mgc: KeybladeMinMagic
     keyblade_max_mgc: KeybladeMaxMagic
+    realm_of_darkness_early: RealmOfDarknessEarly

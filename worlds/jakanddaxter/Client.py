@@ -13,7 +13,7 @@ from pymem.exception import ProcessNotFound
 import Utils
 from NetUtils import ClientStatus
 from CommonClient import ClientCommandProcessor, CommonContext, logger, server_loop, gui_enabled
-from .JakAndDaxterOptions import EnableOrbsanity
+from .Options import EnableOrbsanity
 
 from .GameID import jak1_name
 from .client.ReplClient import JakAndDaxterReplClient
@@ -122,12 +122,6 @@ class JakAndDaxterContext(CommonContext):
             else:
                 orbsanity_bundle = 1
 
-            # Keep compatibility with 0.0.8 at least for now - TODO: Remove this.
-            if "completion_condition" in slot_data:
-                goal_id = slot_data["completion_condition"]
-            else:
-                goal_id = slot_data["jak_completion_condition"]
-
             create_task_log_exception(
                 self.repl.setup_options(orbsanity_option,
                                         orbsanity_bundle,
@@ -136,7 +130,7 @@ class JakAndDaxterContext(CommonContext):
                                         slot_data["lava_tube_cell_count"],
                                         slot_data["citizen_orb_trade_amount"],
                                         slot_data["oracle_orb_trade_amount"],
-                                        goal_id))
+                                        slot_data["jak_completion_condition"]))
 
             # Because Orbsanity and the orb traders in the game are intrinsically linked, we need the server
             # to track our trades at all times to support async play. "Retrieved" will tell us the orbs we lost,
@@ -160,31 +154,36 @@ class JakAndDaxterContext(CommonContext):
 
     async def json_to_game_text(self, args: dict):
         if "type" in args and args["type"] in {"ItemSend"}:
+            my_item_name: Optional[str] = None
+            my_item_finder: Optional[str] = None
+            their_item_name: Optional[str] = None
+            their_item_owner: Optional[str] = None
+
             item = args["item"]
             recipient = args["receiving"]
 
             # Receiving an item from the server.
             if self.slot_concerns_self(recipient):
-                self.repl.my_item_name = self.item_names.lookup_in_game(item.item)
+                my_item_name = self.item_names.lookup_in_game(item.item)
 
                 # Did we find it, or did someone else?
                 if self.slot_concerns_self(item.player):
-                    self.repl.my_item_finder = "MYSELF"
+                    my_item_finder = "MYSELF"
                 else:
-                    self.repl.my_item_finder = self.player_names[item.player]
+                    my_item_finder = self.player_names[item.player]
 
             # Sending an item to the server.
             if self.slot_concerns_self(item.player):
-                self.repl.their_item_name = self.item_names.lookup_in_slot(item.item, recipient)
+                their_item_name = self.item_names.lookup_in_slot(item.item, recipient)
 
                 # Does it belong to us, or to someone else?
                 if self.slot_concerns_self(recipient):
-                    self.repl.their_item_owner = "MYSELF"
+                    their_item_owner = "MYSELF"
                 else:
-                    self.repl.their_item_owner = self.player_names[recipient]
+                    their_item_owner = self.player_names[recipient]
 
             # Write to game display.
-            await self.repl.write_game_text()
+            self.repl.queue_game_text(my_item_name, my_item_finder, their_item_name, their_item_owner)
 
     def on_print_json(self, args: dict) -> None:
 

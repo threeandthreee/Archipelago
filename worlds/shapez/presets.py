@@ -3,7 +3,7 @@ options_presets = {
         "goal": "vanilla",
         "randomize_level_requirements": False,
         "randomize_upgrade_requirements": False,
-        "early_balancer_tunnel_and_trash": "sphere_1",
+        "early_balancer_tunnel_and_trash": "3_buildings",
         "include_achievements": True,
         "exclude_softlock_achievements": False,
         "exclude_long_playtime_achievements": False,
@@ -16,11 +16,11 @@ options_presets = {
     },
     "Maximum checks": {
         "goal": "even_fasterer",
-        "goal_amount": 1000,
+        "goal_amount": 500,
         "include_achievements": True,
         "exclude_softlock_achievements": False,
         "exclude_long_playtime_achievements": False,
-        "shapesanity_amount": 75800
+        "shapesanity_amount": 1000
     },
     "Restrictive start": {
         "goal": "vanilla",

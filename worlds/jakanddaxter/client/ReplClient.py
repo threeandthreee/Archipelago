@@ -1,7 +1,10 @@
 import json
+import queue
 import time
 import struct
 import random
+from dataclasses import dataclass
+from queue import Queue
 from typing import Dict, Optional
 
 import pymem
@@ -22,6 +25,14 @@ from ..locs import (
     OrbCacheLocations as Caches)
 
 
+@dataclass
+class JsonMessageData:
+    my_item_name: Optional[str] = None
+    my_item_finder: Optional[str] = None
+    their_item_name: Optional[str] = None
+    their_item_owner: Optional[str] = None
+
+
 class JakAndDaxterReplClient:
     ip: str
     port: int
@@ -40,11 +51,7 @@ class JakAndDaxterReplClient:
 
     item_inbox: Dict[int, NetworkItem] = {}
     inbox_index = 0
-
-    my_item_name: Optional[str] = None
-    my_item_finder: Optional[str] = None
-    their_item_name: Optional[str] = None
-    their_item_owner: Optional[str] = None
+    json_message_queue: Queue[JsonMessageData] = queue.Queue()
 
     def __init__(self, ip: str = "127.0.0.1", port: int = 8181):
         self.ip = ip
@@ -80,6 +87,13 @@ class JakAndDaxterReplClient:
         if self.received_deathlink:
             await self.receive_deathlink()
             self.received_deathlink = False
+
+        # Progressively empty the queue during each tick
+        # if text messages happen to be too slow we could pool dequeuing here, 
+        # but it'd slow down the ItemReceived message during release
+        if not self.json_message_queue.empty():
+            json_txt_data = self.json_message_queue.get_nowait()
+            await self.write_game_text(json_txt_data)
 
     # This helper function formats and sends `form` as a command to the REPL.
     # ALL commands to the REPL should be sent using this function.
@@ -196,28 +210,33 @@ class JakAndDaxterReplClient:
     # I also only allotted 32 bytes to each string in OpenGOAL, so we must truncate.
     @staticmethod
     def sanitize_game_text(text: str) -> str:
-        if text is None:
-            return "\"NONE\""
-
         result = "".join(c for c in text if (c in {"-", " "} or c.isalnum()))
         result = result[:32].upper()
         return f"\"{result}\""
 
+    # Pushes a JsonMessageData object to the json message queue to be processed during the repl main_tick
+    def queue_game_text(self, my_item_name, my_item_finder, their_item_name, their_item_owner):
+        self.json_message_queue.put(JsonMessageData(my_item_name, my_item_finder, their_item_name, their_item_owner))
+
     # OpenGOAL can handle both its own string datatype and C-like character pointers (charp).
     # So for the game to constantly display this information in the HUD, we have to write it
     # to a memory address as a char*.
-    async def write_game_text(self):
+    async def write_game_text(self, data: JsonMessageData):
         logger.debug(f"Sending info to in-game display!")
-        await self.send_form(f"(begin "
-                             f"  (charp<-string (-> *ap-info-jak1* my-item-name) "
-                             f"    {self.sanitize_game_text(self.my_item_name)}) "
-                             f"  (charp<-string (-> *ap-info-jak1* my-item-finder) "
-                             f"    {self.sanitize_game_text(self.my_item_finder)}) "
-                             f"  (charp<-string (-> *ap-info-jak1* their-item-name) "
-                             f"    {self.sanitize_game_text(self.their_item_name)}) "
-                             f"  (charp<-string (-> *ap-info-jak1* their-item-owner) "
-                             f"    {self.sanitize_game_text(self.their_item_owner)}) "
-                             f"  (none))", print_ok=False)
+        body = ""
+        if data.my_item_name:
+            body += (f" (charp<-string (-> *ap-info-jak1* my-item-name)"
+                     f" {self.sanitize_game_text(data.my_item_name)})")
+        if data.my_item_finder:
+            body += (f" (charp<-string (-> *ap-info-jak1* my-item-finder)"
+                     f" {self.sanitize_game_text(data.my_item_finder)})")
+        if data.their_item_name:
+            body += (f" (charp<-string (-> *ap-info-jak1* their-item-name)"
+                     f" {self.sanitize_game_text(data.their_item_name)})")
+        if data.their_item_owner:
+            body += (f" (charp<-string (-> *ap-info-jak1* their-item-owner)"
+                     f" {self.sanitize_game_text(data.their_item_owner)})")
+        await self.send_form(f"(begin {body} (none))", print_ok=False)
 
     async def receive_item(self):
         ap_id = getattr(self.item_inbox[self.inbox_index], "item")

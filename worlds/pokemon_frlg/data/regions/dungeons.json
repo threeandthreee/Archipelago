@@ -45,18 +45,87 @@
       "TRAINER_BUG_CATCHER_ROBBY_REWARD",
       "ITEM_MT_MOON_1F_RARE_CANDY",
       "ITEM_MT_MOON_1F_ESCAPE_ROPE",
+      "FAME_CHECKER_BROCK_5",
       "TRAINER_LASS_MIRIAM_REWARD",
       "TRAINER_YOUNGSTER_JOSH_REWARD",
       "TRAINER_HIKER_MARCOS_REWARD",
       "ITEM_MT_MOON_1F_MOON_STONE"
     ],
     "events": [],
-    "exits": {},
+    "exits": {
+      "REGION_MT_MOON_1F/SOUTH_ENTRY": "Mt. Moon 1F Leave Area (South)",
+      "REGION_MT_MOON_1F/CENTER_RIGHT_ENTRY": "Mt. Moon 1F Leave Area (Center-Right)",
+      "REGION_MT_MOON_1F/CENTER_LEFT_ENTRY": "Mt. Moon 1F Leave Area (Center-Left)",
+      "REGION_MT_MOON_1F/NORTHWEST_ENTRY": "Mt. Moon 1F Leave Area (Northwest)"
+    },
+    "warps": {}
+  },
+  "REGION_MT_MOON_1F/SOUTH_ENTRY": {
+    "parent_map": "MAP_MT_MOON_1F",
+    "name": "Mt. Moon 1F South Entry",
+    "encounter_region": "Mt. Moon 1F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_MT_MOON_1F/MAIN": "Mt. Moon 1F Leave South Entry"
+    },
     "warps": {
-      "MAP_MT_MOON_1F:0/MAP_MT_MOON_B1F:0": "Mt. Moon 1F Ladder (Northwest)",
-      "MAP_MT_MOON_1F:1/MAP_MT_MOON_B1F:1": "Mt. Moon 1F Ladder (Center-Left)",
-      "MAP_MT_MOON_1F:2/MAP_MT_MOON_B1F:2": "Mt. Moon 1F Ladder (Center-Right)",
       "MAP_MT_MOON_1F:3/MAP_ROUTE4:0": "Mt. Moon 1F Exit"
+    }
+  },
+  "REGION_MT_MOON_1F/CENTER_RIGHT_ENTRY": {
+    "parent_map": "MAP_MT_MOON_1F",
+    "name": "Mt. Moon 1F Center-Right Entry",
+    "encounter_region": "Mt. Moon 1F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_MT_MOON_1F/MAIN": "Mt. Moon 1F Leave Center-Right Entry"
+    },
+    "warps": {
+      "MAP_MT_MOON_1F:2/MAP_MT_MOON_B1F:2": "Mt. Moon 1F Ladder (Center-Right)"
+    }
+  },
+  "REGION_MT_MOON_1F/CENTER_LEFT_ENTRY": {
+    "parent_map": "MAP_MT_MOON_1F",
+    "name": "Mt. Moon 1F Center-Left Entry",
+    "encounter_region": "Mt. Moon 1F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_MT_MOON_1F/MAIN": "Mt. Moon 1F Leave Center-Left Entry"
+    },
+    "warps": {
+      "MAP_MT_MOON_1F:1/MAP_MT_MOON_B1F:1": "Mt. Moon 1F Ladder (Center-Left)"
+    }
+  },
+  "REGION_MT_MOON_1F/NORTHWEST_ENTRY": {
+    "parent_map": "MAP_MT_MOON_1F",
+    "name": "Mt. Moon 1F Northwest Entry",
+    "encounter_region": "Mt. Moon 1F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_MT_MOON_1F/MAIN": "Mt. Moon 1F Leave Northwest Entry"
+    },
+    "warps": {
+      "MAP_MT_MOON_1F:0/MAP_MT_MOON_B1F:0": "Mt. Moon 1F Ladder (Northwest)"
     }
   },
   "REGION_MT_MOON_B1F/FIRST_TUNNEL": {
@@ -73,9 +142,43 @@
       "HIDDEN_ITEM_MT_MOON_B1F_BIG_MUSHROOM"
     ],
     "events": [],
-    "exits": {},
+    "exits": {
+      "REGION_MT_MOON_B1F/FIRST_TUNNEL_NORTHEAST_ENTRY": "Mt. Moon B1F Leave First Tunnel (Northeast)",
+      "REGION_MT_MOON_B1F/FIRST_TUNNEL_SOUTHWEST_ENTRY": "Mt. Moon B1F Leave First Tunnel (Southwest)"
+    },
+    "warps": {}
+  },
+  "REGION_MT_MOON_B1F/FIRST_TUNNEL_NORTHEAST_ENTRY": {
+    "parent_map": "MAP_MT_MOON_B1F",
+    "name": "Mt. Moon B1F First Tunnel Northeast Entry",
+    "encounter_region": "Mt. Moon B1F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_MT_MOON_B1F/FIRST_TUNNEL": "Mt. Moon B1F Leave First Tunnel Northeast Entry"
+    },
     "warps": {
-      "MAP_MT_MOON_B1F:2/MAP_MT_MOON_1F:2": "Mt. Moon B1F First Tunnel Ladder (Northeast)",
+      "MAP_MT_MOON_B1F:2/MAP_MT_MOON_1F:2": "Mt. Moon B1F First Tunnel Ladder (Northeast)"
+    }
+  },
+  "REGION_MT_MOON_B1F/FIRST_TUNNEL_SOUTHWEST_ENTRY": {
+    "parent_map": "MAP_MT_MOON_B1F",
+    "name": "Mt. Moon B1F First Tunnel Southwest Entry",
+    "encounter_region": "Mt. Moon B1F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_MT_MOON_B1F/FIRST_TUNNEL": "Mt. Moon B1F Leave First Tunnel Southeast Entry"
+    },
+    "warps": {
       "MAP_MT_MOON_B1F:5/MAP_MT_MOON_B2F:2": "Mt. Moon B1F First Tunnel Ladder (Southwest)"
     }
   },
@@ -91,9 +194,44 @@
       "HIDDEN_ITEM_MT_MOON_B1F_TINY_MUSHROOM_2"
     ],
     "events": [],
-    "exits": {},
+    "exits": {
+      "REGION_MT_MOON_B1F/SECOND_TUNNEL_EAST_ENTRY": "Mt. Moon B1F Leave Second Tunnel (East)",
+      "REGION_MT_MOON_B1F/SECOND_TUNNEL_WEST_ENTRY": "Mt. Moon B1F Leave Second Tunnel (West)"
+    },
     "warps": {
-      "MAP_MT_MOON_B1F:1/MAP_MT_MOON_1F:1": "Mt. Moon B1F Second Tunnel Ladder (East)",
+    }
+  },
+  "REGION_MT_MOON_B1F/SECOND_TUNNEL_EAST_ENTRY": {
+    "parent_map": "MAP_MT_MOON_B1F",
+    "name": "Mt. Moon B1F Second Tunnel East Entry",
+    "encounter_region": "Mt. Moon B1F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_MT_MOON_B1F/SECOND_TUNNEL": "Mt. Moon B1F Leave Second Tunnel East Entry"
+    },
+    "warps": {
+      "MAP_MT_MOON_B1F:1/MAP_MT_MOON_1F:1": "Mt. Moon B1F Second Tunnel Ladder (East)"
+    }
+  },
+  "REGION_MT_MOON_B1F/SECOND_TUNNEL_WEST_ENTRY": {
+    "parent_map": "MAP_MT_MOON_B1F",
+    "name": "Mt. Moon B1F Second Tunnel West Entry",
+    "encounter_region": "Mt. Moon B1F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_MT_MOON_B1F/SECOND_TUNNEL": "Mt. Moon B1F Leave Second Tunnel West Entry"
+    },
+    "warps": {
       "MAP_MT_MOON_B1F:4/MAP_MT_MOON_B2F:1": "Mt. Moon B1F Second Tunnel Ladder (West)"
     }
   },
@@ -109,9 +247,43 @@
       "HIDDEN_ITEM_MT_MOON_B1F_BIG_MUSHROOM_2"
     ],
     "events": [],
-    "exits": {},
+    "exits": {
+      "REGION_MT_MOON_B1F/THIRD_TUNNEL_NORTHWEST_ENTRY": "Mt. Moon B1F Leave Third Tunnel (Northwest)",
+      "REGION_MT_MOON_B1F/THIRD_TUNNEL_SOUTHEAST_ENTRY": "Mt. Moon B1F Leave Third Tunnel (Southeast)"
+    },
+    "warps": {}
+  },
+  "REGION_MT_MOON_B1F/THIRD_TUNNEL_NORTHWEST_ENTRY": {
+    "parent_map": "MAP_MT_MOON_B1F",
+    "name": "Mt. Moon B1F Third Tunnel Northwest Entry",
+    "encounter_region": "Mt. Moon B1F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_MT_MOON_B1F/THIRD_TUNNEL": "Mt. Moon B1F Leave Third Tunnel Northwest Entry"
+    },
     "warps": {
-      "MAP_MT_MOON_B1F:0/MAP_MT_MOON_1F:0": "Mt. Moon B1F Third Tunnel Ladder (Northwest)",
+      "MAP_MT_MOON_B1F:0/MAP_MT_MOON_1F:0": "Mt. Moon B1F Third Tunnel Ladder (Northwest)"
+    }
+  },
+  "REGION_MT_MOON_B1F/THIRD_TUNNEL_SOUTHEAST_ENTRY": {
+    "parent_map": "MAP_MT_MOON_B1F",
+    "name": "Mt. Moon B1F Third Tunnel Southeast Entry",
+    "encounter_region": "Mt. Moon B1F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_MT_MOON_B1F/THIRD_TUNNEL": "Mt. Moon B1F Leave Third Tunnel Southeast Entry"
+    },
+    "warps": {
       "MAP_MT_MOON_B1F:3/MAP_MT_MOON_B2F:0": "Mt. Moon B1F Third Tunnel Ladder (Southeast)"
     }
   },
@@ -127,15 +299,49 @@
       "HIDDEN_ITEM_MT_MOON_B1F_TINY_MUSHROOM"
     ],
     "events": [],
-    "exits": {},
+    "exits": {
+      "REGION_MT_MOON_B1F/FOURTH_TUNNEL_WEST_ENTRY": "Mt. Moon B1F Leave Fourth Tunnel (West)",
+      "REGION_MT_MOON_B1F/FOURTH_TUNNEL_EAST_ENTRY": "Mt. Moon B1F Leave Fourth Tunnel (East)"
+    },
+    "warps": {}
+  },
+  "REGION_MT_MOON_B1F/FOURTH_TUNNEL_WEST_ENTRY": {
+    "parent_map": "MAP_MT_MOON_B1F",
+    "name": "Mt. Moon B1F Fourth Tunnel West Entry",
+    "encounter_region": "Mt. Moon B1F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_MT_MOON_B1F/FOURTH_TUNNEL": "Mt. Moon B1F Leave Fourth Tunnel West Entry"
+    },
     "warps": {
-      "MAP_MT_MOON_B1F:6/MAP_MT_MOON_B2F:3": "Mt. Moon B1F Fourth Tunnel Ladder (West)",
+      "MAP_MT_MOON_B1F:6/MAP_MT_MOON_B2F:3": "Mt. Moon B1F Fourth Tunnel Ladder (West)"
+    }
+  },
+  "REGION_MT_MOON_B1F/FOURTH_TUNNEL_EAST_ENTRY": {
+    "parent_map": "MAP_MT_MOON_B1F",
+    "name": "Mt. Moon B1F Fourth Tunnel East Entry",
+    "encounter_region": "Mt. Moon B1F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_MT_MOON_B1F/FOURTH_TUNNEL": "Mt. Moon B1F Leave Fourth Tunnel East Entry"
+    },
+    "warps": {
       "MAP_MT_MOON_B1F:7/MAP_ROUTE4:1": "Mt. Moon B1F Fourth Tunnel Ladder (East)"
     }
   },
-  "REGION_MT_MOON_B2F/CENTER": {
+  "REGION_MT_MOON_B2F/SOUTH": {
     "parent_map": "MAP_MT_MOON_B2F",
-    "name": "Mt. Moon B2F Center",
+    "name": "Mt. Moon B2F South",
     "encounter_region": "Mt. Moon B2F",
     "has_land": true,
     "has_water": false,
@@ -147,8 +353,23 @@
     ],
     "events": [],
     "exits": {},
+    "warps": {}
+  },
+  "REGION_MT_MOON_B2F/SOUTH_ENTRY": {
+    "parent_map": "MAP_MT_MOON_B2F",
+    "name": "Mt. Moon B2F South Entry",
+    "encounter_region": "Mt. Moon B2F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_MT_MOON_B2F/SOUTH": "Mt. Moon B2F Leave South Entry"
+    },
     "warps": {
-      "MAP_MT_MOON_B2F:2/MAP_MT_MOON_B1F:5": "Mt. Moon B2F Center Ladder"
+      "MAP_MT_MOON_B2F:2/MAP_MT_MOON_B1F:5": "Mt. Moon B2F South Ladder"
     }
   },
   "REGION_MT_MOON_B2F/NORTHEAST": {
@@ -166,6 +387,21 @@
     ],
     "events": [],
     "exits": {},
+    "warps": {}
+  },
+  "REGION_MT_MOON_B2F/NORTHEAST_ENTRY": {
+    "parent_map": "MAP_MT_MOON_B2F",
+    "name": "Mt. Moon B2F Northeast Entry",
+    "encounter_region": "Mt. Moon B2F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_MT_MOON_B2F/NORTHEAST": "Mt. Moon B2F Leave Northeast Entry"
+    },
     "warps": {
       "MAP_MT_MOON_B2F:1/MAP_MT_MOON_B1F:4": "Mt. Moon B2F Northeast Ladder"
     }
@@ -189,9 +425,43 @@
       "ITEM_MT_MOON_B2F_ANTIDOTE"
     ],
     "events": [],
-    "exits": {},
+    "exits": {
+      "REGION_MT_MOON_B2F/CENTER_ENTRY": "Mt. Moon B2F Leave Area (Center)",
+      "REGION_MT_MOON_B2F/NORTHWEST_ENTRY": "Mt. Moon B2F Leave Area (Northwest)"
+    },
+    "warps": {}
+  },
+  "REGION_MT_MOON_B2F/CENTER_ENTRY": {
+    "parent_map": "MAP_MT_MOON_B2F",
+    "name": "Mt. Moon B2F Center Entry",
+    "encounter_region": "Mt. Moon B2F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_MT_MOON_B2F/MAIN": "Mt. Moon B2F Leave Center Entry"
+    },
     "warps": {
-      "MAP_MT_MOON_B2F:0/MAP_MT_MOON_B1F:3": "Mt. Moon B2F Ladder (Center)",
+      "MAP_MT_MOON_B2F:0/MAP_MT_MOON_B1F:3": "Mt. Moon B2F Ladder (Center)"
+    }
+  },
+  "REGION_MT_MOON_B2F/NORTHWEST_ENTRY": {
+    "parent_map": "MAP_MT_MOON_B2F",
+    "name": "Mt. Moon B2F Northwest Entry",
+    "encounter_region": "Mt. Moon B2F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_MT_MOON_B2F/MAIN": "Mt. Moon B2F Leave Northwest Entry"
+    },
+    "warps": {
       "MAP_MT_MOON_B2F:3/MAP_MT_MOON_B1F:6": "Mt. Moon B2F Ladder (Northwest)"
     }
   },
@@ -755,9 +1025,43 @@
     "kanto": true,
     "locations": [],
     "events": [],
-    "exits": {},
+    "exits": {
+      "REGION_DIGLETTS_CAVE_B1F/NORTHWEST_ENTRY": "Diglett's Cave B1F Leave Area (Northwest)",
+      "REGION_DIGLETTS_CAVE_B1F/SOUTHEAST_ENTRY": "Diglett's Cave B1F Leave Area (Southeast)"
+    },
+    "warps": {}
+  },
+  "REGION_DIGLETTS_CAVE_B1F/NORTHWEST_ENTRY": {
+    "parent_map": "MAP_DIGLETTS_CAVE_B1F",
+    "name": "Diglett's Cave B1F Northwest Entry",
+    "encounter_region": "Diglett's Cave B1F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_DIGLETTS_CAVE_B1F/MAIN": "Diglett's Cave B1F Leave Northwest Entry"
+    },
     "warps": {
-      "MAP_DIGLETTS_CAVE_B1F:0/MAP_DIGLETTS_CAVE_NORTH_ENTRANCE:0": "Diglett's Cave B1F Ladder (Northwest)",
+      "MAP_DIGLETTS_CAVE_B1F:0/MAP_DIGLETTS_CAVE_NORTH_ENTRANCE:0": "Diglett's Cave B1F Ladder (Northwest)"
+    }
+  },
+  "REGION_DIGLETTS_CAVE_B1F/SOUTHEAST_ENTRY": {
+    "parent_map": "MAP_DIGLETTS_CAVE_B1F",
+    "name": "Diglett's Cave B1F Southeast Entry",
+    "encounter_region": "Diglett's Cave B1F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_DIGLETTS_CAVE_B1F/MAIN": "Diglett's Cave B1F Leave Southeast Entry"
+    },
+    "warps": {
       "MAP_DIGLETTS_CAVE_B1F:1/MAP_DIGLETTS_CAVE_SOUTH_ENTRANCE:1": "Diglett's Cave B1F Ladder (Southeast)"
     }
   },
@@ -790,9 +1094,43 @@
       "TRAINER_POKEMANIAC_ASHTON_REWARD"
     ],
     "events": [],
-    "exits": {},
+    "exits": {
+      "REGION_ROCK_TUNNEL_1F/NORTHEAST_ENTRY_NORTHEAST": "Rock Tunnel 1F Leave Northeast Area (Northeast)",
+      "REGION_ROCK_TUNNEL_1F/NORTHEAST_ENTRY_NORTHWEST": "Rock Tunnel 1F Leave Northeast Area (Northwest)"
+    },
+    "warps": {}
+  },
+  "REGION_ROCK_TUNNEL_1F/NORTHEAST_ENTRY_NORTHEAST": {
+    "parent_map": "MAP_ROCK_TUNNEL_1F",
+    "name": "Rock Tunnel 1F Northeast Entry (Northeast)",
+    "encounter_region": "Rock Tunnel 1F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_ROCK_TUNNEL_1F/NORTHEAST": "Rock Tunnel 1F Leave Northeast Entry (Northeast)"
+    },
     "warps": {
-      "MAP_ROCK_TUNNEL_1F:1/MAP_ROCK_TUNNEL_B1F:0": "Rock Tunnel 1F Northeast Ladder (Northeast)",
+      "MAP_ROCK_TUNNEL_1F:1/MAP_ROCK_TUNNEL_B1F:0": "Rock Tunnel 1F Northeast Ladder (Northeast)"
+    }
+  },
+  "REGION_ROCK_TUNNEL_1F/NORTHEAST_ENTRY_NORTHWEST": {
+    "parent_map": "MAP_ROCK_TUNNEL_1F",
+    "name": "Rock Tunnel 1F Northeast Entry (Northwest)",
+    "encounter_region": "Rock Tunnel 1F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_ROCK_TUNNEL_1F/NORTHEAST": "Rock Tunnel 1F Leave Northeast Entry (Northwest)"
+    },
+    "warps": {
       "MAP_ROCK_TUNNEL_1F:0/MAP_ROUTE10:0": "Rock Tunnel 1F Northeast Ladder (Northwest)"
     }
   },
@@ -811,9 +1149,43 @@
       "TRAINER_HIKER_LUCAS_REWARD"
     ],
     "events": [],
-    "exits": {},
+    "exits": {
+      "REGION_ROCK_TUNNEL_1F/NORTHWEST_ENTRY_NORTHWEST": "Rock Tunnel 1F Leave Northwest Area (Northwest)",
+      "REGION_ROCK_TUNNEL_1F/NORTHWEST_ENTRY_EAST": "Rock Tunnel 1F Leave Northwest Area (East)"
+    },
+    "warps": {}
+  },
+  "REGION_ROCK_TUNNEL_1F/NORTHWEST_ENTRY_NORTHWEST": {
+    "parent_map": "MAP_ROCK_TUNNEL_1F",
+    "name": "Rock Tunnel 1F Northwest Entry (Northwest)",
+    "encounter_region": "Rock Tunnel 1F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_ROCK_TUNNEL_1F/NORTHWEST": "Rock Tunnel 1F Leave Northwest Entry (Northwest)"
+    },
     "warps": {
-      "MAP_ROCK_TUNNEL_1F:2/MAP_ROCK_TUNNEL_B1F:1": "Rock Tunnel 1F Northwest Ladder (Northwest)",
+      "MAP_ROCK_TUNNEL_1F:2/MAP_ROCK_TUNNEL_B1F:1": "Rock Tunnel 1F Northwest Ladder (Northwest)"
+    }
+  },
+  "REGION_ROCK_TUNNEL_1F/NORTHWEST_ENTRY_EAST": {
+    "parent_map": "MAP_ROCK_TUNNEL_1F",
+    "name": "Rock Tunnel 1F Northwest Entry (East)",
+    "encounter_region": "Rock Tunnel 1F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_ROCK_TUNNEL_1F/NORTHWEST": "Rock Tunnel 1F Leave Northwest Entry (East)"
+    },
+    "warps": {
       "MAP_ROCK_TUNNEL_1F:3/MAP_ROCK_TUNNEL_B1F:2": "Rock Tunnel 1F Northwest Ladder (East)"
     }
   },
@@ -832,10 +1204,44 @@
       "TRAINER_PICNICKER_DANA_REWARD"
     ],
     "events": [],
-    "exits": {},
+    "exits": {
+      "REGION_ROCK_TUNNEL_1F/SOUTH_ENTRY_NORTHEAST": "Rock Tunnel 1F Leave South Area (Northeast)",
+      "REGION_ROCK_TUNNEL_1F/SOUTH_ENTRY_SOUTH": "Rock Tunnel 1F Leave South Area (South)"
+    },
+    "warps": {}
+  },
+  "REGION_ROCK_TUNNEL_1F/SOUTH_ENTRY_NORTHEAST": {
+    "parent_map": "MAP_ROCK_TUNNEL_1F",
+    "name": "Rock Tunnel 1F South Entry (Northeast)",
+    "encounter_region": "Rock Tunnel 1F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_ROCK_TUNNEL_1F/SOUTH": "Rock Tunnel 1F Leave South Entry (Northeast)"
+    },
     "warps": {
-      "MAP_ROCK_TUNNEL_1F:5/MAP_ROUTE10:1": "Rock Tunnel 1F South Exit",
       "MAP_ROCK_TUNNEL_1F:4/MAP_ROCK_TUNNEL_B1F:3": "Rock Tunnel 1F South Ladder"
+    }
+  },
+  "REGION_ROCK_TUNNEL_1F/SOUTH_ENTRY_SOUTH": {
+    "parent_map": "MAP_ROCK_TUNNEL_1F",
+    "name": "Rock Tunnel 1F South Entry (South)",
+    "encounter_region": "Rock Tunnel 1F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_ROCK_TUNNEL_1F/SOUTH": "Rock Tunnel 1F Leave South Entry (South)"
+    },
+    "warps": {
+      "MAP_ROCK_TUNNEL_1F:5/MAP_ROUTE10:1": "Rock Tunnel 1F South Exit"
     }
   },
   "REGION_ROCK_TUNNEL_B1F/SOUTHEAST": {
@@ -855,9 +1261,43 @@
       "TRAINER_HIKER_ERIC_REWARD"
     ],
     "events": [],
-    "exits": {},
+    "exits": {
+      "REGION_ROCK_TUNNEL_B1F/SOUTHEAST_ENTRY_SOUTHEAST": "Rock Tunnel B1F Leave Southeast Area (Southeast)",
+      "REGION_ROCK_TUNNEL_B1F/SOUTHEAST_ENTRY_NORTHEAST": "Rock Tunnel B1F Leave Southeast Area (Northeast)"
+    },
+    "warps": {}
+  },
+  "REGION_ROCK_TUNNEL_B1F/SOUTHEAST_ENTRY_SOUTHEAST": {
+    "parent_map": "MAP_ROCK_TUNNEL_B1F",
+    "name": "Rock Tunnel B1F Southeast Entry (Southeast)",
+    "encounter_region": "Rock Tunnel B1F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_ROCK_TUNNEL_B1F/SOUTHEAST": "Rock Tunnel B1F Leave Southeast Entry (Southeast)"
+    },
     "warps": {
-      "MAP_ROCK_TUNNEL_B1F:0/MAP_ROCK_TUNNEL_1F:1": "Rock Tunnel B1F Southeast Ladder (Southeast)",
+      "MAP_ROCK_TUNNEL_B1F:0/MAP_ROCK_TUNNEL_1F:1": "Rock Tunnel B1F Southeast Ladder (Southeast)"
+    }
+  },
+  "REGION_ROCK_TUNNEL_B1F/SOUTHEAST_ENTRY_NORTHEAST": {
+    "parent_map": "MAP_ROCK_TUNNEL_B1F",
+    "name": "Rock Tunnel B1F Southeast Entry (Northeast)",
+    "encounter_region": "Rock Tunnel B1F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_ROCK_TUNNEL_B1F/SOUTHEAST": "Rock Tunnel B1F Leave Southeast Entry (Northeast)"
+    },
+    "warps": {
       "MAP_ROCK_TUNNEL_B1F:1/MAP_ROCK_TUNNEL_1F:2": "Rock Tunnel B1F Southeast Ladder (Northeast)"
     }
   },
@@ -876,9 +1316,43 @@
       "TRAINER_POKEMANIAC_COOPER_REWARD"
     ],
     "events": [],
-    "exits": {},
+    "exits": {
+      "REGION_ROCK_TUNNEL_B1F/NORTHWEST_ENTRY_EAST": "Rock Tunnel B1F Leave Northwest Area (East)",
+      "REGION_ROCK_TUNNEL_B1F/NORTHWEST_ENTRY_NORTHWEST": "Rock Tunnel B1F Leave Northwest Area (Northwest)"
+    },
+    "warps": {}
+  },
+  "REGION_ROCK_TUNNEL_B1F/NORTHWEST_ENTRY_EAST": {
+    "parent_map": "MAP_ROCK_TUNNEL_B1F",
+    "name": "Rock Tunnel B1F Northwest Entry (East)",
+    "encounter_region": "Rock Tunnel B1F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_ROCK_TUNNEL_B1F/NORTHWEST": "Rock Tunnel B1F Leave Northwest Entry (East)"
+    },
     "warps": {
-      "MAP_ROCK_TUNNEL_B1F:2/MAP_ROCK_TUNNEL_1F:3": "Rock Tunnel B1F Northwest Ladder (East)",
+      "MAP_ROCK_TUNNEL_B1F:2/MAP_ROCK_TUNNEL_1F:3": "Rock Tunnel B1F Northwest Ladder (East)"
+    }
+  },
+  "REGION_ROCK_TUNNEL_B1F/NORTHWEST_ENTRY_NORTHWEST": {
+    "parent_map": "MAP_ROCK_TUNNEL_B1F",
+    "name": "Rock Tunnel B1F Northwest Entry (Northwest)",
+    "encounter_region": "Rock Tunnel B1F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_ROCK_TUNNEL_B1F/NORTHWEST": "Rock Tunnel B1F Leave Northwest Entry (Northwest)"
+    },
+    "warps": {
       "MAP_ROCK_TUNNEL_B1F:3/MAP_ROCK_TUNNEL_1F:4": "Rock Tunnel B1F Northwest Ladder (Northwest)"
     }
   },
@@ -920,9 +1394,29 @@
     "kanto": true,
     "locations": [],
     "events": [],
-    "exits": {},
+    "exits": {
+      "REGION_POKEMON_TOWER_1F/NEAR_STAIRS": "Pokemon Tower 1F Unobstructed Path",
+      "REGION_POKEMON_TOWER_GHOST/MAIN": "Pokemon Tower 1F (Ghost Battle)"
+    },
     "warps": {
-      "MAP_POKEMON_TOWER_1F:0/MAP_LAVENDER_TOWN:0": "Pokemon Tower 1F Exit",
+      "MAP_POKEMON_TOWER_1F:0/MAP_LAVENDER_TOWN:0": "Pokemon Tower 1F Exit"
+    }
+  },
+  "REGION_POKEMON_TOWER_1F/NEAR_STAIRS": {
+    "parent_map": "MAP_POKEMON_TOWER_1F",
+    "name": "Pokemon Tower 1F Near Stairs",
+    "encounter_region": null,
+    "has_land": false,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_POKEMON_TOWER_1F/MAIN": "Pokemon Tower 1F Near Stairs Unobstructed Path",
+      "REGION_POKEMON_TOWER_GHOST/MAIN": "Pokemon Tower 1F Near Stairs (Ghost Battle)"
+    },
+    "warps": {
       "MAP_POKEMON_TOWER_1F:1/MAP_POKEMON_TOWER_2F:1": "Pokemon Tower 1F Stairs"
     }
   },
@@ -1027,13 +1521,31 @@
       "TRAINER_CHANNELER_EMILIA_REWARD",
       "ITEM_POKEMON_TOWER_6F_RARE_CANDY"
     ],
-    "events": [
-      "STATIC_POKEMON_MAROWAK"
-    ],
-    "exits": {},
+    "events": [],
+    "exits": {
+      "REGION_POKEMON_TOWER_6F/NEAR_STAIRS": "Pokemon Tower 6F Reveal Ghost",
+      "REGION_POKEMON_TOWER_GHOST/MAIN": "Pokemon Tower 6F (Ghost Battle)"
+    },
     "warps": {
-      "MAP_POKEMON_TOWER_6F:0/MAP_POKEMON_TOWER_7F:0": "Pokemon Tower 6F Stairs (South)",
       "MAP_POKEMON_TOWER_6F:1/MAP_POKEMON_TOWER_5F:1": "Pokemon Tower 6F Stairs (East)"
+    }
+  },
+  "REGION_POKEMON_TOWER_6F/NEAR_STAIRS": {
+    "parent_map": "MAP_POKEMON_TOWER_6F",
+    "name": "Pokemon Tower 6F Near Stairs",
+    "encounter_region": "Pokemon Tower 6F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_POKEMON_TOWER_6F/MAIN": "Pokemon Tower 6F Near Stairs Pass Ghost",
+      "REGION_POKEMON_TOWER_GHOST/MAIN": "Pokemon Tower 6F Near Stairs (Ghost Battle)"
+    },
+    "warps": {
+      "MAP_POKEMON_TOWER_6F:0/MAP_POKEMON_TOWER_7F:0": "Pokemon Tower 6F Stairs (South)"
     }
   },
   "REGION_POKEMON_TOWER_7F/MAIN": {
@@ -1047,6 +1559,7 @@
     "locations": [
       "TRAINER_TEAM_ROCKET_GRUNT_19_REWARD",
       "TRAINER_TEAM_ROCKET_GRUNT_20_REWARD",
+      "FAME_CHECKER_MRFUJI_2",
       "TRAINER_TEAM_ROCKET_GRUNT_21_REWARD",
       "HIDDEN_ITEM_POKEMON_TOWER_7F_SOOTHE_BELL"
     ],
@@ -1059,6 +1572,21 @@
     "warps": {
       "MAP_POKEMON_TOWER_7F:0/MAP_POKEMON_TOWER_6F:0": "Pokemon Tower 7F Stairs"
     }
+  },
+  "REGION_POKEMON_TOWER_GHOST/MAIN": {
+    "parent_map": null,
+    "name": "Pokemon Tower Ghost Encounter",
+    "encounter_region": null,
+    "has_land": false,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [
+      "STATIC_POKEMON_MAROWAK"
+    ],
+    "exits": {},
+    "warps": {}
   },
   "REGION_UNDERGROUND_PATH_EAST_ENTRANCE/MAIN": {
     "parent_map": "MAP_UNDERGROUND_PATH_EAST_ENTRANCE",
@@ -1254,6 +1782,7 @@
       "ITEM_ROCKET_HIDEOUT_B4F_CALCIUM",
       "TRAINER_TEAM_ROCKET_GRUNT_16_REWARD",
       "TRAINER_TEAM_ROCKET_GRUNT_17_REWARD",
+      "FAME_CHECKER_GIOVANNI_1",
       "TRAINER_BOSS_GIOVANNI_REWARD",
       "NPC_GIFT_GOT_SILPH_SCOPE",
       "HIDDEN_ITEM_ROCKET_HIDEOUT_B4F_NET_BALL",
@@ -1528,7 +2057,9 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [],
+    "locations": [
+      "FAME_CHECKER_KOGA_6"
+    ],
     "events": [],
     "exits": {},
     "warps": {
@@ -1575,7 +2106,9 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [],
+    "locations": [
+      "NPC_GIFT_GOT_2F_CARD_KEY"
+    ],
     "events": [],
     "exits": {
       "REGION_SILPH_CO_ELEVATOR/MAIN": "Silph Co. 1F Elevator"
@@ -1658,6 +2191,7 @@
     "kanto": true,
     "locations": [
       "TRAINER_TEAM_ROCKET_GRUNT_25_REWARD",
+      "NPC_GIFT_GOT_3F_CARD_KEY",
       "HIDDEN_ITEM_SILPH_CO_3F_PROTEIN"
     ],
     "events": [],
@@ -1771,7 +2305,8 @@
     "locations": [
       "ITEM_SILPH_CO_4F_FULL_HEAL",
       "ITEM_SILPH_CO_4F_ESCAPE_ROPE",
-      "ITEM_SILPH_CO_4F_MAX_REVIVE"
+      "ITEM_SILPH_CO_4F_MAX_REVIVE",
+      "NPC_GIFT_GOT_4F_CARD_KEY"
     ],
     "events": [],
     "exits": {},
@@ -1817,6 +2352,7 @@
     "has_fishing": false,
     "kanto": true,
     "locations": [
+      "NPC_GIFT_GOT_5F_CARD_KEY",
       "HIDDEN_ITEM_SILPH_CO_5F_ELIXIR"
     ],
     "events": [],
@@ -1832,7 +2368,8 @@
     "has_fishing": false,
     "kanto": true,
     "locations": [
-      "ITEM_SILPH_CO_5F_PROTEIN"
+      "ITEM_SILPH_CO_5F_PROTEIN",
+      "FAME_CHECKER_GIOVANNI_2"
     ],
     "events": [],
     "exits": {},
@@ -1867,6 +2404,7 @@
     "kanto": true,
     "locations": [
       "TRAINER_TEAM_ROCKET_GRUNT_30_REWARD",
+      "NPC_GIFT_GOT_6F_CARD_KEY",
       "HIDDEN_ITEM_SILPH_CO_6F_CARBOS",
       "TRAINER_SCIENTIST_TAYLOR_REWARD",
       "TRAINER_TEAM_ROCKET_GRUNT_31_REWARD"
@@ -1970,7 +2508,9 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [],
+    "locations": [
+      "NPC_GIFT_GOT_7F_CARD_KEY"
+    ],
     "events": [],
     "exits": {},
     "warps": {}
@@ -2008,7 +2548,8 @@
       "TRAINER_TEAM_ROCKET_GRUNT_36_REWARD",
       "TRAINER_SCIENTIST_PARKER_REWARD",
       "ITEM_SILPH_CO_8F_IRON",
-      "HIDDEN_ITEM_SILPH_CO_8F_NUGGET"
+      "HIDDEN_ITEM_SILPH_CO_8F_NUGGET",
+      "FAME_CHECKER_GIOVANNI_3"
     ],
     "events": [],
     "exits": {
@@ -2031,7 +2572,9 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [],
+    "locations": [
+      "NPC_GIFT_GOT_8F_CARD_KEY"
+    ],
     "events": [],
     "exits": {
       "REGION_SILPH_CO_8F/MAIN": "Silph Co. 8F West Room Barrier"
@@ -2073,6 +2616,7 @@
     "kanto": true,
     "locations": [
       "HIDDEN_ITEM_SILPH_CO_9F_MAX_POTION",
+      "NPC_GIFT_GOT_9F_CARD_KEY",
       "HIDDEN_ITEM_SILPH_CO_9F_CALCIUM"
     ],
     "events": [],
@@ -2136,7 +2680,9 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [],
+    "locations": [
+      "NPC_GIFT_GOT_10F_CARD_KEY"
+    ],
     "events": [],
     "exits": {
       "REGION_SILPH_CO_10F/MAIN": "Silph Co. 10F Southeast Room Barrier"
@@ -2760,7 +3306,23 @@
     "locations": [],
     "events": [],
     "exits": {
+      "REGION_VICTORY_ROAD_1F/SOUTH_ENTRY": "Victory Road 1F Leave South Area",
       "REGION_VICTORY_ROAD_1F/NORTH": "Victory Road 1F South Rock Barrier"
+    },
+    "warps": {}
+  },
+  "REGION_VICTORY_ROAD_1F/SOUTH_ENTRY": {
+    "parent_map": "MAP_VICTORY_ROAD_1F",
+    "name": "Victory Road 1F South Entry",
+    "encounter_region": "Victory Road 1F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_VICTORY_ROAD_1F/SOUTH": "Victory Road 1F Leave South Entry"
     },
     "warps": {
       "MAP_VICTORY_ROAD_1F:1/MAP_ROUTE23:0": "Victory Road 1F South Exit"
@@ -2784,7 +3346,23 @@
     ],
     "events": [],
     "exits": {
+      "REGION_VICTORY_ROAD_1F/NORTH_ENTRY": "Victory Road 1F Leave North Area",
       "REGION_VICTORY_ROAD_1F/SOUTH": "Victory Road 1F North Strength Boulder"
+    },
+    "warps": {}
+  },
+  "REGION_VICTORY_ROAD_1F/NORTH_ENTRY": {
+    "parent_map": "MAP_VICTORY_ROAD_1F",
+    "name": "Victory Road 1F North Entry",
+    "encounter_region": "Victory Road 1F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_VICTORY_ROAD_1F/NORTH": "Victory Road 1F Leave North Entry"
     },
     "warps": {
       "MAP_VICTORY_ROAD_1F:0/MAP_VICTORY_ROAD_2F:0": "Victory Road 1F North Ladder"
@@ -2801,7 +3379,23 @@
     "locations": [],
     "events": [],
     "exits": {
+      "REGION_VICTORY_ROAD_2F/SOUTHWEST_ENTRY": "Victory Road 2F Leave Southwest Area",
       "REGION_VICTORY_ROAD_2F/CENTER": "Victory Road 2F Southwest Rock Barrier"
+    },
+    "warps": {}
+  },
+  "REGION_VICTORY_ROAD_2F/SOUTHWEST_ENTRY": {
+    "parent_map": "MAP_VICTORY_ROAD_2F",
+    "name": "Victory Road 2F Southwest Entry",
+    "encounter_region": "Victory Road 2F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_VICTORY_ROAD_2F/SOUTHWEST": "Victory Road 2F Leave Southwest Entry"
     },
     "warps": {
       "MAP_VICTORY_ROAD_2F:0/MAP_VICTORY_ROAD_1F:0": "Victory Road 2F Southwest Ladder"
@@ -2826,11 +3420,28 @@
     ],
     "events": [],
     "exits": {
+      "REGION_VICTORY_ROAD_2F/CENTER_ENTRY": "Victory Road 2F Leave Center Area",
       "REGION_VICTORY_ROAD_2F/SOUTHEAST": "Victory Road 2F Center Rock Barrier"
     },
     "warps": {
-      "MAP_VICTORY_ROAD_2F:2/MAP_VICTORY_ROAD_3F:1": "Victory Road 2F Center Ladder",
       "MAP_VICTORY_ROAD_2F:6/MAP_VICTORY_ROAD_3F:4": ""
+    }
+  },
+  "REGION_VICTORY_ROAD_2F/CENTER_ENTRY": {
+    "parent_map": "MAP_VICTORY_ROAD_2F",
+    "name": "Victory Road 2F Center Entry",
+    "encounter_region": "Victory Road 2F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_VICTORY_ROAD_2F/CENTER": "Victory Road 2F Leave Center Entry"
+    },
+    "warps": {
+      "MAP_VICTORY_ROAD_2F:2/MAP_VICTORY_ROAD_3F:1": "Victory Road 2F Center Ladder"
     }
   },
   "REGION_VICTORY_ROAD_2F/NORTHWEST": {
@@ -2847,7 +3458,23 @@
     ],
     "events": [],
     "exits": {
+      "REGION_VICTORY_ROAD_2F/NORTHWEST_ENTRY": "Victory Road 2F Leave Northwest Area",
       "REGION_VICTORY_ROAD_2F/SOUTHWEST": "Victory Road 2F Northwest Strength Boulder"
+    },
+    "warps": {}
+  },
+  "REGION_VICTORY_ROAD_2F/NORTHWEST_ENTRY": {
+    "parent_map": "MAP_VICTORY_ROAD_2F",
+    "name": "Victory Road 2F Northwest Entry",
+    "encounter_region": "Victory Road 2F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_VICTORY_ROAD_2F/NORTHWEST": "Victory Road 2F Leave Northwest Entry"
     },
     "warps": {
       "MAP_VICTORY_ROAD_2F:1/MAP_VICTORY_ROAD_3F:0": "Victory Road 2F Northwest Ladder"
@@ -2863,7 +3490,24 @@
     "kanto": true,
     "locations": [],
     "events": [],
-    "exits": {},
+    "exits": {
+      "REGION_VICTORY_ROAD_2F/SOUTHEAST_ENTRY": "Victory Road 2F Leave Southeast Area"
+    },
+    "warps": {}
+  },
+  "REGION_VICTORY_ROAD_2F/SOUTHEAST_ENTRY": {
+    "parent_map": "MAP_VICTORY_ROAD_2F",
+    "name": "Victory Road 2F Southeast Entry",
+    "encounter_region": "Victory Road 2F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_VICTORY_ROAD_2F/SOUTHEAST": "Victory Road 2F Leave Southeast Entry"
+    },
     "warps": {
       "MAP_VICTORY_ROAD_2F:4/MAP_VICTORY_ROAD_3F:3": "Victory Road 2F Southeast Ladder"
     }
@@ -2878,9 +3522,43 @@
     "kanto": true,
     "locations": [],
     "events": [],
-    "exits": {},
+    "exits": {
+      "REGION_VICTORY_ROAD_2F/EAST_ENTRY_WEST": "Victory Road 2F Leave East Area (West)",
+      "REGION_VICTORY_ROAD_2F/EAST_ENTRY_EAST": "Victory Road 2F Leave East Area (East)"
+    },
+    "warps": {}
+  },
+  "REGION_VICTORY_ROAD_2F/EAST_ENTRY_WEST": {
+    "parent_map": "MAP_VICTORY_ROAD_2F",
+    "name": "Victory Road 2F East Entry (West)",
+    "encounter_region": "Victory Road 2F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_VICTORY_ROAD_2F/EAST": "Victory Road 2F Leave East Entry (West)"
+    },
     "warps": {
-      "MAP_VICTORY_ROAD_2F:3/MAP_VICTORY_ROAD_3F:2": "Victory Road 2F East Ladder",
+      "MAP_VICTORY_ROAD_2F:3/MAP_VICTORY_ROAD_3F:2": "Victory Road 2F East Ladder"
+    }
+  },
+  "REGION_VICTORY_ROAD_2F/EAST_ENTRY_EAST": {
+    "parent_map": "MAP_VICTORY_ROAD_2F",
+    "name": "Victory Road 2F East Entry (East)",
+    "encounter_region": "Victory Road 2F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_VICTORY_ROAD_2F/EAST": "Victory Road 2F Leave East Entry (East)"
+    },
+    "warps": {
       "MAP_VICTORY_ROAD_2F:5/MAP_ROUTE23:1": "Victory Road 2F East Exit"
     }
   },
@@ -2900,10 +3578,43 @@
     ],
     "events": [],
     "exits": {
+      "REGION_VICTORY_ROAD_3F/NORTH_ENTRY_WEST": "Victory Road 3F Leave North Area (West)",
+      "REGION_VICTORY_ROAD_3F/NORTH_ENTRY_EAST": "Victory Road 3F Leave North Area (East)",
       "REGION_VICTORY_ROAD_3F/SOUTHWEST": "Victory Road 3F North Rock Barrier"
     },
+    "warps": {}
+  },
+  "REGION_VICTORY_ROAD_3F/NORTH_ENTRY_WEST": {
+    "parent_map": "MAP_VICTORY_ROAD_3F",
+    "name": "Victory Road 3F North Entry (West)",
+    "encounter_region": "Victory Road 3F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_VICTORY_ROAD_3F/NORTH": "Victory Road 3F Leave North Entry (West)"
+    },
     "warps": {
-      "MAP_VICTORY_ROAD_3F:0/MAP_VICTORY_ROAD_2F:1": "Victory Road 3F North Ladder (West)",
+      "MAP_VICTORY_ROAD_3F:0/MAP_VICTORY_ROAD_2F:1": "Victory Road 3F North Ladder (West)"
+    }
+  },
+  "REGION_VICTORY_ROAD_3F/NORTH_ENTRY_EAST": {
+    "parent_map": "MAP_VICTORY_ROAD_3F",
+    "name": "Victory Road 3F North Entry (East)",
+    "encounter_region": "Victory Road 3F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_VICTORY_ROAD_3F/NORTH": "Victory Road 3F Leave North Entry (East)"
+    },
+    "warps": {
       "MAP_VICTORY_ROAD_3F:1/MAP_VICTORY_ROAD_2F:2": "Victory Road 3F North Ladder (East)"
     }
   },
@@ -2940,10 +3651,43 @@
     ],
     "events": [],
     "exits": {
+      "REGION_VICTORY_ROAD_3F/SOUTHEAST_ENTRY_NORTH": "Victory Road 3F Leave Southeast Area (North)",
+      "REGION_VICTORY_ROAD_3F/SOUTHEAST_ENTRY_SOUTH": "Victory Road 3F Leave Southeast Area (South)",
       "REGION_VICTORY_ROAD_3F/SOUTHWEST": "Victory Road 3F Southeast Strength Boulder"
     },
+    "warps": {}
+  },
+  "REGION_VICTORY_ROAD_3F/SOUTHEAST_ENTRY_NORTH": {
+    "parent_map": "MAP_VICTORY_ROAD_3F",
+    "name": "Victory Road 3F Southeast Entry (North)",
+    "encounter_region": "Victory Road 3F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_VICTORY_ROAD_3F/SOUTHEAST": "Victory Road 3F Leave Southeast Entry (North)"
+    },
     "warps": {
-      "MAP_VICTORY_ROAD_3F:2/MAP_VICTORY_ROAD_2F:3": "Victory Road 3F Southeast Ladder (North)",
+      "MAP_VICTORY_ROAD_3F:2/MAP_VICTORY_ROAD_2F:3": "Victory Road 3F Southeast Ladder (North)"
+    }
+  },
+  "REGION_VICTORY_ROAD_3F/SOUTHEAST_ENTRY_SOUTH": {
+    "parent_map": "MAP_VICTORY_ROAD_3F",
+    "name": "Victory Road 3F Southeast Entry (South)",
+    "encounter_region": "Victory Road 3F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_VICTORY_ROAD_3F/SOUTHEAST": "Victory Road 3F Leave Southeast Entry (South)"
+    },
+    "warps": {
       "MAP_VICTORY_ROAD_3F:3/MAP_VICTORY_ROAD_2F:4": "Victory Road 3F Southeast Ladder (South)"
     }
   },
@@ -2959,7 +3703,9 @@
       "TRAINER_TEAM_ROCKET_GRUNT_43_REWARD",
       "TRAINER_TEAM_ROCKET_GRUNT_44_REWARD"
     ],
-    "events": [],
+    "events": [
+      "EVENT_LEARN_ROCKET_WAREHOUSE_PASSWORD"
+    ],
     "exits": {
       "REGION_MT_EMBER_EXTERIOR/CENTER": "Mt. Ember Exterior South Strength Boulders"
     },
@@ -3629,9 +4375,12 @@
       "TRAINER_TEAM_ROCKET_ADMIN_2_REWARD",
       "TRAINER_SCIENTIST_GIDEON_REWARD",
       "NPC_GIFT_RECOVERED_SAPPHIRE",
+      "FAME_CHECKER_GIOVANNI_6",
       "HIDDEN_ITEM_FIVE_ISLAND_ROCKET_WAREHOUSE_NEST_BALL"
     ],
-    "events": [],
+    "events": [
+      "EVENT_DEFEAT_TEAM_ROCKET_ADMIN"
+    ],
     "exits": {},
     "warps": {
       "MAP_FIVE_ISLAND_ROCKET_WAREHOUSE:0/MAP_FIVE_ISLAND_MEADOW:0": "Rocket Warehouse Exit"
@@ -3832,7 +4581,9 @@
       "TRAINER_LADY_SELPHY_REWARD",
       "ITEM_FIVE_ISLAND_LOST_CAVE_ROOM10_SILK_SCARF"
     ],
-    "events": [],
+    "events": [
+      "EVENT_RESCUE_SELPHY"
+    ],
     "exits": {
       "REGION_FIVE_ISLAND_RESORT_GORGEOUS/NEAR_RESORT": "Follow Selphy"
     },
@@ -4028,7 +4779,7 @@
     "kanto": false,
     "locations": [],
     "events": [
-      "EVENT_LEARN_ROCKET_WAREHOUSE_PASSWORD"
+      "EVENT_LEARN_ROCKET_WAREHOUSE_PASSWORD_2"
     ],
     "exits": {},
     "warps": {

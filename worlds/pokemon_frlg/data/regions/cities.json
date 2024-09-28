@@ -262,8 +262,7 @@
     "has_fishing": true,
     "kanto": true,
     "locations": [
-      "NPC_GIFT_RECEIVED_MYSTIC_TICKET",
-      "NPC_GIFT_RECEIVED_AURORA_TICKET"
+      "FAME_CHECKER_OAK_1"
     ],
     "events": [],
     "exits": {
@@ -352,7 +351,11 @@
     "kanto": true,
     "locations": [
       "TRAINER_RIVAL_OAKS_LAB_BULBASAUR_REWARD",
+      "FAME_CHECKER_DAISY_1",
+      "FAME_CHECKER_OAK_3",
+      "FAME_CHECKER_OAK_6",
       "NPC_GIFT_GOT_FIRST_POKEBALLS",
+      "FAME_CHECKER_OAK_2",
       "NPC_GIFT_GOT_POKEBALLS_FROM_OAK_AFTER_22_RIVAL"
     ],
     "events": [
@@ -501,9 +504,11 @@
       "TRAINER_COOLTRAINER_WARREN_REWARD",
       "TRAINER_BLACK_BELT_TAKASHI_REWARD",
       "TRAINER_LEADER_GIOVANNI_REWARD",
+      "FAME_CHECKER_GIOVANNI_4",
       "BADGE_8",
       "NPC_GIFT_GOT_TM26_FROM_GIOVANNI",
-      "HIDDEN_ITEM_VIRIDIAN_CITY_GYM_MACHO_BRACE"
+      "HIDDEN_ITEM_VIRIDIAN_CITY_GYM_MACHO_BRACE",
+      "FAME_CHECKER_GIOVANNI_5"
     ],
     "events": [
       "EVENT_DEFEAT_GIOVANNI"
@@ -521,7 +526,10 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [],
+    "locations": [
+      "FAME_CHECKER_DAISY_4",
+      "FAME_CHECKER_OAK_4"
+    ],
     "events": [],
     "exits": {},
     "warps": {
@@ -569,6 +577,8 @@
     "has_fishing": false,
     "kanto": true,
     "locations": [
+      "FAME_CHECKER_BROCK_1",
+      "FAME_CHECKER_BROCK_3",
       "HIDDEN_ITEM_PEWTER_CITY_POKE_BALL"
     ],
     "events": [],
@@ -630,7 +640,8 @@
     "has_fishing": false,
     "kanto": true,
     "locations": [
-      "NPC_GIFT_GOT_OLD_AMBER"
+      "NPC_GIFT_GOT_OLD_AMBER",
+      "FAME_CHECKER_BROCK_6"
     ],
     "events": [],
     "exits": {},
@@ -664,6 +675,7 @@
     "locations": [
       "TRAINER_CAMPER_LIAM_REWARD",
       "TRAINER_LEADER_BROCK_REWARD",
+      "FAME_CHECKER_BROCK_2",
       "BADGE_1",
       "NPC_GIFT_GOT_TM39_FROM_BROCK"
     ],
@@ -776,7 +788,9 @@
     "kanto": true,
     "locations": [
       "TRAINER_RIVAL_CERULEAN_BULBASAUR_REWARD",
-      "NPC_GIFT_GOT_FAME_CHECKER"
+      "FAME_CHECKER_BILL_1",
+      "NPC_GIFT_GOT_FAME_CHECKER",
+      "FAME_CHECKER_MISTY_1"
     ],
     "events": [],
     "exits": {
@@ -932,7 +946,10 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [],
+    "locations": [
+      "FAME_CHECKER_BILL_2",
+      "FAME_CHECKER_MISTY_6"
+    ],
     "events": [],
     "exits": {},
     "warps": {
@@ -965,9 +982,11 @@
     "kanto": true,
     "locations": [
       "TRAINER_SWIMMER_MALE_LUIS_REWARD",
+      "FAME_CHECKER_MISTY_3",
       "TRAINER_PICNICKER_DIANA_REWARD",
       "HIDDEN_ITEM_CERULEAN_CITY_GYM_MACHINE_PART",
       "TRAINER_LEADER_MISTY_REWARD",
+      "FAME_CHECKER_MISTY_2",
       "BADGE_2",
       "NPC_GIFT_GOT_TM03_FROM_MISTY"
     ],
@@ -1072,6 +1091,7 @@
     "events": [],
     "exits": {
       "REGION_VERMILION_CITY/NEAR_GYM": "Vermilion City Cuttable Tree",
+      "REGION_VERMILION_CITY/NEAR_SIGN": "Vermilion City Read Sign",
       "REGION_VERMILION_CITY/WATER": "Vermilion City Surfing Spot",
       "REGION_VERMILION_CITY/VISIT": "Vermilion City Visit",
       "REGION_ROUTE6/MAIN": "Vermilion City Exit (North)",
@@ -1100,12 +1120,28 @@
     "events": [],
     "exits": {
       "REGION_VERMILION_CITY/MAIN": "Vermilion City Near Gym Cuttable Tree",
+      "REGION_VERMILION_CITY/NEAR_SIGN": "Vermilion City Near Gym Read Sign",
       "REGION_VERMILION_CITY/WATER": "Vermilion City Near Gym Surfing Spot",
       "REGION_VERMILION_CITY/VISIT": "Vermilion City Near Gym Visit"
     },
     "warps": {
       "MAP_VERMILION_CITY:7/MAP_VERMILION_CITY_GYM:0": "Vermilion Gym"
     }
+  },
+  "REGION_VERMILION_CITY/NEAR_SIGN": {
+    "parent_map": "MAP_VERMILION_CITY",
+    "name": "Vermilion City Near Sign",
+    "encounter_region": null,
+    "has_land": false,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [
+      "FAME_CHECKER_LTSURGE_1"
+    ],
+    "events": [],
+    "exits": {},
+    "warps": {}
   },
   "REGION_VERMILION_CITY/WATER": {
     "parent_map": "MAP_VERMILION_CITY",
@@ -1149,7 +1185,8 @@
     "has_fishing": false,
     "kanto": true,
     "locations": [
-      "NPC_GIFT_GOT_VS_SEEKER"
+      "NPC_GIFT_GOT_VS_SEEKER",
+      "FAME_CHECKER_LTSURGE_6"
     ],
     "events": [],
     "exits": {},
@@ -1182,7 +1219,8 @@
     "has_fishing": false,
     "kanto": true,
     "locations": [
-      "NPC_GIFT_GOT_BIKE_VOUCHER"
+      "NPC_GIFT_GOT_BIKE_VOUCHER",
+      "FAME_CHECKER_DAISY_2"
     ],
     "events": [],
     "exits": {},
@@ -1247,9 +1285,13 @@
     "kanto": true,
     "locations": [
       "TRAINER_SAILOR_DWAYNE_REWARD",
+      "FAME_CHECKER_LTSURGE_5",
       "TRAINER_ENGINEER_BAILY_REWARD",
       "TRAINER_GENTLEMAN_TUCKER_REWARD",
+      "FAME_CHECKER_LTSURGE_3",
+      "FAME_CHECKER_LTSURGE_4",
       "TRAINER_LEADER_LT_SURGE_REWARD",
+      "FAME_CHECKER_LTSURGE_2",
       "BADGE_3",
       "NPC_GIFT_GOT_TM34_FROM_SURGE"
     ],
@@ -1309,7 +1351,9 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [],
+    "locations": [
+      "FAME_CHECKER_MRFUJI_4"
+    ],
     "events": [],
     "exits": {},
     "warps": {
@@ -1341,7 +1385,9 @@
     "has_fishing": false,
     "kanto": true,
     "locations": [
-      "NPC_GIFT_GOT_POKE_FLUTE"
+      "NPC_GIFT_GOT_POKE_FLUTE",
+      "FAME_CHECKER_MRFUJI_1",
+      "FAME_CHECKER_MRFUJI_3"
     ],
     "events": [],
     "exits": {},
@@ -1450,7 +1496,9 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [],
+    "locations": [
+      "FAME_CHECKER_ERIKA_1"
+    ],
     "events": [],
     "exits": {
       "REGION_CELADON_CITY/MAIN": "Celadon City Near Gym Cuttable Tree",
@@ -1482,6 +1530,21 @@
     "has_fishing": false,
     "kanto": true,
     "locations": [
+      "NPC_GIFT_GOT_10_COINS_FROM_GAMBLER",
+      "NPC_GIFT_GOT_20_COINS_FROM_GAMBLER",
+      "NPC_GIFT_GOT_20_COINS_FROM_GAMBLER_2",
+      "HIDDEN_ITEM_CELADON_CITY_GAME_CORNER_COINS_3",
+      "HIDDEN_ITEM_CELADON_CITY_GAME_CORNER_COINS_4",
+      "HIDDEN_ITEM_CELADON_CITY_GAME_CORNER_COINS_12",
+      "HIDDEN_ITEM_CELADON_CITY_GAME_CORNER_COINS_11",
+      "HIDDEN_ITEM_CELADON_CITY_GAME_CORNER_COINS_2",
+      "HIDDEN_ITEM_CELADON_CITY_GAME_CORNER_COINS_5",
+      "HIDDEN_ITEM_CELADON_CITY_GAME_CORNER_COINS_9",
+      "HIDDEN_ITEM_CELADON_CITY_GAME_CORNER_COINS_10",
+      "HIDDEN_ITEM_CELADON_CITY_GAME_CORNER_COINS",
+      "HIDDEN_ITEM_CELADON_CITY_GAME_CORNER_COINS_6",
+      "HIDDEN_ITEM_CELADON_CITY_GAME_CORNER_COINS_7",
+      "HIDDEN_ITEM_CELADON_CITY_GAME_CORNER_COINS_8",
       "TRAINER_TEAM_ROCKET_GRUNT_7_REWARD"
     ],
     "events": [],
@@ -1518,7 +1581,9 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [],
+    "locations": [
+      "FAME_CHECKER_LANCE_4"
+    ],
     "events": [],
     "exits": {
       "REGION_CELADON_CITY_DEPARTMENT_STORE_ELEVATOR/MAIN": "Celadon Department Store 2F Elevator"
@@ -1633,7 +1698,8 @@
     "has_fishing": false,
     "kanto": true,
     "locations": [
-      "NPC_GIFT_GOT_TEA"
+      "NPC_GIFT_GOT_TEA",
+      "FAME_CHECKER_DAISY_5"
     ],
     "events": [],
     "exits": {},
@@ -1666,7 +1732,9 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [],
+    "locations": [
+      "FAME_CHECKER_ERIKA_6"
+    ],
     "events": [],
     "exits": {},
     "warps": {
@@ -1834,6 +1902,7 @@
       "TRAINER_LASS_KAY_REWARD",
       "TRAINER_BEAUTY_BRIDGET_REWARD",
       "TRAINER_BEAUTY_TAMIA_REWARD",
+      "FAME_CHECKER_ERIKA_4",
       "TRAINER_PICNICKER_TINA_REWARD"
     ],
     "events": [],
@@ -1856,7 +1925,10 @@
       "TRAINER_COOLTRAINER_MARY_REWARD",
       "TRAINER_BEAUTY_LORI_REWARD",
       "TRAINER_LASS_LISA_REWARD",
+      "FAME_CHECKER_ERIKA_3",
       "TRAINER_LEADER_ERIKA_REWARD",
+      "FAME_CHECKER_ERIKA_2",
+      "FAME_CHECKER_ERIKA_5",
       "BADGE_4",
       "NPC_GIFT_GOT_TM19_FROM_ERIKA"
     ],
@@ -1938,7 +2010,10 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [],
+    "locations": [
+      "FAME_CHECKER_KOGA_1",
+      "FAME_CHECKER_KOGA_4"
+    ],
     "events": [],
     "exits": {
       "REGION_FUCHSIA_CITY/VISIT": "Fuchsia City Visit",
@@ -2017,7 +2092,8 @@
     "kanto": true,
     "locations": [
       "NPC_GIFT_GOT_HM04",
-      "ITEM_FUCHSIA_CITY_WARDENS_HOUSE_RARE_CANDY"
+      "ITEM_FUCHSIA_CITY_WARDENS_HOUSE_RARE_CANDY",
+      "FAME_CHECKER_KOGA_5"
     ],
     "events": [],
     "exits": {},
@@ -2069,10 +2145,12 @@
       "TRAINER_JUGGLER_NATE_REWARD",
       "TRAINER_JUGGLER_KAYDEN_REWARD",
       "TRAINER_JUGGLER_KIRK_REWARD",
+      "FAME_CHECKER_KOGA_3",
       "TRAINER_TAMER_EDGAR_REWARD",
       "TRAINER_TAMER_PHIL_REWARD",
       "TRAINER_JUGGLER_SHAWN_REWARD",
       "TRAINER_LEADER_KOGA_REWARD",
+      "FAME_CHECKER_KOGA_2",
       "BADGE_5",
       "NPC_GIFT_GOT_TM06_FROM_KOGA"
     ],
@@ -2092,7 +2170,9 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [],
+    "locations": [
+      "FAME_CHECKER_BILL_3"
+    ],
     "events": [],
     "exits": {},
     "warps": {
@@ -2186,7 +2266,10 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [],
+    "locations": [
+      "FAME_CHECKER_LANCE_3",
+      "FAME_CHECKER_SABRINA_1"
+    ],
     "events": [],
     "exits": {
       "REGION_SAFFRON_CITY/VISIT": "Saffron City Visit"
@@ -2329,7 +2412,8 @@
     "has_fishing": false,
     "kanto": true,
     "locations": [
-      "TRAINER_PSYCHIC_TYRON_REWARD"
+      "TRAINER_PSYCHIC_TYRON_REWARD",
+      "FAME_CHECKER_SABRINA_6"
     ],
     "events": [],
     "exits": {},
@@ -2430,6 +2514,8 @@
     "kanto": true,
     "locations": [
       "TRAINER_LEADER_SABRINA_REWARD",
+      "FAME_CHECKER_SABRINA_3",
+      "FAME_CHECKER_SABRINA_4",
       "BADGE_6",
       "NPC_GIFT_GOT_TM04_FROM_SABRINA"
     ],
@@ -2479,7 +2565,9 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [],
+    "locations": [
+      "FAME_CHECKER_SABRINA_5"
+    ],
     "events": [],
     "exits": {},
     "warps": {
@@ -2527,7 +2615,9 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [],
+    "locations": [
+      "FAME_CHECKER_BRUNO_3"
+    ],
     "events": [],
     "exits": {},
     "warps": {
@@ -2557,7 +2647,10 @@
     "has_water": false,
     "has_fishing": true,
     "kanto": true,
-    "locations": [],
+    "locations": [
+      "FAME_CHECKER_BLAINE_1",
+      "FAME_CHECKER_BLAINE_4"
+    ],
     "events": [],
     "exits": {
       "REGION_CINNABAR_ISLAND/WATER": "Cinnabar Island Surfing Spot",
@@ -2602,11 +2695,15 @@
       "TRAINER_SUPER_NERD_AVERY_REWARD",
       "TRAINER_BURGLAR_RAMON_REWARD",
       "TRAINER_SUPER_NERD_DEREK_REWARD",
+      "FAME_CHECKER_BLAINE_3",
       "TRAINER_BURGLAR_DUSTY_REWARD",
       "TRAINER_SUPER_NERD_ZAC_REWARD",
       "TRAINER_LEADER_BLAINE_REWARD",
+      "FAME_CHECKER_BLAINE_2",
       "BADGE_7",
-      "NPC_GIFT_GOT_TM38_FROM_BLAINE"
+      "NPC_GIFT_GOT_TM38_FROM_BLAINE",
+      "FAME_CHECKER_BLAINE_5",
+      "FAME_CHECKER_MRFUJI_5"
     ],
     "events": [
       "EVENT_DEFEAT_BLAINE"
@@ -2697,7 +2794,9 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [],
+    "locations": [
+      "FAME_CHECKER_MRFUJI_6"
+    ],
     "events": [],
     "exits": {
       "REGION_ONE_ISLAND_POKEMON_CENTER_1F/MAIN": "Follow Bill"
@@ -2778,7 +2877,12 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [],
+    "locations": [
+      "FAME_CHECKER_AGATHA_2",
+      "FAME_CHECKER_AGATHA_3",
+      "FAME_CHECKER_LANCE_5",
+      "FAME_CHECKER_LANCE_6"
+    ],
     "events": [],
     "exits": {},
     "warps": {
@@ -2811,7 +2915,10 @@
     "has_fishing": false,
     "kanto": true,
     "locations": [
-      "TRAINER_ELITE_FOUR_LORELEI_REWARD"
+      "FAME_CHECKER_LORELEI_1",
+      "FAME_CHECKER_LORELEI_2",
+      "TRAINER_ELITE_FOUR_LORELEI_REWARD",
+      "TRAINER_ELITE_FOUR_LORELEI_2_REWARD"
     ],
     "events": [],
     "exits": {},
@@ -2829,7 +2936,10 @@
     "has_fishing": false,
     "kanto": true,
     "locations": [
-      "TRAINER_ELITE_FOUR_BRUNO_REWARD"
+      "FAME_CHECKER_BRUNO_1",
+      "FAME_CHECKER_BRUNO_2",
+      "TRAINER_ELITE_FOUR_BRUNO_REWARD",
+      "TRAINER_ELITE_FOUR_BRUNO_2_REWARD"
     ],
     "events": [],
     "exits": {},
@@ -2847,7 +2957,11 @@
     "has_fishing": false,
     "kanto": true,
     "locations": [
-      "TRAINER_ELITE_FOUR_AGATHA_REWARD"
+      "FAME_CHECKER_AGATHA_1",
+      "FAME_CHECKER_AGATHA_5",
+      "FAME_CHECKER_OAK_5",
+      "TRAINER_ELITE_FOUR_AGATHA_REWARD",
+      "TRAINER_ELITE_FOUR_AGATHA_2_REWARD"
     ],
     "events": [],
     "exits": {},
@@ -2865,7 +2979,10 @@
     "has_fishing": false,
     "kanto": true,
     "locations": [
-      "TRAINER_ELITE_FOUR_LANCE_REWARD"
+      "FAME_CHECKER_LANCE_1",
+      "FAME_CHECKER_LANCE_2",
+      "TRAINER_ELITE_FOUR_LANCE_REWARD",
+      "TRAINER_ELITE_FOUR_LANCE_2_REWARD"
     ],
     "events": [],
     "exits": {},
@@ -2883,9 +3000,13 @@
     "has_fishing": false,
     "kanto": true,
     "locations": [
-      "TRAINER_CHAMPION_FIRST_BULBASAUR_REWARD"
+      "TRAINER_CHAMPION_FIRST_BULBASAUR_REWARD",
+      "TRAINER_CHAMPION_REMATCH_BULBASAUR_REWARD"
     ],
-    "events": [],
+    "events": [
+      "EVENT_DEFEAT_CHAMPION",
+      "EVENT_DEFEAT_CHAMPION_REMATCH"
+    ],
     "exits": {},
     "warps": {
       "MAP_POKEMON_LEAGUE_CHAMPIONS_ROOM:0/MAP_POKEMON_LEAGUE_LANCES_ROOM:1": "Pokemon League Champion's Room Exit (South)",
@@ -2900,10 +3021,11 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [],
-    "events": [
-      "EVENT_DEFEAT_CHAMPION"
+    "locations": [
+      "NPC_GIFT_RECEIVED_MYSTIC_TICKET",
+      "NPC_GIFT_RECEIVED_AURORA_TICKET"
     ],
+    "events": [],
     "exits": {},
     "warps": {
       "MAP_POKEMON_LEAGUE_HALL_OF_FAME:0/MAP_POKEMON_LEAGUE_CHAMPIONS_ROOM:1": "Pokemon League Hall of Fame Exit"

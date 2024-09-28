@@ -21,7 +21,7 @@ It is recommended you follow the setup guide for Bizhawk in the [Pokémon Emeral
 
 ## Generating and Patching
 
-1. Download and modify the [template YAML](https://gist.github.com/vyneras/af12ebb1f7e98a5a999b6c084f446cb3) and place it in your Archipelago installation's `Players` folder
+1. Open `ArchipelagoLauncher.exe` and select "Generate Template Options" to create a default YAML.
 2. Launch `ArchipelagoGenerate.exe`. This will generate an output file for you. Your patch file will have one of the following file extensions:
    * `.apfirered`
    * `.apleafgreen`

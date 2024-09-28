@@ -37,6 +37,7 @@ class MagicantMode(Choice):
     option_removed = 4
     default = 0
 
+
 class MonkeyCavesMode(Choice):
     """Chests: Items required to finish the Monkey Caves will be forcibly placed on the chests that can be found in-between rooms of the monkey caves. The "reward" locations, usually found at the end of a branch, are still random. If you waste chest items, they will need to be replaced via the methods in hunt mode.
        Hunt: Items required to finish the Monkey Caves will need to be found outside. They can be obtained from the Dusty Dunes drugstore, the Fourside department store, and the pizza shop in either Twoson or Threed.
@@ -62,7 +63,7 @@ class RandomStartLocation(Toggle):
     display_name = "Random Starting Location"
 
 
-class PSIShuffle(Choice):
+class TeleportShuffle(Choice):
     """Shuffled: Teleports and Starstorm will be shuffled amongst the PSI locations. A few redundant Teleports may not be available.
        Anywhere: Teleports and Starstorm will be placed anywhere in the multiworld, and PSI locations will have regular checks.
        See the Game Page for more information on PSI Locations."""
@@ -82,28 +83,58 @@ class CharacterShuffle(Choice):
     default = 0
 
 
+class PSIShuffle(Choice):
+    """None: Characters will learn their normal PSI skills.
+       Basic: Offensive and Assist PSI will be shuffled. Recovery PSI is not modified. Ness's Favorite Thing will be named Wave in other slots.
+       Extended: Basic shuffle, but includes Jeff gadgets and some combat items.
+       See the Game Page for more information."""
+    display_name = "PSI Shuffle"
+    option_none = 0
+    option_basic = 1
+    option_extended = 2
+
+class BanFlashFavorite(Toggle):
+    """If enabled, allows PSI Flash to be shuffled onto the Favorite Thing PSI slot. Can be quite annoying early-game. 
+       Does nothing if PSI Shuffle is set to None."""
+    display_name = "Flash as Favorite"
+
+
 class PreFixItems(Toggle):
     """If enabled, broken items in the multiworld pool will be replaced with their fixed versions.
        This does not affect any items that are not placed by the multiworld."""
     display_name = "Prefixed Items"
 
+
 class AutoscaleParty(Toggle):
     """If enabled, joining party members will be scaled to roughly the level of the sphere they were obtained in."""
     display_name = "Autoscale Party Members"
 
+class ProgressiveWeapons(Toggle):
+    """If enabled, Bats, Fry Pans, and Guns will be progressive. Does not apply to items dropped by enemies or found in shops."""
+    display_name = "Progressive Weapons"
+
+
+class ProgressiveArmor(Toggle):
+    """If enabled, Bracelets and items for the Other slot besides Ribbons will be progressive. Does not apply to items dropped by enemies or found in shops."""
+    display_name = "Progressive Weapons"
+
+
 class PresentSprites(DefaultOnToggle):
     """If enabled, Presents, Trash cans, and chests will have their appearance modified to be indicative of the item they contain."""
     display_name = "Match Present Sprites"
+
 
 class ShuffleDrops(Toggle):
     """If enabled, enemies will drop random filler items. This does not put checks on enemy drops.
        Drop rates are unchanged."""
     display_name = "Shuffle Drops"
 
+
 class RandomFranklinBadge(Toggle):
     """If enabled, the Franklin Badge will reflect a randomly selected attack type. The type can be determined from the item's name, as well as the help
        text for it. The badge's function outside of battle will not change, and neither will its name outside of the game itself."""
     display_name = "Franklin Badge Protection"
+
 
 class CommonWeight(Range):
     """Weight for placing a common filler item."""
@@ -154,6 +185,7 @@ class RandomFlavors(DefaultOnToggle):
     """Randomizes the non-plain window color options."""
     display_name = "Random Flavors"
 
+
 class DeathLinkMode(Choice):
     """Controls how receiving a Deathlink functions in battle.
        Instant: The player will be instantly defeated.
@@ -166,7 +198,7 @@ class DeathLinkMode(Choice):
     option_mortal_mercy = 2
     default = 1
 
-#class RandomBattleBG(Choice):
+# class RandomBattleBG(Choice):
  #   """Generates random battle backgrounds.
   #     Normal: Battle backgrounds are not randomized.
    #    Random Safe: Generates battle backgrounds from valid backgrounds or combining valid backgrounds.
@@ -202,18 +234,23 @@ class EBOptions(PerGameCommonOptions):
     alternate_sanctuary_goal: SanctuaryAltGoal
     magicant_mode: MagicantMode
     monkey_caves_mode: MonkeyCavesMode
-    shuffle_teleports: PSIShuffle# Better name?
+    shuffle_teleports: TeleportShuffle# Better name?
     character_shuffle: CharacterShuffle
+    psi_shuffle: PSIShuffle
+    allow_flash_as_favorite_thing: BanFlashFavorite
     #shuffle_sound_stone: SoundStoneShuffle
     experience_modifier: ExperienceModifier
     starting_money: StartingMoney
     easy_deaths: EasyDeaths
+    progressive_weapons: ProgressiveWeapons
+    progressive_armor: ProgressiveArmor
     auto_scale_party_members: AutoscaleParty
     remote_items: RemoteItems
     random_flavors: RandomFlavors
     random_battle_backgrounds: RandomBattleBG
     presents_match_contents: PresentSprites
     prefixed_items: PreFixItems
+    #excluded_teleports: ExcludedTeleports
     randomize_franklinbadge_protection: RandomFranklinBadge
     shuffle_enemy_drops: ShuffleDrops
     common_filler_weight: CommonWeight

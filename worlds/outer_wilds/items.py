@@ -5,7 +5,8 @@ import typing
 from typing import Dict, List, NamedTuple, Optional, Set
 
 from BaseClasses import Item, ItemClassification
-from .options import EarlyKeyItem, Spawn
+from .options import EarlyKeyItem, OuterWildsGameOptions, Spawn, get_creation_settings
+from .should_generate import should_generate
 
 if typing.TYPE_CHECKING:
     from . import OuterWildsWorld
@@ -18,6 +19,7 @@ class OuterWildsItem(Item):
 class OuterWildsItemData(NamedTuple):
     code: Optional[int] = None
     type: ItemClassification = ItemClassification.filler
+    category: Optional[str] = None
 
 
 pickled_data = pkgutil.get_data(__name__, "shared_static_logic/static_logic.pickle")
@@ -34,18 +36,34 @@ item_data_table: Dict[str, OuterWildsItemData] = {}
 for items_data_entry in items_data:
     item_data_table[items_data_entry["name"]] = OuterWildsItemData(
         code=(items_data_entry["code"] if "code" in items_data_entry else None),
-        type=item_types_map[items_data_entry["type"]]
+        type=item_types_map[items_data_entry["type"]],
+        category=(items_data_entry["category"] if "category" in items_data_entry else None),
     )
 
 all_non_event_items_table = {name: data.code for name, data in item_data_table.items() if data.code is not None}
 
 item_names: Set[str] = set(entry["name"] for entry in items_data)
+
+prog_items = set(entry["name"] for entry in items_data
+                 if entry["type"] == "progression" and entry["code"] is not None)
+dlc_prog_items = [  # it happens that all DLC items are also prog items
+    "Stranger Light Modulator",
+    "Breach Override Codes",
+    "River Lowlands Painting Code",
+    "Cinder Isles Painting Code",
+    "Hidden Gorge Painting Code",
+    "Dream Totem Patch",
+    "Raft Docks Patch",
+    "Limbo Warp Patch",
+    "Projection Range Patch",
+    "Alarm Bypass Patch",
+]
+
 item_name_groups = {
     # Auto-generated groups
     # We don't need an "Everything" group because AP makes that for us
 
-    "progression": set(entry["name"] for entry in items_data
-                       if entry["type"] == "progression" and entry["code"] is not None),
+    "progression": prog_items,
     "useful": set(entry["name"] for entry in items_data if entry["type"] == "useful"),
     "filler": set(entry["name"] for entry in items_data if entry["type"] == "filler"),
     "trap": set(entry["name"] for entry in items_data if entry["type"] == "trap"),
@@ -67,6 +85,20 @@ item_name_groups = {
         "Ghost Matter Wavelength",
         "Imaging Rule",
     },
+    "Base Progression": {i for i in prog_items if i not in dlc_prog_items},
+    "DLC Progression": dlc_prog_items,
+    "Quantum Rules": {
+        "Imaging Rule",
+        "Entanglement Rule",
+        "Shrine Door Codes",
+    },
+    "Patches": {
+        "Dream Totem Patch",
+        "Raft Docks Patch",
+        "Limbo Warp Patch",
+        "Projection Range Patch",
+        "Alarm Bypass Patch",
+    },
 
     # Aliases
     "Little Scout": {"Scout"},
@@ -86,10 +118,15 @@ item_name_groups = {
     "Eye of the Universe Coordinates": {"Coordinates"},
     "DBF": {"Distress Beacon Frequency"},
     "DB Frequency": {"Distress Beacon Frequency"},
+    "EPF": {"Distress Beacon Frequency"},
+    "EP Frequency": {"Distress Beacon Frequency"},
+    "Escape Pod Frequency": {"Distress Beacon Frequency"},
     "QFF": {"Quantum Fluctuations Frequency"},
     "QF Frequency": {"Quantum Fluctuations Frequency"},
     "HSF": {"Hide & Seek Frequency"},
     "HS Frequency": {"Hide & Seek Frequency"},
+    "DSRF": {"Deep Space Radio Frequency"},
+    "DSR Frequency": {"Deep Space Radio Frequency"},
 }
 
 
@@ -121,9 +158,11 @@ def create_items(world: "OuterWildsWorld") -> None:
     options = world.options
     player = world.player
 
+    items_to_create = {k: v for k, v in item_data_table.items() if should_generate(v.category, options)}
+
     prog_and_useful_items: List[OuterWildsItem] = []
     unique_filler: List[OuterWildsItem] = []
-    for name, item in item_data_table.items():
+    for name, item in items_to_create.items():
         if item.code is None:
             # here we rely on our event items and event locations having identical names
             multiworld.get_location(name, player).place_locked_item(create_item(player, name))
@@ -167,7 +206,9 @@ def create_items(world: "OuterWildsWorld") -> None:
     # add enough "repeatable"/non-unique filler items (and/or traps) to make item count equal location count
     # here we use the term "junk" to mean "filler or trap items"
     unique_item_count = len(prog_and_useful_items) + len(unique_filler)
-    repeatable_filler_needed = len(multiworld.get_unfilled_locations(player)) - unique_item_count
+    unfilled_location_count = len(multiworld.get_unfilled_locations(player))
+    assert unfilled_location_count > unique_item_count
+    repeatable_filler_needed = unfilled_location_count - unique_item_count
     junk_names = list(repeatable_filler_weights.keys())
     junk_weights = list(repeatable_filler_weights.values())
     if apply_trap_items:
@@ -191,11 +232,17 @@ def create_items(world: "OuterWildsWorld") -> None:
     if options.early_key_item:
         key_item = None
         if options.early_key_item == EarlyKeyItem.option_any:
-            key_item = random.choice(["Translator", "Nomai Warp Codes", "Launch Codes"])
+            if options.spawn == Spawn.option_stranger:
+                key_item = random.choice(["Launch Codes", "Stranger Light Modulator"])
+            else:
+                key_item = random.choice(["Translator", "Nomai Warp Codes", "Launch Codes"])
         elif options.early_key_item == EarlyKeyItem.option_translator:
             key_item = "Translator"
         elif options.early_key_item == EarlyKeyItem.option_nomai_warp_codes:
             key_item = "Nomai Warp Codes"
         elif options.early_key_item == EarlyKeyItem.option_launch_codes:
             key_item = "Launch Codes"
+        elif options.early_key_item == EarlyKeyItem.option_stranger_light_modulator:
+            key_item = "Stranger Light Modulator"
+        assert key_item is not None
         multiworld.local_early_items[player][key_item] = 1
