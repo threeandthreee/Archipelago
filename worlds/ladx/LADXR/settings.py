@@ -165,7 +165,7 @@ Note, some entrances can lead into water, use the warp-to-home from the save&qui
                 description='Toggle if stealing is in logic.'),
             Setting('bowwow', 'Special', 'g', 'Good boy mode', options=[('normal', '', 'Disabled'), ('always', 'a', 'Enabled'), ('swordless', 's', 'Enabled (swordless)')], default='normal',
                 description='Allows BowWow to be taken into any area, damage bosses and more enemies. If enabled you always start with bowwow. Swordless option removes the swords from the game and requires you to beat the game without a sword and just bowwow.'),
-            Setting('overworld', 'Special', 'O', 'Overworld', options=[('normal', '', 'Normal'), ('dungeondive', 'D', 'Dungeon dive'), ('nodungeons', 'N', 'No dungeons'), ('random', 'R', 'Randomized')], default='normal',
+            Setting('overworld', 'Special', 'O', 'Overworld', options=[('normal', '', 'Normal'), ('dungeondive', 'D', 'Dungeon dive'), ('nodungeons', 'N', 'No dungeons'), ('random', 'R', 'Randomized'), ('openmabe', 'M', 'Open Mabe')], default='normal',
                 description="""
 [Dungeon Dive] Create a different overworld where all the dungeons are directly accessible and almost no chests are located in the overworld.
 [No dungeons] All dungeons only consist of a boss fight and a instrument reward. Rest of the dungeon is removed.
@@ -203,8 +203,6 @@ Note, some entrances can lead into water, use the warp-to-home from the save&qui
 [Random] Randomizes overworld and dungeon music'
 [Disable] no music in the whole game""",
                 aesthetic=True),
-            Setting('openmabe', 'Archipelago', 'a', 'Open Mabe', default="",
-                description="""Swap east mabe rocks for bushes."""),
         ]
         self.__by_key = {s.key: s for s in self.__all}
 

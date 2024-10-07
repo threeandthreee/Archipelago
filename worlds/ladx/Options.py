@@ -315,15 +315,12 @@ class Bowwow(Choice):
 
 class Overworld(Choice, LADXROption):
     """
-    [Dungeon Dive] Create a different overworld where all the dungeons are directly accessible and almost no chests are located in the overworld.
-    [Tiny dungeons] All dungeons only consist of a boss fight and a instrument reward. Rest of the dungeon is removed.
+    [Open Mabe] Replaces rock on the east side of Mabe Village with bushes, allowing access to Ukuku Prairie without Power Bracelet.
     """
     display_name = "Overworld"
     ladxr_name = "overworld"
     option_normal = 0
-    option_dungeon_dive = 1
-    option_tiny_dungeons = 2
-    # option_shuffled = 3
+    option_open_mabe = 1
     default = option_normal
 
 
@@ -560,15 +557,6 @@ class TarinsGift(Choice):
     default = option_local_progression
 
 
-class OpenMabe(DefaultOffToggle, LADXROption):
-    """
-    Replaces rock on the east side of Mabe Village with bushes, allowing access to Ukuku Prairie without Power Bracelet.
-    """
-    display_name = "Open Mabe"
-    ladxr_name = "openmabe"
-
-
-
 class StabilizeItemPool(DefaultOffToggle):
     """
     From vanilla quantities, the default behavior is to randomly swap some number of rupees for bombs, arrows, powder, and capacity upgrades. This disables that swapping, useful for plando.
@@ -598,10 +586,10 @@ ladx_option_groups = [
     OptionGroup("Miscellaneous", [
         TradeQuest,
         Rooster,
+        Overworld,
         TrendyGame,
         HardMode,
         TarinsGift,
-        OpenMabe,
         InGameHints,
         DeathLink,
         StabilizeItemPool,
@@ -647,7 +635,7 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     trendy_game: TrendyGame
     hard_mode: HardMode
     tarins_gift: TarinsGift
-    open_mabe: OpenMabe
+    overworld: Overworld
     in_game_hints: InGameHints
     death_link: DeathLink
 

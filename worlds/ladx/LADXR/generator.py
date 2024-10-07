@@ -66,7 +66,7 @@ from .locations.keyLocation import KeyLocation
 
 from BaseClasses import ItemClassification
 from ..Locations import LinksAwakeningLocation
-from ..Options import TrendyGame, Palette, MusicChangeCondition, BootsControls, OpenMabe, Warps
+from ..Options import TrendyGame, Palette, MusicChangeCondition, BootsControls, Warps
 
 if TYPE_CHECKING:
     from .. import LinksAwakeningWorld
@@ -156,7 +156,7 @@ def generateRom(args, world: "LinksAwakeningWorld"):
     if not world.ladxr_settings.rooster:
         patches.maptweaks.tweakMap(rom)
         patches.maptweaks.tweakBirdKeyRoom(rom)
-    if world.options.open_mabe:
+    if world.options.overworld == "open_mabe":
         patches.maptweaks.openMabe(rom)
     patches.chest.fixChests(rom)
     patches.shop.fixShop(rom)
@@ -243,7 +243,7 @@ def generateRom(args, world: "LinksAwakeningWorld"):
         patches.core.quickswap(rom, 1)
     elif world.ladxr_settings.quickswap == 'b':
         patches.core.quickswap(rom, 0)
-    
+
     patches.core.addBootsControls(rom, world.options.boots_controls)
 
 
@@ -393,7 +393,7 @@ def generateRom(args, world: "LinksAwakeningWorld"):
             # Then put new text in
             for bucket_idx, (orig_idx, data) in enumerate(bucket):
                 rom.texts[shuffled[bucket_idx][0]] = data
-    
+
 
     if world.options.trendy_game != TrendyGame.option_normal:
 
