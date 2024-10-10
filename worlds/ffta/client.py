@@ -40,6 +40,8 @@ class FFTAClient(BizHawkClient):
     progressive_items: bool
     progressive_shop: bool
     progressive_shop_tiers: int
+    unlock_law_cards: bool
+    unlock_law_card_shop: bool
 
     def __init__(self) -> None:
         super().__init__()
@@ -49,6 +51,8 @@ class FFTAClient(BizHawkClient):
         self.progressive_items = False
         self.progressive_shop = False
         self.progressive_shop_tiers = 0
+        self.unlock_law_cards = False
+        self.unlock_law_card_shop = False
 
     async def validate_rom(self, ctx: BizHawkClientContext) -> bool:
 
@@ -105,11 +109,16 @@ class FFTAClient(BizHawkClient):
                 self.progressive_shop = True
                 self.progressive_shop_tiers = len(ctx.slot_data["progressive_shop_tiers"]) - 1
 
+            if ctx.slot_data["law_cards"] > 1:
+                self.unlock_law_cards = True
+                if ctx.slot_data["law_cards"] > 2:
+                    self.unlock_law_card_shop = True
+
             """
             if "job_unlock_req" in ctx.slot_data:
                 if ctx.slot_data["job_unlock_req"] == JobUnlockReq.option_job_items:
                     self.job_unlock = True
-                    
+
             """
         try:
             if self.progressive_items:
@@ -136,6 +145,20 @@ class FFTAClient(BizHawkClient):
                     for path in range(0, 4):
                         self.path_items.append(list(struct.unpack("<" + "H" * path_lengths[path], path_items[path])))
 
+            if self.unlock_law_cards:
+                law_card_read = await bizhawk.read(ctx.bizhawk_ctx,
+                                                   [(0x02001fb0, 1, "System Bus"),
+                                                    (0x02002025, 1, "System Bus"),
+                                                    ])
+                law_card_flags = [int.from_bytes(x, "little") for x in law_card_read]
+
+                write_flags = [(0x02001fb0, (law_card_flags[0] | 0x80).to_bytes(1, "little"), "System Bus")]
+                if self.unlock_law_card_shop:
+                    write_flags += [(0x02002025, (law_card_flags[1] | 0x01).to_bytes(1, "little"), "System Bus")]
+
+                if law_card_flags[0] < 0x80 or (self.unlock_law_card_shop and law_card_flags[1] < 0x01):
+                    await bizhawk.write(ctx.bizhawk_ctx, write_flags)
+
             offset = 41234532
             flag_list = [(0x2001FD0, 50, "System Bus"), (0x2001FD1, 1, "System Bus"),
                          (0x2002AF0, 2, "System Bus"), (0x200FA18, 2, "System Bus"),
@@ -152,7 +175,7 @@ class FFTAClient(BizHawkClient):
                     await bizhawk.write(ctx.bizhawk_ctx, [(0x2002B08 + byte_i, bytes([0x00]), "System Bus")])
 
                 # Handle job unlock items
-
+                """
                 if item in JobUnlockDict:
                     await bizhawk.write(ctx.bizhawk_ctx, [(0x2002B08 + byte_i, bytes([0x00]), "System Bus")])
 
@@ -164,7 +187,7 @@ class FFTAClient(BizHawkClient):
 
                     else:
                         await bizhawk.write(ctx.bizhawk_ctx, [(job_unlocks, bytes([0x00]), "ROM")])
-
+                """
             self.goal_flag = read_result[5]
 
             local_checked_locations = set()
@@ -230,12 +253,10 @@ class FFTAClient(BizHawkClient):
                                                            (0x02002AF5, 1, "System Bus"),
                                                            (0x02002AF8, 4, "System Bus"),
                                                            (0x02002AF7, 1, "System Bus"),
-                                                           (0x02001F6C, 1, "System Bus"),
                                                            ])
                     path_counters = [int.from_bytes(x, "little") for x in path_memory_data[0:4]]
                     rand_state = int.from_bytes(path_memory_data[4], "little")
                     shop_level = int.from_bytes(path_memory_data[5], "little")
-                    battle_num = int.from_bytes(path_memory_data[6], "little")
                     initialize_seed = False
                     if rand_state == 0x00:
                         initial_seed = await bizhawk.read(ctx.bizhawk_ctx,
@@ -253,8 +274,6 @@ class FFTAClient(BizHawkClient):
                             path_counters[path] += 1
                     elif next_item_id == 0x3FF:
                         if shop_level < self.progressive_shop_tiers:
-                            if shop_level < 2:
-                                battle_num += 10
                             shop_level += 1
                         next_item_id = 0x1bd
 
@@ -262,7 +281,6 @@ class FFTAClient(BizHawkClient):
                     progressive_writes += [(0x02002AF8, (rand_state).to_bytes(4, "little"), "System Bus")]
                     progressive_writes += [(0x02002AF6, [0x01], "System Bus")] if initialize_seed else []
                     progressive_writes += [(0x02002AF7, (shop_level).to_bytes(1, "little"), "System Bus")]
-                    progressive_writes += [(0x02001F6C, (battle_num).to_bytes(1, "little"), "System Bus")]
 
                     # Make case for trap items received
                     # elif next_item.item - offset == 0x11111:
@@ -281,8 +299,6 @@ class FFTAClient(BizHawkClient):
                                 path_counters[path] += 1
                         elif item_after_id == 0x3FF:
                             if shop_level < self.progressive_shop_tiers:
-                                if shop_level < 2:
-                                    battle_num += 10
                                 shop_level += 1
                             item_after_id = 0x1bd
 
@@ -290,7 +306,6 @@ class FFTAClient(BizHawkClient):
                         progressive_writes += [(0x02002AF8, (rand_state).to_bytes(4, "little"), "System Bus")]
                         progressive_writes += [(0x02002AF6, [0x01], "System Bus")] if initialize_seed else []
                         progressive_writes += [(0x02002AF7, (shop_level).to_bytes(1, "little"), "System Bus")]
-                        progressive_writes += [(0x02001F6C, (battle_num).to_bytes(1, "little"), "System Bus")]
 
                         await bizhawk.guarded_write(ctx.bizhawk_ctx,
                                                     [(0x2002c10, [0x00], "System Bus"),

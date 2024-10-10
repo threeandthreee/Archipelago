@@ -29,7 +29,7 @@ from .items import (create_item_label_to_code_map, AllItems, item_table, FFTAIte
                     WeaponMaces, WeaponInstruments, WeaponSouls, WeaponRapiers, WeaponGuns, WeaponKnives, ItemData,
                     EquipArmor, EquipRobes, EquipClothing, MissionUnlockItems, TotemaUnlockItems,
                     SoldierWeapons, PaladinWeapons, WarriorWeapons, DefenderWeapons, TemplarWeapons, AssassinWeapons,
-                    DragoonWeapons, itemGroups, JobUnlocks)
+                    DragoonWeapons, itemGroups, JobUnlocks, LawCards)
 from .locations import (create_location_label_to_id_map)
 from .rom import FFTAProcedurePatch, generate_output
 
@@ -176,9 +176,13 @@ class FFTAWorld(World):
         for item in AllItems:
             if item.progression == ItemClassification.useful:
 
-                if self.options.job_unlock_req != JobUnlockReq.option_job_items:
-                    if item in JobUnlocks:
+                if self.options.law_cards.value == 0:
+                    if item in LawCards:
                         continue
+
+                #if self.options.job_unlock_req != JobUnlockReq.option_job_items:
+                if item in JobUnlocks:
+                    continue
 
                 useful_items += [item.itemName]
 
@@ -270,7 +274,7 @@ class FFTAWorld(World):
         # Go through lists in reverse so later values take priority
         item_groups = []
         random_items = []
-        for tier in self.options.progressive_shop_tiers.value:
+        for i, tier in enumerate(self.options.progressive_shop_tiers.value):
             item_groups_tier = []
             random_items_tier = []
             tier_items = []
@@ -288,7 +292,11 @@ class FFTAWorld(World):
             self.shop_tiers.append(tier_items)
             item_groups.append(item_groups_tier)
             random_items.append(random_items_tier)
-            required_items.append("Progressive Shop")
+            # No item for the first tier, and 2 less items if ProgressiveShopBattleUnlock is set to replace
+            if i > 0 and \
+                (self.options.progressive_shop_battle_unlock.value !=
+                 self.options.progressive_shop_battle_unlock.option_replacing or i > 2):
+                required_items.append("Progressive Shop")
 
         for index, tier in enumerate(item_groups):
             for group_name, group_price in tier:
@@ -391,7 +399,8 @@ class FFTAWorld(World):
             "job_unlock_req",
             "progressive_gates",
             "progressive_shop",
-            "progressive_shop_tiers"
+            "progressive_shop_tiers",
+            "law_cards"
         )
 
         return slot_data
@@ -978,7 +987,7 @@ class FFTAWorld(World):
             while len(self.all_abilities) < length_abilities:
                 self.all_abilities.append(self.random.choice(self.all_abilities))
 
-        elif self.options.randomize_abilities == AbilityRandom.option_random_abilities:
+        elif self.options.randomize_abilities == AbilityRandom.option_randomized:
             self.random.shuffle(self.all_abilities)
 
         last_index = 0

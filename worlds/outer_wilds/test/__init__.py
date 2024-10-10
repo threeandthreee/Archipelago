@@ -143,6 +143,32 @@ class TestDefaultWorld(OuterWildsTestBase):
                                  self.song_of_five_required_items + self.song_of_the_nomai_additional_required_items)
 
 
+class TestSplitTranslator(OuterWildsTestBase):
+    options = {
+        "split_translator": True
+    }
+
+    def test_split_translator(self):
+        self.assertReachableWith("ET: High Energy Lab (Upper Text Wall)", [
+            "Launch Codes", "Translator (Hourglass Twins)"
+        ])
+        self.assertReachableWith("TH: Mines (Text Wall)", [
+            "Launch Codes", "Translator (Timber Hearth)"
+        ])
+        self.assertReachableWith("BH: Southern Observatory (Tornado Text Wall)", [
+            "Launch Codes", "Translator (Brittle Hollow)"
+        ])
+        self.assertReachableWith("GD: Control Module Logs (Text Wheels)", [
+            "Launch Codes", "Translator (Giant's Deep)"
+        ])
+        self.assertReachableWith("DB: Nomai Grave (Text Wheel)", [
+            "Launch Codes", "Silent Running Mode", "Signalscope", "Distress Beacon Frequency", "Escape Pod 3 Signal", "Translator (Dark Bramble)"
+        ])
+        self.assertReachableWith("Ruptured Core (Text Wheel)", [
+            "Launch Codes", "Scout", "Ghost Matter Wavelength", "Translator (Other)"
+        ])
+
+
 class TestSongOfNomaiWorld(OuterWildsTestBase):
     options = {
         "goal": Goal.option_song_of_the_nomai

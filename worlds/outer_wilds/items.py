@@ -20,6 +20,7 @@ class OuterWildsItemData(NamedTuple):
     code: Optional[int] = None
     type: ItemClassification = ItemClassification.filler
     category: Optional[str] = None
+    split_translator: Optional[bool] = None
 
 
 pickled_data = pkgutil.get_data(__name__, "shared_static_logic/static_logic.pickle")
@@ -38,6 +39,7 @@ for items_data_entry in items_data:
         code=(items_data_entry["code"] if "code" in items_data_entry else None),
         type=item_types_map[items_data_entry["type"]],
         category=(items_data_entry["category"] if "category" in items_data_entry else None),
+        split_translator=(items_data_entry["split_translator"] if "split_translator" in items_data_entry else None),
     )
 
 all_non_event_items_table = {name: data.code for name, data in item_data_table.items() if data.code is not None}
@@ -80,6 +82,12 @@ item_name_groups = {
     },
     "Tools": {
         "Translator",
+        "Translator (Hourglass Twins)",
+        "Translator (Timber Hearth)",
+        "Translator (Brittle Hollow)",
+        "Translator (Giant's Deep)",
+        "Translator (Dark Bramble)",
+        "Translator (Other)",
         "Signalscope",
         "Scout",
         "Ghost Matter Wavelength",
@@ -181,6 +189,8 @@ def create_items(world: "OuterWildsWorld") -> None:
             instances = 1
             if name in repeated_prog_useful_items:
                 instances = repeated_prog_useful_items[name]
+            if item.split_translator is not None and item.split_translator != options.split_translator:
+                instances = 0
             for _ in range(0, instances):
                 prog_and_useful_items.append(create_item(player, name))
 
@@ -230,14 +240,26 @@ def create_items(world: "OuterWildsWorld") -> None:
     multiworld.itempool += itempool
 
     if options.early_key_item:
+        relevant_translator = "Translator"
+        if options.split_translator:
+            if options.spawn == Spawn.option_hourglass_twins:
+                relevant_translator = "Translator (Hourglass Twins)"
+            if options.spawn == Spawn.option_timber_hearth:
+                relevant_translator = "Translator (Timber Hearth)"
+            if options.spawn == Spawn.option_brittle_hollow:
+                relevant_translator = "Translator (Brittle Hollow)"
+            if options.spawn == Spawn.option_giants_deep:
+                relevant_translator = "Translator (Giant's Deep)"
+            # ignore stranger spawn since it won't offer a Translator at all
+
         key_item = None
         if options.early_key_item == EarlyKeyItem.option_any:
             if options.spawn == Spawn.option_stranger:
                 key_item = random.choice(["Launch Codes", "Stranger Light Modulator"])
             else:
-                key_item = random.choice(["Translator", "Nomai Warp Codes", "Launch Codes"])
+                key_item = random.choice([relevant_translator, "Nomai Warp Codes", "Launch Codes"])
         elif options.early_key_item == EarlyKeyItem.option_translator:
-            key_item = "Translator"
+            key_item = relevant_translator
         elif options.early_key_item == EarlyKeyItem.option_nomai_warp_codes:
             key_item = "Nomai Warp Codes"
         elif options.early_key_item == EarlyKeyItem.option_launch_codes:

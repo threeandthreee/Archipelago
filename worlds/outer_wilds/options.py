@@ -140,6 +140,7 @@ class EarlyKeyItem(Choice):
 
     `any` will randomly select one of these items that's relevant to your spawn (especially useful with `spawn: random`).
     For base game spawns it will choose Translator, NWC or LC, and for stranger spawns it will choose LC or SLM.
+    If split_translator is also on, then "Translator" means the one for your spawn planet.
 
     Recommended for games with non-vanilla spawns, especially async games.
     In addition, without this AP seems to almost always put Launch Codes in sphere 1, so `any` also helps increase variety.
@@ -183,6 +184,22 @@ class DLCOnly(Toggle):
     display_name = "DLC Only"
 
 
+class SplitTranslator(Toggle):
+    """
+    Splits the "Translator" item into 6 items: 5 for the main planets and their satellites, plus a
+    "Translator (Other)" for smaller parts of the vanilla system and systems added by story mods.
+    """
+    display_name = "Split Translator"
+
+
+class EnableHearthsNeighborMod(Toggle):
+    """
+    Incorporates Hearth's Neighbor story mod content into the randomizer with an additional 3 items and 20 locations.
+    If logsanity is enabled, that will add another 41 locations, for a total of 61 HN1 locations.
+    """
+    display_name = "Enable Hearth's Neighbor Story Mod"
+
+
 @dataclass
 class OuterWildsGameOptions(PerGameCommonOptions):
     start_inventory_from_pool: StartInventoryPool
@@ -200,6 +217,8 @@ class OuterWildsGameOptions(PerGameCommonOptions):
     death_link: DeathLink
     logsanity: Logsanity
     shuffle_spacesuit: ShuffleSpacesuit
+    split_translator: SplitTranslator
+    enable_hn1_mod: EnableHearthsNeighborMod
 
 
 def get_creation_settings(options: OuterWildsGameOptions) -> Set[str]:

@@ -1,7 +1,5 @@
-import typing
-
 from BaseClasses import Item, ItemClassification
-from typing import Dict, List
+from typing import Dict, List, NamedTuple, Optional
 
 PROGRESSION = ItemClassification.progression
 PROGRESSION_SKIP_BALANCING = ItemClassification.progression_skip_balancing
@@ -9,8 +7,8 @@ USEFUL = ItemClassification.useful
 FILLER = ItemClassification.filler
 
 
-class ItemData(typing.NamedTuple):
-    code: typing.Optional[int]
+class ItemData(NamedTuple):
+    code: Optional[int]
     type: str
     classification: ItemClassification = PROGRESSION
 
@@ -72,17 +70,17 @@ item_table: Dict[str, ItemData] = {
 
 }
 
-item_id_name: {int, str} = {}
+item_id_name: Dict[int, str] = {}
 for name in item_table.keys():
     id = item_table[name].code
     if id is not None:
         item_id_name[id] = name
 
 
-class CommanderData(typing.NamedTuple):
+class CommanderData(NamedTuple):
     name: str
     internal_name: str
-    alt_name: str = None
+    alt_name: Optional[str] = None
 
 
 faction_table: Dict[str, List[CommanderData]] = {
@@ -130,7 +128,7 @@ faction_table: Dict[str, List[CommanderData]] = {
 class Wargroove2Item(Item):
     game = "Wargroove 2"
 
-    def __init__(self, name, player: int = None):
+    def __init__(self, name, player):
         item_data = item_table[name]
         super(Wargroove2Item, self).__init__(
             name,

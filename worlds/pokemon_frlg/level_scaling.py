@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from BaseClasses import CollectionState
 
-from .options import FlashRequired, LevelScaling
+from .options import LevelScaling
 from .util import bound
 
 if TYPE_CHECKING:
@@ -1030,7 +1030,7 @@ def level_scaling(multiworld):
                                 update_regions = True
                         next_regions = set()
                         for region in regions:
-                            if not getattr(region, "distance"):
+                            if not getattr(region, "distance") or distance < region.distance:
                                 region.distance = distance
                             next_regions.update({e.connected_region for e in region.exits if e.connected_region not in
                                                  checked_regions and e.access_rule(state)})
@@ -1040,7 +1040,6 @@ def level_scaling(multiworld):
 
                 for location in locations:
                     def can_reach():
-                        player = location.player
                         if location.can_reach(state):
                             return True
                         return False

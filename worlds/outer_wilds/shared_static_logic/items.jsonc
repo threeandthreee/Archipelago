@@ -6,7 +6,13 @@
     { "code": 1734473681, "name": "Launch Codes", "type": "progression" },
 
     { "code": 1734473732, "name": "Spacesuit", "type": "progression" },
-    { "category": "base", "code": 1734473682, "name": "Translator", "type": "progression" },
+    { "category": "base", "split_translator": false, "code": 1734473682, "name": "Translator", "type": "progression" },
+    { "category": "base", "split_translator": true, "code": 1734473746, "name": "Translator (Hourglass Twins)", "type": "progression" },
+    { "category": "base", "split_translator": true, "code": 1734473747, "name": "Translator (Timber Hearth)", "type": "progression" },
+    { "category": "base", "split_translator": true, "code": 1734473748, "name": "Translator (Brittle Hollow)", "type": "progression" },
+    { "category": "base", "split_translator": true, "code": 1734473749, "name": "Translator (Giant's Deep)", "type": "progression" },
+    { "category": "base", "split_translator": true, "code": 1734473750, "name": "Translator (Dark Bramble)", "type": "progression" },
+    { "category": "base", "split_translator": true, "code": 1734473751, "name": "Translator (Other)", "type": "progression" },
     { "category": "base", "code": 1734473683, "name": "Signalscope", "type": "progression" },
     { "code": 1734473684, "name": "Scout", "type": "progression" },
     { "code": 1734473685, "name": "Ghost Matter Wavelength", "type": "progression" },
@@ -60,7 +66,7 @@
     { "code": 1734473727, "name": "Audio Trap", "type": "trap" },
     { "code": 1734473728, "name": "Nap Trap", "type": "trap" },
 
-    { "category": "dlc", "code": 1734473733, "name": "Stranger Light Modulator", "type": "progression" },
+    { "category": "dlc|hn1", "code": 1734473733, "name": "Stranger Light Modulator", "type": "progression" },
     { "category": "dlc", "code": 1734473734, "name": "Breach Override Codes", "type": "progression" },
     { "category": "dlc", "code": 1734473735, "name": "River Lowlands Painting Code", "type": "progression" },
     { "category": "dlc", "code": 1734473736, "name": "Cinder Isles Painting Code", "type": "progression" },
@@ -80,5 +86,9 @@
     { "category": "base+dlc", "code": null, "name": "Victory - Song of the Stranger", "type": "progression" },
     { "category": "base+dlc", "code": null, "name": "Victory - Song of Six", "type": "progression" },
     { "category": "base+dlc", "code": null, "name": "Victory - Song of Seven", "type": "progression" },
-    { "category": "dlc", "code": null, "name": "Victory - Echoes of the Eye", "type": "progression" }
+    { "category": "dlc", "code": null, "name": "Victory - Echoes of the Eye", "type": "progression" },
+
+    { "category": "hn1", "code": 1734473752, "name": "Neighbor's Distress Signal Frequency", "type": "progression" },
+    { "category": "hn1", "code": 1734473753, "name": "Lava Core Signals Frequency", "type": "progression" },
+    { "category": "hn1", "code": 1734473754, "name": "Galactic Communication Frequency", "type": "progression" }
 ]

@@ -1,8 +1,8 @@
 # Wargroove 2 (Steam, Windows)
 
-## Where is the settings page?
+## Where is the options page?
 
-The [player settings page for this game](../player-options) contains all the options you need to configure and export a
+The [player options page for this game](../player-options) contains all the options you need to configure and export a
 config file.
 
 ## What does randomization do to this game?
@@ -10,15 +10,17 @@ config file.
 This randomizer shuffles units, map events, factions and boosts. It features a custom, non-linear campaign with 4 
 final levels and 4 branching paths. The player cannot beat the final levels without specific items scattered throughout 
 the branching paths. Certain levels on these paths may require specific units or items in order to progress.
-Where levels appear in the campaign are randomized.
+Where levels appear in the campaign is randomized.
 
 ## What items and locations get shuffled?
 
 1. Every buildable unit in the game (except for soldiers and dogs, which are free).
 2. Commanders available to certain factions. If the player acquires the Floran Commanders, they can select any commander
 from that faction.
-3. Income and Commander Defense boosts that provide the player with extra income or extra commander defense.
-4. Special map events like the Eastern Bridges or the Southern Walls, which unlock certain locations in certain levels.
+3. Income, Groove and Commander Defense boosts that provide the player with extra income, extra commander groove 
+or extra commander defense.
+4. Special map events like the Bridges Event or the Walls Event, which perform special actions in certain levels.
+5. 28 levels are shuffled into 4 branching paths. A random final level will appear at the end of each path.
 
 ## Which items can be in another player's world?
 
@@ -26,7 +28,7 @@ Any of the above items can be in another player's world.
 
 ## How does Death Link work in Wargroove 2?
 
-The player won't send a death link when resigning, losing on turn 1 or losing on their turn.
+A player will send a death link if they are defeated after turn 1 and on an AI's turn.
 Certain side goals can be reached without the ability to complete the level. Resigning to exit after completing a side
 goal is standard practice. When the player receives a death link from another player, they will be eliminated when the 
 next move is made.
@@ -38,10 +40,16 @@ action is taken in game.
 
 ## What is the goal of this game when randomized?
 
-The goal is to be 1-4 final levels ending with the name `Finale` by finding the `Final North`, `Final East`, 
-`Final South`, or `Final West` depending on which Finale the player is playing.
-All final levels require the `Final Center`. The `Northern Finale` for example, requires `Final North` and 
-`Final Center`, but the `Western Finale` requires `Final West` and `Final Center`.
+The goal is to beat 1-4 final levels ending with the name "Finale" by finding the "Final North", "Final East", 
+"Final South" or "Final West" items depending on which Finale the player is playing.
+All final levels require the "Final Center". The "Northern Finale" for example, requires "Final North" and 
+"Final Center" but the "Western Finale" requires "Final West" and "Final Center".
+
+## Contributing levels to the randomizer
+
+Anybody can contribute levels to the Wargroove 2 randomizer.
+A contributor's guide can be found 
+[here](https://docs.google.com/documen/d/1ovGGTKYJsJcLH4kLZ2k2FQes82sQ96C35gF6j_akCf4/edit?usp=sharing).
 
 ## Unique Local Commands
 

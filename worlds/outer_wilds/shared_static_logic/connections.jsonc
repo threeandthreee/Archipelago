@@ -23,12 +23,9 @@
     { "from": "Timber Hearth Village", "to": "Timber Hearth", "requires": [ { "item": "Spacesuit" } ] },
     { "from": "Timber Hearth", "to": "Timber Hearth Village", "requires": [] },
 
-    // you can simply fall into the black hole inside BH instead of using the warp pad
+    // you can simply fall into the black hole inside BH instead of using the warp pad, no matter what warp rando does
     { "from": "Brittle Hollow", "to": "White Hole Station", "requires": [
-        { "anyOf": [
-            { "item": "Spacesuit" }, // for movement/oxygen after jumping in the black hole
-            { "item": "Nomai Warp Codes" } // for using the warp pad, which does not require the suit
-        ] }
+        { "item": "Spacesuit" } // for movement/oxygen after jumping in the black hole
     ] },
 
     // you can simply jump off/out and fall to the rest of the Hanging City
@@ -218,5 +215,37 @@
     { "category": "dlc", "from": "Subterranean Lake (Out of Bounds)", "to": "Sealed Vault", "requires": [
         { "item": "Projection Range Patch" },
         { "item": "Alarm Bypass Patch" }
+    ] },
+
+    { "category": "hn1", "from": "Space", "to": "Lonely Hermit", "requires": [] },
+
+    { "category": "hn1", "from": "Lonely Hermit", "to": "Alpine Core", "requires": [] },
+
+    { "category": "hn1", "from": "Lonely Hermit", "to": "Lava Core", "requires": [] },
+    { "category": "hn1", "from": "Lava Core", "to": "Lava Shrine", "requires": [
+        { "item": "Scout" }
+    ] },
+    { "category": "hn1", "from": "Lava Core", "to": "Lava Core Frequency", "requires": [
+        { "item": "Signalscope" },
+        { "item": "Lava Core Signals Frequency" }
+    ] },
+
+    { "category": "hn1", "from": "Lonely Hermit", "to": "Lake Core Start Island", "requires": [] },
+    { "category": "hn1", "from": "Lake Core Start Island", "to": "Lake Core", "requires": [
+        { "item": "Stranger Light Modulator" }
+    ] },
+
+    { "category": "hn1", "from": "Space", "to": "Derelict Ship Exterior", "requires": [
+        { "item": "Signalscope" },
+        { "item": "Neighbor's Distress Signal Frequency" }
+    ] },
+    { "category": "hn1", "from": "Derelict Ship Exterior", "to": "Derelict Ship Interior", "requires": [
+        { "item": "Ghost Matter Wavelength" }
+        // the barrier code is also important, but you need no items to get it, so no point listing it here
+    ] },
+
+    { "category": "hn1", "from": "Timber Hearth", "to": "Sole Survivor Pod", "requires": [
+        { "item": "Signalscope" },
+        { "item": "Galactic Communication Frequency" }
     ] }
 ]
