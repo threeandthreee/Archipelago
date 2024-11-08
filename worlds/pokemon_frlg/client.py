@@ -109,7 +109,7 @@ SECTION_EDGES_MAP = {data.constants[map_name]: map_name for map_name in MAP_SECT
 class PokemonFRLGClient(BizHawkClient):
     game = "Pokemon FireRed and LeafGreen"
     system = "GBA"
-    patch_suffix = (".apfirered", ".apleafgreen", ".apfireredrev1", ".apleafgreenrev1")
+    patch_suffix = (".apfirered", ".apleafgreen")
     game_version: str
     goal_flag: Optional[int]
     local_checked_locations: Set[int]

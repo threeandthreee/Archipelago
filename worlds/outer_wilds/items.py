@@ -80,6 +80,15 @@ item_name_groups = {
         "Autopilot",
         "Landing Camera",
     },
+    "Translators": {
+        "Translator",
+        "Translator (Hourglass Twins)",
+        "Translator (Timber Hearth)",
+        "Translator (Brittle Hollow)",
+        "Translator (Giant's Deep)",
+        "Translator (Dark Bramble)",
+        "Translator (Other)",
+    },
     "Tools": {
         "Translator",
         "Translator (Hourglass Twins)",

@@ -499,7 +499,8 @@ def generate_output(world, player: int, output_directory: str, player_names) -> 
     set_items(world.multiworld, player, patch)
 
     write_progressive_lists(world, patch)
-    write_proggresive_shop(ffta_data, world, patch)
+    write_progressive_shop(ffta_data, world, patch)
+    write_display_only_items(patch)
 
     # Set the starting gil amount
     starting_gil = world.options.starting_gil.value
@@ -582,7 +583,6 @@ def generate_output(world, player: int, output_directory: str, player_names) -> 
             patch.write_token(APTokenTypes.WRITE, 0x51c7e4 + (8 * i) + 0x07, bytes([world.options.ability_ap.value]))
         last_index += 1
 
-
     """
     # Randomize jobs
     race_jobs = []
@@ -611,7 +611,7 @@ def generate_output(world, player: int, output_directory: str, player_names) -> 
     for i in range(8):
         patch.write_token(APTokenTypes.WRITE, race_jobs[last_index], bytes([0x05]))
         last_index += 1
-        
+
     """
     # Average stat growth
     job_memory = 0x521a7c
@@ -627,7 +627,6 @@ def generate_output(world, player: int, output_directory: str, player_names) -> 
             patch.write_token(APTokenTypes.WRITE, job_memory + 0x26, bytes([0x3C]))
 
             job_memory += 0x34
-
 
     # Add monsters to recruitment pool if option is selected
     if world.options.force_recruitment == 3:
@@ -909,7 +908,7 @@ def set_items(multiworld, player, patch: FFTAProcedurePatch) -> None:
             patch.write_token(APTokenTypes.OR_8, location.address + 1, byte2)
 
 
-def write_proggresive_shop(ffta_data: FFTAData, world, patch: FFTAProcedurePatch):
+def write_progressive_shop(ffta_data: FFTAData, world, patch: FFTAProcedurePatch):
     if world.options.progressive_shop.value == 0:
         patch.write_token(APTokenTypes.WRITE, 0x00b30950, struct.pack("<B", 0))
         patch.write_token(APTokenTypes.WRITE, 0x00b30951, struct.pack("<B", 1))
@@ -979,3 +978,13 @@ def set_required_items(ffta_data: FFTAData, index: int, itemid1, itemid2, patch:
     else:
         patch.write_token(APTokenTypes.WRITE, ffta_data.missions[index].memory + MissionOffsets.required_item2,
                           bytes([itemid2]))
+
+
+def write_display_only_items(patch: FFTAProcedurePatch):
+    # Items that should be displayed when found, but not put into inventory
+    display_items = [0x185, 0x1BD]
+    # End list with 0
+    display_items += [0x00]
+
+    address = 0x00b31100
+    patch.write_token(APTokenTypes.WRITE, address, struct.pack(f"<{len(display_items)}H", *display_items))

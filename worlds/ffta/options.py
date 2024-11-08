@@ -32,10 +32,9 @@ class OptionListSet(OptionSet):
         else:
             raise ValueError(f"Invalid value {text}")
 
-    @classmethod
-    def verify_keys(cls, data: Iterable[Iterable[str]]) -> None:
-        for x in data:
-            super(OptionListSet, cls).verify_keys(x)
+    def verify_keys(self) -> None:
+        for x in self.value:
+            super(OptionListSet, self).verify_keys(x)
 
     def verify(self, world, player_name, plando_options) -> None:
         outerArray = self.value
@@ -69,10 +68,9 @@ class OptionListList(OptionList):
         else:
             raise ValueError(f"Invalid value {text}")
 
-    @classmethod
-    def verify_keys(cls, data: Iterable[Iterable[str]]) -> None:
-        for x in data:
-            super(OptionListList, cls).verify_keys(x)
+    def verify_keys(self) -> None:
+        for x in self.value:
+            super(OptionListList, self).verify_keys(x)
 
     def verify(self, world, player_name, plando_options) -> None:
         outerArray = self.value
@@ -86,19 +84,17 @@ class OptionShopItems(OptionListList):
     verify_item_name = True
     convert_name_groups = True
 
-    @classmethod
-    def verify_keys(cls, data: Iterable[Iterable[Union[str, ShopItem]]]) -> None:
-        for inner in data:
+    def verify_keys(self) -> None:
+        for inner in self.value:
             inner_names = []
             for x in inner:
                 inner_names.append(x[0] if isinstance(x, Iterable) else x)
-            super(OptionListList, cls).verify_keys(inner_names)
+            super(OptionListList, self).verify_keys(inner_names)
 
     @classmethod
     def from_any(cls, data: Any):
         if is_iterable_except_str(data):
             data = cls.from_iterable(data)
-            cls.verify_keys(data)
             return cls(data)
         return cls.from_text(str(data))
 
@@ -863,13 +859,13 @@ class ProgressiveShopTiers(OptionShopItems):
         "vanilla_random": vanilla_random
     }
 
+
 class UnitNames(Toggle):
     """
     Random unit names are named after players in the multiworld.
     """
     display_name = "Random units named after other players"
     default = 1
-
 
 
 @dataclass

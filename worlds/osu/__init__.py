@@ -7,6 +7,7 @@ from typing import ClassVar               # where the "Type" Import below breaks
 from .Options import OsuOptions
 from .Regions import region_data_table
 from math import floor
+from copy import deepcopy
 from multiprocessing import Process
 from ..LauncherComponents import Component, components, Type
 
@@ -72,7 +73,7 @@ class OsuWorld(World):
     def generate_early(self):
         self.pairs = {}
         self.song_pool = osu_song_pool.copy()
-        self.song_data = osu_song_data.copy()
+        self.song_data = deepcopy(osu_song_data)
         self.modes = {}
         self.starting_songs = []
         self.included_songs = []
@@ -99,8 +100,23 @@ class OsuWorld(World):
         # Pair the Generic Songs to their proper Songs
         self.get_eligible_songs()
         self.random.shuffle(self.song_data)
+
+        # Handle Included Songs
         for beatmapset in sorted(self.options.include_songs.value, key=int, reverse=True):
-            self.song_data.insert(self.options.starting_songs, find_beatmapset(int(beatmapset)))
+            # First get the song data entry for the ID
+            song_entry = deepcopy(find_beatmapset(int(beatmapset)))
+            # Get the eligibile_diffs, if there are any
+            eligibile_diffs = self.check_difficulties(song_entry)
+            if eligibile_diffs and self.options.difficulty_sync.value == 2:
+                eligibile_diffs = [self.random.choice(eligibile_diffs)]
+            # if there are none, make all of them eligibile.
+            if not eligibile_diffs:
+                eligibile_diffs = []
+                for i in song_entry["beatmaps"]:
+                    eligibile_diffs.append(i['id'])
+            song_entry['diffs'] = eligibile_diffs
+            self.song_data.insert(self.options.starting_songs, song_entry)
+
         if len(self.song_data) < len(self.starting_songs + self.included_songs + ["Victory"]):
             raise Exception(f"Player {self.player}'s settings cannot generate enough songs, their settings only allow "
                             f"{len(self.song_data)} out of {len(self.starting_songs + self.included_songs + ['Victory'])} required songs.")
@@ -121,13 +137,20 @@ class OsuWorld(World):
     def get_eligible_songs(self) -> None:
         marked_for_removal = []
         for beatmapset in self.song_data:
-            if not self.check_eligibility(beatmapset):
+            eligibile_diffs = self.check_eligibility(beatmapset)
+            if not eligibile_diffs:
                 marked_for_removal.append(beatmapset)
+                continue
+            # 2 = Strict_random
+            if self.options.difficulty_sync.value == 2:
+                eligibile_diffs = [self.random.choice(eligibile_diffs)]
+            beatmapset['diffs'] = eligibile_diffs
 
         for beatmapset in marked_for_removal:
             self.song_data.remove(beatmapset)
 
     def check_eligibility(self, beatmapset):
+        # first check each of the settings to see if the song could be included
         if str(beatmapset["id"]) in self.options.include_songs.value.union(self.options.exclude_songs.value):
             return False
         if beatmapset["length"] > self.options.maximum_length:
@@ -136,10 +159,18 @@ class OsuWorld(World):
             return False
         if beatmapset["status"] == 'loved' and (not self.options.enable_loved):
             return False
+        # If the song is legal, start looking for difficulties
+        return self.check_difficulties(beatmapset)
+
+    def check_difficulties(self, beatmapset):
+        found_difficulties = []
         for difficulty in beatmapset["beatmaps"]:
             mode = self.modes[difficulty['mode']]
-            if mode.minimum_difficulty <= difficulty['sr']*100 <= mode.maximum_difficulty:
-                return True
+            # excluded modes will have -1 for both
+            if mode.minimum_difficulty <= difficulty['sr'] * 100 <= mode.maximum_difficulty:
+                found_difficulties.append(difficulty['id'])
+        if found_difficulties:
+            return found_difficulties
         return False
 
     def create_item(self, name: str) -> OsuItem:
@@ -223,5 +254,9 @@ class OsuWorld(World):
         return {
             "Pairs": self.pairs,
             "PreformancePointsNeeded": self.get_music_sheet_win_count(),
-            "DisableDifficultyReduction": self.disable_difficulty_reduction
+            "DisableDifficultyReduction": self.disable_difficulty_reduction,
+            "DifficultySync": self.options.difficulty_sync.value,
+            "DisallowConverts": self.options.disallow_converts.value,
+            "MinimumGrade": self.options.minimum_grade.value,
+            "VersionNumber": "1.1b"
         }

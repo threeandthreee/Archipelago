@@ -24,6 +24,8 @@ class Traps:
     SpringTrap = "Spring Trap"
     PoliceTrap = "Police Trap"
     BuyonTrap = "Buyon Trap"
+    ReverseTrap = "Reverse Trap"
+    GravityTrap = "Gravity Trap"
 
 
 class KeyItem:

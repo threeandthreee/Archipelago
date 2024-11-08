@@ -311,7 +311,7 @@ class PokemonFRLGWorld(World):
                 if not self.options.kanto_only:
                     excluded_locations.append("Two Island Town - Beauty's Info (Bruno 5)")
 
-                if "Early Gossipers" in self.options.modify_world_state.value:
+                if "Early Gossipers" not in self.options.modify_world_state.value:
                     excluded_locations.extend([
                         "Professor Oak's Lab - Oak's Aide's Info (Daisy 1)",
                         "Professor Oak's Lab - Oak's Aide's Info (Oak 6)",

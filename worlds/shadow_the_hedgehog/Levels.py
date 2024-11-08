@@ -1,5 +1,5 @@
 
-SHADOW_THE_HEDGEHOG_GAME_ID = "GUPE8P"
+
 
 MISSION_ALIGNMENT_DARK = 0
 MISSION_ALIGNMENT_NEUTRAL = 1
@@ -55,6 +55,29 @@ LEVEL_ID_TO_LEVEL = {
     STAGE_FINAL_HAUNT : "Final Haunt"
 }
 
+FINAL_STAGES = [STAGE_GUN_FORTRESS, STAGE_BLACK_COMET, STAGE_LAVA_SHELTER, STAGE_COSMIC_FALL, STAGE_FINAL_HAUNT]
+
+CharacterToLevel = {
+    "Sonic": [STAGE_WESTOPOLIS, STAGE_LETHAL_HIGHWAY, STAGE_SPACE_GADGET, STAGE_FINAL_HAUNT],
+    "Tails": [STAGE_CIRCUS_PARK, STAGE_AIR_FLEET],
+    "Knuckles": [STAGE_GLYPHIC_CANYON, STAGE_CENTRAL_CITY, STAGE_BLACK_COMET],
+    "Amy": [STAGE_CRYPTIC_CASTLE],
+    "Eggman": [STAGE_CRYPTIC_CASTLE, STAGE_CIRCUS_PARK, STAGE_SKY_TROOPS,
+               STAGE_IRON_JUNGLE, STAGE_LAVA_SHELTER],
+    "Rouge": [STAGE_DIGITAL_CIRCUIT, STAGE_DEATH_RUINS, STAGE_GUN_FORTRESS],
+    "Omega": [STAGE_IRON_JUNGLE, STAGE_LAVA_SHELTER],
+    "Doom": [STAGE_WESTOPOLIS, STAGE_DIGITAL_CIRCUIT, STAGE_GLYPHIC_CANYON,
+             STAGE_LETHAL_HIGHWAY, STAGE_PRISON_ISLAND, STAGE_CENTRAL_CITY,
+             STAGE_THE_DOOM, STAGE_SKY_TROOPS, STAGE_MAD_MATRIX,
+             STAGE_DEATH_RUINS, STAGE_THE_ARK, STAGE_AIR_FLEET,
+             STAGE_SPACE_GADGET, STAGE_GUN_FORTRESS, STAGE_BLACK_COMET,
+             STAGE_COSMIC_FALL, STAGE_FINAL_HAUNT],
+    "Espio": [STAGE_MAD_MATRIX],
+    "Charmy": [STAGE_PRISON_ISLAND],
+    "Vector": [STAGE_COSMIC_FALL],
+    "Maria": [STAGE_THE_DOOM, STAGE_LOST_IMPACT]
+}
+
 ALL_STAGES = list(LEVEL_ID_TO_LEVEL.keys())
 
 DevilDoom_Name = "Devil Doom"
@@ -69,24 +92,44 @@ ALIGNMENT_TO_STRING = \
 
 
 
+
+
 # Starting at Westopolis Clear
 # Levels store all ranks of missions even though they don't exist
 # We can abuse this :)
 
+ITEM_TOKEN_TYPE_STANDARD = 0
+ITEM_TOKEN_TYPE_ALIGNMENT = 1
+ITEM_TOKEN_TYPE_FINAL = 2
+ITEM_TOKEN_TYPE_OBJECTIVE = 3
+
+TOKEN_TYPE_TO_STRING = \
+{
+    ITEM_TOKEN_TYPE_STANDARD: "Base",
+    ITEM_TOKEN_TYPE_ALIGNMENT: "Alignment",
+    ITEM_TOKEN_TYPE_FINAL: "Final",
+    ITEM_TOKEN_TYPE_OBJECTIVE: "Objective"
+}
 
 
+def GetLevelTokenNames(stageId, alignmentId, type):
+    id_name = int(str(LOCATION_ID_PLUS) + str(0) + str(stageId) + str(type) + str(alignmentId) + "0")
+    view_name = (LEVEL_ID_TO_LEVEL[stageId] + " Mission Token " + ALIGNMENT_TO_STRING[alignmentId] +
+                 (" " + TOKEN_TYPE_TO_STRING[type] if type != ITEM_TOKEN_TYPE_STANDARD else "") )
 
+    return id_name, view_name
 
 def GetLevelCompletionNames(stageId, alignmentId):
 
-    id_name = int(str(LOCATION_ID_PLUS) + str(0) + str(stageId) + str(alignmentId))
+    id_name = int(str(LOCATION_ID_PLUS) + str(0) + str(stageId) + str(alignmentId) + "1")
     view_name = LEVEL_ID_TO_LEVEL[stageId] + " Mission Clear " + ALIGNMENT_TO_STRING[alignmentId]
 
     return id_name, view_name
 
 def GetLevelObjectNames(stageId, alignmentId, objectName, i):
-    id_name = int(str(LOCATION_ID_PLUS) + str(1) + str(stageId) + str(alignmentId) + str(i))
+    id_name =  int(str(LOCATION_ID_PLUS) + str(1) + str(stageId) + str(alignmentId) + str(i) + "0")
     objective_location_name = (LEVEL_ID_TO_LEVEL[stageId] + "-" +
                                objectName + " " + str(i))
 
     return id_name, objective_location_name
+

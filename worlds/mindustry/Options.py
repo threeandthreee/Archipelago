@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from Options import Choice, Toggle, PerGameCommonOptions, DefaultOnToggle, StartInventoryPool
+from Options import Choice, Toggle, PerGameCommonOptions, DefaultOnToggle, StartInventoryPool, Range
 
 
 class TutorialSkip(Toggle):
@@ -26,6 +26,21 @@ class DeathLink(Toggle):
     """Enable death link."""
     display_name = "Death link"
 
+class DeathLinkMode(Choice):
+    "Select the death link mode."
+    display_name = "Death link mode"
+    option_death_link_unit = 0
+    option_death_link_core = 1
+    option_death_link_core_russian_roulette = 2
+    default = 0
+
+class CoreRussianRouletteChambers(Range):
+    "The number of chambers for the Core Russian roulette option. If you select X amount of chambers, you will have 1 in a X chance of having your cores destroyed"
+    display_name = "Core Russian Roulette Chambers"
+    range_start = 2
+    range_end = 100
+    default = 6
+
 class MilitaryLevelTracking(DefaultOnToggle):
     """Ensure the player has enough military power to clear sectors. If turned off, the logic will consider that the player can clear every sector once they have the minimal requirement to land on that sector."""
     display_name = "Military level tracking"
@@ -43,6 +58,16 @@ class LogisticDistribution(Choice):
     option_starter_logistics = 3
     default = 1
 
+class MakeEarlyRoadblocksLocal(Toggle):
+    """Make items that could block the player early on local."""
+    display_name = "Make early roadblocks local"
+
+class AmountOfResourcesRequired(Range):
+    """The amount of resources required to complete the 'Every resources collection' goal."""
+    display_name = "Amount of resources required"
+    range_start = 100
+    range_end = 100000
+    default = 2000
 
 @dataclass
 class MindustryOptions(PerGameCommonOptions):
@@ -55,6 +80,10 @@ class MindustryOptions(PerGameCommonOptions):
     disable_invasions: DisableInvasions
     faster_production: FasterProduction
     death_link: DeathLink
+    death_link_mode: DeathLinkMode
     military_level_tracking: MilitaryLevelTracking
     randomize_core_units_weapon: RandomizeCoreUnitsWeapon
     logistic_distribution: LogisticDistribution
+    make_early_roadblocks_local: MakeEarlyRoadblocksLocal
+    amount_of_resources_required: AmountOfResourcesRequired
+    core_russian_roulette_chambers: CoreRussianRouletteChambers

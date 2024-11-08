@@ -6,7 +6,7 @@ from Options import OptionError
 from worlds.AutoWorld import WebWorld, World
 from .coordinates import coordinate_description, generate_random_coordinates
 from .db_layout import generate_random_db_layout
-from .orbits import generate_random_orbits
+from .orbits import generate_random_orbits, generate_random_rotations
 from .warp_platforms import generate_random_warp_platform_mapping
 from .items import OuterWildsItem, all_non_event_items_table, item_name_groups, create_item, create_items
 from .locations_and_regions import all_non_event_locations_table, location_name_groups, create_regions
@@ -85,10 +85,12 @@ class OuterWildsWorld(World):
         # generate game-specific randomizations separate from AP items/locations
         self.eotu_coordinates = generate_random_coordinates(self.random) \
             if self.options.randomize_coordinates else "vanilla"
-        self.warps = generate_random_warp_platform_mapping(self.random) \
+        self.warps = generate_random_warp_platform_mapping(self.random, self.options) \
             if self.options.randomize_warp_platforms else "vanilla"
-        (self.planet_order, self.orbit_angles, self.rotation_axes) = generate_random_orbits(self.random) \
-            if self.options.randomize_orbits else ("vanilla", "vanilla", "vanilla")
+        (self.planet_order, self.orbit_angles) = generate_random_orbits(self.random, self.options) \
+            if self.options.randomize_orbits else ("vanilla", "vanilla")
+        self.rotation_axes = generate_random_rotations(self.random) \
+            if self.options.randomize_rotations else "vanilla"
 
         db_option = self.options.randomize_dark_bramble_layout
         self.db_layout = generate_random_db_layout(self.random, db_option) \
@@ -146,7 +148,8 @@ class OuterWildsWorld(World):
             "death_link",                   # a client/mod feature
             "goal", "spawn",                             # affects tons of stuff, but also a client/mod faeture
             "logsanity", "enable_eote_dlc", "dlc_only",  # changes AP locations, needed by in-game tracker
-            "enable_hn1_mod",
+            "enable_hn1_mod", "enable_hn2_mod",
+            "enable_outsider_mod", "enable_ac_mod", "enable_fq_mod",
             "split_translator"                           # changes AP items, and how client/mod implements Translator
         )
         # more client/mod features, these are only in the apworld because we want them fixed per-slot/at gen time
@@ -158,7 +161,7 @@ class OuterWildsWorld(World):
         slot_data["warps"] = self.warps
         # Archipelago does not yet have apworld versions (data_version is deprecated),
         # so we have to roll our own with slot_data for the time being
-        slot_data["apworld_version"] = "0.3.2"
+        slot_data["apworld_version"] = "0.3.6"
         return slot_data
 
     def write_spoiler(self, spoiler_handle: TextIO) -> None:

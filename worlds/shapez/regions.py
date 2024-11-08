@@ -147,8 +147,9 @@ def create_shapez_regions(player: int, multiworld: MultiWorld,
     multiworld.completion_condition[player] = lambda state: state.has("Goal", player)
 
     # Connect Menu to rest of regions
-    regions["Menu"].connect(regions["Main"], "Belt and Extractor",
-                            lambda state: state.has_all(["Belt", "Extractor"], player))
+    regions["Menu"].connect(regions["Main"], "Transportation",
+                            lambda state: state.has("Extractor", player) and
+                                          state.has_any(["Belt", "Compact Merger", "Compact Splitter"], player))
 
     # Connect Main to achievement regions
     regions["Main"].connect(regions["Cut Shape Achievements"], "Cutter needed",
@@ -249,4 +250,4 @@ def create_shapez_regions(player: int, multiworld: MultiWorld,
                                                              f"Shapesanity {processing} mixing",
                                                              lambda state: has_mixer(state, player))
 
-    return list(regions.values())
+    return [region for region in regions.values() if len(region.locations) or region.name == "Menu"]

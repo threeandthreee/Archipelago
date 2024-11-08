@@ -8,19 +8,23 @@ from typing import List, Set, Dict, TextIO
 from BaseClasses import Item, MultiWorld, Location, Tutorial, ItemClassification
 from Fill import fill_restrictive
 from worlds.AutoWorld import World, WebWorld
+from Options import OptionGroup
 import settings
 from .Items import get_item_names_per_category, item_table
 from .Locations import get_locations
 from .Regions import init_areas
-from .Options import EBOptions
+from .Options import EBOptions, eb_option_groups
 from .setup_game import setup_gamevars, place_static_items
 from .enemy_data import initialize_enemies
 from .flavor_data import create_flavors
 from .local_data import item_id_table
+from .hint_data import setup_hints
 from .text_data import spoiler_psi, spoiler_starts, spoiler_badges
 from .Client import EarthBoundClient
 from .Rules import set_location_rules
 from .Rom import LocalRom, patch_rom, get_base_rom_path, EBProcPatch, valid_hashes
+from .local_data import world_version
+from .static_location_data import location_ids, location_groups
 from worlds.generic.Rules import add_item_rule
 from Options import OptionError
 
@@ -50,6 +54,8 @@ class EBWeb(WebWorld):
 
     tutorials = [setup_en]
 
+    option_groups = eb_option_groups
+
 
 class EarthBoundWorld(World):
     """EarthBound is a contemporary-themed JRPG. Take four psychically-endowed children
@@ -57,12 +63,12 @@ class EarthBoundWorld(World):
     game = "EarthBound"
     option_definitions = EBOptions
     data_version = 1
-    required_client_version = (0, 5, 0)  # Change when 0.5.0 releases
+    required_client_version = (0, 5, 0)
 
     item_name_to_id = {item: item_table[item].code for item in item_table}
-    location_name_to_id = {location.name: location.code for
-                           location in get_locations(None)}
+    location_name_to_id = location_ids
     item_name_groups = get_item_names_per_category()
+    location_name_groups = location_groups
 
     web = EBWeb()
     settings: typing.ClassVar[EBSettings]
@@ -81,7 +87,8 @@ class EarthBoundWorld(World):
         self.locked_locations = []
         self.location_cache = []
         self.event_count = 8
-        self.world_version = "2.1"
+        self.world_version = world_version
+        self.removed_teleports = []
 
     def fill_slot_data(self) -> Dict[str, List[int]]:
         return {
@@ -117,6 +124,38 @@ class EarthBoundWorld(World):
             spoiler_handle.write(f"Single-Level Gadget Slot 1:    {spoiler_psi[self.jeff_assist_items[2]]}\n")
             spoiler_handle.write(f"Single-Level Gadget Slot 2:    {spoiler_psi[self.jeff_assist_items[3]]}\n")
             spoiler_handle.write(f"Multi-Level Gadget Slot 2:    {spoiler_psi[self.jeff_assist_items[4]]}\n")
+
+        if self.options.boss_shuffle:
+            spoiler_handle.write("\nBoss Randomization:\n" + 
+                                 f" Frank => {self.boss_list[0]}\n" +
+                                 f" Frankystein Mark II => {self.boss_list[1]}\n" +
+                                 f" Titanic Ant => {self.boss_list[2]}\n" +
+                                 f" Captain Strong => {self.boss_list[3]}\n" +
+                                 f" Everdred => {self.boss_list[4]}\n" +
+                                 f" Mr. Carpainter => {self.boss_list[5]}\n" +
+                                 f" Mondo Mole => {self.boss_list[6]}\n" +
+                                 f" Boogey Tent => {self.boss_list[7]}\n" +
+                                 f" Mini Barf => {self.boss_list[8]}\n" +
+                                 f" Master Belch => {self.boss_list[9]}\n" +
+                                 f" Trillionage Sprout => {self.boss_list[10]}\n" +
+                                 f" Guardian Digger => {self.boss_list[11]}\n" +
+                                 f" Dept. Store Spook => {self.boss_list[12]}\n" +
+                                 f" Evil Mani-Mani => {self.boss_list[13]}\n" +
+                                 f" Clumsy Robot => {self.boss_list[14]}\n" +
+                                 f" Shrooom! => {self.boss_list[15]}\n" +
+                                 f" Plague Rat of Doom => {self.boss_list[16]}\n" +
+                                 f" Thunder and Storm => {self.boss_list[17]}\n" +
+                                 f" Kraken => {self.boss_list[18]}\n" +
+                                 f" Guardian General => {self.boss_list[19]}\n" +
+                                 f" Master Barf => {self.boss_list[20]}\n" +
+                                 f" Starman Deluxe => {self.boss_list[21]}\n" +
+                                 f" Electro Specter => {self.boss_list[22]}\n" +
+                                 f" Carbon Dog => {self.boss_list[23]}\n" +
+                                 f" Ness's Nightmare => {self.boss_list[24]}\n" +
+                                 f" Heavily Armed Pokey => {self.boss_list[25]}\n" +
+                                 f" Starman Junior => {self.boss_list[26]}\n" +
+                                 f" Diamond Dog => {self.boss_list[27]}\n" +
+                                 f" Giygas (Phase 2) => {self.boss_list[28]}\n")
 
             
 
@@ -271,7 +310,7 @@ class EarthBoundWorld(World):
                 self.create_item("Saturn Valley Teleport"),
                 self.create_item("Dusty Dunes Teleport"),
                 self.create_item("Fourside Teleport"),
-                self.create_item("Summers Teleport"),
+                self.create_item("Winters Teleport"),
                 self.create_item("Scaraba Teleport"),
                 self.create_item("Deep Darkness Teleport"),
                 self.create_item("Tenda Village Teleport"),
@@ -279,10 +318,11 @@ class EarthBoundWorld(World):
 
             ])
             self.random.shuffle(prefill_items)
+            self.removed_teleports.extend(prefill_items[0:5])
             del prefill_items[0:5]
             prefill_items.extend([
                 self.create_item("Dalaam Teleport"),
-                self.create_item("Winters Teleport"),
+                self.create_item("Summers Teleport"),
                 self.create_item("Progressive Poo PSI"),
                 self.create_item("Progressive Poo PSI")
             ])
@@ -332,6 +372,7 @@ class EarthBoundWorld(World):
             add_item_rule(self.multiworld.get_location("Deep Darkness - Barf Character", self.player), lambda item: item.name in self.item_name_groups["Characters"])
 
         fill_restrictive(self.multiworld, self.multiworld.get_all_state(False), prefill_locations, prefill_items, True, True)
+        setup_hints(self)
 
     def get_item_pool(self, excluded_items: Set[str]) -> List[Item]:
         pool: List[Item] = []

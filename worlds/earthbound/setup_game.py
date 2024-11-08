@@ -1,8 +1,9 @@
 import struct
 from .flavor_data import random_flavors
-from .text_data import lumine_hall_text, eb_text_table
+from .text_data import lumine_hall_text, eb_text_table, text_encoder
 from .local_data import item_id_table
 from .psi_shuffle import shuffle_psi
+from .boss_shuffle import initialize_bosses
 
 
 def setup_gamevars(world):
@@ -343,51 +344,6 @@ def setup_gamevars(world):
     else:
         world.franklin_protection = "thunder"
 
-    world.hinted_regions = [
-        "Northern Onett",
-        "Onett",
-        "Giant Step",
-        "Twoson",
-        "Peaceful Rest Valley",
-        "Happy-Happy Village",
-        "Lilliput Steps",
-        "Threed",
-        "Grapefruit Falls",
-        "Belch's Factory",
-        "Saturn Valley",
-        "Upper Saturn Valley",
-        "Milky Well",
-        "Dusty Dunes Desert",
-        "Gold Mine",
-        "Monkey Caves",
-        "Fourside",
-        "Magnet Hill",
-        "Monotoli Building",
-        "Winters",
-        "Snow Wood Boarding School",
-        "Southern Winters",
-        "Rainy Circle",
-        "Stonehenge Base",
-        "Summers",
-        "Dalaam",
-        "Pink Cloud",
-        "Scaraba",
-        "Pyramid",
-        "Southern Scaraba",
-        "Dungeon Man",
-        "Deep Darkness",
-        "Tenda Village",
-        "Lumine Hall",
-        "Lost Underworld",
-        "Fire Spring",
-        "Magicant",
-        "Cave of the Present",
-        "Cave of the Past"
-    ]
-    
-    world.random.shuffle(world.hinted_regions)
-    del world.hinted_regions[6:39]
-
     if world.options.random_start_location == 1:
         world.valid_teleports = [
             "Onett Teleport",
@@ -440,20 +396,29 @@ def setup_gamevars(world):
 
     world.lumine_text = []
     world.prayer_player = []
-    lumine_str = world.random.choice(lumine_hall_text)
+    if world.options.plando_lumine_hall_text == "":
+        lumine_str = world.random.choice(lumine_hall_text)
+    else:
+        lumine_str = world.options.plando_lumine_hall_text.value
+
     for char in lumine_str[:213]:
         world.lumine_text.extend(eb_text_table[char])
     world.lumine_text.extend([0x00])
     world.starting_money = struct.pack('<I', world.options.starting_money.value)
 
-    prayer_player = world.multiworld.get_player_name(world.random.randint(1, world.multiworld.players))
+    prayer_player = world.multiworld.get_player_name(world.random.randint(1, world.multiworld.players)) #todo; move to text converter
     for char in prayer_player[:24]:
         if char in eb_text_table:
             world.prayer_player.extend(eb_text_table[char])
         else:
             world.prayer_player.extend([0x6F])
     world.prayer_player.extend([0x00])
+
+    world.credits_player = world.multiworld.get_player_name(world.player)
+    world.credits_player = text_encoder(world.credits_player, eb_text_table, 16)
+    world.credits_player.extend([0x00])
     shuffle_psi(world)
+    initialize_bosses(world)
 
 
 def place_static_items(world):
@@ -471,15 +436,15 @@ def place_static_items(world):
     world.get_location("Fire Spring Sanctuary").place_locked_item(world.create_item("Melody"))
 
     if world.options.giygas_required == 1:
-        world.get_location("Giygas").place_locked_item(world.create_item("Saved Earth"))  #Normal final boss
+        world.get_location("Giygas").place_locked_item(world.create_item("Saved Earth"))  # Normal final boss
         if world.options.magicant_mode == 1:
-            world.get_location("Ness's Nightmare").place_locked_item(world.create_item("Power of the Earth"))  #If required magicant
+            world.get_location("Magicant - Ness's Nightmare").place_locked_item(world.create_item("Power of the Earth"))  # If required magicant
             world.get_location("Sanctuary Goal").place_locked_item(world.create_item("Magicant Unlock"))
         else:
-            world.get_location("Sanctuary Goal").place_locked_item(world.create_item("Power of the Earth"))  #If not required, place this condition on sanctuary goal
+            world.get_location("Sanctuary Goal").place_locked_item(world.create_item("Power of the Earth"))  # If not required, place this condition on sanctuary goal
     else:
         if world.options.magicant_mode == 1:
-            world.get_location("Ness's Nightmare").place_locked_item(world.create_item("Saved Earth"))  #If Magicant required but not Giygas, place goal
+            world.get_location("Magicant - Ness's Nightmare").place_locked_item(world.create_item("Saved Earth"))  # If Magicant required but not Giygas, place goal
             world.get_location("Sanctuary Goal").place_locked_item(world.create_item("Magicant Unlock"))
         else:
             world.get_location("Sanctuary Goal").place_locked_item(world.create_item("Saved Earth"))  # If neither final boss, place goal
@@ -489,14 +454,14 @@ def place_static_items(world):
 
     if world.options.magicant_mode == 2:
         world.get_location("+1 Sanctuary").place_locked_item(world.create_item("Magicant Unlock"))
-        world.get_location("Ness's Nightmare").place_locked_item(world.create_item("Alternate Goal"))
+        world.get_location("Magicant - Ness's Nightmare").place_locked_item(world.create_item("Alternate Goal"))
 
     if world.options.random_start_location:
         world.multiworld.push_precollected(world.create_item(world.starting_teleport))
 
-    #if not world.options.shuffle_sound_stone:
+    # if not world.options.shuffle_sound_stone:
      #   world.multiworld.push_precollected(world.create_item("Sound Stone"))
-    #else:
+    # else:
      #   world.multiworld.itempool.append(world.create_item("Sound Stone"))
 
     if not world.options.monkey_caves_mode:
@@ -509,8 +474,3 @@ def place_static_items(world):
         world.get_location("Monkey Caves - East 2F Right Chest").place_locked_item(world.create_item("Hamburger"))
         world.get_location("Monkey Caves - East West 3F Right Chest #1").place_locked_item(world.create_item("Hamburger"))
         world.get_location("Monkey Caves - East West 3F Right Chest #2").place_locked_item(world.create_item("Picnic Lunch"))
-
-        #Add magicant, add sanc stuff, add alt goals...
-            
-
-#TOdo; client, rules, static location stuff

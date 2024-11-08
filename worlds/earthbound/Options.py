@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from Options import Toggle, DefaultOnToggle, DeathLink, Choice, Range, PerGameCommonOptions, StartInventoryPool
+from Options import Toggle, DefaultOnToggle, DeathLink, Choice, Range, PerGameCommonOptions, StartInventoryPool, OptionGroup, FreeText, Visibility
 
 
 class GiygasRequired(DefaultOnToggle):
@@ -92,6 +92,22 @@ class PSIShuffle(Choice):
     option_none = 0
     option_basic = 1
     option_extended = 2
+
+class BossShuffle(Toggle):
+    """Shuffles boss encounters amongst each other."""
+    display_name = "Boss Shuffle"
+
+class DecoupleDiamondDog(Toggle):
+    """Shuffles Diamond Dog as a boss separate from Carbon Dog. Carbon Dog will transform into a random boss.
+       Does nothing if Boss Shuffle is disabled."""
+    display_name = "Decouple Diamond Dog"
+
+class ShuffleGiygas(Toggle):
+    """Adds the standalone Giygas fight to the shuffled boss pool.
+       This only applies to the second phase Giygas. The prayer fight is not affected.
+       Does nothing if Boss Shuffle is disabled."""
+    display_name = "Add Giygas to Boss Pool"
+
 
 class BanFlashFavorite(Toggle):
     """If enabled, allows PSI Flash to be shuffled onto the Favorite Thing PSI slot. Can be quite annoying early-game. 
@@ -198,21 +214,13 @@ class DeathLinkMode(Choice):
     option_mortal_mercy = 2
     default = 1
 
-# class RandomBattleBG(Choice):
- #   """Generates random battle backgrounds.
-  #     Normal: Battle backgrounds are not randomized.
-   #    Random Safe: Generates battle backgrounds from valid backgrounds or combining valid backgrounds.
-   #    Random Chaos: Generates random battle backgrounds. Results may look glitchy, or weird. WARNING: MAY CAUSE FLASHING OR MOVING LIGHTS, USE WITH CAUTION"""
-   # display_name = "Random Battle backgrounds"
-    #option_normal = 0
-    #option_random_safe = 1
-    #option_random_chaos = 2
-    #default = 0
-    #Broken. may fix later.
-
 class RandomBattleBG(Toggle):
     """Generates random battle backgrounds."""
     display_name = "Randomize Battle Backgrounds"
+
+class RandomSwirlColors(Toggle):
+    """Generates random colors for pre-battle swirls."""
+    display_name = "Randomize Swirl Colors"
 
 class RemoteItems(Toggle):
     """If enabled, you will receive your own items from the server upon collecting them, rather than locally.
@@ -223,6 +231,11 @@ class RemoteItems(Toggle):
 class SoundStoneShuffle(Toggle):
     """Randomizes the Sound Stone. It will need to be found before Sanctuary guardians can be challenged."""
     display_name = "Sound Stone Shuffle"
+
+class PlandoLumineHallText(FreeText):
+    """Set text to be displayed at Lumine Hall. If nothing is entered, random community-submitted text will be selected instead."""
+    display_name = "Lumine Hall Text Plando"
+    visibility = Visibility.none
 
 
 @dataclass
@@ -238,6 +251,9 @@ class EBOptions(PerGameCommonOptions):
     character_shuffle: CharacterShuffle
     psi_shuffle: PSIShuffle
     allow_flash_as_favorite_thing: BanFlashFavorite
+    boss_shuffle: BossShuffle
+    decouple_diamond_dog: DecoupleDiamondDog
+    boss_shuffle_add_giygas: ShuffleGiygas
     #shuffle_sound_stone: SoundStoneShuffle
     experience_modifier: ExperienceModifier
     starting_money: StartingMoney
@@ -248,6 +264,7 @@ class EBOptions(PerGameCommonOptions):
     remote_items: RemoteItems
     random_flavors: RandomFlavors
     random_battle_backgrounds: RandomBattleBG
+    random_swirl_colors: RandomSwirlColors
     presents_match_contents: PresentSprites
     prefixed_items: PreFixItems
     #excluded_teleports: ExcludedTeleports
@@ -259,3 +276,65 @@ class EBOptions(PerGameCommonOptions):
     start_inventory_from_pool: StartInventoryPool
     death_link: DeathLink
     death_link_mode: DeathLinkMode
+    plando_lumine_hall_text: PlandoLumineHallText
+
+
+eb_option_groups = [
+    OptionGroup("Goal Settings", [
+        GiygasRequired,
+        SanctuariesRequired,
+        SanctuaryAltGoal
+    ]),
+    
+    OptionGroup("Item Settings", [
+        TeleportShuffle,
+        CharacterShuffle,
+        ProgressiveWeapons,
+        ProgressiveArmor,
+        RandomFranklinBadge,
+        CommonWeight,
+        UncommonWeight,
+        RareWeight,
+        PreFixItems
+    ]),
+
+    OptionGroup("World Modes", [
+        RandomStartLocation,
+        MagicantMode,
+        MonkeyCavesMode
+    ]),
+
+    OptionGroup("PSI Randomization", [
+        PSIShuffle,
+        BanFlashFavorite
+    ]),
+
+    OptionGroup("Enemy Randomization", [
+        BossShuffle,
+        DecoupleDiamondDog,
+        ShuffleGiygas,
+        ExperienceModifier,
+        ShuffleDrops
+    ]),
+
+    OptionGroup("Convenience Settings", [
+        ShortenPrayers,
+        EasyDeaths,
+        StartingMoney,
+        RemoteItems,
+        AutoscaleParty
+    ]),
+
+    OptionGroup("Aesthetic Settings", [
+        RandomFlavors,
+        RandomSwirlColors,
+        RandomBattleBG,
+        PresentSprites,
+        PlandoLumineHallText
+    ]),
+
+    OptionGroup("Deathlink", [
+        DeathLink,
+        DeathLinkMode
+    ])
+]

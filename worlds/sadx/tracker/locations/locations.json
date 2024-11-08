@@ -1,0 +1,442 @@
+﻿[
+  {
+    "name": "Station Square Main Area",
+    "sections": [
+      {"name": "Light Shoes Upgrade Point"},
+      {"name": "Chaos 0 Boss Fight (Sonic)"},
+      {"name": "Mission 1 (Sonic)"},
+      {"name": "Jet Anklet Upgrade Point"},
+      {"name": "Lure 1 Upgrade Point"},
+      {"name": "Mission 8 (Big)"},
+      {"name": "Mission 29 (Big)"},
+      {"name": "Burger Shop Emblem"},
+      {"name": "City Hall Emblem"}
+    ],
+    "map_locations": [{"map": "all_maps", "x": 650, "y": 600}]
+  },
+  {
+    "name": "Station Area",
+    "sections": [
+      {"name": "Station Emblem"}
+    ],
+    "map_locations": [{"map": "all_maps", "x": 555, "y": 405}]
+  },
+  {
+    "name": "Hotel Area",
+    "sections": [
+      {"name": "Crystal Ring Upgrade Point"},
+      {"name": "Mission 3 (Sonic)"},
+      {"name": "Mission 10 (Tails)"},
+      {"name": "Chaos 2 Boss Fight (Knuckles)"},
+      {"name": "Mission 14 (Big)"}
+    ],
+    "map_locations": [{"map": "all_maps", "x": 420, "y": 615}]
+  },
+  {
+    "name": "Casino Area",
+    "sections": [
+      {"name": "Egg Walker Boss Fight (Tails)"},
+      {"name": "Mission 5 (Knuckles)"},
+      {"name": "Casino Emblem"}
+    ],
+    "map_locations": [{"map": "all_maps", "x": 405, "y": 320}]
+  },
+  {
+    "name": "Twinkle Park Lobby Area",
+    "sections": [
+      {"name": "Twinkle Circuit (Sub-Level - Mission B)"},
+      {"name": "Twinkle Circuit (Sub-Level - Mission A)"}
+    ],
+    "map_locations": [{"map": "all_maps", "x": 785, "y": 605}]
+  },
+  {
+    "name": "Mystic Ruins Main Area",
+    "sections": [
+      {"name": "Egg Hornet Boss Fight (Sonic)"},
+      {"name": "Chaos 4 Boss Fight (Sonic)"},
+      {"name": "Mission 2 (Sonic)"},
+      {"name": "Egg Hornet Boss Fight (Tails)"},
+      {"name": "Chaos 4 Boss Fight (Tails)"},
+      {"name": "Mission 4 (Tails)"},
+      {"name": "Mission 47 (Tails)"},
+      {"name": "Shovel Claw Upgrade Point"},
+      {"name": "Chaos 4 Boss Fight (Knuckles)"},
+      {"name": "Mission 12 (Knuckles)"},
+      {"name": "Mission 6 (Amy)"},
+      {"name": "Sky Chase Act 1 (Sub-Level - Mission B)"},
+      {"name": "Sky Chase Act 1 (Sub-Level - Mission A)"},
+      {"name": "Tails' Workshop Emblem"},
+      {"name": "Egg Hornet Boss Fight"},
+      {"name": "Chaos 4 Boss Fight"}
+    ],
+    "map_locations": [{"map": "all_maps", "x": 1700, "y": 450}]
+  },
+  {
+    "name": "Angel Island Area",
+    "sections": [
+      {"name": "Ancient Light Upgrade Point"},
+      {"name": "Rhythm Badge Upgrade Point"},
+      {"name": "Mission 32 (Knuckles)"},
+      {"name": "Life Belt Upgrade Point"},
+      {"name": "Mission 35 (Big)"},
+      {"name": "Shrine Emblem"}
+    ],
+    "map_locations": [{"map": "all_maps", "x": 1800, "y": 1350}]
+  },
+  {
+    "name": "Sand Hill Area",
+    "sections": [
+      {"name": "Sand Hill (Sub-Level - Mission B)"},
+      {"name": "Sand Hill (Sub-Level - Mission A)"}
+    ],
+    "map_locations": [{"map": "all_maps", "x": 350, "y": 1440}]
+  },
+  {
+    "name": "Jungle Area",
+    "sections": [
+      {"name": "Egg Viper Boss Fight (Sonic)"},
+      {"name": "Mission 37 (Tails)"},
+      {"name": "Fighting Gloves Upgrade Point"},
+      {"name": "Lure 2 Upgrade Point"},
+      {"name": "Power Rod Upgrade Point"},
+      {"name": "Mission 52 (Big)"},
+      {"name": "E-101 Beta Boss Fight (Gamma)"},
+      {"name": "Mission 7 (Gamma)"},
+      {"name": "Jungle Path Emblem"},
+      {"name": "Tree Stump Emblem"}
+    ],
+    "map_locations": [{"map": "all_maps", "x": 700, "y": 1300}]
+  },
+  {
+    "name": "Egg Carrier Main Area",
+    "sections": [
+      {"name": "Chaos 6 Boss Fight (Sonic)"},
+      {"name": "Mission 33 (Sonic)"},
+      {"name": "Mission 34 (Sonic)"},
+      {"name": "Chaos 6 Boss Fight (Knuckles)"},
+      {"name": "Warrior Feather Upgrade Point"},
+      {"name": "Long Hammer Upgrade Point"},
+      {"name": "E-100 Zero Boss Fight (Amy)"},
+      {"name": "Lure 4 Upgrade Point"},
+      {"name": "Chaos 6 Boss Fight (Big)"},
+      {"name": "Mission 44 (Big)"},
+      {"name": "Jet Booster Upgrade Point"},
+      {"name": "Laser Blaster Upgrade Point"},
+      {"name": "E-101 mkII Boss Fight (Gamma)"},
+      {"name": "Sky Chase Act 2 (Sub-Level - Mission B)"},
+      {"name": "Sky Chase Act 2 (Sub-Level - Mission A)"},
+      {"name": "Pool Emblem"},
+      {"name": "Spinning Platform Emblem"},
+      {"name": "Hidden Bed Emblem"},
+      {"name": "Main Platform Emblem"},
+      {"name": "Chaos 6 Boss Fight"}
+    ],
+    "map_locations": [{"map": "all_maps", "x": 3150, "y": 427}]
+  },
+  {
+    "name": "Emerald Coast",
+    "sections": [
+      {"name": "Emerald Coast (Sonic - Mission C)"},
+      {"name": "Emerald Coast (Sonic - Mission B)"},
+      {"name": "Emerald Coast (Sonic - Mission A)"},
+      {"name": "Emerald Coast (Sonic - Life Capsule 1)"},
+      {"name": "Emerald Coast (Sonic - Life Capsule 2)"},
+      {"name": "Emerald Coast (Sonic - Life Capsule 3)"},
+      {"name": "Emerald Coast (Sonic - Life Capsule 4)"},
+      {"name": "Mission 9 (Sonic)"},
+      {"name": "Emerald Coast (Big - Mission C)"},
+      {"name": "Emerald Coast (Big - Mission B)"},
+      {"name": "Emerald Coast (Big - Mission A)"},
+      {"name": "Emerald Coast (Big - Life Capsule 1)"},
+      {"name": "Mission 22 (Big)"},
+      {"name": "Emerald Coast (Gamma - Mission C)"},
+      {"name": "Emerald Coast (Gamma - Mission B)"},
+      {"name": "Emerald Coast (Gamma - Mission A)"},
+      {"name": "Emerald Coast (Gamma - Life Capsule 1)"},
+      {"name": "Mission 39 (Gamma)"}
+    ],
+    "map_locations": [{"map": "all_maps", "x": 350, "y": 750}]
+  },
+  {
+    "name": "Windy Valley",
+    "sections": [
+      {"name": "Windy Valley (Sonic - Mission C)"},
+      {"name": "Windy Valley (Sonic - Mission B)"},
+      {"name": "Windy Valley (Sonic - Mission A)"},
+      {"name": "Windy Valley (Sonic - Life Capsule 1)"},
+      {"name": "Windy Valley (Sonic - Life Capsule 2)"},
+      {"name": "Windy Valley (Sonic - Life Capsule 3)"},
+      {"name": "Windy Valley (Sonic - Life Capsule 4)"},
+      {"name": "Windy Valley (Sonic - Life Capsule 5)"},
+      {"name": "Mission 11 (Sonic)"},
+      {"name": "Mission 15 (Sonic)"},
+      {"name": "Windy Valley (Tails - Mission C)"},
+      {"name": "Windy Valley (Tails - Mission B)"},
+      {"name": "Windy Valley (Tails - Mission A)"},
+      {"name": "Windy Valley (Tails - Life Capsule 1)"},
+      {"name": "Mission 16 (Tails)"},
+      {"name": "Windy Valley (Gamma - Mission C)"},
+      {"name": "Windy Valley (Gamma - Mission B)"},
+      {"name": "Windy Valley (Gamma - Mission A)"},
+      {"name": "Windy Valley (Gamma - Life Capsule 1)"},
+      {"name": "Windy Valley (Gamma - Life Capsule 2)"},
+      {"name": "Mission 51 (Gamma)"}
+    ],
+    "map_locations": [{"map": "all_maps", "x": 1820, "y": 250}]
+  },
+  {
+    "name": "Casinopolis",
+    "sections": [
+      {"name": "Casinopolis (Sonic - Mission C)"},
+      {"name": "Casinopolis (Sonic - Mission B)"},
+      {"name": "Casinopolis (Sonic - Mission A)"},
+      {"name": "Casinopolis (Sonic - Life Capsule 1)"},
+      {"name": "Casinopolis (Sonic - Life Capsule 2)"},
+      {"name": "Casinopolis (Sonic - Life Capsule 3)"},
+      {"name": "Mission 13 (Sonic)"},
+      {"name": "Mission 17 (Sonic)"},
+      {"name": "Casinopolis (Tails - Mission C)"},
+      {"name": "Casinopolis (Tails - Mission B)"},
+      {"name": "Casinopolis (Tails - Mission A)"},
+      {"name": "Casinopolis (Tails - Life Capsule 1)"},
+      {"name": "Casinopolis (Tails - Life Capsule 2)"},
+      {"name": "Mission 24 (Tails)"},
+      {"name": "Mission 31 (Tails)"},
+      {"name": "Casinopolis (Knuckles - Mission C)"},
+      {"name": "Casinopolis (Knuckles - Mission B)"},
+      {"name": "Casinopolis (Knuckles - Mission A)"},
+      {"name": "Casinopolis (Knuckles - Life Capsule 1)"},
+      {"name": "Casinopolis (Knuckles - Life Capsule 2)"},
+      {"name": "Mission 25 (Knuckles)"},
+      {"name": "Mission 26 (Knuckles)"},
+      {"name": "Mission 48 (Knuckles)"}
+    ],
+    "map_locations": [{"map": "all_maps", "x": 350, "y": 280}]
+  },
+  {
+    "name": "Ice Cap",
+    "sections": [
+      {"name": "Ice Cap (Sonic - Mission C)"},
+      {"name": "Ice Cap (Sonic - Mission B)"},
+      {"name": "Ice Cap (Sonic - Mission A)"},
+      {"name": "Ice Cap (Sonic - Life Capsule 1)"},
+      {"name": "Mission 20 (Sonic)"},
+      {"name": "Mission 53 (Sonic)"},
+      {"name": "Ice Cap (Tails - Mission C)"},
+      {"name": "Ice Cap (Tails - Mission B)"},
+      {"name": "Ice Cap (Tails - Mission A)"},
+      {"name": "Mission 54 (Tails)"},
+      {"name": "Ice Cap (Big - Mission C)"},
+      {"name": "Ice Cap (Big - Mission B)"},
+      {"name": "Ice Cap (Big - Mission A)"},
+      {"name": "Lure 3 Upgrade Point"},
+      {"name": "Ice Cap (Big - Life Capsule 1)"},
+      {"name": "Mission 60 (Big)"}
+    ],
+    "map_locations": [{"map": "all_maps", "x": 1720, "y": 1052}]
+  },
+  {
+    "name": "Twinkle Park",
+    "sections": [
+      {"name": "Twinkle Park (Sonic - Mission C)"},
+      {"name": "Twinkle Park (Sonic - Mission B)"},
+      {"name": "Twinkle Park (Sonic - Mission A)"},
+      {"name": "Twinkle Park (Sonic - Life Capsule 1)"},
+      {"name": "Twinkle Park (Sonic - Life Capsule 2)"},
+      {"name": "Twinkle Park (Sonic - Life Capsule 3)"},
+      {"name": "Twinkle Park (Sonic - Life Capsule 4)"},
+      {"name": "Mission 23 (Sonic)"},
+      {"name": "Mission 49 (Sonic)"},
+      {"name": "Twinkle Park (Amy - Mission C)"},
+      {"name": "Twinkle Park (Amy - Mission B)"},
+      {"name": "Twinkle Park (Amy - Mission A)"},
+      {"name": "Twinkle Park (Amy - Life Capsule 1)"},
+      {"name": "Mission 18 (Amy)"},
+      {"name": "Mission 19 (Amy)"},
+      {"name": "Twinkle Park (Big - Mission C)"},
+      {"name": "Twinkle Park (Big - Mission B)"},
+      {"name": "Twinkle Park (Big - Mission A)"}
+    ],
+    "map_locations": [{"map": "all_maps", "x": 820, "y": 640}]
+  },
+  {
+    "name": "Speed Highway",
+    "sections": [
+      {"name": "Speed Highway (Sonic - Mission C)"},
+      {"name": "Speed Highway (Sonic - Mission B)"},
+      {"name": "Speed Highway (Sonic - Mission A)"},
+      {"name": "Speed Highway (Sonic - Life Capsule 1)"},
+      {"name": "Speed Highway (Sonic - Life Capsule 2)"},
+      {"name": "Speed Highway (Sonic - Life Capsule 3)"},
+      {"name": "Speed Highway (Sonic - Life Capsule 4)"},
+      {"name": "Speed Highway (Sonic - Life Capsule 5)"},
+      {"name": "Speed Highway (Sonic - Life Capsule 6)"},
+      {"name": "Speed Highway (Sonic - Life Capsule 7)"},
+      {"name": "Speed Highway (Sonic - Life Capsule 8)"},
+      {"name": "Speed Highway (Sonic - Life Capsule 9)"},
+      {"name": "Mission 27 (Sonic)"},
+      {"name": "Mission 28 (Sonic)"},
+      {"name": "Mission 55 (Sonic)"},
+      {"name": "Speed Highway (Tails - Mission C)"},
+      {"name": "Speed Highway (Tails - Mission B)"},
+      {"name": "Speed Highway (Tails - Mission A)"},
+      {"name": "Speed Highway (Tails - Life Capsule 1)"},
+      {"name": "Speed Highway (Tails - Life Capsule 2)"},
+      {"name": "Speed Highway (Tails - Life Capsule 3)"},
+      {"name": "Speed Highway (Tails - Life Capsule 4)"},
+      {"name": "Speed Highway (Knuckles - Mission C)"},
+      {"name": "Speed Highway (Knuckles - Mission B)"},
+      {"name": "Speed Highway (Knuckles - Mission A)"},
+      {"name": "Speed Highway (Knuckles - Life Capsule 1)"},
+      {"name": "Speed Highway (Knuckles - Life Capsule 2)"},
+      {"name": "Speed Highway (Knuckles - Life Capsule 3)"}
+    ],
+    "map_locations": [{"map": "all_maps", "x": 740, "y": 540}]
+  },
+  {
+    "name": "Red Mountain",
+    "sections": [
+      {"name": "Red Mountain (Sonic - Mission C)"},
+      {"name": "Red Mountain (Sonic - Mission B)"},
+      {"name": "Red Mountain (Sonic - Mission A)"},
+      {"name": "Red Mountain (Sonic - Life Capsule 1)"},
+      {"name": "Red Mountain (Sonic - Life Capsule 2)"},
+      {"name": "Red Mountain (Sonic - Life Capsule 3)"},
+      {"name": "Red Mountain (Sonic - Life Capsule 4)"},
+      {"name": "Red Mountain (Sonic - Life Capsule 5)"},
+      {"name": "Red Mountain (Sonic - Life Capsule 6)"},
+      {"name": "Red Mountain (Sonic - Life Capsule 7)"},
+      {"name": "Red Mountain (Sonic - Life Capsule 8)"},
+      {"name": "Mission 30 (Sonic)"},
+      {"name": "Mission 57 (Sonic)"},
+      {"name": "Red Mountain (Knuckles - Mission C)"},
+      {"name": "Red Mountain (Knuckles - Mission B)"},
+      {"name": "Red Mountain (Knuckles - Mission A)"},
+      {"name": "Red Mountain (Knuckles - Life Capsule 1)"},
+      {"name": "Red Mountain (Knuckles - Life Capsule 2)"},
+      {"name": "Red Mountain (Knuckles - Life Capsule 3)"},
+      {"name": "Red Mountain (Knuckles - Life Capsule 4)"},
+      {"name": "Mission 56 (Knuckles)"},
+      {"name": "Red Mountain (Gamma - Mission C)"},
+      {"name": "Red Mountain (Gamma - Mission B)"},
+      {"name": "Red Mountain (Gamma - Mission A)"},
+      {"name": "Red Mountain (Gamma - Life Capsule 1)"}
+    ],
+    "map_locations": [{"map": "all_maps", "x": 1580, "y": 1320}]
+  },
+  {
+    "name": "Sky Deck",
+    "sections": [
+      {"name": "Sky Deck (Sonic - Mission C)"},
+      {"name": "Sky Deck (Sonic - Mission B)"},
+      {"name": "Sky Deck (Sonic - Mission A)"},
+      {"name": "Sky Deck (Sonic - Life Capsule 1)"},
+      {"name": "Sky Deck (Sonic - Life Capsule 2)"},
+      {"name": "Sky Deck (Sonic - Life Capsule 3)"},
+      {"name": "Sky Deck (Sonic - Life Capsule 4)"},
+      {"name": "Sky Deck (Sonic - Life Capsule 5)"},
+      {"name": "Sky Deck (Sonic - Life Capsule 6)"},
+      {"name": "Sky Deck (Sonic - Life Capsule 7)"},
+      {"name": "Sky Deck (Sonic - Life Capsule 8)"},
+      {"name": "Sky Deck (Sonic - Life Capsule 9)"},
+      {"name": "Sky Deck (Sonic - Life Capsule 10)"},
+      {"name": "Sky Deck (Sonic - Life Capsule 11)"},
+      {"name": "Sky Deck (Sonic - Life Capsule 12)"},
+      {"name": "Mission 36 (Sonic)"},
+      {"name": "Sky Deck (Tails - Mission C)"},
+      {"name": "Sky Deck (Tails - Mission B)"},
+      {"name": "Sky Deck (Tails - Mission A)"},
+      {"name": "Sky Deck (Tails - Life Capsule 1)"},
+      {"name": "Sky Deck (Tails - Life Capsule 2)"},
+      {"name": "Sky Deck (Tails - Life Capsule 3)"},
+      {"name": "Sky Deck (Tails - Life Capsule 4)"},
+      {"name": "Sky Deck (Knuckles - Mission C)"},
+      {"name": "Sky Deck (Knuckles - Mission B)"},
+      {"name": "Sky Deck (Knuckles - Mission A)"},
+      {"name": "Sky Deck (Knuckles - Life Capsule 1)"},
+      {"name": "Mission 59 (Knuckles)"}
+    ],
+    "map_locations": [{"map": "all_maps", "x": 2940, "y": 427}]
+  },
+  {
+    "name": "Lost World",
+    "sections": [
+      {"name": "Lost World (Sonic - Mission C)"},
+      {"name": "Lost World (Sonic - Mission B)"},
+      {"name": "Lost World (Sonic - Mission A)"},
+      {"name": "Lost World (Sonic - Life Capsule 1)"},
+      {"name": "Lost World (Sonic - Life Capsule 2)"},
+      {"name": "Mission 40 (Sonic)"},
+      {"name": "Mission 41 (Sonic)"},
+      {"name": "Mission 58 (Sonic)"},
+      {"name": "Lost World (Knuckles - Mission C)"},
+      {"name": "Lost World (Knuckles - Mission B)"},
+      {"name": "Lost World (Knuckles - Mission A)"},
+      {"name": "Mission 38 (Knuckles)"}
+    ],
+    "map_locations": [{"map": "all_maps", "x": 538, "y": 1172}]
+  },
+  {
+    "name": "Final Egg",
+    "sections": [
+      {"name": "Final Egg (Sonic - Mission C)"},
+      {"name": "Final Egg (Sonic - Mission B)"},
+      {"name": "Final Egg (Sonic - Mission A)"},
+      {"name": "Final Egg (Sonic - Life Capsule 1)"},
+      {"name": "Final Egg (Sonic - Life Capsule 2)"},
+      {"name": "Final Egg (Sonic - Life Capsule 3)"},
+      {"name": "Final Egg (Sonic - Life Capsule 4)"},
+      {"name": "Final Egg (Sonic - Life Capsule 5)"},
+      {"name": "Final Egg (Sonic - Life Capsule 6)"},
+      {"name": "Final Egg (Sonic - Life Capsule 7)"},
+      {"name": "Final Egg (Sonic - Life Capsule 8)"},
+      {"name": "Final Egg (Sonic - Life Capsule 9)"},
+      {"name": "Final Egg (Sonic - Life Capsule 10)"},
+      {"name": "Final Egg (Sonic - Life Capsule 11)"},
+      {"name": "Final Egg (Sonic - Life Capsule 12)"},
+      {"name": "Final Egg (Sonic - Life Capsule 13)"},
+      {"name": "Final Egg (Sonic - Life Capsule 14)"},
+      {"name": "Final Egg (Sonic - Life Capsule 15)"},
+      {"name": "Final Egg (Sonic - Life Capsule 16)"},
+      {"name": "Mission 45 (Sonic)"},
+      {"name": "Mission 46 (Sonic)"},
+      {"name": "Final Egg (Amy - Mission C)"},
+      {"name": "Final Egg (Amy - Mission B)"},
+      {"name": "Final Egg (Amy - Mission A)"},
+      {"name": "Final Egg (Amy - Life Capsule 1)"},
+      {"name": "Final Egg (Amy - Life Capsule 2)"},
+      {"name": "Mission 50 (Amy)"},
+      {"name": "Final Egg (Gamma - Mission C)"},
+      {"name": "Final Egg (Gamma - Mission B)"},
+      {"name": "Final Egg (Gamma - Mission A)"},
+      {"name": "Mission 21 (Gamma)"}
+    ],
+    "map_locations": [{"map": "all_maps", "x": 672, "y": 1000}]
+  },
+  {
+    "name": "Hot Shelter",
+    "sections": [
+      {"name": "Hot Shelter (Amy - Mission C)"},
+      {"name": "Hot Shelter (Amy - Mission B)"},
+      {"name": "Hot Shelter (Amy - Mission A)"},
+      {"name": "Hot Shelter (Amy - Life Capsule 1)"},
+      {"name": "Hot Shelter (Amy - Life Capsule 2)"},
+      {"name": "Hot Shelter (Amy - Life Capsule 3)"},
+      {"name": "Hot Shelter (Amy - Life Capsule 4)"},
+      {"name": "Mission 43 (Amy)"},
+      {"name": "Hot Shelter (Big - Mission C)"},
+      {"name": "Hot Shelter (Big - Mission B)"},
+      {"name": "Hot Shelter (Big - Mission A)"},
+      {"name": "Hot Shelter (Big - Life Capsule 1)"},
+      {"name": "Hot Shelter (Gamma - Mission C)"},
+      {"name": "Hot Shelter (Gamma - Mission B)"},
+      {"name": "Hot Shelter (Gamma - Mission A)"},
+      {"name": "Hot Shelter (Gamma - Life Capsule 1)"},
+      {"name": "Hot Shelter (Gamma - Life Capsule 2)"},
+      {"name": "Hot Shelter (Gamma - Life Capsule 3)"},
+      {"name": "Hot Shelter (Gamma - Life Capsule 4)"},
+      {"name": "Mission 42 (Gamma)"}
+    ],
+    "map_locations": [{"map": "all_maps", "x": 3250, "y": 1208}]
+  }
+]

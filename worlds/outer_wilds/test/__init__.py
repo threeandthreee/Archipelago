@@ -265,5 +265,12 @@ class TestSuitlessLogsanitySongOfNomaiWorld(OuterWildsTestBase):
 class TestRandomOrbitsOff(OuterWildsTestBase):
     options = {
         "randomize_orbits": "false",
+        "randomize_rotations": "false",
     }
 
+
+# This is why we pulled rotations out into its own option after all
+class TestRandomRotationsOff(OuterWildsTestBase):
+    options = {
+        "randomize_rotations": "false",
+    }

@@ -110,6 +110,22 @@ class LevelEntrancePlando(OptionDict):
          for area in level_areas})
 
 
+class SendDeathLinkChance(Range):
+    """When dying, the chance of sending a death link to another player."""
+    display_name = "Send Death Link Chance"
+    range_start = 1
+    range_end = 100
+    default = 100
+
+
+class ReceiveDeathLinkChance(Range):
+    """When receiving a death link, the chance of dying."""
+    display_name = "Receive Death Link Chance"
+    range_start = 1
+    range_end = 100
+    default = 100
+
+
 class RingLink(Toggle):
     """
     Whether your in-level ring gain/loss is linked to other players.
@@ -424,6 +440,48 @@ class BuyonTrapWeight(BaseTrapWeight):
     display_name = "Buyon Trap Weight"
 
 
+class ReverseTrapWeight(BaseTrapWeight):
+    """
+    Likelihood of receiving a trap that reverses your controls.
+    """
+    display_name = "Reverse Controls Trap Weight"
+
+
+class GravityTrapWeight(BaseTrapWeight):
+    """
+    Likelihood of receiving a trap that increments your gravity.
+    """
+    display_name = "Gravity Trap Weight"
+
+
+class ReverseControlTrapDuration(Range):
+    """
+    How many seconds the reverse control trap will last. If set to 0, the trap will last until you die or change level.
+    """
+    display_name = "Reverse Control Trap Duration"
+    range_start = 0
+    range_end = 60
+    default = 10
+
+
+class TrapsAndFillerOnAdventureFields(DefaultOnToggle):
+    """If enabled, traps and filler can activate in the adventure field."""
+    display_name = "Traps and filler on Adventure Fields"
+
+
+class TrapsAndFillerOnBossFights(DefaultOnToggle):
+    """If enabled, traps and filler can activate during boss fights."""
+    display_name = "Traps and filler on Boss Fights"
+
+
+class TrapsAndFillerOnPerfectChaosFight(Toggle):
+    """
+    If enabled, traps and filler can activate during the Perfect Chaos fight.
+    Keep in mind that enemy traps will subtract rings from the player.
+    """
+    display_name = "Traps and filler on Perfect Chaos Fight"
+
+
 @dataclass
 class SonicAdventureDXOptions(PerGameCommonOptions):
     goal: Goal
@@ -438,6 +496,8 @@ class SonicAdventureDXOptions(PerGameCommonOptions):
     level_entrance_plando: LevelEntrancePlando
 
     death_link: DeathLink
+    send_death_link_chance: SendDeathLinkChance
+    receive_death_link_chance: ReceiveDeathLinkChance
     ring_link: RingLink
     casinopolis_ring_link: CasinopolisRingLink
     hard_ring_link: HardRingLink
@@ -493,6 +553,13 @@ class SonicAdventureDXOptions(PerGameCommonOptions):
     spring_trap_weight: SpringTrapWeight
     police_trap_weight: PoliceTrapWeight
     buyon_trap_weight: BuyonTrapWeight
+    reverse_trap_weight: ReverseTrapWeight
+    gravity_trap_weight: GravityTrapWeight
+
+    reverse_trap_duration: ReverseControlTrapDuration
+    traps_and_filler_on_adventure_fields: TrapsAndFillerOnAdventureFields
+    traps_and_filler_on_boss_fights: TrapsAndFillerOnBossFights
+    traps_and_filler_on_perfect_chaos_fight: TrapsAndFillerOnPerfectChaosFight
 
 
 sadx_option_groups = [
@@ -507,6 +574,8 @@ sadx_option_groups = [
         GuaranteedLevel,
         EntranceRandomizer,
         LevelEntrancePlando,
+        SendDeathLinkChance,
+        ReceiveDeathLinkChance,
         RingLink,
         CasinopolisRingLink,
         HardRingLink,
@@ -566,7 +635,13 @@ sadx_option_groups = [
         IceTrapWeight,
         SpringTrapWeight,
         PoliceTrapWeight,
-        BuyonTrapWeight
+        BuyonTrapWeight,
+        ReverseTrapWeight,
+        GravityTrapWeight,
+        ReverseControlTrapDuration,
+        TrapsAndFillerOnAdventureFields,
+        TrapsAndFillerOnBossFights,
+        TrapsAndFillerOnPerfectChaosFight
     ]),
 
 ]

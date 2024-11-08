@@ -89,6 +89,8 @@ trap_item_table: List[ItemInfo] = [
     ItemInfo(101, ItemName.Traps.SpringTrap, ItemClassification.trap),
     ItemInfo(102, ItemName.Traps.PoliceTrap, ItemClassification.trap),
     ItemInfo(103, ItemName.Traps.BuyonTrap, ItemClassification.trap),
+    ItemInfo(104, ItemName.Traps.ReverseTrap, ItemClassification.trap),
+    ItemInfo(105, ItemName.Traps.GravityTrap, ItemClassification.trap),
 ]
 
 item_name_to_info: Dict[str, ItemInfo] = {
@@ -105,6 +107,7 @@ group_item_table: Dict[str, List[str]] = {
     ItemName.Groups.KeyItems: [item.name for item in key_item_table],
     ItemName.Groups.Fillers: [item.name for item in filler_item_table],
     ItemName.Groups.Traps: [item.name for item in trap_item_table],
+    "Casino Keys": [ItemName.KeyItem.CasinoKeys],
 }
 
 

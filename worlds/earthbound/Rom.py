@@ -8,12 +8,15 @@ from worlds.Files import APProcedurePatch, APTokenMixin, APTokenTypes, APPatchEx
 from .local_data import (item_id_table, location_dialogue, present_locations, psi_item_table, npc_locations, psi_locations, 
                          special_name_table, character_item_table, character_locations, locker_locations, starting_psi_table, item_space_checks,
                          special_name_overrides, protection_checks, badge_names, protection_text, local_present_types, nonlocal_present_types,
-                         present_text_pointers, ap_text_pntrs, party_id_nums)
+                         present_text_pointers, ap_text_pntrs, party_id_nums, world_version)
 from .battle_bg_data import battle_bg_bpp
 from .psi_shuffle import write_psi
 from .text_data import barf_text, eb_text_table, text_encoder
 from .flavor_data import flavor_data
+from .hint_data import parse_hint_data
 from .enemy_data import combat_regions, scale_enemies
+from .boss_shuffle import write_bosses
+from .static_location_data import location_groups
 from BaseClasses import ItemClassification, CollectionState
 from settings import get_settings
 from typing import TYPE_CHECKING, Optional
@@ -133,6 +136,7 @@ def patch_rom(world, rom, player: int, multiworld):
             item_name_loc = (((location.address - 0xEB0000) * 128) + 0x3F0000)
             item_text = bytearray(0)
             player_text = bytearray(0)
+            #todo; replace with the encoder function
             for char in location.item.name[:128]:
                 if char in eb_text_table:
                     item_text.extend(eb_text_table[char])
@@ -264,14 +268,15 @@ def patch_rom(world, rom, player: int, multiworld):
                     rom.write_bytes(special_name_overrides[name], bytearray([0x01, 0x01, 0x01]))
 
             if name in present_locations and "Lost Underworld" not in name and world.options.presents_match_contents:
-                if location.item.classification & ItemClassification.trap:
+                if ItemClassification.trap in location.item.classification:
                     world.present_type = "trap"
-                elif location.item.classification & ItemClassification.progression:
+                elif ItemClassification.progression in location.item.classification:
                     world.present_type = "progression"
-                elif location.item.classification & ItemClassification.useful:
+                elif ItemClassification.useful in location.item.classification:
                     world.present_type = "useful"
                 else:
                     world.present_type = "filler"
+
                 if location.item.player == world.player:
                     rom.write_bytes(present_locations[name] - 12, bytearray(local_present_types[world.present_type]))
                     if name != "Threed - Boogey Tent Trashcan":
@@ -285,6 +290,49 @@ def patch_rom(world, rom, player: int, multiworld):
                             rom.write_bytes(present_locations[name] - 4, bytearray([0x8D, 0xce, 0xee]))
                         else:
                             rom.write_bytes(present_locations[name] - 4, bytearray([0xc1, 0xcd, 0xee]))
+    
+    hintable_locations = [
+        location for location in world.multiworld.get_locations()
+        if location.player == world.player or location.item.player == world.player
+    ]
+
+    world.hint_pointer = 0x0000
+    world.hint_number = 0
+    for index, hint in enumerate(world.in_game_hint_types):
+        if hint == "item_at_location":
+            for location in hintable_locations:
+                if location.name == world.hinted_locations[index]:
+                    parse_hint_data(world, location, rom, hint)
+                    
+        elif hint == "region_progression_check":
+            world.progression_count = 0
+            for location in hintable_locations:
+                if location.name in location_groups[world.hinted_regions[index]]:
+                    if ItemClassification.progression in location.item.classification:
+                        world.progression_count += 1
+            world.hinted_area = world.hinted_regions[index] #im doing a little sneaky
+            parse_hint_data(world, location, rom, hint)
+
+        elif hint == "hint_for_good_item" or hint == "prog_item_at_region":
+            hintable_locations_2 = []
+            for location in hintable_locations:
+                if location.item.name == world.hinted_items[index]:
+                    hintable_locations_2.append(location)
+            if hintable_locations_2 == []:
+                #todo; make an error if this happens
+                location = "null"
+            else:
+                location = world.random.choice(hintable_locations_2)
+            parse_hint_data(world, location, rom, hint)
+
+        elif hint == "item_in_local_region":
+            for location in hintable_locations:
+                if location.name == world.hinted_locations[index]:
+                    parse_hint_data(world, location, rom, hint)
+        else:
+            location = "null"
+            parse_hint_data(world, location, rom, hint)
+
 
     if world.options.skip_prayer_sequences:
         rom.write_bytes(0x07BC96, bytearray([0x02]))
@@ -314,13 +362,19 @@ def patch_rom(world, rom, player: int, multiworld):
         rom.write_bytes(0x0FF26D, bytearray([item_id_table[world.magicant_junk[5]]]))
 
     rom.write_bytes(0x02EC1AA, bytearray([world.options.sanctuaries_required.value]))
-    if world.options.alternate_sanctuary_goal:
+    if world.options.alternate_sanctuary_goal and world.options.giygas_required:
         rom.write_bytes(0x02EC1E2, bytearray([0xFD, 0xC1, 0xEE]))
 
-    if world.options.magicant_mode == 1:
+    if world.options.magicant_mode == 1 and world.options.giygas_required: #Apple kid text
         rom.write_bytes(0x2EC1D8, bytearray([0x33, 0xC2, 0xEE]))
     elif world.options.magicant_mode == 2:
         rom.write_bytes(0x2EC1D8, bytearray([0x6A, 0xC2, 0xEE]))
+
+    if not world.options.giygas_required:
+        rom.write_bytes(0x2EC164, bytearray([0xE8, 0xF0, 0xEE]))
+        rom.write_bytes(0x02EC1E2, bytearray([0x40, 0xC1, 0xEE]))
+        rom.write_bytes(0x02EC1E2, bytearray([0x40, 0xC1, 0xEE]))
+
     
     flavor_address = 0x3FAF10
     for i in range(4):
@@ -396,6 +450,24 @@ def patch_rom(world, rom, player: int, multiworld):
                 rom.write_bytes(0x0BD89A + (i * 4), drawn_background_2)
                 rom.write_bytes(0x0BD89C + (i * 4), drawn_background)
 
+    if world.options.random_swirl_colors:
+        if world.random.random() < 0.5:
+            rom.write_bytes(0x02E98A, bytearray([0x7F]))  # Color math mode
+            rom.write_bytes(0x02E996, bytearray([0x3F]))
+
+        rom.write_bytes(0x300240, bytearray([world.random.randint(0x00, 0x1F)]))  #Normal swirls
+        rom.write_bytes(0x300245, bytearray([world.random.randint(0x00, 0x1F)]))
+        rom.write_bytes(0x30024A, bytearray([world.random.randint(0x00, 0x1F)]))
+
+        rom.write_bytes(0x300253, bytearray([world.random.randint(0x00, 0x1F)]))  #Green swirls
+        rom.write_bytes(0x300258, bytearray([world.random.randint(0x00, 0x1F)]))
+        rom.write_bytes(0x30025D, bytearray([world.random.randint(0x00, 0x1F)]))
+
+        rom.write_bytes(0x300269, bytearray([world.random.randint(0x00, 0x1F)]))  #Red swirls
+        rom.write_bytes(0x30026E, bytearray([world.random.randint(0x00, 0x1F)]))
+        rom.write_bytes(0x300273, bytearray([world.random.randint(0x00, 0x1F)]))
+
+
     if not world.options.prefixed_items:
         rom.write_bytes(0x15F9DB, bytearray([0x06]))
         rom.write_bytes(0x15F9DD, bytearray([0x08]))
@@ -419,15 +491,27 @@ def patch_rom(world, rom, player: int, multiworld):
             elif location.item.name == "Poo" and location.item.player == world.player and world.Poo_placed == False:
                world.Poo_region = location.parent_region
                world.Poo_placed = True
+    
+    if "Paula" in world.start_items:
+        world.Paula_region = "Ness's Mind"
+
+    if "Jeff" in world.start_items:
+        world.Jeff_region = "Ness's Mind"
+
+    if "Poo" in world.start_items:
+        world.Poo_region = "Ness's Mind"
 
     if world.options.psi_shuffle:
         write_psi(world, rom)
+
+    write_bosses(world, rom)
     scale_enemies(world, rom)
     world.badge_name = badge_names[world.franklin_protection]
     world.badge_name = text_encoder(world.badge_name, eb_text_table, 23)
     world.badge_name.extend([0x00])
     rom.write_bytes(0x17FCD0, world.starting_money)
     rom.write_bytes(0x17FCE0, world.prayer_player)
+    rom.write_bytes(0x17FD00, world.credits_player)
     rom.write_bytes(0x155027, world.badge_name)
     rom.write_bytes(0x3FF0A0, world.world_version.encode("ascii"))
 
@@ -480,7 +564,7 @@ class EBPatchExtensions(APPatchExtension):
         version_check = rom.read_bytes(0x3FF0A0, 16)
         version_check = version_check.split(b'\x00', 1)[0]
         version_check_str = version_check.decode("ascii")
-        client_version = "2.1"
+        client_version = world_version
         if client_version != version_check_str and version_check_str != "":
             raise Exception(f"Error! Patch generated on EarthBound APWorld version {version_check_str} doesn't match client version {client_version}! " +
                             f"Please use EarthBound APWorld version {version_check_str} for patching.")
@@ -524,18 +608,20 @@ class EBPatchExtensions(APPatchExtension):
 
         rom.write_bytes(0x3A0100, saturn_font_data)
         rom.write_bytes(0x3C0D00, saturn_font_gfx)
-        #---------------------------------------
-        #paula_level = rom.read_bytes(0x15f60f, 1)
-        #jeff_level = rom.read_bytes(0x15f623, 1)
-        #poo_level = rom.read_bytes(0x15f637, 1)
 
-        #paula_start_exp = rom.read_bytes(0x?? + paula_level, ????)
-        #jeff_start_exp = rom.read_bytes(0x?? + jeff_level, ????)
-        #poo_start_exp = rom.read_bytes(0x?? + poo_level, ????)
+        rom.write_bytes(0x2EF11F, rom.read_bytes(0x091D30, 0x17))
+        # ---------------------------------------
+        # paula_level = rom.read_bytes(0x15f60f, 1)
+        # jeff_level = rom.read_bytes(0x15f623, 1)
+        # poo_level = rom.read_bytes(0x15f637, 1)
 
-        #rom.write_bytes(0x??, paula_start_exp)
-        #rom.write_bytes(0x??, jeff_start_exp)
-        #rom.write_bytes(0x??, poo_start_exp)
+        # paula_start_exp = rom.read_bytes(0x?? + paula_level, ????)
+        # jeff_start_exp = rom.read_bytes(0x?? + jeff_level, ????)
+        # poo_start_exp = rom.read_bytes(0x?? + poo_level, ????)
+
+        # rom.write_bytes(0x??, paula_start_exp)
+        # rom.write_bytes(0x??, jeff_start_exp)
+        # rom.write_bytes(0x??, poo_start_exp)
         return rom.get_bytes()
 
 

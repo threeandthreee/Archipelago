@@ -10,11 +10,9 @@
     { "from": "Space", "to": "Giant's Deep", "requires": [] },
     // the only astral body you can't land on without an item
     { "from": "Space", "to": "Quantum Moon", "requires": [
-        { "item": "Imaging Rule" },
-        { "anyOf": [
-            { "item": "Spacesuit" }, // in this case "Spacesuit" implies the Scout Launcher and its Photo Mode
-            { "item": "Scout" } // without Photo Mode, the only way to take a photo is launching a Scout from the ship
-        ] }
+        { "item": "Imaging Rule" }
+        // In the past, a suitless player without Scout would have no way of actually taking a photo,
+        // but now that "ship photo mode" is an intended feature, we no longer need additional logic here.
     ] },
 
     { "from": "Quantum Moon", "to": "Quantum Shrine", "requires": [ { "item": "Shrine Door Codes" } ] },
@@ -217,7 +215,9 @@
         { "item": "Alarm Bypass Patch" }
     ] },
 
-    { "category": "hn1", "from": "Space", "to": "Lonely Hermit", "requires": [] },
+    { "category": "hn1", "from": "Space", "to": "Lonely Hermit", "requires": [
+        { "item": "Spacesuit" } // we don't have proper HN1 suitless logic, so simply require suit for all of it
+    ] },
 
     { "category": "hn1", "from": "Lonely Hermit", "to": "Alpine Core", "requires": [] },
 
@@ -235,7 +235,7 @@
         { "item": "Stranger Light Modulator" }
     ] },
 
-    { "category": "hn1", "from": "Space", "to": "Derelict Ship Exterior", "requires": [
+    { "category": "hn1", "from": "Lonely Hermit", "to": "Derelict Ship Exterior", "requires": [
         { "item": "Signalscope" },
         { "item": "Neighbor's Distress Signal Frequency" }
     ] },
@@ -246,6 +246,64 @@
 
     { "category": "hn1", "from": "Timber Hearth", "to": "Sole Survivor Pod", "requires": [
         { "item": "Signalscope" },
-        { "item": "Galactic Communication Frequency" }
+        { "item": "Galactic Communication Frequency" },
+        { "item": "Spacesuit" } // we don't have proper HN1 suitless logic, so simply require suit for all of it
+    ] },
+
+    { "category": "to", "from": "Space", "to": "Dark Bramble Exterior", "requires": [
+        { "item": "Spacesuit" } // we don't have proper outsider suitless logic, so simply require suit for all of it
+    ] },
+
+    { "category": "to", "from": "Dark Bramble Exterior", "to": "Secluded Structure", "requires": [
+        { "location": "TO: Jellyfish Painting Path" }, // seeing the hidden path in the painting
+        { "region": "Feldspar's Camp" } // getting to the jellyfish the usual way
+    ] },
+    { "category": "to", "from": "Secluded Structure", "to": "Cliffside Home", "requires": [
+        // copy-pasted from "EotE: Find an Artifact", since you can generate Outsider locations without DLC locations
+        { "anyOf": [
+            { "item": "Ghost Matter Wavelength" }, // to safely enter River Lowlands Workshop
+            { "item": "Stranger Light Modulator" }, // to use a raft and an elevator to reach Hidden Gorge
+            { "item": "Breach Override Codes" } // to enter Hidden Gorge Laboratory
+        ] }
+        // no logic needed for "can get ship into shuttle crusher then fly it over" since this already requires reaching DB
+    ] },
+    { "category": "to&dlc", "from": "Cliffside Home", "to": "Endless Canyon", "requires": [
+        { "item": "Stranger Light Modulator" } // take the elevator down to the regular DLC content
+    ] },
+
+    { "category": "to", "from": "Dark Bramble", "to": "Projection Pool House", "requires": [ { "item": "Scout" } ] },
+
+    { "category": "ac", "from": "Space", "to": "Lingering Chime", "requires": [
+        { "item": "Spacesuit" } // we don't have proper AC suitless logic, so simply require suit for all of it
+    ] },
+    { "category": "ac", "from": "Space", "to": "Dark Bramble Research Station", "requires": [
+        { "item": "Spacesuit" } // we don't have proper AC suitless logic, so simply require suit for all of it
+    ] },
+    // Astral Codec adds a new way to find Escape Pod 3 / the Nomai Grave with Scout instead of Signalscope
+    { "category": "ac", "from": "Dark Bramble Research Station", "to": "Nomai Grave", "requires": [
+        // being at DBRS implies Launch Codes already
+        { "item": "Scout" }, // launch at the DBRS warp transmitter and it ends up at EP3/NG
+        { "item": "Silent Running Mode" } // to fly into Dark Bramble safely and follow the Scout marker
+    ] },
+
+    { "category": "hn2", "from": "Space", "to": "Jam 3 Galaxy", "requires": [
+        { "item": "Spacesuit" } // we don't have proper HN2 suitless logic, so simply require suit for all of it
+    ] },
+    { "category": "hn2", "from": "Jam 3 Galaxy", "to": "Magistarium", "requires": [] },
+    { "category": "hn2", "from": "Magistarium", "to": "Magistarium Library", "requires": [ { "item": "Magistarium Library Access Code" } ] },
+    { "category": "hn2", "from": "Magistarium", "to": "Magistarium Dormitories", "requires": [ { "item": "Magistarium Dormitory Access Code" } ] },
+    { "category": "hn2", "from": "Magistarium", "to": "Magistarium Engine Room", "requires": [ { "item": "Magistarium Engine Access Code" } ] },
+    { "category": "hn2", "from": "Magistarium", "to": "Magistarium Outer Planes", "requires": [
+        { "item": "Magistarium Dormitory Access Code" }, // enter the Magister's room
+        { "item": "Memory Cube Interface" }, // close the hatch so you can safely remove your spacesuit
+        { "item": "Magistarium Dormitory Access Code" } // to get the battery
+    ] },
+
+    { "category": "fq", "from": "Hourglass Twins", "to": "Lost Strings", "requires": [
+        { "item": "Entanglement Rule" },
+        { "item": "Spacesuit" }
+    ] },
+    { "category": "fq", "from": "Lost Strings", "to": "Banjo Galaxy", "requires": [
+        { "item": "Launch Codes" }
     ] }
 ]

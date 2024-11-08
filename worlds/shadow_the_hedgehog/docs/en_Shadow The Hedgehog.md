@@ -23,6 +23,14 @@ Each step of progress on these checks is a multiworld item.
 Likewise, all of these mission objectives are items that can be received, requiring you to meet the total to finish
 the several Dark and Hero missions of the game.
 
+The latest version includes further enemysanity and configuration around the percent of these checks to include.
+Checkpoint sanity is a recent addition, allowing each numbered checkpoint to be an individual check.
+
+There are some junk items and special weapon unlocks are also available.
+
+It is possible to tweak the settings to remove some of the specific checks and alter total to the players choice.
+Likewise, it is possible to exclude stages.
+
 Future checks and items are expected to be added in the future.
 
 ## What other changes are made to the game?
@@ -44,14 +52,12 @@ Ensure you have the mission character selected and pause the game, press the SEL
 Levels which require you to defeat a number of enemies of a particular type will clear as soon as you close the pause menu.
 Other missions require you to achieve 1 more step in the objective.
 
-Character interactions in levels have been made to not happen.
-This is done by setting the flags to true when the player enters a level.
-This may become a sanity in the future.
+Character interactions in levels have been made to not happen, but will happen the first time when charactersanity is enabled.
+This is done by setting the flags to true when the player enters a level, but for those which have been seen.
 
 ## What does the game look like?
 
-Currently this project has no feedback on what the item you have found is, and requires the use of the Text Client. 
-
+Currently this project has no feedback on what the item you have found is, and requires the use of the Text Client.
 
 ## When the player receives an item, what happens?
 
@@ -61,3 +67,19 @@ When you receive an item, the Text Client will update to inform you.
 
 This game requires to be online at all times as it is completely memory based. Level restriction and similar paths
 will not work when playing offline, nor will item collection.
+
+## How do I finish an objective?
+Meet the alignment character in the stage, select that mission, pause the game, press SELECT and the requirement count
+will return to normal. This will auto clear for enemy-based missions, but other missions require you to add to the objective count.
+If SELECT does not change your view, you do not have the required archipelago items to finish the stage.
+
+For further details, fully read other sections.
+
+## How do I finish?
+
+You select your goal type when setting up in the yaml file. Once you reach these conditions you have set,
+based on percentage and enabling, Last Story will unlock in the Story menu. Walk through this and defeat the final boss to finish.
+
+## Known Issues
+- Sometimes the stage will not detect the correct mission objectives and will not shift the total. 
+Exiting and re-entering the level should hopefully resolve this.

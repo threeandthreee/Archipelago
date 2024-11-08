@@ -104,8 +104,17 @@ class RandomizeOrbits(DefaultOnToggle):
     """Randomizes:
     - The order of the five planets (the Hourglass Twins as a whole, Timber Hearth, Brittle Hollow, Giant's Deep, Dark Bramble), i.e. which ones are closer or farther from the sun
     - The orbit angles of the five planets, as well as four satellites (Sun Station, Attlerock, Hollow's Lantern, and the Orbital Probe Cannon)
-    - The axes of rotation for Ember Twin, Ash Twin, Timber Hearth and Brittle Hollow. This often causes the Hourglass Twins' sand pillar to pass through different areas, or structures inside the ATP to move differently."""
+    """
     display_name = "Randomize Orbits"
+
+
+class RandomizeRotations(DefaultOnToggle):
+    """Randomizes the axes of rotation for Ember Twin, Ash Twin, Timber Hearth and Brittle Hollow.
+
+    This often causes the Hourglass Twins' sand pillar to pass through different areas,
+    and structures inside the ATP to move differently (becoming a hazard for the player).
+    """
+    display_name = "Randomize Rotations"
 
 
 class Spawn(Choice):
@@ -200,6 +209,44 @@ class EnableHearthsNeighborMod(Toggle):
     display_name = "Enable Hearth's Neighbor Story Mod"
 
 
+class EnableTheOutsiderMod(Toggle):
+    """
+    Incorporates The Outsider story mod content into the randomizer with an additional 21 locations.
+    If logsanity is enabled, that will add another 44 locations, for a total of 65 TO (The Outsider) locations.
+
+    split_translator is highly recommended with this mod, since it adds a lot of Translator checks to Dark Bramble.
+
+    If randomize_orbits is true, this option forces GD and DB to be in their vanilla "lanes" and have the same orbit angle.
+    """
+    display_name = "Enable The Outsider Story Mod"
+
+
+class EnableAstralCodecMod(Toggle):
+    """
+    Incorporates Astral Codec story mod content into the randomizer with an additional 1 item and 21 locations.
+    If logsanity is enabled, that will add another 39 locations, for a total of 60 AC locations.
+
+    If randomize_warp_platforms is true, this option will ensure there's a warp from the Hourglass Twins to Timber Hearth.
+    """
+    display_name = "Enable Astral Codec Story Mod"
+
+
+class EnableHearthsNeighbor2MagistariumMod(Toggle):
+    """
+    Incorporates Hearth's Neighbor 2: Magistarium story mod content into the randomizer with an additional 4 items and 18 locations.
+    If logsanity is enabled, that will add another 30 locations, for a total of 48 HN2 locations.
+    """
+    display_name = "Enable Hearth's Neighbor 2: Magistarium Story Mod"
+
+
+class EnableFretsQuestMod(Toggle):
+    """
+    Incorporates Fret's Quest story mod content into the randomizer with an additional 1 item and 18 locations.
+    If logsanity is enabled, that will add another 38 locations, for a total of 56 FQ locations.
+    """
+    display_name = "Enable Fret's Quest Story Mod"
+
+
 @dataclass
 class OuterWildsGameOptions(PerGameCommonOptions):
     start_inventory_from_pool: StartInventoryPool
@@ -210,6 +257,7 @@ class OuterWildsGameOptions(PerGameCommonOptions):
     dlc_only: DLCOnly
     randomize_coordinates: RandomizeCoordinates
     randomize_orbits: RandomizeOrbits
+    randomize_rotations: RandomizeRotations
     randomize_warp_platforms: RandomizeWarpPlatforms
     randomize_dark_bramble_layout: RandomizeDarkBrambleLayout
     trap_chance: TrapChance
@@ -219,6 +267,10 @@ class OuterWildsGameOptions(PerGameCommonOptions):
     shuffle_spacesuit: ShuffleSpacesuit
     split_translator: SplitTranslator
     enable_hn1_mod: EnableHearthsNeighborMod
+    enable_outsider_mod: EnableTheOutsiderMod
+    enable_ac_mod: EnableAstralCodecMod
+    enable_hn2_mod: EnableHearthsNeighbor2MagistariumMod
+    enable_fq_mod: EnableFretsQuestMod
 
 
 def get_creation_settings(options: OuterWildsGameOptions) -> Set[str]:

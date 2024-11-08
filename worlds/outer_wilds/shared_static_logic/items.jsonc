@@ -66,7 +66,7 @@
     { "code": 1734473727, "name": "Audio Trap", "type": "trap" },
     { "code": 1734473728, "name": "Nap Trap", "type": "trap" },
 
-    { "category": "dlc|hn1", "code": 1734473733, "name": "Stranger Light Modulator", "type": "progression" },
+    { "category": "dlc|hn1|hn2|fq", "code": 1734473733, "name": "Stranger Light Modulator", "type": "progression" },
     { "category": "dlc", "code": 1734473734, "name": "Breach Override Codes", "type": "progression" },
     { "category": "dlc", "code": 1734473735, "name": "River Lowlands Painting Code", "type": "progression" },
     { "category": "dlc", "code": 1734473736, "name": "Cinder Isles Painting Code", "type": "progression" },
@@ -83,12 +83,21 @@
 
     { "category": "base", "code": null, "name": "Victory - Song of Five", "type": "progression" },
     { "category": "base", "code": null, "name": "Victory - Song of the Nomai", "type": "progression" },
-    { "category": "base+dlc", "code": null, "name": "Victory - Song of the Stranger", "type": "progression" },
-    { "category": "base+dlc", "code": null, "name": "Victory - Song of Six", "type": "progression" },
-    { "category": "base+dlc", "code": null, "name": "Victory - Song of Seven", "type": "progression" },
+    { "category": "base&dlc", "code": null, "name": "Victory - Song of the Stranger", "type": "progression" },
+    { "category": "base&dlc", "code": null, "name": "Victory - Song of Six", "type": "progression" },
+    { "category": "base&dlc", "code": null, "name": "Victory - Song of Seven", "type": "progression" },
     { "category": "dlc", "code": null, "name": "Victory - Echoes of the Eye", "type": "progression" },
 
     { "category": "hn1", "code": 1734473752, "name": "Neighbor's Distress Signal Frequency", "type": "progression" },
     { "category": "hn1", "code": 1734473753, "name": "Lava Core Signals Frequency", "type": "progression" },
-    { "category": "hn1", "code": 1734473754, "name": "Galactic Communication Frequency", "type": "progression" }
+    { "category": "hn1", "code": 1734473754, "name": "Galactic Communication Frequency", "type": "progression" },
+
+    { "category": "ac", "code": 1734473755, "name": "Astral Codec Frequency", "type": "progression" },
+
+    { "category": "hn2", "code": 1734473756, "name": "Memory Cube Interface", "type": "progression" },
+    { "category": "hn2", "code": 1734473757, "name": "Magistarium Library Access Code", "type": "progression" },
+    { "category": "hn2", "code": 1734473758, "name": "Magistarium Dormitory Access Code", "type": "progression" },
+    { "category": "hn2", "code": 1734473759, "name": "Magistarium Engine Access Code", "type": "progression" },
+
+    { "category": "fq", "code": 1734473760, "name": "Hearthian Radio Frequency", "type": "progression" }
 ]

@@ -667,7 +667,8 @@ def get_tokens(world: "PokemonFRLGWorld", game_revision: int) -> APTokenMixin:
     tokens.write_token(APTokenTypes.WRITE, options_address + 0x42, struct.pack("<B", world.town_map_fly_location_id))
 
     # Set resort gorgeous mon
-    tokens.write_token(APTokenTypes.WRITE, options_address + 0x43, struct.pack("<H", world.resort_gorgeous_mon[2]))
+    species_id = data.constants[world.resort_gorgeous_mon[0]]
+    tokens.write_token(APTokenTypes.WRITE, options_address + 0x43, struct.pack("<H", species_id))
 
     # Set total darkness
     if "Total Darkness" in world.options.modify_world_state.value:

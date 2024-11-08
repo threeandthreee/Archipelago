@@ -1705,7 +1705,7 @@ class MindustryRegions():
         """
         Connect regions between themselves
         """
-        entrance = Entrance(source_region.player, source_region.name + " -> " + target_region.name, source_region)
+        entrance = Entrance(source_region.player, source_region.name + " to " + target_region.name, source_region)
         source_region.exits.append(entrance)
         entrance.connect(target_region)
         if rule is not None:
