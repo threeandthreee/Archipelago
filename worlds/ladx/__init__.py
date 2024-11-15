@@ -137,7 +137,7 @@ class LinksAwakeningWorld(World):
 
         self.ladxr_settings.validate()
         world_setup = LADXRWorldSetup()
-        world_setup.randomize(self.ladxr_settings, self.random)
+        world_setup.randomize(self.ladxr_settings, self.random, self.options)
         self.ladxr_logic = LADXRLogic(configuration_options=self.ladxr_settings, world_setup=world_setup)
         self.ladxr_itempool = LADXRItemPool(self.ladxr_logic, self.ladxr_settings, self.random, self.options.stabilize_item_pool).toDict()
 
@@ -454,6 +454,10 @@ class LinksAwakeningWorld(World):
         rom_file = get_base_rom_path()
         if not os.path.exists(rom_file):
             raise FileNotFoundError(rom_file)
+
+    def generate_early(self):
+        if self.options.goal == "specific":
+            assert self.options.instrument_count.value > 0, "Specific instrument count cannnot be zero."
 
     def generate_output(self, output_directory: str):
         # copy items back to locations
