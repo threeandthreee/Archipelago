@@ -62,7 +62,7 @@ def extract_bingo_spaces(location):
 
     # Determine the range of rows and columns
     start_row = start[0]  # 'A', 'B', 'C', etc.
-    start_col = int(start[1])  # 1, 2, 3, etc.
+    start_col = int(start[1:])  # 1, 2, 3, etc.
     end_row = end[0]  # 'A', 'B', 'C', etc.
     end_col = int(end[1:])  # 1, 2, 3, etc.
 

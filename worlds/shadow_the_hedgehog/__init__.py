@@ -1,29 +1,19 @@
-import copy
-import os
 import random
-from dataclasses import fields
-from typing import ClassVar, Dict, List, Set, Tuple, Type
-
-import yaml
-
-from BaseClasses import ItemClassification as IC
-from BaseClasses import LocationProgressType, Region, Tutorial
+from typing import ClassVar, Tuple
+from BaseClasses import  Tutorial
 from Options import OptionError
-from worlds.AutoWorld import WebWorld, World
-from worlds.generic.Rules import add_item_rule
+from worlds.AutoWorld import WebWorld
 from worlds.LauncherComponents import Component, SuffixIdentifier, Type, components, launch_subprocess
-from worlds.shadow_the_hedgehog.Levels import GetLevelCompletionNames
 
+from .Levels import GetLevelCompletionNames
 from .Items import *
 from .Locations import *
-from . import Rules
 
-
-from .Options import ShadowTheHedgehogOptions
+from . import Options, Rules, Regions
 
 #from . import Macros
 
-VERSION: Tuple[int, int, int] = (0, 0, 2)
+VERSION: Tuple[int, int, int] = (0, 0, 7)
 
 
 def run_client():
@@ -72,14 +62,16 @@ class ShtHWorld(World):
     required_client_version: Tuple[int, int, int] = (0, 5, 0)
     web = ShtHWebWorld()
 
-    options_dataclass = ShadowTheHedgehogOptions
-    options: ShadowTheHedgehogOptions
+    options_dataclass = Options.ShadowTheHedgehogOptions
+    options: Options.ShadowTheHedgehogOptions
 
     def __init__(self, *args, **kwargs):
         self.first_regions = []
         self.available_characters = []
+        self.available_weapons = []
         self.token_locations = []
         self.required_tokens = {}
+        self.excess_item_count = 0
 
         for token in TOKENS:
             self.required_tokens[token] = 0
@@ -89,8 +81,12 @@ class ShtHWorld(World):
     def set_rules(self):
         Rules.set_rules(self.multiworld, self, self.player)
 
+    def check_invalid_configurations(self):
+        if self.options.auto_clear_missions and not self.options.objective_sanity:
+            raise OptionError("Cannot auto clear missions alongside not objective sanity.")
+
     def generate_early(self):
-        # Choose first level here; pass into regions
+        self.check_invalid_configurations()
 
         # Set maximum of levels required
         # Exclude missions listed in exclude_locations
@@ -100,21 +96,33 @@ class ShtHWorld(World):
         mission_counter = 0
         mission_total = 0
 
-        #if self.options.enemy_sanity:
-        #    for enemy in Locations.EnemySanityLocations:
-        #        for i in range(1, enemy.total_count+1):
-        #            id, loc = Locations.GetEnemyLocationName(enemy.stageId, enemy.enemyClass, enemy.mission_object_name, i)
-        #            self.options.exclude_locations.value.add(loc)
+        Regions.early_region_checks(self)
 
+        item_count = Items.CountItems(self) - self.options.starting_stages
+        location_count = Locations.count_locations(self)
+
+        if self.options.exceeding_items_filler == Options.ExceedingItemsFiller.option_minimise:
+            if item_count > location_count:
+                potential_downgrades = GetPotentialDowngradeItems(self)
+                if len(potential_downgrades) < item_count - location_count:
+                    c = item_count - location_count - len(potential_downgrades)
+                    raise OptionError("Not enough locations to fill even with downgrades::"+str(c))
+                self.excess_item_count = item_count - location_count
+
+        elif self.options.exceeding_items_filler == Options.ExceedingItemsFiller.option_off and \
+            location_count < item_count:
+            raise OptionError("Invalid count of items present:"+str(location_count)+" vs "+str(item_count))
 
         if self.options.objective_sanity.value and self.options.force_objective_sanity_chance > 0\
                 and self.options.force_objective_sanity_max > 0:
             for locationData in Locations.MissionClearLocations:
+                if locationData.requirement_count is None:
+                    continue
+                if locationData.requirement_count == 1:
+                    continue
                 if mission_counter >= maximum_force_missions:
                     continue
                 if locationData.requirement_count + mission_total > maximum_force_mission_counter:
-                    continue
-                if locationData.requirement_count == 1:
                     continue
 
                 location_id, completion_location_name = GetLevelCompletionNames(locationData.stageId, locationData.alignmentId)
@@ -128,6 +136,7 @@ class ShtHWorld(World):
                     self.options.priority_locations.value.add(completion_location_name)
                     mission_counter += 1
                     mission_total += locationData.requirement_count
+
 
     def create_regions(self):
         regions = Regions.create_regions(self)
@@ -162,6 +171,7 @@ class ShtHWorld(World):
 
     def fill_slot_data(self):
         slot_data = {
+            "check_level": None if len(self.first_regions) == 0 else self.first_regions[0],
             "first_levels": self.first_regions,
             "objective_sanity": self.options.objective_sanity.value,
             "objective_percentage": self.options.objective_percentage.value,
@@ -174,7 +184,15 @@ class ShtHWorld(World):
             "required_dark_tokens": self.required_tokens[Items.Progression.StandardDarkToken],
             "required_final_tokens": self.required_tokens[Items.Progression.FinalToken],
             "required_objective_tokens": self.required_tokens[Items.Progression.ObjectiveToken],
-            "requires_emeralds": self.options.goal_chaos_emeralds.value
+            "requires_emeralds": self.options.goal_chaos_emeralds.value,
+            "key_sanity": self.options.key_sanity.value,
+            "enemy_sanity": self.options.enemy_sanity.value,
+            "objective_enemy_sanity": self.options.enemy_objective_sanity.value,
+            "weapon_sanity_unlock": self.options.weapon_sanity_unlock.value,
+            "weapon_sanity_hold": self.options.weapon_sanity_hold.value,
+            "vehicle_logic": self.options.vehicle_logic.value,
+            "ring_link": self.options.ring_link.value,
+            "auto_clear_missions": self.options.auto_clear_missions.value
         }
 
 

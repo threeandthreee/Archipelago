@@ -3,7 +3,8 @@ Option definitions for Final Fantasy Tactics Advance
 """
 from typing import Dict, Iterable, Any, Union
 from dataclasses import dataclass
-from Options import Choice, DefaultOnToggle, Option, OptionSet, Range, Toggle, FreeText, DeathLink, PerGameCommonOptions, NamedRange, OptionList
+from Options import (Choice, DefaultOnToggle, Option, OptionSet, Range, Toggle, FreeText, DeathLink, PerGameCommonOptions,
+                     NamedRange, OptionList, TextChoice)
 from copy import deepcopy
 from .items import itemGroups, ShopItem
 from Utils import is_iterable_except_str, get_fuzzy_results
@@ -270,7 +271,6 @@ class StartingSpecialChance(Range):
     default = 0
     range_start = 0
     range_end = 10
-
 
 class StartingUnitEquip(Choice):
     """

@@ -1,14 +1,18 @@
-from math import ceil
+import typing
+from math import ceil, floor
 
-from BaseClasses import MultiWorld
+from BaseClasses import MultiWorld, Region, Entrance
 from worlds.AutoWorld import World
 from worlds.generic.Rules import add_rule
-from worlds.shadow_the_hedgehog import Items, Levels, LEVEL_ID_TO_LEVEL, CharacterToLevel, ITEM_TOKEN_TYPE_FINAL, \
-    MISSION_ALIGNMENT_DARK, MISSION_ALIGNMENT_HERO, MISSION_ALIGNMENT_NEUTRAL, ITEM_TOKEN_TYPE_OBJECTIVE, \
-    ITEM_TOKEN_TYPE_STANDARD, ITEM_TOKEN_TYPE_ALIGNMENT
-from worlds.shadow_the_hedgehog.Items import ShadowTheHedgehogItem, GetLevelTokenItems
-from worlds.shadow_the_hedgehog.Locations import MissionClearLocations, GetAllLocationInfo, LocationInfo
-from worlds.shadow_the_hedgehog.Regions import character_name_to_region, stage_id_to_region, region_name_for_character
+from . import Items, Levels, LEVEL_ID_TO_LEVEL, CharacterToLevel, ITEM_TOKEN_TYPE_FINAL, \
+    MISSION_ALIGNMENT_DARK, MISSION_ALIGNMENT_HERO, ITEM_TOKEN_TYPE_OBJECTIVE, \
+    ITEM_TOKEN_TYPE_STANDARD, ITEM_TOKEN_TYPE_ALIGNMENT, Utils, REGION_RESTRICTION_TYPES, Weapons, Regions, LevelRegion, \
+    GetLevelObjectNames, Vehicle
+from .Items import ShadowTheHedgehogItem, GetLevelTokenItems
+from .Locations import MissionClearLocations, LocationInfo
+from .Regions import character_name_to_region, stage_id_to_region, region_name_for_character, weapon_name_to_region, \
+    region_name_for_weapon
+
 
 def GetRelevantTokenItem(token: LocationInfo):
     level_token_items = GetLevelTokenItems()
@@ -31,9 +35,85 @@ def GetRelevantTokenItem(token: LocationInfo):
 
     return level_token_items[0]
 
+def handle_path_rules(options, player, additional_level_region):
+    rule = lambda state: True
+    if options.weapon_sanity_unlock and Levels.IsWeaponsanityRestriction(additional_level_region.restrictionType):
+        if additional_level_region.restrictionType == REGION_RESTRICTION_TYPES.Torch:
+            rule = Weapons.GetRuleByWeaponRequirement(player, Weapons.WeaponAttributes.TORCH,
+                                                      additional_level_region.stageId, additional_level_region.fromRegions)
+
+        elif additional_level_region.restrictionType == REGION_RESTRICTION_TYPES.LongRangeGun:
+            rule = Weapons.GetRuleByWeaponRequirement(player, Weapons.WeaponAttributes.LONG_RANGE,
+                                                      additional_level_region.stageId, additional_level_region.fromRegions)
+
+        elif additional_level_region.restrictionType == REGION_RESTRICTION_TYPES.Vacuum:
+            rule = Weapons.GetRuleByWeaponRequirement(player, Weapons.WeaponAttributes.VACUUM,
+                                                      additional_level_region.stageId, additional_level_region.fromRegions)
+
+        elif additional_level_region.restrictionType == REGION_RESTRICTION_TYPES.Gun:
+            rule = Weapons.GetRuleByWeaponRequirement(player, Weapons.WeaponAttributes.SHOT,
+                                                      additional_level_region.stageId, additional_level_region.fromRegions)
+
+        elif additional_level_region.restrictionType == REGION_RESTRICTION_TYPES.Heal:
+            rule = Weapons.GetRuleByWeaponRequirement(player, Weapons.WeaponAttributes.HEAL,
+                                                      additional_level_region.stageId, additional_level_region.fromRegions)
+
+        else:
+            print("Unhandled restriction",additional_level_region.restrictionType, additional_level_region )
+
+    elif options.vehicle_logic and Levels.IsVeichleSanityRestriction(additional_level_region.restrictionType):
+        if additional_level_region.restrictionType == REGION_RESTRICTION_TYPES.BlackArmsTurret:
+            rule = Vehicle.GetRuleByVehicleRequirement(player, "Black Turret")
+        elif additional_level_region.restrictionType == REGION_RESTRICTION_TYPES.Car:
+            rule = Vehicle.GetRuleByVehicleRequirement(player, "Standard Car")
+        elif additional_level_region.restrictionType == REGION_RESTRICTION_TYPES.BlackVolt:
+            rule = Vehicle.GetRuleByVehicleRequirement(player, "Black Volt")
+        elif additional_level_region.restrictionType == REGION_RESTRICTION_TYPES.BlackHawk:
+            rule = Vehicle.GetRuleByVehicleRequirement(player, "Black Hawk")
+        elif additional_level_region.restrictionType == REGION_RESTRICTION_TYPES.GunJumper:
+            rule = Vehicle.GetRuleByVehicleRequirement(player, "Gun Jumper")
+        elif additional_level_region.restrictionType == REGION_RESTRICTION_TYPES.AirSaucer:
+            rule = Vehicle.GetRuleByVehicleRequirement(player, "Air Saucer")
+        elif additional_level_region.restrictionType == REGION_RESTRICTION_TYPES.GunLift:
+            rule = Vehicle.GetRuleByVehicleRequirement(player, "Gun Lift")
+        elif additional_level_region.restrictionType == REGION_RESTRICTION_TYPES.GunTurret:
+            rule = Vehicle.GetRuleByVehicleRequirement(player, "Gun Turret")
+
+
+    return rule
+
 def set_rules(multiworld: MultiWorld, world: World, player: int):
 
     token_assignments = {}
+
+    for additional_level_region in Levels.INDIVIDUAL_LEVEL_REGIONS:
+        if LEVEL_ID_TO_LEVEL[additional_level_region.stageId] in world.options.excluded_stages:
+            continue
+
+        from_regions = additional_level_region.fromRegions
+
+        for region_from in from_regions:
+            base_region_name = stage_id_to_region(additional_level_region.stageId, region_from)
+            new_region_name = stage_id_to_region(additional_level_region.stageId, additional_level_region.regionIndex)
+
+            base_region = world.get_region(base_region_name)
+            new_region = world.get_region(new_region_name)
+
+            rule = lambda state: True
+
+            if additional_level_region.restrictionType == REGION_RESTRICTION_TYPES.KeyDoor:
+                last_region_name = Regions.get_max_stage_region_id(additional_level_region.stageId, key=False)
+                last_region = world.get_region(last_region_name)
+                connect(world.player, base_region_name + ">" + str(additional_level_region.stageId) +"_door",
+                        last_region, new_region, rule)
+                continue
+
+            path_rule = handle_path_rules(world.options, player, additional_level_region)
+            if path_rule:
+                rule = path_rule
+
+            connect(world.player, base_region_name+">"+new_region_name,
+                    base_region, new_region, rule)
 
     for clear in MissionClearLocations:
 
@@ -42,24 +122,78 @@ def set_rules(multiworld: MultiWorld, world: World, player: int):
 
         id, name = Levels.GetLevelCompletionNames(clear.stageId, clear.alignmentId)
         try:
-            rule = None
-            if clear.requirement_count != 1:
+            level_rule = lambda state: True
+            rule_change = False
+
+            req_rule = lambda state: True
+            if clear.requirements is not None:
+                for req in clear.requirements:
+                    lr = LevelRegion(clear.stageId, None, req)
+                    req_rule = handle_path_rules(world.options, player, lr)
+                    if req_rule is not None:
+                        level_rule = lambda state, r_rule=req_rule, l_rule=level_rule: (
+                                req_rule(state) and l_rule(state))
+                        rule_change = True
+
+            if clear.getDistribution() is not None:
+                for region_id in clear.getDistribution().keys():
+                    required_region = Regions.stage_id_to_region(clear.stageId, region_id)
+                    new_rule = lambda state, r_region=required_region: state.can_reach_region(r_region, player)
+                    current_rule = level_rule
+                    level_rule = lambda state, l_rule=level_rule, n_rule=new_rule, c_rule=current_rule: n_rule(state) and c_rule(state) and l_rule(state)
+                    rule_change = True
+
+                if clear.requirement_count is not None and world.options.objective_sanity:
+                    percentage = world.options.objective_percentage.value
+                    max_required = Utils.getRequiredCount(clear.requirement_count, percentage, round_method=floor)
+                    total = 1
+                    for region,count in clear.getDistribution().items():
+                        required_region = Regions.stage_id_to_region(clear.stageId, region)
+                        new_rule = lambda state, r_region=required_region: state.can_reach_region(r_region, player)
+                        if req_rule is not None:
+                            new_rule = lambda state, n_rule=new_rule, r_rule=req_rule: n_rule(state) and r_rule(state)
+
+                        for l in range(total, total+count+1):
+                            if l > max_required:
+                                break
+
+                            location_id, objective_location_name = (
+                                GetLevelObjectNames(clear.stageId, clear.alignmentId, clear.mission_object_name,
+                                                    l))
+                            location = multiworld.get_location(objective_location_name, player)
+                            add_rule(location, new_rule)
+
+                        total += count
+
+                        if count > max_required:
+                            break
+
+            if clear.requirement_count is not None:
                 location = multiworld.get_location(name, player)
                 item_name = Items.GetStageAlignmentObject(clear.stageId, clear.alignmentId)
                 if world.options.objective_sanity:
-                    percentage = world.options.objective_item_percentage.value
-                    required_count = ceil(clear.requirement_count * percentage / 100)
-                    rule = lambda state, itemname=item_name, count=required_count: state.has(itemname, player, count=count)
-                    add_rule(location, rule)
+                    required_count = Utils.getRequiredCount(clear.requirement_count,
+                                                      world.options.objective_item_percentage.value, round_method=ceil)
+                    new_rule = lambda state, itemname=item_name, count=required_count: state.has(itemname, player, count=count)
+                    # Does this work as an AND or an OR?
+                    level_rule = lambda state, l_rule=level_rule, n_rule=new_rule: l_rule(state) and n_rule(state)
+                    add_rule(location, level_rule)
+                    rule_change = True
+                elif rule_change:
+                    add_rule(location, level_rule)
 
+            else:
+                location = multiworld.get_location(name, player)
+                if rule_change:
+                    add_rule(location, level_rule)
 
             associated_tokens = [t for t in world.token_locations if
                                  t.alignmentId == clear.alignmentId and
                                  t.stageId == clear.stageId]
             for token in associated_tokens:
                 location = multiworld.get_location(token.name, player)
-                if rule:
-                    add_rule(location, rule)
+                if rule_change:
+                    add_rule(location, level_rule)
                 allocated_item = GetRelevantTokenItem(token)
                 if allocated_item is None:
                     print("Could not resolve:", token)
@@ -71,8 +205,9 @@ def set_rules(multiworld: MultiWorld, world: World, player: int):
                 location.place_locked_item(
                     mw_token_item)
 
-        except KeyError:
+        except KeyError as e:
             # Do nothing for mission locations that do not exist
+            print("Key error in handling!", e)
             pass
 
     for character,stages in CharacterToLevel.items():
@@ -80,10 +215,41 @@ def set_rules(multiworld: MultiWorld, world: World, player: int):
             region_name = character_name_to_region(character)
             region = world.get_region(region_name)
             for stage in stages:
+                region_index = 0
+                if type(stage) is tuple:
+                    region_index = stage[1]
+                    stage = stage[0]
+                    pass
+
                 if LEVEL_ID_TO_LEVEL[stage] in world.options.excluded_stages:
                     continue
-                region_stage = world.get_region(stage_id_to_region(stage))
+                region_stage = world.get_region(stage_id_to_region(stage, region_index))
                 region_stage.connect(region, region_name_for_character(LEVEL_ID_TO_LEVEL[stage], character))
+
+    for weapon in Weapons.WEAPON_INFO:
+        if weapon.name in world.available_weapons:
+            region_name = weapon_name_to_region(weapon.name)
+            region = world.get_region(region_name)
+            for stage in weapon.available_stages:
+                region_index = 0
+                if type(stage) is tuple:
+                    region_index = stage[1]
+                    stage = stage[0]
+                    pass
+
+                if LEVEL_ID_TO_LEVEL[stage] in world.options.excluded_stages:
+                    continue
+
+                rule = lambda state: True
+
+                if world.options.weapon_sanity_unlock:
+                    if (Weapons.WeaponAttributes.SPECIAL in weapon.attributes or
+                            world.options.weapon_sanity_hold == 1):
+                        rule = lambda state, w=weapon.name: state.has(w, player)
+
+                region_stage = world.get_region(stage_id_to_region(stage, region_index))
+                region_stage.connect(region, region_name_for_weapon(LEVEL_ID_TO_LEVEL[stage], weapon.name),
+                                     rule=rule)
 
 
     e = multiworld.get_entrance("final-story-unlock", player)
@@ -129,6 +295,18 @@ def set_rules(multiworld: MultiWorld, world: World, player: int):
 
 def get_token_count(world, type, token_assignments, goal_value):
     count = len(token_assignments[type])
-    goal_req = ceil(count * goal_value / 100)
+    goal_req = Utils.getRequiredCount(count, goal_value, ceil)
     world.required_tokens[type] = goal_req
     return (type, goal_req)
+
+def connect(player: int, name: str,
+            source_region: Region, target_region: Region,
+            rule: typing.Optional[typing.Callable] = None):
+
+    connection = Entrance(player, name, source_region)
+
+    if rule is not None:
+        connection.access_rule = rule
+
+    source_region.exits.append(connection)
+    connection.connect(target_region)

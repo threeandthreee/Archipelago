@@ -23,6 +23,8 @@ item_table = {l: ItemData(1000209000+n, ItemClassification.progression | ItemCla
 
 item_table["Extra turn"] = ItemData(1000208999, ItemClassification.progression)
 item_table["Word Length Bonus"] = ItemData(1000208998, ItemClassification.filler)
+item_table["5 Letters"] = ItemData(1000208997, ItemClassification.progression)
+item_table["5 Bonus Tiles"] = ItemData(1000208996, ItemClassification.progression)
 
 possible_bonuses = ["×3W", "×2W", "×3L", "×2L"]
 bonus_locations = [f"{i},{i}" for i in range(15)] \
@@ -43,6 +45,6 @@ for bl in bonus_locations:
     bonus_item_list.append([f"{pb} {bl}" for pb in possible_bonuses])  # add list
 
 group_table: Dict[str, Set[str]] = {
-    "Tiles": letters,
+    "Letters": letters,
     "Bonuses": [item for sublist in bonus_item_list for item in sublist]
 }

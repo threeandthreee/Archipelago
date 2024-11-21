@@ -1,6 +1,5 @@
 import os
 import pkgutil
-import random
 import struct
 import typing
 from collections.abc import Callable
@@ -389,7 +388,7 @@ def generate_output(world, player: int, output_directory: str, player_names) -> 
             world.special_units.remove(special_unit)
             special_chance = world.options.starting_special_chance.value / 10
             normal_unit_chance = 1 - special_chance
-            unit_selected = random.choices(population=[special_unit, 0x01], weights=[special_chance, normal_unit_chance])
+            unit_selected = world.random.choices(population=[special_unit, 0x01], weights=[special_chance, normal_unit_chance])
 
             patch.write_token(APTokenTypes.WRITE, ffta_data.formations[index].memory,
                               bytes([unit_selected[0]]))
@@ -459,7 +458,7 @@ def generate_output(world, player: int, output_directory: str, player_names) -> 
             if ffta_data.formations[index].formation_type == 0x01:
                 randomize_unit(ffta_data, index, world, patch)
                 master_abilities(ffta_data, index, get_job_abilities(world.randomized_jobs[index]),
-                                 random.randint(1, 10), patch, world)
+                                 world.random.randint(1, 10), patch, world)
 
                 # Disable reaction and support abilities for now
                 #patch.write_token(APTokenTypes.WRITE, ffta_data.formations[index].memory + UnitOffsets.ability_reaction,

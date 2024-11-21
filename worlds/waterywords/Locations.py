@@ -28,12 +28,14 @@ def all_locations_fun(max_score):
     return {f"{i} score": LocData(starting_index + i, "Board", i) for i in range(1, max_score + 1)}
 
 
-def ini_locations(goal_score, max_score, number_of_locations):
+def ini_locations(goal_score, max_score, number_of_locations, packs):
     """
     function that loads in all locations necessary for the game, so based on options.
     will make sure that goal_score and max_score are included locations
     """
     scaling = 2  # parameter that determines how many low-score location there are.
+    if packs:
+        scaling = 1.4
 
     scores = []
     # the scores follow the function int( 1 + (percentage ** scaling) * (max_score-1) )

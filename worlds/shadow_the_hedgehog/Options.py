@@ -1,7 +1,8 @@
 from dataclasses import dataclass
+from math import ceil
 
 from Options import PerGameCommonOptions, Choice, DefaultOnToggle, Toggle, Range, OptionSet
-from worlds.shadow_the_hedgehog import ALL_STAGES, Levels
+from . import Levels
 
 
 class GoalChaosEmeralds(DefaultOnToggle):
@@ -65,14 +66,14 @@ class ObjectivePercentage(Range):
     The remaining items however will still be in the pool.
     When playing without objectsanity, the requirement to finish is reduced also."""
     display_name = "Objective Percentage"
-    range_start = 50
+    range_start = 10
     range_end = 100
     default = 100
 
 class ObjectiveItemPercentage(Range):
     """When playing Objective Sanity, determine the percentage of items required to finish stages."""
-    display_name = "Objective Percentage"
-    range_start = 50
+    display_name = "Objective Item Percentage"
+    range_start = 10
     range_end = 100
     default = 100
 
@@ -99,6 +100,27 @@ class Checkpointsanity(Toggle):
 class CharacterSanity(Toggle):
     """Determines if character checks are enabled"""
     display_name = "Character Sanity"
+
+class WeaponsanityUnlock(Toggle):
+    """Determines whether weapons are required to be obtained from the pool of items."""
+    display_name = "Weapon Sanity Unlock"
+
+class WeaponsanityHold(Choice):
+    """Determines whether game contains checks for legally holding each weapon."""
+    display_name = "Weapon Sanity Hold"
+    option_off = 0  # No checks for holding weapons
+    option_unlocked = 1  # Requires the item to be unlocked to get the check.
+    option_on = 2  # Does not require the item to be unlocked to get the check.
+    default = 0
+
+class VehicleLogic(Toggle):
+    """Determines if vehicle logic is active. Does not currently affect gameplay."""
+    display_name = "Vehicle Logic"
+
+class GaugeFiller(DefaultOnToggle):
+    """Determines if gauge filler is included."""
+    display_name = "Gauge Filler"
+
 
 class EnemySanityPercentage(Range):
     """Determines the percentage of enemysanity checks in a stage to be included."""
@@ -141,6 +163,26 @@ class ExcludedStages(OptionSet):
     default = {}
     valid_keys = [i for i in Levels.LEVEL_ID_TO_LEVEL.values() ]
 
+class ExceedingItemsFiller(Choice):
+    """Determines whether game marks non-required items as progression or not."""
+    display_name = "Exceeding Items Filler"
+    option_off = 0  # Never convert exceeding items into filler
+    option_minimise = 1  # Minimise exceeding items into filler
+    option_always = 2  # Always mark exceeding items as filler
+    default = 0
+
+class RingLink(Toggle):
+    """
+    Whether your in-level ring gain/loss is linked to other players.
+    """
+    display_name = "Ring Link"
+
+class AutoClearMissions(DefaultOnToggle):
+    """
+        Set automatic clears for missions once objective criteria is achieved.
+    """
+    display_name = "Auto Clear Missions"
+
 @dataclass
 class ShadowTheHedgehogOptions(PerGameCommonOptions):
     #goal: Goal
@@ -157,7 +199,7 @@ class ShadowTheHedgehogOptions(PerGameCommonOptions):
     enemy_objective_sanity: EnemyObjectiveSanity
     character_sanity: CharacterSanity
     enemy_sanity: Enemysanity
-    #key_sanity: Keysanity
+    key_sanity: Keysanity
     #door_sanity: Doorsanity
     checkpoint_sanity: Checkpointsanity
     enemy_sanity_percentage: EnemySanityPercentage
@@ -166,3 +208,13 @@ class ShadowTheHedgehogOptions(PerGameCommonOptions):
     force_objective_sanity_max: ForceObjectiveSanityMax
     force_objective_sanity_max_counter: ForceObjectiveSanityMaxCounter
     excluded_stages: ExcludedStages
+    weapon_sanity_unlock: WeaponsanityUnlock
+    weapon_sanity_hold: WeaponsanityHold
+    vehicle_logic: VehicleLogic
+    exceeding_items_filler: ExceedingItemsFiller
+    enable_gauge_items: GaugeFiller
+    ring_link: RingLink
+    auto_clear_missions: AutoClearMissions
+
+
+

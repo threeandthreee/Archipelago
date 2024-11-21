@@ -104,6 +104,11 @@ class FFTAWorld(World):
         self.nu_mou_ability_dict = {}
         self.viera_ability_dict = {}
         self.moogle_ability_dict = {}
+        self.human_abilities = []
+        self.bangaa_abilities = []
+        self.nu_mou_abilities = []
+        self.viera_abilities = []
+        self.moogle_abilities = []
         self.new_human_abilities = []
         self.new_bangaa_abilities = []
         self.new_nu_mou_abilities = []
@@ -963,15 +968,22 @@ class FFTAWorld(World):
         player_names = list(self.multiworld.player_name.values())
         player_names.remove(self.multiworld.player_name[self.player])
 
+        self.human_abilities = human_abilities.copy()
+        self.bangaa_abilities = bangaa_abilities.copy()
+        self.nu_mou_abilities = nu_mou_abilities.copy()
+        self.viera_abilities = viera_abilities.copy()
+        self.moogle_abilities = moogle_abilities.copy()
+
         # Randomize abilities
         if self.options.randomize_abilities == AbilityRandom.option_race:
-            self.random.shuffle(human_abilities)
-            self.random.shuffle(bangaa_abilities)
-            self.random.shuffle(nu_mou_abilities)
-            self.random.shuffle(viera_abilities)
-            self.random.shuffle(moogle_abilities)
+            self.random.shuffle(self.human_abilities)
+            self.random.shuffle(self.bangaa_abilities)
+            self.random.shuffle(self.nu_mou_abilities)
+            self.random.shuffle(self.viera_abilities)
+            self.random.shuffle(self.moogle_abilities)
 
-        self.all_abilities = human_abilities + bangaa_abilities + nu_mou_abilities + viera_abilities + moogle_abilities
+        self.all_abilities = (self.human_abilities + self.bangaa_abilities + self.nu_mou_abilities + self.viera_abilities
+                              + self.moogle_abilities)
 
         length_abilities = len(self.all_abilities)
 

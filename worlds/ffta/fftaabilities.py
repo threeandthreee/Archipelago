@@ -2,7 +2,6 @@ from .data import UnitOffsets, JobID, human_abilities, bangaa_abilities, nu_mou_
     moogle_abilities
 from typing import List, Tuple
 from worlds.Files import APTokenTypes
-import random
 
 
 def set_mastered_ability(address, index, patch) -> None:
@@ -114,7 +113,7 @@ def master_abilities(data, index: int, ability_list: List[Tuple], percent: float
                              3, patch)
 
     # Shuffle the abilities
-    random.shuffle(ability_list)
+    world.random.shuffle(ability_list)
 
     reaction_abilities = []
     support_abilities = []
@@ -162,7 +161,7 @@ def master_abilities(data, index: int, ability_list: List[Tuple], percent: float
     # Add random support and reaction abilities to unit if they have learned the ability
     if len(support_abilities) > 0:
         patch.write_token(APTokenTypes.WRITE, data.formations[index].memory + UnitOffsets.ability_support,
-                          bytes([random.choice(support_abilities)]))
+                          bytes([world.random.choice(support_abilities)]))
 
     else:
         patch.write_token(APTokenTypes.WRITE, data.formations[index].memory + UnitOffsets.ability_support,
@@ -170,7 +169,7 @@ def master_abilities(data, index: int, ability_list: List[Tuple], percent: float
 
     if len(reaction_abilities) > 0:
         patch.write_token(APTokenTypes.WRITE, data.formations[index].memory + UnitOffsets.ability_reaction,
-                          bytes([random.choice(reaction_abilities)]))
+                          bytes([world.random.choice(reaction_abilities)]))
 
     else:
         patch.write_token(APTokenTypes.WRITE, data.formations[index].memory + UnitOffsets.ability_reaction,
