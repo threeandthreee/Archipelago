@@ -159,8 +159,8 @@ class MultiworldInstance():
         if self.process and self.process.is_alive():
             return False
 
+        # Ashipelago customization
         webhook_settings = {"WEBHOOK_URL": self.webhook_url, "WEBHOOK_AUTO_START": self.webhook_autostart, "WEBHOOK_DEBUG": self.webhook_debug}
-
         process = multiprocessing.Process(group=None, target=run_server_process,
                                           args=(self.name, self.ponyconfig, get_static_server_data(),
                                                 self.cert, self.key, self.host,

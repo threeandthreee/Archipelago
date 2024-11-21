@@ -60,6 +60,7 @@ class DBCommandProcessor(ServerCommandProcessor):
 
 class WebHostContext(Context):
     room_id: int
+    # Ashipelago customization
     room_is_tracked: bool
 
     def __init__(self, static_server_data: dict, logger: logging.Logger):
@@ -112,6 +113,7 @@ class WebHostContext(Context):
         self.item_name_groups = {"Archipelago": static_item_name_groups.get("Archipelago", {})}
         self.location_name_groups = {"Archipelago": static_location_name_groups.get("Archipelago", {})}
 
+        # Ashipelago customization
         self.room_is_tracked = multidata["server_options"]["track_in_discord"]
         for game in list(multidata.get("datapackage", {})):
             game_data = multidata["datapackage"][game]
@@ -164,6 +166,7 @@ class WebHostContext(Context):
 
 
 def get_random_port():
+    # Ashipelago customization
     return random.randint(52500, 52700)
 
 
@@ -216,6 +219,7 @@ def set_up_logging(room_id) -> logging.Logger:
     return logger
 
 
+# Ashipelago customization
 def run_server_process(name: str, ponyconfig: dict, static_server_data: dict,
                        cert_file: typing.Optional[str], cert_key_file: typing.Optional[str],
                        host: str, rooms_to_run: multiprocessing.Queue, rooms_shutting_down: multiprocessing.Queue, webhook: dict, admin_password):
@@ -274,24 +278,13 @@ def run_server_process(name: str, ponyconfig: dict, static_server_data: dict,
                         port = socketname[1]
                 if port:
                     ctx.logger.info(f'Hosting game at {host}:{port}')
-                    ctx.admin_password = admin_password
-
 
                     with db_session:
                         room = Room.get(id=ctx.room_id)
                         room.last_port = port
-                        ctx.room_url = urlsafe_b64encode(room.id.bytes).rstrip(b'=').decode('ascii')
-                        ctx.seed_url = urlsafe_b64encode(room.seed.id.bytes).rstrip(b'=').decode('ascii')
 
-                        if ctx.room_is_tracked:
-                            if webhook["WEBHOOK_AUTO_START"]:
-                                ctx.webhook_active = True
-                                ctx.WebhookThread(ctx, webhook["WEBHOOK_URL"], webhook["WEBHOOK_DEBUG"]).start()
-
-                            if room.is_new:
-                                _push_player_list(ctx)
-                                ctx.push_item_information()
-                                room.is_new = webhook["WEBHOOK_DEBUG"]
+                        # Ashipelago customization
+                        ctx.dynx.start_room(room, ctx.room_is_tracked, webhook, admin_password)
                 else:
                     ctx.logger.exception("Could not determine port. Likely hosting failure.")
                 with db_session:
@@ -360,11 +353,3 @@ def run_server_process(name: str, ponyconfig: dict, static_server_data: dict,
             save: typing.Optional[typing.Callable[[], typing.Any]] = getattr(task, "save", None)
             if save:
                 save()
-
-
-def _push_player_list(ctx: Context):
-    player_list = []
-    for player in ctx.player_names.values():
-        player_list.append(player)
-
-    ctx.push_to_webhook({"event": "player_list", "room": ctx.room_url, "seed": ctx.seed_url, "players": player_list})
