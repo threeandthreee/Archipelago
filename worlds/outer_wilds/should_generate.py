@@ -13,10 +13,22 @@ def should_generate_location(category: Optional[str], requires_logsanity: bool, 
 def should_generate(category: Optional[str], options: OuterWildsGameOptions) -> bool:
     if category is None:  # this item/location/connection gets generated no matter what the player options are
         return True
+    elif '&' in category:
+        return all(should_generate(c, options) for c in category.split('&'))
+    elif '|' in category:
+        return any(should_generate(c, options) for c in category.split('|'))
     elif category == 'base':  # is generated unless dlc_only is true
         return options.dlc_only.value == 0
     elif category == 'dlc':  # only generated if enable_eote_dlc is true
         return options.enable_eote_dlc.value == 1
-    elif category == 'base+dlc':  # both base game and dlc must be enabled to generate; used only for victory events
-        return options.enable_eote_dlc.value == 1 and options.dlc_only.value == 0
-    # each story mod will be its own generation category
+    elif category == 'hn1':
+        return options.enable_hn1_mod.value == 1
+    elif category == 'to':
+        return options.enable_outsider_mod.value == 1
+    elif category == 'ac':
+        return options.enable_ac_mod.value == 1
+    elif category == 'hn2':
+        return options.enable_hn2_mod.value == 1
+    elif category == 'fq':
+        return options.enable_fq_mod.value == 1
+    raise ValueError(f'Invalid category: {category}')

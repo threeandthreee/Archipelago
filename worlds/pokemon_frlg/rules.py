@@ -961,6 +961,9 @@ def set_rules(world: "PokemonFRLGWorld") -> None:
         set_rule(get_location("Viridian Gym - Hidden Item Under Giovanni"),
                  lambda state: state.has("Itemfinder", player))
 
+        # Route 10
+        set_rule(get_location("Route 10 - Hidden Item Behind Cuttable Tree"), lambda state: can_cut(state))
+
         # Pokemon Tower
         set_rule(get_location("Pokemon Tower 7F - Hidden Item Under Mr. Fuji"),
                  lambda state: state.has("Itemfinder", player))

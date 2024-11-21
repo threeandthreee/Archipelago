@@ -132,7 +132,7 @@ ORG $C07960
 JML SetAnimSpeed
 
 ORG $C22A35
-JML SaveAPData
+;JML SaveAPData
 
 ORG $C14F56
 JML ExtraKeyItems
@@ -223,6 +223,21 @@ JML PrayerReflectIgnore
 
 ORG $C1915F
 JML GetProgressiveGoingtoStorage 
+
+ORG $C2E8ED
+JML GetNewSwirlColorNormal
+
+ORG $C2E91D
+JML GetNewSwirlColorGood
+
+ORG $C2E93A
+JML GetNewSwirlColorBad
+
+ORG $C2E94B
+JML PokeySwirl
+
+ORG $C0F67A
+JML GetSeedPlayer
 ;new jmls
 
 
@@ -379,9 +394,6 @@ db $38
 
 ORG $CF2EF5
 db $38
-
-ORG $CF8E44
-db $00
 
 ORG $C86281
 db $D1
@@ -595,13 +607,13 @@ db $95, $9e, $5c, $10, $15, $50, $1c, $02, $fe, $50, $a3, $95, $9e, $94, $a3, $5
 db $a4, $98, $95, $99, $a2, $50, $a2, $95, $97, $91, $a2, $94, $a3, $51, $13, $02;AP Item join
 
 db $0e, $01, $0d, $01, $1d, $19, $00, $1b, $03, $20, $5e, $c7, $00, $19, $10, $00
-db $0b, $03, $1b, $03, $63, $5e, $c7, $00, $0f, $0a, $05, $5e, $c7, $18, $01, $01
-db $50, $50, $58, $84, $98, $95, $50, $9d, $91, $93, $98, $99, $9e, $95, $50, $91
-db $a0, $a0, $95, $91, $a2, $a3, $50, $99, $9e, $9f, $a0, $95, $a2, $91, $92, $9c
-db $95, $5e, $10, $20, $50, $1c, $02, $03, $50, $9d, $91, $a9, $50, $9b, $9e, $9f
-db $a7, $50, $a7, $98, $91, $a4, $50, $a4, $9f, $50, $94, $9f, $5e, $59, $13, $02
+db $0b, $03, $1b, $03, $63, $5e, $c7, $00, $0f, $0a, $05, $5e, $c7, $10, $20, $1F
+db $02, $76, $10, $03, $18, $01, $01, $19, $10, $01, $1b, $04, $70, $1C, $02, $00
+db $50, $93, $A2, $91, $9d, $9d, $95, $94, $50, $a4, $98, $95, $50, $95, $9e, $97
+db $99, $9e, $95, $50, $99, $9e, $a4, $9f, $50, $a0, $9c, $91, $93, $95, $51, $1D
+db $01, $FF, $9E, $03, $0A, $1D, $F1, $EE, $9f, $50, $94, $9f, $5e, $59, $13, $02
 db $08, $7f, $dc, $c7, $00, $1b, $03, $20, $5e, $c7, $00, $1d, $05, $ff, $9e, $1b
-db $03, $f1, $5e, $c7, $00, $18, $01, $01, $50, $50, $58, $79, $a4, $50, $91, $a0
+db $03, $f2, $5e, $c7, $00, $18, $01, $01, $01, $70, $58, $79, $a4, $50, $91, $a0
 db $a0, $95, $91, $a2, $a3, $50, $a4, $9f, $50, $92, $95, $50, $9d, $99, $a3, $a3
 db $99, $9e, $97, $50, $91, $9e, $50, $95, $9e, $97, $99, $9e, $95, $5e, $5e, $5e
 db $03, $00, $70, $79, $96, $50, $a4, $98, $95, $50, $95, $9e, $97, $99, $9e, $95
@@ -613,14 +625,14 @@ db $01, $04, $30, $00, $0a, $c9, $1c, $c9, $00; Broken sky runner
 
 ORG $C91D5E
 db $70, $7c, $9f, $9f, $9b, $a3, $50, $9c, $99, $9b, $95, $50, $99, $a4, $57, $a3, $50
-db $a2, $95, $91, $94, $a9, $50, $a4, $9f, $50, $97, $9f, $50, $a4, $9f, $50, $83
-db $a5, $9d, $9d, $95, $a2, $a3, $5e, $03, $00, $70, $0a, $33, $1e, $c9, $00;Fixed Sky Runner
+db $a2, $95, $91, $94, $a9, $50, $a4, $9f, $50, $97, $9f, $50, $a4, $9f, $50, $87
+db $99, $9e, $a4, $95, $a2, $a3, $5e, $03, $00, $70, $0a, $33, $1e, $c9, $00;Fixed Sky Runner
 
 ORG $C91CC1
 db $0A, $03,$5E,$C7,$00
 
 ORG $C91E94
-db $ed, $1d, $05, $ff, $9e, $1d, $01, $ff, $9e, $0A, $2C, $20, $C9, $00
+;db $ed, $1d, $05, $ff, $9e, $1d, $01, $ff, $9e, $0A, $2C, $20, $C9, $00
 
 ORG $CFA949
 db $47,$00,$01
@@ -1602,7 +1614,7 @@ ORG $CFB284
 db $B2, $01, $02; Saturn in lab
 
 ORG $CF7459
-db $01, $00, $69, $02, $68, $98
+db $02, $00, $69, $02, $68, $98, $BB, $00
 
 ORG $CFB275
 db $00
@@ -2620,29 +2632,29 @@ db $a9, $5c, $50, $91, $50, $83, $a4, $91, $a2, $50, $7d, $91, $a3, $a4, $95, $a
 db $50, $a3, $a7, $9f, $9f, $a0, $95, $94, $50, $99, $9e, $51, $02, $70, $1c, $02
 db $02, $50, $a0, $a2, $91, $a9, $95, $94, $50, $96, $a2, $9f, $9d, $50, $a4, $98
 db $95, $50, $92, $9f, $a4, $a4, $9f, $9d, $50, $9f, $96, $50, $98, $95, $a2, $50
-db $98, $95, $91, $a2, $a4, $51, $1f, $02, $1c, $14, $00, $70, $7d, $91, $a3, $a4
-db $95, $a2, $50, $72, $91, $a2, $96, $50, $a3, $91, $9e, $9b, $50, $99, $9e, $a4
+db $98, $95, $91, $a2, $a4, $51, $1f, $02, $1c, $14, $00, $70, $1C, $0E, $0A, $F7
+db $C3, $EE, $50, $72, $91, $a2, $96, $50, $a3, $91, $9e, $9b, $50, $99, $9e, $a4
 db $9f, $50, $a4, $98, $95, $50, $a3, $a7, $91, $9d, $a0, $51, $10, $20, $02, $00
 db $70, $1c, $02, $03, $50, $96, $99, $a2, $95, $94, $50, $a4, $98, $95, $50, $85
 db $9c, $a4, $a2, $91, $50, $7d, $95, $97, $91, $50, $72, $91, $aa, $9f, $9f, $9b
-db $91, $51, $1f, $02, $4a, $10, $10, $1f, $02, $1f, $10, $30, $02, $00, $70, $1c
-db $02, $04, $50, $a4, $a2, $99, $95, $94, $50, $80, $83, $79, $50, $83, $a4, $91
-db $a2, $a3, $a4, $9f, $a2, $9d, $51, $14, $1f, $02, $40, $1c, $13, $ff, $1f, $10
-db $0a, $1f, $02, $40, $10, $32, $1c, $13, $2d, $00, $1f, $02, $5b, $10, $07, $1f
-db $02, $5b, $10, $0f, $1f, $02, $5b, $10, $07, $1f, $02, $5b, $10, $07, $1f, $02
-db $5b, $10, $07, $1f, $02, $5b, $10, $07, $1f, $02, $5b, $10, $07, $1f, $02, $5b
-db $10, $20, $02, $02, $00, $70, $1c, $02, $0b, $50, $94, $99, $94, $50, $91, $50
+db $91, $51, $1f, $02, $4a, $10, $10, $1f, $02, $1f, $10, $30, $02, $00, $08, $3b
+db $74, $ef, $ff, $70, $1f, $02, $37, $1c, $02, $04, $50, $a4, $a2, $99, $95, $94
+db $50, $01, $50, $50, $1c, $12, $15, $51, $08, $82, $88, $ef, $ff, $02, $00, $00
+db $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
+db $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
+db $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
+db $00, $00, $00, $02, $00, $70, $1c, $02, $0b, $50, $94, $99, $94, $50, $91, $50
 db $9d, $91, $93, $98, $9f, $50, $93, $9f, $9d, $92, $9f, $50, $9b, $99, $93, $9b
 db $51, $14, $02, $00, $70, $84, $98, $95, $50, $a0, $99, $aa, $aa, $91, $50, $97
 db $a5, $a9, $50, $a4, $98, $a2, $95, $a7, $50, $a3, $93, $91, $9c, $94, $99, $9e
-db $97, $50, $98, $9f, $a4, $50, $a0, $99, $aa, $aa, $91, $50, $91, $a4, $50, $7d
-db $91, $a3, $a4, $95, $a2, $50, $72, $91, $a2, $96, $51, $1f, $02, $11, $10, $30
+db $97, $50, $98, $9f, $a4, $50, $a0, $99, $aa, $aa, $91, $50, $91, $a4, $50, $1C
+db $0D, $0A, $EA, $C4, $EE, $50, $72, $91, $a2, $96, $51, $1f, $02, $11, $10, $30
 db $1f, $02, $2f, $10, $20, $02, $00, $70, $83, $a4, $91, $a2, $50, $7d, $91, $a3
-db $a4, $95, $a2, $50, $a4, $a2, $99, $95, $94, $50, $80, $83, $79, $50, $83, $a4
-db $91, $a2, $a3, $a4, $9f, $a2, $9d, $51, $14, $1c, $13, $00, $20, $10, $14, $1f
-db $02, $40, $10, $28, $1c, $13, $2d, $00, $10, $18, $1f, $02, $40, $1f, $02, $5b
-db $10, $13, $1f, $02, $5b, $10, $0f, $1f, $02, $5b, $10, $0f, $1f, $02, $5b, $10
-db $0b, $1f, $02, $5b, $10, $04, $1f, $02, $5b, $02; Master Barf defeat text
+db $a4, $95, $a2, $50, $a4, $a2, $99, $95, $94, $50, $1c, $12, $16, $51, $1f, $02
+db $37, $10, $10, $08, $b8, $88, $ef, $ff, $02, $00, $00, $00, $00, $00, $00, $00
+db $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
+db $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
+db $00, $00, $00, $00, $00, $00, $00, $00, $00, $00; Master Barf defeat text
 
 ORG $CF694D
 db $09, $00
@@ -2732,7 +2744,8 @@ db $78, $10, $78, $10, $3c, $1f, $15, $92, $00, $06, $03, $01, $10, $3c, $10, $6
 db $1f, $15, $6a, $00, $7a, $02, $01, $1f, $61, $1f, $41, $0b, $08, $6b, $dd, $c7
 db $00, $1f, $eb, $ff, $06, $1f, $21, $e1, $1f, $00, $00, $5f, $1f, $15, $8f, $00
 db $f8, $02, $01, $1f, $61, $1f, $15, $58, $01, $f9, $02, $01, $1f, $61, $1f, $15
-db $c1, $01, $fa, $02, $01, $1f, $61, $1f, $41, $0c, $1f, $50, $0a, $bc, $a5, $ee; Ending
+db $c1, $01, $fa, $02, $01, $1f, $61, $1f, $41, $0c, $1f, $50, $1F, $EB, $FF, $00
+db $0a, $bc, $a5, $ee, $1F, $21, $51, $0A, $81, $C9, $C9; Ending
 
 
 ORG $C39F17
@@ -3200,10 +3213,10 @@ NormalEvent:
 REP #$20
 PLX
 REP #$31
-PHD
+DEC
 PHA
-JML $C21662
-
+LSR
+JML SetFlagProceed
 PocketStorage:
 LDA $0065
 AND #$00FF
@@ -3343,7 +3356,7 @@ TAY
 LDA #$000F
 LDX #$B570
 MVN $7E20
-
+;storage
 LDA #$0063
 LDX #$B590
 LDY #$7E40
@@ -3418,7 +3431,7 @@ CheckStorageForKeys:
 LDX #$0000
 CheckStorageSlot:
 SEP #$20
-CMP $F700,X
+CMP $B590,X
 REP #$20
 BEQ FoundItemCopy2
 CPX #$0023
@@ -4286,7 +4299,7 @@ db $17, $35, $93, $a4, $17, $c9, $5c, $15, $66, $15, $b1, $6f, $59, $03, $1d, $0
 db $ff, $a6
 
 ORG $C60FE5
-db $04, $2a, $02, $1d, $0e, $00, $8b
+db $01, $01, $01, $1d, $0e, $00, $8b
 
 ORG $C951E3
 db $0A, $2D, $B1, $EE
@@ -4308,6 +4321,13 @@ db $D6
 
 ORG $C6D667
 db $0A, $C2, $B1, $EE
+
+ORG $C61014
+db $83, $9f, $50, $97, $9f, $9f, $94, $50, $9c, $a5, $93, $9b, $50, $a7, $99, $a4
+db $98, $50, $a4, $98, $91, $a4, $5e, $13, $0a, $e4, $10, $c6
+
+ORG $C60FF3
+db $04, $2a, $02;Set the flag
 
 ORG $EEB1C2
 db $1d, $03, $ff, $1b, $02, $7d, $92, $c8, $ff, $1d, $0e, $ff, $01, $08, $b6, $dc
@@ -4920,26 +4940,22 @@ pld
 rtl
 
 RepelEnemies:
-CMP #$04
-BEQ CheckEnemySuppression
-OtherFlag:
-AND $9C08,X
-REP #$20
-JML $C2164F
-CheckEnemySuppression:
-CPX #$0001
+REP #$31
+DEC
+TAY
+CMP #$000A
 BEQ CheckRepels
-BRA OtherFlag
+CheckNormal:
+JML ExitRepelCheck
 CheckRepels:
-REP #$20
 PHA
 LDA $9E3C
 BEQ RepelsEmpty
 PLA
-JML $C21654
+JML ExitRepelCheck_ForceFlagOn
 RepelsEmpty:
 PLA
-BRA OtherFlag
+BRA CheckNormal
 
 GetStartingData:
 PHB
@@ -5915,7 +5931,7 @@ db $0a, $41, $c1, $ee
 ORG $EEC141
 db $70, $79, $50, $a2, $95, $91, $94, $50, $a3, $9f, $9d, $95, $a7, $98, $95, $a2
 db $95, $5c, $10, $0a, $50, $a4, $98, $91, $a4, $50, $a9, $9f, $a5, $50, $93, $91
-db $9e, $50, $91, $92, $a3, $9f, $a2, $92, $50, $a4, $98, $95, $50, $a0, $9f, $a7
+db $9e, $50, $08, $b2, $f0, $ee, $ff, $0a, $98, $c1, $ee, $95, $50, $a0, $9f, $a7
 db $95, $a2, $50, $9f, $96, $50, $a4, $98, $95, $50, $75, $91, $a2, $a4, $98, $50
 db $99, $a4, $a3, $95, $9c, $96, $50, $99, $9e, $a4, $9f, $50, $a9, $9f, $a5, $a2
 db $50, $98, $95, $91, $a2, $a4, $5c, $03, $00, $70, $92, $a9, $50, $a0, $a5, $a2
@@ -5928,7 +5944,7 @@ db $98, $91, $a4, $50, $9d, $95, $91, $9e, $a3, $5e, $13, $02, $70, $9f, $a2, $5
 db $a4, $98, $91, $a4, $50, $a9, $9f, $a5, $50, $93, $91, $9e, $50, $a3, $91, $a6
 db $95, $50, $a4, $98, $95, $50, $a7, $9f, $a2, $9c, $94, $50, $92, $a9, $50, $a0
 db $a5, $a2, $99, $96, $a9, $99, $9e, $97, $50, $62, $50, $9d, $9f, $a2, $95, $5c
-db $13, $02, $70, $91, $9e, $94, $50, $a4, $98, $91, $a4, $50, $a9, $9f, $a5, $50
+db $03, $02, $70, $91, $9e, $94, $50, $a4, $98, $91, $a4, $50, $a9, $9f, $a5, $50
 db $9e, $95, $95, $94, $50, $a4, $9f, $50, $a0, $a5, $a2, $97, $95, $50, $a4, $98
 db $95, $50, $95, $a6, $99, $9c, $50, $96, $a2, $9f, $9d, $50, $a9, $9f, $a5, $a2
 db $50, $9d, $99, $9e, $94, $5c, $03, $01, $02, $70, $9f, $a2, $50, $a4, $98, $91
@@ -6174,7 +6190,7 @@ ORG $CF93D6
 db $69, $00, $01
 
 ORG $CF93D9
-db $3b, $c7, $ee, $00, $d0, $c7, $ee
+db $3b, $c7, $ee, $00, $DF, $EE, $EE
 
 ORG $EEC73B
 db $70, $7f, $9e, $95, $a4, $a4, $6f, $10, $0f, $50, $83, $9f, $a2, $a2, $a9, $5c
@@ -7344,6 +7360,1024 @@ db $CD, $C3; Lumine hole double flag
 ORG $EEA9B6
 db $1d, $0e, $ff, $01, $0a, $ef, $a9, $ee
 
+ORG $C9E2F1
+db $0A, $B5, $EE, $EE
+
+ORG $EEEEB5
+db $04, $C4, $00, $04, $DC, $00, $02
+
+ORG $C87205
+db $9e, $c5, $c7 ;sphinx post-pyramid
+
+ORG $CF8E44
+db $01
+
+ORG $CF8E42
+db $69, $00
+
+ORG $D014C0
+db $80
+;Color Math on swirls
+ORG $C2E989
+;LDX #$007F
+
+ORG $C2E995
+;LDX #$003F
+
+ORG $C5770D
+db $A3, $9F, $A5, $A4, $98
+
+ORG $C57665
+db $a3, $9f, $a5, $a4
+
+;;;;;;;;;;;;;;;;;
+;New battle entry for Heavily Armed Pokey
+ORG $CBD8D2
+db $DC, $00;Battle Background
+
+ORG $D0D5A5
+db $d8, $00;Pokey battle
+
+ORG $D5E533
+db $01
+;;;;;;;;;;;;
+;new entry for Diamond Dog
+ORG $D0DF70
+db $01, $53, $00, $ff
+
+ORG $CBDFFE
+db $37, $01
+
+ORG $D5E688
+db $49
+;;;;;;;;;;;;;;;;;;;;;;;;;
+;entry for giygas phase 2 fix
+ORG $C2C505
+LDA #$0005;Set the group number
+
+ORG $D0D562
+db $00
+
+ORG $D0C63C
+db $00
+
+ORG $CBD8AE
+db $e0, $00, $df, $00
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ORG $C91EAD
+db $0a, $fc, $1e, $c9
+
+ORG $C3CF10
+db $04
+;sky runner event stuff
+
+ORG $C91E56
+db $0A, $60, $F2, $EE
+
+ORG $C3CEFE
+db $D8
+
+ORG $C91F11
+db $1F, $00, $00, $6E
+db $10, $F0, $10, $40, $0A, $FE, $F1, $EE
+
+ORG $CF95F6
+db $EC, $02, $02
+
+ORG $CF95F1
+db $0D
+
+ORG $CF6C31
+db $03; Remove sky runner npc from Onett
+
+ORG $C6BBF9
+db $0A, $24, $F2, $EE
+
+;;;;;;;;;
+ORG $EFA455
+db $0A, $3A, $F1, $EE
+;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Frank
+ORG $C65F1F
+db $08, $bc, $ee, $ee
+
+ORG $C65F10
+db $08, $bc, $ee, $ee
+
+ORG $C66481
+db $08, $bc, $ee, $ee
+
+ORG $C660C4
+db $08, $bc, $ee, $ee
+
+ORG $C66110
+db $08, $bc, $ee, $ee
+
+ORG $C66197
+db $08, $bc, $ee, $ee
+
+ORG $C661AB
+db $08, $bc, $ee, $ee
+
+ORG $C746E1
+db $08, $bc, $ee, $ee
+
+ORG $C74BC0
+db $08, $bc, $ee, $ee
+
+ORG $C74E1C
+db $08, $bc, $ee, $ee
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;FSTM2
+ORG $C66145
+db $08, $bc, $ee, $ee, $ff, $0a, $56, $61, $c6
+
+ORG $C6648A
+db $08, $bc, $ee, $ee, $ff, $0a, $9b, $64, $c6
+
+ORG $C664FB
+db $08, $bc, $ee, $ee, $ff, $0a, $0c, $65, $c6
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Captain Strong
+ORG $C5FC28
+db $50, $50, $08, $bc, $ee, $ee, $ff
+
+ORG $C5FC58
+db $08, $bc, $ee, $ee, $ff, $0a, $65, $fc, $c5
+
+ORG $C5FCF6
+db $08, $bc, $ee, $ee, $ff, $0f
+
+ORG $C65F87
+db $08, $bc, $ee, $ee, $ff, $0f
+
+ORG $C66084
+db $08, $bc, $ee, $ee, $ff, $0f
+;;;;;;;;;;;;;;;;
+;Everdred
+ORG $C95C6F
+db $08, $bc, $ee, $ee, $ff, $0f
+
+ORG $C8065C
+db $0a, $e9, $ee, $ee
+;;;;;;;;;;;;;;;;;;;
+;Carpainter
+ORG $C993DA
+db $08, $bc, $ee, $ee, $ff, $0a, $e3, $93, $c9
+
+ORG $C9945D
+db $08, $bc, $ee, $ee, $ff, $0a, $66, $94, $c9
+
+ORG $C99310
+db $08, $bc, $ee, $ee, $ff, $0a, $19, $93, $c9
+
+ORG $C99363
+db $08, $bc, $ee, $ee, $ff, $0a, $6c, $93, $c9
+
+ORG $C990D9
+db $08, $bc, $ee, $ee, $ff, $0f, $0f
+
+ORG $C98EF5
+db $08, $bc, $ee, $ee, $ff, $0a, $fe, $8e, $c9
+
+ORG $C99142
+db $08, $bc, $ee, $ee, $ff, $0a, $4b, $91, $c9
+
+ORG $C99027
+db $08, $bc, $ee, $ee, $ff, $0a, $30, $90, $c9
+
+ORG $C983BA
+db $08, $bc, $ee, $ee, $ff, $0a, $c3, $83, $c9
+
+ORG $C9840B
+db $08, $bc, $ee, $ee, $ff, $0a, $14, $84, $c9
+
+ORG $C9835A
+db $08, $bc, $ee, $ee, $ff, $0a, $63, $83, $c9
+
+ORG $C684CF
+db $08, $bc, $ee, $ee, $ff, $0f, $0f
+
+ORG $C9056E
+db $08, $bc, $ee, $ee, $ff, $0a, $77, $05, $c9
+
+ORG $C794EB
+db $08, $bc, $ee, $ee, $ff, $0a, $f4, $94, $c7
+;;;;;;;;;;;;;
+;Belch
+ORG $C8EF20
+db $08, $bc, $ee, $ee, $ff
+
+ORG $C8EF37
+db $08, $bc, $ee, $ee, $ff
+
+ORG $EF6296
+db $08, $bc, $ee, $ee, $ff, $0a, $9f, $62, $ef
+
+ORG $EF62B2
+db $08, $bc, $ee, $ee, $ff, $0a, $bb, $62, $ef
+
+ORG $EF690F
+db $08, $bc, $ee, $ee, $ff, $0a, $18, $69, $ef
+
+ORG $EF6972
+db $08, $bc, $ee, $ee, $ff, $0a, $7b, $69, $ef
+
+
+
+;Mani Mani
+ORG $C978AC
+db $08, $bc, $ee, $ee, $ff, $50, $99, $a3, $50, $0a, $bb, $78, $c9
+
+ORG $C9782C
+db $08, $bc, $ee, $ee, $ff, $50, $99, $a3, $50, $0a, $3b, $78, $c9
+
+ORG $C97997
+db $08, $bc, $ee, $ee, $ff, $0a, $a3, $79, $c9, $c9
+
+
+;;;;;;;;;;;;;;;
+;Kraken
+ORG $C86060
+db $08, $bc, $ee, $ee, $ff
+
+ORG $C86138
+db $08, $bc, $ee, $ee, $ff
+
+ORG $C8B42F
+db $08, $bc, $ee, $ee
+
+ORG $C8B8B3
+db $08, $bc, $ee, $ee, $ff
+
+ORG $C8B6FB
+db $08, $bc, $ee, $ee, $ff
+
+ORG $C8B590
+db $08, $bc, $ee, $ee, $ff, $0f
+
+ORG $C9AB2A
+db $08, $bc, $ee, $ee, $ff
+
+ORG $C92D4C
+db $08, $bc, $ee, $ee, $ff
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Master Belch
+ORG $C9E64C
+db $08, $bc, $ee, $ee, $ff
+
+ORG $C9E68F
+db $08, $bc, $ee, $ee, $ff
+
+ORG $C9E6C1
+db $0a, $d4, $ee, $ee, $FF
+
+;;;;;;;;;;;;;
+;Starman DX
+ORG $C92C28
+db $08, $bc, $ee, $ee, $ff, $0a, $31, $2c, $c9
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Pokey
+ORG $C57E39
+db $0a, $c2, $ee, $ee
+
+ORG $C57E57
+db $0a, $cb, $ee, $ee
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ORG $C8FC59
+db $0A, $9C, $F0, $EE
+
+ORG $C57F4A
+db $0A, $A7, $F0, $EE
+
+
+ORG $C76186
+db $0A
+dl tracy_backpack_tex
+
+ORG $C64690
+dl tracy_backpack_twice_tex
+
+ORG $C6AE42
+db $0A
+dl winters_drugstore_space
+
+ORG $C6AEA3
+db $0A
+dl winters_drugstore_space2
+
+
+;;;;;;;;;;;;;;;
+;hint stuff
+
+ORG $CF8C25
+dl onett_hint_man ;Onett hint guy text pointer
+
+ORG $CF9C04
+dl twoson_hint_man
+
+ORG $CFAB6C
+dl threed_hint_man
+
+ORG $CFC9F8
+dl fourside_hint_man
+
+ORG $CFD0AD
+dl summers_hint_man
+
+ORG $CFD61F
+dl scaraba_hint_man
+
+ORG $C726D8
+db $02
+
+ORG $C701A0
+db $49
+
+ORG $C701C6
+db $08
+dd display_hint_price
+db $0F
+
+ORG $C7032E
+db $70, $87, $9f, $a2, $94, $50, $9f, $9e, $50, $a4, $98, $95, $50, $a3, $a4, $a2
+db $95, $95, $a4, $50, $99, $a3, $50, $a4, $98, $91, $a4, $50
+
+db $06, $05, $04
+dd display_onett_hint
+
+db $06, $06, $04
+dd display_twoson_hint
+
+db $06, $07, $04
+dd display_threed_hint
+
+db $06, $08, $04
+dd display_fourside_hint
+
+db $06, $09, $04
+dd display_summers_hint
+
+db $06, $0A, $04
+dd display_scaraba_hint
+db $02
+
+display_onett_hint:
+db $08
+dd hint_error_message;replace with generated pointer
+db $03
+db $08
+dd push_onett_hint; replace with a $02 if not pushable
+db $06, $F9, $03
+dd .onett_hint_twice
+db $08
+dd count_hints
+.onett_hint_twice:
+db $04, $F9, $03
+db $01
+db $06, $04, $04
+dd $C72348 ;Direct here if we're out of hints
+dd $C726CC08
+db $FF
+db $03, $01
+db $08
+dd post_hint_text
+db $05, $05, $04
+db $02
+
+display_twoson_hint:
+db $08
+dd hint_error_message;replace with generated pointer
+db $03
+db $08
+dd push_twoson_hint; replace with a $02 if not pushable
+db $06, $FA, $03
+dd .twoson_hint_twice
+db $08
+dd count_hints
+.twoson_hint_twice:
+db $04, $FA, $03
+db $01
+db $06, $04, $04
+dd $C72348 ;Direct here if we're out of hints
+dd $C726CC08
+db $FF
+db $03, $01
+db $08
+dd post_hint_text
+db $05, $06, $04
+db $02
+
+display_threed_hint:
+db $08
+dd hint_error_message;replace with generated pointer
+db $03
+db $08
+dd push_threed_hint; replace with a $02 if not pushable
+db $06, $FB, $03
+dd .threed_hint_twice
+db $08
+dd count_hints
+.threed_hint_twice:
+db $04, $FB, $03
+db $01
+db $06, $04, $04
+dd $C72348 ;Direct here if we're out of hints
+dd $C726CC08
+db $FF
+db $03, $01
+db $08
+dd post_hint_text
+db $05, $07, $04
+db $02
+
+display_fourside_hint:
+db $08
+dd hint_error_message;replace with generated pointer
+db $03
+db $08
+dd push_fourside_hint; replace with a $02 if not pushable
+db $06, $FC, $03
+dd .fourside_hint_twice
+db $08
+dd count_hints
+.fourside_hint_twice:
+db $04, $FC, $03
+db $01
+db $06, $04, $04
+dd $C72348 ;Direct here if we're out of hints
+dd $C726CC08
+db $FF
+db $03, $01
+db $08
+dd post_hint_text
+db $05, $08, $04
+db $02
+
+display_summers_hint:
+db $08
+dd hint_error_message;replace with generated pointer
+db $03
+db $08
+dd push_summers_hint; replace with a $02 if not pushable
+db $06, $FD, $03
+dd .summers_hint_twice
+db $08
+dd count_hints
+.summers_hint_twice:
+db $04, $FD, $03
+db $01
+db $06, $04, $04
+dd $C72348 ;Direct here if we're out of hints
+dd $C726CC08
+db $FF
+db $03, $01
+db $08
+dd post_hint_text
+db $05, $09, $04
+db $02
+
+display_scaraba_hint:
+db $08
+dd hint_error_message;replace with generated pointer
+db $03
+db $08
+dd push_scaraba_hint; replace with a $02 if not pushable
+db $06, $FE, $03
+dd .scaraba_hint_twice
+db $08
+dd count_hints
+.scaraba_hint_twice:
+db $04, $FE, $03
+db $01
+db $06, $04, $04
+dd $C72348 ;Direct here if we're out of hints
+dd $C726CC08
+db $FF
+db $03, $01
+db $08
+dd post_hint_text
+db $05, $0A, $04
+db $02
+
+
+;;;;;;;;;;;;;boss names
+ORG $EEEEBC
+db $76, $a2, $91, $9e, $9b, $02; Frank
+
+db $08, $bc, $ee, $ee, $ff, $0a, $3d, $7e, $c5; Pokey name text
+db $08, $bc, $ee, $ee, $ff, $0a, $5B, $7e, $c5; Pokey name text
+db $50, $50, $08, $bc, $ee, $ee, $ff, $0a, $c7, $e6, $c9; Belch Name next
+
+db $05, $27, $00, $05, $C2, $01, $0A, $D0, $C7, $EE
+
+db $08, $bc, $ee, $ee, $ff, $50, $9f, $96, $50, $0a, $64, $06, $c8
+
+db $76, $A2, $91, $9E, $9B, $A9, $A3, $A4, $95, $99, $9E, $50, $7D, $91, $A2, $9B
+db $50, $79, $79, $02;Frankystein Mark II
+
+db $76, $a2, $91, $9e, $9b, $a9, $a3, $a4, $95, $99, $9e, $02;Frankystein
+
+db $84, $99, $A4, $91, $9E, $99, $93, $50, $71, $9E, $A4, $02; Titanic Ant
+
+db $73, $91, $a0, $a4, $91, $99, $9e, $50, $83, $a4, $a2, $9f, $9e, $97, $02;Captain Strong
+
+db $75, $a6, $95, $a2, $94, $a2, $95, $94, $02;Everdred
+
+db $7d, $a2, $5e, $50, $73, $91, $a2, $a0, $91, $99, $9e, $a4, $95, $a2, $02;Carpainter
+
+db $7d, $9f, $9e, $94, $9f, $50, $7d, $9f, $9c, $95, $02;Mondo Mole
+
+db $72, $9f, $9f, $97, $95, $a9, $50, $84, $95, $9e, $a4, $02;Boogey Tent
+
+db $7d, $99, $9e, $99, $50, $72, $91, $a2, $96, $02; Mini Barf
+
+db $7d, $91, $a3, $a4, $95, $a2, $50, $72, $95, $9c, $93, $98, $02;Belch
+
+db $84, $a2, $99, $9c, $9c, $99, $9f, $9e, $91, $97, $95, $50, $83, $a0, $a2, $9f
+db $a5, $a4, $02;Trillionage sprout
+
+db $77, $a5, $91, $a2, $94, $99, $91, $9e, $50, $74, $99, $97, $97, $95, $a2, $02;uardian digger
+
+db $74, $95, $a0, $a4, $5e, $50, $83, $a4, $9f, $a2, $95, $50, $83, $a0, $9f, $9f
+db $9b, $02;Dept store
+
+db $a4, $98, $95, $50, $7d, $91, $9e, $99, $50, $7d, $91, $9e, $99, $50, $83, $a4
+db $91, $a4, $a5, $95, $02;MMS
+
+db $7d, $91, $9e, $99, $50, $7d, $91, $9e, $99, $02;Mani Mani
+
+db $73, $9c, $a5, $9d, $a3, $a9, $50, $82, $9f, $92, $9f, $a4, $02;Clumsy Robot
+
+db $83, $98, $a2, $9f, $9f, $9f, $9d, $02;Shroom
+
+db $80, $9c, $91, $97, $a5, $95, $50, $82, $91, $a4, $50, $9f, $96, $50, $74, $9f
+db $9f, $9d, $02;Rat
+
+db $84, $98, $a5, $9e, $94, $95, $a2, $50, $91, $9e, $94, $50, $83, $a4, $9f, $a2
+db $9d, $02;Thunderstorm
+
+db $7b, $a2, $91, $9b, $95, $9e, $02;Kraken
+
+db $77, $a5, $91, $a2, $94, $99, $91, $9e, $50, $77, $95, $9e, $95, $a2, $91, $9c
+db $02;General
+
+db $7d, $91, $a3, $a4, $95, $a2, $50, $72, $91, $a2, $96, $02;Barf
+
+db $83, $a4, $91, $a2, $9d, $91, $9e, $50, $74, $88, $02;DX
+
+db $74, $95, $9C, $A5, $A8, $95, $02;Deluxe
+
+db $75, $9C, $95, $93, $A4, $A2, $9F, $50, $83, $A0, $95, $93, $A4, $95, $A2, $02;Specter
+
+db $73, $91, $a2, $92, $9f, $9e, $50, $74, $9f, $97, $02;Carbon Dog
+
+db $78, $95, $91, $a6, $99, $9c, $a9, $50, $71, $a2, $9d, $95, $94, $50, $80, $9f
+db $9b, $95, $a9, $02;Heavily Pokey
+
+db $1c, $02, $01, $57, $a3, $50, $7e, $99, $97, $98, $a4, $9d, $91, $a2, $95, $02;Nightmare
+
+db $83, $a4, $91, $a2, $9d, $91, $9e, $50, $7a, $a5, $9e, $99, $9f, $a2, $02;Junior
+
+db $74, $99, $91, $9d, $9f, $9e, $94, $50, $74, $9f, $97, $02;Diamond Dog
+
+db $77, $99, $A9, $97, $91, $A3, $02; giygas
+
+db $00, $70, $08, $bc, $ee, $ee, $ff, $0a, $5d, $fc, $c8
+
+db $50, $08, $bc, $ee, $ee, $ff, $5e, $0a, $4e, $7f, $c5
+;;;;;;;;;;;;;;;;;;;;;;;;
+;Absorb the power of the earth
+db $91, $92, $a3, $9f, $a2, $92, $50, $a4, $98, $95, $50, $a0, $9f, $a7, $95, $a2
+db $50, $9f, $96, $50, $a4, $98, $95, $50, $75, $91, $a2, $a4, $98, $50, $99, $a4
+db $a3, $95, $9c, $96, $50, $99, $9e, $a4, $9f, $50, $a9, $9f, $a5, $a2, $50, $98
+db $95, $91, $a2, $a4, $5c, $02
+
+;Purge giygas's evil
+db $a0, $a5, $a2, $97, $95, $50, $77, $99, $a9, $97, $91, $a3, $57, $a3, $50, $95
+db $a6, $99, $9c, $50, $96, $a2, $9f, $9d, $50, $a4, $98, $95, $50, $a7, $9f, $a2
+db $9c, $94, $50, $9f, $9e, $93, $95, $50, $91, $9e, $94, $50, $96, $9f, $a2, $50
+db $91, $9c, $9c, $5c, $02
+
+db $18, $04
+;patch moves stuff here
+
+
+ORG $EEF136
+db $0A, $42, $1E, $C9
+
+display_melodies:
+db $93, $9b, $6a, $18, $05, $4e, $00, $07, $b6, $00, $1B, $03
+dd .has_giant_step
+db $08
+dd .display_dot
+db $0A
+dl .check_lilliput
+.has_giant_step:
+db $08
+dd .display_melody
+.check_lilliput:
+db $07, $B7, $00, $1B, $03
+dd .has_lilliput_steps
+db $08
+dd .display_dot
+db $0A
+dl .check_milky
+.has_lilliput_steps:
+db $08
+dd .display_melody
+.check_milky
+db $07, $B9, $00, $1B, $03
+dd .has_milky_well
+db $08
+dd .display_dot
+db $0A
+dl .check_rainy_circle
+.has_milky_well:
+db $08
+dd .display_melody
+.check_rainy_circle:
+db $07, $b8, $00, $1B, $03
+dd .has_rainy_circle
+db $08
+dd .display_dot
+db $0A
+dl .check_magnet_hill
+.has_rainy_circle:
+db $08
+dd .display_melody
+.check_magnet_hill:
+db $07, $BA, $00, $1B, $03
+dd .has_magnet_hill
+db $08
+dd .display_dot
+db $0A
+dl .check_pink_cloud
+.has_magnet_hill:
+db $08
+dd .display_melody
+.check_pink_cloud:
+db $07, $BB, $00, $1b, $03
+dd .has_pink_cloud
+db $08
+dd .display_dot
+db $0A
+dl .check_lumine_hall
+.has_pink_cloud:
+db $08
+dd .display_melody
+.check_lumine_hall:
+db $07, $BC, $00, $1B, $03
+dd .has_lumine_hall
+db $08
+dd .display_dot
+db $0A
+dl .check_fire_spring
+.has_lumine_hall:
+db $08
+dd .display_melody
+.check_fire_spring:
+db $07, $BD, $00, $1B, $03
+dd .has_fire_spring
+db $08
+dd .display_dot
+db $0A
+dl .done_melodies
+.has_fire_spring:
+db $08
+dd .display_melody
+.done_melodies:
+db $02
+
+.display_dot:
+db $70, $02
+
+.display_melody:
+db $AC, $02
+;;;;;;;;;;;;;;;;;;;;
+;sky runner stuff
+db $1F, $E5, $FF
+db $04, $EC, $02
+db $05, $8F, $02
+db $1F, $21, $DA
+db $10, $30
+db $1F, $1E, $BB, $00, $00, $10, $02
+db $1F, $EC, $FF, $00
+db $19, $26, $FF
+db $05, $EC, $02;Unset the flag
+db $04, $30, $00; remove the old sky runner
+db $05, $0B, $00
+db $02
+
+db $07, $30, $00, $1b, $02, $00, $bc, $c6, $ff, $06, $76, $02, $77, $b2, $c6, $00
+db $70, $7b, $99, $5d, $9b, $95, $99, $5d, $9b, $a9, $95, $5d, $9b, $a9, $95, $5d
+db $9b, $99, $99, $99, $5e, $03, $00, $70, $58, $89, $95, $a0, $5c, $10, $0f, $50
+db $79, $50, $96, $9f, $a5, $9e, $94, $50, $0a, $22, $bc, $c6
+
+db $1f, $eb, $ff, $06, $04, $0B, $00, $0A, $5A, $1E, $C9
+;;;;;;;;;;;;;;
+;hint guy
+onett_hint_man:
+db $04, $05, $04
+db $06, $f9, $03
+dd $FFC726DA
+dd $C701440A
+
+twoson_hint_man:
+db $04, $06, $04
+db $06, $fA, $03
+dd $FFC726DA
+dd $C7014F0A
+
+threed_hint_man:
+db $04, $07, $04
+db $06, $fB, $03
+dd $FFC726DA
+dd $C7015A0A
+
+fourside_hint_man:
+db $04, $08, $04
+db $06, $fc, $03
+dd $FFC726DA
+dd $C701650A
+
+summers_hint_man:
+db $04, $09, $04
+db $06, $fD, $03
+dd $FFC726DA
+dd $C701760A
+
+scaraba_hint_man:
+db $04, $0A, $04
+db $06, $fe, $03
+dd $FFC726DA
+dd $C701870A
+
+
+
+
+
+display_hint_price:
+
+db $06, $03, $04
+dd bought_five_hints
+
+db $06, $02, $04
+dd bought_four_hints
+
+db $06, $01, $04
+dd bought_three_hints
+
+db $06, $00, $04
+dd bought_two_hints
+
+db $06, $FF, $03
+dd bought_one_hint
+
+db $61, $60, $60
+db $0E, $64
+db $0D, $01, $02
+
+bought_one_hint:
+db $62, $60, $60
+db $0E, $C8
+db $0D, $01, $02
+
+bought_two_hints:
+db $64, $60, $60
+db $08
+dd get_2bytenum_part1
+db $1D, $08, $90, $01
+db $1B, $00, $1D, $09, $90, $01
+db $08
+dd get_2bytenum_part2
+db $02
+
+bought_three_hints:
+db $68, $60, $60
+db $08
+dd get_2bytenum_part1
+db $1D, $08, $20, $03
+db $1B, $00, $1D, $09, $20, $03
+db $08
+dd get_2bytenum_part2
+db $02
+
+bought_four_hints:
+db $61, $66, $60, $60
+db $08
+dd get_2bytenum_part1
+db $1D, $08, $40, $06
+db $1B, $00, $1D, $09, $40, $06
+db $08
+dd get_2bytenum_part2
+db $02
+
+bought_five_hints:
+db $63, $62, $60, $60
+db $08
+dd get_2bytenum_part1
+db $1D, $08, $80, $0C
+db $1B, $00, $1D, $09, $80, $0C
+db $08
+dd get_2bytenum_part2
+db $02
+
+get_2bytenum_part1:
+db $19, $27, $06, $1b, $04, $1d, $09, $00, $00, $02
+
+get_2bytenum_part2:
+db $1d, $08, $00, $00, $1b, $01, $1b, $04, $02
+
+hint_error_message:
+db $a3, $9f, $9d, $95, $a4, $98, $99, $9e, $97, $50, $a7, $95, $9e, $a4, $50, $a4
+db $95, $a2, $a2, $99, $92, $9c, $a9, $50, $a7, $a2, $9f, $9e, $97, $50, $98, $95
+db $a2, $95, $5e, $02
+
+count_hints:
+db $06, $04, $04
+dd .end_hints
+db $06, 03, $04;if we have 5
+dd .set_sixth_hint
+db $06, $02, $04;if we have 4
+dd .set_fifth_hint
+db $06, $01, $04;if we have 3
+dd .set_fourth_hint
+db $06, $00, $04
+dd .set_third_hint; if we have 2
+db $06, $FF, $03
+dd .set_second_hint
+db $04, $FF, $03, $02
+
+
+.set_second_hint:
+db $04, $00, $04
+db $02
+.set_third_hint:
+db $04, $01, $04
+db $02
+.set_fourth_hint:
+db $04, $02, $04
+db $02
+.set_fifth_hint:
+db $04, $03, $04
+db $02
+.set_sixth_hint:
+db $04, $04, $04
+.end_hints:
+db $02
+
+push_onett_hint:
+db $06, $0B, $04
+dd .skip_hint
+db $08
+dd server_hint_text
+db $1B, $02
+dd .skip_hint
+db $04, $0B, $04
+.skip_hint:
+db $02
+
+push_twoson_hint:
+db $06, $0C, $04
+dd .skip_hint
+db $08
+dd server_hint_text
+db $1B, $02
+dd .skip_hint
+db $04, $0C, $04
+.skip_hint:
+db $02
+
+push_threed_hint:
+db $06, $0D, $04
+dd .skip_hint
+db $08
+dd server_hint_text
+db $1B, $02
+dd .skip_hint
+db $04, $0D, $04
+.skip_hint:
+db $02
+
+push_fourside_hint:
+db $06, $0E, $04
+dd .skip_hint
+db $08
+dd server_hint_text
+db $1B, $02
+dd .skip_hint
+db $04, $0E, $04
+.skip_hint:
+db $02
+
+push_summers_hint:
+db $06, $0F, $04
+dd .skip_hint
+db $08
+dd server_hint_text
+db $1B, $02
+dd .skip_hint
+db $04, $0F, $04
+.skip_hint:
+db $02
+
+push_scaraba_hint:
+db $06, $10, $04
+dd .skip_hint
+db $08
+dd server_hint_text
+db $1B, $02
+dd .skip_hint
+db $04, $10, $04
+.skip_hint:
+db $02
+
+
+server_hint_text:
+db $01, $70, $76, $9f, $a2, $50, $91, $9e, $50, $95, $a8, $a4, $a2, $91, $50, $54
+db $65, $60, $60, $5c, $10, $03, $50, $79, $57, $9c, $9c, $50, $a4, $95, $9c, $9c
+db $50, $a4, $98, $95, $50, $a3, $95, $a2, $a6, $95, $a2, $50, $91, $92, $9f, $a5
+db $a4, $50, $a4, $98, $99, $a3, $50, $98, $99, $9e, $a4, $5e, $03, $01, $70, $87
+db $98, $91, $a4, $50, $94, $9f, $50, $a9, $9f, $a5, $50, $a3, $91, $a9, $6f, $01
+db $08, $4d, $dd, $c7, $ff, $11, $12
+
+db $09, $02
+dd pushhint_saidyes
+dd pushhint_no
+
+pushhint_no:
+db $1D, $19, $01
+db $02
+
+pushhint_saidyes:
+db $19, $27, $06, $1b, $04, $1d, $09, $00, $00, $1d, $08, $F4, $01, $1b, $00, $1d
+db $09, $F4, $01, $1d, $08, $00, $00, $1b, $01, $1b, $04
+db $1D, $14, $00, $00, $00, $00
+db $1B, $03
+dd pushhint_nomoney
+db $1D, $09, $00, $00
+db $18, $0A
+db $1F, $02, $78
+db $1D, $19, $FA
+db $02
+pushhint_nomoney:
+db $12, $70, $89, $9f, $a5, $50, $94, $9f, $9e, $57, $a4, $50, $98, $91, $a6, $95
+db $50, $95, $9e, $9f, $a5, $97, $98, $50, $9d, $9f, $9e, $95, $a9, $50, $96, $9f
+db $a2, $50, $a4, $98, $91, $a4, $50, $a0, $91, $93, $9b, $91, $97, $95, $5e, $03
+db $0A
+dd pushhint_no
+
+post_hint_text:
+db $70, $79, $96, $50, $a9, $9f, $a5, $50, $a7, $91, $9e, $a4, $50, $91, $9e, $9f, $a4
+db $98, $95, $a2, $50, $98, $99, $9e, $a4, $5c, $10, $02, $50, $96, $99, $9e, $94
+db $50, $9d, $95, $50, $91, $a4, $50, $9f, $9e, $95, $50, $9f, $96, $50, $9d, $a9
+db $50, $9f, $a4, $98, $95, $a2, $50, $a3, $98, $9f, $a0, $a3, $5e, $13, $02
+
+tracy_backpack_tex:
+db $70, $89, $9f, $a5, $50, $93, $91, $9e, $50, $91, $9c, $a3, $9f, $50, $9c, $95
+db $91, $a6, $95, $50, $91, $9e, $a9, $a4, $98, $99, $9e, $97, $50, $a9, $9f, $a5
+db $50, $94, $9f, $9e, $57, $a4, $50, $9e, $95, $95, $94, $50, $99, $9e, $50, $a9
+db $9f, $a5, $a2, $50, $92, $91, $93, $9b, $a0, $91, $93, $9b, $5e, $03, $01, $70
+db $89, $9f, $a5, $50, $93, $91, $9e, $50, $9f, $a0, $95, $9e, $50, $99, $a4, $50
+db $a7, $99, $a4, $98, $50, $a4, $98, $95, $50, $82, $50, $92, $a5, $a4, $a4, $9f
+db $9e, $51, $13, $02
+
+tracy_backpack_twice_tex:
+db $70, $74, $99, $94, $50, $a9, $9f, $a5, $50, $96, $9f, $a2, $97, $95, $a4, $50
+db $91, $9c, $a2, $95, $91, $94, $a9, $5c, $50, $92, $99, $97, $50, $92, $a2, $9f
+db $6f, $03, $01, $70, $89, $9f, $a5, $50, $93, $91, $9e, $50, $a3, $a4, $9f, $a2
+db $95, $50, $99, $a4, $95, $9d, $a3, $50, $a7, $99, $a4, $98, $50, $a4, $98, $95
+db $50, $82, $50, $92, $a5, $a4, $a4, $9f, $9e, $51, $13, $02
+
+winters_drugstore_space:
+db $08
+dd drugstore_spacecheck
+db $1B, $02
+dd $FFC6AEE1
+dd $C6AE4B0A
+
+winters_drugstore_space2:
+db $08
+dd drugstore_spacecheck
+db $1B, $02
+dd $FFC6AEE1
+dd $C6AEAC0A
+
+drugstore_spacecheck:
+db $1D, $03, $FF, $1B, $02
+dd .no_space
+db $1D, $19, $FE
+db $02
+.no_space:
+db $1D, $19, $01
+db $02
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ORG $C1C84A
 JSR $C80E
@@ -7655,6 +8689,60 @@ LDY #$7317
 JSL goto_bank_c2
 PLY
 RTL
+
+GetNewSwirlColorNormal:
+LDA #$0004
+STA $14
+LDA #$0004
+STA $04
+LDY #$0000
+STY $12
+JML $C2E8F9
+
+GetNewSwirlColorGood:
+LDA #$001C
+STA $14
+LDA #$0005
+STA $04
+LDY #$000C
+STY $12
+LDA #$0006
+JML $C2E92F
+
+GetNewSwirlColorBad:
+LDA #$0000
+STA $14
+LDA #$001F
+STA $04
+LDY #$001F
+STY $12
+JML $C2E944
+
+PokeySwirl:
+LDA $4A8C
+CMP #$000E
+BEQ .BossSwirl
+CMP #$01C0
+BCC .NormalSwirl
+.BossSwirl:
+JML $C2E953
+.NormalSwirl:
+JML $C2E964
+;;;;;;;;;;;;
+;new code go here
+
+GetSeedPlayer:
+PHY
+PHB
+LDA #$0010
+LDX #$FCE0
+LDY #$9801
+MVN $D77E
+PLB
+PLY
+LDX #$9801
+STX $15
+JML $C0F67F
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -9499,7 +10587,7 @@ ORG $FB0771
 
 blast_alpha_anim:
 db $1f, $02, $34, $1c, $13, $00, $37, $10, $17, $1f, $02, $5b, $10, $10, $1f, $02
-db $33, $10, $14, $1c, $13, $25, $00, $10, $0f, $10, $10, $02
+db $33, $10, $14, $1c, $13, $25, $00, $10, $01, $10, $01, $02
 
 blast_beta_anim:
 db $1f, $02, $34, $1c, $13, $00, $38, $10, $17, $1f, $02, $5b, $10, $10, $1f, $02
@@ -9631,12 +10719,15 @@ FontDataTable:
 
 ORG $FA0060
 FontExtensionData:
+;Font Widths
 db $05; _
 db $04 ;<
 db $06 ;Ζ
 db $03 ;ε
 db $04 ;δ
 db $05 ;λ
+db $06 ;&
+db $06 ;#
 
 ORG $FA0100
 SaturnFontTable:
@@ -9645,6 +10736,12 @@ ORG $FA0160
 SaturnExtensionData:
 db $0A; _
 db $08;<
+db $0B
+db $0B
+db $0B
+db $0B
+db $0D
+db $0B
 
 ORG $FC0000
 FontGFXTable:
@@ -9728,13 +10825,13 @@ animation_pointer_table:
 
 ORG $F60488
 dd $00F70000;Blast A
-dd $00F7015E; Blast b
-dd $00F702C8; Blast g
-dd $00F7049E; Blast o
-dd $00F706E8; Missile a
-dd $00F70736; Missile B
-dd $00F707CD; Missile g
-dd $00F70874; Missile o
+dd $00F701F7; Blast b
+dd $00F70413; Blast g
+dd $00F70679; Blast o
+dd $00F70953; Missile a
+dd $00F70A4F; Missile B
+dd $00F70B85; Missile g
+dd $00F70CCE; Missile o
 
 
 ORG $F60600
@@ -9752,12 +10849,329 @@ db $00, $00, $d4, $4b, $e5, $09, $ff, $7f
 db $00, $00, $d4, $4b, $e5, $09, $ff, $7f; Missile omega
 
 ORG $F70000
-incbin psi_animations.bin
+incbin psi_animations.bin ;this is specifically new animations i drew
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;expanded SRAM
+sramchunk0_pointer = $97F5
+sram_chunk0_size = $0493
+
+sramchunk1_pointer = $B570
+sramchunk1_size = $0010; ap related stuff
+
+sram_chunk2_pointer = $B590
+sramchunk2_size = $0080 ;Expanded storage space
+
+sram_chunk3_pointer = $B620
+sramchunk3_size = $01C0; Expanded flags
+
+sramchunk4_size = $0000
+
+!save_size = #$AA0
+!save_bytes = #$A80
+
+check_corruption = $7E9F79
+memcopy = $C08EED
+mult16 = $C09032
+erase_save = $EF05A9
+copy_save = $EF06A2
+validate_checksum = $EF07C0
+save_game = $EF088F
+save_checksum_1 = $EF0734
+save_checksum_2 = $EF077B
+
+save_chunk_sizes = $EF0A52
+save_chunk_pointers = $EF0A5C
+
+;delete save
+ORG $EF05B3
+LDY !save_size
+
+ORG $EF05DD
+LDX !save_size
+
+ORG $EF063D
+LDY !save_size
+
+ORG $EF069B
+CPX #$0003
+
+;copy save
+ORG $EF06B8
+LDY !save_size
+
+ORG $EF06E2
+LDY !save_size
+
+ORG $EF072B
+LDA !save_size
+;;;;;;;;;
+ORG $EF073E
+LDY !save_size
+
+ORG $EF0773
+CMP !save_bytes
+;;;;;;;;;;;;;;;;;;;
+ORG $EF0785
+LDY !save_size
+
+ORG $EF079F
+CalcChecksum:
+LDY #$0000
+STY $02
+  .Loop:
+  LDA [$06],y
+  EOR $02
+  STA $02
+  INY
+  INY
+  CPY !save_bytes
+  BCC .Loop
+PLD
+RTS
+;;;;;;;;;;;;;;;
+ORG $EF07DB
+LDY !save_size
+
+ORG $EF082F
+CheckCorruptedSave:
+STA $10
+JSR validate_checksum
+CMP #$0000
+BEQ .Return
+.SaveCorrupted:
+LDA $10
+JSR erase_save
+LDX $10
+SEP #$20
+LDA $EF05A6,X
+ORA.w check_corruption
+STA.w check_corruption
+REP #$20
+.Return:
+PLD
+RTS
+
+ORG $EF0899
+SaveGame:
+STA $20
+.RetrySave:
+LDX $00A7
+LDY $00A9
+STX $99C9
+STY $99CB
+LDY !save_size
+JSL mult16
+STA $16
+CLC
+ADC #$6020
+STA $0E
+LDA #$0030
+STA $10
+LDA #$007E
+STA $14
+LDX #$0000
+.ChunkCheck:
+LDA.l save_chunk_pointer_table,X
+BEQ .EndofChunk
+STA $12
+LDA.l save_chunk_size_table,x
+JSL memcopy
+LDA.l save_chunk_size_table,x
+ADC $0E
+STA $0E
+INX
+INX
+BRA .ChunkCheck
+.EndofChunk:
+LDA $20
+JSR save_checksum_1
+STA $1A
+LDA $20
+JSR save_checksum_1
+CMP $1A
+BEQ .Valid
+JMP .RetrySave
+.Valid:
+LDX $16
+STA $30601C,X
+
+LDA $20
+JSR save_checksum_2
+STA $1A
+LDA $20
+JSR save_checksum_2
+CMP $1A
+BEQ .Valid2
+JMP .RetrySave
+.Valid2:
+LDX $16
+STA $30601E,X
+PLD
+RTS
+
+ORG $EF0A4D
+JSR save_game
+RTL
+NOP
+save_chunk_size_table:
+dw sram_chunk0_size
+dw sramchunk1_size
+dw sramchunk2_size
+dw sramchunk3_size
+dw sramchunk4_size
+save_chunk_pointer_table:
+dw sramchunk0_pointer
+dw sramchunk1_pointer
+dw sram_chunk2_pointer
+dw sram_chunk3_pointer
+dw $0000
+dw $0000
+
+;;;;;;;;;;;;;;;;;;;;;
+ORG $EF0A72
+LoadGame:
+LDY !save_size
+JSL mult16
+CLC
+ADC #$6020
+STA $12
+LDA #$0030
+STA $14
+LDA #$007E
+STA $10
+LDX #$0000
+.ChunkCheck:
+LDA.l save_chunk_pointer_table,X
+BEQ .ChunkEnd
+STA $0E
+LDA.l save_chunk_size_table,X
+JSL memcopy
+LDA.l save_chunk_size_table,X
+ADC $12
+STA $12
+INX
+INX
+BRA .ChunkCheck
+.ChunkEnd:
+LDA $99C9
+STA $00A7
+LDA $99CB
+STA $00A9
+PLD
+RTL
+
+ORG $EF0BA6
+LDA !save_bytes
+
+ORG $EF0BB8
+CMP !save_bytes
+
+ORG $EF0BFA
+JSR erase_save
+RTL
+
+ORG $EF0C15
+JSR copy_save
+RTL
+;;;;;;;;;;;;;;;
+;expand event flags
+
+new_flag_table = $7EB620
+new_flag_pointer_0x80 = $7EB5A0
+flag_size = $01C0
+total_flag_bytes = $0240 
+
+
+ORG $C21628
+GetEventFlag:
+JML RepelEnemies
+ExitRepelCheck:
+AND #$0007
+TAX
+LDA $C4562F,X
+PHA
+TYA
+LSR
+LSR
+LSR
+TAX
+PLA
+CPX.w #total_flag_bytes
+BMI .outofrange
+JMP .GetFlagReturnZero
+.outofrange:
+CPX #$0080
+BPL .Inrange
+AND $9C08,X
+BRA .loadflag
+.Inrange:
+AND.w new_flag_pointer_0x80,x
+.loadflag:
+AND #$00FF
+BEQ .GetFlagReturnZero
+.ForceFlagOn:
+LDA #$0001
+RTL
+.GetFlagReturnZero:
+LDA #$0000
+RTL
+NOP
+
+SetFlag:
+JML SetMelodyCount
+SetFlagProceed:
+LSR
+LSR
+CMP.w #total_flag_bytes
+BMI .outofrange
+PLA
+JMP $1659
+.outofrange:
+CMP #$0080
+CLC
+BPL .addflags
+ADC #$9C08
+BRA .label
+.addflags:
+ADC.w #new_flag_pointer_0x80
+.label
+TAY
+PLA
+PHX
+AND #$0007
+TAX
+LDA $C4562F,x
+AND #$00FF
+PLX
+BEQ .WriteFlag
+ORA $0000,Y
+BRA .Store
+.WriteFlag
+EOR #$FFFF
+AND $0000,Y
+.Store:
+STA $0000,y
+AND #$00FF
+RTL
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+RTL
 
 
 
-
-ORG $C93B60
+;ORG $C93B60
 ;db $B1, $63, $03;Font test, delete later. Also update the saturn font
 
 
@@ -9781,3 +11195,5 @@ ORG $C93B60
 
 
 ;B580 reserved for new names?
+;;;;;;;;;;;;;;;;;;
+

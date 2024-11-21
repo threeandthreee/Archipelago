@@ -4,16 +4,18 @@ import settings
 import string
 import typing
 
-from BaseClasses import Item, MultiWorld, Region, Location, Entrance, Tutorial, ItemClassification
+from BaseClasses import Item, Tutorial, ItemClassification
+from Options import NumericOption
 from .Items import item_table, faction_table, Wargroove2Item
-from .Levels import Wargroove2Level, get_level_table, get_first_level, get_final_levels, region_names, FINAL_LEVEL_1, \
+from .Levels import Wargroove2Level, low_victory_checks_levels, high_victory_checks_levels, first_level, \
+    final_levels, region_names, FINAL_LEVEL_1, \
     FINAL_LEVEL_2, FINAL_LEVEL_3, FINAL_LEVEL_4, LEVEL_COUNT, FINAL_LEVEL_COUNT
 from .Locations import location_table
 from .Presets import wargroove2_option_presets
 from .Regions import create_regions
 from .Rules import set_rules
-from ..AutoWorld import World, WebWorld
-from .Options import wargroove2_options
+from worlds.AutoWorld import World, WebWorld
+from .Options import Wargroove2Options
 from worlds.LauncherComponents import Component, components, Type, launch_subprocess
 
 
@@ -53,56 +55,34 @@ class Wargroove2World(World):
     """
     Command an army, in the sequel to the hit turn based strategy game Wargroove!
     """
-
-    option_definitions = wargroove2_options
+    options: Wargroove2Options
+    options_dataclass = Wargroove2Options
     settings: typing.ClassVar[Wargroove2Settings]
     game = "Wargroove 2"
     topology_present = True
-    data_version = 1
     web = Wargroove2Web()
-    level_list: [Wargroove2Level] = None
-    first_level: Wargroove2Level = None
-    final_levels: [Wargroove2Level] = None
+    level_list: typing.List[Wargroove2Level] = []
+    final_levels: typing.List[Wargroove2Level] = []
 
-    item_name_to_id = {name: data.code for name, data in item_table.items()}
-    location_name_to_id = location_table
+    item_name_to_id = {name: data.code for name, data in item_table.items() if data.code is not None}
+    location_name_to_id = {name: code for name, code in location_table.items() if code is not None}
 
-    def _get_slot_data(self):
-        return {
-            'seed': "".join(
-                self.random.choice(string.ascii_letters) for i in range(16)),
-            'income_boost': self.options.income_boost.value,
-            'commander_defense_boost': self.options.commander_defense_boost.value,
-            'starting_groove_multiplier': self.options.groove_boost.value,
-            'level_shuffle_seed': self.options.level_shuffle_seed.value,
-            'can_choose_commander': self.options.commander_choice.value != 0,
-            'final_levels': self.options.final_levels.value,
-            'death_link': self.options.death_link.value == 1
-        }
-
-    def generate_early(self):
-        # First level
-        self.first_level = get_first_level(self.player)
-
-        # Standard levels
-        self.level_list = get_level_table(self.player)
-        low_victory_checks_levels = list(level for level in self.level_list if level.low_victory_checks)
-        high_victory_checks_levels = list(level for level in self.level_list if not level.low_victory_checks)
-        if self.multiworld.level_shuffle_seed[self.player] == 0:
-            random = self.multiworld.random
+    def generate_early(self) -> None:
+        if self.options.level_shuffle_seed.value == 0:
+            random = self.random
         else:
-            random = Random(str(self.multiworld.level_shuffle_seed[self.player]))
+            random = Random(str(self.options.level_shuffle_seed))
 
-        random.shuffle(low_victory_checks_levels)
-        random.shuffle(high_victory_checks_levels)
-        non_starting_levels = high_victory_checks_levels + low_victory_checks_levels[4:]
+        low_victory_checks_levels_copy = low_victory_checks_levels.copy()
+        high_victory_checks_levels_copy = high_victory_checks_levels.copy()
+        random.shuffle(low_victory_checks_levels_copy)
+        random.shuffle(high_victory_checks_levels_copy)
+        non_starting_levels = high_victory_checks_levels_copy + low_victory_checks_levels_copy[4:]
         random.shuffle(non_starting_levels)
-        self.level_list = low_victory_checks_levels[0:4] + non_starting_levels
+        self.level_list = low_victory_checks_levels_copy[0:4] + non_starting_levels
 
-        # Final Levels
-        self.final_levels = get_final_levels(self.player)
-        final_levels_no_ocean = list(level for level in self.final_levels if not level.has_ocean)
-        final_levels_ocean = list(level for level in self.final_levels if level.has_ocean)
+        final_levels_no_ocean = list(level for level in final_levels if not level.has_ocean)
+        final_levels_ocean = list(level for level in final_levels if level.has_ocean)
         random.shuffle(final_levels_no_ocean)
         random.shuffle(final_levels_ocean)
         non_north_levels = final_levels_ocean + final_levels_no_ocean[1:]
@@ -110,16 +90,16 @@ class Wargroove2World(World):
         self.final_levels = final_levels_no_ocean[0:1] + non_north_levels
 
         # Selecting a random starting faction
-        if self.multiworld.commander_choice[self.player] == 2:
+        if self.options.commander_choice == "random_starting_faction":
             factions = [faction for faction in faction_table.keys() if faction != "Starter"]
             starting_faction = Wargroove2Item(self.multiworld.random.choice(factions) + ' Commanders', self.player)
             self.multiworld.push_precollected(starting_faction)
 
-    def create_items(self):
+    def create_items(self) -> None:
         # Fill out our pool with our items from the item table
         pool = []
         precollected_item_names = {item.name for item in self.multiworld.precollected_items[self.player]}
-        ignore_faction_items = self.multiworld.commander_choice[self.player] == 0
+        ignore_faction_items = self.options.commander_choice == "locked_random"
         for name, data in item_table.items():
             if data.code is not None and name not in precollected_item_names and \
                     not data.classification == ItemClassification.filler:
@@ -133,9 +113,11 @@ class Wargroove2World(World):
             pool.append(Wargroove2Item("Income Boost", self.player))
 
         # Matching number of unfilled locations with filler items
-        total_locations = len(self.first_level.location_rules.keys())
+        total_locations = 0
+        total_locations += self.get_total_locations_in_level(first_level)
+
         for level in self.level_list[0:LEVEL_COUNT]:
-            total_locations += len(level.location_rules.keys())
+            total_locations += self.get_total_locations_in_level(level)
         locations_remaining = total_locations - len(pool)
         while locations_remaining > 0:
             # Filling the pool equally with the groove boost
@@ -147,25 +129,28 @@ class Wargroove2World(World):
         victory = Wargroove2Item("Wargroove 2 Victory", self.player)
         for i in range(0, 4):
             final_level = self.final_levels[i]
-            self.multiworld.get_location(final_level.victory_locations[0], self.player).place_locked_item(victory)
+            self.get_location(final_level.victory_locations[0]).place_locked_item(victory)
         # Placing victory event at final location
         self.multiworld.completion_condition[self.player] = lambda state: \
-            state.has("Wargroove 2 Victory", self.player, self.multiworld.final_levels[self.player])
+            state.has("Wargroove 2 Victory", self.player, self.options.final_levels.value)
 
-    def set_rules(self):
-        set_rules(self.multiworld, self.level_list, self.first_level, self.final_levels, self.player)
+    def set_rules(self) -> None:
+        set_rules(self)
 
     def create_item(self, name: str) -> Item:
         return Wargroove2Item(name, self.player)
 
-    def create_regions(self):
-        create_regions(self.multiworld, self.player, self.level_list, self.first_level, self.final_levels)
+    def create_regions(self) -> None:
+        create_regions(self)
 
-    def fill_slot_data(self) -> dict:
-        slot_data = self._get_slot_data()
-        for option_name in wargroove2_options:
-            option = getattr(self.multiworld, option_name)[self.player]
-            slot_data[option_name] = int(option.value)
+    def fill_slot_data(self) -> typing.Dict[str, typing.Any]:
+        slot_data = {'seed': "".join(self.random.choice(string.ascii_letters) for _ in range(16))}
+        for option_name in self.options.__dict__.keys():
+            option = getattr(self.options, option_name)
+            if isinstance(option, NumericOption):
+                slot_data[option_name] = int(option.value)
+            else:
+                slot_data[option_name] = str(option.value)
         for i in range(0, min(LEVEL_COUNT, len(self.level_list))):
             slot_data[f"Level File #{i}"] = self.level_list[i].file_name
             slot_data[region_names[i]] = self.level_list[i].name
@@ -174,10 +159,27 @@ class Wargroove2World(World):
         for i in range(0, FINAL_LEVEL_COUNT):
             slot_data[f"Final Level File #{i}"] = self.final_levels[i].file_name
         slot_data[FINAL_LEVEL_1] = self.final_levels[0].name
+        for location_name in self.final_levels[0].location_rules.keys():
+            slot_data[location_name] = FINAL_LEVEL_1
         slot_data[FINAL_LEVEL_2] = self.final_levels[1].name
+        for location_name in self.final_levels[0].location_rules.keys():
+            slot_data[location_name] = FINAL_LEVEL_2
         slot_data[FINAL_LEVEL_3] = self.final_levels[2].name
+        for location_name in self.final_levels[0].location_rules.keys():
+            slot_data[location_name] = FINAL_LEVEL_3
         slot_data[FINAL_LEVEL_4] = self.final_levels[3].name
+        for location_name in self.final_levels[0].location_rules.keys():
+            slot_data[location_name] = FINAL_LEVEL_4
         return slot_data
 
     def get_filler_item_name(self) -> str:
         return "Groove Boost"
+
+    def get_total_locations_in_level(self, level: Wargroove2Level) -> int:
+        total_locations = 0
+        for location_name in level.location_rules.keys():
+            if location_name.endswith("Victory"):
+                total_locations += self.options.victory_locations
+            else:
+                total_locations += self.options.objective_locations
+        return total_locations

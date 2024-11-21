@@ -1,5 +1,8 @@
+import logging
 import os
 import subprocess
+from logging import Logger
+
 import colorama
 
 import asyncio
@@ -12,7 +15,7 @@ from pymem.exception import ProcessNotFound
 
 import Utils
 from NetUtils import ClientStatus
-from CommonClient import ClientCommandProcessor, CommonContext, logger, server_loop, gui_enabled
+from CommonClient import ClientCommandProcessor, CommonContext, server_loop, gui_enabled
 from .Options import EnableOrbsanity
 
 from .GameID import jak1_name
@@ -23,6 +26,7 @@ import ModuleUpdate
 ModuleUpdate.update()
 
 
+logger = logging.getLogger("JakClient")
 all_tasks: Set[Task] = set()
 
 
@@ -51,7 +55,7 @@ class JakAndDaxterClientCommandProcessor(ClientCommandProcessor):
         - status : check internal status of the REPL."""
         if arguments:
             if arguments[0] == "connect":
-                logger.info("This may take a bit... Wait for the success audio cue before continuing!")
+                self.ctx.on_log_info(logger, "This may take a bit... Wait for the success audio cue before continuing!")
                 self.ctx.repl.initiated_connect = True
             if arguments[0] == "status":
                 create_task_log_exception(self.ctx.repl.print_status())
@@ -64,7 +68,7 @@ class JakAndDaxterClientCommandProcessor(ClientCommandProcessor):
             if arguments[0] == "connect":
                 self.ctx.memr.initiated_connect = True
             if arguments[0] == "status":
-                self.ctx.memr.print_status()
+                create_task_log_exception(self.ctx.memr.print_status())
 
 
 class JakAndDaxterContext(CommonContext):
@@ -85,8 +89,19 @@ class JakAndDaxterContext(CommonContext):
     memr_task: asyncio.Task
 
     def __init__(self, server_address: Optional[str], password: Optional[str]) -> None:
-        self.repl = JakAndDaxterReplClient()
-        self.memr = JakAndDaxterMemoryReader()
+        self.repl = JakAndDaxterReplClient(self.on_log_error,
+                                           self.on_log_warn,
+                                           self.on_log_success,
+                                           self.on_log_info)
+        self.memr = JakAndDaxterMemoryReader(self.on_location_check,
+                                             self.on_finish_check,
+                                             self.on_deathlink_check,
+                                             self.on_deathlink_toggle,
+                                             self.on_orb_trade,
+                                             self.on_log_error,
+                                             self.on_log_warn,
+                                             self.on_log_success,
+                                             self.on_log_info)
         # self.repl.load_data()
         # self.memr.load_data()
         super().__init__(server_address, password)
@@ -219,7 +234,7 @@ class JakAndDaxterContext(CommonContext):
             player = self.player_names[self.slot] if self.slot is not None else "Jak"
             death_text = self.memr.cause_of_death.replace("Jak", player)
             await self.send_death(death_text)
-            logger.info(death_text)
+            self.on_log_warn(logger, death_text)
 
         # Reset all flags, but leave the death count alone.
         self.memr.send_deathlink = False
@@ -246,6 +261,33 @@ class JakAndDaxterContext(CommonContext):
     def on_orb_trade(self, orbs_changed: int):
         create_task_log_exception(self.ap_inform_orb_trade(orbs_changed))
 
+    def on_log_error(self, lg: Logger, message: str):
+        lg.error(message)
+        if self.ui:
+            color = self.jsontotextparser.color_codes["red"]
+            self.ui.log_panels["Archipelago"].on_message_markup(f"[color={color}]{message}[/color]")
+            self.ui.log_panels["All"].on_message_markup(f"[color={color}]{message}[/color]")
+
+    def on_log_warn(self, lg: Logger, message: str):
+        lg.warning(message)
+        if self.ui:
+            color = self.jsontotextparser.color_codes["orange"]
+            self.ui.log_panels["Archipelago"].on_message_markup(f"[color={color}]{message}[/color]")
+            self.ui.log_panels["All"].on_message_markup(f"[color={color}]{message}[/color]")
+
+    def on_log_success(self, lg: Logger, message: str):
+        lg.info(message)
+        if self.ui:
+            color = self.jsontotextparser.color_codes["green"]
+            self.ui.log_panels["Archipelago"].on_message_markup(f"[color={color}]{message}[/color]")
+            self.ui.log_panels["All"].on_message_markup(f"[color={color}]{message}[/color]")
+
+    def on_log_info(self, lg: Logger, message: str):
+        lg.info(message)
+        if self.ui:
+            self.ui.log_panels["Archipelago"].on_message_markup(f"{message}")
+            self.ui.log_panels["All"].on_message_markup(f"{message}")
+
     async def run_repl_loop(self):
         while True:
             await self.repl.main_tick()
@@ -253,66 +295,146 @@ class JakAndDaxterContext(CommonContext):
 
     async def run_memr_loop(self):
         while True:
-            await self.memr.main_tick(self.on_location_check,
-                                      self.on_finish_check,
-                                      self.on_deathlink_check,
-                                      self.on_deathlink_toggle,
-                                      self.on_orb_trade)
+            await self.memr.main_tick()
             await asyncio.sleep(0.1)
 
 
 async def run_game(ctx: JakAndDaxterContext):
 
     # These may already be running. If they are not running, try to start them.
+    # TODO - Support other OS's. Pymem is Windows-only.
     gk_running = False
     try:
         pymem.Pymem("gk.exe")  # The GOAL Kernel
         gk_running = True
     except ProcessNotFound:
-        logger.info("Game not running, attempting to start.")
+        ctx.on_log_warn(logger, "Game not running, attempting to start.")
 
     goalc_running = False
     try:
         pymem.Pymem("goalc.exe")  # The GOAL Compiler and REPL
         goalc_running = True
     except ProcessNotFound:
-        logger.info("Compiler not running, attempting to start.")
+        ctx.on_log_warn(logger, "Compiler not running, attempting to start.")
 
-    # Don't mind all the arguments, they are exactly what you get when you run "task boot-game" or "task repl".
-    # TODO - Support other OS's. cmd for some reason does not work with goalc. Pymem is Windows-only.
-    if not gk_running:
-        try:
-            gk_path = Utils.get_settings()["jakanddaxter_options"]["root_directory"]
-            gk_path = os.path.normpath(gk_path)
-            gk_path = os.path.join(gk_path, "gk.exe")
-        except AttributeError as e:
-            logger.error(f"Hosts.yaml does not contain {e.args[0]}, unable to locate game executables.")
+    try:
+        # Validate folder and file structures of the ArchipelaGOAL root directory.
+        root_path = Utils.get_settings()["jakanddaxter_options"]["root_directory"]
+
+        # Always trust your instincts.
+        if "/" not in root_path:
+            msg = (f"The ArchipelaGOAL root directory contains no path. (Are you missing forward slashes?)\n"
+                   f"Please check that the value of 'jakanddaxter_options > root_directory' in your host.yaml file "
+                   f"is a valid existing path, and all backslashes have been replaced with forward slashes.")
+            ctx.on_log_error(logger, msg)
             return
 
-        if gk_path:
-            # Prefixing ampersand and wrapping gk_path in quotes is necessary for paths with spaces in them.
-            gk_process = subprocess.Popen(
-                ["powershell.exe", f"& \"{gk_path}\"", "--game jak1", "--", "-v", "-boot", "-fakeiso", "-debug"],
-                creationflags=subprocess.CREATE_NEW_CONSOLE)  # These need to be new consoles for stability.
-
-    if not goalc_running:
-        try:
-            goalc_path = Utils.get_settings()["jakanddaxter_options"]["root_directory"]
-            goalc_path = os.path.normpath(goalc_path)
-            goalc_path = os.path.join(goalc_path, "goalc.exe")
-        except AttributeError as e:
-            logger.error(f"Hosts.yaml does not contain {e.args[0]}, unable to locate game executables.")
+        # Start by checking the existence of the root directory provided in the host.yaml file.
+        root_path = os.path.normpath(root_path)
+        if not os.path.exists(root_path):
+            msg = (f"The ArchipelaGOAL root directory does not exist, unable to locate the Game and Compiler.\n"
+                   f"Please check that the value of 'jakanddaxter_options > root_directory' in your host.yaml file "
+                   f"is a valid existing path, and all backslashes have been replaced with forward slashes.")
+            ctx.on_log_error(logger, msg)
             return
 
-        if goalc_path:
-            # Prefixing ampersand and wrapping goalc_path in quotes is necessary for paths with spaces in them.
-            goalc_process = subprocess.Popen(
-                ["powershell.exe", f"& \"{goalc_path}\"", "--game jak1"],
-                creationflags=subprocess.CREATE_NEW_CONSOLE)  # These need to be new consoles for stability.
+        # Now double-check the existence of the two executables we need.
+        gk_path = os.path.join(root_path, "gk.exe")
+        goalc_path = os.path.join(root_path, "goalc.exe")
+        if not os.path.exists(gk_path) or not os.path.exists(goalc_path):
+            msg = (f"The Game and Compiler could not be found in the ArchipelaGOAL root directory.\n"
+                   f"Please check the value of 'jakanddaxter_options > root_directory' in your host.yaml file, "
+                   f"and ensure that path contains gk.exe, goalc.exe, and a data folder.")
+            ctx.on_log_error(logger, msg)
+            return
+
+        # Now we can FINALLY attempt to start the programs.
+        if not gk_running:
+            # Per-mod saves and settings are stored outside the ArchipelaGOAL root folder, so we have to traverse
+            # a relative path, normalize it, and pass it in as an argument to gk. This folder will be created if
+            # it does not exist.
+            config_relative_path = "../_settings/archipelagoal"
+            config_path = os.path.normpath(
+                os.path.join(
+                    root_path,
+                    os.path.normpath(config_relative_path)))
+
+            # The game freezes if text is inadvertently selected in the stdout/stderr data streams. Let's pipe those
+            # streams to a file, and let's not clutter the screen with another console window.
+            log_path = os.path.join(Utils.user_path("logs"), "JakAndDaxterGame.txt")
+            log_path = os.path.normpath(log_path)
+            with open(log_path, "w") as log_file:
+                gk_process = subprocess.Popen(
+                    [gk_path, "--game", "jak1",
+                     "--config-path", config_path,
+                     "--", "-v", "-boot", "-fakeiso", "-debug"],
+                    stdout=log_file,
+                    stderr=log_file,
+                    creationflags=subprocess.CREATE_NO_WINDOW)
+
+        if not goalc_running:
+            # For the OpenGOAL Compiler, the existence of the "data" subfolder indicates you are running it from
+            # a built package. This subfolder is treated as its proj_path.
+            proj_path = os.path.join(root_path, "data")
+            if os.path.exists(proj_path):
+
+                # Look for "iso_data" path to automate away an oft-forgotten manual step of mod updates.
+                # All relative paths should start from root_path and end with "jak1".
+                goalc_args = []
+                possible_relative_paths = {
+                    "../../../../../active/jak1/data/iso_data/jak1",
+                    "./data/iso_data/jak1",
+                }
+
+                for iso_relative_path in possible_relative_paths:
+                    iso_path = os.path.normpath(
+                        os.path.join(
+                            root_path,
+                            os.path.normpath(iso_relative_path)))
+
+                    if os.path.exists(iso_path):
+                        goalc_args = [goalc_path, "--game", "jak1", "--proj-path", proj_path, "--iso-path", iso_path]
+                        logger.debug(f"iso_data folder found: {iso_path}")
+                        break
+                    else:
+                        logger.debug(f"iso_data folder not found, continuing: {iso_path}")
+
+                if not goalc_args:
+                    msg = (f"The iso_data folder could not be found.\n"
+                           f"Please follow these steps:\n"
+                           f"   Run the OpenGOAL Launcher, click Jak and Daxter > Advanced > Open Game Data Folder.\n"
+                           f"   Copy the iso_data folder from this location.\n"
+                           f"   Click Jak and Daxter > Features > Mods > ArchipelaGOAL > Advanced > "
+                           f"Open Game Data Folder.\n"
+                           f"   Paste the iso_data folder in this location.\n"
+                           f"   Click Advanced > Compile. When this is done, click Continue.\n"
+                           f"   Close all launchers, games, clients, and console windows, then restart Archipelago.\n"
+                           f"(See Setup Guide for more details.)")
+                    ctx.on_log_error(logger, msg)
+                    return
+
+            # The non-existence of the "data" subfolder indicates you are running it from source, as a developer.
+            # The compiler will traverse upward to find the project path on its own. It will also assume your
+            # "iso_data" folder is at the root of your repository. Therefore, we don't need any of those arguments.
+            else:
+                goalc_args = [goalc_path, "--game", "jak1"]
+
+            # This needs to be a new console. The REPL console cannot share a window with any other process.
+            goalc_process = subprocess.Popen(goalc_args, creationflags=subprocess.CREATE_NEW_CONSOLE)
+
+    except AttributeError as e:
+        ctx.on_log_error(logger, f"Host.yaml does not contain {e.args[0]}, unable to locate game executables.")
+        return
+    except FileNotFoundError as e:
+        msg = (f"The ArchipelaGOAL root directory path is invalid.\n"
+               f"Please check that the value of 'jakanddaxter_options > root_directory' in your host.yaml file "
+               f"is a valid existing path, and all backslashes have been replaced with forward slashes.")
+        ctx.on_log_error(logger, msg)
+        return
 
     # Auto connect the repl and memr agents. Sleep 5 because goalc takes just a little bit of time to load,
     # and it's not something we can await.
-    logger.info("This may take a bit... Wait for the success audio cue before continuing!")
+    ctx.on_log_info(logger, "This may take a bit... Wait for the game's title sequence before continuing!")
     await asyncio.sleep(5)
     ctx.repl.initiated_connect = True
     ctx.memr.initiated_connect = True
@@ -331,7 +453,7 @@ async def main():
     ctx.run_cli()
 
     # Find and run the game (gk) and compiler/repl (goalc).
-    await run_game(ctx)
+    create_task_log_exception(run_game(ctx))
     await ctx.exit_event.wait()
     await ctx.shutdown()
 

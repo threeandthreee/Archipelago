@@ -7,6 +7,7 @@ from Options import Choice, DefaultOnToggle, Option, OptionSet, Range, Toggle, F
 from copy import deepcopy
 from .items import itemGroups, ShopItem
 from Utils import is_iterable_except_str, get_fuzzy_results
+from functools import singledispatchmethod
 
 
 class OptionListSet(OptionSet):
@@ -31,10 +32,9 @@ class OptionListSet(OptionSet):
         else:
             raise ValueError(f"Invalid value {text}")
 
-    @classmethod
-    def verify_keys(cls, data: Iterable[Iterable[str]]) -> None:
-        for x in data:
-            super(OptionListSet, cls).verify_keys(x)
+    def verify_keys(self) -> None:
+        for x in self.value:
+            super(OptionListSet, self).verify_keys(x)
 
     def verify(self, world, player_name, plando_options) -> None:
         outerArray = self.value
@@ -68,10 +68,9 @@ class OptionListList(OptionList):
         else:
             raise ValueError(f"Invalid value {text}")
 
-    @classmethod
-    def verify_keys(cls, data: Iterable[Iterable[str]]) -> None:
-        for x in data:
-            super(OptionListList, cls).verify_keys(x)
+    def verify_keys(self) -> None:
+        for x in self.value:
+            super(OptionListList, self).verify_keys(x)
 
     def verify(self, world, player_name, plando_options) -> None:
         outerArray = self.value
@@ -85,19 +84,17 @@ class OptionShopItems(OptionListList):
     verify_item_name = True
     convert_name_groups = True
 
-    @classmethod
-    def verify_keys(cls, data: Iterable[Iterable[Union[str, ShopItem]]]) -> None:
-        for inner in data:
+    def verify_keys(self) -> None:
+        for inner in self.value:
             inner_names = []
             for x in inner:
                 inner_names.append(x[0] if isinstance(x, Iterable) else x)
-            super(OptionListList, cls).verify_keys(inner_names)
+            super(OptionListList, self).verify_keys(inner_names)
 
     @classmethod
     def from_any(cls, data: Any):
         if is_iterable_except_str(data):
             data = cls.from_iterable(data)
-            cls.verify_keys(data)
             return cls(data)
         return cls.from_text(str(data))
 
@@ -197,13 +194,45 @@ class OptionShopItems(OptionListList):
         return (parsed_name,) + item[1:]
 
 
+class FixedIntervalRange(Range):
+    interval = 1
+
+    def __init__(self, value: int):
+        # Round down to nearest interval, taking into account range_start.
+        # Example values if range_start=50 and interval=200:
+        # 50, 250, 450, etc.
+        value -= (value - self.range_start) % self.interval
+        super().__init__(value)
+
+
+class FixedIntervalNamedRange(NamedRange):
+    interval = 1
+
+    @singledispatchmethod
+    def __init__(self, value):
+        raise NotImplementedError
+
+    @__init__.register
+    def _(self, value: str):
+        self.value = value
+
+    @__init__.register
+    def _(self, value: int):
+        # Round down to nearest interval, taking into account range_start.
+        # Example values if range_start=50 and interval=200:
+        # 50, 250, 450, etc.
+        if value not in self.special_range_names.values():
+            value -= (value - self.range_start) % self.interval
+        super().__init__(value)
+
+
 class Goal(Choice):
     """
     Sets the unlock condition for the final mission
 
     All mission gates: The final mission is unlocked after going through every mission gate.
     Totema Gauntlet: A series of the five Totema battles must be cleared to unlock the final mission. These are
-    unlocked alongside the mission gates. An additional five items are added to unlock them. 
+    unlocked alongside the mission gates. An additional five items are added to unlock them.
     """
     display_name = "Goal"
     default = 0
@@ -280,7 +309,8 @@ class AbilityAP(Range):
 
 class AbilityRandom(Choice):
     """
-    Randomize the abilities each job has
+    Randomize the abilities each job can use.
+    WARNING: Currently certain combinations may result in softlocks.
 
     Vanilla: Jobs have their original abilities
     Random within race: Abilities are randomized between jobs in the same race. No duplicate abilities within jobs
@@ -293,7 +323,7 @@ class AbilityRandom(Choice):
     default = 0
     option_vanilla = 0
     option_race = 1
-    option_random_abilities = 2
+    option_randomized = 2
     option_random_with_special = 3
 
 
@@ -324,7 +354,7 @@ class JobUnlockReq(Choice):
     option_req_vanilla = 0
     option_all_unlocked = 1
     option_all_locked = 2
-    option_job_items = 3
+    #option_job_items = 3
 
 
 class Laws(Choice):
@@ -340,6 +370,25 @@ class Laws(Choice):
     option_disable_laws = 0
     option_enable_laws = 1
     option_random_laws = 2
+
+
+class LawCards(Choice):
+    """
+    Add Law cards to the pool.
+    Optionally also unlock law cards and the law card shop from the start.
+    (Using cards and trading with the card shop are normally unlocked after the Antilaws mission.)
+
+    Disabled: No law cards in the pool.
+    Enabled: Law cards are added to the pool.
+    Unlock Cards: As Enabled and law cards are usable from the start.
+    Unlock Cards and Shop: As Unlock Cards and the law card shop is unlocked from the start.
+    """
+    display_name = "Add law cards to the item pool."
+    default = 0
+    option_disabled = 0
+    option_enabled = 1
+    option_unlock_cards = 2
+    option_unlock_cards_and_shop = 3
 
 
 class RandomEnemies(Choice):
@@ -389,6 +438,25 @@ class StartingGil(Range):
     default = 5000
     range_start = 0
     range_end = 99999999
+
+
+class GilRewards(FixedIntervalNamedRange):
+    """
+    Sets the amount of gil you get for completing a mission.
+    Must be a multiple of 200. Will be rounded down to the nearest 200 if not.
+    individually-randomized(-low/-middle/-high): Sets a random value for each mission (with optional bias)
+    """
+    display_name = "Gil mission rewards"
+    interval = 200
+    default = 1000
+    range_start = 0
+    range_end = 51000  # 1-byte value so max is 255 * 200
+    special_range_names = {
+        "individually-randomized": "individually-randomized",
+        "individually-randomized-low": "individually-randomized-low",
+        "individually-randomized-middle": "individually-randomized-middle",
+        "individually-randomized-high": "individually-randomized-high",
+        }
 
 
 class GateNumber(Range):
@@ -489,6 +557,14 @@ class QuickOptions(Toggle):
     default = 0
 
 
+class FastReceive(Toggle):
+    """
+    Skip most of the animations and text when receiving items
+    """
+    display_name = "Faster received item popup"
+    default = 1
+
+
 class ForceRecruitment(Choice):
     """
     Forces every mission to give a new recruit.
@@ -565,13 +641,20 @@ class ProgressiveShopUpgrades(Toggle):
     default = 0
 
 
-class ProgressiveShopBattleUnlock(Toggle):
+class ProgressiveShopBattleUnlock(Choice):
     """
-    Enables unlocking the first 2 shop upgrades by fighting 10 and 20 battles total.
-    This progress does not count towards further upgrades.
+    Enables unlocking 2 shop upgrades by fighting 10 and 20 battles total.
+    Enabled: This progress does not stack with other upgrades. 10 battles + 1 upgrade = 1 upgrade total.
+    Stacking: This progress stacks with other upgrades. 10 battles + 1 upgrade = 2 upgrades total.
+    Replacing: As stacking but also removes 2 shop upgrades from the pool.
+        Fighting 20 battles and finding all shop upgrades will be required to unlock the highest shop tier.
     """
     display_name = "Unlock up to 2 shop upgrades by fighting battles"
-    default = 1
+    default = 2
+    option_disabled = 0
+    option_enabled = 1
+    option_stacking = 2
+    option_replacing = 3
 
 
 class ProgressiveShopTiers(OptionShopItems):
@@ -777,7 +860,12 @@ class ProgressiveShopTiers(OptionShopItems):
     }
 
 
-
+class UnitNames(Toggle):
+    """
+    Random unit names are named after players in the multiworld.
+    """
+    display_name = "Random units named after other players"
+    default = 1
 
 
 @dataclass
@@ -793,10 +881,12 @@ class FFTAOptions(PerGameCommonOptions):
     stat_growth: StatGrowth
     job_unlock_req: JobUnlockReq
     laws: Laws
+    law_cards: LawCards
     randomize_enemies: RandomEnemies
     scaling: EnemyScaling
     exp_multiplier: ExpMultiplier
     starting_gil: StartingGil
+    gil_rewards: GilRewards
     gate_num: GateNumber
     gate_paths: GatePaths
     dispatch: DispatchMissions
@@ -805,6 +895,7 @@ class FFTAOptions(PerGameCommonOptions):
     mission_order: MissionOrder
     final_mission: FinalMission
     quick_options: QuickOptions
+    fast_receive: FastReceive
     force_recruitment: ForceRecruitment
     mission_reward_num: MissionRewards
     progressive_gates: ProgressiveGateItems
@@ -813,3 +904,4 @@ class FFTAOptions(PerGameCommonOptions):
     progressive_shop: ProgressiveShopUpgrades
     progressive_shop_battle_unlock: ProgressiveShopBattleUnlock
     progressive_shop_tiers: ProgressiveShopTiers
+    unit_names: UnitNames

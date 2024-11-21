@@ -1,5 +1,6 @@
 from random import Random
 from typing import Dict, List
+from .options import OuterWildsGameOptions
 
 
 # Example output: (
@@ -7,9 +8,15 @@ from typing import Dict, List
 #     {"HGT":30, "TH":60, "BH":90, "GD":120, "DB":150, "SS":180, "AR":210, "HL":240, "OPC":270},
 #     {"ET":"up", "AT":"down", "TH":"left", "BH":"right"}
 # )
-def generate_random_orbits(random: Random) -> (List[str], Dict[str, int], Dict[str, str]):
-    planet_order = ["HGT", "TH", "BH", "GD", "DB"]
-    random.shuffle(planet_order)
+def generate_random_orbits(random: Random, options: OuterWildsGameOptions) -> (List[str], Dict[str, int]):
+    # The Outsider relies on GD and DB coming together at the end of a loop, so they stay in the last two lanes
+    if options.enable_outsider_mod:
+        inner_planets = ["HGT", "TH", "BH"]
+        random.shuffle(inner_planets)
+        planet_order = inner_planets + ["GD", "DB"]
+    else:
+        planet_order = ["HGT", "TH", "BH", "GD", "DB"]
+        random.shuffle(planet_order)
 
     # We want vanilla/flat orbits, angled orbits and vertical orbits to all be reasonably likely,
     # and we want to avoid collisions that would potentially make a location unreachable
@@ -48,13 +55,19 @@ def generate_random_orbits(random: Random) -> (List[str], Dict[str, int], Dict[s
 
         orbit_angles[planet] = random.choice(possible_angles)
 
+    # The Outsider relies on GD and DB coming together at the end of a loop, so they need matching orbit angles.
+    # For some reason that means DB's angle must be the opposite of GD's, not the same.
+    if options.enable_outsider_mod:
+        orbit_angles["DB"] = -(orbit_angles["GD"])
+
     # No subtle constraints for the satellite orbits
     for satellite in ("SS", "AR", "HL", "OPC"):
         orbit_angles[satellite] = random.choice(all_possible_angles)
 
-    # Rotations could be generated separately from order and angles, but since we have to
-    # generate the order and angles together, keeping all three together feels simpler.
+    return planet_order, orbit_angles
 
+
+def generate_random_rotations(random: Random) -> Dict[str, str]:
     # These are static properties of Unity's Vector3 class, e.g. Vector3.up is (0, 1, 0)
     possible_axis_directions = ["up", "down", "left", "right", "forward", "back", "zero"]
 
@@ -66,5 +79,4 @@ def generate_random_orbits(random: Random) -> (List[str], Dict[str, int], Dict[s
     for planet in ("ET", "AT", "TH", "BH"):
         rotation_axes[planet] = random.choice(possible_axis_directions)
 
-    return planet_order, orbit_angles, rotation_axes
-
+    return rotation_axes

@@ -44,6 +44,9 @@ class SonicAdventureDXWorld(World):
     options_dataclass = SonicAdventureDXOptions
     options: SonicAdventureDXOptions
 
+    tracker_world = {"map_page_folder": "tracker", "map_page_maps": "maps/maps.json",
+                     "map_page_locations": "locations/locations.json"}
+
     def generate_early(self):
         self.starter_setup = generate_early_sadx(self, self.options)
         # Universal tracker stuff, shouldn't do anything in standard gen
@@ -153,7 +156,7 @@ class SonicAdventureDXWorld(World):
 
     def fill_slot_data(self) -> Dict[str, Any]:
         return {
-            "ModVersion": 86,
+            "ModVersion": 88,
             "Goal": self.options.goal.value,
             "LogicLevel": self.options.logic_level.value,
             "EmblemsPercentage": self.options.emblems_percentage.value,
@@ -192,6 +195,8 @@ class SonicAdventureDXWorld(World):
             "GammaLifeSanity": self.options.gamma_life_sanity.value,
 
             "DeathLink": self.options.death_link.value,
+            "SendDeathLinkChance": self.options.send_death_link_chance.value,
+            "ReceiveDeathLinkChance": self.options.receive_death_link_chance.value,
             "RingLink": self.options.ring_link.value,
             "CasinopolisRingLink": self.options.casinopolis_ring_link.value,
             "HardRingLink": self.options.hard_ring_link.value,
@@ -227,6 +232,11 @@ class SonicAdventureDXWorld(World):
             "GammaActionStageMissions": self.options.gamma_action_stage_missions.value,
             "BigActionStageMissions": self.options.big_action_stage_missions.value,
 
-            "JunkFillPercentage": self.options.junk_fill_percentage.value
+            "JunkFillPercentage": self.options.junk_fill_percentage.value,
+
+            "ReverseControlTrapDuration": self.options.reverse_trap_duration.value,
+            "TrapsOnAdventureFields": self.options.traps_and_filler_on_adventure_fields.value,
+            "TrapsOnBossFights": self.options.traps_and_filler_on_boss_fights.value,
+            "TrapsOnPerfectChaosFight": self.options.traps_and_filler_on_perfect_chaos_fight.value
 
         }

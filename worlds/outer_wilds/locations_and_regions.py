@@ -119,6 +119,8 @@ def create_regions(world: "OuterWildsWorld") -> None:
     for region_name in region_data_table.keys():
         mw.regions.append(Region(region_name, p, mw))
 
+    split_translator = options.split_translator
+
     # add locations and connections to each region
     for region_name, region_data in region_data_table.items():
         region = mw.get_region(region_name, p)
@@ -131,7 +133,7 @@ def create_regions(world: "OuterWildsWorld") -> None:
         for connection in exit_connections:
             to = connection["to"]
             requires = connection["requires"]
-            rule = None if len(requires) == 0 else lambda state, r=requires: eval_rule(state, p, r)
+            rule = None if len(requires) == 0 else lambda state, r=requires, st=split_translator: eval_rule(state, p, r, st)
             entrance = region.connect(mw.get_region(to, p), None, rule)
             indirect_regions = regions_referenced_by_rule(requires)
             for indirect_region in indirect_regions:
@@ -141,7 +143,7 @@ def create_regions(world: "OuterWildsWorld") -> None:
     for ld in locations_data:
         if ld["name"] in locations_to_create and len(ld["requires"]) > 0:
             set_rule(mw.get_location(ld["name"], p),
-                     lambda state, r=ld["requires"]: eval_rule(state, p, r))
+                     lambda state, r=ld["requires"], st=split_translator: eval_rule(state, p, r, st))
 
     # add dynamic logic, i.e. connections based on player options
     menu = mw.get_region("Menu", p)
@@ -211,11 +213,11 @@ def create_regions(world: "OuterWildsWorld") -> None:
 
 # In particular: this eval_rule() function is the main piece of code which will have to
 # be implemented in both languages, so it's important we keep the implementations in sync
-def eval_rule(state: CollectionState, p: int, rule: [Any]) -> bool:
-    return all(eval_criterion(state, p, criterion) for criterion in rule)
+def eval_rule(state: CollectionState, p: int, rule: [Any], split_translator: bool) -> bool:
+    return all(eval_criterion(state, p, criterion, split_translator) for criterion in rule)
 
 
-def eval_criterion(state: CollectionState, p: int, criterion: Any) -> bool:
+def eval_criterion(state: CollectionState, p: int, criterion: Any, split_translator: bool) -> bool:
     # all valid criteria are dicts
     if isinstance(criterion, dict):
         # we're only using JSON objects / Python dicts here as discriminated unions,
@@ -227,9 +229,11 @@ def eval_criterion(state: CollectionState, p: int, criterion: Any) -> bool:
         # { "item": "..." } and { "anyOf": [ ... ] } and { "location": "foo" } and { "region": "bar" }
         # mean exactly what they sound like, and those are the only kinds of criteria.
         if key == "item" and isinstance(value, str):
+            if not split_translator and value.startswith("Translator ("):
+                return state.has("Translator", p)
             return state.has(value, p)
         elif key == "anyOf" and isinstance(value, list):
-            return any(eval_criterion(state, p, sub_criterion) for sub_criterion in value)
+            return any(eval_criterion(state, p, sub_criterion, split_translator) for sub_criterion in value)
         elif key == "location" and isinstance(value, str):
             return state.can_reach(value, "Location", p)
         elif key == "region" and isinstance(value, str):

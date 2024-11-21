@@ -51,11 +51,17 @@ def create_sadx_items(world: World, starter_setup: StarterSetup, options: SonicA
             [ItemName.Traps.IceTrap] * options.ice_trap_weight.value +
             [ItemName.Traps.SpringTrap] * options.spring_trap_weight.value +
             [ItemName.Traps.PoliceTrap] * options.police_trap_weight.value +
-            [ItemName.Traps.BuyonTrap] * options.buyon_trap_weight.value
+            [ItemName.Traps.BuyonTrap] * options.buyon_trap_weight.value +
+            [ItemName.Traps.ReverseTrap] * options.reverse_trap_weight.value +
+            [ItemName.Traps.GravityTrap] * options.gravity_trap_weight.value
     )
 
-    for _ in range(item_distribution.trap_count):
-        itempool.append(world.create_item(world.random.choice(trap_weights)))
+    if len(trap_weights) == 0:
+        for _ in range(item_distribution.trap_count):
+            itempool.append(world.create_item(world.random.choice(filler_item_table).name))
+    else:
+        for _ in range(item_distribution.trap_count):
+            itempool.append(world.create_item(world.random.choice(trap_weights)))
 
     world.multiworld.push_precollected(world.create_item(get_playable_character_item(starter_setup.character)))
 

@@ -1,5 +1,22 @@
-import typing
-from Options import Choice, Option, Range, DeathLink
+from dataclasses import dataclass
+
+from Options import Choice, Range, DeathLink, PerGameCommonOptions, StartInventoryPool
+
+
+class VictoryLocations(Range):
+    """How many checks are sent per level completed."""
+    display_name = "Victory Locations"
+    range_start = 1
+    range_end = 5
+    default = 2
+
+
+class ObjectiveLocations(Range):
+    """How many checks are sent per level completed."""
+    display_name = "Objective Locations"
+    range_start = 1
+    range_end = 5
+    default = 1
 
 
 class IncomeBoost(Range):
@@ -36,9 +53,13 @@ class LevelShuffleSeed(Range):
 
 class CommanderChoice(Choice):
     """How the player's commander is selected for missions.
-    Locked Random: The player's commander is randomly predetermined for each level.
-    Unlockable Factions: The player starts with Mercival and can unlock playable factions.
-    Random Starting Faction:  The player starts with a random starting faction and can unlock the rest.
+
+    - Locked Random: The player's commander is randomly predetermined for each level.
+
+    - Unlockable Factions: The player starts with Mercival and can unlock playable factions.
+
+    - Random Starting Faction:  The player starts with a random starting faction and can unlock the rest.
+
     When playing with unlockable factions, faction items are added to the pool."""
     display_name = "Commander Choice"
     option_locked_random = 0
@@ -54,12 +75,15 @@ class FinalLevels(Range):
     default = 2
 
 
-wargroove2_options: typing.Dict[str, type(Option)] = {
-    "income_boost": IncomeBoost,
-    "commander_defense_boost": CommanderDefenseBoost,
-    "groove_boost": GrooveBoost,
-    "level_shuffle_seed": LevelShuffleSeed,
-    "commander_choice": CommanderChoice,
-    "final_levels": FinalLevels,
-    "death_link": DeathLink
-}
+@dataclass
+class Wargroove2Options(PerGameCommonOptions):
+    victory_locations: VictoryLocations
+    objective_locations: ObjectiveLocations
+    income_boost: IncomeBoost
+    commander_defense_boost: CommanderDefenseBoost
+    groove_boost: GrooveBoost
+    level_shuffle_seed: LevelShuffleSeed
+    commander_choice: CommanderChoice
+    final_levels: FinalLevels
+    death_link: DeathLink
+    start_inventory_from_pool: StartInventoryPool

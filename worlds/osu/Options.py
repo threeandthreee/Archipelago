@@ -36,6 +36,38 @@ class DisableDifficultyReduction(Toggle):
     display_name = "Disable Difficulty Reduction"
 
 
+class DifficultySync(Choice):
+    """Changes which difficulties of each beatmapset are able to send checks
+    Off - Any difficulty of each Beatmapset will send a check.
+    Strict_Any - Only difficulties that fall in your difficulty ranges will send checks
+    Strict_Random - A randomly chosen difficulty within your range has to be played. /check will tell you the diff.
+    """
+    display_name = "Strict Difficulty Sync"
+    option_Off = 0
+    option_Strict_Any = 1
+    option_Strict_Random = 2
+    default = 0
+
+
+class MinimumGrade(Choice):
+    """If Enabled, only send checks for plays with a grade above this value.
+    If using "CL" mod on Laser, will use Stable's Grading calculation.
+    """
+    display_name = "Minimum Grade"
+    option_Off = 0
+    option_SS = 1
+    option_S = 2
+    option_A = 3
+    option_B = 4
+    option_C = 5
+    default = 0
+
+
+class DisallowConverts(Toggle):
+    """Prevents Converts from sending checks. Reccomended if using strict difficulty Sync."""
+    display_name = "Disallow Converts"
+
+
 class DisableStandard(Toggle):
     """Ignores Standard Difficultys when Generating."""
     display_name = "Exclude Standard"
@@ -207,7 +239,7 @@ class PerformancePointsWinCountPercentage(Range):
 
 
 class IncludeSongs(OptionSet):
-    """List of Beatmapset IDs to include. Will add songs in ascending order by ID after the starting songs.
+    """List of Beatmapset IDs to include, each replacing a Rando song. Will add songs in ascending order by ID after the starting songs.
     IE: If you have 5 starting songs, the first ID will be song 6.
     """
     display_name = "Include Songs"
@@ -227,6 +259,9 @@ class OsuOptions(PerGameCommonOptions):
     additional_songs: AdditionalSongs
     additional_item_percentage: AdditionalItemPercentage
     disable_difficulty_reduction: DisableDifficultyReduction
+    minimum_grade: MinimumGrade
+    difficulty_sync: DifficultySync
+    disallow_converts: DisallowConverts
     maximum_length: MaximumLength
     exclude_standard: DisableStandard
     minimum_difficulty_standard: StandardMinimumDifficulty

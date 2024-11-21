@@ -13,14 +13,9 @@ if TYPE_CHECKING:
 
 BASE_ROM_NAME: Dict[str, str] = {
     "firered": "pokemon red version",
-    "leafgreen": "pokemon green version"
-}
-
-EXPECTED_ROM_NAME: Dict[str, str] = {
-    "firered": "pokemon red version AP",
-    "leafgreen": "pokemon green version AP",
-    "firered_rev1": "pokemon red version AP Rev 1",
-    "leafgreen_rev1": "pokemon green version AP Rev 1",
+    "leafgreen": "pokemon green version",
+    "firered_rev1": "pokemon red version",
+    "leafgreen_rev1": "pokemon green version"
 }
 
 TRACKER_EVENT_FLAGS = [
@@ -114,7 +109,7 @@ SECTION_EDGES_MAP = {data.constants[map_name]: map_name for map_name in MAP_SECT
 class PokemonFRLGClient(BizHawkClient):
     game = "Pokemon FireRed and LeafGreen"
     system = "GBA"
-    patch_suffix = (".apfirered", ".apleafgreen", ".apfireredrev1", ".apleafgreenrev1")
+    patch_suffix = (".apfirered", ".apleafgreen")
     game_version: str
     goal_flag: Optional[int]
     local_checked_locations: Set[int]
@@ -140,14 +135,35 @@ class PokemonFRLGClient(BizHawkClient):
             # Check rom name and patch version
             rom_name_bytes = (await bizhawk.read(ctx.bizhawk_ctx, [(0x108, 32, "ROM")]))[0]
             rom_name = bytes([byte for byte in rom_name_bytes if byte != 0]).decode("ascii")
-            if not (rom_name.startswith(BASE_ROM_NAME["firered"]) or rom_name.startswith(BASE_ROM_NAME["leafgreen"])):
+            game_version_bytes = (await bizhawk.read(ctx.bizhawk_ctx, [(0x100, 4, "ROM")]))[0]
+            game_version = int.from_bytes(game_version_bytes, "little")
+            game_revision_bytes = (await bizhawk.read(ctx.bizhawk_ctx, [(0xBC, 1, "ROM")]))[0]
+            game_revision = int.from_bytes(game_revision_bytes, "little")
+
+            if game_version == 0x4:
+                if game_revision == 0x0:
+                    self.game_version = "firered"
+                elif game_revision == 0x1:
+                    self.game_version = "firered_rev1"
+                else:
+                    return False
+            elif game_version == 0x5:
+                if game_revision == 0x0:
+                    self.game_version = "leafgreen"
+                elif game_revision == 0x1:
+                    self.game_version = "leafgreen_rev1"
+                else:
+                    return False
+            else:
                 return False
-            if rom_name == BASE_ROM_NAME["firered"] or rom_name == BASE_ROM_NAME["leafgreen"]:
+
+            if not rom_name.startswith(BASE_ROM_NAME[self.game_version]):
+                return False
+            if rom_name == BASE_ROM_NAME[self.game_version]:
                 logger.info("ERROR: You appear to be running an unpatched version of Pokemon FireRed or LeafGreen."
                             "You need to generate a patch file and use it to create a patched ROM.")
                 return False
-            if not (rom_name.startswith(EXPECTED_ROM_NAME["firered"]) or
-                    rom_name.startswith(EXPECTED_ROM_NAME["leafgreen"])):
+            if not rom_name.startswith(data.rom_names[self.game_version]):
                 logger.info("ERROR: The patch file used to create this ROM is not compatible with "
                             "this client. Double check your client version against the version being "
                             "used by the generator.")
@@ -161,15 +177,6 @@ class PokemonFRLGClient(BizHawkClient):
         ctx.items_handling = 0b001
         ctx.want_slot_data = True
         ctx.watcher_timeout = 0.125
-
-        if rom_name == EXPECTED_ROM_NAME["firered"]:
-            self.game_version = "firered"
-        elif rom_name == EXPECTED_ROM_NAME["leafgreen"]:
-            self.game_version = "leafgreen"
-        elif rom_name == EXPECTED_ROM_NAME["firered_rev1"]:
-            self.game_version = "firered_rev1"
-        elif rom_name == EXPECTED_ROM_NAME["leafgreen_rev1"]:
-            self.game_version = "leafgreen_rev1"
 
         return True
 
