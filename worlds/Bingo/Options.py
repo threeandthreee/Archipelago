@@ -17,6 +17,12 @@ class BoardSize(Range):
     default = 5
     display_name = "Board Size"
 
+class BingoBalancing(Range):
+    """The percentage of bingo squares that'll be forcibly equally divided amongst the other worlds"""
+    range_start = 0
+    range_end = 100
+    default = 0
+    display_name = "Bingo Forced Balancing"
 
 class AutoHints(Toggle):
     """If true, automatically hint all board squares"""
@@ -54,6 +60,7 @@ class BingoStartHints(StartHints):
 class BingoOptions(PerGameCommonOptions):
     required_bingos: RequiredBingos
     board_size: BoardSize
+    bingo_balance: BingoBalancing
     auto_hints: AutoHints
     board_color: CustomBoardColor
     square_color: CustomSquareColor

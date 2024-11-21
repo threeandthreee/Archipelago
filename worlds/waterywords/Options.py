@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from Options import Choice, OptionGroup, PerGameCommonOptions, Range
+from Options import Choice, OptionGroup, PerGameCommonOptions, Range, Toggle
 
 class ScoreForLastCheck(Range):
     """
@@ -11,7 +11,7 @@ class ScoreForLastCheck(Range):
     display_name = "Score for last check"
     range_start = 160
     range_end = 1000
-    default = 200
+    default = 300
 
 
 class ScoreForGoal(Range):
@@ -23,10 +23,19 @@ class ScoreForGoal(Range):
     display_name = "Score for goal"
     range_start = 160
     range_end = 1000
-    default = 300
-    
+    default = 200
+
+
+class MergeItems(Toggle):
+    """
+    This option merges the 95 letters into 19 packs of "5 Letters"
+    and merges the 45 bonus tiles into 9 packs of "5 Bonus Tiles"
+    """
+    display_name = "Merge items"
+    default = True
 
 @dataclass
 class YachtDiceOptions(PerGameCommonOptions):
     score_for_last_check: ScoreForLastCheck
     score_for_goal: ScoreForGoal
+    merge_items: MergeItems

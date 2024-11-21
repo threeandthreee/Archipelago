@@ -83,18 +83,36 @@ class YachtDiceWorld(World):
         for letter in word_letters:
             self.precollected.append(letter)
             WW_letters.remove(letter)  # This removes one occurrence of the letter from WW_letters
-        self.itempool += WW_letters
+        
+        self.slotdata_letter_packs = []
+        if self.options.merge_items:
+            self.itempool += ["5 Letters"] * 19
+            self.random.shuffle(WW_letters)
+            self.slotdata_letter_packs = [WW_letters[i:i+5] for i in range(0, len(WW_letters), 5)]
+        else:
+            self.itempool += WW_letters
         
         self.precollected += ["Extra turn"] * 1
         self.itempool += ["Extra turn"] * 10
         self.max_turns = 11
-                
+        
+        bonus_tiles = []        
         for bonuses in bonus_item_list:
             item = self.random.choices(bonuses, weights=[8, 16, 12, 24])[0]
             if item.split(" ", 1)[1] in ["0,0", "0,14", "14,0", "14,14", "7,1", "2,4", "12,4", "2,10", "12,10", "7,13"]:
                 self.precollected.append(item)
             else:
-                self.itempool.append(item)
+                bonus_tiles.append(item)
+                
+        self.slotdata_bonus_tiles_packs = []
+        if self.options.merge_items:
+            print("YES")
+            self.itempool += ["5 Bonus Tiles"] * 9
+            self.random.shuffle(bonus_tiles)
+            self.slotdata_bonus_tiles_packs = [bonus_tiles[i:i+5] for i in range(0, len(bonus_tiles), 5)]
+        else:
+            self.itempool += bonus_tiles       
+                
         self.max_bonus_tiles = len(bonus_item_list)
         
         for item in self.precollected:
@@ -117,7 +135,8 @@ class YachtDiceWorld(World):
         location_table = ini_locations(
             self.goal_score,
             self.max_score,
-            self.number_of_locations
+            self.number_of_locations,
+            self.options.merge_items
         )
 
         # simple menu-board construction
@@ -174,5 +193,7 @@ class YachtDiceWorld(World):
         slot_data["goal_score"] = self.goal_score
         slot_data["logic_factor"] = self.logic_factor
         slot_data["max_items"] = self.max_letters + self.max_turns + self.max_bonus_tiles
+        slot_data["letter_packs"] = self.slotdata_letter_packs
+        slot_data["bonus_tiles_packs"] = self.slotdata_bonus_tiles_packs
         
         return slot_data

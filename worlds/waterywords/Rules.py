@@ -24,9 +24,9 @@ def set_yacht_rules(world: MultiWorld, player: int, factor, max_items):
             location,
             lambda state, curscore=location.watery_words_score, player=player: 
                 calculate_score_in_logic(
-                    state.count_group("Tiles", player), 
+                    state.count_group("Letters", player) + state.count("5 Letters", player) * 5, 
                     state.count("Extra turn", player),
-                    state.count_group("Bonuses", player),
+                    state.count_group("Bonuses", player) + state.count("5 Bonus Tiles", player) * 5,
                     factor, max_items
                 )>= curscore,
         )

@@ -1,5 +1,4 @@
-
-
+from dataclasses import dataclass
 
 MISSION_ALIGNMENT_DARK = 0
 MISSION_ALIGNMENT_NEUTRAL = 1
@@ -55,14 +54,144 @@ LEVEL_ID_TO_LEVEL = {
     STAGE_FINAL_HAUNT : "Final Haunt"
 }
 
+class REGION_RESTRICTION_TYPES:
+    KeyDoor = 1
+    BlackHawk = 2
+    BlackVolt = 3
+    Torch = 4
+    AirSaucer = 5
+    Car = 6
+    GunJumper = 7
+    LongRangeGun = 8
+    GunLift = 9
+    NoRestriction = 10
+    Vacuum = 11
+    Gun = 12
+    Heal = 13,
+    BlackArmsTurret = 14
+    GunTurret = 15
+
+def IsWeaponsanityRestriction(restriction_type):
+    weapons = [REGION_RESTRICTION_TYPES.Torch, REGION_RESTRICTION_TYPES.LongRangeGun,
+               REGION_RESTRICTION_TYPES.Vacuum, REGION_RESTRICTION_TYPES.Gun,
+               REGION_RESTRICTION_TYPES.Heal]
+    return restriction_type in weapons
+
+def IsVeichleSanityRestriction(restriction_type):
+    veichles = [REGION_RESTRICTION_TYPES.BlackHawk, REGION_RESTRICTION_TYPES.BlackVolt,
+                REGION_RESTRICTION_TYPES.AirSaucer, REGION_RESTRICTION_TYPES.Car,
+                REGION_RESTRICTION_TYPES.GunJumper, REGION_RESTRICTION_TYPES.GunLift,
+                REGION_RESTRICTION_TYPES.BlackArmsTurret, REGION_RESTRICTION_TYPES.GunTurret]
+    return restriction_type in veichles
+
+@dataclass
+class LevelRegion:
+    stageId: int
+    regionIndex: int
+    restrictionType: int
+    logicType: int
+    fromRegions: list
+
+    def __init__(self, stageId, regionIndex, restrictionType):
+        self.stageId = stageId
+        self.regionIndex = regionIndex
+        self.restrictionType = restrictionType
+        self.fromRegions = None if regionIndex is None else [regionIndex - 1]
+        self.logicType = 1
+
+    def setLogicType(self, logic):
+        self.logicType = logic
+        return self
+
+    def setFromRegion(self, fromRegion):
+        if type(fromRegion) is int:
+            self.fromRegions = [fromRegion]
+        elif type(fromRegion) is list:
+            self.fromRegions = fromRegion
+
+        return self
+
+
+INDIVIDUAL_LEVEL_REGIONS = \
+[
+    LevelRegion(STAGE_WESTOPOLIS, 1, REGION_RESTRICTION_TYPES.KeyDoor),
+
+    LevelRegion(STAGE_DIGITAL_CIRCUIT, 1, REGION_RESTRICTION_TYPES.KeyDoor),
+
+    LevelRegion(STAGE_GLYPHIC_CANYON, 1, REGION_RESTRICTION_TYPES.KeyDoor),
+
+    LevelRegion(STAGE_LETHAL_HIGHWAY, 1, REGION_RESTRICTION_TYPES.KeyDoor),
+
+    LevelRegion(STAGE_CRYPTIC_CASTLE, 1, REGION_RESTRICTION_TYPES.Torch),
+    LevelRegion(STAGE_CRYPTIC_CASTLE, 2, REGION_RESTRICTION_TYPES.BlackHawk),
+    LevelRegion(STAGE_CRYPTIC_CASTLE, 3, REGION_RESTRICTION_TYPES.KeyDoor),
+
+    LevelRegion(STAGE_PRISON_ISLAND, 1, REGION_RESTRICTION_TYPES.AirSaucer),
+    LevelRegion(STAGE_PRISON_ISLAND, 2, REGION_RESTRICTION_TYPES.KeyDoor),
+
+    LevelRegion(STAGE_CIRCUS_PARK, 1, REGION_RESTRICTION_TYPES.KeyDoor),
+
+    LevelRegion(STAGE_CENTRAL_CITY, 1, REGION_RESTRICTION_TYPES.Car)
+        .setLogicType(0),
+    LevelRegion(STAGE_CENTRAL_CITY, 2, REGION_RESTRICTION_TYPES.KeyDoor),
+
+    LevelRegion(STAGE_THE_DOOM, 1, REGION_RESTRICTION_TYPES.KeyDoor),
+
+    LevelRegion(STAGE_SKY_TROOPS, 1, REGION_RESTRICTION_TYPES.GunJumper)
+        .setLogicType(0),
+    LevelRegion(STAGE_SKY_TROOPS, 2, REGION_RESTRICTION_TYPES.KeyDoor),
+    LevelRegion(STAGE_SKY_TROOPS, 3, REGION_RESTRICTION_TYPES.BlackVolt)
+        .setFromRegion(2),
+    LevelRegion(STAGE_SKY_TROOPS, 4, REGION_RESTRICTION_TYPES.BlackHawk)
+        .setFromRegion(1),
+    LevelRegion(STAGE_SKY_TROOPS, 5, REGION_RESTRICTION_TYPES.NoRestriction)
+        .setFromRegion([3,4]),
+
+    LevelRegion(STAGE_MAD_MATRIX, 1, REGION_RESTRICTION_TYPES.LongRangeGun),
+    LevelRegion(STAGE_MAD_MATRIX, 2, REGION_RESTRICTION_TYPES.KeyDoor),
+
+    LevelRegion(STAGE_DEATH_RUINS, 1, REGION_RESTRICTION_TYPES.KeyDoor),
+
+    LevelRegion(STAGE_THE_ARK, 1, REGION_RESTRICTION_TYPES.BlackVolt),
+    LevelRegion(STAGE_THE_ARK, 2, REGION_RESTRICTION_TYPES.KeyDoor),
+
+    LevelRegion(STAGE_AIR_FLEET, 1, REGION_RESTRICTION_TYPES.KeyDoor),
+
+    LevelRegion(STAGE_IRON_JUNGLE, 1, REGION_RESTRICTION_TYPES.KeyDoor),
+
+    LevelRegion(STAGE_SPACE_GADGET, 1, REGION_RESTRICTION_TYPES.AirSaucer),
+    LevelRegion(STAGE_SPACE_GADGET, 2, REGION_RESTRICTION_TYPES.KeyDoor),
+
+    LevelRegion(STAGE_LOST_IMPACT, 1, REGION_RESTRICTION_TYPES.GunLift),
+    LevelRegion(STAGE_LOST_IMPACT, 2, REGION_RESTRICTION_TYPES.KeyDoor),
+
+    LevelRegion(STAGE_GUN_FORTRESS, 1, REGION_RESTRICTION_TYPES.KeyDoor),
+
+    LevelRegion(STAGE_BLACK_COMET, 1, REGION_RESTRICTION_TYPES.AirSaucer),
+    LevelRegion(STAGE_BLACK_COMET, 2, REGION_RESTRICTION_TYPES.KeyDoor),
+
+    LevelRegion(STAGE_LAVA_SHELTER, 1, REGION_RESTRICTION_TYPES.KeyDoor),
+
+    LevelRegion(STAGE_COSMIC_FALL, 1, REGION_RESTRICTION_TYPES.KeyDoor),
+    LevelRegion(STAGE_COSMIC_FALL, 2, REGION_RESTRICTION_TYPES.GunJumper)
+        .setFromRegion(0),
+    LevelRegion(STAGE_COSMIC_FALL, 3, REGION_RESTRICTION_TYPES.NoRestriction)
+        .setFromRegion([1,2]),
+
+    LevelRegion(STAGE_FINAL_HAUNT, 1, REGION_RESTRICTION_TYPES.Vacuum),
+    LevelRegion(STAGE_FINAL_HAUNT, 2, REGION_RESTRICTION_TYPES.BlackVolt),
+    LevelRegion(STAGE_FINAL_HAUNT, 3, REGION_RESTRICTION_TYPES.KeyDoor)
+        .setFromRegion(1),
+]
+
 FINAL_STAGES = [STAGE_GUN_FORTRESS, STAGE_BLACK_COMET, STAGE_LAVA_SHELTER, STAGE_COSMIC_FALL, STAGE_FINAL_HAUNT]
 
 CharacterToLevel = {
-    "Sonic": [STAGE_WESTOPOLIS, STAGE_LETHAL_HIGHWAY, STAGE_SPACE_GADGET, STAGE_FINAL_HAUNT],
+    "Sonic": [STAGE_WESTOPOLIS, STAGE_LETHAL_HIGHWAY, STAGE_FINAL_HAUNT],
     "Tails": [STAGE_CIRCUS_PARK, STAGE_AIR_FLEET],
-    "Knuckles": [STAGE_GLYPHIC_CANYON, STAGE_CENTRAL_CITY, STAGE_BLACK_COMET],
+    "Knuckles": [STAGE_GLYPHIC_CANYON, STAGE_CENTRAL_CITY, (STAGE_BLACK_COMET, 1)],
     "Amy": [STAGE_CRYPTIC_CASTLE],
-    "Eggman": [STAGE_CRYPTIC_CASTLE, STAGE_CIRCUS_PARK, STAGE_SKY_TROOPS,
+    "Eggman": [(STAGE_CRYPTIC_CASTLE, 1), STAGE_CIRCUS_PARK, STAGE_SKY_TROOPS,
                STAGE_IRON_JUNGLE, STAGE_LAVA_SHELTER],
     "Rouge": [STAGE_DIGITAL_CIRCUIT, STAGE_DEATH_RUINS, STAGE_GUN_FORTRESS],
     "Omega": [STAGE_IRON_JUNGLE, STAGE_LAVA_SHELTER],
@@ -71,7 +200,7 @@ CharacterToLevel = {
              STAGE_THE_DOOM, STAGE_SKY_TROOPS, STAGE_MAD_MATRIX,
              STAGE_DEATH_RUINS, STAGE_THE_ARK, STAGE_AIR_FLEET,
              STAGE_SPACE_GADGET, STAGE_GUN_FORTRESS, STAGE_BLACK_COMET,
-             STAGE_COSMIC_FALL, STAGE_FINAL_HAUNT],
+             STAGE_COSMIC_FALL, (STAGE_FINAL_HAUNT, 1)],
     "Espio": [STAGE_MAD_MATRIX],
     "Charmy": [STAGE_PRISON_ISLAND],
     "Vector": [STAGE_COSMIC_FALL],

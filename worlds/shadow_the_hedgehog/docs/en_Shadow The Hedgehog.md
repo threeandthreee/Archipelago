@@ -23,10 +23,18 @@ Each step of progress on these checks is a multiworld item.
 Likewise, all of these mission objectives are items that can be received, requiring you to meet the total to finish
 the several Dark and Hero missions of the game.
 
-The latest version includes further enemysanity and configuration around the percent of these checks to include.
+The game includes further enemysanity and configuration around the percent of these checks to include.
 Checkpoint sanity is a recent addition, allowing each numbered checkpoint to be an individual check.
 
-There are some junk items and special weapon unlocks are also available.
+Enemysanity logic requires the entire stage to be accessible for any of the checks to be in logic.
+
+Keysanity is an additional, this keeps track of each individual key rather the counter. This tracks individual keys and will describe the index of the key in the stage when picking up.
+
+Weaponsanity is an option which prevents you from holding weapons until they are unlocked, which has an affect on logic. There is an option to add checks for holding each weapon, and this can be configured to be only when unlocked as well.
+
+Veichle logic exists and is written, but has no effect on gameplay. You can use this mode, as the logic handles it, but the game will not restrict you from using them.
+
+There are some junk items and special weapon unlocks are also available, regardless of weaponsanity.
 
 It is possible to tweak the settings to remove some of the specific checks and alter total to the players choice.
 Likewise, it is possible to exclude stages.
@@ -55,6 +63,12 @@ Other missions require you to achieve 1 more step in the objective.
 Character interactions in levels have been made to not happen, but will happen the first time when charactersanity is enabled.
 This is done by setting the flags to true when the player enters a level, but for those which have been seen.
 
+Some levels with particular interactions will automatically clear after clearing other missions and the goal being met. This does not clear the mission on the save file but does handle them in the archipelago.  These include: 
+- Cosmic Wall Hero auto clears Cosmic Wall Dark
+- Digital Circuit Dark auto clears Digital Circuit Hero
+- Space Gadget Hero auto clears Space Gadget Dark 
+Mission Tokens, when enabled will be given to the player for completing missions when possible. This requires at least one of the levels missions to be cleared.
+
 ## What does the game look like?
 
 Currently this project has no feedback on what the item you have found is, and requires the use of the Text Client.
@@ -79,7 +93,7 @@ For further details, fully read other sections.
 
 You select your goal type when setting up in the yaml file. Once you reach these conditions you have set,
 based on percentage and enabling, Last Story will unlock in the Story menu. Walk through this and defeat the final boss to finish.
+Each goal has a seperate token or required it based on the flags set.
 
 ## Known Issues
-- Sometimes the stage will not detect the correct mission objectives and will not shift the total. 
-Exiting and re-entering the level should hopefully resolve this.
+N/A
