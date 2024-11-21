@@ -94,14 +94,13 @@ def download_slot_file(room_id, player_id: int):
             fname = f"AP_{app.jinja_env.filters['suuid'](room_id)}_P{slot_data.player_id}_{slot_data.player_name}.zip"
         elif slot_data.game == "Final Fantasy Mystic Quest":
             fname = f"AP+{app.jinja_env.filters['suuid'](room_id)}_P{slot_data.player_id}_{slot_data.player_name}.apmq"
+        # Ashipelago customization
         elif slot_data.game == "The Legend of Zelda - Oracle of Seasons":
             fname = f"AP+{app.jinja_env.filters['suuid'](room_id)}_P{slot_data.player_id}_{slot_data.player_name}.patcherdata"
         elif slot_data.game == "Final Fantasy 12 Open World":
             fname = f"AP+{app.jinja_env.filters['suuid'](room_id)}_P{slot_data.player_id}_{slot_data.player_name}.json"
         elif slot_data.game == "The Wind Waker":
             fname = f"AP+{app.jinja_env.filters['suuid'](room_id)}_P{slot_data.player_id}_{slot_data.player_name}.aptww"
-        elif slot_data.game == "No Man's Sky":
-            fname = f"AP+{app.jinja_env.filters['suuid'](room_id)}_P{slot_data.player_id}_{slot_data.player_name}.apmanual"
         else:
             return "Game download not supported."
         return send_file(io.BytesIO(slot_data.data), as_attachment=True, download_name=fname)
