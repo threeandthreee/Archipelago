@@ -34,7 +34,7 @@ def launch_client(*args):
     from .LinksAwakeningClient import launch
     launch_subprocess(launch, name="Links Awakening DX Client", args=args)
 
-components.append(Component("Links Awakening DX Client",
+components.append(Component("Links Awakening DX Beta Client",
                             func=launch_client,
                             component_type=Type.CLIENT,
                             file_identifier=SuffixIdentifier('.apladx')))
