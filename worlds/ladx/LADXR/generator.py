@@ -146,10 +146,10 @@ def generateRom(base_rom: bytes, args, data: Dict):
     if ladxr_settings["witch"]:
         patches.witch.updateWitch(rom)
     patches.softlock.fixAll(rom)
-    if not world.ladxr_settings.rooster:
+    if not ladxr_settings["rooster"]:
         patches.maptweaks.tweakMap(rom)
         patches.maptweaks.tweakBirdKeyRoom(rom)
-    if world.options.overworld == "open_mabe":
+    if ladxr_settings["overworld"] == "openmabe":
         patches.maptweaks.openMabe(rom)
     patches.chest.fixChests(rom)
     patches.shop.fixShop(rom)
