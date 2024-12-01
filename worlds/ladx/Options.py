@@ -524,6 +524,20 @@ class Warps(Choice):
     default = option_vanilla
 
 
+class WarpImprovements(DefaultOffToggle):
+    """
+    temporary legacy support for beta
+    """
+    display_name = "Warp Improvements"
+
+
+class AdditionalWarpPoints(DefaultOffToggle):
+    """
+    temporary legacy support for beta
+    """
+    display_name = "Additional Warp Points"
+
+
 class ForeignItemIcons(Choice):
     """
     Choose how to display foreign items.
@@ -644,6 +658,8 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     quickswap: Quickswap
     boots_controls: BootsControls
     warps: Warps
+    warp_improvements: WarpImprovements
+    additional_warp_points: AdditionalWarpPoints
 
     ap_title_screen: APTitleScreen
     palette: Palette

@@ -57,7 +57,6 @@ from .patches import tradeSequence as _
 from . import hints
 
 from .patches import bank34
-from ..Options import TrendyGame, Palette
 from .roomEditor import RoomEditor, Object
 from .patches.aesthetics import rgb_to_bin, bin_to_rgb
 
@@ -401,8 +400,8 @@ def generateRom(base_rom: bytes, args, data: Dict):
                 color[channel] = color[channel] * 31 // 0xbc
 
 
-    if ap_options["warps"] != Warps.option_vanilla:
-        patches.core.addWarpImprovements(rom, ap_options["warps"] == Warps.option_improved_additional)
+    if (ap_options["warps"] != Warps.option_vanilla) or (ap_options["warp_improvements"]):
+        patches.core.addWarpImprovements(rom, (ap_options["warps"] == Warps.option_improved_additional) or (ap_options["additional_warp_points"]))
 
     palette = ap_options["palette"]
     if palette != Palette.option_normal:
