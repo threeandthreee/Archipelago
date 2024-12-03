@@ -37,7 +37,7 @@ def launch_client(*args):
 components.append(Component("Links Awakening DX Beta Client",
                             func=launch_client,
                             component_type=Type.CLIENT,
-                            file_identifier=SuffixIdentifier('.apladx')))
+                            file_identifier=SuffixIdentifier('.apladxb')))
 
 class LinksAwakeningSettings(settings.Group):
     class RomFile(settings.UserFilePath):

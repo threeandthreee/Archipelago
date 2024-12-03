@@ -43,7 +43,7 @@ class LADXPatchExtensions(worlds.Files.APPatchExtension):
 class LADXProcedurePatch(worlds.Files.APProcedurePatch):
     hash = [LADX_HASH]
     game = LINKS_AWAKENING
-    patch_file_ending: str = ".apladx"
+    patch_file_ending: str = ".apladxb"
     result_file_ending: str = ".gbc"
 
     procedure = [
