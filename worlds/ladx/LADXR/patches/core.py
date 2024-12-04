@@ -541,7 +541,7 @@ OAMData:
         rom.banks[0x38][0x1400+n*0x20:0x1410+n*0x20] = utils.createTileData(gfx_high)
         rom.banks[0x38][0x1410+n*0x20:0x1420+n*0x20] = utils.createTileData(gfx_low)
 
-def addBootsControls(rom, boots_controls: BootsControls):
+def addBootsControls(rom, boots_controls: int):
     if boots_controls == BootsControls.option_vanilla:
         return
     consts = {
@@ -578,8 +578,8 @@ def addBootsControls(rom, boots_controls: BootsControls):
         jr  z, .yesBoots
         ld   a, [hl]
         """
-    }[boots_controls.value]
-    
+    }[boots_controls]
+
     # The new code fits exactly within Nintendo's poorly space optimzied code while having more features
     boots_code = assembler.ASM("""
 CheckBoots:
@@ -593,12 +593,12 @@ CheckBoots:
     ld  hl, wBButtonSlot
     ld   d, J_B
     call  .maybeBoots
-                               
+
     ; Check the A button
     inc l ; l = wAButtonSlot - done this way to save a byte or two
     ld   d, J_A
     call  .maybeBoots
-                               
+
     ; If neither, reset charge meter and bail
     xor  a
     ld   [wPegasusBootsChargeMeter], a
@@ -637,17 +637,17 @@ def addWarpImprovements(rom, extra_warps):
     tile = utils.createTileData( \
 """11111111
 10000000
-10200320 
+10200320
 10323200
 10033300
 10023230
 10230020
 10000000""", key="0231")
     MINIMAP_BASE = 0x3800
-    
+
     # This is replacing a junk tile never used on the minimap
     rom.banks[0x2C][MINIMAP_BASE + len(tile) * 0x65 : MINIMAP_BASE + len(tile) * 0x66] = tile
-    
+
     # Allow using ENTITY_WARP for finding which map sections are warps
     # Interesting - 3CA0 should be free, but something has pushed all the code forward a byte
     rom.patch(0x02, 0x3CA1, None, ASM("""
@@ -672,7 +672,7 @@ def addWarpImprovements(rom, extra_warps):
         ld   a, e
         cp   $FF
         jr   nz, warp_search_loop
-    
+
     not_found:
         jp   $512B
 
@@ -682,7 +682,7 @@ def addWarpImprovements(rom, extra_warps):
     rom.patch(0x02, 0x1109, ASM("""
     ldh a, [$F6]
     cp 1
-    
+
     """), ASM("""
     jp $7CA1
     nop
@@ -701,7 +701,7 @@ def addWarpImprovements(rom, extra_warps):
         ret
     """), fill_nop=True)
 
-    # Patch over some instructions that decided if we are in debug mode holding some 
+    # Patch over some instructions that decided if we are in debug mode holding some
     # buttons with instead checking for FFDD (why FFDD? It appears to be never used anywhere, so we repurpose it for "is in teleport mode")
     rom.banks[0x01][0x17B8] = 0xDD
     rom.banks[0x01][0x17B9] = 0xFF
@@ -720,7 +720,7 @@ def addWarpImprovements(rom, extra_warps):
 
     # This disables the arrows around the selection bubble
     #rom.patch(0x01, 0x1B6F, None, ASM("ret"), fill_nop=True)
-    
+
     # Fix lag when moving the cursor
     # One option - just disable the delay code
     #rom.patch(0x01, 0x1A76, 0x1A76+3, ASM("xor a"), fill_nop=True)
@@ -768,7 +768,7 @@ def addWarpImprovements(rom, extra_warps):
                 room.overlay[object.x + object.count + object.y * 10] = object.type_id
                 object.count += 1
         room.store(rom)
-    
+
     for warp in all_warps:
         # Set icon
         rom.banks[0x20][0x168B + warp] = 0x55
@@ -776,7 +776,7 @@ def addWarpImprovements(rom, extra_warps):
         if not rom.banks[0x01][0x1959 + warp]:
             rom.banks[0x01][0x1959 + warp] = 0x42
         # Set palette
-        # rom.banks[0x20][0x178B + 0x95] = 0x1      
+        # rom.banks[0x20][0x178B + 0x95] = 0x1
 
     # Setup [?!] icon on map and associated text
     rom.banks[0x01][0x1909 + 0x42] = 0x2B
@@ -787,7 +787,7 @@ def addWarpImprovements(rom, extra_warps):
     call $7E7B
     ret
     """))
-    
+
     # Build a switch statement by hand
     warp_jump = "".join(f"cp ${hex(warp)[2:]}\njr z, success\n" for warp in all_warps)
 
@@ -823,7 +823,7 @@ success:
     ld   a, $70
     ld   [$D405], a                  ; wWarp0DestinationY
     ldh  [$99], a                    ; LinkPositionX
-    ld   a, $66                        
+    ld   a, $66
     ld   [$D416], a                  ; wWarp0PositionTileIndex
     ld   a, $07
     ld   [$DB96], a                  ; wGameplaySubtype
