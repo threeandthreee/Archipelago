@@ -579,7 +579,6 @@ def addBootsControls(rom, boots_controls: int):
         ld   a, [hl]
         """
     }[boots_controls]
-
     # The new code fits exactly within Nintendo's poorly space optimzied code while having more features
     boots_code = assembler.ASM("""
 CheckBoots:
