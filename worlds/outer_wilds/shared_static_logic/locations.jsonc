@@ -389,7 +389,7 @@
     },
     {
         "category": "base", "address": 1085038305, "name": "DB: Scan Escape Pod 3 Signal",
-        "region": "Nomai Grave", "requires": [ { "item": "Distress Beacon Frequency" } ] // see connection logic
+        "region": "Nomai Grave", "requires": [ { "item": "Signalscope" }, { "item": "Distress Beacon Frequency" } ]
     },
     {
         "category": "base", "address": 1085038306, "name": "TH: Scan Galena's Radio Signal",
@@ -1236,7 +1236,12 @@
     {
         "category": "dlc", "address": 1085040015, "name": "DW: Endless Canyon Mural",
         "region": "Endless Canyon", "requires": [
-            { "item": "Dream Totem Patch" } // project multiple bridges, and hand warp to reach 2nd projection totem
+            { "anyOf": [
+                // the intended vanilla route: project bridge into lodge, hand warp inside, project bridge inside lodge
+                { "item": "Dream Totem Patch" },
+                // the "shortcut": use an invisible bridge on the far right to reach lower lodge without projecting the bridge inside
+                { "item": "Projection Range Patch" }
+            ] }
         ]
     },
     {
@@ -1480,7 +1485,10 @@
     {
         "category": "dlc", "logsanity": true, "address": 1085041031, "name": "DW Ship Log: Starlit Cove 4 - Upper Floors",
         "region": "Starlit Cove", "requires": [
-            { "item": "Dream Totem Patch" } // project dock w/ walkway to lower tower entrance
+            { "anyOf": [
+                { "item": "Dream Totem Patch" }, // project dock w/ walkway to lower tower entrance
+                { "item": "Raft Docks Patch" } // unless it's already there
+            ] }
         ]
     },
     {
@@ -1490,7 +1498,12 @@
     {
         "category": "dlc", "logsanity": true, "address": 1085041033, "name": "DW Ship Log: Endless Canyon 2 - Mural",
         "region": "Endless Canyon", "requires": [
-            { "item": "Dream Totem Patch" } // project multiple bridges, and hand warp to reach 2nd projection totem
+            { "anyOf": [
+                // the intended vanilla route: project bridge into lodge, hand warp inside, project bridge inside lodge
+                { "item": "Dream Totem Patch" },
+                // the "shortcut": use an invisible bridge on the far right to reach lower lodge without projecting the bridge inside
+                { "item": "Projection Range Patch" }
+            ] }
         ]
     },
     {
@@ -1752,23 +1765,23 @@
     },
     {
         "category": "hn1", "address": 1085042002, "name": "HN1: Scan Entrance Station Signal",
-        "region": "Lava Core Frequency", "requires": []
+        "region": "Lava Core Entrance", "requires": [ { "item": "Signalscope" }, { "item": "Lava Core Signals Frequency" } ]
     },
     {
         "category": "hn1", "address": 1085042003, "name": "HN1: Scan Lava Shrine Signal",
-        "region": "Lava Core Frequency", "requires": []
+        "region": "Lava Core Structures", "requires": [ { "item": "Signalscope" }, { "item": "Lava Core Signals Frequency" } ]
     },
     {
         "category": "hn1", "address": 1085042004, "name": "HN1: Scan Structure By Cliff Signal",
-        "region": "Lava Core Frequency", "requires": []
+        "region": "Lava Core Structures", "requires": [ { "item": "Signalscope" }, { "item": "Lava Core Signals Frequency" } ]
     },
     {
         "category": "hn1", "address": 1085042005, "name": "HN1: Scan Structure With Pillars Signal",
-        "region": "Lava Core Frequency", "requires": []
+        "region": "Lava Core Structures", "requires": [ { "item": "Signalscope" }, { "item": "Lava Core Signals Frequency" } ]
     },
     {
         "category": "hn1", "address": 1085042006, "name": "HN1: Scan Old Abandoned Town Signal",
-        "region": "Lava Core Frequency", "requires": []
+        "region": "Lava Core Structures", "requires": [ { "item": "Signalscope" }, { "item": "Lava Core Signals Frequency" } ]
     },
     {
         "category": "hn1", "address": 1085042007, "name": "HN1: Lava Shrine Symbol",
@@ -1896,23 +1909,23 @@
 
     {
         "category": "hn1", "logsanity": true, "address": 1085042034, "name": "HN1 Ship Log: Lava Core 1 - Buttons",
-        "region": "Lava Core", "requires": []
+        "region": "Lava Core Entrance", "requires": []
     },
     {
         "category": "hn1", "logsanity": true, "address": 1085042035, "name": "HN1 Ship Log: Lava Core 2 - Communications",
-        "region": "Lava Core Frequency", "requires": []
+        "region": "Lava Core Structures", "requires": [ { "item": "Signalscope" }, { "item": "Lava Core Signals Frequency" } ]
     },
     {
         "category": "hn1", "logsanity": true, "address": 1085042036, "name": "HN1 Ship Log: Structure On A Cliff",
-        "region": "Lava Core", "requires": []
+        "region": "Lava Core Structures", "requires": []
     },
     {
         "category": "hn1", "logsanity": true, "address": 1085042037, "name": "HN1 Ship Log: Structure By Pillars",
-        "region": "Lava Core", "requires": []
+        "region": "Lava Core Structures", "requires": []
     },
     {
         "category": "hn1", "logsanity": true, "address": 1085042038, "name": "HN1 Ship Log: Old Abandoned Town",
-        "region": "Lava Core", "requires": []
+        "region": "Lava Core Structures", "requires": []
     },
     {
         "category": "hn1", "logsanity": true, "address": 1085042039, "name": "HN1 Ship Log: Lava Shrine 1 - Entry",

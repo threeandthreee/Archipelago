@@ -238,6 +238,13 @@ JML PokeySwirl
 
 ORG $C0F67A
 JML GetSeedPlayer
+
+ORG $C1ED67
+JML DrawWorldVersion
+
+ORG $C1FD57
+JML Set24BitStartingEXP
+
 ;new jmls
 
 
@@ -1273,10 +1280,10 @@ db $50, $9e, $95, $95, $94, $50, $9d, $a9, $5e, $5e, $5e, $03, $00, $70, $87, $9
 db $91, $a4, $6f, $03, $00, $70, $87, $98, $91, $a4, $6f, $03, $00, $70, $84, $98
 db $99, $a3, $50, $99, $a3, $50, $a4, $98, $95, $50, $a7, $a2, $9f, $9e, $97, $50
 db $9d, $a5, $9c, $a4, $99, $a7, $9f, $a2, $9c, $94, $6f, $03, $00, $70, $7f, $9f
-db $a0, $a3, $51, $03, $00, $70, $80, $a2, $95, $a4, $95, $9e, $94, $50, $a7, $95
-db $50, $9e, $95, $a6, $95, $a2, $50, $a4, $91, $9c, $9b, $95, $94, $51, $03, $00
+db $a0, $a3, $51, $03, $00, $70, $77, $9f, $a4, $a4, $91, $50, $97, $9f, $51, $0A
+db $A3, $8A, $C6, $a6, $95, $a2, $50, $a4, $91, $9c, $9b, $95, $94, $51, $03, $00
 db $70, $5a, $72, $95, $95, $95, $95, $95, $a0, $5a, $13, $18, $04, $1f, $03, $04
-db $1B, $02, $02; Summers Tony Call
+db $11, $04, $02; Summers Tony Call
 
 ORG $C8B9BC
 db $D7, $00
@@ -2917,6 +2924,7 @@ ORG $00F8D0
 GetItemRemote:
 SEP #$20
 STZ $B582
+STZ $B583
 LDA #$01
 STA $B585
 REP #$20
@@ -3217,6 +3225,7 @@ DEC
 PHA
 LSR
 JML SetFlagProceed
+
 PocketStorage:
 LDA $0065
 AND #$00FF
@@ -3858,7 +3867,7 @@ STY $94
 RTL
 
 ORG $D5F5FB
-db $03, $00, $11; Starting level
+db $03, $00; Starting level
 
 ORG $D5F600
 db $12
@@ -4182,8 +4191,9 @@ ORG $CFB034
 db $d1, $af, $ee
 
 ORG $EEAFD1
-db $1b, $00, $0a, $cb, $da, $c7, $1b, $01, $08, $40, $a7, $ee, $ff, $04, $57, $00
-db $02
+db $1b, $00, $0a, $cb, $da, $c7, $1b, $01, $08, $40, $a7, $ee, $ff
+db $0A
+dl fix_boogey_tent
 
 ORG $C7DAEB
 db $0a, $d7, $af, $ee
@@ -5704,10 +5714,11 @@ PlayerJustDied:
 SEP #$20
 LDA $B582; If the player just died in battle, dont send any more deaths 
 BNE SkipSendingDeath
+;In this case, we died on the overworld
 INC $B582;Player is currently dead
 LDA $B583;Did the player just get killed by a deathlink death?
 BNE SkipSendingDeath
-INC $B584;Is the player sending a death
+INC $B584;Tell the serveer we died
 SkipSendingDeath:
 STZ $B583
 REP #$20
@@ -7865,6 +7876,123 @@ dd post_hint_text
 db $05, $0A, $04
 db $02
 
+ORG $FCFFA0
+db $75, $91, $a2, $a4, $98, $72, $9f, $a5, $9e, $94, $50, $71, $a2, $93, $98, $99
+db $a0, $95, $9c, $91, $97, $9f, $50, $a6, $95, $a2, $a3, $99, $9f, $9e, $50, $02
+
+ORG $E1F4CA
+db $f9, $03; Onett hint shop flag
+
+ORG $E1F4F3
+db $fa, $03; Twoson hint shop flag
+
+ORG $E1F521
+db $fb, $03; Threed hint shop flag
+
+ORG $E1F545
+db $fc, $03; Fourside hint shop flag
+
+ORG $E1F57E
+db $fd, $03; Summers hint shop flag
+
+ORG $E1F55F
+db $fe, $03; Scaraba hint shop flag
+;New data table go here
+
+;Giant Step
+ORG $D6FC38
+db $08
+dd boost_speed_dynamic
+
+ORG $D6FC60
+db $08
+dd boost_vitality_dynamic
+;Lilliput Steps
+ORG $D6FCBB
+db $08
+dd boost_guts_dynamic
+
+ORG $D6FCE3
+db $08
+dd boost_vitality_dynamic
+;Milky Well
+ORG $D6FD3A
+db $08
+dd boost_speed_dynamic
+
+ORG $D6FD5C
+db $08
+dd boost_iq_dynamic
+;Magnet Hill
+ORG $D6FDB7
+db $08
+dd boost_vitality_dynamic
+
+ORG $D6FDDB
+db $08
+dd boost_luck_dynamic
+;Rainy Circle
+ORG $D6FE33
+db $08
+dd boost_guts_dynamic
+
+ORG $D6FE55
+db $08
+dd boost_iq_dynamic
+;Pink Cloud
+
+ORG $D6FEAC
+db $08
+dd boost_speed_dynamic
+
+ORG $D6FED0
+db $08
+dd boost_guts_dynamic
+;Lumine Hall
+ORG $D6FF27
+db $08
+dd boost_luck_dynamic
+
+ORG $D6FF49
+db $08
+dd boost_iq_dynamic
+;Fire Spring
+ORG $D6FFA1
+db $08
+dd boost_speed_dynamic
+
+ORG $D6FFC5
+db $08
+dd boost_luck_dynamic
+
+ORG $C99A9D
+db $a1, $9a, $c9
+
+ORG $C769A8
+db $0A, $3C, $F7, $EE
+
+ORG $C10E16
+LDA #$0098
+
+ORG $EF79F3
+db $4C, $F7, $EE
+
+ORG $D7FD30
+ExpPointers:
+dw $FFFF
+dw $FD40
+dw $FD44
+dw $FD48
+dw $FD4C
+
+ORG $D7FD40
+dd $00000011
+dd $00000000
+dd $00000000
+dd $000016EF
+
+ORG $C9B132
+db $11, $04; Tony phone call flag
 
 ;;;;;;;;;;;;;boss names
 ORG $EEEEBC
@@ -8117,10 +8245,6 @@ db $04, $0A, $04
 db $06, $fe, $03
 dd $FFC726DA
 dd $C701870A
-
-
-
-
 
 display_hint_price:
 
@@ -8377,6 +8501,138 @@ db $02
 .no_space:
 db $1D, $19, $01
 db $02
+
+fix_boogey_tent:
+db $1B, $02
+dd .no_space
+db $04, $57, $00
+db $02
+.no_space:
+db $04, $9D, $02
+db $02
+;Newtext
+
+boost_speed_dynamic:
+db $1B, $04
+db $1F, $C0, $04
+dd boost_ness_speed
+dd boost_paula_speed
+dd boost_jeff_speed
+dd boost_poo_speed
+db $1b, $04, $02
+
+
+boost_vitality_dynamic:
+db $1B, $04
+db $1F, $C0, $04
+dd boost_ness_vitality
+dd boost_paula_vitality
+dd boost_jeff_vitality
+dd boost_poo_vitality
+db $1b, $04, $02
+
+boost_guts_dynamic:
+db $1B, $04
+db $1F, $C0, $04
+dd boost_ness_guts
+dd boost_paula_guts
+dd boost_jeff_guts
+dd boost_poo_guts
+db $1b, $04, $02
+
+boost_iq_dynamic:
+db $1B, $04
+db $1F, $C0, $04
+dd boost_ness_iq
+dd boost_paula_iq
+dd boost_jeff_iq
+dd boost_poo_iq
+db $1b, $04, $02
+
+boost_luck_dynamic:
+db $1B, $04
+db $1F, $C0, $04
+dd boost_ness_luck
+dd boost_paula_luck
+dd boost_jeff_luck
+dd boost_poo_luck
+db $1b, $04, $02
+
+boost_ness_speed:
+db $1E, $0C, $01, $05, $03, $02
+
+boost_paula_speed:
+db $1E, $0C, $02, $05, $03, $02
+
+boost_jeff_speed:
+db $1E, $0C, $03, $05, $03, $02
+
+boost_poo_speed:
+db $1E, $0C, $04, $05, $03, $02
+;;;;;;;;;;
+boost_ness_vitality:
+db $1E, $0D, $01, $05, $03, $02
+
+boost_paula_vitality:
+db $1E, $0D, $02, $05, $03, $02
+
+boost_jeff_vitality:
+db $1E, $0D, $03, $05, $03, $02
+
+boost_poo_vitality:
+db $1E, $0D, $04, $05, $03, $02
+;;;;;;;;;;;;;;
+boost_ness_guts:
+db $1E, $0B, $01, $05, $03, $02
+
+boost_paula_guts:
+db $1E, $0B, $02, $05, $03, $02
+
+boost_jeff_guts:
+db $1E, $0B, $03, $05, $03, $02
+
+boost_poo_guts:
+db $1E, $0B, $04, $05, $03, $02
+;;;;;;;;
+boost_ness_iq:
+db $1E, $0A, $01, $05, $03, $02
+
+boost_paula_iq:
+db $1E, $0A, $02, $05, $03, $02
+
+boost_jeff_iq:
+db $1E, $0A, $03, $05, $03, $02
+
+boost_poo_iq:
+db $1E, $0A, $04, $05, $03, $02
+;;;;;;;;;;;;
+boost_ness_luck:
+db $1E, $0E, $01, $05, $03, $02
+
+boost_paula_luck:
+db $1E, $0E, $02, $05, $03, $02
+
+boost_jeff_luck:
+db $1E, $0E, $03, $05, $03, $02
+
+boost_poo_luck:
+db $1E, $0E, $04, $05, $03, $02
+
+db $06, $69, $00
+dd $00C74207
+db $70, $58, $1c, $02, $01
+db $0A, $A9, $69, $C7
+
+;new text go here
+db $19, $10, $01
+db $1B, $04
+db $0E, $00
+db $08
+db $7F, $DC, $C7, $00
+db $1b, $02
+dd $00C7E6D7
+db $7E, $9F, $92, $9F, $94, $A9, $02
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ORG $C1C84A
@@ -8730,12 +8986,11 @@ JML $C2E953
 JML $C2E964
 ;;;;;;;;;;;;
 ;new code go here
-
 GetSeedPlayer:
 PHY
 PHB
 LDA #$0010
-LDX #$FCE0
+LDX #$FD00
 LDY #$9801
 MVN $D77E
 PLB
@@ -8744,6 +8999,57 @@ LDX #$9801
 STX $15
 JML $C0F67F
 
+DrawWorldVersion:
+LDA #$0024
+JSL $C1DD47
+LDA #$FFA0
+STA $0E
+LDA #$00FC
+STA $10
+;FCFFE0 stores the world version
+JSL $C186B1
+
+LDA #$0013
+JSL $C1DD47;draw the file select box
+JML $C1ED6D
+
+Set24BitStartingEXP:
+PHX
+LDA $24
+AND #$00FF
+ASL
+TAX
+LDA ExpPointers,X
+STA $06
+LDA #$00D7
+STA $08
+LDA [$06]
+BEQ .ZeroCheck
+.HasExp:
+TAX
+INC $06
+INC $06
+LDA [$06]
+STA $08
+STX $06
+PLX
+JML $C1FD61
+.ZeroCheck:
+PHA
+INC $06
+INC $06
+LDA [$06]
+BEQ .NoEXP
+PLA
+DEC $06
+DEC $06
+BRA .HasExp
+.NoEXP:
+PLA
+PLX
+DEC $06
+DEC $06
+JML $C1FD72
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;BATTLE ACTION STUFF WEE-WOO WEE-WOO

@@ -90,6 +90,7 @@ class MindustryWorld(World):
         """Create every item in the world"""
         campaign = self.options.campaign_choice.value
         self.__exclude_items(campaign)
+        world_item_count = 0
         for name, data in item_table.items():
             if self.__from_selected_campaign(data, campaign):
                 if name not in self.exclude:
@@ -97,8 +98,9 @@ class MindustryWorld(World):
                     for i in range(item_count):
                         item = self.create_item(name)
                         self.multiworld.itempool.append(item)
+                        world_item_count += 1
         #Check how many location are empty and fill them with FILLERS
-        remaining = len(self.multiworld.get_unfilled_locations(self.player)) - len(self.multiworld.itempool)
+        remaining = len(self.multiworld.get_unfilled_locations(self.player)) - world_item_count
         while remaining > 0:
             self.__create_filler_item(campaign)
             remaining -= 1
@@ -277,6 +279,7 @@ class MindustryWorld(World):
                 case _:
                     valid = False
         return valid
+
 
     def set_rules(self) -> None:
         """

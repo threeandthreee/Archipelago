@@ -1,8 +1,7 @@
 from dataclasses import dataclass
-
-import random
-from schema import Schema, And
 from typing import Set
+
+from schema import Schema, And
 
 from Options import Choice, DefaultOnToggle, OptionDict, PerGameCommonOptions, Range, StartInventoryPool, Toggle
 
@@ -188,7 +187,7 @@ class DLCOnly(Toggle):
     Sets enable_eote_dlc to true, spawn to stranger, goal to echoes_of_the_eye (see descriptions of those options),
     and then prevents generation of all the base game locations and of many items not useful in the DLC.
 
-    Not compatible with story mods (once those are implemented).
+    Not compatible with story mods.
     """
     display_name = "DLC Only"
 

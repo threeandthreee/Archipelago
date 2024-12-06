@@ -7,30 +7,64 @@ from Options import PerGameCommonOptions
 from .Enums import level_areas, pascal_to_space
 
 
-class Goal(Choice):
-    """
-    Determines the goal of the seed.
-    Levels (0): Complete action stages available to unlock the Perfect Chaos Fight.
-    Emblems (1): Collect a certain number of emblems to unlock the Perfect Chaos Fight.
-    Chaos Emerald Hunt (2): Collect all 7 Chaos Emeralds to unlock the Perfect Chaos Fight.
-    Levels and Chaos Emerald Hunt (3): Beat action stages and collect the emeralds to fight Perfect Chaos.
-    Emblems and Chaos Emerald Hunt (4): Collect both emblems and the emeralds to fight Perfect Chaos.
-    Missions (5): Complete missions to unlock the Perfect Chaos Fight.
-    Missions and Chaos Emerald Hunt (6): Complete and collect the emeralds to fight Perfect Chaos.
+class GoalRequiresLevels(DefaultOnToggle):
+    """If enabled, you have to complete action stages to unlock the last fight."""
+    display_name = "Goal Requires Levels"
 
-    Keep in mind selecting emerald hunt will require enough checks to add the 7 emeralds to the pool.
-    Also, selecting emblems will require at least 5 checks to add the 5 emblems to the pool.
-    Some options will fail to generate a seed if there are not enough checks to add the emeralds.
+
+class LevelPercentage(Range):
+    """If Levels are part of the goal, Percentage of the available levels that needed to be completed to unlock the final story."""
+    display_name = "Level Requirement Percentage"
+    range_start = 25
+    range_end = 100
+    default = 100
+
+
+class GoalRequiresChaosEmeralds(Toggle):
     """
-    display_name = "Goal"
-    option_levels = 0
-    option_emblems = 1
-    option_emerald_hunt = 2
-    option_levels_and_emerald_hunt = 3
-    option_emblems_and_emerald_hunt = 4
-    option_missions = 5
-    option_missions_and_emerald_hunt = 6
-    default = 0
+    If enabled, you have to collect all the Chaos Emeralds to unlock the last fight.
+    Keep in mind selecting emerald hunt will require enough checks to add the 7 emeralds to the pool.
+    """
+    display_name = "Goal Requires Chaos Emeralds"
+
+
+class GoalRequiresEmblems(Toggle):
+    """
+    If enabled, you have to collect a certain number of emblems to unlock the last fight.
+    Enabling this will require at least 5 checks to add the 5 emblems to the pool.
+    """
+    display_name = "Goal Requires Emblems"
+
+
+class EmblemPercentage(Range):
+    """If Emblems are part of the goal, percentage of the available emblems needed to unlock the final story."""
+    display_name = "Emblem Requirement Percentage"
+    range_start = 1
+    range_end = 80
+    default = 80
+
+
+class GoalRequiresMissions(Toggle):
+    """If enabled, you have to complete missions to unlock the last fight."""
+    display_name = "Goal Requires Missions"
+
+
+class MissionPercentage(Range):
+    """If Missions are part of the goal, Percentage of the available missions that needed to be completed to unlock the final story."""
+    display_name = "Mission Requirement Percentage"
+    range_start = 25
+    range_end = 100
+    default = 100
+
+
+class GoalRequiresBosses(Toggle):
+    """If enabled, you have to beat all the bosses to unlock the last fight."""
+    display_name = "Goal Requires Bosses"
+
+
+class GoalRequiresChaoRaces(Toggle):
+    """If enabled, you have to beat all the chao races to unlock the last fight."""
+    display_name = "Goal Requires Chao Races"
 
 
 class LogicLevel(Choice):
@@ -47,30 +81,6 @@ class LogicLevel(Choice):
     default = 0
 
 
-class EmblemPercentage(Range):
-    """If Emblems are part of the goal, percentage of the available emblems needed to unlock the final story."""
-    display_name = "Emblem Requirement Percentage"
-    range_start = 1
-    range_end = 80
-    default = 80
-
-
-class LevelPercentage(Range):
-    """If Levels are part of the goal, Percentage of the available levels that needed to be completed to unlock the final story."""
-    display_name = "Level Requirement Percentage"
-    range_start = 25
-    range_end = 100
-    default = 100
-
-
-class MissionPercentage(Range):
-    """If Missions are part of the goal, Percentage of the available missions that needed to be completed to unlock the final story."""
-    display_name = "Mission Requirement Percentage"
-    range_start = 25
-    range_end = 100
-    default = 100
-
-
 class RandomStartingLocation(DefaultOnToggle):
     """Randomize starting location. If false, you will start at Station Square."""
     display_name = "Random Starting Location"
@@ -84,6 +94,14 @@ class RandomStartingLocationPerCharacter(DefaultOnToggle):
 class GuaranteedLevel(Toggle):
     """Ensures access to a level from the start, even if it means giving you an item."""
     display_name = "Guaranteed Level Access"
+
+
+class GuaranteedStartingChecks(Range):
+    """Ensures at least this many checks in your starting location if possible."""
+    display_name = "Guaranteed Starting Checks"
+    range_start = 1
+    range_end = 10
+    default = 2
 
 
 class EntranceRandomizer(Toggle):
@@ -292,6 +310,27 @@ class FieldEmblemsChecks(DefaultOnToggle):
     display_name = "Field Emblems Checks"
 
 
+class SecretChaoEggs(DefaultOnToggle):
+    """Determines whether getting the 3 secret chao eggs grants checks (3 Locations)."""
+    display_name = "Secret Chao Egg Checks"
+
+
+class ChaoRacesChecks(Toggle):
+    """Determines whether winning the chao races grants checks (5 Locations)."""
+    display_name = "Chao Races Checks"
+
+
+class ChaoRacesLevelsToAccessPercentage(Range):
+    """
+    Percentage of the available levels accessible for the chao races to be in logic.
+    Higher values means races are required later in the game.
+    """
+    display_name = "Level Access Percentage for Chao Races"
+    range_start = 25
+    range_end = 100
+    default = 100
+
+
 class MissionChecks(Toggle):
     """Determines whether completing missions grants checks (60 Locations)."""
     display_name = "Enable Mission Checks"
@@ -484,14 +523,21 @@ class TrapsAndFillerOnPerfectChaosFight(Toggle):
 
 @dataclass
 class SonicAdventureDXOptions(PerGameCommonOptions):
-    goal: Goal
-    logic_level: LogicLevel
-    emblems_percentage: EmblemPercentage
+    goal_requires_levels: GoalRequiresLevels
     levels_percentage: LevelPercentage
+    goal_requires_chaos_emeralds: GoalRequiresChaosEmeralds
+    goal_requires_emblems: GoalRequiresEmblems
+    emblems_percentage: EmblemPercentage
+    goal_requires_missions: GoalRequiresMissions
     mission_percentage: MissionPercentage
+    goal_requires_bosses: GoalRequiresBosses
+    goal_requires_chao_races: GoalRequiresChaoRaces
+
+    logic_level: LogicLevel
     random_starting_location: RandomStartingLocation
     random_starting_location_per_character: RandomStartingLocationPerCharacter
     guaranteed_level: GuaranteedLevel
+    guaranteed_starting_checks: GuaranteedStartingChecks
     entrance_randomizer: EntranceRandomizer
     level_entrance_plando: LevelEntrancePlando
 
@@ -530,6 +576,9 @@ class SonicAdventureDXOptions(PerGameCommonOptions):
     unify_egg_hornet: UnifyEggHornet
 
     field_emblems_checks: FieldEmblemsChecks
+    chao_egg_checks: SecretChaoEggs
+    chao_races_checks: ChaoRacesChecks
+    chao_races_levels_to_access_percentage: ChaoRacesLevelsToAccessPercentage
     mission_mode_checks: MissionChecks
     auto_start_missions: AutoStartMissions
     mission_blacklist: MissionBlackList
@@ -564,14 +613,20 @@ class SonicAdventureDXOptions(PerGameCommonOptions):
 
 sadx_option_groups = [
     OptionGroup("General Options", [
-        Goal,
-        LogicLevel,
-        EmblemPercentage,
+        GoalRequiresLevels,
         LevelPercentage,
+        GoalRequiresChaosEmeralds,
+        GoalRequiresEmblems,
+        EmblemPercentage,
+        GoalRequiresMissions,
         MissionPercentage,
+        GoalRequiresBosses,
+        GoalRequiresChaoRaces,
+        LogicLevel,
         RandomStartingLocation,
         RandomStartingLocationPerCharacter,
         GuaranteedLevel,
+        GuaranteedStartingChecks,
         EntranceRandomizer,
         LevelEntrancePlando,
         SendDeathLinkChance,
@@ -613,6 +668,9 @@ sadx_option_groups = [
     ]),
     OptionGroup("Extra locations", [
         FieldEmblemsChecks,
+        SecretChaoEggs,
+        ChaoRacesChecks,
+        ChaoRacesLevelsToAccessPercentage,
         MissionChecks,
         AutoStartMissions,
         MissionBlackList,

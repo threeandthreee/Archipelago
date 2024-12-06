@@ -33,7 +33,7 @@ item_table: Dict[str, ItemData] = {
     "Sand Lot Bat": ItemData("Ness Weapons", 0xEB0013, ItemClassification.filler, 0),
     "Minor League Bat": ItemData("Ness Weapons", 0xEB0014, ItemClassification.filler, 0),
     "Mr. Baseball Bat": ItemData("Ness Weapons", 0xEB0015, ItemClassification.useful, 0),
-    "Big League Bat": ItemData("Ness Weapons", 0xEB0016, ItemClassification.useful, 0),
+    "Big League Bat": ItemData("Ness Weapons", 0xEB00D5, ItemClassification.useful, 0),
     "Hall of Fame Bat": ItemData("Ness Weapons", 0xEB0017, ItemClassification.useful, 0),
     "Magicant Bat": ItemData("Ness Weapons", 0xEB0018, ItemClassification.useful),
     "Legendary Bat": ItemData("Ness Weapons", 0xEB0019, ItemClassification.useful),
@@ -85,8 +85,8 @@ item_table: Dict[str, ItemData] = {
     "Copper Bracelet": ItemData("Arm Equipment", 0xEB0041, ItemClassification.filler, 0),
     "Silver Bracelet": ItemData("Arm Equipment", 0xEB0042, ItemClassification.filler, 0),
     "Gold Bracelet": ItemData("Arm Equipment", 0xEB0043, ItemClassification.filler, 0),
-    "Platinum Band": ItemData("Arm Equipment", 0xEB0044, ItemClassification.useful),
-    "Diamond Band": ItemData("Arm Equipment", 0xEB0045, ItemClassification.useful),
+    "Platinum Band": ItemData("Arm Equipment", 0xEB00D8, ItemClassification.useful),
+    "Diamond Band": ItemData("Arm Equipment", 0xEB00D9, ItemClassification.useful),
     "Pixie's Bracelet": ItemData("Arm Equipment", 0xEB0046, ItemClassification.useful),
     "Cherub's Band": ItemData("Arm Equipment", 0xEB0047, ItemClassification.useful),
     "Goddess Band": ItemData("Arm Equipment", 0xEB0048, ItemClassification.useful),
@@ -242,7 +242,7 @@ item_table: Dict[str, ItemData] = {
     "Tendakraut": ItemData("Key Items", 0xEB00D3, ItemClassification.progression),
 
     "T-Rex's Bat": ItemData("Ness Weapons", 0xEB00D4, ItemClassification.useful, 0),
-    #"Big League Bat": ItemData("Ness Weapons", 0xEB00D5, ItemClassification.useful, 0), Summers copy
+    #"Big League Bat": ItemData("Ness Weapons", 0xEB0016, ItemClassification.useful, 0), Summers copy
     "Ultimate Bat": ItemData("Ness Weapons", 0xEB00D6, ItemClassification.useful, 0),
     "Double Beam": ItemData("Jeff Weapons", 0xEB00D7, ItemClassification.useful, 0),
     #"Platinum Band": ItemData("Arm Equipment", 0xEB00D8, ItemClassification.useful, 0), Summers copy
@@ -309,7 +309,6 @@ item_table: Dict[str, ItemData] = {
     "Poo": ItemData("Characters", 0xEB0110, ItemClassification.progression),
     "Flying Man": ItemData("Characters", 0xEB0111, ItemClassification.useful),
 
-    'Onett Roadblocks Removed': ItemData('Events', None, ItemClassification.progression, 0),
     'Threed Tunnels Clear': ItemData('Events', None, ItemClassification.progression, 0),
     'Submarine to Deep Darkness': ItemData('Events', None, ItemClassification.progression, 0),
     'Melody': ItemData('Events', None, ItemClassification.progression, 0),

@@ -7,6 +7,10 @@ from BaseClasses import (
     # Entrance,
     Tutorial,
 )
+from settings import (
+    Group,
+    FilePath,
+)
 from .Items import (
     MinitItem,
     # MinitItemData,
@@ -28,7 +32,7 @@ from .Options import MinitGameOptions
 from .Rules import MinitRules
 from .ER_Rules import ER_MinitRules
 from . import RuleUtils
-from typing import Dict, Any, List, TextIO, Tuple
+from typing import Dict, Any, List, TextIO, Tuple, Optional
 from worlds.LauncherComponents import (
     Component,
     components,
@@ -92,6 +96,21 @@ except ModuleNotFoundError:
 # set item_sent flags on connect / full sync
 
 
+class MinitSettings(Group):
+    class RomFile(FilePath):
+        """Path to Minit Vanilla data file"""
+        description = "Minit Vanilla File"
+        md5s = [
+            "cd676b395dc2a25df10a569c17226dde", #steam
+            "1432716643381ced3ad0195078e8e314", #epic
+            # "6263766b38038911efff98423822890e", #itch.io, does not work
+            ]
+        # the hashes for vanilla to be verified by the /patch command
+        required = True
+
+    rom_file: RomFile = RomFile("")
+
+
 class MinitWebWorld(WebWorld):
     theme = "ice"
     setup = Tutorial(
@@ -106,15 +125,21 @@ class MinitWebWorld(WebWorld):
     tutorials = [setup]
 
 
-def launch_client():
+def launch_client(*args):
+    import sys
     from .MinitClient import launch
-    launch_subprocess(launch, name="MinitClient")
+    if not sys.stdout or "--nogui" not in sys.argv:
+        launch_subprocess(launch, name="MinitClient", args=args)
+    else:
+        launch(*args)
 
 
 components.append(Component(
     "Minit Client",
     func=launch_client,
     component_type=Type.CLIENT,
+    supports_uri=True,
+    game_name="Minit"
     ))
 
 
@@ -131,6 +156,7 @@ class MinitWorld(World):
     required_client_version = (0, 4, 4)
     options_dataclass = MinitGameOptions
     options: MinitGameOptions
+    settings: MinitSettings
     web = MinitWebWorld()
     output_connections: List[Tuple[str, str]]
     spoiler_hints: Dict[str, str]
