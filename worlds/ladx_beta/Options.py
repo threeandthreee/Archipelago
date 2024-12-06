@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import os.path
 import typing
 import logging
-from Options import Choice, Toggle, DefaultOnToggle, Range, FreeText, PerGameCommonOptions, OptionGroup, Removed
+from Options import Choice, Toggle, DefaultOnToggle, Range, FreeText, PerGameCommonOptions, OptionGroup, Removed, DeathLink
 from collections import defaultdict
 import Utils
 
@@ -552,7 +552,8 @@ ladx_option_groups = [
         InGameHints,
         NagMessages,
         StabilizeItemPool,
-        BootsControls
+        BootsControls,
+        DeathLink,
     ]),
     OptionGroup("Experimental", [
         DungeonShuffle,
@@ -611,6 +612,7 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     overworld: Overworld
     stabilize_item_pool: StabilizeItemPool
     stealing_in_logic: StealingInLogic
+    death_link: DeathLink
     in_game_hints: InGameHints
 
     warp_improvements: Removed
