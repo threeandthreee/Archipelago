@@ -935,6 +935,8 @@ class Ashipelago:
             item_classification = "Progression"
         elif flags == ItemClassification.useful:
             item_classification = "Useful"
+        elif flags == ItemClassification.progression | ItemClassification.useful:
+            item_classification = "Progression"
         elif flags == ItemClassification.trap:
             item_classification = "Trap"
         elif flags == ItemClassification.skip_balancing:
