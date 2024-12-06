@@ -270,7 +270,7 @@ def main(args, seed=None, baked_server_options: Optional[Dict[str, object]] = No
                 def precollect_hint(location: Location, auto_status: HintStatus):
                     entrance = er_hint_data.get(location.player, {}).get(location.address, "")
                     hint = NetUtils.Hint(location.item.player, location.player, location.address,
-                                         location.item.code, False, entrance, location.item.raw_flags, False, auto_status)
+                                         location.item.code, False, entrance, location.item.raw_flags, auto_status)
                     precollected_hints[location.player].add(hint)
                     if location.item.player not in multiworld.groups:
                         precollected_hints[location.item.player].add(hint)
