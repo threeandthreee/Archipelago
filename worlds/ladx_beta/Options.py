@@ -284,12 +284,15 @@ class MusicChangeCondition(Choice):
 # [Hero] Switch version hero mode, double damage, no heart/fairy drops.
 # [One hit KO] You die on a single hit, always."""),
 
-#             Setting('steal', 'Gameplay', 't', 'Stealing from the shop',
-#                 options=[('always', 'a', 'Always'), ('never', 'n', 'Never'), ('default', '', 'Normal')], default='default',
-#                 description="""Effects when you can steal from the shop. Stealing is bad and never in logic.
-# [Normal] requires the sword before you can steal.
-# [Always] you can always steal from the shop
-# [Never] you can never steal from the shop."""),
+
+class StealingInLogic(DefaultOffToggle, LADXROption):
+    """
+    Puts stealing from the shop in logic if the player has a sword.
+    """
+    display_name = "Stealing in Logic"
+    ladxr_name = "steal"
+
+
 class Bowwow(Choice):
     """Allows BowWow to be taken into any area.  Certain enemies and bosses are given a new weakness to BowWow.
     [Normal] BowWow is in the item pool, but can be logically expected as a damage source.
@@ -544,6 +547,7 @@ ladx_option_groups = [
         Rooster,
         TarinsGift,
         Overworld,
+        StealingInLogic,
         TrendyGame,
         InGameHints,
         NagMessages,
@@ -606,6 +610,7 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     tarins_gift: TarinsGift
     overworld: Overworld
     stabilize_item_pool: StabilizeItemPool
+    stealing_in_logic: StealingInLogic
     in_game_hints: InGameHints
 
     warp_improvements: Removed
