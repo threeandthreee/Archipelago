@@ -714,7 +714,7 @@ class LinksAwakeningContext(CommonContext):
 
 def run_game(romfile: str) -> None:
     auto_start = typing.cast(typing.Union[bool, str],
-                            Utils.get_options()["ladx_options"].get("rom_start", True))
+                            Utils.get_options()["ladx_beta_options"].get("rom_start", True))
     if auto_start is True:
         import webbrowser
         webbrowser.open(romfile)
