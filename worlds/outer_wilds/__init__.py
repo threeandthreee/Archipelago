@@ -1,4 +1,3 @@
-import json
 from typing import Any, Dict, TextIO
 
 from BaseClasses import Tutorial
@@ -6,11 +5,11 @@ from Options import OptionError
 from worlds.AutoWorld import WebWorld, World
 from .coordinates import coordinate_description, generate_random_coordinates
 from .db_layout import generate_random_db_layout
-from .orbits import generate_random_orbits, generate_random_rotations
-from .warp_platforms import generate_random_warp_platform_mapping
 from .items import OuterWildsItem, all_non_event_items_table, item_name_groups, create_item, create_items
 from .locations_and_regions import all_non_event_locations_table, location_name_groups, create_regions
 from .options import OuterWildsGameOptions, RandomizeDarkBrambleLayout, Spawn, Goal, EnableEchoesOfTheEyeDLC
+from .orbits import generate_random_orbits, generate_random_rotations
+from .warp_platforms import generate_random_warp_platform_mapping
 
 
 class OuterWildsWebWorld(WebWorld):
@@ -53,7 +52,7 @@ class OuterWildsWorld(World):
 
         if self.options.spawn == Spawn.option_random_non_vanilla:
             max_spawn = Spawn.option_stranger if self.options.enable_eote_dlc else Spawn.option_giants_deep
-            self.options.spawn = Spawn(self.random.choice(range(Spawn.option_hourglass_twins, max_spawn)))
+            self.options.spawn = Spawn(self.random.choice(range(Spawn.option_hourglass_twins, max_spawn + 1)))
 
         # validate options
         if not self.options.enable_eote_dlc:
@@ -161,7 +160,7 @@ class OuterWildsWorld(World):
         slot_data["warps"] = self.warps
         # Archipelago does not yet have apworld versions (data_version is deprecated),
         # so we have to roll our own with slot_data for the time being
-        slot_data["apworld_version"] = "0.3.6"
+        slot_data["apworld_version"] = "0.3.9"
         return slot_data
 
     def write_spoiler(self, spoiler_handle: TextIO) -> None:

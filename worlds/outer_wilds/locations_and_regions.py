@@ -1,15 +1,14 @@
-from io import BytesIO
 import json
-import pickle
 import pkgutil
 import typing
-from typing import Any, Callable, Dict, List, NamedTuple, Optional, Set
+from typing import Any, Dict, List, NamedTuple, Optional, Set
 
-from BaseClasses import CollectionState, Location, MultiWorld, Region
+from BaseClasses import CollectionState, Location, Region
+from Utils import restricted_loads
 from worlds.generic.Rules import set_rule
-from .options import OuterWildsGameOptions, Spawn, get_creation_settings
-from .warp_platforms import warp_platform_to_logical_region, warp_platform_required_items
+from .options import Spawn
 from .should_generate import should_generate, should_generate_location
+from .warp_platforms import warp_platform_to_logical_region, warp_platform_required_items
 
 if typing.TYPE_CHECKING:
     from . import OuterWildsWorld
@@ -31,10 +30,9 @@ class OuterWildsRegionData(NamedTuple):
 
 
 pickled_data = pkgutil.get_data(__name__, "shared_static_logic/static_logic.pickle")
-locations_data = pickle.load(BytesIO(pickled_data))["LOCATIONS"]
-
-pickled_data = pkgutil.get_data(__name__, "shared_static_logic/static_logic.pickle")
-connections_data = pickle.load(BytesIO(pickled_data))["CONNECTIONS"]
+unpickled_data = restricted_loads(pickled_data)
+locations_data = unpickled_data["LOCATIONS"]
+connections_data = unpickled_data["CONNECTIONS"]
 
 
 location_data_table: Dict[str, OuterWildsLocationData] = {}
@@ -135,9 +133,9 @@ def create_regions(world: "OuterWildsWorld") -> None:
             requires = connection["requires"]
             rule = None if len(requires) == 0 else lambda state, r=requires, st=split_translator: eval_rule(state, p, r, st)
             entrance = region.connect(mw.get_region(to, p), None, rule)
-            indirect_regions = regions_referenced_by_rule(requires)
-            for indirect_region in indirect_regions:
-                mw.register_indirect_condition(indirect_region, entrance)
+            indirect_region_names = regions_referenced_by_rule(requires)
+            for indirect_region_name in indirect_region_names:
+                mw.register_indirect_condition(mw.get_region(indirect_region_name, p), entrance)
 
     # add access rules to the created locations
     for ld in locations_data:
@@ -213,7 +211,7 @@ def create_regions(world: "OuterWildsWorld") -> None:
 
 # In particular: this eval_rule() function is the main piece of code which will have to
 # be implemented in both languages, so it's important we keep the implementations in sync
-def eval_rule(state: CollectionState, p: int, rule: [Any], split_translator: bool) -> bool:
+def eval_rule(state: CollectionState, p: int, rule: List[Any], split_translator: bool) -> bool:
     return all(eval_criterion(state, p, criterion, split_translator) for criterion in rule)
 
 
@@ -247,15 +245,15 @@ def eval_criterion(state: CollectionState, p: int, criterion: Any, split_transla
 # you must also use multiworld.register_indirect_condition."
 # And to call register_indirect_condition, we need to know what regions a rule is referencing.
 # Figuring out the regions referenced by a rule ends up being very similar to evaluating that rule.
-def regions_referenced_by_rule(rule: [Any]) -> [str]:
+def regions_referenced_by_rule(rule: List[Any]) -> List[str]:
     return [region for criterion in rule for region in regions_referenced_by_criterion(criterion)]
 
 
-def regions_referenced_by_criterion(criterion: Any) -> [str]:
+def regions_referenced_by_criterion(criterion: Any) -> List[str]:
     # see eval_criterion comments
     if isinstance(criterion, dict):
         if len(criterion.items()) != 1:
-            return False
+            raise ValueError("Invalid rule criterion: " + json.dumps(criterion))
         key, value = next(iter(criterion.items()))
         if key == "item":
             return []
