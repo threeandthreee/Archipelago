@@ -7,8 +7,8 @@ LADX_HASH = "07c211479386825042efb4ad31bb525f"
 
 class LADXDeltaPatch(worlds.Files.APDeltaPatch):
     hash = LADX_HASH
-    game = "Links Awakening DX"
-    patch_file_ending = ".apladx"
+    game = "Links Awakening DX Beta"
+    patch_file_ending = ".apladxb"
     result_file_ending: str = ".gbc"
 
     @classmethod
