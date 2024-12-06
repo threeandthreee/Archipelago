@@ -23,7 +23,7 @@ import time
 import typing
 
 
-from CommonClient import (CommonContext, ClientCommandProcessor, get_base_parser, gui_enabled, logger,
+from CommonClient import (CommonContext, get_base_parser, gui_enabled, logger,
                           server_loop)
 from NetUtils import ClientStatus
 from worlds.ladx.Common import BASE_ID as LABaseID
@@ -418,6 +418,7 @@ class LinksAwakeningClient():
             self.deathlink_debounce = True
 
         if self.pending_deathlink:
+            logger.info("Got a deathlink")
             self.gameboy.write_memory(LAClientConstants.wLinkHealth, [0])
             self.pending_deathlink = False
             self.deathlink_debounce = True
@@ -447,19 +448,10 @@ def create_task_log_exception(awaitable) -> asyncio.Task:
     task = asyncio.create_task(_log_exception(awaitable))
     all_tasks.add(task)
 
-class LinksAwakeningCommandProcessor(ClientCommandProcessor):
-    def __init__(self, ctx):
-        super().__init__(ctx)
-
-    def _cmd_deathlink(self):
-        """Toggles deathlink."""
-        if isinstance(self.ctx, LinksAwakeningContext):
-            Utils.async_start(self.ctx.update_death_link("DeathLink" not in self.ctx.tags))
 
 class LinksAwakeningContext(CommonContext):
     tags = {"AP"}
     game = "Links Awakening DX"
-    command_processor = LinksAwakeningCommandProcessor
     items_handling = 0b101
     want_slot_data = True
     la_task = None
@@ -475,6 +467,8 @@ class LinksAwakeningContext(CommonContext):
 
     def __init__(self, server_address: typing.Optional[str], password: typing.Optional[str], magpie: typing.Optional[bool]) -> None:
         self.client = LinksAwakeningClient()
+        self.slot_data = {}
+
         if magpie:
             self.magpie_enabled = True
             self.magpie = MagpieBridge()
@@ -525,18 +519,15 @@ class LinksAwakeningContext(CommonContext):
         self.disconnected_intentionally = True
         CommonContext.event_invalid_slot(self)
 
+    ENABLE_DEATHLINK = False
     async def send_deathlink(self):
-        if "DeathLink" in self.tags:
-            logger.info("DeathLink: Sending death to your friends...")
-            self.last_death_link = time.time()
-            await self.send_msgs([{
-                "cmd": "Bounce", "tags": ["DeathLink"],
-                "data": {
-                    "time": self.last_death_link,
-                    "source": self.slot_info[self.slot].name,
-                    "cause": self.slot_info[self.slot].name + " had a nightmare."
-                }
-            }])
+        if self.ENABLE_DEATHLINK:
+            message = [{"cmd": 'Deathlink',
+                        'time': time.time(),
+                        'cause': 'Had a nightmare',
+                        # 'source': self.slot_info[self.slot].name,
+                        }]
+            await self.send_msgs(message)
 
     async def send_victory(self):
         if not self.won:
@@ -546,10 +537,9 @@ class LinksAwakeningContext(CommonContext):
             await self.send_msgs(message)
             self.won = True
 
-    def on_deathlink(self, data: typing.Dict[str, typing.Any]) -> None:
-        self.client.pending_deathlink = True
-        super(LinksAwakeningContext, self).on_deathlink(data)
-
+    async def on_deathlink(self, data: typing.Dict[str, typing.Any]) -> None:
+        if self.ENABLE_DEATHLINK:
+            self.client.pending_deathlink = True
 
     def new_checks(self, item_ids, ladxr_ids):
         self.found_checks += item_ids
@@ -576,8 +566,8 @@ class LinksAwakeningContext(CommonContext):
     def on_package(self, cmd: str, args: dict):
         if cmd == "Connected":
             self.game = self.slot_info[self.slot].game
-            if 'death_link' in args['slot_data'] and args['slot_data']['death_link']:
-                self.update_death_link(True)
+            self.slot_data = args.get("slot_data", {})
+            
         # TODO - use watcher_event
         if cmd == "ReceivedItems":
             for index, item in enumerate(args["items"], start=args["index"]):
@@ -642,6 +632,7 @@ class LinksAwakeningContext(CommonContext):
                             self.magpie.set_checks(self.client.tracker.all_checks)
                             await self.magpie.set_item_tracker(self.client.item_tracker)
                             await self.magpie.send_gps(self.client.gps_tracker)
+                            self.magpie.slot_data = self.slot_data
                         except Exception:
                             # Don't let magpie errors take out the client
                             pass

@@ -12,9 +12,9 @@ from BaseClasses import Entrance, Item, ItemClassification, Location, Tutorial, 
 from Fill import fill_restrictive
 from worlds.AutoWorld import WebWorld, World
 from .Common import *
-from . import ItemIconGuessing
 from .Items import (DungeonItemData, DungeonItemType, ItemName, LinksAwakeningItem, TradeItemData,
-                    ladxr_item_to_la_item_name, links_awakening_items, links_awakening_items_by_name)
+                    ladxr_item_to_la_item_name, links_awakening_items, links_awakening_items_by_name,
+                    links_awakening_item_name_groups)
 from .LADXR import generator
 from .LADXR.itempool import ItemPool as LADXRItemPool
 from .LADXR.locations.constants import CHEST_ITEMS
@@ -24,7 +24,8 @@ from .LADXR.main import get_parser
 from .LADXR.settings import Settings as LADXRSettings
 from .LADXR.worldSetup import WorldSetup as LADXRWorldSetup
 from .Locations import (LinksAwakeningLocation, LinksAwakeningRegion,
-                        create_regions_from_ladxr, get_locations_to_id)
+                        create_regions_from_ladxr, get_locations_to_id,
+                        links_awakening_location_name_groups)
 from .Options import DungeonItemShuffle, ShuffleInstruments, LinksAwakeningOptions, ladx_option_groups
 from .Rom import LADXDeltaPatch, get_base_rom_path
 
@@ -67,6 +68,15 @@ class LinksAwakeningWebWorld(WebWorld):
     )]
     theme = "dirt"
     option_groups = ladx_option_groups
+    options_presets: typing.Dict[str, typing.Dict[str, typing.Any]] = {
+        "Keysanity": {
+            "shuffle_nightmare_keys": "any_world",
+            "shuffle_small_keys": "any_world",
+            "shuffle_maps": "any_world",
+            "shuffle_compasses": "any_world",
+            "shuffle_stone_beaks": "any_world",
+        }
+    }
 
 class LinksAwakeningWorld(World):
     """
@@ -99,30 +109,9 @@ class LinksAwakeningWorld(World):
 
     # Items can be grouped using their names to allow easy checking if any item
     # from that group has been collected. Group names can also be used for !hint
-    item_name_groups = {
-        "Instruments": {
-            "Full Moon Cello", "Conch Horn", "Sea Lily's Bell", "Surf Harp",
-            "Wind Marimba", "Coral Triangle", "Organ of Evening Calm", "Thunder Drum"
-        },
-        "Entrance Keys": {
-            "Tail Key", "Angler Key", "Face Key", "Bird Key", "Slime Key",
-        },
-        "Nightmare Keys": {
-            "Nightmare Key",                 "Nightmare Key (Angler's Tunnel)",
-            "Nightmare Key (Bottle Grotto)", "Nightmare Key (Catfish's Maw)",
-            "Nightmare Key (Color Dungeon)", "Nightmare Key (Eagle's Tower)",
-            "Nightmare Key (Face Shrine)",   "Nightmare Key (Key Cavern)",
-            "Nightmare Key (Tail Cave)",     "Nightmare Key (Turtle Rock)",
-        },
-        "Equipment": {
-            "Progressive Shield", "Progressive Sword", "Shovel", "Bomb", "Bow",
-            "Feather", "Progressive Power Bracelet", "Pegasus Boots", "Flippers",
-            "Hookshot", "Magic Rod", "Rooster", "Ocarina", "Boomerang",
-        },
-        "Movement": {
-            "Feather", "Flippers", "Hookshot", "Pegasus Boots", "Rooster",
-        },
-    }
+    item_name_groups = links_awakening_item_name_groups
+
+    location_name_groups = links_awakening_location_name_groups
 
     prefill_dungeon_items = None
 
@@ -235,7 +224,7 @@ class LinksAwakeningWorld(World):
             for _ in range(count):
                 if item_name in exclude:
                     exclude.remove(item_name)  # this is destructive. create unique list above
-                    self.multiworld.itempool.append(self.create_item("Master Stalfos' Message"))
+                    self.multiworld.itempool.append(self.create_item("Nothing"))
                 else:
                     item = self.create_item(item_name)
 
@@ -393,31 +382,60 @@ class LinksAwakeningWorld(World):
     # Tries to associate an icon from another game with an icon we have
     def guess_icon_for_other_world(self, other):
         if not self.name_cache:
+            forbidden = [
+                "TRADING",
+                "ITEM",
+                "BAD",
+                "SINGLE",
+                "UPGRADE",
+                "BLUE",
+                "RED",
+                "NOTHING",
+                "MESSAGE",
+            ]
             for item in ladxr_item_to_la_item_name.keys():
                 self.name_cache[item] = item
                 splits = item.split("_")
                 self.name_cache["".join(splits)] = item
-                for word in ['RUPEE', 'RUPEES']:
-                    if word in splits:
-                        self.name_cache["".join(reversed(splits))] = item
+                if 'RUPEES' in splits:
+                    self.name_cache["".join(reversed(splits))] = item
+                    
                 for word in item.split("_"):
-                    if word not in ItemIconGuessing.FORBIDDEN and not word.isnumeric():
+                    if word not in forbidden and not word.isnumeric():
                         self.name_cache[word] = item
-            for name in ItemIconGuessing.SYNONYMS.values():
+            others = {
+                'KEY': 'KEY',
+                'COMPASS': 'COMPASS',
+                'BIGKEY': 'NIGHTMARE_KEY',
+                'MAP': 'MAP',
+                'FLUTE': 'OCARINA',
+                'SONG': 'OCARINA',
+                'MUSHROOM': 'TOADSTOOL',
+                'GLOVE': 'POWER_BRACELET',
+                'BOOT': 'PEGASUS_BOOTS',
+                'SHOE': 'PEGASUS_BOOTS',
+                'SHOES': 'PEGASUS_BOOTS',
+                'SANCTUARYHEARTCONTAINER': 'HEART_CONTAINER',
+                'BOSSHEARTCONTAINER': 'HEART_CONTAINER',
+                'HEARTCONTAINER': 'HEART_CONTAINER',
+                'ENERGYTANK': 'HEART_CONTAINER',
+                'MISSILE': 'SINGLE_ARROW',
+                'BOMBS': 'BOMB',
+                'BLUEBOOMERANG': 'BOOMERANG',
+                'MAGICMIRROR': 'TRADING_ITEM_MAGNIFYING_GLASS',
+                'MIRROR': 'TRADING_ITEM_MAGNIFYING_GLASS',
+                'MESSAGE': 'TRADING_ITEM_LETTER',
+                # TODO: Also use AP item name
+            }
+            for name in others.values():
                 assert name in self.name_cache, name
                 assert name in CHEST_ITEMS, name
-            self.name_cache.update(ItemIconGuessing.SYNONYMS)
-            pluralizations = {}
-            for k in self.name_cache.keys():
-                ks = k + 'S'
-                if ks not in self.name_cache:
-                    pluralizations[ks] = self.name_cache[k]
-            self.name_cache.update(pluralizations)
-
+            self.name_cache.update(others)
+            
+        
         uppered = other.upper()
-        for phrase in ItemIconGuessing.PHRASES.keys():
-            if phrase in uppered:
-                return ItemIconGuessing.PHRASES[phrase]
+        if "BIG KEY" in uppered:
+            return 'NIGHTMARE_KEY'
         possibles = other.upper().split(" ")
         rejoined = "".join(possibles)
         if rejoined in self.name_cache:
@@ -503,7 +521,33 @@ class LinksAwakeningWorld(World):
             state.prog_items[self.player]["RUPEES"] -= self.rupees[item.name]
         return change
 
-    def fill_slot_data(self) -> dict:
-        return {
-            "death_link": self.options.death_link.value
-        }
+    def get_filler_item_name(self) -> str:
+        return "Nothing"
+
+    def fill_slot_data(self):
+        slot_data = {}
+
+        if not self.multiworld.is_race:
+            # all of these option are NOT used by the LADX- or Text-Client.
+            # they are used by Magpie tracker (https://github.com/kbranch/Magpie/wiki/Autotracker-API)
+            # for convenient auto-tracking of the generated settings and adjusting the tracker accordingly
+
+            slot_options = ["instrument_count"]
+
+            slot_options_display_name = [
+                "goal", "logic", "tradequest", "rooster",
+                "experimental_dungeon_shuffle", "experimental_entrance_shuffle", "trendy_game", "gfxmod",
+                "shuffle_nightmare_keys", "shuffle_small_keys", "shuffle_maps",
+                "shuffle_compasses", "shuffle_stone_beaks", "shuffle_instruments", "nag_messages"
+            ]
+
+            # use the default behaviour to grab options
+            slot_data = self.options.as_dict(*slot_options)
+
+            # for options which should not get the internal int value but the display name use the extra handling
+            slot_data.update({
+                option: value.current_key
+                for option, value in dataclasses.asdict(self.options).items() if option in slot_options_display_name
+            })
+
+        return slot_data

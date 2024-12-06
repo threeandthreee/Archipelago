@@ -1,19 +1,20 @@
 import hashlib
 import logging
+from copy import deepcopy
 from typing import Dict, Any, TYPE_CHECKING, Optional, Sequence, Tuple, ClassVar, List
 
 from BaseClasses import Tutorial, ItemClassification, MultiWorld, Item, Location
 from worlds.AutoWorld import World, WebWorld
-from .Names import (dr_wily, heat_man_stage, air_man_stage, wood_man_stage, bubble_man_stage, quick_man_stage,
+from .names import (dr_wily, heat_man_stage, air_man_stage, wood_man_stage, bubble_man_stage, quick_man_stage,
                     flash_man_stage, metal_man_stage, crash_man_stage)
-from .Items import (item_table, item_names, MM2Item, filler_item_weights, robot_master_weapon_table,
+from .items import (item_table, item_names, MM2Item, filler_item_weights, robot_master_weapon_table,
                     stage_access_table, item_item_table, lookup_item_to_id)
-from .Locations import (MM2Location, mm2_regions, MM2Region, energy_pickups, etank_1ups, lookup_location_to_id,
+from .locations import (MM2Location, mm2_regions, MM2Region, energy_pickups, etank_1ups, lookup_location_to_id,
                         location_groups)
-from .Rom import patch_rom, MM2ProcedurePatch, MM2LCHASH, PROTEUSHASH, MM2VCHASH, MM2NESHASH
-from .Options import MM2Options
-from .Client import MegaMan2Client
-from .Rules import set_rules, weapon_damage, robot_masters, weapons_to_name, minimum_weakness_requirement
+from .rom import patch_rom, MM2ProcedurePatch, MM2LCHASH, PROTEUSHASH, MM2VCHASH, MM2NESHASH
+from .options import MM2Options, Consumables
+from .client import MegaMan2Client
+from .rules import set_rules, weapon_damage, robot_masters, weapons_to_name, minimum_weakness_requirement
 import os
 import threading
 import base64
@@ -95,13 +96,15 @@ class MM2World(World):
     location_name_groups = location_groups
     web = MM2WebWorld()
     rom_name: bytearray
-    world_version: Tuple[int, int, int] = (0, 3, 1)
+    world_version: Tuple[int, int, int] = (0, 3, 2)
+    wily_5_weapons: Dict[int, List[int]]
 
-    def __init__(self, world: MultiWorld, player: int):
+    def __init__(self, multiworld: MultiWorld, player: int):
         self.rom_name = bytearray()
         self.rom_name_available_event = threading.Event()
-        super().__init__(world, player)
-        self.weapon_damage = weapon_damage.copy()
+        super().__init__(multiworld, player)
+        self.weapon_damage = deepcopy(weapon_damage)
+        self.wily_5_weapons = {}
 
     def create_regions(self) -> None:
         menu = MM2Region("Menu", self.player, self.multiworld)
@@ -115,28 +118,26 @@ class MM2World(World):
                 menu.connect(stage, f"To {region}",
                              lambda state, items=required_items: state.has_all(items, self.player))
             else:
-                old_stage = self.multiworld.get_region(prev_stage, self.player)
+                old_stage = self.get_region(prev_stage)
                 old_stage.connect(stage, f"To {region}",
                                   lambda state, items=required_items: state.has_all(items, self.player))
-            stage.add_locations(locations)
+            stage.add_locations(locations, MM2Location)
             for location in stage.get_locations():
-                if location.address is None and location.name is not dr_wily:
+                if location.address is None and location.name != dr_wily:
                     location.place_locked_item(MM2Item(location.name, ItemClassification.progression,
                                                        None, self.player))
-            if self.options.consumables in (self.options.consumables.option_1up_etank,
-                                            self.options.consumables.option_all):
-                if region in etank_1ups:
-                    stage.add_locations(etank_1ups[region], MM2Location)
-            if self.options.consumables in (self.options.consumables.option_weapon_health,
-                                            self.options.consumables.option_all):
-                if region in energy_pickups:
-                    stage.add_locations(energy_pickups[region], MM2Location)
+            if region in etank_1ups and self.options.consumables in (Consumables.option_1up_etank,
+                                                                     Consumables.option_all):
+                stage.add_locations(etank_1ups[region], MM2Location)
+            if region in energy_pickups and self.options.consumables in (Consumables.option_weapon_health,
+                                                                         Consumables.option_all):
+                stage.add_locations(energy_pickups[region], MM2Location)
             self.multiworld.regions.append(stage)
 
-    def create_item(self, name: str, force_non_progression: bool = False) -> MM2Item:
+    def create_item(self, name: str) -> MM2Item:
         item = item_table[name]
         classification = ItemClassification.filler
-        if item.progression and not force_non_progression:
+        if item.progression:
             classification = ItemClassification.progression_skip_balancing \
                 if item.skip_balancing else ItemClassification.progression
         if item.useful:
@@ -144,7 +145,7 @@ class MM2World(World):
         return MM2Item(name, classification, item.code, self.player)
 
     def get_filler_item_name(self) -> str:
-        return self.multiworld.random.choices(list(filler_item_weights.keys()),
+        return self.random.choices(list(filler_item_weights.keys()),
                                               weights=list(filler_item_weights.values()))[0]
 
     def create_items(self) -> None:
@@ -157,15 +158,15 @@ class MM2World(World):
         itempool.extend([self.create_item(name) for name in robot_master_weapon_table.keys()])
         itempool.extend([self.create_item(name) for name in item_item_table.keys()])
         total_checks = 24
-        if self.options.consumables in (self.options.consumables.option_1up_etank,
-                                        self.options.consumables.option_all):
+        if self.options.consumables in (Consumables.option_1up_etank,
+                                        Consumables.option_all):
             total_checks += 20
-        if self.options.consumables in (self.options.consumables.option_weapon_health,
-                                        self.options.consumables.option_all):
+        if self.options.consumables in (Consumables.option_weapon_health,
+                                        Consumables.option_all):
             total_checks += 27
         remaining = total_checks - len(itempool)
         itempool.extend([self.create_item(name)
-                         for name in self.multiworld.random.choices(list(filler_item_weights.keys()),
+                         for name in self.random.choices(list(filler_item_weights.keys()),
                                                                     weights=list(filler_item_weights.values()),
                                                                     k=remaining)])
         self.multiworld.itempool += itempool
@@ -174,9 +175,9 @@ class MM2World(World):
 
     def generate_early(self) -> None:
         if (not self.options.yoku_jumps
-            and self.options.starting_robot_master.current_key == "heat_man") or \
+            and self.options.starting_robot_master == "heat_man") or \
                 (not self.options.enable_lasers
-                 and self.options.starting_robot_master.current_key == "quick_man"):
+                 and self.options.starting_robot_master == "quick_man"):
             robot_master_pool = [1, 2, 3, 5, 6, 7, ]
             if self.options.yoku_jumps:
                 robot_master_pool.append(0)
@@ -184,11 +185,12 @@ class MM2World(World):
                 robot_master_pool.append(4)
             self.options.starting_robot_master.value = self.random.choice(robot_master_pool)
             logger.warning(
+                f"Mega Man 2 ({self.player_name}): "
                 f"Incompatible starting Robot Master, changing to "
                 f"{self.options.starting_robot_master.current_key.replace('_', ' ').title()}")
 
     def generate_basic(self) -> None:
-        goal_location = self.multiworld.get_location(dr_wily, self.player)
+        goal_location = self.get_location(dr_wily)
         goal_location.place_locked_item(MM2Item("Victory", ItemClassification.progression, None, self.player))
         self.multiworld.completion_condition[self.player] = lambda state: state.has("Victory", self.player)
 
@@ -228,12 +230,12 @@ class MM2World(World):
                             if item.name in rbm_names
                             and item.player == self.player]
             placed_item = self.random.choice(valid_second)
-            rbm_defeated = f"{self.options.starting_robot_master.get_option_name(self.options.starting_robot_master.value)} - Defeated"
+            rbm_defeated = (f"{robot_masters[self.options.starting_robot_master.value].replace(' Defeated', '')}"
+                            f" - Defeated")
             rbm_location = self.get_location(rbm_defeated)
             rbm_location.place_locked_item(placed_item)
             progitempool.remove(placed_item)
             fill_locations.remove(rbm_location)
-            self.multiworld.itempool.remove(placed_item)
             target_rbm = (placed_item.code & 0xF) - 1
             if self.options.strict_weakness or (self.options.random_weakness
                                                 and not (self.weapon_damage[0][target_rbm] > 0)):
@@ -251,11 +253,10 @@ class MM2World(World):
                 weapon_location.place_locked_item(placed_weapon)
                 progitempool.remove(placed_weapon)
                 fill_locations.remove(weapon_location)
-                self.multiworld.itempool.remove(placed_weapon)
 
     def generate_output(self, output_directory: str) -> None:
         try:
-            patch = MM2ProcedurePatch(player=self.player, player_name=self.multiworld.player_name[self.player])
+            patch = MM2ProcedurePatch(player=self.player, player_name=self.player_name)
             patch_rom(self, patch)
 
             self.rom_name = patch.name
@@ -270,12 +271,14 @@ class MM2World(World):
     def fill_slot_data(self) -> Dict[str, Any]:
         return {
             "death_link": self.options.death_link.value,
-            "weapon_damage": self.weapon_damage
+            "weapon_damage": self.weapon_damage,
+            "wily_5_weapons": self.wily_5_weapons,
         }
 
     def interpret_slot_data(self, slot_data: Dict[str, Any]) -> Dict[str, Any]:
         local_weapon = {int(key): value for key, value in slot_data["weapon_damage"].items()}
-        return {"weapon_damage": local_weapon}
+        local_wily = {int(key): value for key, value in slot_data["wily_5_weapons"].items()}
+        return {"weapon_damage": local_weapon, "wily_5_weapons": local_wily}
 
     def modify_multidata(self, multidata: Dict[str, Any]) -> None:
         # wait for self.rom_name to be available.
@@ -284,29 +287,4 @@ class MM2World(World):
         # we skip in case of error, so that the original error in the output thread is the one that gets raised
         if rom_name:
             new_name = base64.b64encode(bytes(self.rom_name)).decode()
-            multidata["connect_names"][new_name] = multidata["connect_names"][self.multiworld.player_name[self.player]]
-
-    def collect(self, state: "CollectionState", item: "Item") -> bool:
-        change = super().collect(state, item)
-        if change and item.name in self.item_name_groups["Weapons"]:
-            # need to evaluate robot master access
-            weapon = next((wp for wp in weapons_to_name if weapons_to_name[wp] == item.name), None)
-            if weapon:
-                for rbm in robot_masters:
-                    if self.weapon_damage[weapon][rbm] >= minimum_weakness_requirement[weapon]:
-                        state.prog_items[self.player][robot_masters[rbm]] = 1
-        return change
-
-    def remove(self, state: "CollectionState", item: "Item") -> bool:
-        change = super().remove(state, item)
-        if change and item.name in self.item_name_groups["Weapons"]:
-            removed_weapon = next((weapons_to_name[weapon] == item.name for weapon in weapons_to_name), None)
-            received_weapons = {weapon for weapon in weapons_to_name
-                                if weapons_to_name[weapon] in state.prog_items[self.player]}
-            if removed_weapon:
-                for rbm in robot_masters:
-                    if self.weapon_damage[removed_weapon][rbm] > 0 and not any(self.weapon_damage[wp][rbm] >
-                                                                               minimum_weakness_requirement[wp]
-                                                                               for wp in received_weapons):
-                        state.prog_items[self.player][robot_masters[rbm]] = 0
-        return change
+            multidata["connect_names"][new_name] = multidata["connect_names"][self.player_name]
