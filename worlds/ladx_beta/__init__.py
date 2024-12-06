@@ -553,6 +553,7 @@ class LinksAwakeningWorld(World):
                 "shuffle_instruments",
                 "nag_messages",
                 "overworld",
+                "hard_mode",
             ]
 
             # use the default behaviour to grab options
