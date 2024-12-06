@@ -6,7 +6,7 @@ from Options import OptionError
 from worlds.AutoWorld import World
 from .CharacterUtils import get_playable_character_item, is_character_playable, are_character_upgrades_randomized, \
     get_character_upgrades_item
-from .Enums import Character, Goal
+from .Enums import Character
 from .Items import filler_item_table
 from .Names import ItemName, LocationName
 from .Options import SonicAdventureDXOptions
@@ -82,7 +82,7 @@ def get_item_distribution(world: World, starting_item_count: int, options: Sonic
             + "Please enable more more checks, you need at least {} more locations.".format(-available_locations))
 
     # If Emblems are enabled, we calculate how many progressive emblems and filler emblems we need
-    if options.goal.value in {Goal.Emblems, Goal.EmblemsAndEmeraldHunt}:
+    if options.goal_requires_emblems.value:
         if available_locations < 5:
             raise OptionError("SADX Error: There are not enough available locations to place Emblems. "
                               + "Please enable more more checks or change your goal. "
@@ -117,8 +117,7 @@ def get_item_names(options: SonicAdventureDXOptions, starter_setup: StarterSetup
         ItemName.KeyItem.IceStone, ItemName.KeyItem.WindStone
     ]
 
-    if options.goal.value in {Goal.EmeraldHunt, Goal.EmblemsAndEmeraldHunt, Goal.LevelsAndEmeraldHunt,
-                              Goal.MissionsAndEmeraldHunt}:
+    if options.goal_requires_chaos_emeralds.value:
         item_names += [
             ItemName.Progression.WhiteEmerald, ItemName.Progression.RedEmerald, ItemName.Progression.CyanEmerald,
             ItemName.Progression.PurpleEmerald, ItemName.Progression.GreenEmerald, ItemName.Progression.YellowEmerald,

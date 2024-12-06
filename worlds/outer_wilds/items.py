@@ -1,11 +1,11 @@
-from io import BytesIO
-import pickle
+import pkgutil
 import pkgutil
 import typing
 from typing import Dict, List, NamedTuple, Optional, Set
 
 from BaseClasses import Item, ItemClassification
-from .options import EarlyKeyItem, OuterWildsGameOptions, Spawn, get_creation_settings
+from Utils import restricted_loads
+from .options import EarlyKeyItem, Spawn
 from .should_generate import should_generate
 
 if typing.TYPE_CHECKING:
@@ -24,7 +24,7 @@ class OuterWildsItemData(NamedTuple):
 
 
 pickled_data = pkgutil.get_data(__name__, "shared_static_logic/static_logic.pickle")
-items_data = pickle.load(BytesIO(pickled_data))["ITEMS"]
+items_data = restricted_loads(pickled_data)["ITEMS"]
 
 item_types_map = {
     "progression": ItemClassification.progression,

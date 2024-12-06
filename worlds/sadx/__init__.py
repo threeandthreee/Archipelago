@@ -4,7 +4,7 @@ from typing import Dict, Any
 from BaseClasses import Tutorial
 from worlds.AutoWorld import WebWorld, World
 from .CharacterUtils import get_playable_characters
-from .Enums import Character, SADX_BASE_ID, Goal, Area, remove_character_suffix, pascal_to_space
+from .Enums import Character, SADX_BASE_ID, Area, remove_character_suffix, pascal_to_space
 from .ItemPool import create_sadx_items, get_item_names, ItemDistribution
 from .Items import SonicAdventureDXItem, group_item_table, item_name_to_info
 from .Locations import all_location_table, group_location_table
@@ -69,11 +69,16 @@ class SonicAdventureDXWorld(World):
                                                     for original, randomized in passthrough["LevelEntranceMap"].items()}
 
                 # Options synchronization, needed for weighted values
-                self.options.goal.value = passthrough["Goal"]
-                self.options.logic_level.value = passthrough["LogicLevel"]
-                self.options.emblems_percentage.value = passthrough["EmblemsPercentage"]
+                self.options.goal_requires_levels.value = passthrough["GoalRequiresLevels"]
                 self.options.levels_percentage.value = passthrough["LevelsPercentage"]
+                self.options.goal_requires_chaos_emeralds.value = passthrough["GoalRequiresChaosEmeralds"]
+                self.options.goal_requires_emblems.value = passthrough["GoalRequiresEmblems"]
+                self.options.emblems_percentage.value = passthrough["EmblemsPercentage"]
+                self.options.goal_requires_missions.value = passthrough["GoalRequiresMissions"]
                 self.options.mission_percentage.value = passthrough["MissionsPercentage"]
+                self.options.goal_requires_bosses.value = passthrough["GoalRequiresBosses"]
+                self.options.goal_requires_chao_races.value = passthrough["GoalRequiresChaoRaces"]
+                self.options.logic_level.value = passthrough["LogicLevel"]
                 self.options.entrance_randomizer.value = passthrough["EntranceRandomizer"]
 
                 self.options.playable_sonic.value = passthrough["PlayableSonic"]
@@ -103,6 +108,14 @@ class SonicAdventureDXWorld(World):
                 self.options.unify_egg_hornet.value = passthrough["UnifyEggHornet"]
 
                 self.options.field_emblems_checks.value = passthrough["FieldEmblemChecks"]
+                self.options.random_starting_location.value = passthrough["RandomStartingLocation"]
+                self.options.random_starting_location_per_character.value = passthrough["RandomStartingLocationPerCharacter"]
+                self.options.guaranteed_level.value = passthrough["GuaranteedLevel"]
+                self.options.guaranteed_starting_checks.value = passthrough["GuaranteedStartingChecks"]
+
+                self.options.chao_egg_checks.value = passthrough["SecretChaoEggs"]
+                self.options.chao_races_checks.value = passthrough["ChaoRacesChecks"]
+                self.options.chao_races_levels_to_access_percentage.value = passthrough["ChaoRacesLevelsToAccessPercentage"]
                 self.options.mission_mode_checks.value = passthrough["MissionModeChecks"]
                 self.options.auto_start_missions.value = passthrough["AutoStartMissions"]
 
@@ -156,15 +169,21 @@ class SonicAdventureDXWorld(World):
 
     def fill_slot_data(self) -> Dict[str, Any]:
         return {
-            "ModVersion": 88,
-            "Goal": self.options.goal.value,
-            "LogicLevel": self.options.logic_level.value,
-            "EmblemsPercentage": self.options.emblems_percentage.value,
+            "ModVersion": 90,
+            "GoalRequiresLevels": self.options.goal_requires_levels.value,
             "LevelsPercentage": self.options.levels_percentage.value,
+            "GoalRequiresChaosEmeralds": self.options.goal_requires_chaos_emeralds.value,
+            "GoalRequiresEmblems": self.options.goal_requires_emblems.value,
+            "EmblemsPercentage": self.options.emblems_percentage.value,
+            "GoalRequiresMissions": self.options.goal_requires_missions.value,
             "MissionsPercentage": self.options.mission_percentage.value,
+            "GoalRequiresBosses": self.options.goal_requires_bosses.value,
+            "GoalRequiresChaoRaces": self.options.goal_requires_chao_races.value,
+            "LogicLevel": self.options.logic_level.value,
             "EmblemsForPerfectChaos": self.item_distribution.emblem_count_progressive,
             "LevelForPerfectChaos": self.location_distribution.levels_for_perfect_chaos,
             "MissionForPerfectChaos": self.location_distribution.missions_for_perfect_chaos,
+            "BossesForPerfectChaos": self.location_distribution.bosses_for_perfect_chaos,
             "StartingCharacter": self.starter_setup.character.value,
             "StartingItem": self.starter_setup.item,
             "StartingArea": self.starter_setup.area.value,
@@ -180,7 +199,12 @@ class SonicAdventureDXWorld(World):
 
             "RandomStartingLocation": self.options.random_starting_location.value,
             "RandomStartingLocationPerCharacter": self.options.random_starting_location_per_character.value,
+            "GuaranteedLevel": self.options.guaranteed_level.value,
+            "GuaranteedStartingChecks": self.options.guaranteed_starting_checks.value,
             "FieldEmblemChecks": self.options.field_emblems_checks.value,
+            "SecretChaoEggs": self.options.chao_egg_checks.value,
+            "ChaoRacesChecks": self.options.chao_races_checks.value,
+            "ChaoRacesLevelsToAccessPercentage": self.options.chao_races_levels_to_access_percentage.value,
             "MissionModeChecks": self.options.mission_mode_checks.value,
             "AutoStartMissions": self.options.auto_start_missions.value,
             "MissionBlackList": {int(mission): int(mission) for mission in self.options.mission_blacklist.value},

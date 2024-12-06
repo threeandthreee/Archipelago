@@ -15,9 +15,9 @@ class Goal(Choice):
     """Sets the goal of your world.
 
     - **Vanilla:** Complete level 26.
-    - **MAM:** Complete a specified level after level 26. Every level before that will be a location. It's recommended\
+    - **MAM:** Complete a specified level after level 26. Every level before that will be a location. It's recommended
     to build a Make-Anything-Machine (MAM).
-    - **Even fasterer:** Upgrade everything to a specified tier after tier 8. Every upgrade before that will be a\
+    - **Even fasterer:** Upgrade everything to a specified tier after tier 8. Every upgrade before that will be a
     location.
     - **Efficiency III:** Deliver 256 blueprint shapes per second to the hub."""
     display_name = "Goal"
@@ -31,7 +31,7 @@ class Goal(Choice):
 
 class GoalAmount(Range):
     """Specify, what level or tier (when either MAM or even fasterer is chosen as goal) is required to reach the goal.
-    If MAM is set as the goal and this is set to less than 27, it will raise an error."""
+    If MAM is set as the goal, this has to be set to 27 or more. Else it will raise an error."""
     display_name = "Goal amount"
     rich_text_doc = True
     range_start = 9
@@ -77,14 +77,14 @@ class RandomizeLevelLogic(Choice):
     levels. The shuffled variants shuffle the order of progression buildings obtained in the multiworld. The standard
     order is: **cutter -> rotator -> painter -> color mixer -> stacker**
 
-    - **Vanilla:** Level 1 requires nothing, 2-4 require the first building, 5-6 require also the second, 7-8 the\
+    - **Vanilla:** Level 1 requires nothing, 2-4 require the first building, 5-6 require also the second, 7-8 the
     third, 9-10 the fourth, and 11 and onwards the fifth and thereby all buildings.
     - **Stretched:** After every floor(maxlevel/6) levels, another building is required.
-    - **Quick:** Every Level, except level 1, requires another building, with level 6 and onwards requiring all\
+    - **Quick:** Every Level, except level 1, requires another building, with level 6 and onwards requiring all
     buildings.
-    - **Random steps:** After a random amount of levels, another building is required, with level 1 always requiring\
+    - **Random steps:** After a random amount of levels, another building is required, with level 1 always requiring
     none. This can potentially generate like any other option.
-    - **Hardcore:** All levels (except level 1) have completely random shape requirements and thus require all\
+    - **Hardcore:** All levels (except level 1) have completely random shape requirements and thus require all
     buildings. Expect early BKs."""
     display_name = "Randomize level logic"
     rich_text_doc = True
@@ -104,17 +104,17 @@ class RandomizeUpgradeLogic(Choice):
     """If upgrade requirements are randomized, this sets how those random shapes are generated
     and how logic works for upgrades.
 
-    - **Vanilla-like:** Tier II requires up to two random buildings, III requires up to three random buildings,\
+    - **Vanilla-like:** Tier II requires up to two random buildings, III requires up to three random buildings,
     and IV and onwards require all processing buildings.
-    - **Linear:** Tier II requires nothing, III-VI require another random building each,\
+    - **Linear:** Tier II requires nothing, III-VI require another random building each,
     and VII and onwards require all buildings.
-    - **Category:** Belt and miner upgrades require no building up to tier IV, but onwards all buildings, processors\
-    upgrades require the cutter (all tiers), rotator (tier IV and onwards), and stacker (tier VI and onwards), and\
-    painting upgrades require the cutter, rotator, stacker, painter (all tiers) and color mixer (tiers V and onwards).\
+    - **Category:** Belt and miner upgrades require no building up to tier V, but onwards all buildings, processors
+    upgrades require the cutter (all tiers), rotator (tier III and onwards), and stacker (tier V and onwards), and
+    painting upgrades require the cutter, rotator, stacker, painter (all tiers) and color mixer (tiers V and onwards).
     Tier VII and onwards will always require all buildings.
-    - **Category random:** Each upgrades category (up to tier IV) requires a random amount of buildings (in order),\
-    with one category always requiring no buildings. Tier V and onwards will always require all buildings.
-    - **Hardcore:** All tiers (except each tier II) have completely random shape requirements and thus require all\
+    - **Category random:** Each upgrades category (up to tier VI) requires a random amount of buildings (in order),
+    with one category always requiring no buildings. Tier VII and onwards will always require all buildings.
+    - **Hardcore:** All tiers (except each tier II) have completely random shape requirements and thus require all
     buildings. Expect early BKs."""
     display_name = "Randomize upgrade logic"
     rich_text_doc = True

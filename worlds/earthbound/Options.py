@@ -228,14 +228,58 @@ class RemoteItems(Toggle):
        However, you will not be able to play offline if this is enabled."""
     display_name = "Remote Items"
 
-class SoundStoneShuffle(Toggle):
-    """Randomizes the Sound Stone. It will need to be found before Sanctuary guardians can be challenged."""
-    display_name = "Sound Stone Shuffle"
-
 class PlandoLumineHallText(FreeText):
     """Set text to be displayed at Lumine Hall. If nothing is entered, random community-submitted text will be selected instead."""
     display_name = "Lumine Hall Text Plando"
     visibility = Visibility.none
+
+class StartingCharacter(Choice):
+    """Changes the character you start as. If random start location is disabled, each character has their own starting location.
+       Ness: Ness's House
+       Paula: the Happy-Happy Villagr cabin
+       Jeff: The Threed zombie prison
+       Poo: Dalaam"""
+    display_name = "Starting Character"
+    option_ness = 0
+    option_paula = 1
+    option_jeff = 2
+    option_poo = 3
+    default = 0
+
+class Armorizer(Choice):
+    """All equippable armor will have randomly generated attributes. This includes who can equip it, elemental resistance (and how strong that resistance is),
+       defense, and the secondary stat it increases (Either Luck or Speed, depending on armor slot.) Choosing "Help!" from the Goods menu will give you exact details
+       on that piece of equipment.
+       Keep Type: Equipment will keep its original equipment slot. If Progressive Armor is enabled, you will get armor with progressively higher defense. 
+       Chaos: Equipment will have a randomly selected slot. It will try to respect the defense progressively, but the type may not match the type received."""
+    display_name = "Armorizer"
+    option_off = 0
+    option_keep_type = 1
+    option_chaos = 2
+    default = 0
+
+class Weaponizer(Choice):
+    """All weapons will have randomly generated attributes. This includes offense, guts boost, and miss rate.
+       Keep Type: Equipment will keep the character that was originally able to use it. If Progressive Weapons is enabled, you will get weapons with progressively higher offense.
+       Chaos: Equipment will be able to be equipped by a randomly selected character. It will try to respect the offense progresively, but the type may not match the type recieved.
+       The Tee Ball Bat will always be a weapon for Ness."""
+    display_name = "Weaponizer"
+    option_off = 0
+    option_keep_type = 1
+    option_chaos = 2
+    default = 0
+
+class RetainResistance(Choice):
+    """If the Equipamizer is enabled, this forces the original Pendant items to retain their original elemental resistances.
+       They will also be forced to be non-Arm equipment. Pendants will still be able to roll additional resistances,
+       and this does not affect resistance rolls on other equipment pieces.
+       Random Level: The resistance type will be retained with a random strength.
+       Same Level: The amount of resistance is the same as in the original"""
+    display_name = "Retain Equipment Resistances"
+    option_off = 0
+    option_random_level = 1
+    option_same_level = 2
+    default = 1
 
 
 @dataclass
@@ -260,6 +304,8 @@ class EBOptions(PerGameCommonOptions):
     easy_deaths: EasyDeaths
     progressive_weapons: ProgressiveWeapons
     progressive_armor: ProgressiveArmor
+    armorizer: Armorizer
+    weaponizer: Weaponizer
     auto_scale_party_members: AutoscaleParty
     remote_items: RemoteItems
     random_flavors: RandomFlavors
@@ -277,6 +323,8 @@ class EBOptions(PerGameCommonOptions):
     death_link: DeathLink
     death_link_mode: DeathLinkMode
     plando_lumine_hall_text: PlandoLumineHallText
+    #starting_character: StartingCharacter
+    #retain_resistances: RetainResistance
 
 
 eb_option_groups = [
@@ -296,6 +344,12 @@ eb_option_groups = [
         UncommonWeight,
         RareWeight,
         PreFixItems
+    ]),
+
+    OptionGroup("Equipamizer", [
+        Armorizer,
+        Weaponizer,
+        #RetainResistance
     ]),
 
     OptionGroup("World Modes", [

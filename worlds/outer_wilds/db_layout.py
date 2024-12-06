@@ -1,6 +1,6 @@
 from enum import Enum
 from random import Random
-from typing import List
+
 from .options import RandomizeDarkBrambleLayout
 
 

@@ -142,7 +142,10 @@
     // unlock the dock the vanilla way, this connection is no longer relevant
     { "category": "dlc", "from": "Dream Raft Loop", "to": "Shrouded Woodlands", "requires": [ { "item": "Raft Docks Patch" } ] },
     { "category": "dlc", "from": "Dream Raft Loop", "to": "Starlit Cove", "requires": [ { "item": "Raft Docks Patch" } ] },
-    { "category": "dlc", "from": "Dream Raft Loop", "to": "Endless Canyon", "requires": [ { "item": "Raft Docks Patch" } ] },
+    { "category": "dlc", "from": "Dream Raft Loop", "to": "Endless Canyon", "requires": [
+        { "item": "Raft Docks Patch" }, // take the elevator up from the dock
+        { "item": "Projection Range Patch" } // use the bonus invisible bridge you may have never noticed in vanilla
+    ] },
 
     { "category": "dlc", "from": "Dream Raft Loop", "to": "Subterranean Lake (Out of Bounds)", "requires": [ { "item": "Limbo Warp Patch" } ] },
     { "category": "dlc", "from": "Subterranean Lake (Out of Bounds)", "to": "Subterranean Lake", "requires": [] },
@@ -154,7 +157,18 @@
 
     { "category": "dlc", "from": "Cinder Isles", "to": "Cinder Isles Symbol Room", "requires": [
         { "region": "Starlit Cove" }, // to extinguish the dream candles that unlock the real door
-        { "item": "Dream Totem Patch" } // project the dock
+        { "anyOf": [
+            { "item": "Dream Totem Patch" }, // project the dock that adds a walkway to the tower's lower entrance
+            { "item": "Raft Docks Patch" } // unless it's already there
+        ] },
+        // This is the one case where entering DW via The Outsider does not work, because after
+        // using that fire you won't have a ship to fly back to the real world's Cinder Isles tower.
+        // The only good fix I can see for this is requiring that you have access to a normal DW entrance.
+        { "anyOf": [
+            { "item": "River Lowlands Painting Code" },
+            { "item": "Cinder Isles Painting Code" },
+            { "item": "Hidden Gorge Painting Code" }
+        ] }
     ] },
 
     { "category": "dlc", "from": "Shrouded Woodlands", "to": "Dream Raft Loop", "requires": [
@@ -221,13 +235,13 @@
 
     { "category": "hn1", "from": "Lonely Hermit", "to": "Alpine Core", "requires": [] },
 
-    { "category": "hn1", "from": "Lonely Hermit", "to": "Lava Core", "requires": [] },
-    { "category": "hn1", "from": "Lava Core", "to": "Lava Shrine", "requires": [
-        { "item": "Scout" }
-    ] },
-    { "category": "hn1", "from": "Lava Core", "to": "Lava Core Frequency", "requires": [
+    { "category": "hn1", "from": "Lonely Hermit", "to": "Lava Core Entrance", "requires": [] },
+    { "category": "hn1", "from": "Lava Core Entrance", "to": "Lava Core Structures", "requires": [
         { "item": "Signalscope" },
         { "item": "Lava Core Signals Frequency" }
+    ] },
+    { "category": "hn1", "from": "Lava Core Structures", "to": "Lava Shrine", "requires": [
+        { "item": "Scout" }
     ] },
 
     { "category": "hn1", "from": "Lonely Hermit", "to": "Lake Core Start Island", "requires": [] },
@@ -259,17 +273,13 @@
         { "region": "Feldspar's Camp" } // getting to the jellyfish the usual way
     ] },
     { "category": "to", "from": "Secluded Structure", "to": "Cliffside Home", "requires": [
-        // copy-pasted from "EotE: Find an Artifact", since you can generate Outsider locations without DLC locations
-        { "anyOf": [
-            { "item": "Ghost Matter Wavelength" }, // to safely enter River Lowlands Workshop
-            { "item": "Stranger Light Modulator" }, // to use a raft and an elevator to reach Hidden Gorge
-            { "item": "Breach Override Codes" } // to enter Hidden Gorge Laboratory
-        ] }
-        // no logic needed for "can get ship into shuttle crusher then fly it over" since this already requires reaching DB
+        // no logic needed for "can get artifact from Stranger" because Secluded Structure logically requires Jellyfish Painting Path which requires GMW
+        // also no logic needed for "can get ship into shuttle crusher then fly it over" since this already requires reaching DB
     ] },
-    { "category": "to&dlc", "from": "Cliffside Home", "to": "Endless Canyon", "requires": [
-        { "item": "Stranger Light Modulator" } // take the elevator down to the regular DLC content
-    ] },
+
+    { "category": "to&dlc", "from": "Cliffside Home", "to": "Endless Canyon", "requires": [] },
+    // since you could use this route to get to the SW archive, we need the (ADB) region too
+    { "category": "to&dlc", "from": "Cliffside Home", "to": "Endless Canyon (After Dam Breaks)", "requires": [] },
 
     { "category": "to", "from": "Dark Bramble", "to": "Projection Pool House", "requires": [ { "item": "Scout" } ] },
 
@@ -296,7 +306,7 @@
     { "category": "hn2", "from": "Magistarium", "to": "Magistarium Outer Planes", "requires": [
         { "item": "Magistarium Dormitory Access Code" }, // enter the Magister's room
         { "item": "Memory Cube Interface" }, // close the hatch so you can safely remove your spacesuit
-        { "item": "Magistarium Dormitory Access Code" } // to get the battery
+        { "item": "Magistarium Engine Access Code" } // to get the battery
     ] },
 
     { "category": "fq", "from": "Hourglass Twins", "to": "Lost Strings", "requires": [

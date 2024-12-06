@@ -46,6 +46,17 @@ class Boss:
     E101mkII = "E-101 mkII"
 
 
+class Chao:
+    GoldEgg = "Gold Chao Egg"
+    SilverEgg = "Silver Chao Egg"
+    BlackEgg = "Black Chao Egg"
+    PearlCourse = "Pearl Course"
+    AmethystCourse = "Amethyst Course"
+    SapphireCourse = "Sapphire Course"
+    RubyCourse = "Ruby Course"
+    EmeraldCourse = "Emerald Course"
+
+
 class Groups:
     UpgradePoints = "Upgrade Points"
     FieldEmblems = "Field Emblems"
@@ -54,3 +65,5 @@ class Groups:
     Bosses = "Bosses"
     LifeCapsules = "Life Capsules"
     Missions = "Missions"
+    ChaoEggs = "Chao Eggs"
+    ChaoRaces = "Chao Races"

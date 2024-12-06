@@ -9,7 +9,7 @@
 
 ## Installation Procedures (Windows)
 
-1. Install Sonic Adventure DX (2004 version).
+1. Install Sonic Adventure DX from: [Sonic Adventure DX Steam Store Page](https://store.steampowered.com/app/71250/Sonic_Adventure_DX/).
 2. Install SA Mod Manager as per [its instructions in GameBanana](https://gamebanana.com/tools/15436)
 3. Unpack the Archipelago Mod into the `/mods` directory in the folder into which you installed Sonic Adventure DX so
    that `/mods/SADX_Archipelago` is a valid path.

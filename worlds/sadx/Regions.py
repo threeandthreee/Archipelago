@@ -9,7 +9,7 @@ from .Enums import Area, Character, SubLevelMission, SubLevel, pascal_to_space
 from .Locations import SonicAdventureDXLocation, life_capsule_location_table, \
     upgrade_location_table, level_location_table, mission_location_table, boss_location_table, sub_level_location_table, \
     field_emblem_location_table
-from .Logic import area_connections
+from .Logic import area_connections, chao_egg_location_table, chao_race_location_table
 from .Names import LocationName
 from .Options import SonicAdventureDXOptions
 from .StartingSetup import StarterSetup
@@ -186,5 +186,14 @@ def get_location_ids_for_common_region(options):
                 continue
             if is_any_character_playable(boss_fight.characters, options):
                 location_ids.append(boss_fight.locationId)
+
+    if options.chao_egg_checks:
+        for egg in chao_egg_location_table:
+            if is_any_character_playable(egg.characters, options):
+                location_ids.append(egg.locationId)
+
+    if options.chao_races_checks:
+        for race in chao_race_location_table:
+            location_ids.append(race.locationId)
 
     return location_ids
