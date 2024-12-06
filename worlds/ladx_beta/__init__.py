@@ -2,9 +2,10 @@ import binascii
 import dataclasses
 import os
 import typing
+import logging
 
 import settings
-from BaseClasses import Entrance, Item, ItemClassification, Location, Tutorial
+from BaseClasses import Entrance, Item, ItemClassification, Location, Tutorial, CollectionState
 from Fill import fill_restrictive
 from worlds.AutoWorld import WebWorld, World
 from worlds.LauncherComponents import Component, components, SuffixIdentifier, Type, launch_subprocess
@@ -195,6 +196,8 @@ class LinksAwakeningWorld(World):
         return Item(event, ItemClassification.progression, None, self.player)
 
     def create_items(self) -> None:
+        itempool = []
+
         exclude = [item.name for item in self.multiworld.precollected_items[self.player]]
 
         dungeon_item_types = {
@@ -277,9 +280,9 @@ class LinksAwakeningWorld(World):
                                 self.prefill_own_dungeons.append(item)
                                 self.pre_fill_items.append(item)
                             else:
-                                self.multiworld.itempool.append(item)
+                                itempool.append(item)
                     else:
-                        self.multiworld.itempool.append(item)
+                        itempool.append(item)
 
         self.multi_key = self.generate_multi_key()
 
@@ -302,21 +305,45 @@ class LinksAwakeningWorld(World):
                     # Properly fill locations within dungeon
                     location.dungeon = r.dungeon_index
 
-        # For now, special case first item
-        FORCE_START_ITEM = True
-        if FORCE_START_ITEM:
-            self.force_start_item()
+        if self.options.tarins_gift != "any_item":
+            self.force_start_item(itempool)
 
-    def force_start_item(self):    
+
+        self.multiworld.itempool += itempool
+
+    def force_start_item(self, itempool):
         start_loc = self.multiworld.get_location("Tarin's Gift (Mabe Village)", self.player)
         if not start_loc.item:
-            possible_start_items = [index for index, item in enumerate(self.multiworld.itempool)
-                if item.player == self.player 
-                    and item.item_data.ladxr_id in start_loc.ladxr_item.OPTIONS and not item.location]
-            if possible_start_items:
-                index = self.random.choice(possible_start_items)
-                start_item = self.multiworld.itempool.pop(index)
+            """
+            Find an item that forces progression or a bush breaker for the player, depending on settings.
+            """
+            if self.options.tarins_gift == "local_progression":
+                base_collection_state = CollectionState(self.multiworld)
+                base_collection_state.update_reachable_regions(self.player)
+                reachable_count = len(base_collection_state.reachable_regions[self.player])
+
+            def is_possible_start_item(item):
+                return item.advancement and item.name not in self.options.non_local_items
+
+            def adheres_to_options(item):
+                if self.options.tarins_gift == "local_progression":
+                    collection_state = base_collection_state.copy()
+                    collection_state.collect(item)
+                    return len(collection_state.reachable_regions[self.player]) > reachable_count
+                # bush breaker
+                return item.name in self.item_name_groups["Bush Breakers"]
+
+            possible_start_items = [item for item in itempool if is_possible_start_item(item)]
+            self.random.shuffle(possible_start_items)
+
+            start_item = next((item for item in possible_start_items if adheres_to_options(item)), None)
+
+            if start_item:
+                itempool.remove(start_item)
                 start_loc.place_locked_item(start_item)
+            else:
+                logging.getLogger("Link's Awakening Logger").warning(f"No {self.options.tarins_gift.current_option_name} available for Tarin's Gift.")
+
 
     def get_pre_fill_items(self):
         return self.pre_fill_items
