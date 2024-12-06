@@ -111,7 +111,7 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
     assembler.const("wLinkSpawnDelay", 0xDE13)
 
     #assembler.const("HARDWARE_LINK", 1)
-    # assembler.const("HARD_MODE", 1 if options["hardmode"] else 0)
+    assembler.const("HARD_MODE", 1 if options["hard_mode"] else 0)
 
     patches.core.cleanup(rom)
     patches.save.singleSaveSlot(rom)
@@ -197,27 +197,27 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
         patches.music.randomizeMusic(rom, random)
     elif options["music"] == Options.Music.option_off:
         patches.music.noMusic(rom)
-    # if ladxr_settings["noflash"]:
-    patches.aesthetics.removeFlashingLights(rom)
-    # if ladxr_settings["hardmode"] == "oracle":
-    #    patches.hardMode.oracleMode(rom)
-    #elif ladxr_settings["hardmode"] == "hero":
-    #    patches.hardMode.heroMode(rom)
-    #elif ladxr_settings["hardmode"] == "ohko":
-    #    patches.hardMode.oneHitKO(rom)
+    if options["no_flash"]:
+        patches.aesthetics.removeFlashingLights(rom)
+    if options["hard_mode"] == Options.HardMode.option_oracle:
+        patches.hardMode.oracleMode(rom)
+    elif options["hard_mode"] == Options.HardMode.option_hero:
+        patches.hardMode.heroMode(rom)
+    elif options["hard_mode"] == Options.HardMode.option_ohko:
+        patches.hardMode.oneHitKO(rom)
     #if ladxr_settings["superweapons"]:
     #    patches.weapons.patchSuperWeapons(rom)
-    #if ladxr_settings["textmode"] == 'fast':
-    patches.aesthetics.fastText(rom)
+    if options["text_mode"] == 'fast':
+        patches.aesthetics.fastText(rom)
     #if ladxr_settings["textmode"] == 'none':
     #    patches.aesthetics.fastText(rom)
     #    patches.aesthetics.noText(rom)
     if not options["nag_messages"]:
         patches.aesthetics.removeNagMessages(rom)
-    #if ladxr_settings["lowhpbeep"] == 'slow':
-    #    patches.aesthetics.slowLowHPBeep(rom)
-    #if ladxr_settings["lowhpbeep"] == 'none':
-    #    patches.aesthetics.removeLowHPBeep(rom)
+    if options["low_hp_beep"] == Options.LowHpBeep.option_slow:
+        patches.aesthetics.slowLowHPBeep(rom)
+    if options["low_hp_beep"] == Options.LowHpBeep.option_none:
+        patches.aesthetics.removeLowHPBeep(rom)
     if 0 <= options["link_palette"]:
         patches.aesthetics.forceLinksPalette(rom, options["link_palette"])
     if args.romdebugmode:
@@ -236,10 +236,10 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
     #    patches.health.setStartHealth(rom, 1)
 
     patches.inventory.songSelectAfterOcarinaSelect(rom)
-    #if ladxr_settings["quickswap"] == 'a':
-    #    patches.core.quickswap(rom, 1)
-    #elif ladxr_settings["quickswap"] == 'b':
-    #    patches.core.quickswap(rom, 0)
+    if options["quickswap"] == Options.Quickswap.option_a:
+        patches.core.quickswap(rom, 1)
+    elif options["quickswap"] == Options.Quickswap.option_b:
+        patches.core.quickswap(rom, 0)
 
     patches.core.addBootsControls(rom, options["boots_controls"])
 

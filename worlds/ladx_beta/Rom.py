@@ -99,6 +99,11 @@ def write_patch_data(world: "LinksAwakeningWorld", patch: LADXProcedurePatch):
             "ap_title_screen",
             "boots_controls",
             "overworld",
+            "quickswap",
+            "hard_mode",
+            "low_hp_beep",
+            "text_mode",
+            "no_flash",
         ),
     }
     patch.write_file("data.json", json.dumps(data_dict).encode('utf-8'))
@@ -151,6 +156,8 @@ def apply_overrides(patch_data: dict) -> None:
         "music",
         "music_change_condition",
         "palette",
+        "low_hp_beep",
+        "no_flash",
     }
     if not patch_data["is_race"]:
         overridable_options.update([
@@ -160,6 +167,8 @@ def apply_overrides(patch_data: dict) -> None:
             "text_shuffle",
             "trendy_game",
             "warps",
+            "quickswap",
+            "text_mode",
         ])
     for option_name in option_overrides.keys():
         if (option_name not in patch_data["options"]) or (option_name not in overridable_options):
