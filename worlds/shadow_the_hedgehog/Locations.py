@@ -1,3 +1,5 @@
+#from __future__ import annotations
+
 from dataclasses import dataclass
 from math import floor
 from typing import Dict, Optional
@@ -5,7 +7,7 @@ from typing import Dict, Optional
 from BaseClasses import Location, Region
 from . import Regions, Levels, Utils, Weapons
 from .Levels import *
-
+from . import Utils as ShadowUtils
 
 class ShadowTheHedgehogLocation(Location):
     game: str = "Shadow The Hedgehog"
@@ -21,27 +23,38 @@ LOCATION_TYPE_CHECKPOINT = 5
 LOCATION_TYPE_KEY = 6
 LOCATION_TYPE_OTHER = 7
 LOCATION_TYPE_CHARACTER = 8
+LOCATION_TYPE_BOSS = 9
 
 @dataclass
 class LocationInfo:
     location_type: int
     locationId: int
     name: str
-    stageId: Optional[int | None]
-    alignmentId: Optional[int | None]
-    count: Optional[int | None]
-    total: Optional[int | None]
-    other: str | None
+    stageId: Optional[int]
+    alignmentId: Optional[int]
+    count: Optional[int]
+    total: Optional[int]
+    other: str
 
 
 @dataclass
 class MissionClearLocation:
     stageId: int
     alignmentId: int
-    requirement_count: int | None
+    requirement_count: Optional[int]
     mission_object_name: Optional[str]
     distribution = None
     requirements = None
+    logicType: int
+
+    def __init__(self, stageId, alignmentId, requirement_count,
+                 mission_object_name):
+        self.stageId = stageId
+        self.alignmentId = alignmentId
+        self.requirement_count = requirement_count
+        self.mission_object_name = mission_object_name
+        self.logicType = Options.LogicLevel.option_normal
+
     def setDistribution(self, dist):
         self.distribution = dist
         return self
@@ -58,7 +71,29 @@ class MissionClearLocation:
         self.requirements = reqs
         return self
 
+    def setLogicLevel(self, level):
+        self.logicType = level
+        return self
 
+
+class BossClearLocation:
+    stageId: int
+    name: str
+    logicType: int
+    requirements = None
+
+    def __init__(self, stageId):
+        self.stageId = stageId
+        self.name = Levels.LEVEL_ID_TO_LEVEL[stageId]
+        self.logicType = Options.LogicLevel.option_normal
+
+    def setLogicType(self, type):
+        self.logicType = type
+        return self
+
+    def setRequirement(self, req):
+        self.requirements = req
+        return self
 
 ENEMY_CLASS_ALIEN = 0
 ENEMY_CLASS_GUN = 1
@@ -186,8 +221,8 @@ MissionClearLocations = [
     MissionClearLocation(STAGE_PRISON_ISLAND, MISSION_ALIGNMENT_DARK, 40, "Soldier")
         .setDistribution(
         {
-            0: 1,
-            1: 39
+            0: 5,
+            1: 35
         }
     ),
     MissionClearLocation(STAGE_PRISON_ISLAND, MISSION_ALIGNMENT_NEUTRAL, None, None)
@@ -228,6 +263,7 @@ MissionClearLocations = [
     MissionClearLocation(STAGE_THE_DOOM, MISSION_ALIGNMENT_DARK, 60, "Soldier"),
     MissionClearLocation(STAGE_THE_DOOM, MISSION_ALIGNMENT_NEUTRAL, None, None),
     MissionClearLocation(STAGE_THE_DOOM, MISSION_ALIGNMENT_HERO, 10, "Researcher")
+        .setLogicLevel(Options.LogicLevel.option_easy)
         .setRequirement(REGION_RESTRICTION_TYPES.Heal),
 
     MissionClearLocation(STAGE_SKY_TROOPS, MISSION_ALIGNMENT_DARK, 5, "Egg Ship")
@@ -333,8 +369,18 @@ MissionClearLocations = [
     ),
 
     MissionClearLocation(STAGE_GUN_FORTRESS, MISSION_ALIGNMENT_DARK, 3, "Computer")
-    .setRequirement(REGION_RESTRICTION_TYPES.LongRangeGun),
-    MissionClearLocation(STAGE_GUN_FORTRESS, MISSION_ALIGNMENT_HERO, None, None),
+    .setRequirement(REGION_RESTRICTION_TYPES.ShootOrTurret)
+    .setDistribution(
+        {
+            1: 3
+        }
+    ),
+    MissionClearLocation(STAGE_GUN_FORTRESS, MISSION_ALIGNMENT_HERO, None, None)
+    .setDistribution(
+        {
+            1: 1
+        }
+    ),
 
     MissionClearLocation(STAGE_BLACK_COMET, MISSION_ALIGNMENT_DARK, 50, "Soldier")
         .setDistribution(
@@ -342,7 +388,12 @@ MissionClearLocations = [
             1: 50
         }
     ),
-    MissionClearLocation(STAGE_BLACK_COMET, MISSION_ALIGNMENT_HERO, None, None),
+    MissionClearLocation(STAGE_BLACK_COMET, MISSION_ALIGNMENT_HERO, None, None)
+        .setDistribution(
+        {
+            1: 1
+        }
+    ),
 
     MissionClearLocation(STAGE_LAVA_SHELTER, MISSION_ALIGNMENT_DARK, 5, "Defense"),
     MissionClearLocation(STAGE_LAVA_SHELTER, MISSION_ALIGNMENT_HERO, None, None),
@@ -371,10 +422,32 @@ MissionClearLocations = [
     )
 ]
 
+BossClearLocations = \
+[
+    BossClearLocation(BOSS_BLACK_BULL_LH),
+    BossClearLocation(BOSS_EGG_BREAKER_CC),
+    BossClearLocation(BOSS_HEAVY_DOG),
+    BossClearLocation(BOSS_BLACK_BULL_DR),
+    BossClearLocation(BOSS_EGG_BREAKER_MM),
+    BossClearLocation(BOSS_BLUE_FALCON),
+    BossClearLocation(BOSS_EGG_BREAKER_IJ)
+        .setRequirement(REGION_RESTRICTION_TYPES.GunTurret),
+    BossClearLocation(BOSS_BLACK_DOOM_GF),
+    BossClearLocation(BOSS_DIABLON_GF),
+    BossClearLocation(BOSS_EGG_DEALER_BC),
+    BossClearLocation(BOSS_DIABLON_BC),
+    BossClearLocation(BOSS_EGG_DEALER_LS),
+    BossClearLocation(BOSS_BLACK_DOOM_CF),
+    BossClearLocation(BOSS_EGG_DEALER_CF),
+    BossClearLocation(BOSS_DIABLON_FH),
+    BossClearLocation(BOSS_BLACK_DOOM_FH)
+]
+
+
 EnemySanityLocations = \
 [
     EnemySanityLocation(STAGE_WESTOPOLIS, ENEMY_CLASS_ALIEN, 45, "Black Arm"),
-    EnemySanityLocation(STAGE_WESTOPOLIS, ENEMY_CLASS_GUN, 36, "GUN"),
+    EnemySanityLocation(STAGE_WESTOPOLIS, ENEMY_CLASS_GUN, 36, "GUN Soldier"),
 
     EnemySanityLocation(STAGE_DIGITAL_CIRCUIT, ENEMY_CLASS_GUN, 46, "GUN Soldier"),
     EnemySanityLocation(STAGE_DIGITAL_CIRCUIT, ENEMY_CLASS_ALIEN, 17, "Black Arm"),
@@ -508,7 +581,13 @@ CheckpointLocations = \
             1: [2,3,4,5,6,7,8],
         }
     ),
-    CheckpointLocation(STAGE_GUN_FORTRESS, 7),
+    CheckpointLocation(STAGE_GUN_FORTRESS, 7)
+        .setDistribution(
+        {
+            0: [1],
+            1: [2,3,4,5,6,7]
+        }
+    ),
     CheckpointLocation(STAGE_BLACK_COMET, 8)
         .setDistribution(
         {
@@ -599,7 +678,13 @@ KeyLocations = \
             1: 4
         }
     ),
-    KeyLocation(STAGE_GUN_FORTRESS),
+    KeyLocation(STAGE_GUN_FORTRESS)
+        .setDistribution(
+        {
+            0: 1,
+            1: 4
+        }
+    ),
     KeyLocation(STAGE_BLACK_COMET)
         .setDistribution(
         {
@@ -689,6 +774,12 @@ def GetWeaponsanityLocationName(weaponName, weaponId):
 
     return id_name, view_name
 
+def GetBossLocationName(bossName, bossStageId):
+    id_name = int(str(LOCATION_ID_PLUS) + str(bossStageId) + str(LOCATION_TYPE_BOSS))
+    view_name = "Boss:" + bossName
+
+    return id_name, view_name
+
 
 
 def GetAllLocationInfo():
@@ -700,6 +791,7 @@ def GetAllLocationInfo():
     charactersanity_locations = []
     keysanity_locations = []
     weaponsanity_locations = []
+    boss_locations = []
 
     for location in MissionClearLocations:
         location_id, completion_location_name = GetLevelCompletionNames(location.stageId, location.alignmentId)
@@ -795,10 +887,15 @@ def GetAllLocationInfo():
                             stageId=None, alignmentId=None, count=None, total=None, other=weapon.name)
         weaponsanity_locations.append(info)
 
+    for boss in BossClearLocations:
+        boss_location_id, boss_location_name = GetBossLocationName(boss.name, boss.stageId)
+        info = LocationInfo(LOCATION_TYPE_BOSS, boss_location_id, boss_location_name, stageId=boss.stageId,
+                            alignmentId=None, count=None, total=None, other=boss.name)
+        boss_locations.append(info)
 
     return (mission_clear_locations, mission_locations, progression_locations,
             enemysanity_locations, checkpointsanity_locations, charactersanity_locations,
-            token_locations, keysanity_locations, weaponsanity_locations)
+            token_locations, keysanity_locations, weaponsanity_locations, boss_locations)
 
 
 def is_token_required_by_goal(world, token : LocationInfo):
@@ -810,7 +907,7 @@ def is_token_required_by_goal(world, token : LocationInfo):
     goal_dictates_neutral_missions = world.options.goal_missions > 0
     goal_dictates_progression_missions = world.options.goal_objective_missions > 0
 
-    if LEVEL_ID_TO_LEVEL[token.stageId] in world.options.excluded_stages:
+    if token.stageId not in world.available_levels:
         return False
 
     if goal_dictates_missions and token.other == ITEM_TOKEN_TYPE_STANDARD:
@@ -840,28 +937,35 @@ def is_token_required_by_goal(world, token : LocationInfo):
 def create_locations(world: "ShtHWorld", regions: Dict[str, Region]):
     (clear_locations, mission_locations, end_location,
      enemysanity_locations, checkpointsanity_locations, charactersanity_locations,
-     token_locations, keysanity_locations, weaponsanity_locations) = GetAllLocationInfo()
+     token_locations, keysanity_locations, weaponsanity_locations, boss_locations) = GetAllLocationInfo()
 
     for location in clear_locations:
-        if LEVEL_ID_TO_LEVEL[location.stageId] in world.options.excluded_stages:
+        if location.stageId not in world.available_levels:
             continue
         within_region = regions[Regions.stage_id_to_region(location.stageId)]
         completion_location = ShadowTheHedgehogLocation(world.player, location.name, location.locationId, within_region)
+
         within_region.locations.append(completion_location)
 
         # TODO:
         # Work out each stages required tokens and add a location
         # If the various settings are enabled
 
+    override_settings = world.options.percent_overrides
+
     if world.options.objective_sanity.value:
         percentage = world.options.objective_percentage.value
         for location in mission_locations:
             if not world.options.enemy_objective_sanity and (location.name == "Soldier" or location.name == "Alien"):
                 continue
-            if LEVEL_ID_TO_LEVEL[location.stageId] in world.options.excluded_stages:
+            if location.stageId not in world.available_levels:
                 continue
 
-            max_required = Utils.getRequiredCount(location.total, percentage, round_method=floor)
+            override_total = ShadowUtils.getOverwriteRequiredCount(override_settings, location.stageId,
+                                                                   location.alignmentId, ShadowUtils.TYPE_ID_OBJECTIVE)
+
+            max_required = Utils.getRequiredCount(location.total, percentage,
+                                                  override=override_total, round_method=floor)
             if location.count <= max_required :
                 within_region = regions[Regions.stage_id_to_region(location.stageId)]
                 completion_location = ShadowTheHedgehogLocation(world.player, location.name, location.locationId, within_region)
@@ -870,9 +974,12 @@ def create_locations(world: "ShtHWorld", regions: Dict[str, Region]):
     if world.options.enemy_sanity:
         percentage = world.options.enemy_sanity_percentage.value
         for enemy in enemysanity_locations:
-            if LEVEL_ID_TO_LEVEL[enemy.stageId] in world.options.excluded_stages:
+            if enemy.stageId not in world.available_levels:
                 continue
-            max_required = Utils.getRequiredCount(enemy.total, percentage, round_method=floor)
+            override_total = ShadowUtils.getOverwriteRequiredCount(override_settings, enemy.stageId,
+                                                                   enemy.alignmentId, ShadowUtils.TYPE_ID_ENEMY)
+            max_required = Utils.getRequiredCount(enemy.total, percentage,
+                                                  override=override_total, round_method=floor)
             if enemy.count <= max_required:
                 within_region = regions[Regions.get_max_stage_region_id(enemy.stageId)]
                 completion_location = ShadowTheHedgehogLocation(world.player, enemy.name, enemy.locationId, within_region)
@@ -880,7 +987,7 @@ def create_locations(world: "ShtHWorld", regions: Dict[str, Region]):
 
     if world.options.checkpoint_sanity:
         for checkpoint in checkpointsanity_locations:
-            if LEVEL_ID_TO_LEVEL[checkpoint.stageId] in world.options.excluded_stages:
+            if checkpoint.stageId not in world.available_levels:
                 continue
             found_check_level_info = [ c for c in CheckpointLocations if c.stageId == checkpoint.stageId ][0]
             region_index = found_check_level_info.getRegion(checkpoint.count)
@@ -890,13 +997,25 @@ def create_locations(world: "ShtHWorld", regions: Dict[str, Region]):
 
     if world.options.key_sanity:
         for key in keysanity_locations:
-            if LEVEL_ID_TO_LEVEL[key.stageId] in world.options.excluded_stages:
+            if key.stageId not in world.available_levels:
                 continue
             found_key_level_info = [c for c in KeyLocations if c.stageId == key.stageId][0]
             region_index = found_key_level_info.getRegion(key.count)
             within_region = regions[Regions.stage_id_to_region(key.stageId, region_index)]
             completion_location = ShadowTheHedgehogLocation(world.player, key.name, key.locationId, within_region)
             within_region.locations.append(completion_location)
+
+    for boss in boss_locations:
+        if boss.stageId not in world.available_levels:
+            continue
+        region_name = Regions.stage_id_to_region(boss.stageId)
+        if region_name not in regions:
+            continue
+        within_region = regions[region_name]
+        completion_location = ShadowTheHedgehogLocation(world.player, boss.name, boss.locationId,
+                                                        within_region)
+        within_region.locations.append(completion_location)
+        pass
 
     if world.options.character_sanity:
         for character in charactersanity_locations:
@@ -917,7 +1036,6 @@ def create_locations(world: "ShtHWorld", regions: Dict[str, Region]):
             completion_location = ShadowTheHedgehogLocation(world.player, weapon.name, weapon.locationId,
                                                             within_region)
             within_region.locations.append(completion_location)
-
 
     for token in token_locations:
         goal_required = is_token_required_by_goal(world, token)
@@ -940,26 +1058,30 @@ def count_locations(world):
     (mission_clear_locations, mission_locations, end_location,
      enemysanity_locations, checkpointsanity_locations,
      charactersanity_locations, token_locations, keysanity_locations,
-     weaponsanity_locations) = GetAllLocationInfo()
+     weaponsanity_locations, boss_locations) = GetAllLocationInfo()
 
-    mission_clear_locations = [ mc for mc in mission_clear_locations if Levels.LEVEL_ID_TO_LEVEL[mc.stageId]
-                                not in world.options.excluded_stages]
+    mission_clear_locations = [ mc for mc in mission_clear_locations if mc.stageId
+                                in world.available_levels]
 
-    mission_locations = [ ml for ml in mission_locations if Levels.LEVEL_ID_TO_LEVEL[ml.stageId]
-                                not in world.options.excluded_stages]
+    mission_locations = [ ml for ml in mission_locations if ml.stageId
+                                in world.available_levels]
 
-    enemysanity_locations = [ml for ml in enemysanity_locations if Levels.LEVEL_ID_TO_LEVEL[ml.stageId]
-                         not in world.options.excluded_stages]
+    enemysanity_locations = [ml for ml in enemysanity_locations if ml.stageId
+                         in world.available_levels]
 
-    checkpointsanity_locations = [ml for ml in checkpointsanity_locations if Levels.LEVEL_ID_TO_LEVEL[ml.stageId]
-                             not in world.options.excluded_stages]
+    checkpointsanity_locations = [ml for ml in checkpointsanity_locations if ml.stageId
+                             in world.available_levels]
 
     charactersanity_locations = [ ml for ml in charactersanity_locations if ml.other in world.available_characters ]
 
-    keysanity_locations = [ks for ks in keysanity_locations if Levels.LEVEL_ID_TO_LEVEL[ks.stageId]
-                             not in world.options.excluded_stages]
+    keysanity_locations = [ks for ks in keysanity_locations if ks.stageId
+                             in world.available_levels]
+
+    boss_locations = [ b for b in boss_locations if b.stageId in world.available_levels ]
 
     weaponsanity_locations = [ml for ml in weaponsanity_locations if ml.other in world.available_weapons]
+
+    override_settings = world.options.percent_overrides
 
     count += len(mission_clear_locations)
 
@@ -968,14 +1090,24 @@ def count_locations(world):
         for location in mission_locations:
             if not world.options.enemy_objective_sanity and (location.name == "Soldier" or location.name == "Alien"):
                 continue
-            max_required = Utils.getRequiredCount(location.total, percentage, round_method=floor)
+
+            override_total = ShadowUtils.getOverwriteRequiredCount(override_settings, location.stageId,
+                                                                   location.alignmentId, ShadowUtils.TYPE_ID_OBJECTIVE)
+
+            max_required = Utils.getRequiredCount(location.total, percentage,
+                                                  override=override_total, round_method=floor)
             if location.count <= max_required:
                 count += 1
 
     if world.options.enemy_sanity:
         percentage = world.options.enemy_sanity_percentage.value
+
         for enemy in enemysanity_locations:
-            max_required = Utils.getRequiredCount(enemy.total, percentage, round_method=floor)
+            override_total = ShadowUtils.getOverwriteRequiredCount(override_settings, enemy.stageId,
+                                                                   enemy.alignmentId, ShadowUtils.TYPE_ID_ENEMY)
+
+            max_required = Utils.getRequiredCount(enemy.total, percentage,
+                                                  override=override_total, round_method=floor)
             if enemy.count <= max_required:
                 count += 1
 
@@ -987,6 +1119,8 @@ def count_locations(world):
 
     if world.options.key_sanity:
         count += len(keysanity_locations)
+
+    count += len(boss_locations)
 
     if world.options.weapon_sanity_hold > 0:
         count += len(weaponsanity_locations)

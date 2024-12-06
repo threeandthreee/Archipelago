@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from math import ceil
 
-from Options import PerGameCommonOptions, Choice, DefaultOnToggle, Toggle, Range, OptionSet
-from . import Levels
+from Options import PerGameCommonOptions, Choice, DefaultOnToggle, Toggle, Range, OptionSet, OptionDict
+#from . import Levels
 
 
 class GoalChaosEmeralds(DefaultOnToggle):
@@ -66,14 +66,21 @@ class ObjectivePercentage(Range):
     The remaining items however will still be in the pool.
     When playing without objectsanity, the requirement to finish is reduced also."""
     display_name = "Objective Percentage"
-    range_start = 10
+    range_start = 1
     range_end = 100
     default = 100
 
 class ObjectiveItemPercentage(Range):
     """When playing Objective Sanity, determine the percentage of items required to finish stages."""
     display_name = "Objective Item Percentage"
-    range_start = 10
+    range_start = 1
+    range_end = 100
+    default = 100
+
+class ObjectiveItemPercentageAvailable(Range):
+    """When playing Objective Sanity, determine the percentage of items required to finish stages left in the pool."""
+    display_name = "Objective Item Percentage"
+    range_start = 1
     range_end = 100
     default = 100
 
@@ -106,7 +113,10 @@ class WeaponsanityUnlock(Toggle):
     display_name = "Weapon Sanity Unlock"
 
 class WeaponsanityHold(Choice):
-    """Determines whether game contains checks for legally holding each weapon."""
+    """Determines whether game contains checks for legally holding each weapon.
+    If unlocked is chosen, you must unlock the weapon with unlock first.
+    If on is chosen, you will still lose the item in this mode, but will get the check.
+    """
     display_name = "Weapon Sanity Hold"
     option_off = 0  # No checks for holding weapons
     option_unlocked = 1  # Requires the item to be unlocked to get the check.
@@ -132,7 +142,7 @@ class EnemySanityPercentage(Range):
 class StartingStages(Range):
     """Determines the number of stages that start unlocked."""
     display_name = "Starting Stages"
-    range_start = 1
+    range_start = 0
     range_end = 22
     default = 1
 
@@ -161,7 +171,7 @@ class ExcludedStages(OptionSet):
     """Stage names to exclude checks from."""
     display_name = "Excluded Stages"
     default = {}
-    valid_keys = [i for i in Levels.LEVEL_ID_TO_LEVEL.values() ]
+    #valid_keys = [i for i in Levels.LEVEL_ID_TO_LEVEL.values() ]
 
 class ExceedingItemsFiller(Choice):
     """Determines whether game marks non-required items as progression or not."""
@@ -169,7 +179,7 @@ class ExceedingItemsFiller(Choice):
     option_off = 0  # Never convert exceeding items into filler
     option_minimise = 1  # Minimise exceeding items into filler
     option_always = 2  # Always mark exceeding items as filler
-    default = 0
+    default = 1
 
 class RingLink(Toggle):
     """
@@ -182,6 +192,32 @@ class AutoClearMissions(DefaultOnToggle):
         Set automatic clears for missions once objective criteria is achieved.
     """
     display_name = "Auto Clear Missions"
+
+class LevelProgression(Choice):
+    """Which type of logic to use for progression through the game."""
+    display_name = "Level Progression"
+    option_select = 0  # All stages will be unlocked through unlocks to Select Mode
+    option_story = 1  # All stages will only be unlocked through story mode progression
+    option_both = 2  # Stages can be unlocked through story mode progression or unlocked for Select Mode
+    default = 0
+
+class PercentOverrides(OptionDict):
+    """List of provided keys to dictate percentage based overrides."""
+    display_name = "Percent Overrides"
+
+class LogicLevel(Choice):
+    """Determines the logic level for playthrough."""
+    display_name = "Logic Level"
+    option_easy = 0  # Logic adds in easier elements for completion
+    option_normal = 1  # Standard logic
+    option_hard = 2  # Requires skips to traverse regions.
+    default = 1
+
+class BossChecks(Toggle):
+    """
+        Determines if bosses provide checks. On vanilla story mode, bosses will still have to be fought to progress.
+    """
+    display_name = "Boss Checks"
 
 @dataclass
 class ShadowTheHedgehogOptions(PerGameCommonOptions):
@@ -196,6 +232,7 @@ class ShadowTheHedgehogOptions(PerGameCommonOptions):
     objective_sanity: ObjectiveSanity
     objective_percentage: ObjectivePercentage
     objective_item_percentage: ObjectiveItemPercentage
+    objective_item_percentage_available: ObjectiveItemPercentageAvailable
     enemy_objective_sanity: EnemyObjectiveSanity
     character_sanity: CharacterSanity
     enemy_sanity: Enemysanity
@@ -215,6 +252,10 @@ class ShadowTheHedgehogOptions(PerGameCommonOptions):
     enable_gauge_items: GaugeFiller
     ring_link: RingLink
     auto_clear_missions: AutoClearMissions
+    level_progression: LevelProgression
+    percent_overrides: PercentOverrides
+    logic_level: LogicLevel
+    #boss_checks: BossChecks
 
 
 
