@@ -1,5 +1,6 @@
 import asyncio
 import typing
+import subprocess
 from NetUtils import ClientStatus, RawJSONtoTextParser
 from CommonClient import (
     CommonContext,
@@ -7,16 +8,14 @@ from CommonClient import (
     logger,
     get_base_parser,
     server_loop,
-    ClientCommandProcessor
+    ClientCommandProcessor,
 )
 import json
-from typing import List
 import time
 import os
 import bsdiff4
 from aiohttp import web
 import Utils
-import settings
 from .Items import item_table
 from .ERData import er_entrances, game_entrances
 tracker_loaded = False
@@ -30,7 +29,7 @@ except ModuleNotFoundError:
 DEBUG = False
 GAMENAME = "Minit"
 ITEMS_HANDLING = 0b111
-
+PATCH_VERSION = 1.0
 
 def data_path(file_name: str):
     import pkgutil
@@ -40,15 +39,10 @@ def data_path(file_name: str):
 class MinitCommandProcessor(ClientCommandProcessor):
 
     def _cmd_patch(self):
-        """Patch the game."""
-        try:
-            if isinstance(self.ctx, ProxyGameContext):
-                self.ctx.patch_game()
-                self.output("Patched.")
-        except FileNotFoundError:
-            logger.info("Patch cancelled")
-        except ValueError:
-            logger.info("Selected game is not vanilla, please reset the game and repatch")
+        """Patch and launch the game."""
+        if isinstance(self.ctx, ProxyGameContext):
+            self.ctx.patch_game()
+
 
     def _cmd_amnisty(self, total: int = 1):
         """Set the Death Amnisty value. Default 1."""
@@ -56,16 +50,6 @@ class MinitCommandProcessor(ClientCommandProcessor):
         self.ctx.death_amnisty_count = 0
         logger.info(f"Amnisty set to {self.ctx.death_amnisty_total}. \
             Deaths towards Amnisty reset.")
-
-
-class RomFile(settings.UserFilePath):
-    description = "Minit Vanilla File"
-    md5s = [
-        "cd676b395dc2a25df10a569c17226dde", #steam
-        "1432716643381ced3ad0195078e8e314", #epic
-        # "6263766b38038911efff98423822890e", #itch.io, does not work
-        ]
-    # the hashes for vanilla to be verified by the /patch command
 
 
 class ProxyGameContext(SuperContext):
@@ -77,7 +61,7 @@ class ProxyGameContext(SuperContext):
     slot_data: dict[str, any]
     death_amnisty_total: int
     death_amnisty_count: int
-    goals: List[str]
+    goals: typing.List[str]
 
     def __init__(self, server_address, password):
         super().__init__(server_address, password)
@@ -88,8 +72,17 @@ class ProxyGameContext(SuperContext):
         self.death_amnisty_total = 1  # should be rewritten by slot data
         self.death_amnisty_count = 0
 
-    def run_gui(self):
+    def make_gui(self):
+        if hasattr(super(), "make_gui"):
+            ui = super().make_gui()
+        else:
+            # back compat, can remove later
+            ui = super().super_make_gui()
+        ui.base_title = "Minit Client"
+        return ui
 
+    def super_make_gui(self):
+        # back compat, can remove later
         from kvui import GameManager
 
         class ProxyManager(GameManager):
@@ -107,27 +100,44 @@ class ProxyGameContext(SuperContext):
 
                 return container
 
-        self.ui = ProxyManager(self)
         if tracker_loaded:
             self.load_kv()
-
-        self.ui_task = asyncio.create_task(self.ui.async_run(), name="UI")
+        return ProxyManager(self)
 
     def patch_game(self):
-        validator = RomFile()
+        from . import MinitWorld
+        try:
+            rom_file = MinitWorld.settings.rom_file
+            rom_file.validate(rom_file)
+        except FileNotFoundError:
+            logger.info("Patch cancelled")
+            return
+        except ValueError:
+            logger.info("Selected game is not vanilla, please reset the game and repatch")
+            return
 
-        source_data_win = Utils.open_filename(
-            'Select Minit data.win',
-            (('data.win', ('.win',)),))
-        validator.validate(source_data_win)
-        with open(os.path.join(source_data_win), "rb") as f:
-            patchedFile = bsdiff4.patch(f.read(), data_path("patch.bsdiff"))
-        with open(os.path.join(source_data_win), "wb") as f:
-            f.write(patchedFile)
-        logger.info(
-            "patched " +
-            source_data_win +
-            ". You can launch the .exe game to run the patched game.")
+        basepath = os.path.dirname(rom_file)
+        patched_name = f"ap_v{PATCH_VERSION}_data.win"
+
+        if not os.path.isfile(os.path.join(basepath, patched_name)):
+            with open(rom_file, "rb") as f:
+                patchedFile = bsdiff4.patch(f.read(), data_path("patch.bsdiff"))
+            with open(os.path.join(os.path.dirname(rom_file), patched_name), "wb") as f:
+                f.write(patchedFile)
+            logger.info("Patch complete")
+        else:
+            logger.info("Found patched file, skipping patching process")
+        executible = "minit.exe"
+        if not os.path.isfile(os.path.join(basepath, executible)):
+            executible = "minitGMS2.exe"
+            if not os.path.isfile(os.path.join(basepath, executible)):
+                logger.info("No known Minit executible in the install folder")
+                return
+        subprocess.Popen([
+            os.path.join(basepath, executible),
+            "-game",
+            os.path.join(basepath, patched_name)
+        ])
 
     def on_package(self, cmd: str, args: dict):
         super().on_package(cmd, args)
@@ -184,7 +194,7 @@ class ProxyGameContext(SuperContext):
         """handle POST at /Death"""
         if self.slot_data["death_link"]:
             response = handleDeathlink(self)
-            await self.send_death("ran out of time")
+            await self.send_death(f"{self.player_names[self.slot]} ran out of time")  # consider more silly messages
             return web.json_response(response)
         else:
             return web.json_response("deathlink disabled")
@@ -415,6 +425,25 @@ def handleDatapackage(ctx: CommonContext):
     datapackagemessage = [{"cmd": "blah", "data": "blah"}]
     return datapackagemessage
 
+import urllib.parse
+# in PR 4068 so will eventually be in main
+def handle_url_arg(args: "argparse.Namespace",
+                   parser: "typing.Optional[argparse.ArgumentParser]" = None) -> "argparse.Namespace":
+    """ handle if text client is launched using the "archipelago://name:pass@host:port" url from webhost """
+    if args.url:
+        url = urllib.parse.urlparse(args.url)
+        if url.scheme == "archipelago":
+            args.connect = url.netloc
+            if url.username:
+                args.name = urllib.parse.unquote(url.username)
+            if url.password:
+                args.password = urllib.parse.unquote(url.password)
+        else:
+            if not parser:
+                parser = get_base_parser()
+            parser.error(f"bad url, found {args.url}, expected url in form of archipelago://archipelago.gg:38281")
+    return args
+
 
 async def main(args):
     from .proxyServer import Webserver, http_server_loop
@@ -441,13 +470,16 @@ async def main(args):
     await ctx.shutdown()
 
 
-def launch():
+def launch(*args):
     import colorama
 
     parser = get_base_parser(
         description="Minit Archipelago Client."
         )
-    args, unknown = parser.parse_known_args()
+    parser.add_argument("url", nargs="?", help="Archipelago Webhost uri to auto connect to.")
+    args = parser.parse_args(args)
+
+    args = handle_url_arg(args, parser=parser)
 
     colorama.init()
 
@@ -456,4 +488,5 @@ def launch():
 
 
 if __name__ == '__main__':
-    launch()
+    import sys
+    launch(*sys.argv[-1:])
