@@ -144,6 +144,8 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
     if not options["rooster"]:
         patches.maptweaks.tweakMap(rom)
         patches.maptweaks.tweakBirdKeyRoom(rom)
+    if options["overworld"] == Options.Overworld.option_open_mabe:
+        patches.maptweaks.openMabe(rom)
     patches.chest.fixChests(rom)
     patches.shop.fixShop(rom)
     patches.rooster.patchRooster(rom)
