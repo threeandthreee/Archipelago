@@ -45,6 +45,19 @@ incbin "mm2font.dat"
 %org($A900, $09)
 incbin "mm2titlefont.dat"
 
+%org($807E, $0B)
+FlashFixes:
+    CMP #$FF
+    BEQ FlashFixTarget1
+    CMP #$FF
+    BNE FlashFixTarget2
+
+%org($8086, $0B)
+FlashFixTarget1:
+
+%org($808D, $0B)
+FlashFixTarget2:
+
 %org($8015, $0D)
 ClearRefreshHook:
     ; if we're already doing a fresh load of the stage select
@@ -352,6 +365,7 @@ StoreWilyProgress:
     STA !stage_completion, X
     PLA
     TAX
+    print "Get Equipped Music: ", hex(realbase())
     LDA #$17
     RTS
 
