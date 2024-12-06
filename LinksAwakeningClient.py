@@ -26,12 +26,12 @@ import typing
 from CommonClient import (CommonContext, get_base_parser, gui_enabled, logger,
                           server_loop)
 from NetUtils import ClientStatus
-from worlds.ladx.Common import BASE_ID as LABaseID
-from worlds.ladx.GpsTracker import GpsTracker
-from worlds.ladx.ItemTracker import ItemTracker
-from worlds.ladx.LADXR.checkMetadata import checkMetadataTable
-from worlds.ladx.Locations import get_locations_to_id, meta_to_name
-from worlds.ladx.Tracker import LocationTracker, MagpieBridge
+from worlds.ladx_beta.Common import BASE_ID as LABaseID
+from worlds.ladx_beta.GpsTracker import GpsTracker
+from worlds.ladx_beta.ItemTracker import ItemTracker
+from worlds.ladx_beta.LADXR.checkMetadata import checkMetadataTable
+from worlds.ladx_beta.Locations import get_locations_to_id, meta_to_name
+from worlds.ladx_beta.Tracker import LocationTracker, MagpieBridge
 
 
 class GameboyException(Exception):
@@ -567,7 +567,7 @@ class LinksAwakeningContext(CommonContext):
         if cmd == "Connected":
             self.game = self.slot_info[self.slot].game
             self.slot_data = args.get("slot_data", {})
-            
+
         # TODO - use watcher_event
         if cmd == "ReceivedItems":
             for index, item in enumerate(args["items"], start=args["index"]):
