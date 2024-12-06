@@ -1,6 +1,6 @@
-from .local_data import item_id_table, character_item_table, party_id_nums
-from .text_data import eb_text_table, text_encoder
-from .static_location_data import location_groups
+from ..game_data.local_data import item_id_table, character_item_table, party_id_nums
+from ..game_data.text_data import eb_text_table, text_encoder
+from ..game_data.static_location_data import location_groups
 import struct
 
 
@@ -34,7 +34,7 @@ def setup_hints(world):
         "Fourside - Post-Moonside Delivery",
         "Lost Underworld - Talking Rock",
         "Dungeon Man - 2F Hole Present",
-        "Poo Starting Item",
+        "Poo - Starting Item",
         "Summers - Magic Cake",
         "Deep Darkness - Teleporting Monkey",
         "Twoson - Insignificant Location",
@@ -127,7 +127,7 @@ def setup_hints(world):
         "there's a guy near Threed's hotel who saw the Zombies take someone away.",
         "you can use the Y button to run or mash through text.",
         "you can submit custom window flavors in the game's Archipelago thread.",
-        "you can buy a ruler at the Fourside Department Store",
+        "you can buy a ruler at the Fourside Department Store.",
         "you can store a lot of items in your backpack with the R button.",
         "Giygas's guard may actually be from another seed...",
         "if you have multiple of something important, you can throw away the extras.",
@@ -141,7 +141,9 @@ def setup_hints(world):
         "you can randomize EarthBound with Archipelago.",
         "hint prices double with each one bought.",
         "you probably should have kept your money.",
-        "there's a secret option to plando Lumine Hall's text."
+        "there's a secret option to plando Lumine Hall's text.",
+        "this isn't a very good hint.",
+        "some hints are good hints.\n@But not this one."
     ]
 
     if world.options.magicant_mode.value in [0, 3]:
@@ -151,6 +153,13 @@ def setup_hints(world):
         if item.name in world.local_hintable_items:
             #let's not hint an item that doesn't exist
             world.local_hintable_items.remove(item.name)
+
+    for item in world.options.start_inventory_from_pool:
+        if item in world.local_hintable_items:
+            world.local_hintable_items.remove(item)
+
+    if world.local_hintable_items == []:
+        hint_types.remove("hint_for_good_item", "prog_item_at_region")
 
     if world.options.giygas_required:
         world.local_hintable_locations.append("Cave of the Past - Present")
@@ -201,9 +210,10 @@ def parse_hint_data(world, location, rom, hint):
         else:
             player_text = f"{world.multiworld.get_player_name(location.item.player)}'s "
             item_text = text_encoder(location.item.name, eb_text_table, 128)
+            item_text.extend([0x50])
 
         player_text = text_encoder(player_text, eb_text_table, 255)
-        location_text = text_encoder(f"can be found at {location.name}.", eb_text_table, 255)
+        location_text = text_encoder(f" can be found at {location.name}.", eb_text_table, 255)
         text = player_text + item_text + location_text
         # [player]'s [item] can be found at [location].
         text.append(0x02)
@@ -233,7 +243,7 @@ def parse_hint_data(world, location, rom, hint):
         if location.player != world.player:
             player_text = text_encoder(f"by {world.multiworld.get_player_name(location.player)}", eb_text_table, 255)
         else:
-            player_text = text_encoder("", eb_text_table, 255)
+            player_text = text_encoder(" ", eb_text_table, 255)
         
         if hint == "hint_for_good_item":
             location_text = text_encoder(f"at {location.name}.", eb_text_table, 255)
@@ -246,10 +256,13 @@ def parse_hint_data(world, location, rom, hint):
                 if location.name in group_locations and group_name != "Everywhere"
             ]
             if not possible_location_groups:
-                area = location.parent_region
+                if location.parent_region.name == "Menu":
+                    area = ""
+                else:
+                    area = f"near {location.parent_region.name}"
             else:
-                area = world.random.choice(possible_location_groups)
-            location_text = text_encoder(f"somewhere near {area}.", eb_text_table, 255)
+                area = f"near {world.random.choice(possible_location_groups)}"
+            location_text = text_encoder(f"somewhere {area}.", eb_text_table, 255)
             # your [item] can be found by [player] somewhere near [location group]
         text = item_text + player_text + location_text
         text.append(0x02)

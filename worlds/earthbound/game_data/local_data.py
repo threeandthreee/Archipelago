@@ -1,4 +1,4 @@
-world_version = "2.3.1"
+world_version = "2.4.1"
 
 check_table = {
     0xEB0000: [0x11, 3],
@@ -616,7 +616,7 @@ item_id_table = {
     "Sand Lot Bat": 0x13,
     "Minor League Bat": 0x14,
     "Mr. Baseball Bat": 0x15,
-    "Big League Bat": 0x16,
+    "Big League Bat": 0xD5,
     "Hall of Fame Bat": 0x17,
     "Magicant Bat": 0x18,
     "Legendary Bat": 0x19,
@@ -662,8 +662,8 @@ item_id_table = {
     "Copper Bracelet": 0x41,
     "Silver Bracelet": 0x42,
     "Gold Bracelet": 0x43,
-    "Platinum Band": 0x44,
-    "Diamond Band": 0x45,
+    "Platinum Band": 0xD8,
+    "Diamond Band": 0xD9,
     "Pixie's Bracelet": 0x46,
     "Cherub's Band": 0x47,
     "Goddess Band": 0x48,
@@ -806,7 +806,6 @@ item_id_table = {
     "Eraser Eraser": 0xD2,
     "Tendakraut": 0xD3,
     "T-Rex's Bat": 0xD4,
-    # "Big League Bat": 0xD5,
     "Ultimate Bat": 0xD6,
     "Double Beam": 0xD7,
     "Defense Ribbon": 0xDA,
