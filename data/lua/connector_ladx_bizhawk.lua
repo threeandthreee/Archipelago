@@ -41,9 +41,9 @@
 --  no further fault-proofing has been done on this.
 --
 
-
-local socket = require("socket")
-udp = socket.socket.udp()
+-- When loading CC connector first, global socket is set already and require would fail
+local socket = socket or require("socket")
+udp = socket.udp()
 require('common')
 
 -- SNI interacts poorly with this connector and looks for ports 55355+
