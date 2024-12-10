@@ -237,8 +237,7 @@ class RAGameboy():
 
     def check_command_response(self, command: str, response: bytes):
         if command == "VERSION":
-            resp = response.decode('ascii')
-            ok = ("bizhawk connector" in resp) or (re.match("\d+\.\d+\.\d+", resp) is not None)
+            ok = re.match("\d+\.\d+\.\d+", response.decode('ascii')) is not None
         else:
             ok = response.startswith(command.encode())
         if not ok:
@@ -307,10 +306,8 @@ class LinksAwakeningClient():
     deathlink_status = None
     slot = None
     recvd_checks = {}
-    address = "127.0.0.1"
-    top_port = 55355
-    bottom_port = 55350
-    port = bottom_port
+    retroarch_address = None
+    retroarch_port = None
     gameboy = None
 
     def msg(self, m):
@@ -318,7 +315,9 @@ class LinksAwakeningClient():
         s = f"SHOW_MSG {m}\n"
         self.gameboy.send(s)
 
-    def __init__(self):
+    def __init__(self, retroarch_address="127.0.0.1", retroarch_port=55355):
+        self.retroarch_address = retroarch_address
+        self.retroarch_port = retroarch_port
         pass
 
     stop_bizhawk_spam = False
@@ -326,12 +325,8 @@ class LinksAwakeningClient():
         if not self.stop_bizhawk_spam:
             logger.info("Waiting on connection to Retroarch...")
             self.stop_bizhawk_spam = True
-        decremented_port = self.port - 1
-        if decremented_port < self.bottom_port:
-            self.port = self.top_port
-        else:
-            self.port = decremented_port
-        self.gameboy = RAGameboy(self.address, self.port)
+        self.gameboy = RAGameboy(self.retroarch_address, self.retroarch_port)
+
         while True:
             try:
                 version = await self.gameboy.get_retroarch_version()
@@ -356,7 +351,6 @@ class LinksAwakeningClient():
                         continue
                 self.stop_bizhawk_spam = False
                 logger.info(f"Connected to Retroarch {version.decode('ascii', errors='replace')} "
-                            f"on {self.gameboy.address}:{self.gameboy.port} "
                             f"running {rom_name.decode('ascii', errors='replace')}")
                 return
             except (BlockingIOError, TimeoutError, ConnectionResetError):
