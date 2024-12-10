@@ -635,6 +635,11 @@ class LinksAwakeningContext(CommonContext):
             self.client.slot = self.slot
             self.game = self.slot_info[self.slot].game
             self.slot_data = args.get("slot_data", {})
+            self.slot_data.update({
+                "server_address": self.server_address,
+                "slot_name": self.slot_name,
+                "password": self.password,
+            })
             if self.slot_data.get("death_link"):
                 Utils.async_start(self.update_death_link(True))
 
@@ -702,7 +707,8 @@ class LinksAwakeningContext(CommonContext):
                             self.magpie.set_checks(self.client.tracker.all_checks)
                             await self.magpie.set_item_tracker(self.client.item_tracker)
                             await self.magpie.send_gps(self.client.gps_tracker)
-                            self.magpie.slot_data = self.slot_data
+                            if self.slot_data and "slot_data" in self.magpie.features and not self.magpie.has_sent_slot_data:
+                                await self.magpie.send_slot_data(self.slot_data)
                         except Exception:
                             # Don't let magpie errors take out the client
                             pass
