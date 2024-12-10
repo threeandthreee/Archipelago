@@ -438,7 +438,7 @@ class LinksAwakeningClient():
         trade1 = 0
         trade2 = 0
         for i, item in enumerate(trade_items):
-            item_id = [x.item_id for x in links_awakening_items if x.ladxr_id == item['name']][0] + LABaseID
+            item_id = [x.item_id for x in links_awakening_items if x.ladxr_id == item['name']][0] + Common.BASE_ID
             item_has_been_received = [x for x in self.recvd_checks.values() if x.item == item_id]
             if not item_has_been_received:
                 continue
