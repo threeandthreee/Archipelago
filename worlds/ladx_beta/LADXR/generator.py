@@ -170,8 +170,6 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
     patches.songs.upgradeMamu(rom)
 
     patches.tradeSequence.patchTradeSequence(rom, options)
-    # Monkey bridge patch, always have the bridge there.
-    rom.patch(0x00, 0x333D, assembler.ASM("bit 4, e\njr Z, $05"), b"", fill_nop=True)
     patches.bowwow.fixBowwow(rom, everywhere=False)
     # if ladxr_settings["bowwow"] != 'normal':
     #    patches.bowwow.bowwowMapPatches(rom)
