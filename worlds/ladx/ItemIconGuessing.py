@@ -518,7 +518,7 @@ GAME_SPECIFIC_PHRASES = {
         'Nightmarionne': 'TRADING_ITEM_YOSHI_DOLL',
         'Mr. Chipper': 'TRADING_ITEM_YOSHI_DOLL',
         'Animdude': 'TRADING_ITEM_YOSHI_DOLL',
-        'Progressive Endoskeleton': 'BLUE_TUNIC' # basically armor you wear to give you more defense
+        'Progressive Endoskeleton': 'BLUE_TUNIC', # basically armor you wear to give you more defense
         '25 Tokens': 'RUPEES_20', # money
         '50 Tokens': 'RUPEES_50',
         '100 Tokens': 'RUPEES_100',
