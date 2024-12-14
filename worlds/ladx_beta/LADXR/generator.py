@@ -208,7 +208,7 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
         patches.hardMode.oneHitKO(rom)
     #if ladxr_settings["superweapons"]:
     #    patches.weapons.patchSuperWeapons(rom)
-    if options["text_mode"] == 'fast':
+    if options["text_mode"] == Options.TextMode.option_fast:
         patches.aesthetics.fastText(rom)
     #if ladxr_settings["textmode"] == 'none':
     #    patches.aesthetics.fastText(rom)
