@@ -207,7 +207,7 @@ class Context:
     def __init__(self, host: str, port: int, server_password: str, password: str, location_check_points: int,
                  hint_cost: int, item_cheat: bool, release_mode: str = "disabled", collect_mode="disabled",
                  remaining_mode: str = "disabled", auto_shutdown: typing.SupportsFloat = 0, compatibility: int = 2,
-                 log_network: bool = False, logger: logging.Logger = logging.getLogger()):
+                 log_network: bool = False, logger: logging.Logger = logging.getLogger(), use_room_hints: bool = False):
         self.logger = logger
         super(Context, self).__init__()
         self.slot_info = {}
@@ -283,7 +283,7 @@ class Context:
         self._load_game_data()
 
         # Ashipelago customization
-        self.dynx = Ashipelago(self)
+        self.dynx = Ashipelago(self, use_room_hints)
 
     # Data package retrieval
     def _load_game_data(self):
@@ -599,6 +599,7 @@ class Context:
             "received_items": self.received_items,
             "hints_used": dict(self.hints_used),
             "hints": dict(self.hints),
+            "room_hints": int,
             "location_checks": dict(self.location_checks),
             "name_aliases": self.name_aliases,
             "client_game_state": dict(self.client_game_state),
@@ -613,7 +614,8 @@ class Context:
                              "server_password": self.server_password, "password": self.password,
                              "release_mode": self.release_mode,
                              "remaining_mode": self.remaining_mode, "collect_mode": self.collect_mode,
-                             "item_cheat": self.item_cheat, "compatibility": self.compatibility}
+                             "item_cheat": self.item_cheat, "compatibility": self.compatibility,
+                             "room_hints": self.dynx.use_room_hints}
 
         }
 
@@ -627,6 +629,7 @@ class Context:
         self.received_items = savedata["received_items"]
         self.hints_used.update(savedata["hints_used"])
         self.hints.update(savedata["hints"])
+        self.dynx.room_hints_used = savedata["room_hints"]
 
         self.name_aliases.update(savedata["name_aliases"])
         self.client_game_state.update(savedata["client_game_state"])
@@ -649,6 +652,7 @@ class Context:
             self.collect_mode = savedata["game_options"]["collect_mode"]
             self.item_cheat = savedata["game_options"]["item_cheat"]
             self.compatibility = savedata["game_options"]["compatibility"]
+            self.dynx.use_room_hints = savedata["game_options"]["room_hints"]
 
         if "group_collected" in savedata:
             self.group_collected = savedata["group_collected"]
@@ -832,6 +836,8 @@ class Ashipelago:
     admin_password: str
     ctx: Context
     webhook_thread: WebhookThread
+    use_room_hints: bool
+    room_hints_used: int
 
     def __init__(self, ctx: Context):
         self.ctx = ctx
@@ -1052,6 +1058,25 @@ class Ashipelago:
             }
             self._push_to_webhook(information)
 
+    def get_room_points(self, team) -> int:
+        result = 0
+        locations = 0
+        for slot, connected_clients in self.ctx.clients[team].items():
+            result = result + (self.ctx.location_check_points * len(self.ctx.location_checks[team, slot]))
+            locations = locations + len(self.ctx.locations[slot])
+
+        hint_cost = max(1, int(self.ctx.hint_cost * 0.01 * locations))
+        return result - hint_cost * self.room_hints_used
+
+    def get_room_hint_cost(self, team) -> int:
+        if self.ctx.hint_cost:
+            locations = 0
+            for slot, connected_clients in self.ctx.clients[team].items():
+                locations = locations + len(self.ctx.locations[slot])
+            return max(1, int(self.ctx.hint_cost * 0.01 * locations / len(self.ctx.clients[team])))
+
+        return 0
+    
     # Webhook class used to multithread the webhook messages so that the main thread is not stalled
     class WebhookThread(threading.Thread):
         ctx: Context
@@ -1868,8 +1893,14 @@ class ClientMessageProcessor(CommonCommandProcessor):
             return False
 
     def get_hints(self, input_text: str, for_location: bool = False) -> bool:
-        points_available = get_client_points(self.ctx, self.client)
-        cost = self.ctx.get_hint_cost(self.client.slot)
+        # Ashipelago customization
+        if self.ctx.dynx.use_room_hints:
+            points_available = self.ctx.dynx.get_room_points(self.client.team)
+            cost = self.ctx.dynx.get_room_hint_cost(self.client.team)
+        else:
+            points_available = get_client_points(self.ctx, self.client)
+            cost = self.ctx.get_hint_cost(self.client.slot)
+
         auto_status = HintStatus.HINT_UNSPECIFIED if for_location else HintStatus.HINT_PRIORITY
         if not input_text:
             hints = {hint.re_check(self.ctx, self.client.team) for hint in
@@ -1963,7 +1994,11 @@ class ClientMessageProcessor(CommonCommandProcessor):
                     hint = not_found_hints.pop()
                     hints.append(hint)
                     can_pay -= 1
-                    self.ctx.hints_used[self.client.team, self.client.slot] += 1
+                    # Ashipelago customization
+                    if self.ctx.dynx.use_room_hints:
+                        self.ctx.dynx.room_hints_used += 1
+                    else:
+                        self.ctx.hints_used[self.client.team, self.client.slot] += 1
 
                 self.ctx.notify_hints(self.client.team, hints)
                 if not_found_hints:

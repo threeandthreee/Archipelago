@@ -37,6 +37,7 @@ def get_meta(options_source: dict, race: bool = False) -> Dict[str, Union[List[s
         "item_cheat": bool(int(options_source.get("item_cheat", not ServerOptions.disable_item_cheat))),
         "server_password": options_source.get("server_password", None),
         "track_in_discord": bool(int(options_source.get("track_in_discord", ServerOptions.track_in_discord))),
+        "use_room_hints": bool(int(options_source.get("use_room_hints", ServerOptions.use_room_hints))),
     }
     generator_options = {
         "spoiler": int(options_source.get("spoiler", GeneratorOptions.spoiler)),
