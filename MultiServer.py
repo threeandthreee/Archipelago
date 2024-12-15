@@ -831,6 +831,7 @@ class Ashipelago:
     seed_url: str
     admin_password: str
     ctx: Context
+    webhook_thread: WebhookThread
 
     def __init__(self, ctx: Context):
         self.ctx = ctx
@@ -845,8 +846,8 @@ class Ashipelago:
         if is_tracked:
             if webhook_settings["WEBHOOK_AUTO_START"]:
                 self.webhook_active = True
-                self.WebhookThread(self.ctx, webhook_settings["WEBHOOK_URL"], webhook_settings["WEBHOOK_DEBUG"]).start()
-
+                webhook_thread = self.WebhookThread(self.ctx, webhook_settings["WEBHOOK_URL"], webhook_settings["WEBHOOK_DEBUG"])
+                webhook_thread.start()
             if room.is_new:
                 self._push_player_list()
                 self._push_game_item_information()
@@ -992,6 +993,9 @@ class Ashipelago:
         if not self.webhook_active:
             return
 
+        if not self.webhook_thread.is_running:
+            self.webhook_thread.start()
+
         self.webhook_queue.put(message)
 
     # Helper function used to push the player list when a new room is started
@@ -1053,6 +1057,7 @@ class Ashipelago:
         ctx: Context
         url: str
         is_debug: bool
+        is_running: bool
 
         def __init__(self, ctx: Context, url: str, is_debug: bool):
             threading.Thread.__init__(self)
@@ -1062,6 +1067,7 @@ class Ashipelago:
             self.is_debug = is_debug
 
         def run(self):
+            self.is_running = True
             while self.ctx.dynx.webhook_active and not self.ctx.exit_event.is_set():
                 time.sleep(1)
                 while 1:
@@ -1077,7 +1083,12 @@ class Ashipelago:
                         try:
                             Webhook(self.url, content=message).execute()
                         except Exception as e:
-                            self.ctx.logger.exception(e)
+                            self.is_running = False
+                            self.ctx.dynx.webhook_queue.put(message)
+                            self.ctx.logger.exception(str(e))
+                            return
+
+            self.is_running = False
 
 
 def update_aliases(ctx: Context, team: int):
