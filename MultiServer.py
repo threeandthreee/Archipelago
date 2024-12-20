@@ -652,7 +652,10 @@ class Context:
             self.collect_mode = savedata["game_options"]["collect_mode"]
             self.item_cheat = savedata["game_options"]["item_cheat"]
             self.compatibility = savedata["game_options"]["compatibility"]
-            self.dynx.use_room_hints = savedata["game_options"]["use_room_hints"]
+            if "use_room_hints" in savedata["game_options"]:
+                self.dynx.use_room_hints = savedata["game_options"]["use_room_hints"]
+            else:
+                self.dynx.use_room_hints = False
 
         if "group_collected" in savedata:
             self.group_collected = savedata["group_collected"]
