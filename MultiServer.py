@@ -861,6 +861,10 @@ class Ashipelago:
 
     # Custom client command used to gift a hint from one player to another
     def gift_hint(self, player_name: str, client_processor: ClientMessageProcessor) -> bool:
+        if self.use_room_hints:
+            client_processor.output(f"The room is currently set to using a shared pool of hints. There is no need to gift any hints, just use the !hint command as needed!")
+            return False
+
         seeked_player, usable, response = get_intended_text(player_name, self.ctx.player_names.values())
         if usable:
             points_available = get_client_points(self.ctx, client_processor.client)
