@@ -629,7 +629,11 @@ class Context:
         self.received_items = savedata["received_items"]
         self.hints_used.update(savedata["hints_used"])
         self.hints.update(savedata["hints"])
-        self.dynx.room_hints_used = savedata["room_hints_used"]
+        # Ashipelago customization
+        if "room_hints_used" in savedata:
+            self.dynx.room_hints_used = savedata["room_hints_used"]
+        else:
+            self.dynx.room_hints_used = 0
 
         self.name_aliases.update(savedata["name_aliases"])
         self.client_game_state.update(savedata["client_game_state"])
@@ -652,6 +656,7 @@ class Context:
             self.collect_mode = savedata["game_options"]["collect_mode"]
             self.item_cheat = savedata["game_options"]["item_cheat"]
             self.compatibility = savedata["game_options"]["compatibility"]
+            # Ashipelago customization
             if "use_room_hints" in savedata["game_options"]:
                 self.dynx.use_room_hints = savedata["game_options"]["use_room_hints"]
             else:
