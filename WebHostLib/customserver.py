@@ -123,6 +123,7 @@ class WebHostContext(Context):
 
         # Ashipelago customization
         self.room_is_tracked = multidata["server_options"]["track_in_discord"]
+        self.dynx.use_room_hints = multidata["server_options"]["use_room_hints"]
         for game in list(multidata.get("datapackage", {})):
             game_data = multidata["datapackage"][game]
             if "checksum" in game_data:

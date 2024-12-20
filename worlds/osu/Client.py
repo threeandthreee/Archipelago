@@ -257,7 +257,7 @@ class APosuClientCommandProcessor(ClientCommandProcessor):
             if len(get_available_ids(self.ctx)) > 0:
                 number = get_available_ids(self.ctx)[0]+1
             else:
-                self.output("You have no songs to download")
+                self.output("You have no songs in logic")
                 return
         try:
             song_number = int(number)-1
@@ -270,6 +270,9 @@ class APosuClientCommandProcessor(ClientCommandProcessor):
             song = list(self.ctx.pairs.keys())[song_number]
         except IndexError:
             self.output("Use the Song Numbers in '/songs' (Not the IDs)")
+            return
+        if not self.ctx.difficulty_sync:
+            self.output("You aren't using difficulty sync.")
             return
         beatmapset = self.ctx.pairs[song]
         asyncio.create_task(self.get_diff_name(beatmapset))
@@ -761,13 +764,13 @@ def calculate_grade(score):
             return 'D'
         elif gamemode == 3:  # osu!mania
             # Mania's Accuracy with classic mod is different from stable, so we have to do it manually
-            mania_total = 300 * score['statistics'].get('perfect', 0) # Perfects are worth 305 with classic mod
+            mania_total = 300 * score['statistics'].get('perfect', 0)  # Perfects are worth 305 with classic mod
             mania_total += 300 * score['statistics'].get('great', 0)
             mania_total += 200 * score['statistics'].get('good', 0)
             mania_total += 100 * score['statistics'].get('ok', 0)
             mania_total += 50 * score['statistics'].get('meh', 0)
             mania_total += 0 * score['statistics'].get('miss', 0)
-            mania_acc = mania_total / (sum(score['statistics'].values()) * 300)
+            mania_acc = mania_total / (sum(score['statistics'].values()) * 300)  # This is also out of 305 on laser
             if mania_acc > 0.95: return 'S'
             if mania_acc > 0.9: return 'A'
             if mania_acc > 0.8: return 'B'

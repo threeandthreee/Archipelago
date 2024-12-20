@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 ROM_NAME = 0x007FC0
 sentinel_addresses = [
-    0xF506B1, 0xF506D9, 0xF50650, 0xF50140, 0xF50685, 0xE070FD
+    0xF506B1, 0xF506D9, 0xF50650, 0xF50140, 0xF50685
 ]
 inventory_start_location = 0xF51440
 inventory_size = 96
@@ -36,17 +36,11 @@ objective_threshold_start_location = 0x21F820
 objective_threshold_size = 32
 objective_progress_start_location = 0xF51520
 objective_progress_size = 32
-objective_count_location = 0x10F0F9
 
 key_items_found_location = 0xF51578
 gp_byte_location = 0xF516A0
 gp_byte_size = 3
 junk_tier_byte = 0x1FFC00
-
-sell_value_byte = 0x00C951
-
-json_doc_length_location = 0x1FF000
-json_doc_location = 0x1FF004
 
 special_flag_key_items = {
     "Hook": (0xF51286, 0b01000000),
@@ -55,8 +49,6 @@ special_flag_key_items = {
     "Package": (0xF5128C, 0b00001000),
     "Legend Sword": (0xF5128C, 0b00100000)
 }
-
-airship_flyable_flag = (0xF51286, 0b11111011)
 
 def get_base_rom_as_bytes() -> bytes:
     with open(get_settings().ff4fe_options.rom_file, "rb") as infile:
@@ -99,7 +91,6 @@ class FF4FEPatchExtension(APPatchExtension):
             rom_data = bytearray(file.read())
             rom_data[ROM_NAME:ROM_NAME+20] = bytes(rom_name, encoding="utf-8")
             rom_data[junk_tier_byte:junk_tier_byte + 1] = bytes([junk_tier])
-        os.unlink(output_file)
         return rom_data
 
 

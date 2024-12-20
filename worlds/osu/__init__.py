@@ -1,3 +1,4 @@
+import logging
 from BaseClasses import Region, Tutorial
 from worlds.AutoWorld import WebWorld, World
 from .Items import OsuItem, item_data_table, item_table, osu_song_data, osu_song_pool, find_beatmapset
@@ -7,7 +8,7 @@ from typing import ClassVar               # where the "Type" Import below breaks
 from .Options import OsuOptions
 from .Regions import region_data_table
 from math import floor
-from copy import deepcopy
+from copy import deepcopy, copy
 from multiprocessing import Process
 from ..LauncherComponents import Component, components, Type
 
@@ -92,15 +93,30 @@ class OsuWorld(World):
         additional_song_count = self.options.additional_songs
         song_count = additional_song_count+starting_song_count
 
+        # Get the valid songs and shuffle them
+        song_data_raw = self.get_eligible_songs()
+        self.random.shuffle(song_data_raw)
+
+        # Make sure we have enough songs
+        potiental_song_count = len(song_data_raw)+len(self.options.include_songs.value)
+        if potiental_song_count < (song_count + 1):
+            # If we don't have atleast 16 more than the requesting starting amount, we can't lower it enough.
+            if potiental_song_count < starting_song_count+16:
+                raise Exception(f"Player {self.player}'s settings cannot generate enough songs, their settings only allow "
+                                f"{len(song_data_raw)+len(self.options.include_songs.value)} out of {song_count+1} " 
+                                f"requested songs, or the {starting_song_count+16} minimum songs.")
+            else:
+                # Otherwise, we can lower the song count such that we have enough songs.
+                song_count = len(song_data_raw)+len(self.options.include_songs.value)-1
+                logging.warning(f"Player {self.player}'s settings cannot generate enough songs. Lowering Song count to"
+                                f" {song_count+1}.")
+
+
         # Put generic songs into the list
         for song in song_pool[:starting_song_count]:
             self.starting_songs.append(song)
         for song in song_pool[starting_song_count:song_count]:
             self.additional_songs.append(song)
-
-        # Get the valid songs and shuffle them
-        song_data_raw = self.get_eligible_songs()
-        self.random.shuffle(song_data_raw)
 
         include_list = []
         # Handle Included Songs
@@ -143,10 +159,6 @@ class OsuWorld(World):
 
         song_data = deepcopy(include_list)
 
-        if len(song_data) < (song_count + 1):
-            raise Exception(f"Player {self.player}'s settings cannot generate enough songs, their settings only allow "
-                            f"{len(song_data)} out of {song_count+1} required songs.")
-
         for generic_song, osu_song in zip((self.starting_songs + self.additional_songs + ["Victory"]), song_data):
             self.pairs[generic_song] = osu_song
 
@@ -165,13 +177,14 @@ class OsuWorld(World):
         song_list = []
         for beatmapset in osu_song_data:
             eligibile_diffs = self.check_eligibility(beatmapset)
-            if eligibile_diffs:
-                song_list.append(beatmapset)
+            if not eligibile_diffs:
                 continue
-            # 2 = Strict_random
-            if self.options.difficulty_sync.value == 2:
+
+            eligibile_beatmapset = copy(beatmapset)
+            if self.options.difficulty_sync.value == 2:  # 2 = Strict_random
                 eligibile_diffs = [self.random.choice(eligibile_diffs)]
-            beatmapset['diffs'] = eligibile_diffs
+            eligibile_beatmapset['diffs'] = eligibile_diffs
+            song_list.append(eligibile_beatmapset)
 
         return song_list
 

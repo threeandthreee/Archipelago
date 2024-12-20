@@ -73,70 +73,70 @@ def convert_bubble_reqs(reqs: List[List[str]], options: AnimalWellOptions) -> Li
                     sublist[i] = iname.bubble_long_real
             # turn bb wand into b wand if you have the hardest option on
             if req == iname.bubble_long:
-                if options.bubble_jumping == BubbleJumping.option_on:
+                if options.bubble_jumping == BubbleJumping.option_long_chains:
                     sublist[i] = iname.bubble
                 else:
                     sublist[i] = iname.bubble_long_real
     return reqs
 
 
+TECH_REPLACEMENTS = {
+    iname.wheel_hop: iname.wheel,
+    iname.wheel_climb: iname.wheel,
+    iname.wheel_hard: iname.wheel,
+    iname.disc_hop: iname.disc,
+    iname.disc_hop_hard: iname.disc,
+    iname.ball_trick_easy: iname.ball,
+    iname.ball_trick_medium: iname.ball,
+    iname.ball_trick_hard: iname.ball,
+    iname.flute_jump: iname.flute,
+    iname.precise_tricks: None,
+    iname.tanking_damage: None,
+    iname.obscure_tricks: None,
+    iname.water_bounce: None,
+}
+
+
 def convert_tech_reqs(reqs: List[List[str]], options: AnimalWellOptions) -> List[List[str]]:
     # these convert [[wheel_hop], [disc]] to either [[wheel], [disc]] or [[disc]]
     # and convert [[disc_hop_hard]] to either [[disc]] or []
+    discards = []
+
+    if not options.wheel_tricks:
+        discards += [iname.wheel_hop, iname.wheel_climb]
+    if options.wheel_tricks != WheelTricks.option_advanced:
+        discards.append(iname.wheel_hard)
+
+    if not options.disc_hopping:
+        discards.append(iname.disc_hop)
+    if options.disc_hopping != DiscHopping.option_multiple:
+        discards.append(iname.disc_hop_hard)
+
+    if not options.ball_throwing:
+        discards.append(iname.ball_trick_easy)
+    if options.ball_throwing < BallThrowing.option_advanced:
+        discards.append(iname.ball_trick_medium)
+    if options.ball_throwing != BallThrowing.option_expert:
+        discards.append(iname.ball_trick_hard)
+
+    if not options.flute_jumps:
+        discards.append(iname.flute_jump)
+
+    if not options.precise_tricks:
+        discards.append(iname.precise_tricks)
+
+    if not options.tanking_damage:
+        discards.append(iname.tanking_damage)
+
+    if not options.obscure_tricks:
+        discards += [iname.obscure_tricks, iname.water_bounce]
+
+    # discard any sublist that has any discarded trick
+    # then convert all the accepted tricks into their proper items
     reqs = [
-        [iname.wheel if item in [iname.wheel_hop, iname.wheel_climb] else item for item in sublist]
+        [TECH_REPLACEMENTS.get(item, item) for item in sublist]
         for sublist in reqs
-        if not (iname.wheel_hop in sublist and not options.wheel_tricks)
-    ]
-    reqs = [
-        [iname.wheel if item == iname.wheel_hard else item for item in sublist]
-        for sublist in reqs
-        if not (iname.wheel_hard in sublist and not options.wheel_tricks == WheelTricks.option_advanced)
-    ]
-    reqs = [
-        [iname.disc if item == iname.disc_hop else item for item in sublist]
-        for sublist in reqs
-        if not (iname.disc_hop in sublist and not options.disc_hopping)
-    ]
-    reqs = [
-        [iname.disc if item == iname.disc_hop_hard else item for item in sublist]
-        for sublist in reqs
-        if not (iname.disc_hop_hard in sublist and not options.disc_hopping == DiscHopping.option_multiple)
-    ]
-    reqs = [
-        [iname.ball if item == iname.ball_trick_easy else item for item in sublist]
-        for sublist in reqs
-        if not (iname.ball_trick_easy in sublist and not options.ball_throwing)
-    ]
-    reqs = [
-        [iname.ball if item == iname.ball_trick_medium else item for item in sublist]
-        for sublist in reqs
-        if not (iname.ball_trick_medium in sublist and options.ball_throwing < BallThrowing.option_advanced)
-    ]
-    reqs = [
-        [iname.ball if item == iname.ball_trick_hard else item for item in sublist]
-        for sublist in reqs
-        if not (iname.ball_trick_hard in sublist and not options.ball_throwing == BallThrowing.option_expert)
-    ]
-    reqs = [
-        [None if item == iname.precise_tricks else item for item in sublist]
-        for sublist in reqs
-        if not (iname.precise_tricks in sublist and not options.precise_tricks)
-    ]
-    reqs = [
-        [None if item == iname.tanking_damage else item for item in sublist]
-        for sublist in reqs
-        if not (iname.tanking_damage in sublist and not options.tanking_damage)
-    ]
-    reqs = [
-        [None if item == iname.obscure_tricks else item for item in sublist]
-        for sublist in reqs
-        if not (iname.obscure_tricks in sublist and not options.obscure_tricks)
-    ]
-    reqs = [
-        [None if item == iname.water_bounce else item for item in sublist]
-        for sublist in reqs
-        if not (iname.water_bounce in sublist and not options.obscure_tricks)
+        if not any(d in sublist for d in discards)
     ]
     return reqs
 
@@ -183,6 +183,8 @@ def create_regions_and_set_rules(world: "AnimalWellWorld") -> None:
                                              lname.bunny_lava]):
                     continue
                 if not options.candle_checks and data.loc_type == LocType.candle:
+                    continue
+                if not options.fruitsanity and data.loc_type == LocType.fruit:
                     continue
                 # not shuffling these yet
                 if data.loc_type == LocType.figure:

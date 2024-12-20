@@ -36,8 +36,6 @@ all_locations: list[LocationData] = []
 
 locationscsv = csvdb.CsvDb(pkgutil.get_data(__name__, "FreeEnterpriseForAP/FreeEnt/assets/db/treasure.csvdb").decode().splitlines())
 
-miab_count = 0
-
 for location in locationscsv.create_view():
     if location.exclude != "":
         if location.exclude == "key":
@@ -51,7 +49,7 @@ for location in locationscsv.create_view():
                     new_location.name = f"Lunar Subterrane -- B7 (right room) -- Ribbon Right"
             all_locations.append(new_location)
         continue
-    new_location = LocationData("", location.world, location.area, int(location.flag, 16), False)
+    new_location = LocationData("", location.world, location.area, int(location.flag, 16), location.fight != "")
     subname = f"{((' -- ' + location.spoilersubarea) if location.spoilersubarea != '' else '')}"
     new_location.name = (f"{location.spoilerarea}"
                          f"{subname}"
@@ -62,7 +60,7 @@ locationscsv = csvdb.CsvDb(pkgutil.get_data(__name__, "FreeEnterpriseForAP/FreeE
 
 for location in locationscsv.create_view():
     new_location = LocationData("", location.world, location.area, int(location.fecode, 16) + 0x200, True)
-    subname = f"{((' -- ' + location.spoilersubarea) if location.spoilersubarea != '' else '')}"
+    subname = f" -- {location.spoilersubarea if location.spoilersubarea != '' else ''}"
     new_location.name = (f"{location.spoilerarea}"
                          f"{subname}"
                          f" -- {location.spoilerdetail}")

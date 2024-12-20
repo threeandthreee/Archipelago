@@ -5,82 +5,79 @@ from .locations import LocationData, free_character_locations, earned_character_
 from ..AutoWorld import World
 
 
-def create_itempool(locations: List[LocationData], world: World) -> Tuple[List[str], str]:
-    chosen_character = get_chosen_character(world)
-    character_pool = create_character_pool(world, chosen_character)
-    key_item_pool = create_key_item_pool(world)
-    location_count = len(locations) - len(character_pool) - len(key_item_pool) - 33  # Objective Status locations hack
-    if world.is_vanilla_game():
-        location_count -= 1  # We aren't using the Objective Reward location.
-    if (world.options.HeroChallenge.current_key != "none"
-            and not world.options.ForgeTheCrystal):
-        location_count -= 1  # We're manually placing the Advance Weapon at Kokkol
-    if world.options.ConquerTheGiant:
+def create_itempool(locations: List[LocationData], multiworld: World) -> Tuple[List[str], str]:
+    chosen_character = get_chosen_character(multiworld)
+    character_pool = create_character_pool(multiworld, chosen_character)
+    key_item_pool = create_key_item_pool(multiworld)
+    location_count = len(locations) - len(character_pool) - len(key_item_pool) - 1  # Objective Status location hack
+    if (multiworld.options.HeroChallenge.current_key != "none"
+            and multiworld.options.ForgeTheCrystal.current_key == "false"):
+        location_count -= 1  # We're manyally placing the Advance Weapon at Kokkol
+    if multiworld.options.ConquerTheGiant.current_key == "true":
         location_count -= 1  # No Kain3 location in Giant%
-    useful_percentage = world.options.UsefulPercentage.value
+    useful_percentage = multiworld.options.UsefulPercentage.value
     useful_count = location_count * useful_percentage // 100
     result_pool = []
     result_pool.extend(character_pool)
     result_pool.extend(key_item_pool)
-    result_pool.extend(world.random.choices([item.name for item in items.useful_items
-                                             if item.tier <= world.options.MaxTier.value
-                                             and not (item.name == "Adamant Armor" and world.options.NoAdamantArmors)],
-                                            k=useful_count))
-    result_pool.extend(world.random.choices([item.name for item in items.filler_items
-                                             if item.tier >= world.options.MinTier.value],
-                                            k=location_count - useful_count))
+    result_pool.extend(multiworld.random.choices([item.name for item in items.useful_items
+                                                  if item.tier <= multiworld.options.MaxTier.value],
+                                                 k=useful_count))
+    result_pool.extend(multiworld.random.choices([item.name for item in items.filler_items
+                                                  if item.tier >= multiworld.options.MinTier.value],
+                                                 k=location_count - useful_count))
     return (result_pool, chosen_character)
 
 
-def create_character_pool(world: World, chosen_character: str) -> List[str]:
+def create_character_pool(multiworld: World, chosen_character: str) -> List[str]:
     character_pool = []
-    allowed_characters = sorted([character for character in world.options.AllowedCharacters.value if character != "None"])
-    if chosen_character != "None" and world.options.HeroChallenge.current_key != "none":
+    allowed_characters = [character for character in multiworld.options.AllowedCharacters.value if character != "None"]
+    if chosen_character != "None":
         if chosen_character in allowed_characters and len(allowed_characters) > 1:
             allowed_characters.remove(chosen_character)
+    if "None" in allowed_characters and len(allowed_characters) == 1:
+        allowed_characters = [character for character in items.characters if character != "None"]
     character_slots = 18 # All slots
     filled_character_slots = 0
-    character_pool.append(chosen_character)
-    filled_character_slots += 1
-    if world.options.NoFreeCharacters:
+    if multiworld.options.HeroChallenge.current_key != "none":
+        character_pool.append(chosen_character)
+        filled_character_slots += 1
+    if multiworld.options.NoFreeCharacters.current_key == "true":
         filled_character_slots += len(free_character_locations)
-    if world.options.NoEarnedCharacters:
+    if multiworld.options.NoEarnedCharacters.current_key == "true":
         filled_character_slots += len(earned_character_locations)
-    elif world.options.ConquerTheGiant:
+    elif multiworld.options.ConquerTheGiant.current_key == "true":
         character_slots -= 1  # Kain3 slot goes unused in this objective
     if (character_slots - filled_character_slots) > len(allowed_characters):
-        if world.options.EnsureAllCharacters:
+        if multiworld.options.EnsureAllCharacters.current_key == "true":
             character_pool.extend([character for character in allowed_characters if character != "None"])
             filled_character_slots += len(allowed_characters)
-        character_pool.extend(world.random.choices(allowed_characters, k=(character_slots - filled_character_slots)))
+        character_pool.extend(multiworld.random.choices(allowed_characters, k=(character_slots - filled_character_slots)))
     else:
-        character_pool.extend(world.random.sample(allowed_characters, character_slots - filled_character_slots))
+        character_pool.extend(multiworld.random.sample(allowed_characters, character_slots - filled_character_slots))
     for x in range(len(character_pool), character_slots):
         character_pool.append("None")
     return character_pool[:18]
 
 
-def get_chosen_character(world: World):
-    if world.options.HeroChallenge.current_key != "none":
-        option_value = str(world.options.HeroChallenge.current_key)
+def get_chosen_character(multiworld):
+    chosen_character = "None"
+    if multiworld.options.HeroChallenge.current_key != "none":
+        option_value = str(multiworld.options.HeroChallenge.current_key)
         if option_value == "random_character":
-            chosen_character = world.random.choice(items.characters)
+            chosen_character = multiworld.random.choice(items.characters)
         else:
             chosen_character = option_value.capitalize()
     else:
-        allowed_characters = world.options.AllowedCharacters.value - world.options.RestrictedCharacters.value - {"None"}
-        if len(allowed_characters) > 0:
-            chosen_character = world.random.choice(sorted(allowed_characters))
-        else:
-            chosen_character = world.random.choice(sorted(world.options.AllowedCharacters.value))
+        chosen_character = multiworld.random.choice(list(multiworld.options.AllowedCharacters.value))
     return chosen_character
 
 
-def create_key_item_pool(world: World) -> List[str]:
+def create_key_item_pool(multiworld: World) -> List[str]:
     key_item_pool = [item.name for item in items.key_items]
-    if not world.options.PassEnabled:
+    if multiworld.options.PassEnabled.current_key == "false":
         key_item_pool.remove("Pass")
-    if world.options.FindTheDarkMatter:
+    if multiworld.options.FindTheDarkMatter.current_key == "true":
         dark_matter_count = 45  # Placeholder until option for number of Dark Matters is made
         for i in range(dark_matter_count):
             key_item_pool.append("DkMatter")

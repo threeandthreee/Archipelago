@@ -9,13 +9,16 @@ class ByteSect(IntEnum):
     bunnies = 3
     candles = 4
     house_key = 5
+    fruits = 6
+
 
 class AWTracker(NamedTuple):
-    tile: int
+    tile: int  # in maxwell, this is the first number of ID when hovering over something
     stamp: int = 0
     stamp_x: int = 0
     stamp_y: int = 0
-    index: int = 0
+    index: int = 0  # in maxwell, the position in the list when searching the tile ID
+
 
 class AWLocationData(NamedTuple):
     offset: Optional[int]  # location ID offset
@@ -183,6 +186,124 @@ location_table: Dict[str, AWLocationData] = {
 
     # extras
     lname.mama_cha.value: AWLocationData(131, ByteSect.items, 10, [], AWTracker(811)),
+
+    # fruits
+    # 130 for regular fruit, 174 for blue, 175 for big blue
+    lname.fruit_0.value: AWLocationData(1000, ByteSect.fruits, 0, ["Fruits"], AWTracker(175, 0, 0, 0, 0)),
+    lname.fruit_1.value: AWLocationData(1001, ByteSect.fruits, 1, ["Fruits"], AWTracker(175, 0, 0, 0, 1)),
+    lname.fruit_2.value: AWLocationData(1002, ByteSect.fruits, 2, ["Fruits"], AWTracker(130, 0, 0, 0, 0)),
+    lname.fruit_3.value: AWLocationData(1003, ByteSect.fruits, 3, ["Fruits"], AWTracker(174, 0, 0, 0, 0)),
+    lname.fruit_4.value: AWLocationData(1004, ByteSect.fruits, 4, ["Fruits"], AWTracker(174, 0, 0, 0, 1)),
+    lname.fruit_5.value: AWLocationData(1005, ByteSect.fruits, 5, ["Fruits"], AWTracker(130, 0, 0, 0, 1)),
+    lname.fruit_6.value: AWLocationData(1006, ByteSect.fruits, 6, ["Fruits"], AWTracker(130, 0, 0, 0, 2)),
+    lname.fruit_7.value: AWLocationData(1007, ByteSect.fruits, 7, ["Fruits"], AWTracker(174, 0, 0, 0, 2)),
+    lname.fruit_8.value: AWLocationData(1008, ByteSect.fruits, 8, ["Fruits"], AWTracker(130, 0, 0, 0, 3)),
+    lname.fruit_9.value: AWLocationData(1009, ByteSect.fruits, 9, ["Fruits"], AWTracker(130, 0, 0, 0, 4)),
+    lname.fruit_10.value: AWLocationData(1010, ByteSect.fruits, 10, ["Fruits"], AWTracker(130, 0, 0, 0, 5)),
+    lname.fruit_11.value: AWLocationData(1011, ByteSect.fruits, 11, ["Fruits"], AWTracker(130, 0, 0, 0, 6)),
+    lname.fruit_12.value: AWLocationData(1012, ByteSect.fruits, 12, ["Fruits"], AWTracker(130, 0, 0, 0, 7)),
+    lname.fruit_13.value: AWLocationData(1013, ByteSect.fruits, 13, ["Fruits"], AWTracker(174, 0, 0, 0, 3)),
+    lname.fruit_14.value: AWLocationData(1014, ByteSect.fruits, 14, ["Fruits"], AWTracker(130, 0, 0, 0, 8)),
+    lname.fruit_15.value: AWLocationData(1015, ByteSect.fruits, 15, ["Fruits"], AWTracker(174, 0, 0, 0, 4)),
+    lname.fruit_16.value: AWLocationData(1016, ByteSect.fruits, 16, ["Fruits"], AWTracker(130, 0, 0, 0, 9)),
+    lname.fruit_17.value: AWLocationData(1017, ByteSect.fruits, 17, ["Fruits"], AWTracker(130, 0, 0, 0, 10)),
+    lname.fruit_18.value: AWLocationData(1018, ByteSect.fruits, 18, ["Fruits"], AWTracker(130, 0, 0, 0, 11)),
+    lname.fruit_19.value: AWLocationData(1019, ByteSect.fruits, 19, ["Fruits"], AWTracker(174, 0, 0, 0, 5)),
+    lname.fruit_20.value: AWLocationData(1020, ByteSect.fruits, 20, ["Fruits"], AWTracker(130, 0, 0, 0, 12)),
+    lname.fruit_21.value: AWLocationData(1021, ByteSect.fruits, 21, ["Fruits"], AWTracker(130, 0, 0, 0, 13)),
+    lname.fruit_22.value: AWLocationData(1022, ByteSect.fruits, 22, ["Fruits"], AWTracker(130, 0, 0, 0, 14)),
+    lname.fruit_23.value: AWLocationData(1023, ByteSect.fruits, 23, ["Fruits"], AWTracker(130, 0, 0, 0, 15)),
+    lname.fruit_24.value: AWLocationData(1024, ByteSect.fruits, 24, ["Fruits"], AWTracker(130, 0, 0, 0, 16)),
+    lname.fruit_25.value: AWLocationData(1025, ByteSect.fruits, 25, ["Fruits"], AWTracker(174, 0, 0, 0, 6)),
+    lname.fruit_26.value: AWLocationData(1026, ByteSect.fruits, 26, ["Fruits"], AWTracker(174, 0, 0, 0, 7)),
+    lname.fruit_27.value: AWLocationData(1027, ByteSect.fruits, 27, ["Fruits"], AWTracker(130, 0, 0, 0, 17)),
+    lname.fruit_28.value: AWLocationData(1028, ByteSect.fruits, 28, ["Fruits"], AWTracker(130, 0, 0, 0, 18)),
+    lname.fruit_29.value: AWLocationData(1029, ByteSect.fruits, 29, ["Fruits"], AWTracker(130, 0, 0, 0, 19)),
+    lname.fruit_30.value: AWLocationData(1030, ByteSect.fruits, 30, ["Fruits"], AWTracker(130, 0, 0, 0, 20)),
+    lname.fruit_31.value: AWLocationData(1031, ByteSect.fruits, 31, ["Fruits"], AWTracker(174, 0, 0, 0, 8)),
+    lname.fruit_32.value: AWLocationData(1032, ByteSect.fruits, 32, ["Fruits"], AWTracker(174, 0, 0, 0, 9)),
+    lname.fruit_33.value: AWLocationData(1033, ByteSect.fruits, 33, ["Fruits"], AWTracker(130, 0, 0, 0, 21)),
+    lname.fruit_34.value: AWLocationData(1034, ByteSect.fruits, 34, ["Fruits"], AWTracker(130, 0, 0, 0, 22)),
+    lname.fruit_35.value: AWLocationData(1035, ByteSect.fruits, 35, ["Fruits"], AWTracker(174, 0, 0, 0, 10)),
+    lname.fruit_36.value: AWLocationData(1036, ByteSect.fruits, 36, ["Fruits"], AWTracker(130, 0, 0, 0, 23)),
+    lname.fruit_37.value: AWLocationData(1037, ByteSect.fruits, 37, ["Fruits"], AWTracker(130, 0, 0, 0, 24)),
+    lname.fruit_38.value: AWLocationData(1038, ByteSect.fruits, 38, ["Fruits"], AWTracker(130, 0, 0, 0, 25)),
+    lname.fruit_39.value: AWLocationData(1039, ByteSect.fruits, 39, ["Fruits"], AWTracker(174, 0, 0, 0, 11)),
+    lname.fruit_40.value: AWLocationData(1040, ByteSect.fruits, 40, ["Fruits"], AWTracker(174, 0, 0, 0, 12)),
+    lname.fruit_41.value: AWLocationData(1041, ByteSect.fruits, 41, ["Fruits"], AWTracker(174, 0, 0, 0, 13)),
+    lname.fruit_42.value: AWLocationData(1042, ByteSect.fruits, 42, ["Fruits"], AWTracker(130, 0, 0, 0, 26)),
+    lname.fruit_43.value: AWLocationData(1043, ByteSect.fruits, 43, ["Fruits"], AWTracker(174, 0, 0, 0, 14)),
+    lname.fruit_44.value: AWLocationData(1044, ByteSect.fruits, 44, ["Fruits"], AWTracker(130, 0, 0, 0, 27)),
+    lname.fruit_45.value: AWLocationData(1045, ByteSect.fruits, 45, ["Fruits"], AWTracker(130, 0, 0, 0, 28)),
+    lname.fruit_46.value: AWLocationData(1046, ByteSect.fruits, 46, ["Fruits"], AWTracker(130, 0, 0, 0, 29)),
+    lname.fruit_47.value: AWLocationData(1047, ByteSect.fruits, 47, ["Fruits"], AWTracker(130, 0, 0, 0, 30)),
+    lname.fruit_48.value: AWLocationData(1048, ByteSect.fruits, 48, ["Fruits"], AWTracker(130, 0, 0, 0, 15)),
+    lname.fruit_49.value: AWLocationData(1049, ByteSect.fruits, 49, ["Fruits"], AWTracker(174, 0, 0, 0, 16)),
+    lname.fruit_50.value: AWLocationData(1050, ByteSect.fruits, 50, ["Fruits"], AWTracker(130, 0, 0, 0, 31)),
+    lname.fruit_51.value: AWLocationData(1051, ByteSect.fruits, 51, ["Fruits"], AWTracker(130, 0, 0, 0, 32)),
+    lname.fruit_52.value: AWLocationData(1052, ByteSect.fruits, 52, ["Fruits"], AWTracker(130, 0, 0, 0, 33)),
+    lname.fruit_53.value: AWLocationData(1053, ByteSect.fruits, 53, ["Fruits"], AWTracker(174, 0, 0, 0, 17)),
+    lname.fruit_54.value: AWLocationData(1054, ByteSect.fruits, 54, ["Fruits"], AWTracker(130, 0, 0, 0, 34)),
+    lname.fruit_55.value: AWLocationData(1055, ByteSect.fruits, 55, ["Fruits"], AWTracker(130, 0, 0, 0, 35)),
+    lname.fruit_56.value: AWLocationData(1056, ByteSect.fruits, 56, ["Fruits"], AWTracker(174, 0, 0, 0, 18)),
+    lname.fruit_57.value: AWLocationData(1057, ByteSect.fruits, 57, ["Fruits"], AWTracker(130, 0, 0, 0, 36)),
+    lname.fruit_58.value: AWLocationData(1058, ByteSect.fruits, 58, ["Fruits"], AWTracker(130, 0, 0, 0, 37)),
+    lname.fruit_59.value: AWLocationData(1059, ByteSect.fruits, 59, ["Fruits"], AWTracker(130, 0, 0, 0, 38)),
+    lname.fruit_60.value: AWLocationData(1060, ByteSect.fruits, 60, ["Fruits"], AWTracker(174, 0, 0, 0, 19)),
+    lname.fruit_61.value: AWLocationData(1061, ByteSect.fruits, 61, ["Fruits"], AWTracker(130, 0, 0, 0, 39)),
+    lname.fruit_62.value: AWLocationData(1062, ByteSect.fruits, 62, ["Fruits"], AWTracker(130, 0, 0, 0, 40)),
+    lname.fruit_63.value: AWLocationData(1063, ByteSect.fruits, 63, ["Fruits"], AWTracker(130, 0, 0, 0, 41)),
+    lname.fruit_64.value: AWLocationData(1064, ByteSect.fruits, 64, ["Fruits"], AWTracker(130, 0, 0, 0, 42)),
+    lname.fruit_65.value: AWLocationData(1065, ByteSect.fruits, 65, ["Fruits"], AWTracker(130, 0, 0, 0, 43)),
+    lname.fruit_66.value: AWLocationData(1066, ByteSect.fruits, 66, ["Fruits"], AWTracker(130, 0, 0, 0, 44)),
+    lname.fruit_67.value: AWLocationData(1067, ByteSect.fruits, 67, ["Fruits"], AWTracker(130, 0, 0, 0, 45)),
+    lname.fruit_68.value: AWLocationData(1068, ByteSect.fruits, 68, ["Fruits"], AWTracker(130, 0, 0, 0, 46)),
+    lname.fruit_69.value: AWLocationData(1069, ByteSect.fruits, 69, ["Fruits"], AWTracker(130, 0, 0, 0, 47)),
+    lname.fruit_70.value: AWLocationData(1070, ByteSect.fruits, 70, ["Fruits"], AWTracker(130, 0, 0, 0, 48)),
+    lname.fruit_71.value: AWLocationData(1071, ByteSect.fruits, 71, ["Fruits"], AWTracker(130, 0, 0, 0, 49)),
+    lname.fruit_72.value: AWLocationData(1072, ByteSect.fruits, 72, ["Fruits"], AWTracker(174, 0, 0, 0, 20)),
+    lname.fruit_73.value: AWLocationData(1073, ByteSect.fruits, 73, ["Fruits"], AWTracker(130, 0, 0, 0, 50)),
+    lname.fruit_74.value: AWLocationData(1074, ByteSect.fruits, 74, ["Fruits"], AWTracker(130, 0, 0, 0, 51)),
+    lname.fruit_75.value: AWLocationData(1075, ByteSect.fruits, 75, ["Fruits"], AWTracker(175, 0, 0, 0, 2)),
+    lname.fruit_76.value: AWLocationData(1076, ByteSect.fruits, 76, ["Fruits"], AWTracker(130, 0, 0, 0, 52)),
+    lname.fruit_77.value: AWLocationData(1077, ByteSect.fruits, 77, ["Fruits"], AWTracker(130, 0, 0, 0, 53)),
+    lname.fruit_78.value: AWLocationData(1078, ByteSect.fruits, 78, ["Fruits"], AWTracker(130, 0, 0, 0, 54)),
+    lname.fruit_79.value: AWLocationData(1079, ByteSect.fruits, 79, ["Fruits"], AWTracker(130, 0, 0, 0, 55)),
+    lname.fruit_80.value: AWLocationData(1080, ByteSect.fruits, 80, ["Fruits"], AWTracker(130, 0, 0, 0, 56)),
+    lname.fruit_81.value: AWLocationData(1081, ByteSect.fruits, 81, ["Fruits"], AWTracker(174, 0, 0, 0, 21)),
+    lname.fruit_82.value: AWLocationData(1082, ByteSect.fruits, 82, ["Fruits"], AWTracker(130, 0, 0, 0, 57)),
+    lname.fruit_83.value: AWLocationData(1083, ByteSect.fruits, 83, ["Fruits"], AWTracker(174, 0, 0, 0, 22)),
+    lname.fruit_84.value: AWLocationData(1084, ByteSect.fruits, 84, ["Fruits"], AWTracker(130, 0, 0, 0, 58)),
+    lname.fruit_85.value: AWLocationData(1085, ByteSect.fruits, 85, ["Fruits"], AWTracker(174, 0, 0, 0, 23)),
+    lname.fruit_86.value: AWLocationData(1086, ByteSect.fruits, 86, ["Fruits"], AWTracker(130, 0, 0, 0, 59)),
+    lname.fruit_87.value: AWLocationData(1087, ByteSect.fruits, 87, ["Fruits"], AWTracker(130, 0, 0, 0, 60)),
+    lname.fruit_88.value: AWLocationData(1088, ByteSect.fruits, 88, ["Fruits"], AWTracker(174, 0, 0, 0, 24)),
+    lname.fruit_89.value: AWLocationData(1089, ByteSect.fruits, 89, ["Fruits"], AWTracker(130, 0, 0, 0, 61)),
+    lname.fruit_90.value: AWLocationData(1090, ByteSect.fruits, 90, ["Fruits"], AWTracker(174, 0, 0, 0, 25)),
+    lname.fruit_91.value: AWLocationData(1091, ByteSect.fruits, 91, ["Fruits"], AWTracker(130, 0, 0, 0, 62)),
+    lname.fruit_92.value: AWLocationData(1092, ByteSect.fruits, 92, ["Fruits"], AWTracker(174, 0, 0, 0, 26)),
+    lname.fruit_93.value: AWLocationData(1093, ByteSect.fruits, 93, ["Fruits"], AWTracker(130, 0, 0, 0, 63)),
+    lname.fruit_94.value: AWLocationData(1094, ByteSect.fruits, 94, ["Fruits"], AWTracker(130, 0, 0, 0, 64)),
+    lname.fruit_95.value: AWLocationData(1095, ByteSect.fruits, 95, ["Fruits"], AWTracker(130, 0, 0, 0, 65)),
+    lname.fruit_96.value: AWLocationData(1096, ByteSect.fruits, 96, ["Fruits"], AWTracker(130, 0, 0, 0, 66)),
+    lname.fruit_97.value: AWLocationData(1097, ByteSect.fruits, 97, ["Fruits"], AWTracker(130, 0, 0, 0, 67)),
+    lname.fruit_98.value: AWLocationData(1098, ByteSect.fruits, 98, ["Fruits"], AWTracker(130, 0, 0, 0, 68)),
+    lname.fruit_99.value: AWLocationData(1099, ByteSect.fruits, 99, ["Fruits"], AWTracker(174, 0, 0, 0, 27)),
+    lname.fruit_100.value: AWLocationData(1100, ByteSect.fruits, 100, ["Fruits"], AWTracker(174, 0, 0, 0, 28)),
+    lname.fruit_101.value: AWLocationData(1101, ByteSect.fruits, 101, ["Fruits"], AWTracker(130, 0, 0, 0, 69)),
+    lname.fruit_102.value: AWLocationData(1102, ByteSect.fruits, 102, ["Fruits"], AWTracker(130, 0, 0, 0, 70)),
+    lname.fruit_103.value: AWLocationData(1103, ByteSect.fruits, 103, ["Fruits"], AWTracker(130, 0, 0, 0, 71)),
+    lname.fruit_104.value: AWLocationData(1104, ByteSect.fruits, 104, ["Fruits"], AWTracker(130, 0, 0, 0, 72)),
+    lname.fruit_105.value: AWLocationData(1105, ByteSect.fruits, 105, ["Fruits"], AWTracker(175, 0, 0, 0, 3)),
+    lname.fruit_106.value: AWLocationData(1106, ByteSect.fruits, 106, ["Fruits"], AWTracker(130, 0, 0, 0, 73)),
+    lname.fruit_107.value: AWLocationData(1107, ByteSect.fruits, 107, ["Fruits"], AWTracker(130, 0, 0, 0, 74)),
+    lname.fruit_108.value: AWLocationData(1108, ByteSect.fruits, 108, ["Fruits"], AWTracker(130, 0, 0, 0, 75)),
+    lname.fruit_109.value: AWLocationData(1109, ByteSect.fruits, 109, ["Fruits"], AWTracker(130, 0, 0, 0, 76)),
+    lname.fruit_110.value: AWLocationData(1110, ByteSect.fruits, 110, ["Fruits"], AWTracker(130, 0, 0, 0, 77)),
+    lname.fruit_111.value: AWLocationData(1111, ByteSect.fruits, 111, ["Fruits"], AWTracker(174, 0, 0, 0, 29)),
+    lname.fruit_112.value: AWLocationData(1112, ByteSect.fruits, 112, ["Fruits"], AWTracker(130, 0, 0, 0, 78)),
+    lname.fruit_113.value: AWLocationData(1113, ByteSect.fruits, 113, ["Fruits"], AWTracker(130, 0, 0, 0, 79)),
+    lname.fruit_114.value: AWLocationData(1114, ByteSect.fruits, 114, ["Fruits"], AWTracker(174, 0, 0, 0, 30)),
 }
 
 # mostly for the logic tracker

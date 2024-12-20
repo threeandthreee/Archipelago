@@ -4,7 +4,7 @@ from . import lark
 _ROOT_FAMILY = "__"
 _consts = {}
 
-_parser = lark.Lark(r'''
+_parser = lark.Lark('''
     start           : const_block*
     const_block     : "consts" "(" identifier ")" "{" const_def* "}"
     const_def       : number identifier

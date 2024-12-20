@@ -1,6 +1,3 @@
-import re
-import string
-
 from worlds.ff4fe.FreeEnterpriseForAP.FreeEnt.generate_wiki_tables import items_dbview
 from . import core_rando
 from .crosspolinate import crosspolinate
@@ -137,13 +134,12 @@ def apply(env):
     treasure_assignment = TreasureAssignment(autosells)
 
     if env.options.ap_data is not None:
-        treasure_table_start = 0x1A0000
         for t in treasure_dbview:
             id = t.flag
             ap_item = env.options.ap_data[str(id)]
             placement = items_dbview.find_one(lambda i: i.code == ap_item["item_data"]["fe_id"])
             if placement is None:
-                treasure_assignment.assign(t, '{} gp'.format(0))
+                treasure_assignment.assign(t, '{} gp'.format(10))
             elif placement.tier <= env.options.ap_data["junk_tier"] and placement.flag != "K":
                 multiplier = (10 if placement.subtype == 'arrow' else 1)
                 divisor = (4 if env.options.flags.has('shops_sell_quarter') else 2)
@@ -151,24 +147,7 @@ def apply(env):
                 treasure_assignment.assign(t, '{} gp'.format(price))
             else:
                 treasure_assignment.assign(t, placement.const)
-            script_text = env.meta["text_pointers"].pop()
-            bank = int(script_text[10], 16)
-            pointer = script_text[20:24]
-            pointer = pointer[1:] if pointer[3] != ")" else pointer[1:3]
-            pointer = int(pointer, 16)
-            entry_location = treasure_table_start + (id * 3)
-            entry_location = f"${hex(entry_location)[2:]}"
-            high_byte = pointer % 256
-            low_byte = pointer // 256
-            env.add_script(f"patch({entry_location}) {{ {bank:X} {high_byte:02X} {low_byte:02X} }}")
-            if ap_item["item_data"]["name"] == "Archipelago Item":
-                safe_item_name = re.sub(r"[^a-zA-Z0-9`\'.\-_!?%/:,\s]", "-", ap_item["item_name"])
-                env.add_script(f'{script_text} {{Found {ap_item["player_name"]}\'s \n{safe_item_name}. }}')
-            else:
-                if placement.tier <= env.options.ap_data["junk_tier"] and placement.flag != "K":
-                    env.add_script(f'{script_text} {{Found your own\n{placement.name}.\nAutomatically converted\nto {price} GP.}}')
-                else:
-                    env.add_script(f'{script_text} {{Found your own\n{placement.name}.}}')
+
     fight_chest_locations = ['{} {}'.format(*env.meta['miab_locations'][slot]) for slot in env.meta['miab_locations']]
     fight_treasure_areas = list(set([t.area for t in treasure_dbview.find_all(lambda t: t.fight is not None)]))
     for area in fight_treasure_areas:
@@ -193,7 +172,8 @@ def apply(env):
             print('---')
             raise Exception("Ok things are fuckered")
         for old,new in zip(remapped_original_chests, remapped_new_chests):
-            treasure_assignment.remap(old, new)
+            pass
+            #treasure_assignment.remap(old, new)
 
     if env.options.ap_data is not None:
         pass
@@ -305,14 +285,12 @@ def apply(env):
         ap_item = env.options.ap_data[str(id)]
         placement = items_dbview.find_one(lambda i: i.code == ap_item["item_data"]["fe_id"])
         if placement is None:
-            env.assignments[reward_slot_name] = "#item.Cure1"
+            treasure_assignment.assign(new_chest, "#item.Cure1", orig_chest.fight)
         else:
-            env.assignments[reward_slot_name] = placement.const
-        treasure_assignment.assign(
-            '{} {}'.format(chest_number[0], chest_number[1]),
-            reward_slot_name,
-            orig_chest.fight,
-            remap=True)
+            treasure_assignment.assign(
+                new_chest,
+                placement.const,
+                orig_chest.fight)
 
     env.add_script(treasure_assignment.get_script())
 

@@ -268,6 +268,10 @@ single_items_dict: dict[str, SingleItemData] = {
     "Slot Unlock: Cup o' Coffee (Ridge Items)": SingleItemData(item_id=0, name="Slot Unlock: Cup o' Coffee (Ridge Items)", classification=ItemClassification.progression, unique=True),
     'Slot Unlock: Snack Mix (Ridge Items)': SingleItemData(item_id=0, name='Slot Unlock: Snack Mix (Ridge Items)', classification=ItemClassification.progression, unique=True),
     'Shop Unlock: Rhombus Weapons': SingleItemData(item_id=0, name='Shop Unlock: Rhombus Weapons', classification=ItemClassification.progression, unique=True),
+    'Slot Unlock: Cobalt Goggles (Rhombus Weapons)': SingleItemData(item_id=0, name='Slot Unlock: Cobalt Goggles (Rhombus Weapons)', classification=ItemClassification.progression, unique=True),
+    'Slot Unlock: Cobalt Edge (Rhombus Weapons)': SingleItemData(item_id=0, name='Slot Unlock: Cobalt Edge (Rhombus Weapons)', classification=ItemClassification.progression, unique=True),
+    'Slot Unlock: Cobalt Mail (Rhombus Weapons)': SingleItemData(item_id=0, name='Slot Unlock: Cobalt Mail (Rhombus Weapons)', classification=ItemClassification.progression, unique=True),
+    'Slot Unlock: Cobalt Boots (Rhombus Weapons)': SingleItemData(item_id=0, name='Slot Unlock: Cobalt Boots (Rhombus Weapons)', classification=ItemClassification.progression, unique=True),
     'Slot Unlock: Laser Goggles (Rhombus Weapons)': SingleItemData(item_id=0, name='Slot Unlock: Laser Goggles (Rhombus Weapons)', classification=ItemClassification.progression, unique=True),
     'Global Slot Unlock: Laser Goggles': SingleItemData(item_id=0, name='Global Slot Unlock: Laser Goggles', classification=ItemClassification.progression, unique=True),
     'Slot Unlock: Laser Edge (Rhombus Weapons)': SingleItemData(item_id=0, name='Slot Unlock: Laser Edge (Rhombus Weapons)', classification=ItemClassification.progression, unique=True),
@@ -2043,6 +2047,10 @@ items_dict: dict[tuple[str, int], ItemData] = KeyDefaultDict(__item_data_from_tu
     ('Slot Unlock: Fruit Drink (Vermillion Items)', 1): ItemData(item=single_items_dict['Slot Unlock: Fruit Drink (Vermillion Items)'], amount=1, combo_id=3235924506),
     ('Slot Unlock: Rice Cracker (Vermillion Items)', 1): ItemData(item=single_items_dict['Slot Unlock: Rice Cracker (Vermillion Items)'], amount=1, combo_id=3235924507),
     ('Slot Unlock: Veggie Sticks (Vermillion Items)', 1): ItemData(item=single_items_dict['Slot Unlock: Veggie Sticks (Vermillion Items)'], amount=1, combo_id=3235924508),
+    ('Slot Unlock: Cobalt Goggles (Rhombus Weapons)', 1): ItemData(item=single_items_dict['Slot Unlock: Cobalt Goggles (Rhombus Weapons)'], amount=1, combo_id=3235924509),
+    ('Slot Unlock: Cobalt Edge (Rhombus Weapons)', 1): ItemData(item=single_items_dict['Slot Unlock: Cobalt Edge (Rhombus Weapons)'], amount=1, combo_id=3235924510),
+    ('Slot Unlock: Cobalt Mail (Rhombus Weapons)', 1): ItemData(item=single_items_dict['Slot Unlock: Cobalt Mail (Rhombus Weapons)'], amount=1, combo_id=3235924511),
+    ('Slot Unlock: Cobalt Boots (Rhombus Weapons)', 1): ItemData(item=single_items_dict['Slot Unlock: Cobalt Boots (Rhombus Weapons)'], amount=1, combo_id=3235924512),
 })
 """Dict which can calculate the ItemData for any item name and amount.
 Includes a large cached list of all those items found in code generation.

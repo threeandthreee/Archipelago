@@ -33,20 +33,21 @@ class AWSettings(Group):
     in_game_tracker: TrackerSetting = TrackerSetting.full_tracker
 
 
-def launch_client():
+def launch_client(*args):
     """
     Launch the Animal Well Client
     """
-    from .client import launch
+    from .client.client import launch
     from CommonClient import gui_enabled
     if gui_enabled:
-        launch_subprocess(launch, name="AnimalWellClient")
+        launch_subprocess(launch, name="AnimalWellClient", args=args)
     else:
-        launch()
+        launch(*args)
 
 
 components.append(Component("ANIMAL WELL Client", func=launch_client,
-                            component_type=Type.CLIENT, icon="Potate"))
+                            component_type=Type.CLIENT, icon="Potate",
+                            supports_uri=True, game_name="ANIMAL WELL"))
 
 icon_paths["Potate"] = f"ap:{__name__}/Potate.png"
 
@@ -76,7 +77,7 @@ class AnimalWellWorld(World):
     """
     game = "ANIMAL WELL"
     web = AnimalWellWeb()
-    version_string: str = "v0.4.2"
+    version_string: str = "v0.5.0"
 
     options: AnimalWellOptions
     options_dataclass = AnimalWellOptions
@@ -94,15 +95,6 @@ class AnimalWellWorld(World):
     traversal_requirements: Dict[Union[LocationNames, RegionNames], Dict[Union[LocationNames, RegionNames], AWData]]
 
     def generate_early(self) -> None:
-        # temporarily here to not break older yamls
-        if self.options.wheel_hopping:
-            self.options.wheel_tricks.value = self.options.wheel_hopping.value
-        if self.options.weird_tricks:
-            self.options.ball_throwing = self.options.ball_throwing.option_expert
-            self.options.tanking_damage = self.options.tanking_damage.option_true
-            self.options.precise_tricks = self.options.precise_tricks.option_true
-            self.options.obscure_tricks = self.options.obscure_tricks.option_true
-
         # if these options conflict, override -- player is warned in the option description
         if not self.options.bunny_warps_in_logic and self.options.bunnies_as_checks:
             self.options.bunny_warps_in_logic.value = True
@@ -178,6 +170,7 @@ class AnimalWellWorld(World):
 
             "candle_checks",
             "bunnies_as_checks",
+            "fruitsanity",
             "bunny_warps_in_logic",
             "exclude_song_chests",
 
@@ -185,6 +178,7 @@ class AnimalWellWorld(World):
             "disc_hopping",
             "wheel_tricks",
             "ball_throwing",
+            "flute_jumps",
             "obscure_tricks",
             "precise_tricks",
             "tanking_damage",
