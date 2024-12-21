@@ -794,8 +794,6 @@ class LinksAwakeningContext(CommonContext):
                             if new_entrances:
                                 await self.send_new_entrances(new_entrances)
 
-                            # FIXME: resolve merge conflict
-                            # await self.magpie.send_gps(self.client.gps_tracker)
                             if self.slot_data and "slot_data" in self.magpie.features and not self.magpie.has_sent_slot_data:
                                 await self.magpie.send_slot_data(self.slot_data)
                         except Exception:
