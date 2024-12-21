@@ -30,6 +30,7 @@ from .LADXR.checkMetadata import checkMetadataTable
 from .Items import links_awakening_items
 from .Locations import get_locations_to_id, meta_to_name
 from .Tracker import LocationTracker, MagpieBridge
+from .TrackerConsts import storage_key
 
 
 class GameboyException(Exception):
@@ -789,10 +790,12 @@ class LinksAwakeningContext(CommonContext):
                                 await self.request_found_entrances()
                                 self.client.gps_tracker.needs_found_entrances = False
 
-                            new_entrances = await self.magpie.send_gps(self.client.gps_tracker)
+                            new_entrances = await self.magpie.send_gps()
                             if new_entrances:
                                 await self.send_new_entrances(new_entrances)
-                            await self.magpie.send_gps(self.client.gps_tracker)
+
+                            # FIXME: resolve merge conflict
+                            # await self.magpie.send_gps(self.client.gps_tracker)
                             if self.slot_data and "slot_data" in self.magpie.features and not self.magpie.has_sent_slot_data:
                                 await self.magpie.send_slot_data(self.slot_data)
                         except Exception:
