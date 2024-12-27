@@ -85,7 +85,7 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
 
     if options["gfxmod"]:
         user_settings = settings.get_settings()
-        gfx_mod_file = user_settings["ladx_options"]["gfx_mod_file"]
+        gfx_mod_file = user_settings["ladx_beta_options"]["gfx_mod_file"]
         patches.aesthetics.gfxMod(rom, gfx_mod_file)
 
     assembler.resetConsts()
