@@ -19,6 +19,7 @@ import Options
 import Utils
 
 if TYPE_CHECKING:
+    from entrance_rando import ERPlacementState
     from worlds import AutoWorld
 
 
@@ -51,6 +52,31 @@ class ThreadBarrierProxy:
 class HasNameAndPlayer(Protocol):
     name: str
     player: int
+
+
+
+def create_group_world(group_name: str, group_idx: int):
+    from worlds import AutoWorld
+    # Create an entirely new world instance per group
+    # Very minimal implementation of a world
+    class GroupWorld(AutoWorld.World):
+        game: str = "group_" + group_name
+        item_name_to_id = {}
+        location_name_to_id = {}
+        item_index: int = group_idx * -100000
+
+        def create_item(self, name: str) -> Item:
+            # If we haven't seen this item before, create a new one
+            if name not in self.item_name_to_id:
+                # It's likely we need to do more than this to support all external access to this class
+                self.item_name_to_id[name] = self.item_index
+                self.item_id_to_name[self.item_index] = name
+                self.item_index -= 1
+            return Item(name, ItemClassification.filler, self.item_name_to_id[name], self.player)
+
+    return GroupWorld
+        
+
 
 
 class MultiWorld():
@@ -188,10 +214,10 @@ class MultiWorld():
         new_id: int = self.players + len(self.groups) + 1
 
         self.regions.add_group(new_id)
-        self.game[new_id] = game
         self.player_types[new_id] = NetUtils.SlotType.group
-        world_type = AutoWorld.AutoWorldRegister.world_types[game]
+        world_type = create_group_world(name, new_id)
         self.worlds[new_id] = world_type.create_group(self, new_id, players)
+        self.game[new_id] = self.worlds[new_id].game
         self.worlds[new_id].collect_item = AutoWorld.World.collect_item.__get__(self.worlds[new_id])
         self.worlds[new_id].collect = AutoWorld.World.collect.__get__(self.worlds[new_id])
         self.worlds[new_id].remove = AutoWorld.World.remove.__get__(self.worlds[new_id])
@@ -240,40 +266,59 @@ class MultiWorld():
         replacement_prio = [False, True, None]
         for player in self.player_ids:
             for item_link in self.worlds[player].options.item_links.value:
+                # TODO: this logic is bug prone - remove the duplication
                 if item_link["name"] in item_links:
-                    if item_links[item_link["name"]]["game"] != self.game[player]:
-                        raise Exception(f"Cannot ItemLink across games. Link: {item_link['name']}")
                     current_link = item_links[item_link["name"]]
-                    current_link["players"][player] = item_link["replacement_item"]
-                    current_link["item_pool"] &= set(item_link["item_pool"])
-                    current_link["exclude"] |= set(item_link.get("exclude", []))
-                    current_link["local_items"] &= set(item_link.get("local_items", []))
-                    current_link["non_local_items"] &= set(item_link.get("non_local_items", []))
+                    current_link["replacement_item"][player] = item_link["replacement_item"]
+                    current_item_mapping = item_link["item_mapping"]
+                    current_link["item_mapping"][player] = current_item_mapping
+                    current_link["item_pool_by_player"][player] = set(current_item_mapping.get(item, item) for item in item_link["item_pool"])
+                    current_link["item_pool"] |= current_link["item_pool_by_player"][player]
+                    current_link["exclude"] |= set(current_item_mapping.get(item, item) for item in item_link.get("exclude", []))
+                    # TODO: this is likely wrong, how is one supposed to use this??
+                    current_link["local_items"] &= set(current_item_mapping.get(item, item) for item in item_link.get("local_items", []))
+                    current_link["non_local_items"] &= set(current_item_mapping.get(item, item) for item in item_link.get("non_local_items", []))
+                    # TODO: not implemented for item mapping lol
                     current_link["link_replacement"] = min(current_link["link_replacement"],
                                                            replacement_prio.index(item_link["link_replacement"]))
                 else:
                     if item_link["name"] in self.player_name.values():
                         raise Exception(f"Cannot name a ItemLink group the same as a player ({item_link['name']}) "
                                         f"({self.get_player_name(player)}).")
+                    item_mapping = item_link["item_mapping"]
                     item_links[item_link["name"]] = {
-                        "players": {player: item_link["replacement_item"]},
-                        "item_pool": set(item_link["item_pool"]),
-                        "exclude": set(item_link.get("exclude", [])),
+                        "replacement_item": {player: item_link["replacement_item"]},
+                        "item_mapping": {player: item_mapping},
+                        "item_pool": set(item_mapping.get(item, item) for item in item_link["item_pool"]),
+                        "item_pool_by_player": {player: set(item_mapping.get(item, item) for item in item_link["item_pool"])},
+                        "exclude": set(item_mapping.get(item, item) for item in item_link.get("exclude", [])),
                         "game": self.game[player],
-                        "local_items": set(item_link.get("local_items", [])),
-                        "non_local_items": set(item_link.get("non_local_items", [])),
+                        "local_items": set(item_mapping.get(item, item) for item in item_link.get("local_items", [])),
+                        "non_local_items": set(item_mapping.get(item, item) for item in item_link.get("non_local_items", [])),
                         "link_replacement": replacement_prio.index(item_link["link_replacement"]),
                     }
 
         for _name, item_link in item_links.items():
             current_item_name_groups = AutoWorld.AutoWorldRegister.world_types[item_link["game"]].item_name_groups
+            player_ids = set(item_link["replacement_item"])
             pool = set()
             local_items = set()
             non_local_items = set()
             for item in item_link["item_pool"]:
                 pool |= current_item_name_groups.get(item, {item})
+            # TODO: this should be keyed/run per player, now
             for item in item_link["exclude"]:
                 pool -= current_item_name_groups.get(item, {item})
+
+            # Filter out items in the pool where there's only one player
+            single_player_items = set()
+            for item in pool:
+                if sum(item in item_link["item_pool_by_player"][player] for player in player_ids) <= 1:
+                    single_player_items.add(item)
+            pool -= single_player_items
+            # Note that this isn't quite correct - if we end up with zero items in the pool for other players but not one,
+            # we will still pointlessly item link
+
             for item in item_link["local_items"]:
                 local_items |= current_item_name_groups.get(item, {item})
             for item in item_link["non_local_items"]:
@@ -286,48 +331,72 @@ class MultiWorld():
 
         for group_name, item_link in item_links.items():
             game = item_link["game"]
-            group_id, group = self.add_group(group_name, game, set(item_link["players"]))
+            group_id, group = self.add_group(group_name, game, player_ids)
 
             group["item_pool"] = item_link["item_pool"]
-            group["replacement_items"] = item_link["players"]
+            group["item_pool_by_player"] = item_link["item_pool_by_player"]
+            group["replacement_items"] = item_link["replacement_item"]
             group["local_items"] = item_link["local_items"]
             group["non_local_items"] = item_link["non_local_items"]
             group["link_replacement"] = replacement_prio[item_link["link_replacement"]]
+            group["item_mapping"] = item_link["item_mapping"]
 
     def link_items(self) -> None:
         """Called to link together items in the itempool related to the registered item link groups."""
         from worlds import AutoWorld
 
         for group_id, group in self.groups.items():
-            def find_common_pool(players: Set[int], shared_pool: Set[str]) -> Tuple[
-                Optional[Dict[int, Dict[str, int]]], Optional[Dict[str, int]]
+            def find_common_pool(players_item_mapping: Set[int], shared_pool: Set[str], player_pools: Dict[int, Set[str]]) -> Tuple[
+                Optional[Dict[int, Dict[str, int]]], Optional[Dict[str, int]] # TODO: fix return val
             ]:
                 classifications: Dict[str, int] = collections.defaultdict(int)
-                counters = {player: {name: 0 for name in shared_pool} for player in players}
+                counters = {player: {name: 0 for name in shared_pool} for player in players_item_mapping.keys()}
+                reverse_players_item_mapping = {}
+                for player, item_mapping in players_item_mapping.items():
+                    reverse_players_item_mapping[player] = {
+                        v: k for k, v in item_mapping.items()
+                    }
+                print(reverse_players_item_mapping)
                 for item in self.itempool:
-                    if item.player in counters and item.name in shared_pool:
-                        counters[item.player][item.name] += 1
-                        classifications[item.name] |= item.classification
+                    if item.player in counters:
+                        mapped_name = players_item_mapping[item.player].get(item.name, item.name)
+                        if mapped_name in shared_pool:
+                            counters[item.player][mapped_name] += 1
+                            classifications[mapped_name] |= item.classification
+                # TODO: optimization - we still want to add items if we are maximimizing item counts
+                # for player in players_item_mapping.copy().keys():
+                #     if all([counters[player][item] == 0 for item in shared_pool]):
+                #         del (players_item_mapping[player])
+                #         del (counters[player])
 
-                for player in players.copy():
-                    if all([counters[player][item] == 0 for item in shared_pool]):
-                        players.remove(player)
-                        del (counters[player])
-
-                if not players:
+                if not players_item_mapping:
                     return None, None
 
+                additional_items = {player: {} for player in counters.keys()}
+                print(counters)
                 for item in shared_pool:
-                    count = min(counters[player][item] for player in players)
+                    # Note: this needs to be recalculated per player instead - if they want to maximize or minimize
+                    # the item count
+                    USE_MAX_INSTEAD=True
+                    if USE_MAX_INSTEAD:
+                        count = max(counters[player][item] for player in players_item_mapping.keys())
+                    else:
+                        count = min(counters[player][item] for player in players_item_mapping.keys())
                     if count:
-                        for player in players:
+                        for player in players_item_mapping.keys():
+                            if USE_MAX_INSTEAD:
+                                if count != counters[player][item]:
+                                    if item in player_pools[player]:
+                                        reversed_item_name = reverse_players_item_mapping[player].get(item, item)
+                                        additional_items[player][reversed_item_name] = count - counters[player][item]
+                                        print("Added", additional_items[player][reversed_item_name], reversed_item_name, "for", player)
                             counters[player][item] = count
                     else:
-                        for player in players:
+                        for player in players_item_mapping.keys():
                             del (counters[player][item])
-                return counters, classifications
+                return counters, classifications, additional_items
 
-            common_item_count, classifications = find_common_pool(group["players"], group["item_pool"])
+            common_item_count, classifications, player_additional_items = find_common_pool(group["item_mapping"], group["item_pool"], group["item_pool_by_player"])
             if not common_item_count:
                 continue
 
@@ -338,29 +407,42 @@ class MultiWorld():
                     # mangle together all original classification bits
                     new_item.classification |= classifications[item_name]
                     new_itempool.append(new_item)
+            
+            for player, additional_items in player_additional_items.items():
+                for item, count in additional_items.items():
+                    for i in range(count):
+                        self.itempool.append(AutoWorld.call_single(self, "create_item", player, item))
+                        print("Created", player, item)
 
             region = Region(group["world"].origin_region_name, group_id, self, "ItemLink")
             self.regions.append(region)
             locations = region.locations
             # ensure that progression items are linked first, then non-progression
             self.itempool.sort(key=lambda item: item.advancement)
-            for item in self.itempool:
-                count = common_item_count.get(item.player, {}).get(item.name, 0)
-                if count:
-                    loc = Location(group_id, f"Item Link: {item.name} -> {self.player_name[item.player]} {count}",
-                        None, region)
-                    loc.access_rule = lambda state, item_name = item.name, group_id_ = group_id, count_ = count: \
-                        state.has(item_name, group_id_, count_)
 
+            for item in self.itempool:
+                mapped_item_name = group["item_mapping"].get(item.player, {}).get(item.name, item.name)
+                count = common_item_count.get(item.player, {}).get(mapped_item_name, 0)
+
+                if count:
+                    player_item = AutoWorld.call_single(self, "create_item", item.player, item.name)
+
+                    loc = Location(group_id, f"Item Link: {mapped_item_name} -> {self.player_name[item.player]} {count}",
+                        None, region)
+                    loc.access_rule = lambda state, item_name = mapped_item_name, group_id_ = group_id, count_ = count: \
+                        state.has(item_name, group_id_, count_)
+                    print("Created", loc.name, mapped_item_name, item.name, player_item)
                     locations.append(loc)
-                    loc.place_locked_item(item)
-                    common_item_count[item.player][item.name] -= 1
+                    loc.place_locked_item(player_item)
+                    common_item_count[item.player][mapped_item_name] -= 1
                 else:
                     new_itempool.append(item)
+
 
             itemcount = len(self.itempool)
             self.itempool = new_itempool
 
+            itemcount -= sum(sum(i.values()) for i in player_additional_items.values())
             while itemcount > len(self.itempool):
                 items_to_add = []
                 for player in group["players"]:
@@ -426,12 +508,12 @@ class MultiWorld():
     def get_location(self, location_name: str, player: int) -> Location:
         return self.regions.location_cache[player][location_name]
 
-    def get_all_state(self, use_cache: bool) -> CollectionState:
+    def get_all_state(self, use_cache: bool, allow_partial_entrances: bool = False) -> CollectionState:
         cached = getattr(self, "_all_state", None)
         if use_cache and cached:
             return cached.copy()
 
-        ret = CollectionState(self)
+        ret = CollectionState(self, allow_partial_entrances)
 
         for item in self.itempool:
             self.worlds[item.player].collect(ret, item)
@@ -717,10 +799,11 @@ class CollectionState():
     path: Dict[Union[Region, Entrance], PathValue]
     locations_checked: Set[Location]
     stale: Dict[int, bool]
+    allow_partial_entrances: bool
     additional_init_functions: List[Callable[[CollectionState, MultiWorld], None]] = []
     additional_copy_functions: List[Callable[[CollectionState, CollectionState], CollectionState]] = []
 
-    def __init__(self, parent: MultiWorld):
+    def __init__(self, parent: MultiWorld, allow_partial_entrances: bool = False):
         self.prog_items = {player: Counter() for player in parent.get_all_ids()}
         self.multiworld = parent
         self.reachable_regions = {player: set() for player in parent.get_all_ids()}
@@ -729,6 +812,7 @@ class CollectionState():
         self.path = {}
         self.locations_checked = set()
         self.stale = {player: True for player in parent.get_all_ids()}
+        self.allow_partial_entrances = allow_partial_entrances
         for function in self.additional_init_functions:
             function(self, parent)
         for items in parent.precollected_items.values():
@@ -763,6 +847,8 @@ class CollectionState():
             if new_region in reachable_regions:
                 blocked_connections.remove(connection)
             elif connection.can_reach(self):
+                if self.allow_partial_entrances and not new_region:
+                    continue
                 assert new_region, f"tried to search through an Entrance \"{connection}\" with no connected Region"
                 reachable_regions.add(new_region)
                 blocked_connections.remove(connection)
@@ -788,7 +874,9 @@ class CollectionState():
                 if new_region in reachable_regions:
                     blocked_connections.remove(connection)
                 elif connection.can_reach(self):
-                    assert new_region, f"tried to search through an Entrance \"{connection}\" with no Region"
+                    if self.allow_partial_entrances and not new_region:
+                        continue
+                    assert new_region, f"tried to search through an Entrance \"{connection}\" with no connected Region"
                     reachable_regions.add(new_region)
                     blocked_connections.remove(connection)
                     blocked_connections.update(new_region.exits)
@@ -808,6 +896,7 @@ class CollectionState():
         ret.advancements = self.advancements.copy()
         ret.path = self.path.copy()
         ret.locations_checked = self.locations_checked.copy()
+        ret.allow_partial_entrances = self.allow_partial_entrances
         for function in self.additional_copy_functions:
             ret = function(self, ret)
         return ret
@@ -972,6 +1061,11 @@ class CollectionState():
             self.stale[item.player] = True
 
 
+class EntranceType(IntEnum):
+    ONE_WAY = 1
+    TWO_WAY = 2
+
+
 class Entrance:
     access_rule: Callable[[CollectionState], bool] = staticmethod(lambda state: True)
     hide_path: bool = False
@@ -979,19 +1073,24 @@ class Entrance:
     name: str
     parent_region: Optional[Region]
     connected_region: Optional[Region] = None
+    randomization_group: int
+    randomization_type: EntranceType
     # LttP specific, TODO: should make a LttPEntrance
     addresses = None
     target = None
 
-    def __init__(self, player: int, name: str = "", parent: Optional[Region] = None) -> None:
+    def __init__(self, player: int, name: str = "", parent: Optional[Region] = None,
+                 randomization_group: int = 0, randomization_type: EntranceType = EntranceType.ONE_WAY) -> None:
         self.name = name
         self.parent_region = parent
         self.player = player
+        self.randomization_group = randomization_group
+        self.randomization_type = randomization_type
 
     def can_reach(self, state: CollectionState) -> bool:
         assert self.parent_region, f"called can_reach on an Entrance \"{self}\" with no parent_region"
         if self.parent_region.can_reach(state) and self.access_rule(state):
-            if not self.hide_path and not self in state.path:
+            if not self.hide_path and self not in state.path:
                 state.path[self] = (self.name, state.path.get(self.parent_region, (self.parent_region.name, None)))
             return True
 
@@ -1002,6 +1101,32 @@ class Entrance:
         self.target = target
         self.addresses = addresses
         region.entrances.append(self)
+
+    def is_valid_source_transition(self, er_state: "ERPlacementState") -> bool:
+        """
+        Determines whether this is a valid source transition, that is, whether the entrance
+        randomizer is allowed to pair it to place any other regions. By default, this is the
+        same as a reachability check, but can be modified by Entrance implementations to add
+        other restrictions based on the placement state.
+
+        :param er_state: The current (partial) state of the ongoing entrance randomization
+        """
+        return self.can_reach(er_state.collection_state)
+
+    def can_connect_to(self, other: Entrance, dead_end: bool, er_state: "ERPlacementState") -> bool:
+        """
+        Determines whether a given Entrance is a valid target transition, that is, whether
+        the entrance randomizer is allowed to pair this Entrance to that Entrance. By default,
+        only allows connection between entrances of the same type (one ways only go to one ways,
+        two ways always go to two ways) and prevents connecting an exit to itself in coupled mode.
+
+        :param other: The proposed Entrance to connect to
+        :param dead_end: Whether the other entrance considered a dead end by Entrance randomization
+        :param er_state: The current (partial) state of the ongoing entrance randomization
+        """
+        # the implementation of coupled causes issues for self-loops since the reverse entrance will be the
+        # same as the forward entrance. In uncoupled they are ok.
+        return self.randomization_type == other.randomization_type and (not er_state.coupled or self.name != other.name)
 
     def __repr__(self):
         multiworld = self.parent_region.multiworld if self.parent_region else None
@@ -1152,6 +1277,16 @@ class Region:
         self.exits.append(exit_)
         return exit_
 
+    def create_er_target(self, name: str) -> Entrance:
+        """
+        Creates and returns an Entrance object as an entrance to this region
+
+        :param name: name of the Entrance being created
+        """
+        entrance = self.entrance_type(self.player, name)
+        entrance.connect(self)
+        return entrance
+
     def add_exits(self, exits: Union[Iterable[str], Dict[str, Optional[str]]],
                   rules: Dict[str, Callable[[CollectionState], bool]] = None) -> List[Entrance]:
         """
@@ -1254,13 +1389,26 @@ class Location:
 
 
 class ItemClassification(IntFlag):
-    filler = 0b0000  # aka trash, as in filler items like ammo, currency etc,
-    progression = 0b0001  # Item that is logically relevant
-    useful = 0b0010  # Item that is generally quite useful, but not required for anything logical
-    trap = 0b0100  # detrimental item
-    skip_balancing = 0b1000  # should technically never occur on its own
-    # Item that is logically relevant, but progression balancing should not touch.
-    # Typically currency or other counted items.
+    filler = 0b0000
+    """ aka trash, as in filler items like ammo, currency etc """
+
+    progression = 0b0001
+    """ Item that is logically relevant.
+    Protects this item from being placed on excluded or unreachable locations. """
+
+    useful = 0b0010
+    """ Item that is especially useful.
+    Protects this item from being placed on excluded or unreachable locations.
+    When combined with another flag like "progression", it means "an especially useful progression item". """
+
+    trap = 0b0100
+    """ Item that is detrimental in some way. """
+
+    skip_balancing = 0b1000
+    """ should technically never occur on its own
+    Item that is logically relevant, but progression balancing should not touch.
+    Typically currency or other counted items. """
+
     progression_skip_balancing = 0b1001  # only progression gets balanced
 
     def as_flag(self) -> int:

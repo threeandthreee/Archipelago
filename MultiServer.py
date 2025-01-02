@@ -967,30 +967,30 @@ class Ashipelago:
             self._push_to_webhook(hint_information)
 
     # Pushes an Item event to Dynxbot
-    def push_item_information(self, team: int, slot: int, item_id, target_player, location, flags, released: bool):
+    def push_item_information(self, item: NetworkItem, team: int, target_player, released: bool):
         item_information = {
             "event": "item",
             "room": self.room_url,
             "seed": self.seed_url,
-            "sender": self.ctx.player_names[(team, slot)],
-            "item": self.ctx.item_names[self.ctx.slot_info[target_player].game][item_id],
+            "sender": self.ctx.player_names[(team, item.player)],
+            "item": self.ctx.item_names[self.ctx.slot_info[target_player].game][item.item],
             "receiver": self.ctx.player_names[(team, target_player)],
-            "location": self.ctx.location_names[self.ctx.slot_info[slot].game][location],
+            "location": self.ctx.location_names[self.ctx.slot_info[item.player].game][item.location],
             "released": released
         }
         item_classification = "Filler"
 
-        if flags == ItemClassification.progression:
+        if item.flags == ItemClassification.progression:
             item_classification = "Progression"
-        elif flags == ItemClassification.useful:
+        elif item.flags == ItemClassification.useful:
             item_classification = "Useful"
-        elif flags == ItemClassification.progression | ItemClassification.useful:
+        elif item.flags == ItemClassification.progression | ItemClassification.useful:
             item_classification = "Progression"
-        elif flags == ItemClassification.trap:
+        elif item.flags == ItemClassification.trap:
             item_classification = "Trap"
-        elif flags == ItemClassification.skip_balancing:
+        elif item.flags == ItemClassification.skip_balancing:
             item_classification = "Skip_Balancing"
-        elif flags == ItemClassification.progression_skip_balancing:
+        elif item.flags == ItemClassification.progression_skip_balancing:
             item_classification = "Progression_Skip_Balancing"
 
         item_information["item_classification"] = item_classification
@@ -1312,7 +1312,8 @@ def get_status_string(ctx: Context, team: int, tag: str):
 
 
 def get_received_items(ctx: Context, team: int, player: int, remote_items: bool) -> typing.List[NetworkItem]:
-    return ctx.received_items.setdefault((team, player, remote_items), [])
+    items = ctx.received_items.setdefault((team, player, remote_items), [])
+    return items
 
 
 def get_start_inventory(ctx: Context, player: int, remote_start_inventory: bool) -> typing.List[NetworkItem]:
@@ -1378,11 +1379,33 @@ def get_remaining(ctx: Context, team: int, slot: int) -> typing.List[typing.Tupl
 
 
 def send_items_to(ctx: Context, team: int, target_slot: int, *items: NetworkItem):
+    print("send_items_to", team, target_slot)
+    print(ctx.slot_info)
     for target in ctx.slot_set(target_slot):
         for item in items:
+            mapped_item = item
+            if ctx.slot_info[target_slot].group_members and target_slot != target:
+                # This should always be an item link item name
+                item_name = ctx.item_names[ctx.slot_info[target_slot].game][item.item]
+                group_name = ctx.slot_info[target_slot].name
+                # Reverse lookup the item name
+                mapped_item_name = item_name
+                if ctx.slot_info[target].item_mapping:
+                    for k, v in ctx.slot_info[target].item_mapping.get(group_name, {}).items():
+                        if v == item_name:
+                            mapped_item_name = k
+                            break
+                # Get the new game
+                mapped_game = ctx.slot_info[target].game 
+                # Translate the item
+                mapped_item_id = ctx.item_names_for_game(mapped_game).get(mapped_item_name)
+
+                if mapped_item_id:
+                    mapped_item = NetworkItem(mapped_item_id, item.location, item.player, item.flags)
+                
             if item.player != target_slot:
-                get_received_items(ctx, team, target, False).append(item)
-            get_received_items(ctx, team, target, True).append(item)
+                get_received_items(ctx, team, target, False).append(mapped_item)
+            get_received_items(ctx, team, target, True).append(mapped_item)
 
 
 # Ashipelago customization
@@ -1403,7 +1426,7 @@ def register_location_checks(ctx: Context, team: int, slot: int, locations: typi
                 ctx.player_names[(team, target_player)], ctx.location_names[ctx.slot_info[slot].game][location]))
             # Ashipelago customization
             if push_webhook:
-                ctx.dynx.push_item_information(team, slot, item_id, target_player, location, flags, released)
+                ctx.dynx.push_item_information(new_item, team, target_player, released)
             info_text = json_format_send_event(new_item, target_player)
             ctx.broadcast_team(team, [info_text])
 
@@ -2275,7 +2298,7 @@ async def process_client_cmd(ctx: Context, client: Client, args: dict):
             hint = ctx.get_hint(client.team, player, location)
             if not hint:
                 return  # Ignored safely
-            if hint.receiving_player != client.slot:
+            if client.slot not in ctx.slot_set(hint.receiving_player):
                 await ctx.send_msgs(client,
                                     [{'cmd': 'InvalidPacket', "type": "arguments", "text": 'UpdateHint: No Permission',
                                       "original_cmd": cmd}])
