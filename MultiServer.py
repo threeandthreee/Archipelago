@@ -843,6 +843,8 @@ class Ashipelago:
     seed_url: str
     admin_password: str
     ctx: Context
+    webhook_url = ""
+    webhook_is_debug = False
     webhook_thread: WebhookThread
     use_room_hints = False
     room_hints_used = 0
@@ -856,11 +858,15 @@ class Ashipelago:
         self.room_url = urlsafe_b64encode(room.id.bytes).rstrip(b'=').decode('ascii')
         self.seed_url = urlsafe_b64encode(room.seed.id.bytes).rstrip(b'=').decode('ascii')
         self.admin_password = admin_password
+        if "WEBHOOK_URL" in webhook_settings:
+            self.webhook_url = webhook_settings["WEBHOOK_URL"]
+        if "WEBHOOK_DEBUG" in webhook_settings:
+            self.webhook_is_debug = webhook_settings["WEBHOOK_DEBUG"]
 
         if is_tracked:
             if webhook_settings["WEBHOOK_AUTO_START"]:
                 self.webhook_active = True
-                self.webhook_thread = self.WebhookThread(self.ctx, webhook_settings["WEBHOOK_URL"], webhook_settings["WEBHOOK_DEBUG"])
+                self.webhook_thread = self.WebhookThread(self.ctx, self.webhook_url, self.webhook_is_debug)
                 self.webhook_thread.start()
             if room.is_new:
                 self._push_player_list()
@@ -1011,10 +1017,11 @@ class Ashipelago:
         if not self.webhook_active:
             return
 
-        if not self.webhook_thread.is_running:
-            self.webhook_thread.start()
-
         self.webhook_queue.put(message)
+
+        if self.webhook_thread is None or not self.webhook_thread.is_alive():
+            self.webhook_thread = self.WebhookThread(self.ctx, self.webhook_url, self.webhook_is_debug)
+            self.webhook_thread.start()
 
     # Helper function used to push the player list when a new room is started
     def _push_player_list(self):
@@ -1094,7 +1101,6 @@ class Ashipelago:
         ctx: Context
         url: str
         is_debug: bool
-        is_running = False
 
         def __init__(self, ctx: Context, url: str, is_debug: bool):
             threading.Thread.__init__(self)
@@ -1104,7 +1110,6 @@ class Ashipelago:
             self.is_debug = is_debug
 
         def run(self):
-            self.is_running = True
             while self.ctx.dynx.webhook_active and not self.ctx.exit_event.is_set():
                 time.sleep(1)
                 while 1:
@@ -1120,12 +1125,9 @@ class Ashipelago:
                         try:
                             Webhook(self.url, content=message).execute()
                         except Exception as e:
-                            self.is_running = False
                             self.ctx.dynx.webhook_queue.put(message)
                             self.ctx.logger.exception(str(e))
                             return
-
-            self.is_running = False
 
 
 def update_aliases(ctx: Context, team: int):
@@ -2803,6 +2805,7 @@ async def auto_shutdown(ctx, to_cancel=None):
         ctx.logger.info("Shutting down due to inactivity.")
         # Ashipelago customization
         ctx.dynx.webhook_active = False
+        ctx.dynx.push_player_connection()
 
     while not ctx.exit_event.is_set():
         if not ctx.client_activity_timers.values():
