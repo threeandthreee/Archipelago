@@ -658,12 +658,12 @@ class LinksAwakeningContext(CommonContext):
             self.won = True
     
     async def request_found_entrances(self):
-        await self.send_msgs([{"cmd": "Get", "keys": [storage_key]}])
+        # Ask for updates so that players can co-op entrances in a seed
+        await self.send_msgs([{"cmd": "SetNotify", "keys": [storage_key]}])
 
     def on_deathlink(self, data: typing.Dict[str, typing.Any]) -> None:
         self.client.deathlink_status = 'pending'
         super(LinksAwakeningContext, self).on_deathlink(data)
-
 
     def new_checks(self, item_ids, ladxr_ids):
         self.found_checks += item_ids
@@ -711,6 +711,9 @@ class LinksAwakeningContext(CommonContext):
         
         if cmd == "Retrieved" and self.magpie_enabled and storage_key in args["keys"]:
             self.client.gps_tracker.receive_found_entrances(args["keys"][storage_key])
+
+        if cmd == "SetReply" and self.magpie_enabled and args["key"] == storage_key:
+            self.client.gps_tracker.receive_found_entrances(args["value"])
 
     async def sync(self):
         sync_msg = [{'cmd': 'Sync'}]
