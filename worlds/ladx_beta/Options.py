@@ -296,12 +296,16 @@ class HardMode(Choice, LADXROption):
     default = option_none
 
 
-class StealingInLogic(DefaultOffToggle, LADXROption):
+class Stealing(Choice, LADXROption):
     """
     Puts stealing from the shop in logic if the player has a sword.
     """
-    display_name = "Stealing in Logic"
+    display_name = "Stealing"
     ladxr_name = "steal"
+    option_in_logic = 1
+    option_out_of_logic = 2
+    option_disabled = 3
+    default = option_out_of_logic
 
 
 class Bowwow(Choice):
@@ -552,7 +556,7 @@ ladx_option_groups = [
         Rooster,
         TarinsGift,
         Overworld,
-        StealingInLogic,
+        Stealing,
         TrendyGame,
         InGameHints,
         NagMessages,
@@ -624,7 +628,7 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     tarins_gift: TarinsGift
     overworld: Overworld
     stabilize_item_pool: StabilizeItemPool
-    stealing_in_logic: StealingInLogic
+    stealing: Stealing
     death_link: DeathLink
     in_game_hints: InGameHints
     quickswap: Quickswap
