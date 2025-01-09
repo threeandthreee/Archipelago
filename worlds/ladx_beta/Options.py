@@ -565,7 +565,6 @@ ladx_option_groups = [
         DeathLink,
         Quickswap,
         HardMode,
-        LowHpBeep,
     ]),
     OptionGroup("Experimental", [
         DungeonShuffle,
