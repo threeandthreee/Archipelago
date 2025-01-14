@@ -1,3 +1,3 @@
 LINKS_AWAKENING = "Links Awakening DX Beta"
 BASE_ID = 10000000
-VERSION = "v10.1"
+VERSION = "v11.0-alpha3"
