@@ -1126,7 +1126,7 @@ class Ashipelago:
                             Webhook(self.url, content=message).execute()
                         except Exception as e:
                             self.ctx.dynx.webhook_queue.put(message)
-                            self.ctx.logger.exception(str(e))
+                            self.ctx.logger.exception(e)
                             return
 
 
@@ -1378,7 +1378,8 @@ def get_remaining(ctx: Context, team: int, slot: int) -> typing.List[typing.Tupl
     return ctx.locations.get_remaining(ctx.location_checks, team, slot)
 
 
-def send_items_to(ctx: Context, team: int, target_slot: int, *items: NetworkItem):
+# Ashipelago customization
+def send_items_to(ctx: Context, team: int, target_slot: int, push_webhook: bool, released: bool, *items: NetworkItem):
     print("send_items_to", team, target_slot)
     print(ctx.slot_info)
     for target in ctx.slot_set(target_slot):
@@ -1406,6 +1407,9 @@ def send_items_to(ctx: Context, team: int, target_slot: int, *items: NetworkItem
             if item.player != target_slot:
                 get_received_items(ctx, team, target, False).append(mapped_item)
             get_received_items(ctx, team, target, True).append(mapped_item)
+            # Ashipelago customization
+            if push_webhook:
+                ctx.dynx.push_item_information(mapped_item, team, target, released)
 
 
 # Ashipelago customization
@@ -1419,14 +1423,11 @@ def register_location_checks(ctx: Context, team: int, slot: int, locations: typi
         for location in new_locations:
             item_id, target_player, flags = ctx.locations[slot][location]
             new_item = NetworkItem(item_id, location, slot, flags)
-            send_items_to(ctx, team, target_player, new_item)
+            send_items_to(ctx, team, target_player, push_webhook, released, new_item)
 
             ctx.logger.info('(Team #%d) %s sent %s to %s (%s)' % (
                 team + 1, ctx.player_names[(team, slot)], ctx.item_names[ctx.slot_info[target_player].game][item_id],
                 ctx.player_names[(team, target_player)], ctx.location_names[ctx.slot_info[slot].game][location]))
-            # Ashipelago customization
-            if push_webhook:
-                ctx.dynx.push_item_information(new_item, team, target_player, released)
             info_text = json_format_send_event(new_item, target_player)
             ctx.broadcast_team(team, [info_text])
 
@@ -2562,7 +2563,7 @@ class ServerCommandProcessor(CommonCommandProcessor):
                 if amount > 100:
                     raise ValueError(f"{amount} is invalid. Maximum is 100.")
                 new_items = [NetworkItem(names[item_name], -1, 0) for _ in range(int(amount))]
-                send_items_to(self.ctx, team, slot, *new_items)
+                send_items_to(self.ctx, team, slot, True, True, *new_items)
 
                 send_new_items(self.ctx)
                 self.ctx.broadcast_text_all(
