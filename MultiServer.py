@@ -868,10 +868,20 @@ class Ashipelago:
                 self.webhook_active = True
                 self.webhook_thread = self.WebhookThread(self.ctx, self.webhook_url, self.webhook_is_debug)
                 self.webhook_thread.start()
+
+            self._push_player_list(room.is_new)
             if room.is_new:
-                self._push_player_list()
                 self._push_game_item_information()
                 room.is_new = webhook_settings["WEBHOOK_DEBUG"]
+
+    # Shuts down a room that has been closed
+    def shutdown_room(self):
+        connection = {
+            "event": "shutdown_room",
+            "room": self.room_url,
+            "seed": self.seed_url
+        }
+        self._push_to_webhook(connection)
 
     # Custom client command used to gift a hint from one player to another
     def gift_hint(self, player_name: str, client_processor: ClientMessageProcessor) -> bool:
@@ -1024,17 +1034,24 @@ class Ashipelago:
             self.webhook_thread.start()
 
     # Helper function used to push the player list when a new room is started
-    def _push_player_list(self):
-        player_list = []
-        for player in self.ctx.player_names.values():
-            player_list.append(player)
+    def _push_player_list(self, is_new: bool):
+        if is_new:
+            player_list = []
+            for player in self.ctx.player_names.values():
+                player_list.append(player)
+            connection = {
+                "event": "start_room",
+                "room": self.room_url,
+                "seed": self.seed_url,
+                "players": player_list
+            }
+        else:
+            connection = {
+                "event": "start_room",
+                "room": self.room_url,
+                "seed": self.seed_url
+            }
 
-        connection = {
-            "event": "player_list",
-            "room": self.room_url,
-            "seed": self.seed_url,
-            "players": player_list
-        }
         self._push_to_webhook(connection)
 
     # Helper function used to push a Gift Hint event to Dynxbot
@@ -2829,7 +2846,7 @@ async def auto_shutdown(ctx, to_cancel=None):
         ctx.logger.info("Shutting down due to inactivity.")
         # Ashipelago customization
         ctx.dynx.webhook_active = False
-        ctx.dynx.push_player_connection()
+        ctx.dynx.shutdown_room()
 
     while not ctx.exit_event.is_set():
         if not ctx.client_activity_timers.values():
