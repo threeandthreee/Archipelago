@@ -162,7 +162,8 @@ class LinksAwakeningWorld(World):
         world_setup = LADXRWorldSetup()
         world_setup.randomize(self.ladxr_settings, self.random, self.options)
         self.ladxr_logic = LADXRLogic(configuration_options=self.ladxr_settings, world_setup=world_setup)
-        self.ladxr_itempool = LADXRItemPool(self.ladxr_logic, self.ladxr_settings, self.random, self.options.stabilize_item_pool).toDict()
+        self.ladxr_itempool = LADXRItemPool(self.ladxr_logic, self.ladxr_settings, self.random, bool(self.options.stabilize_item_pool)).toDict()
+
 
     def generate_early(self) -> None:
         self.dungeon_item_types = {
@@ -538,7 +539,7 @@ class LinksAwakeningWorld(World):
         return change
 
     # Same fill choices and weights used in LADXR.itempool.__randomizeRupees
-    filler_choices = ('Bomb', 'Single Arrow', '10 Arrows', 'Magic Powder', 'Medicine')
+    filler_choices = ("Bomb", "Single Arrow", "10 Arrows", "Magic Powder", "Medicine")
     filler_weights = ( 10,     5,              10,          10,             1)
 
     def get_filler_item_name(self) -> str:
