@@ -395,6 +395,7 @@ def ChooseJunkItems(random, junk, options, junk_count):
             junk_items.append(g_item_dark)
             junk_items.append(g_item_hero)
             junk_distribution[total] = c
+            junk_distribution[total+1] = c
             total += 2
 
     for r,c in RingAmounts.items():
@@ -438,6 +439,28 @@ def CountItems(world: World):
     if world.options.vehicle_logic:
         item_count += len(vehicle_items)
 
+    item_duper = []
+    for item in stage_objective_items:
+        if item.name in item_duper:
+            continue
+        item_duper.append(item.name)
+
+        lookup = [x for x in MissionClearLocations
+                  if x.stageId == item.stageId and x.alignmentId == item.alignmentId][0]
+
+        max_required = ShadowUtils.getMaxRequired(
+            ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_OBJECTIVE_AVAILABLE,
+                                                      lookup.mission_object_name, world.options),
+            lookup.requirement_count, item.stageId, item.alignmentId,
+            world.options.percent_overrides)
+
+        extras = max_required - lookup.requirement_count
+        if extras > 0:
+            print("Add extras", item.name, extras)
+            for i in range(0, max_required - lookup.requirement_count):
+                i_item = copy.copy(item)
+                stage_objective_items.append(i_item)
+
     return item_count
 
 def GetPotentialDowngradeItems(world, mw_stage_items=None):
@@ -452,11 +475,8 @@ def GetPotentialDowngradeItems(world, mw_stage_items=None):
         mw_stage_items = [ShadowTheHedgehogItem(s, world.player) for s in stage_objective_items if
                           s.stageId in world.available_levels]
 
-    percentage = world.options.objective_item_percentage.value
     override_settings = world.options.percent_overrides
-
     itemdict = GetItemLookupDict()
-    percentage_available = world.options.objective_item_percentage_available.value
 
     indexer = {}
     for item in mw_stage_items:
@@ -468,21 +488,21 @@ def GetPotentialDowngradeItems(world, mw_stage_items=None):
 
         indexer[item_lookup.name] += 1
 
-        override_total = ShadowUtils.getOverwriteRequiredCount(override_settings, lookup.stageId,
-                                                         lookup.alignmentId, ShadowUtils.TYPE_ID_COMPLETION)
+        max_required_complete = ShadowUtils.getMaxRequired(
+            ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_COMPLETION, lookup.mission_object_name,
+                                                      world.options),
+            lookup.requirement_count, lookup.stageId, lookup.alignmentId,
+            override_settings)
 
-        override_available = ShadowUtils.getOverwriteRequiredCount(override_settings, lookup.stageId,
-                                                         lookup.alignmentId, ShadowUtils.TYPE_ID_AVAILABLE)
+        max_available = ShadowUtils.getMaxRequired(
+            ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_OBJECTIVE_AVAILABLE, lookup.mission_object_name,
+                                                      world.options),
+            lookup.requirement_count, lookup.stageId, lookup.alignmentId,
+            override_settings)
 
-        max_required = ShadowUtils.getRequiredCount(lookup.requirement_count, percentage,
-                                                    override=override_total, round_method=ceil)
-        max_available = ShadowUtils.getRequiredCount(lookup.requirement_count, percentage_available,
-                                                     override=override_available, round_method=ceil)
         if indexer[item_lookup.name] > max_available:
-            print("Removal of item:", item.name, indexer[item_lookup.name], override_total, override_available,
-                  max_required, max_available)
             to_remove.append(item)
-        elif indexer[item_lookup.name] > max_required:
+        elif indexer[item_lookup.name] > max_required_complete:
             potential_downgrade.append(item)
 
     return potential_downgrade, to_remove
@@ -512,20 +532,21 @@ def PopulateItemPool(world : World, first_regions):
             continue
         item_duper.append(item.name)
 
-        override_total = ShadowUtils.getOverwriteRequiredCount(override_settings, item.stageId,
-                                                               item.alignmentId, ShadowUtils.TYPE_ID_COMPLETION)
-
         lookup = [x for x in MissionClearLocations
                   if x.stageId == item.stageId and x.alignmentId == item.alignmentId][0]
-        if override_total is not None and override_total > 100:
-            max_required = ShadowUtils.getRequiredCount(lookup.requirement_count, None,
-                                                        override=override_total, round_method=ceil)
 
+        max_required = ShadowUtils.getMaxRequired(
+            ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_OBJECTIVE_AVAILABLE,
+                                                      lookup.mission_object_name, world.options),
+            lookup.requirement_count, item.stageId, item.alignmentId,
+            override_settings)
+
+        extras = max_required - lookup.requirement_count
+        if extras > 0:
+            print("Add extras", item.name, extras)
             for i in range(0, max_required - lookup.requirement_count):
                 i_item = copy.copy(item)
                 stage_objective_items.append(i_item)
-
-
 
     mw_stage_items = [ShadowTheHedgehogItem(s, world.player) for s in stage_objective_items if
                       s.stageId in world.available_levels]
@@ -552,6 +573,7 @@ def PopulateItemPool(world : World, first_regions):
     for remove in to_remove:
         mw_stage_items.remove(remove)
 
+
     weapon_dict = Weapons.GetWeaponDict()
     special_weapon_extras = [w for w in weapon_items if
                              Weapons.WeaponAttributes.SPECIAL in weapon_dict[w.name].attributes and
@@ -565,6 +587,17 @@ def PopulateItemPool(world : World, first_regions):
     mw_weapon_special_only.extend(mw_weapon_special_only_dupes)
 
     mw_vehicle_items = [ ShadowTheHedgehogItem(w, world.player) for w in vehicle_items ]
+
+    if world.options.weapon_sanity_unlock and \
+        world.options.weapon_sanity_hold != world.options.weapon_sanity_hold.option_unlocked:
+        for weapon in mw_weapon_items:
+            matching_w = [ w for w in Weapons.WEAPON_INFO if w.name == weapon.name ]
+            if len(matching_w) == 0:
+                continue
+
+            if len(matching_w[0].attributes) == 0:
+                weapon.classification = ItemClassification.filler
+                #print(weapon.name, "is now filler")
 
     item_count = (len(mw_level_unlock_items) + len(mw_stage_items) + 1) # end item
     if world.options.goal_chaos_emeralds:

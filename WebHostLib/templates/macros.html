@@ -35,9 +35,6 @@
                             {% elif patch.game == "Kingdom Hearts 2" %}
                             <a href="{{ url_for("download_slot_file", room_id=room.id, player_id=patch.player_id) }}" download>
                                 Download Kingdom Hearts 2 Mod...</a>
-                            {% elif patch.game == "Kingdom Hearts Birth by Sleep" %}
-                            <a href="{{ url_for("download_slot_file", room_id=room.id, player_id=patch.player_id) }}" download>
-                                Download Kingdom Hearts Birth by Sleep Mod...</a>
                             {% elif patch.game == "Ocarina of Time" %}
                             <a href="{{ url_for("download_slot_file", room_id=room.id, player_id=patch.player_id) }}" download>
                                 Download APZ5 File...</a>
@@ -53,6 +50,9 @@
                             {% elif patch.game == "Final Fantasy Mystic Quest" %}
                             <a href="{{ url_for("download_slot_file", room_id=room.id, player_id=patch.player_id) }}" download>
                                 Download APMQ Patch File...</a>
+                            {% elif patch.game == "Kingdom Hearts Birth by Sleep" %}
+                            <a href="{{ url_for("download_slot_file", room_id=room.id, player_id=patch.player_id) }}" download>
+                                Download Kingdom Hearts Birth by Sleep Mod...</a>
                             {% elif patch.game == "The Legend of Zelda - Oracle of Seasons" %}
                             <a href="{{ url_for("download_slot_file", room_id=room.id, player_id=patch.player_id) }}" download>
                                 Download PatcherData File...</a>
@@ -62,9 +62,9 @@
                             {% elif patch.game == "The Wind Waker" %}
                                 <a href="{{ url_for("download_slot_file", room_id=room.id, player_id=patch.player_id) }}" download>
                                     Download .aptww File...</a>
-                            {% elif patch.game == "No Man's Sky" %}
+                            {% elif patch.game == "Metroid Prime" %}
                                 <a href="{{ url_for("download_slot_file", room_id=room.id, player_id=patch.player_id) }}" download>
-                                    Download .apmanual File...</a>
+                                    Download .apmp1 File...</a>
                             {% else %}
                                 Unsupported game patch file for this game.
                             {% endif %}

@@ -57,7 +57,7 @@ class TextShuffle(DefaultOffToggle):
 
 class Rooster(DefaultOnToggle, LADXROption):
     """
-    [On] Adds the rooster to the item pool. 
+    [On] Adds the rooster to the item pool.
     [Off] The rooster spot is still a check giving an item. But you will never find the rooster. In that case, any rooster spot is accessible without rooster by other means.
     """
     display_name = "Rooster"
@@ -70,7 +70,7 @@ class Boomerang(Choice):
     [Gift] The boomerang salesman will give you a random item, and the boomerang is shuffled.
     """
     display_name = "Boomerang"
-    
+
     normal = 0
     gift = 1
     default = gift
@@ -156,7 +156,7 @@ class ShuffleSmallKeys(DungeonItemShuffle):
     [Own Dungeons] The item will be within a dungeon in your world
     [Own World] The item will be somewhere in your world
     [Any World] The item could be anywhere
-    [Different World] The item will be somewhere in another world 
+    [Different World] The item will be somewhere in another world
     """
     display_name = "Shuffle Small Keys"
     ladxr_item = "KEY"
@@ -223,7 +223,7 @@ class Goal(Choice, LADXROption):
     The Goal of the game
     [Instruments] The Wind Fish's Egg will only open if you have the required number of Instruments of the Sirens, and play the Ballad of the Wind Fish.
     [Seashells] The Egg will open when you bring 20 seashells. The Ballad and Ocarina are not needed.
-    [Open] The Egg will start pre-opened.  
+    [Open] The Egg will start pre-opened.
     [Specific] The Wind Fish's Egg will open with specific instruments, check the sign at the egg to see which. Minimum of 2 instruments, maximum of 6. Anything outside that will be reset to 4.
     """
     display_name = "Goal"
@@ -296,13 +296,16 @@ class HardMode(Choice, LADXROption):
     default = option_none
 
 
-
-class StealingInLogic(DefaultOffToggle, LADXROption):
+class Stealing(Choice, LADXROption):
     """
     Puts stealing from the shop in logic if the player has a sword.
     """
-    display_name = "Stealing in Logic"
+    display_name = "Stealing"
     ladxr_name = "steal"
+    option_in_logic = 1
+    option_out_of_logic = 2
+    option_disabled = 3
+    default = option_out_of_logic
 
 
 class Bowwow(Choice):
@@ -333,7 +336,7 @@ class Overworld(Choice, LADXROption):
 
 class Quickswap(Choice, LADXROption):
     """
-    Adds that the select buttons swaps with either A or B. The item is swapped with the top inventory slot. The map is not available when quickswap is enabled.
+    Adds that the SELECT button swaps with either A or B. The item is swapped with the top inventory slot. The map is not available when quickswap is enabled.
     """
     display_name = "Quickswap"
     ladxr_name = "quickswap"
@@ -368,7 +371,7 @@ class LowHpBeep(Choice, LADXROption):
 
 class NoFlash(DefaultOnToggle, LADXROption):
     """
-    Remove the flashing light effects from Mamu, shopkeeper and MadBatter. Useful for capture cards and people that are sensitive for these things.
+    Remove the flashing light effects from Mamu, shopkeeper and MadBatter. Useful for capture cards and people that are sensitive to these things.
     """
     display_name = "No Flash"
     ladxr_name = "noflash"
@@ -430,18 +433,18 @@ class TrendyGame(Choice):
     default = option_normal
 
 
-class GfxMod(FreeText):
+class GfxMod(DefaultOffToggle):
     """
-    Sets the sprite for link, among other things.
-    The option should be the same name as a sprite file in data/sprites/ladx (extension included) when patching the rom.
+    If enabled, the patcher will prompt the user for a modification file to change sprites in the game and optionally some text.
+    Grab one from upstream or make your own.
+    https://github.com/daid/LADXR/tree/master/gfx
     """
     display_name = "GFX Modification"
-    default = ''
 
 
 class Palette(Choice):
     """
-    Sets the palette for the game. 
+    Sets the palette for the game.
     Note: A few places aren't patched, such as the menu and a few color dungeon tiles.
     [Normal] The vanilla palette
     [1-Bit] One bit of color per channel
@@ -520,7 +523,6 @@ class StabilizeItemPool(DefaultOffToggle):
     display_name = "Stabilize Item Pool"
 
 
-
 class ForeignItemIcons(Choice):
     """
     Choose how to display foreign items.
@@ -554,7 +556,7 @@ ladx_option_groups = [
         Rooster,
         TarinsGift,
         Overworld,
-        StealingInLogic,
+        Stealing,
         TrendyGame,
         InGameHints,
         NagMessages,
@@ -563,7 +565,6 @@ ladx_option_groups = [
         DeathLink,
         Quickswap,
         HardMode,
-        LowHpBeep,
     ]),
     OptionGroup("Experimental", [
         DungeonShuffle,
@@ -577,19 +578,22 @@ ladx_option_groups = [
         APTitleScreen,
         GfxMod,
         Music,
-        MusicChangeCondition
+        MusicChangeCondition,
+        LowHpBeep,
+        TextMode,
+        NoFlash,
     ])
 ]
 
 @dataclass
 class LinksAwakeningOptions(PerGameCommonOptions):
     logic: Logic
-    # 'heartpiece': DefaultOnToggle, # description='Includes heart pieces in the item pool'),                
-    # 'seashells': DefaultOnToggle, # description='Randomizes the secret sea shells hiding in the ground/trees. (chest are always randomized)'),                
-    # 'heartcontainers': DefaultOnToggle, # description='Includes boss heart container drops in the item pool'),                
-    # 'instruments': DefaultOffToggle, # description='Instruments are placed on random locations, dungeon goal will just contain a random item.'),                
+    # 'heartpiece': DefaultOnToggle, # description='Includes heart pieces in the item pool'),
+    # 'seashells': DefaultOnToggle, # description='Randomizes the secret sea shells hiding in the ground/trees. (chest are always randomized)'),
+    # 'heartcontainers': DefaultOnToggle, # description='Includes boss heart container drops in the item pool'),
+    # 'instruments': DefaultOffToggle, # description='Instruments are placed on random locations, dungeon goal will just contain a random item.'),
     tradequest: TradeQuest  # description='Trade quest items are randomized, each NPC takes its normal trade quest item, but gives a random item'),
-    # 'witch': DefaultOnToggle, # description='Adds both the toadstool and the reward for giving the toadstool to the witch to the item pool'),                
+    # 'witch': DefaultOnToggle, # description='Adds both the toadstool and the reward for giving the toadstool to the witch to the item pool'),
     rooster: Rooster  # description='Adds the rooster to the item pool. Without this option, the rooster spot is still a check giving an item. But you will never find the rooster. Any rooster spot is accessible without rooster by other means.'),
     # 'boomerang': Boomerang,
     # 'randomstartlocation': DefaultOffToggle, # 'Randomize where your starting house is located'),
@@ -623,7 +627,7 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     tarins_gift: TarinsGift
     overworld: Overworld
     stabilize_item_pool: StabilizeItemPool
-    stealing_in_logic: StealingInLogic
+    stealing: Stealing
     death_link: DeathLink
     in_game_hints: InGameHints
     quickswap: Quickswap

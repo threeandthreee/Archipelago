@@ -22,7 +22,7 @@ from .modules.hint_data import setup_hints
 from .game_data.text_data import spoiler_psi, spoiler_starts, spoiler_badges
 from .Client import EarthBoundClient
 from .Rules import set_location_rules
-from .Rom import LocalRom, patch_rom, get_base_rom_path, EBProcPatch, valid_hashes
+from .Rom import patch_rom, get_base_rom_path, EBProcPatch, valid_hashes
 from .game_data.static_location_data import location_ids, location_groups
 from .modules.equipamizer import EBArmor, EBWeapon
 from worlds.generic.Rules import add_item_rule, forbid_items_for_player
@@ -238,7 +238,7 @@ class EarthBoundWorld(World):
         try:
             patch = EBProcPatch(player=self.player, player_name=self.player_name)
             patch.write_file("earthbound_basepatch.bsdiff4", pkgutil.get_data(__name__, "earthbound_basepatch.bsdiff4"))
-            patch_rom(self, patch, self.player, self.multiworld)
+            patch_rom(self, patch, self.player)
 
             self.rom_name = patch.name
 
@@ -252,7 +252,9 @@ class EarthBoundWorld(World):
     def fill_slot_data(self) -> Dict[str, List[int]]:
         return {
             "starting_area": self.start_location,
-            "pizza_logic": self.options.monkey_caves_mode.value
+            "pizza_logic": self.options.monkey_caves_mode.value,
+            "free_sancs": self.options.no_free_sanctuaries.value,
+            "shopsanity": self.options.shop_randomizer.value
         }
 
     def modify_multidata(self, multidata: dict):
@@ -268,6 +270,7 @@ class EarthBoundWorld(World):
         spoiler_handle.write(f"\nStarting Location:    {spoiler_starts[self.start_location]}\n")
         spoiler_handle.write(f"Franklin Badge Protection:    {spoiler_badges[self.franklin_protection]}\n")
         if self.options.psi_shuffle:
+            spoiler_handle.write("\nPSI Shuffle:\n")
             spoiler_handle.write(f"Favorite Thing PSI Slot:    {spoiler_psi[self.offensive_psi_slots[0]]}\n")
             spoiler_handle.write(f"Ness Offensive PSI Middle Slot:    {spoiler_psi[self.offensive_psi_slots[1]]}\n")
             spoiler_handle.write(f"Paula Offensive PSI Top Slot:    {spoiler_psi[self.offensive_psi_slots[2]]}\n")
@@ -390,6 +393,10 @@ class EarthBoundWorld(World):
             excluded_items.add("Coin of Slumber")
             excluded_items.add("Souvenir Coin")
             excluded_items.add("Mr. Saturn Coin")
+
+        if not self.options.no_free_sanctuaries:
+            excluded_items.add("Tiny Key")
+            excluded_items.add("Tenda Lavapants")
 
         return excluded_items
 

@@ -1,6 +1,6 @@
 from random import Random
 from typing import List, Tuple
-from .options import OuterWildsGameOptions
+from .options import OuterWildsGameOptions, Spawn
 
 
 # we use lists instead of sets here to ensure determinism
@@ -58,6 +58,11 @@ def generate_random_warp_platform_mapping(random: Random, options: OuterWildsGam
                 'BHT',  # exposed at ~10:30
                 'GDT'   # exposed at ~11:00
             ]]
+            # The above rules out a direct THT/BHT/GDT->SS warp, but we also need to rule out a longer
+            # warp path through THT/BHT/GDT being the only way to SS. Such a path would have to go
+            # through Brittle Hollow because it's the only planet besides HGT with multiple warp pads.
+            if options.spawn != Spawn.option_brittle_hollow:
+                available_platforms = [p for p in available_platforms if p not in ['BHNG', 'WHS']]
 
         destination = random.choice(available_platforms)
         mappings.append((dead_end_platform, destination))

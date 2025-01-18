@@ -67,17 +67,15 @@ class ShahrazadWorld(World):
                 item_name = f"{self.multiworld.player_name[player]} Start"
                 self.item_pool_names[player] = item_name
 
-    def stage_generate_early(multiworld: "MultiWorld"):
-        cls = ShahrazadWorld
+    @classmethod
+    def stage_generate_early(cls, multiworld: "MultiWorld"):
         victims = {}
-        id = cls.base_id
-        for world in multiworld.get_game_worlds(cls.game):
-            for victim in world.options.victims.value:
-                victims[f"{victim} Start"] = id
-                id += 1
+        item_id = cls.base_id
+        for name in {n for w in multiworld.get_game_worlds(cls.game) for n in w.item_pool_names.values()}:
+            victims[name] = item_id
+            item_id += 1
 
         cls.item_name_to_id = victims
-
         # update datapackage checksum
         import worlds
         worlds.network_data_package["games"][cls.game] = cls.get_data_package_data()
@@ -112,25 +110,30 @@ class ShahrazadWorld(World):
 
         self.multiworld.itempool += item_pool
 
-    def generate_basic(self):
-        if hasattr(self.multiworld, "generation_is_fake"):
+    @classmethod
+    def stage_pre_fill(cls, multiworld):
+        if hasattr(multiworld, "generation_is_fake"):
             # UT has no way to get the unlock items so just skip locking altogether
             return
-        for victim_id, item_name in self.item_pool_names.items():
-            victim_world = self.multiworld.worlds[victim_id]
-            menu = victim_world.get_region(victim_world.origin_region_name)
-            victim_world.options.progression_balancing.value = 0
-            for exit in menu.exits:
-                add_rule(exit, lambda state, item_name=item_name: state.has(item_name, self.player))
-            if menu.locations:
-                print(
-                    f"found {len(menu.locations)} locations in {menu.name} "
-                    f"for victim {victim_world.player_name}, "
-                    f"applying access rules, this may slow generation down considerably")
-                for location in menu.locations:
-                    add_rule(location, lambda state, item_name=item_name: state.has(item_name, self.player))
-            if self.options.hint_game_start:
-                self.options.start_hints.value.add(item_name)
+        for world in multiworld.get_game_worlds(cls.game):
+            for victim_id, item_name in world.item_pool_names.items():
+                victim_world = multiworld.worlds[victim_id]
+                menu = victim_world.get_region(victim_world.origin_region_name)
+                victim_world.options.progression_balancing.value = 0
+
+                for exit in menu.exits:
+                    add_rule(exit, lambda state, item_name=item_name: state.has(item_name, world.player))
+
+                if menu.locations:
+                    print(
+                        f"found {len(menu.locations)} locations in {menu.name} "
+                        f"for victim {victim_world.player_name}, "
+                        f"applying access rules, this may slow generation down considerably")
+                    for location in menu.locations:
+                        add_rule(location, lambda state, item_name=item_name: state.has(item_name, world.player))
+
+                if world.options.hint_game_start:
+                    world.options.start_hints.value.add(item_name)
 
     def post_fill(self):
         # start inventory our locations because we can't actually check them

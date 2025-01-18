@@ -94,6 +94,7 @@ class FileGenerator:
             pool_locations=self.lists.pool_locations,
             events_data=self.lists.events_data.values(),
             locked_locations=self.lists.locked_locations,
+            location_groups=self.lists.location_groups,
             **self.common_args
         )
 

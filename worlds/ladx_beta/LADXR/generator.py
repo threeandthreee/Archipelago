@@ -5,6 +5,7 @@ import os
 import random
 import pickle
 import Utils
+import settings
 from collections import defaultdict
 from typing import Dict
 
@@ -58,6 +59,7 @@ from .patches import tradeSequence as _
 from . import hints
 
 from .patches import bank34
+from .utils import formatText
 from .roomEditor import RoomEditor, Object
 from .patches.aesthetics import rgb_to_bin, bin_to_rgb
 
@@ -83,10 +85,12 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
         pymod.prePatch(rom)
 
     if options["gfxmod"]:
-        gfxmod_file = Utils.user_path("data", "sprites", "ladx", options["gfxmod"])
-        if not os.path.isfile(gfxmod_file):
-            raise FileNotFoundError(gfxmod_file)
-        patches.aesthetics.gfxMod(rom, gfxmod_file)
+        user_settings = settings.get_settings()
+        try:
+            gfx_mod_file = user_settings["ladx_beta_options"]["gfx_mod_file"]
+            patches.aesthetics.gfxMod(rom, gfx_mod_file)
+        except FileNotFoundError:
+            pass # if user just doesnt provide gfxmod file, let patching continue
 
     assembler.resetConsts()
     assembler.const("INV_SIZE", 16)
@@ -228,14 +232,14 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
         rom.patch(0, 0x0003, "00", "01")
 
     # Patch the sword check on the shopkeeper turning around.
-    #if ladxr_settings["steal"] == 'never':
-    #    rom.patch(4, 0x36F9, "FA4EDB", "3E0000")
-    #elif ladxr_settings["steal"] == 'always':
-    #    rom.patch(4, 0x36F9, "FA4EDB", "3E0100")
+    if options["stealing"] == Options.Stealing.option_disabled:
+        rom.patch(4, 0x36F9, "FA4EDB", "3E0000")
+        rom.texts[0x2E] = formatText("Hey!  Welcome!  Did you know that I have eyes on the back of my head?")
+        rom.texts[0x2F] = formatText("Nothing escapes my gaze! Your thieving ways shall never prosper!")
 
-    #if ladxr_settings["hpmode"] == 'inverted':
+    #if world.ladxr_settings.hpmode == 'inverted':
     #    patches.health.setStartHealth(rom, 9)
-    #elif ladxr_settings["hpmode"] == '1':
+    #elif world.ladxr_settings.hpmode == '1':
     #    patches.health.setStartHealth(rom, 1)
 
     patches.inventory.songSelectAfterOcarinaSelect(rom)
@@ -324,7 +328,7 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
             0x1A9, 0x1AA, 0x1AB, 0x1AC, 0x1AD,
 
             # Prices
-            0x02C, 0x02D, 0x030, 0x031, 0x032, 0x033, # Shop items
+            0x02C, 0x02D, 0x02E, 0x02F, 0x030, 0x031, 0x032, 0x033, # Shop items
             0x03B, # Trendy Game
             0x045, # Fisherman
             0x018, 0x019, # Crazy Tracy

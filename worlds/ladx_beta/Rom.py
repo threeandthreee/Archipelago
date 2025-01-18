@@ -104,6 +104,7 @@ def write_patch_data(world: "LinksAwakeningWorld", patch: LADXProcedurePatch):
             "low_hp_beep",
             "text_mode",
             "no_flash",
+            "stealing",
         ),
     }
     patch.write_file("data.json", json.dumps(data_dict).encode('utf-8'))

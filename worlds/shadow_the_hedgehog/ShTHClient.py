@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime, timedelta
 import time
 import traceback
 from dataclasses import dataclass
@@ -125,12 +126,11 @@ class ShTHCommandProcessor(ClientCommandProcessor):
                   and m.alignmentId == MISSION_ALIGNMENT_DARK ]
             if len(dark) > 0:
                 dark = dark[0]
-                override_total = ShadowUtils.getOverwriteRequiredCount(ctx.percent_overrides, dark.stageId,
-                                                                       dark.alignmentId,
-                                                                       ShadowUtils.TYPE_ID_OBJECTIVE)
 
-                required_count = ShadowUtils.getRequiredCount(dark.requirement_count, ctx.objective_percentage,
-                                                          override=override_total, round_method=floor)
+                required_count = ShadowUtils.getMaxRequired(
+                    ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_OBJECTIVE,
+                                                              dark.mission_object_name, ctx),
+                    dark.requirement_count,dark.stageId, dark.alignmentId, ctx.override_settings)
 
                 associated_locations = [ x.locationId for x in mission_locations if x.alignmentId == dark.alignmentId and
                   x.stageId == dark.stageId and x.count <= required_count ]
@@ -144,11 +144,10 @@ class ShTHCommandProcessor(ClientCommandProcessor):
                   and m.alignmentId == MISSION_ALIGNMENT_HERO ]
             if len(dark) > 0:
                 dark = dark[0]
-                override_total = ShadowUtils.getOverwriteRequiredCount(ctx.percent_overrides, dark.stageId,
-                                                                       dark.alignmentId,
-                                                                       ShadowUtils.TYPE_ID_OBJECTIVE)
-                required_count = ShadowUtils.getRequiredCount(dark.requirement_count, ctx.objective_percentage,
-                                                          override=override_total, round_method=floor)
+                required_count = ShadowUtils.getMaxRequired(
+                    ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_OBJECTIVE,
+                                                              dark.mission_object_name, ctx),
+                    dark.requirement_count, dark.stageId, dark.alignmentId, ctx.override_settings)
 
                 associated_locations = [x.locationId for x in mission_locations if x.alignmentId == dark.alignmentId and
                                         x.stageId == dark.stageId and x.count <= required_count]
@@ -161,12 +160,11 @@ class ShTHCommandProcessor(ClientCommandProcessor):
                   and m.alignmentId == MISSION_ALIGNMENT_DARK ]
             if len(dark) > 0:
                 dark = dark[0]
-                override_total = ShadowUtils.getOverwriteRequiredCount(ctx.percent_overrides, dark.stageId,
-                                                                       dark.alignmentId,
-                                                                       ShadowUtils.TYPE_ID_COMPLETION)
 
-                required_count = ShadowUtils.getRequiredCount(dark.requirement_count, ctx.objective_percentage,
-                                                          override=override_total, round_method=floor)
+                required_count = ShadowUtils.getMaxRequired(
+                    ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_COMPLETION,
+                                                              dark.mission_object_name, ctx),
+                    dark.requirement_count, dark.stageId, dark.alignmentId, ctx.override_settings)
 
                 remaining_count = required_count - len([unlock for unlock in ctx.handled if unlock[0].item in info and \
                      info[unlock[0].item].stageId == stage
@@ -183,12 +181,11 @@ class ShTHCommandProcessor(ClientCommandProcessor):
                   and m.alignmentId == MISSION_ALIGNMENT_HERO ]
             if len(dark) > 0:
                 dark = dark[0]
-                override_total = ShadowUtils.getOverwriteRequiredCount(ctx.percent_overrides, dark.stageId,
-                                                                       dark.alignmentId,
-                                                                       ShadowUtils.TYPE_ID_COMPLETION)
 
-                required_count = ShadowUtils.getRequiredCount(dark.requirement_count, ctx.objective_percentage,
-                                                          override=override_total, round_method=floor)
+                required_count = ShadowUtils.getMaxRequired(
+                    ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_COMPLETION,
+                                                              dark.mission_object_name, ctx),
+                    dark.requirement_count, dark.stageId, dark.alignmentId, ctx.override_settings)
 
                 remaining_count = required_count - len([unlock for unlock in ctx.handled if unlock[0].item in info and \
                                                         info[unlock[0].item].stageId == stage
@@ -200,11 +197,10 @@ class ShTHCommandProcessor(ClientCommandProcessor):
                   and m.enemyClass == Locations.ENEMY_CLASS_GUN ]
             if len(dark) > 0:
                 dark = dark[0]
-                override_total = ShadowUtils.getOverwriteRequiredCount(ctx.percent_overrides, dark.stageId,
-                                                                       dark.enemyClass,
-                                                                       ShadowUtils.TYPE_ID_ENEMY)
-                required_count = ShadowUtils.getRequiredCount(dark.total_count, ctx.enemy_sanity_percentage,
-                                                          override=override_total, round_method=ceil)
+                required_count = ShadowUtils.getMaxRequired(
+                    ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_ENEMY,
+                                                              dark.mission_object_name, ctx),
+                    dark.requirement_count, dark.stageId, dark.alignmentId, ctx.override_settings)
 
                 associated_locations = [x.locationId for x in enemysanity_locations if
                                         x.alignmentId == dark.enemyClass and
@@ -218,11 +214,10 @@ class ShTHCommandProcessor(ClientCommandProcessor):
                      and m.enemyClass == Locations.ENEMY_CLASS_EGG ]
             if len(dark) > 0:
                 dark = dark[0]
-                override_total = ShadowUtils.getOverwriteRequiredCount(ctx.percent_overrides, dark.stageId,
-                                                                       dark.enemyClass,
-                                                                       ShadowUtils.TYPE_ID_ENEMY)
-                required_count = ShadowUtils.getRequiredCount(dark.total_count, ctx.enemy_sanity_percentage,
-                                                              override=override_total, round_method=ceil)
+                required_count = ShadowUtils.getMaxRequired(
+                    ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_ENEMY,
+                                                              dark.mission_object_name, ctx),
+                    dark.requirement_count, dark.stageId, dark.alignmentId, ctx.override_settings)
                 associated_locations = [x.locationId for x in enemysanity_locations if
                                         x.alignmentId == dark.enemyClass and
                                         x.stageId == dark.stageId and x.count <= required_count]
@@ -235,11 +230,10 @@ class ShTHCommandProcessor(ClientCommandProcessor):
                     and m.enemyClass == Locations.ENEMY_CLASS_ALIEN]
             if len(dark) > 0:
                 dark = dark[0]
-                override_total = ShadowUtils.getOverwriteRequiredCount(ctx.percent_overrides, dark.stageId,
-                                                                       dark.enemyClass,
-                                                                       ShadowUtils.TYPE_ID_ENEMY)
-                required_count = ShadowUtils.getRequiredCount(dark.total_count, ctx.enemy_sanity_percentage,
-                                                              override=override_total, round_method=ceil)
+                required_count = ShadowUtils.getMaxRequired(
+                    ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_ENEMY,
+                                                              dark.mission_object_name, ctx),
+                    dark.requirement_count,dark.stageId, dark.alignmentId, ctx.override_settings)
                 associated_locations = [x.locationId for x in enemysanity_locations if x.alignmentId == dark.enemyClass and
                                         x.stageId == dark.stageId and x.count <= required_count]
 
@@ -372,6 +366,7 @@ HERO_GAUGE_ADDRESS = 0x805766C8
 RINGS_ADDRESS = 0x8057670C
 
 SPECIAL_WEAPONS_ADDRESS = 0x80578068
+SPECIAL_WEAPONS_ADDRESS_APPROVED = 0x80579FC4
 CURRENT_WEAPON_ID_ADDRESS = 0x805766F8
 CURRENT_AMMO_ADDRESS = 0x80576700
 
@@ -549,6 +544,7 @@ class ShTHContext(CommonContext):
 
     def __init__(self, server_address, password):
         super().__init__(server_address, password)
+        self.override_settings = []
         self.dolphin_sync_task: Optional[asyncio.Task] = None
         self.dolphin_status = CONNECTION_INITIAL_STATUS
         self.awaiting_rom = False
@@ -592,6 +588,13 @@ class ShTHContext(CommonContext):
 
         self.hero_gauge_buffer = 0
         self.dark_gauge_buffer = 0
+        self.hero_cooldown = None
+        self.dark_cooldown = None
+        self.hero_max_meter = 0
+        self.dark_max_meter = 0
+        self.hero_gauge_last = 0
+        self.dark_gauge_last = 0
+
         self.junk_delay = 0
 
         self.tokens = []
@@ -603,13 +606,23 @@ class ShTHContext(CommonContext):
         self.ring_link_rings = 0
         self.instance_id = time.time()
         self.debug_logging = False
+        self.error_logging = False
         self.info_logging = True
         self.last_level = None
         self.last_weapon = None
+        self.last_accessible_levels = []
+
+        self.objective_completion_enemy_percentage = 100
+        self.objective_completion_percentage = 100
+        self.objective_enemy_percentage = 100
+        self.objective_item_percentage_available = 100
+        self.objective_item_enemy_percentage_available = 100
 
         # Name of the current stage as read from the game's memory. Sent to trackers whenever its value changes to
         # facilitate automatically switching to the map of the current stage.
         self.current_stage_name: str = ""
+        self.level_keys = []
+        self.key_restore_complete = False
 
     async def disconnect(self, allow_autoreconnect: bool = False):
         self.auth = None
@@ -767,8 +780,23 @@ class ShTHContext(CommonContext):
             if "enemy_sanity_percentage" in slot_data:
                 self.enemy_sanity_percentage = slot_data["enemy_sanity_percentage"]
 
-            if "percent_overrides" in slot_data:
-                self.percent_overrides = slot_data["percent_overrides"]
+            if "override_settings" in slot_data:
+                self.override_settings = slot_data["override_settings"]
+
+            if "objective_completion_enemy_percentage" in slot_data:
+                self.objective_completion_enemy_percentage = slot_data["objective_completion_enemy_percentage"]
+
+            if "objective_completion_percentage" in slot_data:
+                self.objective_completion_percentage = slot_data["objective_completion_percentage"]
+
+            if "objective_enemy_percentage" in slot_data:
+                self.objective_enemy_percentage = slot_data["objective_enemy_percentage"]
+
+            if "objective_item_percentage_available" in slot_data:
+                self.objective_item_percentage_available = slot_data["objective_item_percentage_available"]
+
+            if "objective_item_enemy_percentage_available" in slot_data:
+                self.objective_item_enemy_percentage_available = slot_data["objective_item_enemy_percentage_available"]
 
             self.restoreState()
             self.awaiting_server = False
@@ -884,6 +912,10 @@ async def check_save_loaded(ctx):
             if not is_mission_completable(ctx, stage, alignment):
                 continue
 
+            if ctx.story_mode_available and is_level_accessible(ctx, stage, story=True):
+                if stage not in ctx.available_levels:
+                    ctx.available_levels.append(stage)
+
             current_bytes = dolphin_memory_engine.read_bytes(clear_address, 1)
             current_status = int.from_bytes(current_bytes, byteorder='big')
 
@@ -910,6 +942,17 @@ async def check_save_loaded(ctx):
 
                 if len(boss_location) == 1:
                     messages.append(boss_location[0].locationId)
+            elif current_status == 0:
+                clear_location = [m for m in mission_clear_locations if m.stageId == stage
+                                  and m.alignmentId == alignment and m.locationId in ctx.checked_locations]
+
+                if len(clear_location) > 0:
+                    for c in clear_location:
+                        logger.info(f"Restore {c.name}")
+                        set_complete = 1
+                        set_complete_bytes = set_complete.to_bytes(1, byteorder='big')
+                        writeBytes(clear_address, set_complete_bytes)
+
 
         # decide settings for goal
 
@@ -944,21 +987,21 @@ async def check_save_loaded(ctx):
                     t[1].name == Items.Progression.FinalToken]) < ctx.required_final_tokens:
                 set_last_way = False
 
+        last_way_available_bytes = dolphin_memory_engine.read_bytes(ADDRESS_LAST_STORY_OPTION, 1)
+        is_last_way_available = int.from_bytes(last_way_available_bytes, byteorder='big')
         if set_last_way:
-            set_to = 1
-            set_last_way_bytes = set_to.to_bytes(1, byteorder='big')
-            writeBytes(ADDRESS_LAST_STORY_OPTION, set_last_way_bytes)
+            if is_last_way_available != 1:
+                set_to = 1
+                set_last_way_bytes = set_to.to_bytes(1, byteorder='big')
+                writeBytes(ADDRESS_LAST_STORY_OPTION, set_last_way_bytes)
 
-            # Review
-            for cutscene in range(0, 16):
-                buffer_address_cutscene = CUTSCENE_BUFFER + (8 * cutscene)
-                to_write = 0
-                set_blank = to_write.to_bytes(4, byteorder='big')
-                writeBytes(buffer_address_cutscene, set_blank)
+                # Review
+                for cutscene in range(0, 16):
+                    buffer_address_cutscene = CUTSCENE_BUFFER + (8 * cutscene)
+                    to_write = 0
+                    set_blank = to_write.to_bytes(4, byteorder='big')
+                    writeBytes(buffer_address_cutscene, set_blank)
         else:
-            last_way_available_bytes = dolphin_memory_engine.read_bytes(ADDRESS_LAST_STORY_OPTION, 1)
-            is_last_way_available = int.from_bytes(last_way_available_bytes, byteorder='big')
-
             if is_last_way_available:
                 logger.error("Last Way disabled, not yet meeting goal criteria.")
                 set_to = 0
@@ -1101,8 +1144,6 @@ def is_mission_completable(ctx, stage, alignment):
     if not is_level_accessible(ctx, stage):
         return False
 
-
-
     if len(relevant_clears) == 0:
         return False
     clear = relevant_clears[0]
@@ -1110,18 +1151,16 @@ def is_mission_completable(ctx, stage, alignment):
     if clear.requirement_count is None or not ctx.objective_sanity:
         return True
 
-    override_total = ShadowUtils.getOverwriteRequiredCount(ctx.percent_overrides, stage,
-                                                           alignment,
-                                                           ShadowUtils.TYPE_ID_COMPLETION)
-
-    required_count = ShadowUtils.getRequiredCount(clear.requirement_count, ctx.objective_item_percentage,
-                                                  override=override_total, round_method=ceil)
+    max_required = ShadowUtils.getMaxRequired(
+        ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_COMPLETION,
+                                                  clear.mission_object_name, ctx), clear.requirement_count,
+        stage, alignment, ctx.override_settings)
 
     i = [item for item in ctx.items_received if item.item in info and \
          info[item.item].stageId == stage and info[item.item].type == "level_object"
          and info[item.item].alignmentId == alignment]
 
-    if len(i) >= required_count:
+    if len(i) >= max_required:
         return True
 
     return False
@@ -1133,6 +1172,7 @@ def complete_completable_levels(ctx):
     new_clears = []
     uncleared_stages = [ location_dict[l] for l in remaining_locations
                          if location_dict[l].location_type == Locations.LOCATION_TYPE_MISSION_CLEAR ]
+    story = Story.StoryMode
     for mission in uncleared_stages:
 
         if mission.stageId in Levels.BOSS_STAGES:
@@ -1147,6 +1187,23 @@ def complete_completable_levels(ctx):
 
         # Check if mission is available
         # Check if mission is clearable
+
+        # Don't autoclear missions if they lead to a stage you haven't accessed via story mode yet
+        # Makes tracking easier for getting to that stage
+        if ctx.story_mode_available:
+            would_lead_to = [ s for s in story if s.start_stage_id == mission.stageId
+                                     and s.alignment_id == mission.alignmentId][0]
+
+            routes_to = [ s for s in story if s.end_stage_id == would_lead_to.end_stage_id ]
+            available = False
+            for route in routes_to:
+                is_remaining = [ s for s in uncleared_stages
+                                 if s.stageId == route.start_stage_id and s.alignmentId == route.alignment_id ]
+                if len(is_remaining) == 0:
+                    available = True
+
+            if not available:
+                continue
 
         mission_complete_locations = [ l for l in location_dict.values() if l.stageId == mission.stageId and
                                l.location_type == Locations.LOCATION_TYPE_MISSION_CLEAR
@@ -1196,6 +1253,13 @@ def check_cheats():
         new_bytes = new_value.to_bytes(4, byteorder='big')
         writeBytes(ADDRESS_WATCHED_CUTSCENES+4, new_bytes)
 
+    current_value_bytes = dolphin_memory_engine.read_bytes(ADDRESS_WATCHED_CUTSCENES + 8, 4)
+    current_value = int.from_bytes(current_value_bytes, byteorder='big')
+
+    if current_value != new_value:
+        new_bytes = new_value.to_bytes(4, byteorder='big')
+        writeBytes(ADDRESS_WATCHED_CUTSCENES + 8, new_bytes)
+
 
 # When not in a level, check the level
 async def check_level_status(ctx):
@@ -1204,6 +1268,8 @@ async def check_level_status(ctx):
 
     # Sync level unlocked status
     # Add available levels to save-data
+
+    last_accessible_levels = ctx.last_accessible_levels.copy()
 
     # Check mission clears and keys and clear checks from those not known to the server
     info = Items.GetItemLookupDict()
@@ -1215,16 +1281,17 @@ async def check_level_status(ctx):
     levels_to_unlock = [ info[level[0].item].stageId for level in i ]
     ctx.available_levels.extend(levels_to_unlock)
 
-    item_behaviour_changed = False
-
     remove = []
     for ix in i:
-        item_behaviour_changed = True
         ctx.handled.append(ix)
         remove.append(ix)
 
     for r in remove:
         ctx.items_to_handle.remove(r)
+
+    item_behaviour_changed = False
+    if ctx.available_levels != last_accessible_levels:
+        item_behaviour_changed = True
 
     # Set working address to set accessibility to levels
     # This data should save when the game is saved
@@ -1251,6 +1318,8 @@ async def check_level_status(ctx):
             if current_value != new_count:
                 new_bytes = new_count.to_bytes(4, byteorder='big')
                 writeBytes(address, new_bytes)
+
+        ctx.last_accessible_levels = ctx.available_levels
 
     found_emerald_items = [
         unlock for unlock in ctx.items_to_handle if unlock[0].item in info
@@ -1300,6 +1369,8 @@ async def check_level_status(ctx):
             # Reset the level state when not in a level
             if len(ctx.level_state) != 0 or force_retry:
                 ctx.level_state = {}
+                ctx.level_keys = []
+                ctx.key_restore_complete = False
                 if ctx.auto_clear_missions:
                     new_messages = complete_completable_levels(ctx)
                 else:
@@ -1372,39 +1443,110 @@ async def disable_weapon(ctx):
 
     current_dark_gauge_bytes = dolphin_memory_engine.read_bytes(DARK_GAUGE_ADDRESS, 4)
     current_dark_gauge = int.from_bytes(current_dark_gauge_bytes, byteorder="big")
-    time.sleep(0.05)
+
+    current_hero_gauge_bytes = dolphin_memory_engine.read_bytes(HERO_GAUGE_ADDRESS, 4)
+    current_hero_gauge = int.from_bytes(current_hero_gauge_bytes, byteorder="big")
+    time.sleep(0.1)
 
     current_dark_gauge_bytes = dolphin_memory_engine.read_bytes(DARK_GAUGE_ADDRESS, 4)
     current_dark_gauge2 = int.from_bytes(current_dark_gauge_bytes, byteorder="big")
 
     current_hero_gauge_bytes = dolphin_memory_engine.read_bytes(HERO_GAUGE_ADDRESS, 4)
-    current_hero_gauge = int.from_bytes(current_hero_gauge_bytes, byteorder="big")
-    time.sleep(0.05)
-
-    current_hero_gauge_bytes = dolphin_memory_engine.read_bytes(HERO_GAUGE_ADDRESS, 4)
     current_hero_gauge2 = int.from_bytes(current_hero_gauge_bytes, byteorder="big")
-
-    ctx.hero_gauge_buffer += current_hero_gauge
-    ctx.dark_gauge_buffer += current_dark_gauge
-
-    ctx.junk_delay += 25
-
-    new_bytes = int(0).to_bytes(4, byteorder='big')
-    writeBytes(DARK_GAUGE_ADDRESS, new_bytes)
-
-    new_bytes = int(0).to_bytes(4, byteorder='big')
-    writeBytes(HERO_GAUGE_ADDRESS, new_bytes)
 
     # Sleep not preferable, required to ensure game processes end of dark/hero gauge in case of active power Shadow
     # Which would then not drop the weapon!
 
     if current_hero_gauge2 < current_hero_gauge or \
         current_dark_gauge2 < current_dark_gauge:
+        new_bytes = int(0).to_bytes(4, byteorder='big')
+        writeBytes(DARK_GAUGE_ADDRESS, new_bytes)
+
+        new_bytes = int(0).to_bytes(4, byteorder='big')
+        writeBytes(HERO_GAUGE_ADDRESS, new_bytes)
+
         time.sleep(0.5)
+
+        ctx.hero_gauge_buffer += current_hero_gauge
+        ctx.dark_gauge_buffer += current_dark_gauge
+
+        ctx.junk_delay += 25
 
     new_bytes = int(0).to_bytes(4, byteorder='big')
     writeBytes(CURRENT_AMMO_ADDRESS, new_bytes)
 
+
+def number_to_bit_array(number):
+    # Convert the number to binary and remove the '0b' prefix
+    binary_string = bin(number)[2:]
+    # Convert each character in the binary string to an integer
+    bit_array = [int(bit) for bit in binary_string]
+    return bit_array
+
+
+async def handle_special_weapons(ctx, info, weapons_to_handle):
+    weapon_dict = Weapons.GetWeaponDict()
+    special_weapons_info = Items.GetSpecialWeapons()
+
+    special_weapons = [info[unlock[0].item] for unlock in ctx.handled if unlock[0].item in info \
+                       and info[unlock[0].item].type == "Weapon" and
+                       Weapons.WeaponAttributes.SPECIAL in weapon_dict[info[unlock[0].item].name].attributes]
+
+    special_weapons_new = [info[unlock[0].item] for unlock in weapons_to_handle if unlock[0].item in info \
+                           and info[unlock[0].item].type == "Weapon" and
+                           Weapons.WeaponAttributes.SPECIAL in weapon_dict[info[unlock[0].item].name].attributes]
+
+    special_weapons.extend(special_weapons_new)
+
+    weapon_value = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    i = 0
+    for special_weapon in special_weapons_info:
+        matching = [w for w in special_weapons if w.name == special_weapon.name or
+                    w.name == "Weapon:" + special_weapon.name]
+        if len(matching) >= 1:
+            weapon_value[i] = 1
+        if len(matching) >= 2 and i + 1 < len(weapon_value):
+            weapon_value[i + 1] = 1
+        i += 2
+
+    weapon_value.reverse()
+
+    weapon_value_to_write = int("".join([str(w) for w in weapon_value]), 2)
+
+    current_special_weapons = dolphin_memory_engine.read_bytes(SPECIAL_WEAPONS_ADDRESS, 2)
+    current_special_weapons_value = int.from_bytes(current_special_weapons, byteorder="big")
+
+    current_special_weapons_approved = dolphin_memory_engine.read_bytes(SPECIAL_WEAPONS_ADDRESS_APPROVED, 2)
+    current_special_weapons_approved_value = int.from_bytes(current_special_weapons_approved, byteorder="big")
+
+    bits = number_to_bit_array(current_special_weapons_approved_value)
+    while len(bits) < len(weapon_value):
+        bits.insert(0, 0)
+
+    while len(bits) > len(weapon_value):
+        bits.pop(0)
+
+    for index in range(0, len(bits)):
+        w = weapon_value[index]
+        b = bits[index]
+
+        if w == 1 and b == 1:
+            set_to = 1
+        else:
+            set_to = 0
+
+        bits[index] = set_to
+
+    approved_weapon_value_to_write = int("".join([str(w) for w in bits]), 2)
+
+    if approved_weapon_value_to_write != current_special_weapons_approved_value:
+        new_approved_bytes = approved_weapon_value_to_write.to_bytes(2, byteorder='big')
+        writeBytes(SPECIAL_WEAPONS_ADDRESS_APPROVED, new_approved_bytes)
+
+    if current_special_weapons_value != weapon_value_to_write:
+        new_bytes = weapon_value_to_write.to_bytes(2, byteorder='big')
+        logger.info(f"Write special weapons {weapon_value_to_write}")
+        writeBytes(SPECIAL_WEAPONS_ADDRESS, new_bytes)
 
 async def check_weapons(ctx, current_level):
     info = Items.GetItemLookupDict()
@@ -1421,36 +1563,11 @@ async def check_weapons(ctx, current_level):
 
     messages = []
 
-    weapon_dict = Weapons.GetWeaponDict()
+    await handle_special_weapons(ctx, info, weapons_to_handle)
+
     special_weapons_info = Items.GetSpecialWeapons()
+
     if len(weapons_to_handle) > 0:
-        special_weapons = [ info[unlock[0].item] for unlock in ctx.handled if unlock[0].item in info \
-             and info[unlock[0].item].type == "Weapon" and
-                    Weapons.WeaponAttributes.SPECIAL in weapon_dict[info[unlock[0].item].name].attributes ]
-
-        special_weapons_new = [info[unlock[0].item] for unlock in weapons_to_handle if unlock[0].item in info \
-                           and info[unlock[0].item].type == "Weapon" and
-                           Weapons.WeaponAttributes.SPECIAL in weapon_dict[info[unlock[0].item].name].attributes]
-
-        special_weapons.extend(special_weapons_new)
-
-        weapon_value = [ 0,0,0,0,0,0,0,0,0,0,0 ]
-        i = 0
-        for special_weapon in special_weapons_info:
-            matching = [ w for w in special_weapons if w.name == special_weapon.name or
-                         w.name == "Weapon:"+special_weapon.name ]
-            if len(matching) >= 1:
-                weapon_value[i] = 1
-            if len(matching) >= 2 and i+1 < len(weapon_value):
-                weapon_value[i+1] = 1
-            i += 2
-
-        weapon_value.reverse()
-
-        weapon_value_write = int("".join([ str(w) for w in weapon_value]),2)
-        new_bytes = weapon_value_write.to_bytes(2, byteorder='big')
-        writeBytes(SPECIAL_WEAPONS_ADDRESS, new_bytes)
-
         remove = []
         for r in newly_handled:
             ctx.handled.append(r)
@@ -1513,13 +1630,15 @@ async def check_weapons(ctx, current_level):
                 ctx.last_weapon = None
 
                 if ctx.weapon_sanity_hold_option == WeaponsanityHold.option_on:
-                    logger.error("But the check for  %s must be given", weapon_dict_by_id[current_weapon_id].name)
+
                     # Give the check, remove the check later
                     current_weapon = weapon_dict_by_id[current_weapon_id]
                     weapon_locations = [l.locationId for l in weaponsanity_locations if
                                         l.other == current_weapon.name and \
-                                        l.locationId not in ctx.handled]
-                    messages.extend(weapon_locations)
+                                        l.locationId not in ctx.handled and l.locationId not in ctx.checked_locations]
+                    if len(weapon_locations) > 0:
+                        logger.error("But the check for  %s must be given", weapon_dict_by_id[current_weapon_id].name)
+                        messages.extend(weapon_locations)
                 current_weapon_id = None
 
         if current_weapon_id is not None and ctx.weapon_sanity_hold_option in \
@@ -1690,6 +1809,13 @@ async def check_junk(ctx, current_level):
             ctx.hero_gauge_buffer += gaugeJunk[1].value
             newly_handled.append(gaugeJunk[0])
 
+
+    if ctx.hero_max_meter > 0:
+        ctx.hero_max_meter -= 10
+
+    if ctx.dark_max_meter > 0:
+        ctx.dark_max_meter -= 10
+
     if ctx.hero_gauge_buffer > 0:
 
         current_hero_gauge_bytes = dolphin_memory_engine.read_bytes(HERO_GAUGE_ADDRESS, 4)
@@ -1699,16 +1825,35 @@ async def check_junk(ctx, current_level):
         if ctx.hero_gauge_buffer < increase:
             increase = ctx.hero_gauge_buffer
 
-        if ctx.hero_gauge_buffer > 1000 and increase < 1000:
-            print("gauge diff too small", ctx.hero_gauge_buffer, increase)
+        if increase > 1000:
+            increase = 1000
+
+        now = datetime.now()
+
+        if ctx.hero_cooldown is not None and now > ctx.hero_cooldown:
+            ctx.hero_cooldown = None
+
+        if ctx.hero_cooldown is not None:
+            pass
+        elif ctx.hero_gauge_buffer > 100 and increase < 100 \
+            and ctx.hero_gauge_last == current_hero_gauge:
+            pass
         else:
-            print("gauge diff", ctx.hero_gauge_buffer, increase)
+            print("gauge diff", ctx.hero_gauge_buffer, increase, ctx.hero_max_meter)
             ctx.hero_gauge_buffer -= increase
+
+            ctx.hero_max_meter += increase
+            if ctx.hero_max_meter > 60000:
+                cooldown_until = now + timedelta(seconds=75)
+                ctx.hero_cooldown = cooldown_until
+                ctx.hero_max_meter = 0
 
             new_hero_value = current_hero_gauge + increase
             print("new hero", new_hero_value)
             new_bytes = new_hero_value.to_bytes(4, byteorder='big')
             writeBytes(HERO_GAUGE_ADDRESS, new_bytes)
+
+        ctx.hero_gauge_last = current_hero_gauge
 
     if len(filler_gauge_dark) > 0:
         for gaugeJunk in filler_gauge_dark:
@@ -1723,14 +1868,35 @@ async def check_junk(ctx, current_level):
         if ctx.dark_gauge_buffer < increase:
             increase = ctx.dark_gauge_buffer
 
-        if ctx.dark_gauge_buffer > 1000 and increase < 1000:
-            print("gauge diff too small", ctx.dark_gauge_buffer, increase)
+        if increase > 1000:
+            increase = 1000
+
+        now = datetime.now()
+
+        if ctx.dark_cooldown is not None and now > ctx.dark_cooldown:
+            ctx.dark_cooldown = None
+
+        if ctx.dark_cooldown is not None:
+            pass
+        elif ctx.dark_gauge_buffer > 100 and increase < 100 and \
+                ctx.dark_gauge_last == current_dark_gauge:
+            pass
         else:
+            ctx.dark_max_meter += increase
+            print("gauge diff", ctx.dark_gauge_buffer, increase, ctx.dark_max_meter)
+
+            if ctx.dark_max_meter > 60000:
+                cooldown_until = now + timedelta(seconds=75)
+                ctx.dark_cooldown = cooldown_until
+                ctx.dark_max_meter = 0
+
             ctx.dark_gauge_buffer -= increase
 
             new_dark_value = current_dark_gauge + increase
             new_bytes = new_dark_value.to_bytes(4, byteorder='big')
             writeBytes(DARK_GAUGE_ADDRESS, new_bytes)
+
+        ctx.dark_gauge_last = current_dark_gauge
 
     remove = []
     for r in newly_handled:
@@ -1938,16 +2104,21 @@ async def update_level_behaviour(ctx, current_level, death):
     if len(stageInfoEgg) > 0:
         eggInfo = stageInfoEgg[0]
 
+    extra_increase = 2
+
     if heroInfo is not None and heroInfo.requirement_count is not None:
         hero_count = ctx.level_state["hero_count"]
         heroMax = heroInfo.requirement_count
 
-        override_total = ShadowUtils.getOverwriteRequiredCount(ctx.percent_overrides, current_level,
-                                                               MISSION_ALIGNMENT_HERO,
-                                                               ShadowUtils.TYPE_ID_COMPLETION)
+        heroMaxAdjusted = ShadowUtils.getMaxRequired(
+            ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_COMPLETION,
+                                                      heroInfo.mission_object_name, ctx), heroInfo.requirement_count,
+            current_level, MISSION_ALIGNMENT_HERO, ctx.override_settings)
 
-        heroMaxAdjusted = ShadowUtils.getRequiredCount(heroMax, ctx.objective_item_percentage,
-                                                       override=override_total, round_method=ceil)
+        heroMaxAvailable = ShadowUtils.getMaxRequired(
+            ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_OBJECTIVE_AVAILABLE,
+                                                      heroInfo.mission_object_name, ctx), heroInfo.requirement_count,
+            current_level, MISSION_ALIGNMENT_DARK, ctx.override_settings)
 
         difference_over = heroMaxAdjusted - heroInfo.requirement_count
         if difference_over < 0:
@@ -1961,9 +2132,7 @@ async def update_level_behaviour(ctx, current_level, death):
         if hero_completable == COMPLETE_FLAG_OFF:
             set_max_up = True
             if ctx.objective_sanity:
-                hero_count_max = heroMax + difference_over + 2
-                if ctx.level_state["hero_count"] > hero_count_max:
-                    hero_count_max = ctx.level_state["hero_count"] + difference_over + 2
+                hero_count_max = heroMaxAvailable + extra_increase
             else:
                 hero_count_max = heroMaxAdjusted
             ctx.level_state["hero_completable"] = COMPLETE_FLAG_OFF_SET
@@ -1993,12 +2162,16 @@ async def update_level_behaviour(ctx, current_level, death):
         dark_count = ctx.level_state["dark_count"]
         dark_write = dark_count
         darkMax = darkInfo.requirement_count
-        override_total = ShadowUtils.getOverwriteRequiredCount(ctx.percent_overrides, current_level,
-                                                               MISSION_ALIGNMENT_DARK,
-                                                               ShadowUtils.TYPE_ID_COMPLETION)
 
-        darkMaxAdjusted = ShadowUtils.getRequiredCount(darkMax, ctx.objective_item_percentage,
-                                                       override=override_total, round_method=ceil)
+        darkMaxAdjusted = ShadowUtils.getMaxRequired(
+            ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_COMPLETION,
+                                                      darkInfo.mission_object_name, ctx), darkInfo.requirement_count,
+            current_level, MISSION_ALIGNMENT_DARK, ctx.override_settings)
+
+        darkMaxAvailable = ShadowUtils.getMaxRequired(
+            ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_OBJECTIVE_AVAILABLE,
+                                                      darkInfo.mission_object_name, ctx), darkInfo.requirement_count,
+            current_level, MISSION_ALIGNMENT_DARK, ctx.override_settings)
 
         difference_over = darkMaxAdjusted - darkInfo.requirement_count
         if difference_over < 0:
@@ -2010,9 +2183,7 @@ async def update_level_behaviour(ctx, current_level, death):
         if dark_completable == COMPLETE_FLAG_OFF:
             set_max_up = True
             if ctx.objective_sanity:
-                dark_count_max = darkMax + difference_over + 2
-                if ctx.level_state["dark_count"] > dark_count_max:
-                    dark_count_max = ctx.level_state["dark_count"] + difference_over + 2
+                dark_count_max = darkMaxAvailable + extra_increase
             else:
                 dark_count_max = darkMaxAdjusted
             ctx.level_state["dark_completable"] = COMPLETE_FLAG_OFF_SET
@@ -2050,6 +2221,8 @@ async def update_level_behaviour(ctx, current_level, death):
 
     ## Handle new events
 
+    extra_increase = 2
+
     expected_hero_value = hero_write
     expected_dark_value = dark_write
 
@@ -2071,9 +2244,18 @@ async def update_level_behaviour(ctx, current_level, death):
         if expected_hero_value is not None and current_count > expected_hero_value:
             if ctx.debug_logging:
                 logger.debug("Hero count increased:%d %d", current_count, expected_hero_value)
-            valid_compare_count = heroInfo.requirement_count + 2
-            if ctx.level_state["hero_progress"] > heroInfo.requirement_count:
-                valid_compare_count = ctx.level_state["hero_progress"] + 2
+
+            required_count = ShadowUtils.getMaxRequired(
+                ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_OBJECTIVE_AVAILABLE,
+                                                          heroInfo.mission_object_name, ctx),
+                heroInfo.requirement_count, heroInfo.stageId, heroInfo.alignmentId, ctx.override_settings)
+
+            diff_over = required_count - heroInfo.requirement_count
+            if diff_over > 0:
+                extra_increase += diff_over
+
+            valid_compare_count = heroInfo.requirement_count + extra_increase
+
             if current_count > valid_compare_count:
                 if ctx.info_logging:
                     logger.error("invalid value read for hero count:%d %d",current_count, valid_compare_count)
@@ -2100,9 +2282,18 @@ async def update_level_behaviour(ctx, current_level, death):
         if expected_dark_value is not None and current_count > expected_dark_value:
             if ctx.debug_logging:
                 logger.info("Dark count increased: %d %d", current_count, expected_dark_value)
-            valid_compare_count = darkInfo.requirement_count + 2
-            if ctx.level_state["dark_progress"] > darkInfo.requirement_count:
-                valid_compare_count = ctx.level_state["dark_progress"] + 2
+
+            required_count = ShadowUtils.getMaxRequired(
+                ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_OBJECTIVE_AVAILABLE,
+                                                          darkInfo.mission_object_name, ctx),
+                darkInfo.requirement_count, darkInfo.stageId, darkInfo.alignmentId, ctx.override_settings)
+
+            diff_over = required_count - darkInfo.requirement_count
+            if diff_over > 0:
+                extra_increase += diff_over
+
+            valid_compare_count = darkInfo.requirement_count + extra_increase
+
             if current_count > valid_compare_count:
                 if ctx.error_logging:
                     logger.error("invalid value read for dark count: %d %d",current_count, valid_compare_count)
@@ -2130,9 +2321,9 @@ async def update_level_behaviour(ctx, current_level, death):
         current_count = int.from_bytes(current_bytes, byteorder='big')
 
         if current_count > alien_count:
-            if current_count > alienInfo.total_count + 2:
+            if current_count > alienInfo.total_count + extra_increase:
                 if ctx.info_logging:
-                    logger.error("Error with alien count: %d %d", current_count, alienInfo.total_count + 2)
+                    logger.error("Error with alien count: %d %d", current_count, alienInfo.total_count + extra_increase)
             ctx.level_state["alien_progress"] += (current_count - alien_count)
             alien_progress = True
 
@@ -2144,9 +2335,9 @@ async def update_level_behaviour(ctx, current_level, death):
 
         if current_count > gun_count:
             print("gun count increased --", current_count, gun_count)
-            if current_count > gunInfo.total_count + 2:
+            if current_count > gunInfo.total_count + extra_increase:
                 if ctx.info_logging:
-                    logger.error("Error with gun count: %d %d", current_count, gunInfo.total_count + 2)
+                    logger.error("Error with gun count: %d %d", current_count)
             ctx.level_state["gun_progress"] += (current_count - gun_count)
             gun_progress = True
 
@@ -2158,9 +2349,9 @@ async def update_level_behaviour(ctx, current_level, death):
 
         if current_count > egg_count:
             print("egg count increased --", current_count, egg_count)
-            if current_count > eggInfo.total_count + 2:
+            if current_count > eggInfo.total_count + extra_increase:
                 if ctx.info_logging:
-                    logger.error("Error with egg count: %d %d", current_count, eggInfo.total_count + 2)
+                    logger.error("Error with egg count: %d %d", current_count)
             ctx.level_state["egg_progress"] += (current_count - egg_count)
             egg_progress = True
 
@@ -2299,19 +2490,33 @@ async def update_level_behaviour(ctx, current_level, death):
 
                     key_options = KEY_IDENTIFIER_BY_STAGE[current_level]
                     if current_key_data in key_options:
+                        ctx.level_keys.append(current_key_data)
                         key_index = key_options.index(current_key_data)
                         key_locations = [k for k in keysanity_locations if k.stageId == current_level and k.count == key_index]
                         if len(key_locations) == 0:
-                            if ctx.debug_logging:
+                            if ctx.error_logging:
                                 logger.error("Unable to find location associated %d %d", key_index, current_level)
                         else:
                             messages.extend([k.locationId for k in key_locations])
                     else:
-                        if ctx.debug_logging:
+                        if ctx.error_logging:
                             logger.error("Unknown key object: %d %d %d", current_level, key_options, current_key_data)
                         key_locations = [k for k in keysanity_locations if k.stageId == current_level and k.count == state_key_index]
                         messages.extend([k.locationId for k in key_locations])
-
+                elif not ctx.key_restore_complete:
+                    key_options_unknown = KEY_IDENTIFIER_BY_STAGE[current_level]
+                    keys_to_confirm = [ k for k in key_options_unknown if k not in ctx.level_keys]
+                    key_ind = [ key_options_unknown.index(k) for k in keys_to_confirm ]
+                    key_locations = [k.locationId for k in keysanity_locations if k.stageId == current_level and k.count in key_ind]
+                    checked_keys = [ c for c in ctx.checked_locations if c in key_locations]
+                    if len(checked_keys) > 0:
+                        first_key_location_id = checked_keys.pop()
+                        key_data = [k for k in keysanity_locations if k.locationId == first_key_location_id][0]
+                        key_value_to_write = key_options_unknown[key_data.count]
+                        restored_key_bytes = key_value_to_write.to_bytes(4, byteorder='big')
+                        writeBytes(key_addresses[state_key_index], restored_key_bytes)
+                    else:
+                        ctx.key_restore_complete = True
 
 
 
@@ -2430,9 +2635,10 @@ async def dolphin_sync_task(ctx: ShTHContext):
                     await ctx.disconnect()
                     await asyncio.sleep(5)
                     continue
-        except Exception:
+        except Exception as e:
+            logger.error(e)
             dolphin_memory_engine.un_hook()
-            logger.info("Connection to Dolphin failed, attempting again in 5 seconds...")
+            logger.info("Connection to Dolphin failed with exception, attempting again in 5 seconds...")
             logger.error(traceback.format_exc())
             ctx.dolphin_status = CONNECTION_LOST_STATUS
             await ctx.disconnect(True)

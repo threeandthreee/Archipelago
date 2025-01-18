@@ -179,13 +179,13 @@ def set_rules(multiworld: MultiWorld, world: World, player: int):
                     rule_change = True
 
                 if clear.requirement_count is not None and world.options.objective_sanity:
-                    percentage = world.options.objective_percentage.value
 
-                    override_total = ShadowUtils.getOverwriteRequiredCount(override_settings, clear.stageId,
-                                                                           clear.alignmentId, ShadowUtils.TYPE_ID_OBJECTIVE)
+                    max_required = ShadowUtils.getMaxRequired(
+                        ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_OBJECTIVE,
+                                                                  clear.mission_object_name, world.options),
+                        clear.requirement_count, clear.stageId, clear.alignmentId,
+                        override_settings)
 
-                    max_required = Utils.getRequiredCount(clear.requirement_count, percentage,
-                                                          override=override_total, round_method=floor)
                     total = 1
                     for region,count in clear.getDistribution().items():
                         required_region = Regions.stage_id_to_region(clear.stageId, region)
@@ -212,13 +212,14 @@ def set_rules(multiworld: MultiWorld, world: World, player: int):
                 location = multiworld.get_location(name, player)
                 item_name = Items.GetStageAlignmentObject(clear.stageId, clear.alignmentId)
                 if world.options.objective_sanity:
-                    override_total = ShadowUtils.getOverwriteRequiredCount(override_settings, clear.stageId,
-                                                                           clear.alignmentId,
-                                                                           ShadowUtils.TYPE_ID_COMPLETION)
-                    required_count = Utils.getRequiredCount(clear.requirement_count,
-                                                      world.options.objective_item_percentage.value,
-                                                            override=override_total, round_method=ceil)
-                    new_rule = lambda state, itemname=item_name, count=required_count: state.has(itemname, player, count=count)
+
+                    max_required = ShadowUtils.getMaxRequired(
+                        ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_COMPLETION,
+                                                                  clear.mission_object_name, world.options),
+                        clear.requirement_count, clear.stageId, clear.alignmentId,
+                        override_settings)
+
+                    new_rule = lambda state, itemname=item_name, count=max_required: state.has(itemname, player, count=count)
                     # Does this work as an AND or an OR?
                     level_rule = lambda state, l_rule=level_rule, n_rule=new_rule: l_rule(state) and n_rule(state)
                     add_rule(location, level_rule)
@@ -305,9 +306,8 @@ def set_rules(multiworld: MultiWorld, world: World, player: int):
 
                 rule = lambda state: True
 
-                if world.options.weapon_sanity_unlock:
-                    if (Weapons.WeaponAttributes.SPECIAL in weapon.attributes or
-                            world.options.weapon_sanity_hold == 1):
+                if (world.options.weapon_sanity_unlock and world.options.weapon_sanity_hold == 1) or \
+                    Weapons.WeaponAttributes.SPECIAL in weapon.attributes:
                         rule = lambda state, w=weapon.name: state.has(w, player)
 
                 region_stage = world.get_region(stage_id_to_region(stage, region_index))

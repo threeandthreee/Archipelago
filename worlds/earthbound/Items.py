@@ -146,7 +146,7 @@ item_table: Dict[str, ItemData] = {
     "Sprig of Parsley": ItemData("Food", 0xEB007A, ItemClassification.filler, 0),
     "Jar of Hot Sauce": ItemData("Food", 0xEB007B, ItemClassification.filler, 0),
     "Salt Packet": ItemData("Food", 0xEB007C, ItemClassification.filler, 0),
-    "Backstage Pass": ItemData("Key Items", 0xEB007D, ItemClassification.filler, 0), #Progressive Gun
+    "Tiny Key": ItemData("Key Items", 0xEB007D, ItemClassification.progression),  # Progressive Gun
     "Jar of Delisauce": ItemData("Food", 0xEB007E, ItemClassification.useful, 0),
     "Wet Towel": ItemData("Food", 0xEB007F, ItemClassification.filler, 0),
     "Refreshing Herb": ItemData("Food", 0xEB0080, ItemClassification.useful, 0),
@@ -198,15 +198,15 @@ item_table: Dict[str, ItemData] = {
     "Key to the Shack": ItemData("Key Items", 0xEB00AA, ItemClassification.progression),
     "Key to the Cabin": ItemData("Key Items", 0xEB00AB, ItemClassification.progression),
     "Bad Key Machine": ItemData("Key Items", 0xEB00AC, ItemClassification.progression),
-    #"Archipelago Item": ItemData("Key Items", 0xEB00AD, ItemClassification.progression, 0),
+    # "Archipelago Item": ItemData("Key Items", 0xEB00AD, ItemClassification.progression, 0),
     "Zombie Paper": ItemData("Key Items", 0xEB00AE, ItemClassification.progression),
     "Hawk Eye": ItemData("Key Items", 0xEB00AF, ItemClassification.progression),
     "Bicycle": ItemData("Key Items", 0xEB00B0, ItemClassification.useful),
     "ATM Card": ItemData("Key Items", 0xEB00B1, ItemClassification.progression, 0),
     "Show Ticket": ItemData("Key Items", 0xEB00B2, ItemClassification.filler, 0),
-    "Letter from Kids": ItemData("Key Items", 0xEB00B3, ItemClassification.filler, 0), #Progressive Bat
+    "Tenda Lavapants": ItemData("Key Items", 0xEB00B3, ItemClassification.progression),  # Progressive Bat
     "Wad of Bills": ItemData("Key Items", 0xEB00B4, ItemClassification.progression),
-    "Receiver Phone": ItemData("Key Items", 0xEB00B5, ItemClassification.filler, 0), #Progressive Fry Pan
+    "Receiver Phone": ItemData("Key Items", 0xEB00B5, ItemClassification.filler, 0),  # Progressive Fry Pan
     "Diamond": ItemData("Key Items", 0xEB00B6, ItemClassification.progression),
     "Signed Banana": ItemData("Key Items", 0xEB00B7, ItemClassification.progression),
     "Pencil Eraser": ItemData("Key Items", 0xEB00B8, ItemClassification.progression),
@@ -229,7 +229,7 @@ item_table: Dict[str, ItemData] = {
     "Gelato de Resort": ItemData("Food", 0xEB00C6, ItemClassification.filler, 0),
     "Snake": ItemData("Battle Items", 0xEB00C7, ItemClassification.filler, 0),
     "Viper": ItemData("Battle Items", 0xEB00C8, ItemClassification.filler, 0),
-    "Brain Stone": ItemData("Battle Items", 0xEB00C9, ItemClassification.filler, 0),
+    "Brain Stone": ItemData("Battle Items", 0xEB00C9, ItemClassification.filler),
     "Police Badge": ItemData("Key Items", 0xEB00CA, ItemClassification.progression),
     "Mining Permit": ItemData("Key Items", 0xEB00CB, ItemClassification.progression),
     "Suporma": ItemData("Key Items", 0xEB00CC, ItemClassification.trap),
@@ -237,16 +237,16 @@ item_table: Dict[str, ItemData] = {
     "Insignificant Item": ItemData("Key Items", 0xEB00CE, ItemClassification.progression),
     "Magic Tart": ItemData("Food", 0xEB00CF, ItemClassification.useful, 0),
     "Tiny Ruby": ItemData("Key Items", 0xEB00D0, ItemClassification.progression),
-    "Monkey's Love": ItemData("Battle Items", 0xEB00D1, ItemClassification.filler, 0),
+    "Monkey's Love": ItemData("Battle Items", 0xEB00D1, ItemClassification.filler),
     "Eraser Eraser": ItemData("Key Items", 0xEB00D2, ItemClassification.progression),
     "Tendakraut": ItemData("Key Items", 0xEB00D3, ItemClassification.progression),
 
     "T-Rex's Bat": ItemData("Ness Weapons", 0xEB00D4, ItemClassification.useful, 0),
-    #"Big League Bat": ItemData("Ness Weapons", 0xEB0016, ItemClassification.useful, 0), Summers copy
+    # "Big League Bat": ItemData("Ness Weapons", 0xEB0016, ItemClassification.useful, 0), Summers copy
     "Ultimate Bat": ItemData("Ness Weapons", 0xEB00D6, ItemClassification.useful, 0),
     "Double Beam": ItemData("Jeff Weapons", 0xEB00D7, ItemClassification.useful, 0),
-    #"Platinum Band": ItemData("Arm Equipment", 0xEB00D8, ItemClassification.useful, 0), Summers copy
-    #"Diamond Band": ItemData("Arm Equipment", 0xEB00D9, ItemClassification.useful, 0), Summers Copy
+    # "Platinum Band": ItemData("Arm Equipment", 0xEB00D8, ItemClassification.useful, 0), Summers copy
+    # "Diamond Band": ItemData("Arm Equipment", 0xEB00D9, ItemClassification.useful, 0), Summers Copy
     "Defense Ribbon": ItemData("Ribbons", 0xEB00DA, ItemClassification.useful, 0),
     "Talisman Ribbon": ItemData("Ribbons", 0xEB00DB, ItemClassification.useful),
     "Saturn Ribbon": ItemData("Ribbons", 0xEB00DC, ItemClassification.useful),
@@ -315,8 +315,9 @@ item_table: Dict[str, ItemData] = {
     'Saved Earth': ItemData('Events', None, ItemClassification.progression, 0),
     "Power of the Earth": ItemData("Events", None, ItemClassification.progression, 0),
     "Alternate Goal": ItemData("Events", None, ItemClassification.useful, 0),
-    #"Magicant Boost": ItemData("Events", None, ItemClassification.useful, 0),
-    "Magicant Unlock": ItemData("Events", None, ItemClassification.progression, 0)
+    # "Magicant Boost": ItemData("Events", None, ItemClassification.useful, 0),
+    "Magicant Unlock": ItemData("Events", None, ItemClassification.progression, 0),
+    "ATM Access": ItemData("Events", None, ItemClassification.progression, 0)
 }
 
 

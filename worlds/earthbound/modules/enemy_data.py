@@ -1,5 +1,4 @@
 from typing import Dict
-from logging import warning
 import struct
 import math
 
@@ -56,7 +55,7 @@ def initialize_enemies(world):
         "Thunder Mite": EarthBoundEnemy("Thunder Mite", 0x15a0eb, 293, 200, 10798, 430, 20, 85, 83, 43, False),
         "Cranky Lady": EarthBoundEnemy("Cranky Lady", 0x15a149, 95, 0, 200, 17, 6, 16, 18, 8, False),
         "Extra Cranky Lady": EarthBoundEnemy("Extra Cranky Lady", 0x15a1a7, 277, 0, 3651, 134, 17, 48, 70, 27, False),
-        #F"Giygas (Unused)": EarthBoundEnemy("Giygas (Unused)", 0x15a205, 3600, 0, 0, 0, 52, 203, 300, 73, False),
+        # F"Giygas (Unused)": EarthBoundEnemy("Giygas (Unused)", 0x15a205, 3600, 0, 0, 0, 52, 203, 300, 73, False),
         "Wetnosaur": EarthBoundEnemy("Wetnosaur", 0x15a263, 1030, 0, 33098, 745, 17, 126, 172, 59, False),
         "Chomposaur": EarthBoundEnemy("Chomposaur", 0x15a2c1, 1288, 320, 44378, 896, 17, 139, 183, 62, False, "phys_2"),
         "Titanic Ant": EarthBoundEnemy("Titanic Ant", 0x15a31f, 235, 102, 685, 150, 6, 19, 23, 13, False, None, 2),
@@ -280,7 +279,7 @@ def initialize_enemies(world):
                               "Fourside Dept. Store": {world.enemies["Musica"], world.enemies["Mystical Record"], world.enemies["Scalding Coffee Cup"], world.enemies[world.boss_list[12]]},
                               "Monkey Caves": {world.enemies["Struttin' Evil Mushroom (2)"], world.enemies["Tough Mobile Sprout"], world.enemies["Struttin' Evil Mushroom"]},
                               "Monotoli Building": {world.enemies["Sentry Robot"], world.enemies[world.boss_list[14]]},
-                              "Rainy Circle": {world.enemies["Arachnid!"], world.enemies["Cave Boy"], world.enemies["Elder Batty"], world.enemies["Mighty Bear Seven"], world.enemies["Strong Crocodile"], world.enemies[world.boss_list[15]]},
+                              "Rainy Circle": {world.enemies["Arachnid!"], world.enemies["Cave Boy (2)"], world.enemies["Elder Batty"], world.enemies["Mighty Bear Seven"], world.enemies["Strong Crocodile"], world.enemies[world.boss_list[15]]},
                               "Summers": {world.enemies["Crazed Sign"], world.enemies["Mad Taxi"], world.enemies["Mole Playing Rough"], world.enemies["Over Zealous Cop"], world.enemies["Tough Guy"], world.enemies[world.boss_list[18]]},
                               "Summers Museum": {world.enemies["Shattered Man"]},
                               "Magnet Hill": {world.enemies["Deadly Mouse"], world.enemies["Filthy Attack Roach"], world.enemies["Stinky Ghost"], world.enemies[world.boss_list[16]]},
@@ -317,7 +316,7 @@ def initialize_enemies(world):
                 updated_list.add(world.enemies[world.boss_list[27]])
                 for i in range(1, world.enemies[world.boss_list[27]].attack_extensions):
                     updated_list.add(world.enemies[f"{world.enemies[world.boss_list[27]].name} ({i + 1})"])
-                #todo; option to not have in Giygas/Mine
+                # todo; option to not have in Giygas/Mine
 
             if enemy.name in flunkies:
                 if enemy.name == "Starman Deluxe":
@@ -415,14 +414,14 @@ levels = [
     63,  # magicant
     65,  # cave of the past
     70,
-    73] # gigyas
+    73]  # gigyas
 
 spell_breaks: Dict[str, Dict[int, str]] = {
     "freeze": {8: "zeta", 12: "epsilon", 20: "delta", 25: "lambda", 40: "alpha", 65: "beta", 70: "gamma", 100: "omega"},
     "fire": {5: "zeta", 10: "epsilon", 20: "alpha", 50: "beta", 70: "gamma", 100: "omega"},  # zeta needs to do less damage
     "lifeup": {20: "alpha", 50: "beta", 70: "gamma", 100: "omega"},
     "thunder": {5: "zeta", 10: "epsilon", 15: "delta", 20: "lambda", 35: "alpha", 45: "beta", 60: "gamma", 100: "omega"},
-    "flash": {25: "alpha", 45: "beta", 60: "gamma", 100: "omega"},
+    "flash": {25: "alpha", 60: "beta", 70: "gamma", 100: "omega"},
     "special": {5: "zeta", 10: "epsilon", 30: "alpha", 65: "beta", 80: "gamma", 100: "omega"},
     "healing": {20: "alpha", 40: "beta", 60: "gamma", 100: "omega"},
     "starstorm": {5: "zeta", 12: "epsilon", 20: "delta", 45: "lambda", 70: "alpha", 100: "beta"},
@@ -452,12 +451,12 @@ spell_breaks: Dict[str, Dict[int, str]] = {
     "giygas_phase2_freeze": {8: "zeta", 12: "epsilon", 20: "delta", 25: "lambda", 100: "alpha"},
     "giygas_phase3_freeze": {8: "zeta", 12: "epsilon", 20: "delta", 25: "lambda", 100: "alpha"},
     "giygas_phase4_freeze": {8: "zeta", 12: "epsilon", 20: "delta", 25: "lambda", 100: "alpha"},
-    "giygas_phase2_flash": {25: "alpha", 45: "beta", 100: "gamma"},
-    "giygas_phase3_flash": {25: "alpha", 45: "beta", 100: "gamma"},
-    "giygas_phase4_flash": {25: "alpha", 45: "beta", 100: "gamma"},
+    "giygas_phase2_flash": {25: "alpha", 60: "beta", 100: "gamma"},
+    "giygas_phase3_flash": {25: "alpha", 60: "beta", 100: "gamma"},
+    "giygas_phase4_flash": {25: "alpha", 60: "beta", 100: "gamma"},
     "thunder_minus": {10: "zeta", 15: "epsilon", 20: "delta", 35: "lambda", 45: "alpha", 60: "beta", 100: "gamma", 200: "omega"},
     "starstorm_minus": {12: "zeta", 20: "epsilon", 45: "delta", 70: "lambda", 100: "alpha", 200: "beta"},
-    "flash_minus": {45: "alpha", 60: "beta", 100: "gamma", 200: "omega"},
+    "flash_minus": {60: "alpha", 70: "beta", 100: "gamma", 200: "omega"},
     "blast": {30: "alpha", 40: "beta", 50: "gamma", 100: "omega"},
     "missile": {20: "alpha", 50: "beta", 73: "gamma", 100: "omega"},
     # Todo; blast/missile delta and lambda
@@ -672,7 +671,7 @@ spell_data = {
         "alpha": [0x48, 0x01, 0x00],
         "beta": [0x49, 0x01, 0x00],
         "gamma": [0x5E, 0x00, 0x00],
-        "omega": [0x4A, 0x00, 0x00],
+        "omega": [0x4A, 0x01, 0x00],
     },
     "spray_fire": {
         "zeta": [0x75, 0x01, 0x00],
@@ -885,12 +884,14 @@ def assumed_player_speed_for_level(level):
 def scale_enemy_speed(enemy, new_level):
     normal_dodge_chance = (2 * enemy.speed - assumed_player_speed_for_level(enemy.level)) / 500
 
-    enemy_scaled_speed  = (normal_dodge_chance * 500 + assumed_player_speed_for_level(new_level)) / 2
+    enemy_scaled_speed = (normal_dodge_chance * 500 + assumed_player_speed_for_level(new_level)) / 2
     return enemy_scaled_speed
+
 
 def scale_exp(base_exp, base_level, new_level, k):
     new_exp = base_exp * (new_level / base_level) ** k
     return new_exp
+
 
 def scale_exp_2(base_exp, base_level, new_level, world):
     base_scaled_exp = calculate_exp(base_level)
@@ -900,17 +901,17 @@ def scale_exp_2(base_exp, base_level, new_level, world):
     new_exp = math.ceil(new_exp * world.options.experience_modifier / 100)
     return new_exp
 
+
 def calculate_exp(level):
     if level > 30:
         return 1000 * math.exp(0.05 * level)
     else:
         return 50 * math.exp(0.15 * level)
-        #return 10 * math.exp(0.2 * level) if not boosted
+        # return 10 * math.exp(0.2 * level) if not boosted
 
-    
 
 def scale_shield(level, shield):
-    if shield != None:
+    if shield is not None:
         if level < 10:
             enemy_shield = "disabled"
         elif shield in ["phys_1", "phys_2"]:
@@ -926,19 +927,47 @@ def scale_shield(level, shield):
         return enemy_shield
 
 
+guardian_text = [
+    0xEEFAA0,
+    0xEEFAA6,
+    0xEEFAAD,
+    0xEEFAB3,
+    0xEEFABA,
+    0xEEFAC0,
+    0xEEFAC6,
+    0xEEFACE
+]
+
+guardian_intro = {
+    "Giant Step": 0x066699,
+    "Lilliput Steps": 0x2F97CB,
+    "Milky Well": 0x2F67C3,
+    "Rainy Circle": 0x2EFAD6,
+    "Magnet Hill": 0x083D4D,
+    "Pink Cloud": 0x09D2E3,
+    "Lumine Hall": 0x09E2A4,
+    "Fire Spring": 0x2EFADF
+}
+
+
 def scale_enemies(world, rom):
     if world.options.auto_scale_party_members:
         rom.write_bytes(0x15F60F, bytearray([max(levels[world.scaled_area_order.index(world.Paula_region)] + world.random.randint(-3, 3), 1)]))  # Paula starting level
         rom.write_bytes(0x15F623, bytearray([max(levels[world.scaled_area_order.index(world.Jeff_region)] + world.random.randint(-3, 3), 1)]))  # Jeff starting level
         rom.write_bytes(0x15F637, bytearray([max(levels[world.scaled_area_order.index(world.Poo_region)] + world.random.randint(-3, 3), 1)]))  # Poo starting level
 
+    melody_number = 1
     for region, level in zip(world.scaled_area_order, levels):
+        if region in ["Giant Step", "Lilliput Steps", "Milky Well",
+                      "Rainy Circle", "Magnet Hill", "Pink Cloud",
+                      "Lumine Hall", "Fire Spring"]:
+            rom.write_bytes(guardian_intro[region], struct.pack("I", guardian_text[melody_number - 1]))
+            melody_number += 1
         for enemy in world.regional_enemies[region]:
             if enemy.is_scaled is False:
-                # gprint(f"{enemy.name} {level}")
+                # print(f"{enemy.name} {level}")
                 enemy_hp = int(enemy.hp * level / enemy.level)
                 enemy_pp = int(enemy.pp * level / enemy.level)
-                k = 2.258
                 enemy_exp = int(scale_exp_2(enemy.exp, enemy.level, level, world))
                 enemy_money = int(enemy.money * level / enemy.level)
                 enemy_speed = max(2, int(scale_enemy_speed(enemy, level)))
@@ -946,9 +975,6 @@ def scale_enemies(world, rom):
                 enemy_defense = int(enemy.defense * level / enemy.level)
                 enemy_level = int(enemy.level * level / enemy.level)
                 enemy_shield = scale_shield(level, enemy.shield)
-
-                # if world.multiworld.get_player_name(world.player) == "Pink":
-                # print(f"\nEnemy: {enemy.name}\nLevel: {enemy_level}\nHP: {enemy_hp}\nPP: {enemy_pp}\nEXP: {enemy_exp}\n${enemy_money}\nSpeed: {enemy_speed}\nOffense: {enemy_offense}\nDefense: {enemy_defense}\nSpeed: {enemy_speed} {enemy.shield}")
                 enemy_hp = struct.pack('<H', enemy_hp)
                 enemy_pp = struct.pack('<H', enemy_pp)
                 enemy_exp = struct.pack('<I', enemy_exp)

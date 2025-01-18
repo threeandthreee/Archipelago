@@ -30,6 +30,7 @@ class ListInfo:
     locations_data: dict[str, LocationData]
     events_data: dict[str, LocationData]
     pool_locations: list[LocationData]
+    location_groups: dict[str, list[LocationData]]
 
     locked_locations: list[int]
 
@@ -71,6 +72,7 @@ class ListInfo:
         self.locations_data = {}
         self.events_data = {}
         self.pool_locations = []
+        self.location_groups = defaultdict(list)
 
         self.locked_locations = []
 
@@ -192,12 +194,7 @@ class ListInfo:
                     "Cannot add or overwrite with {num_rewards}."
                 )
 
-        try:
-            area = raw_loc["location"]["map"].split('.')[0]
-            if area not in self.ctx.rando_data["dungeons"]:
-                area = None
-        except (KeyError, AttributeError):
-            area = None
+        area = raw_loc.get("location", {}).get("area", None)
 
         location_names: list[str] = []
 
@@ -226,6 +223,11 @@ class ListInfo:
 
             self.locations_data[full_name] = loc
             self.pool_locations.append(loc)
+            if area != None:
+                try:
+                    self.location_groups[self.ctx.database["areas"][area]["name"]["en_US"]].append(loc)
+                except KeyError:
+                    print(f"Cannot add location '{name}' in area '{area}'")
 
             if locked:
                 self.locked_locations.append(locid)

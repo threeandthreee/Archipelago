@@ -3,8 +3,8 @@ from typing import List, TypedDict, Dict
 from BaseClasses import Location, Region
 from .Enums import Area, pascal_to_space, SADX_BASE_ID
 from .Logic import level_location_table, upgrade_location_table, sub_level_location_table, field_emblem_location_table, \
-    life_capsule_location_table, boss_location_table, mission_location_table, chao_egg_location_table, \
-    chao_race_location_table
+    capsule_location_table, boss_location_table, mission_location_table, chao_egg_location_table, \
+    chao_race_location_table, enemy_location_table
 from .Names import LocationName
 
 
@@ -42,11 +42,11 @@ def get_location_from_emblem() -> List[LocationInfo]:
     return locations
 
 
-def get_location_from_life_capsule() -> List[LocationInfo]:
+def get_location_from_capsule() -> List[LocationInfo]:
     locations: List[LocationInfo] = []
-    for life_capsule in life_capsule_location_table:
-        level_name: str = f"{pascal_to_space(life_capsule.area.name)} ({life_capsule.character.name} - Life Capsule {life_capsule.lifeCapsuleNumber})"
-        locations += [{"id": life_capsule.locationId, "name": level_name}]
+    for capsule in capsule_location_table:
+        level_name: str = f"{pascal_to_space(capsule.area.name)} ({capsule.character.name}) - Capsule {capsule.capsuleNumber:02d} ({pascal_to_space(capsule.type.name)})"
+        locations += [{"id": capsule.locationId, "name": level_name}]
     return locations
 
 
@@ -79,23 +79,33 @@ def get_location_from_races() -> List[LocationInfo]:
     return locations
 
 
+def get_location_from_enemies() -> List[LocationInfo]:
+    locations: List[LocationInfo] = []
+    for enemy in enemy_location_table:
+        level_name: str = f"{pascal_to_space(enemy.area.name)} ({enemy.character.name}) - Enemy {enemy.enemyNumber:02d} ({pascal_to_space(enemy.type.name)})"
+        locations += [{"id": enemy.locationId, "name": level_name}]
+    return locations
+
+
 all_location_table: List[LocationInfo] = (
         get_location_from_level() +
         get_location_from_upgrade() +
         get_location_from_sub_level() +
         get_location_from_emblem() +
-        get_location_from_life_capsule() +
+        get_location_from_capsule() +
         get_location_from_boss() +
         get_location_from_mission() +
         get_location_from_eggs() +
         get_location_from_races() +
+        get_location_from_enemies() +
         [{"id": 9, "name": "Perfect Chaos Fight"}]
 )
 
 
 def get_location_name_by_level(level_name: str) -> List[str]:
     return [location["name"] for location in get_location_from_level() if level_name in location["name"]] + \
-        [location["name"] for location in get_location_from_life_capsule() if level_name in location["name"]]
+        [location["name"] for location in get_location_from_capsule() if level_name in location["name"]] + \
+        [location["name"] for location in get_location_from_enemies() if level_name in location["name"]]
 
 
 group_location_table: Dict[str, List[str]] = {
@@ -103,11 +113,12 @@ group_location_table: Dict[str, List[str]] = {
     LocationName.Groups.FieldEmblems: [location["name"] for location in get_location_from_emblem()],
     LocationName.Groups.Levels: [location["name"] for location in get_location_from_level()],
     LocationName.Groups.Sublevels: [location["name"] for location in get_location_from_sub_level()],
-    LocationName.Groups.LifeCapsules: [location["name"] for location in get_location_from_life_capsule()],
+    LocationName.Groups.Capsules: [location["name"] for location in get_location_from_capsule()],
     LocationName.Groups.Bosses: [location["name"] for location in get_location_from_boss()],
     LocationName.Groups.Missions: [location["name"] for location in get_location_from_mission()],
     LocationName.Groups.ChaoEggs: [location["name"] for location in get_location_from_eggs()],
     LocationName.Groups.ChaoRaces: [location["name"] for location in get_location_from_races()],
+    LocationName.Groups.Enemies: [location["name"] for location in get_location_from_enemies()],
     pascal_to_space(Area.EmeraldCoast.name): get_location_name_by_level(pascal_to_space(Area.EmeraldCoast.name)),
     pascal_to_space(Area.WindyValley.name): get_location_name_by_level(pascal_to_space(Area.WindyValley.name)),
     pascal_to_space(Area.Casinopolis.name): get_location_name_by_level(pascal_to_space(Area.Casinopolis.name)),
@@ -115,6 +126,7 @@ group_location_table: Dict[str, List[str]] = {
     pascal_to_space(Area.TwinklePark.name): get_location_name_by_level(pascal_to_space(Area.TwinklePark.name)),
     pascal_to_space(Area.SpeedHighway.name): get_location_name_by_level(pascal_to_space(Area.SpeedHighway.name)),
     pascal_to_space(Area.RedMountain.name): get_location_name_by_level(pascal_to_space(Area.RedMountain.name)),
+    pascal_to_space(Area.SkyDeck.name): get_location_name_by_level(pascal_to_space(Area.SkyDeck.name)),
     pascal_to_space(Area.LostWorld.name): get_location_name_by_level(pascal_to_space(Area.LostWorld.name)),
     pascal_to_space(Area.FinalEgg.name): get_location_name_by_level(pascal_to_space(Area.FinalEgg.name)),
     pascal_to_space(Area.HotShelter.name): get_location_name_by_level(pascal_to_space(Area.HotShelter.name)),

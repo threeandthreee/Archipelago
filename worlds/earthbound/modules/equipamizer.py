@@ -1,13 +1,13 @@
 from dataclasses import dataclass
 import dataclasses
-from ..game_data.text_data import text_encoder, calc_pixel_width, eb_text_table
+from ..game_data.text_data import text_encoder, calc_pixel_width
 from operator import attrgetter
 import struct
 
 
 def roll_resistances(world, element, armor):
     chance = world.random.randint(0, 100)
-    if chance < 11:
+    if chance < world.options.armorizer_resistance_chance.value:
         setattr(armor, element, world.random.randint(1, 3))
     else:
         setattr(armor, element, 0)
@@ -20,7 +20,7 @@ def price_weapons(weapons, rom):
         if "Summers" in weapon.name:
             weapon.name = weapon.name.replace("Summers", "")
             rom.write_bytes((weapon.address + 26), struct.pack("H", min((price * 2), 50000)))
-            item_name = text_encoder(weapon.name, eb_text_table, 25)
+            item_name = text_encoder(weapon.name, 25)
             item_name.extend([0x00])
             rom.write_bytes(weapon.address, item_name)
         else:
@@ -35,7 +35,7 @@ def price_armors(armor_pricing_list, rom):
         if "Summers" in armor.name:
             armor.name = armor.name.replace("Summers", "")
             rom.write_bytes((armor.address + 26), struct.pack("H", min((price * 2), 50000)))
-            item_name = text_encoder(armor.name, eb_text_table, 25)
+            item_name = text_encoder(armor.name, 25)
             item_name.extend([0x00])
             rom.write_bytes(armor.address, item_name)
         else:
@@ -229,7 +229,8 @@ adjectives = [
     "Tennis",
     "Golf",
     "Hockey",
-    "Burnt"
+    "Burnt",
+    "Boiled"
 ]
 
 char_nums = {
@@ -407,7 +408,7 @@ def randomize_armor(world, rom):
 
     armor_names = {
         "body": ["pendant", "charm", "foot", "brooch", "shirt",
-                 "amulet", "cloak", "suit", "plate", "vest", "coat", "jersey"],
+                 "amulet", "cloak", "suit", "plate", "vest", "coat", "jersey", "poncho"],
         "arm": ["bracelet", "band", "bracer", "gauntlet", "sleeve", "glove", "bangle", "armlet", "sweatband"],
         "other": ["cap", "hat", "coin", "crown", "diadem", "helmet", "mask", "wig", "pants", "jeans", "grieves", "boot"]
     }
@@ -611,7 +612,7 @@ def randomize_armor(world, rom):
     for item in all_armor:
         armor = world.armor_list[item]
 
-        item_name = text_encoder(armor.name, eb_text_table, 25)
+        item_name = text_encoder(armor.name, 25)
         item_name.extend([0x00])
 
         description = f" “{armor.name}”\n"
@@ -642,7 +643,7 @@ def randomize_armor(world, rom):
         if armor.sleep_res > 0:
             description += f"@Protects against Sleep{res_strength[armor.sleep_res - 1]}.\n"
             
-        description = text_encoder(description, eb_text_table, 0x100)
+        description = text_encoder(description, 0x100)
         description = description[:-2]
         description.extend([0x13, 0x02])
 
@@ -898,7 +899,7 @@ def randomize_weapons(world, rom):
 
     for item in all_weapons:
         weapon = world.weapon_list[item]
-        item_name = text_encoder(weapon.name, eb_text_table, 25)
+        item_name = text_encoder(weapon.name, 25)
         item_name.extend([0x00])
         
         description = f" “{weapon.name}”\n"
@@ -912,7 +913,7 @@ def randomize_weapons(world, rom):
         if weapon.miss_rate == 12:
             description += "@If you use this, you might just whiff.\n"
 
-        description = text_encoder(description, eb_text_table, 0x100)
+        description = text_encoder(description, 0x100)
         description = description[:-2]
         description.extend([0x13, 0x02])
 
