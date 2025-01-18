@@ -84,7 +84,6 @@ downloads/
 eggs/
 .eggs/
 lib/
-!worlds/metroidprime/lib/
 lib64/
 parts/
 sdist/
