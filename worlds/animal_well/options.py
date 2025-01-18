@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Dict, Any
 from Options import (DefaultOnToggle, Toggle, StartInventoryPool, Choice, Range, PerGameCommonOptions, OptionGroup,
-                     Visibility, DeathLink)
+                     DeathLink, Removed)
 
 
 class Goal(Choice):
@@ -33,6 +33,7 @@ class EggsNeeded(Range):
     """
     How many Eggs you need to open the 4th Egg Door.
     The amount of Eggs you need for the other 3 doors will scale accordingly.
+    This is intentionally locked at 64 until we can figure it out client-side.
     """
     internal_name = "eggs_needed"
     display_name = "Eggs Required"
@@ -71,6 +72,15 @@ class CandleChecks(Toggle):
     display_name = "Candle Checks"
 
 
+class Fruitsanity(Toggle):
+    """
+    All 115 fruits send a check after being eaten.
+    Tip: Attempting to eat a fruit 3 times will eat it even if you have full health.
+    """
+    internal_name = "fruitsanity"
+    display_name = "Fruitsanity"
+
+
 class KeyRing(DefaultOnToggle):
     """
     Have one keyring which unlocks all normal key doors instead of individual key items.
@@ -92,13 +102,16 @@ class Matchbox(DefaultOnToggle):
 class BubbleJumping(Choice):
     """
     Include using the standard Bubble Wand and chaining bubble jumps together in logic.
-    Exclude Long Chains makes it so you may be required to chain a few bubble jumps before landing.
+    Short Chains means you may be expected to chain a few bubble jumps in a row.
+    Long Chains means you may be expected to chain an unlimited number of bubble jumps in a row.
     """
     internal_name = "bubble_jumping"
     display_name = "Bubble Jumping"
     option_off = 0
-    option_exclude_long_chains = 1
-    option_on = 2
+    option_short_chains = 1
+    alias_exclude_long_chains = 1
+    option_long_chains = 2
+    alias_on = 2
     default = 1
 
 
@@ -149,6 +162,14 @@ class BallThrowing(Choice):
     default = 1
 
 
+class FluteJumps(Toggle):
+    """
+    Include sliding off of the edge of a platform while pulling out the flute so that you can jump mid-air while playing the flute.
+    """
+    internal_name = "flute_jumps"
+    display_name = "Flute Jumps"
+
+
 class ObscureTricks(Toggle):
     """
     Include solutions to puzzles that are obscure or hard to understand in logic.
@@ -185,27 +206,9 @@ class ExcludeSongChests(DefaultOnToggle):
     display_name = "Exclude Song Chests"
 
 
-class WheelHopping(Choice):
-    """
-    Included temporarily for backwards compatibility.
-    """
-    internal_name = "wheel_hopping"
-    display_name = "Wheel Hopping"
-    option_off = 0
-    option_simple = 1
-    option_advanced = 2
-    default = 0
-    visibility = Visibility.none
-
-
-class WeirdTricks(Toggle):
-    """
-    Included temporarily for backward compatibility.
-    Logically equivalent to ball_throwing: expert, tanking_damage: true, precise_tricks: true, obscure_tricks: true
-    """
-    internal_name = "weird_tricks"
-    display_name = "Weird Tricks"
-    visibility = Visibility.none
+class AWDeathLink(DeathLink):
+    __doc__ = (DeathLink.__doc__ + "\n\n    You can toggle this in the Client by using /deathlink, "
+                                   "or in your host.yaml.")
 
 
 @dataclass
@@ -218,46 +221,51 @@ class AnimalWellOptions(PerGameCommonOptions):
     candle_checks: CandleChecks
     bunnies_as_checks: BunniesAsChecks
     bunny_warps_in_logic: BunnyWarpsInLogic
+    fruitsanity: Fruitsanity
     exclude_song_chests: ExcludeSongChests
     random_final_egg_location: FinalEggLocation
-    
+
+    tanking_damage: TankingDamage
     bubble_jumping: BubbleJumping
     disc_hopping: DiscHopping
     wheel_tricks: WheelTricks
     ball_throwing: BallThrowing
+    flute_jumps: FluteJumps
     obscure_tricks: ObscureTricks
     precise_tricks: PreciseTricks
-    tanking_damage: TankingDamage
     
-    death_link: DeathLink
+    death_link: AWDeathLink
     start_inventory_from_pool: StartInventoryPool
 
-    wheel_hopping: WheelHopping  # superseded by wheel_tricks, will be removed in a later update
-    weird_tricks: WeirdTricks  # superseded by multiple options, will be removed in a later update
+    wheel_hopping: Removed
+    weird_tricks: Removed
 
 
 aw_option_groups = [
     OptionGroup("Logic Options", [
+        TankingDamage,
         BubbleJumping,
         DiscHopping,
         WheelTricks,
         BallThrowing,
+        FluteJumps,
         ObscureTricks,
         PreciseTricks,
-        TankingDamage,
     ])
 ]
 
 aw_option_presets: Dict[str, Dict[str, Any]] = {
     "Animal Hell": {
         "eggs_needed": 64,
-        "bubble_jumping": BubbleJumping.option_on,
+        "bubble_jumping": BubbleJumping.option_long_chains,
         "disc_hopping": DiscHopping.option_multiple,
         "wheel_tricks": WheelTricks.option_advanced,
         "bunnies_as_checks": BunniesAsChecks.option_all_bunnies,
         "ball_throwing": BallThrowing.option_expert,
+        "flute_jumps": FluteJumps.option_true,
         "obscure_tricks": ObscureTricks.option_true,
         "precise_tricks": PreciseTricks.option_true,
         "tanking_damage": TankingDamage.option_true,
+        "fruitsanity": Fruitsanity.option_true,
     },
 }

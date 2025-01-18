@@ -2,13 +2,15 @@ import logging
 import struct
 import typing
 import time
-from struct import pack, unpack
-from .game_data.local_data import check_table, client_specials, world_version, hint_bits
-from .game_data.text_data import eb_text_table
+import uuid
+from struct import pack
+from .game_data.local_data import client_specials, world_version, hint_bits, item_id_table
+from .game_data.text_data import text_encoder
+from .gifting.gift_tags import gift_properties
+from .gifting.trait_parser import wanted_traits, trait_interpreter
 
 from NetUtils import ClientStatus, color
 from worlds.AutoSNIClient import SNIClient
-import Utils
 
 if typing.TYPE_CHECKING:
     from SNIClient import SNIContext
@@ -60,7 +62,6 @@ class EarthBoundClient(SNIClient):
     hint_list = []
 
     async def deathlink_kill_player(self, ctx: "SNIContext") -> None:
-        import struct
         from SNIClient import DeathState, snes_buffered_write, snes_flush_writes, snes_read
         battle_hp = {
             1: WRAM_START + 0x9FBF,
@@ -94,7 +95,8 @@ class EarthBoundClient(SNIClient):
         if is_currently_dead[0] != 0x00 or can_receive_deathlinks[0] == 0x00:
             return
 
-        if oss_flag[0] != 0x00 and is_in_battle[0] == 0x00:  # If suppression is set and we're not in a battle dont do deathlinks
+        # If suppression is set and we're not in a battle dont do deathlinks
+        if oss_flag[0] != 0x00 and is_in_battle[0] == 0x00:
             return
 
         for i in range(char_count[0]):
@@ -103,13 +105,14 @@ class EarthBoundClient(SNIClient):
             snes_buffered_write(ctx, active_hp[current_char[0]], bytes([0x00, 0x00]))
             snes_buffered_write(ctx, battle_hp[i + 1], bytes([0x00, 0x00]))
             if deathlink_mode[0] == 0 or is_in_battle[0] == 0:
-                snes_buffered_write(ctx, scrolling_hp[current_char[0]], bytes([0x00, 0x00]))  # This should be the check for instant or mercy. Write the value, call it here
+                # This should be the check for instant or mercy. Write the value, call it here
+                snes_buffered_write(ctx, scrolling_hp[current_char[0]], bytes([0x00, 0x00]))
         await snes_flush_writes(ctx)
         ctx.death_state = DeathState.dead
         ctx.last_death_link = time.time()
 
     async def validate_rom(self, ctx):
-        from SNIClient import snes_buffered_write, snes_flush_writes, snes_read
+        from SNIClient import snes_read
 
         rom_name = await snes_read(ctx, EB_ROMHASH_START, ROMHASH_SIZE)
         apworld_version = await snes_read(ctx, WORLD_VERSION, 16)
@@ -137,7 +140,7 @@ class EarthBoundClient(SNIClient):
         return True
 
     async def game_watcher(self, ctx):
-        from SNIClient import snes_buffered_write, snes_flush_writes, snes_read
+        from SNIClient import snes_buffered_write, snes_flush_writes, snes_read, snes_write
         giygas_clear = await snes_read(ctx, GIYGAS_CLEAR, 0x1)
         game_clear = await snes_read(ctx, GAME_CLEAR, 0x1)
         item_received = await snes_read(ctx, ITEM_RECEIVED, 0x1)
@@ -149,6 +152,10 @@ class EarthBoundClient(SNIClient):
         cur_script = await snes_read(ctx, CUR_SCENE, 1)
         rom = await snes_read(ctx, EB_ROMHASH_START, ROMHASH_SIZE)
         scouted_hint_flags = await snes_read(ctx, SCOUTED_HINT_FLAGS, 1)
+        gift_target = await snes_read(ctx, WRAM_START + 0xB5E7, 2)
+        outbound_gifts = await snes_read(ctx, WRAM_START + 0x31D0, 1)
+        shop_scout = await snes_read(ctx, WRAM_START + 0x0770, 1)
+        shop_scouts_enabled = await snes_read(ctx, ROM_START + 0x04FD77, 1)
         if rom != ctx.rom:
             ctx.rom = None
             return
@@ -162,6 +169,130 @@ class EarthBoundClient(SNIClient):
         if ctx.slot is None:
             return
 
+        await ctx.send_msgs([{
+            "cmd": "Get",
+            "keys": [f"GiftBoxes;{ctx.team}"]
+        }])
+
+        # Some sort of If goes here
+        # I forgor...
+        if f"GiftBox;{ctx.team};{ctx.slot}" not in ctx.stored_data:
+            local_giftbox = {
+                            str(ctx.slot): {
+                                "IsOpen": True,
+                                "AcceptsAnyGift": False,
+                                "DesiredTraits": wanted_traits,
+                                "MinimumGiftDataVersion": 2,
+                                "MaximumGiftDataVersion": 2}}
+            await ctx.send_msgs([{
+                        "cmd": "Set",
+                        "key": f"GiftBoxes;{ctx.team}",
+                        "want_reply": False,
+                        "default": {},
+                        "operations": [{"operation": "update", "value": local_giftbox}]
+                    }])
+        
+            await ctx.send_msgs([{
+                        "cmd": "Get",
+                        "keys": [f"GiftBox;{ctx.team};{ctx.slot}"]
+                    }])
+
+        await ctx.send_msgs([{
+                    "cmd": "SetNotify",
+                    "keys": [f"GiftBox;{ctx.team};{ctx.slot}", f"GiftBoxes;{ctx.team}"]
+                }])
+
+        inbox = ctx.stored_data.get(f"GiftBox;{ctx.team};{ctx.slot}")
+        motherbox = ctx.stored_data.get(f"GiftBoxes;{ctx.team}")
+        if inbox:
+            key, gift = next(iter(inbox.items()))
+            if gift["ItemName"] in item_id_table:
+                # If the name matches an EB item, convert it to one (even if not coming from EB)
+                # Maybe a key item override here
+                item = item_id_table[gift["ItemName"]]
+            else:
+                item = trait_interpreter(gift)
+
+            inbox_queue = await snes_read(ctx, WRAM_START + 0x3200, 1)
+            # Pause if the receiver queue is full
+            if not inbox_queue[0]:
+                await snes_write(ctx, [(WRAM_START + 0x3200, bytes([item]))])
+                inbox.pop(key)
+                await ctx.send_msgs([{
+                            "cmd": "Set",
+                            "key": f"GiftBox;{ctx.team};{ctx.slot}",
+                            "want_reply": False,
+                            "default": {},
+                            "operations": [{"operation": "pop", "value": key}]
+                        }])
+
+        # We're in the Gift selection menu. This should write the selected player's name into RAM
+        # for parsing.
+        # TODO; CHECK A SETNOTIFY HERE
+        if gift_target[0] != 0x00 and motherbox is not None:
+            gift_recipient = str(gift_target[0])
+            recip_name = ctx.player_names[gift_target[0]]
+            recip_name = get_alias(recip_name, ctx.slot_info[gift_target[0]].name)
+            recip_name = text_encoder(recip_name, 20)
+            if gift_recipient in motherbox and motherbox[gift_recipient]["IsOpen"]:
+                recip_name.extend(text_encoder(" (Open)", 20))
+            else:
+                recip_name.extend(text_encoder(" (Closed)", 20))
+            recip_name.append(0x00)
+            await snes_write(ctx, [(WRAM_START + 0xFF80, recip_name)])
+            await snes_write(ctx, [(WRAM_START + 0xB5E7, bytes([0x00, 0x00]))])
+            await snes_write(ctx, [(WRAM_START + 0xB573, bytes([0x00, 0x00]))])
+            
+            gift_flag_byte = await snes_read(ctx, WRAM_START + 0xB622, 1)
+            gift_flag_byte = gift_flag_byte[0] | 0x04
+            await snes_write(ctx, [(WRAM_START + 0xB622, bytes([gift_flag_byte]))])
+
+        if outbound_gifts[0] != 0x00 and motherbox is not None:
+            gift_buffer = await snes_read(ctx, WRAM_START + 0x31D1, 3)
+            gift_item_id = gift_buffer[0]
+            gift = gift_properties[gift_item_id]
+            recipient = struct.unpack("H", gift_buffer[-2:])
+            # Check if the player's box is open, refund if not
+
+            if str(recipient[0]) in motherbox and motherbox[str(recipient[0])]["IsOpen"] and (any(
+                        motherbox[str(recipient[0])]["AcceptsAnyGift"] or
+                        trait["Trait"] in motherbox[str(recipient[0])]["DesiredTraits"] for trait in gift.traits)):
+                was_refunded = False
+                recipient = recipient[0]
+            else:
+                was_refunded = True
+                recipient = ctx.slot
+            guid = str(uuid.uuid4())
+            outgoing_gift = {
+                            guid: {
+                                "ID": guid,
+                                "ItemName": gift.name,
+                                "Amount": 1,
+                                "ItemValue": gift.value,
+                                "Traits": gift.traits,
+                                "SenderSlot": ctx.slot,
+                                "ReceiverSlot": recipient,
+                                "SenderTeam": ctx.team,
+                                "ReceiverTeam": ctx.team,  # ??? Should be Receive slot team?
+                                "IsRefund": was_refunded}}
+
+            await ctx.send_msgs([{
+                        "cmd": "Set",
+                        "key": f"GiftBox;{ctx.team};{recipient}",  # Receiver team here too
+                        "want_reply": True,
+                        "default": {},
+                        "operations": [{"operation": "update", "value": outgoing_gift}]
+                    }])
+            
+            gift_queue = await snes_read(ctx, WRAM_START + 0x31D4, 0x21)
+            # shuffle the entire queue down 3 bytes
+            outbox_full_byte = await snes_read(ctx, WRAM_START + 0xB622, 1)
+
+            await snes_write(ctx, [(WRAM_START + 0x31D1, gift_queue)])
+            await snes_write(ctx, [(WRAM_START + 0x31D0, bytes([outbound_gifts[0] - 1]))])
+            outbox_full_byte = outbox_full_byte[0] & ~0x08
+            await snes_write(ctx, [(WRAM_START + 0xB622, bytes([outbox_full_byte]))])
+
         if game_clear[0] & 0x01 == 0x01:  # Goal should ignore the item queue and textbox check
             await ctx.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
             ctx.finished_game = True
@@ -173,7 +304,15 @@ class EarthBoundClient(SNIClient):
 
                 if i not in self.hint_list:
                     self.hint_list.append(i)
-                    await ctx.send_msgs([{"cmd": "LocationScouts", "locations": [scoutable_hint], "create_as_hint": 1}])
+                    await ctx.send_msgs([{"cmd": "LocationScouts", "locations": [scoutable_hint], "create_as_hint": 2}])
+        
+        if shop_scout[0] and shop_scouts_enabled[0]:
+            shop_slots = []
+            for i in range(7):
+                slot_id = (0xEB0FF9 + (shop_scout[0] * 7) + i)
+                if slot_id in ctx.server_locations:
+                    shop_slots.append(slot_id)
+            await ctx.send_msgs([{"cmd": "LocationScouts", "locations": shop_slots, "create_as_hint": 2}])
 
         await ctx.send_msgs([{
                     "cmd": "Set",
@@ -199,27 +338,31 @@ class EarthBoundClient(SNIClient):
                 snes_buffered_write(ctx, PLAYER_JUST_DIED_SEND_DEATHLINK, bytes([0x00]))
             await ctx.handle_deathlink_state(currently_dead)
 
-        if text_open[0] != 0xFF:  # Don't check locations or items while text is printing, but scouting is fine
-            return
-
         new_checks = []
         from .game_data.local_data import check_table
 
         location_ram_data = await snes_read(ctx, WRAM_START + 0x9C00, 0x88)
+        shop_location_flags = await snes_read(ctx, WRAM_START + 0xB721, 0x41)
         for loc_id, loc_data in check_table.items():
             if loc_id not in ctx.locations_checked:
-                data = location_ram_data[loc_data[0]]
+                if loc_id >= 0xEB1000:
+                    data = shop_location_flags[loc_data[0]]
+                else:
+                    data = location_ram_data[loc_data[0]]
                 masked_data = data & (1 << loc_data[1])
                 bit_set = masked_data != 0
                 invert_bit = ((len(loc_data) >= 3) and loc_data[2])
                 if bit_set != invert_bit and loc_id in ctx.server_locations:
-                    new_checks.append(loc_id)
+                    if text_open[0] == 0xFF or shop_scout[0]:  # Don't check locations while in a textbox
+                        new_checks.append(loc_id)
+                        
         for new_check_id in new_checks:
             ctx.locations_checked.add(new_check_id)
             location = ctx.location_names.lookup_in_slot(new_check_id)
             snes_logger.info(
                 f'New Check: {location} ({len(ctx.locations_checked)}/{len(ctx.missing_locations) + len(ctx.checked_locations)})')
             await ctx.send_msgs([{"cmd": 'LocationChecks', "locations": [new_check_id]}])
+            await snes_write(ctx, [(WRAM_START + 0x0770, bytes([0]))])
 
         if item_received[0] or special_received[0] != 0x00:  # If processing any item from the server
             return
@@ -247,9 +390,9 @@ class EarthBoundClient(SNIClient):
         await snes_flush_writes(ctx)
 
 
-def test_bits(value, bit):
-    byte_index = bit // 8
-    bit_pos = bit % 8
-    byte_val = value[byte_index]
-    bitmask = 1 << (7 - bit_pos)
-    return (byte_val & bitmask) != 0
+def get_alias(alias: str, slot_name: str):
+    try:
+        index = alias.index(f" ({slot_name}")
+    except ValueError:
+        return alias
+    return alias[:index]

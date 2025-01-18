@@ -61,7 +61,7 @@ class DBCommandProcessor(ServerCommandProcessor):
 class WebHostContext(Context):
     room_id: int
     # Ashipelago customization
-    room_is_tracked: bool
+    room_is_tracked: int
 
     def __init__(self, static_server_data: dict, logger: logging.Logger):
         # static server data is used during _load_game_data to load required data,
@@ -123,6 +123,11 @@ class WebHostContext(Context):
 
         # Ashipelago customization
         self.room_is_tracked = multidata["server_options"]["track_in_discord"]
+        if "use_room_hints" in multidata["server_options"]:
+            self.dynx.use_room_hints = multidata["server_options"]["use_room_hints"]
+        else:
+            self.dynx.use_room_hints = False
+
         for game in list(multidata.get("datapackage", {})):
             game_data = multidata["datapackage"][game]
             if "checksum" in game_data:

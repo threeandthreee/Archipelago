@@ -155,35 +155,35 @@ def setup_gamevars(world):
         world.rare_gear.append("Progressive Fry Pan")
     else:
         world.common_gear.extend([
-        "Cracked Bat",
-        "Tee Ball Bat",
-        "Sand Lot Bat",
-        "Minor League Bat",
-        "Fry Pan",
-        "Thick Fry Pan",
-        "Deluxe Fry Pan",
-        "Toy Air Gun",
-        "Zip Gun"
+            "Cracked Bat",
+            "Tee Ball Bat",
+            "Sand Lot Bat",
+            "Minor League Bat",
+            "Fry Pan",
+            "Thick Fry Pan",
+            "Deluxe Fry Pan",
+            "Toy Air Gun",
+            "Zip Gun"
         ])
 
         world.uncommon_gear.extend([
-        "Mr. Baseball Bat",
-        "T-Rex's Bat",
-        "Big League Bat",
-        "Chef's Fry Pan",
-        "Non-Stick Frypan",
-        "French Fry Pan",
-        "Hyper Beam",
-        "Crusher Beam"
+            "Mr. Baseball Bat",
+            "T-Rex's Bat",
+            "Big League Bat",
+            "Chef's Fry Pan",
+            "Non-Stick Frypan",
+            "French Fry Pan",
+            "Hyper Beam",
+            "Crusher Beam"
         ])
 
         world.rare_gear.extend([
-        "Hall of Fame Bat",
-        "Ultimate Bat",
-        "Gutsy Bat",
-        "Casey Bat",
-        "Holy Fry Pan",
-        "Magic Fry Pan"
+            "Hall of Fame Bat",
+            "Ultimate Bat",
+            "Gutsy Bat",
+            "Casey Bat",
+            "Holy Fry Pan",
+            "Magic Fry Pan"
         ])
 
     if world.options.progressive_armor:
@@ -197,29 +197,29 @@ def setup_gamevars(world):
         world.rare_gear.append("Progressive Other")
     else:
         world.common_gear.extend([
-        "Cheap Bracelet",
-        "Copper Bracelet",
-        "Baseball Cap",
-        "Mr. Baseball Cap",
-        "Holmes Hat",
-        "Hard Hat",
-        "Coin of Defense"
+            "Cheap Bracelet",
+            "Copper Bracelet",
+            "Baseball Cap",
+            "Mr. Baseball Cap",
+            "Holmes Hat",
+            "Hard Hat",
+            "Coin of Defense"
         ])
 
         world.uncommon_gear.extend([
-        "Platinum Band",
-        "Diamond Band",
-        "Lucky Coin",
-        "Silver Bracelet",
-        "Gold Bracelet",
-        "Coin of Slumber",
-        "Coin of Silence"
+            "Platinum Band",
+            "Diamond Band",
+            "Lucky Coin",
+            "Silver Bracelet",
+            "Gold Bracelet",
+            "Coin of Slumber",
+            "Coin of Silence"
         ])
 
         world.rare_gear.extend([
-        "Talisman Coin",
-        "Shiny Coin",
-        "Charm Coin"
+            "Talisman Coin",
+            "Shiny Coin",
+            "Charm Coin"
         ])
 
     valid_starts = 14
@@ -424,7 +424,8 @@ def setup_gamevars(world):
 
         world.starting_teleport = world.random.choice(world.valid_teleports)
 
-    filler_items = world.common_items + world.uncommon_items + world.rare_items + world.common_gear + world.uncommon_gear + world.rare_gear
+    filler_items = (world.common_items + world.uncommon_items + world.rare_items + world.common_gear +
+                    world.uncommon_gear + world.rare_gear)
     world.filler_drops = [item_id_table[i] for i in filler_items if i in item_id_table]
     world.filler_drops.append(0x00)
     if world.options.prefixed_items:
@@ -432,10 +433,13 @@ def setup_gamevars(world):
     else:
         world.filler_drops.extend([0x07, 0x05, 0x09, 0x0B, 0x10])
 
+    world.filler_shop = []
     if world.options.magicant_mode.value >= 2:
         world.magicant_junk = []
-        for i in range(6):
+        for i in range(8):
             world.magicant_junk.append(world.random.choice(filler_items))
+    for i in range(2):
+        world.filler_shop.append(world.random.choice(filler_items))
 
     world.available_flavors = []
     if world.options.random_flavors:
@@ -462,7 +466,7 @@ def setup_gamevars(world):
     world.lumine_text.extend([0x00])
     world.starting_money = struct.pack('<I', world.options.starting_money.value)
 
-    prayer_player = world.multiworld.get_player_name(world.random.randint(1, world.multiworld.players)) #todo; move to text converter
+    prayer_player = world.multiworld.get_player_name(world.random.randint(1, world.multiworld.players))  # todo; move to text converter
     for char in prayer_player[:24]:
         if char in eb_text_table:
             world.prayer_player.extend(eb_text_table[char])
@@ -471,7 +475,7 @@ def setup_gamevars(world):
     world.prayer_player.extend([0x00])
 
     world.credits_player = world.multiworld.get_player_name(world.player)
-    world.credits_player = text_encoder(world.credits_player, eb_text_table, 16)
+    world.credits_player = text_encoder(world.credits_player, 16)
     world.credits_player.extend([0x00])
     shuffle_psi(world)
     initialize_bosses(world)
@@ -480,6 +484,7 @@ def setup_gamevars(world):
 def place_static_items(world):
     world.get_location("Belch Defeated").place_locked_item(world.create_item("Threed Tunnels Clear"))
     world.get_location("Dungeon Man Submarine").place_locked_item(world.create_item("Submarine to Deep Darkness"))
+    world.get_location("Any ATM").place_locked_item(world.create_item("ATM Access"))
 
     world.get_location("Giant Step Sanctuary").place_locked_item(world.create_item("Melody"))
     world.get_location("Lilliput Steps Sanctuary").place_locked_item(world.create_item("Melody"))
@@ -514,11 +519,6 @@ def place_static_items(world):
     if world.options.random_start_location:
         world.multiworld.push_precollected(world.create_item(world.starting_teleport))
 
-    # if not world.options.shuffle_sound_stone:
-     #   world.multiworld.push_precollected(world.create_item("Sound Stone"))
-    # else:
-     #   world.multiworld.itempool.append(world.create_item("Sound Stone"))
-
     if not world.options.monkey_caves_mode:
         world.get_location("Monkey Caves - 1F Right Chest").place_locked_item(world.create_item("Wet Towel"))
         world.get_location("Monkey Caves - 1F Left Chest").place_locked_item(world.create_item("Pizza"))
@@ -529,3 +529,13 @@ def place_static_items(world):
         world.get_location("Monkey Caves - East 2F Right Chest").place_locked_item(world.create_item("Hamburger"))
         world.get_location("Monkey Caves - East West 3F Right Chest #1").place_locked_item(world.create_item("Hamburger"))
         world.get_location("Monkey Caves - East West 3F Right Chest #2").place_locked_item(world.create_item("Picnic Lunch"))
+
+    if world.options.shop_randomizer == 2:
+        world.get_location("Twoson Department Store Bakery - Slot 1").place_locked_item(world.create_item("Plain Roll"))
+        world.get_location("Fourside Department Store - Burger Shop Slot 4").place_locked_item(world.create_item("Hamburger"))
+
+        if world.options.monkey_caves_mode < 2:
+            world.get_location("Fourside Bakery - Slot 4").place_locked_item(world.create_item("Repel Sandwich"))
+            world.get_location("Fourside Department Store - Tool Shop Slot 7").place_locked_item(world.create_item("Ruler"))
+            world.get_location("Fourside Department Store - Shop Shop Slot 3").place_locked_item(world.create_item("Protein Drink"))
+            world.get_location("Fourside Department Store - Food Shop Slot 5").place_locked_item(world.create_item("Picnic Lunch"))

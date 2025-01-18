@@ -12,9 +12,6 @@ from .Locations import *
 from . import Options, Rules, Regions, Utils as ShadowUtils
 
 
-#from . import Macros
-
-
 def run_client():
     print("Running ShTHClient")
     from .ShTHClient import main
@@ -126,18 +123,26 @@ class ShtHWorld(World):
 
                     aliens = aliens[0]
 
-                    override_total_complete = ShadowUtils.getOverwriteRequiredCount(override_settings, stage,
-                                                                           alignment_id, ShadowUtils.TYPE_ID_COMPLETION)
-                    max_required_complete = ShadowUtils.getRequiredCount(clear.requirement_count, objective_percentage,
-                                                                override=override_total_complete, round_method=floor)
+                    max_required_complete = ShadowUtils.getMaxRequired(
+                        ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_COMPLETION, clear.mission_object_name, self.options),
+                                   clear.requirement_count, clear.stageId, clear.alignmentId,
+                                       override_settings)
+
+
+                    #override_total_complete = ShadowUtils.getOverwriteRequiredCount(override_settings, stage,
+                     #                                                      alignment_id, ShadowUtils.TYPE_ID_COMPLETION)
+                    #max_required_complete = ShadowUtils.getRequiredCount(clear.requirement_count, objective_percentage,
+                    #                                            override=override_total_complete, round_method=floor)
 
                     d_count = aliens.total_count - max_required_complete
 
                     if d_count > 0:
-                        override_total = ShadowUtils.getOverwriteRequiredCount(override_settings, stage,
-                                                                               alignment_id, ShadowUtils.TYPE_ID_ENEMY)
-                        max_required = ShadowUtils.getRequiredCount(aliens.total_count, percentage,
-                                                              override=override_total, round_method=floor)
+
+                        max_required = ShadowUtils.getMaxRequired(
+                            ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_ENEMY,
+                                                                      clear.mission_object_name, self.options),
+                            aliens.total_count, stage, alignment_id,
+                            override_settings)
 
                         if max_required > max_required_complete:
                             key = key_prefix + "." + Levels.LEVEL_ID_TO_LEVEL[stage]
@@ -159,8 +164,13 @@ class ShtHWorld(World):
         item_count = Items.CountItems(self) - self.options.starting_stages
         location_count = Locations.count_locations(self)
 
-        if self.options.objective_item_percentage_available < self.options.objective_item_percentage:
+        if self.options.objective_item_percentage_available < self.options.objective_completion_percentage:
             raise OptionError("Invalid available percentage versus requirement")
+
+        if self.options.objective_completion_enemy_percentage < self.options.objective_completion_enemy_percentage:
+            raise OptionError("Invalid available enemy percentage versus requirement")
+
+        # TODO: Check all options don't contradict one another from percent_overrides
 
         if self.options.exceeding_items_filler == Options.ExceedingItemsFiller.option_minimise:
             if item_count > location_count:
@@ -174,6 +184,45 @@ class ShtHWorld(World):
         elif self.options.exceeding_items_filler == Options.ExceedingItemsFiller.option_off and \
             location_count < item_count:
             raise OptionError("Invalid count of items present:"+str(location_count)+" vs "+str(item_count))
+
+        for missionClear in Locations.MissionClearLocations:
+
+            if missionClear.requirement_count is None:
+                continue
+
+            max_required_objective = ShadowUtils.getMaxRequired(
+                ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_OBJECTIVE,
+                                                          missionClear.mission_object_name, self.options),
+                missionClear.requirement_count, missionClear.stageId, missionClear.alignmentId,
+                self.options.percent_overrides)
+
+            max_required_available = ShadowUtils.getMaxRequired(
+                ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_OBJECTIVE_AVAILABLE,
+                                                          missionClear.mission_object_name, self.options),
+                missionClear.requirement_count, missionClear.stageId, missionClear.alignmentId,
+                self.options.percent_overrides)
+
+            max_required_completion = ShadowUtils.getMaxRequired(
+                ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_COMPLETION,
+                                                          missionClear.mission_object_name, self.options),
+                missionClear.requirement_count, missionClear.stageId, missionClear.alignmentId,
+                self.options.percent_overrides)
+
+            if max_required_objective > missionClear.requirement_count and not self.options.allow_dangerous_settings:
+                raise OptionError("Dangerous objective value set!")
+
+            if max_required_available < max_required_completion:
+                raise OptionError(f"Stage specific variables uncompletable for stage:{Levels.LEVEL_ID_TO_LEVEL[missionClear.stageId]}"
+                                  f"with {max_required_available} and {max_required_completion}")
+
+        for enemy in Locations.EnemySanityLocations:
+            max_required_enemy = ShadowUtils.getMaxRequired(
+                ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_ENEMY,
+                                                          enemy.mission_object_name, self.options),
+                enemy.total_count, enemy.stageId, enemy.enemyClass, self.options.percent_overrides)
+
+            if max_required_enemy > enemy.total_count and not self.options.allow_dangerous_settings:
+                raise OptionError("Dangerous enemy value set!")
 
         if not self.options.objective_sanity.value and self.options.enemy_sanity:
             self.calculate_object_discrepancies()
@@ -239,9 +288,16 @@ class ShtHWorld(World):
         slot_data = {
             "check_level": None if len(self.first_regions) == 0 else self.first_regions[0],
             "first_levels": self.first_regions,
+
             "objective_sanity": self.options.objective_sanity.value,
             "objective_percentage": self.options.objective_percentage.value,
-            "objective_item_percentage": self.options.objective_item_percentage.value,
+            "objective_enemy_percentage": self.options.objective_enemy_percentage.value,
+            "objective_completion_percentage": self.options.objective_completion_percentage.value,
+            "objective_completion_enemy_percentage": self.options.objective_completion_enemy_percentage.value,
+            "objective_item_percentage_available": self.options.objective_item_percentage_available.value,
+            "objective_item_enemy_percentage_available": self.options.objective_item_enemy_percentage_available.value,
+            "enemy_sanity_percentage": self.options.enemy_sanity_percentage.value,
+
             "checkpoint_sanity": self.options.checkpoint_sanity.value,
             "character_sanity": self.options.character_sanity.value,
 
@@ -262,9 +318,7 @@ class ShtHWorld(World):
             "story_mode_available": self.options.level_progression != Options.LevelProgression.option_select,
             "select_mode_available": self.options.level_progression != Options.LevelProgression.option_story,
             "required_client_version": ShadowUtils.GetVersionString(),
-            "enemy_sanity_percentage": self.options.enemy_sanity_percentage.value,
-            "percent_overrides": self.options.percent_overrides.value
+            "override_settings": self.options.percent_overrides.value,
         }
-
 
         return slot_data

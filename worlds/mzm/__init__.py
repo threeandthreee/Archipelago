@@ -81,6 +81,7 @@ class MZMWorld(World):
     def create_regions(self) -> None:
         create_regions_and_connections(self)
 
+        self.place_event("Ziplines Activated", "Kraid Zipline Activator")
         self.place_event("Kraid Defeated", "Kraid")
         self.place_event("Ridley Defeated", "Ridley")
         self.place_event("Mother Brain Defeated", "Mother Brain")
@@ -121,7 +122,7 @@ class MZMWorld(World):
     def generate_output(self, output_directory: str):
         output_path = Path(output_directory)
 
-        patch = MZMProcedurePatch()
+        patch = MZMProcedurePatch(player=self.player, player_name=self.player_name)
         patch.write_file("basepatch.bsdiff", data_path("basepatch.bsdiff"))
         write_tokens(self, patch)
         if not self.options.unknown_items_always_usable:

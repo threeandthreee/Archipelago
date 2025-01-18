@@ -20,6 +20,7 @@ class WorldData:
     events_dict: dict[str, LocationData]
     locked_locations: set[int]
     pool_locations: list[LocationData]
+    location_groups: dict[str, set[LocationData]]
 
     # items.py
     single_items_dict: dict[str, SingleItemData]

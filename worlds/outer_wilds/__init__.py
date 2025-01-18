@@ -69,6 +69,12 @@ class OuterWildsWorld(World):
         if self.options.shuffle_spacesuit and self.options.spawn != Spawn.option_vanilla:
             raise OptionError('Incompatible options: shuffle_spacesuit is true and spawn is non-vanilla (%s)', self.options.spawn)
 
+        # When Universal Tracker is not involved, spawn is just a normal option.
+        # But we also run this before the UT check because if we're in UT's 1st pass, we won't have slot_data's spawn
+        # yet, and we still need to set this to avoid a DLC-only slot from thinking it has vanilla spawn and crashing
+        # when items.py tries to lock Launch Codes on a location that doesn't exist.
+        self.spawn = self.options.spawn
+
         # implement Universal Tracker support
         if hasattr(self.multiworld, "generation_is_fake"):
             if hasattr(self.multiworld, "re_gen_passthrough"):
@@ -77,9 +83,6 @@ class OuterWildsWorld(World):
                     self.warps = slot_data["warps"]
                     self.spawn = slot_data["spawn"]
             return
-
-        # when Universal Tracker is not involved, spawn is just a normal option
-        self.spawn = self.options.spawn
 
         # generate game-specific randomizations separate from AP items/locations
         self.eotu_coordinates = generate_random_coordinates(self.random) \
@@ -160,7 +163,7 @@ class OuterWildsWorld(World):
         slot_data["warps"] = self.warps
         # Archipelago does not yet have apworld versions (data_version is deprecated),
         # so we have to roll our own with slot_data for the time being
-        slot_data["apworld_version"] = "0.3.9"
+        slot_data["apworld_version"] = "0.3.11"
         return slot_data
 
     def write_spoiler(self, spoiler_handle: TextIO) -> None:

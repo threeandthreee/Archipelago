@@ -21,6 +21,29 @@ class PathInfo:
         return self
 
 
+def StoryToOrder():
+
+    data = set()
+
+    starting_stages = [ s.end_stage_id for s in StoryMode if s.start_stage_id is None ]
+    data = data.union(set(starting_stages))
+
+    while True:
+        story_nodes = [ s for s in StoryMode if s.start_stage_id in data]
+        if len(story_nodes) == 0:
+            break
+        b_len = len(data)
+        data = data.union(set([s.end_stage_id for s in story_nodes if s.end_stage_id is not None and s.end_stage_id not in data]))
+        data = data.union(set([s.boss for s in story_nodes if s.boss not in data and s.boss is not None and s.boss not in data]))
+        if b_len == len(data):
+            break
+
+    #print([Levels.LEVEL_ID_TO_LEVEL[l] for l in data])
+    return data
+
+
+
+
 StoryMode = \
 [
     PathInfo(None, None, Levels.STAGE_WESTOPOLIS, []),

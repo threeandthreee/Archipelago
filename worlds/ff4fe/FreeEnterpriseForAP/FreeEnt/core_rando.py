@@ -17,8 +17,6 @@ from .address import *
 
 
 import math
-import re
-import string
 
 DEBUG = 0
 MAX_RANDOMIZATION_ATTEMPTS = 100
@@ -491,16 +489,10 @@ def apply(env):
         # assign key items
         if env.options.ap_data is not None:
             for slot in RewardSlot:
-                skip_list = [0x5A, 0x5D, 0x5F, 0x60]
-                if slot == RewardSlot.feymarch_item:
-                    id = 0x13D
-                elif slot == RewardSlot.lunar_boss_4_item_1:
-                    id = 0x19F
-                elif slot == RewardSlot.lunar_boss_4_item_2:
-                    id = 0x1A0
-                elif slot < 0x20 or slot in skip_list:
+                skip_list = [0x2D, 0x39, 0x3A, 0x5A, 0x5D, 0x5F, 0x60]
+                if slot < 0x20 or slot in skip_list:
                     continue  # not doing characters here
-                elif slot >= 0x3C and slot <= 0x58:
+                if slot >= 0x3C and slot <= 0x58:
                     id = treasure_dbview.find_one(
                         lambda t: t.map == CHEST_NUMBERS[slot][0] and
                                   t.index == CHEST_NUMBERS[slot][1]).flag
@@ -508,23 +500,12 @@ def apply(env):
                     id = slot + 0x200
                 if int(id) == 0x25B and env.options.flags.has('objective_mode_classicforge'):
                     continue
-                try:
-                    ap_item = env.options.ap_data[str(id)]
-                    placement = items_dbview.find_one(lambda i: i.code == ap_item["item_data"]["fe_id"])
-                except KeyError:
-                    placement = None
+                ap_item = env.options.ap_data[str(id)]
+                placement = items_dbview.find_one(lambda i: i.code == ap_item["item_data"]["fe_id"])
                 if placement is None:
                     reward = ItemReward("#item.Cure1")
-                    env.add_toggle(f"ap_{slot.name}")
                 else:
                     reward = ItemReward(placement.const)
-                script_text = env.meta["text_pointers"].pop()
-                bank = int(script_text[10], 16)
-                pointer = script_text[20:24]
-                pointer = pointer[1:] if pointer[3] != ")" else pointer[1:3]
-                env.add_script(f"consts(ap_reward_slot) {{${pointer} {slot.name}}} ")
-                safe_item_name = re.sub(r"[^a-zA-Z0-9`\'.\-_!?%/:,\s]", "-", ap_item["item_name"])
-                env.add_script(f'{script_text} {{Found {ap_item["player_name"]}\'s \n{safe_item_name}. }}')
                 rewards_assignment[slot] = reward
             found_valid_assignment = True
         elif env.options.flags.has('key_items_vanilla'):
@@ -666,6 +647,27 @@ def apply(env):
 
         found_valid_assignment = True
         break
+        for test in tests:
+            if type(test) is list:
+                if len(test) == 3:
+                    qualification, without, force = test
+                else:    
+                    qualification, without = test
+            else:
+                qualification = test
+                without = []
+                force = None
+
+            result, path = checker.check(qualification, without=without, force=force)
+            if not result:
+                # item is unreachable, assignment fails
+                if DEBUG:
+                    print('  FAILED: no path to {}'.format(qualification))
+                found_valid_assignment = False
+                break
+            else:
+                if DEBUG:
+                    print('  {} : {}'.format(qualification, ', '.join(path)))
 
         attempts += 1
 
@@ -832,13 +834,6 @@ def apply(env):
         for area in areas:
             new_chests = env.rnd.sample(treasure_dbview.find_all(lambda t: t.area == area), len(areas[area]))
             for i,slot in enumerate(areas[area]):
-                id = new_chests[i].flag
-                ap_item = env.options.ap_data[str(id)]
-                placement = items_dbview.find_one(lambda i: i.code == ap_item["item_data"]["fe_id"])
-                if placement is None:
-                    rewards_assignment[slot] = ItemReward("#item.Cure1")
-                else:
-                    rewards_assignment[slot] = ItemReward(placement.const)
                 env.meta['miab_locations'][slot] = [new_chests[i].map, new_chests[i].index]
 
     # hacky cleanup step for _1 and _2 suffixes, and build key item metadata for random objectives

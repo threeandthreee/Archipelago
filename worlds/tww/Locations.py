@@ -1,10 +1,18 @@
 from enum import Enum, Flag, auto
-from typing import Dict, NamedTuple, Optional, Tuple
+from typing import TYPE_CHECKING, NamedTuple, Optional
 
 from BaseClasses import Location, Region
 
+if TYPE_CHECKING:
+    from .randomizers.Dungeons import Dungeon
+
 
 class TWWFlag(Flag):
+    """
+    This class represents flags used for categorizing game locations.
+    Flags are used to group locations by their specific gameplay or logic attributes.
+    """
+
     ALWAYS = auto()
     DUNGEON = auto()
     TNGL_CT = auto()
@@ -34,6 +42,10 @@ class TWWFlag(Flag):
 
 
 class TWWLocationType(Enum):
+    """
+    This class defines constants for various types of locations in The Wind Waker.
+    """
+
     CHART = auto()
     BOCTO = auto()
     CHEST = auto()
@@ -44,6 +56,21 @@ class TWWLocationType(Enum):
 
 
 class TWWLocationData(NamedTuple):
+    """
+    This class represents the data for a location in The Wind Waker.
+
+    :param code: The unique code identifier for the location.
+    :param flags: The flags that categorize the location.
+    :param region: The name of the region where the location resides.
+    :param stage_id: The ID of the stage where the location resides.
+    :param type: The type of the location.
+    :param bit: The bit in memory that is associated with the location. This is combined with other location data to
+    determine where in memory to determine whether the location has been checked. If the location is a special type,
+    this bit is ignored.
+    :param address: For certain location types, this variable contains the address of the byte with the check bit for
+    that location. Defaults to `None`.
+    """
+
     code: Optional[int]
     flags: TWWFlag
     region: str
@@ -54,8 +81,17 @@ class TWWLocationData(NamedTuple):
 
 
 class TWWLocation(Location):
+    """
+    This class represents a location in The Wind Waker.
+
+    :param player: The ID of the player whose world the location is in.
+    :param name: The name of the location.
+    :param parent: The location's parent region.
+    :param data: The data associated with this location.
+    """
+
     game: str = "The Wind Waker"
-    dungeon = None
+    dungeon: Optional["Dungeon"] = None
 
     def __init__(self, player: int, name: str, parent: Region, data: TWWLocationData):
         address = None if data.code is None else TWWLocation.get_apid(data.code)
@@ -70,7 +106,13 @@ class TWWLocation(Location):
         self.address = self.address
 
     @staticmethod
-    def get_apid(code: int):
+    def get_apid(code: int) -> int:
+        """
+        Compute the Archipelago ID for the given location code.
+
+        :param code: The unique code for the location.
+        :return: The computed Archipelago ID.
+        """
         base_id: int = 2326528
         return base_id + code
 
@@ -84,7 +126,7 @@ DUNGEON_NAMES = [
     "Wind Temple",
 ]
 
-LOCATION_TABLE: Dict[str, TWWLocationData] = {
+LOCATION_TABLE: dict[str, TWWLocationData] = {
     # Outset Island
     "Outset Island - Underneath Link's House": TWWLocationData(
         0, TWWFlag.MISCELL, "The Great Sea", 0xB, TWWLocationType.CHEST, 5
@@ -140,10 +182,10 @@ LOCATION_TABLE: Dict[str, TWWLocationData] = {
         16, TWWFlag.SPOILS, "The Great Sea", 0xB, TWWLocationType.EVENT, 0, 0x803C52EC
     ),
     "Windfall Island - Mrs. Marie - Give 21 Joy Pendants": TWWLocationData(
-        17, TWWFlag.SPOILS, "The Great Sea", 0xB, TWWLocationType.EVENT, 4, 0x803C52EC
+        17, TWWFlag.SPOILS, "The Great Sea", 0xB, TWWLocationType.EVENT, 3, 0x803C5248
     ),
     "Windfall Island - Mrs. Marie - Give 40 Joy Pendants": TWWLocationData(
-        18, TWWFlag.SPOILS, "The Great Sea", 0xB, TWWLocationType.EVENT, 5, 0x803C52EC
+        18, TWWFlag.SPOILS, "The Great Sea", 0xB, TWWLocationType.EVENT, 2, 0x803C5248
     ),
     "Windfall Island - Lenzo's House - Left Chest": TWWLocationData(
         19, TWWFlag.SHRT_SQ, "The Great Sea", 0xB, TWWLocationType.CHEST, 1
@@ -152,7 +194,7 @@ LOCATION_TABLE: Dict[str, TWWLocationData] = {
         20, TWWFlag.SHRT_SQ, "The Great Sea", 0xB, TWWLocationType.CHEST, 2
     ),
     "Windfall Island - Lenzo's House - Become Lenzo's Assistant": TWWLocationData(
-        21, TWWFlag.LONG_SQ, "The Great Sea", 0xB, TWWLocationType.EVENT, 0, 0x803C52B5
+        21, TWWFlag.LONG_SQ, "The Great Sea", 0xB, TWWLocationType.SPECL, 0, 0x803C52F0
     ),
     "Windfall Island - Lenzo's House - Bring Forest Firefly": TWWLocationData(
         22, TWWFlag.LONG_SQ, "The Great Sea", 0xB, TWWLocationType.EVENT, 5, 0x803C5295
@@ -242,7 +284,7 @@ LOCATION_TABLE: Dict[str, TWWLocationData] = {
 
     # Dragon Roost Island
     "Dragon Roost Island - Wind Shrine": TWWLocationData(
-        50, TWWFlag.MISCELL, "The Great Sea", 0x0, TWWLocationType.SWTCH, 32
+        50, TWWFlag.MISCELL, "The Great Sea", 0x0, TWWLocationType.EVENT, 3, 0x803C5253
     ),
     "Dragon Roost Island - Rito Aerie - Give Hoskit 20 Golden Feathers": TWWLocationData(
         51, TWWFlag.SPOILS, "The Great Sea", 0xB, TWWLocationType.EVENT, 7, 0x803C524D
@@ -417,7 +459,7 @@ LOCATION_TABLE: Dict[str, TWWLocationData] = {
         104, TWWFlag.DUNGEON, "Tower of the Gods", 0x5, TWWLocationType.CHEST, 6
     ),
     "Tower of the Gods - Stone Tablet": TWWLocationData(
-        105, TWWFlag.DUNGEON, "Tower of the Gods", 0x5, TWWLocationType.SWTCH, 25
+        105, TWWFlag.DUNGEON, "Tower of the Gods", 0x5, TWWLocationType.EVENT, 4, 0x803C5251
     ),
     "Tower of the Gods - Darknut Miniboss Room": TWWLocationData(
         106, TWWFlag.DUNGEON, "Tower of the Gods Miniboss Arena", 0x5, TWWLocationType.CHEST, 5
@@ -617,7 +659,7 @@ LOCATION_TABLE: Dict[str, TWWLocationData] = {
 
     # Mailbox
     "Mailbox - Letter from Hoskit's Girlfriend": TWWLocationData(
-        165, TWWFlag.MAILBOX | TWWFlag.SPOILS, "The Great Sea", 0x0, TWWLocationType.EVENT, 0, 0x803C52DA
+        165, TWWFlag.MAILBOX | TWWFlag.SPOILS, "The Great Sea", 0x0, TWWLocationType.SPECL, 0, 0x803C52DA
     ),
     "Mailbox - Letter from Baito's Mother": TWWLocationData(
         166, TWWFlag.MAILBOX, "The Great Sea", 0x0, TWWLocationType.SPECL, 0, 0x803C52D8
@@ -914,7 +956,7 @@ LOCATION_TABLE: Dict[str, TWWLocationData] = {
 
     # Flight Control Platform
     "Flight Control Platform - Bird-Man Contest - First Prize": TWWLocationData(
-        247, TWWFlag.MINIGME, "The Great Sea", 0x0, TWWLocationType.SPECL, 0
+        247, TWWFlag.MINIGME, "The Great Sea", 0x0, TWWLocationType.EVENT, 6, 0x803C5257
     ),
     "Flight Control Platform - Submarine": TWWLocationData(
         248, TWWFlag.SUBMRIN, "The Great Sea", 0xA, TWWLocationType.CHEST, 3
@@ -1162,59 +1204,7 @@ LOCATION_TABLE: Dict[str, TWWLocationData] = {
 }
 
 
-ISLAND_NUMBER_TO_NAME = {
-    1: "Forsaken Fortress Sector",
-    2: "Star Island",
-    3: "Northern Fairy Island",
-    4: "Gale Isle",
-    5: "Crescent Moon Island",
-    6: "Seven-Star Isles",
-    7: "Overlook Island",
-    8: "Four-Eye Reef",
-    9: "Mother and Child Isles",
-    10: "Spectacle Island",
-    11: "Windfall Island",
-    12: "Pawprint Isle",
-    13: "Dragon Roost Island",
-    14: "Flight Control Platform",
-    15: "Western Fairy Island",
-    16: "Rock Spire Isle",
-    17: "Tingle Island",
-    18: "Northern Triangle Island",
-    19: "Eastern Fairy Island",
-    20: "Fire Mountain",
-    21: "Star Belt Archipelago",
-    22: "Three-Eye Reef",
-    23: "Greatfish Isle",
-    24: "Cyclops Reef",
-    25: "Six-Eye Reef",
-    26: "Tower of the Gods Sector",
-    27: "Eastern Triangle Island",
-    28: "Thorned Fairy Island",
-    29: "Needle Rock Isle",
-    30: "Islet of Steel",
-    31: "Stone Watcher Island",
-    32: "Southern Triangle Island",
-    33: "Private Oasis",
-    34: "Bomb Island",
-    35: "Bird's Peak Rock",
-    36: "Diamond Steppe Island",
-    37: "Five-Eye Reef",
-    38: "Shark Island",
-    39: "Southern Fairy Island",
-    40: "Ice Ring Isle",
-    41: "Forest Haven",
-    42: "Cliff Plateau Isles",
-    43: "Horseshoe Island",
-    44: "Outset Island",
-    45: "Headstone Island",
-    46: "Two-Eye Reef",
-    47: "Angular Isles",
-    48: "Boating Course",
-    49: "Five-Star Isles",
-}
-
-ISLAND_NAME_TO_SALVAGE_BIT = {
+ISLAND_NAME_TO_SALVAGE_BIT: dict[str, int] = {
     "Forsaken Fortress Sector": 8,
     "Star Island": 18,
     "Northern Fairy Island": 51,
@@ -1267,7 +1257,13 @@ ISLAND_NAME_TO_SALVAGE_BIT = {
 }
 
 
-def split_location_name_by_zone(location_name: str) -> Tuple[str, str]:
+def split_location_name_by_zone(location_name: str) -> tuple[str, str]:
+    """
+    Split a location name into its zone name and specific name.
+
+    :param location_name: The full name of the location.
+    :return: A tuple containing the zone and specific name.
+    """
     if " - " in location_name:
         zone_name, specific_location_name = location_name.split(" - ", 1)
     else:

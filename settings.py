@@ -604,7 +604,8 @@ class ServerOptions(Group):
     disable_item_cheat: Union[DisableItemCheat, bool] = False
     location_check_points: LocationCheckPoints = LocationCheckPoints(1)
     hint_cost: HintCost = HintCost(10)
-    track_in_discord: bool = False
+    use_room_hints: bool = False
+    track_in_discord: int = 0
     release_mode: ReleaseMode = ReleaseMode("auto")
     collect_mode: CollectMode = CollectMode("auto")
     remaining_mode: RemainingMode = RemainingMode("goal")

@@ -1,12 +1,25 @@
-from typing import Dict, Iterable, NamedTuple, Optional, Union
+from collections.abc import Iterable
+from typing import TYPE_CHECKING, NamedTuple, Optional
 
 from BaseClasses import Item
 from BaseClasses import ItemClassification as IC
 from worlds.AutoWorld import World
 
+if TYPE_CHECKING:
+    from .randomizers.Dungeons import Dungeon
 
-def item_factory(items: Union[str, Iterable[str]], world: World):
-    ret = []
+
+def item_factory(items: str | Iterable[str], world: World) -> Item | list[Item]:
+    """
+    Create items based on their names.
+    Depending on the input, this function can return a single item or a list of items.
+
+    :param items: The name or names of the items to create.
+    :param world: The game world.
+    :raises KeyError: If an unknown item name is provided.
+    :return: A single item or a list of items.
+    """
+    ret: list[Item] = []
     singleton = False
     if isinstance(items, str):
         items = [items]
@@ -17,12 +30,20 @@ def item_factory(items: Union[str, Iterable[str]], world: World):
         else:
             raise KeyError(f"Unknown item {item}")
 
-    if singleton:
-        return ret[0]
-    return ret
+    return ret[0] if singleton else ret
 
 
 class TWWItemData(NamedTuple):
+    """
+    This class represents the data for an item in The Wind Waker.
+
+    :param type: The type of the item (e.g., "Item", "Dungeon Item").
+    :param classification: The item's classification (progression, useful, filler).
+    :param code: The unique code identifier for the item.
+    :param quantity: The number of this item available.
+    :param item_id: The ID used to represent the item in-game.
+    """
+
     type: str
     classification: IC
     code: Optional[int]
@@ -31,12 +52,21 @@ class TWWItemData(NamedTuple):
 
 
 class TWWItem(Item):
+    """
+    This class represents an item in The Wind Waker.
+
+    :param name: The item's name.
+    :param player: The ID of the player who owns the item.
+    :param data: The data associated with this item.
+    :param classification: Optional classification to override the default.
+    """
+
     game: str = "The Wind Waker"
     type: Optional[str]
-    dungeon = None
+    dungeon: Optional["Dungeon"] = None
 
-    def __init__(self, name: str, player: int, data: TWWItemData, classification: Optional[IC] = None):
-        super(TWWItem, self).__init__(
+    def __init__(self, name: str, player: int, data: TWWItemData, classification: Optional[IC] = None) -> None:
+        super().__init__(
             name,
             data.classification if classification is None else classification,
             None if data.code is None else TWWItem.get_apid(data.code),
@@ -47,19 +77,31 @@ class TWWItem(Item):
         self.item_id = data.item_id
 
     @staticmethod
-    def get_apid(code: int):
+    def get_apid(code: int) -> int:
+        """
+        Compute the Archipelago ID for the given item code.
+
+        :param code: The unique code for the item.
+        :return: The computed Archipelago ID.
+        """
         base_id: int = 2322432
         return base_id + code
 
     @property
     def dungeon_item(self) -> Optional[str]:
+        """
+        Determine if the item is a dungeon item and, if so, returns its type.
+
+        :return: The type of dungeon item, or `None` if it is not a dungeon item.
+        """
         if self.type in ("Small Key", "Big Key", "Map", "Compass"):
             return self.type
+        return None
 
 
-ITEM_TABLE: Dict[str, TWWItemData] = {
-    "Telescope":               TWWItemData("Item",      IC.filler,                       0,  1, 0x20),
-  # "Boat's Sail":             TWWItemData("Item",      IC.progression,                  1,  1, 0x78),
+ITEM_TABLE: dict[str, TWWItemData] = {
+    "Telescope":               TWWItemData("Item",      IC.useful,                       0,  1, 0x20),
+  # "Boat's Sail":             TWWItemData("Item",      IC.progression,                  1,  1, 0x78),  # noqa: E131
     "Wind Waker":              TWWItemData("Item",      IC.progression,                  2,  1, 0x22),
     "Grappling Hook":          TWWItemData("Item",      IC.progression,                  3,  1, 0x25),
     "Spoils Bag":              TWWItemData("Item",      IC.progression,                  4,  1, 0x24),
@@ -75,8 +117,8 @@ ITEM_TABLE: Dict[str, TWWItemData] = {
     "Skull Hammer":            TWWItemData("Item",      IC.progression,                 14,  1, 0x33),
     "Power Bracelets":         TWWItemData("Item",      IC.progression,                 15,  1, 0x28),
 
-    "Hero's Charm":            TWWItemData("Item",      IC.filler,                      16,  1, 0x43),
-    "Hurricane Spin":          TWWItemData("Item",      IC.filler,                      17,  1, 0xAA),
+    "Hero's Charm":            TWWItemData("Item",      IC.useful,                      16,  1, 0x43),
+    "Hurricane Spin":          TWWItemData("Item",      IC.useful,                      17,  1, 0xAA),
     "Dragon Tingle Statue":    TWWItemData("Item",      IC.progression,                 18,  1, 0xA3),
     "Forbidden Tingle Statue": TWWItemData("Item",      IC.progression,                 19,  1, 0xA4),
     "Goddess Tingle Statue":   TWWItemData("Item",      IC.progression,                 20,  1, 0xA5),
@@ -113,7 +155,7 @@ ITEM_TABLE: Dict[str, TWWItemData] = {
     "Maggie's Letter":         TWWItemData("Item",      IC.progression,                 47,  1, 0x9A),
     "Moblin's Letter":         TWWItemData("Item",      IC.progression,                 48,  1, 0x9B),
     "Cabana Deed":             TWWItemData("Item",      IC.progression,                 49,  1, 0x9C),
-    "Fill-Up Coupon":          TWWItemData("Item",      IC.filler,                      50,  1, 0x9E),
+    "Fill-Up Coupon":          TWWItemData("Item",      IC.useful,                      50,  1, 0x9E),
 
     "Nayru's Pearl":           TWWItemData("Item",      IC.progression,                 51,  1, 0x69),
     "Din's Pearl":             TWWItemData("Item",      IC.progression,                 52,  1, 0x6A),
@@ -194,12 +236,12 @@ ITEM_TABLE: Dict[str, TWWItemData] = {
     "Yellow Rupee":            TWWItemData("Item",      IC.filler,                     123,  3, 0x03),
     "Red Rupee":               TWWItemData("Item",      IC.filler,                     124,  8, 0x04),
     "Purple Rupee":            TWWItemData("Item",      IC.filler,                     125, 10, 0x05),
-    "Orange Rupee":            TWWItemData("Item",      IC.filler,                     126, 15, 0x06),
-    "Silver Rupee":            TWWItemData("Item",      IC.filler,                     127, 20, 0x0F),
-    "Rainbow Rupee":           TWWItemData("Item",      IC.filler,                     128,  1, 0xB8),
+    "Orange Rupee":            TWWItemData("Item",      IC.useful,                     126, 15, 0x06),
+    "Silver Rupee":            TWWItemData("Item",      IC.useful,                     127, 20, 0x0F),
+    "Rainbow Rupee":           TWWItemData("Item",      IC.useful,                     128,  1, 0xB8),
 
     "Piece of Heart":          TWWItemData("Item",      IC.filler,                     129, 44, 0x07),
-    "Heart Container":         TWWItemData("Item",      IC.filler,                     130,  6, 0x08),
+    "Heart Container":         TWWItemData("Item",      IC.useful,                     130,  6, 0x08),
 
     "DRC Big Key":             TWWItemData("Big Key",   IC.progression,                131,  1, 0x14),
     "DRC Small Key":           TWWItemData("Small Key", IC.progression,                132,  4, 0x13),
@@ -280,7 +322,7 @@ ISLAND_NUMBER_TO_CHART_NAME = {
 }
 
 
-LOOKUP_ID_TO_NAME: Dict[int, str] = {
+LOOKUP_ID_TO_NAME: dict[int, str] = {
     TWWItem.get_apid(data.code): item for item, data in ITEM_TABLE.items() if data.code is not None
 }
 

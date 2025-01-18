@@ -249,7 +249,341 @@ location_ids = {
     "Magicant - Ness's Nightmare": 0xEB00ED,
     "Cave of the Present - Star Master": 0xEB00EE,
     "Cave of the Present - Broken Phase Distorter": 0xEB00EF,
-    "Cave of the Past - Present": 0xEB00F0
+    "Cave of the Past - Present": 0xEB00F0,
+    ##########################################
+    # Shop checks are denoted by an ID of
+    # 0x1000 | Each shop has 7 allocated ID spaces in memory
+    "Onett Drugstore - Right Counter Slot 1": 0xEB1000,
+    "Onett Drugstore - Right Counter Slot 2": 0xEB1001,
+    "Onett Drugstore - Right Counter Slot 3": 0xEB1002,
+    "Onett Drugstore - Right Counter Slot 4": 0xEB1003,
+    "Onett Drugstore - Right Counter Slot 5": 0xEB1004,
+
+    "Onett Drugstore - Left Counter": 0xEB1007,
+
+    "Summers - Beach Cart": 0xEB100E,
+
+    "Onett Burger Shop - Slot 1": 0xEB1015,
+    "Onett Burger Shop - Slot 2": 0xEB1016,
+    "Onett Burger Shop - Slot 3": 0xEB1017,
+    "Onett Burger Shop - Slot 4": 0xEB1018,
+
+    "Onett Bakery - Slot 1": 0xEB101C,
+    "Onett Bakery - Slot 2": 0xEB101D,
+    "Onett Bakery - Slot 3": 0xEB101E,
+    "Onett Bakery - Slot 4": 0xEB101F,
+
+    "Twoson Department Store Burger Shop - Slot 1": 0xEB1023,
+    "Twoson Department Store Burger Shop - Slot 2": 0xEB1024,
+    "Twoson Department Store Burger Shop - Slot 3": 0xEB1025,
+    "Twoson Department Store Burger Shop - Slot 4": 0xEB1026,
+
+    "Twoson Department Store Bakery - Slot 1": 0xEB102A,  # Force This slot needs to always be a local food item
+    "Twoson Department Store Bakery - Slot 2": 0xEB102B,
+    "Twoson Department Store Bakery - Slot 3": 0xEB102C,
+    "Twoson Department Store Bakery - Slot 4": 0xEB102D,
+
+    "Twoson Department Store Top Floor - Right Counter Slot 1": 0xEB1031,
+    "Twoson Department Store Top Floor - Right Counter Slot 2": 0xEB1032,
+    "Twoson Department Store Top Floor - Right Counter Slot 3": 0xEB1033,
+    "Twoson Department Store Top Floor - Right Counter Slot 4": 0xEB1034,
+    "Twoson Department Store Top Floor - Right Counter Slot 5": 0xEB1035,
+    "Twoson Department Store Top Floor - Right Counter Slot 6": 0xEB1036,
+
+    "Twoson Department Store Top Floor - Left Counter Slot 1": 0xEB1038,
+    "Twoson Department Store Top Floor - Left Counter Slot 2": 0xEB1039,
+
+    "Summers - Magic Cake Cart Shop Slot": 0xEB103F,
+
+    "Burglin Park Junk Shop - Slot 1": 0xEB1046,
+    "Burglin Park Junk Shop - Slot 2": 0xEB1047,
+    "Burglin Park Junk Shop - Slot 3": 0xEB1048,
+    "Burglin Park Junk Shop - Slot 4": 0xEB1049,
+    "Burglin Park Junk Shop - Slot 5": 0xEB104A,
+    "Burglin Park Junk Shop - Slot 6": 0xEB104B,
+
+    "Burglin Park Bread Stand - Slot 1": 0xEB105B,
+    "Burglin Park Bread Stand - Slot 2": 0xEB105C,
+    "Burglin Park Bread Stand - Slot 3": 0xEB105D,
+    "Burglin Park Bread Stand - Slot 4": 0xEB105E,
+    "Burglin Park Bread Stand - Slot 5": 0xEB105F,
+    "Burglin Park Bread Stand - Slot 6": 0xEB1060,
+
+    "Burglin Park - Banana Stand": 0xEB1062,
+
+    "Happy-Happy Village Drugstore - Right Counter Slot 1": 0xEB1069,
+    "Happy-Happy Village Drugstore - Right Counter Slot 2": 0xEB106A,
+    "Happy-Happy Village Drugstore - Right Counter Slot 3": 0xEB106B,
+    "Happy-Happy Village Drugstore - Right Counter Slot 4": 0xEB106C,
+    "Happy-Happy Village Drugstore - Right Counter Slot 5": 0xEB106D,
+
+    "Threed Drugstore - Right Counter Slot 1": 0xEB1070,
+    "Threed Drugstore - Right Counter Slot 2": 0xEB1071,
+    "Threed Drugstore - Right Counter Slot 3": 0xEB1072,
+    "Threed Drugstore - Right Counter Slot 4": 0xEB1073,
+    "Threed Drugstore - Right Counter Slot 5": 0xEB1074,
+
+    "Threed Drugstore - Left Counter Slot 1": 0xEB1077,
+    "Threed Drugstore - Left Counter Slot 2": 0xEB1078,
+    "Threed Drugstore - Left Counter Slot 3": 0xEB1079,
+    "Threed Drugstore - Left Counter Slot 4": 0xEB107A,
+    "Threed Drugstore - Left Counter Slot 5": 0xEB107B,
+
+    "Threed - Arms Dealer Slot 1": 0xEB107E,
+    "Threed - Arms Dealer Slot 2": 0xEB107F,
+    "Threed - Arms Dealer Slot 3": 0xEB1080,
+    "Threed - Arms Dealer Slot 4": 0xEB1081,
+
+    "Threed Bakery - Slot 1": 0xEB1085,
+    "Threed Bakery - Slot 2": 0xEB1086,
+    "Threed Bakery - Slot 3": 0xEB1087,
+    "Threed Bakery - Slot 4": 0xEB1088,
+    "Threed Bakery - Slot 5": 0xEB1089,
+    "Threed Bakery - Slot 6": 0xEB108A,
+    "Threed Bakery - Slot 7": 0xEB108B,
+
+    "Scaraba - Expensive Water Guy": 0xEB108C,
+
+    "Winters Drugstore - Slot 1": 0xEB1093,
+    "Winters Drugstore - Slot 2": 0xEB1094,
+    "Winters Drugstore - Slot 3": 0xEB1095,
+    "Winters Drugstore - Slot 4": 0xEB1096,
+    "Winters Drugstore - Slot 5": 0xEB1097,
+    "Winters Drugstore - Slot 6": 0xEB1098,
+    "Winters Drugstore - Slot 7": 0xEB1099,
+
+    "Saturn Valley Shop - Center Saturn Slot 1": 0xEB109A,
+    "Saturn Valley Shop - Center Saturn Slot 2": 0xEB109B,
+    "Saturn Valley Shop - Center Saturn Slot 3": 0xEB109C,
+    "Saturn Valley Shop - Center Saturn Slot 4": 0xEB109D,
+    "Saturn Valley Shop - Center Saturn Slot 5": 0xEB109E,
+
+    "Dusty Dunes Drugstore - Counter Slot 1": 0xEB10A1,
+    "Dusty Dunes Drugstore - Counter Slot 2": 0xEB10A2,
+    "Dusty Dunes Drugstore - Counter Slot 3": 0xEB10A3,
+    "Dusty Dunes Drugstore - Counter Slot 4": 0xEB10A4,
+    "Dusty Dunes Drugstore - Counter Slot 5": 0xEB10A5,
+
+    "Dusty Dunes - Arms Dealer Slot 1": 0xEB10A8,
+    "Dusty Dunes - Arms Dealer Slot 2": 0xEB10A9,
+    "Dusty Dunes - Arms Dealer Slot 3": 0xEB10AA,
+    "Dusty Dunes - Arms Dealer Slot 4": 0xEB10AB,
+
+    "Fourside Bakery - Slot 1": 0xEB10AF,
+    "Fourside Bakery - Slot 2": 0xEB10B0,
+    "Fourside Bakery - Slot 3": 0xEB10B1,
+    "Fourside Bakery - Slot 4": 0xEB10B2,  # Force this slot to be repel sandwich in monkey caves mode
+    "Fourside Bakery - Slot 5": 0xEB10B3,
+    "Fourside Bakery - Slot 6": 0xEB10B4,
+
+    "Fourside Department Store - Tool Shop Slot 1": 0xEB10B6,
+    "Fourside Department Store - Tool Shop Slot 2": 0xEB10B7,
+    "Fourside Department Store - Tool Shop Slot 3": 0xEB10B8,
+    "Fourside Department Store - Tool Shop Slot 4": 0xEB10B9,
+    "Fourside Department Store - Tool Shop Slot 5": 0xEB10BA,
+    "Fourside Department Store - Tool Shop Slot 6": 0xEB10BB,
+    "Fourside Department Store - Tool Shop Slot 7": 0xEB10BC,  # Force this slot to be ruler in monkey caves mode
+
+    "Fourside Department Store - Shop Shop Slot 1": 0xEB10BD,
+    "Fourside Department Store - Shop Shop Slot 2": 0xEB10BE,
+    "Fourside Department Store - Shop Shop Slot 3": 0xEB10BF,  # Force this slot to be Protein drink in monkey caves mod
+    "Fourside Department Store - Shop Shop Slot 4": 0xEB10C0,
+
+    "Fourside Department Store - Food Shop Slot 1": 0xEB10C4,
+    "Fourside Department Store - Food Shop Slot 2": 0xEB10C5,
+    "Fourside Department Store - Food Shop Slot 3": 0xEB10C6,
+    "Fourside Department Store - Food Shop Slot 4": 0xEB10C7,
+    "Fourside Department Store - Food Shop Slot 5": 0xEB10C8,  # Force this slot to be Picnic lunch in monkey caves mode
+
+    "Fourside Department Store - 2F Cart Slot 1": 0xEB10CB,
+    "Fourside Department Store - 2F Cart Slot 2": 0xEB10CC,
+    "Fourside Department Store - 2F Cart Slot 3": 0xEB10CD,
+    "Fourside Department Store - 2F Cart Slot 4": 0xEB10CE,
+    "Fourside Department Store - 2F Cart Slot 5": 0xEB10CF,
+    "Fourside Department Store - 2F Cart Slot 6": 0xEB10D0,
+    "Fourside Department Store - 2F Cart Slot 7": 0xEB10D1,
+
+    "Fourside Department Store - Toys Shop Slot 1": 0xEB10D2,
+    "Fourside Department Store - Toys Shop Slot 2": 0xEB10D3,
+    "Fourside Department Store - Toys Shop Slot 3": 0xEB10D4,
+    "Fourside Department Store - Toys Shop Slot 4": 0xEB10D5,
+    "Fourside Department Store - Toys Shop Slot 5": 0xEB10D6,
+    "Fourside Department Store - Toys Shop Slot 6": 0xEB10D7,
+
+    "Fourside Department Store - Sports Shop Slot 1": 0xEB10D9,
+    "Fourside Department Store - Sports Shop Slot 2": 0xEB10DA,
+    "Fourside Department Store - Sports Shop Slot 3": 0xEB10DB,
+    "Fourside Department Store - Sports Shop Slot 4": 0xEB10DC,
+
+    "Fourside Department Store - Burger Shop Slot 1": 0xEB10E0,
+    "Fourside Department Store - Burger Shop Slot 2": 0xEB10E1,
+    "Fourside Department Store - Burger Shop Slot 3": 0xEB10E2,
+    "Fourside Department Store - Burger Shop Slot 4": 0xEB10E3,  # Force this slot to be Hamburger
+    "Fourside Department Store - Burger Shop Slot 5": 0xEB10E4,
+
+    "Fourside Department Store - Arms Dealer Slot 1": 0xEB10E7,
+    "Fourside Department Store - Arms Dealer Slot 2": 0xEB10E8,
+    "Fourside Department Store - Arms Dealer Slot 3": 0xEB10E9,
+    "Fourside Department Store - Arms Dealer Slot 4": 0xEB10EA,
+    "Fourside Department Store - Arms Dealer Slot 5": 0xEB10EB,
+
+    "Fourside - Northeast Alley Junk Shop Slot 1": 0xEB10EE,
+    "Fourside - Northeast Alley Junk Shop Slot 2": 0xEB10EF,
+    "Fourside - Northeast Alley Junk Shop Slot 3": 0xEB10F0,
+    "Fourside - Northeast Alley Junk Shop Slot 4": 0xEB10F1,
+
+    "Magicant - Shop Slot 1": 0xEB10F5,
+    "Magicant - Shop Slot 2": 0xEB10F6,
+
+    "Summers - Scam Shop Slot 1": 0xEB1103,
+    "Summers - Scam Shop Slot 2": 0xEB1104,
+    "Summers - Scam Shop Slot 3": 0xEB1105,
+    "Summers - Scam Shop Slot 4": 0xEB1106,
+    "Summers - Scam Shop Slot 5": 0xEB1107,
+    "Summers - Scam Shop Slot 6": 0xEB1108,
+    "Summers - Scam Shop Slot 7": 0xEB1109,
+
+    "Summers Harbor - Shop Slot 1": 0xEB110A,
+    "Summers Harbor - Shop Slot 2": 0xEB110B,
+    "Summers Harbor - Shop Slot 3": 0xEB110C,
+    "Summers Harbor - Shop Slot 4": 0xEB110D,
+    "Summers Harbor - Shop Slot 5": 0xEB110E,
+    "Summers Harbor - Shop Slot 6": 0xEB110F,
+    "Summers Harbor - Shop Slot 7": 0xEB1110,
+
+    "Summers Restaurant - Slot 1": 0xEB1111,
+    "Summers Restaurant - Slot 2": 0xEB1112,
+    "Summers Restaurant - Slot 3": 0xEB1113,
+    "Summers Restaurant - Slot 4": 0xEB1114,
+    "Summers Restaurant - Slot 5": 0xEB1115,
+    "Summers Restaurant - Slot 6": 0xEB1116,
+
+    "Scaraba - Indoors Shop Slot 1": 0xEB1118,
+    "Scaraba - Indoors Shop Slot 2": 0xEB1119,
+    "Scaraba - Indoors Shop Slot 3": 0xEB111A,
+    "Scaraba - Indoors Shop Slot 4": 0xEB111B,
+    "Scaraba - Indoors Shop Slot 5": 0xEB111C,
+    "Scaraba - Indoors Shop Slot 6": 0xEB111D,
+
+    "Scaraba Bazaar - Red Snake Carpet Slot 1": 0xEB1126,
+    "Scaraba Bazaar - Red Snake Carpet Slot 2": 0xEB1127,
+    "Scaraba Bazaar - Red Snake Carpet Slot 3": 0xEB1128,
+
+    "Scaraba Bazaar - Bottom Left Carpet Slot 1": 0xEB112D,
+    "Scaraba Bazaar - Bottom Left Carpet Slot 2": 0xEB112E,
+    "Scaraba Bazaar - Bottom Left Carpet Slot 3": 0xEB112F,
+    "Scaraba Bazaar - Bottom Left Carpet Slot 4": 0xEB1130,
+    "Scaraba Bazaar - Bottom Left Carpet Slot 5": 0xEB1131,
+    "Scaraba Bazaar - Bottom Left Carpet Slot 6": 0xEB1132,
+
+    "Scaraba Hotel - Arms Dealer Slot 1": 0xEB1134,
+    "Scaraba Hotel - Arms Dealer Slot 2": 0xEB1135,
+    "Scaraba Hotel - Arms Dealer Slot 3": 0xEB1136,
+    "Scaraba Hotel - Arms Dealer Slot 4": 0xEB1137,
+
+    "Deep Darkness - Businessman Slot 1": 0xEB113B,
+    "Deep Darkness - Businessman Slot 2": 0xEB113C,
+    "Deep Darkness - Businessman Slot 3": 0xEB113D,
+    "Deep Darkness - Businessman Slot 4": 0xEB113E,
+    "Deep Darkness - Businessman Slot 5": 0xEB113F,
+    "Deep Darkness - Businessman Slot 6": 0xEB1140,
+    "Deep Darkness - Businessman Slot 7": 0xEB1141,
+    
+    "Saturn Valley Shop - Post-Belch Saturn Slot 1": 0xEB1157,
+    "Saturn Valley Shop - Post-Belch Saturn Slot 2": 0xEB1158,
+    "Saturn Valley Shop - Post-Belch Saturn Slot 3": 0xEB1159,
+    "Saturn Valley Shop - Post-Belch Saturn Slot 4": 0xEB115A,
+
+    "Scaraba - Southern Camel Shop Slot 1": 0xEB115E,
+    "Scaraba - Southern Camel Shop Slot 2": 0xEB115F,
+    "Scaraba - Southern Camel Shop Slot 3": 0xEB1160,
+    "Scaraba - Southern Camel Shop Slot 4": 0xEB1161,
+    "Scaraba - Southern Camel Shop Slot 5": 0xEB1162,
+    "Scaraba - Southern Camel Shop Slot 6": 0xEB1163,
+    "Scaraba - Southern Camel Shop Slot 7": 0xEB1164,
+
+    "Deep Darkness - Arms Dealer Slot 1": 0xEB1165,
+    "Deep Darkness - Arms Dealer Slot 2": 0xEB1166,
+    "Deep Darkness - Arms Dealer Slot 3": 0xEB1167,
+    "Deep Darkness - Arms Dealer Slot 4": 0xEB1168,
+
+    "Lost Underworld - Tenda Camp Shop Slot 1": 0xEB116C,
+    "Lost Underworld - Tenda Camp Shop Slot 2": 0xEB116D,
+    "Lost Underworld - Tenda Camp Shop Slot 3": 0xEB116E,
+    "Lost Underworld - Tenda Camp Shop Slot 4": 0xEB116F,
+    "Lost Underworld - Tenda Camp Shop Slot 5": 0xEB1170,
+    "Lost Underworld - Tenda Camp Shop Slot 6": 0xEB1171,
+    "Lost Underworld - Tenda Camp Shop Slot 7": 0xEB1172,
+
+    "Happy-Happy Village Drugstore - Left Counter Slot 1": 0xEB117A,
+    "Happy-Happy Village Drugstore - Left Counter Slot 2": 0xEB117B,
+    "Happy-Happy Village Drugstore - Left Counter Slot 3": 0xEB117C,
+    "Happy-Happy Village Drugstore - Left Counter Slot 4": 0xEB117D,
+    "Happy-Happy Village Drugstore - Left Counter Slot 5": 0xEB117E,
+    "Happy-Happy Village Drugstore - Left Counter Slot 6": 0xEB117F,
+    "Happy-Happy Village Drugstore - Left Counter Slot 7": 0xEB1180,
+
+    "Grapefruit Falls - Hiker Shop Slot 1": 0xEB1181,
+    "Grapefruit Falls - Hiker Shop Slot 2": 0xEB1182,
+    "Grapefruit Falls - Hiker Shop Slot 3": 0xEB1183,
+
+    "Saturn Valley Shop - Top Saturn Slot 1": 0xEB1188,
+    "Saturn Valley Shop - Top Saturn Slot 2": 0xEB1189,
+    "Saturn Valley Shop - Top Saturn Slot 3": 0xEB118A,
+    "Saturn Valley Shop - Top Saturn Slot 4": 0xEB118B,
+    "Saturn Valley Shop - Top Saturn Slot 5": 0xEB118C,
+    "Saturn Valley Shop - Top Saturn Slot 6": 0xEB118D,
+    "Saturn Valley Shop - Top Saturn Slot 7": 0xEB118E,
+
+    "Dusty Dunes Drugstore - Left Shop Slot 1": 0xEB118F,  # Force this slot to be a wet towel in monkey caves
+    "Dusty Dunes Drugstore - Left Shop Slot 2": 0xEB1190,
+    "Dusty Dunes Drugstore - Left Shop Slot 3": 0xEB1191,
+    "Dusty Dunes Drugstore - Left Shop Slot 4": 0xEB1192,
+    "Dusty Dunes Drugstore - Left Shop Slot 5": 0xEB1193,
+    "Dusty Dunes Drugstore - Left Shop Slot 6": 0xEB1194,
+    "Dusty Dunes Drugstore - Left Shop Slot 7": 0xEB1195,
+
+    "Dusty Dunes - Mine Food Cart Slot 1": 0xEB1196,
+    "Dusty Dunes - Mine Food Cart Slot 2": 0xEB1197,
+    "Dusty Dunes - Mine Food Cart Slot 3": 0xEB1198,
+    "Dusty Dunes - Mine Food Cart Slot 4": 0xEB1199,
+    "Dusty Dunes - Mine Food Cart Slot 5": 0xEB119A,
+    "Dusty Dunes - Mine Food Cart Slot 6": 0xEB119B,
+    "Dusty Dunes - Mine Food Cart Slot 7": 0xEB119C,
+
+    "Moonside Hotel - Shop Slot 1": 0xEB119D,
+    "Moonside Hotel - Shop Slot 2": 0xEB119E,
+    "Moonside Hotel - Shop Slot 3": 0xEB119F,
+    "Moonside Hotel - Shop Slot 4": 0xEB11A0,
+    "Moonside Hotel - Shop Slot 5": 0xEB11A1,
+
+    "Dalaam Restaurant - Slot 1": 0xEB11A4,
+    "Dalaam Restaurant - Slot 2": 0xEB11A5,
+    "Dalaam Restaurant - Slot 3": 0xEB11A6,
+    "Dalaam Restaurant - Slot 4": 0xEB11A7,
+
+    "Scaraba Bazaar - Delicacy Shop Slot 1": 0xEB11AB,
+    "Scaraba Bazaar - Delicacy Shop Slot 2": 0xEB11AC,
+    "Scaraba Bazaar - Delicacy Shop Slot 3": 0xEB11AD,
+    "Scaraba Bazaar - Delicacy Shop Slot 4": 0xEB11AE,
+    "Scaraba Bazaar - Delicacy Shop Slot 5": 0xEB11AF,
+    "Scaraba Bazaar - Delicacy Shop Slot 6": 0xEB11B0,
+    "Scaraba Bazaar - Delicacy Shop Slot 7": 0xEB11B1,
+
+    "Twoson/Scaraba - Shared Condiment Shop Slot 1": 0xEB11B2,
+    "Twoson/Scaraba - Shared Condiment Shop Slot 2": 0xEB11B3,
+    "Twoson/Scaraba - Shared Condiment Shop Slot 3": 0xEB11B4,
+    "Twoson/Scaraba - Shared Condiment Shop Slot 4": 0xEB11B5,
+    "Twoson/Scaraba - Shared Condiment Shop Slot 5": 0xEB11B6,
+    "Twoson/Scaraba - Shared Condiment Shop Slot 6": 0xEB11B7,
+    "Twoson/Scaraba - Shared Condiment Shop Slot 7": 0xEB11B8,
+
+    # Make sure this shop uses the earlier one
+    "Andonuts Lab - Caveman Shop Slot 1": 0xEB11C0,
+    "Andonuts Lab - Caveman Shop Slot 2": 0xEB11C1,
+    "Andonuts Lab - Caveman Shop Slot 3": 0xEB11C2,
+    "Andonuts Lab - Caveman Shop Slot 4": 0xEB11C3,
+    "Andonuts Lab - Caveman Shop Slot 5": 0xEB11C4
 }
 
 
@@ -274,7 +608,21 @@ location_groups = {
         "Onett - South Road Present",
         "Onett - Hotel Trashcan",
         "Onett - Mayor Pirkle",
-        "Onett - Traveling Entertainer"
+        "Onett - Traveling Entertainer",
+        "Onett Drugstore - Right Counter Slot 1",
+        "Onett Drugstore - Right Counter Slot 2",
+        "Onett Drugstore - Right Counter Slot 3",
+        "Onett Drugstore - Right Counter Slot 4",
+        "Onett Drugstore - Right Counter Slot 5",
+        "Onett Drugstore - Left Counter",
+        "Onett Burger Shop - Slot 1",
+        "Onett Burger Shop - Slot 2",
+        "Onett Burger Shop - Slot 3",
+        "Onett Burger Shop - Slot 4",
+        "Onett Bakery - Slot 1",
+        "Onett Bakery - Slot 2",
+        "Onett Bakery - Slot 3",
+        "Onett Bakery - Slot 4"
     },
 
     "Giant Step": {
@@ -294,7 +642,29 @@ location_groups = {
         "Twoson - Apple Kid's Mouse",
         "Twoson - Paula's Mother",
         "Twoson - Everdred Meeting",
-        "Twoson - Insignificant Location"
+        "Twoson - Insignificant Location",
+        "Twoson Department Store Burger Shop - Slot 1",
+        "Twoson Department Store Burger Shop - Slot 2",
+        "Twoson Department Store Burger Shop - Slot 3",
+        "Twoson Department Store Burger Shop - Slot 4",
+        "Twoson Department Store Bakery - Slot 1",
+        "Twoson Department Store Bakery - Slot 2",
+        "Twoson Department Store Bakery - Slot 3",
+        "Twoson Department Store Bakery - Slot 4",
+        "Twoson Department Store Top Floor - Right Counter Slot 1",
+        "Twoson Department Store Top Floor - Right Counter Slot 2",
+        "Twoson Department Store Top Floor - Right Counter Slot 3",
+        "Twoson Department Store Top Floor - Right Counter Slot 4",
+        "Twoson Department Store Top Floor - Right Counter Slot 5",
+        "Twoson Department Store Top Floor - Right Counter Slot 6",
+        "Twoson Department Store Top Floor - Left Counter Slot 1",
+        "Twoson/Scaraba - Shared Condiment Shop Slot 1",
+        "Twoson/Scaraba - Shared Condiment Shop Slot 2",
+        "Twoson/Scaraba - Shared Condiment Shop Slot 3",
+        "Twoson/Scaraba - Shared Condiment Shop Slot 4",
+        "Twoson/Scaraba - Shared Condiment Shop Slot 5",
+        "Twoson/Scaraba - Shared Condiment Shop Slot 6",
+        "Twoson/Scaraba - Shared Condiment Shop Slot 7"
     },
 
     "Peaceful Rest Valley": {
@@ -309,7 +679,19 @@ location_groups = {
     "Happy-Happy Village": {
         "Happy-Happy Village - Donation Lady",
         "Happy-Happy Village - Prisoner Item",
-        "Happy-Happy Village - Prisoner"
+        "Happy-Happy Village - Prisoner",
+        "Happy-Happy Village Drugstore - Right Counter Slot 1",
+        "Happy-Happy Village Drugstore - Right Counter Slot 2",
+        "Happy-Happy Village Drugstore - Right Counter Slot 3",
+        "Happy-Happy Village Drugstore - Right Counter Slot 4",
+        "Happy-Happy Village Drugstore - Right Counter Slot 5",
+        "Happy-Happy Village Drugstore - Left Counter Slot 1",
+        "Happy-Happy Village Drugstore - Left Counter Slot 2",
+        "Happy-Happy Village Drugstore - Left Counter Slot 3",
+        "Happy-Happy Village Drugstore - Left Counter Slot 4",
+        "Happy-Happy Village Drugstore - Left Counter Slot 5",
+        "Happy-Happy Village Drugstore - Left Counter Slot 6",
+        "Happy-Happy Village Drugstore - Left Counter Slot 7"
     },
 
     "the Happy-Happy HQ": {
@@ -331,7 +713,28 @@ location_groups = {
         "Threed - East Side Trashcan",
         "Threed - Northeast Shack Trashcan",
         "Threed - Hospital Drawer",
-        "Threed - Zombie Prisoner"
+        "Threed - Zombie Prisoner",
+        "Threed Drugstore - Right Counter Slot 1",
+        "Threed Drugstore - Right Counter Slot 2",
+        "Threed Drugstore - Right Counter Slot 3",
+        "Threed Drugstore - Right Counter Slot 4",
+        "Threed Drugstore - Right Counter Slot 5",
+        "Threed Drugstore - Left Counter Slot 1",
+        "Threed Drugstore - Left Counter Slot 2",
+        "Threed Drugstore - Left Counter Slot 3",
+        "Threed Drugstore - Left Counter Slot 4",
+        "Threed Drugstore - Left Counter Slot 5",
+        "Threed - Arms Dealer Slot 1",
+        "Threed - Arms Dealer Slot 2",
+        "Threed - Arms Dealer Slot 3",
+        "Threed - Arms Dealer Slot 4",
+        "Threed Bakery - Slot 1",
+        "Threed Bakery - Slot 2",
+        "Threed Bakery - Slot 3",
+        "Threed Bakery - Slot 4",
+        "Threed Bakery - Slot 5",
+        "Threed Bakery - Slot 6",
+        "Threed Bakery - Slot 7"
     },
 
     "the Threed Underground Passage": {
@@ -342,7 +745,10 @@ location_groups = {
     "Grapefruit Falls": {
         "Grapefruit Falls - South Present",
         "Grapefruit Falls - North Present",
-        "Grapefruit Falls - Saturn Cave Present"
+        "Grapefruit Falls - Saturn Cave Present",
+        "Grapefruit Falls - Hiker Shop Slot 1",
+        "Grapefruit Falls - Hiker Shop Slot 2",
+        "Grapefruit Falls - Hiker Shop Slot 3"
     },
 
     "Saturn Valley": {
@@ -353,11 +759,27 @@ location_groups = {
         "Saturn Valley - Saturn Coffee",
         "Saturn Valley - Post Belch Gift #1",
         "Saturn Valley - Post Belch Gift #2",
-        "Saturn Valley - Post Belch Gift #3"
+        "Saturn Valley - Post Belch Gift #3",
+        "Saturn Valley Shop - Center Saturn Slot 1",
+        "Saturn Valley Shop - Center Saturn Slot 2",
+        "Saturn Valley Shop - Center Saturn Slot 3",
+        "Saturn Valley Shop - Center Saturn Slot 4",
+        "Saturn Valley Shop - Center Saturn Slot 5",
+        "Saturn Valley Shop - Top Saturn Slot 1",
+        "Saturn Valley Shop - Top Saturn Slot 2",
+        "Saturn Valley Shop - Top Saturn Slot 3",
+        "Saturn Valley Shop - Top Saturn Slot 4",
+        "Saturn Valley Shop - Top Saturn Slot 5",
+        "Saturn Valley Shop - Top Saturn Slot 6",
+        "Saturn Valley Shop - Top Saturn Slot 7",
+        "Saturn Valley Shop - Post-Belch Saturn Slot 1",
+        "Saturn Valley Shop - Post-Belch Saturn Slot 2",
+        "Saturn Valley Shop - Post-Belch Saturn Slot 3",
+        "Saturn Valley Shop - Post-Belch Saturn Slot 4"
     },
 
     "Milky Well": {
-        "Milky Well - Cavern Present" #this is a very good location group :^)
+        "Milky Well - Cavern Present"  # this is a very good location group :^)
     },
 
     "Belch's Factory": {
@@ -379,7 +801,30 @@ location_groups = {
         "Dusty Dunes - North Central Present",
         "Dusty Dunes - Shining Spot",
         "Dusty Dunes - East Peninsula Present",
-        "Dusty Dunes - Mine Reward"
+        "Dusty Dunes - Mine Reward",
+        "Dusty Dunes Drugstore - Left Shop Slot 1",
+        "Dusty Dunes Drugstore - Left Shop Slot 2",
+        "Dusty Dunes Drugstore - Left Shop Slot 3",
+        "Dusty Dunes Drugstore - Left Shop Slot 4",
+        "Dusty Dunes Drugstore - Left Shop Slot 5",
+        "Dusty Dunes Drugstore - Left Shop Slot 6",
+        "Dusty Dunes Drugstore - Left Shop Slot 7",
+        "Dusty Dunes - Mine Food Cart Slot 1",
+        "Dusty Dunes - Mine Food Cart Slot 2",
+        "Dusty Dunes - Mine Food Cart Slot 3",
+        "Dusty Dunes - Mine Food Cart Slot 4",
+        "Dusty Dunes - Mine Food Cart Slot 5",
+        "Dusty Dunes - Mine Food Cart Slot 6",
+        "Dusty Dunes - Mine Food Cart Slot 7",
+        "Dusty Dunes Drugstore - Counter Slot 1",
+        "Dusty Dunes Drugstore - Counter Slot 2",
+        "Dusty Dunes Drugstore - Counter Slot 3",
+        "Dusty Dunes Drugstore - Counter Slot 4",
+        "Dusty Dunes Drugstore - Counter Slot 5",
+        "Dusty Dunes - Arms Dealer Slot 1",
+        "Dusty Dunes - Arms Dealer Slot 2",
+        "Dusty Dunes - Arms Dealer Slot 3",
+        "Dusty Dunes - Arms Dealer Slot 4"
     },
 
     "the Snow Wood locker room": {
@@ -403,6 +848,13 @@ location_groups = {
 
     "Winters": {
         "Winters - Drugstore Saleswoman",
+        "Winters Drugstore - Slot 1",
+        "Winters Drugstore - Slot 2",
+        "Winters Drugstore - Slot 3",
+        "Winters Drugstore - Slot 4",
+        "Winters Drugstore - Slot 5",
+        "Winters Drugstore - Slot 6",
+        "Winters Drugstore - Slot 7"
     },
 
     "the Brick Road Maze": {
@@ -421,7 +873,12 @@ location_groups = {
 
     "Dr. Andonuts's Lab": {
         "Andonuts Lab - Present",
-        "Andonuts Lab - Mouse"
+        "Andonuts Lab - Mouse",
+        "Andonuts Lab - Caveman Shop Slot 1",
+        "Andonuts Lab - Caveman Shop Slot 2",
+        "Andonuts Lab - Caveman Shop Slot 3",
+        "Andonuts Lab - Caveman Shop Slot 4",
+        "Andonuts Lab - Caveman Shop Slot 5"
     },
 
     "Stonehenge Maze Area": {
@@ -502,8 +959,60 @@ location_groups = {
     "Fourside": {
         "Fourside - Venus Gift",
         "Fourside - Bakery 2F Gift",
-        "Fourside - Department Store Blackout"
-        
+        "Fourside - Department Store Blackout",
+        "Fourside Department Store - Tool Shop Slot 1",
+        "Fourside Department Store - Tool Shop Slot 2",
+        "Fourside Department Store - Tool Shop Slot 3",
+        "Fourside Department Store - Tool Shop Slot 4",
+        "Fourside Department Store - Tool Shop Slot 5",
+        "Fourside Department Store - Tool Shop Slot 6",
+        "Fourside Department Store - Tool Shop Slot 7",
+        "Fourside Department Store - Shop Shop Slot 1",
+        "Fourside Department Store - Shop Shop Slot 2",
+        "Fourside Department Store - Shop Shop Slot 3",
+        "Fourside Department Store - Shop Shop Slot 4",
+        "Fourside Department Store - Food Shop Slot 1",
+        "Fourside Department Store - Food Shop Slot 2",
+        "Fourside Department Store - Food Shop Slot 3",
+        "Fourside Department Store - Food Shop Slot 4",
+        "Fourside Department Store - Food Shop Slot 5",
+        "Fourside Department Store - 2F Cart Slot 1",
+        "Fourside Department Store - 2F Cart Slot 2",
+        "Fourside Department Store - 2F Cart Slot 3",
+        "Fourside Department Store - 2F Cart Slot 4",
+        "Fourside Department Store - 2F Cart Slot 5",
+        "Fourside Department Store - 2F Cart Slot 6",
+        "Fourside Department Store - 2F Cart Slot 7",
+        "Fourside Department Store - Toys Shop Slot 1",
+        "Fourside Department Store - Toys Shop Slot 2",
+        "Fourside Department Store - Toys Shop Slot 3",
+        "Fourside Department Store - Toys Shop Slot 4",
+        "Fourside Department Store - Toys Shop Slot 5",
+        "Fourside Department Store - Toys Shop Slot 6",
+        "Fourside Department Store - Sports Shop Slot 1",
+        "Fourside Department Store - Sports Shop Slot 2",
+        "Fourside Department Store - Sports Shop Slot 3",
+        "Fourside Department Store - Sports Shop Slot 4",
+        "Fourside Department Store - Burger Shop Slot 1",
+        "Fourside Department Store - Burger Shop Slot 2",
+        "Fourside Department Store - Burger Shop Slot 3",
+        "Fourside Department Store - Burger Shop Slot 4",
+        "Fourside Department Store - Burger Shop Slot 5",
+        "Fourside Department Store - Arms Dealer Slot 1",
+        "Fourside Department Store - Arms Dealer Slot 2",
+        "Fourside Department Store - Arms Dealer Slot 3",
+        "Fourside Department Store - Arms Dealer Slot 4",
+        "Fourside Department Store - Arms Dealer Slot 5",
+        "Fourside - Northeast Alley Junk Shop Slot 1",
+        "Fourside - Northeast Alley Junk Shop Slot 2",
+        "Fourside - Northeast Alley Junk Shop Slot 3",
+        "Fourside - Northeast Alley Junk Shop Slot 4",
+        "Fourside Bakery - Slot 1",
+        "Fourside Bakery - Slot 2",
+        "Fourside Bakery - Slot 3",
+        "Fourside Bakery - Slot 4",
+        "Fourside Bakery - Slot 5",
+        "Fourside Bakery - Slot 6"
     },
 
     "Moonside": {
@@ -512,7 +1021,12 @@ location_groups = {
         "Moonside - Businessman Present",
         "Moonside - West Island Present",
         "Moonside - Hospital Present",
-        "Fourside - Post-Moonside Delivery"
+        "Fourside - Post-Moonside Delivery",
+        "Moonside Hotel - Shop Slot 1",
+        "Moonside Hotel - Shop Slot 2",
+        "Moonside Hotel - Shop Slot 3",
+        "Moonside Hotel - Shop Slot 4",
+        "Moonside Hotel - Shop Slot 5"
         
     },
 
@@ -537,8 +1051,29 @@ location_groups = {
 
     "Summers": {
         "Summers - Museum Item",
-        "Summers - Magic Cake"
-        
+        "Summers - Magic Cake",
+        "Summers - Beach Cart",
+        "Summers - Magic Cake Cart Shop Slot",
+        "Summers - Scam Shop Slot 1",
+        "Summers - Scam Shop Slot 2",
+        "Summers - Scam Shop Slot 3",
+        "Summers - Scam Shop Slot 4",
+        "Summers - Scam Shop Slot 5",
+        "Summers - Scam Shop Slot 6",
+        "Summers - Scam Shop Slot 7",
+        "Summers Harbor - Shop Slot 1",
+        "Summers Harbor - Shop Slot 2",
+        "Summers Harbor - Shop Slot 3",
+        "Summers Harbor - Shop Slot 4",
+        "Summers Harbor - Shop Slot 5",
+        "Summers Harbor - Shop Slot 6",
+        "Summers Harbor - Shop Slot 7",
+        "Summers Restaurant - Slot 1",
+        "Summers Restaurant - Slot 2",
+        "Summers Restaurant - Slot 3",
+        "Summers Restaurant - Slot 4",
+        "Summers Restaurant - Slot 5",
+        "Summers Restaurant - Slot 6"
     },
 
     "Dalaam": {
@@ -550,7 +1085,11 @@ location_groups = {
         "Dalaam - Restaurant Chest #2",
         "Dalaam - Do Do Guy's House Chest",
         "Dalaam - Upper House Chest",
-        "Dalaam - Throne Character"
+        "Dalaam - Throne Character",
+        "Dalaam Restaurant - Slot 1",
+        "Dalaam Restaurant - Slot 2",
+        "Dalaam Restaurant - Slot 3",
+        "Dalaam Restaurant - Slot 4"
         
     },
 
@@ -563,7 +1102,32 @@ location_groups = {
     "Scaraba": {
         "Scaraba - Snake Bag Salesman",
         "Scaraba - Star Master",
-        "Scaraba - Key Holder"
+        "Scaraba - Key Holder",
+        "Twoson/Scaraba - Shared Condiment Shop Slot 1",
+        "Twoson/Scaraba - Shared Condiment Shop Slot 2",
+        "Twoson/Scaraba - Shared Condiment Shop Slot 3",
+        "Twoson/Scaraba - Shared Condiment Shop Slot 4",
+        "Twoson/Scaraba - Shared Condiment Shop Slot 5",
+        "Twoson/Scaraba - Shared Condiment Shop Slot 6",
+        "Twoson/Scaraba - Shared Condiment Shop Slot 7",
+        "Scaraba - Expensive Water Guy",
+        "Scaraba - Indoors Shop Slot 1",
+        "Scaraba - Indoors Shop Slot 2",
+        "Scaraba - Indoors Shop Slot 3",
+        "Scaraba - Indoors Shop Slot 4",
+        "Scaraba - Indoors Shop Slot 5",
+        "Scaraba - Indoors Shop Slot 6",
+        "Scaraba Hotel - Arms Dealer Slot 1",
+        "Scaraba Hotel - Arms Dealer Slot 2",
+        "Scaraba Hotel - Arms Dealer Slot 3",
+        "Scaraba Hotel - Arms Dealer Slot 4",
+        "Scaraba - Southern Camel Shop Slot 1",
+        "Scaraba - Southern Camel Shop Slot 2",
+        "Scaraba - Southern Camel Shop Slot 3",
+        "Scaraba - Southern Camel Shop Slot 4",
+        "Scaraba - Southern Camel Shop Slot 5",
+        "Scaraba - Southern Camel Shop Slot 6",
+        "Scaraba - Southern Camel Shop Slot 7"
     },
 
     "the Pyramid": {
@@ -605,7 +1169,18 @@ location_groups = {
         "Deep Darkness - Swamp Present",
         "Deep Darkness - Corner Present",
         "Deep Darkness - Alcove Present",
-        "Deep Darkness - Barf Character"
+        "Deep Darkness - Barf Character",
+        "Deep Darkness - Businessman Slot 1",
+        "Deep Darkness - Businessman Slot 2",
+        "Deep Darkness - Businessman Slot 3",
+        "Deep Darkness - Businessman Slot 4",
+        "Deep Darkness - Businessman Slot 5",
+        "Deep Darkness - Businessman Slot 6",
+        "Deep Darkness - Businessman Slot 7",
+        "Deep Darkness - Arms Dealer Slot 1",
+        "Deep Darkness - Arms Dealer Slot 2",
+        "Deep Darkness - Arms Dealer Slot 3",
+        "Deep Darkness - Arms Dealer Slot 4"
     },
 
     "Deep Darkness Truffles": {
@@ -644,7 +1219,14 @@ location_groups = {
         "Lost Underworld - Northeast Present",
         "Lost Underworld - Northeast of Tenda Tribe Present",
         "Lost Underworld - Southwest of Tenda Tribe Present",
-        "Lost Underworld - Evacuation Present"
+        "Lost Underworld - Evacuation Present",
+        "Lost Underworld - Tenda Camp Shop Slot 1",
+        "Lost Underworld - Tenda Camp Shop Slot 2",
+        "Lost Underworld - Tenda Camp Shop Slot 3",
+        "Lost Underworld - Tenda Camp Shop Slot 4",
+        "Lost Underworld - Tenda Camp Shop Slot 5",
+        "Lost Underworld - Tenda Camp Shop Slot 6",
+        "Lost Underworld - Tenda Camp Shop Slot 7"
     },
 
     "Fire Spring": {
@@ -661,7 +1243,9 @@ location_groups = {
         "Magicant - Lonely Present",
         "Magicant - North Present",
         "Magicant - Hills Present",
-        "Magicant - Town Present"
+        "Magicant - Town Present",
+        "Magicant - Shop Slot 1",
+        "Magicant - Shop Slot 2"
     },
     
 
@@ -676,5 +1260,139 @@ location_groups = {
 
     "Cave of the Past": {
         "Cave of the Past - Present"
+    },
+    
+    "Burglin Park": {
+        "Burglin Park Junk Shop - Slot 1",
+        "Burglin Park Junk Shop - Slot 2",
+        "Burglin Park Junk Shop - Slot 3",
+        "Burglin Park Junk Shop - Slot 4",
+        "Burglin Park Junk Shop - Slot 5",
+        "Burglin Park Junk Shop - Slot 6",
+        "Burglin Park Bread Stand - Slot 1",
+        "Burglin Park Bread Stand - Slot 2",
+        "Burglin Park Bread Stand - Slot 3",
+        "Burglin Park Bread Stand - Slot 4",
+        "Burglin Park Bread Stand - Slot 5",
+        "Burglin Park Bread Stand - Slot 6",
+        "Burglin Park - Banana Stand",
+        "Twoson - Everdred Meeting",
+        "Twoson - Apple Kid Invention",
+        "Twoson/Scaraba - Shared Condiment Shop Slot 1",
+        "Twoson/Scaraba - Shared Condiment Shop Slot 2",
+        "Twoson/Scaraba - Shared Condiment Shop Slot 3",
+        "Twoson/Scaraba - Shared Condiment Shop Slot 4",
+        "Twoson/Scaraba - Shared Condiment Shop Slot 5",
+        "Twoson/Scaraba - Shared Condiment Shop Slot 6",
+        "Twoson/Scaraba - Shared Condiment Shop Slot 7"
+    },
+
+    "the Scaraba Bazaar": {
+        "Scaraba Bazaar - Delicacy Shop Slot 1",
+        "Scaraba Bazaar - Delicacy Shop Slot 2",
+        "Scaraba Bazaar - Delicacy Shop Slot 3",
+        "Scaraba Bazaar - Delicacy Shop Slot 4",
+        "Scaraba Bazaar - Delicacy Shop Slot 5",
+        "Scaraba Bazaar - Delicacy Shop Slot 6",
+        "Scaraba Bazaar - Delicacy Shop Slot 7",
+        "Twoson/Scaraba - Shared Condiment Shop Slot 1",
+        "Twoson/Scaraba - Shared Condiment Shop Slot 2",
+        "Twoson/Scaraba - Shared Condiment Shop Slot 3",
+        "Twoson/Scaraba - Shared Condiment Shop Slot 4",
+        "Twoson/Scaraba - Shared Condiment Shop Slot 5",
+        "Twoson/Scaraba - Shared Condiment Shop Slot 6",
+        "Twoson/Scaraba - Shared Condiment Shop Slot 7",
+        "Scaraba Bazaar - Red Snake Carpet Slot 1",
+        "Scaraba Bazaar - Red Snake Carpet Slot 2",
+        "Scaraba Bazaar - Red Snake Carpet Slot 3",
+        "Scaraba Bazaar - Bottom Left Carpet Slot 1",
+        "Scaraba Bazaar - Bottom Left Carpet Slot 2",
+        "Scaraba Bazaar - Bottom Left Carpet Slot 3",
+        "Scaraba Bazaar - Bottom Left Carpet Slot 4",
+        "Scaraba Bazaar - Bottom Left Carpet Slot 5",
+        "Scaraba Bazaar - Bottom Left Carpet Slot 6"
+    },
+
+    "the Twoson Department Store": {
+        "Twoson Department Store Burger Shop - Slot 1",
+        "Twoson Department Store Burger Shop - Slot 2",
+        "Twoson Department Store Burger Shop - Slot 3",
+        "Twoson Department Store Burger Shop - Slot 4",
+        "Twoson Department Store Bakery - Slot 1",
+        "Twoson Department Store Bakery - Slot 2",
+        "Twoson Department Store Bakery - Slot 3",
+        "Twoson Department Store Bakery - Slot 4",
+        "Twoson Department Store Top Floor - Right Counter Slot 1",
+        "Twoson Department Store Top Floor - Right Counter Slot 2",
+        "Twoson Department Store Top Floor - Right Counter Slot 3",
+        "Twoson Department Store Top Floor - Right Counter Slot 4",
+        "Twoson Department Store Top Floor - Right Counter Slot 5",
+        "Twoson Department Store Top Floor - Right Counter Slot 6",
+        "Twoson Department Store Top Floor - Left Counter Slot 1"
+    },
+    
+    "the Fourside Department Store": {
+        "Fourside Department Store - Tool Shop Slot 1",
+        "Fourside Department Store - Tool Shop Slot 2",
+        "Fourside Department Store - Tool Shop Slot 3",
+        "Fourside Department Store - Tool Shop Slot 4",
+        "Fourside Department Store - Tool Shop Slot 5",
+        "Fourside Department Store - Tool Shop Slot 6",
+        "Fourside Department Store - Tool Shop Slot 7",
+        "Fourside Department Store - Shop Shop Slot 1",
+        "Fourside Department Store - Shop Shop Slot 2",
+        "Fourside Department Store - Shop Shop Slot 3",
+        "Fourside Department Store - Shop Shop Slot 4",
+        "Fourside Department Store - Food Shop Slot 1",
+        "Fourside Department Store - Food Shop Slot 2",
+        "Fourside Department Store - Food Shop Slot 3",
+        "Fourside Department Store - Food Shop Slot 4",
+        "Fourside Department Store - Food Shop Slot 5",
+        "Fourside Department Store - 2F Cart Slot 1",
+        "Fourside Department Store - 2F Cart Slot 2",
+        "Fourside Department Store - 2F Cart Slot 3",
+        "Fourside Department Store - 2F Cart Slot 4",
+        "Fourside Department Store - 2F Cart Slot 5",
+        "Fourside Department Store - 2F Cart Slot 6",
+        "Fourside Department Store - 2F Cart Slot 7",
+        "Fourside Department Store - Toys Shop Slot 1",
+        "Fourside Department Store - Toys Shop Slot 2",
+        "Fourside Department Store - Toys Shop Slot 3",
+        "Fourside Department Store - Toys Shop Slot 4",
+        "Fourside Department Store - Toys Shop Slot 5",
+        "Fourside Department Store - Toys Shop Slot 6",
+        "Fourside Department Store - Sports Shop Slot 1",
+        "Fourside Department Store - Sports Shop Slot 2",
+        "Fourside Department Store - Sports Shop Slot 3",
+        "Fourside Department Store - Sports Shop Slot 4",
+        "Fourside Department Store - Burger Shop Slot 1",
+        "Fourside Department Store - Burger Shop Slot 2",
+        "Fourside Department Store - Burger Shop Slot 3",
+        "Fourside Department Store - Burger Shop Slot 4",
+        "Fourside Department Store - Burger Shop Slot 5",
+        "Fourside Department Store - Arms Dealer Slot 1",
+        "Fourside Department Store - Arms Dealer Slot 2",
+        "Fourside Department Store - Arms Dealer Slot 3",
+        "Fourside Department Store - Arms Dealer Slot 4",
+        "Fourside Department Store - Arms Dealer Slot 5"
+    },
+
+    "the Saturn Valley Shop": {
+        "Saturn Valley Shop - Center Saturn Slot 1",
+        "Saturn Valley Shop - Center Saturn Slot 2",
+        "Saturn Valley Shop - Center Saturn Slot 3",
+        "Saturn Valley Shop - Center Saturn Slot 4",
+        "Saturn Valley Shop - Center Saturn Slot 5",
+        "Saturn Valley Shop - Post-Belch Saturn Slot 1",
+        "Saturn Valley Shop - Post-Belch Saturn Slot 2",
+        "Saturn Valley Shop - Post-Belch Saturn Slot 3",
+        "Saturn Valley Shop - Post-Belch Saturn Slot 4",
+        "Saturn Valley Shop - Top Saturn Slot 1",
+        "Saturn Valley Shop - Top Saturn Slot 2",
+        "Saturn Valley Shop - Top Saturn Slot 3",
+        "Saturn Valley Shop - Top Saturn Slot 4",
+        "Saturn Valley Shop - Top Saturn Slot 5",
+        "Saturn Valley Shop - Top Saturn Slot 6",
+        "Saturn Valley Shop - Top Saturn Slot 7"
     }
 }

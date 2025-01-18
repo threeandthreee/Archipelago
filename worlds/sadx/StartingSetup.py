@@ -10,8 +10,8 @@ from .CharacterUtils import get_playable_characters, are_character_upgrades_rand
     is_character_playable
 from .Enums import Character, Area, SubLevel, pascal_to_space, level_areas, LevelMission
 from .Locations import level_location_table, upgrade_location_table, sub_level_location_table, \
-    field_emblem_location_table, boss_location_table, life_capsule_location_table, mission_location_table
-from .Logic import area_connections, chao_egg_location_table
+    field_emblem_location_table, boss_location_table, capsule_location_table, mission_location_table
+from .Logic import area_connections, chao_egg_location_table, enemy_location_table
 from .Names import ItemName
 from .Options import SonicAdventureDXOptions
 
@@ -159,12 +159,19 @@ def validate_settings(options):
             raise OptionError(
                 " -- SADX Error: You need to add more missions in the settings to use mission as goal. Either add more characters or remove missions from the blacklist.")
 
+    if options.capsule_sanity.value:
+        if not options.life_capsule_sanity.value and not options.shield_capsule_sanity.value and not options.powerup_capsule_sanity and not options.ring_capsule_sanity:
+            logging.warning(
+                " -- SADX warning: Capsule-sanity is enabled but all capsule types are disabled. Enabling life capsules.")
+            options.life_capsule_sanity.value = True
+
 
 def get_possible_starting_areas(world, character: Character, level_mapping: dict[Area, Area], guaranteed_level: bool) -> \
         dict[Area, List[Optional[str]]]:
     possible_starting_areas = {}
-    for area in {Area.StationSquareMain, Area.Station, Area.Hotel, Area.Casino, Area.TwinkleParkLobby,
-                 Area.MysticRuinsMain, Area.AngelIsland, Area.Jungle, Area.EggCarrierMain}:
+    areas = [Area.StationSquareMain, Area.Station, Area.Hotel, Area.Casino, Area.TwinkleParkLobby,
+             Area.MysticRuinsMain, Area.AngelIsland, Area.Jungle, Area.EggCarrierMain]
+    for area in areas:
         possible_list_for_area = get_possible_starting_area_information(character, area, world.options, level_mapping,
                                                                         guaranteed_level)
         if possible_list_for_area:
@@ -213,12 +220,12 @@ def get_possible_starting_area_information(character: Character, area: Area, opt
     if options.sub_level_checks:
         for sub_level in sub_level_location_table:
             if sub_level.subLevel == SubLevel.SandHill or sub_level.subLevel == SubLevel.TwinkleCircuit:
-                if character in sub_level.characters and sub_level.area == area:
+                if character in sub_level.get_logic_characters(options) and sub_level.area == area:
                     possible_locations[area].append(None)
     if options.sky_chase_checks:
         for sub_level in sub_level_location_table:
             if sub_level.subLevel == SubLevel.SkyChaseAct1 or sub_level.subLevel == SubLevel.SkyChaseAct2:
-                if character in sub_level.characters and sub_level.area == area:
+                if character in sub_level.get_logic_characters(options) and sub_level.area == area:
                     possible_locations[area].append(None)
     if options.field_emblems_checks:
         for field_emblem in field_emblem_location_table:
@@ -228,8 +235,8 @@ def get_possible_starting_area_information(character: Character, area: Area, opt
         for boss_fight in boss_location_table:
             if character in boss_fight.characters and boss_fight.area == area:
                 possible_locations[area].append(None)
-    if options.life_sanity:
-        for life_capsule in life_capsule_location_table:
+    if options.capsule_sanity:
+        for life_capsule in capsule_location_table:
             actual_area_to = life_capsule.area
             if options.entrance_randomizer:
                 for level_entrance, actual_level in level_mapping.items():
@@ -250,6 +257,17 @@ def get_possible_starting_area_information(character: Character, area: Area, opt
         for egg in chao_egg_location_table:
             if character in egg.characters and egg.area == area and not egg.requirements:
                 possible_locations[area].append(None)
+    if options.enemy_sanity:
+        for enemy in enemy_location_table:
+            actual_area_to = enemy.area
+            if options.entrance_randomizer:
+                for level_entrance, actual_level in level_mapping.items():
+                    if actual_level == enemy.area:
+                        actual_area_to = level_entrance
+            key = (character, area, actual_area_to)
+            if key in area_connections and not area_connections[key][options.logic_level.value]:
+                if enemy.character == character and not enemy.get_logic_items(options):
+                    possible_locations[area].append(None)
 
     return possible_locations
 

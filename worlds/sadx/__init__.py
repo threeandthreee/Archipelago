@@ -1,12 +1,12 @@
 import typing
 from typing import Dict, Any
 
-from BaseClasses import Tutorial
+from BaseClasses import Tutorial, ItemClassification
 from worlds.AutoWorld import WebWorld, World
 from .CharacterUtils import get_playable_characters
 from .Enums import Character, SADX_BASE_ID, Area, remove_character_suffix, pascal_to_space
 from .ItemPool import create_sadx_items, get_item_names, ItemDistribution
-from .Items import SonicAdventureDXItem, group_item_table, item_name_to_info
+from .Items import SonicAdventureDXItem, group_item_table, item_name_to_info, filler_item_table
 from .Locations import all_location_table, group_location_table
 from .Names import ItemName, LocationName
 from .Options import sadx_option_groups, SonicAdventureDXOptions
@@ -109,13 +109,15 @@ class SonicAdventureDXWorld(World):
 
                 self.options.field_emblems_checks.value = passthrough["FieldEmblemChecks"]
                 self.options.random_starting_location.value = passthrough["RandomStartingLocation"]
-                self.options.random_starting_location_per_character.value = passthrough["RandomStartingLocationPerCharacter"]
+                self.options.random_starting_location_per_character.value = passthrough[
+                    "RandomStartingLocationPerCharacter"]
                 self.options.guaranteed_level.value = passthrough["GuaranteedLevel"]
                 self.options.guaranteed_starting_checks.value = passthrough["GuaranteedStartingChecks"]
 
                 self.options.chao_egg_checks.value = passthrough["SecretChaoEggs"]
                 self.options.chao_races_checks.value = passthrough["ChaoRacesChecks"]
-                self.options.chao_races_levels_to_access_percentage.value = passthrough["ChaoRacesLevelsToAccessPercentage"]
+                self.options.chao_races_levels_to_access_percentage.value = passthrough[
+                    "ChaoRacesLevelsToAccessPercentage"]
                 self.options.mission_mode_checks.value = passthrough["MissionModeChecks"]
                 self.options.auto_start_missions.value = passthrough["AutoStartMissions"]
 
@@ -124,14 +126,29 @@ class SonicAdventureDXWorld(World):
                 self.options.sky_chase_checks.value = passthrough["SkyChaseChecks"]
                 self.options.sky_chase_checks_hard.value = passthrough["SkyChaseChecksHard"]
 
-                self.options.life_sanity.value = passthrough["LifeSanity"]
-                self.options.pinball_life_capsules.value = passthrough["PinballLifeCapsules"]
-                self.options.sonic_life_sanity.value = passthrough["SonicLifeSanity"]
-                self.options.tails_life_sanity.value = passthrough["TailsLifeSanity"]
-                self.options.knuckles_life_sanity.value = passthrough["KnucklesLifeSanity"]
-                self.options.amy_life_sanity.value = passthrough["AmyLifeSanity"]
-                self.options.big_life_sanity.value = passthrough["BigLifeSanity"]
-                self.options.gamma_life_sanity.value = passthrough["GammaLifeSanity"]
+                self.options.enemy_sanity.value = passthrough["EnemySanity"]
+
+                self.options.sonic_enemy_sanity.value = passthrough["SonicEnemySanity"]
+                self.options.tails_enemy_sanity.value = passthrough["TailsEnemySanity"]
+                self.options.knuckles_enemy_sanity.value = passthrough["KnucklesEnemySanity"]
+                self.options.amy_enemy_sanity.value = passthrough["AmyEnemySanity"]
+                self.options.big_enemy_sanity.value = passthrough["BigEnemySanity"]
+                self.options.gamma_enemy_sanity.value = passthrough["GammaEnemySanity"]
+
+                self.options.capsule_sanity.value = passthrough["CapsuleSanity"]
+                self.options.pinball_capsules.value = passthrough["PinballCapsules"]
+
+                self.options.sonic_capsule_sanity.value = passthrough["SonicCapsuleSanity"]
+                self.options.tails_capsule_sanity.value = passthrough["TailsCapsuleSanity"]
+                self.options.knuckles_capsule_sanity.value = passthrough["KnucklesCapsuleSanity"]
+                self.options.amy_capsule_sanity.value = passthrough["AmyCapsuleSanity"]
+                self.options.big_capsule_sanity.value = passthrough["BigCapsuleSanity"]
+                self.options.gamma_capsule_sanity.value = passthrough["GammaCapsuleSanity"]
+
+                self.options.life_capsule_sanity.value = passthrough["LifeCapsuleSanity"]
+                self.options.shield_capsule_sanity.value = passthrough["ShieldCapsuleSanity"]
+                self.options.powerup_capsule_sanity.value = passthrough["PowerUpCapsuleSanity"]
+                self.options.ring_capsule_sanity.value = passthrough["RingCapsuleSanity"]
 
     # For the universal tracker, doesn't get called in standard gen
     # Returning slot_data so it regens, giving it back in multiworld.re_gen_passthrough
@@ -147,6 +164,9 @@ class SonicAdventureDXWorld(World):
 
     def create_items(self):
         self.item_distribution = create_sadx_items(self, self.starter_setup, self.options)
+
+    def get_filler_item_name(self) -> str:
+        return self.random.choice(filler_item_table).name
 
     def set_rules(self):
         self.location_distribution = create_sadx_rules(self, self.item_distribution.emblem_count_progressive)
@@ -167,9 +187,16 @@ class SonicAdventureDXWorld(World):
 
         hint_data[self.player] = sadx_hint_data
 
+    def generate_progression_data(self) -> typing.Dict[int, int]:
+        progression_data = {}
+        for ap_location in self.multiworld.get_locations(self.player):
+            if ap_location.item.classification == ItemClassification.progression:
+                progression_data[ap_location.address] = ap_location.address
+        return progression_data
+
     def fill_slot_data(self) -> Dict[str, Any]:
         return {
-            "ModVersion": 90,
+            "ModVersion": 101,
             "GoalRequiresLevels": self.options.goal_requires_levels.value,
             "LevelsPercentage": self.options.levels_percentage.value,
             "GoalRequiresChaosEmeralds": self.options.goal_requires_chaos_emeralds.value,
@@ -209,14 +236,27 @@ class SonicAdventureDXWorld(World):
             "AutoStartMissions": self.options.auto_start_missions.value,
             "MissionBlackList": {int(mission): int(mission) for mission in self.options.mission_blacklist.value},
 
-            "LifeSanity": self.options.life_sanity.value,
-            "PinballLifeCapsules": self.options.pinball_life_capsules.value,
-            "SonicLifeSanity": self.options.sonic_life_sanity.value,
-            "TailsLifeSanity": self.options.tails_life_sanity.value,
-            "KnucklesLifeSanity": self.options.knuckles_life_sanity.value,
-            "AmyLifeSanity": self.options.amy_life_sanity.value,
-            "BigLifeSanity": self.options.big_life_sanity.value,
-            "GammaLifeSanity": self.options.gamma_life_sanity.value,
+            "EnemySanity": self.options.enemy_sanity.value,
+            "SonicEnemySanity": self.options.sonic_enemy_sanity.value,
+            "TailsEnemySanity": self.options.tails_enemy_sanity.value,
+            "KnucklesEnemySanity": self.options.knuckles_enemy_sanity.value,
+            "AmyEnemySanity": self.options.amy_enemy_sanity.value,
+            "BigEnemySanity": self.options.big_enemy_sanity.value,
+            "GammaEnemySanity": self.options.gamma_enemy_sanity.value,
+            "CapsuleSanity": self.options.capsule_sanity.value,
+            "PinballCapsules": self.options.pinball_capsules.value,
+            "SonicCapsuleSanity": self.options.sonic_capsule_sanity.value,
+            "TailsCapsuleSanity": self.options.tails_capsule_sanity.value,
+            "KnucklesCapsuleSanity": self.options.knuckles_capsule_sanity.value,
+            "AmyCapsuleSanity": self.options.amy_capsule_sanity.value,
+            "BigCapsuleSanity": self.options.big_capsule_sanity.value,
+            "GammaCapsuleSanity": self.options.gamma_capsule_sanity.value,
+            "LifeCapsuleSanity": self.options.life_capsule_sanity.value,
+            "ShieldCapsuleSanity": self.options.shield_capsule_sanity.value,
+            "PowerUpCapsuleSanity": self.options.powerup_capsule_sanity.value,
+            "RingCapsuleSanity": self.options.ring_capsule_sanity.value,
+
+            "ProgressionItems": self.generate_progression_data(),
 
             "DeathLink": self.options.death_link.value,
             "SendDeathLinkChance": self.options.send_death_link_chance.value,

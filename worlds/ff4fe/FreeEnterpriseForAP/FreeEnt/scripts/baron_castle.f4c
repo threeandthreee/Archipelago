@@ -388,15 +388,10 @@ event($1B)  //Kainazzo battle, losing twins
         take item #Baron
     }
 
-    music #None
-    // %if ap_baron_castle_item%
-    music #DummyFanfare
-    message #ap_reward_slot.baron_castle_item
-    // %else%
     [#B #Text_LoadRewardNameFromSlot #reward_slot.baron_castle_item 0]
-    message #msg.fe_Received
+    music #None
     sound #GetItem
-    // %end%
+    message #msg.fe_Received
 
     [#B #Objectives_TickRewardSlot #reward_slot.baron_castle_item]
     [#B #Rando_DeliverRewardFromSlot #reward_slot.baron_castle_item]

@@ -124,7 +124,7 @@ item_table: Dict[str, AWItemData] = {
     iname.egg_crystal.value: AWItemData(IClass.progression_skip_balancing, 1, 89, "Eggs"),
     iname.egg_golden.value: AWItemData(IClass.progression_skip_balancing, 1, 90, "Eggs"),
 
-    iname.egg_65.value: AWItemData(IClass.progression_skip_balancing, 1, 91, "Eggs"),
+    iname.egg_65.value: AWItemData(IClass.progression_skip_balancing, 1, 91),  # not in item group for hinting reasons
     
     "Firecracker Refill": AWItemData(IClass.filler, 0, 92, "Filler"),
     "Big Blue Fruit": AWItemData(IClass.filler, 0, 93, "Filler"),

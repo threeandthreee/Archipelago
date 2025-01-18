@@ -218,8 +218,6 @@ msfpatch {
         jmp $_InputCheck
 
     %NewGameSelected:
-        lda #$00
-        sta $=Pregame__ShowPregameMenuIndicator
         jml $019648
 
     %CustomSelected:

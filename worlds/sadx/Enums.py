@@ -51,6 +51,35 @@ class Upgrade(Enum):
     Lure4 = auto()
 
 
+class Enemy(Enum):
+    BoaBoa = 1
+    Buyon = auto()
+    CopSpeeder = auto()
+    ElectroSpinner = auto()
+    EggKeeper = auto()
+    Gola = auto()
+    IceBall = auto()
+    KartKiki = auto()
+    Kiki = auto()
+    Leon = auto()
+    Rhinotank = auto()
+    Spinner = auto()
+    Sweep = auto()
+    SpikySpinner = auto()
+
+
+class Capsule(Enum):
+    ExtraLife = 1
+    Shield = auto()
+    MagneticShield = auto()
+    SpeedUp = auto()
+    Invincibility = auto()
+    Bomb = auto()
+    FiveRings = auto()
+    TenRings = auto()
+    RandomRings = auto()
+
+
 class SubLevelMission(Enum):
     B = 0
     A = auto()

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from worlds.shadow_the_hedgehog import Options
+from . import Options
 
 MISSION_ALIGNMENT_DARK = 0
 MISSION_ALIGNMENT_NEUTRAL = 1

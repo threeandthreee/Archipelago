@@ -1,4 +1,4 @@
-from . import items
+from worlds.ff4fe import events, items
 
 area_rules = {
     "BaronWeaponShop": ["Baron Key"],
@@ -53,7 +53,6 @@ individual_location_rules = {
     "Sealed Cave -- Crystal Room --  item": ["Evilwall Slot Defeated"],
     "Fabul -- West tower 3F (Yang's room) -- Found Yang item": ["Hook", "Magma Key"],
     "Fabul -- West tower 3F (Yang's room) -- Pan Trade item": ["Hook", "Magma Key", "Pan"],
-    "Sylvan Cave -- B3F -- Sylph item": ["Hook", "Magma Key", "Pan"],
     "Mt. Ordeals -- Mirror Room -- item": ["Mirror Cecil Slot Defeated"],
     "Cave Magnes -- Crystal Room -- item": ["Dark Elf Slot Defeated"],
     "Tower of Bab-il (lower) -- 5F -- item (Super Cannon destruction)": ["Dark Imp Slot Defeated"],

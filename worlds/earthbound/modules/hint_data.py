@@ -1,6 +1,7 @@
 from ..game_data.local_data import item_id_table, character_item_table, party_id_nums
-from ..game_data.text_data import eb_text_table, text_encoder
+from ..game_data.text_data import text_encoder
 from ..game_data.static_location_data import location_groups
+from ..modules.shopsanity import shop_locations
 import struct
 
 
@@ -146,12 +147,45 @@ def setup_hints(world):
         "some hints are good hints.\n@But not this one."
     ]
 
+    hintable_location_groups = location_groups.copy()
+
+    if not world.options.shop_randomizer:
+        hintable_location_groups["Onett"] = hintable_location_groups["Onett"] - shop_locations
+        hintable_location_groups["Twoson"] = hintable_location_groups["Twoson"] - shop_locations
+        hintable_location_groups["Happy-Happy Village"] = hintable_location_groups["Happy-Happy Village"] - shop_locations
+        hintable_location_groups["Threed"] = hintable_location_groups["Threed"] - shop_locations
+        hintable_location_groups["Grapefruit Falls"] = hintable_location_groups["Grapefruit Falls"] - shop_locations
+        hintable_location_groups["Saturn Valley"] = hintable_location_groups["Saturn Valley"] - shop_locations
+        hintable_location_groups["Dusty Dunes Desert"] = hintable_location_groups["Dusty Dunes Desert"] - shop_locations
+        hintable_location_groups["Winters"] = hintable_location_groups["Winters"] - shop_locations
+        hintable_location_groups["Dr. Andonuts's Lab"] = hintable_location_groups["Dr. Andonuts's Lab"] - shop_locations
+        hintable_location_groups["Fourside"] = hintable_location_groups["Fourside"] - shop_locations
+        hintable_location_groups["Moonside"] = hintable_location_groups["Moonside"] - shop_locations
+        hintable_location_groups["Summers"] = hintable_location_groups["Summers"] - shop_locations
+        hintable_location_groups["Dalaam"] = hintable_location_groups["Dalaam"] - shop_locations
+        hintable_location_groups["Scaraba"] = hintable_location_groups["Scaraba"] - shop_locations
+        hintable_location_groups["Deep Darkness"] = hintable_location_groups["Deep Darkness"] - shop_locations
+        hintable_location_groups["Lost Underworld"] = hintable_location_groups["Lost Underworld"] - shop_locations
+        hintable_location_groups["Magicant"] = hintable_location_groups["Magicant"] - shop_locations
+
+        del hintable_location_groups["Burglin Park"]
+        del hintable_location_groups["the Scaraba Bazaar"]
+        del hintable_location_groups["the Twoson Department Store"]
+        del hintable_location_groups["the Fourside Department Store"]
+        del hintable_location_groups["the Saturn Valley Shop"]
+
+    if world.options.magicant_mode > 1:
+        del hintable_location_groups["Magicant"]
+
+    if not world.options.giygas_required:
+        del hintable_location_groups["Cave of the Past"]
+
     if world.options.magicant_mode.value in [0, 3]:
         world.local_hintable_items.append("Magicant Teleport")
 
     for item in world.removed_teleports:
         if item.name in world.local_hintable_items:
-            #let's not hint an item that doesn't exist
+            # let's not hint an item that doesn't exist
             world.local_hintable_items.remove(item.name)
 
     for item in world.options.start_inventory_from_pool:
@@ -159,7 +193,8 @@ def setup_hints(world):
             world.local_hintable_items.remove(item)
 
     if world.local_hintable_items == []:
-        hint_types.remove("hint_for_good_item", "prog_item_at_region")
+        hint_types.remove("hint_for_good_item")
+        hint_types.remove("prog_item_at_region")
 
     if world.options.giygas_required:
         world.local_hintable_locations.append("Cave of the Past - Present")
@@ -169,7 +204,6 @@ def setup_hints(world):
 
     for i in range(6):
         world.in_game_hint_types.append(world.random.choice(hint_types))
-    # print(world.in_game_hint_types)
 
     for index, hint in enumerate(world.in_game_hint_types):
         if hint == "item_at_location":
@@ -177,8 +211,7 @@ def setup_hints(world):
             world.hinted_locations[index] = location
         
         elif hint == "region_progression_check":
-            key, value = world.random.choice(list(location_groups.items()))
-            group = key
+            group, group_locs = world.random.choice(list(hintable_location_groups.items()))
             world.hinted_regions[index] = group
 
         elif hint == "hint_for_good_item" or hint == "prog_item_at_region":
@@ -186,9 +219,8 @@ def setup_hints(world):
             world.hinted_items[index] = item
 
         elif hint == "item_in_local_region":
-            key, value = world.random.choice(list(location_groups.items()))
-            group = key
-            location = world.random.choice(sorted(value))
+            group, group_locs = world.random.choice(list(hintable_location_groups.items()))
+            location = world.random.choice(sorted(group_locs))
             world.hinted_regions[index] = group
             world.hinted_locations[index] = location
 
@@ -206,14 +238,13 @@ def parse_hint_data(world, location, rom, hint):
                 item_text = bytearray([0x1C, 0x05, item_id_table[location.item.name]])
             else:
                 # if the item doesn't have a name (e.g it's PSI)
-                item_text = text_encoder(location.item.name, eb_text_table, 128)
+                item_text = text_encoder(location.item.name, 128)
         else:
-            player_text = f"{world.multiworld.get_player_name(location.item.player)}'s "
-            item_text = text_encoder(location.item.name, eb_text_table, 128)
-            item_text.extend([0x50])
+            player_text = f"{world.multiworld.get_player_name(location.item.player)}'s"
+            item_text = text_encoder(location.item.name, 128)
 
-        player_text = text_encoder(player_text, eb_text_table, 255)
-        location_text = text_encoder(f" can be found at {location.name}.", eb_text_table, 255)
+        player_text = text_encoder(player_text, 255)
+        location_text = text_encoder(f" can be found at\n@{location.name}.", 255)
         text = player_text + item_text + location_text
         # [player]'s [item] can be found at [location].
         text.append(0x02)
@@ -223,30 +254,30 @@ def parse_hint_data(world, location, rom, hint):
             text = f"you can find {world.progression_count} important item at {world.hinted_area}."
         else:
             text = f"you can find {world.progression_count} important items at {world.hinted_area}."
-        text = text_encoder(text, eb_text_table, 255)
+        text = text_encoder(text, 255)
         text.append(0x02)
         
     elif hint == "hint_for_good_item" or hint == "prog_item_at_region" or hint == "item_in_local_region":
         if location.item.name in character_item_table and location.item.player == world.player:
-            item_text = text_encoder("your friend ", eb_text_table, 255)
+            item_text = text_encoder("your friend ", 255)
             item_text.extend([0x1C, 0x02, party_id_nums[location.item.name]])
         elif location.item.name in item_id_table and location.item.player == world.player:
-            item_text = text_encoder("your ", eb_text_table, 255)
+            item_text = text_encoder("your ", 255)
             item_text.extend([0x1C, 0x05, item_id_table[location.item.name]])
         elif location.item.player == world.player:
-            item_text = text_encoder(f"your {location.item.name}", eb_text_table, 128)
+            item_text = text_encoder(f"your {location.item.name}", 128)
         else:
             item_text = f"{world.multiworld.get_player_name(location.item.player)}'s {location.item.name}"
-            item_text = text_encoder(item_text, eb_text_table, 255)
-        item_text.extend(text_encoder(" can be found ", eb_text_table, 255))
+            item_text = text_encoder(item_text, 255)
+        item_text.extend(text_encoder(" can be found ", 255))
         
         if location.player != world.player:
-            player_text = text_encoder(f"by {world.multiworld.get_player_name(location.player)}", eb_text_table, 255)
+            player_text = text_encoder(f"by {world.multiworld.get_player_name(location.player)}\n", 255)
         else:
-            player_text = text_encoder(" ", eb_text_table, 255)
+            player_text = text_encoder("\n", 255)
         
         if hint == "hint_for_good_item":
-            location_text = text_encoder(f"at {location.name}.", eb_text_table, 255)
+            location_text = text_encoder(f"at {location.name}.", 255)
             # your [item] can be found by [player] at [location]
 
         else:
@@ -262,15 +293,18 @@ def parse_hint_data(world, location, rom, hint):
                     area = f"near {location.parent_region.name}"
             else:
                 area = f"near {world.random.choice(possible_location_groups)}"
-            location_text = text_encoder(f"somewhere {area}.", eb_text_table, 255)
+            location_text = text_encoder(f"@somewhere {area}.", 255)
             # your [item] can be found by [player] somewhere near [location group]
         text = item_text + player_text + location_text
         text.append(0x02)
 
     elif hint == "joke_hint":
         text = world.random.choice(world.joke_hints)
-        text = text_encoder(text, eb_text_table, 255)
+        text = text_encoder(text, 255)
         text.append(0x02)
+
+    else:
+        text = 0x00
 
     hint_addresses = [
         0x070376,

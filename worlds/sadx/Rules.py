@@ -4,10 +4,10 @@ from worlds.generic.Rules import add_rule
 from .CharacterUtils import get_playable_characters, is_level_playable, is_character_playable
 from .Enums import LevelMission
 from .Locations import get_location_by_name, level_location_table, upgrade_location_table, sub_level_location_table, \
-    LocationInfo, life_capsule_location_table, boss_location_table, mission_location_table, field_emblem_location_table
+    LocationInfo, capsule_location_table, boss_location_table, mission_location_table, field_emblem_location_table
 from .Logic import LevelLocation, UpgradeLocation, SubLevelLocation, EmblemLocation, CharacterUpgrade, \
-    LifeCapsuleLocation, BossFightLocation, MissionLocation, chao_egg_location_table, ChaoEggLocation, \
-    chao_race_location_table
+    CapsuleLocation, BossFightLocation, MissionLocation, chao_egg_location_table, ChaoEggLocation, \
+    chao_race_location_table, enemy_location_table, EnemyLocation
 from .Names import ItemName
 from .Regions import get_region_name
 
@@ -35,7 +35,7 @@ def add_sub_level_rules(self, location_name: str, sub_level: SubLevelLocation):
     location = self.multiworld.get_location(location_name, self.player)
     add_rule(location, lambda state: any(
         state.can_reach_region(get_region_name(character, sub_level.area), self.player) for character in
-        sub_level.characters if character in get_playable_characters(self.options)))
+        sub_level.get_logic_characters(self.options) if character in get_playable_characters(self.options)))
 
 
 def add_field_emblem_rules(self, location_name: str, field_emblem: EmblemLocation):
@@ -51,7 +51,7 @@ def add_field_emblem_rules(self, location_name: str, field_emblem: EmblemLocatio
         (isinstance(character, CharacterUpgrade) and character.character in get_playable_characters(self.options))))
 
 
-def add_life_capsule_rules(self, location_name: str, life_capsule: LifeCapsuleLocation):
+def add_capsule_rules(self, location_name: str, life_capsule: CapsuleLocation):
     location = self.multiworld.get_location(location_name, self.player)
     for need in life_capsule.get_logic_items(self.options):
         add_rule(location, lambda state, item=need: state.has(item, self.player))
@@ -100,6 +100,12 @@ def add_race_rules(self, location_name: str):
         add_rule(location, lambda state, loc=level_location: loc.can_reach(state))
 
 
+def add_enemy_rules(self, location_name: str, enemy: EnemyLocation):
+    location = self.multiworld.get_location(location_name, self.player)
+    for need in enemy.get_logic_items(self.options):
+        add_rule(location, lambda state, item=need: state.has(item, self.player))
+
+
 def calculate_rules(self, location: LocationInfo):
     if location is None:
         return
@@ -112,9 +118,9 @@ def calculate_rules(self, location: LocationInfo):
     for sub_level in sub_level_location_table:
         if location["id"] == sub_level.locationId:
             add_sub_level_rules(self, location["name"], sub_level)
-    for life_capsule in life_capsule_location_table:
+    for life_capsule in capsule_location_table:
         if location["id"] == life_capsule.locationId:
-            add_life_capsule_rules(self, location["name"], life_capsule)
+            add_capsule_rules(self, location["name"], life_capsule)
     for field_emblem in field_emblem_location_table:
         if location["id"] == field_emblem.locationId:
             add_field_emblem_rules(self, location["name"], field_emblem)
@@ -130,6 +136,9 @@ def calculate_rules(self, location: LocationInfo):
     for race in chao_race_location_table:
         if location["id"] == race.locationId:
             add_race_rules(self, location["name"])
+    for enemy in enemy_location_table:
+        if location["id"] == enemy.locationId:
+            add_enemy_rules(self, location["name"], enemy)
 
 
 def create_sadx_rules(self, needed_emblems: int) -> LocationDistribution:

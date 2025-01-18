@@ -5,8 +5,9 @@ from .items import item_descriptions, item_table, ShapezItem, \
     buildings_routing, buildings_processing, buildings_other, \
     buildings_top_row, buildings_wires, gameplay_unlocks, upgrades, \
     big_upgrades, filler, trap, bundles, belt_and_extractor
-from .locations import ShapezLocation, addlevels, all_locations, addupgrades, addachievements, location_description, \
-    addshapesanity, addshapesanity_ut, shapesanity_simple, init_shapesanity_pool
+from .locations import ShapezLocation, addlevels, addupgrades, addachievements, location_description, \
+    addshapesanity, addshapesanity_ut, shapesanity_simple, init_shapesanity_pool, achievement_locations, \
+    level_locations, upgrade_locations, shapesanity_locations, categories
 from .presets import options_presets
 from .options import ShapezOptions
 from worlds.AutoWorld import World, WebWorld
@@ -21,7 +22,7 @@ class ShapezWeb(WebWorld):
     game_info_languages = ['en', 'de']
     setup_en = Tutorial(
         "Multiworld Setup Guide",
-        "A guide to playing shapez with Archipelago.",
+        "A guide to playing shapez with Archipelago:",
         "English",
         "setup_en.md",
         "setup/en",
@@ -35,17 +36,25 @@ class ShapezWeb(WebWorld):
         "setup/de",
         ["BlastSlimey"]
     )
-    datapackage_options = Tutorial(
-        "Changing datapackage options",
-        "3000 locations a too many or not enough? Here's how you can change that:",
+    datapackage_settings_en = Tutorial(
+        "Changing datapackage settings",
+        "3000 locations are too many or not enough? Here's how you can change that:",
         "English",
-        "datapackage_options.md",
-        "datapackage/en",
+        "datapackage_settings_en.md",
+        "datapackage_settings/en",
         ["BlastSlimey"]
     )
-    tutorials = [setup_en, setup_de, datapackage_options]
+    datapackage_settings_de = Tutorial(
+        datapackage_settings_en.tutorial_name,
+        datapackage_settings_en.description,
+        "Deutsch",
+        "datapackage_settings_de.md",
+        "datapackage_settings/de",
+        ["BlastSlimey"]
+    )
+    tutorials = [setup_en, setup_de, datapackage_settings_en, datapackage_settings_de]
     item_descriptions = item_descriptions
-    # location_descriptions = location_description
+    location_descriptions = location_description
 
 
 class ShapezWorld(World):
@@ -61,7 +70,33 @@ class ShapezWorld(World):
     web = ShapezWeb()
     base_id = 20010707
     item_name_to_id = {name: id for id, name in enumerate(item_table.keys(), base_id)}
-    location_name_to_id = {name: id for id, name in enumerate(all_locations, base_id)}
+    location_name_to_id = {name: id for id, name in enumerate(level_locations + upgrade_locations
+                                                              + achievement_locations + shapesanity_locations, base_id)}
+    item_name_groups = {
+        "Main Buildings": {"Cutter", "Rotator", "Painter", "Color Mixer", "Stacker"},
+        "Goal Buildings": {"Cutter", "Rotator", "Painter", "Rotator (CCW)", "Color Mixer", "Stacker", "Quad Cutter",
+                           "Double Painter", "Quad Painter", "Wires", "Switch", "Constant Signal"},
+        "Most Useful Buildings": {"Balancer", "Tunnel", "Tunnel Tier II", "Compact Merger", "Compact Splitter", "Trash",
+                                  "Chaining Extractor"},
+        "Most Important Buildings": {key for key in belt_and_extractor},
+        "Gameplay Mechanics": {"Blueprints", "Wires"},
+        "Upgrades": {f"{size} {cat} Upgrade" for cat in categories for size in ["Big", "Small"]},
+        **{f"{cat} Upgrades": {f"Big {cat} Upgrade", f"Small {cat} Upgrade"} for cat in categories},
+        "Bundles": {key for key in bundles},
+        "Traps": {"Locked Building Trap", "Throttled Building Trap", "Malfunctioning Trap", "Inventory Draining Trap",
+                  "Blueprint Shapes Draining Trap", "Level Shapes Draining Trap", "Upgrade Shapes Draining Trap"},
+    }
+    location_name_groups = {
+        "Levels": {*level_locations},
+        "Upgrades": {*upgrade_locations},
+        "Achievements": {*achievement_locations},
+        "Shapesanity": {*achievement_locations},
+        **{f"{cat} Upgrades": {loc for loc in upgrade_locations if loc.startswith(cat)} for cat in categories},
+        "Only Belt and Extractor": {"Level 1", "Level 1 Additional",
+                                    "My eyes no longer hurt", "It's a mess", "Getting into it", "Perfectionist", "Oops",
+                                    "I need trains", "GPS", "It's been a long time", "Addicted",
+                                    "Shapesanity 1", "Shapesanity 2", "Shapesanity 3"}
+    }
 
     def __init__(self, multiworld: MultiWorld, player: int):
         super().__init__(multiworld, player)
@@ -110,6 +145,8 @@ class ShapezWorld(World):
                 self.random_logic_phase_length = [self.passthrough[f"Phase {i} length"] for i in range(5)]
                 self.category_random_logic_amounts = {cat: self.passthrough[f"{cat} category buildings amount"]
                                                       for cat in ["belt", "miner", "processors", "painting"]}
+                # Forces balancers, tunnel, and trash to not appear in regen to make UT more accurate
+                self.options.early_balancer_tunnel_and_trash.value = 0
                 return
 
         # "MAM" goal is supposed to be longer than vanilla, but to not have more options than necessary,
@@ -143,7 +180,7 @@ class ShapezWorld(World):
         # Determines the order of buildings for levels logic
         if self.options.randomize_level_requirements:
             self.level_logic_type = self.options.randomize_level_logic.current_key
-            if self.level_logic_type.endswith("shuffled"):
+            if self.level_logic_type.endswith("shuffled") or self.level_logic_type == "dopamine":
                 vanilla_list = ["Cutter", "Painter", "Stacker"]
                 while len(vanilla_list) > 0:
                     index = self.random.randint(0, len(vanilla_list)-1)
@@ -319,6 +356,7 @@ class ShapezWorld(World):
             "randomize_level_logic": self.level_logic_type,
             "randomize_upgrade_logic": self.upgrade_logic_type,
             "throughput_levels_ratio": self.options.throughput_levels_ratio.value,
+            "complexity_growth_gradient": self.options.complexity_growth_gradient.value,
             "same_late_upgrade_requirements": bool(self.options.same_late_upgrade_requirements)
         }
 

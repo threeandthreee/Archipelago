@@ -13,13 +13,13 @@ class TestRandomWarpDeterminism(OuterWildsTestBase):
 
     def test_determinism(self):
         self.assertListEqual(self.world.warps, [
-            ('SS', 'GD'),
+            ('SS', 'ATT'),
             ('ATP', 'ET'),
-            ('BHF', 'WHS'),
-            ('BHT', 'TH'),
-            ('THT', 'BHNG'),
+            ('BHF', 'BHT'),
+            ('GD', 'THT'),
+            ('BHNG', 'WHS'),
             ('ST', 'ETT'),
-            ('GDT', 'ATT'),
+            ('GDT', 'TH'),
         ])
 
 

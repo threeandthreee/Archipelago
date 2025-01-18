@@ -954,32 +954,33 @@ def create_locations(world: "ShtHWorld", regions: Dict[str, Region]):
     override_settings = world.options.percent_overrides
 
     if world.options.objective_sanity.value:
-        percentage = world.options.objective_percentage.value
+        objective_percentage = world.options.objective_percentage.value
+        objective_percentage_enemy = world.options.objective_enemy_percentage.value
         for location in mission_locations:
-            if not world.options.enemy_objective_sanity and (location.name == "Soldier" or location.name == "Alien"):
-                continue
             if location.stageId not in world.available_levels:
                 continue
 
-            override_total = ShadowUtils.getOverwriteRequiredCount(override_settings, location.stageId,
-                                                                   location.alignmentId, ShadowUtils.TYPE_ID_OBJECTIVE)
+            max_required = ShadowUtils.getMaxRequired(
+                ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_OBJECTIVE,
+                                                          location.name, world.options),
+                location.total, location.stageId, location.alignmentId,
+                override_settings)
 
-            max_required = Utils.getRequiredCount(location.total, percentage,
-                                                  override=override_total, round_method=floor)
-            if location.count <= max_required :
+            if location.count <= max_required:
                 within_region = regions[Regions.stage_id_to_region(location.stageId)]
                 completion_location = ShadowTheHedgehogLocation(world.player, location.name, location.locationId, within_region)
                 within_region.locations.append(completion_location)
 
     if world.options.enemy_sanity:
-        percentage = world.options.enemy_sanity_percentage.value
         for enemy in enemysanity_locations:
             if enemy.stageId not in world.available_levels:
                 continue
-            override_total = ShadowUtils.getOverwriteRequiredCount(override_settings, enemy.stageId,
-                                                                   enemy.alignmentId, ShadowUtils.TYPE_ID_ENEMY)
-            max_required = Utils.getRequiredCount(enemy.total, percentage,
-                                                  override=override_total, round_method=floor)
+
+            max_required = ShadowUtils.getMaxRequired(
+                ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_ENEMY,
+                                                          enemy.name, world.options),
+                enemy.total, enemy.stageId, enemy.alignmentId,
+                override_settings)
             if enemy.count <= max_required:
                 within_region = regions[Regions.get_max_stage_region_id(enemy.stageId)]
                 completion_location = ShadowTheHedgehogLocation(world.player, enemy.name, enemy.locationId, within_region)
@@ -1086,28 +1087,28 @@ def count_locations(world):
     count += len(mission_clear_locations)
 
     if world.options.objective_sanity:
-        percentage = world.options.objective_percentage.value
+        objective_percentage = world.options.objective_percentage.value
+        objective_percentage_enemy = world.options.objective_enemy_percentage.value
+
         for location in mission_locations:
-            if not world.options.enemy_objective_sanity and (location.name == "Soldier" or location.name == "Alien"):
-                continue
 
-            override_total = ShadowUtils.getOverwriteRequiredCount(override_settings, location.stageId,
-                                                                   location.alignmentId, ShadowUtils.TYPE_ID_OBJECTIVE)
+            max_required = ShadowUtils.getMaxRequired(
+                ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_OBJECTIVE,
+                                                          location.name, world.options),
+                location.total, location.stageId, location.alignmentId,
+                override_settings)
 
-            max_required = Utils.getRequiredCount(location.total, percentage,
-                                                  override=override_total, round_method=floor)
             if location.count <= max_required:
                 count += 1
 
     if world.options.enemy_sanity:
-        percentage = world.options.enemy_sanity_percentage.value
-
         for enemy in enemysanity_locations:
-            override_total = ShadowUtils.getOverwriteRequiredCount(override_settings, enemy.stageId,
-                                                                   enemy.alignmentId, ShadowUtils.TYPE_ID_ENEMY)
 
-            max_required = Utils.getRequiredCount(enemy.total, percentage,
-                                                  override=override_total, round_method=floor)
+            max_required = ShadowUtils.getMaxRequired(
+                ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_ENEMY,
+                                                          enemy.name, world.options),
+                enemy.total, enemy.stageId, enemy.alignmentId,
+                override_settings)
             if enemy.count <= max_required:
                 count += 1
 

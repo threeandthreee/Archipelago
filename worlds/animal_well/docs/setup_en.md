@@ -12,13 +12,13 @@
 ### Configure Your YAML File and Generate a Randomized Game
 Note: You will need to use Archipelago version 0.5.0.
 
-Place the `animal_well.apworld` in your `Archipelago/lib/worlds` folder.
-Open up the Archipelago Launcher.
-Click on Generate Template Options.
-Grab the `ANIMAL WELL.yaml` file and place it in your `Archipelago/Players` folder, and customize it to your liking.
-Place any other yamls you would like to generate in this folder as well.
-Run `Generate` from the Archipelago Launcher.
-Upload your generated game (in you `Archipelago/output` folder) at the [Archipelago Uploads page](https://archipelago.gg/uploads), or host locally.
+- Place the `animal_well.apworld` in your `Archipelago/custom_worlds` folder.
+- Open up the Archipelago Launcher.
+- Click on Generate Template Options.
+- Grab the `ANIMAL WELL.yaml` file and place it in your `Archipelago/Players` folder, and customize it to your liking.
+- Place any other yamls you would like to generate in this folder as well.
+- Run `Generate` from the Archipelago Launcher.
+- Upload your generated game (in you `Archipelago/output` folder) at the [Archipelago Uploads page](https://archipelago.gg/uploads), or host locally.
 
 ## Play the Randomized Game
 1. Launch ANIMAL WELL, and start a new game on an empty save file (or continue from your previous save file that you used for this Archipelago session).
