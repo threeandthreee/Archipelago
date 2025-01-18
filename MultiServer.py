@@ -854,7 +854,7 @@ class Ashipelago:
         self.webhook_queue = queue.SimpleQueue()
 
     # Initializes required fields needed to properly manage the newly started room
-    def start_room(self, room: Room, is_tracked: bool, webhook_settings: dict, admin_password):
+    def start_room(self, room: Room, is_tracked: int, webhook_settings: dict, admin_password):
         self.room_url = urlsafe_b64encode(room.id.bytes).rstrip(b'=').decode('ascii')
         self.seed_url = urlsafe_b64encode(room.seed.id.bytes).rstrip(b'=').decode('ascii')
         self.admin_password = admin_password
@@ -863,13 +863,13 @@ class Ashipelago:
         if "WEBHOOK_DEBUG" in webhook_settings:
             self.webhook_is_debug = webhook_settings["WEBHOOK_DEBUG"]
 
-        if is_tracked:
+        if is_tracked > 0:
             if webhook_settings["WEBHOOK_AUTO_START"]:
                 self.webhook_active = True
                 self.webhook_thread = self.WebhookThread(self.ctx, self.webhook_url, self.webhook_is_debug)
                 self.webhook_thread.start()
 
-            self._push_player_list(room.is_new)
+            self._push_player_list(room.is_new, is_tracked)
             if room.is_new:
                 self._push_game_item_information()
                 room.is_new = webhook_settings["WEBHOOK_DEBUG"]
@@ -1034,16 +1034,17 @@ class Ashipelago:
             self.webhook_thread.start()
 
     # Helper function used to push the player list when a new room is started
-    def _push_player_list(self, is_new: bool):
+    def _push_player_list(self, is_new: bool, is_tracked: int):
         if is_new:
             player_list = []
             for player in self.ctx.player_names.values():
                 player_list.append(player)
             connection = {
-                "event": "start_room",
+                "event": "create_room",
                 "room": self.room_url,
                 "seed": self.seed_url,
-                "players": player_list
+                "players": player_list,
+                "is_tracked": is_tracked
             }
         else:
             connection = {

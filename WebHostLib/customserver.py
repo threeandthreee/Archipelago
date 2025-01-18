@@ -61,7 +61,7 @@ class DBCommandProcessor(ServerCommandProcessor):
 class WebHostContext(Context):
     room_id: int
     # Ashipelago customization
-    room_is_tracked: bool
+    room_is_tracked: int
 
     def __init__(self, static_server_data: dict, logger: logging.Logger):
         # static server data is used during _load_game_data to load required data,

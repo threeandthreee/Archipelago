@@ -36,7 +36,7 @@ def get_meta(options_source: dict, race: bool = False) -> Dict[str, Union[List[s
         "collect_mode": str(options_source.get("collect_mode", ServerOptions.collect_mode)),
         "item_cheat": bool(int(options_source.get("item_cheat", not ServerOptions.disable_item_cheat))),
         "server_password": str(options_source.get("server_password", None)),
-        "track_in_discord": bool(int(options_source.get("track_in_discord", ServerOptions.track_in_discord))),
+        "track_in_discord": int(options_source.get("track_in_discord", ServerOptions.track_in_discord)),
         "use_room_hints": bool(int(options_source.get("use_room_hints", ServerOptions.use_room_hints))),
     }
     generator_options = {
@@ -46,7 +46,7 @@ def get_meta(options_source: dict, race: bool = False) -> Dict[str, Union[List[s
 
     if race:
         server_options["item_cheat"] = False
-        server_options["track_in_discord"] = False
+        server_options["track_in_discord"] = 0
         server_options["remaining_mode"] = "disabled"
         generator_options["spoiler"] = 0
 
