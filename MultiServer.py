@@ -1144,7 +1144,6 @@ class Ashipelago:
                             Webhook(self.url, content=message).execute()
                         except Exception as e:
                             self.ctx.dynx.webhook_queue.put(message)
-                            self.ctx.logger.exception(e)
                             return
 
 
