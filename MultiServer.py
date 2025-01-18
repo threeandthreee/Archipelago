@@ -1330,8 +1330,7 @@ def get_status_string(ctx: Context, team: int, tag: str):
 
 
 def get_received_items(ctx: Context, team: int, player: int, remote_items: bool) -> typing.List[NetworkItem]:
-    items = ctx.received_items.setdefault((team, player, remote_items), [])
-    return items
+    return ctx.received_items.setdefault((team, player, remote_items), [])
 
 
 def get_start_inventory(ctx: Context, player: int, remote_start_inventory: bool) -> typing.List[NetworkItem]:
@@ -1402,32 +1401,12 @@ def send_items_to(ctx: Context, team: int, target_slot: int, push_webhook: bool,
     print(ctx.slot_info)
     for target in ctx.slot_set(target_slot):
         for item in items:
-            mapped_item = item
-            if ctx.slot_info[target_slot].group_members and target_slot != target:
-                # This should always be an item link item name
-                item_name = ctx.item_names[ctx.slot_info[target_slot].game][item.item]
-                group_name = ctx.slot_info[target_slot].name
-                # Reverse lookup the item name
-                mapped_item_name = item_name
-                if ctx.slot_info[target].item_mapping:
-                    for k, v in ctx.slot_info[target].item_mapping.get(group_name, {}).items():
-                        if v == item_name:
-                            mapped_item_name = k
-                            break
-                # Get the new game
-                mapped_game = ctx.slot_info[target].game 
-                # Translate the item
-                mapped_item_id = ctx.item_names_for_game(mapped_game).get(mapped_item_name)
-
-                if mapped_item_id:
-                    mapped_item = NetworkItem(mapped_item_id, item.location, item.player, item.flags)
-                
             if item.player != target_slot:
-                get_received_items(ctx, team, target, False).append(mapped_item)
-            get_received_items(ctx, team, target, True).append(mapped_item)
+                get_received_items(ctx, team, target, False).append(item)
+            get_received_items(ctx, team, target, True).append(item)
             # Ashipelago customization
             if push_webhook:
-                ctx.dynx.push_item_information(mapped_item, team, target, released)
+                ctx.dynx.push_item_information(item, team, target, released)
 
 
 # Ashipelago customization
@@ -2317,7 +2296,7 @@ async def process_client_cmd(ctx: Context, client: Client, args: dict):
             hint = ctx.get_hint(client.team, player, location)
             if not hint:
                 return  # Ignored safely
-            if client.slot not in ctx.slot_set(hint.receiving_player):
+            if hint.receiving_player != client.slot:
                 await ctx.send_msgs(client,
                                     [{'cmd': 'InvalidPacket', "type": "arguments", "text": 'UpdateHint: No Permission',
                                       "original_cmd": cmd}])

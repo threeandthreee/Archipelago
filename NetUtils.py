@@ -10,14 +10,6 @@ import websockets
 from Utils import ByValue, Version
 
 
-class HintStatus(enum.IntEnum):
-    HINT_FOUND = 0
-    HINT_UNSPECIFIED = 1
-    HINT_NO_PRIORITY = 10
-    HINT_AVOID = 20
-    HINT_PRIORITY = 30
-
-
 class JSONMessagePart(typing.TypedDict, total=False):
     text: str
     # optional
@@ -27,8 +19,6 @@ class JSONMessagePart(typing.TypedDict, total=False):
     player: int
     # if type == item indicates item flags
     flags: int
-    # if type == hint_status
-    hint_status: HintStatus
 
 
 class ClientStatus(ByValue, enum.IntEnum):
@@ -37,6 +27,14 @@ class ClientStatus(ByValue, enum.IntEnum):
     CLIENT_READY = 10
     CLIENT_PLAYING = 20
     CLIENT_GOAL = 30
+
+
+class HintStatus(enum.IntEnum):
+    HINT_FOUND = 0
+    HINT_UNSPECIFIED = 1
+    HINT_NO_PRIORITY = 10
+    HINT_AVOID = 20
+    HINT_PRIORITY = 30
 
 
 class SlotType(ByValue, enum.IntFlag):
@@ -83,7 +81,6 @@ class NetworkSlot(typing.NamedTuple):
     game: str
     type: SlotType
     group_members: typing.Union[typing.List[int], typing.Tuple] = ()  # only populated if type == group
-    item_mapping: typing.Optional[dict[str, dict[str, str]]] = None # only populated if slot in group and has item link maps set
 
 
 class NetworkItem(typing.NamedTuple):
@@ -195,7 +192,6 @@ class JSONTypes(str, enum.Enum):
     location_name = "location_name"
     location_id = "location_id"
     entrance_name = "entrance_name"
-    hint_status = "hint_status"
 
 
 class JSONtoTextParser(metaclass=HandlerMeta):
@@ -236,7 +232,7 @@ class JSONtoTextParser(metaclass=HandlerMeta):
 
     def _handle_player_id(self, node: JSONMessagePart):
         player = int(node["text"])
-        node["color"] = 'magenta' if self.ctx.slot_concerns_self(player) else 'yellow'
+        node["color"] = 'magenta' if player == self.ctx.slot else 'yellow'
         node["text"] = self.ctx.player_names[player]
         return self._handle_color(node)
 
@@ -275,10 +271,6 @@ class JSONtoTextParser(metaclass=HandlerMeta):
 
     def _handle_entrance_name(self, node: JSONMessagePart):
         node["color"] = 'blue'
-        return self._handle_color(node)
-
-    def _handle_hint_status(self, node: JSONMessagePart):
-        node["color"] = status_colors.get(node["hint_status"], "red")
         return self._handle_color(node)
 
 
@@ -327,13 +319,6 @@ status_colors: typing.Dict[HintStatus, str] = {
     HintStatus.HINT_AVOID: "salmon",
     HintStatus.HINT_PRIORITY: "plum",
 }
-
-
-def add_json_hint_status(parts: list, hint_status: HintStatus, text: typing.Optional[str] = None, **kwargs):
-    parts.append({"text": text if text != None else status_names.get(hint_status, "(unknown)"),
-                  "hint_status": hint_status, "type": JSONTypes.hint_status, **kwargs})
-
-
 class Hint(typing.NamedTuple):
     receiving_player: int
     finding_player: int
@@ -378,7 +363,8 @@ class Hint(typing.NamedTuple):
         else:
             add_json_text(parts, "'s World")
         add_json_text(parts, ". ")
-        add_json_hint_status(parts, self.status)
+        add_json_text(parts, status_names.get(self.status, "(unknown)"), type="color",
+                      color=status_colors.get(self.status, "red"))
 
         return {"cmd": "PrintJSON", "data": parts, "type": "Hint",
                 "receiving": self.receiving_player,
@@ -424,8 +410,6 @@ class _LocationStore(dict, typing.MutableMapping[int, typing.Dict[int, typing.Tu
         checked = state[team, slot]
         if not checked:
             # This optimizes the case where everyone connects to a fresh game at the same time.
-            if slot not in self:
-                raise KeyError(slot)
             return []
         return [location_id for
                 location_id in self[slot] if

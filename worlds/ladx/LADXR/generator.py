@@ -58,6 +58,7 @@ from . import hints
 
 from .patches import bank34
 from .utils import formatText
+from ..Options import TrendyGame, Palette, Warps
 from .roomEditor import RoomEditor, Object
 from .patches.aesthetics import rgb_to_bin, bin_to_rgb
 
@@ -65,7 +66,7 @@ from .locations.keyLocation import KeyLocation
 
 from BaseClasses import ItemClassification
 from ..Locations import LinksAwakeningLocation
-from ..Options import TrendyGame, Palette, MusicChangeCondition, Warps
+from ..Options import TrendyGame, Palette, MusicChangeCondition, BootsControls
 
 if TYPE_CHECKING:
     from .. import LinksAwakeningWorld
@@ -155,8 +156,6 @@ def generateRom(args, world: "LinksAwakeningWorld"):
     if not world.ladxr_settings.rooster:
         patches.maptweaks.tweakMap(rom)
         patches.maptweaks.tweakBirdKeyRoom(rom)
-    if world.ladxr_settings.overworld == "openmabe":
-        patches.maptweaks.openMabe(rom)
     patches.chest.fixChests(rom)
     patches.shop.fixShop(rom)
     patches.rooster.patchRooster(rom)
@@ -248,7 +247,7 @@ def generateRom(args, world: "LinksAwakeningWorld"):
         patches.core.quickswap(rom, 1)
     elif world.ladxr_settings.quickswap == 'b':
         patches.core.quickswap(rom, 0)
-
+    
     patches.core.addBootsControls(rom, world.options.boots_controls)
 
 
@@ -398,7 +397,7 @@ def generateRom(args, world: "LinksAwakeningWorld"):
             # Then put new text in
             for bucket_idx, (orig_idx, data) in enumerate(bucket):
                 rom.texts[shuffled[bucket_idx][0]] = data
-
+    
 
     if world.options.trendy_game != TrendyGame.option_normal:
 
