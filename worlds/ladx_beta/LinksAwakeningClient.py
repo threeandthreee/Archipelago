@@ -706,6 +706,7 @@ class LinksAwakeningContext(CommonContext):
                 "server_address": self.server_address,
                 "slot_name": self.player_names[self.slot],
                 "password": self.password,
+                "client_version": Common.VERSION,
             })
             if self.slot_data.get("death_link"):
                 Utils.async_start(self.update_death_link(True))
