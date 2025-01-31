@@ -425,7 +425,8 @@ def create_regions(world, player) -> None:
             # Splitting gates into paths
             path = valid_gates[i+1::world.options.gate_paths.value]
             path_lengths[i] = len(path)
-
+            for gate in path:
+                gate.name += f" Path {i+1}"
             gate_1.connect(path[0], path[0].name)
             for x in range(1, len(path)):
                 path[x - 1].connect(path[x], path[x].name)

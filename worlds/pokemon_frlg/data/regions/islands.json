@@ -80,6 +80,7 @@
       "NPC_GIFT_GOT_METEORITE",
       "NPC_GIFT_GOT_TRI_PASS",
       "NPC_GIFT_GOT_RAINBOW_PASS",
+      "NPC_GIFT_GOT_SEVEN_PASS",
       "FAME_CHECKER_BILL_4",
       "FAME_CHECKER_BILL_5",
       "FAME_CHECKER_BILL_6"
@@ -338,7 +339,6 @@
     "kanto": false,
     "locations": [
       "ITEM_TWO_ISLAND_REVIVE",
-      "NPC_GIFT_GOT_TWO_PASS",
       "FAME_CHECKER_BRUNO_5"
     ],
     "events": [
@@ -567,8 +567,7 @@
       "TRAINER_BIKER_GOON_2_REWARD",
       "TRAINER_BIKER_GOON_3_REWARD",
       "TRAINER_CUE_BALL_PAXTON_REWARD",
-      "NPC_GIFT_GOT_FULL_RESTORE_FROM_THREE_ISLAND_DEFENDER",
-      "NPC_GIFT_GOT_THREE_PASS"
+      "NPC_GIFT_GOT_FULL_RESTORE_FROM_THREE_ISLAND_DEFENDER"
     ],
     "events": [],
     "exits": {
@@ -625,7 +624,9 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": false,
-    "locations": [],
+    "locations": [
+      "NPC_GIFT_GOT_TWO_PASS"
+    ],
     "events": [],
     "exits": {},
     "warps": {
@@ -1031,9 +1032,7 @@
     "has_water": false,
     "has_fishing": true,
     "kanto": false,
-    "locations": [
-      "NPC_GIFT_GOT_FIVE_PASS"
-    ],
+    "locations": [],
     "events": [],
     "exits": {
       "REGION_FIVE_ISLAND/WATER": "Five Island Town Surfing Spot",
@@ -1332,7 +1331,6 @@
     "has_fishing": false,
     "kanto": false,
     "locations": [
-      "NPC_GIFT_GOT_SIX_PASS",
       "HIDDEN_ITEM_SIX_ISLAND_LEPPA_BERRY"
     ],
     "events": [],
@@ -1700,7 +1698,8 @@
     "has_fishing": false,
     "kanto": false,
     "locations": [
-      "NPC_GIFT_GOT_SEVEN_PASS"
+      "NPC_GIFT_GOT_DEEP_SEA_SCALE",
+      "NPC_GIFT_GOT_DEEP_SEA_TOOTH"
     ],
     "events": [],
     "exits": {
@@ -1874,7 +1873,9 @@
     "has_water": true,
     "has_fishing": true,
     "kanto": false,
-    "locations": [],
+    "locations": [
+      "NPC_GIFT_GOT_SCANNER"
+    ],
     "events": [],
     "exits": {
       "REGION_SEVEN_ISLAND_TANOBY_RUINS/MAIN": "Tanoby Ruins Landing",

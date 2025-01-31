@@ -11,25 +11,46 @@ from .options import GameVersion, LevelScaling
 if TYPE_CHECKING:
     from . import PokemonFRLGWorld
 
-exclusive_gift_pokemon: List[str] = {
-    "TRADE_POKEMON_NIDORAN",
-    "TRADE_POKEMON_NIDORINOA",
-    "CELADON_PRIZE_POKEMON_3",
-    "CELADON_PRIZE_POKEMON_4",
-    "TRADE_POKEMON_LICKITUNG"
-}
-
-indirect_conditions: Dict[str, List[str]] = {
+INDIRECT_CONDITIONS: Dict[str, List[str]] = {
     "Seafoam Islands 1F": ["Seafoam Islands B3F West Surfing Spot", "Seafoam Islands B3F Southeast Surfing Spot",
                            "Seafoam Islands B3F West Landing", "Seafoam Islands B3F Southeast Landing"],
     "Seafoam Islands B3F West": ["Seafoam Islands B4F Surfing Spot (West)",
                                  "Seafoam Islands B4F Near Articuno Landing"],
-    "Victory Road 3F Southwest": ["Victory Road 2F Center Rock Barrier"]
+    "Victory Road 3F Southwest": ["Victory Road 2F Center Rock Barrier"],
+    "Vermilion City": ["Navel Rock Arrival", "Birth Island Arrival"]
 }
 
-sevii_required_events = [
-    "Champion's Room - Champion Rematch Battle"
+SEVII_REQUIRED_EVENTS = [
+    "Champion's Room - Champion Rematch Reward"
 ]
+
+STATIC_POKEMON_SPOILER_NAMES = {
+    "STATIC_POKEMON_ELECTRODE_1": "Power Plant (Static)",
+    "STATIC_POKEMON_ELECTRODE_2": "Power Plant (Static)",
+    "LEGENDARY_POKEMON_ZAPDOS": "Power Plant (Static)",
+    "CELADON_PRIZE_POKEMON_1": "Celadon Game Corner Prize Room",
+    "CELADON_PRIZE_POKEMON_2": "Celadon Game Corner Prize Room",
+    "CELADON_PRIZE_POKEMON_3": "Celadon Game Corner Prize Room",
+    "CELADON_PRIZE_POKEMON_4": "Celadon Game Corner Prize Room",
+    "CELADON_PRIZE_POKEMON_5": "Celadon Game Corner Prize Room",
+    "GIFT_POKEMON_EEVEE": "Celadon Condominiums Roof Room",
+    "STATIC_POKEMON_ROUTE12_SNORLAX": "Route 12 (Static)",
+    "STATIC_POKEMON_ROUTE16_SNORLAX": "Route 16 (Static)",
+    "GIFT_POKEMON_HITMONCHAN": "Saffron Dojo",
+    "GIFT_POKEMON_HITMONLEE": "Saffron Dojo",
+    "GIFT_POKEMON_LAPRAS": "Silph Co. 7F",
+    "LEGENDARY_POKEMON_ARTICUNO": "Seafoam Islands B4F (Static)",
+    "GIFT_POKEMON_OMANYTE": "Pokemon Lab Experiment Room (Helix)",
+    "GIFT_POKEMON_KABUTO": "Pokemon Lab Experiment Room (Dome)",
+    "GIFT_POKEMON_AERODACTYL": "Pokemon Lab Experiment Room (Amber)",
+    "LEGENDARY_POKEMON_MOLTRES": "Mt. Ember Summit",
+    "STATIC_POKEMON_HYPNO": "Berry Forest (Static)",
+    "EGG_POKEMON_TOGEPI": "Water Labyrinth (Egg)",
+    "LEGENDARY_POKEMON_MEWTWO": "Cerulean Cave B1F (Static)",
+    "LEGENDARY_POKEMON_HO_OH": "Navel Rock Summit",
+    "LEGENDARY_POKEMON_LUGIA": "Navel Rock Base",
+    "LEGENDARY_POKEMON_DEOXYS": "Birth Island Exterior"
+}
 
 
 class PokemonFRLGRegion(Region):
@@ -109,7 +130,8 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
                                 encounter_region,
                                 None,
                                 None,
-                                frozenset(["Pokemon", "Wild"])
+                                frozenset(["Pokemon", "Wild"]),
+                                spoiler_name=f"{encounter_region_name} ({subcategory_name})",
                             )
                             encounter_location.show_in_spoiler = False
 
@@ -120,7 +142,7 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
                             # Fill the location with an event for catching that species
                             encounter_location.place_locked_item(PokemonFRLGItem(
                                 data.species[species_id].name,
-                                ItemClassification.progression,
+                                ItemClassification.progression_skip_balancing,
                                 None,
                                 world.player
                             ))
@@ -144,7 +166,7 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
         for event_id in region_data.events:
             event_data = world.modified_events[event_id]
 
-            if world.options.kanto_only and event_data.name in sevii_required_events:
+            if world.options.kanto_only and event_data.name in SEVII_REQUIRED_EVENTS:
                 continue
 
             if type(event_data.name) is list:
@@ -169,7 +191,9 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
                                         new_region,
                                         None,
                                         None,
-                                        event_data.tags)
+                                        event_data.tags,
+                                        spoiler_name=STATIC_POKEMON_SPOILER_NAMES[event_id]
+                                        if event_id in STATIC_POKEMON_SPOILER_NAMES else None)
             event.place_locked_item(PokemonFRLGItem(item,
                                                     ItemClassification.progression,
                                                     None,
@@ -241,10 +265,6 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
                                                                 None,
                                                                 world.player))
                 scaling_event.show_in_spoiler = False
-
-                if scaling_data.rule is not None:
-                    scaling_event.access_rule = scaling_data.rule
-
                 region.locations.append(scaling_event)
             elif "Static" in scaling_data.tags:
                 scaling_event = PokemonFRLGLocation(
@@ -262,10 +282,6 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
                                                                 None,
                                                                 world.player))
                 scaling_event.show_in_spoiler = False
-
-                if scaling_data.rule is not None:
-                    scaling_event.access_rule = scaling_data.rule
-
                 region.locations.append(scaling_event)
             elif "Wild" in scaling_data.tags:
                 index = 1
@@ -304,12 +320,8 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
                                                                     None,
                                                                     world.player))
                     scaling_event.show_in_spoiler = False
-
                     if event[2] is not None:
                         scaling_event.access_rule = event[2]
-                    elif scaling_data.rule is not None:
-                        scaling_event.access_rule = scaling_data.rule
-
                     region.locations.append(scaling_event)
 
         for region in regions.values():
@@ -361,6 +373,7 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
 
     regions["Menu"] = PokemonFRLGRegion("Menu", world.player, world.multiworld)
     regions["Menu"].connect(regions["Player's House 2F"], "Start Game")
+    regions["Menu"].connect(regions["Pokedex"], "Pokedex")
     regions["Menu"].connect(regions["Evolutions"], "Evolve")
     regions["Menu"].connect(regions["Sky"], "Flying")
 
@@ -368,7 +381,7 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
 
 
 def create_indirect_conditions(world: "PokemonFRLGWorld"):
-    for region, entrances in indirect_conditions.items():
+    for region, entrances in INDIRECT_CONDITIONS.items():
         for entrance in entrances:
             world.multiworld.register_indirect_condition(world.get_region(region), world.get_entrance(entrance))
 

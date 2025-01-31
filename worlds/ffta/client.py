@@ -3,6 +3,8 @@ import time
 import logging
 import sys
 import struct
+import asyncio
+import Utils
 
 from .options import FinalMission, JobUnlockReq
 
@@ -11,18 +13,27 @@ import worlds._bizhawk as bizhawk
 from worlds._bizhawk.client import BizHawkClient
 from .items import JobUnlockDict
 from .locations import (MissionGroups, DispatchMissionGroups, bitflags)
-from worlds.LauncherComponents import SuffixIdentifier, components
+from worlds.LauncherComponents import SuffixIdentifier, components, Component, Type, launch_subprocess
 from .fftautils import xorshift32
+
 
 if TYPE_CHECKING:
     from worlds._bizhawk.context import BizHawkClientContext
 else:
     BizHawkClientContext = object
 
+UT_found = False
+bizhawk_component = None
 for component in components:
-    if component.script_name == "BizHawkClient":
+    if component.script_name == "BizHawkClientUniversalTracker":
         component.file_identifier = SuffixIdentifier(*(*component.file_identifier.suffixes, ".apffta"))
+        UT_found = True
         break
+    elif component.script_name == "BizHawkClient":
+        bizhawk_component = component
+
+if not UT_found:
+    bizhawk_component.file_identifier = SuffixIdentifier(*(*bizhawk_component.file_identifier.suffixes, ".apffta"))
 
 
 class FFTAClient(BizHawkClient):

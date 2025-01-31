@@ -59,14 +59,31 @@ def make_d2_logic(player: int):
         ])],
 
         # potentially 2 keys w/ vanilla route 
-        ["enter d2", "d2 basement", False, lambda state: all([
-            any([
-                ooa_has_small_keys(state, player, 2, 2),
-                ooa_can_jump_2_wide_pit(state, player, False)
-            ]),
-            ooa_can_kill_spiked_beetle(state, player),
-            ooa_generic_boss_and_miniboss_kill(state, player),
+        ["enter d2", "d2 miniboss arena", False, lambda state: any([
+                all([
+                    ooa_has_small_keys(state, player, 2, 2),
+                    ooa_can_kill_normal_enemy(state, player, True, True)
+                ]),
+                all([
+                    ooa_can_jump_2_wide_pit(state, player, False),
+                    ooa_can_kill_spiked_beetle(state, player)
+                ])
+            ])
+        ],
+        # The key door doesn't need you to kill the beetles to go past it
+        # So come in with keys, and do the 2-wide pit jump from the other side
+        # To get to these items without being able to kill the spiked beetles.
+        # You also don't need to kill swoop for these, as you can just fall down one of the holes they make.
+        # (only relevant in keysanity)
+        ["d2 miniboss arena", "d2 bombed terrace", False, lambda state: all([
+            ooa_can_jump_2_wide_pit(state, player, False),
+            ooa_has_bombs(state, player)
         ])],
+        ["d2 miniboss arena", "d2 moblin drop", False, lambda state: all([
+            ooa_can_jump_2_wide_pit(state, player, False),
+            ooa_can_kill_normal_enemy(state, player)
+        ])],
+        ["d2 miniboss arena", "d2 basement", False, lambda state: ooa_generic_boss_and_miniboss_kill(state, player)],
         ["d2 basement", "d2 thwomp tunnel", False, None],
         ["d2 basement", "d2 thwomp shelf", False, lambda state: any([
             ooa_can_jump_1_wide_pit(state, player, False),
@@ -105,12 +122,10 @@ def make_d2_logic(player: int):
 
         # 4 keys
         ["enter d2", "d2 rope room", False, lambda state: all([
-            ooa_can_kill_spiked_beetle(state, player),
             ooa_can_kill_normal_enemy(state, player, True, True),
             ooa_has_small_keys(state, player, 2, 4),
         ])],
         ["enter d2", "d2 ladder chest", False, lambda state: all([
-            ooa_can_kill_spiked_beetle(state, player),
             ooa_can_kill_normal_enemy(state, player, True),
             ooa_has_small_keys(state, player, 2, 4),
             ooa_has_bombs(state, player)
@@ -567,7 +582,7 @@ def make_d6past_logic(player: int):
             ooa_has_cane(state, player),
             ooa_has_bracelet(state, player),
             ooa_can_jump_1_wide_pit(state, player, False),
-            ooa_has_small_keys(state, player, 6, 1),
+            ooa_has_small_keys(state, player, 9, 1),
             ooa_has_bombs(state, player)
         ])],
         ["d6 wall B bombed", "d6 past spear chest", False, lambda state: ooa_can_dive(state, player)],
@@ -577,9 +592,9 @@ def make_d6past_logic(player: int):
         ])],
         # past, 3 keys
         ["d6 wall B bombed", "d6 boss", False, lambda state: all([
-            ooa_has_boss_key(state, player, 6),
+            ooa_has_boss_key(state, player, 9),
             ooa_can_dive(state, player),
-            ooa_has_small_keys(state, player, 6, 3),
+            ooa_has_small_keys(state, player, 9, 3),
             ooa_has_seedshooter(state, player),
             any([
                 ooa_has_sword(state, player),
@@ -648,7 +663,7 @@ def make_d6present_logic(player: int):
             any([
                 ooa_can_swim(state, player, False),
                 all([
-                    ooa_has_small_keys(state, player, 9, 3),
+                    ooa_has_small_keys(state, player, 6, 3),
                     ooa_has_switch_hook(state, player),
                 ])
             ])
@@ -660,13 +675,13 @@ def make_d6present_logic(player: int):
         ["d6 present beamos chest", "d6 present rng chest", False, lambda state: all([
             ooa_has_bracelet(state, player),
             ooa_can_kill_normal_enemy(state, player, True),
-            ooa_has_small_keys(state, player, 9, 3),
+            ooa_has_small_keys(state, player, 6, 3),
         ])],
 
         ["enter d6 present", "d6 present channel chest", False, lambda state: all([
             state.has("_d6_canal_expanded", player),
             ooa_has_switch_hook(state, player),
-            ooa_has_small_keys(state, player, 9, 3),
+            ooa_has_small_keys(state, player, 6, 3),
         ])],
 
         ["d6 present spinner chest", "d6 present vire chest", False, lambda state: all([
@@ -675,7 +690,7 @@ def make_d6present_logic(player: int):
                 state.has("Expert's Ring", player),
                 ooa_option_hard_logic(state, player) # for switch hook kill (?)
             ]),
-            ooa_has_small_keys(state, player, 9, 3),
+            ooa_has_small_keys(state, player, 6, 3),
             ooa_has_switch_hook(state, player)
         ])],
     ]

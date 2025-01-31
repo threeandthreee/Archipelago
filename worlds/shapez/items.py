@@ -1,33 +1,35 @@
-from typing import Dict, Callable
+from typing import Dict, Callable, Any, List
 
 from BaseClasses import Item, ItemClassification as IClass
+from .options import ShapezOptions
+from .data.strings import GOALS, ITEMS, OTHER
 
 
-def is_mam_achievement_included(goal: str, achievements: bool, early_useful: str) -> IClass:
-    return IClass.progression if achievements and (not goal == "vanilla") else IClass.useful
+def is_mam_achievement_included(options: ShapezOptions) -> IClass:
+    return IClass.progression if options.include_achievements and (not options.goal == GOALS.vanilla) else IClass.useful
 
 
-def is_achievements_included(goal: str, achievements: bool, early_useful: str) -> IClass:
-    return IClass.progression if achievements else IClass.useful
+def is_achievements_included(options: ShapezOptions) -> IClass:
+    return IClass.progression if options.include_achievements else IClass.useful
 
 
-def is_goal_efficiency_iii(goal: str, achievements: bool, early_useful: str) -> IClass:
-    return IClass.progression if goal == "efficiency_iii" else IClass.useful
+def is_goal_efficiency_iii(options: ShapezOptions) -> IClass:
+    return IClass.progression if options.goal == GOALS.efficiency_iii else IClass.useful
 
 
-def always_progression(goal: str, achievements: bool, early_useful: str) -> IClass:
+def always_progression(options: ShapezOptions) -> IClass:
     return IClass.progression
 
 
-def always_useful(goal: str, achievements: bool, early_useful: str) -> IClass:
+def always_useful(options: ShapezOptions) -> IClass:
     return IClass.useful
 
 
-def always_filler(goal: str, achievements: bool, early_useful: str) -> IClass:
+def always_filler(options: ShapezOptions) -> IClass:
     return IClass.filler
 
 
-def always_trap(goal: str, achievements: bool, early_useful: str) -> IClass:
+def always_trap(options: ShapezOptions) -> IClass:
     return IClass.trap
 
 
@@ -35,90 +37,115 @@ def always_trap(goal: str, achievements: bool, early_useful: str) -> IClass:
 # would be unreasonably complicated and time-consuming.
 # Some buildings are not needed to complete the game, but are "logically needed" for the "MAM" achievement.
 
-buildings_processing: Dict[str, Callable[[str, bool, str], IClass]] = {
-    "Cutter": always_progression,
-    "Rotator": always_progression,
-    "Painter": always_progression,
-    "Rotator (CCW)": always_progression,
-    "Color Mixer": always_progression,
-    "Stacker": always_progression,
-    "Quad Cutter": always_progression,
-    "Double Painter": always_progression,
-    "Rotator (180°)": always_progression,
-    "Quad Painter": always_progression
+buildings_processing: Dict[str, Callable[[ShapezOptions], IClass]] = {
+    ITEMS.cutter: always_progression,
+    ITEMS.cutter_quad: always_progression,
+    ITEMS.rotator: always_progression,
+    ITEMS.rotator_ccw: always_progression,
+    ITEMS.rotator_180: always_progression,
+    ITEMS.stacker: always_progression,
+    ITEMS.painter: always_progression,
+    ITEMS.painter_double: always_progression,
+    ITEMS.painter_quad: always_progression,
+    ITEMS.color_mixer: always_progression,
 }
 
-buildings_routing: Dict[str, Callable[[str, bool, str], IClass]] = {
-    "Balancer": always_progression,
-    "Tunnel": always_progression,
-    "Compact Merger": always_progression,
-    "Tunnel Tier II": is_mam_achievement_included,
-    "Compact Splitter": always_progression
+buildings_routing: Dict[str, Callable[[ShapezOptions], IClass]] = {
+    ITEMS.balancer: always_progression,
+    ITEMS.comp_merger: always_progression,
+    ITEMS.comp_splitter: always_progression,
+    ITEMS.tunnel: always_progression,
+    ITEMS.tunnel_tier_ii: is_mam_achievement_included,
 }
 
-buildings_other: Dict[str, Callable[[str, bool, str], IClass]] = {
-    "Trash": always_progression,
-    "Chaining Extractor": always_useful
+buildings_other: Dict[str, Callable[[ShapezOptions], IClass]] = {
+    ITEMS.trash: always_progression,
+    ITEMS.extractor_chain: always_useful
 }
 
-buildings_top_row: Dict[str, Callable[[str, bool, str], IClass]] = {
-    "Belt Reader": is_mam_achievement_included,
-    "Storage": is_achievements_included,
-    "Switch": always_progression,
-    "Item Filter": is_mam_achievement_included,
-    "Display": always_useful
+buildings_top_row: Dict[str, Callable[[ShapezOptions], IClass]] = {
+    ITEMS.belt_reader: is_mam_achievement_included,
+    ITEMS.storage: is_achievements_included,
+    ITEMS.switch: always_progression,
+    ITEMS.item_filter: is_mam_achievement_included,
+    ITEMS.display: always_useful
 }
 
-buildings_wires: Dict[str, Callable[[str, bool, str], IClass]] = {
-    "Wires": always_progression,
-    "Constant Signal": always_progression,
-    "Logic Gates": is_mam_achievement_included,
-    "Virtual Processing": is_mam_achievement_included
+buildings_wires: Dict[str, Callable[[ShapezOptions], IClass]] = {
+    ITEMS.wires: always_progression,
+    ITEMS.const_signal: always_progression,
+    ITEMS.logic_gates: is_mam_achievement_included,
+    ITEMS.virtual_proc: is_mam_achievement_included
 }
 
-gameplay_unlocks: Dict[str, Callable[[str, bool, str], IClass]] = {
-    "Blueprints": is_achievements_included
+gameplay_unlocks: Dict[str, Callable[[ShapezOptions], IClass]] = {
+    ITEMS.blueprints: is_achievements_included
 }
 
-upgrades: Dict[str, Callable[[str, bool, str], IClass]] = {
-    "Big Belt Upgrade": is_goal_efficiency_iii,
-    "Big Miner Upgrade": always_useful,
-    "Big Processors Upgrade": always_useful,
-    "Big Painting Upgrade": always_useful,
-    "Small Belt Upgrade": always_filler,
-    "Small Miner Upgrade": always_filler,
-    "Small Processors Upgrade": always_filler,
-    "Small Painting Upgrade": always_filler
+upgrades: Dict[str, Callable[[ShapezOptions], IClass]] = {
+    ITEMS.upgrade_big_belt: is_goal_efficiency_iii,
+    ITEMS.upgrade_big_miner: always_useful,
+    ITEMS.upgrade_big_proc: always_useful,
+    ITEMS.upgrade_big_paint: always_useful,
+    ITEMS.upgrade_small_belt: always_filler,
+    ITEMS.upgrade_small_miner: always_filler,
+    ITEMS.upgrade_small_proc: always_filler,
+    ITEMS.upgrade_small_paint: always_filler
 }
 
-bundles: Dict[str, Callable[[str, bool, str], IClass]] = {
-    "Blueprint Shapes Bundle": always_filler,
-    "Level Shapes Bundle": always_filler,
-    "Upgrade Shapes Bundle": always_filler
+whacky_upgrades: Dict[str, Callable[[ShapezOptions], IClass]] = {
+    ITEMS.upgrade_gigantic_belt: is_goal_efficiency_iii,
+    ITEMS.upgrade_gigantic_miner: always_useful,
+    ITEMS.upgrade_gigantic_proc: always_useful,
+    ITEMS.upgrade_gigantic_paint: always_useful,
+    ITEMS.upgrade_rising_belt: is_goal_efficiency_iii,
+    ITEMS.upgrade_rising_miner: always_useful,
+    ITEMS.upgrade_rising_proc: always_useful,
+    ITEMS.upgrade_rising_paint: always_useful,
+    ITEMS.upgrade_big_random: always_useful,
+    ITEMS.upgrade_small_random: always_filler,
 }
 
-standard_traps: Dict[str, Callable[[str, bool, str], IClass]] = {
-    "Locked Building Trap": always_trap,
-    "Throttled Building Trap": always_trap,
-    "Malfunctioning Trap": always_trap
+whacky_upgrade_traps: Dict[str, Callable[[ShapezOptions], IClass]] = {
+    ITEMS.trap_upgrade_belt: always_trap,
+    ITEMS.trap_upgrade_miner: always_trap,
+    ITEMS.trap_upgrade_proc: always_trap,
+    ITEMS.trap_upgrade_paint: always_trap,
+    ITEMS.trap_upgrade_demonic_belt: always_trap,
+    ITEMS.trap_upgrade_demonic_miner: always_trap,
+    ITEMS.trap_upgrade_demonic_proc: always_trap,
+    ITEMS.trap_upgrade_demonic_paint: always_trap,
 }
 
-random_draining_trap: Dict[str, Callable[[str, bool, str], IClass]] = {
-    "Inventory Draining Trap": always_trap
+bundles: Dict[str, Callable[[ShapezOptions], IClass]] = {
+    ITEMS.bundle_blueprint: always_filler,
+    ITEMS.bundle_level: always_filler,
+    ITEMS.bundle_upgrade: always_filler
 }
 
-split_draining_traps: Dict[str, Callable[[str, bool, str], IClass]] = {
-    "Blueprint Shapes Draining Trap": always_trap,
-    "Level Shapes Draining Trap": always_trap,
-    "Upgrade Shapes Draining Trap": always_trap
+standard_traps: Dict[str, Callable[[ShapezOptions], IClass]] = {
+    ITEMS.trap_locked: always_trap,
+    ITEMS.trap_throttled: always_trap,
+    ITEMS.trap_malfunction: always_trap,
+    ITEMS.trap_inflation: always_trap,
 }
 
-belt_and_extractor: Dict[str, Callable[[str, bool, str], IClass]] = {
-    "Belt": always_progression,
-    "Extractor": always_progression
+random_draining_trap: Dict[str, Callable[[ShapezOptions], IClass]] = {
+    ITEMS.trap_draining_inv: always_trap
 }
 
-item_table: Dict[str, Callable[[str, bool, str], IClass]] = {
+split_draining_traps: Dict[str, Callable[[ShapezOptions], IClass]] = {
+    ITEMS.trap_draining_blueprint: always_trap,
+    ITEMS.trap_draining_level: always_trap,
+    ITEMS.trap_draining_upgrade: always_trap
+}
+
+belt_and_extractor: Dict[str, Callable[[ShapezOptions], IClass]] = {
+    ITEMS.belt: always_progression,
+    ITEMS.extractor: always_progression
+}
+
+item_table: Dict[str, Callable[[ShapezOptions], IClass]] = {
     **buildings_processing,
     **buildings_routing,
     **buildings_other,
@@ -126,6 +153,8 @@ item_table: Dict[str, Callable[[str, bool, str], IClass]] = {
     **buildings_wires,
     **gameplay_unlocks,
     **upgrades,
+    **whacky_upgrades,
+    **whacky_upgrade_traps,
     **bundles,
     **standard_traps,
     **random_draining_trap,
@@ -134,41 +163,58 @@ item_table: Dict[str, Callable[[str, bool, str], IClass]] = {
 }
 
 big_upgrades = [
-    "Big Belt Upgrade",
-    "Big Miner Upgrade",
-    "Big Processors Upgrade",
-    "Big Painting Upgrade"
+    ITEMS.upgrade_big_belt,
+    ITEMS.upgrade_big_miner,
+    ITEMS.upgrade_big_proc,
+    ITEMS.upgrade_big_paint
 ]
 
 small_upgrades = [
-    "Small Belt Upgrade",
-    "Small Miner Upgrade",
-    "Small Processors Upgrade",
-    "Small Painting Upgrade"
+    ITEMS.upgrade_small_belt,
+    ITEMS.upgrade_small_miner,
+    ITEMS.upgrade_small_proc,
+    ITEMS.upgrade_small_paint
 ]
 
 
-def trap(random: float, split_draining: bool) -> str:
-    """Returns a random trap item."""
-    random_value = (len(standard_traps)+1)*random
-    if random_value >= 1:
-        return list(standard_traps.keys())[int(random_value)-1]
-    else:
-        return "Inventory Draining Trap" \
-            if not split_draining else list(split_draining_traps.keys())[int(random_value*3)]
-
-
-def filler(random: float) -> str:
+def filler(random: float, whacky_allowed: bool) -> str:
     """Returns a random filler item."""
-    if random < 0.16:  # These float values are intentionally just estimates of 1/6 and 2/3
-        return big_upgrades[int(random*4/0.16)]
-    elif random < 0.66:
-        return small_upgrades[int((random-0.16)*4/0.5)]  # Yes, I want this calculation to be written that way
-    else:
-        return list(bundles.keys())[int((random-0.66)*len(bundles)/0.34)]
+    bundles_list = [*bundles]
+    return random_choice_nested(random, [
+        small_upgrades,
+        [
+            bundles_list,
+            bundles_list,
+            [
+                big_upgrades,
+                [*whacky_upgrades] if whacky_allowed else big_upgrades,
+            ],
+        ],
+    ])
 
 
-item_descriptions = {
+def trap(random: float, split_draining: bool, whacky_allowed: bool) -> str:
+    """Returns a random trap item."""
+    pool = [
+        *standard_traps,
+        ITEMS.trap_draining_inv if not split_draining else [*split_draining_traps],
+    ]
+    if whacky_allowed:
+        pool.append([*whacky_upgrade_traps])
+    return random_choice_nested(random, pool)
+
+
+def random_choice_nested(random: float, nested: List[Any]) -> Any:
+    """Helper function for getting a random element from a nested list."""
+    current: Any = nested
+    while isinstance(current, List):
+        index_float = random*len(current)
+        current = current[int(index_float)]
+        random = index_float-int(index_float)
+    return current
+
+
+item_descriptions = {  # TODO replace keys with global strings and update with whacky upgrades
     "Balancer": "A routing building, that can merge two belts into one, split a belt in two, " +
                 "or balance the items of two belts",
     "Tunnel": "A routing building consisting of two parts, that allows for gaps in belts",
@@ -219,6 +265,8 @@ item_descriptions = {
     "Locked Building Trap": "Locks a random building from being placed for 15-60 seconds",
     "Throttled Building Trap": "Halves the speed of a random building for 15-60 seconds",
     "Malfunctioning Trap": "Makes a random building process items incorrectly for 15-60 seconds",
+    "Inflation Trap": "Permanently increases the required shapes multiplier by 1. "
+                      "In other words: Permanently increases required shapes by 10% of the standard amount.",
     "Belt": "One of the most important buildings in the game, that transports your shapes and colors from one " +
             "place to another",
     "Extractor": "One of the most important buildings in the game, that extracts shapes from those randomly " +
@@ -227,4 +275,4 @@ item_descriptions = {
 
 
 class ShapezItem(Item):
-    game = "shapez"
+    game = OTHER.game_name

@@ -50,6 +50,10 @@ def get_asm_files(patch_data):
         asm_files.append("asm/conditional/quick_flute.yaml")
     if not(patch_data["options"]["enable_dance_and_joke"]):
         asm_files.append("asm/conditional/skip_dance_and_joke.yaml")
+    if patch_data["options"]["qol_mermaid_suit"]:
+        asm_files.append("asm/conditional/qol_mermaid_suit.yaml")
+    if patch_data["options"]["warp_to_start"]:
+        asm_files.append("asm/conditional/warp_to_start.yaml")
     return asm_files
 
 
@@ -326,3 +330,39 @@ def define_dungeon_items_text_constants(assembler: Z80Assembler, patch_data):
             compasses_text.extend(dungeon_precision)
         compasses_text.extend([0x09, 0x00, 0x21, 0x00])  # "\color(WHITE)!(end)"
         assembler.add_floating_chunk(f"text.compass{dungeon_tag}", compasses_text)
+
+def set_file_select_text(assembler: Z80Assembler, slot_name: str):
+    def char_to_tile(c: str) -> int:
+        if '0' <= c <= '9':
+            return ord(c) - 0x20
+        if 'A' <= c <= 'Z':
+            return ord(c) + 0xa1
+        if c == '+':
+            return 0xfd
+        if c == '-':
+            return 0xfe
+        if c == '.':
+            return 0xff
+        else:
+            return 0xfc  # All other chars are blank spaces
+
+    row_1 = [char_to_tile(c) for c in f"ARCHIP. {VERSION}"]
+    row_1_left_padding = int((16 - len(row_1)) / 2)
+    row_1_right_padding = int(16 - row_1_left_padding - len(row_1))
+    row_1 = ([0x00] * row_1_left_padding) + row_1 + ([0x00] * row_1_right_padding)
+    row_2 = [char_to_tile(c) for c in slot_name.replace("-", " ").upper()]
+    row_2_left_padding = int((16 - len(row_2)) / 2)
+    row_2_right_padding = int(16 - row_2_left_padding - len(row_2))
+    row_2 = ([0x00] * row_2_left_padding) + row_2 + ([0x00] * row_2_right_padding)
+
+    text_tiles = [0x74, 0x31]
+    text_tiles.extend(row_1)
+    text_tiles.extend([0x41, 0x40])
+    text_tiles.extend([0x02] * 12)  # Offscreen tiles
+
+    text_tiles.extend([0x40, 0x41])
+    text_tiles.extend(row_2)
+    text_tiles.extend([0x51, 0x50])
+    text_tiles.extend([0x02] * 12)  # Offscreen tiles
+
+    assembler.add_floating_chunk("dma_FileSelectStringTiles", text_tiles)

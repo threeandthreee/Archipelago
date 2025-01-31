@@ -13,3 +13,4 @@ class SatisfactoryWebWorld(WebWorld):
         ["Robb", "Jarno"]
     )
     tutorials = [setup]
+    rich_text_options_doc = True

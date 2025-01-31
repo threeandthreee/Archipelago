@@ -39,6 +39,7 @@ def make_overworld_logic(player: int):
         ["lynna village", "black tower worker", False, None],
         ["lynna village", "black tower heartpiece", False, lambda state: ooa_can_remove_dirt(state, player, False)],
         ["lynna village", "advance shop", False, lambda state: ooa_has_rupees(state, player, 400)],
+        ["lynna village", "lynna shooting gallery", False, lambda state: ooa_has_sword(state, player)],
         ["lynna village", "ambi's palace tree", False, lambda state: ooa_can_harvest_tree(state, player, False)],
         ["lynna village", "ambi's palace chest", False, lambda state: any([
             all([
@@ -89,6 +90,7 @@ def make_overworld_logic(player: int):
         
         # SHORE PRESENT
         #######################################
+        ["forest of time", "shore present", True,  lambda state: state.has("Ricky's Gloves", player)],
         ["lynna city", "shore present", True, lambda state: any([
             ooa_can_swim_deepwater(state, player, True),
             ooa_has_bracelet(state, player),
@@ -103,6 +105,7 @@ def make_overworld_logic(player: int):
             any([
                 ooa_has_seedshooter(state, player),
                 ooa_can_summon_ricky(state, player),
+                state.has("Ricky's Gloves", player),
                 ooa_can_go_back_to_present(state, player), #lynna city and lynna village are connected, so no need to create a different logic                    
             ]),
             ooa_can_break_tingle_balloon(state, player)
@@ -204,10 +207,8 @@ def make_overworld_logic(player: int):
             ooa_can_jump_1_wide_pit(state, player, False)
         ])],
         ["lynna village", "hidden tokay cave", True, lambda state: ooa_can_dive(state, player)],
-        ["crescent present west", "crescent past east", False, lambda state: any([
-            ooa_can_break_bush(state, player),
-            ooa_can_go_back_to_present(state, player),   
-        ])],
+        ["crescent past west", "crescent past east", False, lambda state: ooa_can_break_bush(state, player)],
+        ["crescent present west", "crescent past east", False, lambda state: ooa_can_go_back_to_present(state, player)],
         ["crescent past east", "tokay bomb cave", False, lambda state: all([
             ooa_has_bracelet(state, player),
             ooa_has_bombs(state, player),

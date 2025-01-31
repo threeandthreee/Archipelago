@@ -52,11 +52,13 @@ def make_holodrum_logic(player: int):
 
         ["horon village", "horon village tree", False, lambda state: oos_can_harvest_tree(state, player, True)],
 
-        ["horon village", "horon shop", False, lambda state: oos_has_rupees(state, player, 150)],
-        ["horon village", "advance shop", False, lambda state: oos_has_rupees(state, player, 300)],
+        ["horon village", "horon shop", False, lambda state:
+            oos_has_rupees_for_shop(state, player, "horonShop")],
+        ["horon village", "advance shop", False, lambda state:
+            oos_has_rupees_for_shop(state, player, "advanceShop")],
         ["horon village", "member's shop", False, lambda state: all([
             state.has("Member's Card", player),
-            oos_has_rupees(state, player, 450)
+            oos_has_rupees_for_shop(state, player, "memberShop")
         ])],
 
         # WESTERN COAST ##############################################################################################
@@ -447,6 +449,8 @@ def make_holodrum_logic(player: int):
             ]),
             oos_has_bracelet(state, player)
         ])],
+        ["floodgate keyhole", "spool swamp scrub", False, lambda state:
+            oos_has_rupees_for_shop(state, player, "spoolSwampScrub")],
         ["floodgate keyhole", "spool stump", False, lambda state: state.has("Floodgate Key", player)],
 
         ["spool stump", "d3 entrance", False, lambda state: oos_season_in_spool_swamp(state, player, SEASON_SUMMER)],
@@ -458,8 +462,8 @@ def make_holodrum_logic(player: int):
         ])],
 
         ["spool stump", "spool swamp middle", False, lambda state: any([
-            oos_get_default_season(state, player, "SPOOL_SWAMP") != 'spring',
-            oos_can_remove_season(state, player, 'spring'),
+            oos_get_default_season(state, player, "SPOOL_SWAMP") != SEASON_SPRING,
+            oos_can_remove_season(state, player, SEASON_SPRING),
             oos_has_flippers(state, player),
             oos_can_summon_dimitri(state, player)
         ])],
@@ -612,10 +616,19 @@ def make_holodrum_logic(player: int):
             ])
         ])],
 
-        ["sunken city", "ingo trade", False, lambda state: any([
-            state.has("Goron Vase", player),
-            oos_self_locking_item(state, player, "ingo trade", "Goron Vase")
+        ["sunken city", "ingo trade", False, lambda state: all([
+            any([
+                oos_has_feather(state, player),
+                oos_has_flippers(state, player),
+                oos_can_summon_dimitri(state, player),
+                oos_get_default_season(state, player, "SUNKEN_CITY") == SEASON_WINTER
+            ]),
+            any([
+                state.has("Goron Vase", player),
+                oos_self_locking_item(state, player, "ingo trade", "Goron Vase")
+            ])
         ])],
+
         ["sunken city", "syrup trade", False, lambda state: all([
             any([
                 oos_get_default_season(state, player, "SUNKEN_CITY") == SEASON_WINTER,
@@ -629,7 +642,8 @@ def make_holodrum_logic(player: int):
             ]),
             state.has("Mushroom", player)
         ])],
-        ["syrup trade", "syrup shop", False, lambda state: oos_has_rupees(state, player, 600)],
+        ["syrup trade", "syrup shop", False, lambda state:
+            oos_has_rupees_for_shop(state, player, "syrupShop")],
 
         # Use Dimitri to get the tree seeds, using dimitri to get seeds being medium difficulty
         ["sunken city dimitri", "sunken city tree", False,lambda state: all([
@@ -799,6 +813,8 @@ def make_holodrum_logic(player: int):
         ["suburbs", "samasa desert", False, lambda state: state.has("_met_pirates", player)],
         ["samasa desert", "samasa desert pit", False, lambda state: oos_has_bracelet(state, player)],
         ["samasa desert", "samasa desert chest", False, lambda state: oos_has_flippers(state, player)],
+        ["samasa desert", "samasa desert scrub", False, lambda state:
+            oos_has_rupees_for_shop(state, player, "samasaCaveScrub")],
 
         # TEMPLE REMAINS ####################################################################################
 
@@ -924,7 +940,14 @@ def make_holodrum_logic(player: int):
         # GOLDEN BEASTS #############################################################################################
 
         ["d0 entrance", "golden darknut", False, lambda state: all([
-            oos_season_in_western_coast(state, player, SEASON_SPRING),
+            any([
+                oos_get_default_season(state, player, "WESTERN_COAST") == SEASON_SPRING,
+                all([
+                    oos_season_in_western_coast(state, player, SEASON_SPRING),
+                    state.has("Pirate's Bell", player),
+                    state.has("_met_pirates", player),
+                ])
+            ]),
             any([
                 oos_has_sword(state, player),
                 oos_has_fools_ore(state, player)

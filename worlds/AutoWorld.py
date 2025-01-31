@@ -331,6 +331,9 @@ class World(metaclass=AutoWorldRegister):
     __file__: ClassVar[str]
     """path it was loaded from"""
 
+    # Ashipelago customization
+    is_experimental: bool = False
+
     def __init__(self, multiworld: "MultiWorld", player: int):
         assert multiworld is not None
         self.multiworld = multiworld

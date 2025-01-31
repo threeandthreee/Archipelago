@@ -52,7 +52,7 @@
 # replace text in script command 9a (showtextnonexitable) using
 # scriptTextReplacements: four-byte entries, first two bytes are old text
 # index, second two bytes are new text index.
-0c//scriptTextReplacements: |
+17//scriptTextReplacements: |
     db $0e,$04,$01,$01    ; Lynna shop 1
     db $0e,$03,$01,$02    ; Lynna shop 2
     db $0e,$02,$01,$03    ; Lynna shop 3
@@ -64,17 +64,23 @@
     db $0e,$1d,$01,$2a    ; Hidden shop 2
     db $0e,$2c,$01,$31    ; Hidden shop 3
     db $ff
-0c//scriptShowTextNonExitableCustom: |
-    push de
+17//scriptShowTextNonExitableCustom_body: |
     ld e,$02
     ld hl,scriptTextReplacements
     call searchDoubleKey
-    pop de
     jr nc,@done
     ldi a,(hl)
     ld b,a
     ld c,(hl)
     @done:
+    ret
+
+0c//scriptShowTextNonExitableCustom: |
+    push de
+    ld e,$17
+    ld hl,scriptShowTextNonExitableCustom_body
+    call interBankCall
+    pop de
     jp showTextNonExitable
 
 0c/4300/: call scriptShowTextNonExitableCustom

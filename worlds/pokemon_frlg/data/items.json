@@ -91,6 +91,11 @@
     "classification": "PROGRESSION",
     "tags": ["Unique"]
   },
+  "ITEM_BLUE_TEA": {
+    "name": "Blue Tea",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
   "ITEM_CARD_KEY": {
     "name": "Card Key",
     "classification": "PROGRESSION",
@@ -181,6 +186,11 @@
     "classification": "PROGRESSION",
     "tags": ["Unique"]
   },
+  "ITEM_GREEN_TEA": {
+    "name": "Green Tea",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
   "ITEM_HELIX_FOSSIL": {
     "name": "Helix Fossil",
     "classification": "PROGRESSION",
@@ -248,7 +258,7 @@
   },
   "ITEM_POWDER_JAR": {
     "name": "Powder Jar",
-    "classification": "FILLER",
+    "classification": "USEFUL",
     "tags": ["Unique"]
   },
   "ITEM_PROG_CARD_KEY": {
@@ -261,14 +271,29 @@
     "classification": "PROGRESSION",
     "tags": ["Unique"]
   },
+  "ITEM_PURPLE_TEA": {
+    "name": "Purple Tea",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
   "ITEM_RAINBOW_PASS": {
     "name": "Rainbow Pass",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
+  "ITEM_RED_TEA": {
+    "name": "Red Tea",
     "classification": "PROGRESSION",
     "tags": ["Unique"]
   },
   "ITEM_RUBY": {
     "name": "Ruby",
     "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
+  "ITEM_RUNNING_SHOES": {
+    "name": "Running Shoes",
+    "classification": "USEFUL",
     "tags": ["Unique"]
   },
   "ITEM_SAFARI_PASS": {
@@ -278,6 +303,11 @@
   },
   "ITEM_SAPPHIRE": {
     "name": "Sapphire",
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
+  },
+  "ITEM_SCANNER": {
+    "name": "Scanner",
     "classification": "PROGRESSION",
     "tags": ["Unique"]
   },
@@ -318,7 +348,7 @@
   },
   "ITEM_TEACHY_TV": {
     "name": "Teachy TV",
-    "classification": "FILLER",
+    "classification": "USEFUL",
     "tags": ["Unique"]
   },
   "ITEM_THREE_PASS": {
@@ -343,7 +373,7 @@
   },
   "ITEM_VS_SEEKER": {
     "name": "Vs. Seeker",
-    "classification": "PROGRESSION",
+    "classification": "USEFUL",
     "tags": ["Unique"]
   },
 
@@ -821,33 +851,33 @@
 
   "ITEM_SUN_STONE": {
     "name": "Sun Stone",
-    "classification": "USEFUL",
-    "tags": ["EvoStone"]
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
   },
   "ITEM_MOON_STONE": {
     "name": "Moon Stone",
-    "classification": "USEFUL",
-    "tags": ["EvoStone"]
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
   },
   "ITEM_FIRE_STONE": {
     "name": "Fire Stone",
-    "classification": "USEFUL",
-    "tags": ["EvoStone"]
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
   },
   "ITEM_THUNDER_STONE": {
     "name": "Thunder Stone",
-    "classification": "USEFUL",
-    "tags": ["EvoStone"]
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
   },
   "ITEM_WATER_STONE": {
     "name": "Water Stone",
-    "classification": "USEFUL",
-    "tags": ["EvoStone"]
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
   },
   "ITEM_LEAF_STONE": {
     "name": "Leaf Stone",
-    "classification": "USEFUL",
-    "tags": ["EvoStone"]
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
   },
 
   "ITEM_TINY_MUSHROOM": {
@@ -1206,8 +1236,8 @@
   },
   "ITEM_KINGS_ROCK": {
     "name": "King's Rock",
-    "classification": "USEFUL",
-    "tags": ["Held"]
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
   },
   "ITEM_SILVER_POWDER": {
     "name": "Silver Powder",
@@ -1231,13 +1261,13 @@
   },
   "ITEM_DEEP_SEA_TOOTH": {
     "name": "Deep Sea Tooth",
-    "classification": "USEFUL",
-    "tags": ["Held"]
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
   },
   "ITEM_DEEP_SEA_SCALE": {
     "name": "Deep Sea Scale",
-    "classification": "USEFUL",
-    "tags": ["Held"]
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
   },
   "ITEM_SMOKE_BALL": {
     "name": "Smoke Ball",
@@ -1266,8 +1296,8 @@
   },
   "ITEM_METAL_COAT": {
     "name": "Metal Coat",
-    "classification": "USEFUL",
-    "tags": ["Held"]
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
   },
   "ITEM_LEFTOVERS": {
     "name": "Leftovers",
@@ -1276,8 +1306,8 @@
   },
   "ITEM_DRAGON_SCALE": {
     "name": "Dragon Scale",
-    "classification": "USEFUL",
-    "tags": ["Held"]
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
   },
   "ITEM_LIGHT_BALL": {
     "name": "Light Ball",
@@ -1361,8 +1391,8 @@
   },
   "ITEM_UP_GRADE": {
     "name": "Up-Grade",
-    "classification": "USEFUL",
-    "tags": ["Held"]
+    "classification": "PROGRESSION",
+    "tags": ["Unique"]
   },
   "ITEM_SHELL_BELL": {
     "name": "Shell Bell",

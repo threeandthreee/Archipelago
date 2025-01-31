@@ -35,9 +35,12 @@ class StateLogic:
         return part_name is None or state.has(part_event_prefix + part_name, self.player)
     
     def can_power(self, state: CollectionState, power_level: Optional[PowerInfrastructureLevel]) -> bool:
-        return power_level is None or state.has(building_event_prefix + str(power_level), self.player)
+        return power_level is None or state.has(building_event_prefix + power_level.to_name(), self.player)
 
     def can_produce_all(self, state: CollectionState, parts: Optional[Iterable[str]]) -> bool:
+        if parts and "SAM" in parts:
+            debug = "Now"
+
         return parts is None or \
             state.has_all(map(self.to_part_event, parts), self.player)
 
@@ -68,16 +71,9 @@ class StateLogic:
         if recipe.is_radio_active and not self.can_produce_all(state, ("Hazmat Suit", "Iodine Infused Filter")): 
             return False
         
-        if recipe.minimal_belt_speed and \
+        if not self.options.experimental_generation and recipe.minimal_belt_speed and \
                 not self.can_build_any(state, map(self.to_belt_name, range(recipe.minimal_belt_speed, 6))):
             return False
-        
-        if recipe.minimal_belt_speed > 1 and not self.can_build_all(state, ("Conveyor Merger", "Conveyor Splitter")):
-            return False
-
-        if recipe.name == "Recipe: Object Scanner":
-            # TODO leftover Jarno debug code?
-            debugger = "attach"
 
         return self.has_recipe(state, recipe) \
             and self.can_build(state, recipe.building) \
@@ -97,6 +93,3 @@ class StateLogic:
     @staticmethod
     def to_belt_name(power_level: int) -> str:
         return "Conveyor Mk." + str(power_level)
-
-
-

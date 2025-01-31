@@ -384,6 +384,12 @@ class GoldChestLockWeight(Range):
     range_end = 100
     default = 10
 
+class ForceFillerLocal(Toggle):
+    """
+    If selected, forces all filler items to be placed in your own world.
+    """
+    display_name = "Force Filler Local"
+
 class CommonPoolWeight(Range):
     """
     Controls the likelihood of choosing a common filler item when filling the world.
@@ -485,6 +491,7 @@ class CrossCodeOptions(PerGameCommonOptions):
     silver_chest_lock_weight: SilverChestLockWeight
     gold_chest_lock_weight: GoldChestLockWeight
 
+    force_filler_local: ForceFillerLocal
     common_pool_weight: CommonPoolWeight
     rare_pool_weight: RarePoolWeight
     epic_pool_weight: EpicPoolWeight
@@ -545,6 +552,7 @@ option_groups: list[OptionGroup] = [
     OptionGroup(
         name="Pools",
         options=[
+            ForceFillerLocal,
             CommonPoolWeight,
             RarePoolWeight,
             EpicPoolWeight,

@@ -62,12 +62,27 @@
   },
   "EVENT_SAVE_BILL": {
     "name": "Route 25 Sea Cottage - Cell Separation System",
-    "item": "Save Bill",
+    "item": "Help Bill",
     "tags": ["Event"]
   },
-  "EVENT_BUY_EVO_STONES": {
-    "name": "Celadon Department Store 4F - Wise Man Gifts",
-    "item": "Buy Evo Stones",
+  "EVENT_BUY_FIRE_STONE": {
+    "name": "Celadon Department Store 4F - Wise Man Gifts (Fire Stone)",
+    "item": "Fire Stone",
+    "tags": ["Event"]
+  },
+  "EVENT_BUY_THUNDER_STONE": {
+    "name": "Celadon Department Store 4F - Wise Man Gifts (Thunder Stone)",
+    "item": "Thunder Stone",
+    "tags": ["Event"]
+  },
+  "EVENT_BUY_WATER_STONE": {
+    "name": "Celadon Department Store 4F - Wise Man Gifts (Water Stone)",
+    "item": "Water Stone",
+    "tags": ["Event"]
+  },
+  "EVENT_BUY_LEAF_STONE": {
+    "name": "Celadon Department Store 4F - Wise Man Gifts (Leaf Stone)",
+    "item": "Leaf Stone",
     "tags": ["Event"]
   },
   "EVENT_BUY_VENDING_MACHINE_LEMONADE": {
@@ -130,15 +145,15 @@
     "item": "Free Captured Pokemon",
     "tags": ["Event"]
   },
-  "EVENT_SPAWN_UNOWN": {
+  "EVENT_UNLOCK_RUINS": {
     "name": "Tanoby Key - Solve Puzzle",
-    "item": "Spawn Unown",
+    "item": "Unlock Ruins",
     "tags": ["Event"]
   },
 
   "TRADE_POKEMON_MR_MIME": {
     "name": "Route 2 Trade House - Trade Abra",
-    "item": "Static Mr. Mime",
+    "item": "Missable Mr. Mime",
     "tags": ["Pokemon", "Misc"]
   },
   "GIFT_POKEMON_MAGIKARP": {
@@ -148,7 +163,7 @@
   },
   "TRADE_POKEMON_JYNX": {
     "name": "Cerulean Trade House - Trade Poliwhirl",
-    "item": "Static Jynx",
+    "item": "Missable Jynx",
     "tags": ["Pokemon", "Misc"]
   },
   "TRADE_POKEMON_NIDORAN": {
@@ -157,14 +172,14 @@
       "Underground Path North Entrance - Trade Nidoran F"
     ],
     "item": [
-      "Static Nidoran F",
-      "Static Nidoran M"
+      "Missable Nidoran F",
+      "Missable Nidoran M"
       ],
     "tags": ["Pokemon", "Misc"]
   },
   "TRADE_POKEMON_FARFETCHD": {
     "name": "Vermilion Trade House - Trade Spearow",
-    "item": "Static Farfetch'd",
+    "item": "Missable Farfetch'd",
     "tags": ["Pokemon", "Misc"]
   },
   "TRADE_POKEMON_NIDORINOA": {
@@ -173,24 +188,24 @@
       "Route 11 Gate 2F - Trade Nidorina"
     ],
     "item": [
-      "Static Nidorina",
-      "Static Nidorino"
+      "Missable Nidorina",
+      "Missable Nidorino"
       ],
     "tags": ["Pokemon", "Misc"]
   },
   "STATIC_POKEMON_ELECTRODE_1": {
     "name": "Power Plant - South Room Item",
-    "item": "Missable Electrode",
+    "item": "Static Electrode",
     "tags": ["Pokemon", "Misc"]
   },
   "STATIC_POKEMON_ELECTRODE_2": {
     "name": "Power Plant - Northeast Room Item (Left)",
-    "item": "Missable Electrode",
+    "item": "Static Electrode",
     "tags": ["Pokemon", "Misc"]
   },
   "LEGENDARY_POKEMON_ZAPDOS": {
     "name": "Power Plant - Legendary Pokemon",
-    "item": "Missable Zapdos",
+    "item": "Static Zapdos",
     "tags": ["Pokemon", "Legendary"]
   },
   "STATIC_POKEMON_MAROWAK": {
@@ -236,12 +251,12 @@
   },
   "STATIC_POKEMON_ROUTE12_SNORLAX": {
     "name": "Route 12 - Sleeping Pokemon",
-    "item": "Missable Snorlax",
+    "item": "Static Snorlax",
     "tags": ["Pokemon", "Misc"]
   },
   "STATIC_POKEMON_ROUTE16_SNORLAX": {
     "name": "Route 16 - Sleeping Pokemon",
-    "item": "Missable Snorlax",
+    "item": "Static Snorlax",
     "tags": ["Pokemon", "Misc"]
   },
   "TRADE_POKEMON_LICKITUNG": {
@@ -249,17 +264,17 @@
       "Route 18 Gate 2F - Trade Golduck",
       "Route 18 Gate 2F - Trade Slowbro"
     ],
-    "item": "Static Lickitung",
+    "item": "Missable Lickitung",
     "tags": ["Pokemon", "Misc"]
   },
   "GIFT_POKEMON_HITMONCHAN": {
     "name": "Saffron Dojo - Item (Right)",
-    "item": "Missable Hitmonchan",
+    "item": "Static Hitmonchan",
     "tags": ["Pokemon", "Misc"]
   },
   "GIFT_POKEMON_HITMONLEE": {
     "name": "Saffron Dojo - Item (Left)",
-    "item": "Missable Hitmonlee",
+    "item": "Static Hitmonlee",
     "tags": ["Pokemon", "Misc"]
   },
   "GIFT_POKEMON_LAPRAS": {
@@ -269,17 +284,17 @@
   },
   "LEGENDARY_POKEMON_ARTICUNO": {
     "name": "Seafoam Islands B4F - Legendary Pokemon",
-    "item": "Missable Articuno",
+    "item": "Static Articuno",
     "tags": ["Pokemon", "Legendary"]
   },
   "TRADE_POKEMON_ELECTRODE": {
     "name": "Pokemon Lab Lounge - Trade Raichu",
-    "item": "Static Electrode",
+    "item": "Missable Electrode",
     "tags": ["Pokemon", "Misc"]
   },
   "TRADE_POKEMON_TANGELA": {
     "name": "Pokemon Lab Lounge - Trade Venonat",
-    "item": "Static Tangela",
+    "item": "Missable Tangela",
     "tags": ["Pokemon", "Misc"]
   },
   "GIFT_POKEMON_OMANYTE": {
@@ -299,17 +314,17 @@
   },
   "TRADE_POKEMON_SEEL": {
     "name": "Pokemon Lab Experiment Room - Trade Ponyta",
-    "item": "Static Seel",
+    "item": "Missable Seel",
     "tags": ["Pokemon", "Misc"]
   },
   "LEGENDARY_POKEMON_MOLTRES": {
     "name": "Mt. Ember Summit - Legendary Pokemon",
-    "item": "Missable Moltres",
+    "item": "Static Moltres",
     "tags": ["Pokemon", "Legendary"]
   },
   "STATIC_POKEMON_HYPNO": {
     "name": "Berry Forest - Scary Pokemon",
-    "item": "Missable Hypno",
+    "item": "Static Hypno",
     "tags": ["Pokemon", "Misc"]
   },
   "EGG_POKEMON_TOGEPI": {
@@ -319,22 +334,22 @@
   },
   "LEGENDARY_POKEMON_MEWTWO": {
     "name": "Cerulean Cave B1F - Legendary Pokemon",
-    "item": "Missable Mewtwo",
+    "item": "Static Mewtwo",
     "tags": ["Pokemon", "Legendary"]
   },
   "LEGENDARY_POKEMON_HO_OH": {
     "name": "Navel Rock Summit - Legendary Pokemon",
-    "item": "Missable Ho-Oh",
+    "item": "Static Ho-Oh",
     "tags": ["Pokemon", "Legendary"]
   },
   "LEGENDARY_POKEMON_LUGIA": {
     "name": "Navel Rock Base - Legendary Pokemon",
-    "item": "Missable Lugia",
+    "item": "Static Lugia",
     "tags": ["Pokemon", "Legendary"]
   },
   "LEGENDARY_POKEMON_DEOXYS": {
     "name": "Birth Island Exterior - Legendary Pokemon",
-    "item": "Missable Deoxys",
+    "item": "Static Deoxys",
     "tags": ["Pokemon", "Legendary"]
   },
 
@@ -428,14 +443,34 @@
     "item": "Nidorina",
     "tags": ["Pokemon", "Evolution"]
   },
+  "EVOLVE_NIDORINA": {
+    "name": "Evolution - Nidorina",
+    "item": "Nidoqueen",
+    "tags": ["Pokemon", "Evolution"]
+  },
   "EVOLVE_NIDORAN_M": {
     "name": "Evolution - Nidoran M",
     "item": "Nidorino",
     "tags": ["Pokemon", "Evolution"]
   },
+  "EVOLVE_NIDORINO": {
+    "name": "Evolution - Nidorino",
+    "item": "Nidoking",
+    "tags": ["Pokemon", "Evolution"]
+  },
+  "EVOLVE_CLEFAIRY": {
+    "name": "Evolution - Clefairy",
+    "item": "Clefable",
+    "tags": ["Pokemon", "Evolution"]
+  },
   "EVOLVE_VULPIX": {
     "name": "Evolution - Vulpix",
     "item": "Ninetales",
+    "tags": ["Pokemon", "Evolution"]
+  },
+  "EVOLVE_JIGGLYPUFF": {
+    "name": "Evolution - Jigglypuff",
+    "item": "Wigglytuff",
     "tags": ["Pokemon", "Evolution"]
   },
   "EVOLVE_ZUBAT": {
@@ -453,9 +488,14 @@
     "item": "Gloom",
     "tags": ["Pokemon", "Evolution"]
   },
-  "EVOLVE_GLOOM": {
-    "name": "Evolution - Gloom",
+  "EVOLVE_GLOOM_1": {
+    "name": "Evolution - Gloom 1",
     "item": "Vileplume",
+    "tags": ["Pokemon", "Evolution"]
+  },
+  "EVOLVE_GLOOM_2": {
+    "name": "Evolution - Gloom 2",
+    "item": "Bellossom",
     "tags": ["Pokemon", "Evolution"]
   },
   "EVOLVE_PARAS": {
@@ -498,9 +538,14 @@
     "item": "Poliwhirl",
     "tags": ["Pokemon", "Evolution"]
   },
-  "EVOLVE_POLIWHIRL": {
-    "name": "Evolution - Poliwhirl",
+  "EVOLVE_POLIWHIRL_1": {
+    "name": "Evolution - Poliwhirl 1",
     "item": "Poliwrath",
+    "tags": ["Pokemon", "Evolution"]
+  },
+  "EVOLVE_POLIWHIRL_2": {
+    "name": "Evolution - Poliwhirl 2",
+    "item": "Politoed",
     "tags": ["Pokemon", "Evolution"]
   },
   "EVOLVE_ABRA": {
@@ -553,9 +598,14 @@
     "item": "Rapidash",
     "tags": ["Pokemon", "Evolution"]
   },
-  "EVOLVE_SLOWPOKE": {
-    "name": "Evolution - Slowpoke",
+  "EVOLVE_SLOWPOKE_1": {
+    "name": "Evolution - Slowpoke 1",
     "item": "Slowbro",
+    "tags": ["Pokemon", "Evolution"]
+  },
+  "EVOLVE_SLOWPOKE_2": {
+    "name": "Evolution - Slowpoke 2",
+    "item": "Slowking",
     "tags": ["Pokemon", "Evolution"]
   },
   "EVOLVE_MAGNEMITE": {
@@ -591,6 +641,11 @@
   "EVOLVE_HAUNTER": {
     "name": "Evolution - Haunter",
     "item": "Gengar",
+    "tags": ["Pokemon", "Evolution"]
+  },
+  "EVOLVE_ONIX": {
+    "name": "Evolution - Onix",
+    "item": "Steelix",
     "tags": ["Pokemon", "Evolution"]
   },
   "EVOLVE_DROWZEE": {
@@ -638,6 +693,11 @@
     "item": "Seadra",
     "tags": ["Pokemon", "Evolution"]
   },
+  "EVOLVE_SEADRA": {
+    "name": "Evolution - Seadra",
+    "item": "Kingdra",
+    "tags": ["Pokemon", "Evolution"]
+  },
   "EVOLVE_GOLDEEN": {
     "name": "Evolution - Goldeen",
     "item": "Seaking",
@@ -648,24 +708,44 @@
     "item": "Starmie",
     "tags": ["Pokemon", "Evolution"]
   },
+  "EVOLVE_SCYTHER": {
+    "name": "Evolution - Scyther",
+    "item": "Scizor",
+    "tags": ["Pokemon", "Evolution"]
+  },
   "EVOLVE_MAGIKARP": {
     "name": "Evolution - Magikarp",
     "item": "Gyarados",
     "tags": ["Pokemon", "Evolution"]
   },
-  "EVOLVE_EEVEE_THUNDER_STONE": {
-    "name": "Evolution - Eevee (Thunder Stone)",
+  "EVOLVE_EEVEE_1": {
+    "name": "Evolution - Eevee 1",
     "item": "Jolteon",
     "tags": ["Pokemon", "Evolution"]
   },
-  "EVOLVE_EEVEE_WATER_STONE": {
-    "name": "Evolution - Eevee (Water Stone)",
+  "EVOLVE_EEVEE_2": {
+    "name": "Evolution - Eevee 2",
     "item": "Vaporeon",
     "tags": ["Pokemon", "Evolution"]
   },
-  "EVOLVE_EEVEE_FIRE_STONE": {
-    "name": "Evolution - Eevee (Fire Stone)",
+  "EVOLVE_EEVEE_3": {
+    "name": "Evolution - Eevee 3",
     "item": "Flareon",
+    "tags": ["Pokemon", "Evolution"]
+  },
+  "EVOLVE_EEVEE_4": {
+    "name": "Evolution - Eevee 4",
+    "item": "Espeon",
+    "tags": ["Pokemon", "Evolution"]
+  },
+  "EVOLVE_EEVEE_5": {
+    "name": "Evolution - Eevee 5",
+    "item": "Umbreon",
+    "tags": ["Pokemon", "Evolution"]
+  },
+  "EVOLVE_PORYGON": {
+    "name": "Evolution - Porygon",
+    "item": "Porygon2",
     "tags": ["Pokemon", "Evolution"]
   },
   "EVOLVE_OMANYTE": {
@@ -793,6 +873,11 @@
     "item": "Jumpluff",
     "tags": ["Pokemon", "Evolution"]
   },
+  "EVOLVE_SUNKERN": {
+    "name": "Evolution - Sunkern",
+    "item": "Sunflora",
+    "tags": ["Pokemon", "Evolution"]
+  },
   "EVOLVE_WOOPER": {
     "name": "Evolution - Wooper",
     "item": "Quagsire",
@@ -838,18 +923,18 @@
     "item": "Donphan",
     "tags": ["Pokemon", "Evolution"]
   },
-  "EVOLVE_TYROGUE_ATK_LT_DEF": {
-    "name": "Evolution - Tyrogue (Atk < Def)",
+  "EVOLVE_TYROGUE_1": {
+    "name": "Evolution - Tyrogue 1",
     "item": "Hitmonchan",
     "tags": ["Pokemon", "Evolution"]
   },
-  "EVOLVE_TYROGUE_ATK_GT_DEF": {
-    "name": "Evolution - Tyrogue (Atk > Def)",
+  "EVOLVE_TYROGUE_2": {
+    "name": "Evolution - Tyrogue 2",
     "item": "Hitmonlee",
     "tags": ["Pokemon", "Evolution"]
   },
-  "EVOLVE_TYROGUE_ATK_EQ_DEF": {
-    "name": "Evolution - Tyrogue (Atk = Def)",
+  "EVOLVE_TYROGUE_3": {
+    "name": "Evolution - Tyrogue 3",
     "item": "Hitmontop",
     "tags": ["Pokemon", "Evolution"]
   },
@@ -918,13 +1003,13 @@
     "item": "Linoone",
     "tags": ["Pokemon", "Evolution"]
   },
-  "EVOLVE_WURMPLE_LOW_PERSONALITY": {
-    "name": "Evolution - Wurmple (Low Personality)",
+  "EVOLVE_WURMPLE_1": {
+    "name": "Evolution - Wurmple 1",
     "item": "Silcoon",
     "tags": ["Pokemon", "Evolution"]
   },
-  "EVOLVE_WURMPLE_HIGH_PERSONALITY": {
-    "name": "Evolution - Wurmple (High Personality)",
+  "EVOLVE_WURMPLE_2": {
+    "name": "Evolution - Wurmple 2",
     "item": "Cascoon",
     "tags": ["Pokemon", "Evolution"]
   },
@@ -958,24 +1043,9 @@
     "item": "Shiftry",
     "tags": ["Pokemon", "Evolution"]
   },
-  "EVOLVE_NINCADA": {
-    "name": "Evolution - Nincada",
-    "item": "Ninjask",
-    "tags": ["Pokemon", "Evolution"]
-  },
-  "EVOLVE_NINCADA_EXTRA": {
-    "name": "Evolution - Nincada (Extra)",
-    "item": "Shedinja",
-    "tags": ["Pokemon", "Evolution"]
-  },
   "EVOLVE_TAILLOW": {
     "name": "Evolution - Taillow",
     "item": "Swellow",
-    "tags": ["Pokemon", "Evolution"]
-  },
-  "EVOLVE_SHROOMISH": {
-    "name": "Evolution - Shroomish",
-    "item": "Breloom",
     "tags": ["Pokemon", "Evolution"]
   },
   "EVOLVE_WINGULL": {
@@ -983,114 +1053,24 @@
     "item": "Pelipper",
     "tags": ["Pokemon", "Evolution"]
   },
+  "EVOLVE_RALTS": {
+    "name": "Evolution - Ralts",
+    "item": "Kirlia",
+    "tags": ["Pokemon", "Evolution"]
+  },
+  "EVOLVE_KIRLIA": {
+    "name": "Evolution - Kirlia",
+    "item": "Gardevoir",
+    "tags": ["Pokemon", "Evolution"]
+  },
   "EVOLVE_SURSKIT": {
     "name": "Evolution - Surskit",
     "item": "Masquerain",
     "tags": ["Pokemon", "Evolution"]
   },
-  "EVOLVE_WAILMER": {
-    "name": "Evolution - Wailmer",
-    "item": "Wailord",
-    "tags": ["Pokemon", "Evolution"]
-  },
-  "EVOLVE_BALTOY": {
-    "name": "Evolution - Baltoy",
-    "item": "Claydol",
-    "tags": ["Pokemon", "Evolution"]
-  },
-  "EVOLVE_BARBOACH": {
-    "name": "Evolution - Barboach",
-    "item": "Whiscash",
-    "tags": ["Pokemon", "Evolution"]
-  },
-  "EVOLVE_CORPHISH": {
-    "name": "Evolution - Corphish",
-    "item": "Crawdaunt",
-    "tags": ["Pokemon", "Evolution"]
-  },
-  "EVOLVE_FEEBAS": {
-    "name": "Evolution - Feebas",
-    "item": "Milotic",
-    "tags": ["Pokemon", "Evolution"]
-  },
-  "EVOLVE_CARVANHA": {
-    "name": "Evolution - Carvanha",
-    "item": "Sharpedo",
-    "tags": ["Pokemon", "Evolution"]
-  },
-  "EVOLVE_TRAPINCH": {
-    "name": "Evolution - Trapinch",
-    "item": "Vibrava",
-    "tags": ["Pokemon", "Evolution"]
-  },
-  "EVOLVE_VIBRAVA": {
-    "name": "Evolution - Vibrava",
-    "item": "Flygon",
-    "tags": ["Pokemon", "Evolution"]
-  },
-  "EVOLVE_MAKUHITA": {
-    "name": "Evolution - Makuhita",
-    "item": "Hariyama",
-    "tags": ["Pokemon", "Evolution"]
-  },
-  "EVOLVE_ELECTRIKE": {
-    "name": "Evolution - Electrike",
-    "item": "Manectric",
-    "tags": ["Pokemon", "Evolution"]
-  },
-  "EVOLVE_NUMEL": {
-    "name": "Evolution - Numel",
-    "item": "Camerupt",
-    "tags": ["Pokemon", "Evolution"]
-  },
-  "EVOLVE_SPHEAL": {
-    "name": "Evolution - Spheal",
-    "item": "Sealeo",
-    "tags": ["Pokemon", "Evolution"]
-  },
-  "EVOLVE_SEALEO": {
-    "name": "Evolution - Sealeo",
-    "item": "Walrein",
-    "tags": ["Pokemon", "Evolution"]
-  },
-  "EVOLVE_CACNEA": {
-    "name": "Evolution - Cacnea",
-    "item": "Cacturne",
-    "tags": ["Pokemon", "Evolution"]
-  },
-  "EVOLVE_SNORUNT": {
-    "name": "Evolution - Snorunt",
-    "item": "Glalie",
-    "tags": ["Pokemon", "Evolution"]
-  },
-  "EVOLVE_AZURILL": {
-    "name": "Evolution - Azurill",
-    "item": "Marill",
-    "tags": ["Pokemon", "Evolution"]
-  },
-  "EVOLVE_SPOINK": {
-    "name": "Evolution - Spoink",
-    "item": "Grumpig",
-    "tags": ["Pokemon", "Evolution"]
-  },
-  "EVOLVE_MEDITITE": {
-    "name": "Evolution - Meditite",
-    "item": "Medicham",
-    "tags": ["Pokemon", "Evolution"]
-  },
-  "EVOLVE_SWABLU": {
-    "name": "Evolution - Swablu",
-    "item": "Altaria",
-    "tags": ["Pokemon", "Evolution"]
-  },
-  "EVOLVE_WYNAUT": {
-    "name": "Evolution - Wynaut",
-    "item": "Wobbuffet",
-    "tags": ["Pokemon", "Evolution"]
-  },
-  "EVOLVE_DUSKULL": {
-    "name": "Evolution - Duskull",
-    "item": "Dusclops",
+  "EVOLVE_SHROOMISH": {
+    "name": "Evolution - Shroomish",
+    "item": "Breloom",
     "tags": ["Pokemon", "Evolution"]
   },
   "EVOLVE_SLAKOTH": {
@@ -1103,9 +1083,14 @@
     "item": "Slaking",
     "tags": ["Pokemon", "Evolution"]
   },
-  "EVOLVE_GULPIN": {
-    "name": "Evolution - Gulpin",
-    "item": "Swalot",
+  "EVOLVE_NINCADA_1": {
+    "name": "Evolution - Nincada 1",
+    "item": "Ninjask",
+    "tags": ["Pokemon", "Evolution"]
+  },
+  "EVOLVE_NINCADA_2": {
+    "name": "Evolution - Nincada 2",
+    "item": "Shedinja",
     "tags": ["Pokemon", "Evolution"]
   },
   "EVOLVE_WHISMUR": {
@@ -1118,9 +1103,19 @@
     "item": "Exploud",
     "tags": ["Pokemon", "Evolution"]
   },
-  "EVOLVE_SHUPPET": {
-    "name": "Evolution - Shuppet",
-    "item": "Banette",
+  "EVOLVE_MAKUHITA": {
+    "name": "Evolution - Makuhita",
+    "item": "Hariyama",
+    "tags": ["Pokemon", "Evolution"]
+  },
+  "EVOLVE_AZURILL": {
+    "name": "Evolution - Azurill",
+    "item": "Marill",
+    "tags": ["Pokemon", "Evolution"]
+  },
+  "EVOLVE_SKITTY": {
+    "name": "Evolution - Skitty",
+    "item": "Delcatty",
     "tags": ["Pokemon", "Evolution"]
   },
   "EVOLVE_ARON": {
@@ -1133,6 +1128,76 @@
     "item": "Aggron",
     "tags": ["Pokemon", "Evolution"]
   },
+  "EVOLVE_MEDITITE": {
+    "name": "Evolution - Meditite",
+    "item": "Medicham",
+    "tags": ["Pokemon", "Evolution"]
+  },
+  "EVOLVE_ELECTRIKE": {
+    "name": "Evolution - Electrike",
+    "item": "Manectric",
+    "tags": ["Pokemon", "Evolution"]
+  },
+  "EVOLVE_GULPIN": {
+    "name": "Evolution - Gulpin",
+    "item": "Swalot",
+    "tags": ["Pokemon", "Evolution"]
+  },
+  "EVOLVE_CARVANHA": {
+    "name": "Evolution - Carvanha",
+    "item": "Sharpedo",
+    "tags": ["Pokemon", "Evolution"]
+  },
+  "EVOLVE_WAILMER": {
+    "name": "Evolution - Wailmer",
+    "item": "Wailord",
+    "tags": ["Pokemon", "Evolution"]
+  },
+  "EVOLVE_NUMEL": {
+    "name": "Evolution - Numel",
+    "item": "Camerupt",
+    "tags": ["Pokemon", "Evolution"]
+  },
+  "EVOLVE_SPOINK": {
+    "name": "Evolution - Spoink",
+    "item": "Grumpig",
+    "tags": ["Pokemon", "Evolution"]
+  },
+  "EVOLVE_TRAPINCH": {
+    "name": "Evolution - Trapinch",
+    "item": "Vibrava",
+    "tags": ["Pokemon", "Evolution"]
+  },
+  "EVOLVE_VIBRAVA": {
+    "name": "Evolution - Vibrava",
+    "item": "Flygon",
+    "tags": ["Pokemon", "Evolution"]
+  },
+  "EVOLVE_CACNEA": {
+    "name": "Evolution - Cacnea",
+    "item": "Cacturne",
+    "tags": ["Pokemon", "Evolution"]
+  },
+  "EVOLVE_SWABLU": {
+    "name": "Evolution - Swablu",
+    "item": "Altaria",
+    "tags": ["Pokemon", "Evolution"]
+  },
+  "EVOLVE_BARBOACH": {
+    "name": "Evolution - Barboach",
+    "item": "Whiscash",
+    "tags": ["Pokemon", "Evolution"]
+  },
+  "EVOLVE_CORPHISH": {
+    "name": "Evolution - Corphish",
+    "item": "Crawdaunt",
+    "tags": ["Pokemon", "Evolution"]
+  },
+  "EVOLVE_BALTOY": {
+    "name": "Evolution - Baltoy",
+    "item": "Claydol",
+    "tags": ["Pokemon", "Evolution"]
+  },
   "EVOLVE_LILEEP": {
     "name": "Evolution - Lileep",
     "item": "Cradily",
@@ -1143,14 +1208,49 @@
     "item": "Armaldo",
     "tags": ["Pokemon", "Evolution"]
   },
-  "EVOLVE_RALTS": {
-    "name": "Evolution - Ralts",
-    "item": "Kirlia",
+  "EVOLVE_FEEBAS": {
+    "name": "Evolution - Feebas",
+    "item": "Milotic",
     "tags": ["Pokemon", "Evolution"]
   },
-  "EVOLVE_KIRLIA": {
-    "name": "Evolution - Kirlia",
-    "item": "Gardevoir",
+  "EVOLVE_SHUPPET": {
+    "name": "Evolution - Shuppet",
+    "item": "Banette",
+    "tags": ["Pokemon", "Evolution"]
+  },
+  "EVOLVE_DUSKULL": {
+    "name": "Evolution - Duskull",
+    "item": "Dusclops",
+    "tags": ["Pokemon", "Evolution"]
+  },
+  "EVOLVE_WYNAUT": {
+    "name": "Evolution - Wynaut",
+    "item": "Wobbuffet",
+    "tags": ["Pokemon", "Evolution"]
+  },
+  "EVOLVE_SNORUNT": {
+    "name": "Evolution - Snorunt",
+    "item": "Glalie",
+    "tags": ["Pokemon", "Evolution"]
+  },
+  "EVOLVE_SPHEAL": {
+    "name": "Evolution - Spheal",
+    "item": "Sealeo",
+    "tags": ["Pokemon", "Evolution"]
+  },
+  "EVOLVE_SEALEO": {
+    "name": "Evolution - Sealeo",
+    "item": "Walrein",
+    "tags": ["Pokemon", "Evolution"]
+  },
+  "EVOLVE_CLAMPERL_1": {
+    "name": "Evolution - Clamperl 1",
+    "item": "Huntail",
+    "tags": ["Pokemon", "Evolution"]
+  },
+  "EVOLVE_CLAMPERL_2": {
+    "name": "Evolution - Clamperl 2",
+    "item": "Gorebyss",
     "tags": ["Pokemon", "Evolution"]
   },
   "EVOLVE_BAGON": {

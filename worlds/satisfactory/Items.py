@@ -1,9 +1,13 @@
+import copy
 from random import Random
 from typing import ClassVar, Dict, Set, List, TextIO, Tuple, Optional
 from BaseClasses import Item, ItemClassification as C, MultiWorld
 from .GameLogic import GameLogic, Recipe
 from .Options import SatisfactoryOptions
 from .ItemData import ItemData, ItemGroups as G
+from .Options import SatisfactoryOptions
+import logging
+
 
 class Items:
     item_data: ClassVar[Dict[str, ItemData]] = {
@@ -22,7 +26,7 @@ class Items:
         "Bundle: Automated Wiring": ItemData(frozenset({G.Parts}), 1338011),
         "Bundle: Battery": ItemData(frozenset({G.Parts}), 1338012),
         "Bundle: Bauxite": ItemData(frozenset({G.Parts}), 1338013),
-        "Bundle: Beacon": ItemData(frozenset({G.Parts}), 1338014),
+        "Bundle: Neural-Quantum Processor": ItemData(frozenset({G.Parts}), 1338014), #1.0
         "Bundle: Biomass": ItemData(frozenset({G.Parts}), 1338015),
         "Bundle: Black Powder": ItemData(frozenset({G.Parts}), 1338016),
         "Bundle: Cable": ItemData(frozenset({G.Parts}), 1338017),
@@ -30,7 +34,7 @@ class Items:
         "Bundle: Caterium Ore": ItemData(frozenset({G.Parts}), 1338019),
         "Bundle: Circuit Board": ItemData(frozenset({G.Parts}), 1338020),
         "Bundle: Coal": ItemData(frozenset({G.Parts}), 1338021),
-        "Bundle: Color Cartridge": ItemData(frozenset({G.Parts}), 1338022),
+        "Bundle: Singularity Cell": ItemData(frozenset({G.Parts}), 1338022), #1.0
         "Bundle: Compacted Coal": ItemData(frozenset({G.Parts}), 1338023),
         "Bundle: Computer": ItemData(frozenset({G.Parts}), 1338024),
         "Bundle: Concrete": ItemData(frozenset({G.Parts}), 1338025),
@@ -49,7 +53,7 @@ class Items:
         "Bundle: Encased Uranium Cell": ItemData(frozenset({G.Trap}), 1338038, C.trap),
         "Bundle: Fabric": ItemData(frozenset({G.Parts}), 1338039),
         "Bundle: FICSIT Coupon": ItemData(frozenset({G.Parts}), 1338040),
-        "Bundle: Flower Petals": ItemData(frozenset({G.Parts}), 1338041),
+        "Bundle: AI Expansion Server": ItemData(frozenset({G.Parts}), 1338041), #1.0
         "Bundle: Fused Modular Frame": ItemData(frozenset({G.Parts}), 1338042),
         "Bundle: Hard Drive": ItemData(frozenset({G.Parts}), 1338043),
         "Bundle: Heat Sink": ItemData(frozenset({G.Parts}), 1338044),
@@ -93,7 +97,7 @@ class Items:
         "Bundle: Power Shard": ItemData(frozenset({G.Parts}), 1338082),
         "Bundle: Confusing Creature Statue": ItemData(frozenset({G.Parts}), 1338083),
         "Bundle: Pressure Conversion Cube": ItemData(frozenset({G.Parts}), 1338084),
-        "Bundle: Quantum Computer": ItemData(frozenset({G.Parts}), 1338085),
+        "Bundle: Alien Power Matrix": ItemData(frozenset({G.Parts}), 1338085), #1.0
         "Bundle: Quartz Crystal": ItemData(frozenset({G.Parts}), 1338086),
         "Bundle: Quickwire": ItemData(frozenset({G.Parts}), 1338087),
         "Bundle: Radio Control Unit": ItemData(frozenset({G.Parts}), 1338088),
@@ -101,7 +105,7 @@ class Items:
         "Bundle: Reinforced Iron Plate": ItemData(frozenset({G.Parts}), 1338090),
         "Bundle: Rotor": ItemData(frozenset({G.Parts}), 1338091),
         "Bundle: Rubber": ItemData(frozenset({G.Parts}), 1338092),
-        "Bundle: SAM Ore": ItemData(frozenset({G.Parts}), 1338093),
+        "Bundle: SAM": ItemData(frozenset({G.Parts}), 1338093), # 1.0
         "Bundle: Screw": ItemData(frozenset({G.Parts}), 1338094),
         "Bundle: Silica": ItemData(frozenset({G.Parts}), 1338095),
         "Bundle: Smart Plating": ItemData(frozenset({G.Parts}), 1338096),
@@ -129,7 +133,22 @@ class Items:
         "Bundle: Stinger Remains": ItemData(frozenset({G.Parts}), 1338118),
         "Bundle: Hatcher Remains": ItemData(frozenset({G.Parts}), 1338119),
         "Bundle: Alien DNA Capsule": ItemData(frozenset({G.Parts}), 1338120),
-        #1338121 - 1338149 Reserved for future parts
+# 1.0
+        "Bundle: Diamonds": ItemData(frozenset({G.Parts}), 1338121),
+        "Bundle: Time Crystal": ItemData(frozenset({G.Parts}), 1338122),
+        "Bundle: Ficsite Ingot": ItemData(frozenset({G.Parts}), 1338123),
+        "Bundle: Ficsite Trigon": ItemData(frozenset({G.Parts}), 1338124),
+        "Bundle: Reanimated SAM": ItemData(frozenset({G.Parts}), 1338125),
+        "Bundle: SAM Fluctuator": ItemData(frozenset({G.Parts}), 1338126),
+        "Bundle: Biochemical Sculptor": ItemData(frozenset({G.Parts}), 1338127),
+        "Bundle: Ballistic Warp Drive": ItemData(frozenset({G.Parts}), 1338128),
+        "Bundle: Ficsonium": ItemData(frozenset({G.Trap}), 1338129, C.trap),
+        "Bundle: Ficsonium Fuel Rod": ItemData(frozenset({G.Trap}), 1338130, C.trap),
+        "Bundle: Packaged Rocket Fuel": ItemData(frozenset({G.Parts}), 1338131),
+        "Bundle: Packaged Ionized Fuel": ItemData(frozenset({G.Parts}), 1338132),
+# 1.0
+
+        #1338131 - 1338149 Reserved for future parts
 
         # Equipment / Ammo
         "Bundle: Bacon Agaric": ItemData(frozenset({G.Ammo}), 1338150),
@@ -144,16 +163,16 @@ class Items:
         "Bundle: Explosive Rebar": ItemData(frozenset({G.Ammo}), 1338159),
         "Bundle: Factory Cart": ItemData(frozenset({G.Equipment}), 1338160),
         "Bundle: Factory Cart (golden)": ItemData(frozenset({G.Equipment}), 1338161, count=0),
-        "Bundle: Gas Mask": ItemData(frozenset({G.Equipment}), 1338162, C.progression),
+        "Bundle: Gas Mask": ItemData(frozenset({G.Equipment}), 1338162),
         "Bundle: Gas Nobelisk": ItemData(frozenset({G.Ammo}), 1338163),
-        "Bundle: Hazmat Suit": ItemData(frozenset({G.Equipment}), 1338164, C.progression),
+        "Bundle: Hazmat Suit": ItemData(frozenset({G.Equipment}), 1338164),
         "Bundle: Homing Rifle Ammo": ItemData(frozenset({G.Ammo}), 1338165),
-        "Bundle: Hover Pack": ItemData(frozenset({G.Equipment}), 1338166, C.progression),
+        "Bundle: Hover Pack": ItemData(frozenset({G.Equipment}), 1338166),
         "Bundle: Iron Rebar": ItemData(frozenset({G.Ammo}), 1338167),
-        "Bundle: Jetpack": ItemData(frozenset({G.Equipment}), 1338168, C.progression),
+        "Bundle: Jetpack": ItemData(frozenset({G.Equipment}), 1338168),
         "Bundle: Medicinal Inhaler": ItemData(frozenset({G.Ammo}), 1338169),
         "Bundle: Nobelisk": ItemData(frozenset({G.Ammo}), 1338170),
-        "Bundle: Nobelisk Detonator": ItemData(frozenset({G.Equipment}), 1338171, C.progression),
+        "Bundle: Nobelisk Detonator": ItemData(frozenset({G.Equipment}), 1338171),
         "Bundle: Nuke Nobelisk": ItemData(frozenset({G.Ammo}), 1338172),
         "Bundle: Object Scanner": ItemData(frozenset({G.Equipment}), 1338173),
         "Bundle: Paleberry": ItemData(frozenset({G.Ammo}), 1338174),
@@ -169,15 +188,16 @@ class Items:
         "Bundle: Xeno-Zapper": ItemData(frozenset({G.Equipment}), 1338184),
         "Bundle: Zipline": ItemData(frozenset({G.Equipment}), 1338185),
         "Bundle: Portable Miner": ItemData(frozenset({G.Equipment}), 1338186),
-        "Bundle: Gas Filter": ItemData(frozenset({G.Ammo}), 1338187, C.progression),
-
+        "Bundle: Gas Filter": ItemData(frozenset({G.Ammo}), 1338187),
+        # Other
         "Small Inflated Pocket Dimension": ItemData(frozenset({G.Upgrades}), 1338188, C.useful, 11),
         "Inflated Pocket Dimension": ItemData(frozenset({G.Upgrades}), 1338189, C.useful, 5),
         "Expanded Toolbelt": ItemData(frozenset({G.Upgrades}), 1338190, C.useful, 5),
+        "Dimensional Depot upload from inventory": ItemData(frozenset({G.Upgrades}), 1338191, C.useful),
 
-        #1338188 - 1338199 Reserved for future equipment/ammo
+        #1338191 - 1338199 Reserved for future equipment/ammo
 
-        #1338200+ Recipes / buildings / schematics / others
+        #1338200+ Recipes / buildings / schematics
         "Recipe: Reinforced Iron Plate": ItemData(frozenset({G.Recipe}), 1338200, C.progression),
         "Recipe: Adhered Iron Plate": ItemData(frozenset({G.Recipe}), 1338201, C.progression),
         "Recipe: Bolted Iron Plate": ItemData(frozenset({G.Recipe}), 1338202, C.progression),
@@ -195,7 +215,7 @@ class Items:
         "Recipe: Recycled Rubber": ItemData(frozenset({G.Recipe}), 1338214, C.progression),
         "Recipe: Iron Plate": ItemData(frozenset({G.Recipe}), 1338215, C.progression),
         "Recipe: Coated Iron Plate": ItemData(frozenset({G.Recipe}), 1338216, C.progression),
-        "Recipe: Steel Coated Plate": ItemData(frozenset({G.Recipe}), 1338217, C.progression),
+        "Recipe: Steel Cast Plate": ItemData(frozenset({G.Recipe}), 1338217, C.progression), # 1.0
         "Recipe: Iron Rod": ItemData(frozenset({G.Recipe}), 1338218, C.progression),
         "Recipe: Steel Rod": ItemData(frozenset({G.Recipe}), 1338219, C.progression),
         "Recipe: Screw": ItemData(frozenset({G.Recipe}), 1338220, C.progression),
@@ -215,13 +235,13 @@ class Items:
         "Recipe: Steamed Copper Sheet": ItemData(frozenset({G.Recipe}), 1338234, C.progression),
         "Recipe: Steel Pipe": ItemData(frozenset({G.Recipe}), 1338235, C.progression),
         "Recipe: Steel Beam": ItemData(frozenset({G.Recipe}), 1338236, C.progression),
-        #"Recipe: Crude Oil": ItemData(frozenset({G.Recipe}), 1338237),
+        "Recipe: Neural-Quantum Processor": ItemData(frozenset({G.Recipe}), 1338237, C.progression), # 1.0
         "Recipe: Heavy Oil Residue": ItemData(frozenset({G.Recipe}), 1338238, C.progression),
         "Recipe: Polymer Resin": ItemData(frozenset({G.Recipe}), 1338239, C.progression),
         "Recipe: Fuel": ItemData(frozenset({G.Recipe}), 1338240, C.progression),
         "Recipe: Residual Fuel": ItemData(frozenset({G.Recipe}), 1338241, C.progression),
         "Recipe: Diluted Fuel (refinery)": ItemData(frozenset({G.Recipe}), 1338242, C.progression),
-        #"Recipe: Water": ItemData(frozenset({G.Recipe}), 1338243),
+        "Recipe: AI Expansion Server": ItemData(frozenset({G.Recipe}), 1338243, C.progression), # 1.0
         "Recipe: Concrete": ItemData(frozenset({G.Recipe}), 1338244, C.progression),
         "Recipe: Rubber Concrete": ItemData(frozenset({G.Recipe}), 1338245, C.progression),
         "Recipe: Wet Concrete": ItemData(frozenset({G.Recipe}), 1338246, C.progression),
@@ -242,17 +262,17 @@ class Items:
         "Recipe: Pure Copper Ingot": ItemData(frozenset({G.Recipe}), 1338261, C.progression),
         "Recipe: Caterium Ingot": ItemData(frozenset({G.Recipe}), 1338262, C.progression),
         "Recipe: Pure Caterium Ingot": ItemData(frozenset({G.Recipe}), 1338263, C.progression),
-        #"Recipe: Limestone": ItemData(frozenset({G.Recipe}), 1338264),
-        #"Recipe: Raw Quartz": ItemData(frozenset({G.Recipe}), 1338265),
-        #"Recipe: Iron Ore": ItemData(frozenset({G.Recipe}), 1338266),
-        #"Recipe: Copper Ore": ItemData(frozenset({G.Recipe}), 1338267),
-        #"Recipe: Coal": ItemData(frozenset({G.Recipe}), 1338268),
-        #"Recipe: Sulfur": ItemData(frozenset({G.Recipe}), 1338269),
-        #"Recipe: Caterium Ore": ItemData(frozenset({G.Recipe}), 1338270, C.progression),
+        "Recipe: Alien Power Matrix": ItemData(frozenset({G.Recipe}), 1338264), # 1.0
+        "Recipe: Ficsite Ingot (Aluminum)": ItemData(frozenset({G.Recipe}), 1338265, C.progression), # 1.0
+        "Recipe: Ficsite Ingot (Caterium)": ItemData(frozenset({G.Recipe}), 1338266, C.progression), # 1.0
+        "Recipe: Ficsite Ingot (Iron)": ItemData(frozenset({G.Recipe}), 1338267, C.progression), # 1.0
+        "Recipe: Ficsite Trigon": ItemData(frozenset({G.Recipe}), 1338268, C.progression), # 1.0
+        "Recipe: Reanimated SAM": ItemData(frozenset({G.Recipe}), 1338269, C.progression), # 1.0
+        "Recipe: SAM Fluctuator": ItemData(frozenset({G.Recipe}), 1338270, C.progression), # 1.0
         "Recipe: Petroleum Coke": ItemData(frozenset({G.Recipe}), 1338271, C.progression),
         "Recipe: Compacted Coal": ItemData(frozenset({G.Recipe}), 1338272, C.progression),
         "Recipe: Motor": ItemData(frozenset({G.Recipe}), 1338273, C.progression),
-        "Recipe: Rigour Motor": ItemData(frozenset({G.Recipe}), 1338274, C.progression),
+        "Recipe: Rigor Motor": ItemData(frozenset({G.Recipe}), 1338274, C.progression),
         "Recipe: Electric Motor": ItemData(frozenset({G.Recipe}), 1338275, C.progression),
         "Recipe: Modular Frame": ItemData(frozenset({G.Recipe}), 1338276, C.progression),
         "Recipe: Bolted Frame": ItemData(frozenset({G.Recipe}), 1338277, C.progression),
@@ -287,9 +307,9 @@ class Items:
         "Recipe: Diluted Fuel": ItemData(frozenset({G.Recipe}), 1338306, C.progression),
         "Recipe: Alumina Solution": ItemData(frozenset({G.Recipe}), 1338307, C.progression),
         "Recipe: Automated Miner": ItemData(frozenset({G.Recipe}), 1338308, C.progression),
-        #"Recipe: Bauxite": ItemData(frozenset({G.Recipe}), 1338309),
+        "Recipe: Singularity Cell": ItemData(frozenset({G.Recipe}), 1338309, C.progression), # 1.0
         "Recipe: Aluminum Scrap": ItemData(frozenset({G.Recipe}), 1338310, C.progression),
-        "Recipe: Electrode - Aluminum Scrap": ItemData(frozenset({G.Recipe}), 1338311, C.progression),
+        "Recipe: Electrode Aluminum Scrap": ItemData(frozenset({G.Recipe}), 1338311, C.progression),
         "Recipe: Instant Scrap": ItemData(frozenset({G.Recipe}), 1338312, C.progression),
         "Recipe: Aluminum Ingot": ItemData(frozenset({G.Recipe}), 1338313, C.progression),
         "Recipe: Pure Aluminum Ingot": ItemData(frozenset({G.Recipe}), 1338314, C.progression),
@@ -298,7 +318,7 @@ class Items:
         "Recipe: Alclad Casing": ItemData(frozenset({G.Recipe}), 1338317, C.progression),
         "Recipe: Heat Sink": ItemData(frozenset({G.Recipe}), 1338318, C.progression),
         "Recipe: Heat Exchanger": ItemData(frozenset({G.Recipe}), 1338319, C.progression),
-        "Recipe: Nitrogen Gas": ItemData(frozenset({G.Recipe}), 1338320, C.progression),
+        "Recipe: Synthetic Power Shard": ItemData(frozenset({G.Recipe}), 1338320, C.progression),
         "Recipe: Nitric Acid": ItemData(frozenset({G.Recipe}), 1338321, C.progression),
         "Recipe: Fused Modular Frame": ItemData(frozenset({G.Recipe}), 1338322, C.progression),
         "Recipe: Heat-Fused Frame": ItemData(frozenset({G.Recipe}), 1338323, C.progression),
@@ -316,23 +336,23 @@ class Items:
         "Recipe: Supercomputer": ItemData(frozenset({G.Recipe}), 1338335, C.progression),
         "Recipe: OC Supercomputer": ItemData(frozenset({G.Recipe}), 1338336, C.progression),
         "Recipe: Super-State Computer": ItemData(frozenset({G.Recipe}), 1338337, C.progression),
-        #"Recipe: Uranium": ItemData(frozenset({G.Recipe}), 1338338}), 
+        "Recipe: Biochemical Sculptor": ItemData(frozenset({G.Recipe}), 1338338, C.progression), # 1.0
         "Recipe: Sulfuric Acid": ItemData(frozenset({G.Recipe}), 1338339, C.progression),
-        #"Recipe: Encased Uranium Cell": duplicated, 
+        "Recipe: Ballistic Warp Drive": ItemData(frozenset({G.Recipe}), 1338340, C.progression), # 1.0
         "Recipe: Encased Uranium Cell": ItemData(frozenset({G.Recipe}), 1338341, C.progression),
         "Recipe: Infused Uranium Cell": ItemData(frozenset({G.Recipe}), 1338342, C.progression),
         "Recipe: Uranium Fuel Rod": ItemData(frozenset({G.Recipe}), 1338343, C.progression),
         "Recipe: Uranium Fuel Unit": ItemData(frozenset({G.Recipe}), 1338344, C.progression),
-        "Recipe: Beacon": ItemData(frozenset({G.Recipe}), 1338345, C.progression),
-        "Recipe: Crystal Beacon": ItemData(frozenset({G.Recipe}), 1338346, C.progression),
-        #"Recipe: Uranium Waste": ItemData(frozenset({G.Recipe}), 1338347, C.progression),
+        "Recipe: Aluminum Beam": ItemData(frozenset({G.Recipe}), 1338345, C.progression), # 1.0
+        "Recipe: Aluminum Rod": ItemData(frozenset({G.Recipe}), 1338346, C.progression), # 1.0
+        "Recipe: Basic Iron Ingot": ItemData(frozenset({G.Recipe}), 1338347, C.progression), # 1.0
         "Recipe: Non-fissile Uranium": ItemData(frozenset({G.Recipe}), 1338348, C.progression),
         "Recipe: Fertile Uranium": ItemData(frozenset({G.Recipe}), 1338349, C.progression),
-        "Recipe: Plutonium Pellet": ItemData(frozenset({G.Recipe}), 1338350, C.progression),
-        "Recipe: Encased Plutonium Cell": ItemData(frozenset({G.Recipe}), 1338351, C.progression),
-        "Recipe: Instant Plutonium Cell": ItemData(frozenset({G.Recipe}), 1338352, C.progression),
-        "Recipe: Plutonium Fuel Rod": ItemData(frozenset({G.Recipe}), 1338353, C.progression),
-        "Recipe: Plutonium Fuel Unit": ItemData(frozenset({G.Recipe}), 1338354, C.progression),
+        "Recipe: Plutonium Pellet": ItemData(frozenset({G.Recipe}), 1338350),
+        "Recipe: Encased Plutonium Cell": ItemData(frozenset({G.Recipe}), 1338351),
+        "Recipe: Instant Plutonium Cell": ItemData(frozenset({G.Recipe}), 1338352),
+        "Recipe: Plutonium Fuel Rod": ItemData(frozenset({G.Recipe}), 1338353),
+        "Recipe: Plutonium Fuel Unit": ItemData(frozenset({G.Recipe}), 1338354),
         "Recipe: Gas Filter": ItemData(frozenset({G.Recipe}), 1338355, C.progression),
         "Recipe: Iodine Infused Filter": ItemData(frozenset({G.Recipe}), 1338356, C.progression),
         "Recipe: Assembly Director System": ItemData(frozenset({G.Recipe}), 1338357, C.progression),
@@ -340,11 +360,11 @@ class Items:
         "Recipe: Copper Powder": ItemData(frozenset({G.Recipe}), 1338359, C.progression),
         "Recipe: Nuclear Pasta": ItemData(frozenset({G.Recipe}), 1338360, C.progression),
         "Recipe: Thermal Propulsion Rocket": ItemData(frozenset({G.Recipe}), 1338361, C.progression),
-        #"Obtainable: Leaves": ItemData(frozenset({G.Recipe}), 1338362}), 
-        #"Obtainable: Wood": ItemData(frozenset({G.Recipe}), 1338363}), 
-        #"Obtainable: Hatcher Remains": ItemData(frozenset({G.Recipe}), 1338364}), 
-        #"Obtainable: Hog Remains": ItemData(frozenset({G.Recipe}), 1338365}), 
-        #"Obtainable: Plasma Spitter Remains": ItemData(frozenset({G.Recipe", 1338366),
+        "Recipe: Ficsonium": ItemData(frozenset({G.Recipe}), 1338362), # 1.0
+        "Recipe: Ficsonium Fuel Rod": ItemData(frozenset({G.Recipe}), 1338363), # 1.0
+        "Recipe: Dark Matter Crystal": ItemData(frozenset({G.Recipe}), 1338364, C.progression), # 1.0
+        "Recipe: Dark Matter Crystallization": ItemData(frozenset({G.Recipe}), 1338365, C.progression), # 1.0
+        "Recipe: Dark Matter Trap": ItemData(frozenset({G.Recipe}), 1338366, C.progression), # 1.0
         "Recipe: Pulse Nobelisk":  ItemData(frozenset({G.Recipe}), 1338367, C.useful),
         "Recipe: Hatcher Protein": ItemData(frozenset({G.Recipe}), 1338368, C.progression),
         "Recipe: Hog Protein": ItemData(frozenset({G.Recipe}), 1338369, C.progression),
@@ -382,15 +402,15 @@ class Items:
         "Recipe: Black Powder": ItemData(frozenset({G.Recipe}), 1338401, C.progression),
         "Recipe: Blade Runners": ItemData(frozenset({G.Recipe}), 1338402, C.useful),
         "Recipe: Chainsaw": ItemData(frozenset({G.Recipe}), 1338403, C.useful),
-        "Recipe: Cluster Nobelisk":  ItemData(frozenset({G.Recipe}), 1338404, C.useful),
-        "Recipe: Explosive Rebar":  ItemData(frozenset({G.Recipe}), 1338405, C.useful),
+        "Recipe: Cluster Nobelisk":  ItemData(frozenset({G.Recipe}), 1338404),
+        "Recipe: Explosive Rebar":  ItemData(frozenset({G.Recipe}), 1338405),
         "Recipe: Factory Cart": ItemData(frozenset({G.Recipe}), 1338406, C.useful),
-        "Recipe: Gas Nobelisk":  ItemData(frozenset({G.Recipe}), 1338407, C.useful),
-        "Recipe: Golden Factory Cart":  ItemData(frozenset({G.Recipe}), 1338408, C.useful),
-        "Recipe: Homing Rifle Ammo": ItemData(frozenset({G.Recipe}), 1338409, C.useful),
+        "Recipe: Gas Nobelisk":  ItemData(frozenset({G.Recipe}), 1338407),
+        "Recipe: Golden Factory Cart":  ItemData(frozenset({G.Recipe}), 1338408),
+        "Recipe: Homing Rifle Ammo": ItemData(frozenset({G.Recipe}), 1338409),
         "Recipe: Iron Rebar":  ItemData(frozenset({G.Recipe}), 1338410, C.progression),
         "Recipe: Nobelisk":  ItemData(frozenset({G.Recipe}), 1338411, C.progression),
-        "Recipe: Nuke Nobelisk": ItemData(frozenset({G.Recipe}), 1338412, C.useful),
+        "Recipe: Nuke Nobelisk": ItemData(frozenset({G.Recipe}), 1338412),
         "Recipe: Nutritional Inhaler":  ItemData(frozenset({G.Recipe}), 1338413, C.useful),
         "Recipe: Object Scanner":  ItemData(frozenset({G.Recipe}), 1338414, C.progression),
         "Recipe: Parachute":  ItemData(frozenset({G.Recipe}), 1338415, C.useful),
@@ -398,10 +418,10 @@ class Items:
         "Recipe: Rebar Gun":  ItemData(frozenset({G.Recipe}), 1338417, C.useful),
         "Recipe: Rifle": ItemData(frozenset({G.Recipe}), 1338418, C.useful),
         "Recipe: Rifle Ammo":  ItemData(frozenset({G.Recipe}), 1338419, C.progression),
-        "Recipe: Shatter Rebar":  ItemData(frozenset({G.Recipe}), 1338420, C.useful),
-        "Recipe: Stun Rebar":  ItemData(frozenset({G.Recipe}), 1338421, C.useful),
+        "Recipe: Shatter Rebar":  ItemData(frozenset({G.Recipe}), 1338420),
+        "Recipe: Stun Rebar":  ItemData(frozenset({G.Recipe}), 1338421),
         "Recipe: Therapeutic Inhaler": ItemData(frozenset({G.Recipe}), 1338422, C.useful),
-        "Recipe: Turbo Rifle Ammo":  ItemData(frozenset({G.Recipe}), 1338423, C.useful),
+        "Recipe: Turbo Rifle Ammo":  ItemData(frozenset({G.Recipe}), 1338423),
         "Recipe: Vitamin Inhaler":  ItemData(frozenset({G.Recipe}), 1338424, C.useful),
         "Recipe: Xeno-Basher": ItemData(frozenset({G.Recipe}), 1338425, C.useful),
         "Recipe: Xeno-Zapper":  ItemData(frozenset({G.Recipe}), 1338426, C.useful),
@@ -413,7 +433,35 @@ class Items:
         "Recipe: Power Shard (2)": ItemData(frozenset({G.Recipe}), 1338432, C.useful),
         "Recipe: Power Shard (5)": ItemData(frozenset({G.Recipe}), 1338433, C.useful),
 
-        #1338434 - 1338599 Reserved for future recipes
+# 1.0
+        "Recipe: Diamonds": ItemData(frozenset({G.Recipe}), 1338434, C.progression),
+        "Recipe: Cloudy Diamonds": ItemData(frozenset({G.Recipe}), 1338435, C.progression),
+        "Recipe: Oil-Based Diamonds": ItemData(frozenset({G.Recipe}), 1338436, C.progression),
+        "Recipe: Petroleum Diamonds": ItemData(frozenset({G.Recipe}), 1338437, C.progression),
+        "Recipe: Pink Diamonds": ItemData(frozenset({G.Recipe}), 1338438, C.progression),
+        "Recipe: Turbo Diamonds": ItemData(frozenset({G.Recipe}), 1338439, C.progression),
+        "Recipe: Time Crystal": ItemData(frozenset({G.Recipe}), 1338440, C.progression),
+        "Recipe: Superposition Oscillator": ItemData(frozenset({G.Recipe}), 1338441, C.progression),
+        #"Recipe: Excited Photonic Matter": ItemData(frozenset({G.Recipe}), 1338442, C.progression), should probably be unlocked with converter
+        "Recipe: Rocket Fuel": ItemData(frozenset({G.Recipe}), 1338443, C.progression),
+        "Recipe: Nitro Rocket Fuel": ItemData(frozenset({G.Recipe}), 1338444, C.progression),
+        "Recipe: Ionized Fuel": ItemData(frozenset({G.Recipe}), 1338445, C.useful),
+        "Recipe: Packaged Rocket Fuel": ItemData(frozenset({G.Recipe}), 1338446, C.progression),
+        "Recipe: Packaged Ionized Fuel": ItemData(frozenset({G.Recipe}), 1338447, C.useful),
+        "Recipe: Dark-Ion Fuel": ItemData(frozenset({G.Recipe}), 1338448, C.useful),
+        "Recipe: Quartz Purification": ItemData(frozenset({G.Recipe}), 1338449, C.progression),
+        "Recipe: Fused Quartz Crystal": ItemData(frozenset({G.Recipe}), 1338450, C.progression),
+        "Recipe: Leached Caterium Ingot": ItemData(frozenset({G.Recipe}), 1338451, C.progression),
+        "Recipe: Leached Copper Ingot": ItemData(frozenset({G.Recipe}), 1338452, C.progression),
+        "Recipe: Leached Iron ingot": ItemData(frozenset({G.Recipe}), 1338453, C.progression),
+        "Recipe: Molded Beam": ItemData(frozenset({G.Recipe}), 1338454, C.progression),
+        "Recipe: Molded Steel Pipe": ItemData(frozenset({G.Recipe}), 1338455, C.progression),
+        "Recipe: Plastic AI Limiter": ItemData(frozenset({G.Recipe}), 1338456, C.progression),
+        "Recipe: Tempered Caterium Ingot": ItemData(frozenset({G.Recipe}), 1338457, C.progression),
+        "Recipe: Tempered Copper Ingot": ItemData(frozenset({G.Recipe}), 1338458, C.progression),
+# 1.0
+
+        #1338459 - 1338599 Reserved for future recipes
 
         #1338400 - 1338899 buildings / others
         "Building: Constructor": ItemData(frozenset({G.Building}), 1338600, C.progression),
@@ -434,7 +482,6 @@ class Items:
         "Building: Water Extractor": ItemData(frozenset({G.Building}), 1338615, C.progression),
         "Building: Smelter": ItemData(frozenset({G.Building}), 1338616, C.progression),
         "Building: Foundry": ItemData(frozenset({G.Building}), 1338617, C.progression),
-
         "Building: Fuel Generator": ItemData(frozenset({G.Building}), 1338618, C.progression),
         "Building: Resource Well Pressurizer": ItemData(frozenset({G.Building}), 1338619, C.progression),
         "Building: Equipment Workshop": ItemData(frozenset({G.Building}), 1338620, C.progression),
@@ -454,7 +501,7 @@ class Items:
         "Building: Priority Power Switch": ItemData(frozenset({G.Building}), 1338634, C.useful),
         "Building: Storage Container": ItemData(frozenset({G.Building}), 1338635, C.useful, 0),
         "Building: Lookout Tower": ItemData(frozenset({G.Building}), 1338636, C.filler),
-        #"Building: Power Pole Mk.1": ItemData(frozenset({G.Building}), 1338637, C.progression),
+        #"Building: Power Pole Mk.1": ItemData(frozenset({G.Building}), 1338637, C.progression), # available from start
         "Building: Power Pole Mk.2": ItemData(frozenset({G.Building}), 1338638, C.useful),
         "Building: Power Pole Mk.3": ItemData(frozenset({G.Building}), 1338639, C.useful),
         "Building: Industrial Storage Container": ItemData(frozenset({G.Building}), 1338640, C.filler),
@@ -520,8 +567,8 @@ class Items:
         "Building: Wall Outlet Mk.1": ItemData(frozenset({G.Building}), 1338700, C.useful),
         "Building: Wall Outlet Mk.2": ItemData(frozenset({G.Building}), 1338701, C.useful),
         "Building: Wall Outlet Mk.3": ItemData(frozenset({G.Building}), 1338702, C.useful),
-        "Building: Modern Catwalks": ItemData(frozenset({G.Building}), 1338703, C.useful, 0),
-        "Building: Industrial Walkways": ItemData(frozenset({G.Building}), 1338704, C.useful, 0),
+        "Building: Modern Catwalks": ItemData(frozenset({G.Building}), 1338703, C.filler, 0),
+        "Building: Industrial Walkways": ItemData(frozenset({G.Building}), 1338704, C.filler, 0),
         "Building: Stairs": ItemData(frozenset({G.Building}), 1338705, C.filler, 0),
         "Building: Clean Pipeline Mk.1": ItemData(frozenset({G.Building}), 1338706, C.filler, 0),
         "Building: Clean Pipeline Mk.2": ItemData(frozenset({G.Building}), 1338707, C.filler, 0),
@@ -540,7 +587,17 @@ class Items:
         "Building: Roofs": ItemData(frozenset({G.Walls}), 1338720, C.filler, 0),
         "Building: Roof Corners": ItemData(frozenset({G.Walls}), 1338721, C.filler, 0),
 
-        #1338722 - 1338749 Reserved for buildings
+# 1.0
+        "Building: Converter": ItemData(frozenset({G.Building}), 1338722, C.progression),
+        "Building: Quantum Encoder": ItemData(frozenset({G.Building}), 1338723, C.progression),
+        "Building: Portal": ItemData(frozenset({G.Building}), 1338724, C.filler),
+        "Building: Conveyor Mk.6": ItemData(frozenset({G.Building, G.ConveyorMk6}), 1338725, C.progression),
+        "Building: Conveyor Lift Mk.6": ItemData(frozenset({G.Building, G.ConveyorMk6}), 1338726, C.useful),
+        "Building: Alien Power Augmenter": ItemData(frozenset({G.Building}), 1338727, C.progression),
+        "Building: Dimensional Depot Uploader": ItemData(frozenset({G.Building}), 1338728, C.useful),
+# 1.0
+
+        #1338729 - 1338749 Reserved for Cosmetics
 
         "Customizer: Asphalt Foundation Material": ItemData(frozenset({G.Customizer, G.Foundations}), 1338750, C.filler, 0),
         "Customizer: Concrete Foundation Material": ItemData(frozenset({G.Customizer, G.Foundations}), 1338751, C.filler, 0),
@@ -560,9 +617,19 @@ class Items:
         "Customizer: Pathway Patterns": ItemData(frozenset({G.Customizer, G.Foundations}), 1338765, C.filler, 0),
         "Customizer: Factory Zone Patterns": ItemData(frozenset({G.Customizer, G.Foundations}), 1338766, C.filler, 0),
 
-        #1338767 - 1338799 Reserved for buildings
+# 1.0
+        "Customizer: Steel-Framed Windows": ItemData(frozenset({G.Customizer, G.Walls}), 1338767, C.filler, 0), 
+        "Customizer: Construction Fences": ItemData(frozenset({G.Customizer}), 1338768, C.filler, 0), 
+        "Customizer: Unpainted Finish": ItemData(frozenset({G.Customizer}), 1338769, C.filler, 0), 
+        "Customizer: Copper Paint Finish": ItemData(frozenset({G.Customizer}), 1338770, C.filler, 0), 
+        "Customizer: Chrome Paint Finish": ItemData(frozenset({G.Customizer}), 1338771, C.filler, 0), 
+        "Customizer: Carbon Steel Finish": ItemData(frozenset({G.Customizer}), 1338772, C.filler, 0), 
+        "Customizer: Caterium Paint Finish": ItemData(frozenset({G.Customizer}), 1338773, C.filler, 0), 
+# 1.0
 
-        # Transports 1338800 - 1338899
+        #1338773 - 1338799 Reserved for buildings
+
+        # Transports 1338800 - 1338898
         # Drones (including Drone)
         "Transport: Drones": ItemData(frozenset({G.Transport}), 1338800, C.useful),
 
@@ -584,27 +651,30 @@ class Items:
         "Transport: Hypertube Wall Support": ItemData(frozenset({G.Transport, G.HyperTubes}), 1338811, C.filler),
         "Transport: Hypertube Wall Hole": ItemData(frozenset({G.Transport, G.HyperTubes}), 1338812, C.filler),
 
-        #1338900 - 1338998 Handled by trap system
+        #1338900 - 1338998 Handled by trap system (includes a few non-trap things)
         # Regenerate via /Script/Blutility.EditorUtilityWidgetBlueprint'/Archipelago/Debug/EU_GenerateTrapIds.EU_GenerateTrapIds'
-        "Hog Basic": ItemData(frozenset({G.Trap}), 1338900, C.trap),
-        "Hog Alpha": ItemData(frozenset({G.Trap}), 1338901, C.trap),
-        "Hog Johnny": ItemData(frozenset({G.Trap}), 1338902, C.trap),
-        "Hog Cliff": ItemData(frozenset({G.Trap}), 1338903, C.trap),
-        "Hog Cliff Nuclear": ItemData(frozenset({G.Trap}), 1338904, C.trap),
-        "Not The Bees": ItemData(frozenset({G.Trap}), 1338905, C.trap),
-        "Hatcher": ItemData(frozenset({G.Trap}), 1338906, C.trap),
-        "Doggo Pulse Nobelisk": ItemData(frozenset({G.Trap}), 1338907, C.trap),
-        "Doggo Nuke Nobelisk": ItemData(frozenset({G.Trap}), 1338908, C.trap),
-        "Doggo with PowerSlug": ItemData(frozenset({G.Parts}), 1338909),
-        "Doggo Gas Nobelisk": ItemData(frozenset({G.Trap}), 1338910, C.trap),
-        "Spore Flower": ItemData(frozenset({G.Trap}), 1338911, C.trap),
-        "Stinger Gas": ItemData(frozenset({G.Trap}), 1338912, C.trap),
-        "Stinger Elite": ItemData(frozenset({G.Trap}), 1338913, C.trap),
-        "Stinger Small": ItemData(frozenset({G.Trap}), 1338914, C.trap),
-        "Spitter Forest": ItemData(frozenset({G.Trap}), 1338915, C.trap),
-        "Spitter Forest Alpha": ItemData(frozenset({G.Trap}), 1338916, C.trap),
-        "Nuclear Waste (ground)": ItemData(frozenset({G.Trap}), 1338917, C.trap),
-        "Plutonium Waste (ground)": ItemData(frozenset({G.Trap}), 1338918, C.trap),
+        "Trap: Hog": ItemData(frozenset({G.Trap}), 1338900, C.trap),
+        "Trap: Alpha Hog": ItemData(frozenset({G.Trap}), 1338901, C.trap),
+        "Trap: Johnny": ItemData(frozenset({G.Trap}), 1338902, C.trap),
+        "Trap: Cliff Hog": ItemData(frozenset({G.Trap}), 1338903, C.trap),
+        "Trap: Nuclear Hog": ItemData(frozenset({G.Trap}), 1338904, C.trap),
+        "Trap: Not the Bees": ItemData(frozenset({G.Trap}), 1338905, C.trap),
+        "Trap: Hatcher": ItemData(frozenset({G.Trap}), 1338906, C.trap),
+        "Trap: Doggo with Pulse Nobelisk": ItemData(frozenset({G.Trap}), 1338907, C.trap),
+        "Trap: Doggo with Nuke Nobelisk": ItemData(frozenset({G.Trap}), 1338908, C.trap),
+        "Doggo with Power Slug": ItemData(frozenset({G.Parts}), 1338909, C.filler),
+        "Trap: Doggo with Gas Nobelisk": ItemData(frozenset({G.Trap}), 1338910, C.trap),
+        "Trap: Spore Flower": ItemData(frozenset({G.Trap}), 1338911, C.trap),
+        "Trap: Stinger": ItemData(frozenset({G.Trap}), 1338912, C.trap),
+        "Trap: Gas Stinger": ItemData(frozenset({G.Trap}), 1338913, C.trap),
+        "Trap: Small Stinger": ItemData(frozenset({G.Trap}), 1338914, C.trap),
+        "Trap: Spitter": ItemData(frozenset({G.Trap}), 1338915, C.trap),
+        "Trap: Alpha Spitter": ItemData(frozenset({G.Trap}), 1338916, C.trap),
+        "Trap: Nuclear Waste Drop": ItemData(frozenset({G.Trap}), 1338917, C.trap),
+        "Trap: Plutonium Waste Drop": ItemData(frozenset({G.Trap}), 1338918, C.trap),
+        "Trap: Elite Hatcher": ItemData(frozenset({G.Trap}), 1338919, C.trap),
+        "Trap: Can of Beans": ItemData(frozenset({G.Trap}), 1338920, C.trap),
+        "Trap: Fart Cloud": ItemData(frozenset({G.Trap}), 1338921, C.trap),
 
         #Item id range upper bound
         "Building: Space Elevator": ItemData(frozenset({G.Building}), 1338999, C.progression)
@@ -632,23 +702,32 @@ class Items:
     logic: GameLogic
     random: Random
     precalculated_progression_recipes: Optional[Dict[str, Recipe]]
+    precalculated_progression_recipes_names: Optional[Set[str]]
 
 
-    def __init__(self, player: Optional[int], logic: GameLogic, random: Random):
+    def __init__(self, player: Optional[int], logic: GameLogic, random: Random, options: SatisfactoryOptions):
         self.player = player
         self.logic = logic
         self.random = random
 
-        if False: # TODO major performance boost if we can get it stable
+        if options.experimental_generation: # TODO major performance boost if we can get it stable
             self.precalculated_progression_recipes = self.select_progression_recipes()
+            self.precalculated_progression_recipes_names = set(
+                recipe.name for recipe in self.precalculated_progression_recipes.values()
+            )
         else:
             self.precalculated_progression_recipes = None
+            self.precalculated_progression_recipes_names = None
 
 
     def select_recipe_for_part_that_does_not_depend_on_parent_recipes(self,
             part: str, parts_to_avoid: Dict[str, str]) -> Recipe:
         
         recipes: List[Recipe] = list(self.logic.recipes[part])
+
+        implicit_recipe = next(filter(lambda r: r.implicitly_unlocked, recipes), None)
+        if implicit_recipe:
+            return implicit_recipe
 
         while (len(recipes) > 0):
             recipe: Recipe = recipes.pop(self.random.randrange(len(recipes)))
@@ -682,11 +761,55 @@ class Items:
                     self.build_progression_recipe_tree(child_recipe.inputs, selected_recipes)
 
 
-    def select_progression_recipes(self) -> Dict[str, str]:
-        required_top_level_parts: Tuple[str, ...] = ("Versatile Framework", "Modular Engine", "Adaptive Control Unit")
+    def select_progression_recipes(self) -> Dict[str, Recipe]:
+        selected_recipes: Dict[str, Recipe] = {}
+
+        while not self.is_beatable(selected_recipes):
+            selected_recipes = self.select_random_progression_recipes()
+
+        return selected_recipes
+
+
+    def is_beatable(self, recipes: Dict[str, Recipe]) -> bool:
+        if not recipes:
+            return False
+
+        craftable_parts: Set[str] = set()
+        pending_recipes_by_part: Dict[str, Recipe] = copy.deepcopy(recipes)
+
+        for part, recipe_tuples in self.logic.recipes.items():
+            for recipe in recipe_tuples:
+                if recipe.implicitly_unlocked:
+                    craftable_parts.add(part)
+
+        while pending_recipes_by_part:
+            new_collected_parts: Set[str] = set()
+
+            for part, recipe in pending_recipes_by_part.items():
+                if all(input in craftable_parts for input in recipe.inputs):
+                    new_collected_parts.add(part)
+
+            if not new_collected_parts:
+                return False
+
+            craftable_parts = craftable_parts.union(new_collected_parts)
+
+            for part in new_collected_parts:
+                del pending_recipes_by_part[part]
+
+        return True
+
+
+    def select_random_progression_recipes(self) -> Dict[str, Recipe]:
         selected_recipes: Dict[str, str] = {}
 
-        self.build_progression_recipe_tree(required_top_level_parts, selected_recipes)
+        for part, recipes in self.logic.recipes.items():
+
+            implicit_recipe: Recipe = next(filter(lambda r: r.implicitly_unlocked, recipes), None)
+            if implicit_recipe:
+                continue
+
+            selected_recipes[part] = self.random.choice(recipes)
 
         return selected_recipes
 
@@ -694,12 +817,17 @@ class Items:
     @classmethod
     def create_item(cls, instance: Optional["Items"], name: str, player: int) -> Item:
         data: ItemData = cls.item_data[name]
+        type = data.type
 
-        if instance and instance.precalculated_progression_recipes and \
-                name not in instance.precalculated_progression_recipes:
-            return Item(name, C.useful, data.code, instance.player)
+        if type == C.progression and not name.startswith("Building: ") and \
+                instance and instance.precalculated_progression_recipes_names:
+            if name not in instance.precalculated_progression_recipes_names:
+                type = C.useful
+                logging.info(f"Downscaling .. {name}")
+            else:
+                logging.warn(f"Preserving .. {name}")
 
-        return Item(name, data.type, data.code, player)
+        return Item(name, type, data.code, player)
 
 
     def get_filler_item_name(self, random: Random, options: SatisfactoryOptions) -> str:
@@ -758,5 +886,5 @@ class Items:
                 f"{player_name}{part} -> {recipe.name}" 
                 for part, recipes_per_part in self.logic.recipes.items()
                 for recipe in recipes_per_part 
-                if recipe.name in self.precalculated_progression_recipes
+                if recipe.name in self.precalculated_progression_recipes_names
             ))

@@ -4102,7 +4102,9 @@ db $95, $a0, $9f, $a2, $a4, $50, $a4, $9f, $50, $a4, $98, $95, $50, $7c, $9f, $a
 db $a4, $50, $85, $9e, $94, $95, $a2, $a7, $9f, $a2, $9c, $94, $51, $59, $04, $dc
 db $00, $02, $1f, $02, $67, $10, $30, $01, $70, $58, $1c, $02, $04, $50, $9c, $95
 db $91, $a2, $9e, $95, $94, $50, $98, $9f, $a7, $50, $a4, $9f, $50, $a5, $a3, $95
-db $06, $d1, $03, $36, $ae, $ee, $ff, $1c, $12, $15, $51, $59, $1f, $71, $04, $02
+db $06, $d1, $03, $36, $ae, $ee, $ff, $1c, $12, $15, $51, $59
+db $0A
+dl PooNPCPSiFlag
 db $02, $1c, $12, $16, $51, $59, $1f, $71, $04, $03, $02, $1f, $00, $00, $7b, $10
 db $85, $00, $1f, $03, $70, $58, $1c, $02, $02, $50, $9a, $9f, $99, $9e, $95, $94
 db $50, $a9, $9f, $a5, $5e, $59, $04, $e1, $03, $1f, $11, $02, $02, $1f, $00, $00
@@ -8323,7 +8325,7 @@ db $00
 ORG $CFB8F5
 db $47
 
-ORG $D7FE70
+ORG $D7FEA0
 ExtraWindowData:
 dw $0005, $0009, $001A, $0004
 
@@ -9230,7 +9232,7 @@ db $08
 dd .CheckIfUseKeytoLocker
 db $1B, $02
 dd $C6FB5D
-db $06, $F8, $03
+db $06, $F4, $03
 dd $C7D9FD
 db $08
 dd .LockerItemAwaitsText
@@ -9245,7 +9247,7 @@ db $1D, $0E, $FF, $11
 db $08
 dd .LockerGetItemText
 db $03
-db $04, $F8, $03
+db $04, $F4, $03
 db $02
 
 .BottomRightLocker:
@@ -9344,6 +9346,11 @@ dd $C75E78
 db $1D, $01, $FF, $9E
 db $0A
 dl $C75E03
+
+PooNPCPSiFlag:
+db $04, $D1, $03
+db $1f, $71, $04, $02
+db $02
 
 
 ;FOR TESTING!!!!
@@ -10984,11 +10991,15 @@ db $0B, $05
 db $1B, $03
 dd .RemoteItem
 .CheckRemotePrice:
-db $1D, $14, $00, $00, $00, $00
+db $08
+dd $C5E254
 db $1B, $03
 dd .CantAffordSpecial
-db $0A
-dl .RegularPrice
+db $1B, $01
+db $1B, $04
+db $1B, $00
+db $1d, $19, $01
+db $02
 
 .NormalItem:
 ;Write a code here that checks if the item is in the banlist
@@ -11248,7 +11259,7 @@ db $0A
 dl .FinishGive
 .GivePoo:
 db $1B, $01
-db $1D, $0E, $03, $00
+db $1D, $0E, $04, $00
 db $0A
 dl .FinishGive
 .FinishGive:
