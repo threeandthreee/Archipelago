@@ -94,8 +94,8 @@ def ooa_has_small_keys(state: CollectionState, player: int, dungeon_id: int, amo
             or state.has(f"Master Key ({DUNGEON_NAMES[dungeon_id]})", player))
 
 def ooa_has_boss_key(state: CollectionState, player: int, dungeon_id: int):
-    # Specific case for D6, because of course D6 is mess.
-    if (dungeon_id == 6):
+    # Specific case for D6 Past, because of course D6 is mess.
+    if (dungeon_id == 9):
         return any([
             state.has("Boss Key (Mermaid's Cave)", player),
             all([
@@ -776,7 +776,7 @@ def ooa_can_meet_maple(state: CollectionState, player: int):
 # Self-locking items helper predicates ##########################################
 
 def ooa_self_locking_item(state: CollectionState, player: int, region_name: str, item_name: str):
-    if state.multiworld.worlds[player].options.accessibility == Accessibility.option_locations:
+    if state.multiworld.worlds[player].options.accessibility == Accessibility.alias_locations:
         return False
 
     region = state.multiworld.get_region(region_name, player)

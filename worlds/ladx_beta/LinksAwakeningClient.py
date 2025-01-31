@@ -75,6 +75,8 @@ class LAClientConstants:
     # Unused
     # ROMWorldID = 0x0055
     # ROMConnectorVersion = 0x0056
+    wInventoryAppearing = 0xC14F
+    wDialogState = 0xC19F
     wAddHealthBuffer = 0xDB93
     wSubtractHealthBuffer = 0xDB94
     # RO: We should only act if this is higher then 6, as it indicates that the game is running normally
@@ -141,7 +143,7 @@ class RAGameboy():
     def set_checks_range(self, checks_start, checks_size):
         self.checks_start = checks_start
         self.checks_size = checks_size
-    
+
     def set_location_range(self, location_start, location_size, critical_addresses):
         self.location_start = location_start
         self.location_size = location_size
@@ -239,7 +241,7 @@ class RAGameboy():
         self.cache[start:start + len(hram_block)] = hram_block
 
         self.last_cache_read = time.time()
-    
+
     async def read_memory_block(self, address: int, size: int):
         block = bytearray()
         remaining_size = size
@@ -247,7 +249,7 @@ class RAGameboy():
             chunk = await self.async_read_memory(address + len(block), remaining_size)
             remaining_size -= len(chunk)
             block += chunk
-        
+
         return block
 
     async def read_memory_cache(self, addresses):
@@ -350,6 +352,7 @@ class LinksAwakeningClient():
     auth = None
     game_crc = None
     deathlink_status = None
+    no_kill_room_id = None
     slot = None
     recvd_checks = {}
     retroarch_address = None
@@ -454,70 +457,12 @@ class LinksAwakeningClient():
     async def is_victory(self):
         return (await self.gameboy.read_memory_cache([LAClientConstants.wGameplayType]))[LAClientConstants.wGameplayType] == 1
 
-    def fix_trade_items(self):
-        """
-        If we kill the player after they give up a trade item but before they
-        complete the related check, they are locked out of the check. This
-        looks at items collected and compares against locations checked to
-        give unused trade items back to the player.
-        """
-        trade_items = (
-            { 'destination': '0x2A6-Trade', 'name': 'TRADING_ITEM_YOSHI_DOLL' },
-            { 'destination': '0x2B2-Trade', 'name': 'TRADING_ITEM_RIBBON' },
-            { 'destination': '0x2FE-Trade', 'name': 'TRADING_ITEM_DOG_FOOD' },
-            { 'destination': '0x07B-Trade', 'name': 'TRADING_ITEM_BANANAS' },
-            { 'destination': '0x087-Trade', 'name': 'TRADING_ITEM_STICK' },
-            { 'destination': '0x2D7-Trade', 'name': 'TRADING_ITEM_HONEYCOMB' },
-            { 'destination': '0x019-Trade', 'name': 'TRADING_ITEM_PINEAPPLE' },
-            { 'destination': '0x2D9-Trade', 'name': 'TRADING_ITEM_HIBISCUS' },
-            { 'destination': '0x2A8-Trade', 'name': 'TRADING_ITEM_LETTER' },
-            { 'destination': '0x0CD-Trade', 'name': 'TRADING_ITEM_BROOM' },
-            { 'destination': '0x2F5-Trade', 'name': 'TRADING_ITEM_FISHING_HOOK' },
-            { 'destination': '0x0C9-Trade', 'name': 'TRADING_ITEM_NECKLACE' },
-        )
-        trade1 = 0
-        trade2 = 0
-        for i, item in enumerate(trade_items):
-            item_id = [x.item_id for x in links_awakening_items if x.ladxr_id == item['name']][0] + Common.BASE_ID
-            item_has_been_received = [x for x in self.recvd_checks.values() if x.item == item_id]
-            if not item_has_been_received:
-                continue
-            destination_has_been_checked = [x for x in self.tracker.all_checks if x.value and x.id == item['destination']]
-            if destination_has_been_checked:
-                continue
-            if i <= 7: # trade item inventory is tracked by bits across 2 addresses
-                trade1 += 2**i
-            else:
-                trade2 += 2**(i-8)
-        self.gameboy.write_memory(LAClientConstants.wTradeSequenceItem, [trade1])
-        self.gameboy.write_memory(LAClientConstants.wTradeSequenceItem2, [trade2])
-
     async def main_tick(self, item_get_cb, win_cb, deathlink_cb):
         await self.gameboy.update_cache()
         await self.tracker.readChecks(item_get_cb)
         await self.item_tracker.readItems()
         await self.gps_tracker.read_location()
         await self.gps_tracker.read_entrances()
-
-        current_health = (await self.gameboy.read_memory_cache([LAClientConstants.wLinkHealth]))[LAClientConstants.wLinkHealth]
-        health_to_remove = (await self.gameboy.read_memory_cache([LAClientConstants.wSubtractHealthBuffer]))[LAClientConstants.wSubtractHealthBuffer]
-
-        if self.deathlink_status == 'pending':
-            self.gameboy.write_memory(LAClientConstants.wAddHealthBuffer, [0]) # Stop any health gain
-            self.gameboy.write_memory(LAClientConstants.wLinkHealth, [1]) #  Almost dead
-            self.gameboy.write_memory(LAClientConstants.wSubtractHealthBuffer, [1]) # Deal remaining damage this way to trigger medicine
-            self.deathlink_status = 'in_progress'
-        elif self.deathlink_status == 'in_progress':
-            if not current_health: # Died from deathlink
-                self.deathlink_status = 'complete'
-                self.fix_trade_items()
-            elif not health_to_remove: # Survived deathlink (medicine)
-                self.deathlink_status = None
-        elif not self.deathlink_status and not current_health: # Died naturally
-            await deathlink_cb()
-            self.deathlink_status = 'complete'
-        elif self.deathlink_status == 'complete' and current_health:
-            self.deathlink_status = None
 
         if await self.is_victory():
             await win_cb()
@@ -528,6 +473,34 @@ class LinksAwakeningClient():
         if recv_index in self.recvd_checks:
             item = self.recvd_checks[recv_index]
             await self.recved_item_from_ap(item.item, item.location, item.player, recv_index)
+
+        mem = await self.gameboy.read_memory_cache([
+            LAClientConstants.wLinkHealth,
+            LAClientConstants.wSubtractHealthBuffer,
+        ])
+
+        if self.deathlink_status == 'pending':
+            room_id = '0x' + hex(self.gps_tracker.room)[2:].zfill(3).upper()
+            checks = [x for x in self.tracker.remaining_checks
+                      if x.id.startswith(room_id) and not x.id.endswith('Owl')]
+            if checks:
+                self.no_kill_room_id = room_id
+            elif room_id != self.no_kill_room_id:
+                self.gameboy.write_memory(LAClientConstants.wAddHealthBuffer, [0]) # Stop any health gain
+                self.gameboy.write_memory(LAClientConstants.wLinkHealth, [1]) # Almost dead
+                self.gameboy.write_memory(LAClientConstants.wSubtractHealthBuffer, [1]) # Deal remaining damage this way to trigger medicine
+                self.deathlink_status = 'in_progress'
+                self.no_kill_room_id = None
+        elif self.deathlink_status == 'in_progress':
+            if not mem[LAClientConstants.wLinkHealth]: # Died from deathlink
+                self.deathlink_status = 'complete'
+            elif not mem[LAClientConstants.wSubtractHealthBuffer]: # Survived deathlink (medicine)
+                self.deathlink_status = None
+        elif not self.deathlink_status and not mem[LAClientConstants.wLinkHealth]: # Died naturally
+            await deathlink_cb()
+            self.deathlink_status = 'complete'
+        elif self.deathlink_status == 'complete' and mem[LAClientConstants.wLinkHealth]:
+            self.deathlink_status = None
 
 
 all_tasks = set()
@@ -552,6 +525,11 @@ class LinksAwakeningCommandProcessor(ClientCommandProcessor):
         """Toggles deathlink."""
         if isinstance(self.ctx, LinksAwakeningContext):
             Utils.async_start(self.ctx.update_death_link("DeathLink" not in self.ctx.tags))
+
+    def _cmd_die(self):
+        """Die."""
+        if isinstance(self.ctx, LinksAwakeningContext):
+            self.ctx.client.deathlink_status = 'pending'
 
 class LinksAwakeningContext(CommonContext):
     tags = {"AP"}
@@ -618,7 +596,7 @@ class LinksAwakeningContext(CommonContext):
     async def send_checks(self):
         message = [{"cmd": "LocationChecks", "locations": self.found_checks}]
         await self.send_msgs(message)
-    
+
     async def send_new_entrances(self, entrances: typing.Dict[str, str]):
         # Store the entrances we find on the server for future sessions
         message = [{
@@ -660,7 +638,7 @@ class LinksAwakeningContext(CommonContext):
             logger.info("victory!")
             await self.send_msgs(message)
             self.won = True
-    
+
     async def request_found_entrances(self):
         await self.send_msgs([{"cmd": "Get", "keys": [self.slot_storage_key]}])
 
@@ -706,6 +684,7 @@ class LinksAwakeningContext(CommonContext):
                 "server_address": self.server_address,
                 "slot_name": self.player_names[self.slot],
                 "password": self.password,
+                "client_version": Common.VERSION,
             })
             if self.slot_data.get("death_link"):
                 Utils.async_start(self.update_death_link(True))
@@ -714,7 +693,7 @@ class LinksAwakeningContext(CommonContext):
         if cmd == "ReceivedItems":
             for index, item in enumerate(args["items"], start=args["index"]):
                 self.client.recvd_checks[index] = item
-        
+
         if cmd == "Retrieved" and self.magpie_enabled and self.slot_storage_key in args["keys"]:
             self.client.gps_tracker.receive_found_entrances(args["keys"][self.slot_storage_key])
 
@@ -794,7 +773,7 @@ class LinksAwakeningContext(CommonContext):
                             self.magpie.set_checks(self.client.tracker.all_checks)
                             await self.magpie.set_item_tracker(self.client.item_tracker)
                             self.magpie.slot_data = self.slot_data
-                            
+
                             if self.client.gps_tracker.needs_found_entrances:
                                 await self.request_found_entrances()
                                 self.client.gps_tracker.needs_found_entrances = False

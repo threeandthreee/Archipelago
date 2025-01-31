@@ -165,6 +165,14 @@ class OracleOfAgesEnableTokkeyDanceAndKidJoke(Toggle):
     """
     display_name = "Enable Tokkey Dance and Kid Joke"
 
+
+class OracleOfAgesQolMermaidSuit(Toggle):
+    """
+    Defines if you don't want to spam the buttons to swim with the mermaid suit.
+    """
+    display_name = "Enable Mermaid Suit's QOL"
+    default = True
+
 class OracleOfAgesPricesFactor(Range):
     """
     A factor (expressed as percentage) that will be applied to all prices inside all shops in the game.
@@ -277,6 +285,7 @@ class OracleOfAgesOptions(PerGameCommonOptions):
     start_inventory_from_pool: StartInventoryPool
     goal: OracleOfAgesGoal
     enable_dance_and_joke: OracleOfAgesEnableTokkeyDanceAndKidJoke
+    qol_mermaid_suit: OracleOfAgesQolMermaidSuit
     logic_difficulty: OracleOfAgesLogicDifficulty
     required_essences: OracleOfAgesRequiredEssences
     required_slates: OracleOfAgesRequiredSlates

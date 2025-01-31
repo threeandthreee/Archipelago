@@ -21,6 +21,7 @@ from settings import Settings, get_settings
 from time import sleep
 from typing import BinaryIO, Coroutine, Optional, Set, Dict, Any, Union, TypeGuard
 from yaml import load, load_all, dump
+from enum import IntEnum
 
 try:
     from yaml import CLoader as UnsafeLoader, CSafeLoader as SafeLoader, CDumper as Dumper
@@ -430,13 +431,18 @@ class RestrictedUnpickler(pickle.Unpickler):
                 self.generic_properties_module = importlib.import_module("worlds.generic")
             return getattr(self.generic_properties_module, name)
         # pep 8 specifies that modules should have "all-lowercase names" (options, not Options)
-        if module.lower().endswith("options"):
+        if (module.lower().endswith("options")
+                # Ashipelago customization
+                or "games" in module.lower()):
             if module == "Options":
                 mod = self.options_module
             else:
                 mod = importlib.import_module(module)
             obj = getattr(mod, name)
             if issubclass(obj, (self.options_module.Option, self.options_module.PlandoConnection)):
+                return obj
+            # Ashipelago customization
+            if issubclass(obj, IntEnum):
                 return obj
         # Forbid everything else.
         raise pickle.UnpicklingError(f"global '{module}.{name}' is forbidden")

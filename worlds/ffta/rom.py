@@ -491,6 +491,9 @@ def generate_output(world, player: int, output_directory: str, player_names) -> 
     # Make Llednar not invincible
     patch.write_token(APTokenTypes.WRITE, 0x130870, struct.pack("<i", 0x00200000))
 
+    # Remove Marche's combo ability
+    patch.write_token(APTokenTypes.WRITE, 0x0CA066, bytes([0x00]))
+
     # Randomize locations on map
     for i in range(0, len(world.location_ids)):
         patch.write_token(APTokenTypes.WRITE, 0xb390dc + i, bytes([world.location_ids[i]]))

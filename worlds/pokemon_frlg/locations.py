@@ -1,10 +1,9 @@
 import copy
-import stat
 from typing import TYPE_CHECKING, Dict, FrozenSet, Iterable, List, Optional, Union
 from BaseClasses import CollectionState, Location, Region, ItemClassification
 from .data import data, BASE_OFFSET
 from .items import get_random_item, offset_item_value, reverse_offset_item_value, PokemonFRLGItem
-from .options import FreeFlyLocation, PewterCityRoadblock, TownMapFlyLocation, ViridianCityRoadblock
+from .options import FreeFlyLocation, TownMapFlyLocation, ViridianCityRoadblock
 
 if TYPE_CHECKING:
     from . import PokemonFRLGWorld
@@ -21,21 +20,21 @@ LOCATION_GROUPS = {
         "Viridian Gym - Prize"
     },
     "Gym TMs": {
-        "Pewter Gym - Brock's TM",
-        "Cerulean Gym - Misty's TM",
-        "Vermilion Gym - Lt. Surge's TM",
-        "Celadon Gym - Erika's TM",
-        "Fuchsia Gym - Koga's TM",
-        "Saffron Gym - Sabrina's TM",
-        "Cinnabar Gym - Blaine's TM",
-        "Viridian Gym - Giovanni's TM"
+        "Pewter Gym - Brock TM",
+        "Cerulean Gym - Misty TM",
+        "Vermilion Gym - Lt. Surge TM",
+        "Celadon Gym - Erika TM",
+        "Fuchsia Gym - Koga TM",
+        "Saffron Gym - Sabrina TM",
+        "Cinnabar Gym - Blaine TM",
+        "Viridian Gym - Giovanni TM"
     },
     "Oak's Aides": {
-        "Route 2 Gate - Oak's Aide's Gift",
-        "Route 10 Pokemon Center 1F - Oak's Aide's Gift",
-        "Route 11 Gate 2F - Oak's Aide's Gift",
-        "Route 16 Gate 2F - Oak's Aide's Gift",
-        "Route 15 Gate 2F - Oak's Aide's Gift"
+        "Route 2 Gate - Oak's Aide Gift (Pokedex Progress)",
+        "Route 10 Pokemon Center 1F - Oak's Aide Gift (Pokedex Progress)",
+        "Route 11 Gate 2F - Oak's Aide Gift (Pokedex Progress)",
+        "Route 16 Gate 2F - Oak's Aide Gift (Pokedex Progress)",
+        "Route 15 Gate 2F - Oak's Aide Gift (Pokedex Progress)"
     }
 }
 
@@ -64,6 +63,7 @@ FLY_ITEM_ID_MAP = {
 }
 
 sevii_required_locations = [
+    "One Cinnabar Pokemon Center 1F - Bill",
     "Lorelei's Room - Elite Four Lorelei Rematch Reward",
     "Bruno's Room - Elite Four Bruno Rematch Reward",
     "Agatha's Room - Elite Four Agatha Rematch Reward",
@@ -101,6 +101,7 @@ class PokemonFRLGLocation(Location):
     default_item_id: Optional[int]
     tags: FrozenSet[str]
     data_ids: Optional[List[str]]
+    spoiler_name: str
 
     def __init__(
             self,
@@ -111,13 +112,14 @@ class PokemonFRLGLocation(Location):
             item_address: Optional[Dict[str, Union[int, List[int]]]] = None,
             default_item_id: Optional[int] = None,
             tags: FrozenSet[str] = frozenset(),
-            data_ids: Optional[List[str]] = None) -> None:
+            data_ids: Optional[List[str]] = None,
+            spoiler_name: Optional[str] = None) -> None:
         super().__init__(player, name, address, parent)
         self.default_item_id = None if default_item_id is None else offset_item_value(default_item_id)
         self.item_address = item_address
         self.tags = tags
         self.data_ids = data_ids
-
+        self.spoiler_name = spoiler_name if spoiler_name is not None else name
 
 def offset_flag(flag: int) -> int:
     if flag is None:

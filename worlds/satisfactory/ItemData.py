@@ -30,6 +30,7 @@ class ItemGroups(str, Enum):
     Upgrades = 25
     Vehicles = 26
     Customizer = 27
+    ConveyorMk6 = 28
 
 class ItemData(NamedTuple):
     """Represents an item in the pool, it could be a resource bundle, production recipe, trap, etc."""

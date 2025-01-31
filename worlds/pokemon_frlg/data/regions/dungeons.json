@@ -2106,9 +2106,7 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [
-      "NPC_GIFT_GOT_2F_CARD_KEY"
-    ],
+    "locations": [],
     "events": [],
     "exits": {
       "REGION_SILPH_CO_ELEVATOR/MAIN": "Silph Co. 1F Elevator"
@@ -2129,7 +2127,8 @@
     "locations": [
       "TRAINER_TEAM_ROCKET_GRUNT_24_REWARD",
       "TRAINER_TEAM_ROCKET_GRUNT_23_REWARD",
-      "TRAINER_SCIENTIST_JERRY_REWARD"
+      "TRAINER_SCIENTIST_JERRY_REWARD",
+      "ITEM_SILPH_CO_2F_CARD_KEY_2F"
     ],
     "events": [],
     "exits": {
@@ -2191,7 +2190,7 @@
     "kanto": true,
     "locations": [
       "TRAINER_TEAM_ROCKET_GRUNT_25_REWARD",
-      "NPC_GIFT_GOT_3F_CARD_KEY",
+      "ITEM_SILPH_CO_3F_CARD_KEY_5F",
       "HIDDEN_ITEM_SILPH_CO_3F_PROTEIN"
     ],
     "events": [],
@@ -2283,6 +2282,7 @@
     "has_fishing": false,
     "kanto": true,
     "locations": [
+      "ITEM_SILPH_CO_4F_CARD_KEY_4F",
       "TRAINER_SCIENTIST_RODNEY_REWARD"
     ],
     "events": [],
@@ -2305,8 +2305,7 @@
     "locations": [
       "ITEM_SILPH_CO_4F_FULL_HEAL",
       "ITEM_SILPH_CO_4F_ESCAPE_ROPE",
-      "ITEM_SILPH_CO_4F_MAX_REVIVE",
-      "NPC_GIFT_GOT_4F_CARD_KEY"
+      "ITEM_SILPH_CO_4F_MAX_REVIVE"
     ],
     "events": [],
     "exits": {},
@@ -2352,7 +2351,6 @@
     "has_fishing": false,
     "kanto": true,
     "locations": [
-      "NPC_GIFT_GOT_5F_CARD_KEY",
       "HIDDEN_ITEM_SILPH_CO_5F_ELIXIR"
     ],
     "events": [],
@@ -2404,7 +2402,7 @@
     "kanto": true,
     "locations": [
       "TRAINER_TEAM_ROCKET_GRUNT_30_REWARD",
-      "NPC_GIFT_GOT_6F_CARD_KEY",
+      "ITEM_SILPH_CO_6F_CARD_KEY_6F",
       "HIDDEN_ITEM_SILPH_CO_6F_CARBOS",
       "TRAINER_SCIENTIST_TAYLOR_REWARD",
       "TRAINER_TEAM_ROCKET_GRUNT_31_REWARD"
@@ -2508,9 +2506,7 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [
-      "NPC_GIFT_GOT_7F_CARD_KEY"
-    ],
+    "locations": [],
     "events": [],
     "exits": {},
     "warps": {}
@@ -2524,7 +2520,8 @@
     "has_fishing": false,
     "kanto": true,
     "locations": [
-      "TRAINER_RIVAL_SILPH_BULBASAUR_REWARD"
+      "TRAINER_RIVAL_SILPH_BULBASAUR_REWARD",
+      "ITEM_SILPH_CO_7F_CARD_KEY_7F"
     ],
     "events": [
       "GIFT_POKEMON_LAPRAS"
@@ -2573,7 +2570,7 @@
     "has_fishing": false,
     "kanto": true,
     "locations": [
-      "NPC_GIFT_GOT_8F_CARD_KEY"
+      "ITEM_SILPH_CO_8F_CARD_KEY_8F"
     ],
     "events": [],
     "exits": {
@@ -2616,7 +2613,6 @@
     "kanto": true,
     "locations": [
       "HIDDEN_ITEM_SILPH_CO_9F_MAX_POTION",
-      "NPC_GIFT_GOT_9F_CARD_KEY",
       "HIDDEN_ITEM_SILPH_CO_9F_CALCIUM"
     ],
     "events": [],
@@ -2635,7 +2631,8 @@
     "has_fishing": false,
     "kanto": true,
     "locations": [
-      "TRAINER_TEAM_ROCKET_GRUNT_37_REWARD"
+      "TRAINER_TEAM_ROCKET_GRUNT_37_REWARD",
+      "ITEM_SILPH_CO_9F_CARD_KEY_9F"
     ],
     "events": [],
     "exits": {
@@ -2681,7 +2678,7 @@
     "has_fishing": false,
     "kanto": true,
     "locations": [
-      "NPC_GIFT_GOT_10F_CARD_KEY"
+      "ITEM_SILPH_CO_10F_CARD_KEY_10F"
     ],
     "events": [],
     "exits": {
@@ -2722,7 +2719,8 @@
     "kanto": true,
     "locations": [
       "TRAINER_TEAM_ROCKET_GRUNT_41_REWARD",
-      "HIDDEN_ITEM_SILPH_CO_11F_REVIVE"
+      "HIDDEN_ITEM_SILPH_CO_11F_REVIVE",
+      "ITEM_SILPH_CO_11F_CARD_KEY_11F"
     ],
     "events": [],
     "exits": {
@@ -3816,28 +3814,13 @@
     "has_fishing": false,
     "kanto": false,
     "locations": [],
-    "events": [],
-    "exits": {
-      "REGION_MT_EMBER_SUMMIT/NEAR_MOLTRES": "Mt. Ember Summit Strength Boulders"
-    },
-    "warps": {
-      "MAP_MT_EMBER_SUMMIT:0/MAP_MT_EMBER_EXTERIOR:4": "Mt. Ember Summit Exit"
-    }
-  },
-  "REGION_MT_EMBER_SUMMIT/NEAR_MOLTRES": {
-    "parent_map": "MAP_MT_EMBER_SUMMIT",
-    "name": "Mt. Ember Summit Near Moltres",
-    "encounter_region": null,
-    "has_land": false,
-    "has_water": false,
-    "has_fishing": false,
-    "kanto": false,
-    "locations": [],
     "events": [
       "LEGENDARY_POKEMON_MOLTRES"
     ],
     "exits": {},
-    "warps": {}
+    "warps": {
+      "MAP_MT_EMBER_SUMMIT:0/MAP_MT_EMBER_EXTERIOR:4": "Mt. Ember Summit Exit"
+    }
   },
   "REGION_MT_EMBER_RUBY_PATH_1F/MAIN": {
     "parent_map": "MAP_MT_EMBER_RUBY_PATH_1F",
@@ -4329,7 +4312,8 @@
     "has_fishing": true,
     "kanto": false,
     "locations": [
-      "TRAINER_TEAM_ROCKET_GRUNT_45_REWARD"
+      "TRAINER_TEAM_ROCKET_GRUNT_45_REWARD",
+      "NPC_GIFT_GOT_SIX_PASS"
     ],
     "events": [
       "EVENT_HELP_LORELEI"
@@ -4684,7 +4668,9 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": false,
-    "locations": [],
+    "locations": [
+      "NPC_GIFT_GOT_FIVE_PASS"
+    ],
     "events": [],
     "exits": {
       "REGION_SIX_ISLAND_DOTTED_HOLE_1F/MAIN": "Dotted Hole 1F East Ledge Drop"
@@ -4841,7 +4827,7 @@
     "kanto": false,
     "locations": [],
     "events": [
-      "EVENT_SPAWN_UNOWN"
+      "EVENT_UNLOCK_RUINS"
     ],
     "exits": {},
     "warps": {

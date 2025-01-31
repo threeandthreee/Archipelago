@@ -218,7 +218,6 @@ class OracleOfAgesClient(BizHawkClient):
             }])
 
     async def process_deathlink(self, ctx: "BizHawkClientContext", is_dead):
-        return
         if ctx.last_death_link > self.last_deathlink and not is_dead:
             # A death was received from another player, make our player die as well
             await bizhawk.write(ctx.bizhawk_ctx, [(RAM_ADDRS["received_item"][0], [0xFF], "System Bus")])

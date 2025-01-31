@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from Options import Choice, DeathLink, DefaultOnToggle, PerGameCommonOptions, Range, Toggle, StartInventoryPool, \
-    ItemDict
+    ItemDict, ItemsAccessibility
 
 
 class OracleOfSeasonsGoal(Choice):
@@ -40,6 +40,19 @@ class OracleOfSeasonsRequiredEssences(Range):
     to fight Onox in his castle
     """
     display_name = "Required Essences"
+    range_start = 0
+    range_end = 8
+    default = 8
+
+
+class OracleOfSeasonsPlacedEssences(Range):
+    """
+    The amount of essences that will be placed in the world. Removed essences are replaced by filler items instead, and
+    if essences are not shuffled, those filler items will be placed on the pedestal where the essence would have been.
+    If the value for "Placed Essences" is lower than "Required Essences" (which can happen when using random values
+    for both), a new random value is automatically picked in the valid range.
+    """
+    display_name = "Placed Essences"
     range_start = 0
     range_end = 8
     default = 8
@@ -179,6 +192,16 @@ class OracleOfSeasonsOldMenShuffle(Choice):
     default = 3
 
 
+class OracleOfSeasonsBusinessScrubsShuffle(Toggle):
+    """
+    This option adds the 4 accessible business scrubs (Spool Swamp, Samasa Desert, D2, D4) to the pool of randomized
+    locations. Just like any other shop, they ask for rupees in exchange of the randomized item,
+    which can only be purchased once.
+    Please note that scrubs inside dungeons can hold dungeon items, such as keys.
+    """
+    display_name = "Shuffle Business Scrubs"
+
+
 class OracleOfSeasonsGoldenOreSpotsShuffle(Toggle):
     """
     This option adds the 7 hidden digging spots in Subrosia (containing 50 Ore Chunks each) to the pool
@@ -193,6 +216,16 @@ class OracleOfSeasonsEssenceSanity(Toggle):
     at the end their respective dungeons.
     """
     display_name = "Shuffle Essences"
+
+
+class OracleOfSeasonsExcludeDungeonsWithoutEssence(DefaultOnToggle):
+    """
+    If enabled, all dungeons whose essence has been removed because of the "Placed Essences" option will be excluded,
+    which means you can safely ignore them since they cannot contain an item that is required to complete the seed.
+    If "Shuffle Essences" is enabled, this option has no effect.
+    Hero's Cave is not considered to be a dungeon for this option, and therefore is never excluded.
+    """
+    display_name = "Exclude Dungeons Without Essence"
 
 
 class OracleOfSeasonsMasterKeys(Choice):
@@ -363,17 +396,26 @@ class OracleOfSeasonsRingQuality(DefaultOnToggle):
     display_name = "Remove Useless Rings"
 
 
-class OracleOfSeasonsPricesFactor(Range):
+class OracleOfSeasonsShopPrices(Choice):
     """
-    A factor (expressed as percentage) that will be applied to all prices inside all shops in the game.
-    - Setting it at 10% will make all items almost free
-    - Setting it at 500% will make all items horrendously expensive, use at your own risk!
+    Determine the cost of items found in shops of all sorts (including Subrosian Market and Business Scrubs):
+    - Vanilla: shop items have the same cost as in the base game
+    - Free: all shop items can be obtained for free
+    - Cheap: shop prices are randomized with an average cost of 50 Rupees
+    - Reasonable: shop prices are randomized with an average cost of 100 Rupees
+    - Expensive: shop prices are randomized with an average cost of 200 Rupees
+    - Outrageous: shop prices are randomized with an average cost of 350 Rupees
     """
-    display_name = "Prices Factor (%)"
+    display_name = "Shop Prices"
 
-    range_start = 10
-    range_end = 500
-    default = 100
+    option_vanilla = 0
+    option_free = 1
+    option_cheap = 2
+    option_reasonable = 3
+    option_expensive = 4
+    option_outrageous = 5
+
+    default = 0
 
 
 class OracleOfSeasonsAdvanceShop(Toggle):
@@ -465,43 +507,64 @@ class OracleOfSeasonsRemoveItemsFromPool(ItemDict):
 
 @dataclass
 class OracleOfSeasonsOptions(PerGameCommonOptions):
+    accessibility: ItemsAccessibility
     start_inventory_from_pool: StartInventoryPool
     goal: OracleOfSeasonsGoal
     logic_difficulty: OracleOfSeasonsLogicDifficulty
+
+    # Essences
     required_essences: OracleOfSeasonsRequiredEssences
+    placed_essences: OracleOfSeasonsPlacedEssences
+    shuffle_essences: OracleOfSeasonsEssenceSanity
+    exclude_dungeons_without_essence: OracleOfSeasonsExcludeDungeonsWithoutEssence
+
+    # Seasons
     default_seasons: OracleOfSeasonsDefaultSeasons
     normalize_horon_village_season: OracleOfSeasonsHoronSeason
+
+    # Overworld layout options
     animal_companion: OracleOfSeasonsAnimalCompanion
-    default_seed: OracleOfSeasonsDefaultSeedType
-    duplicate_seed_tree: OracleOfSeasonsDuplicateSeedTree
+    shuffle_portals: OracleOfSeasonsPortalShuffle
     shuffle_dungeons: OracleOfSeasonsDungeonShuffle
     remove_d0_alt_entrance: OracleOfSeasonsD0AltEntrance
     remove_d2_alt_entrance: OracleOfSeasonsD2AltEntrance
-    shuffle_portals: OracleOfSeasonsPortalShuffle
+    default_seed: OracleOfSeasonsDefaultSeedType
+    duplicate_seed_tree: OracleOfSeasonsDuplicateSeedTree
+
+    # Optional locations
     shuffle_old_men: OracleOfSeasonsOldMenShuffle
+    shuffle_business_scrubs: OracleOfSeasonsBusinessScrubsShuffle
     shuffle_golden_ore_spots: OracleOfSeasonsGoldenOreSpotsShuffle
-    shuffle_essences: OracleOfSeasonsEssenceSanity
+    deterministic_gasha_locations: OracleOfSeasonsGashaLocations
+    advance_shop: OracleOfSeasonsAdvanceShop
+
+    # Dungeon items
     master_keys: OracleOfSeasonsMasterKeys
     keysanity_small_keys: OracleOfSeasonsSmallKeyShuffle
     keysanity_boss_keys: OracleOfSeasonsBossKeyShuffle
     keysanity_maps_compasses: OracleOfSeasonsMapCompassShuffle
+
+    # Numeric requirements for some checks / access to regions
     treehouse_old_man_requirement: OraclesOfSeasonsTreehouseOldManRequirement
     tarm_gate_required_jewels: OraclesOfSeasonsTarmGateRequirement
     golden_beasts_requirement: OraclesOfSeasonsGoldenBeastsRequirement
     sign_guy_requirement: OracleOfSeasonsSignGuyRequirement
+
+    # Other randomizable stuff
     randomize_lost_woods_item_sequence: OracleOfSeasonsLostWoodsItemSequence
     randomize_lost_woods_main_sequence: OracleOfSeasonsLostWoodsMainSequence
     randomize_samasa_gate_code: OracleOfSeasonsSamasaGateCode
     samasa_gate_code_length: OracleOfSeasonsSamasaGateCodeLength
-    deterministic_gasha_locations: OracleOfSeasonsGashaLocations
+
+    # Miscellaneous options
+    shop_prices: OracleOfSeasonsShopPrices
+    enforce_potion_in_shop: OracleOfSeasonsEnforcePotionInShop
     remove_useless_rings: OracleOfSeasonsRingQuality
-    shop_prices_factor: OracleOfSeasonsPricesFactor
-    advance_shop: OracleOfSeasonsAdvanceShop
     fools_ore: OracleOfSeasonsFoolsOre
     warp_to_start: OracleOfSeasonsWarpToStart
-    enforce_potion_in_shop: OracleOfSeasonsEnforcePotionInShop
     combat_difficulty: OracleOfSeasonsCombatDifficulty
     quick_flute: OracleOfSeasonsQuickFlute
     starting_maps_compasses: OracleOfSeasonsStartingMapsCompasses
+
     remove_items_from_pool: OracleOfSeasonsRemoveItemsFromPool
     death_link: DeathLink

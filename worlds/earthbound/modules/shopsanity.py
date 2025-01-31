@@ -381,19 +381,19 @@ def write_shop_checks(world, rom, shop_checks):
             rom.write_bytes(0x019DA0, struct.pack("I", 0xF00ADA5C)) # Preserve the greyed out HP/PP palette
 
             rom.write_bytes(0x05E0A9, struct.pack("I", 0xF4900008))  # Compare the price of the item with money on hand
-            rom.write_bytes(0x05E0B6, struct.pack("I", 0xF4905308))  # Display the item we bought and ask to confirm
+            rom.write_bytes(0x05E0B6, struct.pack("I", 0xF4905808))  # Display the item we bought and ask to confirm
             # The player bought the item; set a flag and give it to them
-            rom.write_bytes(0x05E0CE, struct.pack("I", 0xF492B20A))
-            rom.write_bytes(0x05E0C8, struct.pack("I", 0xF492B2))
-            rom.write_bytes(0x05DF1E, struct.pack("I", 0xF494760A))
+            rom.write_bytes(0x05E0CE, struct.pack("I", 0xF492B70A))
+            rom.write_bytes(0x05E0C8, struct.pack("I", 0xF492B7))
+            rom.write_bytes(0x05DF1E, struct.pack("I", 0xF4947B0A))
             # Prevent the game from checking inventory space if not needed
-            rom.write_bytes(0x05E029, struct.pack("I", 0xF494960A))
-            rom.write_bytes(0x05E04C, struct.pack("I", 0xF494BB0A))
-            rom.write_bytes(0x05E1AE, struct.pack("I", 0xF4948F))  # Post-shop cleanup
+            rom.write_bytes(0x05E029, struct.pack("I", 0xF4949B0A))
+            rom.write_bytes(0x05E04C, struct.pack("I", 0xF494C00A))
+            rom.write_bytes(0x05E1AE, struct.pack("I", 0xF49494))  # Post-shop cleanup
 
-            rom.write_bytes(0x050A6A, struct.pack("I", 0xF494AF0A))
-            rom.write_bytes(0x050B4C, struct.pack("I", 0xF494B30A))
-            rom.write_bytes(0x050C2E, struct.pack("I", 0xF494B70A))
+            rom.write_bytes(0x050A6A, struct.pack("I", 0xF494B40A))
+            rom.write_bytes(0x050B4C, struct.pack("I", 0xF494B80A))
+            rom.write_bytes(0x050C2E, struct.pack("I", 0xF494BC0A))
 
             rom.write_bytes(0x3407E0, bytearray([item_id_table[world.filler_shop[0]], 0x00, 0x00, 0x00, 0x49, 0x01]))
             rom.write_bytes(0x3407E6, bytearray([item_id_table[world.filler_shop[1]], 0x00, 0x00, 0x00, 0x4A, 0x01]))
@@ -415,3 +415,4 @@ def write_shop_checks(world, rom, shop_checks):
                     rom.write_bytes(0x157775, bytearray([0x8C]))
                     rom.write_bytes(0x157778, bytearray([0x6C]))
                     rom.write_bytes(0x157781, bytearray([0x5D]))
+                    rom.write_bytes(0x157848, bytearray([0x7F])) #DD Drugstore left counter 1

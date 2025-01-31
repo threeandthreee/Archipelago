@@ -77,37 +77,38 @@ def set_rules(world) -> None:
     gate_items = [(MissionUnlockItems[i].itemName,
                    MissionUnlockItems[i+1].itemName) for i in range(0, len(MissionUnlockItems), 2)]
 
+    gates = world.multiworld.get_regions(world.player)
+    dispatch_gates = [x.name for x in gates if x.name.startswith("Dispatch")][1:]
+    gates = [x.name for x in gates if x.name.startswith("Gate")][1:]
+
     if world.options.progressive_gates.value == 1:
         sphere = 0
-        for i in range(0, num_gates):
+        for i, gate in enumerate(gates):
             path = i % world.options.gate_paths.value
             if path == 0:
                 sphere += 1
             if world.options.gate_items.value == 1:
-                add_rule(world.multiworld.get_entrance(f"Gate {i+2}", world.player),
+                add_rule(world.multiworld.get_entrance(gate, world.player),
                          rule_generator_progressive(world, f"Progressive Path {path+1}", sphere * 2))
             else:
-                add_rule(world.multiworld.get_entrance(f"Gate {i+2}", world.player),
+                add_rule(world.multiworld.get_entrance(gate, world.player),
                          rule_generator_progressive(world, f"Progressive Path {path+1}", sphere))
 
-            if world.options.gate_items.value == 2 and i < num_gates - (world.options.gate_paths.value - 1) \
-                    and world.options.dispatch.value > 0:
-                add_rule(world.multiworld.get_entrance(f"Dispatch Gate {i+2}", world.player),
-                         rule_generator_progressive(world, "Progressive Dispatch", (i+1)))
-
+        for i, dispatch_gate in enumerate(dispatch_gates):
+            add_rule(world.multiworld.get_entrance(dispatch_gate, world.player),
+                     rule_generator_progressive(world, "Progressive Dispatch", (i+1)))
     else:
-        for i in range(0, num_gates):
+        for i, gate in enumerate(gates):
             item1 = gate_items[i][0]
             item2 = gate_items[i][1]
 
-            add_rule(world.multiworld.get_entrance(f"Gate {i+2}", world.player),
+            add_rule(world.multiworld.get_entrance(gate, world.player),
                      rule_generator(world, item1))
 
             if world.options.gate_items.value == 1:
-                add_rule(world.multiworld.get_entrance(f"Gate {i+2}", world.player),
+                add_rule(world.multiworld.get_entrance(gate, world.player),
                          rule_generator(world, item2))
 
-            elif world.options.gate_items.value == 2 and i < num_gates - (world.options.gate_paths.value - 1)\
-                    and world.options.dispatch.value > 0:
-                add_rule(world.multiworld.get_entrance(f"Dispatch Gate {i+2}", world.player),
-                         rule_generator(world, item2))
+        for i, dispatch_gate in enumerate(dispatch_gates):
+            add_rule(world.multiworld.get_entrance(dispatch_gate, world.player),
+                     rule_generator(world, item2))

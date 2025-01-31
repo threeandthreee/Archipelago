@@ -92,6 +92,7 @@ DEFINES = {
     "TREASURE_ROD_OF_SEASONS":"$07",
     "TREASURE_MAGNET_GLOVES":"$08",
     "TREASURE_SWITCH_HOOK":"$0a",
+    "TREASURE_BIGGORON_SWORD":"$0c",
     "TREASURE_FLUTE":"$0e",
     "TREASURE_SHOOTER":"$0f",
     "TREASURE_HARP":"$11",
@@ -315,6 +316,7 @@ DEFINES = {
     "wRoomLayout":"$cf00",
     "wLinkObjectIndex":"$cc2c",
     "wMenuLoadState":"$cbcc",
+    "wLinkDeathTrigger": "$cdd5",
 
     # rom 00
     "getRandomNumber":"$043e",
@@ -385,6 +387,7 @@ DEFINES = {
     "GLOBALFLAG_REPAIRED_SWORD":"$2d",
     "GLOBALFLAG_VERAN_BEATEN":"$47",
     "GLOBALFLAG_GOT_TUNINUT_FROM_BROTHER":"$48",
+    "GLOBALFLAG_WON_LYNNA_SHOOTING_GALLERY":"$49",
 }
 
 ASM_FILES = [
@@ -406,7 +409,6 @@ ASM_FILES = [
     "asm/timeportals.yaml",
     "asm/boss_items.yaml",
     "asm/keysanity.yaml",
-    "asm/warp_to_start.yaml",
     "asm/shops_handling.yaml",
     "asm/gfx.yaml",
     "asm/get_item_behavior.yaml",
@@ -414,6 +416,7 @@ ASM_FILES = [
     "asm/text.yaml",
     "asm/remove_item_on_use.yaml",
     "asm/dungeon_shuffle.yaml",
+    "asm/file_select_custom_string.yaml",
 ]
 
 RUPEE_VALUES = {

@@ -432,6 +432,7 @@ class OracleOfAgesWorld(World):
         return
 
     def write_spoiler(self, spoiler_handle):
+        spoiler_handle.write(f"Apworld version : {VERSION}")
         if self.options.shuffle_dungeons != "vanilla":
             spoiler_handle.write(f"\nDungeon Entrances ({self.multiworld.player_name[self.player]}):\n")
             for entrance, dungeon in self.dungeon_entrances.items():

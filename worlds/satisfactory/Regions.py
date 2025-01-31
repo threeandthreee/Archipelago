@@ -1,5 +1,5 @@
 from typing import List, Set, Dict, Tuple, Optional, Callable
-from BaseClasses import MultiWorld, Region, Entrance, Location, CollectionState
+from BaseClasses import MultiWorld, Region, Location, Item, CollectionState
 from .Locations import LocationData
 from .GameLogic import GameLogic, PowerInfrastructureLevel
 from .StateLogic import StateLogic
@@ -21,9 +21,16 @@ class SatisfactoryLocation(Location):
         if (data.rule):
             self.access_rule = data.rule
 
+        if (data.non_progression):
+            self.item_rule = self.non_progression_only
+
+    @staticmethod
+    def non_progression_only(item: Item) -> bool:
+        return not item.advancement
+
 
 def create_regions_and_return_locations(world: MultiWorld, options: SatisfactoryOptions, player: int, 
-            game_logic: GameLogic, state_logic: StateLogic, locations: Tuple[LocationData, ...]):
+            game_logic: GameLogic, state_logic: StateLogic, locations: List[LocationData]):
     
     region_names: List[str] = [
         "Menu",
@@ -64,7 +71,7 @@ def create_regions_and_return_locations(world: MultiWorld, options: Satisfactory
     ]
 
     early_game_buildings: List[str] = [
-        str(PowerInfrastructureLevel.Automated)
+        PowerInfrastructureLevel.Automated.to_name()
     ]
 
     if options.mam_logic_placement.value == Placement.early:
@@ -89,6 +96,7 @@ def create_regions_and_return_locations(world: MultiWorld, options: Satisfactory
     connect(regions, "Hub Tier 5", "Hub Tier 6")
     connect(regions, "Hub Tier 6", "Hub Tier 7", lambda state: state.has("Elevator Tier 3", player))
     connect(regions, "Hub Tier 7", "Hub Tier 8")
+    connect(regions, "Hub Tier 8", "Hub Tier 9", lambda state: state.has("Elevator Tier 4", player))
     connect(regions, "Overworld", "Gas Area", lambda state:
                                 state_logic.can_produce_all(state, ("Gas Mask", "Gas Filter")))
     connect(regions, "Overworld", "Radioactive Area", lambda state:
@@ -114,7 +122,7 @@ def create_regions_and_return_locations(world: MultiWorld, options: Satisfactory
                 lambda state, building_name=building_name: state_logic.can_build(state, building_name))
         
     for tree_name, tree in game_logic.man_trees.items():
-        connect(regions, "Mam", tree_name, can_produce_all_allowing_handcrafting(tree.access_items))
+        connect(regions, "Mam", tree_name)
 
         for node in tree.nodes:
             if not node.depends_on:
@@ -169,7 +177,7 @@ def connect(regions: Dict[str, Region], source: str, target: str,
     sourceRegion.connect(targetRegion, rule=rule)
 
 
-def get_locations_per_region(locations: Tuple[LocationData, ...]) -> Dict[str, List[LocationData]]:
+def get_locations_per_region(locations: List[LocationData]) -> Dict[str, List[LocationData]]:
     per_region: Dict[str, List[LocationData]]  = {}
 
     for location in locations:

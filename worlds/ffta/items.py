@@ -882,7 +882,7 @@ AllItems: typing.List[ItemData] = WeaponSwords + WeaponBlades + WeaponSabers + W
                                   WeaponGreatBows + WeaponSpears + WeaponInstruments + WeaponKnuckles + WeaponSouls + \
                                   WeaponGuns + EquipShields + EquipHelmets + EquipGloves + EquipHats + EquipArmor + \
                                   EquipRings + EquipClothing + EquipRobes + EquipShoes + MissionUnlockItems + JobUnlocks + TotemaUnlockItems + \
-                                  Consumables + ProgressiveItems + LawCards
+                                  Consumables + ProgressiveItems + LawCards + EquipFemale
 
 SoldierWeapons: typing.List[ItemData] = WeaponSwords + WeaponGreatswords
 PaladinWeapons: typing.List[ItemData] = WeaponGreatswords + WeaponKnightswords

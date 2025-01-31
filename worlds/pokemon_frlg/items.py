@@ -100,5 +100,5 @@ def get_random_item(world: "PokemonFRLGWorld", item_classification: ItemClassifi
     if item_classification is None:
         item_classification = ItemClassification.useful if world.random.random() < 0.20 else ItemClassification.filler
     items = [item for item in data.items.values()
-             if item.classification == item_classification and "Unique" not in item.tags]
+             if item.classification == item_classification]
     return world.random.choice(items).name

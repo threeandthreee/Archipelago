@@ -3,11 +3,12 @@ Archipelago World definition for Final Fantasy Tactics Advance
 """
 
 import os
-from typing import ClassVar, Dict, Any, Union, Tuple
+from typing import ClassVar, Dict, Any, Union, Tuple, Optional
 import settings
 import sys
 import logging
 from Utils import visualize_regions
+from random import Random
 
 from .client import FFTAClient
 
@@ -119,6 +120,15 @@ class FFTAWorld(World):
         self.recruit_secret = [0x03, 0x0f, 0x17, 0x20, 0x29, 0x8a, 0x8c, 0x8e,
                                0x90, 0x92, 0x94, 0x96, 0x98, 0x9a, 0x9c, 0x9e]
         self.special_units = [0x04, 0x09, 0x0a, 0x0c, 0x0d, 0x5a, 0x5e]
+
+        self.seed = getattr(multiworld, "re_gen_passthrough", {}).get("Final Fantasy Tactics Advance", self.random.getrandbits(64))
+        self.random = Random(self.seed)
+
+    def interpret_slot_data(self, slot_data: Dict[str, Any]) -> Optional[int]:
+        seed = slot_data.get("universal_tracker_seed")
+        if seed is None:
+            print("This game was generated before Universal Tracker support")
+        return seed
 
     def get_filler_item_name(self) -> str:
         filler = ["Potion", "Hi-Potion", "X-Potion", "Ether", "Elixir", "Antidote",
@@ -407,6 +417,8 @@ class FFTAWorld(World):
             "progressive_shop_tiers",
             "law_cards"
         )
+
+        slot_data["universal_tracker_seed"] = self.seed
 
         return slot_data
 

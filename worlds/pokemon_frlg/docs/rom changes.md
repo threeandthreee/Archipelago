@@ -1,8 +1,7 @@
 ## Base Rom Changes
 
-* Text speed is instant
+* Added a new setting for text speed Instant. The game will default to this setting
 * With an option set, text will advance while A is held
-* Running is enabled from the beginning of the game
 * Cycling and running is allowed in most maps
 * The game will prompt you to use another repel when one runs out
 * Bag and PC space was expanded
@@ -17,15 +16,25 @@ predetermined priority
 * Increased Safari Zone steps from 600 to 60000
 * You can fly between Kanto and the Sevii Islands
 * Trainers will not approach the player if Blind Trainers is on
-* The text displayed when a Trainer is about to send out a new pokémon has been shortened so that you can still see the name of the pokémon when deciding if you want to swap
+* The text displayed when a Trainer is about to send out a new Pokémon has been shortened so that you can still see the name of the Pokémon when deciding if you want to swap
+* Increased the rate at which a Pokémon's HP drains in battle to be based on the Pokémon's max HP
 * Added a GO HOME option to the menu that teleports you to Pallet Town
+* All evolution items (Moon Stone, Dragon Scale, etc.) have been turned into key items that can be used repeatadly. The items that have a held effect (Metal Coat, Deep Sea Scale, etc.) will give you both a held item version and key item version of the item when you get them.
+* Talking to the Mystery Gift Man on the 2nd floor of any Pokemon Center will allow you to respawn any static encounters you haven't caught yet.
+* Talking to the Wireless Club Attendant (left) on the 2nd floor of any Pokemon Center will let you fight a random uncatchable Pokemon in order to grind exp and money.
+* The Pikachu tutorial in the intro is skipped
 * The Old Man catching tutorial is skipped
 * Miguel's position in Mt. Moon will change based on which side you enter from
 * You are able to pick up both fossils in Mt. Moon after beating Miguel
 * The Team Rocket Grunt on Route 24 won't give you your reward until after the battle
 * The S.S. Anne will never depart
 * The Vermilion Gym puzzle doesn't reset if you get the second trash can switch wrong
+* Updated the coin purchase NPC at the Celadon Game Corner
+  * Changed the 50 coin purchase to a 100 coin purchase
+  * Added a 1000 and 1500 coin purchase option
+  * Made it so that you can purchase coins even if it would put you over the max coins of 9999
 * The Saffron City guards will block your way from both directions (this only matters if your free fly is Saffron City)
+* You are able to pick up both Pokémon in the Saffron Dojo
 * The Seafoam Islands entrances on Route 20 have been swapped so that you can travel from Cinnabar to Fuchsia
 * Only the last guard on Route 23 will check for badges or gyms
 * Professor Oak will give you the Mystic and Aurora Ticket in the Hall of Fame
@@ -39,8 +48,10 @@ predetermined priority
   * The initial cutscene with the biker at the Two Island Game Corner has been removed
   * Three Isle Path is open immediately
   * The Rocket Warehouse requires both passwords to open
+  * You no longer need to have a max friendship Pokémon in order to get the Togepi Egg from the Gentleman in the Water Labyrinth
+  * A new event was added on Seven Island where you can get a Scanner in the Tanoby Ruins after solving the puzzle in the Tanoby Key. The Scanner can be traded to the Scientist in town for a Deep Sea Scale and Deep Sea Tooth.
 * Evolutions that would be impossible have been changed:
   * Regular trade evolutions now evolve at Level 37
-  * Held item trade evolutions now evolve by using the item on the pokémon from the bag
+  * Held item trade evolutions now evolve by using the item on the Pokémon from the bag
   * Eevee can be given a Sun Stone or Moon Stone to evolve into Espeon or Umbreon respectively
   * Feebas evolves into Milotic at Level 30

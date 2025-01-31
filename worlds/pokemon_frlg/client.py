@@ -1,15 +1,17 @@
 from typing import TYPE_CHECKING, Dict, List, Optional, Set, Tuple
 from NetUtils import ClientStatus
-from Options import Toggle
 import worlds._bizhawk as bizhawk
 from worlds._bizhawk.client import BizHawkClient
-from .data import data, FAMESANITY_OFFSET
+from .data import data
 from .items import reverse_offset_item_value
 from .locations import offset_flag
 from .options import Goal
 
 if TYPE_CHECKING:
     from worlds._bizhawk.context import BizHawkClientContext
+
+DEXSANITY_OFFSET = 0x5000
+FAMESANITY_OFFSET = 0x6000
 
 BASE_ROM_NAME: Dict[str, str] = {
     "firered": "pokemon red version",
@@ -31,7 +33,7 @@ TRACKER_EVENT_FLAGS = [
     "FLAG_DEFEATED_ROUTE22_EARLY_RIVAL",
     "FLAG_GOT_SS_TICKET",  # Saved Bill in the Route 25 Sea Cottage
     "FLAG_RESCUED_MR_FUJI",
-    "FLAG_HIDE_SAFFRON_ROCKETS",  # Liberated Silph Co.
+    "FLAG_HIDE_SILPH_GIOVANNI",  # Liberated Silph Co.
     "FLAG_DEFEATED_CHAMP",
     "FLAG_RESCUED_LOSTELLE",
     "FLAG_SEVII_DETOUR_FINISHED",  # Gave Meteorite to Lostelle's Dad
@@ -40,6 +42,7 @@ TRACKER_EVENT_FLAGS = [
     "FLAG_RESCUED_SELPHY",
     "FLAG_LEARNED_YES_NAH_CHANSEY",
     "FLAG_DEFEATED_ROCKETS_IN_WAREHOUSE",  # Freed Pokémon in Rocket Warehouse
+    "FLAG_SYS_UNLOCKED_TANOBY_RUINS",
     "FLAG_SYS_CAN_LINK_WITH_RS",  # Restored Pokémon Network Machine
     "FLAG_DEFEATED_CHAMP_REMATCH",
     "FLAG_PURCHASED_LEMONADE"
@@ -69,6 +72,20 @@ TRACKER_FLY_UNLOCK_FLAGS = [
     "FLAG_WORLD_MAP_SEVEN_ISLAND"
 ]
 FLY_UNLOCK_FLAG_MAP = {data.constants[flag_name]: flag_name for flag_name in TRACKER_FLY_UNLOCK_FLAGS}
+
+HINT_FLAGS = {
+    "FLAG_HINT_ROUTE_2_OAKS_AIDE": "NPC_GIFT_GOT_HM05",
+    "FLAG_HINT_ROUTE_10_OAKS_AIDE": "NPC_GIFT_GOT_EVERSTONE_FROM_OAKS_AIDE",
+    "FLAG_HINT_ROUTE_11_OAKS_AIDE": "NPC_GIFT_GOT_ITEMFINDER",
+    "FLAG_HINT_ROUTE_16_OAKS_AIDE": "NPC_GIFT_GOT_AMULET_COIN_FROM_OAKS_AIDE",
+    "FLAG_HINT_ROUTE_15_OAKS_AIDE": "NPC_GIFT_GOT_EXP_SHARE_FROM_OAKS_AIDE",
+    "FLAG_HINT_BICYCLE_SHOP": "NPC_GIFT_GOT_BICYCLE",
+    "FLAG_HINT_SHOW_MAGIKARP": "NPC_GIFT_GOT_NET_BALL_FROM_ROUTE12_FISHING_HOUSE",
+    "FLAG_HINT_SHOW_HERACROSS": "NPC_GIFT_GOT_NEST_BALL_FROM_WATER_PATH_HOUSE_1",
+    "FLAG_HINT_SHOW_RESORT_GORGEOUS_MON": "NPC_GIFT_GOT_LUXURY_BALL_FROM_RESORT_GORGEOUS_HOUSE",
+    "FLAG_HINT_SHOW_TOGEPI": "FAME_CHECKER_DAISY_3"
+}
+HINT_FLAG_MAP = {data.constants[flag_name]: flag_name for flag_name in HINT_FLAGS.keys()}
 
 MAP_SECTION_EDGES: Dict[str, List[Tuple[int, int]]] = {
     "MAP_ROUTE2": [(23, 39)],
@@ -125,6 +142,7 @@ class PokemonFRLGClient(BizHawkClient):
         self.local_checked_locations = set()
         self.local_set_events = {}
         self.local_set_fly_unlocks = {}
+        self.local_hints = []
         self.caught_pokemon = 0
         self.current_map = (0, 0)
 
@@ -229,7 +247,7 @@ class PokemonFRLGClient(BizHawkClient):
             # Read flags in 2 chunks
             read_result = await bizhawk.guarded_read(
                 ctx.bizhawk_ctx,
-                [(sb1_address + 0x10E0, 0x90, "System Bus")],  # Flags
+                [(sb1_address + 0x1130, 0x90, "System Bus")],  # Flags
                 [guards["IN OVERWORLD"], guards["SAVE BLOCK 1"]]
             )
 
@@ -240,12 +258,26 @@ class PokemonFRLGClient(BizHawkClient):
 
             read_result = await bizhawk.guarded_read(
                 ctx.bizhawk_ctx,
-                [(sb1_address + 0x1170, 0x90, "System Bus")],  # Flags continued
+                [(sb1_address + 0x11C0, 0x90, "System Bus")],  # Flags continued
                 [guards["IN OVERWORLD"], guards["SAVE BLOCK 1"]]
             )
 
             if read_result is not None:
                 flag_bytes += read_result[0]
+
+            # Read fame checker flags
+            fame_checker_bytes = bytes(0)
+            fame_checker_read_status = False
+            if ctx.slot_data["famesanity"]:
+                read_result = await bizhawk.guarded_read(
+                    ctx.bizhawk_ctx,
+                    [(sb1_address + 0x3B14, 0x40, "System Bus")],  # Fame Checker
+                    [guards["IN OVERWORLD"], guards["SAVE BLOCK 1"]]
+                )
+
+                if read_result is not None:
+                    fame_checker_bytes = read_result[0]
+                    fame_checker_read_status = True
 
             # Read pokedex flags
             pokemon_caught_bytes = bytes(0)
@@ -263,6 +295,7 @@ class PokemonFRLGClient(BizHawkClient):
             game_clear = False
             local_set_events = {flag_name: False for flag_name in TRACKER_EVENT_FLAGS}
             local_set_fly_unlocks = {flag_name: False for flag_name in TRACKER_FLY_UNLOCK_FLAGS}
+            local_hints = {flag_name: False for flag_name in HINT_FLAGS.keys()}
             local_checked_locations = set()
             caught_pokemon = 0
 
@@ -285,11 +318,30 @@ class PokemonFRLGClient(BizHawkClient):
                         if flag_id in FLY_UNLOCK_FLAG_MAP:
                             local_set_fly_unlocks[FLY_UNLOCK_FLAG_MAP[flag_id]] = True
 
+                        if flag_id in HINT_FLAG_MAP:
+                            local_hints[HINT_FLAG_MAP[flag_id]] = True
+
+            # Check set fame checker flags
+            if fame_checker_read_status:
+                fame_checker_index = 0
+                for byte_i, byte in enumerate(fame_checker_bytes):
+                    if byte_i % 4 == 0:  # The Fame Checker flags are every 4 bytes
+                        for i in range(2, 8):
+                            if byte & (1 << i) != 0:
+                                location_id = offset_flag(FAMESANITY_OFFSET + fame_checker_index)
+                                if location_id in ctx.server_locations:
+                                    local_checked_locations.add(location_id)
+                            fame_checker_index += 1
+
             # Get caught Pokémon count
             if pokedex_read_status:
                 for byte_i, byte in enumerate(pokemon_caught_bytes):
                     for i in range(8):
                         if byte & (1 << i) != 0:
+                            dex_number = byte_i * 8 + i
+                            location_id = offset_flag(DEXSANITY_OFFSET + dex_number)
+                            if location_id in ctx.server_locations:
+                                local_checked_locations.add(location_id)
                             caught_pokemon += 1
 
             # Send locations
@@ -354,6 +406,22 @@ class PokemonFRLGClient(BizHawkClient):
                     }])
                     self.caught_pokemon = caught_pokemon
 
+            # Send AP Hints
+            if ctx.slot_data["provide_hints"]:
+                hints_locations = []
+                for flag_name, loc_name in HINT_FLAGS.items():
+                    if local_hints[flag_name] and flag_name not in self.local_hints:
+                        hints_locations.append(loc_name)
+                        self.local_hints.append(flag_name)
+                hint_ids = [offset_flag(data.locations[loc].flag) for loc in hints_locations
+                            if offset_flag(data.locations[loc].flag) in ctx.missing_locations]
+                if hint_ids:
+                    await ctx.send_msgs([{
+                        "cmd": "LocationScouts",
+                        "locations": hint_ids,
+                        "create_as_hint": 2
+                    }])
+
         except bizhawk.RequestFailedError:
             # Exit handler and return to main loop to reconnect
             pass
@@ -372,7 +440,7 @@ class PokemonFRLGClient(BizHawkClient):
         read_result = await bizhawk.guarded_read(
             ctx.bizhawk_ctx,
             [
-                (sb1_address + 0x3DD8, 2, "System Bus"),
+                (sb1_address + 0x3DE8, 2, "System Bus"),
                 (received_item_address + 4, 1, "System Bus")
             ],
             [guards["IN OVERWORLD"], guards["SAVE BLOCK 1"]]

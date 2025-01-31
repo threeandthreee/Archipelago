@@ -808,7 +808,7 @@ def randomize_weapons(world, rom):
             weapon.offense = world.random.randint(1, 127)
 
         if weapon.can_equip == "Poo":
-            weapon.poo_off = world.random.randint(1, 127)
+            weapon.poo_off = weapon.offense
             front_name = world.random.choice(weapon_names[weapon.can_equip])
             back_name = world.random.choice(royal_names)
         else:
