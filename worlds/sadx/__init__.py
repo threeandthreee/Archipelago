@@ -1,7 +1,7 @@
 import typing
 from typing import Dict, Any
 
-from BaseClasses import Tutorial, ItemClassification
+from BaseClasses import Tutorial
 from worlds.AutoWorld import WebWorld, World
 from .CharacterUtils import get_playable_characters
 from .Enums import Character, SADX_BASE_ID, Area, remove_character_suffix, pascal_to_space
@@ -13,6 +13,8 @@ from .Options import sadx_option_groups, SonicAdventureDXOptions
 from .Regions import create_sadx_regions, get_location_ids_for_area
 from .Rules import create_sadx_rules, LocationDistribution
 from .StartingSetup import StarterSetup, generate_early_sadx, write_sadx_spoiler, CharacterArea, level_areas
+
+sadx_version = 110
 
 
 class SonicAdventureDXWeb(WebWorld):
@@ -34,7 +36,6 @@ class SonicAdventureDXWorld(World):
     starter_setup: StarterSetup = StarterSetup()
     item_distribution: ItemDistribution = ItemDistribution()
     location_distribution: LocationDistribution = LocationDistribution()
-
     item_name_to_id = {item.name: item.itemId + SADX_BASE_ID for item in item_name_to_info.values()}
     location_name_to_id = {loc["name"]: loc["id"] + SADX_BASE_ID for loc in all_location_table}
 
@@ -46,6 +47,7 @@ class SonicAdventureDXWorld(World):
 
     tracker_world = {"map_page_folder": "tracker", "map_page_maps": "maps/maps.json",
                      "map_page_locations": "locations/locations.json"}
+    ut_can_gen_without_yaml = True
 
     def generate_early(self):
         self.starter_setup = generate_early_sadx(self, self.options)
@@ -53,8 +55,8 @@ class SonicAdventureDXWorld(World):
         if hasattr(self.multiworld, "re_gen_passthrough"):
             if "Sonic Adventure DX" in self.multiworld.re_gen_passthrough:
                 passthrough = self.multiworld.re_gen_passthrough["Sonic Adventure DX"]
+
                 self.starter_setup.character = Character(passthrough["StartingCharacter"])
-                self.starter_setup.item = passthrough["StartingItem"]
                 self.starter_setup.area = Area(passthrough["StartingArea"])
                 self.starter_setup.charactersWithArea = [
                     CharacterArea(Character.Sonic, Area(passthrough["SonicStartingArea"])),
@@ -74,9 +76,11 @@ class SonicAdventureDXWorld(World):
                 self.options.goal_requires_chaos_emeralds.value = passthrough["GoalRequiresChaosEmeralds"]
                 self.options.goal_requires_emblems.value = passthrough["GoalRequiresEmblems"]
                 self.options.emblems_percentage.value = passthrough["EmblemsPercentage"]
+                self.options.max_emblem_cap.value = passthrough["MaximumEmblemCap"]
                 self.options.goal_requires_missions.value = passthrough["GoalRequiresMissions"]
                 self.options.mission_percentage.value = passthrough["MissionsPercentage"]
                 self.options.goal_requires_bosses.value = passthrough["GoalRequiresBosses"]
+                self.options.boss_percentage.value = passthrough["BossPercentage"]
                 self.options.goal_requires_chao_races.value = passthrough["GoalRequiresChaoRaces"]
                 self.options.logic_level.value = passthrough["LogicLevel"]
                 self.options.entrance_randomizer.value = passthrough["EntranceRandomizer"]
@@ -108,10 +112,10 @@ class SonicAdventureDXWorld(World):
                 self.options.unify_egg_hornet.value = passthrough["UnifyEggHornet"]
 
                 self.options.field_emblems_checks.value = passthrough["FieldEmblemChecks"]
-                self.options.random_starting_location.value = passthrough["RandomStartingLocation"]
+                self.options.starting_character.value = passthrough["StartingCharacterOption"]
+                self.options.starting_location.value = passthrough["StartingLocationOption"]
                 self.options.random_starting_location_per_character.value = passthrough[
                     "RandomStartingLocationPerCharacter"]
-                self.options.guaranteed_level.value = passthrough["GuaranteedLevel"]
                 self.options.guaranteed_starting_checks.value = passthrough["GuaranteedStartingChecks"]
 
                 self.options.chao_egg_checks.value = passthrough["SecretChaoEggs"]
@@ -121,8 +125,10 @@ class SonicAdventureDXWorld(World):
                 self.options.mission_mode_checks.value = passthrough["MissionModeChecks"]
                 self.options.auto_start_missions.value = passthrough["AutoStartMissions"]
 
-                self.options.sub_level_checks.value = passthrough["SubLevelChecks"]
-                self.options.sub_level_checks_hard.value = passthrough["SubLevelChecksHard"]
+                self.options.twinkle_circuit_check.value = passthrough["TwinkleCircuitCheck"]
+                self.options.twinkle_circuit_multiple_check.value = passthrough["MultipleTwinkleCircuitChecks"]
+                self.options.sand_hill_check.value = passthrough["SandHillCheck"]
+                self.options.sand_hill_check_hard.value = passthrough["SandHillCheckHard"]
                 self.options.sky_chase_checks.value = passthrough["SkyChaseChecks"]
                 self.options.sky_chase_checks_hard.value = passthrough["SkyChaseChecksHard"]
 
@@ -149,11 +155,20 @@ class SonicAdventureDXWorld(World):
                 self.options.shield_capsule_sanity.value = passthrough["ShieldCapsuleSanity"]
                 self.options.powerup_capsule_sanity.value = passthrough["PowerUpCapsuleSanity"]
                 self.options.ring_capsule_sanity.value = passthrough["RingCapsuleSanity"]
+                self.options.fish_sanity.value = passthrough["FishSanity"]
+                self.options.lazy_fishing.value = passthrough["LazyFishing"]
 
     # For the universal tracker, doesn't get called in standard gen
     # Returning slot_data so it regens, giving it back in multiworld.re_gen_passthrough
     @staticmethod
     def interpret_slot_data(slot_data: Dict[str, Any]) -> Dict[str, Any]:
+
+        if slot_data["ModVersion"] != sadx_version:
+            current_version = f"v{sadx_version // 100}.{(sadx_version // 10) % 10}.{sadx_version % 10}"
+            slot_version = f"v{slot_data['ModVersion'] // 100}.{(slot_data['ModVersion'] // 10) % 10}.{slot_data['ModVersion'] % 10}"
+
+            raise Exception(
+                f"SADX version error: The version of apworld used to generate this world ({slot_version}) does not match the version of your installed apworld ({current_version}).")
         return slot_data
 
     def create_item(self, name: str) -> SonicAdventureDXItem:
@@ -190,21 +205,23 @@ class SonicAdventureDXWorld(World):
     def generate_progression_data(self) -> typing.Dict[int, int]:
         progression_data = {}
         for ap_location in self.multiworld.get_locations(self.player):
-            if ap_location.item.classification == ItemClassification.progression:
+            if ap_location.item.advancement:
                 progression_data[ap_location.address] = ap_location.address
         return progression_data
 
     def fill_slot_data(self) -> Dict[str, Any]:
         return {
-            "ModVersion": 101,
+            "ModVersion": sadx_version,
             "GoalRequiresLevels": self.options.goal_requires_levels.value,
             "LevelsPercentage": self.options.levels_percentage.value,
             "GoalRequiresChaosEmeralds": self.options.goal_requires_chaos_emeralds.value,
             "GoalRequiresEmblems": self.options.goal_requires_emblems.value,
             "EmblemsPercentage": self.options.emblems_percentage.value,
+            "MaximumEmblemCap": self.options.max_emblem_cap.value,
             "GoalRequiresMissions": self.options.goal_requires_missions.value,
             "MissionsPercentage": self.options.mission_percentage.value,
             "GoalRequiresBosses": self.options.goal_requires_bosses.value,
+            "BossPercentage": self.options.boss_percentage.value,
             "GoalRequiresChaoRaces": self.options.goal_requires_chao_races.value,
             "LogicLevel": self.options.logic_level.value,
             "EmblemsForPerfectChaos": self.item_distribution.emblem_count_progressive,
@@ -212,7 +229,6 @@ class SonicAdventureDXWorld(World):
             "MissionForPerfectChaos": self.location_distribution.missions_for_perfect_chaos,
             "BossesForPerfectChaos": self.location_distribution.bosses_for_perfect_chaos,
             "StartingCharacter": self.starter_setup.character.value,
-            "StartingItem": self.starter_setup.item,
             "StartingArea": self.starter_setup.area.value,
             "SonicStartingArea": self.starter_setup.get_starting_area(Character.Sonic).value,
             "TailsStartingArea": self.starter_setup.get_starting_area(Character.Tails).value,
@@ -224,9 +240,9 @@ class SonicAdventureDXWorld(World):
             "LevelEntranceMap": {original.value: randomized.value for original, randomized in
                                  self.starter_setup.level_mapping.items()},
 
-            "RandomStartingLocation": self.options.random_starting_location.value,
+            "StartingCharacterOption": self.options.starting_character.value,
+            "StartingLocationOption": self.options.starting_location.value,
             "RandomStartingLocationPerCharacter": self.options.random_starting_location_per_character.value,
-            "GuaranteedLevel": self.options.guaranteed_level.value,
             "GuaranteedStartingChecks": self.options.guaranteed_starting_checks.value,
             "FieldEmblemChecks": self.options.field_emblems_checks.value,
             "SecretChaoEggs": self.options.chao_egg_checks.value,
@@ -255,6 +271,8 @@ class SonicAdventureDXWorld(World):
             "ShieldCapsuleSanity": self.options.shield_capsule_sanity.value,
             "PowerUpCapsuleSanity": self.options.powerup_capsule_sanity.value,
             "RingCapsuleSanity": self.options.ring_capsule_sanity.value,
+            "FishSanity": self.options.fish_sanity.value,
+            "LazyFishing": self.options.lazy_fishing.value,
 
             "ProgressionItems": self.generate_progression_data(),
 
@@ -265,8 +283,10 @@ class SonicAdventureDXWorld(World):
             "CasinopolisRingLink": self.options.casinopolis_ring_link.value,
             "HardRingLink": self.options.hard_ring_link.value,
             "RingLoss": self.options.ring_loss.value,
-            "SubLevelChecks": self.options.sub_level_checks.value,
-            "SubLevelChecksHard": self.options.sub_level_checks_hard.value,
+            "TwinkleCircuitCheck": self.options.twinkle_circuit_check.value,
+            "MultipleTwinkleCircuitChecks": self.options.twinkle_circuit_multiple_check.value,
+            "SandHillCheck": self.options.sand_hill_check.value,
+            "SandHillCheckHard": self.options.sand_hill_check_hard.value,
             "SkyChaseChecks": self.options.sky_chase_checks.value,
             "SkyChaseChecksHard": self.options.sky_chase_checks_hard.value,
 

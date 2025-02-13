@@ -5,18 +5,15 @@ import bsdiff4
 import struct
 from typing import TYPE_CHECKING, Dict, List, Tuple
 
-from BaseClasses import ItemClassification
-
 from worlds.Files import APPatchExtension, APProcedurePatch, APTokenMixin, APTokenTypes
 from settings import get_settings
-from .data import data, TrainerPokemonDataTypeEnum
-from .items import get_random_item, reverse_offset_item_value
-from .locations import PokemonFRLGLocation, reverse_offset_flag
-from .options import (Dexsanity, FlashRequired, ItemfinderRequired, HmCompatibility, LevelScaling,
+from .data import data, EvolutionMethodEnum, TrainerPokemonDataTypeEnum
+from .locations import PokemonFRLGLocation
+from .options import (Dexsanity, FlashRequired, ForceFullyEvolved, ItemfinderRequired, HmCompatibility, LevelScaling,
                       RandomizeLegendaryPokemon, RandomizeMiscPokemon, RandomizeStarters, RandomizeTrainerParties,
                       RandomizeWildPokemon, SeviiIslandPasses, ShuffleHiddenItems, SilphCoCardKey, TmTutorCompatibility,
                       ViridianCityRoadblock)
-from .pokemon import STARTER_INDEX, randomize_tutor_moves
+from .pokemon import randomize_tutor_moves
 from .util import bool_array_to_int, bound, encode_string
 
 if TYPE_CHECKING:
@@ -169,14 +166,14 @@ def get_tokens(world: "PokemonFRLGWorld", game_revision: int) -> APTokenMixin:
                 tokens.write_token(
                     APTokenTypes.WRITE,
                     item_address,
-                    struct.pack("<H", reverse_offset_item_value(location.item.code))
+                    struct.pack("<H", location.item.code)
                 )
             elif type(item_address) is list:
                 for address in item_address:
                     tokens.write_token(
                         APTokenTypes.WRITE,
                         address,
-                        struct.pack("<H", reverse_offset_item_value(location.item.code))
+                        struct.pack("<H", location.item.code)
                     )
         else:
             if type(item_address) is int:
@@ -196,7 +193,7 @@ def get_tokens(world: "PokemonFRLGWorld", game_revision: int) -> APTokenMixin:
         # Creates a list of item information to store in tables later. Those tables are used to display the item and
         # player name in a text box. In the case of not enough space, the game will default to "found an ARCHIPELAGO
         # ITEM"
-        location_info.append((reverse_offset_flag(location.address), location.item.player, location.item.name))
+        location_info.append((location.address, location.item.player, location.item.name))
 
     if world.options.trainersanity:
         rival_rewards = ["RIVAL_OAKS_LAB", "RIVAL_ROUTE22_EARLY", "RIVAL_CERULEAN", "RIVAL_SS_ANNE",
@@ -276,27 +273,12 @@ def get_tokens(world: "PokemonFRLGWorld", game_revision: int) -> APTokenMixin:
             struct.pack("<B", player_name_ids[player_name])
         )
 
-    # Replace unique items if necessary
-    if world.options.kanto_only:
-        location_ids = ["NPC_GIFT_GOT_HM06", "ITEM_FOUR_ISLAND_ICEFALL_CAVE_1F_HM07"]
-        for location_id in location_ids:
-            location_data = data.locations[location_id]
-            new_item_id = reverse_offset_item_value(
-                world.item_name_to_id[get_random_item(world, ItemClassification.filler)]
-            )
-
-            tokens.write_token(
-                APTokenTypes.WRITE,
-                location_data.address[game_version_revision],
-                struct.pack("<H", new_item_id)
-            )
-
     # Set starting items
     start_inventory = world.options.start_inventory.value.copy()
 
     starting_items: List[Tuple[str, int]] = []
     for item, quantity in start_inventory.items():
-        if "Unique" in data.items[reverse_offset_item_value(world.item_name_to_id[item])].tags:
+        if "Unique" in data.items[world.item_name_to_id[item]].tags:
             quantity = 1
         if quantity > 999:
             quantity = 999
@@ -305,7 +287,7 @@ def get_tokens(world: "PokemonFRLGWorld", game_revision: int) -> APTokenMixin:
     for i, starting_item in enumerate(starting_items, 1):
         item_address = data.rom_addresses[game_version_revision]["gArchipelagoStartingItems"] + (i * 2)
         count_address = data.rom_addresses[game_version_revision]["gArchipelagoStartingItemsCount"] + (i * 2)
-        item = reverse_offset_item_value(world.item_name_to_id[starting_item[0]])
+        item = world.item_name_to_id[starting_item[0]]
         tokens.write_token(APTokenTypes.WRITE, item_address, struct.pack("<H", item))
         tokens.write_token(APTokenTypes.WRITE, count_address, struct.pack("<H", starting_item[1]))
 
@@ -671,6 +653,10 @@ def get_tokens(world: "PokemonFRLGWorld", game_revision: int) -> APTokenMixin:
     teas_split = 1 if world.options.split_teas else 0
     tokens.write_token(APTokenTypes.WRITE, options_address + 0x42, struct.pack("<B", teas_split))
 
+    # Set starting town
+    starting_town = data.constants[world.starting_town]
+    tokens.write_token(APTokenTypes.WRITE, options_address + 0x43, struct.pack("<B", starting_town))
+
     # Set free fly location
     tokens.write_token(APTokenTypes.WRITE, options_address + 0x44, struct.pack("<B", world.free_fly_location_id))
 
@@ -678,8 +664,7 @@ def get_tokens(world: "PokemonFRLGWorld", game_revision: int) -> APTokenMixin:
     tokens.write_token(APTokenTypes.WRITE, options_address + 0x45, struct.pack("<B", world.town_map_fly_location_id))
 
     # Set resort gorgeous mon
-    species_id = data.constants[world.resort_gorgeous_mon[0]]
-    tokens.write_token(APTokenTypes.WRITE, options_address + 0x46, struct.pack("<H", species_id))
+    tokens.write_token(APTokenTypes.WRITE, options_address + 0x46, struct.pack("<H", world.resort_gorgeous_mon))
 
     # Set intro species
     species_id = world.random.choice(list(data.species.keys()))
@@ -688,7 +673,7 @@ def get_tokens(world: "PokemonFRLGWorld", game_revision: int) -> APTokenMixin:
     # Set PC item ID
     pc_item_location = world.get_location("Player's PC - Starting Item")
     if pc_item_location.item.player == world.player:
-        item_id = reverse_offset_item_value(pc_item_location.item.code)
+        item_id = pc_item_location.item.code
     else:
         item_id = data.constants["ITEM_ARCHIPELAGO_PROGRESSION"]
     tokens.write_token(APTokenTypes.WRITE, options_address + 0x4A, struct.pack("<H", item_id))
@@ -793,13 +778,8 @@ def _set_starters(world: "PokemonFRLGWorld", tokens: APTokenMixin, game_version_
         return
 
     for name, starter in world.modified_starters.items():
-        starter_address = data.rom_addresses[game_version_revision]["sStarterSpecies"] + (STARTER_INDEX[name] * 2)
-        tokens.write_token(APTokenTypes.WRITE, starter_address, struct.pack("<H", starter.species_id))
         tokens.write_token(APTokenTypes.WRITE,
-                           starter.player_address[game_version_revision],
-                           struct.pack("<H", starter.species_id))
-        tokens.write_token(APTokenTypes.WRITE,
-                           starter.rival_address[game_version_revision],
+                           starter.address[game_version_revision],
                            struct.pack("<H", starter.species_id))
 
 
@@ -853,10 +833,40 @@ def _set_trainer_parties(world: "PokemonFRLGWorld", tokens: APTokenMixin, game_v
         for i, pokemon in enumerate(trainer.party.pokemon):
             pokemon_address = party_address + (i * pokemon_data_size)
 
-            level = round(pokemon.level + (pokemon.level * (world.options.modify_trainer_levels.value / 100)))
-            level = bound(level, 1, 100)
+            pokemon.level = round(pokemon.level + (pokemon.level * (world.options.modify_trainer_levels.value / 100)))
+            pokemon.level = bound(pokemon.level, 1, 100)
 
-            tokens.write_token(APTokenTypes.WRITE, pokemon_address + 0x02, struct.pack("<B", level))
+            if world.options.force_fully_evolved != ForceFullyEvolved.special_range_names["never"]:
+                evolve = True
+                if world.options.force_fully_evolved == ForceFullyEvolved.special_range_names["species"]:
+                    while evolve:
+                        evolve = False
+                        species_data = world.modified_species[pokemon.species_id]
+                        evolutions = species_data.evolutions.copy()
+                        world.random.shuffle(evolutions)
+                        for evolution in evolutions:
+                            if evolution.method in range(EvolutionMethodEnum.LEVEL, EvolutionMethodEnum.ITEM):
+                                if pokemon.level >= evolution.param:
+                                    pokemon.species_id = evolution.species_id
+                                    evolve = True
+                                    break
+                            else:
+                                evolution_data = world.modified_species[evolution.species_id]
+                                evolution_level = sum(evolution_data.base_stats) / 15
+                                if pokemon.level > evolution_level:
+                                    pokemon.species_id = evolution.species_id
+                                    evolve = True
+                                    break
+                elif pokemon.level >= world.options.force_fully_evolved.value:
+                    while evolve:
+                        species_data = world.modified_species[pokemon.species_id]
+                        if len(species_data.evolutions) > 0:
+                            evolution = world.random.choice(species_data.evolutions)
+                            pokemon.species_id = evolution.species_id
+                        else:
+                            evolve = False
+
+            tokens.write_token(APTokenTypes.WRITE, pokemon_address + 0x02, struct.pack("<B", pokemon.level))
             tokens.write_token(APTokenTypes.WRITE, pokemon_address + 0x04, struct.pack("<H", pokemon.species_id))
 
             if trainer.party.pokemon_data_type in {TrainerPokemonDataTypeEnum.NO_ITEM_CUSTOM_MOVES,

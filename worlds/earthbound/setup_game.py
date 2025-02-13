@@ -4,6 +4,7 @@ from .game_data.text_data import lumine_hall_text, eb_text_table, text_encoder
 from .game_data.local_data import item_id_table
 from .modules.psi_shuffle import shuffle_psi
 from .modules.boss_shuffle import initialize_bosses
+from .modules.enemy_shuffler import shuffle_enemies
 
 
 def setup_gamevars(world):
@@ -141,6 +142,70 @@ def setup_gamevars(world):
         "Goddess Ribbon"
     ]
 
+    world.slime_pile_wanted_item = world.random.choice([
+        "Cookie",
+        "Bag of Fries",
+        "Hamburger",
+        "Boiled Egg",
+        "Fresh Egg",
+        "Picnic Lunch",
+        "Pasta di Summers",
+        "Pizza",
+        "Chef's Special",
+        "Large Pizza",
+        "PSI Caramel",
+        "Magic Truffle",
+        "Brain Food Lunch",
+        "Rock Candy",
+        "Croissant",
+        "Bread Roll",
+        "Can of Fruit Juice",
+        "Royal Iced Tea",
+        "Protein Drink",
+        "Kraken Soup",
+        "Bottle of Water",
+        "Cold Remedy",
+        "Vial of Serum",
+        "IQ Capsule",
+        "Guts Capsule",
+        "Speed Capsule",
+        "Vital Capsule",
+        "Luck Capsule",
+        "Ketchup Packet",
+        "Sugar Packet",
+        "Tin of Cocoa",
+        "Carton of Cream",
+        "Sprig of Parsley",
+        "Jar of Hot Sauce",
+        "Salt Packet",
+        "Jar of Delisauce",
+        "Trout Yogurt",
+        "Banana",
+        "Calorie Stick",
+        "Gelato de Resort",
+        "Magic Tart",
+        "Cup of Noodles",
+        "Repel Sandwich",
+        "Repel Superwich",
+        "Lucky Sandwich",
+        "Cup of Coffee",
+        "Double Burger",
+        "Mammoth Burger",
+        "Peanut Cheese Bar",
+        "Piggy Jelly",
+        "Bowl of Rice Gruel",
+        "Bean Croquette",
+        "Molokheiya Soup",
+        "Plain Roll",
+        "Kabob",
+        "Plain Yogurt",
+        "Beef Jerky",
+        "Spicy Jerky",
+        "Luxury Jerky",
+        "Bottle of DXwater",
+        "Magic Pudding",
+        "Popsicle"])
+
     if world.options.progressive_weapons:
         for i in range(3):
             world.common_gear.append("Progressive Bat")
@@ -221,6 +286,8 @@ def setup_gamevars(world):
             "Shiny Coin",
             "Charm Coin"
         ])
+
+    world.multiworld.push_precollected(world.create_item(world.starting_character))
 
     valid_starts = 14
     if world.options.magicant_mode != 00:
@@ -479,6 +546,7 @@ def setup_gamevars(world):
     world.credits_player.extend([0x00])
     shuffle_psi(world)
     initialize_bosses(world)
+    shuffle_enemies(world)
 
 
 def place_static_items(world):

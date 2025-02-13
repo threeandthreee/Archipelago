@@ -133,7 +133,7 @@ hyrule_locations: List[LocationData] = [
     LocationData(73, 22, 2, "Cucco Mini-Dungeon"),
     LocationData(None, None, None, "Access Potion Shop", Event, Items.AccessPotionShop),
     LocationData(74, 0, 273, "[Mai] Witch's House", Maiamai),
-    LocationData(None, None, None, "Eastern Palace Weather Vane", Event, Items.EasternPalaceWV),
+    LocationData(None, None, None, "Eastern Palace Weather Vane", Vane, Items.EasternPalaceWV),
     LocationData(75, 0, 2, "Eastern Ruins Armos Chest"),
     LocationData(76, 0, 5, "Eastern Ruins Hookshot Chest"),
     LocationData(77, 0, 3, "Eastern Ruins Merge Chest"),
@@ -262,7 +262,7 @@ lorule_locations: List[LocationData] = [
     LocationData(165, None, 985, "Swamp Cave (Middle)"),
     LocationData(166, 5, 130, "Swamp Cave (Right)"),
     LocationData(167, 5, 128, "Big Bomb Flower Cave"),
-    LocationData(None, None, None, "Swamp Palace Weather Vane", Event, Items.SwampPalaceWV),
+    LocationData(None, None, None, "Swamp Palace Weather Vane", Vane, Items.SwampPalaceWV),
     LocationData(168, 1, 64, "Lorule Field Hookshot Chest"),
     LocationData(169, 1, 295, "[Mai] Lorule Haunted Grove Wall", Maiamai),
     LocationData(170, 0, 294, "[Mai] Buried in the Desert", Maiamai),
@@ -604,4 +604,16 @@ dungeon_item_excludes: List[str] = [
     "[DP] Zaganaga",
     "[TR] Left Balcony",
     "[LC] Zelda",
+]
+
+starting_weapon_locations: List[str] = [
+    "Ravio's Gift",
+    "Ravio's Shop (1)",
+    "Ravio's Shop (2)",
+    "Ravio's Shop (3)",
+    "Ravio's Shop (4)",
+    "Ravio's Shop (5)",
+    "Ravio's Shop (7)",
+    "Ravio's Shop (8)",
+    "Ravio's Shop (9)",
 ]

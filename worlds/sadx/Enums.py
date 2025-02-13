@@ -80,15 +80,40 @@ class Capsule(Enum):
     RandomRings = auto()
 
 
+class Fish(Enum):
+    AnglerFish = 0
+    Hammerhead = auto()
+    StripedBeakfish = auto()
+    BlueMarlin = auto()
+    MechaFish = auto()
+    LargemouthBass = auto()
+    Piranha = auto()
+    Oarfish = auto()
+    Salmon = auto()
+    Shark = auto()
+    SeaBass = auto()
+    Coelacanth = auto()
+    RedSeaBream = auto()
+    JapaneseEel = auto()
+    MorayEel = auto()
+
+
 class SubLevelMission(Enum):
     B = 0
     A = auto()
+    Sonic = auto()
+    Tails = auto()
+    Knuckles = auto()
+    Amy = auto()
+    Big = auto()
+    Gamma = auto()
 
 
 class LevelMission(Enum):
     C = 0
     B = auto()
     A = auto()
+    S = auto()
 
 
 class SubLevel(Enum):
@@ -114,7 +139,9 @@ class Area(Enum):
     MysticRuinsMain = auto()
     AngelIsland = auto()
     Jungle = auto()
-    EggCarrierMain = auto()
+    EggCarrierOutside = auto()
+    EggCarrierInside = auto()
+    EggCarrierFrontDeck = auto()
     EmeraldCoast = auto()
     WindyValley = auto()
     Casinopolis = auto()

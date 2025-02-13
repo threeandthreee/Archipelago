@@ -8,8 +8,6 @@ See the [setup guide](https://github.com/randomsalience/albw-archipelago/blob/ma
 
 ## Known Issues
 
-- The game crashes during the credits if items are received, e.g. if collect on goal is enabled.
-- If the client is connected before a save is loaded, it gives a fake error message about the loaded save not being an Archipelago save.
 - Checks that logically require portraits or pendants do not show up in the Universal Tracker.
 
 ## Not Yet Implemented

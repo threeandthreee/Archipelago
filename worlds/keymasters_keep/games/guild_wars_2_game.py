@@ -56,7 +56,7 @@ class GuildWars2Game(Game):
                 },
                 is_time_consuming=False,
                 is_difficult=False,
-                weight=3,
+                weight=15,
             ),
             GameObjectiveTemplate(
                 label="Do DAILY_CATEGORY Dailies",
@@ -65,7 +65,7 @@ class GuildWars2Game(Game):
                 },
                 is_time_consuming=True,
                 is_difficult=False,
-                weight=len(self.daily_categories()),
+                weight=len(self.daily_categories()) * 5,
             ),
             GameObjectiveTemplate(
                 label="Do a WEEKLY_CATEGORY Weekly",
@@ -74,14 +74,14 @@ class GuildWars2Game(Game):
                 },
                 is_time_consuming=True,
                 is_difficult=False,
-                weight=len(self.weekly_categories()),
+                weight=len(self.weekly_categories()) * 5,
             ),
             GameObjectiveTemplate(
                 label="Do a Wizard's Vault Special",
                 data=dict(),
                 is_time_consuming=True,
                 is_difficult=False,
-                weight=2,
+                weight=10,
             ),
         ]
 
@@ -95,7 +95,7 @@ class GuildWars2Game(Game):
                     },
                     is_time_consuming=True,
                     is_difficult=False,
-                    weight=2,
+                    weight=10,
                 ),
                 GameObjectiveTemplate(
                     label="Visit the following vistas: VISTAS",
@@ -104,7 +104,7 @@ class GuildWars2Game(Game):
                     },
                     is_time_consuming=True,
                     is_difficult=False,
-                    weight=2,
+                    weight=10,
                 ),
                 GameObjectiveTemplate(
                     label="Visit all points of interest in ZONE",
@@ -113,7 +113,7 @@ class GuildWars2Game(Game):
                     },
                     is_time_consuming=False,
                     is_difficult=False,
-                    weight=1,
+                    weight=5,
                 ),
                 GameObjectiveTemplate(
                     label="Unlock all waypoints in ZONE",
@@ -122,8 +122,12 @@ class GuildWars2Game(Game):
                     },
                     is_time_consuming=False,
                     is_difficult=False,
-                    weight=1,
+                    weight=5,
                 ),
+            ]
+
+        if "Jumping Puzzle" in self.game_modes_played:
+            objective_list += [
                 GameObjectiveTemplate(
                     label="Complete the JUMPING_PUZZLE jumping puzzle",
                     data={
@@ -131,11 +135,23 @@ class GuildWars2Game(Game):
                     },
                     is_time_consuming=False,
                     is_difficult=False,
-                    weight=1,
+                    weight=5,
                 ),
             ]
 
-        if "Gathering & Crafting" in self.game_modes_played:
+        if "End of Dragons" in self.storylines_owned and "Fishing" in self.game_modes_played:
+            objective_list.append(GameObjectiveTemplate(
+                label="Catch COUNTx FISHABLE",
+                data={
+                    "COUNT": (self.fishing_count_range, 1),
+                    "FISHABLE": (self.fishables, 1),
+                },
+                is_time_consuming=True,
+                is_difficult=False,
+                weight=5,
+            ))
+
+        if "Gathering" in self.game_modes_played:
             objective_list += [
                 GameObjectiveTemplate(
                     label="Harvest COUNTx HARVESTABLE",
@@ -145,7 +161,7 @@ class GuildWars2Game(Game):
                     },
                     is_time_consuming=True,
                     is_difficult=False,
-                    weight=2,
+                    weight=10,
                 ),
                 GameObjectiveTemplate(
                     label="Log COUNTx LOGGABLE",
@@ -155,7 +171,7 @@ class GuildWars2Game(Game):
                     },
                     is_time_consuming=True,
                     is_difficult=False,
-                    weight=1,
+                    weight=5,
                 ),
                 GameObjectiveTemplate(
                     label="Log COUNTx LOGGABLE",
@@ -165,7 +181,7 @@ class GuildWars2Game(Game):
                     },
                     is_time_consuming=True,
                     is_difficult=False,
-                    weight=1,
+                    weight=5,
                 ),
                 GameObjectiveTemplate(
                     label="Mine COUNTx MINEABLE",
@@ -175,7 +191,7 @@ class GuildWars2Game(Game):
                     },
                     is_time_consuming=True,
                     is_difficult=False,
-                    weight=1,
+                    weight=5,
                 ),
                 GameObjectiveTemplate(
                     label="Mine COUNTx MINEABLE",
@@ -185,22 +201,11 @@ class GuildWars2Game(Game):
                     },
                     is_time_consuming=True,
                     is_difficult=False,
-                    weight=1,
+                    weight=5,
                 ),
             ]
 
-            if "End of Dragons" in self.storylines_owned:
-                objective_list.append(GameObjectiveTemplate(
-                    label="Catch COUNTx FISHABLE",
-                    data={
-                        "COUNT": (self.fishing_count_range, 1),
-                        "FISHABLE": (self.fishables, 1),
-                    },
-                    is_time_consuming=True,
-                    is_difficult=False,
-                    weight=1,
-                ))
-
+        if "Crafting" in self.game_modes_played:
             objective_list.append(
                 GameObjectiveTemplate(
                     label="Reach level LEVEL in DISCIPLINE",
@@ -210,7 +215,7 @@ class GuildWars2Game(Game):
                     },
                     is_time_consuming=True,
                     is_difficult=False,
-                    weight=2,
+                    weight=10,
                 )
             )
 
@@ -222,7 +227,7 @@ class GuildWars2Game(Game):
                 },
                 is_time_consuming=True,
                 is_difficult=False,
-                weight=5,
+                weight=25,
             ))
 
         if "Story" in self.game_modes_played:
@@ -233,7 +238,7 @@ class GuildWars2Game(Game):
                 },
                 is_time_consuming=False,
                 is_difficult=False,
-                weight=3,
+                weight=15,
             ))
 
         if "WvW" in self.game_modes_played:
@@ -245,14 +250,14 @@ class GuildWars2Game(Game):
                     },
                     is_time_consuming=False,
                     is_difficult=False,
-                    weight=5,
+                    weight=25,
                 ),
                 GameObjectiveTemplate(
                     label="Earn a large skirmish chest",
                     data=dict(),
                     is_time_consuming=True,
                     is_difficult=False,
-                    weight=2,
+                    weight=10,
                 ),
             ]
 
@@ -264,7 +269,7 @@ class GuildWars2Game(Game):
                 },
                 is_time_consuming=False,
                 is_difficult=True,
-                weight=3,
+                weight=15,
             ))
 
         if "Fractals" in self.game_modes_played:
@@ -276,7 +281,7 @@ class GuildWars2Game(Game):
                 },
                 is_time_consuming=False,
                 is_difficult=True,
-                weight=3,
+                weight=15,
             ))
 
         if "Dungeons" in self.game_modes_played:
@@ -287,7 +292,7 @@ class GuildWars2Game(Game):
                 },
                 is_time_consuming=True,
                 is_difficult=False,
-                weight=3,
+                weight=15,
             ))
 
         if "Raids" in self.game_modes_played and len(self.raids()) > 0:
@@ -298,7 +303,7 @@ class GuildWars2Game(Game):
                 },
                 is_time_consuming=True,
                 is_difficult=False,
-                weight=2,
+                weight=10,
             ))
 
         if "Strikes" in self.game_modes_played:
@@ -309,7 +314,7 @@ class GuildWars2Game(Game):
                 },
                 is_time_consuming=True,
                 is_difficult=False,
-                weight=3,
+                weight=15,
             ))
 
         if "Convergences" in self.game_modes_played:
@@ -320,7 +325,7 @@ class GuildWars2Game(Game):
                 },
                 is_time_consuming=True,
                 is_difficult=False,
-                weight=3,
+                weight=15,
             ))
 
         return objective_list
@@ -385,7 +390,7 @@ class GuildWars2Game(Game):
             categories += ["Living World Season 4"]
         if "Season 3" in self.storylines_owned:
             categories += ["Living World Season 3"]
-        if "Janthir Wilds" in self.storylines_owned:
+        if "Janthir Wilds" in self.storylines_owned and "Jumping Puzzles" in self.game_modes_played:
             categories += ["Buzzy Treetops"]
 
         return categories
@@ -1213,7 +1218,7 @@ class GuildWars2Game(Game):
 
     @staticmethod
     def logging_count_range_low() -> range:
-        return range(10, 31)
+        return range(3, 10)
 
     @staticmethod
     def logging_count_range_high() -> range:
@@ -1905,8 +1910,11 @@ class GuildWars2GameModes(OptionSet):
 
     display_name = "Guild Wars 2 Game Modes"
     valid_keys = [
+        "Jumping Puzzles",
         "Exploration",
-        "Gathering & Crafting",
+        "Fishing",
+        "Gathering",
+        "Crafting",
         "Open World",
         "Story",
         "PvP",

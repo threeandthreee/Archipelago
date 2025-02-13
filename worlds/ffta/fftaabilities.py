@@ -1,6 +1,7 @@
 from .data import UnitOffsets, JobID, human_abilities, bangaa_abilities, nu_mou_abilities, viera_abilities, \
     moogle_abilities
 from typing import List, Tuple
+from itertools import chain
 from worlds.Files import APTokenTypes
 
 
@@ -392,22 +393,24 @@ def get_job_abilities(job: int):
         return 0
 
 
-human_abilities_bitflags = JobAbilities.soldier + JobAbilities.paladin + JobAbilities.fighter \
-                               + JobAbilities.thiefhum + JobAbilities.ninja + JobAbilities.whitemagehum + \
-                               JobAbilities.blackmagehum + JobAbilities.illusionisthum + JobAbilities.bluemage \
-                               + JobAbilities.archerhum + JobAbilities.hunter
+human_abilities_bitflags = list(chain(JobAbilities.soldier, JobAbilities.paladin, JobAbilities.fighter,
+                                      JobAbilities.thiefhum, JobAbilities.ninja, JobAbilities.whitemagehum,
+                                      JobAbilities.blackmagehum, JobAbilities.illusionisthum, JobAbilities.bluemage,
+                                      JobAbilities.archerhum, JobAbilities.hunter))
 
 
-bangaa_abilities_bitflags = JobAbilities.warrior + JobAbilities.dragoon + JobAbilities.defender + JobAbilities.gladiator \
-                            + JobAbilities.white_monk + JobAbilities.bishop + JobAbilities.templar
+bangaa_abilities_bitflags = list(chain(JobAbilities.warrior, JobAbilities.dragoon, JobAbilities.defender,
+                                       JobAbilities.gladiator, JobAbilities.white_monk, JobAbilities.bishop,
+                                       JobAbilities.templar))
 
-nu_mou_abilities_bitflags = JobAbilities.whitemagemou + JobAbilities.blackmagemou + JobAbilities.timemagemou + \
-                            JobAbilities.illusionistmou + JobAbilities.alchemist + JobAbilities.beastmaster + \
-                            JobAbilities.morpher + JobAbilities.sage
+nu_mou_abilities_bitflags = list(chain(JobAbilities.whitemagemou, JobAbilities.blackmagemou, JobAbilities.timemagemou,
+                                       JobAbilities.illusionistmou, JobAbilities.alchemist, JobAbilities.beastmaster,
+                                       JobAbilities.morpher, JobAbilities.sage))
 
-viera_abilities_bitflags = JobAbilities.fencer + JobAbilities.elementalist + JobAbilities.redmage + JobAbilities.whitemageviera + \
-                           JobAbilities.summoner + JobAbilities.archerviera + JobAbilities.assassin + JobAbilities.sniper
+viera_abilities_bitflags = list(chain(JobAbilities.fencer, JobAbilities.elementalist, JobAbilities.redmage,
+                                      JobAbilities.whitemageviera, JobAbilities.summoner, JobAbilities.archerviera,
+                                      JobAbilities.assassin, JobAbilities.sniper))
 
-moogle_abilities_bitflags = JobAbilities.animist + JobAbilities.mogknight + JobAbilities.gunner + JobAbilities.thiefmog + \
-                            JobAbilities.juggler + JobAbilities.gadgeteer + JobAbilities.blackmagemog + \
-                            JobAbilities.timemagemog
+moogle_abilities_bitflags = list(chain(JobAbilities.animist, JobAbilities.mogknight, JobAbilities.gunner,
+                                       JobAbilities.thiefmog, JobAbilities.juggler, JobAbilities.gadgeteer,
+                                       JobAbilities.blackmagemog, JobAbilities.timemagemog))

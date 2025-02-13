@@ -106,7 +106,7 @@ class DiabloIIResurrectedGame(Game):
             GameObjectiveTemplate(
                 label="Find one of the following Uniques: UNIQUES",
                 data={
-                    "UNIQUES": (self.uniques, 3)
+                    "UNIQUES": (self.uniques, 5)
                 },
                 is_time_consuming=True,
                 is_difficult=False,
@@ -1626,16 +1626,12 @@ class DiabloIIResurrectedGame(Game):
         return [
             "Amulet",
             "Body Armor",
-            "Barbarian Helm",
             "Belt",
             "Pair of Boots",
             "Pair of Gloves",
             "Helm",
-            "Pelt",
             "Ring",
-            "Shrunken Head",
             "Shield",
-            "Targe",
             "Axe",
             "Katar",
             "Dagger",
@@ -1644,15 +1640,10 @@ class DiabloIIResurrectedGame(Game):
             "Maul",
             "Mace",
             "Club",
-            "Scepter",
             "Polearm",
             "Spear",
             "Bow",
             "Crossbow",
-            "Javelin",
-            "Orb",
-            "Staff",
-            "Wand",
         ]
 
     @staticmethod

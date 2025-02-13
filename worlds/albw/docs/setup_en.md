@@ -10,8 +10,10 @@
 ## Installation
 
 1. Install the latest version of Archipelago.
-2. Put the apworld in your `Archipelago/custom_worlds/` folder.
-3. Put the `.pyd` (for Windows) or `.so` file (for Linux) in your `Archipelago/lib/` folder.
+2. Download `albw.apworld` and put it in your `Archipelago/custom_worlds/` folder.
+3. Download and unzip `albwrandomizer.zip`. Put the `albwrandomizer` folder in your `Archipelago/lib/` folder.
+ - If you already have an `albwrandomizer` *file* in your `lib` folder from a previous version, remove it.
+ - If running from source, place the `albwrandomizer` folder in your `Archipelago` folder instead.
 4. In the emulator, select `File > Open Lime3DS Folder` or `File > Open Citra Folder`. Create a `load` folder inside this folder, and inside the `load` folder create a `mods` folder.
 
 ## Generating a Game

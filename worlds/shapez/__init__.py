@@ -1,3 +1,4 @@
+import math
 from typing import Any, List, Dict, Tuple, Mapping
 
 from Options import OptionError
@@ -13,7 +14,8 @@ from .presets import options_presets
 from .options import ShapezOptions
 from worlds.AutoWorld import World, WebWorld
 from BaseClasses import Item, Tutorial, LocationProgressType, MultiWorld
-from .regions import create_shapez_regions
+from .regions import create_shapez_regions, has_x_belt_multiplier
+from ..generic.Rules import add_rule
 
 
 class ShapezWeb(WebWorld):
@@ -131,6 +133,7 @@ class ShapezWorld(World):
         self.included_locations: Dict[str, Tuple[str, LocationProgressType]] = {}
         self.client_seed: int = 0
         self.shapesanity_names: List[str] = []
+        self.upgrade_traps_allowed: bool = False
 
         # Universal Tracker support
         self.ut_active: bool = False
@@ -145,6 +148,9 @@ class ShapezWorld(World):
 
     def generate_early(self) -> None:
         # Calculate all the important values used for generating a shapez world, with some of them being random
+        self.upgrade_traps_allowed: bool = (self.options.include_whacky_upgrades and
+                                            (not self.options.goal == GOALS.efficiency_iii) and
+                                            self.options.throughput_levels_ratio == 0)
 
         # Load values from UT if this is a regenerated world
         if hasattr(self.multiworld, "re_gen_passthrough"):
@@ -268,7 +274,8 @@ class ShapezWorld(World):
 
     def add_alias(self, location_name: str, alias: str):
         """This method is given as a parameter when locations with helpful aliases for UT are created."""
-        self.location_id_to_alias[self.location_name_to_id[location_name]] = alias
+        if self.ut_active:
+            self.location_id_to_alias[self.location_name_to_id[location_name]] = alias
 
     def create_regions(self) -> None:
         # Create list of all included level and upgrade locations based on player options
@@ -288,13 +295,11 @@ class ShapezWorld(World):
 
         # Add achievements to included locations based on player options
         if self.options.include_achievements:
-            self.included_locations.update(addachievements(bool(self.options.exclude_softlock_achievements),
-                                                           bool(self.options.exclude_long_playtime_achievements),
-                                                           bool(self.options.exclude_progression_unreasonable),
-                                                           self.maxlevel, self.upgrade_logic_type,
-                                                           self.category_random_logic_amounts,
-                                                           self.options.goal.current_key,
-                                                           self.included_locations, self.add_alias))
+            self.included_locations.update(addachievements(
+                bool(self.options.exclude_softlock_achievements), bool(self.options.exclude_long_playtime_achievements),
+                bool(self.options.exclude_progression_unreasonable), self.maxlevel, self.upgrade_logic_type,
+                self.category_random_logic_amounts, self.options.goal.current_key, self.included_locations,
+                self.add_alias, self.upgrade_traps_allowed))
 
         # Save the final amount of to-be-filled locations
         self.location_count = len(self.included_locations)
@@ -304,8 +309,7 @@ class ShapezWorld(World):
                                                              self.location_name_to_id,
                                                              self.level_logic, self.upgrade_logic,
                                                              self.options.early_balancer_tunnel_and_trash.current_key,
-                                                             self.options.goal.current_key,
-                                                             bool(self.options.lock_belt_and_extractor)))
+                                                             self.options.goal.current_key))
 
     def create_items(self) -> None:
         # Include guaranteed items (game mechanic unlocks and 7x4 big upgrades)
@@ -331,13 +335,12 @@ class ShapezWorld(World):
         # Get value from traps probability option and convert to float
         traps_probability = self.options.traps_percentage/100
         split_draining = bool(self.options.split_inventory_draining_trap)
-        whacky_trap_allowed = (bool(self.options.include_whacky_upgrades)
-                               and not self.options.goal == GOALS.efficiency_iii)
         # Fill remaining locations with fillers
         for x in range(self.location_count - len(included_items)):
             if self.random.random() < traps_probability:
                 # Fill with trap
-                included_items.append(self.create_item(trap(self.random.random(), split_draining, whacky_trap_allowed)))
+                included_items.append(self.create_item(trap(self.random.random(), split_draining,
+                                                            self.upgrade_traps_allowed)))
             else:
                 # Fil with random filler item
                 included_items.append(self.create_item(self.get_filler_item_name()))
@@ -350,6 +353,31 @@ class ShapezWorld(World):
             self.multiworld.early_items[self.player][ITEMS.balancer] = 1
             self.multiworld.early_items[self.player][ITEMS.tunnel] = 1
             self.multiworld.early_items[self.player][ITEMS.trash] = 1
+
+    def set_rules(self) -> None:
+        # Levels might need more belt speed if they require throughput per second. As the randomization of what levels
+        # need throughput happens in the client mod, this logic needs to be applied to all levels. This is applied to
+        # every individual level instead of regions, because they would need a much more complex calculation to prevent
+        # softlocks.
+
+        def f(x: int, name: str):
+            # These calculations are taken from the client mod
+            if x < 26:
+                throughput = math.ceil((2.999+x*0.333)*self.options.required_shapes_multiplier/10)
+            else:
+                throughput = min((4+(x-26)*0.25)*self.options.required_shapes_multiplier/10, 200)
+            if throughput/32 >= 1:
+                add_rule(self.get_location(name),
+                         lambda state: has_x_belt_multiplier(state, self.player, throughput/32))
+
+        if not self.options.throughput_levels_ratio == 0:
+            f(0, LOCATIONS.level(1, 1))
+            f(19, LOCATIONS.level(20, 1))
+            f(19, LOCATIONS.level(20, 2))
+            for _x in range(self.maxlevel):
+                f(_x, LOCATIONS.level(_x+1))
+            if self.options.goal.current_key in [GOALS.vanilla, GOALS.mam]:
+                f(self.maxlevel, LOCATIONS.goal)
 
     def fill_slot_data(self) -> Mapping[str, Any]:
         # Buildings logic; all buildings as individual parameters

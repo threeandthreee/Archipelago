@@ -19,7 +19,7 @@ UnsetScripts:
 dw $006B,$ED02,$000B,$005F
 
 CharUnlockPointers:
-dw $F830,$F837,$F83E,$F845,$F955
+dw $F830,$F837,$F83E,$F845,$F955,$F849
 
 ORG $03FE10
 db $1C,$02,$FE,$50,$9A,$9F,$99,$9E,$95,$94,$50,$A9,$9F,$A5,$A2,$50,$A0,$91,$A2,$A4,$A9,$51,$1F,$00,$00,$0B,$10,$78,$10,$78,$10,$78,$10,$3C,$1F,$03,$13,$02
@@ -54,7 +54,8 @@ dw $FD80,$FD8E,$FD94,$FD9E,$FDA8,$FDC2,$FDD0,$FE74,$FE80,$FEE0,$FEEA
 
 ORG $D5F880
 SpecialNameTable:
-dw $A810, $A81F, $A82F, $A84C, $A85C, $A873, $A888, $A89A, $A8AB, $A8BC, $A8CD, $A8DD, $A8F4, $A90B, $A924, $A938, $A93E, $A943, $A947, $C659
+dw $A810, $A81F, $A82F, $A84C, $A85C, $A873, $A888, $A89A, $A8AB, $A8BC, $A8CD, $A8DD, $A8F4, $A90B, $A924, $A938, $A93E, $A943, $A947, #SpecialTexMagicant
+dw #SpecialTexNess
 
 
 
@@ -259,6 +260,9 @@ JML GetRandomizedTrack
 
 ORG $C105C9
 JML LoadExpandedWindowTable
+
+ORG $C2A5B2
+JSL early_missile_damage
 
 ;new jmls
 
@@ -546,55 +550,32 @@ db $91, $a9, $5e, $03, $00, $0A, $79, $AF, $EE, $00, $1b, $03, $B3, $9B, $EE, $0
 db $1f, $1e, $e1, $01, $06, $04, $2f, $00, $02;Threed character
 
 ORG $D5F710
-db $70, $16, $cf, $15, $6f, $17, $55, $91, $15, $5f, $a0, $a3, $a9, $93, $98, $99
-db $93, $15, $fb, $a4, $98, $91, $15, $ff, $17, $9d, $a5, $15, $dd, $16, $a7, $16
-db $e7, $91, $94, $9c, $17, $17, $03, $18, $04, $1f, $11, $02, $1f, $00, $00, $0b
+PaulaUnlocktext:
+db $08
+dd $C7966C
+db $18, $04, $1f, $11, $02, $1f, $00, $00, $0b
 db $10, $78, $50, $08, $10, $F8, $D5, $00, $1f, $03, $18, $01, $01, $70, $1c, $02
 db $02, $50, $9a, $9f, $16, $b9, $94, $15, $a8, $03, $18, $04, $02; Paula Join
 
-db $17, $f2, $50, $9e, $91, $9d, $16, $46, $1c, $02, $04, $5e, $10, $14, $16, $93
-db $91, $9d, $15, $18, $16, $22, $a7, $98, $9f, $15, $19, $96, $15, $f7, $92, $95
-db $16, $69, $15, $a8, $03, $00, $70, $17, $3d, $16, $26, $95, $a2, $a6, $91, $9e
-db $17, $1d, $1c, $02, $01, $5e, $10, $0f, $16, $8f, $15, $19, $9f, $92, $95, $a9
-db $50, $1c, $02, $01, $5e, $03, $00, $70, $1c, $02, $01, $51, $10, $14, $00, $50
-db $50, $7d, $a9, $50, $9c, $99, $96, $16, $46, $99, $9e, $15, $0e, $17, $75, $a3
-db $5e, $03, $0e, $01, $08, $7f, $dc, $c7, $00, $18, $04, $04, $10, $00, $04, $f8
-db $01, $04, $f3, $01, $18, $04, $1f, $11, $04, $1f, $00, $00, $0b, $10, $78, $50
+PooUnlockText:
+db $08
+dd $C929CD
+db $18, $04, $1f, $11, $04, $1f, $00, $00, $0b, $10, $78, $50
 db $08, $10, $F8, $D5, $00, $1f, $03, $18, $01, $01, $70, $1c, $02, $04, $50, $9a
-db $9f, $16, $b9, $94, $15, $a8, $03, $01, $08, $FC, $F7, $D5, $FF, $18, $04, $02; Poo join 
+db $9f, $16, $b9, $94, $15, $a8, $03, $01, $08, $6B, $F7, $D5, $FF, $18, $04, $02; Poo join 
 
 ORG $C884D0
-db $70, $89, $15, $20, $16, $91, $95, $a8, $17, $36, $16, $e0, $15, $9b, $15, $03
-db $10, $14, $16, $19, $1c, $02, $03, $5e, $03, $00, $70, $15, $d3, $15, $ed, $15
-db $9f, $5c, $10, $0f, $15, $12, $9e, $15, $ea, $5d, $a3, $15, $bb, $95, $94, $5c
-db $10, $0f, $50, $17, $b7, $16, $34, $a3, $98, $a9, $5c, $03, $00, $70, $16, $4f
-db $79, $50, $a4, $16, $74, $15, $aa, $91, $15, $5f, $a2, $95, $93, $9b, $9c, $15
-db $df, $5e, $10, $14, $16, $ba, $15, $d7, $9a, $a5, $a3, $15, $36, $16, $b0, $50
-db $17, $3d, $15, $03, $13, $18, $04, $1f, $00, $00, $0b, $10, $78, $50, $08, $10
+JeffUnlockText:
+db $08
+dd $C88533
+db $13, $18, $04, $1f, $00, $00, $0b, $10, $78, $50, $08, $10
 db $F8, $D5, $00, $1f, $03, $18, $01, $01, $70, $1c, $02, $03, $50, $9a, $9f, $16
 db $b9, $94, $15, $a8, $03, $18, $04, $1f, $11, $03, $02; Jeff join
 
-db $70, $17, $3D, $15, $0E, $17, $BC, $16, $01, $5E, $03, $00, $15, $37, $7D, $A9
-db $17, $12, $6F, $03, $00, $70, $7C, $16, $E3, $A3, $17, $E1, $76, $9C, $16, $9D
-db $17, $B6, $5E, $03, $18, $04, $08, $1A, $F8, $D5, $00, $1F, $11, $0B, $02; FlyingMan join
-
-db $70, $89, $9f, $a5, $50, $93, $91, $9e, $50, $93, $91, $9c, $9c, $50, $9d, $95
-db $50, $84, $95, $94, $94, $a9, $5e, $03, $00, $70, $84, $95, $94, $94, $a9, $50
-db $72, $95, $91, $a2, $5e, $03, $00, $70, $79, $a4, $50, $99, $a3, $50, $9d, $a9
-db $50, $94, $95, $a3, $a4, $99, $9e, $a9, $50, $a4, $9f, $50, $a3, $91, $a6, $95
-db $50, $a4, $98, $95, $50, $a7, $9f, $a2, $9c, $94, $5c, $10, $20, $50, $91, $9e
-db $94, $50, $79, $50, $a7, $99, $9c, $9c, $50, $91, $9c, $9c, $9f, $a7, $50, $a9
-db $9f, $a5, $50, $a4, $9f, $50, $92, $95, $50, $9d, $a9, $50, $95, $a3, $93, $9f
-db $a2, $a4, $51, $03, $1d, $03, $ff, $1b, $03, $6A, $86, $c8, $00, $00, $70, $87
-db $95, $9c, $9c, $5c, $50, $79, $50, $a7, $9f, $a5, $9c, $94, $5c, $10, $15, $50
-db $95, $a8, $93, $95, $a0, $a4, $50, $a9, $9f, $a5, $57, $a2, $95, $50, $93, $91
-db $a2, $a2, $a9, $99, $9e, $97, $50, $a4, $9f, $9f, $50, $9d, $a5, $93, $98, $50
-db $a3, $a4, $a5, $96, $96, $5e, $07, $68, $00, $13, $02, $a9, $5c, $15, $25, $9e, $51, $03, $18
-db $04, $10, $01, $1f, $11, $03, $1f, $eb, $99, $9e, $97, $50, $a4, $9f, $9f, $50
-db $9d, $a5, $93, $98, $50, $a3, $a4, $a5, $96, $96, $5e, $13, $02, $00, $50, $50
-db $58, $84, $98, $95, $50, $1c, $05, $02, $50, $9a, $9f, $99, $9e, $a3, $50, $a9
-db $9f, $a5, $5e, $59, $1f, $02, $10, $10, $30, $1d, $00, $ff, $02, $13, $1f, $41
-db $13, $02; TeddyBear join
+FlyingManUnlockText:
+db $08
+dd $C76FCE
+db $18, $04, $08, $1A, $F8, $D5, $00, $1F, $11, $0B, $02; FlyingMan join
 
 ORG $C75C33
 db $70, $79, $57, $9d, $50, $a4, $98, $95, $50, $1c, $05, $03, $51, $03, $00, $70
@@ -809,90 +790,150 @@ db $02, $2A, $18, $04, $10, $80, $05, $2F, $01, $0A, $00, $AA, $EE ;Buzz Buzz te
 
 ORG $EE9210
 OnettTeleTex:
-db $18, $01, $01, $01, $70, $58, $1C, $02, $01, $50, $9C, $95, $91, $A2, $9E, $95
+db $18, $01, $01, $01
+db $0A
+dd OnettLeaderName
+OnettLeaderDone:
+db $50, $9C, $95, $91, $A2, $9E, $95
 db $94, $50, $A4, $9F, $50, $A4, $95, $9C, $95, $A0, $9F, $A2, $A4, $50, $A4, $9F
 db $50, $7F, $9E, $95, $A4, $A4, $51, $59, $1F, $02, $67, $04, $D1, $00, $13, $02 ;Onett
 
 TwosonTeleTex:
-db $18, $01, $01, $01, $70, $58, $1C, $02, $01, $50, $9C, $95, $91, $A2, $9E, $95
+db $18, $01, $01, $01
+db $0A
+dd TwosonLeaderName
+TwosonLeaderDone:
+db $50, $9C, $95, $91, $A2, $9E, $95
 db $94, $50, $A4, $9F, $50, $A4, $95, $9C, $95, $A0, $9F, $A2, $A4, $50, $A4, $9F
 db $50, $84, $A7, $9F, $A3, $9F, $9E, $51, $59, $1F, $02, $67, $04, $D2, $00, $13
 db $02 ;Twoson
 
 HappyTeleTex:
-db $18, $01, $01, $01, $70, $58, $1C, $02, $01, $50, $9C, $95, $91, $A2, $9E, $95
+db $18, $01, $01, $01
+db $0A
+dd HappyLeaderName
+HappyLeaderDone:
+db $50, $9C, $95, $91, $A2, $9E, $95
 db $94, $50, $A4, $9F, $50, $A4, $95, $9C, $95, $A0, $9F, $A2, $A4, $50, $A4, $9F
 db $50, $78, $91, $A0, $A0, $A9, $5D, $78, $91, $A0, $A0, $A9, $50, $86, $99, $9C
 db $9C, $91, $97, $95, $51, $59, $1F, $02, $67, $04, $DD, $00, $13, $02 ;Happy-Happy
 
 ThreedTeleTex:
-db $18, $01, $01, $01, $70, $58, $1C, $02, $01, $50, $9C, $95, $91, $A2, $9E, $95
+db $18, $01, $01, $01
+db $0A
+dd ThreedLeaderName
+ThreedLeaderDone:
+db $50, $9C, $95, $91, $A2, $9E, $95
 db $94, $50, $A4, $9F, $50, $A4, $95, $9C, $95, $A0, $9F, $A2, $A4, $50, $A4, $9F
 db $50, $84, $98, $A2, $95, $95, $94, $51, $59, $1F, $02, $67, $04, $D3, $00, $13
 db $02 ;Threed
 
 SaturnTeleTex:
-db $18, $01, $01, $01, $70, $58, $1C, $02, $01, $50, $9C, $95, $91, $A2, $9E, $95
+db $18, $01, $01, $01
+db $0A
+dd SaturnLeaderName
+SaturnLeaderDone:
+db $50, $9C, $95, $91, $A2, $9E, $95
 db $94, $50, $A4, $9F, $50, $A4, $95, $9C, $95, $A0, $9F, $A2, $A4, $50, $A4, $9F
 db $50, $83, $91, $A4, $A5, $A2, $9E, $50, $86, $91, $9C, $9C, $95, $A9, $51, $59
 db $1F, $02, $67, $04, $D5, $00, $13, $02 ;Saturn Valley
 
 DunesTeleTex:
-db $18, $01, $01, $01, $70, $58, $1C, $02, $01, $50, $9C, $95, $91, $A2, $9E, $95
+db $18, $01, $01, $01
+db $0A
+dd DunesLeaderName
+DunesLeaderDone:
+db $50, $9C, $95, $91, $A2, $9E, $95
 db $94, $50, $A4, $9F, $50, $A4, $95, $9C, $95, $A0, $9F, $A2, $A4, $50, $A4, $9F
 db $50, $74, $A5, $A3, $A4, $A9, $50, $74, $A5, $9E, $95, $A3, $50, $74, $95, $A3
 db $95, $A2, $A4, $51, $59, $1F, $02, $67, $04, $DE, $00, $13, $02;Dusty Dunes
 
 FoursTeleTex:
-db $18, $01, $01, $01, $70, $58, $1C, $02, $01, $50, $9C, $95, $91, $A2, $9E, $95
+db $18, $01, $01, $01
+db $0A
+dd FoursLeaderName
+FoursLeaderDone:
+db $50, $9C, $95, $91, $A2, $9E, $95
 db $94, $50, $A4, $9F, $50, $A4, $95, $9C, $95, $A0, $9F, $A2, $A4, $50, $A4, $9F
 db $50, $76, $9F, $A5, $A2, $A3, $99, $94, $95, $51, $59, $1F, $02, $67, $04, $D6
 db $00, $13, $02; Fourside
 
 WintersTeleTex:
-db $18, $01, $01, $01, $70, $58, $1C, $02, $01, $50, $9C, $95, $91, $A2, $9E, $95
+db $18, $01, $01, $01
+db $0A
+dd WintersLeaderName
+WintersLeaderDone:
+db $50, $9C, $95, $91, $A2, $9E, $95
 db $94, $50, $A4, $9F, $50, $A4, $95, $9C, $95, $A0, $9F, $A2, $A4, $50, $A4, $9F
 db $50, $87, $99, $9E, $A4, $95, $A2, $A3, $51, $59, $1F, $02, $67, $04, $D4, $00
 db $13, $02 ;Winters
 
 SummersTeleTex:
-db $18, $01, $01, $01, $70, $58, $1C, $02, $01, $50, $9C, $95, $91, $A2, $9E, $95
+db $18, $01, $01, $01
+db $0A
+dd SummersLeaderName
+SummersLeaderDone:
+db $50, $9C, $95, $91, $A2, $9E, $95
 db $94, $50, $A4, $9F, $50, $A4, $95, $9C, $95, $A0, $9F, $A2, $A4, $50, $A4, $9F
 db $50, $83, $A5, $9D, $9D, $95, $A2, $A3, $51, $59, $1F, $02, $67, $04, $D7, $00
 db $13, $02 ;Summers
 
 ScarabaTeleTex:
-db $18, $01, $01, $01, $70, $58, $1C, $02, $01, $50, $9C, $95, $91, $A2, $9E, $95
+db $18, $01, $01, $01
+db $0A
+dl ScarabaLeaderName
+ScarabaLeaderDone:
+db $50, $9C, $95, $91, $A2, $9E, $95
 db $94, $50, $A4, $9F, $50, $A4, $95, $9C, $95, $A0, $9F, $A2, $A4, $50, $A4, $9F
 db $50, $83, $93, $91, $A2, $91, $92, $91, $51, $59, $1F, $02, $67, $04, $D9, $00
 db $13, $02 ;Scaraba
 
 DalaamTeleTex:
-db $18, $01, $01, $01, $70, $58, $1C, $02, $01, $50, $9C, $95, $91, $A2, $9E, $95
+db $18, $01, $01, $01
+db $0A
+dd DalaamLeaderName
+DalaamLeaderDone:
+db $50, $9C, $95, $91, $A2, $9E, $95
 db $94, $50, $A4, $9F, $50, $A4, $95, $9C, $95, $A0, $9F, $A2, $A4, $50, $A4, $9F
 db $50, $74, $91, $9C, $91, $91, $9D, $51, $59, $1F, $02, $67, $04, $D8, $00, $13
 db $02 ;Dalaam
 
 DarkTeleTex:
-db $18, $01, $01, $01, $70, $58, $1C, $02, $01, $50, $9C, $95, $91, $A2, $9E, $95
+db $18, $01, $01, $01
+db $0A
+dd DarkLeaderName
+DarkLeaderDone:
+db $50, $9C, $95, $91, $A2, $9E, $95
 db $94, $50, $A4, $9F, $50, $A4, $95, $9C, $95, $A0, $9F, $A2, $A4, $50, $A4, $9F
 db $50, $A4, $98, $95, $50, $74, $95, $95, $A0, $50, $74, $91, $A2, $9B, $9E, $95
 db $A3, $A3, $51, $59, $1F, $02, $67, $04, $DA, $00, $13, $02; Deep Darkness
 
 TendaTeleTex:
-db $18, $01, $01, $01, $70, $58, $1C, $02, $01, $50, $9C, $95, $91, $A2, $9E, $95
+db $18, $01, $01, $01
+db $0A
+dd TendaLeaderName
+TendaLeaderDone:
+db $50, $9C, $95, $91, $A2, $9E, $95
 db $94, $50, $A4, $9F, $50, $A4, $95, $9C, $95, $A0, $9F, $A2, $A4, $50, $A4, $9F
 db $50, $84, $95, $9E, $94, $91, $50, $86, $99, $9C, $9C, $91, $97, $95, $51, $59
 db $1F, $02, $67, $04, $DB, $00, $13, $02 ;Tenda Village
 
 UnderworldTeleTex:
-db $18, $01, $01, $01, $70, $58, $1C, $02, $01, $50, $9C, $95, $91, $A2, $9E, $95
+db $18, $01, $01, $01
+db $0A
+dd UnderLeaderName
+UnderLeaderDone:
+db $50, $9C, $95, $91, $A2, $9E, $95
 db $94, $50, $A4, $9F, $50, $A4, $95, $9C, $95, $A0, $9F, $A2, $A4, $50, $A4, $9F
 db $50, $A4, $98, $95, $50, $7C, $9F, $A3, $A4, $50, $85, $9E, $94, $95, $A2, $A7
 db $9F, $A2, $9C, $94, $51, $59, $1F, $02, $67, $04, $DC, $00, $13, $02; Lost Underworld
 
 MagicantTeleTex:
-db $18, $01, $01, $01, $70, $58, $1C, $02, $01, $50, $9C, $95, $91, $A2, $9E, $95
+db $18, $01, $01, $01
+db $0A
+dd MagicLeaderName
+MagicLeaderDone:
+db $50, $9C, $95, $91, $A2, $9E, $95
 db $94, $50, $A4, $9F, $50, $A4, $95, $9C, $95, $A0, $9F, $A2, $A4, $50, $A4, $9F
 db $50, $7D, $91, $97, $99, $93, $91, $9E, $A4, $51, $59, $1F, $02, $67, $04, $DF
 db $00, $13, $02 ;Magicant
@@ -1024,6 +1065,7 @@ ORG $C573C1
 db $0A,$DC,$73,$C5,$00
 
 ORG $C573DC
+;CLEANUP: can I subrotuine here
 db $18, $01, $01, $70, $83, $9f, $5c, $50, $9e, $9f, $a7, $50, $79, $50, $a7, $99
 db $9c, $9c, $50, $a4, $95, $91, $93, $98, $50, $a9, $9f, $a5, $50, $a4, $98, $95
 db $50, $a3, $95, $93, $a2, $95, $a4, $50, $9f, $96, $50, $9d, $a9, $50, $a0, $9f
@@ -1371,7 +1413,11 @@ db $a2, $5e, $03, $00, $70, $79, $50, $92, $95, $a4, $50, $a9, $9f, $a5, $50, $9
 db $a5, $a3, $a4, $50, $9d, $99, $a3, $a3, $50, $98, $9f, $9d, $95, $50, $95, $a6
 db $95, $a2, $a9, $50, $9f, $9e, $93, $95, $50, $99, $9e, $50, $91, $a7, $98, $99
 db $9c, $95, $51, $03, $0a, $88, $2f, $c9, $08, $7f, $dc, $c7, $00, $1b, $03, $aa
-db $06, $61, $00, $70, $83, $9f, $5e, $5e, $5e, $50, $a4, $98, $91, $a4, $50, $97
+db $06, $61, $00
+db $0A
+dl PaulaBoatText
+NotSoloPaula:
+db $5e, $5e, $50, $a4, $98, $91, $a4, $50, $97
 db $99, $a2, $9c, $50, $9f, $a6, $95, $a2, $50, $a4, $98, $95, $a2, $95, $5e, $5e
 db $5e, $03, $00, $70, $a9, $9f, $a5, $a2, $50, $92, $a5, $94, $94, $a9, $5c, $10
 db $07, $50, $a2, $99, $97, $98, $a4, $6f, $5e, $5e, $5e, $10, $14, $50, $89, $9f
@@ -1379,7 +1425,11 @@ db $a5, $50, $a4, $a7, $9f, $50, $9f, $9e, $50, $91, $50, $a2, $9f, $9d, $91, $9
 db $a4, $99, $93, $50, $a6, $91, $93, $91, $a4, $99, $9f, $9e, $6f, $03, $00, $70
 db $78, $91, $51, $10, $07, $50, $79, $57, $9d, $50, $9a, $a5, $a3, $a4, $50, $9b
 db $99, $94, $94, $99, $9e, $97, $51, $03, $00, $0a, $88, $2f, $c9, $08, $7f, $dc
-db $c7, $00, $1b, $03, $8c, $06, $61, $00, $70, $83, $9f, $5e, $5e, $5e, $50, $a4
+db $c7, $00, $1b, $03, $8c, $06, $61, $00
+db $0A
+dl JeffBoatText
+NotSoloJeff:
+db $5e, $5e, $50, $a4
 db $98, $91, $a4, $50, $97, $a5, $a9, $50, $a7, $99, $a4, $98, $50, $a4, $98, $95
 db $50, $97, $9c, $91, $a3, $a3, $95, $a3, $5e, $5e, $5e, $03, $00, $70, $a9, $9f
 db $a5, $a2, $50, $92, $a5, $94, $94, $a9, $5c, $10, $07, $50, $a2, $99, $97, $98
@@ -2243,14 +2293,14 @@ ORG $EF952F
 db $EC, $03, $29, $96, $C7
 
 ORG $C7961A
-db $0A, $08, $AF, $EE, $00, $18, $01, $01, $06, $56, $00, $8D, $96, $c7, $00, $70
+db $0A, $08, $AF, $EE, $00, $18, $01, $01, $06, $56, $00
+dd CabinPostItemRescue
+db $70
 db $72, $a9, $50, $a4, $98, $95, $50, $a7, $91, $a9, $5c, $10, $0a, $50, $79, $50
 db $96, $9f, $a5, $9e, $94, $50, $a4, $98, $99, $a3, $1c, $05, $11, $50, $98, $95
 db $a2, $95, $5e, $10, $0f, $0A, $34, $AF, $EE, $34, $AF, $EE, $1b, $02, $34, $93
-db $c8, $00, $10, $0f, $50, $79, $57, $94, $50, $9c, $99, $9b, $95, $50, $a9, $9f
-db $a5, $50, $a4, $9f, $50, $98, $91, $a6, $95, $50, $99, $a4, $5e, $03, $00, $1f
-db $02, $74, $10, $20, $1b, $04, $70, $58, $1c, $02, $00, $50, $97, $9f, $04, $56
-db $00, $04, $2D, $00, $04, $EC, $03, $04, $ED, $03, $18, $04, $0a, $a4, $96, $c7
+db $c8, $00, $10, $0f, $50, $79, $57, $94, $50, $9c, $99, $9b, $0A
+dl CabinTextFixNew
 
 ORG $C796BB
 db $02; End Paula
@@ -2508,18 +2558,13 @@ db $08, $00
 ORG $CFE102
 db $00
 
+ORG $CFE103
+dd StarMasterText
+
 ORG $CFE0FB
 db $62, $00, $03
 
 ORG $C76F96
-db $06, $e5, $03, $e9, $6f, $c7, $ff, $70, $71, $a4, $50, $9c, $91, $a3, $a4, $5c
-db $10, $0a, $50, $a9, $9f, $a5, $57, $a6, $95, $50, $91, $a2, $a2, $99, $a6, $95
-db $94, $5e, $10, $0f, $50, $79, $50, $9e, $9f, $a7, $50, $9f, $96, $96, $95, $a2
-db $50, $a9, $9f, $a5, $50, $9d, $a9, $50, $a5, $9c, $a4, $99, $9d, $91, $a4, $95
-db $50, $9b, $9e, $9f, $a7, $9c, $95, $94, $97, $95, $5e, $03, $04, $e5, $03, $0a
-db $40, $92, $ee, $70, $74, $9f, $50, $a9, $9f, $a5, $50, $9b, $9e, $9f, $a7, $50
-db $98, $9f, $a7, $50, $a4, $9f, $50, $97, $95, $a4, $50, $9f, $a5, $a4, $50, $9f
-db $96, $50, $98, $95, $a2, $95, $6f, $13, $02
 
 ORG $C9BD69
 db $70, $77, $9f, $9f, $94, $50, $9e, $95, $a7, $a3, $5c, $10, $0a, $50, $95, $a6
@@ -2578,8 +2623,8 @@ db $0A, $43, $A0, $EE
 
 ORG $EEA043
 db $18, $01, $01, $70, $74, $99, $94, $50, $a9, $9f, $a5, $50, $92, $a2, $99, $9e
-db $97, $50, $91, $9e, $a9, $50, $52, $84, $95, $9e, $94, $91, $9b, $a2, $91, $a5
-db $a4, $52, $6f, $03, $00, $70, $79, $a4, $57, $a3, $50, $a4, $98, $95, $50, $a0
+db $97, $50, $a4, $98, $95, $50, $6C, $1C, $05, $01, $0a, $64, $a0, $ee, $00, $00
+db $00, $6E, $6f, $03, $00, $70, $79, $a4, $57, $a3, $50, $a4, $98, $95, $50, $a0
 db $95, $a2, $96, $95, $93, $a4, $50, $a3, $9e, $91, $93, $9b, $50, $96, $9f, $a2
 db $50, $a0, $9c, $9f, $a4, $a4, $99, $9e, $97, $50, $a7, $9f, $a2, $9c, $94, $50
 db $94, $9f, $9d, $99, $9e, $91, $a4, $99, $9f, $9e, $5e, $03, $00, $0a, $b0, $61
@@ -3421,9 +3466,7 @@ LDA $D55000,X
 BEQ CheckKeys
 JML $C14F5A
 CheckKeys:
-STZ $B58B
-PHX
-PHY
+JML DeleteExtraKeyItem
 LDA $06
 AND #$00FF
 LDX #$0000
@@ -3471,8 +3514,8 @@ BNE RemoveItem
 PLA
 INC $B580
 BRA BackToItems
-RemoveItem:
 PLA
+RemoveItem:
 LDA #$0010
 BRA EndKeyCheck
 CheckStorageForKeys:
@@ -3914,11 +3957,25 @@ ORG $D5F5FB
 db $03, $00; Starting level
 
 ORG $D5F600
-db $12
+db $4A
 
 ORG $D5F830
-db $04, $e1, $03, $0a, $10, $f7, $d5, $04, $e2, $03, $0a, $d0, $84, $c8, $04, $10
-db $00, $0a, $5d, $f7, $d5, $0A, $5B, $85, $C8
+db $04, $e1, $03, $0a
+dl PaulaUnlocktext
+ 
+db $04, $e2, $03, $0a
+dl JeffUnlockText
+
+db $04, $10, $00, $0a
+dl PooUnlockText
+
+db $0A
+dl FlyingManUnlockText
+
+NessFlagText:
+db $04, $17, $04
+db $0A
+dl NessUnlockText
 
 ORG $C66AC1
 db $68; Tracy text
@@ -3978,7 +4035,8 @@ db $95, $ee, $ff, $55, $95, $ee, $ff, $55, $95, $ee, $ff, $02, $70, $71, $50, $a
 db $9f, $99, $93, $95, $50, $a2, $91, $9e, $97, $50, $9f, $a5, $a4, $50, $96, $a2
 db $9f, $9d, $50, $a7, $99, $a4, $98, $99, $9e, $0A, $F5, $A7, $EE, $50, $a0, $a2
 db $95, $a3, $95, $9e, $a4, $51, $03, $00, $1b, $04, $09, $04, $30, $f8, $d5, $ff
-db $37, $f8, $d5, $ff, $3e, $f8, $d5, $ff, $45, $f8, $d5, $ff, $02
+db $37, $f8, $d5, $ff, $3e, $f8, $d5, $ff, $45, $f8, $d5, $ff, $0A
+dl PresentNessCheck
 
 ORG $EEA810
 db $7f, $9e, $95, $a4, $a4, $50, $84, $95, $9c, $95, $a0, $9f, $a2, $a4, $00, $84
@@ -4072,7 +4130,7 @@ db $91, $9c, $9c, $95, $a9, $51, $59, $04, $d5, $00, $02, $1f, $02, $67, $10, $3
 db $01, $70, $58, $1c, $02, $01, $50, $9c, $95, $91, $a2, $9e, $95, $94, $50, $98
 db $9f, $a7, $50, $a4, $9f, $50, $a4, $95, $9c, $95, $a0, $9f, $a2, $a4, $50, $a4
 db $9f, $50, $74, $a5, $a3, $a4, $a9, $50, $74, $a5, $9e, $95, $a3, $50, $74, $95
-db $a3, $95, $a2, $a4, $51, $59, $04, $de, $00, $02, $1f, $02, $67, $10, $30, $00
+db $a3, $95, $a2, $a4, $51, $59, $04, $de, $00, $02, $1f, $02, $67, $10, $30, $01
 db $70, $58, $1c, $02, $01, $50, $9c, $95, $91, $a2, $9e, $95, $94, $50, $98, $9f
 db $a7, $50, $a4, $9f, $50, $a4, $95, $9c, $95, $a0, $9f, $a2, $a4, $50, $a4, $9f
 db $50, $76, $9f, $a5, $a2, $a3, $99, $94, $95, $51, $59, $04, $d6, $00, $02, $1f
@@ -4102,17 +4160,29 @@ db $95, $a0, $9f, $a2, $a4, $50, $a4, $9f, $50, $a4, $98, $95, $50, $7c, $9f, $a
 db $a4, $50, $85, $9e, $94, $95, $a2, $a7, $9f, $a2, $9c, $94, $51, $59, $04, $dc
 db $00, $02, $1f, $02, $67, $10, $30, $01, $70, $58, $1c, $02, $04, $50, $9c, $95
 db $91, $a2, $9e, $95, $94, $50, $98, $9f, $a7, $50, $a4, $9f, $50, $a5, $a3, $95
-db $06, $d1, $03, $36, $ae, $ee, $ff, $1c, $12, $15, $51, $59
+db $06, $d1, $03, $36, $ae, $ee, $ff, $1c, $12, $15, $51, $59, $0A
+dl SetNpcPooPSIFlag
+db $02, $1c, $12, $16, $51, $59, $1f, $71, $04, $03, $02
 db $0A
-dl PooNPCPSiFlag
-db $02, $1c, $12, $16, $51, $59, $1f, $71, $04, $03, $02, $1f, $00, $00, $7b, $10
-db $85, $00, $1f, $03, $70, $58, $1c, $02, $02, $50, $9a, $9f, $99, $9e, $95, $94
-db $50, $a9, $9f, $a5, $5e, $59, $04, $e1, $03, $1f, $11, $02, $02, $1f, $00, $00
-db $7b, $10, $85, $00, $1f, $03, $70, $58, $1c, $02, $03, $50, $9a, $9f, $99, $9e
+dl NPCPaulaTex
+NpcPaulaReturn:
+db $10
+db $85, $01, $1f, $03, $70, $58, $1c, $02, $02, $50, $9a, $9f, $99, $9e, $95, $94
+db $50, $a9, $9f, $a5, $5e, $59, $04, $e1, $03, $1f, $11, $02, $02
+
+db $0A
+dl NPCJeffTex
+NpcJeffReturn:
+db $10, $85, $01, $1f, $03, $70, $58, $1c, $02, $03, $50, $9a, $9f, $99, $9e
 db $95, $94, $50, $a9, $9f, $a5, $5e, $59, $04, $e2, $03, $1f, $11, $03, $02, $1f
 db $00, $00, $7b, $10, $85, $00, $1f, $03, $70, $58, $1c, $02, $04, $50, $9a, $9f
 db $99, $9e, $95, $94, $50, $a9, $9f, $a5, $5e, $59, $04, $10, $00, $1f, $11, $04
-db $02, $1f, $00, $00, $7b, $10, $85, $00, $1f, $03, $70, $58, $1c, $02, $0b, $50
+db $02
+
+db $0A
+dl NPCPooTex
+NpcPooReturn:
+db $10, $85, $01, $1f, $03, $70, $58, $1c, $02, $0b, $50
 db $9a, $9f, $99, $9e, $95, $94, $50, $a9, $9f, $a5, $5e, $59, $1f, $11, $0b, $02
 db $1f, $02, $67, $10, $30, $01, $70, $58, $1c, $02, $01, $50, $9c, $95, $91, $a2
 db $9e, $95, $94, $50, $98, $9f, $a7, $50, $a4, $9f, $50, $a4, $95, $9c, $95, $a0
@@ -4199,7 +4269,9 @@ db $02, $08, $b6, $dc, $c7, $ff, $03, $1f, $81, $ff, $ff, $02
 
 ORG $EEAF34
 db $03, $1d, $03, $ff, $1b, $02, $4d, $af, $ee, $ff, $1d, $0e, $ff, $11, $08, $cf
-db $dc, $c7, $ff, $03, $0a, $88, $96, $c7, $c7, $00, $70, $89, $9f, $a5, $57, $a2
+db $dc, $c7, $ff, $03, $0a
+dl CabinTextJump
+db $c7, $00, $70, $89, $9f, $a5, $57, $a2
 db $95, $50, $93, $91, $a2, $a2, $a9, $99, $9e, $97, $50, $a4, $9f, $9f, $50, $9d
 db $a5, $93, $98, $50, $a3, $a4, $a5, $96, $96, $5e, $03, $1f, $f1, $b5, $01, $0a
 db $00, $04, $ec, $03, $02
@@ -4536,7 +4608,7 @@ StarstormBits:
 db $02, $04
 
 CharFlags:
-dw $03E1, $003E2, $0010, $0068
+dw $03E1, $003E2, $0010, $0068, $0417
 
 ORG $CFD67D
 db $62, $00, $04, $0A, $00
@@ -4728,9 +4800,6 @@ db $0A, $B6, $B8, $EE
 
 ORG $EEB8B6
 db $04, $a9, $00, $1f, $f1, $e5, $02, $1e, $01, $0a, $f4, $f3, $c7
-
-ORG $C76FE2
-db $0A, $C3, $B8, $EE
 
 ORG $EEB8C3
 db $1f, $81, $ff, $ff, $08, $d6, $b8, $ee, $ff, $1b, $03, $be, $b8, $ee, $ff, $04
@@ -5048,11 +5117,16 @@ AND #$00FF
 BEQ EndStartData
 PHX
 PHA
+CMP #$0001
+BNE .NotNess
+LDA #$0006
+.NotNess:
 DEC
 DEC
 ASL
 TAX
 LDA CharFlags,X
+LDX #$0001
 JSL $C2165E
 PLA
 JSL $C228F8
@@ -6101,9 +6175,13 @@ ORG $EEAAF1
 db $F2, $C5, $EE
 
 ORG $EEC5F2
-db $1f, $00, $00, $7b, $10, $85, $01, $1f, $03, $70, $58, $1c, $02, $04, $50, $9a
+db $0A
+dl PooNPCTexReal
+PooReturnReal:
+db $10, $85, $01, $1f, $03, $70, $58, $1c, $02, $04, $50, $9a
 db $9f, $99, $9e, $95, $94, $50, $a9, $9f, $a5, $5e, $59, $04, $10, $00, $1f, $11
 db $04, $03, $01, $0e, $00, $0e, $01, $08, $f1, $c5, $ee, $ff, $02
+;db $04, $0e, $01, $0e, $00, $0e, $01, $08, $f1, $c5, $ee, $ff, $02
 
 ORG $C3E27C
 db $0C
@@ -7343,15 +7421,14 @@ ORG $D57295
 db $80, $A2, $9F, $97, $A2, $95, $A3, $A3, $99, $A6, $95, $50, $92, $91, $A4, $00
 
 ORG $D572BC
-db $80, $A2, $9F, $97, $A2, $95, $A3, $A3, $99, $A6, $95, $50, $96, $A2, $A9, $50
-db $A0, $91, $9E, $00
+db $80, $a2, $9f, $97, $a2, $95, $a3, $a3, $99, $a6, $95, $50, $a0, $91, $9e, $00
 
 ORG $D572E3
 db $80, $A2, $9F, $97, $A2, $95, $A3, $A3, $99, $A6, $95, $50, $97, $A5, $9E, $00
 
 ORG $D5730A
-db $80, $A2, $9F, $97, $A2, $95, $A3, $A3, $99, $A6, $95, $50, $92, $A2, $91, $93
-db $95, $9C, $95, $A4, $00
+db $80, $a2, $9f, $97, $a2, $95, $a3, $5e, $50, $92, $a2, $91, $93, $95, $9c
+db $95, $a4, $00
 
 ORG $D57331
 db $80, $A2, $9F, $97, $A2, $95, $A3, $A3, $99, $A6, $95, $50, $9F, $A4, $98, $95
@@ -8227,7 +8304,7 @@ ORG $D56F2E
 db $00
 
 ORG $D56B93
-db $83, $7f, $7c, $74, $50, $7f, $85, $84, $00; Change the Receiver phone to Sold Out
+db $87, $91, $a2, $a0, $50, $a0, $91, $94, $00; Change the Receiver phone to Sold Out
 
 
 ORG $F41000
@@ -8241,8 +8318,7 @@ db $78, $78, $86, $50, $84, $95, $9C, $95, $A0, $9F, $A2, $A4, $00
 .ThreedTeleport:
 db $84, $98, $A2, $95, $95, $94, $50, $84, $95, $9C, $95, $A0, $9F, $A2, $A4, $00
 .SaturnTeleport:
-db $83, $91, $a4, $a5, $a2, $9e, $50, $86, $91, $9c, $9c, $95, $a9, $50, $84, $95
-db $9c, $95, $a0, $9f, $a2, $a4, $00
+db $83, $91, $a4, $a5, $a2, $9e, $50, $84, $95, $9c, $95, $a0, $9f, $a2, $a4, $00
 .DesertTeleport:
 db $74, $A5, $9E, $95, $A3, $50, $84, $95, $9C, $95, $A0, $9F, $A2, $A4, $00
 .FoursideTeleport:
@@ -8279,6 +8355,8 @@ db $7A, $95, $96, $96, $00
 db $80, $9F, $9F, $00
 .FlnMn:
 db $76, $9C, $A9, $99, $9E, $97, $50, $7D, $91, $9E, $00
+.Ness:
+db $7E, $95, $A3, $A3, $00
 .SoldOut:
 db $83, $7F, $7C, $74, $50, $7F, $85, $84, $00
 .TeleportNames:
@@ -8305,6 +8383,7 @@ dw .Paula
 dw .Jeff
 dw .Poo
 dw .FlnMn
+dw .Ness
 
 .PlayerText:
 db $18, $01, $0B, $1c, $02, $01, $02
@@ -8356,6 +8435,273 @@ db $F6
 
 ORG $C64FA5
 db $FF
+
+ORG $EEAAA5
+db $0A
+dl NpcNessGiveOverride
+
+ORG $C79693
+db $02
+;Paula text og script
+
+ORG $C92A38
+dd $C92A3C
+
+ORG $C76FDA
+db $0A
+dl $C76FEE
+
+ORG $C885AC
+db $02
+
+ORG $D56BAF
+db $04
+
+ORG $C55715
+db $0A
+dl WarpPadDescription
+
+ORG $C6FFBC
+db $0A
+dl WarpPadUsage
+
+ORG $C8FD5B
+db $0A
+dl PokeyCharCount
+
+ORG $CFE045
+dw $041B
+
+ORG $CFE056
+dw $041A
+
+ORG $CFE067
+dw $0419
+
+ORG $CFE078
+dw $0418
+
+ORG $C8FFF0
+db $0A
+dl DisplayRobots
+
+ORG $C811B3
+db $0A
+dl OrangeKidCrowdfund
+
+ORG $C66680
+db $84, $66
+
+ORG $C6BE82
+db $86, $BE
+
+ORG $C6BE8F
+db $93, $BE
+
+ORG $C76119
+db $0A
+dl TracyNessText
+
+ORG $CFE367
+dd MagicantTentacleText
+
+ORG $C87963
+db $0A
+dl DuckSignTex
+
+ORG $C87997
+db $0A
+dl GoatSignTex
+
+ORG $C87A1F
+db $0A
+dl SlimeSignTex
+
+ORG $C8798A
+db $02
+
+ORG $C879BA
+db $02
+
+ORG $C87A45
+db $02
+
+ORG $C92E9E
+db $0A
+dl PooBoatText
+NotSoloPoo:
+
+ORG $C39F0C
+db $42
+dl CheckNessRobot
+
+ORG $F30080
+db $0A, $C3, $B8, $EE
+
+ORG $C7BF32
+db $0A
+dl GiantStepNessText
+
+ORG $C7BF5C
+db $0A
+dl GiantStepNessName
+
+ORG $C7BFFC
+db $0A
+dl LilliputNessText
+
+ORG $C7C027
+db $0A
+dl LilliputNessName
+
+ORG $C7C18F
+db $0A
+dl MilkyNessText
+
+ORG $C7C1CA
+db $0A
+dl MilkyNessName
+
+ORG $C7C0D4
+db $0A
+dl RainyNessText
+
+ORG $C7C0F9
+db $0A
+dl RainyNessName
+
+ORG $C7C26C
+db $0A
+dl MagnetNessText
+
+ORG $C7C295
+db $0A
+dl MagnetNessName
+
+ORG $C7C32B
+db $0A
+dl CloudNessText
+
+ORG $C7C35C
+db $0A
+dl CloudNessName
+
+ORG $C7C426
+db $0A
+dl LumineNessText
+
+ORG $C7C44B
+db $0A
+dl LumineNessName
+
+ORG $C7C4DD
+db $0A
+dl FireNessText
+
+ORG $C7C50D
+db $0A
+dl FireNessName
+
+ORG $EF97B2
+dd $EF97B6
+
+ORG $EF67AA
+dd $EF67AE
+
+ORG $C83D34
+dd $C83D38
+
+ORG $C9D2CA
+dd $C9D2CE
+
+ORG $C9E28B
+dd $C9E28F
+
+ORG $EF57FB
+dd $EF57FF
+
+ORG $C8854C
+db $0A
+dl $C88561
+
+ORG $EE9BDD
+db $0A
+dl EarthPowerLeader
+
+ORG $EEAB04
+db $0A
+dd OnettTeleNPCName
+OnettTeleNPCBack:
+
+ORG $EEAB36
+db $0A
+dd TwosonTeleNPCName
+TwosonTeleNPCBack:
+
+ORG $EEAB69
+db $0A
+dd HappyTeleNPCName
+HappyTeleNPCBack:
+
+ORG $EEABA9
+db $0A
+dd ThreedTeleNPCName
+ThreedTeleNPCBack:
+
+ORG $EEABDC
+db $0A
+dd SaturnTeleNPCName
+SaturnTeleNPCBack:
+
+ORG $EEAC16
+db $0A
+dd DunesTeleNPCName
+DunesTeleNPCBack:
+
+ORG $EEAC55
+db $0A
+dd FoursTeleNPCName
+FoursTeleNPCBack:
+
+ORG $EEAC8A
+db $0A
+dd WintersTeleNPCName
+WintersTeleNPCBack:
+
+ORG $EEACBE
+db $0A
+dd SummersTeleNPCName
+SummersTeleNPCBack:
+
+ORG $EEACF2
+db $0A
+dd ScarabaTeleNPCName
+ScarabaTeleNPCBack:
+
+ORG $EEAD26
+db $0A
+dd DalaamTeleNPCName
+DalaamTeleNPCBack:
+
+ORG $EEAD59
+db $0A
+dd DarkTeleNPCName
+DarkTeleNPCBack:
+
+ORG $EEAD93
+db $0A
+dd TendaTeleNPCName
+TendaTeleNPCBack:
+
+ORG $EEADCD
+db $0A
+dd UnderTeleNPCName
+UnderTeleNPCBack:
+
+ORG $EEAECB
+db $0A
+dd MagicTeleNPCName
+MagicTeleNPCBack:
 
 ;New data table go here
 
@@ -8987,7 +9333,7 @@ db $1E, $0E, $04, $05, $03, $02
 db $06, $69, $00
 dd $00C74207
 db $70, $58, $1c, $02, $01
-db $0A, $A9, $69, $C7
+db $0A, $AD, $69, $C7
 
 ;new text go here
 db $19, $10, $01
@@ -9347,10 +9693,46 @@ db $1D, $01, $FF, $9E
 db $0A
 dl $C75E03
 
-PooNPCPSiFlag:
-db $04, $D1, $03
-db $1f, $71, $04, $02
+SpecialTexMagicant:
+db $7D, $91, $97, $99, $93, $91, $9E, $A4, $50, $84, $95, $9C, $95, $A0, $9F, $A2
+db $A4, $00
+
+SpecialTexNess:
+db $7E, $95, $A3, $A3, $00
+
+NpcNessGiveOverride:
+db $0D, $01
+db $1B, $04
+db $1B, $00
+db $0B, $15
+db $1B, $03
+dd .GiveNess
+db $1B, $01
+db $0A
+dl $EEAAAB
+.GiveNess:
+db $1C, $04
+db $1F, $00, $00
+db $7b, $10, $85, $01, $1f, $03, $70, $58
+db $1c, $02, $01
+db $50, $9a, $9f, $99, $9e, $95, $94, $50, $a9, $9f, $a5, $5e, $59
+db $04, $17, $04
+db $1f, $11, $01, $02, $01
 db $02
+
+NessUnlockText:
+db $70, $78, $95, $a9, $51, $03, $01, $70, $79, $57, $9d, $50, $1c, $02, $01, $51
+db $03, $01, $70, $79, $a4, $57, $a3, $50, $97, $a2, $95, $91, $a4, $50, $a4, $9f
+db $50, $96, $99, $9e, $91, $9c, $9c, $a9, $50, $9d, $95, $95, $a4, $50, $a9, $9f
+db $a5, $50, $97, $a5, $a9, $a3, $51, $13
+db $18, $04, $1f, $00, $00, $0b, $10, $78, $50, $08, $10, $F8, $D5, $00, $1f, $03
+db $18, $01, $01, $70, $1c, $02, $01, $50, $9a, $9f, $16, $b9, $94, $15, $a8, $03
+db $18, $04, $1f, $11, $01, $02
+db $02
+
+SetNpcPooPSIFlag:
+db $04, $D1, $03
+db $1f, $71, $04, $02, $02
 
 
 ;FOR TESTING!!!!
@@ -9806,7 +10188,7 @@ CMP #$0020
 BEQ .SetShopFlag
 CMP #$0021
 BEQ .ClearAPName
-JML $C17DDC
+JML CheckMoreMoreCommands
 .CheckIfIsBanned:
 JMP .CompareBannedItemList
 .SendGiftPacket:
@@ -9876,8 +10258,9 @@ LDA #$00EE
 STA $10
 LDA.w #PlayerNameText
 STA $0E
-JSL $C3E4CA
+JSL $C3E4D4
 JSL $C186B1
+JSL $C3E4CA
 .LoopWin:
 JSL $C12DD5
 
@@ -10340,7 +10723,7 @@ RTL
 
 SetShopFlag:
 STZ $B573
-LDA $97D4
+LDA $0734 ; If I change this to $0734 will it fix my flag bug?
 LDX #$0000
 .CheckShopID:
 CMP #$0007
@@ -10872,6 +11255,118 @@ LDA #$00D7
 STA $08
 JML $C105D3
 
+CheckMoreMoreCommands:
+CMP #$0022
+BEQ CheckIfCanWarp
+JML $C17DDC
+
+CheckIfCanWarp:
+PHX
+LDX $987B
+LDA $9877
+JSL $C00AA1
+PLX
+AND #$0080
+BEQ .CantWarp
+LDA #$0001
+.CantWarp:
+STA $97CC
+LDA #$0000
+JML $C17F0F
+
+CheckNessRobot:
+SEP #$20
+LDA $B622
+BIT #$40
+REP #$20
+BEQ skip_ness
+JML $C0A98B
+skip_ness:
+LDY #$9F17
+STY $94
+RTL
+
+DeleteExtraKeyItem:
+PHX
+PHY
+STZ $B58B
+LDY #$0001
+.CheckNextCharacter:
+LDX #$0000
+JSR .GetCharacterInventory
+PHY
+LDA $06
+LDY #$0000
+.CheckNextSlot:
+SEP #$20
+CMP $9992,X
+REP #$20
+BEQ .LogKeyItem
+.IgnoreOriginalItem:
+INX
+INY
+CPY #$000E
+BNE .CheckNextSlot
+LDA $B58E
+CMP $98A4
+BEQ .Done
+PLY
+INY
+BRA .CheckNextCharacter
+
+.LogKeyItem:
+PHA
+LDA $B58B
+BNE .TossDuplicateItem
+PLA
+INC $B58B
+JMP .IgnoreOriginalItem
+.Done:
+LDA $06
+LDX #$0000
+.CheckStorage:
+SEP #$20
+CMP $3280,X
+REP #$20
+BEQ .TossDuplicateItemNoPull
+INX
+CPX #$0045
+BNE .CheckStorage
+
+.REALLYdone:
+PLY
+LDA #$0000
+JML EndKeyCheck
+.TossDuplicateItem:
+PLA
+PLY
+JML RemoveItem
+
+.TossDuplicateItemNoPull:
+PLY
+JML RemoveItem
+
+.GetCharacterInventory:
+PHY
+LDA $986E,Y ; get the character
+AND #$00FF
+TAY
+TXA
+..Check:
+CPY #$0000
+BEQ ..Done
+CLC
+ADC #$005F
+DEY
+BRA ..Check
+..Done:
+PLY
+TAX
+STY $B58E
+RTS
+
+;new code go here
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;ANYTHING BETWEEN THIS BREAK AND THE NEXT NEEDS TO GET COMMENTED OUT!
@@ -10947,8 +11442,8 @@ ORG $C5E04C
 
 ORG $F4002A
 ;Item ID, 2-byte price, Item Type, 2-bytelocation ID/flag number
-;db $02, $ff, $ff, $00, $00, $00; Non-remote local item. Franklin Badge.
-;db $01, $ff, $ff, $01, $01, $00; Non-remote local Teleport.
+;db $03, $0f, $00, $02, $00, $00; Non-remote local item. Franklin Badge.
+;db $05, $0F, $00, $02, $01, $00; Non-remote local Teleport.
 ;db $96, $ff, $ff, $05, $02, $00; A remote regular item
 ;db $01, $ff, $ff, $02, $03, $00; Non-remote local Character
 ;db $ad, $ff, $ff, $04, $04, $00; Item that the player already bought and got the flag for
@@ -11098,11 +11593,12 @@ dl $C50660
   db $02
 
   ..CharShopNameTable:
-  db $09, $04
+  db $09, $05
   dd .Paula
   dd .Jeff
   dd .Poo
   dd .FlnMn
+  dd .Ness
   db $02
 
 .Error:
@@ -11176,6 +11672,8 @@ db $1C, $02, $03, $02
 db $1C, $02, $04, $02
 .FlnMn:
 db $76, $9C, $A9, $99, $9E, $97, $50, $7D, $91, $9E, $02
+.Ness:
+db $1C, $02, $01, $02
 
 ShopsanityPurchaseHandler:
 ;Set the flag here, probably?
@@ -11343,11 +11841,12 @@ db $02
 ..Character:
 db $1B, $01
 db $1B, $04
-db $09, $04
+db $09, $05
 dd .Paula
 dd .Jeff
 dd .Poo
 dd .FlnMn
+dd .Ness
 db $02
 .Paula:
 db $08
@@ -11367,6 +11866,11 @@ db $02
 .FlnMn:
 db $08
 dd $D5F845
+db $18, $01, $01
+db $02
+.Ness:
+db $08
+dd $D5F849
 db $18, $01, $01
 db $02
 
@@ -12347,6 +12851,69 @@ db $00, $04, $05, $00
 dd $00ef9e05
 dd $00C299EF
 ;;;;;;;;;;
+db $00, $01, $03, $01
+dd $00EF8543;Blast Zeta
+dd blast_zeta
+
+db $00, $01, $03, $03
+dd $00EF8543;Blast Epsilon
+dd blast_epsilon
+;;;;;;;;;;;;;;;;;;;;;;;;
+db $00, $01, $03, $01
+dd $00EF8543;Missile Zeta
+dd missile_zeta
+
+db $00, $01, $03, $03
+dd $00EF8543;Missile Epsilon
+dd missile_epsilon
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+db $00, $01, $01, $00
+dd throwbomb_zeta
+dd blast_zeta
+
+db $00, $01, $01, $00
+dd throwbomb_epsilon
+dd blast_epsilon
+
+db $00, $01, $01, $00
+dd throwbomb_alpha
+dd blast_alpha
+
+db $00, $01, $01, $00
+dd throwbomb_beta
+dd blast_beta
+
+db $00, $01, $01, $00
+dd throwbomb_gamma
+dd blast_gamma
+
+db $00, $01, $01, $00
+dd throwbomb_omega
+dd blast_omega
+;;;;;;;;;;;;;;;;;;;;;;;;;
+db $00, $01, $01, $00
+dd shootrocket_zeta
+dd missile_zeta
+
+db $00, $01, $01, $00
+dd shootrocket_epsilon
+dd missile_epsilon
+
+db $00, $01, $01, $00
+dd shootrocket_alpha
+dd missile_alpha
+
+db $00, $01, $01, $00
+dd shootrocket_beta
+dd missile_beta
+
+db $00, $01, $01, $00
+dd shootrocket_gamma
+dd missile_gamma
+
+db $00, $01, $01, $00
+dd shootrocket_omega
+dd missile_omega
 
 
 
@@ -12602,6 +13169,95 @@ extinguish_epsilon:
 db $01, $1f, $02, $19, $70, $1c, $0d, $50, $94, $99, $a3, $a0, $95, $9e, $a3, $95
 db $94, $50, $91, $9e, $50, $95, $a8, $a4, $99, $9e, $97, $a5, $99, $a3, $98, $99
 db $9e, $97, $50, $a3, $a0, $9c, $91, $a3, $98, $51, $1f, $02, $58, $03, $10, $01
+db $02
+
+throwbomb_zeta:
+db $01, $1F, $02, $19
+db $70, $1c, $0d, $50, $a4, $a2, $99, $95, $94, $50, $a4, $9f, $50, $a4, $98, $a2
+db $9f, $a7, $50, $91, $50, $92, $9f, $9d, $92, $5c, $10, $05, $50, $92, $a5, $a4
+db $50, $a4, $a2, $99, $a0, $a0, $95, $94, $50, $9f, $a6, $95, $a2, $50, $a9, $9f
+db $a5, $51
+db $1F, $02, $11
+db $03, $02
+
+throwbomb_epsilon:
+db $01, $1F, $02, $19
+db $70, $1c, $0d, $50, $a4, $98, $a2, $95, $a7, $50, $91, $50, $a4, $9f, $a9
+db $50, $92, $9f, $9d, $92, $51
+db $1F, $02, $11, $03
+db $02
+
+throwbomb_alpha:
+db $01, $1F, $02, $19
+db $70, $1c, $0d, $50, $a4, $98, $a2, $95, $a7, $50, $91, $50, $92, $9f, $9d
+db $92, $51
+db $1F, $02, $11, $03
+db $02
+
+throwbomb_beta:
+db $01, $1F, $02, $19
+db $01, $70, $1c, $0d, $50, $a4, $98, $a2, $95, $a7, $50, $91, $50, $92, $99, $97
+db $50, $92, $9f, $9d, $92, $51
+db $1F, $02, $11, $03
+db $02
+
+throwbomb_gamma:
+db $01, $1F, $02, $19
+db $70, $1c, $0d, $50, $a4, $98, $a2, $95, $a7, $50, $91, $50, $a3, $a5, $a0
+db $95, $a2, $50, $92, $9f, $9d, $92, $51
+db $1F, $02, $11, $03
+db $02
+
+throwbomb_omega:
+db $01, $1F, $02, $19
+db $70, $1c, $0d, $50, $a4, $98, $a2, $95, $a7, $50, $91, $50, $98, $91, $9e, $94
+db $98, $95, $9c, $94, $50, $9e, $a5, $93, $9c, $95, $91, $a2, $50, $92, $9f, $9d
+db $92, $51
+db $1F, $02, $11, $03
+db $02
+
+shootrocket_zeta:
+db $01, $1F, $02, $19
+db $01, $70, $1c, $0d, $50, $a3, $98, $9f, $a4, $50, $91, $50, $94, $a5, $94, $50
+db $92, $9f, $a4, $a4, $9c, $95, $50, $a2, $9f, $93, $9b, $95, $a4, $51
+db $1F, $02, $46, $03
+db $02
+
+shootrocket_epsilon:
+db $01, $1F, $02, $19
+db $01, $70, $1c, $0d, $50, $a3, $98, $9f, $a4, $50, $91, $50, $a2, $9f, $9d, $91
+db $9e, $50, $93, $91, $9e, $94, $9c, $95, $51
+db $1F, $02, $46, $03
+db $02
+
+shootrocket_alpha:
+db $01, $1F, $02, $19
+db $01, $70, $1c, $0d, $50, $a3, $98, $9f, $a4, $50, $91, $50, $92, $9f, $a4, $a4
+db $9c, $95, $50, $a2, $9f, $93, $9b, $95, $a4, $51
+db $1F, $02, $46
+db $03
+db $02
+
+shootrocket_beta:
+db $01, $1F, $02, $19
+db $01, $70, $1c, $0d, $50, $a3, $98, $9f, $a4, $50, $91, $50, $94, $9f, $a5, $92
+db $9c, $95, $50, $92, $9f, $a4, $a4, $9c, $95, $50, $a2, $9f, $93, $9b, $95, $a4
+db $51
+db $1F, $02, $46, $03
+db $02
+
+shootrocket_gamma:
+db $01, $1F, $02, $19
+db $01, $70, $1c, $0d, $50, $a3, $98, $9f, $a4, $50, $91, $50, $92, $99, $97, $50
+db $92, $9f, $a4, $a4, $9c, $95, $50, $a2, $9f, $93, $9b, $95, $a4, $51
+db $1F, $02, $46, $03
+db $02
+
+shootrocket_omega:
+db $01, $1F, $02, $19
+db $01, $70, $1c, $0d, $50, $a3, $98, $9f, $a4, $50, $91, $50, $a2, $95, $91, $9c
+db $50, $97, $a5, $9e, $51
+db $1F, $02, $46, $03
 db $02
 
 ;New battle code
@@ -12959,6 +13615,43 @@ dw $00B3 ;Epsilon
 dw $00B4 ;Delta
 dw $00B5 ;Lambda
 
+blast_zeta:
+REP #$31
+LDA #$0016
+JSR blast_common
+RTL
+
+blast_epsilon:
+REP #$31
+LDA #$002D
+JSR blast_common
+RTL
+
+missile_zeta:
+REP #$31
+LDA #$0001
+STA $B5EB
+JSR missile_common
+STZ $B5EB
+RTL
+
+missile_epsilon:
+REP #$31
+LDA #$0003
+STA $B5EB
+JSR missile_common
+STZ $B5EB
+RTL
+
+early_missile_damage:
+PHA
+LDA $B5EB
+BEQ late_missile_damage
+LDY #$0019
+late_missile_damage:
+PLA
+JML $C08FF7
+
 
 
 
@@ -13215,6 +13908,18 @@ db $02, $E5, $01, $00, $00, $00, $09, $00, $BD, $E5, $EE, $FF
 
 db $19, $05, $04;neutralize o
 db $02, $E6, $01, $00, $00, $00, $09, $00, $FA, $E5, $EE, $FF
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+db $13, $06, $01;blast z
+db $02, $A4, $01, $00, $00, $00, $09, $00, $1C, $D2, $EE, $FF
+
+db $13, $07, $01;blast e
+db $02, $A5, $01, $00, $00, $00, $0B, $00, $6C, $D2, $EE, $FF
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+db $14, $06, $01;missile z
+db $02, $A8, $01, $00, $00, $00, $09, $00, $5F, $D3, $EE, $FF
+
+db $14, $07, $01;missile e
+db $02, $A8, $01, $00, $00, $00, $09, $00, $5F, $D3, $EE, $FF
 
 
 ;;;;;;;;;;;;;;;
@@ -13227,7 +13932,7 @@ ORG $EF8580
 db $0A, $00, $00, $FB
 
 ORG $FB0000
-db $1F, $C0, $57; number of anims
+db $1F, $C0, $5B; number of anims
 
 ORG $FB00CB
 dd $00EF88E9; Teleport 1. change to a $02
@@ -13280,7 +13985,13 @@ dd $00EF88E9;Stop omega
 
 dd neutralize_anim;Neutralize alpha
 dd $00EF88E9;Neutralize omega
-;TODO;Fix/change animations to not be Jeff-ified
+
+dd blast_alpha_anim;Blast alpha
+dd blast_alpha_anim;Blast beta
+
+dd missile_alpha_anim;Missile Zeta
+dd missile_alpha_anim;Missile Epsilon
+
 db $02
 
 PSINameTable:
@@ -14272,10 +14983,633 @@ escg_inquire:
 db $70, $87, $98, $91, $a4, $50, $a7, $9f, $a5, $9c, $94, $50, $a9, $9f, $a5, $50
 db $9c, $99, $9b, $95, $50, $a4, $9f, $50, $94, $9f, $6f, $02
 ;;;;;;;;;;;;;;;;;;;;;;
-;SHOPSANITY HANDLING! THIS IS PATCHED BY THE ROM ONLY!
-;USE THIS FOR TESTING!
+ORG $F30000
+CabinTextFixNew:
+db $95, $50, $a9, $9f
+db $a5, $50, $a4, $9f, $50, $98, $91, $a6, $95, $50, $99, $a4, $5e, $03, $00, $1f
+db $02, $74, $10, $20, $1b, $04, $70, $58, $1c, $02, $00, $50, $97, $9f
+CabinTextJump:
+db $04, $56
+db $00, $04, $2D, $00
+CabinPostItemRescue:
+db $04, $EC, $03, $04, $ED, $03, $18, $04, $0a, $a4, $96, $c7
 
-;$04 seems to contain the number of processed shop-slots
+StarMasterText:
+db $06, $e5, $03
+dd .GotCheck
+db $70, $71, $a4, $50, $9c, $91, $a3, $a4, $5c
+db $10, $0a, $50, $a9, $9f, $a5, $57, $a6, $95, $50, $91, $a2, $a2, $99, $a6, $95
+db $94, $5e, $10, $0f, $50, $79, $50, $9e, $9f, $a7, $50, $9f, $96, $96, $95, $a2
+db $50, $a9, $9f, $a5, $50, $9d, $a9, $50, $a5, $9c, $a4, $99, $9d, $91, $a4, $95
+db $50, $9b, $9e, $9f, $a7, $9c, $95, $94, $97, $95, $5e, $03, $04, $e5, $03, $0a
+db $40, $92, $ee
+.GotCheck:
+db $70, $74, $9f, $50, $a9, $9f, $a5, $50, $9b, $9e, $9f, $a7, $50
+db $98, $9f, $a7, $50, $a4, $9f, $50, $97, $95, $a4, $50, $9f, $a5, $a4, $50, $9f
+db $96, $50, $98, $95, $a2, $95, $6f, $13, $02
+
+TeddyJoin:
+db $70, $89, $9f, $a5, $50, $93, $91, $9e, $50, $93, $91, $9c, $9c, $50, $9d, $95
+db $50, $84, $95, $94, $94, $a9, $5e, $03, $00, $70, $84, $95, $94, $94, $a9, $50
+db $72, $95, $91, $a2, $5e, $03, $00, $70, $79, $a4, $50, $99, $a3, $50, $9d, $a9
+db $50, $94, $95, $a3, $a4, $99, $9e, $a9, $50, $a4, $9f, $50, $a3, $91, $a6, $95
+db $50, $a4, $98, $95, $50, $a7, $9f, $a2, $9c, $94, $5c, $10, $20, $50, $91, $9e
+db $94, $50, $79, $50, $a7, $99, $9c, $9c, $50, $91, $9c, $9c, $9f, $a7, $50, $a9
+db $9f, $a5, $50, $a4, $9f, $50, $92, $95, $50, $9d, $a9, $50, $95, $a3, $93, $9f
+db $a2, $a4, $51, $03, $1d, $03, $ff, $1b, $03, $6A, $86, $c8, $00, $00, $70, $87
+db $95, $9c, $9c, $5c, $50, $79, $50, $a7, $9f, $a5, $9c, $94, $5c, $10, $15, $50
+db $95, $a8, $93, $95, $a0, $a4, $50, $a9, $9f, $a5, $57, $a2, $95, $50, $93, $91
+db $a2, $a2, $a9, $99, $9e, $97, $50, $a4, $9f, $9f, $50, $9d, $a5, $93, $98, $50
+db $a3, $a4, $a5, $96, $96, $5e, $07, $68, $00, $13, $02, $a9, $5c, $15, $25, $9e, $51, $03, $18
+db $04, $10, $01, $1f, $11, $03, $1f, $eb, $99, $9e, $97, $50, $a4, $9f, $9f, $50
+db $9d, $a5, $93, $98, $50, $a3, $a4, $a5, $96, $96, $5e, $13, $02, $00, $50, $50
+db $58, $84, $98, $95, $50, $1c, $05, $02, $50, $9a, $9f, $99, $9e, $a3, $50, $a9
+db $9f, $a5, $5e, $59, $1f, $02, $10, $10, $30, $1d, $00, $ff, $02, $13, $1f, $41
+db $13, $02; TeddyBear join
+
+PresentNessCheck:
+db $0B, $05
+db $1B, $03
+dd NessFlagText
+db $02
+
+WarpPadDescription:
+db $71, $50, $98, $91, $9e, $94, $98, $95, $9c, $94, $50, $a4, $95, $9c, $95, $a0
+db $9f, $a2, $a4, $95, $a2, $50, $92, $a5, $99, $9c, $a4, $50, $92, $a9, $50, $a4
+db $98, $95, $50, $97, $95, $9e, $99, $a5, $a3, $5c, $50, $1c, $02, $03, $5e, $03
+db $00, $70, $89, $9f, $a5, $50, $93, $91, $9e, $50, $a5, $a3, $95, $50, $99, $a4
+db $50, $a4, $9f, $50, $a4, $95, $9c, $95, $a0, $9f, $a2, $a4, $50, $a4, $9f, $50
+db $9b, $9e, $9f, $a7, $9e, $50, $9c, $9f, $93, $91, $a4, $99, $9f, $9e, $a3, $5e
+db $13, $02
+
+WarpPadUsage:
+db $1C, $22, $01
+db $1B, $06
+db $1B, $03
+dd .CantWarp
+db $06, $F2, $02
+dd $C7C865
+db $70
+db $83, $75, $7c, $75, $73, $84, $50, $87, $71, $82, $80, $50, $7d, $7f, $74, $75
+db $01
+db $19, $02
+db $71, $02
+db $19, $02
+db $72, $02
+db $1C, $07, $02
+db $11
+db $12
+db $09, $02
+dd .WarpAccept
+dd .WarpAccept
+db $02
+.WarpAccept:
+db $70, $79, $7e, $80, $85, $84, $50, $89, $7f, $85, $82, $50, $74, $75, $83, $84
+db $79, $7e, $71, $84, $79, $7f, $7e, $10, $06
+db $1B, $04
+db $1A, $0B
+db $1F, $20, $00, $00, $02
+
+.CantWarp:
+db $70, $84, $98, $95, $50, $a3, $99, $97, $9e, $91, $9c, $50, $99, $a3, $50, $9a
+db $91, $9d, $9d, $95, $94, $5c, $10, $05, $50, $a3, $9f, $50, $a4, $98, $95, $50
+db $1c, $05, $b5, $50, $93, $91, $9e, $9e, $9f, $a4, $50, $92, $95, $50, $a5, $a3
+db $95, $94, $50, $98, $95, $a2, $95, $5e, $13, $02
+
+
+PokeyCharCount:
+db $08
+dd .CountChars
+db $0A
+dl $C8FD5F
+
+.CountChars:
+db $19, $20
+db $09, $04
+dd .One
+dd .Two
+dd .Three
+dd .Four
+.One:
+db $02
+.Two:
+db $A4, $A7, $9F, $50, $02
+.Three:
+db $A4, $98, $A2, $95, $95, $50, $02
+.Four:
+db $96, $9F, $A5, $A2, $50, $02
+
+DisplayRobots:
+db $18, $04
+db $07, $17, $04
+db $1B, $02
+dd .NoNess
+db $04, $18, $04
+.NoNess:
+db $07, $E1, $03
+db $1B, $02
+dd .NoPaula
+db $04, $19, $04
+
+.NoPaula:
+db $07, $E2, $03
+db $1B, $02
+dd .NoJeff
+db $04, $1A, $04
+.NoJeff:
+db $07, $10, $00
+db $1B, $02
+dd .NoPoo
+db $04, $1B, $04
+.NoPoo:
+db $02
+
+OrangeKidCrowdfund:
+db $01, $70
+db $84, $98, $91, $a4, $57, $a3, $50, $a7, $98, $a9, $50, $79, $50, $94, $95, $93
+db $99, $94, $95, $94, $50, $a4, $9f, $50, $9f, $a0, $95, $9e, $50, $91, $50, $93
+db $a2, $9f, $a7, $94, $96, $a5, $9e, $94, $99, $9e, $97, $50, $93, $91, $9d, $a0
+db $91, $99, $97, $9e, $50, $96, $9f, $a2, $50, $9d, $a9, $50, $99, $9e, $a6, $95
+db $9e, $a4, $99, $9f, $9e, $a3, $5e, $03, $00, $70, $79, $96, $50, $a9, $9f, $a5
+db $50, $a3, $a0, $95, $9e, $94, $50, $54, $62, $60, $60, $50, $a2, $99, $97, $98
+db $a4, $50, $9e, $9f, $a7, $5c, $10, $05, $a9, $9f, $a5, $57, $9c, $9c, $50, $9a
+db $9f, $99, $9e, $50, $a4, $98, $95, $50, $7f, $a2, $91, $9e, $97, $95, $50, $7a
+db $a5, $99, $93, $95, $50, $a4, $99, $95, $a2, $03, $00, $70, $91, $9e, $94, $50
+db $97, $95, $a4, $50, $95, $a8, $93, $9c, $a5, $a3, $99, $a6, $95, $50, $95, $91
+db $a2, $9c, $a9, $50, $91, $93, $93, $95, $a3, $a3, $50, $a4, $9f, $50, $9d, $a9
+db $50, $9c, $91, $a4, $95, $a3, $a4, $50, $99, $9e, $a6, $95, $9e, $a4, $99, $9f
+db $9e, $5c, $50, $a4, $98, $95, $50, $1c, $05, $01, $5e, $03, $00, $70, $87, $98
+db $91, $a4, $50, $94, $9f, $50, $a9, $9f, $a5, $50, $a3, $91, $a9, $6f
+db $0A
+dl $C812AE
+
+NPCPaulaTex:
+db $1C, $04
+db $1f, $00, $00, $7b
+db $0A
+dl NpcPaulaReturn
+NPCJeffTex:
+db $1C, $04
+db $1f, $00, $00, $7b
+db $0A
+dl NpcJeffReturn
+NPCPooTex:
+db $1C, $04
+db $1f, $00, $00, $7b
+db $0A
+dl NpcPooReturn
+PooNPCTexReal:
+db $1C, $04
+db $1f, $00, $00, $7b
+db $0A
+dl PooReturnReal
+
+TracyNessText:
+db $06, $17, $04
+dd $C76120
+db $70, $87, $98, $a9, $50, $91, $a2, $95, $50, $a9, $9f, $a5, $50, $99, $9e, $50
+db $9d, $a9, $50, $a2, $9f, $9f, $9d, $6f, $03, $00, $70, $7d, $91, $a9, $92, $95
+db $50, $99, $96, $50, $79, $50, $9b, $9e, $95, $a7, $50, $1c, $02, $01, $50, $a7
+db $91, $a3, $50, $9f, $9b, $91, $a9, $5c, $10, $05, $50, $79, $57, $94, $50, $97
+db $99, $a6, $95, $50, $a9, $9f, $a5, $50, $9d, $a9, $50, $1c, $05, $01, $5e, $03
+db $00, $70, $7f, $98, $5c, $50, $a7, $95, $9c, $9c, $5e, $03, $00, $70, $79, $96
+db $50, $a9, $9f, $a5, $50, $a7, $91, $9e, $9e, $91, $50, $93, $a2, $91, $9d, $50
+db $a3, $9f, $9d, $95, $a4, $98, $99, $9e, $97, $50, $99, $9e, $50, $a9, $9f, $a5
+db $a2, $50, $a0, $9f, $93, $9b, $95, $a4, $a3, $5c, $10, $04, $50, $9a, $a5, $a3
+db $a4, $50, $a5, $a3, $95, $50, $a4, $98, $95, $50, $82, $50, $92, $a5, $a4, $a4
+db $9f, $9e, $5e, $13, $02
+
+MagicantTentacleText:
+db $06, $17, $04
+dd $C77D9F
+db $70, $58, $71, $50, $a6, $9f, $99, $93, $95, $50, $93, $a2, $95, $95, $a0, $a3
+db $50, $99, $9e, $a4, $9f, $50, $19, $10, $01, $1c, $02, $00, $57, $a3, $50, $9d
+db $99, $9e, $94, $5e, $5e, $5e, $03, $00, $70, $79, $a4, $50, $a3, $91, $a9, $a3
+db $5c, $10, $08, $50, $6c, $1c, $02, $01, $50, $9d, $a5, $a3, $a4, $50, $92, $95
+db $50, $a0, $a2, $95, $a3, $95, $9e, $a4, $50, $a4, $9f, $50, $a0, $a2, $9f, $93
+db $95, $95, $94, $50, $92, $95, $a9, $9f, $9e, $94, $50, $a4, $98, $99, $a3, $50
+db $a0, $9f, $99, $9e, $a4, $5e, $5e, $5e, $6e, $59, $13, $02
+
+DuckSignTex:
+db $08
+dd $C87994
+db $6E, $01
+db $08
+dd $C87994
+db $03
+db $0A
+dl $C8798B
+
+GoatSignTex:
+db $08
+dd $C87994
+db $6E, $01
+db $08
+dd $C87994
+db $03
+db $0A
+dl $C879BB
+
+SlimeSignTex:
+db $08
+dd $C87994
+db $6E, $01
+db $08
+dd $C87994
+db $03
+db $0A
+dl $C87A46
+
+JeffBoatText:
+db $19, $20
+db $0B, $01
+db $1B, $03
+dd JeffBoatSolo
+db $70, $83, $9f, $5e
+db $0A
+dl NotSoloJeff
+JeffBoatSolo:
+db $70
+db $83, $9f, $5c, $50, $a9, $9f, $a5, $57, $a2, $95, $50, $a0, $a2, $95, $a4, $a4
+db $a9, $50, $a3, $9d, $91, $a2, $a4, $5c, $50, $95, $98, $6f, $03, $00, $70, $84
+db $98, $99, $a3, $50, $92, $9f, $91, $a4, $57, $a3, $50, $91, $50, $9c, $99, $a4
+db $a4, $9c, $95, $50, $a2, $99, $93, $9b, $95, $a4, $a9, $5c, $50, $9d, $91, $a9
+db $92, $95, $50, $a9, $9f, $a5, $50, $93, $9f, $a5, $9c, $94, $50, $97, $99, $a6
+db $95, $50, $99, $a4, $50, $91, $9e, $50, $a5, $a0, $97, $a2, $91, $94, $95, $51
+db $03, $00
+db $0A
+dl $C92F88
+
+PooBoatText:
+db $19, $20
+db $0B, $01
+db $1B, $03
+dd PooBoatSolo
+db $70, $83, $17, $8b
+db $0A
+dl NotSoloPoo
+PooBoatSolo:
+db $70, $78, $95, $a9, $5c, $50, $a7, $98, $91, $a4, $57, $a3, $50, $a7, $99, $a4
+db $98, $50, $a4, $98, $95, $50, $a3, $95, $a2, $99, $9f, $a5, $a3, $50, $96, $91
+db $93, $95, $6f, $03, $00, $70, $89, $9f, $a5, $50, $97, $9f, $a4, $a4, $91, $50
+db $9c, $99, $97, $98, $a4, $95, $9e, $50, $a5, $a0, $50, $91, $50, $9c, $99, $a4
+db $a4, $9c, $95, $51, $03, $00, $70, $71, $50, $9c, $9f, $9f, $9b, $50, $9c, $99
+db $9b, $95, $50, $a4, $98, $91, $a4, $50, $93, $9f, $a5, $9c, $94, $50, $a3, $93
+db $91, $a2, $95, $50, $91, $50, $a3, $95, $91, $50, $9d, $9f, $9e, $a3, $a4, $95
+db $a2, $51
+db $03, $00
+db $0A
+dl $C92F88
+
+PaulaBoatText:
+db $19, $20
+db $0B, 01
+db $1B, $03
+dd PaulaBoatSolo
+db $70, $83, $9f, $5e
+db $0A
+dl NotSoloPaula
+PaulaBoatSolo:
+db $70, $87, $98, $91, $a4, $57, $a3, $50, $a4, $98, $91, $a4, $50, $93, $a2, $91
+db $93, $9b, $9c, $99, $9e, $97, $50, $95, $9e, $95, $a2, $97, $a9, $50, $91, $a4
+db $50, $a9, $9f, $a5, $a2, $50, $96, $99, $9e, $97, $95, $a2, $a4, $99, $a0, $a3
+db $6f, $03, $00, $70, $89, $9f, $a5, $50, $a3, $95, $95, $9d, $50, $91, $9c, $9d
+db $9f, $a3, $a4, $50, $a2, $95, $91, $94, $a9, $50, $96, $9f, $a2, $50, $91, $9e
+db $a9, $a4, $98, $99, $9e, $97, $51, $03, $00, $70, $7d, $91, $a9, $92, $95, $50
+db $a4, $98, $95, $50, $9d, $9f, $9e, $a3, $a4, $95, $a2, $a3, $50, $a3, $98, $9f
+db $a5, $9c, $94, $50, $92, $95, $50, $a2, $95, $91, $94, $a9, $50, $96, $9f, $a2
+db $50, $89, $7f, $85, $51
+db $03, $00
+db $0A
+dl $C92F88
+
+NessBarfAppear:
+db $70, $1c, $02, $01, $50, $a4, $95, $9c, $95, $a0, $9f, $a2, $a4, $95, $94, $50
+db $99, $9e, $51, $03, $02
+
+NessBarfAttack:
+db $70
+db $1c, $02, $01, $50, $a4, $a2, $99, $95, $94, $50, $80, $83, $79, $50, $82, $9f
+db $93, $9b, $99, $9e, $51
+db $03, $00
+db $70, $1F, $02, $37
+db $1C, $02, $01
+db $50, $A4, $A2, $99, $95, $94, $50
+db $1C, $12, $01, $51
+db $08
+dd $EF864C
+db $02
+
+GiantStepNessText:
+db $08
+dd NessSancDiscover
+db $0A
+dl $C7BF36
+
+LilliputNessText:
+db $08
+dd NessSancDiscover
+db $0A
+dl $C7C000
+
+MilkyNessText:
+db $08
+dd NessSancDiscover
+db $0A
+dl $C7C193
+
+RainyNessText:
+db $08
+dd NessSancDiscover
+db $0A
+dl $C7C0D8
+
+MagnetNessText:
+db $1C, $21, $01
+db $08
+dd NessSancDiscover
+db $0A
+dl $C7C270
+
+CloudNessText:
+db $08
+dd NessSancDiscover
+db $0A
+dl $C7C32F
+
+LumineNessText:
+db $08
+dd NessSancDiscover
+db $0A
+dl $C7C42A
+
+FireNessText:
+db $08
+dd NessSancDiscover
+db $0A
+dl $C7C4E1
+
+NessSancDiscover:
+db $70
+db $06, $17, $04
+dd .NessPresent
+db $83, $9F, $9D, $95, $A7, $98, $95, $A2, $95, $5C, $50, $10, $0A
+.NessPresent:
+db $1c, $02, $01
+db $02
+
+GiantStepNessName:
+db $08
+dd PrintLeader
+db $0A
+dl $C7BF60
+
+LilliputNessName:
+db $08
+dd PrintLeader
+db $0A
+dl $C7C02B
+
+MilkyNessName:
+db $08
+dd PrintLeader
+db $0A
+dl $C7C1CE
+
+RainyNessName:
+db $08
+dd PrintLeader
+db $0A
+dl $C7C0FD
+
+MagnetNessName:
+db $08
+dd PrintLeader
+db $0A
+dl $C7C299
+
+CloudNessName:
+db $08
+dd PrintLeader
+db $0A
+dl $C7C360
+
+LumineNessName:
+db $08
+dd PrintLeader
+db $0A
+dl $C7C44F
+
+FireNessName:
+db $08
+dd PrintLeader
+db $0A
+dl $C7C511
+
+EarthPowerLeader:
+db $08
+dd PrintLeader
+db $0A
+dl $EE9BE2
+
+OnettLeaderName:
+db $08
+dd PrintLeader2
+db $0A
+dl OnettLeaderDone
+
+TwosonLeaderName:
+db $08
+dd PrintLeader2
+db $0A
+dl TwosonLeaderDone
+
+HappyLeaderName:
+db $08
+dd PrintLeader2
+db $0A
+dl HappyLeaderDone
+
+ThreedLeaderName:
+db $08
+dd PrintLeader2
+db $0A
+dl ThreedLeaderDone
+
+SaturnLeaderName:
+db $08
+dd PrintLeader2
+db $0A
+dl SaturnLeaderDone
+
+DunesLeaderName:
+db $08
+dd PrintLeader2
+db $0A
+dl DunesLeaderDone
+
+FoursLeaderName:
+db $08
+dd PrintLeader2
+db $0A
+dl FoursLeaderDone
+
+WintersLeaderName:
+db $08
+dd PrintLeader2
+db $0A
+dl WintersLeaderDone
+
+SummersLeaderName:
+db $08
+dd PrintLeader2
+db $0A
+dl SummersLeaderDone
+
+ScarabaLeaderName:
+db $08
+dd PrintLeader2
+db $0A
+dl ScarabaLeaderDone
+
+DalaamLeaderName:
+db $08
+dd PrintLeader2
+db $0A
+dl DalaamLeaderDone
+
+DarkLeaderName:
+db $08
+dd PrintLeader2
+db $0A
+dl DarkLeaderDone
+
+TendaLeaderName:
+db $08
+dd PrintLeader2
+db $0A
+dl TendaLeaderDone
+
+UnderLeaderName:
+db $08
+dd PrintLeader2
+db $0A
+dl UnderLeaderDone
+
+MagicLeaderName:
+db $08
+dd PrintLeader2
+db $0A
+dl MagicLeaderDone
+
+OnettTeleNPCName:
+db $08
+dd PrintLeader2
+db $0A
+dl OnettTeleNPCBack
+
+TwosonTeleNPCName:
+db $08
+dd PrintLeader2
+db $0A
+dl TwosonTeleNPCBack
+
+HappyTeleNPCName:
+db $08
+dd PrintLeader2
+db $0A
+dl HappyTeleNPCBack
+
+ThreedTeleNPCName:
+db $08
+dd PrintLeader2
+db $0A
+dl ThreedTeleNPCBack
+
+SaturnTeleNPCName:
+db $08
+dd PrintLeader2
+db $0A
+dl SaturnTeleNPCBack
+
+DunesTeleNPCName:
+db $08
+dd PrintLeader2
+db $0A
+dl DunesTeleNPCBack
+
+FoursTeleNPCName:
+db $08
+dd PrintLeader2
+db $0A
+dl FoursTeleNPCBack
+
+WintersTeleNPCName:
+db $08
+dd PrintLeader2
+db $0A
+dl WintersTeleNPCBack
+
+SummersTeleNPCName:
+db $08
+dd PrintLeader2
+db $0A
+dl SummersTeleNPCBack
+
+ScarabaTeleNPCName:
+db $08
+dd PrintLeader2
+db $0A
+dl ScarabaTeleNPCBack
+
+DalaamTeleNPCName:
+db $08
+dd PrintLeader2
+db $0A
+dl DalaamTeleNPCBack
+
+DarkTeleNPCName:
+db $08
+dd PrintLeader2
+db $0A
+dl DarkTeleNPCBack
+
+TendaTeleNPCName:
+db $08
+dd PrintLeader2
+db $0A
+dl TendaTeleNPCBack
+
+UnderTeleNPCName:
+db $08
+dd PrintLeader2
+db $0A
+dl UnderTeleNPCBack
+
+MagicTeleNPCName:
+db $08
+dd PrintLeader2
+db $0A
+dl MagicTeleNPCBack
+
+PrintLeader:
+db $70
+db $19, $10, $01
+db $1B, $04
+db $1C, $02, $00
+db $02
+
+PrintLeader2:
+db $70
+db $58
+db $19, $10, $01
+db $1B, $04
+db $1C, $02, $00
+db $02
+
+;todo, PSI rockin?
+
+;New New Text
 
 
 

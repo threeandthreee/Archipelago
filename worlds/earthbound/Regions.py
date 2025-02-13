@@ -64,6 +64,7 @@ def init_areas(world: "EarthBoundWorld", locations: List[LocationData]) -> None:
         create_region(world, player, locations_per_region, "Lost Underworld"),
         create_region(world, player, locations_per_region, "Fire Spring"),
         create_region(world, player, locations_per_region, "Magicant"),
+        create_region(world, player, locations_per_region, "Sea of Eden"),
         create_region(world, player, locations_per_region, "Cave of the Present"),
 
         create_region(world, player, locations_per_region, "Global ATM Access"),
@@ -188,8 +189,9 @@ def init_areas(world: "EarthBoundWorld", locations: List[LocationData]) -> None:
         multiworld.get_region("Cave of the Past", player).add_exits(["Endgame"],
                                                                     {"Endgame": lambda state: state.has("Paula", player)})
 
-    if world.options.magicant_mode < 2:
-        multiworld.get_region("Magicant", player).add_exits(["Global ATM Access"])
+    if world.options.magicant_mode < 3:
+        multiworld.get_region("Magicant", player).add_exits(["Global ATM Access", "Sea of Eden"],
+                                                            {"Sea of Eden": lambda state: state.has("Ness", player)})
 
 
 def create_location(player: int, location_data: LocationData, region: Region) -> Location:
@@ -239,5 +241,7 @@ def connect_menu_region(world: "EarthBoundWorld") -> None:
     }
     #todo; change the coordinate dict to use names instead of numbers, change start_location instead of making a new var
     world.starting_region = starting_region_list[world.start_location]
-    world.multiworld.get_region("Menu", world.player).add_exits([world.starting_region, "Ness's Mind"])
+    world.multiworld.get_region("Menu", world.player).add_exits([world.starting_region, "Ness's Mind"],
+                                {"Ness's Mind": lambda state: state.has_any({"Ness", "Paula", "Jeff", "Poo"}, world.player),
+                                world.starting_region: lambda state: state.has_any({"Ness", "Paula", "Jeff", "Poo"}, world.player)})
     

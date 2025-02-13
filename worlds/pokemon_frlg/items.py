@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Dict, FrozenSet, Optional
 from BaseClasses import Item, ItemClassification
-from .data import data, BASE_OFFSET
+from .data import data
 
 if TYPE_CHECKING:
     from . import PokemonFRLGWorld
@@ -67,15 +67,7 @@ class PokemonFRLGItem(Item):
         if code is None:
             self.tags = frozenset(["Event"])
         else:
-            self.tags = data.items[reverse_offset_item_value(code)].tags
-
-
-def offset_item_value(item_value: int) -> int:
-    return item_value + BASE_OFFSET
-
-
-def reverse_offset_item_value(item_id: int) -> int:
-    return item_id - BASE_OFFSET
+            self.tags = data.items[code].tags
 
 
 def create_item_name_to_id_map() -> Dict[str, int]:
@@ -84,7 +76,7 @@ def create_item_name_to_id_map() -> Dict[str, int]:
     """
     name_to_id_map: Dict[str, int] = {}
     for item_value, attributes in data.items.items():
-        name_to_id_map[attributes.name] = offset_item_value(item_value)
+        name_to_id_map[attributes.name] = item_value
 
     return name_to_id_map
 
@@ -93,7 +85,7 @@ def get_item_classification(item_id: int) -> ItemClassification:
     """
     Returns the item classification for a given AP item id (code)
     """
-    return data.items[reverse_offset_item_value(item_id)].classification
+    return data.items[item_id].classification
 
 
 def get_random_item(world: "PokemonFRLGWorld", item_classification: ItemClassification = None) -> str:

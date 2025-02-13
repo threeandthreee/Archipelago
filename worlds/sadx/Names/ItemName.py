@@ -32,15 +32,18 @@ class KeyItem:
     Train = "Train"
     Boat = "Boat"
     Raft = "Raft"
-    StationKeys = "Station Keys"
-    HotelKeys = "Hotel Keys"
-    CasinoKeys = "Casino District Keys"
+    StationFrontKey = "Station Front Key"
+    StationBackKey = "Station Back Key"
+    HotelFrontKey = "Hotel Front Key"
+    HotelBackKey = "Hotel Back Key"
     TwinkleParkTicket = "Twinkle Park Ticket"
     EmployeeCard = "Employee Card"
     IceStone = "Ice Stone"
     WindStone = "Wind Stone"
     Dynamite = "Dynamite"
     JungleCart = "Jungle Cart"
+    Egglift = "Egglift"
+    Monorail = "Monorail"
 
 
 class Sonic:

@@ -43,7 +43,8 @@ barf_text = {
     "Paula": [0xE0, 0xC2, 0xEE, 0xBD, 0xC3, 0xEE],
     "Jeff": [0xFA, 0xC2, 0xEE, 0x10, 0xC4, 0xEE],
     "Poo": [0x1A, 0x74, 0xEF, 0x3E, 0xC4, 0xEE],
-    "Flying Man": [0x17, 0xC3, 0xEE, 0x95, 0xC4, 0xEE]
+    "Flying Man": [0x17, 0xC3, 0xEE, 0x95, 0xC4, 0xEE],
+    "Ness": [0x16, 0x07, 0xF3, 0x2B, 0x07, 0xF3]
 }
 
 eb_text_table = {" ": ([0x50]), "!": ([0x51]), '"': ([0x52]), "■": ([0x53]), "$": ([0x54]), "%": ([0x55]),
@@ -201,7 +202,10 @@ lumine_hall_text = [
     "Well, that's never happened before...",
     "99 bottles of DXWater on the wall, 99 bottles of DXWater. Take one down, pass it around, 98 bottles of DXWater on the wall!",
     "After all these years. Finally, I have them all.",
-    "If there were two guys on the moon and one killed the other with a rock would that be screwed up or what"
+    "If there were two guys on the moon and one killed the other with a rock would that be screwed up or what",
+    "Help, I'm trapped in a Lumine Hall factory!",
+    "They say that Ice Palace can be found at Ice Palace...",
+    "Hey Mom, I'm in AP!",
 ]
 
 spoiler_psi = {

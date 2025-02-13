@@ -1,6 +1,6 @@
 from typing import Any, Dict, List
 from BaseClasses import CollectionState, Item, ItemClassification, Location, Region, Tutorial
-from Fill import FillError, fill_restrictive
+from Fill import fill_restrictive
 from worlds.generic.Rules import set_rule
 from worlds.minishoot.options import MinishootOptions
 from .pool import MinishootPool
@@ -46,6 +46,8 @@ class MinishootWorld(World):
     location_name_to_id = location_name_to_id
 
     def create_item(self, name: str) -> MinishootItem:
+        if name in self.get_ignored_items():
+            name = self.get_filler_item_name()
         item_data = item_table[name]
         item = MinishootItem(name, item_data.classification, self.item_name_to_id[name], self.player)
         if item.name == "Progressive Cannon" and not self.options.cannon_level_logical_requirements:
@@ -108,6 +110,27 @@ class MinishootWorld(World):
             randomized_pools.append(MinishootPool.scarab)
 
         return randomized_pools
+    
+    def get_ignored_items(self) -> List[str]:
+        return [
+            "Abyss Map",
+            "Beach Map",
+            "Blue Forest Map",
+            "Desert Map",
+            "Green Map",
+            "Junkyard Map",
+            "Sunken City Map",
+            "Swamp Map",
+            "Ancient Astrolabe",
+            "Compass",
+            "Explorer"
+        ]
+
+    def get_fallback_items(self) -> List[str]:
+        return ["Super Crystals x2", "Super Crystals x5", "Super Crystals x10", "Super Crystals x15"]
+    
+    def get_filler_item_name(self) -> str:
+        return self.random.choice(self.get_fallback_items())
 
     def create_items(self) -> None:
         minishoot_items: List[MinishootItem] = []
@@ -119,11 +142,11 @@ class MinishootWorld(World):
             dungeon_name: [] for dungeon_name in get_dungeons()
         }
 
-        # Make sure the player is actually having a good time and give them at least one progressive cannon.
-        self.multiworld.push_precollected(self.create_item("Progressive Cannon"))
-
         for item_name, data in item_table.items():
-            for i in range(0, data.quantity_in_item_pool):
+            quantity = data.quantity_in_item_pool
+            if item_name == "Progressive Cannon":
+                quantity -= 1 # The plugin will add the first cannon level automatically.
+            for i in range(0, quantity):
                 # For dungeon rewards, place them in the vanilla locations.
                 if data.pool == MinishootPool.dungeon_reward:
                     location = self.multiworld.get_location(dungeon_reward_location_mapping[item_name], self.player)
@@ -149,6 +172,10 @@ class MinishootWorld(World):
                 elif data.pool in randomized_pools:
                     minishoot_item: MinishootItem = self.create_item(item_name)
                     minishoot_items.append(minishoot_item)
+            # We add one filler item to compensate for the cannon level that is added automatically.
+            if item_name == "Progressive Cannon":
+                minishoot_item: MinishootItem = self.create_item(self.get_filler_item_name())
+                minishoot_items.append(minishoot_item)
                     
         for location_name, data in location_table.items():
             if data.pool not in randomized_pools:
@@ -225,6 +252,11 @@ class MinishootWorld(World):
         for loc in self.get_locations():
             if loc.address is not None and not loc.show_in_spoiler:
                 loc.address = None
+
+    def post_fill(self) -> None:
+        # Fill the remaining locations with filler items.
+        for location in self.multiworld.get_unfilled_locations(self.player):
+            location.place_locked_item(self.create_item(self.get_filler_item_name()))
             
     def fill_slot_data(self) -> Dict[str, Any]:
         slot_data: Dict[str, Any] = {
@@ -233,9 +265,13 @@ class MinishootWorld(World):
             "shard_sanity": self.options.shard_sanity.value,
             "key_sanity": self.options.key_sanity.value,
             "boss_key_sanity": self.options.boss_key_sanity.value,
+            "show_archipelago_item_category": self.options.show_archipelago_item_category.value,
             "simple_temple_exit": self.options.simple_temple_exit.value,
             "blocked_forest": self.options.blocked_forest.value,
             "cannon_level_logical_requirements": self.options.cannon_level_logical_requirements.value,
+            "boostless_springboards": self.options.boostless_springboards.value,
+            "boostless_spirit_races": self.options.boostless_spirit_races.value,
+            "boostless_torch_races": self.options.boostless_torch_races.value,
             "completion_goals": self.options.completion_goals.value
         }
 

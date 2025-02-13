@@ -3,8 +3,6 @@ from NetUtils import ClientStatus
 import worlds._bizhawk as bizhawk
 from worlds._bizhawk.client import BizHawkClient
 from .data import data
-from .items import reverse_offset_item_value
-from .locations import offset_flag
 from .options import Goal
 
 if TYPE_CHECKING:
@@ -157,6 +155,8 @@ class PokemonFRLGClient(BizHawkClient):
             game_version = int.from_bytes(game_version_bytes, "little")
             game_revision_bytes = (await bizhawk.read(ctx.bizhawk_ctx, [(0xBC, 1, "ROM")]))[0]
             game_revision = int.from_bytes(game_revision_bytes, "little")
+            rom_checksum_bytes = (await bizhawk.read(ctx.bizhawk_ctx, [(0x1B8, 4, "ROM")]))[0]
+            rom_checksum = int.from_bytes(rom_checksum_bytes, "little")
 
             if game_version == 0x4:
                 if game_revision == 0x0:
@@ -175,16 +175,19 @@ class PokemonFRLGClient(BizHawkClient):
             else:
                 return False
 
-            if not rom_name.startswith(BASE_ROM_NAME[self.game_version]):
-                return False
             if rom_name == BASE_ROM_NAME[self.game_version]:
                 logger.info("ERROR: You appear to be running an unpatched version of Pokemon FireRed or LeafGreen."
                             "You need to generate a patch file and use it to create a patched ROM.")
                 return False
-            if not rom_name.startswith(data.rom_names[self.game_version]):
+            if rom_name != data.rom_names[self.game_version]:
+                return False
+            if data.rom_checksum != rom_checksum:
+                generator_checksum = "{0:x}".format(rom_checksum).upper() if rom_checksum != 0 else "Undefined"
+                client_checksum = "{0:x}".format(data.rom_checksum).upper() if data.rom_checksum != 0 else "Undefined"
                 logger.info("ERROR: The patch file used to create this ROM is not compatible with "
-                            "this client. Double check your client version against the version being "
+                            "this client. Double check your pokemon_frlg.apworld against the version being "
                             "used by the generator.")
+                logger.info(f"Client checksum: {client_checksum}, Generator checksum: {generator_checksum}")
                 return False
         except UnicodeDecodeError:
             return False
@@ -296,30 +299,29 @@ class PokemonFRLGClient(BizHawkClient):
             local_set_events = {flag_name: False for flag_name in TRACKER_EVENT_FLAGS}
             local_set_fly_unlocks = {flag_name: False for flag_name in TRACKER_FLY_UNLOCK_FLAGS}
             local_hints = {flag_name: False for flag_name in HINT_FLAGS.keys()}
-            local_checked_locations = set()
+            local_checked_locations: Set[int] = set()
             caught_pokemon = 0
 
             # Check set flags
             for byte_i, byte in enumerate(flag_bytes):
                 for i in range(8):
                     if byte & (1 << i) != 0:
-                        flag_id = byte_i * 8 + i
+                        location_id = byte_i * 8 + i
 
-                        location_id = offset_flag(flag_id)
                         if location_id in ctx.server_locations:
                             local_checked_locations.add(location_id)
 
-                        if flag_id == self.goal_flag:
+                        if location_id == self.goal_flag:
                             game_clear = True
 
-                        if flag_id in EVENT_FLAG_MAP:
-                            local_set_events[EVENT_FLAG_MAP[flag_id]] = True
+                        if location_id in EVENT_FLAG_MAP:
+                            local_set_events[EVENT_FLAG_MAP[location_id]] = True
 
-                        if flag_id in FLY_UNLOCK_FLAG_MAP:
-                            local_set_fly_unlocks[FLY_UNLOCK_FLAG_MAP[flag_id]] = True
+                        if location_id in FLY_UNLOCK_FLAG_MAP:
+                            local_set_fly_unlocks[FLY_UNLOCK_FLAG_MAP[location_id]] = True
 
-                        if flag_id in HINT_FLAG_MAP:
-                            local_hints[HINT_FLAG_MAP[flag_id]] = True
+                        if location_id in HINT_FLAG_MAP:
+                            local_hints[HINT_FLAG_MAP[location_id]] = True
 
             # Check set fame checker flags
             if fame_checker_read_status:
@@ -328,7 +330,7 @@ class PokemonFRLGClient(BizHawkClient):
                     if byte_i % 4 == 0:  # The Fame Checker flags are every 4 bytes
                         for i in range(2, 8):
                             if byte & (1 << i) != 0:
-                                location_id = offset_flag(FAMESANITY_OFFSET + fame_checker_index)
+                                location_id = FAMESANITY_OFFSET + fame_checker_index
                                 if location_id in ctx.server_locations:
                                     local_checked_locations.add(location_id)
                             fame_checker_index += 1
@@ -339,7 +341,7 @@ class PokemonFRLGClient(BizHawkClient):
                     for i in range(8):
                         if byte & (1 << i) != 0:
                             dex_number = byte_i * 8 + i
-                            location_id = offset_flag(DEXSANITY_OFFSET + dex_number)
+                            location_id = DEXSANITY_OFFSET + dex_number
                             if location_id in ctx.server_locations:
                                 local_checked_locations.add(location_id)
                             caught_pokemon += 1
@@ -413,8 +415,8 @@ class PokemonFRLGClient(BizHawkClient):
                     if local_hints[flag_name] and flag_name not in self.local_hints:
                         hints_locations.append(loc_name)
                         self.local_hints.append(flag_name)
-                hint_ids = [offset_flag(data.locations[loc].flag) for loc in hints_locations
-                            if offset_flag(data.locations[loc].flag) in ctx.missing_locations]
+                hint_ids = [data.locations[loc].flag for loc in hints_locations
+                            if data.locations[loc].flag in ctx.missing_locations]
                 if hint_ids:
                     await ctx.send_msgs([{
                         "cmd": "LocationScouts",
@@ -455,7 +457,7 @@ class PokemonFRLGClient(BizHawkClient):
             next_item = ctx.items_received[num_received_items]
             should_display = 1 if next_item.flags & 1 or next_item.player == ctx.slot else 0
             await bizhawk.write(ctx.bizhawk_ctx, [
-                (received_item_address, reverse_offset_item_value(next_item.item).to_bytes(2, "little"), "System Bus"),
+                (received_item_address, next_item.item.to_bytes(2, "little"), "System Bus"),
                 (received_item_address + 2, (num_received_items + 1).to_bytes(2, "little"), "System Bus"),
                 (received_item_address + 4, [1], "System Bus"),
                 (received_item_address + 5, [should_display], "System Bus")

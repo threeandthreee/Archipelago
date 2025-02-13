@@ -214,7 +214,7 @@ class IncludeStakeList(OptionSet):
     Example: ['White Stake','Red Stake','Gold Stake']
     This will make those stakes playable and remove the other ones from the game.
     (Also make sure to capitalize the first letters, it's case sensitive.)
-    This option is only considered if Playable Staeks is set to choose.
+    This option is only considered if Playable Stakes is set to choose.
     """
     display_name = "Include Stakes to have important Locations"
     default = ["White Stake", "Red Stake"]
