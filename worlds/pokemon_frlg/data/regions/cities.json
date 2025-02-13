@@ -78,9 +78,7 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [
-      "PC_ITEM_POTION"
-    ],
+    "locations": [],
     "events": [],
     "exits": {},
     "warps": {
@@ -1388,7 +1386,16 @@
       "EVENT_BUY_FIRE_STONE",
       "EVENT_BUY_THUNDER_STONE",
       "EVENT_BUY_WATER_STONE",
-      "EVENT_BUY_LEAF_STONE"
+      "EVENT_BUY_LEAF_STONE",
+      "EVENT_BUY_MOON_STONE",
+      "EVENT_BUY_SUN_STONE",
+      "EVENT_BUY_KINGS_ROCK",
+      "EVENT_BUY_METAL_COAT",
+      "EVENT_BUY_DRAGON_SCALE",
+      "EVENT_BUY_UP_GRADE",
+      "EVENT_BUY_DEEP_SEA_SCALE",
+      "EVENT_BUY_DEEP_SEA_TOOTH",
+      "EVENT_BUY_HEART_SCALE"
     ],
     "exits": {
       "REGION_CELADON_CITY_DEPARTMENT_STORE_ELEVATOR/MAIN": "Celadon Department Store 4F Elevator"
@@ -2609,7 +2616,7 @@
   },
   "REGION_INDIGO_PLATEAU_EXTERIOR/VISIT": {
     "parent_map": "MAP_INDIGO_PLATEAU_EXTERIOR",
-    "name": "Indigo Plateau Exterior Visit",
+    "name": "Indigo Plateau Visit",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -2624,7 +2631,7 @@
   },
   "REGION_INDIGO_PLATEAU_EXTERIOR/MAIN": {
     "parent_map": "MAP_INDIGO_PLATEAU_EXTERIOR",
-    "name": "Indigo Plateau Exterior",
+    "name": "Indigo Plateau",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -2633,8 +2640,8 @@
     "locations": [],
     "events": [],
     "exits": {
-      "REGION_INDIGO_PLATEAU_EXTERIOR/VISIT": "Indigo Plateau Exterior Visit",
-      "REGION_ROUTE23/NORTH": "Indigo Plateau Exterior Exit"
+      "REGION_INDIGO_PLATEAU_EXTERIOR/VISIT": "Indigo Plateau Visit",
+      "REGION_ROUTE23/NORTH": "Indigo Plateau Exit"
     },
     "warps": {
       "MAP_INDIGO_PLATEAU_EXTERIOR:0/MAP_INDIGO_PLATEAU_POKEMON_CENTER_1F:0": "Indigo Plateau Pokemon Center"

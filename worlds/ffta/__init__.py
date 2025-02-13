@@ -4,6 +4,7 @@ Archipelago World definition for Final Fantasy Tactics Advance
 
 import os
 from typing import ClassVar, Dict, Any, Union, Tuple, Optional
+from itertools import chain
 import settings
 import sys
 import logging
@@ -994,8 +995,8 @@ class FFTAWorld(World):
             self.random.shuffle(self.viera_abilities)
             self.random.shuffle(self.moogle_abilities)
 
-        self.all_abilities = (self.human_abilities + self.bangaa_abilities + self.nu_mou_abilities + self.viera_abilities
-                              + self.moogle_abilities)
+        self.all_abilities = list(chain(self.human_abilities, self.bangaa_abilities, self.nu_mou_abilities,
+                                        self.viera_abilities, self.moogle_abilities))
 
         length_abilities = len(self.all_abilities)
 

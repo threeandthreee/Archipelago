@@ -1,5 +1,7 @@
 from typing import Any, Dict, List, Optional, Tuple
 
+from kivy.core.clipboard import Clipboard
+
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
@@ -656,6 +658,7 @@ class AvailableTrialLayout(BoxLayout):
 
     unlock_button: Button
     complete_button: Button
+    copy_button: Button
 
     def __init__(
         self,
@@ -671,8 +674,8 @@ class AvailableTrialLayout(BoxLayout):
         self.trial = trial
 
         self.unlock_button = Button(
-            text="Unlock",
-            width="70dp",
+            text=" ",
+            width="16dp",
             size_hint_x=None,
             halign="left",
         )
@@ -683,7 +686,7 @@ class AvailableTrialLayout(BoxLayout):
 
         self.complete_button = Button(
             text="Complete",
-            width="100dp",
+            width="88dp",
             size_hint_x=None,
             halign="left",
             disabled=True,
@@ -692,6 +695,17 @@ class AvailableTrialLayout(BoxLayout):
         self.complete_button.bind(on_press=self.on_complete_button_press)
 
         self.add_widget(self.complete_button)
+
+        self.copy_button = Button(
+            text="Copy",
+            width="56dp",
+            size_hint_x=None,
+            halign="left",
+        )
+
+        self.copy_button.bind(on_press=self.on_copy_button_press)
+
+        self.add_widget(self.copy_button)
 
         trial_objective: str = self.ctx.area_trial_game_objectives[self.trial.name]
 
@@ -719,16 +733,17 @@ class AvailableTrialLayout(BoxLayout):
         self.disabled = True
 
     def on_unlock_button_press(self, _) -> None:
-        if self.unlock_button.text == "Unlock":
-            self.unlock_button.text = "Lock"
+        if self.complete_button.disabled:
             self.complete_button.disabled = False
         else:
-            self.unlock_button.text = "Unlock"
             self.complete_button.disabled = True
 
     def on_complete_button_press(self, _) -> None:
         self.complete_button.disabled = True
         self.ctx.complete_location(self.trial.archipelago_id)
+
+    def on_copy_button_press(self, _) -> None:
+        Clipboard.copy(self.ctx.area_trial_game_objectives[self.trial.name])
 
 
 class GoalAreaLabel(Label):
@@ -798,6 +813,7 @@ class AvailableGoalTrialLayout(BoxLayout):
 
     unlock_button: Button
     complete_button: Button
+    copy_button: Button
 
     def __init__(self, ctx: KeymastersKeepContext) -> None:
         super().__init__(orientation="horizontal", size_hint_y=None, height="40dp", spacing="8dp")
@@ -805,8 +821,8 @@ class AvailableGoalTrialLayout(BoxLayout):
         self.ctx = ctx
 
         self.unlock_button = Button(
-            text="Unlock",
-            width="70dp",
+            text=" ",
+            width="16dp",
             size_hint_x=None,
             halign="left",
         )
@@ -817,7 +833,7 @@ class AvailableGoalTrialLayout(BoxLayout):
 
         self.complete_button = Button(
             text="Complete",
-            width="100dp",
+            width="88dp",
             size_hint_x=None,
             halign="left",
             disabled=True,
@@ -826,6 +842,17 @@ class AvailableGoalTrialLayout(BoxLayout):
         self.complete_button.bind(on_press=self.on_complete_button_press)
 
         self.add_widget(self.complete_button)
+
+        self.copy_button = Button(
+            text="Copy",
+            width="56dp",
+            size_hint_x=None,
+            halign="left",
+        )
+
+        self.copy_button.bind(on_press=self.on_copy_button_press)
+
+        self.add_widget(self.copy_button)
 
         trial_name: str = KeymastersKeepLocations.THE_KEYMASTERS_CHALLENGE_CHAMBER_VICTORY.value
         trial_objective: str = self.ctx.goal_trial_game_objective
@@ -854,11 +881,9 @@ class AvailableGoalTrialLayout(BoxLayout):
         self.disabled = True
 
     def on_unlock_button_press(self, _) -> None:
-        if self.unlock_button.text == "Unlock":
-            self.unlock_button.text = "Lock"
+        if self.complete_button.disabled:
             self.complete_button.disabled = False
         else:
-            self.unlock_button.text = "Unlock"
             self.complete_button.disabled = True
 
     def on_complete_button_press(self, _) -> None:
@@ -867,6 +892,9 @@ class AvailableGoalTrialLayout(BoxLayout):
         self.ctx.complete_location(
             location_data[KeymastersKeepLocations.THE_KEYMASTERS_CHALLENGE_CHAMBER_VICTORY].archipelago_id
         )
+
+    def on_copy_button_press(self, _) -> None:
+        Clipboard.copy(self.ctx.goal_trial_game_objective)
 
 
 class AvailableTrialsLayout(ScrollView):
@@ -1072,10 +1100,23 @@ class TrialsTabLayout(BoxLayout):
 class CompletedGoalTrialLayout(BoxLayout):
     ctx: KeymastersKeepContext
 
+    copy_button: Button
+
     def __init__(self, ctx: KeymastersKeepContext) -> None:
         super().__init__(orientation="horizontal", size_hint_y=None, height="40dp", spacing="8dp")
 
         self.ctx = ctx
+
+        self.copy_button = Button(
+            text="Copy",
+            width="56dp",
+            size_hint_x=None,
+            halign="left",
+        )
+
+        self.copy_button.bind(on_press=self.on_copy_button_press)
+
+        self.add_widget(self.copy_button)
 
         trial_name: str = KeymastersKeepLocations.THE_KEYMASTERS_CHALLENGE_CHAMBER_VICTORY.value
         trial_objective: str = self.ctx.goal_trial_game_objective
@@ -1103,12 +1144,17 @@ class CompletedGoalTrialLayout(BoxLayout):
         self.height = "0dp"
         self.disabled = True
 
+    def on_copy_button_press(self, _) -> None:
+        Clipboard.copy(self.ctx.goal_trial_game_objective)
+
 
 class CompletedTrialLayout(BoxLayout):
     ctx: KeymastersKeepContext
 
     area: KeymastersKeepRegions
     trial: KeymastersKeepLocationData
+
+    copy_button: Button
 
     def __init__(
         self,
@@ -1122,6 +1168,17 @@ class CompletedTrialLayout(BoxLayout):
 
         self.area = area
         self.trial = trial
+
+        self.copy_button = Button(
+            text="Copy",
+            width="56dp",
+            size_hint_x=None,
+            halign="left",
+        )
+
+        self.copy_button.bind(on_press=self.on_copy_button_press)
+
+        self.add_widget(self.copy_button)
 
         trial_objective: str = self.ctx.area_trial_game_objectives[self.trial.name]
 
@@ -1147,6 +1204,9 @@ class CompletedTrialLayout(BoxLayout):
         self.opacity = 0.0
         self.height = "0dp"
         self.disabled = True
+
+    def on_copy_button_press(self, _) -> None:
+        Clipboard.copy(self.ctx.area_trial_game_objectives[self.trial.name])
 
 
 class CompletedTrialsLayout(ScrollView):

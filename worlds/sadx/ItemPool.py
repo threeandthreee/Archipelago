@@ -24,6 +24,11 @@ class ItemDistribution:
 def create_sadx_items(world: World, starter_setup: StarterSetup, options: SonicAdventureDXOptions):
     item_names = get_item_names(options, starter_setup)
 
+    # Remove the items that are already in the starting inventory
+    for item in world.options.start_inventory:
+        for _ in range(world.options.start_inventory[item]):
+            item_names.remove(item)
+
     # Calculate the number of items per type
     item_distribution = get_item_distribution(world, len(item_names), options)
 
@@ -65,9 +70,6 @@ def create_sadx_items(world: World, starter_setup: StarterSetup, options: SonicA
 
     world.multiworld.push_precollected(world.create_item(get_playable_character_item(starter_setup.character)))
 
-    if starter_setup.item:
-        world.multiworld.push_precollected(world.create_item(starter_setup.item))
-
     world.multiworld.itempool += itempool
     return item_distribution
 
@@ -87,10 +89,13 @@ def get_item_distribution(world: World, starting_item_count: int, options: Sonic
             raise OptionError("SADX Error: There are not enough available locations to place Emblems. "
                               + "Please enable more more checks or change your goal. "
                               + "You need at least {} more locations.".format(5 - available_locations))
-        emblem_count_progressive = max(1, math.ceil(available_locations * options.emblems_percentage.value / 100.0))
-        emblem_count_non_progressive = available_locations - emblem_count_progressive
-        junk_count = math.floor(emblem_count_non_progressive * (options.junk_fill_percentage.value / 100.0))
-        emblem_count_non_progressive -= junk_count
+
+        total_emblems = min(available_locations, options.max_emblem_cap.value)
+        emblem_count_progressive = max(1, math.ceil(total_emblems * options.emblems_percentage.value / 100.0))
+        emblem_count_non_progressive = total_emblems - emblem_count_progressive
+        emblems_to_filler = math.floor(emblem_count_non_progressive * (options.junk_fill_percentage.value / 100.0))
+        junk_count = available_locations - total_emblems + emblems_to_filler
+        emblem_count_non_progressive -= emblems_to_filler
     # If not, all the remaining locations are filler
     else:
         emblem_count_progressive = 0
@@ -111,10 +116,11 @@ def get_item_distribution(world: World, starting_item_count: int, options: Sonic
 def get_item_names(options: SonicAdventureDXOptions, starter_setup: StarterSetup) -> List[str]:
     item_names = sum((get_item_for_options_per_character(character, options) for character in Character), [])
     item_names += [
-        ItemName.KeyItem.Train, ItemName.KeyItem.Boat, ItemName.KeyItem.Raft, ItemName.KeyItem.StationKeys,
-        ItemName.KeyItem.HotelKeys, ItemName.KeyItem.CasinoKeys, ItemName.KeyItem.TwinkleParkTicket,
+        ItemName.KeyItem.Train, ItemName.KeyItem.Boat, ItemName.KeyItem.Raft, ItemName.KeyItem.StationFrontKey,
+        ItemName.KeyItem.StationBackKey, ItemName.KeyItem.HotelFrontKey, ItemName.KeyItem.HotelBackKey,
+        ItemName.KeyItem.TwinkleParkTicket,
         ItemName.KeyItem.EmployeeCard, ItemName.KeyItem.Dynamite, ItemName.KeyItem.JungleCart,
-        ItemName.KeyItem.IceStone, ItemName.KeyItem.WindStone
+        ItemName.KeyItem.IceStone, ItemName.KeyItem.WindStone, ItemName.KeyItem.Egglift, ItemName.KeyItem.Monorail
     ]
 
     if options.goal_requires_chaos_emeralds.value:
@@ -125,8 +131,7 @@ def get_item_names(options: SonicAdventureDXOptions, starter_setup: StarterSetup
         ]
 
     item_names.remove(get_playable_character_item(starter_setup.character))
-    if starter_setup.item:
-        item_names.remove(starter_setup.item)
+
     return item_names
 
 

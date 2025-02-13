@@ -20,6 +20,7 @@ from .modules.equipamizer import randomize_armor, randomize_weapons
 from .modules.music_rando import music_randomizer
 from .modules.palette_shuffle import randomize_psi_palettes
 from .modules.shopsanity import write_shop_checks
+from .modules.enemy_shuffler import apply_enemy_shuffle
 from .game_data.static_location_data import location_groups
 from BaseClasses import ItemClassification
 from typing import TYPE_CHECKING, Optional
@@ -72,6 +73,32 @@ def patch_rom(world, rom, player: int):
                     13: [0x9C, 0x00, 0x84, 0x17],  # Lost Underworld
                     14: [0x4B, 0x11, 0xAD, 0x18]  # Magicant
     }
+
+    starting_levels = {
+        "Ness": 0x15F5FB,
+        "Paula": 0x15F60F,
+        "Jeff": 0x15F623,
+        "Poo": 0x15F637
+    }
+
+    atm_card_slots = {
+        "Ness": 0x15F5FF,
+        "Paula": 0x15F613,
+        "Jeff": 0x15F629,
+        "Poo": 0x15F63B
+    }
+
+    starting_weapon = {
+        "Ness": [0x15F600, 0x12],
+        "Paula": [0x15F615, 0x1C],
+        "Jeff": [0x15F62A, 0x24]
+    }
+
+    teleport_learnlevel = {
+        "Ness": [0x158D53, 0x158D62],
+        "Paula": [0x158D54, 0x158D63],
+        "Poo": [0x158D55, 0x158D64]
+    }
     world.start_items = []
     world.handled_locations = []
     
@@ -90,6 +117,23 @@ def patch_rom(world, rom, player: int):
 
     rom.write_bytes(0x01FE91, bytearray(starting_area_coordinates[world.start_location][0:2]))
     rom.write_bytes(0x01FE8B, bytearray(starting_area_coordinates[world.start_location][2:4]))  # Respawn position
+
+    if world.options.skip_epilogue:
+        rom.write_bytes(0x2EA3C6, struct.pack("I", 0xEEA432))
+
+    if world.starting_character == "Poo":
+        rom.write_bytes(starting_levels[world.starting_character], bytearray([0x06]))
+    else:
+        rom.write_bytes(starting_levels[world.starting_character], bytearray([0x03]))
+    rom.write_bytes(atm_card_slots[world.starting_character], bytearray([0xB1]))
+    if world.starting_character != "Poo":
+        rom.write_bytes(starting_weapon[world.starting_character][0], bytearray([starting_weapon[world.starting_character][1]]))
+
+    if world.starting_character != "Jeff":
+        for i in range(2):
+            rom.write_bytes(teleport_learnlevel[world.starting_character][i - 1], bytearray([0x01]))
+    else:
+        rom.write_bytes(0x15F62B, bytearray([0xB5]))
 
     if world.options.alternate_sanctuary_goal:
         rom.write_bytes(0x04FD72, bytearray([world.options.sanctuaries_required.value + 2]))
@@ -161,6 +205,7 @@ def patch_rom(world, rom, player: int):
                 else:
                     player_text.extend([0x6F])
             player_text.extend([0x00])
+            # Locations over this address are Shopsanity locations and handled in the shopsanity module
             if location.address < 0xEB1000:
                 rom.write_bytes(item_name_loc, bytearray(item_text))
                 rom.write_bytes(player_name_loc, bytearray(player_text))
@@ -247,7 +292,7 @@ def patch_rom(world, rom, player: int):
                     rom.write_bytes(0x15F63C, bytearray([0x00]))  # Don't give anything if the item doesn't have a tangible ID
 
                 if item in special_name_table and location.item.player == location.player:  # Apply a special script if teleport or character
-                    rom.write_bytes(0x15F7F6, bytearray(special_name_table[item][1:4]))
+                    rom.write_bytes(0x15F765, bytearray(special_name_table[item][1:4])) #This might be offset, check if it is
                     rom.write_bytes(0x2EC618, bytearray([special_name_table[item][4]]))
                     rom.write_bytes(0x2EC61A, bytearray([0xA5, 0xAA, 0xEE]))
 
@@ -298,6 +343,9 @@ def patch_rom(world, rom, player: int):
 
     rom.write_bytes(0x0800C4, bytearray([item_id]))  # Bike shop
     rom.write_bytes(0x0802EA, bytearray([item_id]))
+
+    rom.write_bytes(0x2EA05C, bytearray([item_id_table[world.slime_pile_wanted_item]]))
+    rom.write_bytes(0x2F61F6, bytearray([item_id_table[world.slime_pile_wanted_item]]))
     
     hintable_locations = [
         location for location in world.multiworld.get_locations()
@@ -418,9 +466,22 @@ def patch_rom(world, rom, player: int):
     starting_char = 0
     starting_psi_types = []
     starting_character_count = []
+    starting_inventory_pointers = {
+        "Ness": 0x99F3,
+        "Paula": 0x9A53,
+        "Jeff": 0x9AB4,
+        "Poo": 0x9B10
+    }
+
+    if world.starting_character == "Poo" and world.multiworld.get_location(
+        "Poo - Starting Item", world.player).item.name not in item_id_table:
+        starting_inventory_pointers["Poo"] = 0x9B0F
+    rom.write_bytes(0x16FB66, struct.pack("H", starting_inventory_pointers[world.starting_character]))
     for item in world.multiworld.precollected_items[player]:
         if world.options.remote_items:
             continue
+        if item.name == world.starting_character:
+            rom.write_bytes(0x00B672, bytearray([world.options.starting_character.value + 1]))
 
         if item.name == "Poo" and world.multiworld.get_location("Poo - Starting Item", world.player).item.name in special_name_table:
             world.multiworld.push_precollected(world.multiworld.get_location("Poo - Starting Item", world.player).item)
@@ -515,6 +576,7 @@ def patch_rom(world, rom, player: int):
     if world.options.randomize_psi_palettes:
         randomize_psi_palettes(world, rom)
 
+    apply_enemy_shuffle(world, rom)
     write_bosses(world, rom)
     calculate_scaling(world)
     if world.options.shop_randomizer:
@@ -642,14 +704,17 @@ class EBPatchExtensions(APPatchExtension):
 
         rom.write_bytes(0x2EF11F, rom.read_bytes(0x091D30, 0x17))
         # ---------------------------------------
+        ness_level = rom.read_bytes(0x15F5FB, 1)
         paula_level = rom.read_bytes(0x15f60f, 1)
         jeff_level = rom.read_bytes(0x15f623, 1)
         poo_level = rom.read_bytes(0x15f637, 1)
 
+        ness_start_exp = rom.read_bytes(0x158F49 + (ness_level[0] * 4), 4)
         paula_start_exp = rom.read_bytes(0x1590D9 + (paula_level[0] * 4), 4)
         jeff_start_exp = rom.read_bytes(0x159269 + (jeff_level[0] * 4), 4)
         poo_start_exp = rom.read_bytes(0x1593F9 + (poo_level[0] * 4), 4)
 
+        rom.write_bytes(0x17FD40, ness_start_exp)
         rom.write_bytes(0x17FD44, paula_start_exp)
         rom.write_bytes(0x17FD48, jeff_start_exp)
         rom.write_bytes(0x17FD4C, poo_start_exp)

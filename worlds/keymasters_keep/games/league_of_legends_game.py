@@ -75,7 +75,7 @@ class LeagueOfLegendsGame(Game):
             GameObjectiveTemplate(
                 label="Win a match with CHAMPION with the following boots equipped: BOOT",
                 data={
-                    "CHAMPION": (self.champions, 1),
+                    "CHAMPION": (self.champions_boots, 1),
                     "BOOT": (self.boots, 1),
                 },
                 is_time_consuming=True,
@@ -251,9 +251,26 @@ class LeagueOfLegendsGame(Game):
             "First Strike",
         ]
 
-    @staticmethod
-    def champions() -> List[str]:
-        return [
+    def champions(self) -> List[str]:
+        return sorted(self.archipelago_options.league_of_legends_champions_owned.value)
+
+    def champions_boots(self) -> List[str]:
+        champions: List[str] = self.champions()
+
+        if "Cassiopeia" in champions:
+            champions.remove("Cassiopeia")
+
+        return champions
+
+
+# Archipelago Options
+class LeagueOfLegendsChampionsOwned(OptionSet):
+    """
+    Indicates which League of Legends champions the player owns and wants to play.
+    """
+
+    display_name = "League of Legends Champions Owned"
+    valid_keys = [
             "Aatrox",
             "Ahri",
             "Akali",
@@ -291,7 +308,7 @@ class LeagueOfLegendsGame(Game):
             "Fiora",
             "Fizz",
             "Galio",
-            "Gankplank",
+            "Gangplank",
             "Garen",
             "Gnar",
             "Gragas",
@@ -335,6 +352,7 @@ class LeagueOfLegendsGame(Game):
             "Malzahar",
             "Maokai",
             "Master Yi",
+            "Mel",
             "Milio",
             "Miss Fortune",
             "Mordekaiser",
@@ -373,7 +391,7 @@ class LeagueOfLegendsGame(Game):
             "Sett",
             "Shaco",
             "Shen",
-            "Syvana",
+            "Shyvana",
             "Singed",
             "Sion",
             "Sivir",
@@ -393,7 +411,7 @@ class LeagueOfLegendsGame(Game):
             "Tristana",
             "Trundle",
             "Tryndamere",
-            "Twister Fate",
+            "Twisted Fate",
             "Twitch",
             "Udyr",
             "Urgot",
@@ -401,6 +419,7 @@ class LeagueOfLegendsGame(Game):
             "Vayne",
             "Veigar",
             "Vex",
+            "Vel'Koz",
             "Vi",
             "Viego",
             "Viktor",
@@ -423,15 +442,5 @@ class LeagueOfLegendsGame(Game):
             "Zoe",
             "Zyra",
         ]
-
-
-# Archipelago Options
-class LeagueOfLegendsChampionsOwned(OptionSet):
-    """
-    Indicates which League of Legends champions the player owns and wants to play.
-    """
-
-    display_name = "League of Legends Champions Owned"
-    valid_keys = LeagueOfLegendsGame().champions()
 
     default = valid_keys

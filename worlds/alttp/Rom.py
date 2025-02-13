@@ -4,7 +4,7 @@ import Utils
 import worlds.Files
 
 LTTPJPN10HASH: str = "03a63945398191337e896e5771f77173"
-RANDOMIZERBASEHASH: str = "528c9298ff37e6d13cb8c1d5b8bd8f79"
+RANDOMIZERBASEHASH: str = "8704fb9b9fa4fad52d4d2f9a95fb5360"
 ROM_PLAYER_LIMIT: int = 255
 
 import io
@@ -774,22 +774,16 @@ bonk_addresses = [0x4CF6C, 0x4CFBA, 0x4CFE0, 0x4CFFB, 0x4D018, 0x4D01B, 0x4D028,
                   0x4D504, 0x4D507, 0x4D55E, 0x4D56A]
 
 
-def get_nonnative_item_sprite(code: int, advancement: bool) -> int:
+def get_nonnative_item_sprite(code: int) -> int:
     if 84173 >= code >= 84007:  # LttP item in SMZ3
         return code - 84000
-    # Set all non-native sprites to Power Star as per 13 to 2 vote at
+    return 0x6B  # set all non-native sprites to Power Star as per 13 to 2 vote at
     # https://discord.com/channels/731205301247803413/827141303330406408/852102450822905886
-    # Use a gold Power Star for advancement items and a silver Power Star
-    # for non-advancement items, as per more recent discussions.
-    if advancement:
-        return 0x69  # Gold Power Star
-    else:
-        return 0x6B  # Silver Power Star
 
 
 def patch_rom(world: MultiWorld, rom: LocalRom, player: int, enemized: bool):
+    local_random = world.per_slot_randoms[player]
     local_world = world.worlds[player]
-    local_random = local_world.random
 
     # patch items
 
@@ -806,8 +800,7 @@ def patch_rom(world: MultiWorld, rom: LocalRom, player: int, enemized: bool):
                     if location.item.trap:
                         itemid = 0x5A  # Nothing, which disguises
                     else:
-                        itemid = get_nonnative_item_sprite(location.item.code,
-                                                           world.star_scams[player] or location.item.advancement)
+                        itemid = get_nonnative_item_sprite(location.item.code)
                 # Keys in their native dungeon should use the orignal item code for keys
                 elif location.parent_region.dungeon:
                     if location.parent_region.dungeon.is_dungeon_item(location.item):
@@ -1783,8 +1776,7 @@ def write_custom_shops(rom, world, player):
             replacement_price_data = get_price_data(item['replacement_price'], item['replacement_price_type'])
             slot = 0 if shop.type == ShopType.TakeAny else index
             if item['player'] and world.game[item['player']] != "A Link to the Past":  # item not native to ALTTP
-                item_code = get_nonnative_item_sprite(world.worlds[item['player']].item_name_to_id[item['item']],
-                                                      world.star_scams[player] or shop.region.locations[index].item.advancement)
+                item_code = get_nonnative_item_sprite(world.worlds[item['player']].item_name_to_id[item['item']])
             else:
                 item_code = item_table[item["item"]].item_code
                 if item['item'] == 'Single Arrow' and item['player'] == 0 and world.retro_bow[player]:
@@ -1875,7 +1867,7 @@ def apply_oof_sfx(rom, oof: str):
 def apply_rom_settings(rom, beep, color, quickswap, menuspeed, music: bool, sprite: str, oof: str, palettes_options,
                        world=None, player=1, allow_random_on_event=False, reduceflashing=False,
                        triforcehud: str = None, deathlink: bool = False, allowcollect: bool = False):
-    local_random = random if not world else world.worlds[player].random
+    local_random = random if not world else world.per_slot_randoms[player]
     disable_music: bool = not music
     # enable instant item menu
     if menuspeed == 'instant':
@@ -2205,9 +2197,8 @@ def write_string_to_rom(rom, target, string):
 
 def write_strings(rom, world, player):
     from . import ALTTPWorld
-
+    local_random = world.per_slot_randoms[player]
     w: ALTTPWorld = world.worlds[player]
-    local_random = w.random
 
     tt = TextTable()
     tt.removeUnwantedText()
@@ -2434,7 +2425,7 @@ def write_strings(rom, world, player):
     if world.worlds[player].has_progressive_bows and (w.difficulty_requirements.progressive_bow_limit >= 2 or (
             world.swordless[player] or world.glitches_required[player] == 'no_glitches')):
         prog_bow_locs = world.find_item_locations('Progressive Bow', player, True)
-        local_random.shuffle(prog_bow_locs)
+        world.per_slot_randoms[player].shuffle(prog_bow_locs)
         found_bow = False
         found_bow_alt = False
         while prog_bow_locs and not (found_bow and found_bow_alt):

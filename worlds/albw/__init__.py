@@ -1,7 +1,7 @@
 import os
 import pickle
 from typing import ClassVar, Dict, List, Optional, Sequence, Tuple
-from ..AutoWorld import WebWorld, World
+from worlds.AutoWorld import WebWorld, World
 from BaseClasses import CollectionState, Item, ItemClassification, Location, LocationProgressType, MultiWorld, \
     Region, Tutorial
 from Fill import fill_restrictive, sweep_from_pool
@@ -11,7 +11,7 @@ from worlds.generic.Rules import set_rule
 from .Items import ALBWItem, Items, ItemData, ItemType, all_items, item_table, vane_to_item, \
     convenient_hyrule_vanes, convenient_lorule_vanes, hyrule_vanes, lorule_vanes
 from .Locations import ALBWLocation, LocationData, LocationType, all_locations, dungeon_table, location_table, \
-    dungeon_item_excludes
+    dungeon_item_excludes, starting_weapon_locations
 from .Options import ALBWOptions, CrackShuffle, InitialCrackState, Keysy, LogicMode, NiceItems, WeatherVanes, \
     create_randomizer_settings
 from .Patch import PatchInfo, ALBWProcedurePatch
@@ -144,8 +144,11 @@ class ALBWWorld(World):
                 #     location.progress_type = LocationProgressType.EXCLUDED
                 
                 # optionally exclude minigames
-                if loc_data.loctype == LocationType.Minigame and self.options.minigames_excluded:
-                    location.progress_type = LocationProgressType.EXCLUDED
+                if self.options.minigames_excluded:
+                    if loc_data.loctype == LocationType.Minigame:
+                        location.progress_type = LocationProgressType.EXCLUDED
+                    if loc_data.name == "[Mai] Hyrule Rupee Rush Wall" or loc_data.name == "[Mai] Lorule Rupee Rush Wall":
+                        location.progress_type = LocationProgressType.EXCLUDED
 
                 # place default item
                 item = self._get_location_item(loc_data)
@@ -224,8 +227,7 @@ class ALBWWorld(World):
         # starting weapon
         if self.starting_weapon is not None:
             starting_weapon_itempool = [item for item in self.pre_fill_items if item.name == self.starting_weapon.name]
-            ravio_location_names = [loc.name for loc in all_locations if loc.loctype == LocationType.Ravio]
-            self._initial_fill(starting_weapon_itempool, ravio_location_names)
+            self._initial_fill(starting_weapon_itempool, starting_weapon_locations)
     
     def fill_slot_data(self) -> None:
         return {"seed": self.seed}
@@ -341,6 +343,6 @@ class ALBWWorld(World):
         weapons = [Items.Bow, Items.Bombs, Items.FireRod, Items.IceRod, Items.Hammer, Items.Boots]
         if not self.options.swordless_mode:
             weapons.append(Items.Sword)
-        if self.options.logic_mode != LogicMode.option_normal:
+        if self.options.lamp_and_net_as_weapons:
             weapons.extend([Items.Lamp, Items.Net])
         return self.random.choice(weapons)

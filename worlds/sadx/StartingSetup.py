@@ -2,7 +2,7 @@ import collections
 import logging
 import re
 from dataclasses import dataclass, field
-from typing import List, Optional, TextIO
+from typing import List, TextIO
 
 from Options import OptionError
 from worlds.AutoWorld import World
@@ -11,8 +11,7 @@ from .CharacterUtils import get_playable_characters, are_character_upgrades_rand
 from .Enums import Character, Area, SubLevel, pascal_to_space, level_areas, LevelMission
 from .Locations import level_location_table, upgrade_location_table, sub_level_location_table, \
     field_emblem_location_table, boss_location_table, capsule_location_table, mission_location_table
-from .Logic import area_connections, chao_egg_location_table, enemy_location_table
-from .Names import ItemName
+from .Logic import area_connections, chao_egg_location_table, enemy_location_table, fish_location_table
 from .Options import SonicAdventureDXOptions
 
 
@@ -26,7 +25,6 @@ class CharacterArea:
 class StarterSetup:
     character: Character = None
     area: Area = None
-    item: str = None
     charactersWithArea: List[CharacterArea] = field(default_factory=list)
     level_mapping: dict[Area, Area] = field(default_factory=dict)
 
@@ -42,7 +40,12 @@ def generate_early_sadx(world: World, options: SonicAdventureDXOptions) -> Start
 
     starter_setup = StarterSetup()
     possible_characters = get_playable_characters(options)
+
     world.random.shuffle(possible_characters)
+
+    if options.starting_character.value != 0:
+        possible_characters.remove(Character(options.starting_character.value))
+        possible_characters.insert(0, Character(options.starting_character.value))
 
     if options.entrance_randomizer:
         fixed_areas = {Area[re.sub(r' ', '', area)]: Area[re.sub(r' ', '', dest)]
@@ -52,40 +55,34 @@ def generate_early_sadx(world: World, options: SonicAdventureDXOptions) -> Start
         starter_setup.level_mapping = {**fixed_areas, **dict(
             zip([area for area in level_areas if area not in fixed_areas], randomized_remaining_areas))}
 
-    valid_starting_pair = None
     for character in possible_characters:
-        possible_starter_areas = get_possible_starting_areas(world, character,
-                                                             starter_setup.level_mapping,
-                                                             options.guaranteed_level.value == 1)
-        if not options.random_starting_location:
-            possible_starter_areas = {area: items for area, items in possible_starter_areas.items() if
-                                      area == Area.StationSquareMain}
+        possible_starter_areas = get_possible_starting_areas(world, character, starter_setup.level_mapping)
+
+        if any(count >= options.guaranteed_starting_checks for count in possible_starter_areas.values()):
+            possible_starter_areas = {area: count for area, count in possible_starter_areas.items() if
+                                      count >= options.guaranteed_starting_checks}
         else:
-            if any(len(items) >= options.guaranteed_starting_checks for items in possible_starter_areas.values()):
-                possible_starter_areas = {area: items for area, items in possible_starter_areas.items() if
-                                          len(items) >= options.guaranteed_starting_checks}
+            max_count = max(possible_starter_areas.values())
+            possible_starter_areas = {area: count for area, count in possible_starter_areas.items() if
+                                      count == max_count}
+
+        if possible_starter_areas.keys():
+            if options.starting_location.value > 0 and Area(options.starting_location.value - 1) in list(
+                    possible_starter_areas.keys()):
+                starter_setup.area = Area(options.starting_location.value - 1)
             else:
-                possible_starter_areas = {area: items for area, items in possible_starter_areas.items() if
-                                          len(items) == max(len(items) for items in possible_starter_areas.values())}
-
-        areas_mixed = [(area, item) for area, items in possible_starter_areas.items() for item in items]
-        areas_without_items = [pair for pair in areas_mixed if pair[1] is None]
-        areas_with_items = [pair for pair in areas_mixed if pair[1] is not None]
-
-        if areas_with_items or areas_without_items:
-            valid_starting_pair = world.random.choice(areas_without_items if areas_without_items else areas_with_items)
+                starter_setup.area = world.random.choice(list(possible_starter_areas.keys()))
             starter_setup.character = character
-            starter_setup.area, starter_setup.item = valid_starting_pair
             break
 
-    if not valid_starting_pair:
+    if not starter_setup.area:
         raise OptionError(
             "SADX Error: Couldn't define a valid starting location (Probably a problem of low settings, guaranteed level and/or fixed starting location).")
 
-    if options.random_starting_location_per_character and options.random_starting_location:
+    if options.random_starting_location_per_character:
         used_areas = {starter_setup.area}
         starter_setup.charactersWithArea.append(CharacterArea(starter_setup.character, starter_setup.area))
-        possible_areas_dict = {char: get_possible_starting_areas(world, char, starter_setup.level_mapping, False) for
+        possible_areas_dict = {char: get_possible_starting_areas(world, char, starter_setup.level_mapping) for
                                char in
                                possible_characters}
         filtered_areas_dict = {char: list(areas_dict.keys()) for char, areas_dict in possible_areas_dict.items()}
@@ -106,6 +103,13 @@ def validate_settings(options):
     if not get_playable_characters(options):
         logging.warning(" -- SADX warning: Zero playable characters in settings. enabling Sonic as a failsafe.")
         options.playable_sonic.value = True
+
+    if options.starting_character.value > 0:
+        if Character(options.starting_character.value) not in get_playable_characters(options):
+            logging.warning(
+                " -- SADX warning: Starting character is not playable. Randomizing starting character.")
+            options.starting_character.value = 0
+
     if (not options.goal_requires_levels and not options.goal_requires_missions and not options.goal_requires_emblems
             and not options.goal_requires_chaos_emeralds and not options.goal_requires_bosses and not options.goal_requires_chao_races):
         logging.warning(" -- SADX warning: No goal requirement set. Enabling action stages requirement as a failsafe.")
@@ -165,15 +169,21 @@ def validate_settings(options):
                 " -- SADX warning: Capsule-sanity is enabled but all capsule types are disabled. Enabling life capsules.")
             options.life_capsule_sanity.value = True
 
+    if options.logic_level.value == 0 and (
+            options.sonic_action_stage_missions.value == 4 or options.tails_action_stage_missions.value == 4
+            or options.knuckles_action_stage_missions.value == 4 or options.amy_action_stage_missions.value == 4
+            or options.big_action_stage_missions.value == 4 or options.gamma_action_stage_missions.value == 4):
+        raise OptionError(
+            " -- SADX error: S-Rank missions are not available for normal logic, please select a harder logic level.")
 
-def get_possible_starting_areas(world, character: Character, level_mapping: dict[Area, Area], guaranteed_level: bool) -> \
-        dict[Area, List[Optional[str]]]:
+
+def get_possible_starting_areas(world, character: Character, level_mapping: dict[Area, Area]) -> \
+        dict[Area, int]:
     possible_starting_areas = {}
     areas = [Area.StationSquareMain, Area.Station, Area.Hotel, Area.Casino, Area.TwinkleParkLobby,
-             Area.MysticRuinsMain, Area.AngelIsland, Area.Jungle, Area.EggCarrierMain]
+             Area.MysticRuinsMain, Area.AngelIsland, Area.Jungle, Area.EggCarrierOutside, Area.EggCarrierInside]
     for area in areas:
-        possible_list_for_area = get_possible_starting_area_information(character, area, world.options, level_mapping,
-                                                                        guaranteed_level)
+        possible_list_for_area = get_possible_starting_area_information(character, area, world.options, level_mapping)
         if possible_list_for_area:
             possible_starting_areas.update(possible_list_for_area)
 
@@ -181,60 +191,49 @@ def get_possible_starting_areas(world, character: Character, level_mapping: dict
 
 
 def get_possible_starting_area_information(character: Character, area: Area, options: SonicAdventureDXOptions,
-                                           level_mapping: dict[Area, Area], guaranteed_level: bool) -> \
-        dict[Area, List[Optional[str]]]:
-    possible_locations = collections.defaultdict(list)
+                                           level_mapping: dict[Area, Area]) -> \
+        dict[Area, int]:
+    possible_locations = collections.defaultdict(int)
 
-    if guaranteed_level:
-        for level in level_location_table:
-            if is_level_playable(level, options) and level.levelMission == LevelMission.C:
-                actual_area_to = level.area
-                if options.entrance_randomizer:
-                    for level_entrance, actual_level in level_mapping.items():
-                        if actual_level == level.area:
-                            actual_area_to = level_entrance
-                key = (character, area, actual_area_to)
-                if key in area_connections and not area_connections[key][options.logic_level.value]:
-                    if level.character == character:
-                        if not level.get_logic_items(options):
-                            possible_locations[area].append(None)
-                        if len(level.get_logic_items(options)) == 1:
-                            possible_locations[area].append(level.get_logic_items(options)[0])
-    else:
-        for level in level_location_table:
-            if is_level_playable(level, options):
-                actual_area_to = level.area
-                if options.entrance_randomizer:
-                    for level_entrance, actual_level in level_mapping.items():
-                        if actual_level == level.area:
-                            actual_area_to = level_entrance
-                key = (character, area, actual_area_to)
-                if key in area_connections and not area_connections[key][options.logic_level.value]:
-                    if level.character == character and not level.get_logic_items(options):
-                        possible_locations[area].append(None)
+    for level in level_location_table:
+        if is_level_playable(level, options):
+            actual_area_to = level.area
+            if options.entrance_randomizer:
+                for level_entrance, actual_level in level_mapping.items():
+                    if actual_level == level.area:
+                        actual_area_to = level_entrance
+            key = (character, area, actual_area_to)
+            if key in area_connections and not area_connections[key][options.logic_level.value]:
+                if level.character == character and not level.get_logic_items(options):
+                    possible_locations[area] += 1
 
     if are_character_upgrades_randomized(character, options):
         for upgrade in upgrade_location_table:
             if upgrade.character == character and upgrade.area == area and not upgrade.get_logic_items(options):
-                possible_locations[area].append(None)
-    if options.sub_level_checks:
+                possible_locations[area] += 1
+    if options.sand_hill_check:
         for sub_level in sub_level_location_table:
-            if sub_level.subLevel == SubLevel.SandHill or sub_level.subLevel == SubLevel.TwinkleCircuit:
+            if sub_level.subLevel == SubLevel.SandHill:
                 if character in sub_level.get_logic_characters(options) and sub_level.area == area:
-                    possible_locations[area].append(None)
+                    possible_locations[area] += 1
+    if options.twinkle_circuit_check:
+        for sub_level in sub_level_location_table:
+            if sub_level.subLevel == SubLevel.TwinkleCircuit and sub_level.subLevelMission == LevelMission.B:
+                if character in sub_level.get_logic_characters(options) and sub_level.area == area:
+                    possible_locations[area] += 1
     if options.sky_chase_checks:
         for sub_level in sub_level_location_table:
             if sub_level.subLevel == SubLevel.SkyChaseAct1 or sub_level.subLevel == SubLevel.SkyChaseAct2:
                 if character in sub_level.get_logic_characters(options) and sub_level.area == area:
-                    possible_locations[area].append(None)
+                    possible_locations[area] += 1
     if options.field_emblems_checks:
         for field_emblem in field_emblem_location_table:
             if character in field_emblem.get_logic_characters_upgrades(options) and field_emblem.area == area:
-                possible_locations[area].append(None)
+                possible_locations[area] += 1
     if options.boss_checks:
         for boss_fight in boss_location_table:
             if character in boss_fight.characters and boss_fight.area == area:
-                possible_locations[area].append(None)
+                possible_locations[area] += 1
     if options.capsule_sanity:
         for life_capsule in capsule_location_table:
             actual_area_to = life_capsule.area
@@ -245,18 +244,18 @@ def get_possible_starting_area_information(character: Character, area: Area, opt
             key = (character, area, actual_area_to)
             if key in area_connections and not area_connections[key][options.logic_level.value]:
                 if life_capsule.character == character and not life_capsule.get_logic_items(options):
-                    possible_locations[area].append(None)
+                    possible_locations[area] += 1
     if options.mission_mode_checks:
         for mission in mission_location_table:
             if str(mission.missionNumber) in options.mission_blacklist.value:
                 continue
             if (mission.character == character and mission.cardArea == area
                     and mission.objectiveArea == area and not mission.get_logic_items(options)):
-                possible_locations[area].append(None)
+                possible_locations[area] += 1
     if options.chao_egg_checks:
         for egg in chao_egg_location_table:
             if character in egg.characters and egg.area == area and not egg.requirements:
-                possible_locations[area].append(None)
+                possible_locations[area] += 1
     if options.enemy_sanity:
         for enemy in enemy_location_table:
             actual_area_to = enemy.area
@@ -267,7 +266,18 @@ def get_possible_starting_area_information(character: Character, area: Area, opt
             key = (character, area, actual_area_to)
             if key in area_connections and not area_connections[key][options.logic_level.value]:
                 if enemy.character == character and not enemy.get_logic_items(options):
-                    possible_locations[area].append(None)
+                    possible_locations[area] += 1
+    if options.fish_sanity:
+        for fish in fish_location_table:
+            actual_area_to = fish.area
+            if options.entrance_randomizer:
+                for level_entrance, actual_level in level_mapping.items():
+                    if actual_level == fish.area:
+                        actual_area_to = level_entrance
+            key = (character, area, actual_area_to)
+            if key in area_connections and not area_connections[key][options.logic_level.value]:
+                if Character.Big == character and not fish.get_logic_items(options):
+                    possible_locations[area] += 1
 
     return possible_locations
 
@@ -279,12 +289,9 @@ def write_sadx_spoiler(world: World, spoiler_handle: TextIO, starter_setup: Star
     spoiler_handle.write(header_text)
 
     starting_area_name = re.sub(r'(?<=[a-z])(?=[A-Z])', ' ', starter_setup.area.name)
-    if starter_setup.item:
-        text = "- Will start as {0} in the {1} area with {2}.\n"
-        text = text.format(starter_setup.character.name, starting_area_name, starter_setup.item)
-    else:
-        text = "- Will start as {0} in the {1} area.\n"
-        text = text.format(starter_setup.character.name, starting_area_name)
+
+    text = "- Will start as {0} in the {1} area.\n"
+    text = text.format(starter_setup.character.name, starting_area_name)
 
     for characterArea in starter_setup.charactersWithArea:
         if characterArea.character == starter_setup.character:
@@ -297,39 +304,3 @@ def write_sadx_spoiler(world: World, spoiler_handle: TextIO, starter_setup: Star
         for original, randomized in starter_setup.level_mapping.items():
             text += f"- {pascal_to_space(original.name)} -> {pascal_to_space(randomized.name)}\n"
     spoiler_handle.writelines(text)
-
-
-starting_area_items = {
-    Character.Sonic: {
-        Area.StationSquareMain: [ItemName.KeyItem.TwinkleParkTicket, ItemName.KeyItem.EmployeeCard],
-        Area.Hotel: [],
-        Area.MysticRuinsMain: [ItemName.KeyItem.WindStone],
-        Area.EggCarrierMain: []
-    },
-    Character.Tails: {
-        Area.StationSquareMain: [ItemName.KeyItem.EmployeeCard],
-        Area.Casino: [],
-        Area.MysticRuinsMain: [ItemName.KeyItem.WindStone],
-        Area.EggCarrierMain: []
-    },
-    Character.Knuckles: {
-        Area.StationSquareMain: [],
-        Area.Casino: [],
-    },
-    Character.Amy: {
-        Area.StationSquareMain: [ItemName.KeyItem.TwinkleParkTicket],
-        Area.Jungle: [],
-        Area.EggCarrierMain: []
-    },
-    Character.Gamma: {
-        Area.StationSquareMain: [ItemName.KeyItem.HotelKeys],
-        Area.Hotel: [],
-        Area.MysticRuinsMain: [ItemName.KeyItem.Dynamite],
-        Area.Jungle: [],
-    },
-    Character.Big: {
-        Area.StationSquareMain: [],
-        Area.Hotel: [],
-        Area.EggCarrierMain: []
-    }
-}

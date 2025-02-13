@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Callable, FrozenSet, List, Optional, Set, Union
+from typing import TYPE_CHECKING, FrozenSet, List, Optional, Set, Union
 from dataclasses import dataclass
 
 from BaseClasses import CollectionState

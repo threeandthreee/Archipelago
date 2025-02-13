@@ -1,0 +1,91 @@
+﻿# Q. What is this file?
+# A. This file contains options which allow you to configure your multiworld experience while allowing
+#    others to play how they want as well.
+#
+# Q. I've never seen a file like this before. What characters am I allowed to use?
+# A. This is a .yaml file. You are allowed to use most characters.
+#    To test if your yaml is valid or not, you can use this website:
+#        http://www.yamllint.com/
+#    You can also verify that your Archipelago options are valid at this site:
+#        https://archipelago.gg/check
+
+# Your name in-game, limited to 16 characters.
+#     {player} will be replaced with the player's slot number.
+#     {PLAYER} will be replaced with the player's slot number, if that slot number is greater than 1.
+#     {number} will be replaced with the counter value of the name.
+#     {NUMBER} will be replaced with the counter value of the name, if the counter value is greater than 1.
+name: Player{number}
+game: Ratchet & Clank 2
+requires:
+  version: 0.5.0 # Version of Archipelago required for this yaml to work as expected.
+
+Ratchet & Clank 2:
+  # Game Options
+
+  # A system that can move progression earlier, to try and prevent the player from getting stuck and bored early.
+  #
+  # A lower setting means more getting stuck. A higher setting means less getting stuck.
+  #
+  # Minimum value is 0
+  # Maximum value is 99
+  progression_balancing: 50
+
+  # Set rules for reachability of your items/locations.
+  #
+  # full: ensure everything can be reached and acquired.
+  #
+  # minimal: ensure what is needed to reach your goal can be acquired.
+  accessibility: full
+
+  # When you die, everyone who enabled death link dies. Of course, the reverse is true too.
+  death_link: false
+
+  # Shuffle what items appear at the Megacorp and Gadgetron vendors. Also shuffles your two starting weapons.
+  #
+  # off: The vendors will stay unmodified.
+  #
+  # weapons: All weapons that are normally available at the vendors will be shuffled among the vendor slots.
+  shuffle_weapon_vendors: off
+
+  # Skips the Wupash Nebula ship section that appears when first traveling to Maktar Nebula.
+  skip_wupash_nebula: true
+
+
+  # Item & Location Options
+  local_items:
+    # Forces these items to be in their native world.
+    []
+
+  non_local_items:
+    # Forces these items to be outside their native world.
+    []
+
+  start_inventory:
+    # Start with these items.
+    {}
+
+  start_inventory_from_pool:
+    # Start with these items and don't place them in the world.
+    # 
+    # The game decides what the replacement items will be.
+    {}
+
+  start_hints:
+    # Start with these item's locations prefilled into the ``!hint`` command.
+    []
+
+  start_location_hints:
+    # Start with these locations and their item prefilled into the ``!hint`` command.
+    []
+
+  exclude_locations:
+    # Prevent these locations from having an important item.
+    []
+
+  priority_locations:
+    # Prevent these locations from having an unimportant item.
+    []
+
+  item_links:
+    # Share part of your item pool with other players.
+    []

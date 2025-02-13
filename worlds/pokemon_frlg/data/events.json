@@ -66,28 +66,73 @@
     "tags": ["Event"]
   },
   "EVENT_BUY_FIRE_STONE": {
-    "name": "Celadon Department Store 4F - Wise Man Gifts (Fire Stone)",
+    "name": "Celadon Department Store 4F - Evo Shop Item 3",
     "item": "Fire Stone",
     "tags": ["Event"]
   },
   "EVENT_BUY_THUNDER_STONE": {
-    "name": "Celadon Department Store 4F - Wise Man Gifts (Thunder Stone)",
+    "name": "Celadon Department Store 4F - Evo Shop Item 4",
     "item": "Thunder Stone",
     "tags": ["Event"]
   },
   "EVENT_BUY_WATER_STONE": {
-    "name": "Celadon Department Store 4F - Wise Man Gifts (Water Stone)",
+    "name": "Celadon Department Store 4F - Evo Shop Item 5",
     "item": "Water Stone",
     "tags": ["Event"]
   },
   "EVENT_BUY_LEAF_STONE": {
-    "name": "Celadon Department Store 4F - Wise Man Gifts (Leaf Stone)",
+    "name": "Celadon Department Store 4F - Evo Shop Item 6",
     "item": "Leaf Stone",
     "tags": ["Event"]
   },
+  "EVENT_BUY_MOON_STONE": {
+    "name": "Celadon Department Store 4F - Evo Shop Item 7",
+    "item": "Moon Stone",
+    "tags": ["Event"]
+  },
+  "EVENT_BUY_SUN_STONE": {
+    "name": "Celadon Department Store 4F - Evo Shop Item 8",
+    "item": "Sun Stone",
+    "tags": ["Event"]
+  },
+  "EVENT_BUY_KINGS_ROCK": {
+    "name": "Celadon Department Store 4F - Held Shop Item 1",
+    "item": "King's Rock",
+    "tags": ["Event"]
+  },
+  "EVENT_BUY_METAL_COAT": {
+    "name": "Celadon Department Store 4F - Held Shop Item 2",
+    "item": "Metal Coat",
+    "tags": ["Event"]
+  },
+  "EVENT_BUY_DRAGON_SCALE": {
+    "name": "Celadon Department Store 4F - Held Shop Item 3",
+    "item": "Dragon Scale",
+    "tags": ["Event"]
+  },
+  "EVENT_BUY_UP_GRADE": {
+    "name": "Celadon Department Store 4F - Held Shop Item 4",
+    "item": "Up-Grade",
+    "tags": ["Event"]
+  },
+  "EVENT_BUY_DEEP_SEA_SCALE": {
+    "name": "Celadon Department Store 4F - Held Shop Item 5",
+    "item": "Deep Sea Scale",
+    "tags": ["Event"]
+  },
+  "EVENT_BUY_DEEP_SEA_TOOTH": {
+    "name": "Celadon Department Store 4F - Held Shop Item 6",
+    "item": "Deep Sea Tooth",
+    "tags": ["Event"]
+  },
+  "EVENT_BUY_HEART_SCALE": {
+    "name": "Celadon Department Store 4F - Held Shop Item 7",
+    "item": "Heart Scale",
+    "tags": ["Event"]
+  },
   "EVENT_BUY_VENDING_MACHINE_LEMONADE": {
-    "name": "Celadon Department Store Roof - Vending Machine",
-    "item": "Buy Lemonade",
+    "name": "Celadon Department Store Roof - Vending Machine Item 3",
+    "item": "Lemonade",
     "tags": ["Event"]
   },
   "EVENT_RESCUE_MR_FUJI": {
@@ -106,8 +151,8 @@
     "tags": ["Event"]
   },
   "EVENT_BUY_MARKET_LEMONADE": {
-    "name": "Two Island Town - Market Stall",
-    "item": "Buy Lemonade",
+    "name": "Two Island Town - Market Stall Item 4",
+    "item": "Lemonade",
     "tags": ["Event"]
   },
   "EVENT_DELIVER_METEORITE": {

@@ -12,10 +12,11 @@ if TYPE_CHECKING:
     from . import PokemonFRLGWorld
 
 INDIRECT_CONDITIONS: Dict[str, List[str]] = {
-    "Seafoam Islands 1F": ["Seafoam Islands B3F West Surfing Spot", "Seafoam Islands B3F Southeast Surfing Spot",
-                           "Seafoam Islands B3F West Landing", "Seafoam Islands B3F Southeast Landing"],
-    "Seafoam Islands B3F West": ["Seafoam Islands B4F Surfing Spot (West)",
-                                 "Seafoam Islands B4F Near Articuno Landing"],
+    "Seafoam Islands 1F": ["Seafoam Islands B3F Southwest Surfing Spot", "Seafoam Islands B3F Southwest Landing",
+                           "Seafoam Islands B3F East Landing (South)", "Seafoam Islands B3F East Surfing Spot (South)",
+                           "Seafoam Islands B3F South Water (Water Battle)"],
+    "Seafoam Islands B3F Southwest": ["Seafoam Islands B4F Surfing Spot (West)",
+                                      "Seafoam Islands B4F Near Articuno Landing"],
     "Victory Road 3F Southwest": ["Victory Road 2F Center Rock Barrier"],
     "Vermilion City": ["Navel Rock Arrival", "Birth Island Arrival"]
 }
@@ -50,6 +51,29 @@ STATIC_POKEMON_SPOILER_NAMES = {
     "LEGENDARY_POKEMON_HO_OH": "Navel Rock Summit",
     "LEGENDARY_POKEMON_LUGIA": "Navel Rock Base",
     "LEGENDARY_POKEMON_DEOXYS": "Birth Island Exterior"
+}
+
+STARTING_TOWNS = {
+    "SPAWN_PALLET_TOWN": "Pallet Town",
+    "SPAWN_VIRIDIAN_CITY": "Viridian City South",
+    "SPAWN_PEWTER_CITY": "Pewter City",
+    "SPAWN_CERULEAN_CITY": "Cerulean City",
+    "SPAWN_LAVENDER_TOWN": "Lavender Town",
+    "SPAWN_VERMILION_CITY": "Vermilion City",
+    "SPAWN_CELADON_CITY": "Celadon City",
+    "SPAWN_FUCHSIA_CITY": "Fuchsia City",
+    "SPAWN_CINNABAR_ISLAND": "Cinnabar Island",
+    "SPAWN_INDIGO_PLATEAU": "Indigo Plateau",
+    "SPAWN_SAFFRON_CITY": "Saffron City",
+    "SPAWN_ROUTE4": "Route 4 West",
+    "SPAWN_ROUTE10": "Route 10 North",
+    "SPAWN_ONE_ISLAND": "One Island Town",
+    "SPAWN_TWO_ISLAND": "Two Island Town",
+    "SPAWN_THREE_ISLAND": "Three Island Town",
+    "SPAWN_FOUR_ISLAND": "Four Island Town",
+    "SPAWN_FIVE_ISLAND": "Five Island Town",
+    "SPAWN_SEVEN_ISLAND": "Seven Island Town",
+    "SPAWN_SIX_ISLAND": "Six Island Town"
 }
 
 
@@ -146,6 +170,7 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
                                 None,
                                 world.player
                             ))
+                            world.repeatable_pokemon.add(data.species[species_id].name)
                             encounter_region.locations.append(encounter_location)
 
                     # Add the new encounter region to the multiworld
@@ -371,8 +396,18 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
         world.encounter_name_list = [i[0] for i in encounter_name_level_list]
         world.encounter_level_list = [i[1] for i in encounter_name_level_list]
 
+    if world.options.random_starting_town:
+        forbidden_starting_towns = ["SPAWN_INDIGO_PLATEAU", "SPAWN_ROUTE10"]
+        if world.options.kanto_only:
+            forbidden_starting_towns.extend(["SPAWN_ONE_ISLAND", "SPAWN_TWO_ISLAND", "SPAWN_THREE_ISLAND",
+                                             "SPAWN_FOUR_ISLAND", "SPAWN_FIVE_ISLAND", "SPAWN_SIX_ISLAND",
+                                             "SPAWN_SEVEN_ISLAND"])
+        allowed_starting_towns = [town for town in STARTING_TOWNS.keys() if town not in forbidden_starting_towns]
+        world.starting_town = world.random.choice(allowed_starting_towns)
+
     regions["Menu"] = PokemonFRLGRegion("Menu", world.player, world.multiworld)
-    regions["Menu"].connect(regions["Player's House 2F"], "Start Game")
+    regions["Menu"].connect(regions[STARTING_TOWNS[world.starting_town]], "Start Game")
+    regions["Menu"].connect(regions["Player's PC"], "Use PC")
     regions["Menu"].connect(regions["Pokedex"], "Pokedex")
     regions["Menu"].connect(regions["Evolutions"], "Evolve")
     regions["Menu"].connect(regions["Sky"], "Flying")

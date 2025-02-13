@@ -1,5 +1,6 @@
 from typing import Dict
 import typing
+from itertools import chain
 from BaseClasses import Item, ItemClassification
 
 
@@ -876,13 +877,14 @@ TrapItems: typing.List[ItemData] = [
     ItemData('Roulette Trap', ItemClassification.trap, 0x11111),
 ]
 
-AllItems: typing.List[ItemData] = WeaponSwords + WeaponBlades + WeaponSabers + WeaponKnightswords + \
-                                  WeaponGreatswords + WeaponBroadswords + WeaponKnives + WeaponRapiers + \
-                                  WeaponKatanas + WeaponStaves + WeaponRods + WeaponMaces + WeaponBows + \
-                                  WeaponGreatBows + WeaponSpears + WeaponInstruments + WeaponKnuckles + WeaponSouls + \
-                                  WeaponGuns + EquipShields + EquipHelmets + EquipGloves + EquipHats + EquipArmor + \
-                                  EquipRings + EquipClothing + EquipRobes + EquipShoes + MissionUnlockItems + JobUnlocks + TotemaUnlockItems + \
-                                  Consumables + ProgressiveItems + LawCards + EquipFemale
+AllItems: typing.List[ItemData] = list(chain(WeaponSwords, WeaponBlades, WeaponSabers, WeaponKnightswords,
+                                             WeaponGreatswords, WeaponBroadswords, WeaponKnives, WeaponRapiers,
+                                             WeaponKatanas, WeaponStaves, WeaponRods, WeaponMaces, WeaponBows,
+                                             WeaponGreatBows, WeaponSpears, WeaponInstruments, WeaponKnuckles,
+                                             WeaponSouls, WeaponGuns, EquipShields, EquipHelmets, EquipGloves,
+                                             EquipHats, EquipArmor, EquipRings, EquipClothing, EquipRobes, EquipShoes,
+                                             MissionUnlockItems, JobUnlocks, TotemaUnlockItems, Consumables,
+                                             ProgressiveItems, LawCards, EquipFemale))
 
 SoldierWeapons: typing.List[ItemData] = WeaponSwords + WeaponGreatswords
 PaladinWeapons: typing.List[ItemData] = WeaponGreatswords + WeaponKnightswords
@@ -894,16 +896,16 @@ TemplarWeapons: typing.List[ItemData] = WeaponKnightswords + WeaponSpears
 
 AssassinWeapons: typing.List[ItemData] = WeaponKatanas + WeaponGreatBows
 
-AllWeapons = WeaponSwords + WeaponBlades + WeaponSabers + WeaponKnightswords + \
-                WeaponGreatswords + WeaponBroadswords + WeaponKnives + WeaponRapiers + \
-                WeaponKatanas + WeaponStaves + WeaponRods + WeaponMaces + WeaponBows + \
-                WeaponGreatBows + WeaponSpears + WeaponInstruments + WeaponKnuckles + \
-                WeaponSouls + WeaponGuns
+AllWeapons = list(chain(WeaponSwords, WeaponBlades, WeaponSabers, WeaponKnightswords,
+                        WeaponGreatswords, WeaponBroadswords, WeaponKnives, WeaponRapiers,
+                        WeaponKatanas, WeaponStaves, WeaponRods, WeaponMaces, WeaponBows,
+                        WeaponGreatBows, WeaponSpears, WeaponInstruments, WeaponKnuckles,
+                        WeaponSouls, WeaponGuns))
 
-AllOtherEquipment = EquipShields + EquipHelmets + EquipGloves + EquipHats + EquipArmor + \
-                EquipRings + EquipClothing + EquipRobes + EquipShoes
+AllOtherEquipment = list(chain(EquipShields, EquipHelmets, EquipGloves, EquipHats, EquipArmor,
+                               EquipRings, EquipClothing, EquipRobes, EquipShoes))
 
-AllBuyableItems = AllWeapons + AllOtherEquipment + Consumables
+AllBuyableItems = list(chain(AllWeapons, AllOtherEquipment, Consumables))
 
 item_table: typing.Dict[str, ItemData] = {item.itemName: item for item in AllItems}
 items_by_id: typing.Dict[int, ItemData] = {item.itemID: item for item in AllItems}

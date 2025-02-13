@@ -101,6 +101,7 @@ def setup_hints(world):
         "Sea Pendant",
         "Shyness Book",
         "Hawk Eye",
+        "Ness",
         "Paula",
         "Jeff",
         "Poo",
@@ -149,7 +150,7 @@ def setup_hints(world):
 
     hintable_location_groups = location_groups.copy()
 
-    if not world.options.shop_randomizer:
+    if world.options.shop_randomizer != 2:
         hintable_location_groups["Onett"] = hintable_location_groups["Onett"] - shop_locations
         hintable_location_groups["Twoson"] = hintable_location_groups["Twoson"] - shop_locations
         hintable_location_groups["Happy-Happy Village"] = hintable_location_groups["Happy-Happy Village"] - shop_locations
@@ -174,7 +175,7 @@ def setup_hints(world):
         del hintable_location_groups["the Fourside Department Store"]
         del hintable_location_groups["the Saturn Valley Shop"]
 
-    if world.options.magicant_mode > 1:
+    if world.options.magicant_mode >= 2:
         del hintable_location_groups["Magicant"]
 
     if not world.options.giygas_required:
@@ -191,6 +192,12 @@ def setup_hints(world):
     for item in world.options.start_inventory_from_pool:
         if item in world.local_hintable_items:
             world.local_hintable_items.remove(item)
+
+    for item in world.options.start_hints.value:
+        if item in world.local_hintable_items:
+            world.local_hintable_items.remove(item)
+            
+    world.local_hintable_items.remove(world.starting_character)
 
     if world.local_hintable_items == []:
         hint_types.remove("hint_for_good_item")
@@ -277,7 +284,7 @@ def parse_hint_data(world, location, rom, hint):
             player_text = text_encoder("\n", 255)
         
         if hint == "hint_for_good_item":
-            location_text = text_encoder(f"at {location.name}.", 255)
+            location_text = text_encoder(f"@at {location.name}.", 255)
             # your [item] can be found by [player] at [location]
 
         else:

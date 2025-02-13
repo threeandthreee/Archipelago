@@ -1,13 +1,14 @@
 # Keymaster's Keep Supported Games by Platform
 
-Keymaster's Keep currently supports 151 games
+Keymaster's Keep currently supports 176 games
 
-### Android (19)
+### Android (22)
 * A Dance of Fire and Ice
+* Balatro
 * Bloons TD 6
 * Crush Crush
 * Cytus II
-* DemonCrawl
+* Deemo -Reborn-
 * Dungeon Defenders
 * Ensemble Stars!! Music
 * Halls of Torment
@@ -18,28 +19,35 @@ Keymaster's Keep currently supports 151 games
 * Plants vs. Zombies 2: It's About Time
 * Plants vs. Zombies: Heroes
 * Project Sekai: Colorful Stage
+* Slay the Spire
 * Super Hexagon
+* The Bazaar
 * Vampire Survivors
 * Voez
 * Warframe
 
-### Apple iOS (20)
+### Apple iOS (25)
 * A Dance of Fire and Ice
+* Balatro
 * Bloons TD 6
 * Crush Crush
 * Cytus II
+* Deemo -Reborn-
 * Dungeon Defenders
 * Ensemble Stars!! Music
 * Halls of Torment
 * Insaniquarium Deluxe
 * Little Inferno
+* Monster Rancher 2 DX
 * Muse Dash
 * Plants vs. Zombies
 * Plants vs. Zombies 2: It's About Time
 * Plants vs. Zombies: Heroes
 * Project Sekai: Colorful Stage
 * Shovel Knight Dig
+* Slay the Spire
 * Super Hexagon
+* The Bazaar
 * The Binding of Isaac: Rebirth
 * Vampire Survivors
 * Voez
@@ -61,12 +69,14 @@ Keymaster's Keep currently supports 151 games
 * RetroAchievements
 * Shiny Pokémon Hunt
 
-### Microsoft Xbox (3)
+### Microsoft Xbox (5)
 * Harry Potter: Quidditch World Cup
 * Shadow The Hedgehog
+* Sonic Riders
 * Star Wars: Battlefront II (Classic)
+* Zuma Deluxe
 
-### Microsoft Xbox 360 (14)
+### Microsoft Xbox 360 (15)
 * BattleBlock Theater
 * Dungeon Defenders
 * Guitar Hero 5
@@ -81,8 +91,9 @@ Keymaster's Keep currently supports 151 games
 * Rock Band
 * Rock Band 2
 * Rock Band 3
+* Zuma Deluxe
 
-### Microsoft Xbox One (38)
+### Microsoft Xbox One (44)
 * Bloons TD 6
 * Cuphead
 * DJMax Respect V
@@ -90,6 +101,7 @@ Keymaster's Keep currently supports 151 games
 * Dead By Daylight
 * Deep Rock Galactic
 * Descenders
+* Destiny 2
 * Diablo II: Resurrected
 * ELDEN RING
 * Enter the Gungeon
@@ -103,29 +115,36 @@ Keymaster's Keep currently supports 151 games
 * MONSTER HUNTER RISE
 * Mages of Mystralia
 * Neon White
+* Octodad: Dadliest Catch
 * Ori and the Will of the Wisps
+* Overwatch 2
 * Pinball FX3
 * Placid Plastic Duck Simulator
 * PowerWash Simulator
 * Rimworld
 * Rock Band 4
 * Rock of Ages 2: Bigger & Boulder
+* Slay the Spire
 * Sonic Mania
 * Sonic Origins
 * Spyro Reignited Trilogy
 * Stellaris
 * Tetris Effect: Connected
 * The Binding of Isaac: Rebirth
+* The Elder Scrolls V: Skyrim - Special Edition
 * Tony Hawk's Pro Skater 1+2
 * TrackMania Turbo
 * Trackmania
 * Vampire Survivors
 * Warframe
+* Zuma Deluxe
 
-### Microsoft Xbox Series X/S (24)
+### Microsoft Xbox Series X/S (28)
+* Balatro
 * DJMax Respect V
 * Dead By Daylight
 * Deep Rock Galactic
+* Destiny 2
 * Diablo II: Resurrected
 * ELDEN RING
 * Final Fantasy XIV
@@ -137,20 +156,24 @@ Keymaster's Keep currently supports 151 games
 * Marvel Rivals
 * Neon White
 * Ori and the Will of the Wisps
+* Overwatch 2
 * Placid Plastic Duck Simulator
 * PowerWash Simulator
 * Shovel Knight Dig
 * Sonic Origins
 * Street Fighter 6
 * Tetris Effect: Connected
+* The Elder Scrolls V: Skyrim - Special Edition
 * Tony Hawk's Pro Skater 1+2
 * Trackmania
 * Vampire Survivors
 * Warframe
 
-### Modded Game (2)
+### Modded Game (4)
+* FTL: Multiverse
 * PlatinumQuest
 * Pokémon Platinum Map Randomizer
+* Universal Studios Experience (Minecraft Bedrock)
 
 ### Nintendo 3DS (2)
 * Hyrule Warriors: Definitive Edition
@@ -180,18 +203,23 @@ Keymaster's Keep currently supports 151 games
 * Harry Potter: Quidditch World Cup
 * Pokémon Ruby, Sapphire, and Emerald Versions
 
-### Nintendo GameCube (4)
+### Nintendo GameCube (5)
 * Harry Potter: Quidditch World Cup
 * Shadow The Hedgehog
+* Sonic Riders
 * Super Mario Sunshine
 * Super Smash Bros. Melee
 
-### Nintendo Switch (54)
+### Nintendo Switch (62)
 * Arcaea
+* Balatro
+* Caveblazers
+* Cobalt Core
 * Crush Crush
 * Cuphead
 * Dark Souls: Remastered
 * Dead By Daylight
+* Deemo -Reborn-
 * Descenders
 * Diablo II: Resurrected
 * Disney Music Parade Encore
@@ -213,9 +241,12 @@ Keymaster's Keep currently supports 151 games
 * Mario Party
 * Mario Party 2
 * Mario Party 3
+* Monster Rancher 2 DX
 * Muse Dash
 * Neon White
+* Octodad: Dadliest Catch
 * Ori and the Will of the Wisps
+* Overwatch 2
 * Paperball
 * Persona 4 Arena Ultimax
 * Pikmin 4
@@ -226,6 +257,7 @@ Keymaster's Keep currently supports 151 games
 * Rock of Ages 2: Bigger & Boulder
 * Salt and Sacrifice
 * Shovel Knight Dig
+* Slay the Spire
 * Sonic Mania
 * Sonic Origins
 * Spyro Reignited Trilogy
@@ -242,7 +274,7 @@ Keymaster's Keep currently supports 151 games
 * Warframe
 * Ys VIII: Lacrimosa of Dana
 
-### Nintendo Wii (14)
+### Nintendo Wii (15)
 * Fortune Street
 * Guitar Hero 5
 * Guitar Hero III: Legends of Rock
@@ -255,14 +287,16 @@ Keymaster's Keep currently supports 151 games
 * Rock Band
 * Rock Band 2
 * Rock Band 3
+* Sonic Riders: Zero Gravity
 * Super Mario Galaxy
 * Super Mario Galaxy 2
 
-### Nintendo Wii U (8)
+### Nintendo Wii U (9)
 * Kirby's Return to Dream Land
 * Little Inferno
 * Mario Kart 8
 * Mario Party 2
+* Octodad: Dadliest Catch
 * Rhythm Heaven Fever
 * Super Mario Galaxy
 * Super Mario Galaxy 2
@@ -271,15 +305,19 @@ Keymaster's Keep currently supports 151 games
 ### Nokia N-GAGE (1)
 * Guitar Hero World Tour
 
-### PC (99)
+### PC (121)
 * 14 Minesweeper Variants
 * 14 Minesweeper Variants 2
 * A Dance of Fire and Ice
 * Anger Foot
 * Awaria
 * Backpack Battles
+* Balatro
 * BattleBlock Theater
 * Bloons TD 6
+* Cataclysm: Dark Days Ahead
+* Caveblazers
+* Cobalt Core
 * Creeper World 3: Arc Eternal
 * Creeper World 4
 * Crush Crush
@@ -287,9 +325,12 @@ Keymaster's Keep currently supports 151 games
 * DJMax Respect V
 * Dark Souls: Remastered
 * Dead By Daylight
+* Deadlock
+* Deemo -Reborn-
 * Deep Rock Galactic
 * DemonCrawl
 * Descenders
+* Destiny 2
 * Diablo II: Resurrected
 * Dungeon Defenders
 * ELDEN RING
@@ -302,6 +343,7 @@ Keymaster's Keep currently supports 151 games
 * Frogger (1997)
 * GTFO
 * GUILTY GEAR -STRIVE-
+* God Eater Resurrection
 * Guild Wars 2
 * Guitar Hero III: Legends of Rock
 * Guitar Hero World Tour
@@ -309,6 +351,7 @@ Keymaster's Keep currently supports 151 games
 * Harry Potter: Quidditch World Cup
 * Hollow Knight
 * HoloCure: Save the Fans!
+* Hyperspace Dogfights
 * I Was a Teenage Exocolonist
 * Insaniquarium Deluxe
 * Just Shapes & Beats
@@ -316,18 +359,22 @@ Keymaster's Keep currently supports 151 games
 * Kingdom Hearts: Melody of Memory
 * Layers of Fear (2023)
 * League of Legends
+* Lethal Company
 * Little Inferno
 * MONSTER HUNTER RISE
 * Made in Abyss: Binary Star Falling into Darkness
 * Mages of Mystralia
 * Marvel Rivals
+* Monster Rancher 2 DX
 * Muse Dash
 * Mythos: Sudoku
 * Neon White
 * NiGHTS into Dreams...
+* Octodad: Dadliest Catch
 * OldTV
 * OpenRCT2
 * Ori and the Will of the Wisps
+* Overwatch 2
 * Paperball
 * Peggle Deluxe
 * Persona 4 Arena Ultimax
@@ -340,24 +387,31 @@ Keymaster's Keep currently supports 151 games
 * Re-Volt
 * Realm of the Mad God
 * Rhythm Doctor
+* Rift Wizard 2
 * Rimworld
 * Rock of Ages 2: Bigger & Boulder
 * Salt and Sacrifice
 * Shovel Knight Dig
 * Sins of a Solar Empire II
+* Slay the Spire
 * Smite 2
 * Sonic Mania
 * Sonic Origins
+* Sonic Riders
 * Spore
 * Spyro Reignited Trilogy
 * Star Wars: Battlefront II (Classic)
 * Stellaris
 * Street Fighter 6
 * Super Hexagon
+* Synthetik: Legion Rising
 * Tetris Effect: Connected
+* The Bazaar
 * The Binding of Isaac: Rebirth
+* The Elder Scrolls V: Skyrim - Special Edition
 * Tony Hawk's Pro Skater 1+2
 * Touhou Kanjuden: Legacy of Lunatic Kingdom
+* Tower Tactics: Liberation
 * Tower Unite
 * TrackMania Turbo
 * TrackMania United Forever
@@ -370,7 +424,9 @@ Keymaster's Keep currently supports 151 games
 * Vampire Survivors
 * WEBFISHING
 * Warframe
+* Wayfinder
 * Ys VIII: Lacrimosa of Dana
+* Zuma Deluxe
 
 ### Sega Dreamcast (1)
 * Re-Volt
@@ -378,11 +434,12 @@ Keymaster's Keep currently supports 151 games
 ### Sega Saturn (1)
 * NiGHTS into Dreams...
 
-### Sony PlayStation (2)
+### Sony PlayStation (3)
 * Frogger (1997)
+* Monster Rancher 2 DX
 * Re-Volt
 
-### Sony PlayStation 2 (11)
+### Sony PlayStation 2 (13)
 * Guitar Hero
 * Guitar Hero 5
 * Guitar Hero II
@@ -393,9 +450,11 @@ Keymaster's Keep currently supports 151 games
 * Rock Band
 * Rock Band 2
 * Shadow The Hedgehog
+* Sonic Riders
+* Sonic Riders: Zero Gravity
 * Star Wars: Battlefront II (Classic)
 
-### Sony PlayStation 3 (12)
+### Sony PlayStation 3 (13)
 * Dungeon Defenders
 * Guitar Hero 5
 * Guitar Hero III: Legends of Rock
@@ -408,19 +467,23 @@ Keymaster's Keep currently supports 151 games
 * Rock Band
 * Rock Band 2
 * Rock Band 3
+* Zuma Deluxe
 
-### Sony PlayStation 4 (42)
+### Sony PlayStation 4 (49)
 * Bloons TD 6
 * Cuphead
 * Dark Souls: Remastered
 * Dead By Daylight
+* Deemo -Reborn-
 * Deep Rock Galactic
 * Descenders
+* Destiny 2
 * Diablo II: Resurrected
 * ELDEN RING
 * Enter the Gungeon
 * Final Fantasy XIV
 * GUILTY GEAR -STRIVE-
+* God Eater Resurrection
 * Hollow Knight
 * I Was a Teenage Exocolonist
 * Just Shapes & Beats
@@ -430,6 +493,8 @@ Keymaster's Keep currently supports 151 games
 * Made in Abyss: Binary Star Falling into Darkness
 * Mages of Mystralia
 * Neon White
+* Octodad: Dadliest Catch
+* Overwatch 2
 * Persona 4 Arena Ultimax
 * Pinball FX3
 * Placid Plastic Duck Simulator
@@ -438,6 +503,7 @@ Keymaster's Keep currently supports 151 games
 * Rock Band 4
 * Rock of Ages 2: Bigger & Boulder
 * Salt and Sacrifice
+* Slay the Spire
 * Sonic Mania
 * Sonic Origins
 * Spyro Reignited Trilogy
@@ -445,6 +511,7 @@ Keymaster's Keep currently supports 151 games
 * Street Fighter 6
 * Tetris Effect: Connected
 * The Binding of Isaac: Rebirth
+* The Elder Scrolls V: Skyrim - Special Edition
 * Theatrhythm: Final Bar Line
 * Tony Hawk's Pro Skater 1+2
 * TrackMania Turbo
@@ -453,9 +520,11 @@ Keymaster's Keep currently supports 151 games
 * Warframe
 * Ys VIII: Lacrimosa of Dana
 
-### Sony PlayStation 5 (24)
+### Sony PlayStation 5 (29)
+* Balatro
 * Dead By Daylight
 * Deep Rock Galactic
+* Destiny 2
 * Diablo II: Resurrected
 * ELDEN RING
 * Final Fantasy XIV
@@ -466,6 +535,7 @@ Keymaster's Keep currently supports 151 games
 * MONSTER HUNTER RISE
 * Marvel Rivals
 * Neon White
+* Overwatch 2
 * Placid Plastic Duck Simulator
 * PowerWash Simulator
 * Salt and Sacrifice
@@ -473,16 +543,19 @@ Keymaster's Keep currently supports 151 games
 * Sonic Origins
 * Street Fighter 6
 * Tetris Effect: Connected
+* The Elder Scrolls V: Skyrim - Special Edition
 * Tony Hawk's Pro Skater 1+2
 * Trackmania
 * Vampire Survivors
 * Warframe
+* Wayfinder
 * Ys VIII: Lacrimosa of Dana
 
 ### Sony PlayStation Portable (1)
 * Star Wars: Battlefront II (Classic)
 
-### Sony PlayStation Vita (3)
+### Sony PlayStation Vita (4)
+* God Eater Resurrection
 * Plants vs. Zombies
 * The Binding of Isaac: Rebirth
 * Ys VIII: Lacrimosa of Dana
@@ -490,6 +563,7 @@ Keymaster's Keep currently supports 151 games
 ### Virtual Reality (1)
 * PowerWash Simulator
 
-### Web Browser (1)
+### Web Browser (2)
+* Cataclysm: Dark Days Ahead
 * Crush Crush
 

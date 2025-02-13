@@ -41,6 +41,8 @@
 
 - You get the SADX_Archipelago: DLL error - The specified module could not be found.
     - Make sure that the antivirus didn't delete the `/mods/SADX_Archipelago/sadx-classic-randomizer.dll` file.
+- You get error: The code execution cannot proceeD because MSVCP140.dll was not found.
+    - Install the .NET 8 from [Microsoft's website](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-8.0.10-windows-x64-installer).
 - The game closes when you press start.
     - This is a Steam input issue. Either run the game from Steam or adjust the "Desktop controller configuration" to
       just be a controller.

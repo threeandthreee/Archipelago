@@ -1,4 +1,19 @@
 {
+  "REGION_PC": {
+    "parent_map": null,
+    "name": "Player's PC",
+    "encounter_region": null,
+    "has_land": false,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [
+      "PC_ITEM_POTION"
+    ],
+    "events": [],
+    "exits": {},
+    "warps": {}
+  },
   "REGION_POKEDEX": {
     "parent_map": null,
     "name": "Pokedex",

@@ -46,7 +46,8 @@ area_exits = {
     "Lumine Hall": ["Lost Underworld"],
     "Lost Underworld": ["Fire Spring"],
     "Fire Spring": ["Fire Spring"],
-    "Magicant": ["Magicant"],
+    "Magicant": ["Sea of Eden"],
+    "Sea of Eden": ["Sea of Eden"],
     "Cave of the Present": ["Cave of the Past"],
     "Cave of the Past": ["Endgame"],
     "Endgame": ["Endgame"],
@@ -188,7 +189,9 @@ area_rules = {
 
     "Fire Spring": {"Fire Spring": [["Nothing"]]},
 
-    "Magicant": {"Magicant": [["Nothing"]]},
+    "Magicant": {"Sea of Eden": [["Ness"]]},
+
+    "Sea of Eden": {"Sea of Eden": [["Nothing"]]},
 
     "Cave of the Present": {"Cave of the Past": [["Power of the Earth"]]},
 
@@ -244,12 +247,28 @@ def calculate_scaling(world):
     world.scaled_area_order = []
     passed_connections = []
     local_prog = []
+    Ness_scaled = False
+    Paula_scaled = False
+    Jeff_scaled = False
+    Poo_scaled = False
+    scaled_chars = {
+        "Ness": Ness_scaled,
+        "Paula": Paula_scaled,
+        "Jeff": Jeff_scaled,
+        "Poo": Poo_scaled
+    }
+
     sphere_count = 0
     last_region = "Ness's Mind"
     early_regions = []
+    world.Ness_region = "Ness's Mind"
     world.Paula_region = "Ness's Mind"
     world.Jeff_region = "Ness's Mind"
     world.Poo_region = "Ness's Mind"
+    for item in world.multiworld.precollected_items[world.player]:
+        if item.name in ["Ness", "Paula", "Jeff", "Poo"]:
+            scaled_chars[item.name] = True
+
     for num, sphere in enumerate(world.multiworld.get_spheres()):
         if num + 1 not in inventory:
             inventory[num + 1] = []
@@ -272,23 +291,33 @@ def calculate_scaling(world):
             if location.player == world.player and location.parent_region.name in combat_regions:
                 last_region = location.parent_region.name
 
-            if location.item.player == world.player and location.item.name == "Paula":
+            if location.item.player == world.player and location.item.name == "Ness" and not scaled_chars["Ness"]:
+                if location.parent_region.name in combat_regions and location.player == world.player:
+                    world.Ness_region = location.parent_region.name
+                else:
+                    world.Ness_region = last_region
+                scaled_chars["Ness"] = True
+
+            if location.item.player == world.player and location.item.name == "Paula" and not scaled_chars["Paula"]:
                 if location.parent_region.name in combat_regions and location.player == world.player:
                     world.Paula_region = location.parent_region.name
                 else:
                     world.Paula_region = last_region
+                scaled_chars["Paula"] = True
 
-            if location.item.player == world.player and location.item.name == "Jeff":
+            if location.item.player == world.player and location.item.name == "Jeff" and not scaled_chars["Jeff"]:
                 if location.parent_region.name in combat_regions and location.player == world.player:
                     world.Jeff_region = location.parent_region.name
                 else:
                     world.Jeff_region = last_region
+                scaled_chars["Jeff"] = True
 
-            if location.item.player == world.player and location.item.name == "Poo":
+            if location.item.player == world.player and location.item.name == "Poo" and not scaled_chars["Poo"]:
                 if location.parent_region.name in combat_regions and location.player == world.player:
                     world.Poo_region = location.parent_region.name
                 else:
                     world.Poo_region = last_region
+                scaled_chars["Poo"] = True
         sphere_count = num
 
     for item in range(1, len(inventory)):
@@ -328,17 +357,22 @@ def calculate_scaling(world):
     if world.options.magicant_mode == 2 and world.options.giygas_required:
         # If magicant is an alternate goal it should be scaled after Giygas
         world.accessible_regions.remove("Magicant")
+        world.accessible_regions.append("Sea of Eden")
         world.accessible_regions.insert(world.accessible_regions.index("Endgame") + 1, "Magicant")
     elif world.options.magicant_mode == 3 and world.options.giygas_required:
         world.accessible_regions.insert(world.accessible_regions.index("Endgame") - 1, "Magicant")
     elif world.options.magicant_mode == 3 and not world.options.giygas_required:
         # Just add it to the end of scaling
         world.accessible_regions.append("Magicant")
+        world.accessible_regions.append("Sea of Eden")
 
     # calculate which areas need to have enemies scaled
     for region in world.accessible_regions:
         if region in combat_regions:
             world.scaled_area_order.append(region)
+
+    if world.Ness_region == "Ness's Mind":
+        world.Ness_region = world.scaled_area_order[0]
 
     if world.Paula_region == "Ness's Mind":
         world.Paula_region = world.scaled_area_order[0]

@@ -882,6 +882,7 @@ class Ashipelago:
             "seed": self.seed_url
         }
         self._push_to_webhook(connection)
+        self.webhook_active = False
 
     # Custom client command used to gift a hint from one player to another
     def gift_hint(self, player_name: str, client_processor: ClientMessageProcessor) -> bool:
@@ -2824,7 +2825,6 @@ async def auto_shutdown(ctx, to_cancel=None):
                 task.cancel()
         ctx.logger.info("Shutting down due to inactivity.")
         # Ashipelago customization
-        ctx.dynx.webhook_active = False
         ctx.dynx.shutdown_room()
 
     while not ctx.exit_event.is_set():

@@ -228,7 +228,7 @@
     "tags": ["FlyUnlock"]
   },
   "FLY_UNLOCK_VISITED_INDIGO_PLATEAU": {
-    "name": "Indigo Plateau Exterior - Unlock Fly Destination",
+    "name": "Indigo Plateau - Unlock Fly Destination",
     "tags": ["FlyUnlock"]
   },
   "FLY_UNLOCK_VISITED_LAVENDER_TOWN": {
@@ -1787,6 +1787,10 @@
   },
   "NPC_GIFT_GOT_FULL_RESTORE_FROM_THREE_ISLAND_DEFENDER": {
     "name": "Three Island Town - Anti-Biker Gift",
+    "tags": ["NPCGift"]
+  },
+  "NPC_GIFT_GOT_LINK_CABLE": {
+    "name": "Silph Co. 7F - Rival Gift",
     "tags": ["NPCGift"]
   },
   "NPC_GIFT_GOT_LUXURY_BALL_FROM_RESORT_GORGEOUS_HOUSE": {

@@ -1,4 +1,4 @@
-world_version = "3.0.2B"
+world_version = "3.1"
 
 check_table = {
     0xEB0000: [0x11, 3],
@@ -531,7 +531,7 @@ check_table = {
 }
 
 location_dialogue = {  # Locations which just need to print the name of the item
-    "Onett - Tracy Gift": [0x07616B],
+    "Onett - Tracy Gift": [0x07616B, 0x330478],
     "Onett - Meteor Item": [0x0862C3],
     "Onett - Library Counter": [0x05EC0C],
     "Onett - Library Bookshelf": [0x2EBA66],
@@ -539,7 +539,7 @@ location_dialogue = {  # Locations which just need to print the name of the item
     "Onett - Mayor Pirkle": [0x0661D6, 0x072D4B, 0x072BE9],
     "Onett - Traveling Entertainer": [0x07476C],
     "Twoson - Bike Shop Rental": [0x080046],
-    "Twoson - Orange Kid Donation": [0x08134A],
+    "Twoson - Orange Kid Donation": [0x08134A, 0x0813B9, 0x3303E3],
     "Twoson - Apple Kid Invention": [0x081F89],
     "Twoson - Apple Kid's Mouse": [0x2EBA86],
     "Twoson - Antique Shop": [0x093E5F, 0x093F0A],
@@ -547,7 +547,7 @@ location_dialogue = {  # Locations which just need to print the name of the item
     "Twoson - Everdred Meeting": [0x095FA2],
     "Twoson - Insignificant Location": [0x094EB1],
     "Happy-Happy Village - Donation Lady": [0x2EC578, 0x2EC580],
-    "Happy-Happy Village - Prisoner Item": [0x2F95FE, 0x079646],
+    "Happy-Happy Village - Prisoner Item": [0x2F95FE, 0x33001E, 0x079646],
     "Happy-Happy Village - Defeat Carpainter": [0x098215],
     "Threed - Hospital Drawer": [0x08686C],
     "Saturn Valley - Post Belch Gift #1": [0x07EAAA],
@@ -615,7 +615,7 @@ npc_locations = {  # Locations given to you by an NPC
     "Onett - Mayor Pirkle": [0x072D61],
     "Onett - Traveling Entertainer": [0x07477C],
     "Twoson - Bike Shop Rental": [0x0801A5, 0x08008F],
-    "Twoson - Orange Kid Donation": [0x081362, 0x0813B9],
+    "Twoson - Orange Kid Donation": [0x081362],
     "Twoson - Apple Kid's Mouse": [0x0819DF],
     "Twoson - Apple Kid Invention": [0x082015, 0x081FF3],
     "Twoson - Antique Shop": [0x2EAEFD],
@@ -1145,14 +1145,16 @@ character_item_table = {
     "Paula": [0x01, 0x02, 0x89, 0x01, 0x06], 
     "Jeff": [0x02, 0x03, 0x8A, 0x01, 0x06],
     "Poo": [0x03, 0x04, 0x8B, 0x01, 0x06],
-    "Flying Man": [0x04, 0x27, 0x27, 0x00, 0x04]
+    "Flying Man": [0x04, 0x27, 0x27, 0x00, 0x04],
+    "Ness": [0x05, 0x00, 0x10, 0x00, 0x01, 0x06]  # the last 2 might not be needed anymore
 }
 
 party_id_nums = {
     "Paula": 0x02,
     "Jeff": 0x03,
     "Poo": 0x04,
-    "Flying Man": 0x0B
+    "Flying Man": 0x0B,
+    "Ness": 0x01
 }
 
 special_name_table = {
@@ -1175,7 +1177,8 @@ special_name_table = {
     "Jeff": [0x10, 0x37, 0xF8, 0xD5, 0x11],
     "Poo": [0x11, 0x3E, 0xF8, 0xD5, 0x12],
     "Flying Man": [0x12, 0x45, 0xF8, 0xD5, 0x13],
-    "Magicant Teleport": [0x13, 0x01, 0x95, 0xEE, 0x14]
+    "Magicant Teleport": [0x13, 0x01, 0x95, 0xEE, 0x14],
+    "Ness": [0x14, 0x49, 0xF8, 0xD5, 0x15]
 }
 
 client_specials = {
@@ -1198,7 +1201,8 @@ client_specials = {
     0x010E: 0x10,
     0x010F: 0x11,
     0x0110: 0x12,
-    0x0111: 0x13
+    0x0111: 0x13,
+    0x0112: 0x15
 }
 
 
@@ -1240,6 +1244,7 @@ item_space_checks = {
     "Happy-Happy Village - Prisoner Item": [0x2F965D, 0x61, 0x96, 0xEF, 0x2EAF3A, 0x3E, 0xAF, 0xEE],
     "Happy-Happy Village - Defeat Carpainter": [0x098268, 0x6C, 0x82, 0xC9],
     "Threed - Hospital Drawer": [0x08687C, 0x80, 0x68, 0xC8],
+    "Threed - Boogey Tent Trashcan": [0x2EF640, 0x44, 0xF6, 0xEE],
     "Saturn Valley - Post Belch Gift #1": [0x2EC049, 0x4D, 0xC0, 0xEE],
     "Saturn Valley - Post Belch Gift #2": [0x2EC063, 0x67, 0xC0, 0xEE],
     "Saturn Valley - Post Belch Gift #3": [0x2EC056, 0x5A, 0xC0, 0xEE],

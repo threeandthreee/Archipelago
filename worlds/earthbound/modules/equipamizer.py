@@ -269,11 +269,26 @@ royal_names = [
     "of barons",
     "of lords",
     "of sultans",
-    "of counts"
+    "of counts",
+    "of England"
 ]
 
 
 def randomize_armor(world, rom):
+    if world.options.equipamizer_cap_stats:
+        armor_caps = {
+            "body": 30,
+            "arm": 80,
+            "other": 110
+
+        }
+    else:
+        armor_caps = {
+            "body": 127,
+            "arm": 127,
+            "other": 127
+        }
+
     other_adjectives = adjectives.copy()
     arm_adjectives = adjectives.copy()
     body_adjectives = adjectives.copy()
@@ -488,7 +503,7 @@ def randomize_armor(world, rom):
         elif armor.equip_type == "other" and armor.can_equip == "All":
             progressive_others.append(item)
 
-        armor.defense = world.random.randint(1, 127)
+        armor.defense = world.random.randint(1, armor_caps[armor.equip_type])
 
         chance = world.random.randint(0, 100)
         if chance < 8:
@@ -658,12 +673,17 @@ def randomize_armor(world, rom):
 
 
 def randomize_weapons(world, rom):
+    if world.options.equipamizer_cap_stats:
+        weapon_cap = 120
+    else:
+        weapon_cap = 127
+
     weapon_names = {
         "Ness": ["bat", "stick", "club", "board", "racket", "cue", "pole", "paddle"],
         "Paula": ["fry pan", "frypan", "skillet", "whisk", "saucepan", "pin"],
-        "Jeff": ["gun", "beam", "air gun", "beam gun", "cannon", "blaster", "pistol", "revolver"],
+        "Jeff": ["gun", "beam", "air gun", "beam gun", "cannon", "blaster", "pistol", "revolver", "shotgun"],
         "Poo": ["Sword", "Katana", "Knife", "Scisscors", "Cutter", "Blade", "Chisel", "Saw", "Axe"],
-        "All": ["Yo-yo", "Slingshot"]
+        "All": ["Yo-yo", "Slingshot", "Boomerang"]
     }
 
     miss_rates = {
@@ -686,13 +706,22 @@ def randomize_weapons(world, rom):
     progressive_alls = [
     ]
 
+    starting_weapons = {
+        "Ness": "Tee Ball Bat",
+        "Paula": "Fry Pan",
+        "Jeff": "Pop Gun",
+        "Poo": "None"
+    }
+    
+    starting_weapon = starting_weapons[world.starting_character]
+
     world.weapon_list = {
         "Cracked Bat": EBWeapon("Ness", "Bash", 0x155297),
         "Tee Ball Bat": EBWeapon("Ness", "Bash", 0x1552BE),
         "Sand Lot Bat": EBWeapon("Ness", "Bash", 0x1552E5),
         "Minor League Bat": EBWeapon("Ness", "Bash", 0x15530C),
         "Mr. Baseball Bat": EBWeapon("Ness", "Bash", 0x155333),
-        "Big League Bat": EBWeapon("Ness", "Bash", 0x15535A),
+        "Big League Bat": EBWeapon("Ness", "Bash", 0x157073),
         "Hall of Fame Bat": EBWeapon("Ness", "Bash", 0x155381),
         "Magicant Bat": EBWeapon("Ness", "Bash", 0x1553A8),
         "Legendary Bat": EBWeapon("Ness", "Bash", 0x1553CF),
@@ -792,8 +821,8 @@ def randomize_weapons(world, rom):
             else:
                 weapon.can_equip = world.random.choice(["Ness", "Paula", "Jeff", "Poo"])
 
-            if item == "Tee Ball Bat":
-                weapon.can_equip = "Ness"
+            if item == starting_weapon:
+                weapon.can_equip = world.starting_character
 
         if weapon.can_equip == "Ness":
             progressive_bats.append(item)
@@ -802,10 +831,10 @@ def randomize_weapons(world, rom):
         elif weapon.can_equip == "Jeff":
             progressive_guns.append(item)
 
-        if item == "Tee Ball Bat" and not world.options.progressive_weapons:
+        if item == starting_weapon and not world.options.progressive_weapons:
             weapon.offense = 10
         else:
-            weapon.offense = world.random.randint(1, 127)
+            weapon.offense = world.random.randint(1, weapon_cap)
 
         if weapon.can_equip == "Poo":
             weapon.poo_off = weapon.offense
@@ -828,7 +857,7 @@ def randomize_weapons(world, rom):
             weapon.equip_type = "Bash"
 
         chance = world.random.randint(1, 100)
-        if chance < 4 and item != "Tee Ball Bat":
+        if chance < 4 and item != starting_weapon:
             weapon.miss_rate = 12
         else:
             weapon.miss_rate = miss_rates[weapon.can_equip]

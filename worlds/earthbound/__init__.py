@@ -13,7 +13,7 @@ import settings
 from .Items import get_item_names_per_category, item_table
 from .Locations import get_locations
 from .Regions import init_areas
-from .Options import EBOptions, eb_option_groups
+from .Options import EBOptions, eb_option_groups, StartingCharacter
 from .setup_game import setup_gamevars, place_static_items
 from .modules.enemy_data import initialize_enemies
 from .modules.flavor_data import create_flavors
@@ -94,14 +94,29 @@ class EarthBoundWorld(World):
         self.weapon_list: Dict[str, EBWeapon]
 
     def generate_early(self):  # Todo: place locked items in generate_early
+        self.starting_character = self.options.starting_character.current_key.capitalize()
         self.locals = []
         local_space_count = 0
+        max_counts = {
+            "Ness": 12,
+            "Paula": 11,
+            "Jeff": 9,
+            "Poo": 99
+        }
+        max_count = max_counts[self.starting_character]
         for item_name, amount in self.options.start_inventory.items():
             if item_name in item_id_table:
                 local_space_count += amount
-                if local_space_count > 12 and not self.options.remote_items:
+                if local_space_count > max_count and not self.options.remote_items:
                     player = self.multiworld.get_player_name(self.player)
-                    raise OptionError(f"{player}: start_inventory cannot place more than 12 items into 'Goods'. Attempted to place {local_space_count} Goods items.")
+                    raise OptionError(f"{player}: starting inventory cannot place more than {max_count} items into 'Goods' for {self.starting_character}. Attempted to place {local_space_count} Goods items.")
+
+        for item_name, amount in self.options.start_inventory_from_pool.items():
+            if item_name in item_id_table:
+                local_space_count += amount
+                if local_space_count > max_count and not self.options.remote_items:
+                    player = self.multiworld.get_player_name(self.player)
+                    raise OptionError(f"{player}: starting inventory cannot place more than {max_count} items into 'Goods' for {self.starting_character}. Attempted to place {local_space_count} Goods items.")
         setup_gamevars(self)
         create_flavors(self)
         initialize_enemies(self)
@@ -200,10 +215,12 @@ class EarthBoundWorld(World):
                 add_item_rule(self.multiworld.get_location("Magicant - Ness's Nightmare", self.player), lambda item: (item.name in self.item_name_groups["PSI"] and item.name != "Magicant Teleport"))
 
         if self.options.character_shuffle == 0:
+            main_characters = ["Ness", "Paula", "Jeff", "Poo"]
+            for character in main_characters:
+                if character != self.starting_character:
+                    prefill_items.append(self.create_item(character))
+
             prefill_items.extend([
-                self.create_item("Paula"),
-                self.create_item("Jeff"),
-                self.create_item("Poo"),
                 self.create_item("Flying Man"),
                 self.create_item("Teddy Bear"),
                 self.create_item("Super Plush Bear")
@@ -226,8 +243,9 @@ class EarthBoundWorld(World):
             add_item_rule(self.multiworld.get_location("Deep Darkness - Barf Character", self.player), lambda item: item.name in self.item_name_groups["Characters"])
 
             if (self.start_location == 9 and self.starting_teleport == "Winters Teleport") or (self.start_location == 7 and self.starting_teleport == "Dalaam Teleport"):
-                forced_poo = self.random.choice(["Dalaam - Throne Character", "Snow Wood - Bedroom"])
-                add_item_rule(self.multiworld.get_location(forced_poo, self.player), lambda item: item.name == "Poo")
+                if self.starting_character != "Poo":
+                    forced_poo = self.random.choice(["Dalaam - Throne Character", "Snow Wood - Bedroom"])
+                    add_item_rule(self.multiworld.get_location(forced_poo, self.player), lambda item: item.name == "Poo")
                 forbid_items_for_player(self.multiworld.get_location("Dalaam - Trial of Mu", self.player), {"Winters Teleport"}, self.player)
                 forbid_items_for_player(self.multiworld.get_location("Dalaam - Trial of Mu", self.player), {"Progressive Poo PSI"}, self.player)
 
@@ -350,6 +368,8 @@ class EarthBoundWorld(World):
 
     def get_excluded_items(self) -> Set[str]:
         excluded_items: Set[str] = set()
+        excluded_items.add(self.starting_character)
+
         if self.options.shuffle_teleports == 0:
             excluded_items.add("Onett Teleport")
             excluded_items.add("Twoson Teleport")
@@ -371,6 +391,7 @@ class EarthBoundWorld(World):
             excluded_items.add("Magicant Teleport")
 
         if self.options.character_shuffle == 0:
+            excluded_items.add("Ness")
             excluded_items.add("Paula")
             excluded_items.add("Jeff")
             excluded_items.add("Poo")

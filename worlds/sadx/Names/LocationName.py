@@ -68,3 +68,4 @@ class Groups:
     ChaoEggs = "Chao Eggs"
     ChaoRaces = "Chao Races"
     Enemies = "Enemies"
+    Fish = "Fish"

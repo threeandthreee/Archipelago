@@ -8,7 +8,6 @@ from .Items import item_name_to_id, item_id_to_name, item_table, is_joker, is_jo
     is_deck, is_progression, is_useful, is_bundle, tarots, planets, vouchers, spectrals, is_voucher, is_booster, is_stake, is_stake_per_deck, \
     stake_to_number, number_to_stake, is_tarot, is_planet, is_spectral
 from .BalatroDecks import deck_id_to_name, deck_name_to_key
-import random
 import math
 from worlds.generic.Rules import add_rule
 from .Options import BalatroOptions, Traps, IncludeDecksMode, StakeUnlockMode, \
@@ -63,7 +62,6 @@ class BalatroWorld(World):
     required_stake = "White Stake"
 
     short_mode_pool = list(jokers.keys())
-    random.shuffle(short_mode_pool)
 
     joker_bundles = []
     tarot_bundles = []
@@ -78,6 +76,17 @@ class BalatroWorld(World):
     distributed_fillers = dict()
 
     def generate_early(self):
+        # item groups
+        self.item_name_groups = {
+            "jokers": [jokers.values()],
+            "planets" : [planets.values()],
+            "tarots" : [tarots.values()],
+            "spectrals" : [spectrals.values()],
+            "vouchers" : [vouchers.values()]            
+        }   
+        
+        self.random.shuffle(self.short_mode_pool)
+        
         # decks
         if self.options.include_decksMode.value == IncludeDecksMode.option_all:
             self.playable_decks = [value for _,
@@ -85,7 +94,7 @@ class BalatroWorld(World):
         elif self.options.include_decksMode.value == IncludeDecksMode.option_number:
             playable_deck_choice = list(
                 [value for key, value in deck_id_to_name.items()])
-            random.shuffle(playable_deck_choice)
+            self.random.shuffle(playable_deck_choice)
             self.playable_decks = playable_deck_choice[0:
                                                        self.options.include_deckNumber.value]
         elif self.options.include_decksMode.value == IncludeDecksMode.option_choose:
@@ -95,11 +104,11 @@ class BalatroWorld(World):
         if self.options.include_stakesMode == IncludeStakesMode.option_all:
             self.playable_stakes = [value for _,
                                     value in number_to_stake.items()]
-            random.shuffle(self.playable_stakes)
+            self.random.shuffle(self.playable_stakes)
         elif self.options.include_stakesMode == IncludeStakesMode.option_number:
             playable_stake_choice = list(
                 [value for key, value in number_to_stake.items()])
-            random.shuffle(playable_stake_choice)
+            self.random.shuffle(playable_stake_choice)
             self.playable_stakes = playable_stake_choice[0:
                                                          self.options.include_stakesNumber.value]
         elif self.options.include_stakesMode == IncludeStakesMode.option_choose:
@@ -191,9 +200,9 @@ class BalatroWorld(World):
                     str(index+1)
 
         # make consumable pool accessible as soon as possible
-        self.multiworld.local_early_items[self.player][random.choice(
+        self.multiworld.local_early_items[self.player][self.random.choice(
             ["Archipelago Tarot", "Archipelago Belt"])] = 1
-        self.multiworld.local_early_items[self.player][random.choice(
+        self.multiworld.local_early_items[self.player][self.random.choice(
             [self.bundle_with_custom_tarot, self.bundle_with_custom_planet])] = 1
 
     def create_items(self):
@@ -206,7 +215,7 @@ class BalatroWorld(World):
         if decks_to_unlock > 0:
             # unlock first stake
             if self.options.stake_unlock_mode == StakeUnlockMode.option_stake_as_item:
-                stake_name = random.choice(self.playable_stakes)
+                stake_name = self.random.choice(self.playable_stakes)
                 stake_data = item_table[stake_name]
                 excludedItems[stake_name] = stake_data
                 preCollected_item = self.create_item(
@@ -221,7 +230,7 @@ class BalatroWorld(World):
 
             deck_table = list(deck_table.items())
             while decks_to_unlock > 0:
-                deck = random.choice(deck_table)
+                deck = self.random.choice(deck_table)
                 deck_name = deck[0]
                 deck_data = deck[1]
                 if self.options.stake_unlock_mode != StakeUnlockMode.option_stake_as_item_per_deck:
@@ -234,7 +243,7 @@ class BalatroWorld(World):
 
                 if self.options.stake_unlock_mode == StakeUnlockMode.option_stake_as_item_per_deck:
                     stake_name = deck_name + " " + \
-                        random.choice(self.playable_stakes)
+                        self.random.choice(self.playable_stakes)
                     stake_data = item_table[stake_name]
                     preCollected_stake = self.create_item(
                         stake_name, ItemClassification.progression)
@@ -343,7 +352,7 @@ class BalatroWorld(World):
             counter += 1
 
             if (trap_amount != -1 and counter % trap_amount == 0):
-                trap_id = random.randint(330, 335)
+                trap_id = self.random.randint(330, 335)
                 self.itempool.append(self.create_item(
                     item_id_to_name[trap_id + offset], ItemClassification.trap))
             else:
@@ -357,7 +366,7 @@ class BalatroWorld(World):
 
                 # after all good filler items are placed, fill the rest with normal filler items
                 else:
-                    filler_id = random.randint(310, 321)
+                    filler_id = self.random.randint(310, 321)
 
                 self.itempool.append(self.create_item(
                     item_id_to_name[filler_id + offset], ItemClassification.filler))

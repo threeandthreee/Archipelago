@@ -563,6 +563,8 @@
     "has_fishing": false,
     "kanto": false,
     "locations": [
+      "ITEM_THREE_ISLAND_ZINC",
+      "HIDDEN_ITEM_THREE_ISLAND_PP_UP",
       "TRAINER_BIKER_GOON_REWARD",
       "TRAINER_BIKER_GOON_2_REWARD",
       "TRAINER_BIKER_GOON_3_REWARD",
@@ -571,7 +573,6 @@
     ],
     "events": [],
     "exits": {
-      "REGION_THREE_ISLAND/BEHIND_EAST_FENCE": "Three Island Town Cuttable Tree",
       "REGION_THREE_ISLAND/VISIT": "Three Island Town Visit",
       "REGION_THREE_ISLAND_PORT/WEST": "Three Island Town Exit (South)",
       "REGION_THREE_ISLAND_BOND_BRIDGE/MAIN": "Three Island Town Exit (West)"
@@ -585,36 +586,6 @@
       "MAP_THREE_ISLAND:5/MAP_THREE_ISLAND_HOUSE4:0": "Three Island Worried Father's House",
       "MAP_THREE_ISLAND:6/MAP_THREE_ISLAND_HOUSE5:0": "Lostelle's Friend's House"
     }
-  },
-  "REGION_THREE_ISLAND/BEHIND_EAST_FENCE": {
-    "parent_map": "MAP_THREE_ISLAND",
-    "name": "Three Island Town Behind East Fence",
-    "encounter_region": null,
-    "has_land": false,
-    "has_water": false,
-    "has_fishing": false,
-    "kanto": false,
-    "locations": [
-      "ITEM_THREE_ISLAND_ZINC"
-    ],
-    "events": [],
-    "exits": {},
-    "warps": {}
-  },
-  "REGION_THREE_ISLAND/BEHIND_WEST_FENCE": {
-    "parent_map": "MAP_THREE_ISLAND",
-    "name": "Three Island Town Behind West Fence",
-    "encounter_region": null,
-    "has_land": false,
-    "has_water": false,
-    "has_fishing": false,
-    "kanto": false,
-    "locations": [
-      "HIDDEN_ITEM_THREE_ISLAND_PP_UP"
-    ],
-    "events": [],
-    "exits": {},
-    "warps": {}
   },
   "REGION_THREE_ISLAND_HOUSE1/MAIN": {
     "parent_map": "MAP_THREE_ISLAND_HOUSE1",
@@ -762,8 +733,7 @@
     "events": [],
     "exits": {
       "REGION_THREE_ISLAND_BOND_BRIDGE/WATER": "Bond Bridge Surfing Spot",
-      "REGION_THREE_ISLAND/MAIN": "Bond Bridge Exit",
-      "REGION_THREE_ISLAND/BEHIND_WEST_FENCE": "Bond Bridge Cuttable Tree"
+      "REGION_THREE_ISLAND/MAIN": "Bond Bridge Exit"
     },
     "warps": {
       "MAP_THREE_ISLAND_BOND_BRIDGE:0,1/MAP_THREE_ISLAND_BERRY_FOREST:0": "Berry Forest"

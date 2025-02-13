@@ -243,20 +243,6 @@ class PlandoLumineHallText(FreeText):
     visibility = Visibility.none
 
 
-class StartingCharacter(Choice):
-    """Changes the character you start as. If random start location is disabled, each character has their own starting location.
-       Ness: Ness's House
-       Paula: the Happy-Happy Villagr cabin
-       Jeff: The Threed zombie prison
-       Poo: Dalaam"""
-    display_name = "Starting Character"
-    option_ness = 0
-    option_paula = 1
-    option_jeff = 2
-    option_poo = 3
-    default = 0
-
-
 class Armorizer(Choice):
     """All equippable armor will have randomly generated attributes. This includes who can equip it, elemental resistance (and how strong that resistance is),
        defense, and the secondary stat it increases (Either Luck or Speed, depending on armor slot.) Choosing "Help!" from the Goods menu will give you exact details
@@ -342,9 +328,52 @@ class ShopRandomizer(Choice):
     default = 0
 
 
-class ScoutShopChecks(DefaultOnToggle):
+class ScoutShopChecks(Choice):
     """Scouts Shop checks when you open a shop. Only affects shops in Shopsanity mode."""
     display_name = "Scout Shop Checks"
+    option_off = 0
+    option_progression_only = 1
+    option_all = 2
+    default = 0
+
+
+class StartingCharacter(Choice):
+    """Sets which character you start as. Each character will always start with the ability to teleport,
+       and the ATM card. Ness will not be required to fight Sanctuary bosses."""
+    display_name = "Starting Character"
+    option_Ness = 0
+    option_Paula = 1
+    option_Jeff = 2
+    option_Poo = 3
+    default = 0
+
+
+class EquipamizerStatCap(DefaultOnToggle):
+    """If enabled, the highest value that Equipamizer can roll for a piece of equipment's
+       main stat will be capped. 80 for armor, 125 for weapons.
+       If disabled, the main stat can potentially roll up to 128."""
+    display_name = "Equipamizer Stat Cap"
+
+
+class MoneyDropMultiplier(Range):
+    """Multiplies money dropped by enemies by the chosen value."""
+    display_name = "Money Drop Multiplier"
+    range_start = 1
+    range_end = 100
+    default = 1
+
+
+class EnemyShuffle(Toggle):
+    """Shuffles Non-boss enemies amongst each other."""
+    display_name = "Enemy Shuffle"
+
+
+class SkipEpilogue(Toggle):
+    """If enabled, the choice to play the epilogue after beating Giygas will be removed, and you will
+       go directly to the credits. This option is mainly for no-release seeds where checks could be
+       potentially spoiled in the open-access epilogue."""
+    display_name = "Skip Epilogue"
+    visibility = Visibility.template
 
 
 @dataclass
@@ -358,18 +387,23 @@ class EBOptions(PerGameCommonOptions):
     monkey_caves_mode: MonkeyCavesMode
     shuffle_teleports: TeleportShuffle  # Better name?
     character_shuffle: CharacterShuffle
+    starting_character: StartingCharacter
     psi_shuffle: PSIShuffle
     allow_flash_as_favorite_thing: BanFlashFavorite
+    enemy_shuffle: EnemyShuffle
     boss_shuffle: BossShuffle
     decouple_diamond_dog: DecoupleDiamondDog
     boss_shuffle_add_giygas: ShuffleGiygas
     experience_modifier: ExperienceModifier
+    money_drop_multiplier: MoneyDropMultiplier
     starting_money: StartingMoney
     easy_deaths: EasyDeaths
     progressive_weapons: ProgressiveWeapons
     progressive_armor: ProgressiveArmor
     armorizer: Armorizer
     weaponizer: Weaponizer
+    armorizer_resistance_chance: ElementChance
+    equipamizer_cap_stats: EquipamizerStatCap
     auto_scale_party_members: AutoscaleParty
     remote_items: RemoteItems
     random_flavors: RandomFlavors
@@ -383,11 +417,7 @@ class EBOptions(PerGameCommonOptions):
     common_filler_weight: CommonWeight
     uncommon_filler_weight: UncommonWeight
     rare_filler_weight: RareWeight
-    start_inventory_from_pool: StartInventoryPool
-    death_link: DeathLink
-    death_link_mode: DeathLinkMode
     plando_lumine_hall_text: PlandoLumineHallText
-    armorizer_resistance_chance: ElementChance
     no_free_sanctuaries: NoFreeSancs
     randomize_overworld_music: RandomizeOverworldMusic
     randomize_battle_music: RandomizeBattleMusic
@@ -395,7 +425,10 @@ class EBOptions(PerGameCommonOptions):
     randomize_psi_palettes: RandomizePSIPalettes
     shop_randomizer: ShopRandomizer
     scout_shop_checks: ScoutShopChecks
-    # starting_character: StartingCharacter
+    skip_epilogue: SkipEpilogue
+    start_inventory_from_pool: StartInventoryPool
+    death_link: DeathLink
+    death_link_mode: DeathLinkMode
 
 
 eb_option_groups = [
@@ -420,14 +453,16 @@ eb_option_groups = [
     OptionGroup("Equipamizer", [
         Armorizer,
         Weaponizer,
-        ElementChance
+        ElementChance,
+        EquipamizerStatCap
     ]),
 
     OptionGroup("World Modes", [
         RandomStartLocation,
         MagicantMode,
         MonkeyCavesMode,
-        NoFreeSancs
+        NoFreeSancs,
+        StartingCharacter
     ]),
 
     OptionGroup("PSI Randomization", [
@@ -436,11 +471,13 @@ eb_option_groups = [
     ]),
 
     OptionGroup("Enemy Randomization", [
+        EnemyShuffle,
         BossShuffle,
         DecoupleDiamondDog,
         ShuffleGiygas,
         ExperienceModifier,
-        ShuffleDrops
+        ShuffleDrops,
+        MoneyDropMultiplier
     ]),
 
     OptionGroup("Shop Randomization", [
@@ -453,7 +490,8 @@ eb_option_groups = [
         EasyDeaths,
         StartingMoney,
         RemoteItems,
-        AutoscaleParty
+        AutoscaleParty,
+        SkipEpilogue
     ]),
 
     OptionGroup("Aesthetic Settings", [

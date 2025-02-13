@@ -24,4 +24,8 @@ def get_item_pool(item_name: str) -> MinishootPool:
         'Dungeon Reward': MinishootPool.dungeon_reward,
         'Goal': MinishootPool.goal,
     }
+
+    if item_name not in item_pool_mapping:
+        return MinishootPool.default
+
     return item_pool_mapping[item_name]
