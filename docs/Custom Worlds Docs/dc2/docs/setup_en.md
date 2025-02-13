@@ -2,7 +2,7 @@
 
 ## Required Software
 
-- [ePSXe version 1.9.0](https://www.epsxe.com/download.php)
+- [pcsx2 version 1.6.0](https://www.pcsx2.net/downloads)
 - [DC2AP Client](https://github.com/ArsonAssassin/DC2AP/releases)
 - [Dark Cloud 2 APWorld] (https://github.com/ArsonAssassin/DC2AP/releases)
 - Dark Cloud 2 ROM. The Archipelago community cannot provide this.
@@ -13,7 +13,7 @@ The DC2AP Client is a C# client which reads memory addresses from ePSXe and comm
 
 ## Joining a MultiWorld Game
 
-1. Run ePSXe 1.9.0. It MUST be this version.
+1. Run pcsx2 1.6.0. It MUST be this version.
 2. Load the Dark Cloud  rom
 3. Open the DC2AP Client
 4. Enter your host (including port), slot name and password (if set)
