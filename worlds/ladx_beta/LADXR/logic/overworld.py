@@ -11,7 +11,7 @@ class World:
 
         mabe_village = Location("Mabe Village")
         Location().add(HeartPiece(0x2A4)).connect(mabe_village, r.bush)  # well
-        Location().add(FishingMinigame()).connect(mabe_village, AND(r.bush, COUNT("RUPEES", 20)))  # fishing game, heart piece is directly done by the minigame.
+        Location().add(FishingMinigame()).connect(mabe_village, AND(r.can_farm, COUNT("RUPEES", 20)))  # fishing game, heart piece is directly done by the minigame.
         Location().add(Seashell(0x0A3)).connect(mabe_village, r.bush)  # bushes below the shop
         Location().add(Seashell(0x0D2)).connect(mabe_village, PEGASUS_BOOTS)  # smash into tree next to lv1
         Location().add(Song(0x092)).connect(mabe_village, OCARINA)  # Marins song
@@ -23,7 +23,7 @@ class World:
         papahl_house.connect(mamasha_trade, TRADING_ITEM_YOSHI_DOLL)
 
         trendy_shop = Location("Trendy Shop")
-        trendy_shop.connect(Location().add(TradeSequenceItem(0x2A0, TRADING_ITEM_YOSHI_DOLL)), FOUND("RUPEES", 50))
+        trendy_shop.connect(Location().add(TradeSequenceItem(0x2A0, TRADING_ITEM_YOSHI_DOLL)), AND(r.can_farm, FOUND("RUPEES", 50)))
         outside_trendy = Location()
         outside_trendy.connect(mabe_village, r.bush)
 
@@ -44,11 +44,11 @@ class World:
 
         shop = Location("Shop")
         if options.steal == "inlogic":
-            Location().add(ShopItem(0)).connect(shop, OR(COUNT("RUPEES", 500), SWORD))
-            Location().add(ShopItem(1)).connect(shop, OR(COUNT("RUPEES", 1480), SWORD))
+            Location().add(ShopItem(0)).connect(shop, OR(AND(r.can_farm, COUNT("RUPEES", 500)), SWORD))
+            Location().add(ShopItem(1)).connect(shop, OR(AND(r.can_farm, COUNT("RUPEES", 1480)), SWORD))
         else:
-            Location().add(ShopItem(0)).connect(shop, COUNT("RUPEES", 500))
-            Location().add(ShopItem(1)).connect(shop, COUNT("RUPEES", 1480))
+            Location().add(ShopItem(0)).connect(shop, AND(r.can_farm, COUNT("RUPEES", 500)))
+            Location().add(ShopItem(1)).connect(shop, AND(r.can_farm, COUNT("RUPEES", 1480)))
         self._addEntrance("shop", mabe_village, shop, None)
 
         dream_hut = Location("Dream Hut")
@@ -176,7 +176,7 @@ class World:
         self._addEntrance("prairie_left_cave2", ukuku_prairie, prairie_left_cave2, BOMB)
         self._addEntranceRequirementExit("prairie_left_cave2", None) # if exiting, you do not need bombs
 
-        mamu = Location("Mamu").connect(Location().add(Song(0x2FB)), AND(OCARINA, COUNT("RUPEES", 1480)))
+        mamu = Location("Mamu").connect(Location().add(Song(0x2FB)), AND(OCARINA, r.can_farm, COUNT("RUPEES", 1480)))
         self._addEntrance("mamu", ukuku_prairie, mamu, AND(OR(AND(FEATHER, PEGASUS_BOOTS), ROOSTER), OR(HOOKSHOT, ROOSTER), POWER_BRACELET))
 
         dungeon3_entrance = Location("Outside D3").connect(ukuku_prairie, OR(FEATHER, ROOSTER, FLIPPERS))
@@ -401,7 +401,7 @@ class World:
 
         # Raft game.
         raft_house = Location("Raft House")
-        Location().add(KeyLocation("RAFT")).connect(raft_house, AND(r.bush, COUNT("RUPEES", 100))) # add bush requirement for farming in case player has to try again
+        Location().add(KeyLocation("RAFT")).connect(raft_house, AND(r.can_farm, COUNT("RUPEES", 100)))
         raft_return_upper = Location("Raft Return North")
         raft_return_lower = Location("Raft Return South").connect(raft_return_upper, None, one_way=True)
         outside_raft_house = Location("Outside Raft House").connect(below_right_taltal, HOOKSHOT).connect(below_right_taltal, FLIPPERS, one_way=True)
