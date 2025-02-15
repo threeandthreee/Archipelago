@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import os.path
 import typing
 import logging
-from Options import Choice, Toggle, DefaultOnToggle, Range, FreeText, PerGameCommonOptions, OptionGroup, Removed, DeathLink
+from Options import Choice, Toggle, DefaultOnToggle, Range, FreeText, PerGameCommonOptions, OptionGroup, Removed, DeathLink, StartInventoryPool
 from collections import defaultdict
 import Utils
 
@@ -635,6 +635,7 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     low_hp_beep: LowHpBeep
     text_mode: TextMode
     no_flash: NoFlash
+    start_inventory_from_pool: StartInventoryPool
 
     warp_improvements: Removed
     additional_warp_points: Removed
