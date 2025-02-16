@@ -30,7 +30,7 @@ app.config["SELFLAUNCHCERT"] = None  # can point to a SSL Certificate to encrypt
 app.config["SELFLAUNCHKEY"] = None  # can point to a SSL Certificate Key to encrypt Room websocket connections
 app.config["SELFGEN"] = True  # application process is in charge of scheduling Generations.
 app.config["DEBUG"] = False
-app.config["PORT"] = 80
+app.config["PORT"] = 8100
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 64 * 1024 * 1024  # 64 megabyte limit
 # if you want to deploy, make sure you have a non-guessable secret key

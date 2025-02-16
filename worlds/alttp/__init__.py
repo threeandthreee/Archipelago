@@ -130,6 +130,7 @@ class ALTTPWorld(World):
     dungeons on your quest to rescue the descendents of the seven wise men and defeat the evil
     Ganon!
     """
+    hidden = True
     game = "A Link to the Past"
     options_dataclass = ALTTPOptions
     options: ALTTPOptions

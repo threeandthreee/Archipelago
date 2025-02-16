@@ -143,10 +143,6 @@ if __name__ == "__main__":
     app = get_app()
     create_options_files()
     create_ordered_tutorials_file()
-    if app.config["SELFLAUNCH"]:
-        autohost(app.config)
-    if app.config["SELFGEN"]:
-        autogen(app.config)
     if app.config["SELFHOST"]:  # using WSGI, you just want to run get_app()
         if app.config["DEBUG"]:
             app.run(debug=True, port=app.config["PORT"])
