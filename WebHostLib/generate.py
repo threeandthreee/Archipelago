@@ -54,8 +54,8 @@ def get_meta(options_source: dict, race: bool = False) -> Dict[str, Union[List[s
     }
 
 
-@app.route('/generate', methods=['GET', 'POST'])
-@app.route('/generate/<race>', methods=['GET', 'POST'])
+#@app.route('/generate', methods=['GET', 'POST'])
+#@app.route('/generate/<race>', methods=['GET', 'POST'])
 def generate(race=False):
     if request.method == 'POST':
         # check if the post request has the file part

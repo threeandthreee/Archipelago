@@ -175,7 +175,7 @@ def upload_zip_to_db(zfile: zipfile.ZipFile, owner=None, meta={"race": False}, s
         flash("No multidata was found in the zip file, which is required.")
 
 
-@app.route("/uploads", methods=["GET", "POST"])
+#@app.route("/uploads", methods=["GET", "POST"])
 def uploads():
     if request.method == "POST":
         # check if the POST request has a file part.
@@ -217,27 +217,27 @@ def uploads():
     return render_template("hostGame.html", version=__version__)
 
 
-@app.route('/user-content', methods=['GET'])
+#@app.route('/user-content', methods=['GET'])
 def user_content():
     rooms = select(room for room in Room if room.owner == session["_id"])
     seeds = select(seed for seed in Seed if seed.owner == session["_id"])
     return render_template("userContent.html", rooms=rooms, seeds=seeds)
 
 
-@app.route("/disown_seed/<suuid:seed>", methods=["GET"])
+#@app.route("/disown_seed/<suuid:seed>", methods=["GET"])
 def disown_seed(seed):
     seed = Seed.get(id=seed)
     if not seed:
         return abort(404)
     if seed.owner !=  session["_id"]:
         return abort(403)
-    
+
     seed.owner = 0
 
     return redirect(url_for("user_content"))
 
 
-@app.route("/disown_room/<suuid:room>", methods=["GET"])
+#@app.route("/disown_room/<suuid:room>", methods=["GET"])
 def disown_room(room):
     room = Room.get(id=room)
     if not room:

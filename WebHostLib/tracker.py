@@ -318,7 +318,7 @@ def _process_if_request_valid(incoming_request: Request, room: Optional[Room]) -
     return None
 
 
-@app.route("/tracker/<suuid:tracker>/<int:tracked_team>/<int:tracked_player>")
+#@app.route("/tracker/<suuid:tracker>/<int:tracked_team>/<int:tracked_player>")
 def get_player_tracker(tracker: UUID, tracked_team: int, tracked_player: int, generic: bool = False) -> Response:
     key = f"{tracker}_{tracked_team}_{tracked_player}_{generic}"
     response: Optional[Response] = cache.get(key)
@@ -354,13 +354,13 @@ def get_timeout_and_player_tracker(room: Room, tracked_team: int, tracked_player
             % TRACKER_CACHE_TIMEOUT_IN_SECONDS or TRACKER_CACHE_TIMEOUT_IN_SECONDS, room.last_activity, tracker)
 
 
-@app.route("/generic_tracker/<suuid:tracker>/<int:tracked_team>/<int:tracked_player>")
+#@app.route("/generic_tracker/<suuid:tracker>/<int:tracked_team>/<int:tracked_player>")
 def get_generic_game_tracker(tracker: UUID, tracked_team: int, tracked_player: int) -> Response:
     return get_player_tracker(tracker, tracked_team, tracked_player, True)
 
 
-@app.route("/tracker/<suuid:tracker>", defaults={"game": "Generic"})
-@app.route("/tracker/<suuid:tracker>/<game>")
+#@app.route("/tracker/<suuid:tracker>", defaults={"game": "Generic"})
+#@app.route("/tracker/<suuid:tracker>/<game>")
 def get_multiworld_tracker(tracker: UUID, game: str) -> Response:
     key = f"{tracker}_{game}"
     response: Optional[Response] = cache.get(key)
@@ -475,8 +475,8 @@ def render_generic_multiworld_sphere_tracker(tracker_data: TrackerData) -> str:
     )
 
 
-@app.route("/sphere_tracker/<suuid:tracker>")
-@cache.memoize(timeout=TRACKER_CACHE_TIMEOUT_IN_SECONDS)
+#@app.route("/sphere_tracker/<suuid:tracker>")
+#@cache.memoize(timeout=TRACKER_CACHE_TIMEOUT_IN_SECONDS)
 def get_multiworld_sphere_tracker(tracker: UUID):
     # Room must exist.
     room = Room.get(tracker=tracker)
@@ -2255,29 +2255,29 @@ if "Starcraft 2" in network_data_package["games"]:
         }
         # Format: L0, L1, L2, L3
         progressive_names = {
-            "Progressive Terran Infantry Weapon":               ["Terran Infantry Weapons Level 1", 
+            "Progressive Terran Infantry Weapon":               ["Terran Infantry Weapons Level 1",
                                                                  "Terran Infantry Weapons Level 1",
-                                                                 "Terran Infantry Weapons Level 2", 
+                                                                 "Terran Infantry Weapons Level 2",
                                                                  "Terran Infantry Weapons Level 3"],
-            "Progressive Terran Infantry Armor":                ["Terran Infantry Armor Level 1", 
+            "Progressive Terran Infantry Armor":                ["Terran Infantry Armor Level 1",
                                                                  "Terran Infantry Armor Level 1",
-                                                                 "Terran Infantry Armor Level 2", 
+                                                                 "Terran Infantry Armor Level 2",
                                                                  "Terran Infantry Armor Level 3"],
-            "Progressive Terran Vehicle Weapon":                ["Terran Vehicle Weapons Level 1", 
+            "Progressive Terran Vehicle Weapon":                ["Terran Vehicle Weapons Level 1",
                                                                  "Terran Vehicle Weapons Level 1",
-                                                                 "Terran Vehicle Weapons Level 2", 
+                                                                 "Terran Vehicle Weapons Level 2",
                                                                  "Terran Vehicle Weapons Level 3"],
-            "Progressive Terran Vehicle Armor":                 ["Terran Vehicle Armor Level 1", 
+            "Progressive Terran Vehicle Armor":                 ["Terran Vehicle Armor Level 1",
                                                                  "Terran Vehicle Armor Level 1",
-                                                                 "Terran Vehicle Armor Level 2", 
+                                                                 "Terran Vehicle Armor Level 2",
                                                                  "Terran Vehicle Armor Level 3"],
             "Progressive Terran Ship Weapon":                   ["Terran Ship Weapons Level 1",
                                                                  "Terran Ship Weapons Level 1",
                                                                  "Terran Ship Weapons Level 2",
                                                                  "Terran Ship Weapons Level 3"],
-            "Progressive Terran Ship Armor":                    ["Terran Ship Armor Level 1", 
+            "Progressive Terran Ship Armor":                    ["Terran Ship Armor Level 1",
                                                                  "Terran Ship Armor Level 1",
-                                                                 "Terran Ship Armor Level 2", 
+                                                                 "Terran Ship Armor Level 2",
                                                                  "Terran Ship Armor Level 3"],
             "Progressive Fire-Suppression System":              ["Fire-Suppression System Level 1",
                                                                  "Fire-Suppression System Level 1",

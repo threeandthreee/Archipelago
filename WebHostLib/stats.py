@@ -72,7 +72,7 @@ def create_game_played_figure(all_games_data: typing.Dict[datetime.date, typing.
     return plot
 
 
-@app.route('/stats')
+#@app.route('/stats')
 @cache.memoize(timeout=60 * 60)  # regen once per hour should be plenty
 def stats():
     from worlds import network_data_package

@@ -99,7 +99,7 @@ def glossary(lang: str):
     )
 
 
-@app.route('/seed/<suuid:seed>')
+#@app.route('/seed/<suuid:seed>')
 def view_seed(seed: UUID):
     seed = Seed.get(id=seed)
     if not seed:
@@ -107,7 +107,7 @@ def view_seed(seed: UUID):
     return render_template("viewSeed.html", seed=seed, slot_count=count(seed.slots))
 
 
-@app.route('/new_room/<suuid:seed>')
+#@app.route('/new_room/<suuid:seed>')
 def new_room(seed: UUID):
     seed = Seed.get(id=seed)
     if not seed:
