@@ -137,6 +137,7 @@ def apply_overrides(patch_data: dict) -> None:
         "low_hp_beep",
         "text_mode",
         "no_flash",
+        "quickswap",
     }
     if not patch_data["is_race"]:
         overridable_options.update([
