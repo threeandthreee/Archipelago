@@ -1,6 +1,39 @@
 from typing import NamedTuple, List, Dict
 import struct
 
+boss_sprite_pointers = {
+    "Frank": 0xEF2B69,
+    "Frankystein Mark II": 0xEF43F9,
+    "Titanic Ant": 0xEF3B57,
+    "Captain Strong": 0xEF23A9,
+    "Everdred": 0xEF2BCD,
+    "Mr. Carpainter": 0xEF2BFF,
+    "Mondo Mole": 0xEF4557,
+    "Boogey Tent": 0xEF3748,
+    "Mini Barf": 0xEF3B89,
+    "Master Belch": 0xEF3CD6,
+    "Trillionage Sprout": 0xEF3BBB,
+    "Guardian Digger": 0xEF45BB,
+    "Dept. Store Spook": 0xEF495F,
+    "Evil Mani-Mani": 0xEF395F,
+    "Clumsy Robot": 0xEF45A2,
+    "Shrooom!": 0xEF392B,
+    "Plague Rat of Doom": 0xEF4570,
+    "Thunder and Storm": 0xEF3C70,
+    "Kraken": 0xEF3991,
+    "Guardian General": 0xEF3C3C,
+    "Master Barf": 0xEF39F5,
+    "Starman Deluxe": 0xEF3A59,
+    "Electro Specter": 0xEF45ED,
+    "Carbon Dog": 0xEF3D08,
+    "Ness's Nightmare": 0xEF395F,
+    "Heavily Armed Pokey": 0xEF49AA,
+    "Starman Junior": 0xEF3A59,
+    "Diamond Dog": 0xEF3D08,
+    "Giygas (4)": 0xEF40F2
+
+}
+
 
 def initialize_bosses(world):
     world.boss_list = [
@@ -56,8 +89,7 @@ def initialize_bosses(world):
                           [0x0683FF]),
         "Frankystein Mark II": SlotInfo([0x0F96F0], [], [0x066146, 0x06648B, 0x0664FC], [0x068406]),
         "Titanic Ant": SlotInfo([], [], [], [0x06840D]),
-        "Captain Strong": SlotInfo([0x0302CE, 0x05F870, 0x0F8E3D, 0x05F886, 0x05F8A1, 0x05F8E3, 0x05FB0E,
-                                    0x05FBFC, 0x05FD08, 0x05FD5C], [0x5FC2B, 0x05FCF7, 0x065F88, 0x066085],
+        "Captain Strong": SlotInfo([], [0x5FC2B, 0x05FCF7, 0x065F88, 0x066085],
                                    [0x05FC59], [0x068468]),
         "Everdred": SlotInfo([0x0F9A64, 0x0F9FB4], [0x2EEEEA], [0x095C70], [0x06846F]),
         "Mr. Carpainter": SlotInfo([0x0FA27E],
@@ -222,6 +254,18 @@ def write_bosses(world, rom):
     # carbon dog's transformation
     rom.write_bytes(0x10DF69, struct.pack("H", world.boss_info[world.boss_list[27]].enemy_id))
     rom.write_bytes(0x02C503, bytearray([world.boss_info[world.boss_list[28]].music]))  # music
+
+    rom.write_bytes(0x2F188F, struct.pack("I", boss_sprite_pointers[world.boss_list[3]]))
+
+    rom.write_bytes(0x0302CE, struct.pack("H", 0x0154))
+    rom.write_bytes(0x05F870, struct.pack("H", 0x0154))
+    rom.write_bytes(0x0F8E3D, struct.pack("H", 0x0154))
+    rom.write_bytes(0x05F886, struct.pack("H", 0x0154))
+    rom.write_bytes(0x05F8A1, struct.pack("H", 0x0154))
+    rom.write_bytes(0x05F8E3, struct.pack("H", 0x0154))
+    rom.write_bytes(0x05FB0E, struct.pack("H", 0x0154))
+    rom.write_bytes(0x05FBFC, struct.pack("H", 0x0154))
+    rom.write_bytes(0x05FD08, struct.pack("H", 0x0154))
+    rom.write_bytes(0x05FD5C, struct.pack("H", 0x0154))
     
     # c2c505 sets the song
-            

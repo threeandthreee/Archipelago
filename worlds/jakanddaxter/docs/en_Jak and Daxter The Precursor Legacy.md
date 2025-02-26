@@ -1,9 +1,32 @@
 # Jak And Daxter (ArchipelaGOAL)
 
-## Where is the options page?
+## FAQ
+- [Where is the Options page?](#where-is-the-options-page)
+- [What does randomization do to this game?](#what-does-randomization-do-to-this-game)
+- [What are the Special Checks and how do I check them?](#what-are-the-special-checks-and-how-do-i-check-them)
+- [What are the Special Items and what do they unlock?](#what-are-the-special-items-and-what-do-they-unlock)
+- [How do I know which Special Items I have?](#how-do-i-know-which-special-items-i-have)
+- [What is the goal of the game once randomized?](#what-is-the-goal-of-the-game-once-randomized)
+- [What happens when I pick up or receive a Power Cell?](#what-happens-when-i-pick-up-or-receive-a-power-cell)
+- [What happens when I pick up or receive a Scout Fly?](#what-happens-when-i-pick-up-or-receive-a-scout-fly)
+- [How do I check the 'Free 7 Scout Flies' Power Cell?](#how-do-i-check-the-free-7-scout-flies-power-cell)
+- [What does Deathlink do?](#what-does-deathlink-do)
+- [What does Move Randomizer do?](#what-does-move-randomizer-do)
+- [What are the movement options in Move Randomizer?](#what-are-the-movement-options-in-move-randomizer)
+- [How do I know which moves I have?](#how-do-i-know-which-moves-i-have)
+- [What does Orbsanity do?](#what-does-orbsanity-do)
+- [What do Traps do?](#what-do-traps-do)
+- [What kind of Traps are there?](#what-kind-of-traps-are-there)
+- [I got soft-locked and cannot leave, how do I get out of here?](#i-got-soft-locked-and-cannot-leave-how-do-i-get-out-of-here)
+- [Why did I get an Option Error when generating a seed, and how do I fix it?](#why-did-i-get-an-option-error-when-generating-a-seed-and-how-do-i-fix-it)
+- [How do I check my player options in-game?](#how-do-i-check-my-player-options-in-game)
+- [How does the HUD work?](#how-does-the-hud-work)
+- [I think I found a bug, where should I report it?](#i-think-i-found-a-bug-where-should-i-report-it)
 
-The [Player Options Page](../player-options) for this game contains 
-all the options you need to configure and export a config file.
+## Where is the options page
+
+The [Player Options Page](../player-options) for this game contains all the options you need to configure and export 
+a config file.
 
 At this time, there are several caveats and restrictions:
 - Power Cells and Scout Flies are **always** randomized.
@@ -11,16 +34,16 @@ At this time, there are several caveats and restrictions:
     - This is to prevent hard locks, where an item required for progression is locked behind a trade you can't afford because you spent the orbs elsewhere.
     - By default, that total is 1530.
 
-## What does randomization do to this game?
+## What does randomization do to this game
 The game now contains the following Location checks:
 - All 101 Power Cells 
 - All 112 Scout Flies
-- All the Orb Caches that are not in Gol and Maia's Citadel (a total of 11)
+- All 14 Orb Caches (collect every orb in the cache and let it close)
 
 These may contain Items for different games, as well as different Items from within Jak and Daxter. 
 Additionally, several special checks and corresponding items have been added that are required to complete the game.
 
-## What are the special checks and how do I check them?
+## What are the special checks and how do I check them
 | Check Name             | How To Check                                                                 |
 |------------------------|------------------------------------------------------------------------------|
 | Fisherman's Boat       | Complete the fishing minigame in Forbidden Jungle                            |
@@ -36,7 +59,7 @@ Additionally, several special checks and corresponding items have been added tha
 | Freed The Yellow Sage  | Free the Yellow Sage in Gol and Maia's Citadel                               | 
 | Freed The Green Sage   | Free the Green Sage in Gol and Maia's Citadel                                | 
 
-## What are the special items and what do they unlock?
+## What are the special items and what do they unlock
 | Item Name                                                                | What It Unlocks                                                                               |
 |--------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------|
 | Fisherman's Boat                                                         | Misty Island                                                                                  |
@@ -50,12 +73,12 @@ Additionally, several special checks and corresponding items have been added tha
 | Freed The Blue Sage <br/> Freed The Red Sage <br/> Freed The Yellow Sage | The final staircase in Gol and Maia's Citadel                                                 |
 | Freed The Green Sage                                                     | The final elevator in Gol and Maia's Citadel                                                  | 
 
-## How do I know which special items I have?
+## How do I know which special items I have
 Open the game's menu, navigate to `Options`, then `Archipelago Options`, then `Item Tracker`.
 This will show you a list of all the special items in the game, ones not normally tracked as power cells or scout flies.
 Gray items indicate you do not possess that item, light blue items indicate you possess that item.
 
-## What is the goal of the game once randomized?
+## What is the goal of the game once randomized
 By default, to complete the game you must defeat the Gol and Maia and stop them from opening the Dark Eco silo. In order 
 to reach them, you will need at least 72 Power Cells to cross the Lava Tube, as well as the four special items for 
 freeing the Red, Blue, Yellow, and Green Sages.
@@ -65,7 +88,7 @@ a particular connector level, or opening the 100 Power Cell door after defeating
 the thresholds for connector levels and orb trades. These options allow you to tailor the expected length and difficulty
 of your run as you see fit.
 
-## What happens when I pick up or receive a power cell?
+## What happens when I pick up or receive a power cell
 When you pick up a power cell, Jak and Daxter will perform their victory animation. Your power cell count will 
 NOT change. The pause menu will say "Task Completed" below the picked-up Power Cell. If your power cell was related 
 to one of the special checks listed above, you will automatically check that location as well - a 2 for 1 deal!
@@ -74,7 +97,7 @@ Finally, your text client will inform you what you found and who it belongs to.
 When you receive a power cell, your power cell count will tick up by 1. Gameplay will otherwise continue as normal. 
 Finally, your text client will inform you where you received the power cell from.
 
-## What happens when I pick up or receive a scout fly?
+## What happens when I pick up or receive a scout fly
 When you pick up a scout fly, your scout fly count will NOT change. The pause menu will show you the number of
 scout flies you picked up per-region, and this number will have ticked up by 1 for the region that scout fly belongs to. 
 Finally, your text client will inform you what you found and who it belongs to.
@@ -83,7 +106,7 @@ When you receive a scout fly, your total scout fly count will tick up by 1. The 
 scout flies you received per-region, and this number will have ticked up by 1 for the region that scout fly belongs to. 
 Finally, your text client will inform you where you received the scout fly from, and which one it is.
 
-## How do I check the "Free 7 Scout Flies" power cell?
+## How do I check the Free 7 Scout Flies power cell
 You will automatically check this power cell when you _receive_ your 7th scout fly, NOT when you _pick up_ your 7th
 scout fly. So in short:
 
@@ -92,7 +115,7 @@ scout fly. So in short:
     - First, you will receive that scout fly, as normal.
     - Second, you will immediately complete the "Free 7 Scout Flies" check, which will send out another item.
 
-## What does Deathlink do?
+## What does Deathlink do
 If you enable Deathlink, all the other players in your Multiworld who also have it enabled will be linked on death. 
 That means when Jak dies in your game, the players in your Deathlink group also die. Likewise, if any of the other 
 players die, Jak will also die in a random, possibly spectacular fashion.
@@ -100,7 +123,7 @@ players die, Jak will also die in a random, possibly spectacular fashion.
 You can turn off Deathlink at any time in the game by opening the game's menu and navigating to `Options`, 
 then `Archipelago Options`, then `Deathlink`.
 
-## What does Move Randomizer do?
+## What does Move Randomizer do
 If you enable Move Randomizer, most of Jak's movement set will be added to the randomized item pool, and you will need 
 to receive the move in order to use it (i.e. you must find it, or another player must send it to you). Some moves have
 prerequisite moves that you must also have in order to use them (e.g. Crouch Jump is dependent on Crouch). Jak will only
@@ -110,7 +133,7 @@ the hip" requires Punch). Note that Flut Flut and the Zoomer will have access to
 You can turn off Move Rando at any time in the game by opening the game's menu, navigate to `Options`, 
 then `Archipelago Options`, then `Move Randomizer`. This will give you access to the full movement set again.
 
-## What are the movement options in Move Randomizer?
+## What are the movement options in Move Randomizer
 | Move Name       | Prerequisite Moves |
 |-----------------|--------------------|
 | Crouch          |                    |
@@ -125,48 +148,81 @@ then `Archipelago Options`, then `Move Randomizer`. This will give you access to
 | Punch Uppercut  | Punch              |
 | Kick            |                    |
 
-## How do I know which moves I have?
+## How do I know which moves I have
 Open the game's menu, navigate to `Options`, then `Archipelago Options`, then `Move Tracker`.
 This will show you a list of all the moves in the game. 
 - Gray items indicate you do not possess that move.
 - Yellow items indicate you possess that move, but you are missing its prerequisites.
 - Light blue items indicate you possess that move, as well as its prerequisites.
 
-## What does Orbsanity do?
-If you enable Orbsanity, Precursor Orbs will be turned into ordered lists of progressive checks. Every time you collect 
-a "bundle" of the correct number of orbs, you will trigger the next release in the list. Likewise, these bundles of orbs 
-will be added to the item pool to be randomized. There are several options to change the difficulty of this challenge. 
+## What does Orbsanity do
+If you enable Orbsanity, bundles of Precursor Orbs will be turned into checks. Every time you collect the chosen number 
+of orbs, i.e. a "bundle," you will trigger another check. Likewise, the orbs will be added to the random item pool. 
+There are several options to change the difficulty of this challenge. 
 
-- "Per Level" Orbsanity means the lists of orb checks are generated and populated for each level in the game.
-    - (Geyser Rock, Sandover Village, etc.)
-- "Global" Orbsanity means there is only one list of checks for the entire game.
-    - It does not matter where you pick up the orbs, they all count toward the same list.
-- The options with "Bundle Size" in the name indicate how many orbs are in a "bundle." This adds a number of Items 
+- "Per Level" Orbsanity means the bundles are for each level in the game. (Geyser Rock, Sandover Village, etc.)
+- "Global" Orbsanity means orbs collected from any level count toward the next bundle.
+- The options with "Bundle Size" in the name indicate how many orbs are in a bundle. This adds a number of Items 
   and Locations to the pool inversely proportional to the size of the bundle.
     - For example, if your bundle size is 20 orbs, you will add 100 items to the pool. If your bundle size is 250 orbs,
       you will add 8 items to the pool.
 
-### A WARNING ABOUT ORBSANITY OPTIONS
+## What do Traps do
+When creating your player YAML, you can choose to replace some of the game's extraneous Power Cells and Precursor Orbs 
+with traps. You can choose which traps you want to generate in your seed and how long they last. A random assortment 
+will then be chosen to populate the item pool.
 
-Unlike other settings, you CANNOT alter Orbsanity options after you generate a seed and start a game. **If you turn 
-Orbsanity OFF in the middle of an Orbsanity game, you will have NO way of completing the orb checks.** This may cause
-you to miss important progression items and prevent you (and others) from completing the run.
+When you receive one, you will hear a buzzer and some kind of negative effect will occur in game. These effects may be 
+challenging, maddening, or entertaining. When the trap duration ends, the game should return to its previous state.
+Multiple traps can be active at the same time, and they may interact with each other in strange ways. If they become 
+too frustrating, you can lower their duration by navigating to `Options`, then `Archipelago Options`, then 
+`Seed Options`, then `Trap Duration`. Lowering this number to zero will disable traps entirely.
 
-When you connect your text client to the Archipelago Server, the server will tell the game what settings were chosen
-for this seed, and the game will apply those settings automatically. You can verify (but DO NOT ALTER) these settings 
-by navigating to `Options`, then `Archipelago Options`, then `Seed Options`.
+## What kind of Traps are there
+| Trap Name       | Effect                                                                         |
+|-----------------|--------------------------------------------------------------------------------|
+| Trip Trap       | Jak trips and falls                                                            |
+| Slippery Trap   | The world gains the physical properties of Snowy Mountain's ice lake           |
+| Gravity Trap    | Jak falls to the ground faster and takes fall damage more easily               |
+| Camera Trap     | The camera remains fixed in place no matter how far away Jak moves             |
+| Darkness Trap   | The world gains the lighting properties of Dark Cave                           |
+| Earthquake Trap | The world and camera shake                                                     |
+| Teleport Trap   | Jak immediately teleports to Samos's Hut                                       |
+| Despair Trap    | The Warrior sobs profusely                                                     |
+| Pacifism Trap   | Jak's attacks have no effect on enemies, crates, or buttons                    |
+| Ecoless Trap    | Jak's eco is drained and he cannot collect new eco                             |
+| Health Trap     | Jak's health is set to 0 - not dead yet, but he will die to any attack or bonk |
+| Ledge Trap      | Jak cannot grab onto ledges                                                    |
+| Zoomer Trap     | Jak mounts an invisible zoomer (model loads properly depending on level)       |
+| Mirror Trap     | The world is mirrored                                                          |
 
-## I got soft-locked and can't leave, how do I get out of here?
+## I got soft-locked and cannot leave how do I get out of here
 Open the game's menu, navigate to `Options`, then `Archipelago Options`, then `Warp To Home`. 
 Selecting this option will ask if you want to be teleported to Geyser Rock. From there, you can teleport back 
 to the nearest sage's hut to continue your journey.
 
-## How does the HUD work? What are the alternate modes? (I didn't know there were alternate modes!)
+## Why did I get an Option Error when generating a seed and how do I fix it
+Depending on your player YAML, Jak and Daxter can have a lot of items, which can sometimes be overwhelming or 
+disruptive to multiworld games. There are also options that are mutually incompatible with each other, even in a solo
+game. To prevent the game from disrupting multiworlds, or generating an impossible solo seed, some options have
+Singleplayer and Multiplayer Minimums and Maximums, collectively called "friendly limits."
+
+If you're generating a solo game, or your multiworld host agrees to your request, you can override those limits by
+editing the `host.yaml`. In the Archipelago Launcher, click `Open host.yaml`, then search for `jakanddaxter_options`,
+then search for `enforce_friendly_options`, then change this value from `true` to `false`. Disabling this allows for 
+more disruptive and challenging options, but it may cause seed generation to fail. **Use at your own risk!**
+
+## How do I check my player options in-game
+When you connect your text client to the Archipelago Server, the server will tell the game what options were chosen
+for this seed, and the game will apply those settings automatically. 
+
+You can verify these options by navigating to `Options`, then `Archipelago Options`, then `Seed Options`. **You can open 
+each option to verify them, but you should NOT alter them during a run.** This may cause you to miss important 
+progression items and prevent you (and others) from completing the run.
+
+## How does the HUD work
 The game's normal HUD shows you how many power cells, precursor orbs, and scout flies you currently have. But if you 
-hold `L2 or R2` and press `Up or Down` on the D-Pad, the HUD will show you alternate modes. In all modes, the last 
-sent/received item and the player who sent/received it will be displayed below the Power Cell icon. This will help you 
-quickly reference information about which locations you've checked, newly received items and who to thank for them, etc. 
-Here is how the HUD works:
+hold `L2 or R2` and press a direction on the D-Pad, the HUD will show you alternate modes. Here is how the HUD works:
 
 | HUD Mode      | Button Combo                 | What You're Seeing                | Text Message                          |
 |---------------|------------------------------|-----------------------------------|---------------------------------------|
@@ -176,7 +232,12 @@ Here is how the HUD works:
 |               |                              |                                   |                                       |
 | (In Any Mode) |                              | (If you sent an Item to Yourself) | `FOUND {Your Item}`                   |
 
-## I think I found a bug, where should I report it?
+In all modes, the last 3 sent/received items and the player who sent/received it will be displayed in the 
+bottom left corner. This will help you quickly reference information about newly received or sent items. Items in blue 
+are Progression (or non-Jak items), in green are Filler, and in red are Traps. You can turn this off by navigating 
+to `Options`, then `Archipelago Options`, then set `Item Messages` to `Off`.
+
+## I think I found a bug where should I report it
 Depending on the nature of the bug, there are a couple of different options.
 
 * If you found a logical error in the randomizer, please create a new Issue 

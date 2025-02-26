@@ -1,6 +1,7 @@
 from typing import Dict, TYPE_CHECKING
 
 from .Rac2Interface import PLANET_LIST_SIZE, INVENTORY_SIZE, NANOTECH_BOOST_MAX
+from .TextManager import get_rich_item_name
 from .data import Planets, Locations, Items
 
 if TYPE_CHECKING:
@@ -145,15 +146,19 @@ async def handle_checked_location(ctx: 'Rac2Context'):
     if ctx.game_interface.pcsx2_interface.read_int8(ctx.game_interface.addresses.hypnomatic_part3) == 1:
         cleared_locations.add(Locations.GRELBIN_MYSTIC_MORE_MOONSTONES.location_id)
 
+    # check for wrench cutscene custom flags
+    if ctx.game_interface.pcsx2_interface.read_int8(ctx.game_interface.addresses.tabora_wrench_cutscene_flag) == 1:
+        cleared_locations.add(Locations.TABORA_OMNIWRENCH_10000.location_id)
+    if ctx.game_interface.pcsx2_interface.read_int8(ctx.game_interface.addresses.aranos_wrench_cutscene_flag) == 1:
+        cleared_locations.add(Locations.ARANOS_OMNIWRENCH_12000.location_id)
+
     cleared_locations = cleared_locations.difference(ctx.checked_locations)
     await ctx.send_msgs([{"cmd": "LocationChecks", "locations": cleared_locations}])
     for location_id in cleared_locations:
-        location_name = [loc for loc in Planets.ALL_LOCATIONS if loc.location_id == location_id].pop()
+        location_name = [loc for loc in Planets.ALL_LOCATIONS if loc.location_id == location_id].pop().name
         ctx.game_interface.logger.info(f"Location checked: {location_name}")
 
-        net_item = ctx.locations_info[location_id]
-        if net_item.player != ctx.slot:
-            ctx.notification_manager.queue_notification(
-                f"Sent \x0C{ctx.item_names.lookup_in_slot(net_item.item, net_item.player)}\x08 \
-                to {ctx.player_names[net_item.player]}."
-            )
+        net_item = ctx.locations_info.get(location_id, None)
+        if net_item is not None and net_item.player != ctx.slot:
+            item_to_player_names = get_rich_item_name(ctx, net_item, True)
+            ctx.notification_manager.queue_notification(f"Sent {item_to_player_names}")

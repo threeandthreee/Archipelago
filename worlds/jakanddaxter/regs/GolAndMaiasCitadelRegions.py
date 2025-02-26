@@ -1,5 +1,3 @@
-from typing import List
-
 from BaseClasses import CollectionState
 from .RegionBase import JakAndDaxterRegion
 from ..Options import EnableOrbsanity, CompletionCondition
@@ -8,7 +6,7 @@ from ..Rules import can_free_scout_flies, can_fight, can_reach_orbs_level
 
 
 # God help me... here we go.
-def build_regions(level_name: str, world: JakAndDaxterWorld) -> List[JakAndDaxterRegion]:
+def build_regions(level_name: str, world: JakAndDaxterWorld) -> list[JakAndDaxterRegion]:
     multiworld = world.multiworld
     options = world.options
     player = world.player
@@ -40,11 +38,13 @@ def build_regions(level_name: str, world: JakAndDaxterWorld) -> List[JakAndDaxte
     jump_pad_room.add_fly_locations([131163])  # Blue eco vent is right next to it.
     jump_pad_room.add_fly_locations([65627], access_rule=lambda state:
                                     can_free_scout_flies(state, player) and can_jump_farther(state, player))
+    jump_pad_room.add_cache_locations([24039, 24040])  # First, blue eco vent, second, blue eco cluster near sage.
 
     blast_furnace = JakAndDaxterRegion("Blast Furnace", player, multiworld, level_name, 39)
     blast_furnace.add_cell_locations([71], access_rule=lambda state: can_fight(state, player))
     blast_furnace.add_special_locations([71], access_rule=lambda state: can_fight(state, player))
     blast_furnace.add_fly_locations([393307])  # Blue eco vent nearby.
+    blast_furnace.add_cache_locations([24038])  # Blue eco cluster near sage.
 
     bunny_room = JakAndDaxterRegion("Bunny Chamber", player, multiworld, level_name, 45)
     bunny_room.add_cell_locations([72], access_rule=lambda state: can_fight(state, player))

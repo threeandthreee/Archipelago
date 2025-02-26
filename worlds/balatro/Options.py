@@ -214,7 +214,7 @@ class IncludeStakeList(OptionSet):
     Example: ['White Stake','Red Stake','Gold Stake']
     This will make those stakes playable and remove the other ones from the game.
     (Also make sure to capitalize the first letters, it's case sensitive.)
-    This option is only considered if Playable Stakes is set to choose.
+    This option is only considered if playable Stakes is set to choose.
     """
     display_name = "Include Stakes to have important Locations"
     default = ["White Stake", "Red Stake"]
@@ -223,7 +223,7 @@ class IncludeStakeList(OptionSet):
 
 class IncludeStakesNumber(Range):
     """Specify how many randomly selected stakes will be playable.
-    This option is only considered if Playable Stakes is set to number. """
+    This option is only considered if playable Stakes is set to number. """
     display_name = "Include number of playable stakes"
     range_start = 1
     range_end = 8
@@ -290,6 +290,12 @@ class DecksUnlockedFromStart(Range):
 class DeathLink(Toggle):
     """When your run ends, everybody will die. When somebody else dies, your run will end."""
     display_name = "Death Link"
+    
+    
+class ForceYaml(Toggle):
+    """Some settings (like death link or remove_or_debuff_jokers etc) can be changed in-game after the fact. 
+    If you want to disallow this (for a race for example) set this option to true."""
+    display_name = "Force Yaml"
 
 
 class OpFillerAmount(Range):
@@ -362,9 +368,12 @@ class BalatroOptions(PerGameCommonOptions):
     shop_items: ShopItems
     minimum_price: MinimumShopPrice
     maximum_price: MaximumShopPrice
+    
+    # traps
+    trap_amount: Traps
 
     # deathlink
     deathlink: DeathLink
-
-    # traps
-    trap_amount: Traps
+    
+    #misc
+    forceyaml: ForceYaml

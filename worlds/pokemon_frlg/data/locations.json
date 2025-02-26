@@ -191,7 +191,7 @@
     "tags": ["ExtraKeyItem"]
   },
   "NPC_GIFT_GOT_LETTER": {
-    "name": "Pokemon Lab Research Room - Scientist",
+    "name": "Pokemon Lab Research Room - Scientist Gift",
     "tags": ["ExtraKeyItem"]
   },
   "HIDDEN_ITEM_CERULEAN_CITY_GYM_MACHINE_PART": {
@@ -199,7 +199,7 @@
     "tags": ["ExtraKeyItem"]
   },
   "NPC_GIFT_GOT_SAFARI_PASS": {
-    "name": "Fuchsia Safari Zone Office - Safari Zone Worker",
+    "name": "Fuchsia Safari Zone Office - Safari Zone Worker Gift",
     "tags": ["ExtraKeyItem"]
   },
 
@@ -322,11 +322,11 @@
   },
 
   "NPC_GIFT_GOT_ONE_PASS": {
-    "name": "One Cinnabar Pokemon Center 1F - Bill",
+    "name": "One Cinnabar Pokemon Center 1F - Bill Gift",
     "tags": ["SplitIslandPasses"]
   },
   "NPC_GIFT_GOT_TWO_PASS": {
-    "name": "Lostelle's House - Lostelle",
+    "name": "Lostelle's House - Lostelle Gift",
     "tags": ["SplitIslandPasses"]
   },
   "NPC_GIFT_GOT_FIVE_PASS": {
@@ -334,24 +334,24 @@
     "tags": ["SplitIslandPasses"]
   },
   "NPC_GIFT_GOT_SIX_PASS": {
-    "name": "Icefall Cave Back - Lorelei",
+    "name": "Icefall Cave Back - Lorelei Gift",
     "tags": ["SplitIslandPasses"]
   },
   "NPC_GIFT_GOT_SEVEN_PASS": {
-    "name": "One Island Pokemon Center 1F - Celio (Deliver Sapphire)",
+    "name": "One Island Pokemon Center 1F - Celio Gift (Deliver Sapphire)",
     "tags": ["SplitIslandPasses"]
   },
 
   "NPC_GIFT_GOT_RED_TEA": {
-    "name": "Celadon Condominiums 1F - Brock",
+    "name": "Celadon Condominiums 1F - Brock Gift",
     "tags": ["SplitTeas"]
   },
   "NPC_GIFT_GOT_BLUE_TEA": {
-    "name": "Celadon Condominiums 1F - Misty",
+    "name": "Celadon Condominiums 1F - Misty Gift",
     "tags": ["SplitTeas"]
   },
   "NPC_GIFT_GOT_PURPLE_TEA": {
-    "name": "Celadon Condominiums 1F - Erika",
+    "name": "Celadon Condominiums 1F - Erika Gift",
     "tags": ["SplitTeas"]
   },
 

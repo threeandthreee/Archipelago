@@ -2,7 +2,8 @@
 Option definitions for Pokémon FireRed/LeafGreen
 """
 from dataclasses import dataclass
-from Options import Choice, DefaultOnToggle, NamedRange, OptionSet, PerGameCommonOptions, Range, Toggle
+from schema import Schema, And, Use
+from Options import Choice, DefaultOnToggle, NamedRange, OptionDict, OptionSet, PerGameCommonOptions, Range, Toggle
 from .data import data
 
 
@@ -93,7 +94,7 @@ class Trainersanity(NamedRange):
     """
     display_name = "Trainersanity"
     default = 0
-    range_start = 1
+    range_start = 0
     range_end = 456
     special_range_names = {
         "none": 0,
@@ -116,7 +117,7 @@ class Dexsanity(NamedRange):
     """
     display_name = "Dexsanity"
     default = 0
-    range_start = 1
+    range_start = 0
     range_end = 386
     special_range_names = {
         "none": 0,
@@ -852,33 +853,17 @@ class MinCatchRate(Range):
     default = 3
 
 
-class GuaranteedCatch(Toggle):
-    """
-    Pokeballs are guaranteed to catch wild Pokemon regardless of catch rate.
-    """
-    display_name = "Guaranteed Catch"
-
-
-class NormalizeEncounterRates(Toggle):
-    """
-    Make every slot on an encounter table approximately equally likely.
-
-    This does NOT mean each species is equally likely. Each species may occupy more than one slot and slots vary in
-    probability.
-    """
-    display_name = "Normalize Encounter Rates"
-
-
 class AllPokemonSeen(Toggle):
     """
-    Start will all Pokemon seen in you Pokedex. This allows you to see where the Pokemon can be encountered in the wild.
+    Start will all Pokemon seen in your Pokedex.
+    This allows you to see where the Pokemon can be encountered in the wild.
     """
     display_name = "All Pokemon Seen"
 
 
 class ExpModifier(Range):
     """
-    Multiplies gained EXP by a percentage.
+    Sets the EXP multiplier that is used when the in game option for experience is set to Custom.
 
     100 is default
     50 is half
@@ -899,13 +884,6 @@ class StartingMoney(Range):
     range_start = 0
     range_end = 999999
     default = 3000
-
-
-class BlindTrainers(Toggle):
-    """
-    Trainers will not start a battle with you unless you talk to them.
-    """
-    display_name = "Blind Trainers"
 
 
 class BetterShops(Toggle):
@@ -943,29 +921,6 @@ class TownMapFlyLocation(Choice):
     option_any = 2
 
 
-class TurboA(Toggle):
-    """
-    Holding A will advance most text automatically.
-    """
-    display_name = "Turbo A"
-
-
-class ReceiveItemMessages(Choice):
-    """
-    Sets whether you receive an in-game notification when receiving an item. Items can still onlybe received in the
-    overworld.
-
-    - All: Every item shows a message.
-    - Progression: Only progression items show a message
-    - None: All items are added to your bag silently (badges will still show).
-    """
-    display_name = "Receive Item Messages"
-    default = 1
-    option_all = 0
-    option_progression = 1
-    option_none = 2
-
-
 class RandomizeMusic(Toggle):
     """
     Shuffles music played in any situation where it loops.
@@ -976,10 +931,60 @@ class RandomizeMusic(Toggle):
 class RandomizeFanfares(Toggle):
     """
     Shuffles fanfares for item pickups, healing at the pokecenter, etc.
-
-    When this option is enabled, pressing B will interrupt most fanfares.
     """
     display_name = "Randomize Fanfares"
+
+
+class GameOptions(OptionDict):
+    """
+    Allows you to preset the in game options.
+    The available options and their allowed values are the following:
+
+    - Text Speed: Slow, Mid, Fast, Instant
+    - Turbo A: Off, On
+    - Auto Run: Off, On
+    - Button Mode: Help, LR, L=A
+    - Frame: 1-10
+    - Battle Scene: Off, On
+    - Battle Style: Shift, Set
+    - Show Effectiveness: Off, On
+    - Experience: None, Half, Normal, Double, Triple, Quadruple, Custom
+    - Sound: Mono, Stereo
+    - Low HP Beep: Off, On
+    - Skip Fanfares: Off, On
+    - Bike Music: Off, On
+    - Surf Music: Off, On
+    - Guaranteed Catch: Off, On
+    - Encounter Rates: Vanilla, Normalized
+    - Blind Trainers: Off, On
+    - Item Messages: All, Progression, None
+    """
+    display_name = "Game Options"
+    default = {"Text Speed": "Instant", "Turbo A": "Off", "Auto Run": "Off", "Button Mode": "Help", "Frame": 1,
+               "Battle Scene": "On", "Battle Style": "Shift", "Show Effectiveness": "On", "Experience": "Custom",
+               "Sound": "Mono", "Low HP Beep": "On", "Skip Fanfares": "Off", "Bike Music": "On", "Surf Music": "On",
+               "Guaranteed Catch": "Off", "Encounter Rates": "Vanilla", "Blind Trainers": "Off",
+               "Item Messages": "Progression"}
+    schema = Schema({
+        "Text Speed": And(str, lambda s: s in ("Slow", "Mid", "Fast", "Instant")),
+        "Turbo A": And(str, lambda s: s in ("Off", "On")),
+        "Auto Run": And(str, lambda s: s in ("Off", "On")),
+        "Button Mode": And(str, lambda s: s in ("Help", "LR", "L=A")),
+        "Frame": And(Use(int), lambda n: 1 <= n <= 10),
+        "Battle Scene": And(str, lambda s: s in ("Off", "On")),
+        "Battle Style": And(str, lambda s: s in ("Shift", "Set")),
+        "Show Effectiveness": And(str, lambda s: s in ("Off", "On")),
+        "Experience": And(str, lambda s: s in ("None", "Half", "Normal", "Double", "Triple", "Quadruple", "Custom")),
+        "Sound": And(str, lambda s: s in ("Mono", "Stereo")),
+        "Low HP Beep": And(str, lambda s: s in ("Off", "On")),
+        "Skip Fanfares": And(str, lambda s: s in ("Off", "On")),
+        "Bike Music": And(str, lambda s: s in ("Off", "On")),
+        "Surf Music": And(str, lambda s: s in ("Off", "On")),
+        "Guaranteed Catch": And(str, lambda s: s in ("Off", "On")),
+        "Encounter Rates": And(str, lambda s: s in ("Vanilla", "Normalized")),
+        "Blind Trainers": And(str, lambda s: s in ("Off", "On")),
+        "Item Messages": And(str, lambda s: s in ("All", "Progression", "None"))
+    })
 
 
 class ProvideHints(Toggle):
@@ -1063,18 +1068,14 @@ class PokemonFRLGOptions(PerGameCommonOptions):
 
     reusable_tm_tutors: ReusableTmsTutors
     min_catch_rate: MinCatchRate
-    guaranteed_catch: GuaranteedCatch
-    normalize_encounter_rates: NormalizeEncounterRates
     all_pokemon_seen: AllPokemonSeen
     exp_modifier: ExpModifier
     starting_money: StartingMoney
-    blind_trainers: BlindTrainers
     better_shops: BetterShops
     free_fly_location: FreeFlyLocation
     town_map_fly_location: TownMapFlyLocation
 
-    turbo_a: TurboA
-    receive_item_messages: ReceiveItemMessages
     randomize_music: RandomizeMusic
     randomize_fanfares: RandomizeFanfares
+    game_options: GameOptions
     provide_hints: ProvideHints

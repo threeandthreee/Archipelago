@@ -1,12 +1,10 @@
-from typing import List
-
 from .RegionBase import JakAndDaxterRegion
 from ..Options import EnableOrbsanity
 from .. import JakAndDaxterWorld
 from ..Rules import can_free_scout_flies, can_reach_orbs_level
 
 
-def build_regions(level_name: str, world: JakAndDaxterWorld) -> List[JakAndDaxterRegion]:
+def build_regions(level_name: str, world: JakAndDaxterWorld) -> list[JakAndDaxterRegion]:
     multiworld = world.multiworld
     options = world.options
     player = world.player
@@ -34,8 +32,10 @@ def build_regions(level_name: str, world: JakAndDaxterWorld) -> List[JakAndDaxte
     yakow_cliff.add_fly_locations([75], access_rule=lambda state: can_free_scout_flies(state, player))
 
     oracle_platforms = JakAndDaxterRegion("Oracle Platforms", player, multiworld, level_name, 6)
-    oracle_platforms.add_cell_locations([13], access_rule=lambda state: world.can_trade(state, world.total_trade_orbs, None))
-    oracle_platforms.add_cell_locations([14], access_rule=lambda state: world.can_trade(state, world.total_trade_orbs, 13))
+    oracle_platforms.add_cell_locations([13], access_rule=lambda state:
+                                        world.can_trade(state, world.total_trade_orbs, None))
+    oracle_platforms.add_cell_locations([14], access_rule=lambda state:
+                                        world.can_trade(state, world.total_trade_orbs, 13))
     oracle_platforms.add_fly_locations([393291], access_rule=lambda state:
                                        can_free_scout_flies(state, player))
 

@@ -30,8 +30,16 @@ class Addresses:
             self.selectable_planets: int = 0x139948
             self.ratchet_position: int = 0x189EA0
             self.current_moby_instance_pointer: int = 0x18C0B0
+            self.raritanium_count: int = 0x1A79FC
             self.ratchet_state: int = 0x18C0B4
             self.current_nanotech: int = 0x18C2EC
+            self.current_bolts: int = 0x1A79F8
+            self.current_bolt_multiplier: int = 0x1A7A32
+            self.current_ratchet_xp: int = 0x1A7A0C
+            self.challenge_mode_flag: int = 0x1A7A0A
+            self.wrench_weapon_id: int = 0x139572
+            self.current_armor_level: int = 0x1A7A18
+            self.joba_hoverbike_1_victories: int = 0x13960F
             self.clank_disabled: int = 0x18C31C
             self.platinum_bolt_table: int = 0x19B278
             self.checkpoint_data: int = 0x19B2E8
@@ -50,6 +58,8 @@ class Addresses:
             self.platinum_bolt_count: int = self.platinum_bolt_table + 0x6C
             self.nanotech_boost_count: int = self.platinum_bolt_table + 0x6D
             self.hypnomatic_part_count: int = self.platinum_bolt_table + 0x6E
+            self.tabora_wrench_cutscene_flag: int = self.platinum_bolt_table + 0x6F
+            self.aranos_wrench_cutscene_flag: int = self.platinum_bolt_table + 0x70
 
             # Pause state is at 0x1A8F00 on all planets except for Oozla where it's at 0x1A8F40.
             self.pause_state: int = 0x1A8F00

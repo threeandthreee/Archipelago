@@ -1,4 +1,7 @@
-from typing import Optional
+import json
+import shutil
+import zipfile
+from typing import Optional, cast, Dict, Any
 import asyncio
 import multiprocessing
 import os
@@ -9,7 +12,8 @@ from CommonClient import ClientCommandProcessor, CommonContext, get_base_parser,
 from NetUtils import ClientStatus
 import Utils
 from settings import get_settings
-from . import Rac2World
+from . import Rac2World, Rac2Settings
+from .Container import Rac2ProcedurePatch
 from .ClientCheckLocations import handle_checked_location
 from .Callbacks import update, init
 from .ClientReceiveItems import handle_received_items
@@ -231,18 +235,53 @@ async def run_game(iso_file):
 
 
 async def patch_and_run_game(aprac2_file: str):
+    settings: Optional[Rac2Settings] = get_settings().get("rac2_options", False)
+    assert settings, "No Rac2 Settings?"
+
     aprac2_file = os.path.abspath(aprac2_file)
-    # input_iso_path = get_settings().rac2_options.iso_file
-    # game_version = get_version_from_iso(input_iso_path)
     base_name = os.path.splitext(aprac2_file)[0]
     output_path = base_name + '.iso'
 
     if not os.path.exists(output_path):
         from .PatcherUI import PatcherUI
         patcher = PatcherUI(aprac2_file, output_path, logger)
-        patcher.run()
+        await patcher.async_run()
+        if patcher.errored:
+            raise Exception("Patching Failed")
+
+    game_ini_path: str = settings.game_ini
+    if os.path.exists(game_ini_path):
+        version = Rac2ProcedurePatch.get_game_version_from_iso(output_path)
+        crc = get_pcsx2_crc(output_path)
+        if version and crc:
+            file_name = f"{version}_{crc:X}.ini"
+            file_path = os.path.join(os.path.dirname(game_ini_path), file_name)
+            shutil.copy(game_ini_path, file_path)
+
     Utils.async_start(run_game(output_path))
 
+
+def get_name_from_aprac2(aprac2_path: str) -> str:
+    with zipfile.ZipFile(aprac2_path) as zip_file:
+        with zip_file.open("archipelago.json") as file:
+            archipelago_json = file.read().decode("utf-8")
+            archipelago_json = json.loads(archipelago_json)
+    return cast(Dict[str, Any], archipelago_json)["player_name"]
+
+
+def get_pcsx2_crc(iso_path: str) -> Optional[int]:
+    if not os.path.exists(iso_path):
+        return False
+
+    ELF_START: int = 0x00258800
+    ELF_SIZE: int = 0x27F53C
+    crc: int = 0
+    with open(iso_path, "rb") as iso_file:
+        iso_file.seek(ELF_START)
+        for i in range(int(ELF_SIZE / 4)):
+            crc ^= int.from_bytes(iso_file.read(4), "little")
+
+    return crc
 
 def launch():
     Utils.init_logging("RAC2 Client")
@@ -255,11 +294,12 @@ def launch():
                             help='Path to an aprac2 file')
         args = parser.parse_args()
 
+        ctx = Rac2Context(args.connect, args.password)
+
         if os.path.isfile(args.aprac2_file):
             logger.info("aprac2 file supplied, beginning patching process...")
             await patch_and_run_game(args.aprac2_file)
-
-        ctx = Rac2Context(args.connect, args.password)
+            ctx.auth = get_name_from_aprac2(args.aprac2_file)
 
         logger.info("Connecting to server...")
         ctx.server_task = asyncio.create_task(server_loop(ctx), name="Server Loop")

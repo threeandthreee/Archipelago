@@ -1,7 +1,7 @@
 import logging
 import random
 import struct
-from typing import ByteString, List, Callable, Optional
+from typing import ByteString, Callable
 import json
 import pymem
 from pymem import pattern
@@ -28,7 +28,7 @@ sizeof_float = 4
 # *****************************************************************************
 # **** This number must match (-> *ap-info-jak1* version) in ap-struct.gc! ****
 # *****************************************************************************
-expected_memory_version = 4
+expected_memory_version = 5
 
 
 # IMPORTANT: OpenGOAL memory structures are particular about the alignment, in memory, of member elements according to
@@ -104,6 +104,11 @@ memory_version_offset = offsets.define(sizeof_uint32)
 
 # Connection status to AP server (not the game!)
 server_connection_offset = offsets.define(sizeof_uint8)
+slot_name_offset = offsets.define(sizeof_uint8, 16)
+slot_seed_offset = offsets.define(sizeof_uint8, 8)
+
+# Trap information.
+trap_duration_offset = offsets.define(sizeof_float)
 
 # The End.
 end_marker_offset = offsets.define(sizeof_uint8, 4)
@@ -163,7 +168,7 @@ class JakAndDaxterMemoryReader:
     # The memory reader just needs the game running.
     gk_process: pymem.process = None
 
-    location_outbox: List[int] = []
+    location_outbox: list[int] = []
     outbox_index: int = 0
     finished_game: bool = False
 
@@ -297,7 +302,7 @@ class JakAndDaxterMemoryReader:
         if not self.connected:
             self.log_error(logger, "The Memory Reader is not connected!")
 
-        memory_version: Optional[int] = None
+        memory_version: int | None = None
         try:
             memory_version = self.read_goal_address(memory_version_offset, sizeof_uint32)
             if memory_version == expected_memory_version:
@@ -327,7 +332,7 @@ class JakAndDaxterMemoryReader:
         await self.verify_memory_version()
         self.log_info(logger, msg)
 
-    def read_memory(self) -> List[int]:
+    def read_memory(self) -> list[int]:
         try:
             # Need to grab these first and convert to floats, see below.
             citizen_orb_amount = self.read_goal_address(citizen_orb_amount_offset, sizeof_float)

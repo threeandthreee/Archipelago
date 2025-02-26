@@ -278,10 +278,10 @@ def randomize_abilities(world: "PokemonFRLGWorld") -> None:
         return
 
     allowed_abilities = list(range(data.constants["ABILITIES_COUNT"]))
-    allowed_abilities.remove(data.constants["ABILITY_NONE"])
-    allowed_abilities.remove(data.constants["ABILITY_CACOPHONY"])
-    for ability_id in world.blacklisted_abilities:
-        allowed_abilities.remove(ability_id)
+    world.blacklisted_abilities.add(data.constants["ABILITY_NONE"])
+    world.blacklisted_abilities.add(data.constants["ABILITY_CACOPHONY"])
+    allowed_abilities = [ability for ability in allowed_abilities
+                         if ability not in world.blacklisted_abilities]
 
     if world.options.abilities == RandomizeAbilities.option_follow_evolutions:
         already_randomized = set()

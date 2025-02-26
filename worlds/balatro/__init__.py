@@ -6,7 +6,7 @@ from BaseClasses import ItemClassification, Region, Tutorial, LocationProgressTy
 from ..AutoWorld import WebWorld, World
 from .Items import item_name_to_id, item_id_to_name, item_table, is_joker, is_joker_bundle, jokers, decks, joker_bundles, offset, ItemData, BalatroItem, \
     is_deck, is_progression, is_useful, is_bundle, tarots, planets, vouchers, spectrals, is_voucher, is_booster, is_stake, is_stake_per_deck, \
-    stake_to_number, number_to_stake, is_tarot, is_planet, is_spectral
+    stake_to_number, number_to_stake, is_tarot, is_planet, is_spectral, item_groups
 from .BalatroDecks import deck_id_to_name, deck_name_to_key
 import math
 from worlds.generic.Rules import add_rule
@@ -71,19 +71,13 @@ class BalatroWorld(World):
     bundle_with_custom_planet = "Planet Bundle"
     bundle_with_custom_spectral = "Spectral Bundle"
 
+    item_name_groups = item_groups
+     
     itempool: Dict[str, int]
     
     distributed_fillers = dict()
 
-    def generate_early(self):
-        # item groups
-        self.item_name_groups = {
-            "jokers": [jokers.values()],
-            "planets" : [planets.values()],
-            "tarots" : [tarots.values()],
-            "spectrals" : [spectrals.values()],
-            "vouchers" : [vouchers.values()]            
-        }   
+    def generate_early(self):       
         
         self.random.shuffle(self.short_mode_pool)
         
@@ -594,6 +588,7 @@ class BalatroWorld(World):
             "minimum_price": min_price,
             "maximum_price": max_price,
             "deathlink": bool(self.options.deathlink),
+            "forceyaml": bool(self.options.forceyaml),
             "stake_unlock_mode": self.options.stake_unlock_mode.value,
             "remove_jokers": bool(self.options.remove_or_debuff_jokers),
             "remove_consumables": bool(self.options.remove_or_debuff_consumables),

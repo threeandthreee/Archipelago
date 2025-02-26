@@ -524,14 +524,14 @@ def is_useful(item_name: str) -> bool:
 
 def get_category(item_name: str) -> str:
     if is_planet(item_name) or is_planet_bundle(item_name):
-        return "planet"
+        return "Planet"
     if is_tarot(item_name) or is_tarot_bundle(item_name):
-        return "tarot"
+        return "Tarot"
     if is_spectral(item_name) or is_spectral_bundle(item_name):
-        return "spectral"
+        return "Spectral"
     if is_joker(item_name) or is_joker_bundle(item_name):
-        return "joker"
-    return "other"
+        return "Joker"
+    return "Other"
 
 
 item_id_to_name: Dict[int, str] = {
@@ -566,3 +566,9 @@ tarots: Dict[int, str] = {
 joker_bundles: Dict[int, str] = {
     data.code: item_name for item_name, data in item_table.items() if data.code and is_joker_bundle(item_name)
 }
+
+item_groups = {}
+for item, data in item_table.items():
+    group = get_category(item)    
+    item_groups[group] = item_groups.get(group, []) + [item]
+    

@@ -2577,7 +2577,8 @@
     ],
     "events": [],
     "exits": {
-      "REGION_ONE_ISLAND_POKEMON_CENTER_1F/MAIN": "Follow Bill"
+      "REGION_ONE_ISLAND_POKEMON_CENTER_1F/MAIN": "Follow Bill",
+      "REGION_VERMILION_CITY/MAIN": "Follow Bill"
     },
     "warps": {
       "MAP_CINNABAR_ISLAND_POKEMON_CENTER_1F:0/MAP_CINNABAR_ISLAND:3": "Cinnabar Pokemon Center 1F Exit",

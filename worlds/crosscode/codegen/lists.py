@@ -193,6 +193,8 @@ class ListInfo:
         item_rewards = rewards.get("items", [])
         num_rewards = max(1, len(item_rewards))
 
+        properties = raw_loc.get("properties", {})
+
         found = False
 
         if name in self.reward_amounts:
@@ -243,6 +245,9 @@ class ListInfo:
                     self.location_groups[f"{area_name} {category}s"].append(loc)
                 except KeyError:
                     print(f"Cannot add location '{name}' in area '{area}'")
+
+            if properties.get("alwaysQuest", False):
+                self.location_groups["Always Quests"].append(loc)
 
             if locked:
                 self.locked_locations.append(locid)

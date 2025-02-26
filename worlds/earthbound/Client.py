@@ -51,6 +51,8 @@ CHAR_COUNT = WRAM_START + 0x98A4
 OSS_FLAG = WRAM_START + 0x5D98
 HINT_SCOUNT_IDS = ROM_START + 0x310250
 SCOUTED_HINT_FLAGS = WRAM_START + 0xB621
+MONEY_IN_BANK = WRAM_START + 0x9835
+IS_ENERGYLINK_ENABLED = ROM_START + 0x04FD78
 already_tried_to_connect = False
 
 
@@ -156,6 +158,7 @@ class EarthBoundClient(SNIClient):
         outbound_gifts = await snes_read(ctx, WRAM_START + 0x31D0, 1)
         shop_scout = await snes_read(ctx, WRAM_START + 0x0770, 1)
         shop_scouts_enabled = await snes_read(ctx, ROM_START + 0x04FD77, 1)
+        outgoing_energy = await snes_read(ctx, MONEY_IN_BANK, 4)
         if rom != ctx.rom:
             ctx.rom = None
             return
@@ -174,7 +177,7 @@ class EarthBoundClient(SNIClient):
             "keys": [f"GiftBoxes;{ctx.team}"]
         }])
 
-        #### GIFTING DATA ######
+        # GIFTING DATA
         if f"GiftBox;{ctx.team};{ctx.slot}" not in ctx.stored_data:
             local_giftbox = {
                             str(ctx.slot): {
@@ -399,6 +402,56 @@ class EarthBoundClient(SNIClient):
         if item_received[0] or special_received[0] != 0x00:  # If processing any item from the server
             return
 
+        is_energylink_enabled = await snes_read(ctx, IS_ENERGYLINK_ENABLED, 1)
+        is_requesting_energy = await snes_read(ctx, WRAM_START + 0x1BD6, 1)
+        energy_withdrawal = await snes_read(ctx, WRAM_START + 0x1BDC, 4)
+        energy = ctx.set_notify(f"EnergyLink{ctx.team}")
+        energy = ctx.stored_data.get(f"EnergyLink{ctx.team}", 0)
+        exchange_rate = 1000000
+        if is_energylink_enabled[0]:
+
+            deposited_energy = int.from_bytes(outgoing_energy, byteorder="little")
+            if deposited_energy:
+                deposited_energy *= exchange_rate
+                await snes_write(ctx, [(MONEY_IN_BANK, (0x00).to_bytes(4, byteorder="little"))])
+                await ctx.send_msgs([{
+                    "cmd": "Set", "key": f"EnergyLink{ctx.team}", "slot": ctx.slot, "operations":
+                        [{"operation": "add", "value": deposited_energy},
+                            {"operation": "max", "value": 0}]}])
+
+            if is_requesting_energy[0] and energy: # This is just to pull the current number for a display.
+                energy //= exchange_rate
+                if energy > 9999999:
+                    energy = 9999999
+                    cap_flag = await snes_read(ctx, WRAM_START + 0xB623, 1)
+                    cap_flag = int.from_bytes(cap_flag)
+                    cap_flag |= 0x20
+                    await snes_write(ctx, [(WRAM_START + 0xB623, cap_flag.to_bytes(1, byteorder="little"))])
+
+                await snes_write(ctx, [(WRAM_START + 0x1BD8, energy.to_bytes(4, byteorder="little"))])
+                await snes_write(ctx, [(WRAM_START + 0x1BD6, (0x00).to_bytes(1, byteorder="little"))])
+
+            print(energy_withdrawal)
+            if any(energy_withdrawal) and energy:
+                print("AAAAAAAAAAAAA")
+                withdrawal = int.from_bytes(energy_withdrawal, byteorder="little")
+                withdrawal *= exchange_rate
+                energy = ctx.stored_data.get(f"EnergyLink{ctx.team}", 0) # Refresh the value
+
+                if withdrawal > energy:
+                    energy_success = 2
+                    withdrawal = energy
+                else:
+                    energy_success = 1
+
+                await snes_write(ctx, [(WRAM_START + 0x97D0, (withdrawal // exchange_rate).to_bytes(4, byteorder="little"))])
+                await snes_write(ctx, [(WRAM_START + 0x1BDC, (0x00).to_bytes(4, byteorder="little"))])
+                await ctx.send_msgs([{
+                    "cmd": "Set", "key": f"EnergyLink{ctx.team}", "slot": ctx.slot, "operations":
+                        [{"operation": "add", "value": (withdrawal * -1)},
+                            {"operation": "max", "value": 0}]}])
+                await snes_write(ctx, [(WRAM_START + 0x1BE0, energy_success.to_bytes(1, byteorder="little"))])  # Signal the game to continue
+
         if cur_script[0]:  # Stop items during cutscenes
             return
 
@@ -418,7 +471,7 @@ class EarthBoundClient(SNIClient):
                 snes_buffered_write(ctx, WRAM_START + 0xB570, bytes([item_id]))
             else:
                 snes_buffered_write(ctx, WRAM_START + 0xB572, bytes([client_specials[item_id]]))
-                    
+
         await snes_flush_writes(ctx)
 
 

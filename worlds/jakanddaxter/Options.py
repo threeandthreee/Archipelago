@@ -1,9 +1,10 @@
 from dataclasses import dataclass
-from Options import PerGameCommonOptions, StartInventoryPool, Toggle, Choice, Range, DefaultOnToggle
+from Options import PerGameCommonOptions, StartInventoryPool, Toggle, Choice, Range, DefaultOnToggle, OptionSet
+from .Items import trap_item_table
 
 
 class EnableMoveRandomizer(Toggle):
-    """Enable to include movement options as items in the randomizer. Until you find his other moves, Jak is limited to
+    """Include movement options as items in the randomizer. Until you find his other moves, Jak is limited to
     running, swimming, single-jumping, and shooting yellow eco through his goggles.
 
     This adds 11 items to the pool."""
@@ -11,11 +12,10 @@ class EnableMoveRandomizer(Toggle):
 
 
 class EnableOrbsanity(Choice):
-    """Enable to include bundles of Precursor Orbs as an ordered list of progressive checks. Every time you collect the
-    chosen number of orbs, you will trigger the next release in the list.
+    """Include bundles of Precursor Orbs as checks. Every time you collect the chosen number of orbs, you will trigger
+    another check.
 
-    "Per Level" means these lists are generated and populated for each level in the game. "Global" means there
-    is only one list for the entire game.
+    "Per Level" means bundles are for each level in the game. "Global" means bundles carry over level to level.
 
     This adds a number of Items and Locations to the pool inversely proportional to the size of the bundle.
     For example, if your bundle size is 20 orbs, you will add 100 items to the pool. If your bundle size is 250 orbs,
@@ -115,23 +115,22 @@ class LavaTubeCellCount(Range):
 
 
 class EnableOrderedCellCounts(DefaultOnToggle):
-    """Enable to reorder the Cell Count options in ascending order. This is useful if you choose to randomize
-    those options.
+    """Reorders the Cell Count requirements for vehicle sections to be in ascending order.
 
     For example, if Fire Canyon Cell Count, Mountain Pass Cell Count, and Lava Tube Cell Count are 60, 30, and 40
-    respectively, they will be reordered to 30, 40, and 60 respectively."""
+    respectively, they will be reordered to 30, 40, and 60."""
     display_name = "Enable Ordered Cell Counts"
 
 
 class RequirePunchForKlaww(DefaultOnToggle):
-    """Enable to force the Punch move to come before Klaww. Disabling this setting may require Jak to fight Klaww
+    """Force the Punch move to come before Klaww. Disabling this setting may require Jak to fight Klaww
     and Gol and Maia by shooting yellow eco through his goggles. This only applies if "Enable Move Randomizer" is ON."""
     display_name = "Require Punch For Klaww"
 
 
 # 222 is the absolute maximum because there are 9 citizen trades and 2000 orbs to trade (2000/9 = 222).
 class CitizenOrbTradeAmount(Range):
-    """Set the number of orbs you need to trade to ordinary citizens for a power cell (Mayor, Uncle, etc.).
+    """The number of orbs you need to trade to citizens for a power cell (Mayor, Uncle, etc.).
 
     Along with Oracle Orb Trade Amount, this setting cannot exceed the total number of orbs in the game (2000).
     The equation to determine the total number of trade orbs is (9 * Citizen Trades) + (6 * Oracle Trades).
@@ -146,7 +145,7 @@ class CitizenOrbTradeAmount(Range):
 
 # 333 is the absolute maximum because there are 6 oracle trades and 2000 orbs to trade (2000/6 = 333).
 class OracleOrbTradeAmount(Range):
-    """Set the number of orbs you need to trade to the Oracles for a power cell.
+    """The number of orbs you need to trade to the Oracles for a power cell.
 
     Along with Citizen Orb Trade Amount, this setting cannot exceed the total number of orbs in the game (2000).
     The equation to determine the total number of trade orbs is (9 * Citizen Trades) + (6 * Oracle Trades).
@@ -157,6 +156,51 @@ class OracleOrbTradeAmount(Range):
     range_end = 333
     multiplayer_maximum = 150
     default = 120
+
+
+class FillerPowerCellsReplacedWithTraps(Range):
+    """
+    The number of filler power cells that will be replaced with traps. This does not affect the number of progression
+    power cells.
+
+    If this value is greater than the number of filler power cells, then they will all be replaced with traps.
+    """
+    display_name = "Filler Power Cells Replaced With Traps"
+    range_start = 0
+    range_end = 100
+    default = 0
+
+
+class FillerOrbBundlesReplacedWithTraps(Range):
+    """
+    The number of filler orb bundles that will be replaced with traps. This does not affect the number of progression
+    orb bundles. This only applies if "Enable Orbsanity" is set to "Per Level" or "Global."
+
+    If this value is greater than the number of filler orb bundles, then they will all be replaced with traps.
+    """
+    display_name = "Filler Orb Bundles Replaced With Traps"
+    range_start = 0
+    range_end = 2000
+    default = 0
+
+
+class TrapEffectDuration(Range):
+    """
+    The length of time, in seconds, that a trap effect lasts.
+    """
+    display_name = "Trap Effect Duration"
+    range_start = 5
+    range_end = 60
+    default = 30
+
+
+class ChosenTraps(OptionSet):
+    """
+    The list of traps that will be randomly added to the item pool. If the list is empty, no traps are created.
+    """
+    display_name = "Chosen Traps"
+    default = {trap for trap in trap_item_table.values()}
+    valid_keys = {trap for trap in trap_item_table.values()}
 
 
 class CompletionCondition(Choice):
@@ -185,5 +229,9 @@ class JakAndDaxterOptions(PerGameCommonOptions):
     require_punch_for_klaww: RequirePunchForKlaww
     citizen_orb_trade_amount: CitizenOrbTradeAmount
     oracle_orb_trade_amount: OracleOrbTradeAmount
+    filler_power_cells_replaced_with_traps: FillerPowerCellsReplacedWithTraps
+    filler_orb_bundles_replaced_with_traps: FillerOrbBundlesReplacedWithTraps
+    trap_effect_duration: TrapEffectDuration
+    chosen_traps: ChosenTraps
     jak_completion_condition: CompletionCondition
     start_inventory_from_pool: StartInventoryPool

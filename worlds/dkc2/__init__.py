@@ -49,7 +49,6 @@ class DKC2World(World):
     Donkey Kong Country 2 WIP
     """
     game = "Donkey Kong Country 2"
-    is_experimental = True
     web = DKC2Web()
 
     settings: typing.ClassVar[DKC2Settings]

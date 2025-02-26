@@ -1,16 +1,15 @@
 import math
-from typing import Dict
+from typing import Any, Dict, TextIO
 
 from BaseClasses import CollectionState, Entrance, Item, ItemClassification, Location, Region, Tutorial
 
 from worlds.AutoWorld import WebWorld, World
 
-from .Items import JigsawItem, item_table
+from .Items import JigsawItem, item_table, item_groups
 from .Locations import JigsawLocation, location_table
 
-from .Options import JigsawOptions, OrientationOfImage
-from .Rules import add_piece, remove_piece, set_jigsaw_rules
-from worlds.generic.Rules import set_rule
+from .Options import JigsawOptions, OrientationOfImage, PieceOrder
+from .Rules import add_piece
 
 
 class JigsawWeb(WebWorld):
@@ -24,6 +23,8 @@ class JigsawWeb(WebWorld):
             ["Spineraks"],
         )
     ]
+    
+    
 
 
 class JigsawWorld(World):
@@ -41,15 +42,13 @@ class JigsawWorld(World):
 
     location_name_to_id = {name: data.id for name, data in location_table.items()}
     
-    ap_world_version = "0.0.2"
+    item_name_groups = item_groups
+    
+    ap_world_version = "0.1.0"
 
     def _get_jigsaw_data(self):
         return {
-            # "world_seed": self.multiworld.per_slot_randoms[self.player].getrandbits(32),
             "seed_name": self.multiworld.seed_name,
-            "player_name": self.multiworld.get_player_name(self.player),
-            "player_id": self.player,
-            "race": self.multiworld.is_race,
         }
         
     def calculate_optimal_nx_and_ny(self, number_of_pieces, orientation):
@@ -85,7 +84,7 @@ class JigsawWorld(World):
 
         return optimal_nx, optimal_ny
         
-    def generate_early(self):        
+    def generate_early(self):       
         self.orientation = 1
         if self.options.orientation_of_image == OrientationOfImage.option_landscape:
             self.orientation = 1.5
@@ -94,21 +93,83 @@ class JigsawWorld(World):
         self.nx, self.ny = self.calculate_optimal_nx_and_ny(self.options.number_of_pieces.value, self.orientation)
         self.npieces = self.nx * self.ny
         
-        self.pool_pieces = [i for i in range(1, self.npieces + 1)]
-        self.multiworld.random.shuffle(self.pool_pieces)
+        pieces = [i for i in range(1, self.npieces + 1)]
+        self.multiworld.random.shuffle(pieces)
         
-        start_pieces = []
-        start_clusters = []
         merges = 0
-        while merges < max(3, math.pow(self.nx * self.ny, 0.4)):
-            p = self.pool_pieces.pop(0)
-            start_pieces.append(p)
-            start_clusters, merges = add_piece(start_clusters, p, self.nx, self.ny)
-                
-        self.pool_pieces = [f"Puzzle Piece {i}" for i in self.pool_pieces]                
+        clusters = []
         
-        for i in start_pieces:
-            self.multiworld.push_precollected(self.create_item(f"Puzzle Piece {i}"))
+        self.precollected_pieces = []
+        self.itempool_pieces = []
+        
+        while pieces:  # pieces left
+            p = None
+            if self.options.piece_order == PieceOrder.option_random_order:
+                p = pieces.pop(0)  # pick the first remaining piece
+            if self.options.piece_order == PieceOrder.option_corners_edges_rest:
+                # Check for corner pieces
+                for corner in [1, self.nx, self.nx * (self.ny - 1) + 1, self.nx * self.ny]:
+                    if corner in pieces:
+                        p = corner
+                        pieces.remove(corner)
+                        break
+                else:
+                    # Check for edge pieces
+                    for edge in pieces:
+                        if edge <= self.nx or edge > self.nx * (self.ny - 1) or edge % self.nx <= 1:
+                            p = edge
+                            pieces.remove(edge)
+                            break
+                    else:
+                        # If no corner or edge pieces, pick the first remaining piece
+                        p = pieces.pop(0)
+            
+            # if you have merges left to unlock pieces
+            if merges > len(self.itempool_pieces) + self.options.number_of_checks_out_of_logic.value:
+                self.itempool_pieces.append(p)  # add piece to itempool. The order in this is the order you'll get pcs
+            else:
+                self.precollected_pieces.append(p)  # if no merges left, add piece to start_inventory
+                
+            clusters, merges = add_piece(clusters, p, self.nx, self.ny)  # update number of merges left
+                    
+        self.possible_merges = [- self.options.number_of_checks_out_of_logic.value]
+        self.actual_possible_merges = [0]
+        merges = 0
+        clusters = []
+        
+        for p in self.precollected_pieces:
+            clusters, merges = add_piece(clusters, p, self.nx, self.ny)
+            self.possible_merges.append(merges - self.options.number_of_checks_out_of_logic.value) 
+            self.actual_possible_merges.append(merges)
+        for c, p in enumerate(self.itempool_pieces):
+            clusters, merges = add_piece(clusters, p, self.nx, self.ny)
+            if len(self.itempool_pieces) - c < 10:
+                self.possible_merges.append(merges)   
+            else:
+                self.possible_merges.append(merges - self.options.number_of_checks_out_of_logic.value)   
+            self.actual_possible_merges.append(merges)
+        
+        self.pieces_needed_per_merge = [0]
+        for i in range(1, self.npieces):
+            self.pieces_needed_per_merge.append(next(index for index, value in enumerate(self.possible_merges) if value >= i))
+        
+        pieces_left = math.ceil(len(self.itempool_pieces) * (1 + self.options.percentage_of_extra_pieces.value / 100))
+                
+        if pieces_left / (self.npieces - 2) < 1:
+            self.pool_pieces = [f"Puzzle Piece" for i in range(pieces_left)]                
+        else:
+            self.pool_pieces = []
+            number_of_locations_left = self.npieces - 2
+            while number_of_locations_left > 0:
+                n = math.ceil(pieces_left / number_of_locations_left)
+                if n > 2:
+                    exit("[Jigsaw] Did not account for n > 2...")
+                self.pool_pieces.append(f"{str(n) + ' ' if n > 1 else ''}Puzzle Piece{'s' if n > 1 else ''}")
+                number_of_locations_left -= 1
+                pieces_left -= n
+                
+        for _ in self.precollected_pieces:
+            self.multiworld.push_precollected(self.create_item(f"Puzzle Piece"))
             
         self.pool_pieces += ["Squawks"] * (self.npieces - len(self.pool_pieces) - 2)
             
@@ -116,17 +177,31 @@ class JigsawWorld(World):
     def create_items(self):
         self.multiworld.itempool += [self.create_item(name) for name in self.pool_pieces]
 
-    def create_regions(self):
-        
+    def create_regions(self):        
         # simple menu-board construction
         menu = Region("Menu", self.player, self.multiworld)
         board = Region("Board", self.player, self.multiworld)
 
         # add locations to board, one for every location in the location_table
         board.locations = [
-            JigsawLocation(self.player, f"Connect {i} Pieces", i, 234782000+i, board)
-            for i in range(2, self.npieces)
+            JigsawLocation(self.player, f"Merge {i} times", 234782000+i, i, board)
+            for i in range(1, self.npieces)
         ]
+        
+        # self.possible_merges is a list, and self.possible_merges[x] is the number of merges you can make with x puzzle pieces
+        for loc in board.locations:
+            # loc.nmerges is the number of merges for that location. So "Merge 4 times" has nmerges equal to 4
+            loc.access_rule = lambda state, count=loc.nmerges: \
+                state.count("Puzzle Piece", self.player) + 2 * state.count("2 Puzzle Pieces", self.player) >= self.pieces_needed_per_merge[count]
+            
+        # Change the victory location to an event and place the Victory item there.
+        victory_location_name = f"Merge {self.npieces - 1} times"
+        self.get_location(victory_location_name).address = None
+        self.get_location(victory_location_name).place_locked_item(
+            Item("Victory", ItemClassification.progression, None, self.player)
+        )
+        
+        self.multiworld.completion_condition[self.player] = lambda state: state.has("Victory", self.player)
 
         # add the regions
         connection = Entrance(self.player, "New Board", menu)
@@ -137,20 +212,9 @@ class JigsawWorld(World):
     def get_filler_item_name(self) -> str:
         return "Squawks"
 
-    def set_rules(self):
-        """
-        set rules per location, and add the rule for beating the game
-        """
-    
-        set_jigsaw_rules(self.multiworld, self.player, self.nx, self.ny)
-        
-        self.multiworld.completion_condition[self.player] = lambda state: all(
-            state.has(f"Puzzle Piece {i}", self.player) for i in range(1, self.npieces + 1)
-        )
-        
     def create_item(self, name: str) -> Item:
         item_data = item_table[name]
-        item = JigsawItem(name, item_data.classification, item_data.code, self.player, item_data.piece_nr)
+        item = JigsawItem(name, item_data.classification, item_data.code, self.player)
         return item
 
     def fill_slot_data(self):
@@ -162,29 +226,22 @@ class JigsawWorld(World):
         slot_data["orientation"] = self.orientation
         slot_data["nx"] = self.nx
         slot_data["ny"] = self.ny
+        slot_data["piece_order"] = self.precollected_pieces + self.itempool_pieces
+        slot_data["possible_merges"] = self.possible_merges
+        slot_data["actual_possible_merges"] = self.actual_possible_merges
+        slot_data["ap_world_version"] = self.ap_world_version
         return slot_data
     
-    # We overwrite these function to monitor when states have changed. See also dice_simulation in Rules.py
-    def collect(self, state: CollectionState, item: Item) -> bool:
-        change = super().collect(state, item)
-        if change:  # if something changed
-            if state.prog_items[self.player]["clusters"] == 0:  # initialize clusters if it's not ini'd yet
-                state.prog_items[self.player]["clusters"] = []
-                
-            # update clusters and number of merges
-            state.prog_items[self.player]["clusters"], state.prog_items[self.player]["merges"] = \
-                add_piece(state.prog_items[self.player]["clusters"], item.piece_nr, self.nx, self.ny)
-            # print(state.prog_items[self.player], state.prog_items[self.player]["clusters"], state.prog_items[self.player]["merges"])
-        return change
+    def interpret_slot_data(self, slot_data: Dict[str, Any]):
+        self.possible_merges = slot_data["possible_merges"]
+        self.pieces_needed_per_merge = [0]
+        for i in range(1, self.npieces):
+            self.pieces_needed_per_merge.append(next(index for index, value in enumerate(self.possible_merges) if value >= i))
 
-    def remove(self, state: CollectionState, item: Item) -> bool:
-        change = super().remove(state, item)
-        if change:  # if something changed
-            if state.prog_items[self.player]["clusters"] == 0:  # initialize clusters if it's not ini'd yet
-                state.prog_items[self.player]["clusters"] = []
-                
-            # update clusters and number of merges
-            state.prog_items[self.player]["clusters"], state.prog_items[self.player]["merges"] = \
-                remove_piece(state.prog_items[self.player]["clusters"], item.piece_nr, self.nx, self.ny)
-            # print(state.prog_items[self.player], state.prog_items[self.player]["clusters"], state.prog_items[self.player]["merges"])
-        return change
+    def write_spoiler(self, spoiler_handle: TextIO) -> None:
+        spoiler_handle.write(f"\nPuzzle dimension {self.nx} {self.ny}\n")
+        spoiler_handle.write(f"\nself.precollected_pieces {self.precollected_pieces}\n")
+        spoiler_handle.write(f"\nself.itempool_pieces {self.itempool_pieces}\n")
+        spoiler_handle.write(f"\nself.possible_merges {self.possible_merges}\n")
+        spoiler_handle.write(f"\nself.actual_possible_merges {self.actual_possible_merges}\n")
+        spoiler_handle.write(f"\nself.pieces_needed_per_merge {self.pieces_needed_per_merge}\n")

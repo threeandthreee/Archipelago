@@ -57,7 +57,7 @@ perfectly safe to make progress offline; everything will re-sync when you reconn
 
 ## Auto-Tracking
 
-Pokémon FireRed and LeafGreen has a fully functional map tracker that supports auto-tracking (currently the Pokédex Count and Events do not auto track).
+Pokémon FireRed and LeafGreen has a fully functional map tracker that supports auto-tracking.
 
 1. Download [Pokémon FireRed/LeafGreen Tracker](https://github.com/vyneras/pokemon-frlg-tracker/releases/latest) and
 [PopTracker](https://github.com/black-sliver/PopTracker/releases).

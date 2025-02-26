@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import os.path
 import typing
 import logging
-from Options import Choice, Toggle, DefaultOnToggle, Range, FreeText, PerGameCommonOptions, OptionGroup, Removed, DeathLink
+from Options import Choice, Toggle, DefaultOnToggle, Range, FreeText, PerGameCommonOptions, OptionGroup, Removed, DeathLink, StartInventoryPool
 from collections import defaultdict
 import Utils
 
@@ -536,51 +536,44 @@ class ForeignItemIcons(Choice):
 
 
 ladx_option_groups = [
-    OptionGroup("Goal Options", [
-        Goal,
-        InstrumentCount,
+    OptionGroup("Gameplay Adjustments", [
+        TarinsGift,
+        Stealing,
+        HardMode,
+        TrendyGame,
+        InGameHints,
     ]),
-    OptionGroup("Shuffles", [
+    OptionGroup("World Layout", [
+        Warps,
+        Overworld,
+        DungeonShuffle,
+        EntranceShuffle,
+    ]),
+    OptionGroup("Item Pool", [
+        TradeQuest,
+        Rooster,
         ShuffleInstruments,
         ShuffleNightmareKeys,
         ShuffleSmallKeys,
         ShuffleMaps,
         ShuffleCompasses,
-        ShuffleStoneBeaks
-    ]),
-    OptionGroup("Warp Points", [
-        Warps,
-    ]),
-    OptionGroup("Miscellaneous", [
-        TradeQuest,
-        Rooster,
-        TarinsGift,
-        Overworld,
-        Stealing,
-        TrendyGame,
-        InGameHints,
-        NagMessages,
+        ShuffleStoneBeaks,
         StabilizeItemPool,
-        BootsControls,
-        DeathLink,
+    ]),
+    OptionGroup("Quality of Life & Aesthetic", [
+        NagMessages,
         Quickswap,
-        HardMode,
-    ]),
-    OptionGroup("Experimental", [
-        DungeonShuffle,
-        EntranceShuffle
-    ]),
-    OptionGroup("Visuals & Sound", [
-        LinkPalette,
-        Palette,
-        TextShuffle,
+        BootsControls,
         ForeignItemIcons,
         APTitleScreen,
         GfxMod,
+        LinkPalette,
+        Palette,
+        TextShuffle,
+        TextMode,
         Music,
         MusicChangeCondition,
         LowHpBeep,
-        TextMode,
         NoFlash,
     ])
 ]
@@ -635,6 +628,7 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     low_hp_beep: LowHpBeep
     text_mode: TextMode
     no_flash: NoFlash
+    start_inventory_from_pool: StartInventoryPool
 
     warp_improvements: Removed
     additional_warp_points: Removed

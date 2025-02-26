@@ -249,8 +249,7 @@ def can_evolve(state: CollectionState, player: int, world: "PokemonFRLGWorld", p
             return state.has_all([world.item_id_to_name[evolution_data.param],
                                   world.item_id_to_name[evolution_data.param2]],
                                  player)
-        elif evolution_data.method == EvolutionMethodEnum.FRIENDSHIP:
-            return has_n_gyms(state, player, 4)
-        else:
+        elif evolution_data.method in range(EvolutionMethodEnum.LEVEL, EvolutionMethodEnum.ITEM):
             return has_n_gyms(state, player, evolution_data.param / 7)
+        return True
     return False

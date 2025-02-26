@@ -4,13 +4,14 @@ import sys
 import json
 import subprocess
 from logging import Logger
+from datetime import datetime
 
 import colorama
 
 import asyncio
 from asyncio import Task
 
-from typing import Set, Awaitable, Optional, List
+from typing import Set, Awaitable
 
 import pymem
 from pymem.exception import ProcessNotFound
@@ -90,7 +91,7 @@ class JakAndDaxterContext(CommonContext):
     repl_task: asyncio.Task
     memr_task: asyncio.Task
 
-    def __init__(self, server_address: Optional[str], password: Optional[str]) -> None:
+    def __init__(self, server_address: str | None, password: str | None) -> None:
         self.repl = JakAndDaxterReplClient(self.on_log_error,
                                            self.on_log_warn,
                                            self.on_log_success,
@@ -139,6 +140,11 @@ class JakAndDaxterContext(CommonContext):
             else:
                 orbsanity_bundle = 1
 
+            # Connected packet is unaware of starting inventory or if player is returning to an existing game.
+            # Set initial item count to 0 if it hasn't been set higher by a ReceivedItems packet yet.
+            if not self.repl.received_initial_items and self.repl.initial_item_count < 0:
+                self.repl.initial_item_count = 0
+
             create_task_log_exception(
                 self.repl.setup_options(orbsanity_option,
                                         orbsanity_bundle,
@@ -147,7 +153,10 @@ class JakAndDaxterContext(CommonContext):
                                         slot_data["lava_tube_cell_count"],
                                         slot_data["citizen_orb_trade_amount"],
                                         slot_data["oracle_orb_trade_amount"],
-                                        slot_data["jak_completion_condition"]))
+                                        slot_data["trap_effect_duration"],
+                                        slot_data["jak_completion_condition"],
+                                        slot_data["slot_name"][:16],
+                                        slot_data["slot_seed"][:8]))
 
             # Because Orbsanity and the orb traders in the game are intrinsically linked, we need the server
             # to track our trades at all times to support async play. "Retrieved" will tell us the orbs we lost,
@@ -169,16 +178,26 @@ class JakAndDaxterContext(CommonContext):
                 create_task_log_exception(self.repl.subtract_traded_orbs(orbs_traded))
 
         if cmd == "ReceivedItems":
+            if not self.repl.received_initial_items:
+
+                # ReceivedItems packet should set the initial item count to > 0, even if already set to 0 by the
+                # Connected packet. Then we should tell the game to update the title screen, telling the player
+                # to wait while we process the initial items. This is skipped if no initial items are sent.
+                self.repl.initial_item_count = len(args["items"])
+                create_task_log_exception(self.repl.send_connection_status("wait"))
+
+            # This enumeration should run on every ReceivedItems packet,
+            # regardless of it being on initial connection or midway through a game.
             for index, item in enumerate(args["items"], start=args["index"]):
                 logger.debug(f"index: {str(index)}, item: {str(item)}")
                 self.repl.item_inbox[index] = item
 
     async def json_to_game_text(self, args: dict):
         if "type" in args and args["type"] in {"ItemSend"}:
-            my_item_name: Optional[str] = None
-            my_item_finder: Optional[str] = None
-            their_item_name: Optional[str] = None
-            their_item_owner: Optional[str] = None
+            my_item_name: str | None = None
+            my_item_finder: str | None = None
+            their_item_name: str | None = None
+            their_item_owner: str | None = None
 
             item = args["item"]
             recipient = args["receiving"]
@@ -219,11 +238,11 @@ class JakAndDaxterContext(CommonContext):
             self.repl.received_deathlink = True
             super().on_deathlink(data)
 
-    async def ap_inform_location_check(self, location_ids: List[int]):
+    async def ap_inform_location_check(self, location_ids: list[int]):
         message = [{"cmd": "LocationChecks", "locations": location_ids}]
         await self.send_msgs(message)
 
-    def on_location_check(self, location_ids: List[int]):
+    def on_location_check(self, location_ids: list[int]):
         create_task_log_exception(self.ap_inform_location_check(location_ids))
 
     async def ap_inform_finished_game(self):
@@ -366,7 +385,7 @@ def find_root_directory(ctx: JakAndDaxterContext):
             for mod in mod_sources[src].keys():
                 if mod == "archipelagoal":
                     archipelagoal_source = src
-                    # TODO - We could verify the right version is installed. Do we need to?
+                    # Using this file, we could verify the right version is installed, but we don't need to.
         if archipelagoal_source is None:
             msg = (f"Unable to locate the ArchipelaGOAL install directory: "
                    f"The ArchipelaGOAL mod is not installed in the OpenGOAL Launcher!\n"
@@ -458,7 +477,8 @@ async def run_game(ctx: JakAndDaxterContext):
 
             # The game freezes if text is inadvertently selected in the stdout/stderr data streams. Let's pipe those
             # streams to a file, and let's not clutter the screen with another console window.
-            log_path = os.path.join(Utils.user_path("logs"), "JakAndDaxterGame.txt")
+            timestamp = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+            log_path = os.path.join(Utils.user_path("logs"), f"JakAndDaxterGame_{timestamp}.txt")
             log_path = os.path.normpath(log_path)
             with open(log_path, "w") as log_file:
                 gk_process = subprocess.Popen(
@@ -520,7 +540,12 @@ async def run_game(ctx: JakAndDaxterContext):
             goalc_process = subprocess.Popen(goalc_args, creationflags=subprocess.CREATE_NEW_CONSOLE)
 
     except AttributeError as e:
-        ctx.on_log_error(logger, f"Host.yaml does not contain {e.args[0]}, unable to locate game executables.")
+        if " " in e.args[0]:
+            # YAML keys in Host.yaml ought to contain no spaces, which means this is a much more important error.
+            ctx.on_log_error(logger, e.args[0])
+        else:
+            ctx.on_log_error(logger,
+                             f"Host.yaml does not contain {e.args[0]}, unable to locate game executables.")
         return
     except FileNotFoundError as e:
         msg = (f"The following path could not be found: {e.filename}\n"

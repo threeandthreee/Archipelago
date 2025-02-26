@@ -333,6 +333,9 @@ class CrossCodeWorld(World):
                 self.options.gold_chest_lock_weight.value,
             ]))
 
+        if self.options.exclude_always_quests.value and not self.options.quest_rando.value:
+            self.options.exclude_locations.value.update(self.location_name_groups["Always Quests"])
+
         if self.options.force_filler_local.value:
             for name in self._filler_pool_names:
                 self.options.local_items.value.update(self.item_name_groups[name])

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Sequence
 
 from .Locations import *
 from .Locations import LocationData
@@ -66,6 +66,7 @@ TABORA = PlanetData("Tabora", 8, [
     TABORA_CANYON_GLIDE_PB,
     TABORA_NORTHEAST_DESERT_PB,
     TABORA_CANYON_GLIDE_PILLAR_NT,
+    TABORA_OMNIWRENCH_10000,
 ])
 DOBBO = PlanetData("Dobbo", 9, [
     DOBBO_DEFEAT_THUG_LEADER,
@@ -108,6 +109,7 @@ ARANOS_PRISON = PlanetData("Aranos Prison", 14, [
     ARANOS_CONTROL_ROOM,
     ARANOS_PLUMBER,
     ARANOS_UNDER_SHIP_PB,
+    ARANOS_OMNIWRENCH_12000,
 ])
 GORN = PlanetData("Gorn", 15, [
     GORN_DEFEAT_THUG_FLEET,
@@ -174,7 +176,7 @@ LOGIC_PLANETS = [
     YEEDIL,
 ]
 
-ALL_LOCATIONS: list[LocationData] = [
+ALL_LOCATIONS: Sequence[LocationData] = [
     location
     for locations in [planet.locations for planet in LOGIC_PLANETS]
     for location in locations

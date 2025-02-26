@@ -632,7 +632,7 @@ def set_default_rules(world: "PokemonFRLGWorld"):
 
     set_rule(world.get_entrance("Seafoam Islands B3F South Water (Water Battle)"),
              lambda state: can_strength(state, player, world) and
-                    state.can_reach_region("Seafoam Islands 1F", player))
+                           state.can_reach_region("Seafoam Islands 1F", player))
 
     # Cinnabar Island
     set_rule(world.get_location("Pokemon Lab Lounge - Trade Raichu"),
@@ -654,6 +654,8 @@ def set_default_rules(world: "PokemonFRLGWorld"):
     set_rule(world.get_entrance("Pokemon Mansion"),
              lambda state: state.has("Letter", player) or
                            not options.extra_key_items)
+    set_rule(world.get_entrance("Follow Bill"),
+             lambda state: state.has("Defeat Blaine", player))
 
     # Route 23
     set_rule(world.get_entrance("Route 23 South Surfing Spot"),
@@ -790,10 +792,6 @@ def set_default_rules(world: "PokemonFRLGWorld"):
                  lambda state: can_sail_island(state, player, options, 6))
         set_rule(world.get_entrance("Seven Island Arrival"),
                  lambda state: can_sail_island(state, player, options, 7))
-
-        # Cinnabar Island
-        set_rule(world.get_entrance("Follow Bill"),
-                 lambda state: state.has("Defeat Blaine", player))
 
         # One Island Town
         set_rule(world.get_location("One Island Pokemon Center 1F - Celio Gift (Deliver Ruby)"),
@@ -1257,11 +1255,11 @@ def set_split_tea_rules(world: "PokemonFRLGWorld"):
     player = world.player
 
     # Celadon City
-    set_rule(world.get_location("Celadon Condominiums 1F - Brock"),
+    set_rule(world.get_location("Celadon Condominiums 1F - Brock Gift"),
              lambda state: state.has("Defeat Brock", player))
-    set_rule(world.get_location("Celadon Condominiums 1F - Misty"),
+    set_rule(world.get_location("Celadon Condominiums 1F - Misty Gift"),
              lambda state: state.has("Defeat Misty", player))
-    set_rule(world.get_location("Celadon Condominiums 1F - Erika"),
+    set_rule(world.get_location("Celadon Condominiums 1F - Erika Gift"),
              lambda state: state.has("Defeat Erika", player))
 
 
@@ -1269,16 +1267,16 @@ def set_split_pass_rules(world: "PokemonFRLGWorld"):
     player = world.player
 
     # Cinnabar Island
-    set_rule(world.get_location("One Cinnabar Pokemon Center 1F - Bill"),
+    set_rule(world.get_location("One Cinnabar Pokemon Center 1F - Bill Gift"),
              lambda state: state.has("Defeat Blaine", player))
 
     # One Island Town
-    set_rule(world.get_location("One Island Pokemon Center 1F - Celio (Deliver Sapphire)"),
+    set_rule(world.get_location("One Island Pokemon Center 1F - Celio Gift (Deliver Sapphire)"),
              lambda state: state.has_all(["Deliver Meteorite", "Ruby", "Free Captured Pokemon", "Sapphire"],
                                          player))
 
     # Three Island Town
-    set_rule(world.get_location("Lostelle's House - Lostelle"),
+    set_rule(world.get_location("Lostelle's House - Lostelle Gift"),
              lambda state: state.has("Deliver Meteorite", player))
 
     # Dotted Hole

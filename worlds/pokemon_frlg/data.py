@@ -170,8 +170,8 @@ class EvolutionMethodEnum(IntEnum):
     LEVEL_NINJASK = 6
     LEVEL_SHEDINJA = 7
     ITEM = 8
-    FRIENDSHIP = 9
-    ITEM_HELD = 10
+    ITEM_HELD = 9
+    FRIENDSHIP = 10
 
 
 EVOLUTION_METHOD_TYPE: Dict[str, EvolutionMethodEnum] = {
@@ -184,8 +184,8 @@ EVOLUTION_METHOD_TYPE: Dict[str, EvolutionMethodEnum] = {
     "LEVEL_NINJASK": EvolutionMethodEnum.LEVEL_NINJASK,
     "LEVEL_SHEDINJA": EvolutionMethodEnum.LEVEL_SHEDINJA,
     "ITEM": EvolutionMethodEnum.ITEM,
-    "FRIENDSHIP": EvolutionMethodEnum.FRIENDSHIP,
-    "ITEM_HELD": EvolutionMethodEnum.ITEM_HELD
+    "ITEM_HELD": EvolutionMethodEnum.ITEM_HELD,
+    "FRIENDSHIP": EvolutionMethodEnum.FRIENDSHIP
 }
 
 

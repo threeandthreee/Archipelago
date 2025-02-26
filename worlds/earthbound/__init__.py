@@ -8,7 +8,6 @@ from typing import List, Set, Dict, TextIO
 from BaseClasses import Item, MultiWorld, Location, Tutorial, ItemClassification
 from Fill import fill_restrictive
 from worlds.AutoWorld import World, WebWorld
-from Options import OptionGroup
 import settings
 from .Items import get_item_names_per_category, item_table
 from .Locations import get_locations
@@ -88,6 +87,11 @@ class EarthBoundWorld(World):
         self.locked_locations = []
         self.location_cache = []
         self.event_count = 8
+        self.progressive_filler_bats = 0
+        self.progressive_filler_pans = 0
+        self.progressive_filler_guns = 0
+        self.progressive_filler_bracelets = 0
+        self.progressive_filler_other = 0
         self.world_version = world_version
         self.removed_teleports = []
         self.armor_list: Dict[str, EBArmor]
@@ -254,7 +258,7 @@ class EarthBoundWorld(World):
 
     def generate_output(self, output_directory: str):
         try:
-            patch = EBProcPatch(player=self.player, player_name=self.player_name)
+            patch = EBProcPatch(player=self.player, player_name=self.multiworld.player_name[self.player])
             patch.write_file("earthbound_basepatch.bsdiff4", pkgutil.get_data(__name__, "earthbound_basepatch.bsdiff4"))
             patch_rom(self, patch, self.player)
 
@@ -272,7 +276,9 @@ class EarthBoundWorld(World):
             "starting_area": self.start_location,
             "pizza_logic": self.options.monkey_caves_mode.value,
             "free_sancs": self.options.no_free_sanctuaries.value,
-            "shopsanity": self.options.shop_randomizer.value
+            "shopsanity": self.options.shop_randomizer.value,
+           # "starting_character": self.starting_character,
+          #  "items_remote": self.options.remote_items.value
         }
 
     def modify_multidata(self, multidata: dict):
@@ -430,8 +436,32 @@ class EarthBoundWorld(World):
         return item
 
     def generate_filler(self, pool: List[Item]) -> None:
+        item_to_counts = {
+            "Progressive Bat": self.progressive_filler_bats,
+            "Progressive Fry Pan": self.progressive_filler_pans,
+            "Progressive Gun": self.progressive_filler_guns,
+            "Progressive Bracelet": self.progressive_filler_bracelets,
+            "Progressive Other": self.progressive_filler_other
+        }
+
+        max_filler_counts = {
+            "Progressive Bat": 8,
+            "Progressive Fry Pan": 9,
+            "Progressive Gun": 6,
+            "Progressive Bracelet": 6,
+            "Progressive Other": 10
+        }
+
         for _ in range(len(self.multiworld.get_unfilled_locations(self.player)) - len(pool) - self.event_count):  # Change to fix event count
             item = self.set_classifications(self.get_filler_item_name())
+            if item.name in ["Progressive Bat", "Progressive Fry Pan", "Progressive Other",
+                             "Progressive Gun", "Progressive Bracelet"]:
+                item_to_counts[item.name] += 1
+
+                if item_to_counts[item.name] >= max_filler_counts[item.name]:
+                    self.common_gear = [x for x in self.common_gear if x != item.name]
+                    self.uncommon_gear = [x for x in self.common_gear if x != item.name]
+                    self.rare_gear = [x for x in self.common_gear if x != item.name]
             pool.append(item)
 
     def get_item_pool(self, excluded_items: Set[str]) -> List[Item]:

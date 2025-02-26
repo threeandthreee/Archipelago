@@ -2,13 +2,13 @@ from typing import TYPE_CHECKING
 
 from BaseClasses import ItemClassification, Item
 from .data import Items
-from .data.Items import CoordData, EquipmentData
+from .data.Items import CoordData, EquipmentData, ProgressiveUpgradeData
 
 if TYPE_CHECKING:
     from . import Rac2World
 
 
-def get_classification(_world: "Rac2World", item_name: str) -> ItemClassification:
+def get_classification(item_name: str) -> ItemClassification:
     item = Items.from_name(item_name)
     if item in Items.COORDS:
         return ItemClassification.progression
@@ -40,14 +40,14 @@ def get_classification(_world: "Rac2World", item_name: str) -> ItemClassificatio
         Items.NANOTECH_BOOST,
     ]:
         return ItemClassification.useful
-    if item in Items.WEAPONS:
+    if item in Items.WEAPONS or item in Items.UPGRADES:
         return ItemClassification.useful
 
     return ItemClassification.filler
     
 
 def create_planets(world: "Rac2World") -> list["Item"]:
-    coords_to_add: list[CoordData] = Items.COORDS
+    coords_to_add: list[CoordData] = list(Items.COORDS)
     world.multiworld.random.shuffle(coords_to_add)
     precollected_ids: list[int] = [item.code for item in world.multiworld.precollected_items[world.player]]
 
@@ -68,7 +68,7 @@ def create_planets(world: "Rac2World") -> list["Item"]:
 
 
 def create_equipment(world: "Rac2World") -> list["Item"]:
-    equipment_to_add: list[EquipmentData] = Items.EQUIPMENT + [Items.SHEEPINATOR, Items.SPIDERBOT_GLOVE]
+    equipment_to_add: list[EquipmentData] = list(Items.EQUIPMENT) + [Items.SHEEPINATOR, Items.SPIDERBOT_GLOVE]
     precollected_ids: list[int] = [item.code for item in world.multiworld.precollected_items[world.player]]
     equipment_to_add = [equipment for equipment in equipment_to_add if equipment.item_id not in precollected_ids]
 
@@ -102,3 +102,15 @@ def create_collectables(world: "Rac2World") -> list["Item"]:
         collectable_items.append(world.create_item(Items.HYPNOMATIC_PART.name))
 
     return collectable_items
+
+
+def create_upgrades(world: "Rac2World") -> list["Item"]:
+    upgrades_to_add: list[ProgressiveUpgradeData] = list(Items.UPGRADES)
+    # There are two wrench upgrades, add one more
+    upgrades_to_add.append(Items.WRENCH_UPGRADE)
+
+    # Remove the armor upgrade from the pool, as it currently is only for debug purpose
+    # TODO: Remove this line once armor locations get implemented
+    upgrades_to_add.remove(Items.ARMOR_UPGRADE)
+
+    return [world.create_item(upgrade.name) for upgrade in upgrades_to_add]

@@ -233,6 +233,8 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
             if kanto_only and not data.regions[region_id].kanto:
                 continue
             region_exit = data.regions[region_id].name
+            if not kanto_only and region_exit == "Vermilion City" and exit_name == "Follow Bill":
+                continue
             connections.append((exit_name, region_name, region_exit))
 
         for warp in region_data.warps:

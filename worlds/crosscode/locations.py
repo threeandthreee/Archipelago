@@ -384,7 +384,7 @@ locations_data = [
     LocationData(code=3235824369, name='Cold Pedestal', area='heat-dng', access=AccessInfo(region={'linear': '16', 'open': 'open7.4'})),
     LocationData(code=3235824370, name='Shock Pedestal', area='wave-dng', access=AccessInfo(region={'linear': '27', 'open': 'open14.5'})),
     LocationData(code=3235824371, name='Wave Pedestal', area='shock-dng', access=AccessInfo(region={'linear': '25', 'open': 'open13.1'})),
-    LocationData(code=3235824372, name='Chase the Hologram Frobbit', area='autumn-fall', access=AccessInfo(region={'linear': '20', 'open': 'open9'})),
+    LocationData(code=3235824372, name='Chase the Hologram Frobbit', area='autumn-fall', access=AccessInfo(region={'linear': '20', 'open': 'open9'}, cond=[ItemCondition(item_name='Heat', amount=1), ItemCondition(item_name='Cold', amount=1)])),
     LocationData(code=3235824474, name='Mushroom Kingdom', area='jungle-city', access=AccessInfo(region={'linear': '23', 'open': 'open10'}, cond=[ItemCondition(item_name='Wave', amount=1)])),
     LocationData(code=3235824377, name='First Steps - Reward 1', area='autumn-area', metadata={'quest': True}, access=AccessInfo(region={'linear': '3', 'open': 'open3'})),
     LocationData(code=3235824378, name='First Steps - Reward 2', area='autumn-area', metadata={'quest': True}, access=AccessInfo(region={'linear': '3', 'open': 'open3'})),
@@ -801,7 +801,7 @@ locations_data = [
 locations_dict = { location.name: location for location in locations_data }
 
 events_data = [
-    LocationData(code=None, name='Chase the Hologram Frobbit (Event)', access=AccessInfo(region={'linear': '20', 'open': 'open9'})),
+    LocationData(code=None, name='Chase the Hologram Frobbit (Event)', access=AccessInfo(region={'linear': '20', 'open': 'open9'}, cond=[ItemCondition(item_name='Heat', amount=1), ItemCondition(item_name='Cold', amount=1)])),
     LocationData(code=None, name='Mushroom Kingdom (Event)', access=AccessInfo(region={'linear': '23', 'open': 'open10'}, cond=[ItemCondition(item_name='Wave', amount=1)])),
     LocationData(code=None, name='First Steps (Event)', metadata={'quest': True}, access=AccessInfo(region={'linear': '3', 'open': 'open3'})),
     LocationData(code=None, name='A Few More Steps (Event)', metadata={'quest': True}, access=AccessInfo(region={'linear': '3', 'open': 'open3'}, cond=[QuestCondition(quest_name='First Steps')])),
@@ -2928,6 +2928,13 @@ location_groups = {
     "Autumn's Rise Cutscenes": {
         locations_dict['Talatu Introductions'],
         locations_dict['Schneider Guild Pass'],
+    },
+    "Always Quests": {
+        locations_dict['Talatu Introductions'],
+        locations_dict['Bergen Mine Detector'],
+        locations_dict["Ba'kii Shade Statue"],
+        locations_dict['Chase the Hologram Frobbit'],
+        locations_dict['Mushroom Kingdom'],
     },
     "Bergen Village Cutscenes": {
         locations_dict['Bergen Mine Guard'],

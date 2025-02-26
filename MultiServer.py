@@ -871,6 +871,9 @@ class Ashipelago:
 
             self._push_player_list(room.is_new, is_tracked)
             if room.is_new:
+                #Get generation data
+                #Build shared point pool map
+                #Update multisave with point pool for future use
                 self._push_game_item_information()
                 room.is_new = webhook_settings["WEBHOOK_DEBUG"]
 
@@ -1096,6 +1099,7 @@ class Ashipelago:
             }
             self._push_to_webhook(information)
 
+    # Helper function used to calculate the amount of room points currently available
     def get_room_points(self, team) -> int:
         result = 0
         locations = 0
@@ -1106,6 +1110,7 @@ class Ashipelago:
         hint_cost = max(1, int(self.ctx.hint_cost * 0.01 * locations / len(self.ctx.clients[team])))
         return result - hint_cost * self.room_hints_used
 
+    # Helper function used to calculate the cost of a hint using a room point value
     def get_room_hint_cost(self, team) -> int:
         if self.ctx.hint_cost:
             locations = 0
@@ -1114,7 +1119,7 @@ class Ashipelago:
             return max(1, int(self.ctx.hint_cost * 0.01 * locations / len(self.ctx.clients[team])))
 
         return 0
-    
+
     # Webhook class used to multithread the webhook messages so that the main thread is not stalled
     class WebhookThread(threading.Thread):
         ctx: Context
