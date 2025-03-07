@@ -21,12 +21,13 @@ import sys
 import subprocess
 import time
 import typing
+from enum import Enum
 
 
 from CommonClient import (CommonContext, ClientCommandProcessor, get_base_parser, gui_enabled, logger,
                           server_loop)
 from NetUtils import ClientStatus
-from worlds.ladx.Common import BASE_ID as LABaseID
+from worlds.ladx.Common import BASE_ID
 from worlds.ladx.GpsTracker import GpsTracker
 from worlds.ladx.TrackerConsts import storage_key
 from worlds.ladx.ItemTracker import ItemTracker
@@ -67,40 +68,33 @@ XkV+qFpGQXrLhT/fqraQeQLuplpNH5g+WkAAAAASUVORK5CYII="""
     data = io.BytesIO(binary_data)
     return CoreImage(data, ext="png").texture
 
+def clamp(minimum, number, maximum):
+    return max(minimum, min(maximum, number))
 
-class LAClientConstants:
-    # Connector version
-    VERSION = 0x01
-    #
+
+class Constants:
     # Memory locations of LADXR
     ROMGameID = 0x0051  # 4 bytes
     SlotName = 0x0134
-    # Unused
-    # ROMWorldID = 0x0055
-    # ROMConnectorVersion = 0x0056
-    wLinkHealth = 0xDB5A
-    wAddHealthBuffer = 0xDB93
-    wSubtractHealthBuffer = 0xDB94
+
+    wDeathCountLo = 0xDB57 # R0
+    wDeathCountHi = 0xDB58 # R0
+
     # RO: We should only act if this is higher then 6, as it indicates that the game is running normally
     wGameplayType = 0xDB95
-    # RO: Starts at 0, increases every time an item is received from the server and processed
-    wLinkSyncSequenceNumber = 0xDDF6
-    wLinkStatusBits = 0xDDF7          # RW:
-    #      Bit0: wLinkGive* contains valid data, set from script cleared from ROM.
-    wLinkGiveItem = 0xDDF8  # RW
-    wLinkGiveItemFrom = 0xDDF9  # RW
-    # All of these six bytes are unused, we can repurpose
-    # wLinkSendItemRoomHigh = 0xDDFA  # RO
-    # wLinkSendItemRoomLow = 0xDDFB  # RO
-    # wLinkSendItemTarget = 0xDDFC  # RO
-    # wLinkSendItemItem = 0xDDFD  # RO
-    # wLinkSendShopItem = 0xDDFE # RO, which item to send (1 based, order of the shop items)
-    # RO, which player to send to, but it's just the X position of the NPC used, so 0x18 is player 0
-    # wLinkSendShopTarget = 0xDDFF
 
+    # Block of addresses for multiworld things
+    wMWRecvIndexHi = 0xDDF6   # RO: The index of the next item to receive.
+    wMWRecvIndexLo = 0xDDF7   #     If given something different it will be ignored.
+    wMWCommand = 0xDDF8       # RW: See MW_Commands
+    wMWItemCode = 0xDDF9      # RW: Item code to give the player
+    wMWItemSenderHi = 0xDDFA  # RW: Unused, but maybe will set up more rom banks in the future
+    wMWItemSenderLo = 0xDDFB  # RW: ID for sending player
+    wMWMultipurposeC = 0xDDFC # RW
+    wMWMultipurposeD = 0xDDFD # RW
+    wMWMultipurposeE = 0xDDFE # RW
+    wMWMultipurposeF = 0xDDFF # RW
 
-    CheckCounter = 0xB010 # Two bytes
-    wRecvIndex = 0xDDFD # Two bytes
     wCheckAddress = 0xC0FF - 0x4
     WRamCheckSize = 0x4
     WRamSafetyValue = bytearray([0]*WRamCheckSize)
@@ -113,14 +107,28 @@ class LAClientConstants:
     MaxGameplayValue = 0x1A
     VictoryGameplayAndSub = 0x0102
 
+    DeathItem = 0xF0
+
+
+class MW_Commands(Enum):
+    # bit 0: send item
+    # bit 1: consider receive index for item send
+    # bit 2: collect location
+    NONE =              0b00000000
+    SEND_ITEM =         0b00000011
+    SEND_ITEM_EXTRA =   0b00000001
+    COLLECT =           0b00000100
+    COLLECT_WITH_ITEM = 0b00000101
+
+
 class RAGameboy():
     cache = []
     last_cache_read = None
     socket = None
 
     def __init__(self, address, port) -> None:
-        self.cache_start = LAClientConstants.wRamStart
-        self.cache_size = LAClientConstants.hRamStart + LAClientConstants.hRamSize - LAClientConstants.wRamStart
+        self.cache_start = Constants.wRamStart
+        self.cache_size = Constants.hRamStart + Constants.hRamSize - Constants.wRamStart
 
         self.address = address
         self.port = port
@@ -165,9 +173,9 @@ class RAGameboy():
 
     async def check_safe_gameplay(self, throw=True):
         async def check_wram():
-            check_values = await self.async_read_memory(LAClientConstants.wCheckAddress, LAClientConstants.WRamCheckSize)
+            check_values = await self.async_read_memory(Constants.wCheckAddress, Constants.WRamCheckSize)
 
-            if check_values != LAClientConstants.WRamSafetyValue:
+            if check_values != Constants.WRamSafetyValue:
                 if throw:
                     raise InvalidEmulatorStateError()
                 return False
@@ -178,10 +186,10 @@ class RAGameboy():
                 raise InvalidEmulatorStateError()
             return False
 
-        gameplay_value = await self.async_read_memory(LAClientConstants.wGameplayType)
+        gameplay_value = await self.async_read_memory(Constants.wGameplayType)
         gameplay_value = gameplay_value[0]
         # In gameplay or credits
-        if not (LAClientConstants.MinGameplayValue <= gameplay_value <= LAClientConstants.MaxGameplayValue) and gameplay_value != 0x1:
+        if not (Constants.MinGameplayValue <= gameplay_value <= Constants.MaxGameplayValue) and gameplay_value != 0x1:
             if throw:
                 logger.info("invalid emu state")
                 raise InvalidEmulatorStateError()
@@ -200,14 +208,14 @@ class RAGameboy():
         self.cache = []
 
         if not await self.check_safe_gameplay():
-            return False
+            return
 
         attempts = 0
         while True:
             # RA doesn't let us do an atomic read of a large enough block of RAM
             # Some bytes can't change in between reading location_block and hram_block
             location_block = await self.read_memory_block(self.location_start, self.location_size)
-            hram_block = await self.read_memory_block(LAClientConstants.hRamStart, LAClientConstants.hRamSize)
+            hram_block = await self.read_memory_block(Constants.hRamStart, Constants.hRamSize)
             verification_block = await self.read_memory_block(self.location_start, self.location_size)
 
             valid = True
@@ -222,12 +230,12 @@ class RAGameboy():
 
             # Shouldn't really happen, but keep it from choking
             if attempts > 5:
-                return False
+                return
 
         checks_block = await self.read_memory_block(self.checks_start, self.checks_size)
 
         if not await self.check_safe_gameplay():
-            return False
+            return
 
         self.cache = bytearray(self.cache_size)
 
@@ -237,11 +245,10 @@ class RAGameboy():
         start = self.location_start - self.cache_start
         self.cache[start:start + len(location_block)] = location_block
 
-        start = LAClientConstants.hRamStart - self.cache_start
+        start = Constants.hRamStart - self.cache_start
         self.cache[start:start + len(hram_block)] = hram_block
 
         self.last_cache_read = time.time()
-        return True
 
     async def read_memory_block(self, address: int, size: int):
         block = bytearray()
@@ -253,9 +260,7 @@ class RAGameboy():
 
         return block
 
-    async def read_memory_cache(self, addresses):
-        if not self.last_cache_read or self.last_cache_read + 0.1 < time.time():
-            await self.update_cache()
+    def read_memory_cache(self, addresses):
         if not self.cache:
             return None
         assert (len(self.cache) == self.cache_size)
@@ -345,6 +350,18 @@ class RAGameboy():
         if splits[2] == "-1":
             logger.info(splits[3])
 
+    def send_mw_command(self, command, item_code=0xFF, item_sender=0x0000,
+                        mp_c=0x00, mp_d=0x00, mp_e=0x00, mp_f=0x00,
+                        mp_cd=0x0000, mp_ef=0x0000):
+        [sender_high, sender_low] = struct.pack('>H', item_sender)
+        if mp_cd:
+            [mp_c, mp_d] = struct.pack('>H', mp_cd)
+        if mp_ef:
+            [mp_e, mp_f] = struct.pack('>H', mp_ef)
+        msg = [command, item_code, sender_high, sender_low, mp_c, mp_d, mp_e, mp_f]
+        self.write_memory(Constants.wMWCommand, msg)
+
+
 
 class LinksAwakeningClient():
     socket = None
@@ -353,6 +370,7 @@ class LinksAwakeningClient():
     auth = None
     game_crc = None
     collect_enabled = True
+    expected_death_count = None
     pending_deathlink = False
     retroarch_address = None
     retroarch_port = None
@@ -406,7 +424,7 @@ class LinksAwakeningClient():
                 pass
 
     async def reset_auth(self):
-        auth = binascii.hexlify(await self.gameboy.async_read_memory(0x0134, 12)).decode()
+        auth = binascii.hexlify(await self.gameboy.async_read_memory(Constants.SlotName, 12)).decode()
         self.auth = auth
 
     async def wait_and_init_tracker(self, magpie: MagpieBridge):
@@ -415,32 +433,7 @@ class LinksAwakeningClient():
         self.item_tracker = ItemTracker(self.gameboy)
         self.gps_tracker = GpsTracker(self.gameboy)
         magpie.gps_tracker = self.gps_tracker
-
-    async def give_item(self, item):
-        # Spin until we either:
-        # get an exception from a bad read (emu shut down or reset)
-        # beat the game
-        # the client handles the last pending item
-        status = (await self.gameboy.async_read_memory_safe(LAClientConstants.wLinkStatusBits))[0]
-        while not (await self.is_victory()) and status & 1 == 1:
-            time.sleep(0.1)
-            status = (await self.gameboy.async_read_memory_safe(LAClientConstants.wLinkStatusBits))[0]
-
-        item_id = item.item - LABaseID
-        # The player name table only goes up to 100, so don't go past that
-        # Even if it didn't, the remote player _index_ byte is just a byte, so 255 max
-        from_player = item.player
-        if from_player > 100:
-            from_player = 100
-
-        self.gameboy.write_memory(LAClientConstants.wLinkGiveItem, [item_id, from_player])
-        status |= 1
-        status = self.gameboy.write_memory(LAClientConstants.wLinkStatusBits, [status])
-
-    async def recved_item_from_ap(self, item, next_index):
-        await self.give_item(item)
-        next_index += 1
-        self.gameboy.write_memory(LAClientConstants.wRecvIndex, struct.pack(">H", next_index))
+        self.expected_death_count = None
 
     # The key location is blocked from collection unless the value location
     # has also been checked.
@@ -467,16 +460,27 @@ class LinksAwakeningClient():
         for id in ctx.checked_locations:
             meta_id = links_awakening_location_id_to_meta[id]
             is_checked = next(x for x in self.tracker.all_checks if x.id == meta_id).value
-            if(is_checked or
-               current_room == meta_id[:5] or # player is in the location room
-               id not in ctx.locations_info or # location scout data not in yet
-               self.dependent_location_ids.get(id) not in ctx.checked_locations): # location dependency not met
+            if(is_checked
+               or current_room == meta_id[:5] # player is in the location room
+               or id not in ctx.locations_info # location scout data not in yet
+               or self.dependent_location_ids.get(id) not in ctx.checked_locations): # location dependency not met
                 continue
-            item = ctx.locations_info[id]
             check = self.tracker.meta_to_check[meta_id]
-            did_collect = await self.collect_check(check)
-            if did_collect and item.player == ctx.slot:
-                await self.give_item(item)
+            item = ctx.locations_info[id]
+            if item.player == ctx.slot:
+                self.gameboy.send_mw_command(
+                    command=MW_Commands.COLLECT_WITH_ITEM,
+                    item_code=item.item - BASE_ID,
+                    item_sender=clamp(0, ctx.slot, 100),
+                    mp_cd=check.address,
+                    mp_e=check.mask,
+                )
+            else:
+                self.gameboy.send_mw_command(
+                    command=MW_Commands.COLLECT,
+                    mp_cd=check.address,
+                    mp_e=check.mask,
+                )
             break # one per cycle
         locations_to_scout = ctx.checked_locations - ctx.scouted_locations
         if len(locations_to_scout):
@@ -485,16 +489,6 @@ class LinksAwakeningClient():
                 "locations": locations_to_scout
             }])
             ctx.scouted_locations.update(locations_to_scout)
-
-    async def collect_check(self, check):
-        current_value = int.from_bytes(await self.gameboy.async_read_memory(check.address), 'big')
-        already_collected = bool(current_value & check.mask)
-        if not already_collected:
-            new_value = current_value | check.mask
-            self.gameboy.write_memory(check.address, [new_value])
-            check_count = struct.unpack(">H", await self.gameboy.async_read_memory(LAClientConstants.CheckCounter, 2))[0]
-            self.gameboy.write_memory(LAClientConstants.CheckCounter, struct.pack(">H", check_count + 1))
-        return not already_collected
 
     should_reset_auth = False
     async def wait_for_game_ready(self):
@@ -505,53 +499,60 @@ class LinksAwakeningClient():
                 raise GameboyException("Resetting due to wrong archipelago server")
         logger.info("Game connection ready!")
 
-    async def is_victory(self):
-        return (await self.gameboy.read_memory_cache([LAClientConstants.wGameplayType]))[LAClientConstants.wGameplayType] == 1
-
     async def main_tick(self, ctx, item_get_cb, win_cb, deathlink_cb):
-        cache_is_fresh = await self.gameboy.update_cache()
-        await self.tracker.readChecks(item_get_cb)
-        await self.item_tracker.readItems()
-        await self.gps_tracker.read_location()
-        await self.gps_tracker.read_entrances()
+        await self.gameboy.update_cache()
+
+        self.tracker.readChecks(item_get_cb)
+        self.item_tracker.readItems()
+        self.gps_tracker.read_location()
+        self.gps_tracker.read_entrances()
+
+        mem = self.gameboy.read_memory_cache([
+            Constants.wDeathCountLo,
+            Constants.wDeathCountHi,
+            Constants.wGameplayType,
+            Constants.wMWRecvIndexHi,
+            Constants.wMWRecvIndexLo,
+            Constants.wMWCommand,
+        ])
 
         if not ctx.slot or not self.tracker.has_start_item():
             return
 
-        if await self.is_victory():
+        if mem[Constants.wGameplayType] == 1: # Credits screen
             await win_cb()
 
-        current_health = (await self.gameboy.read_memory_cache([LAClientConstants.wLinkHealth]))[LAClientConstants.wLinkHealth]
-        health_to_remove = (await self.gameboy.read_memory_cache([LAClientConstants.wSubtractHealthBuffer]))[LAClientConstants.wSubtractHealthBuffer]
+        death_count = struct.unpack(">H", [mem[Constants.wDeathCountHi], mem[Constants.wDeathCountLo]])
+        if self.expected_death_count is None:
+            self.expected_death_count = death_count
+        elif death_count > self.expected_death_count:
+            self.expected_death_count = death_count
+            deathlink_cb()
 
-        if self.deathlink_status == 'pending':
-            self.gameboy.write_memory(LAClientConstants.wAddHealthBuffer, [0]) # Stop any health gain
-            self.gameboy.write_memory(LAClientConstants.wLinkHealth, [1]) #  Almost dead
-            self.gameboy.write_memory(LAClientConstants.wSubtractHealthBuffer, [1]) # Deal remaining damage this way to trigger medicine
-            self.deathlink_status = 'in_progress'
+        if mem[Constants.wMWCommand] != MW_Commands.NONE:
             return
-        elif self.deathlink_status == 'in_progress':
-            if not current_health: # Died from deathlink
-                self.deathlink_status = 'complete'
-                self.queue_trade_item_fix = True
-            elif not health_to_remove: # Survived deathlink (medicine)
-                self.deathlink_status = None
-            return
-        elif not self.deathlink_status and not current_health: # Died naturally
-            await deathlink_cb()
-            self.deathlink_status = 'complete'
-        elif self.deathlink_status == 'complete' and current_health:
-            self.deathlink_status = None
 
-        # receive items
-        recv_index = struct.unpack(">H", await self.gameboy.async_read_memory(LAClientConstants.wRecvIndex, 2))[0]
+        if self.pending_deathlink:
+            self.gameboy.send_mw_command(
+                command=MW_Commands.SEND_ITEM_EXTRA,
+                item_code=Constants.DeathItem,
+                item_sender=0, # can't identify who, so go with server
+            )
+            self.pending_deathlink = False
+            return
+
+        recv_index = struct.unpack(">H", [mem[Constants.wMWRecvIndexHi], mem[Constants.wMWRecvIndexLo]])
         if recv_index in ctx.recvd_checks:
             item = ctx.recvd_checks[recv_index]
-            await self.recved_item_from_ap(item, recv_index)
+            self.gameboy.send_mw_command(
+                command=MW_Commands.SEND_ITEM,
+                item_code=item.item - BASE_ID,
+                item_sender=clamp(0, item.player, 100),
+                mp_cd=recv_index,
+            )
             return
 
-        # collect
-        if self.collect_enabled and cache_is_fresh:
+        if self.collect_enabled:
             await self.collect(ctx)
 
 all_tasks = set()

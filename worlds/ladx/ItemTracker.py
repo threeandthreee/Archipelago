@@ -124,15 +124,15 @@ class Item:
 
         if self.mask:
             byte = byte & self.mask
-        
+
         if not self.count:
             byte = int(byte > self.threshold)
         elif self.encodedCount:
             # LADX seems to store one decimal digit per nibble
             byte = byte - (byte // 16 * 6)
-        
+
         byte += extra
-        
+
         if self.max and byte > self.max:
             byte = self.max
 
@@ -141,7 +141,7 @@ class Item:
                 self.value += byte - self.rawValue
         else:
             self.value = byte
-        
+
         self.rawValue = byte
 
         if oldValue != self.value:
@@ -154,8 +154,8 @@ class ItemTracker:
         pass
     extraItems = {}
 
-    async def readRamByte(self, byte):
-        return (await self.gameboy.read_memory_cache([byte]))[byte]
+    def readRamByte(self, byte):
+        return (self.gameboy.read_memory_cache([byte]))[byte]
 
     def loadItems(self):
         self.items = [
@@ -226,10 +226,10 @@ class ItemTracker:
 
         self.itemDict = {item.id: item for item in self.items}
 
-    async def readItems(self):
+    def readItems(self):
         extraItems = self.extraItems
         missingItems = {x for x in self.items if x.address == None and x.id != 'RUPEE_COUNT'}
-        
+
         # Add keys for opened key doors
         for i in range(len(dungeonKeyDoors)):
             item = f'KEY{i + 1}'
@@ -237,43 +237,43 @@ class ItemTracker:
 
             for address, masks in dungeonKeyDoors[i].items():
                 for mask in masks:
-                    value = await self.readRamByte(address) & mask
+                    value = self.readRamByte(address) & mask
                     if value > 0:
                         extraItems[item] += 1
 
         # Main inventory items
         for i in range(inventoryStartAddress, inventoryEndAddress):
-            value = await self.readRamByte(i)
+            value = self.readRamByte(i)
 
             if value in inventoryItemIds:
                 item = self.itemDict[inventoryItemIds[value]]
                 extra = extraItems[item.id] if item.id in extraItems else 0
                 item.set(1, extra)
                 missingItems.remove(item)
-        
+
         for item in missingItems:
             extra = extraItems[item.id] if item.id in extraItems else 0
             item.set(0, extra)
-        
+
         # All other items
         for item in [x for x in self.items if x.address]:
             extra = extraItems[item.id] if item.id in extraItems else 0
-            item.set(await self.readRamByte(item.address), extra)
-        
+            item.set(self.readRamByte(item.address), extra)
+
         # The current rupee count is BCD, but the add/remove values are not
-        currentRupees = self.calculateRupeeCount(await self.readRamByte(rupeesHigh), await self.readRamByte(rupeesLow))
-        addingRupees = (await self.readRamByte(addRupeesHigh) << 8) +  await self.readRamByte(addRupeesLow)
-        removingRupees = (await self.readRamByte(removeRupeesHigh) << 8) + await self.readRamByte(removeRupeesLow)
+        currentRupees = self.calculateRupeeCount(self.readRamByte(rupeesHigh), self.readRamByte(rupeesLow))
+        addingRupees = (self.readRamByte(addRupeesHigh) << 8) +  self.readRamByte(addRupeesLow)
+        removingRupees = (self.readRamByte(removeRupeesHigh) << 8) + self.readRamByte(removeRupeesLow)
         self.itemDict['RUPEE_COUNT'].set(currentRupees + addingRupees - removingRupees, 0)
-    
+
     def calculateRupeeCount(self, high: int, low: int) -> int:
         return (high - (high // 16 * 6)) * 100 + (low - (low // 16 * 6))
-    
+
     def setExtraItem(self, item: str, qty: int) -> None:
         self.extraItems[item] = qty
 
     async def sendItems(self, socket, diff=False):
-        if not self.items: 
+        if not self.items:
             return
         message = {
             "type":"item",
@@ -297,5 +297,5 @@ class ItemTracker:
             )
 
             item.diff = 0
-        
+
         await socket.send(json.dumps(message))

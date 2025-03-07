@@ -158,13 +158,13 @@ class LocationTracker:
     def has_start_item(self):
         return self.start_check not in self.remaining_checks
 
-    async def readChecks(self, cb):
+    def readChecks(self, cb):
         new_checks = []
         for check in self.remaining_checks:
             addresses = [check.address]
             if check.alternateAddress:
                 addresses.append(check.alternateAddress)
-            bytes = await self.gameboy.read_memory_cache(addresses)
+            bytes = self.gameboy.read_memory_cache(addresses)
             if not bytes:
                 return False
             check.set(list(bytes.values()))
@@ -201,7 +201,7 @@ class MagpieBridge:
                 logger.info(
                     f"Connected, supported features: {message['features']}")
                 self.features = message["features"]
-                
+
                 await self.send_handshAck()
 
             if message["type"] == "sendFull":
@@ -222,7 +222,7 @@ class MagpieBridge:
         if the_id == "0x2A7":
             return "0x2A1-1"
         return the_id
-    
+
     async def send_handshAck(self):
         if not self.ws:
             return
