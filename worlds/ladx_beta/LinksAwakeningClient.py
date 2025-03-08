@@ -520,7 +520,7 @@ class LinksAwakeningClient():
                                   if x.item == item_id), False)
             all_checks = [x for x in self.tracker.all_checks if x.id == location]
             remaining_checks = [x for x in self.tracker.remaining_checks if x.id == location]
-            destination_checked = not remaining_checks or (len(remaining_checks) < len(all_checks))
+            destination_checked = location and (not remaining_checks or (len(remaining_checks) < len(all_checks)))
             expected_trade_items.append(int(item_received and not destination_checked))
 
             inventory = self.item_tracker.itemDict[item].value
