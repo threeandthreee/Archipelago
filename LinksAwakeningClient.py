@@ -522,7 +522,7 @@ class LinksAwakeningClient():
         if mem[Constants.wGameplayType] == 1: # Credits screen
             await win_cb()
 
-        death_count = struct.unpack(">H", [mem[Constants.wDeathCountHi], mem[Constants.wDeathCountLo]])
+        death_count = mem[Constants.wDeathCountHi]*0xff + mem[Constants.wDeathCountLo]
         if self.expected_death_count is None:
             self.expected_death_count = death_count
         elif death_count > self.expected_death_count:
@@ -541,7 +541,7 @@ class LinksAwakeningClient():
             self.pending_deathlink = False
             return
 
-        recv_index = struct.unpack(">H", [mem[Constants.wMWRecvIndexHi], mem[Constants.wMWRecvIndexLo]])
+        recv_index = mem[Constants.wMWRecvIndexHi] * 0xff + mem[Constants.wMWRecvIndexLo]
         if recv_index in ctx.recvd_checks:
             item = ctx.recvd_checks[recv_index]
             self.gameboy.send_mw_command(
