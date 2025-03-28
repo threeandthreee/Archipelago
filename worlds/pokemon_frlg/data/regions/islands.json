@@ -498,7 +498,7 @@
     "locations": [],
     "events": [],
     "exits": {
-      "REGION_THREE_ISLAND/MAIN": "Three Isle Port West Exit"
+      "REGION_THREE_ISLAND/SOUTH": "Three Isle Port West Exit"
     },
     "warps": {
       "MAP_THREE_ISLAND_PORT:0/MAP_THREE_ISLAND_DUNSPARCE_TUNNEL:0": "Three Isle Path (West)",
@@ -554,17 +554,15 @@
     "exits": {},
     "warps": {}
   },
-  "REGION_THREE_ISLAND/MAIN": {
+  "REGION_THREE_ISLAND/SOUTH": {
     "parent_map": "MAP_THREE_ISLAND",
-    "name": "Three Island Town",
+    "name": "Three Island Town South",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
     "has_fishing": false,
     "kanto": false,
     "locations": [
-      "ITEM_THREE_ISLAND_ZINC",
-      "HIDDEN_ITEM_THREE_ISLAND_PP_UP",
       "TRAINER_BIKER_GOON_REWARD",
       "TRAINER_BIKER_GOON_2_REWARD",
       "TRAINER_BIKER_GOON_3_REWARD",
@@ -573,13 +571,33 @@
     ],
     "events": [],
     "exits": {
-      "REGION_THREE_ISLAND/VISIT": "Three Island Town Visit",
-      "REGION_THREE_ISLAND_PORT/WEST": "Three Island Town Exit (South)",
-      "REGION_THREE_ISLAND_BOND_BRIDGE/MAIN": "Three Island Town Exit (West)"
+      "REGION_THREE_ISLAND/VISIT": "Three Island Town South Visit",
+      "REGION_THREE_ISLAND/NORTH": "Three Island Town Biker Blockade",
+      "REGION_THREE_ISLAND_PORT/WEST": "Three Island Town South Exit"
     },
     "warps": {
       "MAP_THREE_ISLAND:0/MAP_THREE_ISLAND_HOUSE1:0": "Lostelle's House",
-      "MAP_THREE_ISLAND:1/MAP_THREE_ISLAND_POKEMON_CENTER_1F:0": "Three Island Pokemon Center",
+      "MAP_THREE_ISLAND:1/MAP_THREE_ISLAND_POKEMON_CENTER_1F:0": "Three Island Pokemon Center"
+    }
+  },
+  "REGION_THREE_ISLAND/NORTH": {
+    "parent_map": "MAP_THREE_ISLAND",
+    "name": "Three Island Town North",
+    "encounter_region": null,
+    "has_land": false,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": false,
+    "locations": [
+      "ITEM_THREE_ISLAND_ZINC",
+      "HIDDEN_ITEM_THREE_ISLAND_PP_UP"
+    ],
+    "events": [],
+    "exits": {
+      "REGION_THREE_ISLAND/VISIT": "Three Island Town North Visit",
+      "REGION_THREE_ISLAND_BOND_BRIDGE/MAIN": "Three Island Town North Exit"
+    },
+    "warps": {
       "MAP_THREE_ISLAND:2/MAP_THREE_ISLAND_MART:0": "Three Island Poke Mart",
       "MAP_THREE_ISLAND:3/MAP_THREE_ISLAND_HOUSE2:0": "Sabrina Fan's House",
       "MAP_THREE_ISLAND:4/MAP_THREE_ISLAND_HOUSE3:0": "Three Island Beauty's House",
@@ -733,7 +751,7 @@
     "events": [],
     "exits": {
       "REGION_THREE_ISLAND_BOND_BRIDGE/WATER": "Bond Bridge Surfing Spot",
-      "REGION_THREE_ISLAND/MAIN": "Bond Bridge Exit"
+      "REGION_THREE_ISLAND/NORTH": "Bond Bridge Exit"
     },
     "warps": {
       "MAP_THREE_ISLAND_BOND_BRIDGE:0,1/MAP_THREE_ISLAND_BERRY_FOREST:0": "Berry Forest"

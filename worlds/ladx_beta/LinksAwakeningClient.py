@@ -98,7 +98,6 @@ class LAClientConstants:
     # wLinkSendShopTarget = 0xDDFF
 
 
-    CheckCounter = 0xB010 # Two bytes
     wRecvIndex = 0xDDFD # Two bytes
     wCheckAddress = 0xC0FF - 0x4
     WRamCheckSize = 0x4
@@ -493,8 +492,6 @@ class LinksAwakeningClient():
         if not already_collected:
             new_value = current_value | check.mask
             self.gameboy.write_memory(check.address, [new_value])
-            check_count = struct.unpack(">H", await self.gameboy.async_read_memory(LAClientConstants.CheckCounter, 2))[0]
-            self.gameboy.write_memory(LAClientConstants.CheckCounter, struct.pack(">H", check_count + 1))
         return not already_collected
 
     trade_items = {
@@ -523,7 +520,7 @@ class LinksAwakeningClient():
                                   if x.item == item_id), False)
             all_checks = [x for x in self.tracker.all_checks if x.id == location]
             remaining_checks = [x for x in self.tracker.remaining_checks if x.id == location]
-            destination_checked = not remaining_checks or (len(remaining_checks) < len(all_checks))
+            destination_checked = location and (not remaining_checks or (len(remaining_checks) < len(all_checks)))
             expected_trade_items.append(int(item_received and not destination_checked))
 
             inventory = self.item_tracker.itemDict[item].value

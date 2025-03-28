@@ -51,6 +51,19 @@
     push bc
     push hl
 
+    push bc
+    ld b,a
+    push af
+    ld e, $16
+    ld hl, getTreasureDataBCE
+    call interBankCall
+    ld e,b
+    call satchelRefillSeeds
+    call shooterAddDefaultSeed
+    call activateFlute
+    pop af
+    pop bc
+
     call giveTreasureCustom
 
     ld e,$42

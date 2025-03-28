@@ -1,17 +1,17 @@
 16//smallKeyObjectsTable: |
-    db $00,$0d,$81,$42    ; D0 
-    db $00,$01,$82,$42    ; D1
-    db $00,$02,$83,$42    ; D2
-    db $00,$03,$84,$42    ; D3
-    db $00,$04,$85,$42    ; D4
-    db $00,$05,$86,$42    ; D5
-    db $00,$06,$87,$42    ; D6 Present
-    db $00,$07,$88,$42    ; D7
-    db $00,$08,$89,$42    ; D8
+    db $00,$0d,$81,option.smallKeySprite    ; D0 
+    db $00,$01,$82,option.smallKeySprite    ; D1
+    db $00,$02,$83,option.smallKeySprite    ; D2
+    db $00,$03,$84,option.smallKeySprite    ; D3
+    db $00,$04,$85,option.smallKeySprite    ; D4
+    db $00,$05,$86,option.smallKeySprite    ; D5
+    db $00,$06,$87,option.smallKeySprite    ; D6 Present
+    db $00,$07,$88,option.smallKeySprite    ; D7
+    db $00,$08,$89,option.smallKeySprite    ; D8
     db $00,$00,$00,$00
     db $00,$00,$00,$00
     db $00,$00,$00,$00
-    db $00,$0c,$8a,$42    ; D6 Past
+    db $00,$0c,$8a,option.smallKeySprite    ; D6 Past
 16/53f3/: dw smallKeyObjectsTable
 
 16//bossKeyObjectsTable: |

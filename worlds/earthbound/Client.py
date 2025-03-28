@@ -93,12 +93,17 @@ class EarthBoundClient(SNIClient):
         is_in_battle = await snes_read(ctx, IS_IN_BATTLE, 1)
         char_count = await snes_read(ctx, CHAR_COUNT, 1)
         snes_buffered_write(ctx, GOT_DEATH_FROM_SERVER, bytes([0x01]))
+        text_open = await snes_read(ctx, OPEN_WINDOW, 1)
 
         if is_currently_dead[0] != 0x00 or can_receive_deathlinks[0] == 0x00:
             return
 
         # If suppression is set and we're not in a battle dont do deathlinks
         if oss_flag[0] != 0x00 and is_in_battle[0] == 0x00:
+            return
+
+        # Prevent overworld deaths while a menu is open
+        if not is_in_battle[0] and text_open[0] != 0xFF:
             return
 
         for i in range(char_count[0]):
@@ -405,7 +410,7 @@ class EarthBoundClient(SNIClient):
         is_energylink_enabled = await snes_read(ctx, IS_ENERGYLINK_ENABLED, 1)
         is_requesting_energy = await snes_read(ctx, WRAM_START + 0x1BD6, 1)
         energy_withdrawal = await snes_read(ctx, WRAM_START + 0x1BDC, 4)
-        energy = ctx.set_notify(f"EnergyLink{ctx.team}")
+        ctx.set_notify(f"EnergyLink{ctx.team}")
         energy = ctx.stored_data.get(f"EnergyLink{ctx.team}", 0)
         exchange_rate = 1000000
         if is_energylink_enabled[0]:
@@ -419,7 +424,7 @@ class EarthBoundClient(SNIClient):
                         [{"operation": "add", "value": deposited_energy},
                             {"operation": "max", "value": 0}]}])
 
-            if is_requesting_energy[0] and energy: # This is just to pull the current number for a display.
+            if is_requesting_energy[0] and energy:  # This is just to pull the current number for a display.
                 energy //= exchange_rate
                 if energy > 9999999:
                     energy = 9999999
@@ -431,12 +436,10 @@ class EarthBoundClient(SNIClient):
                 await snes_write(ctx, [(WRAM_START + 0x1BD8, energy.to_bytes(4, byteorder="little"))])
                 await snes_write(ctx, [(WRAM_START + 0x1BD6, (0x00).to_bytes(1, byteorder="little"))])
 
-            print(energy_withdrawal)
             if any(energy_withdrawal) and energy:
-                print("AAAAAAAAAAAAA")
                 withdrawal = int.from_bytes(energy_withdrawal, byteorder="little")
                 withdrawal *= exchange_rate
-                energy = ctx.stored_data.get(f"EnergyLink{ctx.team}", 0) # Refresh the value
+                energy = ctx.stored_data.get(f"EnergyLink{ctx.team}", 0)  # Refresh the value
 
                 if withdrawal > energy:
                     energy_success = 2

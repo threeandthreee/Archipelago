@@ -3,7 +3,7 @@
 ## Required Software
 
 - [Archipelago](https://github.com/ArchipelagoMW/Archipelago/releases)
-- An English (UE) Pokémon Crystal v1.0 ROM. The Archipelago community cannot provide this.
+- An English (UE) Pokémon Crystal v1.0 or v1.1 ROM. The Archipelago community cannot provide this.
 - [BizHawk](https://tasvideos.org/BizHawk/ReleaseHistory) 2.7 or later. 2.9.1 is recommended.
 
 ### Configuring BizHawk
@@ -21,7 +21,7 @@ Once you have installed BizHawk, open `EmuHawk.exe` and change the following set
 
 ## Optional Software
 
-[Pokémon Crystal AP Tracker](https://github.com/AliceMousie/crystal-ap-tracker/releases/latest) for use
+[Pokémon Crystal AP Tracker](https://github.com/palex00/crystal-ap-tracker/releases/latest) for use
 with [PopTracker](https://github.com/black-sliver/PopTracker/releases)
 
 ## Generating and Patching a Game
@@ -64,7 +64,7 @@ perfectly safe to make progress offline; everything will re-sync when you reconn
 
 Pokémon Crystal has a fully functional map tracker that supports auto-tracking.
 
-1. Download [Pokémon Crystal AP Tracker](https://github.com/AliceMousie/crystal-ap-tracker/releases/latest) and
+1. Download [Pokémon Crystal AP Tracker](https://github.com/palex00/crystal-ap-tracker/releases/latest) and
    [PopTracker](https://github.com/black-sliver/PopTracker/releases).
 2. Put the tracker pack into packs/ in your PopTracker install.
 3. Open PopTracker, and load the Pokémon Crystal pack.

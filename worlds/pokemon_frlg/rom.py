@@ -11,8 +11,8 @@ from .data import data, EvolutionMethodEnum, TrainerPokemonDataTypeEnum
 from .locations import PokemonFRLGLocation
 from .options import (Dexsanity, FlashRequired, ForceFullyEvolved, ItemfinderRequired, HmCompatibility, LevelScaling,
                       RandomizeLegendaryPokemon, RandomizeMiscPokemon, RandomizeStarters, RandomizeTrainerParties,
-                      RandomizeWildPokemon, SeviiIslandPasses, ShuffleHiddenItems, SilphCoCardKey, TmTutorCompatibility,
-                      ViridianCityRoadblock)
+                      RandomizeWildPokemon, SeviiIslandPasses, ShuffleFlyUnlocks, ShuffleHiddenItems,
+                      SilphCoCardKey, TmTutorCompatibility, Trainersanity, ViridianCityRoadblock)
 from .pokemon import randomize_tutor_moves
 from .util import bool_array_to_int, bound, encode_string
 
@@ -310,6 +310,9 @@ def get_tokens(world: "PokemonFRLGWorld", game_revision: int) -> APTokenMixin:
         item = world.item_name_to_id[starting_item[0]]
         tokens.write_token(APTokenTypes.WRITE, item_address, struct.pack("<H", item))
         tokens.write_token(APTokenTypes.WRITE, count_address, struct.pack("<H", starting_item[1]))
+
+    # Set randomized fly destinations
+    _set_randomized_fly_destinations(world, tokens, game_version_revision)
 
     # Set species data
     _set_species_info(world, tokens, game_version_revision)
@@ -617,11 +620,11 @@ def get_tokens(world: "PokemonFRLGWorld", game_revision: int) -> APTokenMixin:
     tokens.write_token(APTokenTypes.WRITE, options_address + 0x35, struct.pack("<B", recurring_hidden_items))
 
     # Set trainersanity
-    trainersanity = 1 if world.options.trainersanity else 0
+    trainersanity = 1 if world.options.trainersanity.value != Trainersanity.special_range_names["none"] else 0
     tokens.write_token(APTokenTypes.WRITE, options_address + 0x36, struct.pack("<B", trainersanity))
 
     # Set dexsanity
-    dexsanity = 1 if world.options.dexsanity != Dexsanity.special_range_names["none"] else 0
+    dexsanity = 1 if world.options.dexsanity.value != Dexsanity.special_range_names["none"] else 0
     tokens.write_token(APTokenTypes.WRITE, options_address + 0x37, struct.pack("<B", dexsanity))
 
     # Set extra key items
@@ -633,7 +636,7 @@ def get_tokens(world: "PokemonFRLGWorld", game_revision: int) -> APTokenMixin:
     tokens.write_token(APTokenTypes.WRITE, options_address + 0x39, struct.pack("<B", kanto_only))
 
     # Set fly unlocks
-    fly_unlocks = 1 if world.options.shuffle_fly_destination_unlocks else 0
+    fly_unlocks = 1 if world.options.shuffle_fly_unlocks.value != ShuffleFlyUnlocks.option_off else 0
     tokens.write_token(APTokenTypes.WRITE, options_address + 0x3A, struct.pack("B", fly_unlocks))
 
     # Set famesanity
@@ -744,6 +747,63 @@ def get_tokens(world: "PokemonFRLGWorld", game_revision: int) -> APTokenMixin:
 
     return tokens
 
+
+def _set_randomized_fly_destinations(world: "PokemonFRLGWorld", tokens: APTokenMixin, game_version_revision: str):
+    if not world.options.randomize_fly_destinations:
+        return
+
+    fly_id_map = {
+        "SPAWN_PALLET_TOWN": "MAPSEC_PALLET_TOWN",
+        "SPAWN_VIRIDIAN_CITY": "MAPSEC_VIRIDIAN_CITY",
+        "SPAWN_PEWTER_CITY": "MAPSEC_PEWTER_CITY",
+        "SPAWN_CERULEAN_CITY": "MAPSEC_CERULEAN_CITY",
+        "SPAWN_LAVENDER_TOWN": "MAPSEC_LAVENDER_TOWN",
+        "SPAWN_VERMILION_CITY": "MAPSEC_VERMILION_CITY",
+        "SPAWN_CELADON_CITY": "MAPSEC_CELADON_CITY",
+        "SPAWN_FUCHSIA_CITY": "MAPSEC_FUCHSIA_CITY",
+        "SPAWN_CINNABAR_ISLAND": "MAPSEC_CINNABAR_ISLAND",
+        "SPAWN_INDIGO_PLATEAU": "MAPSEC_INDIGO_PLATEAU",
+        "SPAWN_SAFFRON_CITY": "MAPSEC_SAFFRON_CITY",
+        "SPAWN_ROUTE4": "MAPSEC_ROUTE_4_POKECENTER",
+        "SPAWN_ROUTE10": "MAPSEC_ROUTE_10_POKECENTER",
+        "SPAWN_ONE_ISLAND": "MAPSEC_ONE_ISLAND",
+        "SPAWN_TWO_ISLAND": "MAPSEC_TWO_ISLAND",
+        "SPAWN_THREE_ISLAND": "MAPSEC_THREE_ISLAND",
+        "SPAWN_FOUR_ISLAND": "MAPSEC_FOUR_ISLAND",
+        "SPAWN_FIVE_ISLAND": "MAPSEC_FIVE_ISLAND",
+        "SPAWN_SEVEN_ISLAND": "MAPSEC_SEVEN_ISLAND",
+        "SPAWN_SIX_ISLAND": "MAPSEC_SIX_ISLAND"
+    }
+
+    fly_layer_offset = 0x294
+    fly_point_table_address = data.rom_addresses[game_version_revision]["sFlyPoints"]
+    fly_map_kanto_address = data.rom_addresses[game_version_revision]["sRegionMapSections_Kanto"]
+    fly_map_sevii_123_address = data.rom_addresses[game_version_revision]["sRegionMapSections_Sevii123"]
+    fly_map_sevii_45_address = data.rom_addresses[game_version_revision]["sRegionMapSections_Sevii45"]
+    fly_map_sevii_67_address = data.rom_addresses[game_version_revision]["sRegionMapSections_Sevii67"]
+    for i in range(fly_layer_offset, fly_layer_offset + 0x14A):
+        value = data.constants["MAPSEC_NONE"]
+        tokens.write_token(APTokenTypes.WRITE, fly_map_kanto_address + i, struct.pack("<B", value))
+        tokens.write_token(APTokenTypes.WRITE, fly_map_sevii_123_address + i, struct.pack("<B", value))
+        tokens.write_token(APTokenTypes.WRITE, fly_map_sevii_45_address + i, struct.pack("<B", value))
+        tokens.write_token(APTokenTypes.WRITE, fly_map_sevii_67_address + i, struct.pack("<B", value))
+    for fly_id, fly_data in world.fly_destination_data.items():
+        fly_id_address = fly_point_table_address + (data.constants[fly_id] - 1) * 8
+        fly_map_address = fly_layer_offset + fly_data[5]
+        fly_map_value = data.constants[fly_id_map[fly_id]]
+        tokens.write_token(APTokenTypes.WRITE, fly_id_address, struct.pack("<B", fly_data[0]))
+        tokens.write_token(APTokenTypes.WRITE, fly_id_address + 1, struct.pack("<B", fly_data[1]))
+        tokens.write_token(APTokenTypes.WRITE, fly_id_address + 2, struct.pack("<H", fly_data[2]))
+        tokens.write_token(APTokenTypes.WRITE, fly_id_address + 4, struct.pack("<H", fly_data[3]))
+        if fly_data[4] == 1:
+            fly_map_address += fly_map_kanto_address
+        elif fly_data[4] == 2:
+            fly_map_address += fly_map_sevii_123_address
+        elif fly_data[4] == 3:
+            fly_map_address += fly_map_sevii_45_address
+        elif fly_data[4] == 4:
+            fly_map_address += fly_map_sevii_67_address
+        tokens.write_token(APTokenTypes.WRITE, fly_map_address, struct.pack("<B", fly_map_value))
 
 def _set_species_info(world: "PokemonFRLGWorld", tokens: APTokenMixin, game_version_revision: str) -> None:
     for species in world.modified_species.values():

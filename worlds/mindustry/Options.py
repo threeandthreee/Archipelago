@@ -14,6 +14,14 @@ class CampaignChoice(Choice):
     option_all_planets = 2
     default = 0
 
+class Goal(Choice):
+    """The goal for the multiworld"""
+    display_name = "Goal"
+    option_resources = 0
+    option_conquest = 1
+    default = 0
+
+
 class DisableInvasions(Toggle):
     """Disable invasions and prevent losing progress."""
     display_name = "Disable invasions"
@@ -21,6 +29,10 @@ class DisableInvasions(Toggle):
 class FasterProduction(Toggle):
     """Enable faster production and harvesting of resources."""
     display_name = "Faster production"
+
+class FasterConveyor(Toggle):
+    """Enable faster conveyor."""
+    display_name = "Faster conveyor"
 
 class DeathLink(Toggle):
     """Enable death link."""
@@ -58,6 +70,14 @@ class LogisticDistribution(Choice):
     option_starter_logistics = 3
     default = 1
 
+class ProgressiveDrills(Toggle):
+    """Makes Drills progressive."""
+    display_name = "Progressive Drills"
+
+class ProgressiveGenerators(Toggle):
+    """Makes Generators progressive."""
+    display_name = "Progressive Generators"
+
 class MakeEarlyRoadblocksLocal(Toggle):
     """Make items that could block the player early on local."""
     display_name = "Make early roadblocks local"
@@ -77,13 +97,17 @@ class MindustryOptions(PerGameCommonOptions):
     start_inventory_from_pool: StartInventoryPool
     tutorial_skip: TutorialSkip
     campaign_choice: CampaignChoice
+    goal: Goal
     disable_invasions: DisableInvasions
     faster_production: FasterProduction
+    faster_conveyor: FasterConveyor
     death_link: DeathLink
     death_link_mode: DeathLinkMode
     military_level_tracking: MilitaryLevelTracking
     randomize_core_units_weapon: RandomizeCoreUnitsWeapon
     logistic_distribution: LogisticDistribution
+    progressive_drills : ProgressiveDrills
+    progressive_generators : ProgressiveGenerators
     make_early_roadblocks_local: MakeEarlyRoadblocksLocal
     amount_of_resources_required: AmountOfResourcesRequired
     core_russian_roulette_chambers: CoreRussianRouletteChambers

@@ -179,15 +179,15 @@
 
 ##### BELL SMITHY ###############################################
 
-# Remove the "post-endgame" discussion when no items are reforgeable
+# Remove the "post-endgame" discussion when no items are reforgeable (patch is changed by secret_locations.yaml)
 0b/3596/: dw $7598
-# The full "post-endgame" script space is free (from 2f5f0 to 2f641 included)
-0b/35f0/reforgeRustyBell: |
+
+# The "secret checking" script space is free (from 2f611 to 2f622 included)
+0b/3611/reforgeRustyBell: |
     db orroomflag,$80
     db loseitem,TREASURE_RUSTY_BELL
     db giveitem,locations.subrosianSmithyBell.id,locations.subrosianSmithyBell.subid
     dwbe $75b6
-# (2f635 to 2f641 remains)
 0b/35b3/: dwbe reforgeRustyBell
 
 

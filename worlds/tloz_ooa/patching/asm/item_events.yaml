@@ -281,7 +281,7 @@
     db $02
     db giveitem
     dwbe locations.dekuForestSoldier # item set at randomization
-    db orroomflag,$20
+    db setglobalflag,GLOBALFLAG_GAVE_MYST_SEED
     db jumpalways
     dw script_soldierDone
 0c//script_soldierCheckSeeds: |
@@ -289,7 +289,7 @@
     dw script_soldierGiveItem
     db $5d,$ee # jump
 0c//script_dekuForestSoldier: |
-    db jumpifroomflagset,$20
+    db jumpifglobalflagset,GLOBALFLAG_GAVE_MYST_SEED
     dw script_soldierDone
     db jumpifitemobtained,TREASURE_MYSTERY_SEEDS
     dw script_soldierCheckSeeds

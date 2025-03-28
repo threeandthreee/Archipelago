@@ -112,19 +112,22 @@ class KSSSNIClient(SNIClient):
 
         game_state = int.from_bytes(await snes_read(ctx, KSS_GAME_STATE, 1), "little")
 
+        kirby_hp = int.from_bytes(await snes_read(ctx, KSS_KIRBY_HP, 2), "little")
         if "DeathLink" in ctx.tags and game_state == 3 and ctx.last_death_link + 1 < time.time() \
                 and ctx.death_state == DeathState.alive:
-            kirby_hp = int.from_bytes(await snes_read(ctx, KSS_KIRBY_HP, 2), "little")
             if kirby_hp == 0:
                 # TODO: see if I can get gamemode specific messages
                 await ctx.handle_deathlink_state(True, f"Pop Star was too much for {ctx.player_names[ctx.slot]}.")
+        elif "DeathLink" in ctx.tags and game_state == 3 and kirby_hp > 0:
+            ctx.death_state = DeathState.alive
 
         save_abilities = 0
         i = 0
         for i, ability in enumerate([item for item in ctx.items_received if item.item & 0x100]):
             save_abilities |= (1 << ((ability.item & 0xFF) - 1))
         snes_buffered_write(ctx, KSS_COPY_ABILITIES, int.to_bytes(save_abilities, 3, "little"))
-        snes_buffered_write(ctx, KSS_MWW_ITEMS, int.to_bytes(i+1, 1, "little"))
+        if save_abilities:
+            snes_buffered_write(ctx, KSS_MWW_ITEMS, int.to_bytes(i+1, 1, "little"))
 
         known_treasures = int.from_bytes(await snes_read(ctx, KSS_TGCO_TREASURE, 8), "little")
         treasure_data = 0
@@ -152,7 +155,7 @@ class KSSSNIClient(SNIClient):
         planet_clear = int.from_bytes(await snes_read(ctx, KSS_RAINBOW_STAR, 1), "little")
         current_total = sum(1 for item in ctx.items_received if item.item & 0xFFFF == 0x1004)
         new_clear = 0
-        for i in range(min(current_total + 1, 8)):
+        for i in range(min(current_total, 8)):
             new_clear |= (1 << i)
         if planet_clear != new_clear and new_clear:
             snes_buffered_write(ctx, KSS_RAINBOW_STAR, int.to_bytes(new_clear, 1, "little"))

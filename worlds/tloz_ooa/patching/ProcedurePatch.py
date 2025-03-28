@@ -47,8 +47,7 @@ class OoAPatchExtensions(APPatchExtension):
         define_dungeon_items_text_constants(assembler, patch_data)
 
         # Define dynamic data blocks
-        # TODO
-        #define_compass_rooms_table(assembler, patch_data)
+        define_compass_rooms_table(assembler, patch_data)
         define_collect_properties_table(assembler, patch_data)
         set_file_select_text(assembler, caller.player_name)
 
@@ -62,16 +61,15 @@ class OoAPatchExtensions(APPatchExtension):
         for block in assembler.blocks:
             rom_data.write_bytes(block.addr.full_address(), block.byte_array)
 
-        # Perform direct edits on the ROM
-        # TODO
         alter_treasures(rom_data)
         write_chest_contents(rom_data, patch_data)
         write_seed_tree_content(rom_data, patch_data)
         set_dungeon_warps(rom_data, patch_data)
         #apply_miscellaneous_options(rom_data, patch_data)
 
-        #set_heart_beep_interval_from_settings(rom_data)
-        #set_character_sprite_from_settings(rom_data)
+        set_heart_beep_interval_from_settings(rom_data)
+        set_character_sprite_from_settings(rom_data)
+        apply_misc_option(rom_data, patch_data)
         inject_slot_name(rom_data, caller.player_name)
 
         rom_data.update_checksum(0x14e)

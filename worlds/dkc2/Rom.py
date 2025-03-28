@@ -3,6 +3,7 @@ import Utils
 import hashlib
 import os
 import json
+import base64
 
 from typing import TYPE_CHECKING, List
 
@@ -101,8 +102,11 @@ currency_data = {
 trap_data = {
     STARTING_ID + 0x0040: [0x40, 0x00], # Freeze Trap
     STARTING_ID + 0x0041: [0x42, 0x00], # Reverse Trap
-    STARTING_ID + 0x0042: [0x44, 0x00], # Damage Trap
-    STARTING_ID + 0x0043: [0x46, 0x00], # Instant Death Trap
+    STARTING_ID + 0x0042: [0x54, 0x00], # Honey Trap
+    STARTING_ID + 0x0043: [0x4A, 0x00], # Ice Trap
+    STARTING_ID + 0x0044: [0x50, 0x00], # TNT Barrel Trap
+    STARTING_ID + 0x0045: [0x44, 0x00], # Damage Trap
+    STARTING_ID + 0x0046: [0x46, 0x00], # Instant Death Trap
     STARTING_ID + 0x0032: [0x48, 0x00], # Instant DK Barrel (not a trap, but this system works better lol)
     STARTING_ID + 0x0033: [0x4C, 0x00], # Banana Extractinator (not a trap, but this system works better lol)
 }
@@ -114,7 +118,8 @@ class DKC2PatchExtension(APPatchExtension):
     def shuffle_levels(caller: APProcedurePatch, rom: bytes) -> bytes:
         unshuffled_rom = bytearray(rom)
         rom = bytearray(rom)
-        rom_connections = json.loads(caller.get_file("levels.bin").decode("UTF-8"))
+        level_data = base64.b64decode(caller.get_file("levels.bin").decode("UTF-8"))
+        rom_connections = json.loads(level_data)
         
         from .Levels import level_rom_data, boss_rom_data
         dkc2_level_rom_data = dict(level_rom_data, **boss_rom_data)
@@ -337,17 +342,27 @@ def patch_rom(world: "DKC2World", patch: DKC2ProcedurePatch):
     # Set starting lives
     patch.write_byte(0x008FA1, world.options.starting_life_count.value)
 
-    # Death link enable
+    # Link-features
     patch.write_byte(0x3DFF98, world.options.death_link.value)
     patch.write_byte(0x3DFF99, world.options.energy_link.value)
+    patch.write_byte(0x3DFF9A, world.options.trap_link.value)
 
     # Options write
-    patch.write_byte(0x3DFF9A, world.options.dk_coin_checks.value)
-    patch.write_byte(0x3DFF9B, world.options.kong_checks.value)
-    patch.write_byte(0x3DFF9C, world.options.balloonsanity.value)
-    patch.write_byte(0x3DFF9D, world.options.coinsanity.value)
-    patch.write_byte(0x3DFF9E, world.options.bananasanity.value)
-    patch.write_byte(0x3DFF9F, world.options.swanky_checks.value)
+    patch.write_byte(0x3DFFA0, world.options.dk_coin_checks.value)
+    patch.write_byte(0x3DFFA1, world.options.kong_checks.value)
+    patch.write_byte(0x3DFFA2, world.options.balloonsanity.value)
+    patch.write_byte(0x3DFFA3, world.options.coinsanity.value)
+    patch.write_byte(0x3DFFA4, world.options.bananasanity.value)
+    patch.write_byte(0x3DFFA5, world.options.swanky_checks.value)
+
+    # Enabled traps
+    patch.write_byte(0x3DFFA8, world.options.freeze_trap_weight.value)
+    patch.write_byte(0x3DFFA9, world.options.reverse_trap_weight.value)
+    patch.write_byte(0x3DFFAA, world.options.honey_trap_weight.value)
+    patch.write_byte(0x3DFFAB, world.options.ice_trap_weight.value)
+    patch.write_byte(0x3DFFAC, world.options.tnt_barrel_trap_weight.value)
+    patch.write_byte(0x3DFFAD, world.options.damage_trap_weight.value)
+    patch.write_byte(0x3DFFAE, world.options.insta_death_trap_weight.value)
 
     # Write starting inventory
     patch.write_byte(0x3DFF80, world.options.starting_kong.value)
@@ -413,7 +428,8 @@ def patch_rom(world: "DKC2World", patch: DKC2ProcedurePatch):
     adjust_palettes(world, patch)
 
     # Save shuffled levels data
-    patch.write_file("levels.bin", json.dumps(world.rom_connections).encode("UTF-8"))
+    json_levels = json.dumps(world.rom_connections).encode("UTF-8")
+    patch.write_file("levels.bin", base64.b64encode(json_levels))
 
     patch.write_file("token_patch.bin", patch.get_token_binary())
 

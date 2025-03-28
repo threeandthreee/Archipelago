@@ -163,8 +163,10 @@ class DeathLinkMode(IntEnum):
 
 class Visibility(IntEnum):
     nothing = 0
-    recipient = 1
-    full = 2
+    progression = 1
+    recipient = 2
+    progression_recipient = 3
+    full = 4
 
 class Difficulty(IntEnum):
     very_easy = 0
@@ -402,13 +404,10 @@ class SelectedScenario(Choice):
     default = Scenario.archipelago_madness_vanilla.value    
 
 class DeathLink(Choice):
-    """DeathLink is an opt-in feature for Multiworlds where individual death events are propagated to all games with DeathLink enabled.
-
-    - Disabled: No changes to base game.
-
-    - Enabled: When any ride crashes, everybody (with DeathLink enabled) dies. Inversely, when anybody (again, with DeathLink enabled) dies, a random ride will explode.
-
-    When enabled, there is a 20-second rest period between any deathlink event. Fix that coaster quickly!
+    """If you die, everybody dies, and vise versa!
+    - This manifests itself in exploding rides. Somebody dying will cause a random ride to crash,
+    and building rides badly will cause others to die. There's a 20 second timer between deathlink events.
+    Fix that coaster quickly!
     """
     display_name = "DeathLink"
     option_disabled = DeathLinkMode.disabled.value
@@ -419,14 +418,20 @@ class SelectedVisibility(Choice):
     """Choose how much the unlock shop displays. 
 
     "Nothing" tells you nothing about the item you'll purchase. 
+
+    Progression tells you what class of item (Normal, Progression, Useful Trap) you're sending.
     
     Recipient tells you who will receive the item, but not what they'll receive. 
+
+    Progression Recipient tells you both the class of item and who receives it.
     
     Full tells you what you're buying and who receives it.
     """
     display_name = "Visibility"
     option_nothing = Visibility.nothing.value
+    option_progression = Visibility.progression.value
     option_recipient = Visibility.recipient.value
+    option_progression_recipient = Visibility.progression_recipient.value
     option_full = Visibility.full.value
     default = Visibility.recipient.value
 
@@ -628,8 +633,27 @@ class ShopMinimumNausea(Range):
     range_end = 4
     default = 0
 
+class ShopMinimumLength(Range):
+    """If the shop determines you need a ride with a minimum length, this value in meters will be the lowest it 
+    can ask for. If this value is higher than the maximum, the generator will assume it is a mistake and set it to 0.
+    """
+    display_name = "Minimum Shop Length Requirement"
+    range_start = 0
+    range_end = 2500
+    default = 610
+
+class ShopMinimumTotalCustomers(Range):
+    """If the shop determines you need a ride with a minimum total number of customers, this value will be the 
+    lowest it can ask for. If this value is higher than the maximum, the generator will assume it is a mistake and 
+    set it to 0.
+    """
+    display_name = "Minimum Shop Customers Requirement"
+    range_start = 0
+    range_end = 2000
+    default = 0
+
 class ShopMaximumExcitement(Range):
-    """If the shop determines you need a ride with a maximum excitement, this value will be the highest it can ask for.
+    """If the shop determines you need a ride with a minimum excitement, this value will be the highest it can ask for.
     """
     display_name = "Maximum Shop Excitement Requirement"
     range_start = 0
@@ -637,7 +661,7 @@ class ShopMaximumExcitement(Range):
     default = 5
 
 class ShopMaximumIntensity(Range):
-    """If the shop determines you need a ride with a maximum intensity, this value will be the highest it can ask for.
+    """If the shop determines you need a ride with a minimum intensity, this value will be the highest it can ask for.
     """
     display_name = "Maximum Shop Intensity Requirement"
     range_start = 0
@@ -645,13 +669,36 @@ class ShopMaximumIntensity(Range):
     default = 5
 
 class ShopMaximumNausea(Range):
-    """If the shop determines you need a ride with a maximum nausea, this value will be the highest it can ask for.
+    """If the shop determines you need a ride with a minimum nausea, this value will be the highest it can ask for.
     """
     display_name = "Maximum Shop Nausea Requirement"
     range_start = 0
     range_end = 4
     default = 4
 
+class ShopMaximumLength(Range):
+    """If the shop determines you need a ride with a minimum length, this value will be the highest it can ask for.
+    """
+    display_name = "Maximum Shop Length Requirement"
+    range_start = 0
+    range_end = 2500
+    default = 1250
+
+class ShopMaximumTotalCustomers(Range):
+    """If the shop determines you need a ride with a minimum total number of customers, this value will be the 
+    highest it can ask for.
+    """
+    display_name = "Maximum Shop Total Customers Requirement"
+    range_start = 0
+    range_end = 2000
+    default = 800
+
+class BalanceGuestCounts(OpenRCT2OnToggle):
+    """Attempts to balance the minimum guest requirements to the ride they're attached to. Low throughput rides
+    like Spiral Slides will tend towards the minimum, while high throughput rides like roller coasters will 
+    tend towards the maximum.
+    """
+    display_name = "Randomize Park Values"
 
 class RequiredUniqueRides(Range):
     """Requires specific rides to be built before scenario completion is awarded. These will tend to appear in the later half of the game.
@@ -701,20 +748,36 @@ class SpamTraps(Range):
     range_end = 20
     default = 5
 
+class LoanSharkTraps(Range):
+    """When found, increases your loan! Adding traps will increase the total number of items in the world."""
+    display_name = "Loan Shark Trap"
+    range_start = 0
+    range_end = 20
+    default = 5
+
 class Filler(Range):
-    """How many extra filler items to add to the mix as a percentage. This will mostly consist of Cash Bonuses"""
+    """How many extra filler items to add to the mix as a percentage. This will mostly consist of Cash Bonuses."""
     display_name = "Filler"
     range_start = 1
     range_end = 50
     default = 10
 
 class IncludeATM(OpenRCT2OnToggle):
-    """Includes an ATM in the item list, regardless of whether it normally appears in the chosen scenario"""
+    """Includes an ATM in the item list, regardless of whether it normally appears in the chosen scenario."""
     display_name = "Include ATM"
 
 class IncludeFirstAid(OpenRCT2OnToggle):
-    """Includes a First Aid Room in the item list, regardless of whether it normally appears in the chosen scenario"""
+    """Includes a First Aid Room in the item list, regardless of whether it normally appears in the chosen scenario."""
     display_name = "Include First Aid Room"
+
+class AllRidesAndSceneryBase(OpenRCT2Toggle):
+    """Adds every ride and scenery pack in the base game to the item pool. This will make for a significantly longer scenario."""
+    display_name = "Include All Rides and Scenery (Base Game)"
+
+class AllRidesAndSceneryExpansion(OpenRCT2Toggle):
+    """Adds every ride and scenery pack in the RCT2 Expansion Packs to the item pool. If this is true the base game rides and 
+    scenery will also be included. This will make for a significantly longer scenario."""
+    display_name = "Include All Rides and Scenery (Expansion Packs)"
 
 class Skips(Range):
     """By default, every game starts with a single skip to ignore a shop requirement. This will add additional skips to 
@@ -761,6 +824,11 @@ openrct2_option_groups = [
         ShopMaximumIntensity,
         ShopMinimumNausea,
         ShopMaximumNausea,
+        ShopMinimumLength,
+        ShopMaximumLength,
+        ShopMinimumTotalCustomers,
+        ShopMaximumTotalCustomers,
+        BalanceGuestCounts,
         SelectedVisibility
     ]),
     OptionGroup("Item & Trap Options", [
@@ -771,7 +839,10 @@ openrct2_option_groups = [
         Skips,
         FurryConventionTraps,
         BathroomTraps,
-        SpamTraps
+        SpamTraps,
+        LoanSharkTraps,
+        AllRidesAndSceneryBase,
+        AllRidesAndSceneryExpansion
     ]),
 ]
 
@@ -786,12 +857,19 @@ class openRCT2Options(PerGameCommonOptions):
     shop_maximum_intensity: ShopMaximumIntensity
     shop_minimum_nausea: ShopMinimumNausea
     shop_maximum_nausea: ShopMaximumNausea
+    shop_minimum_length: ShopMinimumLength
+    shop_maximum_length: ShopMaximumLength
+    shop_minimum_total_customers: ShopMinimumTotalCustomers
+    shop_maximum_total_customers: ShopMaximumTotalCustomers
+    balance_guest_counts: BalanceGuestCounts
     ignore_ride_stat_changes: IgnoreRideStatChanges
     scenario_length: SelectedScenarioLength
     scenario: SelectedScenario
     filler: Filler
     include_atm: IncludeATM
     include_first_aid: IncludeFirstAid
+    all_rides_and_scenery_base: AllRidesAndSceneryBase
+    all_rides_and_scenery_expansion: AllRidesAndSceneryExpansion
     skips: Skips
 
     # deathlink
@@ -801,6 +879,7 @@ class openRCT2Options(PerGameCommonOptions):
     furry_convention_traps: FurryConventionTraps
     bathroom_traps: BathroomTraps
     spam_traps: SpamTraps
+    loan_shark_traps: LoanSharkTraps
 
     # in-game options. All Archipelago needs to do with these is pass them to OpenRCT2. The game will handle the rest
     randomization_range: SelectedRandomizationRange

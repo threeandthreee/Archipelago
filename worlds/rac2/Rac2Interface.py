@@ -2,16 +2,18 @@ import array
 import dataclasses
 import struct
 from dataclasses import dataclass, field
-from time import sleep
 from logging import Logger
 from enum import Enum, IntEnum
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, NamedTuple, TYPE_CHECKING, Sequence
 
-from .TextManager import wrap_text
-from .data import Items
+from .data import Items, Locations
+from .data.Locations import LocationData
 from .data.RamAddresses import Addresses
-from .data.Items import ItemData, EquipmentData, CoordData, CollectableData
+from .data.Items import ItemData, EquipmentData, CoordData, CollectableData, WeaponData
 from .pcsx2_interface.pine import Pine
+
+if TYPE_CHECKING:
+    from .Rac2Client import Rac2Context
 
 _SUPPORTED_VERSIONS = ["SCUS-97268"]
 
@@ -24,6 +26,10 @@ PLANET_LIST_SIZE = 25
 INVENTORY_SIZE = 56
 PLATINUM_BOLT_MAX = 40
 NANOTECH_BOOST_MAX = 10
+
+
+class MissingAddressError(Exception):
+    pass
 
 
 class ConnectionState(Enum):
@@ -70,6 +76,17 @@ class Rac2Planet(IntEnum):
     Wupash_Nebula = 25
     Jamming_Array = 26
     Insomniac_Museum = 30
+
+
+class PauseState(Enum):
+    INGAME = 0
+    CUTSCENE = 2
+    MENU = 3
+    QUICKSELECT = 4
+    VENDOR = 5
+    SHIP = 6
+    MINIGAME = 7
+    UPGRADE = 8
 
 
 @dataclass
@@ -188,6 +205,235 @@ class MemorySegmentTable:
         return string
 
 
+class Vendor:
+    CURSOR_OFFSET: int = -0xC0
+    SUBMENU_OFFSET: int = -0xBC
+    MODEL_UPDATE_OFFSET: int = -0xB0
+    SLOT_COUNT_OFFSET: int = 0x600
+    VENDOR_TYPE_OFFSET: int = -0xF0
+    VENDOR_WEAPON_TYPE_OFFSET: int = 0x604
+    SLOT_SIZE: int = 0x18
+
+    class Mode(Enum):
+        CLOSED = 0
+        MEGACORP = 1
+        GADGETRON = 2
+        AMMO = 3
+
+    class Type(Enum):
+        WEAPON = 0
+        MOD = 1
+        SHIP = 2
+        ARMOR = 3
+
+    class VendorSlot(NamedTuple):
+        item_id: int
+        is_ammo: bool
+        model_oclass: int = 0xCDB
+        ammo_model_oclass: int = 0xCDB
+        is_upgrade: bool = False
+
+    def __init__(self, interface: "Rac2Interface"):
+        self.mode: Vendor.Mode = Vendor.Mode.CLOSED
+        self.interface: Rac2Interface = interface
+        self.slots: list[Vendor.VendorSlot] = []
+        self.recently_bought_locations: list[int] = []
+
+    def change_mode(self, ctx: "Rac2Context", new_mode: Mode):
+        # only allow toggle when sub-menu is not up.
+        if self._is_submenu_up():
+            return
+
+        if new_mode is Vendor.Mode.AMMO:
+            if not ctx.slot_data["randomize_megacorp_vendor"]:
+                return
+
+            current_inventory: dict[str, int] = ctx.game_interface.get_current_inventory()
+            owned_weapons: list[Items.WeaponData] = []
+            already_found_weapon_offsets: list[int] = []
+            for weapon in Items.WEAPONS:
+                if current_inventory[weapon.name] <= 0:
+                    continue
+                offset = weapon.base_weapon_offset or weapon.offset
+                # Another version of the same weapon was already found
+                if offset in already_found_weapon_offsets:
+                    continue
+                # Don't add ammo for weapons that don't have ammo
+                if weapon.max_ammo <= 0:
+                    continue
+                already_found_weapon_offsets.append(offset)
+                owned_weapons.append(weapon)
+
+            if len(owned_weapons) == 0:
+                return
+            slots = [Vendor.VendorSlot(weapon.base_weapon_offset or weapon.offset, True) for weapon in owned_weapons]
+            self.populate_slots(slots)
+            self._reset_weapon_data(ctx)
+        elif new_mode is Vendor.Mode.MEGACORP:
+            if not ctx.slot_data["randomize_megacorp_vendor"]:
+                return
+
+            weapons: list[EquipmentData] = list(Items.MEGACORP_VENDOR_WEAPONS)
+            weapons.remove(Items.CLANK_ZAPPER)
+            locations: Sequence[LocationData] = Locations.MEGACORP_VENDOR_LOCATIONS
+            slots: list[Vendor.VendorSlot] = []
+            unlock_list: list[int] = self.get_unlock_list()
+            for i, loc in enumerate(locations):
+                # Don't place items on the vendor that have already been purchased.
+                if loc.location_id in ctx.checked_locations or loc.location_id in self.recently_bought_locations:
+                    continue
+
+                # Do not add to vendor unless the item is unlocked
+                if weapons[i].offset not in unlock_list:
+                    continue
+
+                location_info = ctx.locations_info[loc.location_id]
+                item_name = ctx.item_names.lookup_in_slot(location_info.item, location_info.player)
+                item = None
+                try:
+                    item = Items.from_name(item_name)
+                except ValueError:
+                    pass
+
+                equipment_table = self.interface.addresses.planet[ctx.current_planet].equipment_data
+                if isinstance(item, EquipmentData):
+                    slots.append(Vendor.VendorSlot(weapons[i].offset, False, item.oclass_id))
+                elif item is Items.BOLT_PACK:
+                    slots.append(Vendor.VendorSlot(weapons[i].offset, False, 0x0D))
+                else:
+                    slots.append(Vendor.VendorSlot(weapons[i].offset, False, 0x47))
+
+                self.interface.pcsx2_interface.write_int16(equipment_table + weapons[i].offset * 0xE0 + 0x3C, Items.get_icon_id(item))
+            if not slots:
+                self.change_mode(ctx, self.Mode.AMMO)
+                return
+            self.populate_slots(slots)
+        elif new_mode is Vendor.Mode.GADGETRON:
+            if not ctx.slot_data["randomize_gadgetron_vendor"]:
+                return
+
+            weapons: Sequence[EquipmentData] = Items.GADGETRON_VENDOR_WEAPONS
+            locations: Sequence[LocationData] = Locations.GADGETRON_VENDOR_LOCATIONS
+            slots: list[Vendor.VendorSlot] = []
+            for i, loc in enumerate(locations):
+                # Don't place items on the vendor that have already been purchased.
+                if loc.location_id in ctx.checked_locations or loc.location_id in self.recently_bought_locations:
+                    continue
+
+                location_info = ctx.locations_info[loc.location_id]
+                item_name = ctx.item_names.lookup_in_slot(location_info.item, location_info.player)
+                item = None
+                try:
+                    item = Items.from_name(item_name)
+                except ValueError:
+                    pass
+
+                equipment_table = self.interface.addresses.planet[ctx.current_planet].equipment_data
+                if isinstance(item, EquipmentData):
+                    slots.append(Vendor.VendorSlot(weapons[i].offset, False, item.oclass_id))
+                elif item is Items.BOLT_PACK:
+                    slots.append(Vendor.VendorSlot(weapons[i].offset, False, 0x0D))
+                else:
+                    slots.append(Vendor.VendorSlot(weapons[i].offset, False, 0x47))
+
+                self.interface.pcsx2_interface.write_int16(equipment_table + weapons[i].offset * 0xE0 + 0x3C, Items.get_icon_id(item))
+            self.populate_slots(slots)
+        elif new_mode is Vendor.Mode.CLOSED:
+            # reset weapon data back to default when not in vendor
+            self._reset_weapon_data(ctx)
+            self.recently_bought_locations = []
+
+        self.mode = new_mode
+
+    def notify_item_bought(self, location_id: int):
+        self.recently_bought_locations.append(location_id)
+
+    def refresh(self, ctx: "Rac2Context") -> None:
+        try:
+            self.change_mode(ctx, self.mode)
+        except MissingAddressError:
+            return
+
+    def set_slot(self, slot_num: int, slot_data: VendorSlot) -> None:
+        vendor_slot_table = self._get_vendor_slot_table()
+
+        address = vendor_slot_table + slot_num * self.SLOT_SIZE
+        self.interface.pcsx2_interface.write_int32(address, slot_data.item_id)
+        self.interface.pcsx2_interface.write_int32(address + 0x4, slot_data.is_ammo)
+        self.interface.pcsx2_interface.write_int32(address + 0x8, slot_data.model_oclass)
+        self.interface.pcsx2_interface.write_int32(address + 0xC, slot_data.ammo_model_oclass)
+        self.interface.pcsx2_interface.write_int32(address + 0x10, 0)
+        self.interface.pcsx2_interface.write_int32(address + 0x14, slot_data.is_upgrade)
+
+    def populate_slots(self, slots: list[VendorSlot]) -> None:
+        self.slots = slots
+        for i, slot in enumerate(slots):
+            self.set_slot(i, slot)
+
+        vendor_slot_table = self._get_vendor_slot_table()
+        self.interface.pcsx2_interface.write_int8(vendor_slot_table + self.SLOT_COUNT_OFFSET, len(slots))
+        self.set_cursor_position(self.get_cursor_position())
+
+    def get_slot_count(self) -> Optional[int]:
+        vendor_slot_table = self._get_vendor_slot_table()
+        return self.interface.pcsx2_interface.read_int8(vendor_slot_table + self.SLOT_COUNT_OFFSET)
+
+    def set_cursor_position(self, slot: int):
+        vendor_slot_table = self._get_vendor_slot_table()
+
+        # Make sure cursor stays in bounds
+        slot = min(self.get_slot_count() - 1, slot)
+        slot = max(0, slot)
+
+        self.interface.pcsx2_interface.write_int8(vendor_slot_table + self.CURSOR_OFFSET, slot)
+        # Changing the cursor directly doesn't update the model view. Changing this value will force an update.
+        self.interface.pcsx2_interface.write_int8(vendor_slot_table + self.MODEL_UPDATE_OFFSET, 3)
+
+    def get_cursor_position(self) -> Optional[int]:
+        vendor_slot_table = self._get_vendor_slot_table()
+        return self.interface.pcsx2_interface.read_int8(vendor_slot_table + self.CURSOR_OFFSET)
+
+    def get_type(self) -> Type:
+        vendor_slot_table = self._get_vendor_slot_table()
+        type_number = self.interface.pcsx2_interface.read_int8(vendor_slot_table + self.VENDOR_TYPE_OFFSET)
+        return self.Type(type_number)
+
+    def is_megacorp(self) -> bool:
+        vendor_slot_table = self._get_vendor_slot_table()
+        return self.interface.pcsx2_interface.read_int8(vendor_slot_table + self.VENDOR_WEAPON_TYPE_OFFSET) == 0
+
+    def get_unlock_list(self) -> list[int]:
+        items = []
+        for i in range(32):
+            item = self.interface.pcsx2_interface.read_int8(self.interface.addresses.vendor_list + i)
+            if item == 0xFF:
+                break
+            items.append(item & 0x3F)
+        return items
+
+    def _get_vendor_slot_table(self) -> int:
+        current_planet = self.interface.get_current_planet()
+        if not current_planet:
+            raise MissingAddressError("Could not get current planet")
+
+        vendor_slot_table = self.interface.addresses.planet[current_planet].vendor_slot_table
+        if not vendor_slot_table:
+            raise MissingAddressError
+
+        return vendor_slot_table
+
+    def _is_submenu_up(self) -> bool:
+        vendor_slot_table = self._get_vendor_slot_table()
+        return self.interface.pcsx2_interface.read_int8(vendor_slot_table + self.SUBMENU_OFFSET) != 0
+
+    def _reset_weapon_data(self, ctx: "Rac2Context") -> None:
+        equipment_data = self.interface.addresses.planet[ctx.current_planet].equipment_data
+        if equipment_data:
+            for weapon in Items.WEAPONS:
+                weapon_data = equipment_data + weapon.offset * 0xE0
+                self.interface.pcsx2_interface.write_int16(weapon_data + 0x3C, weapon.icon_id)
+
+
 def planet_by_id(planet_id) -> Optional[Rac2Planet]:
     for world in Rac2Planet:
         if world.value == planet_id:
@@ -206,6 +452,7 @@ class Rac2Interface:
     """Interface sitting in front of the pcsx2_interface to provide higher level functions for interacting with RAC2"""
     pcsx2_interface: Pine = Pine()
     addresses: Addresses = None
+    vendor: Vendor = None
     connection_status: str
     logger: Logger
     _previous_message_size: int = 0
@@ -216,12 +463,23 @@ class Rac2Interface:
 
     def __init__(self, logger) -> None:
         self.logger = logger
+        self.vendor = Vendor(self)
 
     def give_equipment_to_player(self, equipment: EquipmentData):
-        self.pcsx2_interface.write_int8(self.addresses.inventory + equipment.offset, 1)
+        if isinstance(equipment, WeaponData) and equipment.base_weapon_offset is not None:
+            addr = self.addresses.weapon_subid_table + equipment.base_weapon_offset
+            current_weapon_subid = self.pcsx2_interface.read_int8(addr)
+            if current_weapon_subid < equipment.offset:
+                self.pcsx2_interface.write_int8(addr, equipment.offset)
+            self.pcsx2_interface.write_int8(self.addresses.inventory + equipment.base_weapon_offset, 1)
+        else:
+            self.pcsx2_interface.write_int8(self.addresses.inventory + equipment.offset, 1)
         # TODO: Auto equip Thruster-Pack if you don't have Heli-Pack.
         if equipment in Items.QUICK_SELECTABLE:
             self.add_to_quickselect(equipment)
+
+        if isinstance(equipment, WeaponData) and equipment.max_ammo:
+            self.set_ammo(equipment, equipment.max_ammo)
 
     def unlock_planet(self, planet_number: int):
         planet_list = []
@@ -240,20 +498,39 @@ class Rac2Interface:
             except IndexError:
                 id_to_write = 0
             self.pcsx2_interface.write_int32(self.addresses.selectable_planets + 4 * list_idx, id_to_write)
+            if id_to_write > 0:
+                self.pcsx2_interface.write_int8(self.addresses.highlighted_planets + id_to_write, 10)
 
-    def give_collectable_to_player(self, item: CollectableData, new_amount: int):
-        if item is Items.PLATINUM_BOLT:
-            self.pcsx2_interface.write_int8(self.addresses.platinum_bolt_count, new_amount)
+    def get_bolts(self) -> int:
+        return self.pcsx2_interface.read_int32(self.addresses.current_bolts)
 
-        if item is Items.NANOTECH_BOOST:
-            self.pcsx2_interface.write_int8(self.addresses.nanotech_boost_count, new_amount)
+    def set_bolts(self, amount: int):
+        self.pcsx2_interface.write_int32(self.addresses.current_bolts, amount & 0x7FFFFFFF)
 
-        if item is Items.HYPNOMATIC_PART:
-            self.pcsx2_interface.write_int8(self.addresses.hypnomatic_part_count, new_amount)
+    def give_collectable_to_player(self, item: CollectableData, new_amount: int, current_amount: int):
+        count_addrs = {
+            Items.PLATINUM_BOLT.item_id: self.addresses.platinum_bolt_count,
+            Items.NANOTECH_BOOST.item_id: self.addresses.nanotech_boost_count,
+            Items.HYPNOMATIC_PART.item_id: self.addresses.hypnomatic_part_count,
+            Items.BOLT_PACK.item_id: self.addresses.bolt_pack_count,
+        }
+        # Handle special cases
+        if item is Items.BOLT_PACK:
+            owned_bolts = self.get_bolts()
+            while current_amount < new_amount:
+                # Each bolt pack gives 20% of owned bolts, never giving less than 10'000
+                current_amount += 1
+                owned_bolts += max(int(owned_bolts * 0.2), 10000)
+            self.set_bolts(owned_bolts)
+        # Update the count variable in RAM so these collectibles aren't processed again
+        self.pcsx2_interface.write_int8(count_addrs[item.item_id], new_amount)
 
-    # TODO: Deal with armor and weapons
+    # TODO: Deal with armor
 
     def count_inventory_item(self, item: ItemData) -> int:
+        if isinstance(item, WeaponData) and item.base_weapon_offset is not None:
+            current_subid = self.pcsx2_interface.read_int8(self.addresses.weapon_subid_table + item.base_weapon_offset)
+            return 1 if current_subid >= item.offset else 0
         if isinstance(item, EquipmentData):
             return self.pcsx2_interface.read_int8(self.addresses.inventory + item.offset)
         if isinstance(item, CoordData):
@@ -269,6 +546,8 @@ class Rac2Interface:
             return self.pcsx2_interface.read_int8(self.addresses.nanotech_boost_count)
         if item is Items.HYPNOMATIC_PART:
             return self.pcsx2_interface.read_int8(self.addresses.hypnomatic_part_count)
+        if item is Items.BOLT_PACK:
+            return self.pcsx2_interface.read_int8(self.addresses.bolt_pack_count)
 
     def get_current_inventory(self) -> dict[str, int]:
         inventory: dict[str, int] = {}
@@ -277,7 +556,7 @@ class Rac2Interface:
         return inventory
 
     def get_wrench_level(self) -> int:
-        wrench_id = self.pcsx2_interface.read_int8(self.addresses.wrench_weapon_id)
+        wrench_id = self.pcsx2_interface.read_int8(self.addresses.weapon_subid_table + 0xA)
         if wrench_id == 0x4A:
             return 1
         elif wrench_id == 0x4B:
@@ -291,7 +570,7 @@ class Rac2Interface:
                 wrench_id = 0x4A
             elif level == 2:
                 wrench_id = 0x4B
-            self.pcsx2_interface.write_int8(self.addresses.wrench_weapon_id, wrench_id)
+            self.pcsx2_interface.write_int8(self.addresses.weapon_subid_table + 0xA, wrench_id)
             return True
         except RuntimeError:
             return False
@@ -305,6 +584,9 @@ class Rac2Interface:
             return True
         except RuntimeError:
             return False
+
+    def get_equipped_weapon(self) -> int:
+        return self.pcsx2_interface.read_int8(self.addresses.equipped_weapon)
 
     def get_alive(self) -> bool:
         planet = self.get_current_planet()
@@ -339,8 +621,21 @@ class Rac2Interface:
 
     def set_nanotech(self, new_value) -> None:
         if not (0 <= new_value <= 0xFF):
-            return
+            raise ValueError(f"Cannot set nanotech to {new_value} must be in range 0-255.")
         self.pcsx2_interface.write_int8(self.addresses.current_nanotech, new_value)
+
+    def set_ammo(self, weapon: WeaponData, new_ammo: int) -> None:
+        if not weapon.max_ammo:
+            raise Exception(f"{weapon} is not a valid ammo based weapon.")
+        new_ammo = max(0, min(weapon.max_ammo, new_ammo))
+        weapon_offset = weapon.base_weapon_offset or weapon.offset
+        self.pcsx2_interface.write_int32(self.addresses.current_ammo_table + ((weapon_offset & 0x3F) * 0x4), new_ammo)
+
+    def get_ammo(self, weapon: WeaponData) -> int:
+        if not weapon.max_ammo:
+            raise Exception(f"{weapon} is not a valid ammo based weapon.")
+        weapon_offset = weapon.base_weapon_offset or weapon.offset
+        return self.pcsx2_interface.read_int32(self.addresses.current_ammo_table + ((weapon_offset & 0x3F) * 0x4))
 
     def switch_planet(self, new_planet: Rac2Planet) -> bool:
         current_planet = self.get_current_planet()
@@ -434,43 +729,6 @@ class Rac2Interface:
     def is_loading(self) -> bool:
         return not self.pcsx2_interface.read_int8(self.addresses.loaded_flag)
 
-    def send_hud_message(self, message: str) -> bool:
-        if (
-            self.get_current_planet() == Rac2Planet.Title_Screen
-            or self.get_pause_state() != 0
-            or self.get_ratchet_state() == 97
-        ):
-            return False
-
-        try:
-            payload_message = wrap_text(message, 25, 35).encode() + b"\00"
-            message_address = self.addresses.planet[self.get_current_planet()].skill_point_text
-
-            if not message_address:
-                return False
-
-            # Overwrite from start of "You got a skill point!" text with payload message.
-            overwritten_text = self.pcsx2_interface.read_bytes(message_address, len(payload_message))
-            self.pcsx2_interface.write_bytes(message_address, payload_message)
-
-            # Save original values for variables we use to trigger the text box.
-            has_nice_ride = self.pcsx2_interface.read_int8(self.addresses.skill_point_table + 0x1D)
-            ship_upgrades = self.pcsx2_interface.read_int16(self.addresses.ship_upgrades)
-
-            # Set variables to trigger skill point get text box.
-            self.pcsx2_interface.write_int8(self.addresses.skill_point_table + 0x1D, 0)
-            self.pcsx2_interface.write_int16(self.addresses.ship_upgrades, 0xFF50)
-
-            # After short delay, reset variables to original values.
-            sleep(0.05)
-            self.pcsx2_interface.write_int8(self.addresses.skill_point_table + 0x1D, has_nice_ride)
-            self.pcsx2_interface.write_int16(self.addresses.ship_upgrades, ship_upgrades)
-            self.pcsx2_interface.write_bytes(message_address, overwritten_text)
-        except RuntimeError:
-            return False
-
-        return True
-
     def get_moby(self, uid: int) -> Optional[MobyInstance]:
         address = self.get_segment_pointer_table().moby_instances
         uid_offset = 0xB2
@@ -543,6 +801,7 @@ class Rac2Interface:
         offset_addr = self.get_text_offset_addr(text_id)
         if offset_addr:
             return self.pcsx2_interface.read_int32(offset_addr)
+        return None
 
     def set_text_address(self, text_id: int, addr: int) -> bool:
         offset_addr = self.get_text_offset_addr(text_id)
@@ -550,6 +809,20 @@ class Rac2Interface:
             self.pcsx2_interface.write_int32(offset_addr, addr)
             return True
         return False
+
+    def can_display_hud_notification(self):
+        return self.get_pause_state() == 0 and self.get_ratchet_state() != 97
+
+    def trigger_hud_notification_display(self):
+        try:
+            # Overwrite from start of "You got a skill point!" text with payload message.
+            self.pcsx2_interface.write_int8(self.addresses.custom_text_notification_trigger, 0x01)
+            return True
+        except RuntimeError:
+            return False
+
+    def is_hud_notification_pending(self):
+        return self.pcsx2_interface.read_int8(self.addresses.custom_text_notification_trigger) == 0x01
 
     def get_segment_pointer_table(self) -> Optional[MemorySegmentTable]:
         if self.addresses is None:
@@ -565,3 +838,11 @@ class Rac2Interface:
             return None
 
         return MemorySegmentTable.from_list(array.array('I', table_bytes).tolist())
+
+    def set_weapon_xp(self, base_weapon_offset: int, xp: int):
+        address = self.addresses.current_weapon_xp_table + ((base_weapon_offset & 0x3F) * 0x4)
+        self.pcsx2_interface.write_int32(address, xp)
+
+    def get_weapon_xp(self, base_weapon_offset: int) -> int:
+        address = self.addresses.current_weapon_xp_table + ((base_weapon_offset & 0x3F) * 0x4)
+        return self.pcsx2_interface.read_int32(address)

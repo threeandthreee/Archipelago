@@ -64,14 +64,9 @@ class RandomStartLocation(Toggle):
     display_name = "Random Starting Location"
 
 
-class TeleportShuffle(Choice):
-    """Shuffled: Teleports and Starstorm will be shuffled amongst the PSI locations. A few redundant Teleports may not be available.
-       Anywhere: Teleports and Starstorm will be placed anywhere in the multiworld, and PSI locations will have regular checks.
-       See the Game Page for more information on PSI Locations."""
-    display_name = "Teleport Shuffle"
-    option_shuffled = 0
-    option_anywhere = 1
-    default = 0
+class LocalTeleports(Toggle):
+    """Forces all teleports and Poo PSI to be placed locally in your world."""
+    display_name = "Local Teleports"
 
 
 class CharacterShuffle(Choice):
@@ -380,6 +375,17 @@ class EnergyLink(Toggle):
        This requires a server connection to be used, but won't break offline play."""
     display_name = "Energy Link"
 
+class DungeonShuffle(Toggle):
+    """Shuffles Dungeon entrances amongst each other."""
+    display_name = "Dungeon Shuffle"
+
+class PhotoCount(Range):
+    """How many Photograph traps are placed in the item pool."""
+    display_name = "Photos in pool"
+    range_start = 0
+    range_end = 32
+    default = 20
+
 
 @dataclass
 class EBOptions(PerGameCommonOptions):
@@ -390,7 +396,7 @@ class EBOptions(PerGameCommonOptions):
     alternate_sanctuary_goal: SanctuaryAltGoal
     magicant_mode: MagicantMode
     monkey_caves_mode: MonkeyCavesMode
-    shuffle_teleports: TeleportShuffle  # Better name?
+    local_teleports: LocalTeleports
     character_shuffle: CharacterShuffle
     starting_character: StartingCharacter
     psi_shuffle: PSIShuffle
@@ -416,7 +422,7 @@ class EBOptions(PerGameCommonOptions):
     random_swirl_colors: RandomSwirlColors
     presents_match_contents: PresentSprites
     prefixed_items: PreFixItems
-    # excluded_teleports: ExcludedTeleports
+    total_photos: PhotoCount
     randomize_franklinbadge_protection: RandomFranklinBadge
     shuffle_enemy_drops: ShuffleDrops
     common_filler_weight: CommonWeight
@@ -430,6 +436,7 @@ class EBOptions(PerGameCommonOptions):
     randomize_psi_palettes: RandomizePSIPalettes
     shop_randomizer: ShopRandomizer
     scout_shop_checks: ScoutShopChecks
+    dungeon_shuffle: DungeonShuffle
     skip_epilogue: SkipEpilogue
     start_inventory_from_pool: StartInventoryPool
     death_link: DeathLink
@@ -445,7 +452,7 @@ eb_option_groups = [
     ]),
     
     OptionGroup("Item Settings", [
-        TeleportShuffle,
+        LocalTeleports,
         CharacterShuffle,
         ProgressiveWeapons,
         ProgressiveArmor,
@@ -453,7 +460,8 @@ eb_option_groups = [
         CommonWeight,
         UncommonWeight,
         RareWeight,
-        PreFixItems
+        PreFixItems,
+        PhotoCount
     ]),
 
     OptionGroup("Equipamizer", [
@@ -489,6 +497,10 @@ eb_option_groups = [
     OptionGroup("Shop Randomization", [
         ShopRandomizer,
         ScoutShopChecks
+    ]),
+
+    OptionGroup("Entrance Randomization", [
+        DungeonShuffle
     ]),
 
     OptionGroup("Convenience Settings", [

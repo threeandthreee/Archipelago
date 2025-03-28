@@ -48,4 +48,4 @@ def GetRuleByVehicleRequirement(player, req):
     if len(matches) == 0:
         print("Something wrong here with", req, [ v.name for v in VEHICLE_INFO])
 
-    return lambda state, match=matches: state.has_any([m.name for m in matches],player)
+    return lambda state, match=matches: state.has_any([m.name for m in match],player)

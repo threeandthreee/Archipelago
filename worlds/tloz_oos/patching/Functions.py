@@ -9,7 +9,7 @@ from .z80asm.Assembler import Z80Assembler
 from .Constants import *
 from ..data.Constants import *
 from .. import LOCATIONS_DATA, OracleOfSeasonsOldMenShuffle, OracleOfSeasonsGoal, OracleOfSeasonsAnimalCompanion, \
-    OracleOfSeasonsMasterKeys, OracleOfSeasonsFoolsOre
+    OracleOfSeasonsMasterKeys, OracleOfSeasonsFoolsOre, OracleOfSeasonsShowDungeonsWithEssence
 from pathlib import Path
 
 
@@ -25,8 +25,12 @@ def get_asm_files(patch_data):
         asm_files.append("asm/conditional/remove_d2_alt_entrance.yaml")
     if patch_data["options"]["goal"] == OracleOfSeasonsGoal.option_beat_ganon:
         asm_files.append("asm/conditional/ganon_goal.yaml")
+    if patch_data["options"]["rosa_quick_unlock"]:
+        asm_files.append("asm/conditional/instant_rosa.yaml")
     if get_settings()["tloz_oos_options"]["remove_music"]:
         asm_files.append("asm/conditional/mute_music.yaml")
+    if patch_data["options"]["secret_locations"]:
+        asm_files.append("asm/conditional/secret_locations.yaml")
     return asm_files
 
 
@@ -246,7 +250,7 @@ def define_option_constants(assembler: Z80Assembler, patch_data):
     assembler.define_byte("option.defaultSeedType", 0x20 + patch_data["options"]["default_seed"])
     assembler.define_byte("option.receivedDamageModifier", options["combat_difficulty"])
     assembler.define_byte("option.openAdvanceShop", options["advance_shop"])
-    assembler.define_byte("option.warpToStart", options["warp_to_start"])
+    assembler.define_byte("option.warpToStart", True)
 
     assembler.define_byte("option.requiredEssences", options["required_essences"])
     assembler.define_byte("option.goldenBeastsRequirement", options["golden_beasts_requirement"])
@@ -729,3 +733,24 @@ def define_dungeon_items_text_constants(assembler: Z80Assembler, patch_data):
             compasses_text.extend(dungeon_precision)
         compasses_text.extend([0x05, 0xd8, 0x00])  # "\color(WHITE)!(end)"
         assembler.add_floating_chunk(f"text.compassD{i}", compasses_text)
+
+
+def define_essence_sparkle_constants(assembler: Z80Assembler, patch_data):
+    byte_array = []
+    show_dungeons_with_essence = patch_data["options"]["show_dungeons_with_essence"]
+
+    essence_pedestals = [k for k, v in LOCATIONS_DATA.items() if v.get("essence", False)]
+    if show_dungeons_with_essence and not patch_data["options"]["shuffle_essences"]:
+        for i, pedestal in enumerate(essence_pedestals):
+            if patch_data["locations"][pedestal]["item"] not in ESSENCES:
+                continue
+
+            # Find where dungeon entrance is located, and place the sparkle hint there
+            dungeon = f"d{i+1}"
+            dungeon_entrance = [k for k, v in patch_data["dungeon_entrances"].items() if v == dungeon][0]
+            entrance_data = DUNGEON_ENTRANCES[dungeon_entrance]
+            byte_array.extend([entrance_data["group"], entrance_data["room"]])
+    assembler.add_floating_chunk("essenceLocationsTable", byte_array)
+
+    require_compass = show_dungeons_with_essence == OracleOfSeasonsShowDungeonsWithEssence.option_with_compass
+    assembler.define_byte("option.essenceSparklesRequireCompass", 1 if require_compass else 0)

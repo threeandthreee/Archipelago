@@ -3,7 +3,7 @@ Functions related to AP regions for Pokémon FireRed and LeafGreen (see ./data/r
 """
 from typing import TYPE_CHECKING, Dict, List, Tuple, Optional, Callable
 from BaseClasses import Region, CollectionState, ItemClassification
-from .data import data
+from .data import data, LocationCategory, kanto_fly_destinations, sevii_fly_destinations, starting_town_blacklist_map
 from .items import PokemonFRLGItem
 from .locations import PokemonFRLGLocation
 from .options import GameVersion, LevelScaling
@@ -53,7 +53,7 @@ STATIC_POKEMON_SPOILER_NAMES = {
     "LEGENDARY_POKEMON_DEOXYS": "Birth Island Exterior"
 }
 
-STARTING_TOWNS = {
+starting_town_map = {
     "SPAWN_PALLET_TOWN": "Pallet Town",
     "SPAWN_VIRIDIAN_CITY": "Viridian City South",
     "SPAWN_PEWTER_CITY": "Pewter City",
@@ -69,11 +69,34 @@ STARTING_TOWNS = {
     "SPAWN_ROUTE10": "Route 10 North",
     "SPAWN_ONE_ISLAND": "One Island Town",
     "SPAWN_TWO_ISLAND": "Two Island Town",
-    "SPAWN_THREE_ISLAND": "Three Island Town",
+    "SPAWN_THREE_ISLAND": "Three Island Town South",
     "SPAWN_FOUR_ISLAND": "Four Island Town",
     "SPAWN_FIVE_ISLAND": "Five Island Town",
     "SPAWN_SEVEN_ISLAND": "Seven Island Town",
     "SPAWN_SIX_ISLAND": "Six Island Town"
+}
+
+fly_destination_entrance_map = {
+      "Pallet Town Fly Destination": "SPAWN_PALLET_TOWN",
+      "Viridian City Fly Destination": "SPAWN_VIRIDIAN_CITY",
+      "Pewter City Fly Destination": "SPAWN_PEWTER_CITY",
+      "Route 4 Fly Destination": "SPAWN_ROUTE4",
+      "Cerulean City Fly Destination": "SPAWN_CERULEAN_CITY",
+      "Vermilion City Fly Destination": "SPAWN_VERMILION_CITY",
+      "Route 10 Fly Destination": "SPAWN_ROUTE10",
+      "Lavender Town Fly Destination": "SPAWN_LAVENDER_TOWN",
+      "Celadon City Fly Destination": "SPAWN_CELADON_CITY",
+      "Fuchsia City Fly Destination": "SPAWN_FUCHSIA_CITY",
+      "Saffron City Fly Destination": "SPAWN_SAFFRON_CITY",
+      "Cinnabar Island Fly Destination": "SPAWN_CINNABAR_ISLAND",
+      "Indigo Plateau Fly Destination": 'SPAWN_INDIGO_PLATEAU',
+      "One Island Fly Destination": "SPAWN_ONE_ISLAND",
+      "Two Island Fly Destination": "SPAWN_TWO_ISLAND",
+      "Three Island Fly Destination": "SPAWN_THREE_ISLAND",
+      "Four Island Fly Destination": "SPAWN_FOUR_ISLAND",
+      "Five Island Fly Destination": "SPAWN_FIVE_ISLAND",
+      "Six Island Fly Destination": "SPAWN_SIX_ISLAND",
+      "Seven Island Fly Destination": "SPAWN_SEVEN_ISLAND"
 }
 
 
@@ -151,10 +174,10 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
                                 world.player,
                                 f"{encounter_region_name} - {subcategory_name} Encounter {j + 1}",
                                 None,
+                                LocationCategory.EVENT_WILD_POKEMON,
                                 encounter_region,
                                 None,
                                 None,
-                                frozenset(["Pokemon", "Wild"]),
                                 spoiler_name=f"{encounter_region_name} ({subcategory_name})",
                             )
                             encounter_location.show_in_spoiler = False
@@ -213,10 +236,10 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
             event = PokemonFRLGLocation(world.player,
                                         name,
                                         None,
+                                        event_data.category,
                                         new_region,
                                         None,
                                         None,
-                                        event_data.tags,
                                         spoiler_name=STATIC_POKEMON_SPOILER_NAMES[event_id]
                                         if event_id in STATIC_POKEMON_SPOILER_NAMES else None)
             event.place_locked_item(PokemonFRLGItem(item,
@@ -276,15 +299,15 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
             else:
                 region = regions[scaling_data.region]
 
-            if "Trainer" in scaling_data.tags:
+            if scaling_data.category == LocationCategory.EVENT_TRAINER_SCALING:
                 scaling_event = PokemonFRLGLocation(
                     world.player,
                     scaling_data.name,
                     None,
+                    scaling_data.category,
                     region,
                     None,
                     None,
-                    scaling_data.tags,
                     scaling_data.data_ids
                 )
                 scaling_event.place_locked_item(PokemonFRLGItem("Trainer Party",
@@ -293,15 +316,15 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
                                                                 world.player))
                 scaling_event.show_in_spoiler = False
                 region.locations.append(scaling_event)
-            elif "Static" in scaling_data.tags:
+            elif scaling_data.category == LocationCategory.EVENT_STATIC_POKEMON_SCALING:
                 scaling_event = PokemonFRLGLocation(
                     world.player,
                     scaling_data.name,
                     None,
+                    scaling_data.category,
                     region,
                     None,
                     None,
-                    scaling_data.tags,
                     scaling_data.data_ids
                 )
                 scaling_event.place_locked_item(PokemonFRLGItem("Static Encounter",
@@ -310,7 +333,7 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
                                                                 world.player))
                 scaling_event.show_in_spoiler = False
                 region.locations.append(scaling_event)
-            elif "Wild" in scaling_data.tags:
+            elif scaling_data.category == LocationCategory.EVENT_WILD_POKEMON_SCALING:
                 index = 1
                 events: Dict[str, Tuple[str, List[str], Optional[Callable[[CollectionState], bool]]]] = {}
                 encounter_category_data = encounter_categories[scaling_data.type]
@@ -335,10 +358,10 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
                         world.player,
                         event[0],
                         None,
+                        scaling_data.category,
                         region,
                         None,
                         None,
-                        scaling_data.tags | {scaling_data.type},
                         event[1]
                     )
 
@@ -353,43 +376,42 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
 
         for region in regions.values():
             for location in region.locations:
-                if "Scaling" in location.tags:
-                    if "Trainer" in location.tags:
-                        min_level = 100
+                if location.category == LocationCategory.EVENT_TRAINER_SCALING:
+                    min_level = 100
 
-                        for data_id in location.data_ids:
-                            trainer_data = data.trainers[data_id]
-                            for pokemon in trainer_data.party.pokemon:
-                                min_level = min(min_level, pokemon.level)
+                    for data_id in location.data_ids:
+                        trainer_data = data.trainers[data_id]
+                        for pokemon in trainer_data.party.pokemon:
+                            min_level = min(min_level, pokemon.level)
 
-                        trainer_name_level_list.append((location.name, min_level))
-                        world.trainer_name_level_dict[location.name] = min_level
-                    elif "Static" in location.tags:
-                        for data_id in location.data_ids:
-                            pokemon_data = None
+                    trainer_name_level_list.append((location.name, min_level))
+                    world.trainer_name_level_dict[location.name] = min_level
+                elif location.category == LocationCategory.EVENT_STATIC_POKEMON_SCALING:
+                    for data_id in location.data_ids:
+                        pokemon_data = None
 
-                            if data_id in data.misc_pokemon:
-                                pokemon_data = data.misc_pokemon[data_id]
-                            elif data_id in data.legendary_pokemon:
-                                pokemon_data = data.legendary_pokemon[data_id]
+                        if data_id in data.misc_pokemon:
+                            pokemon_data = data.misc_pokemon[data_id]
+                        elif data_id in data.legendary_pokemon:
+                            pokemon_data = data.legendary_pokemon[data_id]
 
-                            encounter_name_level_list.append((location.name, pokemon_data.level[game_version]))
-                            world.encounter_name_level_dict[location.name] = pokemon_data.level[game_version]
-                    elif "Wild" in location.tags:
-                        max_level = 1
+                        encounter_name_level_list.append((location.name, pokemon_data.level[game_version]))
+                        world.encounter_name_level_dict[location.name] = pokemon_data.level[game_version]
+                elif location.category == LocationCategory.EVENT_WILD_POKEMON_SCALING:
+                    max_level = 1
 
-                        for data_id in location.data_ids:
-                            data_ids = data_id.split()
-                            map_data = data.maps[data_ids[0]]
-                            encounters = (map_data.land_encounters if "Land" in location.tags else
-                                          map_data.water_encounters if "Water" in location.tags else
-                                          map_data.fishing_encounters)
+                    for data_id in location.data_ids:
+                        data_ids = data_id.split()
+                        map_data = data.maps[data_ids[0]]
+                        encounters = (map_data.land_encounters if "Land" in location.name else
+                                      map_data.water_encounters if "Water" in location.name else
+                                      map_data.fishing_encounters)
 
-                            encounter_max_level = encounters.slots[game_version][int(data_ids[1])].max_level
-                            max_level = max(max_level, encounter_max_level)
+                        encounter_max_level = encounters.slots[game_version][int(data_ids[1])].max_level
+                        max_level = max(max_level, encounter_max_level)
 
-                        encounter_name_level_list.append((location.name, max_level)),
-                        world.encounter_name_level_dict[location.name] = max_level
+                    encounter_name_level_list.append((location.name, max_level)),
+                    world.encounter_name_level_dict[location.name] = max_level
 
         trainer_name_level_list.sort(key=lambda i: i[1])
         world.trainer_name_list = [i[0] for i in trainer_name_level_list]
@@ -404,11 +426,53 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
             forbidden_starting_towns.extend(["SPAWN_ONE_ISLAND", "SPAWN_TWO_ISLAND", "SPAWN_THREE_ISLAND",
                                              "SPAWN_FOUR_ISLAND", "SPAWN_FIVE_ISLAND", "SPAWN_SIX_ISLAND",
                                              "SPAWN_SEVEN_ISLAND"])
-        allowed_starting_towns = [town for town in STARTING_TOWNS.keys() if town not in forbidden_starting_towns]
+        blacklisted_starting_towns = [v for k, v in starting_town_blacklist_map.items()
+                                      if k in world.options.starting_town_blacklist.value]
+        allowed_starting_towns = [town for town in starting_town_map.keys()
+                                  if town not in forbidden_starting_towns and town not in blacklisted_starting_towns]
+        if len(allowed_starting_towns) == 0:
+            allowed_starting_towns = [town for town in starting_town_map.keys() if town not in forbidden_starting_towns]
         world.starting_town = world.random.choice(allowed_starting_towns)
 
+    if world.options.randomize_fly_destinations:
+        fly_destinations = kanto_fly_destinations.copy()
+        if not world.options.kanto_only:
+            fly_destinations.update(sevii_fly_destinations)
+        maps_already_chosen = set()
+        exit_already_randomized = set()
+        for exit_name, map in world.options.fly_destination_plando.value.items():
+            if map in maps_already_chosen or map not in fly_destinations.keys():
+                continue
+            exit = world.multiworld.get_entrance(exit_name, world.player)
+            regions[exit.connected_region.name].entrances.remove(exit)
+            exit.connected_region = None
+            allowed_regions = list(fly_destinations[map].keys())
+            region = world.random.choice(allowed_regions)
+            allowed_warps = fly_destinations[map][region]
+            warp = world.random.choice(allowed_warps)
+            maps_already_chosen.add(map)
+            exit_already_randomized.add(exit_name)
+            exit.connected_region = regions[region]
+            regions[region].entrances.append(exit)
+            world.fly_destination_data[fly_destination_entrance_map[exit.name]] = warp
+        for exit in regions["Sky"].exits:
+            if exit.name in exit_already_randomized:
+                continue
+            regions[exit.connected_region.name].entrances.remove(exit)
+            exit.connected_region = None
+            allowed_maps = [k for k in fly_destinations.keys() if k not in maps_already_chosen]
+            map = world.random.choice(allowed_maps)
+            allowed_regions = list(fly_destinations[map].keys())
+            region = world.random.choice(allowed_regions)
+            allowed_warps = fly_destinations[map][region]
+            warp = world.random.choice(allowed_warps)
+            maps_already_chosen.add(map)
+            exit.connected_region = regions[region]
+            regions[region].entrances.append(exit)
+            world.fly_destination_data[fly_destination_entrance_map[exit.name]] = warp
+
     regions["Menu"] = PokemonFRLGRegion("Menu", world.player, world.multiworld)
-    regions["Menu"].connect(regions[STARTING_TOWNS[world.starting_town]], "Start Game")
+    regions["Menu"].connect(regions[starting_town_map[world.starting_town]], "Start Game")
     regions["Menu"].connect(regions["Player's PC"], "Use PC")
     regions["Menu"].connect(regions["Pokedex"], "Pokedex")
     regions["Menu"].connect(regions["Evolutions"], "Evolve")

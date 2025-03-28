@@ -218,15 +218,10 @@ def make_d3_logic(player: int):
         ["d3 pitfall", "d3 crossing bridge room 1", True, lambda state: any([
             ooa_has_seedshooter(state, player),
             ooa_can_jump_3_wide_pit(state, player, False),
+            ooa_can_toss_ring(state, player),
             all([
                 ooa_option_hard_logic(state, player),
-                any([
-                    ooa_has_boomerang(state, player),
-                    all([
-                        ooa_has_bracelet(state, player),
-                        state.has("Toss Ring", player)
-                    ]),
-                ]),
+                ooa_has_boomerang(state, player)
             ])
         ])],
         ["d3 crossing bridge room 1", "d3 between two bridge room", True, lambda state: ooa_has_small_keys(state, player, 3, 4)],
@@ -462,14 +457,10 @@ def make_d5_logic(player: int):
         ["d5 switch A", "d5 eyes chest", False, lambda state: any([
             ooa_has_seedshooter(state, player),
             all([
-                ooa_option_hard_logic(state, player),
                 ooa_can_use_pegasus_seeds(state, player),
                 ooa_has_feather(state, player),
                 ooa_can_use_mystery_seeds(state, player),
-                any([
-                    ooa_has_bracelet(state, player) and state.has("Toss Ring", player),
-                    ooa_has_cane(state, player),
-                ])
+                ooa_can_toss_ring(state, player)
             ])
         ])],
         ["d5 switch A", "d5 two-statue puzzle", False, lambda state: all([
@@ -688,7 +679,7 @@ def make_d6present_logic(player: int):
             any([
                 ooa_has_sword(state, player),
                 state.has("Expert's Ring", player),
-                ooa_option_hard_logic(state, player) # for switch hook kill (?)
+                ooa_option_medium_logic(state, player) # for switch hook kill (?)
             ]),
             ooa_has_small_keys(state, player, 6, 3),
             ooa_has_switch_hook(state, player)

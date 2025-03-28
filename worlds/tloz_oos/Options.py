@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 
 from Options import Choice, DeathLink, DefaultOnToggle, PerGameCommonOptions, Range, Toggle, StartInventoryPool, \
-    ItemDict, ItemsAccessibility
+    ItemDict, ItemsAccessibility, ItemSet
+from worlds.tloz_oos.data.Items import ITEMS_DATA
 
 
 class OracleOfSeasonsGoal(Choice):
@@ -16,6 +17,7 @@ class OracleOfSeasonsGoal(Choice):
     option_beat_ganon = 1
 
     default = 0
+    include_in_patch = True
 
 
 class OracleOfSeasonsLogicDifficulty(Choice):
@@ -40,9 +42,12 @@ class OracleOfSeasonsRequiredEssences(Range):
     to fight Onox in his castle
     """
     display_name = "Required Essences"
+
     range_start = 0
     range_end = 8
+
     default = 8
+    include_in_patch = True
 
 
 class OracleOfSeasonsPlacedEssences(Range):
@@ -53,8 +58,10 @@ class OracleOfSeasonsPlacedEssences(Range):
     for both), a new random value is automatically picked in the valid range.
     """
     display_name = "Placed Essences"
+
     range_start = 0
     range_end = 8
+
     default = 8
 
 
@@ -106,6 +113,7 @@ class OracleOfSeasonsAnimalCompanion(Choice):
     option_moosh = 2
 
     default = "random"
+    include_in_patch = True
 
 
 class OracleOfSeasonsDefaultSeedType(Choice):
@@ -124,6 +132,7 @@ class OracleOfSeasonsDefaultSeedType(Choice):
     option_mystery = 4
 
     default = 0
+    include_in_patch = True
 
 
 class OracleOfSeasonsDuplicateSeedTree(Choice):
@@ -190,6 +199,7 @@ class OracleOfSeasonsOldMenShuffle(Choice):
     option_turn_into_locations = 4
 
     default = 3
+    include_in_patch = True
 
 
 class OracleOfSeasonsBusinessScrubsShuffle(Toggle):
@@ -200,6 +210,7 @@ class OracleOfSeasonsBusinessScrubsShuffle(Toggle):
     Please note that scrubs inside dungeons can hold dungeon items, such as keys.
     """
     display_name = "Shuffle Business Scrubs"
+    include_in_patch = True
 
 
 class OracleOfSeasonsGoldenOreSpotsShuffle(Toggle):
@@ -208,14 +219,16 @@ class OracleOfSeasonsGoldenOreSpotsShuffle(Toggle):
     of randomized locations.
     """
     display_name = "Shuffle Golden Ore Spots"
+    include_in_patch = True
 
 
 class OracleOfSeasonsEssenceSanity(Toggle):
     """
-    If enabled, essences will be shuffled anywhere in the multiworld instead of being guranteed to be found
+    If enabled, essences will be shuffled anywhere in the multiworld instead of being guaranteed to be found
     at the end their respective dungeons.
     """
     display_name = "Shuffle Essences"
+    include_in_patch = True
 
 
 class OracleOfSeasonsExcludeDungeonsWithoutEssence(DefaultOnToggle):
@@ -226,6 +239,27 @@ class OracleOfSeasonsExcludeDungeonsWithoutEssence(DefaultOnToggle):
     Hero's Cave is not considered to be a dungeon for this option, and therefore is never excluded.
     """
     display_name = "Exclude Dungeons Without Essence"
+
+
+class OracleOfSeasonsShowDungeonsWithEssence(Choice):
+    """
+    Determines the condition required to highlight dungeons having an essence on their end pedestal
+    (with a sparkle on the in-game map).
+    This is especially useful when using "Exclude Dungeons Without Essence" to know which dungeons you can ignore.
+    If "Shuffle Essences" is enabled, this option has no effect.
+    - Disabled: Dungeons with an essence are never shown on the map
+    - With Compass: Dungeons with an essence can only be highlighted after obtaining their Compass
+    - Always: Dungeons with an essence are always shown on the map
+    """
+    # TODO: - With Treasure Map: Dungeons with an essence all become highlighted when you obtain the unique Treasure Map item
+    display_name = "Show Dungeons With Essence"
+
+    option_disabled = 0
+    option_with_compass = 1
+    option_always = 2
+
+    default = 1
+    include_in_patch = True
 
 
 class OracleOfSeasonsMasterKeys(Choice):
@@ -244,6 +278,7 @@ class OracleOfSeasonsMasterKeys(Choice):
     option_all_dungeon_keys = 2
 
     default = 0
+    include_in_patch = True
 
 
 class OracleOfSeasonsSmallKeyShuffle(Toggle):
@@ -251,6 +286,7 @@ class OracleOfSeasonsSmallKeyShuffle(Toggle):
     If enabled, dungeon Small Keys can be found anywhere instead of being confined in their dungeon of origin.
     """
     display_name = "Keysanity (Small Keys)"
+    include_in_patch = True
 
 
 class OracleOfSeasonsD0AltEntrance(Toggle):
@@ -260,6 +296,7 @@ class OracleOfSeasonsD0AltEntrance(Toggle):
     If this option is not set in such a case, you could potentially have two distant entrances leading to the same dungeon.
     """
     display_name = "Remove Hero's Cave Alt. Entrance"
+    include_in_patch = True
 
 
 class OracleOfSeasonsD2AltEntrance(Toggle):
@@ -269,6 +306,7 @@ class OracleOfSeasonsD2AltEntrance(Toggle):
     If this option is not set in such a case, you could potentially have two distant entrances leading to the same dungeon.
     """
     display_name = "Remove D2 Alt. Entrance"
+    include_in_patch = True
 
 
 class OracleOfSeasonsBossKeyShuffle(Toggle):
@@ -276,6 +314,7 @@ class OracleOfSeasonsBossKeyShuffle(Toggle):
     If enabled, dungeon Boss Keys can be found anywhere instead of being confined in their dungeon of origin.
     """
     display_name = "Keysanity (Boss Keys)"
+    include_in_patch = True
 
 
 class OracleOfSeasonsMapCompassShuffle(Toggle):
@@ -283,6 +322,7 @@ class OracleOfSeasonsMapCompassShuffle(Toggle):
     If enabled, Dungeon Maps and Compasses can be found anywhere instead of being confined in their dungeon of origin.
     """
     display_name = "Maps & Compasses Outside Dungeon"
+    include_in_patch = True
 
 
 class OraclesOfSeasonsTreehouseOldManRequirement(Range):
@@ -293,7 +333,9 @@ class OraclesOfSeasonsTreehouseOldManRequirement(Range):
 
     range_start = 0
     range_end = 8
+
     default = 5
+    include_in_patch = True
 
 
 class OraclesOfSeasonsTarmGateRequirement(Range):
@@ -304,7 +346,9 @@ class OraclesOfSeasonsTarmGateRequirement(Range):
 
     range_start = 0
     range_end = 4
+
     default = 4
+    include_in_patch = True
 
 
 class OraclesOfSeasonsGoldenBeastsRequirement(Range):
@@ -317,7 +361,9 @@ class OraclesOfSeasonsGoldenBeastsRequirement(Range):
 
     range_start = 0
     range_end = 4
+
     default = 1
+    include_in_patch = True
 
 
 class OracleOfSeasonsSignGuyRequirement(Range):
@@ -330,7 +376,9 @@ class OracleOfSeasonsSignGuyRequirement(Range):
 
     range_start = 0
     range_end = 250
+
     default = 10
+    include_in_patch = True
 
 
 class OracleOfSeasonsLostWoodsItemSequence(DefaultOnToggle):
@@ -370,6 +418,7 @@ class OracleOfSeasonsSamasaGateCodeLength(Range):
 
     range_start = 1
     range_end = 40
+
     default = 8
 
 
@@ -385,15 +434,29 @@ class OracleOfSeasonsGashaLocations(Range):
 
     range_start = 0
     range_end = 16
+
     default = 0
+    include_in_patch = True
 
 
-class OracleOfSeasonsRingQuality(DefaultOnToggle):
+class OracleOfSeasonsRequiredRings(ItemSet):
     """
-    If enabled, this option prevents useless rings from being shuffled in the item pool.
-    Both rings with no effect and rings providing maluses are considered useless.
+    Forces a specified set of rings to appear somewhere in the seed.
+    Adding too many rings to this list can cause generation failures.
+    List of ring names can be found here: https://zeldawiki.wiki/wiki/Magic_Ring
     """
-    display_name = "Remove Useless Rings"
+    display_name = "Required Rings"
+    valid_keys = {name for name, idata in ITEMS_DATA.items() if "ring" in idata}
+
+
+class OracleOfSeasonsExcludedRings(ItemSet):
+    """
+    Forces a specified set of rings to not appear in the seed.
+    List of ring names can be found here: https://zeldawiki.wiki/wiki/Magic_Ring
+    """
+    display_name = "Excluded Rings"
+    default = {name for name, idata in ITEMS_DATA.items() if "ring" in idata and idata["ring"] == "useless"}
+    valid_keys = {name for name, idata in ITEMS_DATA.items() if "ring" in idata}
 
 
 class OracleOfSeasonsShopPrices(Choice):
@@ -426,6 +489,7 @@ class OracleOfSeasonsAdvanceShop(Toggle):
     item pool to compensate for the extra purchases that might be required)
     """
     display_name = "Open Advance Shop"
+    include_in_patch = True
 
 
 class OracleOfSeasonsFoolsOre(Choice):
@@ -444,16 +508,7 @@ class OracleOfSeasonsFoolsOre(Choice):
     option_excluded = 2
 
     default = 1
-
-
-class OracleOfSeasonsWarpToStart(DefaultOnToggle):
-    """
-    When enabled, you can warp to start by pressing A+B during the whiteout of the screen leading to inventory or
-    map menu.
-    This can be used to make backtracking a bit more bearable in seeds where Gale Seeds take time to obtain and prevent
-    most softlock situations from happening
-    """
-    display_name = "Warp to Start"
+    include_in_patch = True
 
 
 class OracleOfSeasonsEnforcePotionInShop(Toggle):
@@ -461,6 +516,7 @@ class OracleOfSeasonsEnforcePotionInShop(Toggle):
     When enabled, you are guaranteed to have a renewable Potion for 300 rupees inside Horon shop
     """
     display_name = "Enforce Potion in Shop"
+    include_in_patch = True
 
 
 class OracleOfSeasonsCombatDifficulty(Choice):
@@ -477,6 +533,7 @@ class OracleOfSeasonsCombatDifficulty(Choice):
     option_insane = -4
 
     default = 0
+    include_in_patch = True
 
 
 class OracleOfSeasonsQuickFlute(DefaultOnToggle):
@@ -484,6 +541,15 @@ class OracleOfSeasonsQuickFlute(DefaultOnToggle):
     When enabled, playing the flute will immobilize you during a very small amount of time compared to vanilla game.
     """
     display_name = "Quick Flute"
+    include_in_patch = True
+
+
+class OracleOfSeasonsRosaQuickUnlock(Toggle):
+    """
+    When enabled, Rosa will instantly unlock all subrosia locks when given the Ribbon
+    """
+    display_name = "Rosa Quick Unlock"
+    include_in_patch = True
 
 
 class OracleOfSeasonsStartingMapsCompasses(Toggle):
@@ -493,6 +559,7 @@ class OracleOfSeasonsStartingMapsCompasses(Toggle):
     Unlike 'start_inventory_from_pool', this is performed instanatly and silently when starting the game.
     """
     display_name = "Start with Dungeon Maps & Compasses"
+    include_in_patch = True
 
 
 class OracleOfSeasonsRemoveItemsFromPool(ItemDict):
@@ -503,6 +570,14 @@ class OracleOfSeasonsRemoveItemsFromPool(ItemDict):
     """
     display_name = "Remove Items from Pool"
     verify_item_name = False
+
+
+class OracleOfSeasonsIncludeSecretLocations(DefaultOnToggle):
+    """
+    When enabled, add the linked game secrets to the list of locations
+    """
+    display_name = "Secret Locations"
+    include_in_patch = True
 
 
 @dataclass
@@ -517,6 +592,7 @@ class OracleOfSeasonsOptions(PerGameCommonOptions):
     placed_essences: OracleOfSeasonsPlacedEssences
     shuffle_essences: OracleOfSeasonsEssenceSanity
     exclude_dungeons_without_essence: OracleOfSeasonsExcludeDungeonsWithoutEssence
+    show_dungeons_with_essence: OracleOfSeasonsShowDungeonsWithEssence
 
     # Seasons
     default_seasons: OracleOfSeasonsDefaultSeasons
@@ -537,6 +613,7 @@ class OracleOfSeasonsOptions(PerGameCommonOptions):
     shuffle_golden_ore_spots: OracleOfSeasonsGoldenOreSpotsShuffle
     deterministic_gasha_locations: OracleOfSeasonsGashaLocations
     advance_shop: OracleOfSeasonsAdvanceShop
+    secret_locations: OracleOfSeasonsIncludeSecretLocations
 
     # Dungeon items
     master_keys: OracleOfSeasonsMasterKeys
@@ -559,11 +636,12 @@ class OracleOfSeasonsOptions(PerGameCommonOptions):
     # Miscellaneous options
     shop_prices: OracleOfSeasonsShopPrices
     enforce_potion_in_shop: OracleOfSeasonsEnforcePotionInShop
-    remove_useless_rings: OracleOfSeasonsRingQuality
+    required_rings: OracleOfSeasonsRequiredRings
+    excluded_rings: OracleOfSeasonsExcludedRings
     fools_ore: OracleOfSeasonsFoolsOre
-    warp_to_start: OracleOfSeasonsWarpToStart
     combat_difficulty: OracleOfSeasonsCombatDifficulty
     quick_flute: OracleOfSeasonsQuickFlute
+    rosa_quick_unlock: OracleOfSeasonsRosaQuickUnlock
     starting_maps_compasses: OracleOfSeasonsStartingMapsCompasses
 
     remove_items_from_pool: OracleOfSeasonsRemoveItemsFromPool

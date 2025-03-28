@@ -34,8 +34,10 @@ boss_sprite_pointers = {
 
 }
 
+banned_transformations = ["Master Belch", "Master Barf", "Kraken", "Heavily Armed Pokey"]
 
-def initialize_bosses(world):
+
+def initialize_bosses(world) -> None:
     world.boss_list = [
         "Frank",
         "Frankystein Mark II",
@@ -176,15 +178,22 @@ def initialize_bosses(world):
     if world.options.boss_shuffle:
         world.random.shuffle(world.boss_list)
 
-    if not world.options.decouple_diamond_dog:
-        world.boss_list.remove("Diamond Dog")
-        world.boss_list.append("Diamond Dog")  # Reorder it
-    if not world.options.boss_shuffle_add_giygas:
-        world.boss_list.remove("Giygas (4)")
-        world.boss_list.append("Giygas (4)")
+        if not world.options.decouple_diamond_dog:
+            world.boss_list.remove("Diamond Dog")
+            insert_index = 28 if not world.options.boss_shuffle_add_giygas else 27
+            world.boss_list.insert(insert_index, "Diamond Dog")
+        if not world.options.boss_shuffle_add_giygas:
+            world.boss_list.remove("Giygas (4)")
+            world.boss_list.insert(29, "Giygas (4)")
 
 
-def write_bosses(world, rom):
+def write_bosses(world, rom) -> None:
+    if world.boss_list[25] == "Carbon Dog" and world.boss_list[27] in banned_transformations:
+        original_boss = world.boss_list[27]
+        transformation_replacement = world.random.randint(0,24)
+        world.boss_list[27] = world.boss_list[transformation_replacement]
+        world.boss_list[transformation_replacement] = original_boss
+
     rom.write_bytes(0x15E527, bytearray([0x00, 0x00]))  # Blank out Pokey's end battle action
     rom.write_bytes(0x15B8B9, bytearray([0x00, 0x00]))
     rom.write_bytes(0x15DD13, bytearray([0x00, 0x00]))  # Blank out barf's end battle script
@@ -267,5 +276,16 @@ def write_bosses(world, rom):
     rom.write_bytes(0x05FBFC, struct.pack("H", 0x0154))
     rom.write_bytes(0x05FD08, struct.pack("H", 0x0154))
     rom.write_bytes(0x05FD5C, struct.pack("H", 0x0154))
+    rom.copy_bytes(0x10DF7B, 6, 0x2FFF10)
+    if world.boss_list[25] == "Carbon Dog":
+        rom.write_bytes(0x2FFF16, bytearray([0x00]))  # Count of enemies
+        rom.write_bytes(0x2FFF17, struct.pack("H", world.boss_info[world.boss_list[27]].enemy_id))  # Add diamond dog
+        rom.write_bytes(0x2FFF19, bytearray([0xFF]))
+        rom.write_bytes(world.enemies[world.boss_list[27]].address + 91, bytearray([0x00]))  # Force to front row
+    elif world.boss_list[25] == "Giygas (4)":
+        rom.write_bytes(0x0121DF, bytearray([0x00]))
+        rom.write_bytes(0x2FFF16, bytearray([0xFF]))
+    else:
+        rom.write_bytes(0x2FFF16, bytearray([0xFF]))
     
     # c2c505 sets the song

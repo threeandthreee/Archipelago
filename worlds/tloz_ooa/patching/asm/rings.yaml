@@ -66,7 +66,7 @@
     jp nz,showText
     pop hl
     ret
-0b/45b0/: jp removeGashaNutRingText 
+0b/45bb/: jp removeGashaNutRingText 
 
 # skip forced ring appraisal and ring list with vasu (prevents softlock).
 0c/4a27/: dw $354a

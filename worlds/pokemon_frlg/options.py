@@ -2,9 +2,9 @@
 Option definitions for Pokémon FireRed/LeafGreen
 """
 from dataclasses import dataclass
-from schema import Schema, And, Use
+from schema import Optional, Schema, And, Use
 from Options import Choice, DefaultOnToggle, NamedRange, OptionDict, OptionSet, PerGameCommonOptions, Range, Toggle
-from .data import data
+from .data import data, fly_blacklist_map, fly_plando_maps, starting_town_blacklist_map
 
 
 class GameVersion(Choice):
@@ -45,6 +45,56 @@ class RandomStartingTown(Toggle):
     Indigo Plateau.
     """
     display_name = "Random Starting Town"
+
+
+class StartingTownBlacklist(OptionSet):
+    """
+    Prevents certain towns from being chosen as your random starting town.
+
+    Has no effect if the starting town is not randomized.
+    """
+    display_name = "Starting Town Blacklist"
+    valid_keys = list(starting_town_blacklist_map.keys())
+
+
+class RandomizeFlyDestinations(Toggle):
+    """
+    Randomizes where each fly point takes you. The new fly destinations can be almost any outdoor warp point in the
+    game with a few exceptions (Cycling Road Gates for example).
+    """
+    display_name = "Randomize Fly Destinations"
+
+
+class FlyDestinationPlando(OptionDict):
+    """
+    Plando what map certain fly points will take you to. For example \"Pallet Town Fly Destination\": \"Route 8\"
+    will make it so that unlocking the Pallet Town fly point will let you fly to Route 8.
+
+    Has no effect if fly destinations aren't randomized.
+    """
+    display_name = "Fly Destination Plando"
+    schema = Schema({
+        Optional("Pallet Town Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Viridian City Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Pewter City Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Route 4 Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Cerulean City Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Vermilion City Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Route 10 Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Lavender Town Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Celadon City Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Fuchsia City Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Saffron City Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Cinnabar Island Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Indigo Plateau Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("One Island Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Two Island Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Three Island Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Four Island Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Five Island Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Six Island Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Seven Island Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+    })
 
 
 class ShuffleBadges(DefaultOnToggle):
@@ -134,16 +184,16 @@ class Famesanity(Toggle):
     display_name = "Famesanity"
 
 
-class ShuffleFlyDestinationUnlocks(Choice):
+class ShuffleFlyUnlocks(Choice):
     """
     Shuffles the ability to fly to Pokemon Centers into the pool. Entering the map that normally would unlock the
     fly destination gives a random item.
 
-    - Off: Fly Destination Unlocks are not shuffled.
-    - Exclude Indigo: Fly Destination Unlocks are shuffled. Indigo Plateau Fly Unlock is vanilla.
-    - All: Fly Destination Unlocks are shuffled.
+    - Off: Fly Unlocks are not shuffled.
+    - Exclude Indigo: Fly Unlocks are shuffled. Indigo Plateau Fly Unlock is vanilla.
+    - All: Fly Unlocks are shuffled.
     """
-    display_name = "Shuffle Fly Destination Unlocks"
+    display_name = "Shuffle Fly Unlocks"
     default = 0
     option_off = 0
     option_exclude_indigo = 1
@@ -789,6 +839,8 @@ class RandomizeMoves(Choice):
 class MoveBlacklist(OptionSet):
     """
     Prevents species from learning these moves via learnsets, TMs, and move tutors.
+
+    Has no effect is moves are not randomized.
     """
     display_name = "Move Blacklist"
     valid_keys = sorted(data.moves.keys())
@@ -898,27 +950,35 @@ class BetterShops(Toggle):
     display_name = "Better Shops"
 
 
-class FreeFlyLocation(Choice):
+class FreeFlyLocation(Toggle):
     """
     Enables flying to one random location (excluding cities reachable with no items).
     """
     display_name = "Free Fly Location"
-    default = 0
-    option_off = 0
-    option_exclude_indigo = 1
-    option_any = 2
 
 
-class TownMapFlyLocation(Choice):
+class FreeFlyBlacklist(OptionSet):
+    """
+    Prevents certain towns from being chosen as your free fly location.
+    """
+    display_name = "Starting Town Blacklist"
+    valid_keys = list(fly_blacklist_map.keys())
+
+
+class TownMapFlyLocation(Toggle):
     """
     Enables flying to one random location once the town map has been obtained
     (excluding cities reachable with no items).
     """
     display_name = "Town Map Fly Location"
-    default = 0
-    option_off = 0
-    option_exclude_indigo = 1
-    option_any = 2
+
+
+class TownMapFlyBlacklist(OptionSet):
+    """
+    Prevents certain towns from being chosen as your town map fly location.
+    """
+    display_name = "Starting Town Blacklist"
+    valid_keys = list(fly_blacklist_map.keys())
 
 
 class RandomizeMusic(Toggle):
@@ -1003,6 +1063,9 @@ class PokemonFRLGOptions(PerGameCommonOptions):
     goal: Goal
     kanto_only: KantoOnly
     random_starting_town: RandomStartingTown
+    starting_town_blacklist: StartingTownBlacklist
+    randomize_fly_destinations: RandomizeFlyDestinations
+    fly_destination_plando: FlyDestinationPlando
 
     shuffle_badges: ShuffleBadges
     shuffle_hidden: ShuffleHiddenItems
@@ -1010,7 +1073,7 @@ class PokemonFRLGOptions(PerGameCommonOptions):
     trainersanity: Trainersanity
     dexsanity: Dexsanity
     famesanity: Famesanity
-    shuffle_fly_destination_unlocks: ShuffleFlyDestinationUnlocks
+    shuffle_fly_unlocks: ShuffleFlyUnlocks
     pokemon_request_locations: PokemonRequestLocations
     shuffle_running_shoes: ShuffleRunningShoes
     card_key: SilphCoCardKey
@@ -1073,7 +1136,9 @@ class PokemonFRLGOptions(PerGameCommonOptions):
     starting_money: StartingMoney
     better_shops: BetterShops
     free_fly_location: FreeFlyLocation
+    free_fly_blacklist: FreeFlyBlacklist
     town_map_fly_location: TownMapFlyLocation
+    town_map_fly_blacklist: TownMapFlyBlacklist
 
     randomize_music: RandomizeMusic
     randomize_fanfares: RandomizeFanfares

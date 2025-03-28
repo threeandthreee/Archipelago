@@ -309,7 +309,7 @@ item_table: Dict[str, ItemData] = {
     "Poo": ItemData("Characters", 0xEB0110, ItemClassification.progression),
     "Flying Man": ItemData("Characters", 0xEB0111, ItemClassification.useful),
     "Ness": ItemData("Characters", 0xEB0112, ItemClassification.progression),
-    "Photograph": ItemData("Photos", 0xEB0113, ItemClassification.trap, 32),
+    "Photograph": ItemData("Photos", 0xEB0113, ItemClassification.trap, 0),
 
     'Threed Tunnels Clear': ItemData('Events', None, ItemClassification.progression, 0),
     'Submarine to Deep Darkness': ItemData('Events', None, ItemClassification.progression, 0),
@@ -317,7 +317,7 @@ item_table: Dict[str, ItemData] = {
     'Saved Earth': ItemData('Events', None, ItemClassification.progression, 0),
     "Power of the Earth": ItemData("Events", None, ItemClassification.progression, 0),
     "Alternate Goal": ItemData("Events", None, ItemClassification.useful, 0),
-    # "Magicant Boost": ItemData("Events", None, ItemClassification.useful, 0),
+    "Valley Bridge Repair": ItemData("Events", None, ItemClassification.progression, 0),
     "Magicant Unlock": ItemData("Events", None, ItemClassification.progression, 0),
     "ATM Access": ItemData("Events", None, ItemClassification.progression, 0)
 }

@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from BaseClasses import CollectionState
 from worlds.generic.Rules import add_rule, set_rule
 from .data import data
-from .options import JohtoOnly
+from .options import JohtoOnly, Route32Condition
 
 if TYPE_CHECKING:
     from . import PokemonCrystalWorld
@@ -90,7 +90,26 @@ def set_rules(world: "PokemonCrystalWorld") -> None:
     def can_rocksmash(state: CollectionState):
         return state.has("TM08 Rock Smash", world.player)
 
-    def has_badge_item(state: CollectionState, badge):
+    if world.options.randomize_badges.value == 0:
+        badge_items = {"zephyr": "EVENT_ZEPHYR_BADGE_FROM_FALKNER",
+                       "hive": "EVENT_HIVE_BADGE_FROM_BUGSY",
+                       "plain": "EVENT_PLAIN_BADGE_FROM_WHITNEY",
+                       "fog": "EVENT_FOG_BADGE_FROM_MORTY",
+                       "mineral": "EVENT_STORM_BADGE_FROM_CHUCK",
+                       "storm": "EVENT_MINERAL_BADGE_FROM_JASMINE",
+                       "glacier": "EVENT_GLACIER_BADGE_FROM_PRYCE",
+                       "rising": "EVENT_RISING_BADGE_FROM_CLAIR",
+
+                       "boulder": "EVENT_BOULDER_BADGE_FROM_BROCK",
+                       "cascade": "EVENT_CASCADE_BADGE_FROM_MISTY",
+                       "thunder": "EVENT_THUNDER_BADGE_FROM_LTSURGE",
+                       "rainbow": "EVENT_RAINBOW_BADGE_FROM_ERIKA",
+                       "soul": "EVENT_SOUL_BADGE_FROM_JANINE",
+                       "marsh": "EVENT_MARSH_BADGE_FROM_SABRINA",
+                       "volcano": "EVENT_VOLCANO_BADGE_FROM_BLAINE",
+                       "earth": "EVENT_EARTH_BADGE_FROM_BLUE"
+                       }
+    else:
         badge_items = {"zephyr": "Zephyr Badge",
                        "hive": "Hive Badge",
                        "plain": "Plain Badge",
@@ -109,56 +128,15 @@ def set_rules(world: "PokemonCrystalWorld") -> None:
                        "volcano": "Volcano Badge",
                        "earth": "Earth Badge"
                        }
-        return state.has(badge_items[badge], world.player)
-
-    def has_badge_flag(state: CollectionState, badge):
-        badge_flags = {"zephyr": "EVENT_ZEPHYR_BADGE_FROM_FALKNER",
-                       "hive": "EVENT_HIVE_BADGE_FROM_BUGSY",
-                       "plain": "EVENT_PLAIN_BADGE_FROM_WHITNEY",
-                       "fog": "EVENT_FOG_BADGE_FROM_MORTY",
-                       "mineral": "EVENT_STORM_BADGE_FROM_CHUCK",
-                       "storm": "EVENT_MINERAL_BADGE_FROM_JASMINE",
-                       "glacier": "EVENT_GLACIER_BADGE_FROM_PRYCE",
-                       "rising": "EVENT_RISING_BADGE_FROM_CLAIR",
-
-                       "boulder": "EVENT_BOULDER_BADGE_FROM_BROCK",
-                       "cascade": "EVENT_CASCADE_BADGE_FROM_MISTY",
-                       "thunder": "EVENT_THUNDER_BADGE_FROM_LTSURGE",
-                       "rainbow": "EVENT_RAINBOW_BADGE_FROM_ERIKA",
-                       "soul": "EVENT_SOUL_BADGE_FROM_JANINE",
-                       "marsh": "EVENT_MARSH_BADGE_FROM_SABRINA",
-                       "volcano": "EVENT_VOLCANO_BADGE_FROM_BLAINE",
-                       "earth": "EVENT_EARTH_BADGE_FROM_BLUE"
-                       }
-        return state.has(badge_flags[badge], world.player)
 
     def has_badge(state: CollectionState, badge):
-        if world.options.randomize_badges.value == 0:
-            return has_badge_flag(state, badge)
-        return has_badge_item(state, badge)
+        return state.has(badge_items[badge], world.player)
 
     def has_n_badges(state: CollectionState, n: int) -> bool:
-        return sum([has_badge(state, i) for i in [
-            "zephyr",
-            "hive",
-            "plain",
-            "fog",
-            "mineral",
-            "storm",
-            "glacier",
-            "rising",
-            "boulder",
-            "cascade",
-            "thunder",
-            "rainbow",
-            "soul",
-            "marsh",
-            "volcano",
-            "earth"
-        ]]) >= n
+        return state.has_from_list_unique(badge_items.values(), world.player, n)
 
     def has_rocket_badges(state: CollectionState):
-        return has_n_badges(state, world.options.elite_four_badges.value - 1)
+        return has_n_badges(state, world.options.radio_tower_badges.value)
 
     def has_elite_four_badges(state: CollectionState):
         return has_n_badges(state, world.options.elite_four_badges.value)
@@ -186,6 +164,15 @@ def set_rules(world: "PokemonCrystalWorld") -> None:
 
     def trainersanity():
         return world.options.trainersanity
+
+    def remove_ilex_cut_tree():
+        return world.options.remove_ilex_cut_tree
+
+    def require_badge_for_route_32():
+        return world.options.route_32_condition.value == Route32Condition.option_any_badge
+
+    def require_egg_for_route_32():
+        return world.options.route_32_condition.value == Route32Condition.option_egg_from_aide
 
     def expn(state: CollectionState):
         if pokegear():
@@ -237,6 +224,7 @@ def set_rules(world: "PokemonCrystalWorld") -> None:
 
     set_rule(get_entrance("REGION_ROUTE_31 -> REGION_DARK_CAVE_VIOLET_ENTRANCE"), can_flash)
 
+    set_rule(get_location("EVENT_GAVE_KENYA"), lambda state: state.has("EVENT_GOT_KENYA", world.player))
     set_rule(get_location("Route 31 - TM50 for Delivering Kenya"),
              lambda state: state.has("EVENT_GOT_KENYA", world.player))
 
@@ -260,31 +248,40 @@ def set_rules(world: "PokemonCrystalWorld") -> None:
         set_rule(get_location("Violet City - Hidden Item Behind Cut Tree"), can_cut)
     set_rule(get_location("Violet City - Item 1"), can_surf)
     set_rule(get_location("Violet City - Item 2"), can_surf)
-    # set_rule(get_location("EVENT_GOT_TOGEPI_EGG_FROM_ELMS_AIDE"),
-    #          lambda state: state.has("EVENT_BEAT_FALKNER", world.player))
 
-    # set_rule(get_entrance("REGION_VIOLET_CITY -> REGION_ROUTE_32"),
-    #          lambda state: state.has("EVENT_GOT_TOGEPI_EGG_FROM_ELMS_AIDE", world.player))
-    # set_rule(get_entrance("REGION_ROUTE_36 -> REGION_ROUTE_36_RUINS_OF_ALPH_GATE"),
-    #          lambda state: state.has("EVENT_GOT_TOGEPI_EGG_FROM_ELMS_AIDE", world.player))
+    set_rule(get_entrance("REGION_RUINS_OF_ALPH_OUTSIDE:NORTH -> REGION_RUINS_OF_ALPH_OUTSIDE:SOUTH"),
+             can_surf)
+    set_rule(get_entrance("REGION_RUINS_OF_ALPH_OUTSIDE:SOUTH -> REGION_RUINS_OF_ALPH_OUTSIDE:NORTH"),
+             can_surf)
 
-    set_rule(get_entrance("REGION_RUINS_OF_ALPH_AERODACTYL_CHAMBER -> REGION_RUINS_OF_ALPH_AERODACTYL_ITEM_ROOM"),
-             lambda state: can_surf(state) and can_flash(state))
-
-    # set_rule(get_entrance("REGION_RUINS_OF_ALPH_HO_OH_CHAMBER -> REGION_RUINS_OF_ALPH_HO_OH_ITEM_ROOM"),
-    #          can_surf)
+    set_rule(get_entrance("REGION_RUINS_OF_ALPH_KABUTO_CHAMBER -> REGION_RUINS_OF_ALPH_KABUTO_ITEM_ROOM"),
+             lambda state: state.has("EVENT_MART_ESCAPE_ROPE", world.player))
 
     set_rule(get_entrance("REGION_RUINS_OF_ALPH_OMANYTE_CHAMBER -> REGION_RUINS_OF_ALPH_OMANYTE_ITEM_ROOM"),
-             lambda state: can_surf(state) and can_strength(state))
+             lambda state: state.has("EVENT_MART_WATER_STONE", world.player))
+
+    set_rule(get_entrance("REGION_RUINS_OF_ALPH_AERODACTYL_CHAMBER -> REGION_RUINS_OF_ALPH_AERODACTYL_ITEM_ROOM"),
+             can_flash)
+
+    set_rule(get_entrance("REGION_RUINS_OF_ALPH_HO_OH_CHAMBER -> REGION_RUINS_OF_ALPH_HO_OH_ITEM_ROOM"),
+             lambda state: state.has("Rainbow Wing", world.player))
 
     # Route 32
-    set_rule(get_location("Route 32 - Miracle Seed from Man in North"), lambda state: has_badge(state, "zephyr"))
+    if require_badge_for_route_32():
+        set_rule(get_entrance("REGION_ROUTE_32:NORTH -> REGION_ROUTE_32:SOUTH"), lambda state: has_n_badges(state, 1))
 
+    if require_egg_for_route_32():
+        set_rule(get_entrance("REGION_ROUTE_32:NORTH -> REGION_ROUTE_32:SOUTH"),
+                 lambda state: state.has("EVENT_GOT_TOGEPI_EGG_FROM_ELMS_AIDE", world.player))
+
+    set_rule(get_location("Route 32 - Miracle Seed from Man in North"), lambda state: has_badge(state, "zephyr"))
     set_rule(get_location("Route 32 - TM05 from Roar Guy"), can_cut)
 
     # Union Cave
     set_rule(get_entrance("REGION_UNION_CAVE_1F -> REGION_UNION_CAVE_B1F:SOUTH"), can_surf)
     set_rule(get_entrance("REGION_UNION_CAVE_B1F -> REGION_UNION_CAVE_B1F:NORTH"), can_surf)
+    set_rule(get_entrance("REGION_UNION_CAVE_B1F:NORTH -> REGION_RUINS_OF_ALPH_OUTSIDE:SOUTH:UNION_LEDGE"),
+             can_strength)
     set_rule(get_entrance("REGION_UNION_CAVE_B1F:SOUTH -> REGION_UNION_CAVE_B2F"), can_surf)
 
     # Azalea Town
@@ -297,12 +294,19 @@ def set_rules(world: "PokemonCrystalWorld") -> None:
     set_rule(get_location("Azalea Town - Lure Ball from Kurt"),
              lambda state: state.has("EVENT_CLEARED_SLOWPOKE_WELL", world.player))
 
+    # Ilex Forest
+    if not remove_ilex_cut_tree():
+        set_rule(get_entrance("REGION_ILEX_FOREST:NORTH -> REGION_ILEX_FOREST:SOUTH"), can_cut)
+        set_rule(get_entrance("REGION_ILEX_FOREST:SOUTH -> REGION_ILEX_FOREST:NORTH"), can_cut)
+
     # Route 34
     set_rule(get_entrance("REGION_ROUTE_34 -> REGION_ROUTE_34:WATER"), can_surf)
 
     # Goldenrod City
     set_rule(get_location("Goldenrod City - Squirtbottle from Flower Shop"),
              lambda state: has_badge(state, "plain"))
+    set_rule(get_location("Goldenrod City - Post-E4 GS Ball from Trade Corner Receptionist"),
+             lambda state: state.has("EVENT_BEAT_ELITE_FOUR", world.player))
 
     if not johto_only():
         set_rule(get_entrance("REGION_GOLDENROD_MAGNET_TRAIN_STATION -> REGION_SAFFRON_MAGNET_TRAIN_STATION"),
@@ -328,9 +332,9 @@ def set_rules(world: "PokemonCrystalWorld") -> None:
 
     # Radio Tower
 
-    set_rule(get_entrance("REGION_RADIO_TOWER_2F -> REGION_RADIO_TOWER_3F"), has_rocket_badges)
+    set_rule(get_entrance("REGION_RADIO_TOWER_2F -> REGION_RADIO_TOWER_3F:NOCARDKEY"), has_rocket_badges)
 
-    set_rule(get_entrance("REGION_RADIO_TOWER_3F -> REGION_RADIO_TOWER_4F:CARDKEY"),
+    set_rule(get_entrance("REGION_RADIO_TOWER_3F:NOCARDKEY -> REGION_RADIO_TOWER_3F:CARDKEY"),
              lambda state: state.has("Card Key", world.player))
 
     set_rule(get_location("Radio Tower 3F - TM11 from Woman"),
@@ -354,10 +358,20 @@ def set_rules(world: "PokemonCrystalWorld") -> None:
     set_rule(get_entrance("REGION_ROUTE_35 -> REGION_ROUTE_35:FRUITTREE"), can_surf)
 
     # Sudowoodo
-    set_rule(get_entrance("REGION_ROUTE_36 -> REGION_ROUTE_37"), lambda state: state.has("Squirtbottle", world.player))
-
-    set_rule(get_entrance("REGION_ROUTE_36 -> REGION_ROUTE_36_NATIONAL_PARK_GATE"),
+    set_rule(get_entrance("REGION_ROUTE_36:EAST -> REGION_ROUTE_37"),
              lambda state: state.has("Squirtbottle", world.player))
+    set_rule(get_entrance("REGION_ROUTE_36:EAST -> REGION_ROUTE_36:WEST"),
+             lambda state: state.has("Squirtbottle", world.player))
+    set_rule(get_entrance("REGION_ROUTE_36:WEST -> REGION_ROUTE_36:EAST"),
+             lambda state: state.has("Squirtbottle", world.player))
+    set_rule(get_entrance("REGION_ROUTE_36:WEST -> REGION_ROUTE_37"),
+             lambda state: state.has("Squirtbottle", world.player))
+    set_rule(get_entrance("REGION_ROUTE_37 -> REGION_ROUTE_36:EAST"),
+             lambda state: state.has("Squirtbottle", world.player))
+    set_rule(get_entrance("REGION_ROUTE_37 -> REGION_ROUTE_36:WEST"),
+             lambda state: state.has("Squirtbottle", world.player))
+    set_rule(get_entrance("REGION_ROUTE_35 -> REGION_ROUTE_36:WEST"), can_cut)
+    set_rule(get_entrance("REGION_ROUTE_36:WEST -> REGION_ROUTE_35"), can_cut)
 
     set_rule(get_location("Route 36 - TM08 from Rock Smash Guy"), lambda state: state.has("Squirtbottle", world.player))
 
@@ -371,6 +385,9 @@ def set_rules(world: "PokemonCrystalWorld") -> None:
     set_rule(get_entrance("REGION_ECRUTEAK_CITY -> REGION_TIN_TOWER_1F"),
              lambda state: state.has("Clear Bell", world.player) and
                            state.has("EVENT_CLEARED_RADIO_TOWER", world.player))
+
+    set_rule(get_location("Tin Tower 1F - Rainbow Wing"),
+             lambda state: state.has("EVENT_BEAT_ELITE_FOUR", world.player))
 
     # Olivine City
     set_rule(get_location("EVENT_JASMINE_RETURNED_TO_GYM"), lambda state: state.has("Secretpotion", world.player))

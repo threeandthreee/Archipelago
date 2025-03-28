@@ -89,7 +89,7 @@ class MindustryWorld(World):
     def create_items(self) -> None:
         """Create every item in the world"""
         campaign = self.options.campaign_choice.value
-        self.__exclude_items(campaign)
+        self.__exclude_items(self.options)
         world_item_count = 0
         for name, data in item_table.items():
             if self.__from_selected_campaign(data, campaign):
@@ -267,19 +267,17 @@ class MindustryWorld(World):
         """
         valid = False
         if data.group != ItemGroup.FILLER: #We dont want filler items to get thrown in yet.
-            match campaign:
-                case 0:
-                    if data.item_planet == ItemPlanet.SERPULO:
-                        valid = True
-                case 1:
-                    if data.item_planet == ItemPlanet.EREKIR:
-                        valid = True
-                case 2:
+            if campaign == 0:
+                if data.item_planet == ItemPlanet.SERPULO:
                     valid = True
-                case _:
-                    valid = False
+            elif campaign == 1:
+                if data.item_planet == ItemPlanet.EREKIR:
+                    valid = True
+            elif campaign == 2:
+                valid = True
+            else:
+                valid = False
         return valid
-
 
     def set_rules(self) -> None:
         """
@@ -300,30 +298,88 @@ class MindustryWorld(World):
         return {
             "tutorial_skip": bool(self.options.tutorial_skip.value),
             "campaign_choice": self.options.campaign_choice.value,
+            "goal": self.options.goal.value,
             "disable_invasions": bool(self.options.disable_invasions.value),
             "faster_production": bool(self.options.faster_production.value),
+            "faster_conveyor": bool(self.options.faster_conveyor.value),
             "death_link": bool(self.options.death_link.value),
             "death_link_mode": self.options.death_link_mode.value,
             "military_level_tracking": bool(self.options.military_level_tracking.value),
             "randomize_core_units_weapon": bool(self.options.randomize_core_units_weapon.value),
             "logistic_distribution": self.options.logistic_distribution.value,
+            "progressive_drills": bool(self.options.progressive_drills),
+            "progressive_generators": bool(self.options.progressive_generators),
             "make_early_roadblocks_local": bool(self.options.make_early_roadblocks_local),
             "amount_of_resources_required": self.options.amount_of_resources_required.value,
             "core_russian_roulette_chambers": self.options.core_russian_roulette_chambers.value
         }
 
-    def __exclude_items(self, campaign:int) -> None:
+    def __exclude_items(self, options: MindustryOptions) -> None:
         """Exclude items from the item pools depending on player options"""
-        if self.options.logistic_distribution == 3: #Starter logistics
-            if campaign == 0: #Serpulo
-                self.__exclude_serpulo_logistics()
-            if campaign == 1: #Erekir
-                self.__exclude_erekir_logistics()
-            if campaign == 2: #All
-                self.__exclude_serpulo_logistics()
-                self.__exclude_erekir_logistics()
+        campaign = options.campaign_choice.value
+        progressive_drills = bool(options.progressive_drills)
+        progressive_generators = bool(options.progressive_generators)
 
-    def __exclude_serpulo_logistics(self) -> None:
+        if campaign == 0: #Serpulo
+            if self.options.logistic_distribution == 3:  # Starter logistics
+                self.__starter_serpulo_logistics()
+            if progressive_drills:
+                self.__exclude_serpulo_drills()
+            else:
+                self.__exclude_serpulo_progressive_drills()
+            if progressive_generators:
+                self.__exclude_serpulo_generators()
+            else:
+                self.__exclude_serpulo_progressive_generators()
+        if campaign == 1: #Erekir
+            if self.options.logistic_distribution == 3:  # Starter logistics
+                self.__starter_erekir_logistics()
+            if progressive_drills:
+                self.__exclude_erekir_drills()
+            else:
+                self.__exclude_erekir_progressive_drills()
+            if progressive_generators:
+                self.__exclude_erekir_generators()
+            else:
+                self.__exclude_erekir_progressive_generators()
+        if campaign == 2: #All
+            if self.options.logistic_distribution == 3:  # Starter logistics
+                self.__starter_serpulo_logistics()
+                self.__starter_erekir_logistics()
+            if progressive_drills:
+                self.__exclude_serpulo_drills()
+                self.__exclude_erekir_drills()
+            else:
+                self.__exclude_serpulo_progressive_drills()
+                self.__exclude_erekir_progressive_drills()
+            if progressive_generators:
+                self.__exclude_serpulo_generators()
+                self.__exclude_erekir_generators()
+            else:
+                self.__exclude_serpulo_progressive_generators()
+                self.__exclude_erekir_progressive_generators()
+
+    def __exclude_serpulo_progressive_drills(self) -> None:
+        """Exclude Serpulo progressive drills from the item pool"""
+        for x in range(3):
+            self.exclude.append("Progressive Drills Serpulo")
+
+    def __exclude_serpulo_progressive_generators(self) -> None:
+        """Exclude Serpulo progressive generators from the item pool"""
+        for x in range(7):
+            self.exclude.append("Progressive Generators Serpulo")
+
+    def __exclude_erekir_progressive_drills(self) -> None:
+        """Exclude Erekir progressive drills from the item pool"""
+        for x in range(3):
+            self.exclude.append("Progressive Drills Erekir")
+
+    def __exclude_erekir_progressive_generators(self) -> None:
+        """Exclude Erekir progressive generators from the item pool"""
+        for x in range(4):
+            self.exclude.append("Progressive Generators Erekir")
+
+    def __starter_serpulo_logistics(self) -> None:
         """Exclude Serpulo logistics items from the item pool for the Starter logistics options"""
         self.multiworld.push_precollected(self.create_item("Conduit"))
         self.exclude.append("Conduit")
@@ -349,7 +405,7 @@ class MindustryWorld(World):
         self.multiworld.push_precollected(self.create_item("Power Node"))
         self.exclude.append("Power Node")
 
-    def __exclude_erekir_logistics(self) -> None:
+    def __starter_erekir_logistics(self) -> None:
         """Exclude Erekir logistics items from the item pool for the Starter logistics options"""
         self.multiworld.push_precollected(self.create_item("Duct Router"))
         self.exclude.append("Duct Router")
@@ -368,3 +424,29 @@ class MindustryWorld(World):
 
         self.multiworld.push_precollected(self.create_item("Reinforced Liquid Router"))
         self.exclude.append("Reinforced Liquid Router")
+
+    def __exclude_serpulo_drills(self):
+        self.exclude.append("Pneumatic Drill")
+        self.exclude.append("Laser Drill")
+        self.exclude.append("Airblast Drill")
+
+    def __exclude_serpulo_generators(self):
+        self.exclude.append("Combustion Generator")
+        self.exclude.append("Steam Generator")
+        self.exclude.append("Thermal Generator")
+        self.exclude.append("Differential Generator")
+        self.exclude.append("Thorium Reactor")
+        self.exclude.append("Impact Reactor")
+        self.exclude.append("RTG Generator")
+
+
+    def __exclude_erekir_drills(self):
+        self.exclude.append("Impact Drill")
+        self.exclude.append("Large Plasma Bore")
+        self.exclude.append("Eruption Drill")
+
+    def __exclude_erekir_generators(self):
+        self.exclude.append("Chemical Combustion Chamber")
+        self.exclude.append("Pyrolysis Generator")
+        self.exclude.append("Flux Reactor")
+        self.exclude.append("Neoplasia Reactor")

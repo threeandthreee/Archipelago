@@ -5,6 +5,7 @@ from .game_data.local_data import item_id_table
 from .modules.psi_shuffle import shuffle_psi
 from .modules.boss_shuffle import initialize_bosses
 from .modules.enemy_shuffler import shuffle_enemies
+from .modules.dungeon_er import shuffle_dungeons
 
 
 def setup_gamevars(world):
@@ -342,6 +343,10 @@ def setup_gamevars(world):
             world.uncommon_gear.append("Broken Cannon")
             world.rare_gear.append("Broken Antenna")
 
+    for i in range(world.options.total_photos):
+        world.multiworld.itempool.append(world.create_item("Photograph"))
+        world.event_count += 1
+        
     world.franklinbadge_elements = [
         "thunder",
         "fire",
@@ -493,6 +498,15 @@ def setup_gamevars(world):
 
     filler_items = (world.common_items + world.uncommon_items + world.rare_items + world.common_gear +
                     world.uncommon_gear + world.rare_gear)
+
+    if world.options.progressive_weapons:
+        remove_items = {"Progressive Bat", "Progressive Fry Pan", "Progressive Gun"}
+        filler_items = [item for item in filler_items if item not in remove_items]
+
+    if world.options.progressive_armor:
+        remove_items = {"Progressive Bracelet", "Progressive Other"}
+        filler_items = [item for item in filler_items if item not in remove_items]
+
     world.filler_drops = [item_id_table[i] for i in filler_items if i in item_id_table]
     world.filler_drops.append(0x00)
     if world.options.prefixed_items:
@@ -546,6 +560,7 @@ def setup_gamevars(world):
     shuffle_psi(world)
     initialize_bosses(world)
     shuffle_enemies(world)
+    shuffle_dungeons(world)
 
 
 def place_static_items(world):
@@ -561,6 +576,8 @@ def place_static_items(world):
     world.get_location("Pink Cloud Sanctuary").place_locked_item(world.create_item("Melody"))
     world.get_location("Lumine Hall Sanctuary").place_locked_item(world.create_item("Melody"))
     world.get_location("Fire Spring Sanctuary").place_locked_item(world.create_item("Melody"))
+
+    world.get_location("Carpainter Defeated").place_locked_item(world.create_item("Valley Bridge Repair"))
 
     if world.options.giygas_required == 1:
         world.get_location("Giygas").place_locked_item(world.create_item("Saved Earth"))  # Normal final boss

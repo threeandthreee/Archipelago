@@ -13,7 +13,8 @@ def make_subrosia_logic(player: int):
         ["volcanoes west portal", "subrosia volcano sector", True, None],
         ["d8 entrance portal", "d8 entrance", True, None],
 
-        ["subrosia pirates sector", "western coast after ship", False, lambda state: state.has("Pirate's Bell", player)],
+        # TODO when alt starting locations are implemented, there probably needs to be a way to re-use this forced transition
+        ["pirates after bell", "western coast after ship", False, None],
 
         # Regions ###############################################################
 
@@ -71,6 +72,8 @@ def make_subrosia_logic(player: int):
             state.has("Rusty Bell", player),
             oos_self_locking_item(state, player, "subrosian smithy bell", "Rusty Bell")
         ])],
+        ["subrosia temple sector", "smith secret", False, lambda state: oos_has_shield(state, player)],
+
         ["subrosia temple sector", "temple of seasons", False, None],
         ["subrosia temple sector", "tower of winter", False, lambda state: any([
             oos_has_feather(state, player),
@@ -83,6 +86,10 @@ def make_subrosia_logic(player: int):
         ["subrosia temple sector", "tower of autumn", False, lambda state: all([
             oos_has_feather(state, player),
             state.has("Bomb Flower", player)
+        ])],
+        ["subrosia temple sector", "subrosian secret", False, lambda state: all([
+            oos_can_jump_1_wide_pit(state, player, False),
+            oos_has_magic_boomerang(state, player)
         ])],
 
         ["subrosia market sector", "subrosia seaside", False, lambda state: oos_has_shovel(state, player)],
@@ -158,5 +165,6 @@ def make_subrosia_logic(player: int):
         ["subrosia market sector", "subrosia market digging spot", False, lambda state: oos_has_shovel(state, player)],
 
         ["subrosia bridge sector", "subrosia bridge digging spot", False, lambda state: oos_has_shovel(state, player)],
-    ]
 
+        ["subrosia pirates sector", "pirates after bell", False, lambda state: state.has("Pirate's Bell", player)],
+    ]

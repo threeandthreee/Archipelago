@@ -83,6 +83,8 @@ DEFINES = {
     "SND_ERROR":"$5a",
     "SND_SOLVEPUZZLE_2":"$5b",
     "SND_TELEPORT":"$8d",
+    "SND_GETSEED": "$5e",
+    "SND_COMPASS": "$a2",
     "TREASURE_SHIELD":"$01",
     "TREASURE_PUNCH":"$02",
     "TREASURE_BOMBS":"$03",
@@ -176,6 +178,7 @@ DEFINES = {
     "ormemory":"$92",
     "rungenericnpc":"$97",
     "showtext":"$98",
+    "showloadedtext":"$9d",
     "checkabutton":"$9e",
     "checkcfc0_bit0":"$a0",
     "jumpifroomflagset":"$b0",
@@ -235,6 +238,9 @@ DEFINES = {
     "wIsLinkedGame":"$cc01",
     "wMenuDisabled":"$cc02",
     "wCutsceneState":"$cc03",
+    "wMaxBombs": "$c6b1",
+    "wLinkMaxHealth": "$c6ab",
+    "wNumEmberSeeds": "$c6b9",
     "wCutsceneTrigger":"$cc04",
     "wScreenTransitionDirection":"$cd02",
     "wScreenOffsetY":"$cd08",
@@ -251,6 +257,7 @@ DEFINES = {
     "wWarpTransition2":"$cc4b",
     "wBoughtItems1":"$c642",
     "wBoughtItems2":"$c643",
+    "wDungeonCompasses":"$c684",
 
     # rom 00
     "interBankCall":"$008a",
@@ -319,6 +326,7 @@ DEFINES = {
     "wLinkDeathTrigger": "$cdd5",
 
     # rom 00
+    "checkFlag": "$0205",
     "getRandomNumber":"$043e",
     "clearMemory":"$046f",
     "copyMemory":"$0486",
@@ -375,6 +383,8 @@ DEFINES = {
     # Existing Global Flag
     "GLOBALFLAG_WON_FAIRY_HIDING_GAME":"$0e",
     "GLOBALFLAG_TUNI_NUT_PLACED":"$29",
+	"GLOBALFLAG_BOUGHT_FEATHER_FROM_TOKAY" : "$36",
+	"GLOBALFLAG_BOUGHT_BRACELET_FROM_TOKAY"	: "$37",
 
     # Custom Global Flag
     "GLOBALFLAG_GOT_SEACHART":"$03",
@@ -388,6 +398,7 @@ DEFINES = {
     "GLOBALFLAG_VERAN_BEATEN":"$47",
     "GLOBALFLAG_GOT_TUNINUT_FROM_BROTHER":"$48",
     "GLOBALFLAG_WON_LYNNA_SHOOTING_GALLERY":"$49",
+    "GLOBALFLAG_GAVE_MYST_SEED":"$4a",
 }
 
 ASM_FILES = [
@@ -417,6 +428,11 @@ ASM_FILES = [
     "asm/remove_item_on_use.yaml",
     "asm/dungeon_shuffle.yaml",
     "asm/file_select_custom_string.yaml",
+    "asm/impa_refill.yaml",
+    "asm/combat_difficulty.yaml",
+    "asm/tokay_market.yaml",
+    "asm/compass_chimes.yaml",
+    "asm/warp_to_start.yaml"
 ]
 
 RUPEE_VALUES = {
@@ -559,6 +575,13 @@ DUNGEON_EXITS = {
     "d7": 0x13c60,
     "d8": 0x13c74,
     "d6 past": 0x13c54,
+}
+
+PALETTE_BYTES = {
+    "green": 0x00,
+    "blue": 0x01,
+    "red": 0x02,
+    "orange": 0x03,
 }
 
 SEED_TREE_DATA = {

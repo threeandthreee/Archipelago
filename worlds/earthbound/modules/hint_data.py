@@ -14,14 +14,15 @@ def setup_hints(world):
         "hint_for_good_item",  # gives the exact location and sender of a good item for the local player
         "item_in_local_region",  # Hints a random item that can be found in a specific local location group
         "prog_item_at_region",  # Hints the region that a good item can be found for this player
-        "joke_hint"  # Doesn't hint anything
-        # specific characters?
+        "joke_hint",  # Doesn't hint anything
+        "dungeon_location"
         # dungeon er?
     ]
     world.in_game_hint_types = []
     world.hinted_locations = {}
     world.hinted_items = {}
     world.hinted_regions = {}
+    world.hinted_dungeons = {}
 
     # may not need to be world.
     world.local_hintable_locations = [
@@ -184,25 +185,23 @@ def setup_hints(world):
     if world.options.magicant_mode.value in [0, 3]:
         world.local_hintable_items.append("Magicant Teleport")
 
-    for item in world.removed_teleports:
+    for item in world.multiworld.precollected_items[world.player]:
         if item.name in world.local_hintable_items:
-            # let's not hint an item that doesn't exist
             world.local_hintable_items.remove(item.name)
-
-    for item in world.multiworld.precollected_items:
-        if item in world.local_hintable_items:
-            world.local_hintable_items.remove(item)
 
     for item in world.options.start_hints.value:
         if item in world.local_hintable_items:
             world.local_hintable_items.remove(item)
-            
-    if world.starting_character in world.local_hintable_items:
-        world.local_hintable_items.remove(world.starting_character)
+
+    if world.starting_area_teleport in world.local_hintable_items:
+        world.local_hintable_items.remove(world.starting_area_teleport)
 
     if world.local_hintable_items == []:
         hint_types.remove("hint_for_good_item")
         hint_types.remove("prog_item_at_region")
+
+    if not world.options.dungeon_shuffle:
+        hint_types.remove("dungeon_location")
 
     if world.options.giygas_required:
         world.local_hintable_locations.append("Cave of the Past - Present")
@@ -232,8 +231,12 @@ def setup_hints(world):
             world.hinted_regions[index] = group
             world.hinted_locations[index] = location
 
+        elif hint == "dungeon_location":
+            dungeon = world.random.choice(list(world.dungeon_connections.keys()))
+            world.hinted_dungeons[index] = dungeon
 
-def parse_hint_data(world, location, rom, hint):
+
+def parse_hint_data(world, location, rom, hint, index):
     if hint == "item_at_location":
         if world.player == location.item.player and location.item.name in character_item_table and location.item.name != "Photograph":
             player_text = "your friend "
@@ -308,6 +311,12 @@ def parse_hint_data(world, location, rom, hint):
 
     elif hint == "joke_hint":
         text = world.random.choice(world.joke_hints)
+        text = text_encoder(text, 255)
+        text.append(0x02)
+
+    elif hint == "dungeon_location":
+        dungeon = world.hinted_dungeons[index]
+        text = f"{dungeon} leads to {world.dungeon_connections[dungeon]}."
         text = text_encoder(text, 255)
         text.append(0x02)
 

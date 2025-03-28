@@ -4,7 +4,7 @@ CharLastInvSlot:
 dw $99FE,$9A5D,$9ABC,$9B1B
 
 TeleSectorID:
-dw $5A59,$5A85,$5A91,$5AAD,$5AED,$5B09,$5B31,$5AD1,$5B4D,$5B5D,$5B79,$5B91,$5B99,$5BAD,$5AB1,$5B89,$5B29
+dw $FFFF,$5A85,$5A91,$5AAD,$5AED,$5B09,$5B31,$5AD1,$5B4D,$5B5D,$5B79,$5B91,$5B99,$5BAD,$5AB1,$5B89,$5B29
 
 TeleFlags:
 dw $0001,$0002,$1000,$0004,$0010,$2000,$0020,$0008,$0040,$0100,$0080,$0400,$0800,$4000,$0004,$0200,$0020
@@ -291,6 +291,24 @@ JML CheckTotalEnergy
 
 ORG $C192DE
 JML DisplayEnergy
+
+ORG $C2EF3D
+JML LoadEnemyToVram
+
+ORG $C2BDC1
+JML AllowDynamicCallEnemyLoad
+
+ORG $C2EFA2
+JML AllowEnemyToSpawn
+
+ORG $C2EFC6
+JML ForceLoadSingle
+
+ORG $C2EEEF
+JML InitializeLoadingEnemies
+
+ORG $C2EFF7
+JSL SetupVramForSpriteLoad
 
 ;new jmls
 
@@ -892,7 +910,7 @@ db $13, $02 ;Summers
 ScarabaTeleTex:
 db $18, $01, $01, $01
 db $0A
-dl ScarabaLeaderName
+dd ScarabaLeaderName
 ScarabaLeaderDone:
 db $50, $9C, $95, $91, $A2, $9E, $95
 db $94, $50, $A4, $9F, $50, $A4, $95, $9C, $95, $A0, $9F, $A2, $A4, $50, $A4, $9F
@@ -955,7 +973,7 @@ db $94, $50, $9E, $9F, $A4, $98, $99, $9E, $97, $51, $59, $1F, $02, $79, $13, $0
 PooPsiTex:
 db $18, $01, $01, $01, $70, $58, $1C, $02, $04, $50, $A2, $95, $91, $9C, $99, $AA
 db $95, $94, $50, $A4, $98, $95, $50, $A0, $9F, $A7, $95, $A2, $50, $9F, $96, $50
-db $07, $D1, $03, $1B, $03, $8D, $95, $EE, $FF, $1C, $12, $15, $51, $59, $1F, $02
+db $07, $D1, $03, $1B, $03, $8E, $95, $EE, $FF, $1C, $12, $15, $51, $59, $1F, $02
 db $67, $1F, $71, $04, $02, $04, $D1, $03, $13, $02, $1C, $12, $16, $51, $59, $1F
 db $02, $67, $1F, $71, $04, $03, $13, $02; Starstorm
 
@@ -971,9 +989,14 @@ db $18, $01, $01, $19, $02, $83, $A4, $9F, $A2, $95, $02, $19, $02, $84, $91, $9
 db $95, $02, $19, $02, $74, $95, $9C, $95, $A4, $95, $02, $1C, $07, $03, $11, $09
 db $03, $50, $96, $EE, $00, $99, $96, $EE, $00, $84, $C6, $EE, $00, $18, $04, $02
 db $08, $31, $E4, $C5, $00, $1B, $02, $20, $96, $EE, $00, $1D, $0C, $01, $01, $18
-db $07, $02, $00, $00, $00, $00, $1B, $03, $20, $96, $EE, $00, $08, $56, $E4
-db $C5, $00, $01, $1B, $02, $20, $96, $EE, $00, $1B, $00, $1D, $0C, $00, $00, $1B
-db $03, $50, $96, $EE, $00, $1B, $01, $19, $19, $00, $00, $1B, $01, $1D, $12, $00
+db $07, $02, $00, $00, $00, $00, $1B, $03, $6C, $96, $EE, $00, $08, $56, $E4
+db $C5, $00, $01, $1B, $02, $20, $96, $EE, $00, $1B, $00, $0A
+dl StorageStoreCheck
+db $0A
+dd StorageStoreCheck
+db $00
+BackFromCheck:
+db $1B, $01, $19, $19, $00, $00, $1B, $01, $1D, $12, $00
 db $00, $01, $0A, $50, $96, $EE, $18, $04, $02, $02, $0E, $01, $19, $14, $1B, $02
 db $20, $96, $EE, $00, $1A, $07, $01, $1B, $02, $D6, $96, $EE, $00, $1B, $04, $1B
 db $00, $18, $02, $08, $4A, $E5, $C5, $00, $1B, $02, $99, $96, $EE, $00, $1B, $05, $18
@@ -1823,14 +1846,11 @@ db $8F
 ORG $CF0EC6
 db $86, $f7, $2f
 
-ORG $2FF786
-db $06, $b2, $01, $8e, $f7, $2f, $00, $02, $05, $33, $00, $02
-
 ORG $CF111C
 db $86, $F7, $2F
 
 ORG $2FF786
-db $06, $de, $03, $97, $f7, $2f, $00, $06, $b2, $01, $98, $f7, $2f, $00, $04, $d8
+db $02, $de, $03, $97, $f7, $2f, $00, $06, $b2, $01, $98, $f7, $2f, $00, $04, $d8
 db $02, $02, $05, $d8, $02, $02
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ORG $CF5B2B
@@ -2905,7 +2925,11 @@ db $f2, $03, $00, $5e, $02, $1f, $ea, $04, $00, $1f, $f2, $04, $00, $5e, $02, $1
 db $00, $00, $5e, $5e, $0a, $6e, $a5, $ee; Credits choice
 
 ORG $EEA5D0
-db $04, $d1, $00, $04, $d2, $00, $04, $d3, $00, $04, $d5, $00, $04, $d6, $00, $04
+db $0A
+dl FixEpilogueWinters
+db $d2, $00
+BackfromEpilogueFix:
+db $04, $d3, $00, $04, $d5, $00, $04, $d6, $00, $04
 db $d7, $00, $04, $d8, $00, $04, $d9, $00, $04, $da, $00, $04, $db, $00, $04, $dc
 db $00, $04, $dd, $00, $04, $de, $00, $04, $df, $00, $04, $69, $00, $12, $70, $80
 db $9c, $95, $91, $a3, $95, $50, $9b, $95, $95, $a0, $50, $99, $9e, $50, $9d, $99
@@ -2962,21 +2986,19 @@ db $93, $98, $5e
 ;ORG $CF9629
 ;dw $0069
 ;;;;;;;;;;;;;;;
+ORG $D579F0 ; New Tenda Village coordinates
+dw $0035
+dw $0020
 
-ORG $D578DD
-db $78,$91,$a0,$a0,$a9,$5D,$78,$91,$a0,$a0,$a9,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$DD,$00,$f4,$01,$cb,$03
-db $84,$98,$A2,$95,$95,$94,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$D3,$00,$B4,$02,$66,$04
-db $83,$91,$A4,$A5,$A2,$9E,$50,$86,$91,$9C,$9C,$95,$A9,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$D5,$00,$22,$00,$CC,$03
-db $74,$A5,$A3,$A4,$A9,$50,$74,$A5,$9E,$95,$A3,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$DE,$00,$A0,$00,$E3,$04
-db $76,$9F,$A5,$A2,$A3,$99,$94,$95,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$D6,$00,$7C,$01,$F9,$01
-db $87,$99,$9E,$A4,$95,$A2,$A3,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$D4,$00,$3E,$00,$21,$01
-db $83,$A5,$9D,$9D,$95,$A2,$A3,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$D7,$00,$2A,$02,$61,$01
-db $83,$93,$91,$A2,$91,$92,$91,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$D9,$00,$98,$00,$0E,$02
-db $74,$91,$9C,$91,$91,$9D,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$D8,$00,$3A,$02,$C1,$01
-db $74,$95,$95,$A0,$50,$74,$91,$A2,$9B,$9E,$95,$A3,$A3,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$DA,$00,$C0,$02,$80,$03
-db $84,$95,$9E,$94,$91,$50,$86,$99,$9C,$9C,$91,$97,$95,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$DB,$00,$35,$00,$20,$00
-db $85,$9E,$94,$95,$A2,$A7,$9F,$A2,$9C,$94,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$DC,$00,$45,$01,$5F,$01
-db $7D,$91,$97,$99,$93,$91,$9E,$A4,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$DF,$00,$F2,$02,$28,$02
+ORG $F4A000
+db $78, $91, $a0, $a0, $a9, $5d, $78, $91, $a0, $a0, $a9, $00, $00, $00, $00, $00
+db $00, $00, $00, $00, $00, $00, $00, $00, $00, $dd, $00, $f4, $01, $cb, $03, $FF; Happy-Happy Teleport
+
+db $74, $a5, $a3, $a4, $a9, $50, $74, $a5, $9e, $95, $a3, $00, $00, $00, $00, $00
+db $00, $00, $00, $00, $00, $00, $00, $00, $00, $de, $00, $a0, $00, $e3, $04, $FF; Dusty Dunes
+
+db $7d, $91, $97, $99, $93, $91, $9e, $a4, $00, $00, $00, $00, $00, $00, $00, $00
+db $00, $00, $00, $00, $00, $00, $00, $00, $00, $df, $00, $f2, $02, $28, $02, $FF; Magicant Teleport
 
 
 
@@ -4510,14 +4532,16 @@ db $50, $93, $91, $a2, $a2, $a9, $99, $9e, $97, $50, $a4, $9f, $9f, $50, $9d, $a
 db $93, $98, $51, $03, $02
 
 ORG $C8B19F
-db $01, $01, $01
+db $04, $0B, $00
 
 ORG $C920B8
 db $0A, $00, $B3, $EE
 
 ORG $EEB300
 db $1f, $21, $51, $1f, $e5, $ff, $1f, $21, $24, $1f, $e5, $ff, $1f, $ec, $ff, $06
-db $08, $1f, $b3, $ee, $ff, $1b, $03, $f3, $b3, $ee, $ff, $04, $3d, $00, $02, $10
+db $08, $1f, $b3, $ee, $ff, $1b, $03, $f3, $b3, $ee, $ff, $0A
+dl ActivateCakeEnemies
+db $10
 db $20, $1f, $1a, $2d, $04, $03, $1f, $16, $2d, $04, $01, $1f, $e6, $2d, $04, $10
 db $1a, $1f, $1b, $2d, $04, $18, $01, $01, $70, $89, $9f, $a5, $57, $a2, $95, $50
 db $96, $99, $9e, $91, $9c, $9c, $a9, $50, $91, $a7, $91, $9b, $95, $5e, $03, $00
@@ -5936,7 +5960,8 @@ RTL
 ExplodeReturn:
 JSR $6A44
 JML $C2A670
-
+;;;;;;;;;;;;;;;;;;;;
+;old code
 
 
 
@@ -6081,7 +6106,7 @@ ORG $EEC2C6
 db $50, $16, $6f, $51, $08, $58, $24, $c9, $ff, $0a, $bc, $d5, $c9
 
 ORG $CF213D
-db $D6, $81
+db $C7, $80
 
 ORG $EEA0E6
 db $01
@@ -8495,7 +8520,7 @@ db $0A
 dl TracyNessText
 
 ORG $CFE367
-dd MagicantTentacleText
+dd MagicantTentacleERText
 
 ORG $C87963
 db $0A
@@ -8800,6 +8825,138 @@ dl ShowDadEnergy
 ORG $C63229
 db $0A
 dl PingDadEnergy
+
+ORG $CF1203
+dd SetSaturnLadderFlag
+
+;ORG $D01664
+;db $1F, $04 Flag for the Saturn Valley Ladder
+
+;ORG $CF19C7
+;dd JackieMoonsideSetup Only in dungeon er
+
+;ORG $CFC8C6
+;dd EverDeadText ; Only in dungeon ER
+
+;ORG $CF1657
+;dd CafeEverdredText ; Only in dungeon ER
+
+ORG $CFC50E
+dd JackieItemCheck
+
+ORG $CF0648
+dd UnlockOnettTeleport
+
+ORG $CF09E3
+dd $C9B10B
+
+ORG $CF1922
+dd $C9B10B
+
+ORG $CF00C6
+dd $C9B10B
+
+ORG $CF00BB
+dd $C9B10B
+
+ORG $CFBC06
+dd MinerDialogue
+
+ORG $C6122B
+db $0A
+dl MinerText2
+
+ORG $C93267
+db $0A
+dl $C9327F
+
+;ORG $D0D4E5
+;dd PokeyBattleExpanded
+
+;ORG $EFFF10
+;PokeyBattleExpanded:
+
+ORG $CF6BF1
+db $6F
+
+ORG $D5AD53
+dw $0209
+dw $0209; Skate Punk
+
+ORG $D5DD69 ; Loaded Dice
+dw $0209
+dw $0209
+dw $0209
+dw $0209
+
+ORG $D5A5F7 ; Loaded Dice
+dw $0209
+dw $0209
+dw $0209
+dw $0209
+
+ORG $D5AEC9 ; Starman Super
+dw $0209
+
+ORG $D03CA4 ; Remove bugged plate
+db $00
+
+ORG $CF0457
+dd OnettHotelSetTeleport
+
+ORG $EECA28
+db $0A
+dl MonkeyCaveShop
+
+ORG $C50051
+dd MonkeyShopGreeting
+
+ORG $C50519
+dd MonkeyShopBuyLine
+
+ORG $C50E1F
+dd MonkeyShopNotEnoughMoney
+
+ORG $C506B1
+dd MonkeyShopSelectItem
+
+ORG $C50849
+dd MonkeyShopPickCarrier
+
+ORG $C50381
+dd MonkeyShopNoBuy
+
+ORG $C50C87
+dd MonkeyShopCancelBuy
+
+ORG $C501E9
+dd MonkeyShopExitThanks
+
+ORG $C515B9
+dd MonkeyShopThank
+
+ORG $C519CB
+dd MonkeyShopCantCarry
+
+ORG $C51751
+dd MonkeyShopBuyAnother
+
+ORG $C50FB7
+dd MonkeyShopCantCarrySingle
+
+ORG $D5782C
+db $E0 ; Repel Sandwich
+db $5D
+db $5A
+db $7F
+db $5F
+db $6C ; Protein Drink
+db $8C ; Ruler
+
+ORG $C74C11
+dd PostFrankGuardText
+
+
 
 ;New data table go here
 
@@ -9430,7 +9587,9 @@ db $1E, $0E, $04, $05, $03, $02
 
 db $06, $69, $00
 dd $00C74207
-db $70, $58, $1c, $02, $01
+db $0A
+dl LeaderHandinBadge
+db $01
 db $0A, $AD, $69, $C7
 
 ;new text go here
@@ -11262,6 +11421,7 @@ STA $97CC
 STZ $0724
 lda $0730
 STA $97D0
+STZ $97D2
 LDA $0734
 STA $97D4
 LDA #$000B
@@ -11772,6 +11932,127 @@ STA $97CC
 LDA #$0000
 JML $C17F0F
 
+SetFlagOnEquipConfirmSolo:
+db $1C, $20, $01
+db $0A
+dl $C5E1E0
+
+SetFlagOnEquipConfirm:
+db $1C, $20, $01
+db $0A
+dl $C50990
+
+ForcePurchaseCheck:
+db $1D, $19, $01
+db $0A
+dd CancelBuyRemoveName
+
+ForceSetSoloCheck:
+db $1C, $20, $01
+db $0A
+dl $C5E1E0
+
+LoadEnemyToVram:
+LDA $1BE2
+BEQ .LoadNormal
+LDA $9D11
+AND #$00FF
+BRA .LoadCustom
+.LoadNormal:
+LDA [$0A]
+.LoadCustom:
+LDY #$005E
+PHX
+LDX $AAB4
+SEP #$20
+STA $1BE4,X
+REP #$20
+PLX
+JML $C2EF42
+
+AllowDynamicCallEnemyLoad:
+CMP #$00FF
+BEQ .cantcall
+JML $C2BDA3
+.cantcall:
+LDA $26
+PHX
+LDX #$0000
+SEP #$20
+.Check:
+CMP $1BE4,X
+BEQ .Loaded
+CPX #$0003
+BEQ .DontOverride
+INX
+BRA .Check
+.DontOverride:
+REP #$20
+PLX
+JML $C2BDC6
+.Loaded:
+REP #$20
+PLX
+JML $C2BDEC
+
+AllowEnemyToSpawn:
+LDA $1BE2
+BEQ .DontOverride
+LDA $9D11
+AND #$00FF
+BRA .Done
+.DontOverride:
+LDA [$0A]
+.Done:
+STA $AABE,X
+JML $C2EFA7
+
+ForceLoadSingle:
+LDA [$1A],y
+AND #$00FF
+PHA
+LDA $1BE2
+BNE .ForceMode
+.Load:
+PLA
+JML $C2EFCB
+
+.ForceMode:
+LDA $B5ED
+BNE .Done
+INC $B5ED
+BRA .Load
+.Done:
+PLA
+JML $C2EFD4
+
+InitializeLoadingEnemies:
+LDA $1BE2
+BNE .MidBattle
+STZ $1BE4
+STZ $1BE6
+.MidBattle:
+STZ $AAB4
+STZ $AAB2
+JML $C2EEF5
+
+SetupVramForSpriteLoad:
+PHA
+LDA $1BE2
+BEQ .NormalLoad
+LDA $AAB4
+CMP #$04
+BCC .NormalLoad
+PLA
+JSL $C085B7
+SEP #$20
+LDA #$0F
+STA $00000D
+RTL
+.NormalLoad:
+PLA
+JML $C08616
+
 ;new code go here
 
 
@@ -11827,7 +12108,7 @@ ORG $C5E029
 ;dl OverrideSpaceCheckOnSpecialItem_nosell
 
 ORG $C5E1AE
-;dd CancelBuyRemoveName
+;dd ForcePurchaseCheck
 
 ORG $C50A6A
 ;db $0A
@@ -11845,12 +12126,22 @@ ORG $C5E04C
 ;db $0A
 ;dl OverrideSpaceCheckOnSpecialItem_oneslot
 
+ORG $C5E1A5
+;dd SetFlagOnEquipConfirmSolo
+
+ORG $C5E119
+;dd SetFlagOnEquipConfirm
+
+ORG $C5E0F2
+;dd ForceSetSoloCheck
 
 
-ORG $F4002A
+
+
+ORG $F400A8
 ;Item ID, 2-byte price, Item Type, 2-bytelocation ID/flag number
-;db $AD, $00, $00, $06, $00, $00; Non-remote local item. Franklin Badge.
-;db $AD, $00, $00, $06, $01, $00; Non-remote local Teleport.
+;db $4A, $00, $00, $00, $00, $00; Non-remote local item. Franklin Badge.
+;db $5A, $00, $00, $00, $01, $00; Non-remote local Teleport.
 ;db $96, $ff, $ff, $05, $02, $00; A remote regular item
 ;db $01, $ff, $ff, $02, $03, $00; Non-remote local Character
 ;db $ad, $ff, $ff, $04, $04, $00; Item that the player already bought and got the flag for
@@ -12214,7 +12505,7 @@ dl .LeaderGiven
 db $1D, $03, $FF
 db $1B, $02
 dd $C5DF89
-db $1C, $20, $01
+;db $1C, $20, $01
 db $0A
 dl $C5E0DE
 .BoughtSpecialItemGiveToPlayer:
@@ -13340,7 +13631,18 @@ dd missile_gamma
 db $00, $01, $01, $00
 dd shootrocket_omega
 dd missile_omega
+;;;;;;;;;;;;;;;;;;;;;;;;;;
+db $00, $01, $05, $00
+dd paralyz_pollen_lambda
+dd $C28CF1
 
+db $00, $04, $05, $00
+dd paralyz_pollen_omega
+dd $C28A92
+;;;;;;;;;;;;;;;;
+db $00, $00, $05, $00
+dd $EF9A47
+dd code_test_load_enemyvram
 
 
 ;New battle text
@@ -13685,6 +13987,30 @@ db $01, $70, $1c, $0d, $50, $a3, $98, $9f, $a4, $50, $91, $50, $a2, $95, $91, $9
 db $50, $97, $a5, $9e, $51
 db $1F, $02, $46, $03
 db $02
+
+paralyz_pollen_lambda:
+db $01, $1F, $02, $19
+db $01, $70, $1C, $0D, $50
+db $97, $9f, $a4, $50, $91, $50, $9c, $99, $a4, $a4, $9c, $95, $50, $a0, $9f, $9c
+db $9c, $95, $9e, $50, $9f, $9e, $50, $a9, $9f, $a5, $51
+db $1F, $02, $52
+db $03
+db $02
+
+paralyz_pollen_omega:
+db $01, $1F, $02, $19
+db $01, $70, $1C, $0D, $50
+db $97, $9f, $a4, $50, $91, $50, $92, $a5, $9e, $93, $98, $50, $9f, $96, $50, $a0
+db $9f, $9c, $9c, $95, $9e, $50, $95, $a6, $95, $a2, $a9, $a7, $98, $95, $a2, $95
+db $51
+db $1F, $02, $52
+db $03
+db $02
+
+vram_test_message:
+db $01, $70
+db $77, $9F, $50, $97, $9F, $50, $97, $91, $94, $97, $95, $A4, $50, $94, $A9, $9E
+db $91, $9D, $99, $93, $50, $A6, $A2, $91, $9D, $51, $03, $02
 
 ;New battle code
 ORG $FD0000
@@ -14078,9 +14404,41 @@ late_missile_damage:
 PLA
 JML $C08FF7
 
+code_test_load_enemyvram:
+REP #$31
+LDA $AAB4
+CMP #$0004
+BCS .skip_vram_load ; 4 is the max enemies the game can handle. If we already loaded 4, ignore
+LDA $9D11
+AND #$00FF
+SEP #$20
+CMP $1BE4
+BEQ .skip_vram_load
+CMP $1BE5
+BEQ .skip_vram_load
+CMP $1BE6
+BEQ .skip_vram_load
+CMP $1BE7
+BEQ .skip_vram_load ;If the enemy is already loaded, don't load it into a new slot
+REP #$20
+LDA #$0090
+LDY #$005E
+INC $1BE2
+JSL goto_vramload
+.skip_vram_load:
+REP #$31
+JSL $C2C145 ;Do the enemy call
+STZ $1BE2
+STZ $B5ED
+RTL
 
-
-
+goto_vramload:
+REP #$31
+PHD
+TDC
+ADC #$FFE2
+TCD
+JML $C2EEF5
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ORG $C28FC8
@@ -15220,7 +15578,7 @@ Gift_menu:
   db $0A
   dl .gift_item_picker
   .GetGiftText:
-  db $1C, $21, $01
+  db $1C, $21, $12
   db $12
   db $1C, $1C, $01  
   db $1B, $06
@@ -16650,6 +17008,251 @@ dl $EF6049
 PhotoShopText:
 db $80, $98, $9f, $a4, $9f, $5d, $9f, $a0, $00
 
+SetSaturnLadderFlag:
+db $04
+db $1F, $04
+db $02
+
+JackieMoonsideSetup:
+db $1F, $63
+dd JackieMoonsideGive
+db $0A
+dl $C9A08B
+
+JackieMoonsideGive:
+db $05, $4F, $02
+db $1F, $1A, $80, $03, $03
+db $1F, $16, $80, $03, $03
+db $10, $30
+db $1F, $1B, $80, $03
+db $18, $01, $01
+.JackieGiveItem:
+db $70, $71, $50, $a3, $a4, $a2, $91, $9e, $97, $95, $50, $9d, $91, $9e, $50, $9a
+db $a5, $a3, $a4, $50, $93, $91, $9d, $95, $50, $92, $91, $a2, $97, $99, $9e, $97
+db $50, $99, $9e, $50, $98, $95, $a2, $95, $5c, $10, $0b, $50, $9c, $9f, $9f, $9b
+db $99, $9e, $97, $50, $96, $9f, $a2, $50, $a9, $9f, $a5, $5e, $5e, $5e, $03, $00
+db $70, $79, $a3, $50, $98, $95, $50, $91, $50, $96, $a2, $99, $95, $9e, $94, $50
+db $9f, $96, $50, $a9, $9f, $a5, $a2, $a3, $6f, $10, $16, $50, $78, $95, $50, $94
+db $95, $9d, $91, $9e, $94, $95, $94, $50, $79, $50, $97, $99, $a6, $95, $50, $a9
+db $9f, $a5, $50, $a4, $98, $99, $a3, $50, $1c, $05, $01, $50, $91, $9e, $94, $50
+db $9c, $95, $96, $a4, $5e, $03
+db $1D, $03, $FF
+db $1B, $02
+dd .FullInv
+db $05, $20, $04
+db $04, $DF, $03
+db $1D, $0E, $FF, $04, $08
+dd $C7DCB6
+db $03
+db $18, $04, $02
+.FullInv:
+db $00, $70
+db $83, $99, $9e, $93, $95, $50, $a9, $9f, $a5, $a2, $50, $a0, $9f, $93, $9b, $95
+db $a4, $a3, $50, $91, $a2, $95, $50, $a3, $9f, $50, $96, $a5, $9c, $9c, $5c, $10
+db $0a, $50, $79, $57, $9c, $9c, $50, $98, $9f, $9c, $94, $50, $9f, $9e, $50, $a4
+db $9f, $50, $99, $a4, $50, $96, $9f, $a2, $50, $9e, $9f, $a7, $5e
+db $04, $20, $04
+db $03
+db $18, $04
+db $02
+
+JackieItemCheck:
+db $06
+db $20, $04
+dd JackieMoonsideGive_JackieGiveItem
+db $0A
+dl $c6f175
+
+UnlockOnettTeleport:
+db $04, $D1, $00
+db $02
+
+MagicantTentacleERText:
+db $07
+db $17, $04
+db $1B, $02
+dd .Ness
+db $1F, $63
+dd $C9B112
+.Ness:
+db $0A
+dl MagicantTentacleText
+
+MinerDialogue:
+db $06
+db $AE, $00 ;If the mine is open...
+dd $C60349;Proceed as normal
+;If the mine is closed
+db $06
+db $5A, $00 ;and we got the check
+dd $C60365 ;Run the permit script
+db $06
+db $48, $00 ;If the check is primed...
+dd $C6050B ;Give it to the player
+db $0A
+dl $C60365 ;Else run the permit script
+
+MinerText2:
+db $06, $5A, $00
+dd .Already
+db $91, $9C, $9D, $9F, $A3, $A4
+db $0A
+dl $C61231
+.Already:
+db $98, $91, $94
+db $0A
+dl $C61231
+
+CafeEverdredText:
+db $06, $91, $00
+dd .Done
+db $18, $01, $01
+db $70, $58, $71, $a2, $95, $50, $a9, $9f, $a5, $50, $a2, $95, $91, $9c, $9c, $a9
+db $50, $97, $9f, $99, $9e, $97, $50, $a4, $9f, $50, $9a, $a5, $a3, $a4, $50, $9c
+db $95, $91, $a6, $95, $50, $98, $99, $9d, $50, $9c, $a9, $99, $9e, $97, $50, $9f
+db $9e, $50, $a4, $98, $95, $50, $a3, $a4, $a2, $95, $95, $a4, $5E, $5E, $5E, $6f, $59, $03
+db $18, $04, $02
+.Done:
+db $1F, $63
+dd $C9B112
+db $02
+
+LeaderHandinBadge:
+db $70, $58
+db $19, $10, $01
+db $1B, $04
+db $1C, $02, $00
+db $0A
+dl $EEF748
+
+EverDeadText:
+db $70, $87, $98, $a9, $50, $91, $a2, $95, $50, $a9, $9f, $a5, $50, $99, $9e, $a4
+db $95, $a2, $a2, $a5, $a0, $a4, $99, $9e, $97, $50, $9d, $a9, $50, $a3, $a4, $a2
+db $95, $95, $a4, $50, $a9, $9f, $97, $91, $6f, $03, $01, $70, $85, $97, $98, $5c
+db $50, $99, $a4, $57, $a3, $50, $9e, $9f, $a4, $50, $95, $a6, $95, $9e, $50, $a2
+db $95, $9c, $91, $a8, $99, $9e, $97, $50, $9e, $9f, $a7, $5e, $13
+db $0A
+dl $C839EB
+
+StorageStoreCheck:
+db $1B, $05
+db $19, $19, $00, $00
+db $1C, $19, $01
+db $1B, $03
+dd .CheckRegular
+db $1C, $1D, $01
+.CheckRegular:
+db $1B, $06
+db $1D, $0C, $00, $00
+db $1B, $03
+dd .ClearAndFull
+db $0A
+dl BackFromCheck
+.ClearAndFull:
+db $1C, $1E, $01
+db $0A
+dd $EE9650
+
+ActivateCakeEnemies:
+db $05, $0B, $00
+db $04, $3d, $00, $02
+
+FixEpilogueWinters:
+db $04, $d1, $00
+db $04, $d2, $00
+db $04, $d4, $00
+db $0A
+dl BackfromEpilogueFix
+
+OnettHotelSetTeleport:
+db $04
+db $D1, $00
+db $0A
+dl $C9B11E
+
+MonkeyCaveShop:
+db $04, $ED, $00
+db $08 
+dd $C5DFB1
+db $05, $ED, $00
+db $02
+
+MonkeyShopGreeting: ; todo: write this
+db $70, $85, $9b, $99, $9b, $99, $50, $85, $9b, $a5, $51, $03, $00, $70, $58, $87
+db $95, $9c, $93, $9f, $9d, $95, $50, $a4, $9f, $50, $7d, $9f, $9e, $9b, $95, $a9
+db $50, $7d, $91, $a2, $a4, $5e, $59, $03, $02
+db $02
+
+MonkeyShopBuyLine:
+db $70, $7b, $a5, $50, $7b, $99, $9b, $a5, $51, $03, $00, $70, $58, $87, $98, $91
+db $a4, $50, $a7, $9f, $a5, $9c, $94, $50, $a9, $9f, $a5, $50, $9c, $99, $9b, $95
+db $6f, $03, $02
+
+MonkeyShopNotEnoughMoney:
+db $70, $85, $9b, $99, $50, $a5, $9b, $a5, $50, $a5, $9b, $a5, $9c, $95, $9c, $95
+db $51, $03, $00, $70, $58, $89, $9f, $a5, $50, $91, $a2, $95, $50, $a4, $9f, $9f
+db $50, $a0, $9f, $9f, $a2, $50, $96, $9f, $a2, $50, $a4, $98, $99, $a3, $50, $99
+db $a4, $95, $9d, $51, $59, $03, $02
+
+MonkeyShopSelectItem:
+db $70, $7b, $99, $99, $9b, $a5, $9b, $91, $50, $1c, $05, $00, $6f, $03, $00, $70
+db $58, $89, $9f, $a5, $50, $a7, $91, $9e, $a4, $50, $a4, $98, $95, $50, $1c, $05
+db $00, $6f, $59, $03, $02
+
+MonkeyShopPickCarrier:
+db $70, $7b, $a9, $a5, $9b, $a9, $9b, $99, $9b, $95, $9b, $99, $a5, $6f, $03, $00
+db $70, $58, $87, $98, $9f, $57, $a3, $50, $a4, $91, $9b, $99, $9e, $97, $50, $99
+db $a4, $6f, $59, $03, $02
+
+MonkeyShopCancelBuy:
+db $70, $85, $9b, $99, $91, $a9, $50, $a5, $9b, $99, $5e, $03, $00, $70, $58, $7f
+db $98, $5c, $10, $05, $50, $9f, $9b, $91, $a9, $5e, $59, $03, $02
+
+MonkeyShopThank:
+db $70, $85, $9b, $a5, $9b, $a5, $9b, $a5, $51, $03, $00, $70, $58, $84, $98, $91
+db $9e, $9b, $a3, $51, $59, $03, $02
+
+MonkeyShopNoBuy:
+db $70, $7b, $a9, $99, $99, $99, $95, $9b, $95, $9b, $95, $9b, $95, $6f, $03, $00
+db $70, $58, $89, $9f, $a5, $50, $94, $9f, $9e, $57, $a4, $50, $a7, $91, $9e, $a4
+db $50, $a4, $9f, $50, $92, $a5, $a9, $50, $96, $a2, $9f, $9d, $50, $91, $50, $9d
+db $9f, $9e, $9b, $95, $a9, $6f, $59, $03, $02
+
+MonkeyShopCantCarrySingle:
+db $70, $7b, $95, $95, $9b, $99, $9b, $99, $95, $95, $51, $03, $00, $70, $58, $89
+db $9f, $a5, $50, $91, $a2, $95, $50, $93, $91, $a2, $a2, $a9, $99, $9e, $97, $50
+db $a7, $91, $a9, $50, $a4, $9f, $9f, $50, $9d, $a5, $93, $98, $51, $59, $03, $02
+
+MonkeyShopExitThanks:
+db $70, $85, $9b, $99, $9b, $99, $9b, $99, $51, $03, $00, $70, $58, $73, $9f, $9d
+db $95, $50, $91, $97, $91, $99, $9e, $51, $59, $03, $02
+
+MonkeyShopBuyAnother:
+db $70, $85, $9b, $a9, $a5, $99, $9b, $a5, $a5, $a5, $a9, $95, $50, $7b, $a9, $95
+db $a5, $95, $9b, $a5, $9b, $9f, $5e, $03, $00, $70, $58, $87, $9f, $a5, $9c, $94
+db $50, $a9, $9f, $a5, $50, $9c, $99, $9b, $95, $50, $91, $9e, $a9, $a4, $98, $99
+db $9e, $97, $50, $95, $9c, $a3, $95, $6f, $59, $03, $00, $02
+
+MonkeyShopCantCarry:
+db $70, $1c, $02, $00, $50, $9b, $99, $9b, $99, $95, $95, $51, $03, $00, $70, $58, $1c
+db $02, $00, $50, $99, $a3, $50, $93, $91, $a2, $a2, $a9, $99, $9e, $97, $50, $a7
+db $91, $a9, $50, $a4, $9f, $9f, $50, $9d, $a5, $93, $98, $51, $59, $03, $00, $70
+db $7b, $a9, $95, $9b, $99, $9b, $99, $9f, $9b, $95, $6f, $03, $00, $70, $58, $87
+db $99, $9c, $9c, $50, $a3, $9f, $9d, $95, $9f, $9e, $95, $50, $95, $9c, $a3, $95
+db $50, $a4, $91, $9b, $95, $50, $99, $a4, $6f, $59, $03, $00, $02
+
+PostFrankGuardText:
+db $70, $7a, $a5, $a3, $a4, $50, $57, $93, $91, $a5, $a3, $95, $50, $a9, $9f, $a5
+db $50, $92, $95, $91, $a4, $50, $a5, $a0, $50, $9f, $a5, $a2, $50, $92, $9f, $a3
+db $a3, $5c, $10, $05, $50, $94, $9f, $95, $a3, $9e, $57, $a4, $50, $9d, $95, $91
+db $9e, $50, $79, $57, $9c, $9c, $50, $9d, $9f, $a6, $95, $50, $96, $9f, $a2, $50
+db $a0, $a5, $9e, $9b, $a3, $50, $9c, $99, $9b, $95, $50, $a9, $9f, $a5, $51, $03
+db $0A
+dl $C74C58
+
+
+;ORG $C62B87
+;db $0a, $28, $ca, $ee ; Test, delete later
 
 ;New New Text
 

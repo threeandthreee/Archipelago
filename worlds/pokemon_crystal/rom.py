@@ -8,6 +8,7 @@ from settings import get_settings
 from worlds.Files import APProcedurePatch, APTokenMixin, APTokenTypes, APPatchExtension
 from .data import data
 from .items import item_const_name_to_id
+from .options import Route32Condition
 from .utils import convert_to_ingame_text
 
 if TYPE_CHECKING:
@@ -344,8 +345,7 @@ def generate_output(world: "PokemonCrystalWorld", output_directory: str, patch: 
     write_bytes(patch, elite_four_text, data.rom_addresses["AP_Setting_VictoryRoadBadges_Text"] + 1)
     write_bytes(patch, [world.options.elite_four_badges - 1],
                 data.rom_addresses["AP_Setting_VictoryRoadBadges"] + 1)
-    rocket_badges = world.options.elite_four_badges - 2 if world.options.elite_four_badges > 1 else 0
-    write_bytes(patch, [rocket_badges], data.rom_addresses["AP_Setting_RocketBadges"] + 1)
+    write_bytes(patch, [world.options.radio_tower_badges - 1], data.rom_addresses["AP_Setting_RocketBadges"] + 1)
 
     red_text = convert_to_ingame_text("{:02d}".format(world.options.red_badges.value))
     write_bytes(patch, red_text, data.rom_addresses["AP_Setting_RedBadges_Text"] + 1)
@@ -399,6 +399,21 @@ def generate_output(world: "PokemonCrystalWorld", output_directory: str, patch: 
             map_fly_byte = 1 << (world.map_card_fly_location % 8)
             write_bytes(patch, [map_fly_byte], data.rom_addresses["AP_Setting_MapCardFreeFly_Byte"] + 1)
             write_bytes(patch, map_fly_offset, data.rom_addresses["AP_Setting_MapCardFreeFly_Offset"] + 1)
+
+    if not world.options.remove_ilex_cut_tree:
+        write_bytes(patch, [1], data.rom_addresses["AP_Setting_IlexCutTree"] + 1)
+
+    if world.options.skip_elite_four:
+        # Lance's room is ID 7
+        write_bytes(patch, [0x7], data.rom_addresses["AP_Setting_IndigoPlateauPokecenter1F_E4Warp"] + 4)
+
+    route_32_open = [1] if world.options.route_32_condition.value == Route32Condition.option_none else [0]
+    route_32_badge = [1] if world.options.route_32_condition.value == Route32Condition.option_any_badge else [0]
+    route_32_egg = [1] if world.options.route_32_condition.value == Route32Condition.option_egg_from_aide else [0]
+
+    write_bytes(patch, route_32_open, data.rom_addresses["AP_Setting_Route32Open"] + 1)
+    write_bytes(patch, route_32_badge, data.rom_addresses["AP_Setting_Route32RequiresBadge"] + 1)
+    write_bytes(patch, route_32_egg, data.rom_addresses["AP_Setting_Route32RequiresEgg"] + 1)
 
     # Set slot name
     for i, byte in enumerate(world.player_name.encode("utf-8")):

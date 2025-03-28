@@ -1,11 +1,12 @@
 from dataclasses import dataclass
 
-from Options import Choice, DeathLink, DefaultOnToggle, PerGameCommonOptions, Range, Toggle, StartInventoryPool
+from Options import Choice, DeathLink, DefaultOnToggle, PerGameCommonOptions, Range, Toggle, StartInventoryPool, ItemSet
+
+from worlds.tloz_ooa.data.Items import ITEMS_DATA
 
 
 class OracleOfAgesGoal(Choice):
     """
-    <NOT IMPLEMENTED, ONLY VERAN IS HANDLED RIGHT NOW>
     The goal to accomplish in order to complete the seed.
     - Beat Veran: beat the usual final boss (same as vanilla)
     - Beat Ganon: teleport to the Room of Rites after beating Veran, then beat Ganon (same as linked game)
@@ -146,32 +147,25 @@ class OracleOfAgesSlateShuffle(Toggle):
     display_name = "Slates Outside Dungeon 8"
 
 
-class OracleOfAgesRingQuality(Choice):
+class OracleOfSeasonsRequiredRings(ItemSet):
     """
-    Defines the quality of the rings that will be shuffled in your seed:
-    - Any: any ring can potentially be shuffled (including literally useless ones)
-    - Only Useful: only useful rings will be shuffled
+    Forces a specified set of rings to appear somewhere in the seed.
+    Adding too many rings to this list can cause generation failures.
+    List of ring names can be found here: https://zeldawiki.wiki/wiki/Magic_Ring
     """
-    display_name = "Rings Quality"
-
-    option_any = 0
-    option_only_useful = 1
-
-    default = 1
-
-class OracleOfAgesEnableTokkeyDanceAndKidJoke(Toggle):
-    """
-    Defines if you don't want to skip the small dance that tokkay does and the joke you tell the kid. (Because some people like it)
-    """
-    display_name = "Enable Tokkey Dance and Kid Joke"
+    display_name = "Required Rings"
+    valid_keys = {name for name, idata in ITEMS_DATA.items() if "ring" in idata}
 
 
-class OracleOfAgesQolMermaidSuit(Toggle):
+class OracleOfSeasonsExcludedRings(ItemSet):
     """
-    Defines if you don't want to spam the buttons to swim with the mermaid suit.
+    Forces a specified set of rings to not appear in the seed.
+    List of ring names can be found here: https://zeldawiki.wiki/wiki/Magic_Ring
     """
-    display_name = "Enable Mermaid Suit's QOL"
-    default = True
+    display_name = "Excluded Rings"
+    default = sorted({name for name, idata in ITEMS_DATA.items() if "ring" in idata and idata["ring"] == "useless"})
+    valid_keys = {name for name, idata in ITEMS_DATA.items() if "ring" in idata}
+
 
 class OracleOfAgesPricesFactor(Range):
     """
@@ -209,83 +203,23 @@ class OracleOfAgesWarpToStart(DefaultOnToggle):
 
 class OracleOfAgesCombatDifficulty(Choice):
     """
-    <NOT IMPLEMENTED RIGHT NOW>
     Modifies the damage taken during combat to make this aspect of the game easier or harder depending on the
     type of experience you want to have
     """
     display_name = "Combat Difficulty"
 
-    option_peaceful = 0
-    option_easier = 1
-    option_vanilla = 2
-    option_harder = 3
-    option_insane = 4
-
-    default = 2
-
-
-class OracleOfAgesQuickFlute(DefaultOnToggle):
-    """
-    When enabled, playing the flute and the harp will immobilize you during a very small amount of time compared to vanilla game.
-    """
-    display_name = "Quick Flute & Harp"
-
-
-class OracleOfAgesHeartBeepInterval(Choice):
-    """
-    <NOT IMPLEMENTED RIGHT NOW>
-    - Default: play the beeping sound at the usual frequency when low on health
-    - Half: play the beeping sound two times less when low on health
-    - Quarter: play the beeping sound four times less when low on health
-    - Disabled: never play the beeping sound when low on health
-    """
-    display_name = "Heart Beep Frequency"
-
-    option_default = 0
-    option_half = 1
-    option_quarter = 2
-    option_disabled = 3
+    option_peaceful = 4
+    option_easier = 2
+    option_vanilla = 0
+    option_harder = -2
+    option_insane = -4
 
     default = 0
-
-
-class OracleOfAgesCharacterSprite(Choice):
-    """
-    <NOT IMPLEMENTED RIGHT NOW>
-    The sprite to use as a character during this seed.
-    (Sprites extracted from ardnaxelarak's rando)
-    """
-    display_name = "Character Sprite"
-
-    option_link = 0
-    option_subrosian = 1
-    option_goron = 2
-    option_piratian = 3
-
-    default = 0
-
-
-class OracleOfAgesCharacterPalette(Choice):
-    """
-    <NOT IMPLEMENTED RIGHT NOW>
-    The color tint to apply to the character sprite during this seed
-    """
-    display_name = "Character Tint"
-
-    option_green = 0
-    option_blue = 1
-    option_red = 2
-    option_orange = 3
-
-    default = 0
-
 
 @dataclass
 class OracleOfAgesOptions(PerGameCommonOptions):
     start_inventory_from_pool: StartInventoryPool
     goal: OracleOfAgesGoal
-    enable_dance_and_joke: OracleOfAgesEnableTokkeyDanceAndKidJoke
-    qol_mermaid_suit: OracleOfAgesQolMermaidSuit
     logic_difficulty: OracleOfAgesLogicDifficulty
     required_essences: OracleOfAgesRequiredEssences
     required_slates: OracleOfAgesRequiredSlates
@@ -297,13 +231,9 @@ class OracleOfAgesOptions(PerGameCommonOptions):
     keysanity_boss_keys: OracleOfAgesBossKeyShuffle
     keysanity_maps_compasses: OracleOfAgesMapCompassShuffle
     keysanity_slates: OracleOfAgesSlateShuffle
-    ring_quality: OracleOfAgesRingQuality
+    required_rings: OracleOfSeasonsRequiredRings
+    excluded_rings: OracleOfSeasonsExcludedRings
     shop_prices_factor: OracleOfAgesPricesFactor
     advance_shop: OracleOfAgesAdvanceShop
-    warp_to_start: OracleOfAgesWarpToStart
     combat_difficulty: OracleOfAgesCombatDifficulty
-    quick_flute: OracleOfAgesQuickFlute
-    heart_beep_interval: OracleOfAgesHeartBeepInterval
-    character_sprite: OracleOfAgesCharacterSprite
-    character_palette: OracleOfAgesCharacterPalette
     death_link: DeathLink

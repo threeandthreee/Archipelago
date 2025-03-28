@@ -76,6 +76,36 @@ class ItemData(NamedTuple):
     tags: FrozenSet[str]
 
 
+class LocationCategory(IntEnum):
+    BADGE = 0
+    HM = 1
+    KEY_ITEM = 2
+    RUNNING_SHOES = 3
+    EXTRA_KEY_ITEM = 4
+    FLY_UNLOCK = 5
+    SPLIT_CARD_KEY = 6
+    SPLIT_ISLAND_PASS = 7
+    SPLIT_TEA = 8
+    ITEM_BALL = 9
+    HIDDEN_ITEM = 10
+    HIDDEN_ITEM_RECURRING = 11
+    STARTING_ITEM = 12
+    NPC_GIFT = 13
+    POKEMON_REQUEST = 14
+    TRAINERSANITY = 15
+    FAMESANITY = 16
+    FAMESANITY_POKEMON_REQUEST = 17
+    DEXSANITY = 18
+    EVENT = 19
+    EVENT_WILD_POKEMON = 20
+    EVENT_STATIC_POKEMON = 21
+    EVENT_LEGENDARY_POKEMON = 22
+    EVENT_EVOLUTION_POKEMON = 23
+    EVENT_TRAINER_SCALING = 24
+    EVENT_WILD_POKEMON_SCALING = 25
+    EVENT_STATIC_POKEMON_SCALING = 26
+
+
 class LocationData(NamedTuple):
     id: str
     name: str
@@ -83,6 +113,7 @@ class LocationData(NamedTuple):
     default_item: int
     address: Dict[str, Union[int, List[int]]]
     flag: int
+    category: LocationCategory
     tags: FrozenSet[str]
 
 
@@ -113,7 +144,7 @@ class EventData(NamedTuple):
     name: Union[str, List[str]]
     item: Union[str, List[str]]
     parent_region_id: str
-    tags: FrozenSet[str]
+    category: LocationCategory
 
 
 class RegionData:
@@ -172,21 +203,6 @@ class EvolutionMethodEnum(IntEnum):
     ITEM = 8
     ITEM_HELD = 9
     FRIENDSHIP = 10
-
-
-EVOLUTION_METHOD_TYPE: Dict[str, EvolutionMethodEnum] = {
-    "LEVEL": EvolutionMethodEnum.LEVEL,
-    "LEVEL_ATK_LT_DEF": EvolutionMethodEnum.LEVEL_ATK_LT_DEF,
-    "LEVEL_ATK_EQ_DEF": EvolutionMethodEnum.LEVEL_ATK_EQ_DEF,
-    "LEVEL_ATK_GT_DEF": EvolutionMethodEnum.LEVEL_ATK_GT_DEF,
-    "LEVEL_SILCOON": EvolutionMethodEnum.LEVEL_SILCOON,
-    "LEVEL_CASCOON": EvolutionMethodEnum.LEVEL_CASCOON,
-    "LEVEL_NINJASK": EvolutionMethodEnum.LEVEL_NINJASK,
-    "LEVEL_SHEDINJA": EvolutionMethodEnum.LEVEL_SHEDINJA,
-    "ITEM": EvolutionMethodEnum.ITEM,
-    "ITEM_HELD": EvolutionMethodEnum.ITEM_HELD,
-    "FRIENDSHIP": EvolutionMethodEnum.FRIENDSHIP
-}
 
 
 class EvolutionData(NamedTuple):
@@ -705,7 +721,7 @@ def load_json_data(data_name: str) -> Union[List[Any], Dict[str, Any]]:
     return orjson.loads(pkgutil.get_data(__name__, "data/" + data_name).decode("utf-8-sig"))
 
 
-def _init() -> None:
+def init() -> None:
     extracted_data: Dict[str, Any] = load_json_data("extracted_data.json")
     data.rom_names = extracted_data["rom_names"]
     data.rom_checksum = extracted_data["rom_checksum"]
@@ -845,6 +861,7 @@ def _init() -> None:
                     location_json["default_item"],
                     location_address,
                     location_json["flag"],
+                    LocationCategory[location_data[location_id]["category"]],
                     frozenset(location_data[location_id]["tags"])
                 )
             else:
@@ -855,6 +872,7 @@ def _init() -> None:
                     location_json["default_item"],
                     location_json["address"],
                     location_json["flag"],
+                    LocationCategory[location_data[location_id]["category"]],
                     frozenset(location_data[location_id]["tags"])
                 )
 
@@ -869,7 +887,7 @@ def _init() -> None:
                 event_data[event_id]["name"],
                 event_data[event_id]["item"],
                 region_id,
-                frozenset(event_data[event_id]["tags"])
+                LocationCategory[event_data[event_id]["category"]]
             )
             new_region.events.append(event_id)
             data.events[event_id] = new_event
@@ -944,7 +962,7 @@ def _init() -> None:
                 evolution_data["param"],
                 evolution_data["param2"],
                 evolution_data["species"],
-                EVOLUTION_METHOD_TYPE[evolution_data["method"]]
+                EvolutionMethodEnum[evolution_data["method"]]
             ) for evolution_data in species_data["evolutions"]],
             None,
             species_data["catch_rate"],
@@ -1464,7 +1482,7 @@ def _init() -> None:
 
 
 data = PokemonFRLGData()
-_init()
+init()
 
 LEGENDARY_POKEMON = frozenset([data.constants[species] for species in [
     "SPECIES_ARTICUNO",
@@ -1489,6 +1507,524 @@ LEGENDARY_POKEMON = frozenset([data.constants[species] for species in [
     "SPECIES_JIRACHI",
     "SPECIES_DEOXYS",
 ]])
+
+fly_blacklist_map = {
+    "Pallet Town": "ITEM_FLY_PALLET",
+    "Viridian City": "ITEM_FLY_VIRIDIAN",
+    "Pewter City": "ITEM_FLY_PEWTER",
+    "Cerulean City": "ITEM_FLY_CERULEAN",
+    "Lavender Town": "ITEM_FLY_LAVENDER",
+    "Vermilion City": "ITEM_FLY_VERMILION",
+    "Celadon City": "ITEM_FLY_CELADON",
+    "Fuchsia City": "ITEM_FLY_FUCHSIA",
+    "Cinnabar Island": "ITEM_FLY_CINNABAR",
+    "Indigo Plateau": "ITEM_FLY_INDIGO",
+    "Saffron City": "ITEM_FLY_SAFFRON",
+    "One Island": "ITEM_FLY_ONE_ISLAND",
+    "Two Island": "ITEM_FLY_TWO_ISLAND",
+    "Three Island": "ITEM_FLY_THREE_ISLAND",
+    "Four Island": "ITEM_FLY_FOUR_ISLAND",
+    "Five Island": "ITEM_FLY_FIVE_ISLAND",
+    "Six Island": "ITEM_FLY_SIX_ISLAND",
+    "Seven Island": "ITEM_FLY_SEVEN_ISLAND",
+    "Route 4": "ITEM_FLY_ROUTE4",
+    "Route 10": "ITEM_FLY_ROUTE10"
+}
+
+starting_town_blacklist_map = {
+    "Pallet Town": "SPAWN_PALLET_TOWN",
+    "Viridian City": "SPAWN_VIRIDIAN_CITY",
+    "Pewter City": "SPAWN_PEWTER_CITY",
+    "Cerulean City": "SPAWN_CERULEAN_CITY",
+    "Lavender Town": "SPAWN_LAVENDER_TOWN",
+    "Vermilion City": "SPAWN_VERMILION_CITY",
+    "Celadon City": "SPAWN_CELADON_CITY",
+    "Fuchsia City": "SPAWN_FUCHSIA_CITY",
+    "Cinnabar Island": "SPAWN_CINNABAR_ISLAND",
+    "Saffron City": "SPAWN_SAFFRON_CITY",
+    "Route 4": "SPAWN_ROUTE4",
+    "One Island": "SPAWN_ONE_ISLAND",
+    "Two Island": "SPAWN_TWO_ISLAND",
+    "Three Island": "SPAWN_THREE_ISLAND",
+    "Four Island": "SPAWN_FOUR_ISLAND",
+    "Five Island": "SPAWN_FIVE_ISLAND",
+    "Seven Island": "SPAWN_SEVEN_ISLAND",
+    "Six Island": "SPAWN_SIX_ISLAND"
+}
+
+# Data is formatted as (Map Group, Map Num, X-Coord, Y-Coord, Region Map ID, Region Map Index)
+kanto_fly_destinations = {
+    "Pallet Town": {
+        "Pallet Town": [
+            (3, 0, 6, 8, 1, 246),
+            (3, 0, 15, 8, 1, 246),
+            (3, 0, 16, 14, 1, 246)
+        ]
+    },
+    "Viridian City": {
+        "Viridian City South": [
+            (3, 1, 25, 12, 1, 180),
+            (3, 1, 25, 19, 1, 180),
+            (3, 1, 36, 20, 1, 180),
+            (3, 1, 26, 27, 1, 180)
+        ],
+        "Viridian City North": [
+            (3, 1, 36, 11, 1, 180)
+        ]
+    },
+    "Pewter City": {
+        "Pewter City": [
+            (3, 2, 17, 7, 1, 92),
+            (3, 2, 33, 12, 1, 92),
+            (3, 2, 15, 17, 1, 92),
+            (3, 2, 28, 19, 1, 92),
+            (3, 2, 17, 26, 1, 92),
+            (3, 2, 9, 31, 1, 92)
+        ],
+        "Pewter City Near Museum": [
+            (3, 2, 9, 25, 1, 92)
+        ]
+    },
+    "Cerulean City": {
+        "Cerulean City": [
+            (3, 3, 10, 12, 1, 80),
+            (3, 3, 17, 12, 1, 80),
+            (3, 3, 30, 12, 1, 80),
+            (3, 3, 15, 18, 1, 80),
+            (3, 3, 22, 20, 1, 80),
+            (3, 3, 13, 29, 1, 80),
+            (3, 3, 23, 29, 1, 80),
+            (3, 3, 29, 29, 1, 80)
+        ],
+        "Cerulean City Backyard": [
+            (3, 3, 10, 8, 1, 80)
+        ],
+        "Cerulean City Outskirts": [
+            (3, 3, 31, 8, 1, 80)
+        ],
+        "Cerulean City Near Cave": [
+            (3, 3, 1, 13, 1, 80)
+        ]
+    },
+    "Vermilion City": {
+        "Vermilion City": [
+            (3, 5, 9, 7, 1, 212),
+            (3, 5, 15, 7, 1, 212),
+            (3, 5, 12, 18, 1, 212),
+            (3, 5, 19, 18, 1, 212),
+            (3, 5, 29, 18, 1, 212),
+            (3, 5, 28, 25, 1, 212)
+        ],
+        "Vermilion City Near Gym": [
+            (3, 5, 14, 26, 1, 212)
+        ],
+        "Vermilion City Near Harbor": [
+            (3, 5, 23, 34, 1, 212)
+        ]
+    },
+    "Lavender Town": {
+        "Lavender Town": [
+            (3, 4, 6, 6, 1, 150),
+            (3, 4, 18, 7, 1, 150),
+            (3, 4, 10, 12, 1, 150),
+            (3, 4, 20, 16, 1, 150),
+            (3, 4, 5, 17, 1, 150),
+            (3, 4, 10, 17, 1, 150)
+        ]
+    },
+    "Celadon City": {
+        "Celadon City": [
+            (3, 6, 30, 4, 1, 143),
+            (3, 6, 30, 12, 1, 143),
+            (3, 6, 48, 12, 1, 143),
+            (3, 6, 11, 15, 1, 143),
+            (3, 6, 15, 15, 1, 143),
+            (3, 6, 39, 21, 1, 143),
+            (3, 6, 34, 22, 1, 143),
+            (3, 6, 37, 30, 1, 143),
+            (3, 6, 41, 30, 1, 143),
+            (3, 6, 49, 30, 1, 143)
+        ],
+        "Celadon City Near Gym": [
+            (3, 6, 11, 31, 1, 143)
+        ]
+    },
+    "Fuchsia City": {
+        "Fuchsia City": [
+            (3, 7, 24, 6, 1, 276),
+            (3, 7, 11, 16, 1, 276),
+            (3, 7, 28, 17, 1, 276),
+            (3, 7, 14, 32, 1, 276),
+            (3, 7, 19, 32, 1, 276),
+            (3, 7, 25, 32, 1, 276),
+            (3, 7, 33, 32, 1, 276),
+            (3, 7, 38, 32, 1, 276),
+            (3, 7, 9, 33, 1, 276)
+        ],
+        "Fuchsia City Backyard": [
+            (3, 7, 39, 28, 1, 276)
+        ]
+    },
+    "Saffron City": {
+        "Saffron City": [
+            (3, 10, 34, 6, 1, 146),
+            (3, 10, 40, 13, 1, 146),
+            (3, 10, 46, 13, 1, 146),
+            (3, 10, 22, 15, 1, 146),
+            (3, 10, 27, 22, 1, 146),
+            (3, 10, 40, 22, 1, 146),
+            (3, 10, 47, 22, 1, 146),
+            (3, 10, 8, 27, 1, 146),
+            (3, 10, 58, 27, 1, 146),
+            (3, 10, 33, 31, 1, 146),
+            (3, 10, 24, 39, 1, 146),
+            (3, 10, 43, 39, 1, 146),
+            (3, 10, 34, 46, 1, 146)
+        ]
+    },
+    "Cinnabar Island": {
+        "Cinnabar Island": [
+            (3, 8, 8, 4, 1, 312),
+            (3, 8, 20, 5, 1, 312),
+            (3, 8, 8, 10, 1, 312),
+            (3, 8, 14, 12, 1, 312),
+            (3, 8, 19, 12, 1, 312),
+        ]
+    },
+    "Indigo Plateau": {
+        "Indigo Plateau": [
+            (3, 9, 11, 7, 1, 68)
+        ]
+    },
+    "Route 2": {
+        "Route 2 Southwest": [
+            (3, 20, 5, 52, 1, 136)
+        ],
+        "Route 2 Northwest": [
+            (3, 20, 5, 13, 1, 114)
+        ],
+        "Route 2 Northeast": [
+            (3, 20, 17, 12, 1, 114),
+            (3, 20, 17, 23, 1, 114)
+        ],
+        "Route 2 East": [
+            (3, 20, 18, 41, 1, 136)
+        ],
+        "Route 2 Southeast": [
+            (3, 20, 18, 47, 1, 136)
+        ]
+    },
+    "Route 4": {
+        "Route 4 West": [
+            (3, 22, 12, 6, 1, 74),
+            (3, 22, 19, 6, 1, 75)
+        ],
+        "Route 4 East": [
+            (3, 22, 32, 6, 1, 75)
+        ]
+    },
+    "Route 5": {
+        "Route 5": [
+            (3, 23, 23, 26, 1, 124),
+            (3, 23, 24, 32, 1, 124)
+        ],
+        "Route 5 Near Tunnel": [
+            (3, 23, 31, 32, 1, 124)
+        ]
+    },
+    "Route 6": {
+        "Route 6": [
+            (3, 24, 12, 6, 1, 168)
+        ],
+        "Route 6 Near Tunnel": [
+            (3, 24, 19, 14, 1, 168)
+        ]
+    },
+    "Route 7": {
+        "Route 7": [
+            (3, 25, 15, 10, 1, 145)
+        ],
+        "Route 7 Near Tunnel": [
+            (3, 25, 7, 15, 1, 144)
+        ]
+    },
+    "Route 8": {
+        "Route 8": [
+            (3, 26, 7, 10, 1, 147)
+        ],
+        "Route 8 Near Tunnel": [
+            (3, 26, 13, 5, 1, 147)
+        ]
+    },
+    "Route 10": {
+        "Route 10 North": [
+            (3, 28, 8, 20, 1, 84),
+            (3, 28, 13, 21, 1, 84)
+        ],
+        "Route 10 South": [
+            (3, 28, 8, 58, 1, 128)
+        ],
+        "Route 10 Near Power Plant": [
+            (3, 28, 7, 41, 1, 106)
+        ],
+        "Route 10 Near Power Plant Back": [
+            (3, 28, 2, 37, 1, 106)
+        ]
+    },
+    "Route 11": {
+        "Route 11 West": [
+            (3, 29, 6, 8, 1, 213),
+            (3, 29, 58, 10, 1, 215)
+        ],
+        "Route 11 East": [
+            (3, 29, 65, 10, 1, 215)
+        ]
+    },
+    "Route 12": {
+        "Route 12 North": [
+            (3, 30, 14, 15, 1, 172)
+        ],
+        "Route 12 Center": [
+            (3, 30, 14, 22, 1, 172)
+        ],
+        "Route 12 South": [
+            (3, 30, 12, 87, 1, 238)
+        ]
+    },
+    "Route 15": {
+        "Route 15 South": [
+            (3, 33, 16, 11, 1, 277)
+        ],
+        "Route 15 Southwest": [
+            (3, 33, 9, 11, 1, 277)
+        ]
+    },
+    "Route 16": {
+        "Route 16 Northeast": [
+            (3, 34, 27, 6, 1, 141)
+        ],
+        "Route 16 Northwest": [
+            (3, 34, 10, 6, 1, 139),
+            (3, 34, 20, 6, 1, 140)
+        ],
+        "Route 16 Center": [
+            (3, 34, 27, 13, 1, 141)
+        ]
+    },
+    "Route 18": {
+        "Route 18 East": [
+            (3, 36, 48, 9, 1, 275)
+        ]
+    },
+    "Route 20": {
+        "Route 20 Near North Cave": [
+            (3, 38, 60, 9, 1, 316)
+        ],
+        "Route 20 Near South Cave": [
+            (3, 38, 72, 15, 1, 317)
+        ]
+    },
+    "Route 22": {
+        "Route 22": [
+            (3, 41, 8, 6, 1, 178)
+        ]
+    },
+    "Route 23": {
+        "Route 23 South": [
+            (3, 42, 8, 153, 1, 156)
+        ],
+        "Route 23 Near Cave": [
+            (3, 42, 5, 29, 1, 90)
+        ],
+        "Route 23 North": [
+            (3, 42, 18, 29, 1, 90)
+        ]
+    },
+    "Route 25": {
+        "Route 25": [
+            (3, 44, 51, 5, 1, 38)
+        ]
+    },
+    "Navel Rock": {
+        "Navel Rock Exterior": [
+            (2, 0, 9, 9, 3, 186),
+            (2, 0, 9, 16, 3, 186)
+        ]
+    },
+    "Birth Island": {
+        "Birth Island Exterior": [
+            (2, 56, 15, 24, 4, 304)
+        ]
+    }
+}
+
+sevii_fly_destinations = {
+    "One Island": {
+        "One Island Town": [
+            (3, 12, 14, 6, 2, 177),
+            (3, 12, 19, 10, 2, 177),
+            (3, 12, 8, 12, 2, 177),
+            (3, 12, 12, 18, 2, 177)
+        ]
+    },
+    "Kindle Road": {
+        "Kindle Road Center": [
+            (3, 45, 15, 59, 2, 112)
+        ],
+        "Kindle Road North": [
+            (3, 45, 11, 6, 2, 68)
+        ]
+    },
+    "Two Island": {
+        "Two Island Town": [
+            (3, 13, 10, 8, 2, 207),
+            (3, 13, 21, 8, 2, 207),
+            (3, 13, 33, 10, 2, 207),
+            (3, 13, 39, 10, 2, 207)
+        ]
+    },
+    "Cape Brink": {
+        "Cape Brink": [
+            (3, 47, 12, 17, 2, 163)
+        ]
+    },
+    "Three Isle Port": {
+        "Three Isle Port West": [
+            (3, 49, 16, 5, 2, 304),
+            (3, 49, 12, 13, 2, 304)
+        ],
+        "Three Isle Port East": [
+            (3, 49, 38, 6, 2, 305)
+        ]
+    },
+    "Three Island": {
+        "Three Island Town South": [
+            (3, 14, 14, 28, 2, 282),
+            (3, 14, 3, 32, 2, 282)
+        ],
+        "Three Island Town North": [
+            (3, 14, 4, 7, 2, 282),
+            (3, 14, 12, 7, 2, 282),
+            (3, 14, 12, 13, 2, 282),
+            (3, 14, 18, 13, 2, 282),
+            (3, 14, 13, 20, 2, 282)
+        ]
+    },
+    "Bond Bridge": {
+        "Bond Bridge": [
+            (3, 48, 12, 7, 2, 278)
+        ]
+    },
+    "Four Island": {
+        "Four Island Town": [
+            (3, 15, 12, 14, 3, 91),
+            (3, 15, 25, 15, 3, 91),
+            (3, 15, 18, 21, 3, 91),
+            (3, 15, 33, 24, 3, 91),
+            (3, 15, 22, 27, 3, 91),
+            (3, 15, 25, 27, 3, 91),
+            (3, 15, 10, 28, 3, 91)
+        ],
+        "Four Island Town Near Cave": [
+            (3, 15, 38, 13, 3, 91)
+        ]
+    },
+    "Five Island": {
+        "Five Island Town": [
+            (3, 16, 12, 7, 3, 258),
+            (3, 16, 18, 7, 3, 258),
+            (3, 16, 22, 10, 3, 258),
+            (3, 16, 12, 14, 3, 258)
+        ]
+    },
+    "Five Isle Meadow": {
+        "Five Isle Meadow": [
+            (3, 56, 12, 22, 3, 281)
+        ]
+    },
+    "Resort Gorgeous": {
+        "Resort Gorgeous Near Resort": [
+            (3, 54, 39, 9, 3, 215)
+        ],
+        "Resort Gorgeous Near Cave": [
+            (3, 54, 64, 14, 3, 216)
+        ]
+    },
+    "Six Island": {
+        "Six Island Town": [
+            (3, 18, 11, 12, 4, 127),
+            (3, 18, 20, 12, 4, 127),
+            (3, 18, 16, 18, 4, 127)
+        ]
+    },
+    "Water Path": {
+        "Water Path North": [
+            (3, 60, 5, 14, 4, 84),
+            (3, 60, 11, 20, 4, 84)
+        ]
+    },
+    "Ruin Valley": {
+        "Ruin Valley": [
+            (3, 61, 24, 25, 4, 192)
+        ]
+    },
+    "Green Path": {
+        "Green Path East": [
+            (3, 59, 63, 11, 4, 83)
+        ],
+        "Green Path West": [
+            (3, 59, 45, 11, 4, 82)
+        ]
+    },
+    "Outcast Island": {
+        "Outcast Island": [
+            (3, 58, 7, 22, 4, 15)
+        ]
+    },
+    "Seven Island": {
+        "Seven Island Town": [
+            (3, 17, 12, 4, 4, 181),
+            (3, 17, 5, 10, 4, 181),
+            (3, 17, 11, 10, 4, 181),
+            (3, 17, 16, 13, 4, 181)
+        ]
+    },
+    "Sevault Canyon": {
+        "Sevault Canyon": [
+            (3, 64, 7, 18, 4, 204),
+            (3, 64, 14, 62, 4, 248)
+        ]
+    },
+    "Tanoby Ruins": {
+        "Tanoby Ruins Viapois Island": [
+            (3, 65, 11, 7, 4, 267)
+        ],
+        "Tanoby Ruins Rixy Island": [
+            (3, 65, 12, 16, 4, 267)
+        ],
+        "Tanoby Ruins Scufib Island": [
+            (3, 65, 32, 10, 4, 268)
+        ],
+        "Tanoby Ruins Dilford Island": [
+            (3, 65, 44, 12, 4, 269)
+        ],
+        "Tanoby Ruins Weepth Island": [
+            (3, 65, 88, 9, 4, 271)
+        ],
+        "Tanoby Ruins Liptoo Island": [
+            (3, 65, 103, 11, 4, 272)
+        ],
+        "Tanoby Ruins Monean Island": [
+            (3, 65, 120, 11, 4, 273)
+        ]
+    },
+    "Trainer Tower Exterior": {
+        "Trainer Tower Exterior North": [
+            (3, 62, 58, 8, 4, 137)
+        ]
+    }
+}
+fly_plando_maps = list(k for k in kanto_fly_destinations.keys()) + list(k for k in sevii_fly_destinations.keys())
 
 NATIONAL_ID_TO_SPECIES_ID = {species.national_dex_number: i for i, species in data.species.items()}
 NAME_TO_SPECIES_ID = {species.name: i for i, species in data.species.items()}

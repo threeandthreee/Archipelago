@@ -23,7 +23,8 @@ surf_regions = [
     "REGION_CINNABAR_ISLAND",
     "REGION_ROUTE_19",
     "REGION_ROUTE_20",
-    "REGION_ROUTE_21"
+    "REGION_ROUTE_21",
+    "REGION_RUINS_OF_ALPH_HO_OH_ITEM_ROOM"
 ]
 
 strength_regions = [

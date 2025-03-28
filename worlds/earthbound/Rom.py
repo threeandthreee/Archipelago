@@ -19,6 +19,8 @@ from .modules.music_rando import music_randomizer
 from .modules.palette_shuffle import randomize_psi_palettes
 from .modules.shopsanity import write_shop_checks
 from .modules.enemy_shuffler import apply_enemy_shuffle
+from .modules.dungeon_er import write_dungeon_entrances
+from .modules.foodamizer import randomize_food
 from .game_data.static_location_data import location_groups
 from BaseClasses import ItemClassification
 from typing import TYPE_CHECKING, Optional
@@ -76,6 +78,14 @@ class LocalRom(object):
 
 
 def patch_rom(world, rom, player: int):
+    rom.copy_bytes(0x1578DD, 0x3E, 0x34A060) # Threed/Saturn teleport move
+    rom.copy_bytes(0x15791B, 0xF8, 0x157959)
+
+    rom.copy_bytes(0x34A000, 0x1F, 0x1578DD)
+    rom.copy_bytes(0x34A020, 0x1F, 0x15793A)
+    rom.copy_bytes(0x34A040, 0x1F, 0x157A51)
+    rom.copy_bytes(0x34A060, 0x3E, 0x1578FC)
+
     starting_area_coordinates = {
                     0: [0x50, 0x04, 0xB5, 0x1F],  # North Onett
                     1: [0x52, 0x06, 0x4C, 0x1F],  # Onett
@@ -146,6 +156,8 @@ def patch_rom(world, rom, player: int):
     else:
         rom.write_bytes(starting_levels[world.starting_character], bytearray([0x03]))
     rom.write_bytes(atm_card_slots[world.starting_character], bytearray([0xB1]))
+    if world.starting_character != "Ness":
+        rom.write_bytes(atm_card_slots["Ness"], bytearray([0x58]))
     if world.starting_character != "Poo":
         rom.write_bytes(starting_weapon[world.starting_character][0], bytearray([starting_weapon[world.starting_character][1]]))
 
@@ -381,7 +393,7 @@ def patch_rom(world, rom, player: int):
         if hint == "item_at_location":
             for location in hintable_locations:
                 if location.name == world.hinted_locations[index] and location.player == world.player:
-                    parse_hint_data(world, location, rom, hint)
+                    parse_hint_data(world, location, rom, hint, index)
                     
         elif hint == "region_progression_check":
             world.progression_count = 0
@@ -390,7 +402,7 @@ def patch_rom(world, rom, player: int):
                     if ItemClassification.progression in location.item.classification:
                         world.progression_count += 1
             world.hinted_area = world.hinted_regions[index]  # im doing a little sneaky
-            parse_hint_data(world, location, rom, hint)
+            parse_hint_data(world, location, rom, hint, index)
 
         elif hint == "hint_for_good_item" or hint == "prog_item_at_region":
             hintable_locations_2 = []
@@ -405,15 +417,15 @@ def patch_rom(world, rom, player: int):
                 location = world.random.choice(hintable_locations)
             else:
                 location = world.random.choice(hintable_locations_2)
-            parse_hint_data(world, location, rom, hint)
+            parse_hint_data(world, location, rom, hint, index)
 
         elif hint == "item_in_local_region":
             for location in hintable_locations:
                 if location.name == world.hinted_locations[index] and location.player == world.player:
-                    parse_hint_data(world, location, rom, hint)
+                    parse_hint_data(world, location, rom, hint, index)
         else:
             location = "null"
-            parse_hint_data(world, location, rom, hint)
+            parse_hint_data(world, location, rom, hint, index)
     
     for location in hintable_locations:
         if location.item.name == "Paula":
@@ -609,7 +621,11 @@ def patch_rom(world, rom, player: int):
         randomize_psi_palettes(world, rom)
 
     apply_enemy_shuffle(world, rom)
+    # randomize_food(world,rom)
     write_bosses(world, rom)
+    if world.options.dungeon_shuffle:
+        write_dungeon_entrances(world, rom)
+
     calculate_scaling(world)
     if world.options.shop_randomizer:
         write_shop_checks(world, rom, shop_checks)

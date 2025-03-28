@@ -12,7 +12,8 @@ from CommonClient import ClientCommandProcessor, CommonContext, get_base_parser,
 from NetUtils import ClientStatus
 import Utils
 from settings import get_settings
-from . import Rac2World, Rac2Settings
+from .data.Planets import get_all_active_locations
+from . import Rac2Settings
 from .Container import Rac2ProcedurePatch
 from .ClientCheckLocations import handle_checked_location
 from .Callbacks import update, init
@@ -74,12 +75,12 @@ class Rac2Context(CommonContext):
     last_error_message: Optional[str] = None
     death_link_enabled = False
     queued_deaths: int = 0
+    previous_decoy_glove_ammo: int = 0
 
     def __init__(self, server_address, password):
         super().__init__(server_address, password)
         self.game_interface = Rac2Interface(logger)
-        self.notification_manager = NotificationManager(HUD_MESSAGE_DURATION, self.game_interface.send_hud_message)
-        self.locations_scouted = set(Rac2World.location_name_to_id.values())
+        self.notification_manager = NotificationManager(HUD_MESSAGE_DURATION)
 
     def on_deathlink(self, data: Utils.Dict[str, Utils.Any]) -> None:
         super().on_deathlink(data)
@@ -100,10 +101,19 @@ class Rac2Context(CommonContext):
     def on_package(self, cmd: str, args: dict):
         if cmd == "Connected":
             self.slot_data = args["slot_data"]
+            # Set death link tag if it was requested in options
             if "death_link" in args["slot_data"]:
                 self.death_link_enabled = bool(args["slot_data"]["death_link"])
                 Utils.async_start(self.update_death_link(
                     bool(args["slot_data"]["death_link"])))
+
+            # Scout all active locations for lookups that may be required later on
+            all_locations = [loc.location_id for loc in get_all_active_locations(self.slot_data)]
+            self.locations_scouted = set(all_locations)
+            Utils.async_start(self.send_msgs([{
+                "cmd": "LocationScouts",
+                "locations": list(self.locations_scouted)
+            }]))
 
     def run_gui(self):
         from kvui import GameManager
@@ -179,20 +189,19 @@ async def _handle_game_ready(ctx: Rac2Context):
             if current_planet is not None:
                 logger.info(f"Loaded planet {current_planet} ({current_planet.name})")
             await asyncio.sleep(1)
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(0.1)
         return
     elif ctx.game_interface.is_loading():
         ctx.game_interface.logger.info("Waiting for planet to load...")
         ctx.is_loading = True
         return
 
-    ctx.notification_manager.handle_notifications()
-
-    if ctx.current_planet != ctx.game_interface.get_current_planet():
+    connected_to_server = (ctx.server is not None) and (ctx.slot is not None)
+    if ctx.current_planet != ctx.game_interface.get_current_planet() and connected_to_server:
         ctx.previous_planet = ctx.current_planet
         ctx.current_planet = ctx.game_interface.get_current_planet()
-        init(ctx, ctx.server is not None and ctx.slot is not None)
-    update(ctx, ctx.server is not None and ctx.slot is not None)
+        init(ctx)
+    update(ctx, connected_to_server)
 
     if ctx.server:
         ctx.last_error_message = None
@@ -201,14 +210,15 @@ async def _handle_game_ready(ctx: Rac2Context):
             return
 
         current_inventory = ctx.game_interface.get_current_inventory()
-        if ctx.current_planet is not None and ctx.current_planet > 0 and ctx.game_interface.get_pause_state() == 0:
+        if ctx.current_planet is not None and ctx.current_planet > 0 and ctx.game_interface.get_pause_state() in [0, 5]:
             await handle_received_items(ctx, current_inventory)
-        await handle_checked_location(ctx)
+        if ctx.current_planet and ctx.current_planet > 0:
+            await handle_checked_location(ctx)
         await handle_check_goal_complete(ctx)
 
         if ctx.death_link_enabled:
             await handle_deathlink(ctx)
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(0.1)
     else:
         message = "Waiting for player to connect to server"
         if ctx.last_error_message is not message:
@@ -282,6 +292,7 @@ def get_pcsx2_crc(iso_path: str) -> Optional[int]:
             crc ^= int.from_bytes(iso_file.read(4), "little")
 
     return crc
+
 
 def launch():
     Utils.init_logging("RAC2 Client")

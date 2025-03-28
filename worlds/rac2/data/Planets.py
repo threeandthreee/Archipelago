@@ -1,13 +1,12 @@
-from typing import List, Sequence
+from typing import Set
 
 from .Locations import *
-from .Locations import LocationData
 
 
 class PlanetData(NamedTuple):
     name: str
     number: int
-    locations: List[LocationData] = []
+    locations: Sequence[LocationData] = []
 
 
 ARANOS_TUTORIAL = PlanetData("Aranos Tutorial", 0)
@@ -18,6 +17,8 @@ OOZLA = PlanetData("Oozla", 1, [
     OOZLA_TRACTOR_PUZZLE_PB,
     OOZLA_SWAMP_RUINS_PB,
     OOZLA_SWAMP_MONSTER_II,
+    OOZLA_VENDOR_WEAPON_1,
+    OOZLA_VENDOR_WEAPON_2,
 ])
 MAKTAR_NEBULA = PlanetData("Maktar Nebula", 2, [
     MAKTAR_ARENA_CHALLENGE,
@@ -34,17 +35,29 @@ ENDAKO = PlanetData("Endako", 3, [
     ENDAKO_LEDGE_PB,
     ENDAKO_CRANE_PB,
     ENDAKO_CRANE_NT,
+    ENDAKO_VENDOR_WEAPON_1,
+    ENDAKO_VENDOR_WEAPON_2,
 ])
 BARLOW = PlanetData("Barlow", 4, [
     BARLOW_INVENTOR,
     BARLOW_HOVERBIKE_RACE_TRANSMISSION,
     BARLOW_HOVERBIKE_RACE_PB,
     BARLOW_HOUND_CAVE_PB,
+    BARLOW_VENDOR_WEAPON,
+    BARLOW_GADGETRON_1,
+    BARLOW_GADGETRON_2,
+    BARLOW_GADGETRON_3,
+    BARLOW_GADGETRON_4,
+    BARLOW_GADGETRON_5,
+    BARLOW_GADGETRON_6,
 ])
 FELTZIN_SYSTEM = PlanetData("Feltzin System", 5, [
     FELTZIN_DEFEAT_THUG_SHIPS,
     FELTZIN_RACE_PB,
     FELTZIN_CARGO_BAY_NT,
+    FELTZIN_DESTROY_SPACE_WASPS,
+    FELTZIN_FIGHT_ACE_THUGS,
+    FELTZIN_RACE,
 ])
 NOTAK = PlanetData("Notak", 6, [
     NOTAK_TOP_PIER_TELESCREEN,
@@ -53,6 +66,7 @@ NOTAK = PlanetData("Notak", 6, [
     NOTAK_PROMENADE_SIGN_PB,
     NOTAK_TIMED_DYNAMO_PB,
     NOTAK_PROMENADE_END_NT,
+    NOTAK_VENDOR_WEAPON,
 ])
 SIBERIUS = PlanetData("Siberius", 7, [
     SIBERIUS_DEFEAT_THIEF,
@@ -67,6 +81,8 @@ TABORA = PlanetData("Tabora", 8, [
     TABORA_NORTHEAST_DESERT_PB,
     TABORA_CANYON_GLIDE_PILLAR_NT,
     TABORA_OMNIWRENCH_10000,
+    TABORA_VENDOR_WEAPON_1,
+    TABORA_VENDOR_WEAPON_2,
 ])
 DOBBO = PlanetData("Dobbo", 9, [
     DOBBO_DEFEAT_THUG_LEADER,
@@ -74,10 +90,14 @@ DOBBO = PlanetData("Dobbo", 9, [
     DOBBO_SPIDERBOT_ROOM_PB,
     DOBBO_FACILITY_GLIDE_PB,
     DOBBO_FACILITY_GLIDE_NT,
+    DOBBO_VENDOR_WEAPON,
 ])
 HRUGIS_CLOUD = PlanetData("Hrugis Cloud", 10, [
     HRUGIS_DESTROY_DEFENSES,
     HRUGIS_RACE_PB,
+    HRUGIS_SABOTEURS,
+    HRUGIS_BERSERK_DRONES,
+    HRUGIS_RACE,
 ])
 JOBA = PlanetData("Joba", 11, [
     JOBA_FIRST_HOVERBIKE_RACE,
@@ -88,6 +108,8 @@ JOBA = PlanetData("Joba", 11, [
     JOBA_LEVITATOR_TOWER_PB,
     JOBA_HOVERBIKE_RACE_SHORTCUT_NT,
     JOBA_TIMED_DYNAMO_NT,
+    JOBA_VENDOR_WEAPON_1,
+    JOBA_VENDOR_WEAPON_2,
 ])
 TODANO = PlanetData("Todano", 12, [
     TODANO_SEARCH_ROCKET_SILO,
@@ -97,6 +119,7 @@ TODANO = PlanetData("Todano", 12, [
     TODANO_END_TOUR_PB,
     TODANO_SPIDERBOT_CONVEYOR_PB,
     TODANO_ROCKET_SILO_NT,
+    TODANO_VENDOR_WEAPON,
 ])
 BOLDAN = PlanetData("Boldan", 13, [
     BOLDAN_FIND_FIZZWIDGET,
@@ -110,10 +133,15 @@ ARANOS_PRISON = PlanetData("Aranos Prison", 14, [
     ARANOS_PLUMBER,
     ARANOS_UNDER_SHIP_PB,
     ARANOS_OMNIWRENCH_12000,
+    ARANOS_VENDOR_WEAPON_1,
+    ARANOS_VENDOR_WEAPON_2,
 ])
 GORN = PlanetData("Gorn", 15, [
     GORN_DEFEAT_THUG_FLEET,
     GORN_RACE_PB,
+    GORN_FIGHT_BANDITS,
+    GORN_GHOST_SHIP,
+    GORN_RACE,
 ])
 SNIVELAK = PlanetData("Snivelak", 16, [
     SNIVELAK_RESCUE_ANGELA,
@@ -153,7 +181,7 @@ WUPASH_NEBULA = PlanetData("Wupash Nebula", 25)
 JAMMING_ARRAY = PlanetData("Jamming Array", 26)
 INSOMNIAC_MUSEUM = PlanetData("Insomniac Museum", 30)
 
-LOGIC_PLANETS = [
+LOGIC_PLANETS: Sequence[PlanetData] = [
     OOZLA,
     MAKTAR_NEBULA,
     ENDAKO,
@@ -181,3 +209,91 @@ ALL_LOCATIONS: Sequence[LocationData] = [
     for locations in [planet.locations for planet in LOGIC_PLANETS]
     for location in locations
 ]
+
+
+def get_location_groups() -> Dict[str, Set[str]]:
+    groups: Dict[str, Set[str]] = {}
+    for planet in LOGIC_PLANETS:
+        groups[planet.name] = {loc.name for loc in planet.locations}
+    groups.update({
+        "Spaceship": {
+            *groups[FELTZIN_SYSTEM.name],
+            *groups[HRUGIS_CLOUD.name],
+            *groups[GORN.name]
+        },
+        "Hoverbike": {
+            BARLOW_HOVERBIKE_RACE_TRANSMISSION.name,
+            BARLOW_HOVERBIKE_RACE_PB.name,
+            JOBA_FIRST_HOVERBIKE_RACE.name,
+            JOBA_HOVERBIKE_RACE_SHORTCUT_NT.name,
+        },
+        "Giant Clank": {
+            DOBBO_DEFEAT_THUG_LEADER.name,
+            DAMOSEL_DEFEAT_MOTHERSHIP.name,
+        },
+        "Arena": {
+            MAKTAR_ARENA_CHALLENGE.name,
+            JOBA_ARENA_BATTLE.name,
+            JOBA_ARENA_CAGE_MATCH.name,
+        },
+        "Tanky Bosses": {
+            SNIVELAK_RESCUE_ANGELA.name,
+            OOZLA_SWAMP_MONSTER_II.name,
+            DOBBO_DEFEAT_THUG_LEADER.name,
+            DAMOSEL_DEFEAT_MOTHERSHIP.name,
+        },
+    })
+
+    return groups
+
+
+class SpaceshipSystemTextInfo(NamedTuple):
+    challenge_descriptions: Sequence[int]
+    challenge_locations: Sequence[int]
+    perfect_race_location: int
+    challenge_1_completed_text: int
+
+
+# This dictionary is used by the `process_spaceship_text` function in the game client in order to know how to properly
+# set dynamic text in the spaceship challenge menus
+SPACESHIP_SYSTEMS: Dict[int, SpaceshipSystemTextInfo] = {
+    FELTZIN_SYSTEM.number: SpaceshipSystemTextInfo(
+        challenge_descriptions=[0x2FDB, 0x2FDD, 0x2FDC, 0x2FDF],
+        challenge_locations=[
+            FELTZIN_DEFEAT_THUG_SHIPS.location_id,
+            FELTZIN_DESTROY_SPACE_WASPS.location_id,
+            FELTZIN_FIGHT_ACE_THUGS.location_id,
+            FELTZIN_RACE.location_id
+        ],
+        perfect_race_location=FELTZIN_RACE_PB.location_id,
+        challenge_1_completed_text=0x11F5,
+    ),
+    HRUGIS_CLOUD.number: SpaceshipSystemTextInfo(
+        challenge_descriptions=[0x2FE7, 0x2FE8, 0x2FE9, 0x2FEB],
+        challenge_locations=[
+            HRUGIS_DESTROY_DEFENSES.location_id,
+            HRUGIS_SABOTEURS.location_id,
+            HRUGIS_BERSERK_DRONES.location_id,
+            HRUGIS_RACE.location_id
+        ],
+        perfect_race_location=HRUGIS_RACE_PB.location_id,
+        challenge_1_completed_text=0x11FB,
+    ),
+    GORN.number: SpaceshipSystemTextInfo(
+        challenge_descriptions=[0x2FEF, 0x2FF0, 0x2FF1, 0x2FF2],
+        challenge_locations=[
+            GORN_DEFEAT_THUG_FLEET.location_id,
+            GORN_FIGHT_BANDITS.location_id,
+            GORN_GHOST_SHIP.location_id,
+            GORN_RACE.location_id
+        ],
+        perfect_race_location=GORN_RACE_PB.location_id,
+        challenge_1_completed_text=0x11FF,
+    )
+}
+
+
+def get_all_active_locations(options_as_dict: Dict[str, Any]):
+    return [loc for loc in ALL_LOCATIONS
+            if (loc.enable_if is None or loc.enable_if(options_as_dict))
+            and loc.location_id is not None]

@@ -21,12 +21,20 @@ class JigsawItem(Item):
 item_table = {
     "Puzzle Piece": ItemData(234782000, ItemClassification.progression_skip_balancing),
     "2 Puzzle Pieces": ItemData(234782001, ItemClassification.progression_skip_balancing),
+    "5 Puzzle Pieces": ItemData(234782004, ItemClassification.progression_skip_balancing),
+    "10 Puzzle Pieces": ItemData(234782009, ItemClassification.progression_skip_balancing),
+    "25 Puzzle Pieces": ItemData(234782024, ItemClassification.progression),
+    "100 Puzzle Pieces": ItemData(234782099, ItemClassification.progression),
     "Squawks": ItemData(234781999, ItemClassification.filler),
 }
 
 item_groups = {
     "Puzzle Pieces": {
         "Puzzle Piece", 
-        "2 Puzzle Pieces"
+        "2 Puzzle Pieces",
+        "5 Puzzle Pieces",
+        "10 Puzzle Pieces",
+        "25 Puzzle Pieces",
+        "100 Puzzle Pieces",
     }
 }

@@ -30,6 +30,25 @@ RAM_ADDRS = {
     "is_dead": (0xCC34, 1, "System Bus"),
 }
 
+GASHA_ADDRS = {
+    "Mount Cucco Gasha Spot": (0xc71f, 0x00),
+    "Tarm Ruins Gasha Spot": (0xc722, 0x01),
+    "Goron Mountain West Gasha Spot": (0xc738, 0x02),
+    "Goron Mountain East Gasha Spot": (0xc73b, 0x03),
+    "Onox Gasha Spot": (0xc744, 0x04),
+    "Sunken City Gasha Spot": (0xc73f, 0x05),
+    "Holodrum Plain Island Gasha Spot": (0xc775, 0x06),
+    "Spool Swamp North Gasha Spot": (0xc780, 0x07),
+    "Eyeglass Lake Gasha Spot": (0xc789, 0x08),
+    "Lower Holodrum Plain Gasha Spot": (0xc795, 0x09),
+    "North Horon Gasha Spot": (0xc7a6, 0x0a),
+    "Eastern Suburbs Gasha Spot": (0xc7ac, 0x0b),
+    "Spool Swamp South Gasha Spot": (0xc7c0, 0x0c),
+    "Samasa Desert Gasha Spot": (0xc7ce, 0x0d),
+    "Western Coast Gasha Spot": (0xc7f0, 0x0e),
+    "Horon Village Gasha Spot": (0xc7c8, 0x0f),
+}
+
 
 class OracleOfSeasonsClient(BizHawkClient):
     game = "The Legend of Zelda - Oracle of Seasons"
@@ -37,6 +56,7 @@ class OracleOfSeasonsClient(BizHawkClient):
     patch_suffix = ".apoos"
     local_checked_locations: Set[int]
     local_scouted_locations: Set[int]
+    local_tracker_updates: Set[str]
     item_id_to_name: Dict[int, str]
     location_name_to_id: Dict[str, int]
 
@@ -46,6 +66,7 @@ class OracleOfSeasonsClient(BizHawkClient):
         self.location_name_to_id = build_location_name_to_id_dict()
         self.local_checked_locations = set()
         self.local_scouted_locations = set()
+        self.local_tracker_updates = set()
 
         self.set_deathlink = False
         self.last_deathlink = None
@@ -115,6 +136,7 @@ class OracleOfSeasonsClient(BizHawkClient):
 
             await self.process_checked_locations(ctx, flag_bytes)
             await self.process_scouted_locations(ctx, flag_bytes)
+            await self.process_tracker_updates(ctx, flag_bytes)
 
             # Process received items (only if we aren't in Blaino's Gym to prevent him from calling us cheaters)
             if received_item_is_empty and current_room != ROOM_BLAINOS_GYM:
@@ -240,3 +262,36 @@ class OracleOfSeasonsClient(BizHawkClient):
                 # ...because of their own incompetence, so let's make their mates pay for that
                 await ctx.send_death(ctx.player_names[ctx.slot] + " might not be the Hero of Time after all.")
                 self.last_deathlink = ctx.last_death_link
+
+    async def process_tracker_updates(self, ctx: "BizHawkClientContext", flag_bytes):
+        # Processes the gasha tracking
+        local_tracker_updates = set(self.local_tracker_updates)
+        byte_offset = 0xC64a - RAM_ADDRS["location_flags"][0]
+        gasha_seed_bytes = flag_bytes[byte_offset] + flag_bytes[byte_offset + 1] * 0x100
+        for gasha_name in GASHA_ADDRS:
+            (byte_addr, flag) = GASHA_ADDRS[gasha_name]
+
+            # Check if the seed has been harvested
+            byte_offset = byte_addr - RAM_ADDRS["location_flags"][0]
+            if flag_bytes[byte_offset] & 0x20 != 0:
+                local_tracker_updates.add(f"Harvested {gasha_name}")
+            else:
+                # Check if the seed is currently planted
+                flag_bit = 0x1 << flag
+                if gasha_seed_bytes & flag_bit == 0:
+                    continue
+
+            local_tracker_updates.add(f"Planted {gasha_name}")
+
+        if len(local_tracker_updates) > len(self.local_tracker_updates):
+            updates = {check: True for check in local_tracker_updates.difference(self.local_tracker_updates)}
+            await ctx.send_msgs([{
+                "cmd": "Set",
+                "key": f"OoS_{ctx.team}_{ctx.slot}",
+                "default": {},
+                "operations": [{
+                    "operation": "update",
+                    "value": updates
+                }],
+            }])
+            self.local_tracker_updates = local_tracker_updates
