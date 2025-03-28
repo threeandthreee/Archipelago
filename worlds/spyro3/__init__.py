@@ -33,6 +33,7 @@ class Spyro3World(World):
     """
 
     game: str = "Spyro 3"
+    is_experimental = True
     options_dataclass = Spyro3Option
     options: Spyro3Option
     topology_present: bool = True
