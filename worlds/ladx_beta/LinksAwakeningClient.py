@@ -804,6 +804,7 @@ class LinksAwakeningContext(CommonContext):
         if cmd == "Connected":
             self.game = self.slot_info[self.slot].game
             self.slot_data = args.get("slot_data", {})
+            # This is sent to magpie over local websocket to make its own connection
             self.slot_data.update({
                 "server_address": self.server_address,
                 "slot_name": self.player_names[self.slot],
@@ -894,7 +895,10 @@ class LinksAwakeningContext(CommonContext):
                         try:
                             self.magpie.set_checks(self.client.tracker.all_checks)
                             await self.magpie.set_item_tracker(self.client.item_tracker)
-                            self.magpie.slot_data = self.slot_data
+                            if self.slot_data and "slot_data" in self.magpie.features and not self.magpie.has_sent_slot_data:
+                                self.magpie.slot_data = self.slot_data
+                                await self.magpie.send_slot_data()
+
                             if self.client.gps_tracker.needs_found_entrances:
                                 await self.request_found_entrances()
                                 self.client.gps_tracker.needs_found_entrances = False
@@ -902,9 +906,6 @@ class LinksAwakeningContext(CommonContext):
                             new_entrances = await self.magpie.send_gps()
                             if new_entrances:
                                 await self.send_new_entrances(new_entrances)
-
-                            if self.slot_data and "slot_data" in self.magpie.features and not self.magpie.has_sent_slot_data:
-                                await self.magpie.send_slot_data(self.slot_data)
                         except Exception:
                             # Don't let magpie errors take out the client
                             pass

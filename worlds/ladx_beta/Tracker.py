@@ -185,6 +185,7 @@ class MagpieBridge:
     gps_tracker: GpsTracker = None
     ws = None
     features = []
+    slot_data = {}
     has_sent_slot_data = False
 
     def use_entrance_tracker(self):
@@ -215,8 +216,6 @@ class MagpieBridge:
                     await self.send_all_inventory()
                 if "checks" in self.features:
                     await self.send_all_checks()
-                if "slot_data" in self.features and self.slot_data:
-                    await self.send_slot_data(self.slot_data)
                 if self.use_entrance_tracker():
                     await self.send_gps(diff=False)
 
@@ -296,14 +295,14 @@ class MagpieBridge:
 
             return await self.gps_tracker.send_entrances(self.ws, diff)
 
-    async def send_slot_data(self, slot_data):
+    async def send_slot_data(self):
         if not self.ws:
             return
 
         logger.debug("Sending slot_data to magpie.")
         message = {
             "type": "slot_data",
-            "slot_data": slot_data
+            "slot_data": self.slot_data
         }
         await self.ws.send(json.dumps(message))
         self.has_sent_slot_data = True
