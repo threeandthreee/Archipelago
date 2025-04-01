@@ -238,6 +238,17 @@ class RAGameboy():
         start = LAClientConstants.hRamStart - self.cache_start
         self.cache[start:start + len(hram_block)] = hram_block
 
+        self.cache = bytearray(self.cache_size)
+
+        start = self.checks_start - self.cache_start
+        self.cache[start:start + len(checks_block)] = checks_block
+
+        start = self.location_start - self.cache_start
+        self.cache[start:start + len(location_block)] = location_block
+
+        start = LAClientConstants.hRamStart - self.cache_start
+        self.cache[start:start + len(hram_block)] = hram_block
+
         self.last_cache_read = time.time()
         return True
 
@@ -248,7 +259,6 @@ class RAGameboy():
             chunk = await self.async_read_memory(address + len(block), remaining_size)
             remaining_size -= len(chunk)
             block += chunk
-
         return block
 
     async def read_memory_cache(self, addresses):
@@ -653,7 +663,7 @@ class LinksAwakeningContext(CommonContext):
     la_task = None
     client = None
     # TODO: does this need to re-read on reset?
-    found_checks = []
+    found_checks = set()
     handled_locations = set()
     recvd_checks = {}
     last_resend = time.time()
@@ -708,10 +718,6 @@ class LinksAwakeningContext(CommonContext):
         self.ui = LADXManager(self)
         self.ui_task = asyncio.create_task(self.ui.async_run(), name="UI")
 
-    async def send_checks(self):
-        message = [{"cmd": "LocationChecks", "locations": self.found_checks}]
-        await self.send_msgs(message)
-
     async def send_new_entrances(self, entrances: typing.Dict[str, str]):
         # Store the entrances we find on the server for future sessions
         message = [{
@@ -722,6 +728,15 @@ class LinksAwakeningContext(CommonContext):
             "operations": [{"operation": "update", "value": entrances}],
         }]
 
+    async def send_new_entrances(self, entrances: typing.Dict[str, str]):
+        # Store the entrances we find on the server for future sessions
+        message = [{
+            "cmd": "Set",
+            "key": self.slot_storage_key,
+            "default": {},
+            "want_reply": False,
+            "operations": [{"operation": "update", "value": entrances}],
+        }]
         await self.send_msgs(message)
 
     had_invalid_slot_data = None
@@ -760,13 +775,19 @@ class LinksAwakeningContext(CommonContext):
         # Ask for updates so that players can co-op entrances in a seed
         await self.send_msgs([{"cmd": "SetNotify", "keys": [self.slot_storage_key]}])
 
+    async def request_found_entrances(self):
+        await self.send_msgs([{"cmd": "Get", "keys": [self.slot_storage_key]}])
+
+        # Ask for updates so that players can co-op entrances in a seed
+        await self.send_msgs([{"cmd": "SetNotify", "keys": [self.slot_storage_key]}])
+
     def on_deathlink(self, data: typing.Dict[str, typing.Any]) -> None:
         self.client.deathlink_status = 'pending'
         super(LinksAwakeningContext, self).on_deathlink(data)
 
     def new_checks(self, item_ids, ladxr_ids):
-        self.found_checks += item_ids
-        create_task_log_exception(self.send_checks())
+        self.found_checks.update(item_ids)
+        create_task_log_exception(self.check_locations(self.found_checks))
         if self.magpie_enabled:
             create_task_log_exception(self.magpie.send_new_checks(ladxr_ids))
 
@@ -879,13 +900,12 @@ class LinksAwakeningContext(CommonContext):
 
                     if self.last_resend + 5.0 < now:
                         self.last_resend = now
-                        await self.send_checks()
+                        await self.check_locations(self.found_checks)
                     if self.magpie_enabled:
                         try:
                             self.magpie.set_checks(self.client.tracker.all_checks)
                             await self.magpie.set_item_tracker(self.client.item_tracker)
                             self.magpie.slot_data = self.slot_data
-
                             if self.client.gps_tracker.needs_found_entrances:
                                 await self.request_found_entrances()
                                 self.client.gps_tracker.needs_found_entrances = False
@@ -966,6 +986,6 @@ def launch(*launch_args):
 
     Utils.init_logging("LinksAwakeningContext", exception_logger="Client")
 
-    colorama.init()
+    colorama.just_fix_windows_console()
     asyncio.run(main())
     colorama.deinit()

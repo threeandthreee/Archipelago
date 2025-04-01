@@ -193,6 +193,12 @@ class MagpieBridge:
                and "entrance_mapping" in self.slot_data \
                and any([k != v for k, v in self.slot_data["entrance_mapping"].items()])
 
+    def use_entrance_tracker(self):
+        return "entrances" in self.features \
+               and self.slot_data \
+               and "entrance_mapping" in self.slot_data \
+               and any([k != v for k, v in self.slot_data["entrance_mapping"].items()])
+
     async def handler(self, websocket):
         self.ws = websocket
         while True:
@@ -201,7 +207,7 @@ class MagpieBridge:
                 logger.info(
                     f"Connected, supported features: {message['features']}")
                 self.features = message["features"]
-                
+
                 await self.send_handshAck()
 
             if message["type"] == "sendFull":
@@ -222,7 +228,7 @@ class MagpieBridge:
         if the_id == "0x2A7":
             return "0x2A1-1"
         return the_id
-    
+
     async def send_handshAck(self):
         if not self.ws:
             return
