@@ -238,17 +238,6 @@ class RAGameboy():
         start = LAClientConstants.hRamStart - self.cache_start
         self.cache[start:start + len(hram_block)] = hram_block
 
-        self.cache = bytearray(self.cache_size)
-
-        start = self.checks_start - self.cache_start
-        self.cache[start:start + len(checks_block)] = checks_block
-
-        start = self.location_start - self.cache_start
-        self.cache[start:start + len(location_block)] = location_block
-
-        start = LAClientConstants.hRamStart - self.cache_start
-        self.cache[start:start + len(hram_block)] = hram_block
-
         self.last_cache_read = time.time()
         return True
 
