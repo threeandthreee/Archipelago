@@ -122,6 +122,7 @@ class ALTTPWeb(WebWorld):
     )
 
     tutorials = [setup_en, setup_de, setup_es, setup_fr, msu, msu_es, msu_fr, plando, oof_sound]
+    game_info_languages = ["en", "fr"]
 
 
 class ALTTPWorld(World):

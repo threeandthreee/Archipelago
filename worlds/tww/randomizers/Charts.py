@@ -1,4 +1,3 @@
-import copy
 from typing import TYPE_CHECKING
 
 from ..Items import ISLAND_NUMBER_TO_CHART_NAME
@@ -72,7 +71,7 @@ class ChartRandomizer:
         self.world = world
         self.multiworld = world.multiworld
 
-        self.island_number_to_chart_name = copy.deepcopy(ISLAND_NUMBER_TO_CHART_NAME)
+        self.island_number_to_chart_name = ISLAND_NUMBER_TO_CHART_NAME.copy()
 
     def setup_progress_sunken_treasure_locations(self) -> None:
         """
@@ -87,7 +86,7 @@ class ChartRandomizer:
         # The shuffled island numbers determine which sector each chart points to.
         shuffled_island_numbers = list(self.island_number_to_chart_name.keys())
         if options.randomize_charts:
-            self.multiworld.random.shuffle(shuffled_island_numbers)
+            self.world.random.shuffle(shuffled_island_numbers)
 
         for original_item_name in reversed(original_item_names):
             # Assign each chart to its new island.

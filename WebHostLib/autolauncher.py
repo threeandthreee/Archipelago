@@ -6,9 +6,10 @@ import multiprocessing
 import typing
 from datetime import timedelta, datetime
 from threading import Event, Thread
+from typing import Any
 from uuid import UUID
 
-from pony.orm import db_session, select, commit
+from pony.orm import db_session, select, commit, PrimaryKey
 
 from Utils import restricted_loads
 from .locker import Locker, AlreadyRunningException
@@ -35,12 +36,21 @@ def handle_generation_failure(result: BaseException):
         logging.exception(e)
 
 
+def _mp_gen_game(gen_options: dict, meta: dict[str, Any] | None = None, owner=None, sid=None) -> PrimaryKey | None:
+    from setproctitle import setproctitle
+
+    setproctitle(f"Generator ({sid})")
+    res = gen_game(gen_options, meta=meta, owner=owner, sid=sid)
+    setproctitle(f"Generator (idle)")
+    return res
+
+
 def launch_generator(pool: multiprocessing.pool.Pool, generation: Generation):
     try:
         meta = json.loads(generation.meta)
         options = restricted_loads(generation.options)
         logging.info(f"Generating {generation.id} for {len(options)} players")
-        pool.apply_async(gen_game, (options,),
+        pool.apply_async(_mp_gen_game, (options,),
                          {"meta": meta,
                           "sid": generation.id,
                           "owner": generation.owner},
@@ -53,7 +63,25 @@ def launch_generator(pool: multiprocessing.pool.Pool, generation: Generation):
         generation.state = STATE_STARTED
 
 
-def init_db(pony_config: dict):
+def init_generator(config: dict[str, Any]) -> None:
+    from setproctitle import setproctitle
+
+    setproctitle("Generator (idle)")
+
+    try:
+        import resource
+    except ModuleNotFoundError:
+        pass  # unix only module
+    else:
+        # set soft limit for memory to from config (default 4GiB)
+        soft_limit = config["GENERATOR_MEMORY_LIMIT"]
+        old_limit, hard_limit = resource.getrlimit(resource.RLIMIT_AS)
+        if soft_limit != old_limit:
+            resource.setrlimit(resource.RLIMIT_AS, (soft_limit, hard_limit))
+            logging.debug(f"Changed AS mem limit {old_limit} -> {soft_limit}")
+        del resource, soft_limit, hard_limit
+
+    pony_config = config["PONY"]
     db.bind(**pony_config)
     db.generate_mapping()
 
@@ -105,8 +133,8 @@ def autogen(config: dict):
         try:
             with Locker("autogen"):
 
-                with multiprocessing.Pool(config["GENERATORS"], initializer=init_db,
-                                          initargs=(config["PONY"],), maxtasksperchild=10) as generator_pool:
+                with multiprocessing.Pool(config["GENERATORS"], initializer=init_generator,
+                                          initargs=(config,), maxtasksperchild=10) as generator_pool:
                     with db_session:
                         to_start = select(generation for generation in Generation if generation.state == STATE_STARTED)
 
@@ -150,6 +178,7 @@ class MultiworldInstance():
         self.rooms_to_start = multiprocessing.Queue()
         self.rooms_shutting_down = multiprocessing.Queue()
         self.name = f"MultiHoster{id}"
+        # Ashipelago customization
         self.webhook_url = config["WEBHOOK_URL"]
         self.webhook_autostart = config["WEBHOOK_AUTO_START"]
         self.webhook_debug = config["WEBHOOK_DEBUG"]
@@ -175,7 +204,6 @@ class MultiworldInstance():
         if room_id in self.room_ids:
             pass  # should already be hosted currently.
         else:
-            logging.info(f"Adding {room_id} to be spun up")
             self.room_ids.add(room_id)
             self.rooms_to_start.put(room_id)
 

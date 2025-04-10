@@ -62,11 +62,13 @@ class TestBooksanityNone(SVTestBase):
         for location in self.multiworld.get_locations():
             if not location.name.startswith(shipsanity_prefix):
                 continue
+
             item_to_ship = location.name[len(shipsanity_prefix):]
             if item_to_ship not in power_books and item_to_ship not in skill_books:
                 continue
+
             with self.subTest(location.name):
-                self.assert_reach_location_true(location, self.multiworld.state)
+                self.assert_can_reach_location(location)
 
 
 class TestBooksanityPowers(SVTestBase):
@@ -108,11 +110,13 @@ class TestBooksanityPowers(SVTestBase):
         for location in self.multiworld.get_locations():
             if not location.name.startswith(shipsanity_prefix):
                 continue
+
             item_to_ship = location.name[len(shipsanity_prefix):]
             if item_to_ship not in power_books and item_to_ship not in skill_books:
                 continue
+
             with self.subTest(location.name):
-                self.assert_reach_location_true(location, self.multiworld.state)
+                self.assert_can_reach_location(location)
 
 
 class TestBooksanityPowersAndSkills(SVTestBase):
@@ -154,11 +158,13 @@ class TestBooksanityPowersAndSkills(SVTestBase):
         for location in self.multiworld.get_locations():
             if not location.name.startswith(shipsanity_prefix):
                 continue
+
             item_to_ship = location.name[len(shipsanity_prefix):]
             if item_to_ship not in power_books and item_to_ship not in skill_books:
                 continue
+
             with self.subTest(location.name):
-                self.assert_reach_location_true(location, self.multiworld.state)
+                self.assert_can_reach_location(location)
 
 
 class TestBooksanityAll(SVTestBase):
@@ -200,8 +206,10 @@ class TestBooksanityAll(SVTestBase):
         for location in self.multiworld.get_locations():
             if not location.name.startswith(shipsanity_prefix):
                 continue
+
             item_to_ship = location.name[len(shipsanity_prefix):]
             if item_to_ship not in power_books and item_to_ship not in skill_books:
                 continue
+
             with self.subTest(location.name):
-                self.assert_reach_location_true(location, self.multiworld.state)
+                self.assert_can_reach_location(location)
