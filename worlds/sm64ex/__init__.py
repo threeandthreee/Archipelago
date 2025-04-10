@@ -37,22 +37,6 @@ class SM64World(World):
     item_name_to_id = item_table
     location_name_to_id = location_table
 
-    item_name_groups = {
-        "Cannons": {
-            "Cannon Unlock BoB", "Cannon Unlock CCM", "Cannon Unlock JRB",
-            "Cannon Unlock RR" , "Cannon Unlock SL" , "Cannon Unlock SSL",
-            "Cannon Unlock THI", "Cannon Unlock TTM", "Cannon Unlock WDW",
-            "Cannon Unlock WF",
-        },
-        "Caps": {
-            "Metal Cap", "Vanish Cap", "Wing Cap",
-        },
-        "Moves": {
-            "Backflip", "Climb", "Dive", "Double Jump", "Ground Pound", "Kick",
-            "Ledge Grab", "Long Jump", "Side Flip", "Triple Jump", "Wall Kick",
-        },
-    }
-
     required_client_version = (0, 3, 5)
 
     area_connections: typing.Dict[int, int]
@@ -126,7 +110,11 @@ class SM64World(World):
         # 1Up Mushrooms
         self.multiworld.itempool += [self.create_item("1Up Mushroom") for i in range(0,self.filler_count)]
         # Power Stars
-        self.multiworld.itempool += [self.create_item("Power Star") for i in range(0,self.number_of_stars)]
+        star_range = self.number_of_stars
+        # Vanilla 100 Coin stars have to removed from the pool if other max star increasing options are active.
+        if self.options.enable_coin_stars == "vanilla":
+            star_range -= 15
+        self.multiworld.itempool += [self.create_item("Power Star") for i in range(0,star_range)]
         # Keys
         if (not self.options.progressive_keys):
             key1 = self.create_item("Basement Key")
@@ -188,6 +176,23 @@ class SM64World(World):
             self.multiworld.get_location("Bowser in the Fire Sea 1Up Block Near Poles", self.player).place_locked_item(self.create_item("1Up Mushroom"))
             self.multiworld.get_location("Wing Mario Over the Rainbow 1Up Block", self.player).place_locked_item(self.create_item("1Up Mushroom"))
             self.multiworld.get_location("Bowser in the Sky 1Up Block", self.player).place_locked_item(self.create_item("1Up Mushroom"))
+
+        if (self.options.enable_coin_stars == "vanilla"):
+            self.multiworld.get_location("BoB: 100 Coins", self.player).place_locked_item(self.create_item("Power Star"))
+            self.multiworld.get_location("WF: 100 Coins", self.player).place_locked_item(self.create_item("Power Star"))
+            self.multiworld.get_location("JRB: 100 Coins", self.player).place_locked_item(self.create_item("Power Star"))
+            self.multiworld.get_location("CCM: 100 Coins", self.player).place_locked_item(self.create_item("Power Star"))
+            self.multiworld.get_location("BBH: 100 Coins", self.player).place_locked_item(self.create_item("Power Star"))
+            self.multiworld.get_location("HMC: 100 Coins", self.player).place_locked_item(self.create_item("Power Star"))
+            self.multiworld.get_location("LLL: 100 Coins", self.player).place_locked_item(self.create_item("Power Star"))
+            self.multiworld.get_location("SSL: 100 Coins", self.player).place_locked_item(self.create_item("Power Star"))
+            self.multiworld.get_location("DDD: 100 Coins", self.player).place_locked_item(self.create_item("Power Star"))
+            self.multiworld.get_location("SL: 100 Coins", self.player).place_locked_item(self.create_item("Power Star"))
+            self.multiworld.get_location("WDW: 100 Coins", self.player).place_locked_item(self.create_item("Power Star"))
+            self.multiworld.get_location("TTM: 100 Coins", self.player).place_locked_item(self.create_item("Power Star"))
+            self.multiworld.get_location("THI: 100 Coins", self.player).place_locked_item(self.create_item("Power Star"))
+            self.multiworld.get_location("TTC: 100 Coins", self.player).place_locked_item(self.create_item("Power Star"))
+            self.multiworld.get_location("RR: 100 Coins", self.player).place_locked_item(self.create_item("Power Star"))
 
     def get_filler_item_name(self) -> str:
         return "1Up Mushroom"
