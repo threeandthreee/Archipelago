@@ -1,6 +1,5 @@
 from typing import TYPE_CHECKING
 
-import worlds.spelunky2.Options
 from BaseClasses import CollectionState
 from worlds.generic.Rules import set_rule
 
@@ -12,6 +11,8 @@ def set_common_rules(world: "Spelunky2World", player: int):
 
     # Entrance Rules
     set_rule(world.get_entrance("Menu -> Dwelling"), lambda state: True)
+    # set_rule(world.get_entrance("Menu -> Olmec's Lair"), lambda state: state.has("Olmec's Lair Shortcut", player) or state.has("Progressive Shortcut", player, 2)) - Not implemented yet
+    # set_rule(world.get_entrance("Menu -> Ice Caves"), lambda state: state.has("Ice Caves Shortcut", player) or state.has("Progressive Shortcut", player, 3)) - Not implemeneted yet
     set_rule(world.get_entrance("Dwelling -> Jungle"), lambda state: state.has("Jungle", player) or state.has("Progressive World Unlock", player))
     set_rule(world.get_entrance("Dwelling -> Volcana"), lambda state: state.has("Volcana", player) or state.has("Progressive World Unlock", player))
     set_rule(world.get_entrance("Jungle -> Olmec's Lair"), lambda state: state.has_all(["Jungle", "Olmec's Lair"], player) or state.has("Progressive World Unlock", player, 2))
@@ -59,9 +60,10 @@ def set_common_rules(world: "Spelunky2World", player: int):
     set_rule(world.get_location("Kapala Journal Entry"), lambda state: has_world_2(state, player))
     set_rule(world.get_location("Hedjet Journal Entry"), lambda state: state.has("Udjat Eye", player))
     set_rule(world.get_location("Crown Journal Entry"), lambda state: state.has("Udjat Eye", player))
+    set_rule(world.get_location("Ankh Journal Entry"), lambda state: state.has("Ankh", player))
     set_rule(world.get_location("Tablet of Destiny Journal Entry"), lambda state: state.can_reach("Duat Journal Entry", "Location", player))
     set_rule(world.get_location("Cape Journal Entry"), lambda state: state.has("Udjat Eye", player))
-    set_rule(world.get_location("Vlad's Cape Journal Entry"), lambda state: state.has("Ankh", player))
+    set_rule(world.get_location("Vlad's Cape Journal Entry"), lambda state: state.has("Udjat Eye", player))
     set_rule(world.get_location("Telepack Journal Entry"), lambda state: state.has("Udjat Eye", player))
     set_rule(world.get_location("Hoverpack Journal Entry"), lambda state: state.has("Udjat Eye", player))
     set_rule(world.get_location("Powerpack Journal Entry"), lambda state: state.has("Udjat Eye", player))
@@ -69,6 +71,7 @@ def set_common_rules(world: "Spelunky2World", player: int):
     set_rule(world.get_location("Mattock Journal Entry"), lambda state: has_world_2(state, player))
     set_rule(world.get_location("Excalibur Journal Entry"), lambda state: has_royalty(state, player) and state.has("Excalibur", player))
     set_rule(world.get_location("Plasma Cannon Journal Entry"), lambda state: can_access_mothership(state, player))
+    set_rule(world.get_location("Scepter Journal Entry"), lambda state: state.has("Scepter", player))
     set_rule(world.get_location("Four-Leaf Clover Journal Entry"), lambda state: has_world_2(state, player))
 
 def set_sunken_city_rules(world: "Spelunky2World", player: int):

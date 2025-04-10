@@ -43,7 +43,8 @@ TRACKER_EVENT_FLAGS = [
     "FLAG_SYS_UNLOCKED_TANOBY_RUINS",
     "FLAG_SYS_CAN_LINK_WITH_RS",  # Restored Pokémon Network Machine
     "FLAG_DEFEATED_CHAMP_REMATCH",
-    "FLAG_PURCHASED_LEMONADE"
+    "FLAG_PURCHASED_LEMONADE",
+    "FLAG_GOT_RUNNING_SHOES"  # Used for vanilla running shoes
 ]
 EVENT_FLAG_MAP = {data.constants[flag_name]: flag_name for flag_name in TRACKER_EVENT_FLAGS}
 
@@ -104,6 +105,7 @@ MAP_SECTION_EDGES: Dict[str, List[Tuple[int, int]]] = {
     "MAP_ROUTE23": [(23, 39), (23, 79), (23, 119)],
     "MAP_ROUTE25": [(35, 29)],
     "MAP_VIRIDIAN_FOREST": [(53, 35)],
+    "MAP_DIGLETTS_CAVE_B1F": [(48, 39)],
     "MAP_UNDERGROUND_PATH_NORTH_SOUTH_TUNNEL": [(7, 31)],
     "MAP_UNDERGROUND_PATH_EAST_WEST_TUNNEL": [(39, 6)],
     "MAP_ONE_ISLAND_KINDLE_ROAD": [(23, 29), (23, 65), (23, 101)],
@@ -130,7 +132,9 @@ class PokemonFRLGClient(BizHawkClient):
     local_checked_locations: Set[int]
     local_set_events: Dict[str, bool]
     local_set_fly_unlocks: Dict[str, bool]
-    caught_pokemon: int
+    local_hints: List[str]
+    caught_pokemon: Set[int]
+    caught_pokemon_count: int
     current_map: Tuple[int, int]
 
     def __init__(self) -> None:
@@ -138,10 +142,11 @@ class PokemonFRLGClient(BizHawkClient):
         self.game_version = None
         self.goal_flag = None
         self.local_checked_locations = set()
-        self.local_set_events = {}
-        self.local_set_fly_unlocks = {}
-        self.local_hints = []
-        self.caught_pokemon = 0
+        self.local_set_events = dict()
+        self.local_set_fly_unlocks = dict()
+        self.local_hints = list()
+        self.caught_pokemon = set()
+        self.caught_pokemon_count = 0
         self.current_map = (0, 0)
 
     async def validate_rom(self, ctx: "BizHawkClientContext") -> bool:
@@ -300,7 +305,8 @@ class PokemonFRLGClient(BizHawkClient):
             local_set_fly_unlocks = {flag_name: False for flag_name in TRACKER_FLY_UNLOCK_FLAGS}
             local_hints = {flag_name: False for flag_name in HINT_FLAGS.keys()}
             local_checked_locations: Set[int] = set()
-            caught_pokemon = 0
+            caught_pokemon: Set[int] = set()
+            caught_pokemon_count = 0
 
             # Check set flags
             for byte_i, byte in enumerate(flag_bytes):
@@ -340,11 +346,12 @@ class PokemonFRLGClient(BizHawkClient):
                 for byte_i, byte in enumerate(pokemon_caught_bytes):
                     for i in range(8):
                         if byte & (1 << i) != 0:
-                            dex_number = byte_i * 8 + i
-                            location_id = DEXSANITY_OFFSET + dex_number
+                            dex_number = byte_i * 8 + i + 1
+                            location_id = DEXSANITY_OFFSET + dex_number - 1
                             if location_id in ctx.server_locations:
                                 local_checked_locations.add(location_id)
-                            caught_pokemon += 1
+                            caught_pokemon.add(dex_number)
+                            caught_pokemon_count += 1
 
             # Send locations
             if local_checked_locations != self.local_checked_locations:
@@ -396,17 +403,29 @@ class PokemonFRLGClient(BizHawkClient):
                 }])
                 self.local_set_fly_unlocks = local_set_fly_unlocks
 
-            # Send caught Pokémon amount
+            # Send caught Pokémon
             if pokedex_read_status:
                 if caught_pokemon != self.caught_pokemon and ctx.slot is not None:
+                    await ctx.send_msgs([{
+                        "cmd": "Set",
+                        "key": f"pokemon_frlg_pokemon_{ctx.team}_{ctx.slot}",
+                        "default": {},
+                        "want_reply": False,
+                        "operations": [{"operation": "replace", "value": caught_pokemon}, ]
+                    }])
+                    self.caught_pokemon = caught_pokemon
+
+            # Send caught Pokémon amount
+            if pokedex_read_status:
+                if caught_pokemon_count != self.caught_pokemon_count and ctx.slot is not None:
                     await ctx.send_msgs([{
                         "cmd": "Set",
                         "key": f"pokemon_frlg_pokedex_{ctx.team}_{ctx.slot}",
                         "default": 0,
                         "want_reply": False,
-                        "operations": [{"operation": "replace", "value": caught_pokemon},]
+                        "operations": [{"operation": "replace", "value": caught_pokemon_count},]
                     }])
-                    self.caught_pokemon = caught_pokemon
+                    self.caught_pokemon_count = caught_pokemon_count
 
             # Send AP Hints
             if ctx.slot_data["provide_hints"]:

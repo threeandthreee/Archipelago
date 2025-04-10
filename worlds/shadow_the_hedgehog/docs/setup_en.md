@@ -35,6 +35,32 @@
 You must remain with client running whenever playing the game to receive checks and other items.
 You should now be able to receive and send items. You'll need to do these steps every time you want to reconnect.
 
-## Auto-Tracking
+## Advanced YAML Configuration
 
-Currently unavailable.
+The percent_overrides list option in the yaml file is very powerful in terms of overwriting behaviours.
+You can define a list of stages and the requirement to override the percentage for, for this check.
+This feature is new and welcome for feedback.
+These values will override the default setting for each of the available options.
+You can override settings in the following format:
+{type}.{stage}
+
+The available types are:
+Enemysanity:
+- EA: Alien enemysanity
+- EG: Gun enemysanity
+- EE: Egg robo enemysanity
+
+Objective
+- OD: Locations percentage for dark mission
+- OH: Locations percentage for hero mission
+
+Completion
+- CD: Amount of items from pool required to complete dark mission.
+- CH: Amount of items from pool required to complete hero mission.
+
+Available
+- AD: Available dark items in the pool
+- AH: Available hero items in the pool
+
+e.g. CH.Westopolis: 10 -- set the Hero Clear requirement to 10%.
+

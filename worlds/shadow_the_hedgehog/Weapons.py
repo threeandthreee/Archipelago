@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from . import Levels, Regions
+from . import Levels
 
 
 @dataclass
@@ -24,6 +24,7 @@ class WeaponAttributes:
     NOT_AIMABLE = 16
     HEAL = 32
     SPECIAL = 64
+    SHADOW_RIFLE = 128
 
 
 def GetAnyShadowBoxRegions():
@@ -35,7 +36,7 @@ def GetAnyShadowBoxRegions():
         (Levels.STAGE_THE_ARK,1), Levels.STAGE_AIR_FLEET, Levels.STAGE_IRON_JUNGLE,
         Levels.STAGE_SPACE_GADGET, Levels.STAGE_LOST_IMPACT, Levels.STAGE_GUN_FORTRESS,
         (Levels.STAGE_BLACK_COMET,1), Levels.STAGE_LAVA_SHELTER, Levels.STAGE_COSMIC_FALL,
-        Levels.STAGE_FINAL_HAUNT
+        Levels.STAGE_FINAL_HAUNT, Levels.STAGE_THE_LAST_WAY
     ]
 
 def GetRuleByWeaponRequirement(player, req, stage, regions):
@@ -43,33 +44,104 @@ def GetRuleByWeaponRequirement(player, req, stage, regions):
         for i in range(0, len(regions)):
             if max(regions) > i:
                 regions.append(i)
-    else:
+    elif stage is not None:
         p_regions = [ l.regionIndex for l in Levels.INDIVIDUAL_LEVEL_REGIONS if l.stageId == stage]
         if len(p_regions) == 0:
             regions = []
         else:
             regions = p_regions
 
-    matches = [ w for w in WEAPON_INFO if req in w.attributes and
+    matches_items = [ w for w in WEAPON_INFO if (
+            (req is None and len(w.attributes) > 0)
+            or req in w.attributes or req == w.name) and
                 len([ a for a in w.available_stages
-                  if (type(a) is tuple and a[0] == stage and a[1] in regions)
+                  if (stage is not None and type(a) is tuple and a[0] == stage and a[1] in regions)
                   or
-                  a == stage
+                      (stage is None)
+                  or
+                      (stage is not None and type(a) is not tuple and a == stage)
                 ]) > 0
                 ]
+
+    matches_groups = [ group[0] for group in WeaponGroups.items() if len([ x for x in group[1] if x in
+                                                                           [m.game_id for m in matches_items]]) > 0]
+    matches = []
+    matches.extend([ x.name for x in matches_items])
+    matches.extend(matches_groups)
+
+    #print(stage, regions, matches)
 
     if len(matches) == 0:
         print("Something wrong here with", req, stage, regions)
 
-    return lambda state, match=matches: state.has_any([m.name for m in matches],player)
+    return lambda state, reqs=matches: state.has_any([m for m in reqs],player)
 
+
+class WEAPONS:
+    PISTOL = 0x1
+    SUB_MACHINE_GUN = 0x2
+    SEMI_AUTOMATIC_RIFLE = 0x3
+    HEAVY_MACHINE_GUN = 0x4
+    GATLING_GUN = 0x5
+    EGG_GUN = 0x7
+    LIGHT_SHOT = 0x8
+    FLASH_SHOT = 0x9
+    RING_SHOT = 0xA
+    HEAVY_SHOT = 0xB
+    GRENADE_LAUNCHER = 0xC
+    BAZOOKA = 0xD
+    TANK_CANNON = 0xE
+    BLACK_BARREL = 0xF
+    BIG_BARREL = 0x10
+    EGG_BAZOOKA = 0x11
+    RPG = 0x12
+    FOUR_SHOT_RPG = 0x13
+    EIGHT_SHOT_RPG = 0x14
+    WORM_SHOOTER = 0x15
+    WIDE_WORM_SHOOTER = 0x16
+    BIG_WORM_SHOOTER = 0x17
+    VACUUM_POD = 0x18
+    LASER_RIFLE = 0x19
+    SPLITTER = 0x1A
+    REFRACTOR = 0x1B
+    SURVIVAL_KNIFE = 0x1E
+    BLACK_SWORD = 0x1F
+    DARK_HAMMER = 0x20
+    EGG_SPEAR = 0x21
+    SPEED_LIMIT_SIGN = 0x22
+    DIGITAL_POLE = 0x23
+    CANYON_POLE = 0x24
+    LETHAL_POLE = 0x25
+    CRYPTIC_TORCH = 0x26
+    PRISON_BRANCH = 0x27
+    CIRCUS_POLE = 0x28
+    STOP_SIGN = 0x29
+    DOOM_POLE = 0x2A
+    SKY_POLE = 0x2B
+    MATRIX_POLE = 0x2C
+    RUINS_BRANCH = 0x2D
+    FLEET_POLE = 0x2F
+    IRON_POLE = 0x30
+    GADGET_POLE = 0x31
+    IMPACT_POLE = 0x32
+    FORTRESS_POLE = 0x33
+    LAVA_SHOVEL = 0x35
+    COSMIC_POLE = 0x36
+    HAUNT_POLE = 0x37
+    LAST_POLE = 0x38
+    SAMURAI_BLADE = 0x3A
+    SATELLITE_GUN = 0x3C
+    EGG_VACUUM = 0x3E
+    OMOCHAO_GUN = 0x40
+    HEAL_CANNON = 0x42
+    SHADOW_RIFLE = 0x43
 
 
 WEAPON_INFO = [
     WeaponInfo(0x1, "Pistol",
-               [Levels.STAGE_WESTOPOLIS,Levels.STAGE_LETHAL_HIGHWAY, Levels.STAGE_CENTRAL_CITY,
-                Levels.STAGE_THE_DOOM, Levels.STAGE_DEATH_RUINS, Levels.STAGE_LOST_IMPACT,
-                Levels.BOSS_BLACK_BULL_DR, Levels.BOSS_DIABLON_GF],
+               [Levels.STAGE_WESTOPOLIS,Levels.STAGE_LETHAL_HIGHWAY, Levels.STAGE_PRISON_ISLAND,
+                Levels.STAGE_CENTRAL_CITY, Levels.STAGE_THE_DOOM, Levels.STAGE_DEATH_RUINS,
+                Levels.STAGE_LOST_IMPACT, Levels.BOSS_BLACK_BULL_DR, Levels.BOSS_DIABLON_GF],
                [WeaponAttributes.SHOT]),
     WeaponInfo(0x2, "Sub Machine Gun",
                [Levels.STAGE_WESTOPOLIS,
@@ -118,16 +190,19 @@ WEAPON_INFO = [
                 Levels.STAGE_LETHAL_HIGHWAY, (Levels.STAGE_CRYPTIC_CASTLE,1),
                 Levels.STAGE_PRISON_ISLAND, Levels.STAGE_CENTRAL_CITY,
                 Levels.STAGE_DEATH_RUINS, Levels.STAGE_SPACE_GADGET,
-                Levels.STAGE_BLACK_COMET, Levels.BOSS_DIABLON_BC,
+                Levels.STAGE_BLACK_COMET, Levels.BOSS_DIABLON_BC, Levels.BOSS_BLACK_BULL_LH,
                Levels.BOSS_DIABLON_FH, Levels.BOSS_BLACK_DOOM_FH],
                [WeaponAttributes.SHOT]),
     WeaponInfo(0xA, "Ring Shot",
            [Levels.STAGE_SKY_TROOPS, Levels.STAGE_SPACE_GADGET,
                 Levels.STAGE_FINAL_HAUNT, Levels.BOSS_DIABLON_BC,
-            Levels.BOSS_DIABLON_FH, Levels.BOSS_BLACK_DOOM_FH],
+            Levels.BOSS_DIABLON_FH, Levels.BOSS_BLACK_DOOM_FH,
+            Levels.STAGE_THE_LAST_WAY],
 [WeaponAttributes.SHOT]),
     WeaponInfo(0xB, "Heavy Shot",
-               [(Levels.STAGE_FINAL_HAUNT,1)],[WeaponAttributes.SHOT]),
+               [(Levels.STAGE_FINAL_HAUNT,1),
+                (Levels.STAGE_THE_LAST_WAY,1)],
+               [WeaponAttributes.SHOT]),
     WeaponInfo(0xC, "Grenade Launcher",
                [Levels.STAGE_GLYPHIC_CANYON, Levels.STAGE_THE_DOOM,Levels.STAGE_DEATH_RUINS,
                 (Levels.STAGE_SPACE_GADGET,1), Levels.STAGE_LOST_IMPACT, Levels.BOSS_BLACK_DOOM_GF],
@@ -143,15 +218,15 @@ WEAPON_INFO = [
 [WeaponAttributes.NOT_AIMABLE]),
     WeaponInfo(0xF, "Black Barrel",
                [Levels.STAGE_SKY_TROOPS, (Levels.STAGE_SPACE_GADGET, 1),
-    (Levels.STAGE_BLACK_COMET,1), Levels.STAGE_FINAL_HAUNT,],
+    (Levels.STAGE_BLACK_COMET,1), Levels.STAGE_FINAL_HAUNT,Levels.STAGE_THE_LAST_WAY],
 [WeaponAttributes.NOT_AIMABLE]),
     WeaponInfo(0x10, "Big Barrel",
                [Levels.STAGE_COSMIC_FALL,(Levels.STAGE_FINAL_HAUNT,1),
-                Levels.BOSS_BLACK_DOOM_FH],
+                Levels.BOSS_BLACK_DOOM_FH,Levels.STAGE_THE_LAST_WAY],
 [WeaponAttributes.NOT_AIMABLE]),
     WeaponInfo(0x11, "Egg Bazooka",
                [(Levels.STAGE_CRYPTIC_CASTLE, 1), Levels.STAGE_CIRCUS_PARK, Levels.STAGE_SKY_TROOPS,
-                Levels.STAGE_MAD_MATRIX, Levels.STAGE_IRON_JUNGLE, Levels.STAGE_LAVA_SHELTER,
+                (Levels.STAGE_MAD_MATRIX,1), Levels.STAGE_IRON_JUNGLE, Levels.STAGE_LAVA_SHELTER,
                 Levels.BOSS_EGG_BREAKER_MM, Levels.BOSS_EGG_BREAKER_IJ,
                 Levels.BOSS_EGG_DEALER_BC, Levels.BOSS_EGG_DEALER_LS, Levels.BOSS_EGG_DEALER_CF],
 [WeaponAttributes.NOT_AIMABLE]),
@@ -174,10 +249,12 @@ WEAPON_INFO = [
                 (Levels.STAGE_SPACE_GADGET, 1)],
 [WeaponAttributes.NOT_AIMABLE]),
     WeaponInfo(0x16, "Wide Worm Shooter",
-               [(Levels.STAGE_MAD_MATRIX, 1), (Levels.STAGE_BLACK_COMET,1)],
+               [(Levels.STAGE_MAD_MATRIX, 1), (Levels.STAGE_BLACK_COMET,1),
+                Levels.STAGE_THE_LAST_WAY],
 [WeaponAttributes.NOT_AIMABLE]),
     WeaponInfo(0x17, "Big Worm Shooter",
-               [(Levels.STAGE_BLACK_COMET,1)],
+               [(Levels.STAGE_BLACK_COMET,1),
+                (Levels.STAGE_THE_LAST_WAY,1)],
 [WeaponAttributes.NOT_AIMABLE]),
     WeaponInfo(0x18, "Vacuum Pod",
                [Levels.STAGE_CENTRAL_CITY, (Levels.STAGE_SPACE_GADGET,1), Levels.STAGE_FINAL_HAUNT],
@@ -190,7 +267,7 @@ WEAPON_INFO = [
 [WeaponAttributes.SHOT]),
     WeaponInfo(0x1B, "Refractor",
                [(Levels.STAGE_BLACK_COMET,1),Levels.STAGE_FINAL_HAUNT,
-                Levels.BOSS_BLACK_DOOM_FH],
+                Levels.BOSS_BLACK_DOOM_FH, Levels.STAGE_THE_LAST_WAY],
 [WeaponAttributes.SHOT, WeaponAttributes.LONG_RANGE]),
     WeaponInfo(0x1E, "Survival Knife",
                [Levels.STAGE_THE_DOOM],
@@ -199,10 +276,11 @@ WEAPON_INFO = [
                [Levels.STAGE_DIGITAL_CIRCUIT,Levels.STAGE_GLYPHIC_CANYON,
                 (Levels.STAGE_CRYPTIC_CASTLE,1),(Levels.STAGE_PRISON_ISLAND,1), Levels.STAGE_CENTRAL_CITY,
                 Levels.STAGE_SKY_TROOPS, Levels.STAGE_AIR_FLEET,
-                Levels.STAGE_FINAL_HAUNT],
+                Levels.STAGE_FINAL_HAUNT, Levels.STAGE_THE_LAST_WAY],
 []),
     WeaponInfo(0x20, "Dark Hammer",
-               [Levels.STAGE_FINAL_HAUNT],
+               [Levels.STAGE_FINAL_HAUNT,
+                (Levels.STAGE_THE_LAST_WAY,1)],
 []),
     WeaponInfo(0x21, "Egg Spear",
                [Levels.STAGE_CRYPTIC_CASTLE, Levels.STAGE_CIRCUS_PARK, (Levels.STAGE_SKY_TROOPS,1),
@@ -280,7 +358,7 @@ WEAPON_INFO = [
                [Levels.STAGE_FINAL_HAUNT],
 []),
     WeaponInfo(0x38, "Last Pole",
-               [],
+               [Levels.STAGE_THE_LAST_WAY],
 []),
 
     WeaponInfo(0x3A, "Samurai Blade",
@@ -300,7 +378,7 @@ WEAPON_INFO = [
 [WeaponAttributes.SPECIAL, WeaponAttributes.HEAL]),
     WeaponInfo(0x43, "Shadow Rifle",
                GetAnyShadowBoxRegions(),
-[WeaponAttributes.SPECIAL, WeaponAttributes.SHOT, WeaponAttributes.LONG_RANGE])
+[WeaponAttributes.SPECIAL, WeaponAttributes.SHOT, WeaponAttributes.LONG_RANGE, WeaponAttributes.SHADOW_RIFLE])
 ]
 
 def GetWeaponDict():
@@ -316,6 +394,17 @@ def GetWeaponDictById():
         weapon_dict[weapon.game_id] = weapon
 
     return weapon_dict
+
+def GetWeaponGroupsDict():
+    weapons = GetWeaponDictById()
+    weapon_groups_dict = {}
+    for group in WeaponGroups.items():
+        weapon_groups_dict[group[0]] = []
+        for item in group[1]:
+            weapon_item = weapons[item]
+            weapon_groups_dict[group[0]].append(weapon_item)
+
+    return weapon_groups_dict
 
 
 def GetWeaponByStageDict():
@@ -359,3 +448,59 @@ def WeaponInfoByWeapon():
     pass
 
 #WeaponInfoByWeapon()
+
+def GetWeaponByName(name):
+    weapon = [ w for w in WEAPON_INFO if w.name == name]
+    if len(weapon)  == 0:
+        return None
+
+    return weapon[0]
+
+WeaponGroups = {
+
+    "Stage Melee Weapons": [WEAPONS.SPEED_LIMIT_SIGN, WEAPONS.DIGITAL_POLE, WEAPONS.CANYON_POLE, WEAPONS.LETHAL_POLE,
+                    WEAPONS.PRISON_BRANCH, WEAPONS.CIRCUS_POLE, WEAPONS.STOP_SIGN, WEAPONS.DOOM_POLE,
+                    WEAPONS.SKY_POLE, WEAPONS.MATRIX_POLE, WEAPONS.RUINS_BRANCH, WEAPONS.FLEET_POLE,
+                    WEAPONS.IRON_POLE, WEAPONS.GADGET_POLE, WEAPONS.IMPACT_POLE, WEAPONS.FORTRESS_POLE,
+                    WEAPONS.LAVA_SHOVEL, WEAPONS.COSMIC_POLE, WEAPONS.HAUNT_POLE, WEAPONS.LAST_POLE],
+
+    "Environment Weapons": [WEAPONS.SPEED_LIMIT_SIGN, WEAPONS.DIGITAL_POLE, WEAPONS.CANYON_POLE, WEAPONS.LETHAL_POLE,
+                    WEAPONS.PRISON_BRANCH, WEAPONS.CIRCUS_POLE, WEAPONS.STOP_SIGN, WEAPONS.DOOM_POLE,
+                    WEAPONS.SKY_POLE, WEAPONS.MATRIX_POLE, WEAPONS.RUINS_BRANCH, WEAPONS.FLEET_POLE,
+                    WEAPONS.IRON_POLE, WEAPONS.GADGET_POLE, WEAPONS.IMPACT_POLE, WEAPONS.FORTRESS_POLE,
+                    WEAPONS.LAVA_SHOVEL, WEAPONS.COSMIC_POLE, WEAPONS.HAUNT_POLE, WEAPONS.LAST_POLE, WEAPONS.CRYPTIC_TORCH],
+
+    "Egg Pawn Weapons": [WEAPONS.EGG_GUN, WEAPONS.EGG_SPEAR, WEAPONS.EGG_BAZOOKA],
+
+    "GUN Launcher Weapons": [WEAPONS.RPG, WEAPONS.FOUR_SHOT_RPG, WEAPONS.EIGHT_SHOT_RPG, WEAPONS.BAZOOKA,
+                             WEAPONS.TANK_CANNON],
+
+    "Black Warrior Weapons": [WEAPONS.FLASH_SHOT, WEAPONS.LIGHT_SHOT, WEAPONS.HEAVY_SHOT, WEAPONS.RING_SHOT,
+                              WEAPONS.BLACK_SWORD],
+
+    "Black Oak Weapons": [WEAPONS.BLACK_SWORD, WEAPONS.BLACK_BARREL, WEAPONS.BIG_BARREL,
+                          WEAPONS.DARK_HAMMER],
+
+    "Worm Weapons": [WEAPONS.WORM_SHOOTER, WEAPONS.WIDE_WORM_SHOOTER, WEAPONS.BIG_WORM_SHOOTER],
+
+    "Gun Solider Weapons": [WEAPONS.PISTOL, WEAPONS.GRENADE_LAUNCHER, WEAPONS.SURVIVAL_KNIFE,
+                            WEAPONS.SUB_MACHINE_GUN],
+
+    "Gun Mech Weapons": [WEAPONS.SEMI_AUTOMATIC_RIFLE, WEAPONS.LASER_RIFLE, WEAPONS.HEAVY_MACHINE_GUN,
+                         WEAPONS.SUB_MACHINE_GUN, WEAPONS.GATLING_GUN],
+
+    "Laser Weapons": [WEAPONS.REFRACTOR, WEAPONS.LASER_RIFLE, WEAPONS.SPLITTER, WEAPONS.RING_SHOT],
+
+    "Standard Melee Weapons": [WEAPONS.SURVIVAL_KNIFE, WEAPONS.BLACK_SWORD, WEAPONS.DARK_HAMMER],
+
+    "All Melee Weapons": [WEAPONS.SPEED_LIMIT_SIGN, WEAPONS.DIGITAL_POLE, WEAPONS.CANYON_POLE, WEAPONS.LETHAL_POLE,
+                    WEAPONS.PRISON_BRANCH, WEAPONS.CIRCUS_POLE, WEAPONS.STOP_SIGN, WEAPONS.DOOM_POLE,
+                    WEAPONS.SKY_POLE, WEAPONS.MATRIX_POLE, WEAPONS.RUINS_BRANCH, WEAPONS.FLEET_POLE,
+                    WEAPONS.IRON_POLE, WEAPONS.GADGET_POLE, WEAPONS.IMPACT_POLE, WEAPONS.FORTRESS_POLE,
+                    WEAPONS.LAVA_SHOVEL, WEAPONS.COSMIC_POLE, WEAPONS.HAUNT_POLE, WEAPONS.LAST_POLE, WEAPONS.CRYPTIC_TORCH,
+                          WEAPONS.SURVIVAL_KNIFE, WEAPONS.BLACK_SWORD, WEAPONS.DARK_HAMMER]
+
+
+
+
+}

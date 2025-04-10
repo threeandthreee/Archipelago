@@ -1,6 +1,7 @@
 from typing import Dict, TYPE_CHECKING
 
 from .Rac2Interface import PLANET_LIST_SIZE, INVENTORY_SIZE, NANOTECH_BOOST_MAX
+from .TextManager import get_rich_item_name
 from .data import Planets, Locations, Items
 
 if TYPE_CHECKING:
@@ -137,23 +138,28 @@ async def handle_checked_location(ctx: 'Rac2Context'):
         if i in NANOTECH_OFFSET_TO_LOCATION_ID and ctx.game_interface.pcsx2_interface.read_int8(address) == 1:
             cleared_locations.add(NANOTECH_OFFSET_TO_LOCATION_ID[i])
 
-    # check for hypnomatic parts
-    if ctx.game_interface.pcsx2_interface.read_int8(ctx.game_interface.addresses.hypnomatic_part1) == 1:
-        cleared_locations.add(Locations.SMOLG_DISTRIBUTION_FACILITY_END.location_id)
-    if ctx.game_interface.pcsx2_interface.read_int8(ctx.game_interface.addresses.hypnomatic_part2) == 1:
-        cleared_locations.add(Locations.DAMOSEL_TRAIN_RAILS.location_id)
-    if ctx.game_interface.pcsx2_interface.read_int8(ctx.game_interface.addresses.hypnomatic_part3) == 1:
-        cleared_locations.add(Locations.GRELBIN_MYSTIC_MORE_MOONSTONES.location_id)
+    # Check all location flags defined on locations
+    all_active_locations = Planets.get_all_active_locations(ctx.slot_data)
+    for location in all_active_locations:
+        if location.checked_flag_address is not None:
+            addr = location.checked_flag_address(ctx.game_interface.addresses)
+            if ctx.game_interface.pcsx2_interface.read_int8(addr) != 0:
+                cleared_locations.add(location.location_id)
 
     cleared_locations = cleared_locations.difference(ctx.checked_locations)
+    item_was_bought = False
     await ctx.send_msgs([{"cmd": "LocationChecks", "locations": cleared_locations}])
     for location_id in cleared_locations:
-        location_name = [loc for loc in Planets.ALL_LOCATIONS if loc.location_id == location_id].pop()
-        ctx.game_interface.logger.info(f"Location checked: {location_name}")
+        location = next(loc for loc in all_active_locations if loc.location_id == location_id)
+        ctx.game_interface.logger.info(f"Location checked: {location.name}")
+        if location.is_vendor:
+            ctx.game_interface.vendor.notify_item_bought(location_id)
+            item_was_bought = True
 
-        net_item = ctx.locations_info[location_id]
-        if net_item.player != ctx.slot:
-            ctx.notification_manager.queue_notification(
-                f"Sent \x0C{ctx.item_names.lookup_in_slot(net_item.item, net_item.player)}\x08 \
-                to {ctx.player_names[net_item.player]}."
-            )
+        net_item = ctx.locations_info.get(location_id, None)
+        if net_item is not None and net_item.player != ctx.slot:
+            item_to_player_names = get_rich_item_name(ctx, net_item, True)
+            ctx.notification_manager.queue_notification(f"Sent {item_to_player_names}")
+
+    if item_was_bought:
+        ctx.game_interface.vendor.refresh(ctx)

@@ -3,7 +3,7 @@ Logic rule definitions for Pokémon FireRed and LeafGreen
 """
 from typing import TYPE_CHECKING
 from worlds.generic.Rules import add_rule, set_rule
-from .data import data, NATIONAL_ID_TO_SPECIES_ID, NUM_REAL_SPECIES
+from .data import data, LocationCategory, NATIONAL_ID_TO_SPECIES_ID, NUM_REAL_SPECIES
 from .locations import PokemonFRLGLocation
 from .logic import (can_challenge_elite_four, can_challenge_elite_four_rematch, can_cut, can_enter_cerulean_cave,
                     can_enter_silph, can_enter_viridian_gym, can_evolve, can_fly, can_leave_cerulean, can_leave_pewter,
@@ -223,7 +223,7 @@ def set_default_rules(world: "PokemonFRLGWorld"):
              lambda state: can_cut(state, player, world))
     set_rule(world.get_entrance("Vermilion City Near Gym Surfing Spot"),
              lambda state: can_surf(state, player, world))
-    set_rule(world.get_entrance("Vermilion Harbor"),
+    set_rule(world.get_entrance("Vermilion City Checkpoint"),
              lambda state: state.has("S.S. Ticket", player))
 
     # S.S. Anne
@@ -632,7 +632,7 @@ def set_default_rules(world: "PokemonFRLGWorld"):
 
     set_rule(world.get_entrance("Seafoam Islands B3F South Water (Water Battle)"),
              lambda state: can_strength(state, player, world) and
-                    state.can_reach_region("Seafoam Islands 1F", player))
+                           state.can_reach_region("Seafoam Islands 1F", player))
 
     # Cinnabar Island
     set_rule(world.get_location("Pokemon Lab Lounge - Trade Raichu"),
@@ -654,6 +654,8 @@ def set_default_rules(world: "PokemonFRLGWorld"):
     set_rule(world.get_entrance("Pokemon Mansion"),
              lambda state: state.has("Letter", player) or
                            not options.extra_key_items)
+    set_rule(world.get_entrance("Follow Bill"),
+             lambda state: state.has("Defeat Blaine", player))
 
     # Route 23
     set_rule(world.get_entrance("Route 23 South Surfing Spot"),
@@ -753,7 +755,7 @@ def set_default_rules(world: "PokemonFRLGWorld"):
     # Evolutions
     for location in world.multiworld.get_locations(player):
         assert isinstance(location, PokemonFRLGLocation)
-        if location.tags is not None and "Evolution" in location.tags:
+        if location.category == LocationCategory.EVENT_EVOLUTION_POKEMON:
             pokemon_name = location.name.split("-")[1].strip()
             set_rule(world.get_location(location.name),
                      lambda state, pokemon=pokemon_name: can_evolve(state, player, world, pokemon))
@@ -790,10 +792,6 @@ def set_default_rules(world: "PokemonFRLGWorld"):
                  lambda state: can_sail_island(state, player, options, 6))
         set_rule(world.get_entrance("Seven Island Arrival"),
                  lambda state: can_sail_island(state, player, options, 7))
-
-        # Cinnabar Island
-        set_rule(world.get_entrance("Follow Bill"),
-                 lambda state: state.has("Defeat Blaine", player))
 
         # One Island Town
         set_rule(world.get_location("One Island Pokemon Center 1F - Celio Gift (Deliver Ruby)"),
@@ -1074,7 +1072,7 @@ def set_hidden_item_rules(world: "PokemonFRLGWorld"):
     if world.options.itemfinder_required != ItemfinderRequired.option_off:
         for location in world.multiworld.get_locations(player):
             assert isinstance(location, PokemonFRLGLocation)
-            if location.tags is not None and "Hidden" in location.tags:
+            if location.category in [LocationCategory.HIDDEN_ITEM, LocationCategory.HIDDEN_ITEM_RECURRING]:
                 add_rule(location, lambda state: state.has("Itemfinder", player))
 
 
@@ -1097,13 +1095,39 @@ def set_trainersanity_rules(world: "PokemonFRLGWorld"):
     set_rule(world.get_location("Route 22 - Late Rival Reward"),
              lambda state: state.has_all(["Defeat Route 22 Rival", "Defeat Giovanni"], player))
 
-    if not options.kanto_only:
-        # Mt. Ember
-        set_rule(world.get_location("Mt. Ember Exterior - Team Rocket Grunt Reward (Left)"),
-                 lambda state: state.has("Deliver Meteorite", player))
-        set_rule(world.get_location("Mt. Ember Exterior - Team Rocket Grunt Reward (Right)"),
-                 lambda state: state.has("Deliver Meteorite", player))
+    # Route 8
+    set_rule(world.get_location("Route 8 - Twins Eli & Anne Reward"),
+             lambda state: state.has_any(world.repeatable_pokemon, player))
 
+    # Route 12
+    set_rule(world.get_location("Route 12 - Young Couple Gia & Jes Reward"),
+             lambda state: state.has_any(world.repeatable_pokemon, player))
+
+    # Route 14
+    set_rule(world.get_location("Route 14 - Twins Kiri & Jan Reward"),
+             lambda state: state.has_any(world.repeatable_pokemon, player))
+
+    # Route 15
+    set_rule(world.get_location("Route 15 - Crush Kin Ron & Mya Reward"),
+             lambda state: state.has_any(world.repeatable_pokemon, player))
+
+    # Route 16
+    set_rule(world.get_location("Route 16 - Young Couple Lea & Jed Reward"),
+             lambda state: state.has_any(world.repeatable_pokemon, player))
+
+    # Route 19
+    set_rule(world.get_location("Route 19 - Sis and Bro Lia & Luc Reward"),
+             lambda state: state.has_any(world.repeatable_pokemon, player))
+
+    # Route 21
+    set_rule(world.get_location("Route 21 - Sis and Bro Lil & Ian Reward"),
+             lambda state: state.has_any(world.repeatable_pokemon, player))
+
+    # Victory Road
+    set_rule(world.get_location("Victory Road 3F - Cool Couple Ray & Tyra Reward"),
+             lambda state: state.has_any(world.repeatable_pokemon, player))
+
+    if not options.kanto_only:
         # Indigo Plateau
         set_rule(world.get_location("Lorelei's Room - Elite Four Lorelei Rematch Reward"),
                  lambda state: can_challenge_elite_four_rematch(state, player, options))
@@ -1115,6 +1139,36 @@ def set_trainersanity_rules(world: "PokemonFRLGWorld"):
                  lambda state: can_challenge_elite_four_rematch(state, player, options))
         set_rule(world.get_location("Champion's Room - Champion Rematch Reward"),
                  lambda state: can_challenge_elite_four_rematch(state, player, options))
+
+        # Kindle Road
+        set_rule(world.get_location("Kindle Road - Crush Kin Mik & Kia Reward"),
+                 lambda state: state.has_any(world.repeatable_pokemon, player))
+
+        # Mt. Ember
+        set_rule(world.get_location("Mt. Ember Exterior - Team Rocket Grunt Reward (Left)"),
+                 lambda state: state.has("Deliver Meteorite", player))
+        set_rule(world.get_location("Mt. Ember Exterior - Team Rocket Grunt Reward (Right)"),
+                 lambda state: state.has("Deliver Meteorite", player))
+
+        # Bond Bridge
+        set_rule(world.get_location("Bond Bridge - Twins Joy & Meg Reward"),
+                 lambda state: state.has_any(world.repeatable_pokemon, player))
+
+        # Water Path
+        set_rule(world.get_location("Water Path - Twins Miu & Mia Reward"),
+                 lambda state: state.has_any(world.repeatable_pokemon, player))
+
+        # Outcast Island
+        set_rule(world.get_location("Outcast Island - Sis and Bro Ava & Geb Reward"),
+                 lambda state: state.has_any(world.repeatable_pokemon, player))
+
+        # Canyon Entrance
+        set_rule(world.get_location("Canyon Entrance - Young Couple Eve & Jon Reward"),
+                 lambda state: state.has_any(world.repeatable_pokemon, player))
+
+        # Sevault Canyon
+        set_rule(world.get_location("Sevault Canyon - Cool Couple Lex & Nya Reward"),
+                 lambda state: state.has_any(world.repeatable_pokemon, player))
 
 
 def set_dexsanity_rules(world: "PokemonFRLGWorld"):
@@ -1165,7 +1219,7 @@ def set_famesanity_rules(world: "PokemonFRLGWorld"):
     # Fuchsia City
     set_rule(world.get_location("Fuchsia City - Koga's Daughter Info"),
              lambda state: post_game_gossipers(state, player, options))
-    set_rule(world.get_location("FuchSafari Zone Warden's House - Bookshelf Info"),
+    set_rule(world.get_location("Safari Zone Warden's House - Bookshelf Info"),
              lambda state: state.has("Defeat Koga", player))
 
     # Saffron City
@@ -1232,7 +1286,7 @@ def set_famesanity_rules(world: "PokemonFRLGWorld"):
     if world.options.fame_checker_required:
         for location in world.multiworld.get_locations(player):
             assert isinstance(location, PokemonFRLGLocation)
-            if location.tags is not None and ("FameChecker" in location.tags):
+            if location.category == LocationCategory.FAMESANITY:
                 add_rule(location, lambda state: state.has("Fame Checker", player))
 
 
@@ -1257,11 +1311,11 @@ def set_split_tea_rules(world: "PokemonFRLGWorld"):
     player = world.player
 
     # Celadon City
-    set_rule(world.get_location("Celadon Condominiums 1F - Brock"),
+    set_rule(world.get_location("Celadon Condominiums 1F - Brock Gift"),
              lambda state: state.has("Defeat Brock", player))
-    set_rule(world.get_location("Celadon Condominiums 1F - Misty"),
+    set_rule(world.get_location("Celadon Condominiums 1F - Misty Gift"),
              lambda state: state.has("Defeat Misty", player))
-    set_rule(world.get_location("Celadon Condominiums 1F - Erika"),
+    set_rule(world.get_location("Celadon Condominiums 1F - Erika Gift"),
              lambda state: state.has("Defeat Erika", player))
 
 
@@ -1269,16 +1323,16 @@ def set_split_pass_rules(world: "PokemonFRLGWorld"):
     player = world.player
 
     # Cinnabar Island
-    set_rule(world.get_location("One Cinnabar Pokemon Center 1F - Bill"),
+    set_rule(world.get_location("Cinnabar Pokemon Center 1F - Bill Gift"),
              lambda state: state.has("Defeat Blaine", player))
 
     # One Island Town
-    set_rule(world.get_location("One Island Pokemon Center 1F - Celio (Deliver Sapphire)"),
+    set_rule(world.get_location("One Island Pokemon Center 1F - Celio Gift (Deliver Sapphire)"),
              lambda state: state.has_all(["Deliver Meteorite", "Ruby", "Free Captured Pokemon", "Sapphire"],
                                          player))
 
     # Three Island Town
-    set_rule(world.get_location("Lostelle's House - Lostelle"),
+    set_rule(world.get_location("Lostelle's House - Lostelle Gift"),
              lambda state: state.has("Deliver Meteorite", player))
 
     # Dotted Hole

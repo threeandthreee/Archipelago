@@ -8,7 +8,6 @@ from typing import List, Set, Dict, TextIO
 from BaseClasses import Item, MultiWorld, Location, Tutorial, ItemClassification
 from Fill import fill_restrictive
 from worlds.AutoWorld import World, WebWorld
-from Options import OptionGroup
 import settings
 from .Items import get_item_names_per_category, item_table
 from .Locations import get_locations
@@ -25,7 +24,7 @@ from .Rules import set_location_rules
 from .Rom import patch_rom, get_base_rom_path, EBProcPatch, valid_hashes
 from .game_data.static_location_data import location_ids, location_groups
 from .modules.equipamizer import EBArmor, EBWeapon
-from worlds.generic.Rules import add_item_rule, forbid_items_for_player
+from worlds.generic.Rules import add_item_rule
 from Options import OptionError
 
 
@@ -88,12 +87,17 @@ class EarthBoundWorld(World):
         self.locked_locations = []
         self.location_cache = []
         self.event_count = 8
+        self.progressive_filler_bats = 0
+        self.progressive_filler_pans = 0
+        self.progressive_filler_guns = 0
+        self.progressive_filler_bracelets = 0
+        self.progressive_filler_other = 0
         self.world_version = world_version
         self.removed_teleports = []
         self.armor_list: Dict[str, EBArmor]
         self.weapon_list: Dict[str, EBWeapon]
 
-    def generate_early(self):  # Todo: place locked items in generate_early
+    def generate_early(self) -> None:  # Todo: place locked items in generate_early
         self.starting_character = self.options.starting_character.current_key.capitalize()
         self.locals = []
         local_space_count = 0
@@ -101,8 +105,9 @@ class EarthBoundWorld(World):
             "Ness": 12,
             "Paula": 11,
             "Jeff": 9,
-            "Poo": 99
+            "Poo": 12
         }
+
         max_count = max_counts[self.starting_character]
         for item_name, amount in self.options.start_inventory.items():
             if item_name in item_id_table:
@@ -120,15 +125,13 @@ class EarthBoundWorld(World):
         setup_gamevars(self)
         create_flavors(self)
         initialize_enemies(self)
-        if self.options.shuffle_teleports == 0:
-            self.options.local_items.value |= self.item_name_groups["PSI"]
-            self.event_count += 12
-            if self.options.magicant_mode != 0:
-                self.event_count -= 1
 
         if self.options.character_shuffle == 0:
             self.options.local_items.value.update(["Paula", "Jeff", "Poo", "Flying Man"])
             self.event_count += 6
+
+        if self.options.local_teleports:
+            self.options.local_items.value |= self.item_name_groups["PSI"]
 
     def create_regions(self) -> None:
         init_areas(self, get_locations(self))
@@ -147,72 +150,6 @@ class EarthBoundWorld(World):
     def pre_fill(self) -> None:
         prefill_locations = []
         prefill_items = []
-        
-        if self.options.magicant_mode == 3:
-            removable_teleports = 6
-        else:
-            removable_teleports = 5
-
-        if self.options.shuffle_teleports == 0:
-            prefill_locations.extend([
-                self.multiworld.get_location("Onett - Buzz Buzz", self.player),
-                self.multiworld.get_location("Onett - Mani Mani Statue", self.player),
-                self.multiworld.get_location("Saturn Valley - Saturn Coffee", self.player),
-                self.multiworld.get_location("Monkey Caves - Monkey Power", self.player),
-                self.multiworld.get_location("Summers - Magic Cake", self.player),
-                self.multiworld.get_location("Scaraba - Star Master", self.player),
-                self.multiworld.get_location("Tenda Village - Tenda Tea", self.player),
-                self.multiworld.get_location("Lost Underworld - Talking Rock", self.player),
-                self.multiworld.get_location("Fourside - Department Store Blackout", self.player),
-                self.multiworld.get_location("Cave of the Present - Star Master", self.player),
-                self.multiworld.get_location("Dalaam - Trial of Mu", self.player)
-            ])
-
-            if self.options.magicant_mode == 0:
-                prefill_locations.append(self.multiworld.get_location("Magicant - Ness's Nightmare", self.player))
-
-            prefill_items.extend([
-                self.create_item("Onett Teleport"),
-                self.create_item("Twoson Teleport"),
-                self.create_item("Happy-Happy Village Teleport"),
-                self.create_item("Threed Teleport"),
-                self.create_item("Saturn Valley Teleport"),
-                self.create_item("Dusty Dunes Teleport"),
-                self.create_item("Fourside Teleport"),
-                self.create_item("Winters Teleport"),
-                self.create_item("Scaraba Teleport"),
-                self.create_item("Deep Darkness Teleport"),
-                self.create_item("Tenda Village Teleport"),
-                self.create_item("Lost Underworld Teleport")
-
-            ])
-            self.random.shuffle(prefill_items)
-            self.removed_teleports.extend(prefill_items[0:removable_teleports])
-            del prefill_items[0:removable_teleports]
-            prefill_items.extend([
-                self.create_item("Dalaam Teleport"),
-                self.create_item("Summers Teleport"),
-                self.create_item("Progressive Poo PSI"),
-                self.create_item("Progressive Poo PSI")
-            ])
-
-            if self.options.magicant_mode in [0, 3]:
-                prefill_items.append(self.create_item("Magicant Teleport"))
-            self.random.shuffle(prefill_items)
-            add_item_rule(self.multiworld.get_location("Onett - Buzz Buzz", self.player), lambda item: item.name in self.item_name_groups["PSI"])
-            add_item_rule(self.multiworld.get_location("Onett - Mani Mani Statue", self.player), lambda item: item.name in self.item_name_groups["PSI"])
-            add_item_rule(self.multiworld.get_location("Saturn Valley - Saturn Coffee", self.player), lambda item: item.name in self.item_name_groups["PSI"])
-            add_item_rule(self.multiworld.get_location("Monkey Caves - Monkey Power", self.player), lambda item: item.name in self.item_name_groups["PSI"])
-            add_item_rule(self.multiworld.get_location("Summers - Magic Cake", self.player), lambda item: item.name in self.item_name_groups["PSI"] and item.name != "Summers Teleport")
-            add_item_rule(self.multiworld.get_location("Scaraba - Star Master", self.player), lambda item: item.name in self.item_name_groups["PSI"])
-            add_item_rule(self.multiworld.get_location("Tenda Village - Tenda Tea", self.player), lambda item: item.name in self.item_name_groups["PSI"])
-            add_item_rule(self.multiworld.get_location("Lost Underworld - Talking Rock", self.player), lambda item: item.name in self.item_name_groups["PSI"])
-            add_item_rule(self.multiworld.get_location("Fourside - Department Store Blackout", self.player), lambda item: item.name in self.item_name_groups["PSI"])
-            add_item_rule(self.multiworld.get_location("Cave of the Present - Star Master", self.player), lambda item: item.name in self.item_name_groups["PSI"])
-            add_item_rule(self.multiworld.get_location("Dalaam - Trial of Mu", self.player), lambda item: (item.name in self.item_name_groups["PSI"] and item.name != "Dalaam Teleport"))
-            
-            if self.options.magicant_mode == 0:
-                add_item_rule(self.multiworld.get_location("Magicant - Ness's Nightmare", self.player), lambda item: (item.name in self.item_name_groups["PSI"] and item.name != "Magicant Teleport"))
 
         if self.options.character_shuffle == 0:
             main_characters = ["Ness", "Paula", "Jeff", "Poo"]
@@ -242,19 +179,12 @@ class EarthBoundWorld(World):
             add_item_rule(self.multiworld.get_location("Dalaam - Throne Character", self.player), lambda item: item.name in self.item_name_groups["Characters"])
             add_item_rule(self.multiworld.get_location("Deep Darkness - Barf Character", self.player), lambda item: item.name in self.item_name_groups["Characters"])
 
-            if (self.start_location == 9 and self.starting_teleport == "Winters Teleport") or (self.start_location == 7 and self.starting_teleport == "Dalaam Teleport"):
-                if self.starting_character != "Poo":
-                    forced_poo = self.random.choice(["Dalaam - Throne Character", "Snow Wood - Bedroom"])
-                    add_item_rule(self.multiworld.get_location(forced_poo, self.player), lambda item: item.name == "Poo")
-                forbid_items_for_player(self.multiworld.get_location("Dalaam - Trial of Mu", self.player), {"Winters Teleport"}, self.player)
-                forbid_items_for_player(self.multiworld.get_location("Dalaam - Trial of Mu", self.player), {"Progressive Poo PSI"}, self.player)
-
         fill_restrictive(self.multiworld, self.multiworld.get_all_state(False), prefill_locations, prefill_items, True, True)
         setup_hints(self)
 
-    def generate_output(self, output_directory: str):
+    def generate_output(self, output_directory: str) -> None:
         try:
-            patch = EBProcPatch(player=self.player, player_name=self.player_name)
+            patch = EBProcPatch(player=self.player, player_name=self.multiworld.player_name[self.player])
             patch.write_file("earthbound_basepatch.bsdiff4", pkgutil.get_data(__name__, "earthbound_basepatch.bsdiff4"))
             patch_rom(self, patch, self.player)
 
@@ -267,15 +197,31 @@ class EarthBoundWorld(World):
         finally:
             self.rom_name_available_event.set()  # make sure threading continues and errors are collected
 
+    def extend_hint_information(self, hint_data: Dict[int, Dict[int, str]]):
+        if self.options.dungeon_shuffle:
+            dungeon_entrances = {}
+            dungeon_mapping = {}
+            for dungeon in self.dungeon_connections:
+                dungeon_entrances[self.dungeon_connections[dungeon]] = dungeon
+
+            for dungeon in dungeon_entrances:
+                for location in self.get_region(dungeon).locations:
+                    if location.address:
+                        dungeon_mapping[location.address] = dungeon_entrances[dungeon]
+
+            hint_data[self.player] = dungeon_mapping
+
     def fill_slot_data(self) -> Dict[str, List[int]]:
         return {
             "starting_area": self.start_location,
             "pizza_logic": self.options.monkey_caves_mode.value,
             "free_sancs": self.options.no_free_sanctuaries.value,
-            "shopsanity": self.options.shop_randomizer.value
+            "shopsanity": self.options.shop_randomizer.value,
+           # "starting_character": self.starting_character,
+          #  "items_remote": self.options.remote_items.value
         }
 
-    def modify_multidata(self, multidata: dict):
+    def modify_multidata(self, multidata: dict) -> None:
         import base64
         # wait for self.rom_name to be available.
         self.rom_name_available_event.wait()
@@ -289,24 +235,24 @@ class EarthBoundWorld(World):
         spoiler_handle.write(f"Franklin Badge Protection:    {spoiler_badges[self.franklin_protection]}\n")
         if self.options.psi_shuffle:
             spoiler_handle.write("\nPSI Shuffle:\n")
-            spoiler_handle.write(f"Favorite Thing PSI Slot:    {spoiler_psi[self.offensive_psi_slots[0]]}\n")
-            spoiler_handle.write(f"Ness Offensive PSI Middle Slot:    {spoiler_psi[self.offensive_psi_slots[1]]}\n")
-            spoiler_handle.write(f"Paula Offensive PSI Top Slot:    {spoiler_psi[self.offensive_psi_slots[2]]}\n")
-            spoiler_handle.write(f"Paula/Poo Offensive PSI Middle Slot:    {spoiler_psi[self.offensive_psi_slots[3]]}\n")
-            spoiler_handle.write(f"Paula/Poo Offensive PSI Bottom Slot:    {spoiler_psi[self.offensive_psi_slots[4]]}\n")
-            spoiler_handle.write(f"Poo Progressive PSI Slot:    {spoiler_psi[self.offensive_psi_slots[5]]}\n")
+            spoiler_handle.write(f" Favorite Thing PSI Slot:    {spoiler_psi[self.offensive_psi_slots[0]]}\n")
+            spoiler_handle.write(f" Ness Offensive PSI Middle Slot:    {spoiler_psi[self.offensive_psi_slots[1]]}\n")
+            spoiler_handle.write(f" Paula Offensive PSI Top Slot:    {spoiler_psi[self.offensive_psi_slots[2]]}\n")
+            spoiler_handle.write(f" Paula/Poo Offensive PSI Middle Slot:    {spoiler_psi[self.offensive_psi_slots[3]]}\n")
+            spoiler_handle.write(f" Paula/Poo Offensive PSI Bottom Slot:    {spoiler_psi[self.offensive_psi_slots[4]]}\n")
+            spoiler_handle.write(f" Poo Progressive PSI Slot:    {spoiler_psi[self.offensive_psi_slots[5]]}\n")
 
-            spoiler_handle.write(f"Ness/Poo Shield Slot:    {spoiler_psi[self.shield_slots[0]]}\n")
-            spoiler_handle.write(f"Paula Shield Slot:    {spoiler_psi[self.shield_slots[1]]}\n")
+            spoiler_handle.write(f" Ness/Poo Shield Slot:    {spoiler_psi[self.shield_slots[0]]}\n")
+            spoiler_handle.write(f" Paula Shield Slot:    {spoiler_psi[self.shield_slots[1]]}\n")
 
-            spoiler_handle.write(f"Ness Assist PSI Middle Slot:    {spoiler_psi[self.assist_psi_slots[0]]}\n")
-            spoiler_handle.write(f"Ness Assist PSI Bottom Slot:    {spoiler_psi[self.assist_psi_slots[1]]}\n")
-            spoiler_handle.write(f"Paula Assist PSI Middle Slot:    {spoiler_psi[self.assist_psi_slots[2]]}\n")
-            spoiler_handle.write(f"Paula Assist PSI Bottom Slot:    {spoiler_psi[self.assist_psi_slots[3]]}\n")
-            spoiler_handle.write(f"Poo Assist PSI Slot:    {spoiler_psi[self.assist_psi_slots[4]]}\n")
+            spoiler_handle.write(f" Ness Assist PSI Middle Slot:    {spoiler_psi[self.assist_psi_slots[0]]}\n")
+            spoiler_handle.write(f" Ness Assist PSI Bottom Slot:    {spoiler_psi[self.assist_psi_slots[1]]}\n")
+            spoiler_handle.write(f" Paula Assist PSI Middle Slot:    {spoiler_psi[self.assist_psi_slots[2]]}\n")
+            spoiler_handle.write(f" Paula Assist PSI Bottom Slot:    {spoiler_psi[self.assist_psi_slots[3]]}\n")
+            spoiler_handle.write(f" Poo Assist PSI Slot:    {spoiler_psi[self.assist_psi_slots[4]]}\n")
         if self.options.psi_shuffle == 2:
-            spoiler_handle.write(f"Bomb/Bazooka Slot:    {spoiler_psi[self.jeff_offense_items[0]]}\n")
-            spoiler_handle.write(f"Bottle Rocket Slot:    {spoiler_psi[self.jeff_offense_items[1]]}\n")
+            spoiler_handle.write(f" Bomb/Bazooka Slot:    {spoiler_psi[self.jeff_offense_items[0]]}\n")
+            spoiler_handle.write(f" Bottle Rocket Slot:    {spoiler_psi[self.jeff_offense_items[1]]}\n")
 
             spoiler_handle.write(f"Spray Can Slot:    {spoiler_psi[self.jeff_assist_items[0]]}\n")
             spoiler_handle.write(f"Multi-Level Gadget Slot 1:    {spoiler_psi[self.jeff_assist_items[1]]}\n")
@@ -346,6 +292,13 @@ class EarthBoundWorld(World):
                                  f" Diamond Dog => {self.boss_list[27]}\n" +
                                  f" Giygas (Phase 2) => {self.boss_list[28]}\n")
 
+        if self.options.dungeon_shuffle:
+            spoiler_handle.write("\nDungeon Entrances:\n")
+            for dungeon in self.dungeon_connections:
+                spoiler_handle.write(
+                    f" {dungeon} => {self.dungeon_connections[dungeon]}\n"
+                )
+
     def create_item(self, name: str) -> Item:
         data = item_table[name]
         return Item(name, data.classification, data.code, self.player)
@@ -369,25 +322,16 @@ class EarthBoundWorld(World):
     def get_excluded_items(self) -> Set[str]:
         excluded_items: Set[str] = set()
         excluded_items.add(self.starting_character)
+        starting_area_to_teleport = ["Onett Teleport", "Onett Teleport", "Twoson Teleport", "Happy-Happy Village Teleport",
+                                   "Threed Teleport", "Saturn Valley Teleport", "Fourside Teleport", "Winters Teleport",
+                                   "Summers Teleport", "Dalaam Teleport", "Scaraba Teleport", "Deep Darkness Teleport",
+                                   "Tenda Village Teleport", "Lost Underworld Teleport", "Magicant Teleport"]
+        self.starting_area_teleport = starting_area_to_teleport[self.start_location]
+        excluded_items.add(self.starting_area_teleport)
+        if self.options.random_start_location:
+            excluded_items.add(self.starting_teleport)
 
-        if self.options.shuffle_teleports == 0:
-            excluded_items.add("Onett Teleport")
-            excluded_items.add("Twoson Teleport")
-            excluded_items.add("Happy-Happy Village Teleport")
-            excluded_items.add("Threed Teleport")
-            excluded_items.add("Saturn Valley Teleport")
-            excluded_items.add("Dusty Dunes Teleport")
-            excluded_items.add("Fourside Teleport")
-            excluded_items.add("Winters Teleport")
-            excluded_items.add("Summers Teleport")
-            excluded_items.add("Scaraba Teleport")
-            excluded_items.add("Deep Darkness Teleport")
-            excluded_items.add("Tenda Village Teleport")
-            excluded_items.add("Lost Underworld Teleport")
-            excluded_items.add("Magicant Teleport")
-            excluded_items.add("Progressive Poo PSI")
-            excluded_items.add("Dalaam Teleport")
-        elif self.options.magicant_mode not in [0, 3]:
+        if self.options.magicant_mode not in [0, 3]:
             excluded_items.add("Magicant Teleport")
 
         if self.options.character_shuffle == 0:
@@ -430,8 +374,32 @@ class EarthBoundWorld(World):
         return item
 
     def generate_filler(self, pool: List[Item]) -> None:
+        item_to_counts = {
+            "Progressive Bat": self.progressive_filler_bats,
+            "Progressive Fry Pan": self.progressive_filler_pans,
+            "Progressive Gun": self.progressive_filler_guns,
+            "Progressive Bracelet": self.progressive_filler_bracelets,
+            "Progressive Other": self.progressive_filler_other
+        }
+
+        max_filler_counts = {
+            "Progressive Bat": 8,
+            "Progressive Fry Pan": 9,
+            "Progressive Gun": 6,
+            "Progressive Bracelet": 6,
+            "Progressive Other": 10
+        }
+
         for _ in range(len(self.multiworld.get_unfilled_locations(self.player)) - len(pool) - self.event_count):  # Change to fix event count
             item = self.set_classifications(self.get_filler_item_name())
+            if item.name in ["Progressive Bat", "Progressive Fry Pan", "Progressive Other",
+                             "Progressive Gun", "Progressive Bracelet"]:
+                item_to_counts[item.name] += 1
+
+                if item_to_counts[item.name] >= max_filler_counts[item.name]:
+                    self.common_gear = [x for x in self.common_gear if x != item.name]
+                    self.uncommon_gear = [x for x in self.common_gear if x != item.name]
+                    self.rare_gear = [x for x in self.common_gear if x != item.name]
             pool.append(item)
 
     def get_item_pool(self, excluded_items: Set[str]) -> List[Item]:

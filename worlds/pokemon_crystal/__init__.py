@@ -1,7 +1,7 @@
 import copy
 import logging
 import pkgutil
-from typing import List, Union, ClassVar, Dict, Any, Tuple
+from typing import List, ClassVar, Dict, Any, Tuple
 
 import settings
 from BaseClasses import Tutorial, ItemClassification
@@ -16,7 +16,7 @@ from .locations import create_locations, PokemonCrystalLocation, create_location
 from .misc import misc_activities, get_misc_spoiler_log
 from .moves import randomize_tms
 from .music import randomize_music
-from .options import PokemonCrystalOptions, JohtoOnly, RandomizeBadges, Goal, HMBadgeRequirements
+from .options import PokemonCrystalOptions, JohtoOnly, RandomizeBadges, Goal, HMBadgeRequirements, Route32Condition
 from .phone import generate_phone_traps
 from .phone_data import PhoneScript
 from .pokemon import randomize_pokemon, randomize_starters
@@ -44,7 +44,7 @@ class PokemonCrystalWebWorld(WebWorld):
         "English",
         "setup_en.md",
         "setup/en",
-        ["AliceMousie"]
+        ["AliceMousie", "gerbiljames"]
     )]
 
 
@@ -53,6 +53,7 @@ class PokemonCrystalWorld(World):
     Explore the Johto and Kanto regions, become the Pokémon League Champion, and
     defeat the elusive Red at the peak of Mt. Silver!"""
     game = "Pokemon Crystal"
+    apworld_version = "3.0.1"
 
     topology_present = True
     web = PokemonCrystalWebWorld()
@@ -63,7 +64,7 @@ class PokemonCrystalWorld(World):
     options_dataclass = PokemonCrystalOptions
     options: PokemonCrystalOptions
 
-    required_client_version = (0, 5, 0)
+    required_client_version = (0, 5, 1)
 
     item_name_to_id = create_item_label_to_code_map()
     location_name_to_id = create_location_label_to_id_map()
@@ -92,6 +93,16 @@ class PokemonCrystalWorld(World):
                     and self.options.randomize_badges == RandomizeBadges.option_completely_random):
                 self.multiworld.local_early_items[self.player]["Storm Badge"] = 1
 
+        if self.options.randomize_badges.value != RandomizeBadges.option_completely_random and self.options.radio_tower_badges.value > (
+                7 if self.options.johto_only else 15):
+            self.options.radio_tower_badges.value = 7 if self.options.johto_only else 15
+            logging.warning(
+                "Pokemon Crystal: Radio Tower Badges >%d incompatible with vanilla or shuffled badges. "
+                "Changing Radio Tower Badges to %d for player %s.",
+                self.options.radio_tower_badges.value,
+                self.options.radio_tower_badges.value,
+                self.multiworld.get_player_name(self.player))
+
         if self.options.johto_only:
             if self.options.goal == Goal.option_red and self.options.johto_only == JohtoOnly.option_on:
                 self.options.goal.value = Goal.option_elite_four
@@ -111,6 +122,12 @@ class PokemonCrystalWorld(World):
                     logging.warning(
                         "Pokemon Crystal: Elite Four Badges >8 incompatible with Johto Only "
                         "if badges are not completely random. Changing Elite Four Badges to 8 for player %s.",
+                        self.multiworld.get_player_name(self.player))
+                if self.options.radio_tower_badges > 8:
+                    self.options.radio_tower_badges.value = 8
+                    logging.warning(
+                        "Pokemon Crystal: Radio Tower Badges >8 incompatible with Johto Only "
+                        "if badges are not completely random. Changing Radio Tower Badges to 8 for player %s.",
                         self.multiworld.get_player_name(self.player))
 
     def create_regions(self) -> None:
@@ -163,7 +180,7 @@ class PokemonCrystalWorld(World):
                     default_itempool += [self.create_item_by_code(item_code + 256)]
                 else:
                     default_itempool += [self.create_item_by_code(item_code)]
-            elif len(add_badges):
+            elif add_badges:
                 default_itempool += [self.create_item_by_code(add_badges.pop())]
             elif self.random.randint(0, 100) < total_trap_weight:
                 default_itempool += [get_random_trap()]
@@ -171,6 +188,10 @@ class PokemonCrystalWorld(World):
                 default_itempool += [self.create_item_by_const_name(get_random_filler_item(self.random))]
             else:
                 default_itempool += [self.create_item_by_code(item_code)]
+
+        if self.options.johto_only.value != JohtoOnly.option_off:
+            default_itempool = [item if "JohtoOnlyRemoved" not in item.tags else self.create_item_by_const_name(
+                get_random_filler_item(self.random)) for item in default_itempool]
 
         self.multiworld.itempool += default_itempool
 
@@ -182,8 +203,14 @@ class PokemonCrystalWorld(World):
             badge_locs = [loc for loc in self.multiworld.get_locations(self.player) if "Badge" in loc.tags]
             badge_items = [self.create_item_by_code(loc.default_item_code) for loc in badge_locs]
             if self.options.early_fly:
-                # take one of the 3 early badge locations, set it to storm badge
-                storm_loc = self.random.choice([loc for loc in badge_locs if "EarlyBadge" in loc.tags])
+                # take one of the early badge locations, set it to storm badge
+                if self.options.route_32_condition.value == Route32Condition.option_any_badge:
+                    early_badge_tag = "EarlyBadge_Route32RequiresBadge"
+                elif self.options.remove_ilex_cut_tree:
+                    early_badge_tag = "EarlyBadge_RemovedIlexCutTree"
+                else:
+                    early_badge_tag = "EarlyBadge"
+                storm_loc = self.random.choice([loc for loc in badge_locs if early_badge_tag in loc.tags])
                 storm_badge = next(item for item in badge_items if item.name == "Storm Badge")
                 storm_loc.place_locked_item(storm_badge)
                 badge_locs.remove(storm_loc)
@@ -259,8 +286,12 @@ class PokemonCrystalWorld(World):
             "trainersanity",
             "randomize_pokegear",
             "hm_badge_requirements",
-            "randomize_berry_trees"
+            "randomize_berry_trees",
+            "remove_ilex_cut_tree",
+            "radio_tower_badges",
+            "route_32_condition"
         )
+        slot_data["apworld_version"] = self.apworld_version
         slot_data["free_fly_location"] = 0
         slot_data["map_card_fly_location"] = 0
         if self.options.free_fly_location:
@@ -292,7 +323,9 @@ class PokemonCrystalWorld(World):
                                   8: "Lavender Town",
                                   10: "Celadon City",
                                   9: "Saffron City",
-                                  11: "Fuchsia City"}
+                                  11: "Fuchsia City",
+                                  18: "Azalea Town",
+                                  20: "Goldenrod City"}
             spoiler_handle.write(f"\n\nFree Fly Location ({self.multiworld.player_name[self.player]}): "
                                  f"{free_fly_locations[self.free_fly_location]}\n")
             if self.options.free_fly_location > 1:

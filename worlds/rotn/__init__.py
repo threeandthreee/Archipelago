@@ -1,0 +1,241 @@
+from BaseClasses import Tutorial, Region, Item, ItemClassification
+from worlds.AutoWorld import WebWorld, World
+from typing import List, ClassVar, Type
+from math import floor
+from Options import PerGameCommonOptions
+
+from .options import RotNOptions
+from .RiftCollections import RotNCollections
+from .items import RotNSongItem, RotNFixedItem
+from. locations import RotNLocation
+
+class RotNWeb(WebWorld):
+    theme = "stone"
+    tutorials = [Tutorial(
+        "Multiworld Setup Guide",
+        "A guide to setting up Rift of the Necrodancer Archipelago mod",
+        "English",
+        "rift_en.md",
+        "rift/en",
+        ["studkid"]
+    )]
+
+class RotNWorld(World):
+    """
+    Rift of the Necrodancer is a game that you play.
+    """
+    game = "Rift of the Necrodancer"
+    options_dataclass: ClassVar[Type[PerGameCommonOptions]] = RotNOptions
+    options: RotNOptions
+
+    topology_present = False
+    web = RotNWeb()
+
+    rift_collection = RotNCollections()
+    filler_item_names = list(rift_collection.filler_items.keys())
+    filler_item_weights = list(rift_collection.filler_weights.values())
+
+    item_name_to_id = {name: code for name, code in rift_collection.item_names_to_id.items()}
+    location_name_to_id = {name: code for name, code in rift_collection.location_names_to_id.items()}
+
+    victory_song_name: str = ""
+    starting_songs: List[str]
+    included_songs: List[str]
+    location_count: int
+
+    def generate_early(self):
+        min_diff = min(self.options.min_intensity.value, self.options.max_intensity.value)
+        max_diff = max(self.options.min_intensity.value, self.options.max_intensity.value)
+
+        starter_song_count = self.options.starting_song_count.value
+
+        while True:
+            available_song_keys = self.rift_collection.getSongsWithSettings(min_diff, max_diff)
+            available_song_keys = self.handle_plando(available_song_keys)
+
+            count_needed_for_start = max(0, starter_song_count - len(self.starting_songs))
+            if len(available_song_keys) + len(self.included_songs) >= count_needed_for_start + 11:
+                final_song_list = available_song_keys
+                break
+
+            # If the above fails, we want to adjust the difficulty thresholds.
+            # Easier first, then harder
+            if min_diff <= 1 and max_diff >= 11:
+                raise Exception("Failed to find enough songs, even with maximum difficulty thresholds.")
+            elif min_diff <= 1:
+                max_diff += 1
+            else:
+                min_diff -= 1
+
+        self.create_song_pool(final_song_list)
+
+        for song in self.starting_songs:
+            self.multiworld.push_precollected(self.create_item(song))
+
+    def handle_plando(self, available_song_keys: List[str]) -> List[str]:
+        song_items = self.rift_collection.song_items
+
+        start_items = self.options.start_inventory.value.keys()
+        include_songs = self.options.include_songs.value
+        exclude_songs = self.options.exclude_songs.value
+
+        self.starting_songs = [s for s in start_items if s in song_items]
+        self.included_songs = [s for s in include_songs if s in song_items and s not in self.starting_songs]
+
+        return [s for s in available_song_keys if s not in start_items
+                and s not in include_songs and s not in exclude_songs]
+    
+    def create_song_pool(self, available_song_keys: List[str]):
+        starting_song_count = self.options.starting_song_count.value
+        additional_song_count = self.options.additional_song_count.value
+
+        self.random.shuffle(available_song_keys)
+
+        # First, we must double check if the player has included too many guaranteed songs
+        included_song_count = len(self.included_songs)
+        if included_song_count > additional_song_count:
+            # If so, we want to thin the list, thus let's get the goal song and starter songs while we are at it.
+            self.random.shuffle(self.included_songs)
+            self.victory_song_name = self.included_songs.pop()
+            while len(self.included_songs) > additional_song_count:
+                next_song = self.included_songs.pop()
+                if len(self.starting_songs) < starting_song_count:
+                    self.starting_songs.append(next_song)
+        else:
+            # If not, choose a random victory song from the available songs
+            chosen_song = self.random.randrange(0, len(available_song_keys) + included_song_count)
+            if chosen_song < included_song_count:
+                self.victory_song_name = self.included_songs[chosen_song]
+                del self.included_songs[chosen_song]
+            else:
+                self.victory_song_name = available_song_keys[chosen_song - included_song_count]
+                del available_song_keys[chosen_song - included_song_count]
+
+        # Next, make sure the starting songs are fulfilled
+        if len(self.starting_songs) < starting_song_count:
+            for _ in range(len(self.starting_songs), starting_song_count):
+                if len(available_song_keys) > 0:
+                    self.starting_songs.append(available_song_keys.pop())
+                else:
+                    self.starting_songs.append(self.included_songs.pop())
+
+        # Then attempt to fulfill any remaining songs for interim songs
+        if len(self.included_songs) < additional_song_count:
+            for _ in range(len(self.included_songs), self.options.additional_song_count):
+                if len(available_song_keys) <= 0:
+                    break
+                self.included_songs.append(available_song_keys.pop())
+
+        self.location_count = 2 * (len(self.starting_songs) + len(self.included_songs))
+
+    def create_item(self, name: str) -> Item:
+        if name == self.rift_collection.DIAMOND_NAME:
+            return RotNFixedItem(name, ItemClassification.progression_skip_balancing,
+                                 self.rift_collection.DIAMOND_CODE, self.player)
+        
+        filler = self.rift_collection.filler_items.get(name)
+        if filler:
+            return RotNFixedItem(name, ItemClassification.filler, filler, self.player)
+        
+        song = self.rift_collection.song_items[name]
+        return RotNSongItem(name, self.player, song)
+    
+    def get_filler_item_name(self):
+        return self.random.choices(self.filler_item_names, self.filler_item_weights)[0]
+    
+    def create_items(self) -> None:
+        song_keys_in_pool = self.included_songs.copy()
+
+        # Note: Item count will be off if plando is involved.
+        item_count = self.get_diamond_count()
+
+        # First add all goal song tokens
+        for _ in range(0, item_count):
+            self.multiworld.itempool.append(self.create_item(self.rift_collection.DIAMOND_NAME))
+
+        # Then add 1 copy of every song
+        item_count += len(self.included_songs)
+        for song in self.included_songs:
+            self.multiworld.itempool.append(self.create_item(song))
+
+        # At this point, if a player is using traps, it's possible that they have filled all locations
+        items_left = self.location_count - item_count
+        if items_left <= 0:
+            return
+
+        # When it comes to filling remaining spaces, we have 2 options. A useless filler or additional songs.
+        # First fill 50% with the filler. The rest is to be duplicate songs.
+        filler_count = floor(0.5 * items_left)
+        items_left -= filler_count
+
+        for _ in range(0, filler_count):
+            self.multiworld.itempool.append(self.create_item(self.get_filler_item_name()))
+
+        # All remaining spots are filled with duplicate songs. Duplicates are set to useful instead of progression
+        # to cut down on the number of progression items that Muse Dash puts into the pool.
+
+        # This is for the extraordinary case of needing to fill a lot of items.
+        while items_left > len(song_keys_in_pool):
+            for key in song_keys_in_pool:
+                item = self.create_item(key)
+                item.classification = ItemClassification.useful
+                self.multiworld.itempool.append(item)
+
+            items_left -= len(song_keys_in_pool)
+            continue
+
+        # Otherwise add a random assortment of songs
+        self.random.shuffle(song_keys_in_pool)
+        for i in range(0, items_left):
+            item = self.create_item(song_keys_in_pool[i])
+            item.classification = ItemClassification.useful
+            self.multiworld.itempool.append(item)
+
+    def create_regions(self) -> None:
+        menu_region = Region("Menu", self.player, self.multiworld)
+        self.multiworld.regions += [menu_region]
+
+        # Make a collection of all songs available for this rando.
+        # 1. All starting songs
+        # 2. All other songs shuffled
+        # Doing it in this order ensures that starting songs are first in line to getting 2 locations.
+        # Final song is excluded as for the purpose of this rando, it doesn't matter.
+
+        all_selected_locations = self.starting_songs.copy()
+        included_song_copy = self.included_songs.copy()
+
+        self.random.shuffle(included_song_copy)
+        all_selected_locations.extend(included_song_copy)
+
+        # Adds 2 item locations per song/album to the menu region.
+        for i in range(0, len(all_selected_locations)):
+            name = all_selected_locations[i]
+            loc1 = RotNLocation(self.player,  name + "-0", self.rift_collection.song_locations[name + "-0"], menu_region)
+            loc1.access_rule = lambda state, place=name: state.has(place, self.player)
+            menu_region.locations.append(loc1)
+
+            loc2 = RotNLocation(self.player,  name + "-1", self.rift_collection.song_locations[name + "-1"], menu_region)
+            loc2.access_rule = lambda state, place=name: state.has(place, self.player)
+            menu_region.locations.append(loc2)
+
+    def set_rules(self) -> None:
+        self.multiworld.completion_condition[self.player] = lambda state: \
+            state.has(self.rift_collection.DIAMOND_NAME, self.player, self.get_diamond_win_count())
+                      
+    def get_diamond_count(self) -> int:
+        multiplier = self.options.diamond_count_percentage.value / 100.0
+        song_count = len(self.starting_songs) + len(self.included_songs)
+        return max(1, floor(song_count * multiplier))
+    
+    def get_diamond_win_count(self) -> int:
+        multiplier = self.options.diamond_win_percentage.value / 100.0
+        diamond_count = self.get_diamond_count()
+        return max(1, floor(diamond_count * multiplier))
+    
+    def fill_slot_data(self):
+        return {
+            "victoryLocation": self.victory_song_name,
+            "deathLink": self.options.death_link.value,
+            "diamondWinCount": self.get_diamond_win_count(),
+            "gradeNeeded": self.options.grade_needed.value,
+        }

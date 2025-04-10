@@ -329,6 +329,7 @@ REGIONS = [
     'd8 boss',
     #######
     "veran beaten",
+    "ganon beaten",
     #######
     
     # trade

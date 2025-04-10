@@ -90,7 +90,7 @@ secondary_trait_list = {
     "Copper": ["Copper Bracelet"],
     "Silver": ["Silver Bracelet"],
     "Gold": ["Gold Bracelet"],
-    "Diamond": ["Diamond Bracelet"],
+    "Diamond": ["Diamond Band"],
     "Plastic": ["Cheap Bracelet", "Bottle of Water", "Bottle of DXwater"],
     "Herb": ["Refreshing Herb", "Secret Herb"],
     "Repellant": ["Repel Sandwich", "Repel Superwich"],
@@ -347,7 +347,7 @@ gift_by_quality = {
         0.28: "Bottle of Water",
         0.50: "PSI Caramel",
         0.51: "Magic Tart",
-        1.14: "Bottle of Dxwater",
+        1.14: "Bottle of DXwater",
         1.20: "Magic Pudding",
         2.28: "Magic Truffle"
     }

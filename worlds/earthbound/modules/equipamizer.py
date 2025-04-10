@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import dataclasses
+import copy
 from ..game_data.text_data import text_encoder, calc_pixel_width
 from operator import attrgetter
 import struct
@@ -370,26 +371,26 @@ def randomize_armor(world, rom):
         "Goddess Band",
         "Bracer of Kings",
         "Baseball Cap",
-        "Holmes Hat",
         "Mr. Baseball Cap",
+        "Holmes Hat",
         "Hard Hat",
-        "Ribbon",
-        "Red Ribbon",
-        "Goddess Ribbon",
         "Coin of Slumber",
         "Coin of Defense",
+        "Coin of Silence",
+        "Mr. Saturn Coin",
         "Lucky Coin",
+        "Charm Coin",
         "Talisman Coin",
         "Shiny Coin",
         "Souvenir Coin",
         "Diadem of Kings",
         "Earth Pendant",
+        "Saturn Ribbon",
+        "Ribbon",
+        "Red Ribbon",
         "Defense Ribbon",
         "Talisman Ribbon",
-        "Saturn Ribbon",
-        "Coin of Silence",
-        "Charm Coin",
-        "Mr. Saturn Coin",
+        "Goddess Ribbon",
         "Summers Platinum Band",
         "Summers Diamond Band"
 
@@ -525,9 +526,6 @@ def randomize_armor(world, rom):
             # Only Arm gear can have sleep resistance; arm gear cannot have elemental resistance
             roll_resistances(world, "sleep_res", armor)
 
-        # if "Pendant" in item and world.options.retain_resistances:
-            # print(item)
-
         if armor.flash_res + armor.freeze_res + armor.fire_res == 0:
             # If no resistances are active use a normal name
             front_name = world.random.choice(armor_dict[armor.equip_type])
@@ -600,7 +598,8 @@ def randomize_armor(world, rom):
         rom.write_bytes(armor.address + 31, bytearray([armor.defense, armor.poo_def, armor.aux_stat, resistance]))
         rom.write_bytes(armor.address + 25, bytearray([type_bytes[armor.equip_type]]))
     
-    sorted_armor = sorted(world.armor_list.values(), key=attrgetter("defense"))
+    sortable_armor = copy.deepcopy(world.armor_list)
+    sorted_armor = sorted(sortable_armor.values(), key=attrgetter("defense"))
 
     sorted_arm_gear = [armor for armor in sorted_armor if armor.equip_type == "arm"]
     sorted_body_gear = [armor for armor in sorted_armor if armor.equip_type == "body"]
@@ -616,17 +615,19 @@ def randomize_armor(world, rom):
         progressive_bracelets,
         progressive_others
     ]
-
-    for i in range(3):
-        price_armors(sorts[i], rom)
     
     if world.options.progressive_armor:
         for i in range(2):
             apply_progressive_armor(world, prog_armors[i], sorts[i], rom)
 
+    for i in range(3):
+        price_armors(sorts[i], rom)
+
     for item in all_armor:
         armor = world.armor_list[item]
 
+        if "Summers" in armor.name:
+            armor.name = armor.name.replace("Summers", "")
         item_name = text_encoder(armor.name, 25)
         item_name.extend([0x00])
 
@@ -639,7 +640,10 @@ def randomize_armor(world, rom):
             else:
                 description += f"@Must be equipped on your {armor.equip_type}.\n"
 
-        description += f"@+{armor.defense} Defense.\n"
+        if armor.can_equip == "Poo":
+            description += f"@+{armor.poo_def} Defense.\n"
+        else:
+            description += f"@+{armor.defense} Defense.\n"
         if armor.aux_stat > 0:
             description += f"@+{armor.aux_stat} {aux_stat[armor.equip_type]}. \n"
 
@@ -657,7 +661,7 @@ def randomize_armor(world, rom):
 
         if armor.sleep_res > 0:
             description += f"@Protects against Sleep{res_strength[armor.sleep_res - 1]}.\n"
-            
+        
         description = text_encoder(description, 0x100)
         description = description[:-2]
         description.extend([0x13, 0x02])
@@ -766,19 +770,24 @@ def randomize_weapons(world, rom):
         "Sand Lot Bat",
         "Minor League Bat",
         "Mr. Baseball Bat",
+        "T-Rex's Bat",
         "Big League Bat",
         "Hall of Fame Bat",
+        "Ultimate Bat",
+        "Casey Bat",
         "Magicant Bat",
         "Legendary Bat",
         "Gutsy Bat",
-        "Casey Bat",
+        
         "Fry Pan",
         "Thick Fry Pan",
         "Deluxe Fry Pan",
         "Chef's Fry Pan",
+        "Non-stick Frypan",
         "French Fry Pan",
-        "Magic Fry Pan",
         "Holy Fry Pan",
+        "Magic Fry Pan",
+
         "Sword of Kings",
         "Pop Gun",
         "Stun Gun",
@@ -787,6 +796,7 @@ def randomize_weapons(world, rom):
         "Zip Gun",
         "Laser Gun",
         "Hyper Beam",
+        "Double Beam",
         "Crusher Beam",
         "Spectrum Beam",
         "Death Ray",
@@ -798,10 +808,6 @@ def randomize_weapons(world, rom):
         "Bionic Slingshot",
         "Trick Yo-yo",
         "Combat Yo-yo",
-        "T-Rex's Bat",
-        "Ultimate Bat",
-        "Double Beam",
-        "Non-stick Frypan",
         "Summers Big League Bat"
     ]
 
@@ -831,7 +837,7 @@ def randomize_weapons(world, rom):
         elif weapon.can_equip == "Jeff":
             progressive_guns.append(item)
 
-        if item == starting_weapon and not world.options.progressive_weapons:
+        if item == starting_weapon:  # Todo; remove not progressive weapons
             weapon.offense = 10
         else:
             weapon.offense = world.random.randint(1, weapon_cap)
@@ -896,7 +902,8 @@ def randomize_weapons(world, rom):
             weapon.offense, weapon.poo_off, weapon.aux_stat, weapon.miss_rate]))
         rom.write_bytes(weapon.address + 25, bytearray([type_bytes[weapon.equip_type]]))
 
-    sorted_weapons = sorted(world.weapon_list.values(), key=attrgetter("offense"))
+    sortable_weapons = copy.deepcopy(world.weapon_list)
+    sorted_weapons = sorted(sortable_weapons.values(), key=attrgetter("offense"))
 
     sorted_bats = [weapon for weapon in sorted_weapons if weapon.can_equip == "Ness"]
     sorted_pans = [weapon for weapon in sorted_weapons if weapon.can_equip == "Paula"]
@@ -928,6 +935,13 @@ def randomize_weapons(world, rom):
 
     for item in all_weapons:
         weapon = world.weapon_list[item]
+        if "Summers" in item:
+            weapon.offense = world.weapon_list["Big League Bat"].offense
+            rom.write_bytes(weapon.address + 31, bytearray([world.weapon_list["Big League Bat"].offense]))
+
+        if "Summers" in weapon.name:
+            weapon.name = weapon.name.replace("Summers", "")
+
         item_name = text_encoder(weapon.name, 25)
         item_name.extend([0x00])
         

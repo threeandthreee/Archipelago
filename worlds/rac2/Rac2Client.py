@@ -1,4 +1,7 @@
-from typing import Optional
+import json
+import shutil
+import zipfile
+from typing import Optional, cast, Dict, Any
 import asyncio
 import multiprocessing
 import os
@@ -9,7 +12,9 @@ from CommonClient import ClientCommandProcessor, CommonContext, get_base_parser,
 from NetUtils import ClientStatus
 import Utils
 from settings import get_settings
-from . import Rac2World
+from .data.Planets import get_all_active_locations
+from . import Rac2Settings
+from .Container import Rac2ProcedurePatch
 from .ClientCheckLocations import handle_checked_location
 from .Callbacks import update, init
 from .ClientReceiveItems import handle_received_items
@@ -70,12 +75,12 @@ class Rac2Context(CommonContext):
     last_error_message: Optional[str] = None
     death_link_enabled = False
     queued_deaths: int = 0
+    previous_decoy_glove_ammo: int = 0
 
     def __init__(self, server_address, password):
         super().__init__(server_address, password)
         self.game_interface = Rac2Interface(logger)
-        self.notification_manager = NotificationManager(HUD_MESSAGE_DURATION, self.game_interface.send_hud_message)
-        self.locations_scouted = set(Rac2World.location_name_to_id.values())
+        self.notification_manager = NotificationManager(HUD_MESSAGE_DURATION)
 
     def on_deathlink(self, data: Utils.Dict[str, Utils.Any]) -> None:
         super().on_deathlink(data)
@@ -96,10 +101,19 @@ class Rac2Context(CommonContext):
     def on_package(self, cmd: str, args: dict):
         if cmd == "Connected":
             self.slot_data = args["slot_data"]
+            # Set death link tag if it was requested in options
             if "death_link" in args["slot_data"]:
                 self.death_link_enabled = bool(args["slot_data"]["death_link"])
                 Utils.async_start(self.update_death_link(
                     bool(args["slot_data"]["death_link"])))
+
+            # Scout all active locations for lookups that may be required later on
+            all_locations = [loc.location_id for loc in get_all_active_locations(self.slot_data)]
+            self.locations_scouted = set(all_locations)
+            Utils.async_start(self.send_msgs([{
+                "cmd": "LocationScouts",
+                "locations": list(self.locations_scouted)
+            }]))
 
     def run_gui(self):
         from kvui import GameManager
@@ -175,20 +189,19 @@ async def _handle_game_ready(ctx: Rac2Context):
             if current_planet is not None:
                 logger.info(f"Loaded planet {current_planet} ({current_planet.name})")
             await asyncio.sleep(1)
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(0.1)
         return
     elif ctx.game_interface.is_loading():
         ctx.game_interface.logger.info("Waiting for planet to load...")
         ctx.is_loading = True
         return
 
-    ctx.notification_manager.handle_notifications()
-
-    if ctx.current_planet != ctx.game_interface.get_current_planet():
+    connected_to_server = (ctx.server is not None) and (ctx.slot is not None)
+    if ctx.current_planet != ctx.game_interface.get_current_planet() and connected_to_server:
         ctx.previous_planet = ctx.current_planet
         ctx.current_planet = ctx.game_interface.get_current_planet()
-        init(ctx, ctx.server is not None and ctx.slot is not None)
-    update(ctx, ctx.server is not None and ctx.slot is not None)
+        init(ctx)
+    update(ctx, connected_to_server)
 
     if ctx.server:
         ctx.last_error_message = None
@@ -197,14 +210,15 @@ async def _handle_game_ready(ctx: Rac2Context):
             return
 
         current_inventory = ctx.game_interface.get_current_inventory()
-        if ctx.current_planet is not None and ctx.current_planet > 0 and ctx.game_interface.get_pause_state() == 0:
+        if ctx.current_planet is not None and ctx.current_planet > 0 and ctx.game_interface.get_pause_state() in [0, 5]:
             await handle_received_items(ctx, current_inventory)
-        await handle_checked_location(ctx)
+        if ctx.current_planet and ctx.current_planet > 0:
+            await handle_checked_location(ctx)
         await handle_check_goal_complete(ctx)
 
         if ctx.death_link_enabled:
             await handle_deathlink(ctx)
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(0.1)
     else:
         message = "Waiting for player to connect to server"
         if ctx.last_error_message is not message:
@@ -231,17 +245,53 @@ async def run_game(iso_file):
 
 
 async def patch_and_run_game(aprac2_file: str):
+    settings: Optional[Rac2Settings] = get_settings().get("rac2_options", False)
+    assert settings, "No Rac2 Settings?"
+
     aprac2_file = os.path.abspath(aprac2_file)
-    # input_iso_path = get_settings().rac2_options.iso_file
-    # game_version = get_version_from_iso(input_iso_path)
     base_name = os.path.splitext(aprac2_file)[0]
     output_path = base_name + '.iso'
 
     if not os.path.exists(output_path):
         from .PatcherUI import PatcherUI
         patcher = PatcherUI(aprac2_file, output_path, logger)
-        patcher.run()
+        await patcher.async_run()
+        if patcher.errored:
+            raise Exception("Patching Failed")
+
+    game_ini_path: str = settings.game_ini
+    if os.path.exists(game_ini_path):
+        version = Rac2ProcedurePatch.get_game_version_from_iso(output_path)
+        crc = get_pcsx2_crc(output_path)
+        if version and crc:
+            file_name = f"{version}_{crc:X}.ini"
+            file_path = os.path.join(os.path.dirname(game_ini_path), file_name)
+            shutil.copy(game_ini_path, file_path)
+
     Utils.async_start(run_game(output_path))
+
+
+def get_name_from_aprac2(aprac2_path: str) -> str:
+    with zipfile.ZipFile(aprac2_path) as zip_file:
+        with zip_file.open("archipelago.json") as file:
+            archipelago_json = file.read().decode("utf-8")
+            archipelago_json = json.loads(archipelago_json)
+    return cast(Dict[str, Any], archipelago_json)["player_name"]
+
+
+def get_pcsx2_crc(iso_path: str) -> Optional[int]:
+    if not os.path.exists(iso_path):
+        return False
+
+    ELF_START: int = 0x00258800
+    ELF_SIZE: int = 0x27F53C
+    crc: int = 0
+    with open(iso_path, "rb") as iso_file:
+        iso_file.seek(ELF_START)
+        for i in range(int(ELF_SIZE / 4)):
+            crc ^= int.from_bytes(iso_file.read(4), "little")
+
+    return crc
 
 
 def launch():
@@ -255,11 +305,12 @@ def launch():
                             help='Path to an aprac2 file')
         args = parser.parse_args()
 
+        ctx = Rac2Context(args.connect, args.password)
+
         if os.path.isfile(args.aprac2_file):
             logger.info("aprac2 file supplied, beginning patching process...")
             await patch_and_run_game(args.aprac2_file)
-
-        ctx = Rac2Context(args.connect, args.password)
+            ctx.auth = get_name_from_aprac2(args.aprac2_file)
 
         logger.info("Connecting to server...")
         ctx.server_task = asyncio.create_task(server_loop(ctx), name="Server Loop")

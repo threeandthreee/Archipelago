@@ -47,6 +47,16 @@ class RedBadges(Range):
     range_end = 16
 
 
+class RadioTowerBadges(Range):
+    """
+    Number of badges at which Team Rocket takes over the Goldenrod Radio Tower
+    """
+    display_name = "Radio Tower Badges"
+    default = 7
+    range_start = 1
+    range_end = 16
+
+
 class RandomizeBadges(Choice):
     """
     Shuffles gym badge locations into the pool
@@ -73,6 +83,20 @@ class RequireItemfinder(DefaultOnToggle):
     Hidden items require Itemfinder in logic
     """
     display_name = "Require Itemfinder"
+
+
+class Route32Condition(Choice):
+    """
+    Sets the condition required to pass into the south part of Route 32
+    Egg from aide: Collect the Egg from the aide in the Violet City Pokemon Center after beating Falkner
+    Any badge: Obtain any badge
+    None: No requirement
+    """
+    display_name = "Route 32 Access Condition"
+    default = 0
+    option_egg_from_aide = 0
+    option_any_badge = 1
+    option_none = 2
 
 
 class Trainersanity(Toggle):
@@ -123,6 +147,18 @@ class RandomizeWilds(Toggle):
     Randomizes species of wild Pokemon
     """
     display_name = "Randomize Wilds"
+
+
+class ForceFullyEvolved(Range):
+    """
+    When an opponent uses a pokemon of the specified level or higher, restricts the species to only fully evolved pokemon.
+
+    Only applies when trainer parties are randomized.
+    """
+    display_name = "Force Fully Evolved"
+    range_start = 1
+    range_end = 100
+    default = 100
 
 
 class NormalizeEncounterRates(Toggle):
@@ -190,7 +226,7 @@ class HMCompatibility(NamedRange):
     """
     display_name = "HM Compatibility"
     default = 0
-    range_start = 1
+    range_start = 50
     range_end = 100
     special_range_names = {
         "vanilla": 0,
@@ -285,6 +321,13 @@ class HMBadgeRequirements(Choice):
     option_add_kanto = 2
 
 
+class RemoveIlexCutTree(DefaultOnToggle):
+    """
+    Removes the Cut tree in Ilex Forest
+    """
+    display_name = "Remove Ilex Forest Cut Tree"
+
+
 class ReusableTMs(Toggle):
     """
     TMs can be used an infinite number of times
@@ -314,6 +357,13 @@ class BlindTrainers(Toggle):
     Trainers have no vision and will not start battles unless interacted with
     """
     display_name = "Blind Trainers"
+
+
+class SkipEliteFour(Toggle):
+    """
+    Go straight to Lance when challenging the Elite Four
+    """
+    display_name = "Skip Elite Four"
 
 
 class BetterMarts(Toggle):
@@ -420,15 +470,18 @@ class PokemonCrystalOptions(PerGameCommonOptions):
     johto_only: JohtoOnly
     elite_four_badges: EliteFourBadges
     red_badges: RedBadges
+    radio_tower_badges: RadioTowerBadges
     randomize_badges: RandomizeBadges
     randomize_hidden_items: RandomizeHiddenItems
     require_itemfinder: RequireItemfinder
+    route_32_condition: Route32Condition
     trainersanity: Trainersanity
     trainersanity_alerts: TrainersanityAlerts
     randomize_pokegear: RandomizePokegear
     randomize_berry_trees: RandomizeBerryTrees
     randomize_starters: RandomizeStarters
     randomize_wilds: RandomizeWilds
+    force_fully_evolved: ForceFullyEvolved
     normalize_encounter_rates: NormalizeEncounterRates
     randomize_static_pokemon: RandomizeStaticPokemon
     randomize_trainer_parties: RandomizeTrainerParties
@@ -444,10 +497,12 @@ class PokemonCrystalOptions(PerGameCommonOptions):
     free_fly_location: FreeFlyLocation
     early_fly: EarlyFly
     hm_badge_requirements: HMBadgeRequirements
+    remove_ilex_cut_tree: RemoveIlexCutTree
     reusable_tms: ReusableTMs
     guaranteed_catch: GuaranteedCatch
     minimum_catch_rate: MinimumCatchRate
     blind_trainers: BlindTrainers
+    skip_elite_four: SkipEliteFour
     better_marts: BetterMarts
     experience_modifier: ExpModifier
     phone_trap_weight: PhoneTrapWeight

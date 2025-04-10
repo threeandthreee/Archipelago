@@ -6,9 +6,7 @@ You can read through all the options and generate a YAML [here](../player-option
 
 ## What does randomization do to this game?
 
-Randomisation in this game affects the memory of the game to unlock various events and behaviours.
-Story mode should not be used and in future versions may be disabled. Any progress through this will not be logic.
-All level access is handled via the Select menu where levels will be unlocked as you find the required items to unlock them.
+Randomisation in this game affects the memory of the game to unlock various events and behaviours. Level access is determined based on settings, either unlocking them individually through Select mode, playing through story mode, or a combination of both.
 Once you have the goal met, The Last Way will open and be available from the Story menu.
 
 ## What items and locations get randomized?
@@ -39,7 +37,11 @@ There are some junk items and special weapon unlocks are also available, regardl
 It is possible to tweak the settings to remove some of the specific checks and alter total to the players choice.
 Likewise, it is possible to exclude stages.
 
+Bosses are now available checks. Bosses are required to navigate through story mode and are only available through this mode.
+
 Future checks and items are expected to be added in the future.
+
+
 
 ## What other changes are made to the game?
 
@@ -55,7 +57,7 @@ Once you make progress on an objective, the number will increase in game, but wi
 The client will keep the current amount set to the amount you have received from the Multiworld.
 
 If you have the original max (remember, 2 less than what is displayed) you can complete the level.
-Ensure you have the mission character selected and pause the game, press the SELECT button, and the total value will visibly change.
+Ensure you have the mission character selected and pause the game, press the Z button, and the total value will visibly change.
 
 Levels which require you to defeat a number of enemies of a particular type will clear as soon as you close the pause menu.
 Other missions require you to achieve 1 more step in the objective.
@@ -68,6 +70,49 @@ Some levels with particular interactions will automatically clear after clearing
 - Digital Circuit Dark auto clears Digital Circuit Hero
 - Space Gadget Hero auto clears Space Gadget Dark 
 Mission Tokens, when enabled will be given to the player for completing missions when possible. This requires at least one of the levels missions to be cleared.
+
+There are options to shuffle the story mode and handle goals based exclusively on story progression. Shuffling in The Last Way and Devil Doom will require the player to also find Devil Doom within the story web as part of the goal. Note that finding the stage early will reduce the player's rings to 0, forcing Super Shadow to fall, in a loop, so return to Devil Doom once you have met the other goal conditions.
+
+## How do I use the additional commands?
+
+The Shadow Archipelago Client has additional commands to help make life easier.
+
+/weapons
+Lists the weapons you have available.
+
+If you provide no arguments, you will be shown the weapons in your current stage.
+
+If you provide /s you can define which stage, either by in-game code or name.
+
+If you provide /a, you can show all the weapons you have regardless of stage.
+
+If you provide /h, you can see status of whether you have held the weapon for those types of checks.
+
+
+/sanity (/dark, /hero, /gun, /egg, /alien /darkclear /heroclear)
+Lists the sanity percentages required for beating the stage requirements, allowing to work out the percentages for you. 
+
+If you don't provide either of these, it will show all sanities for the stage. This will show the current progress, total required and total available, as well as the frequency value.
+
+/story /s{stage}
+e.g. /story /sPrison Island
+Sets the current story path to the given level. Only allows setting levels currently available to the player. This makes story mode more convinent, allowing the player to not have to play through early stages to return to levels. This cannot be used for technical reasons for mid-story bosses but can be used for final bosses.
+
+ Not providing an argument will list all the stages available to the player in story mode.
+ 
+/token
+Shows the progress and total requirements for token counts for unlocking the end game.
+
+/boss /s{boss name}
+To compensate for the technical issues with bosses not being able to be set in story mode, this shows you which stage points to a boss. Will show all found options.
+
+## How does Story Shuffle work?
+
+If you enable story shuffle, the story path will be randomised to make it more interesting.
+The first step is ensuring that all stages can be accessed. Once all base stages have been ensured reachable, stages will lead to provided final bosses, then bosses, and then fill in the rest of the details.
+
+After that, the story progression field will determine a likely path, reducing the amount of completion requirements in order to complete the earlier missions and potentially increase for the later missions, making the player less likely to be burger kinged for as long.
+
 
 ## What does the game look like?
 
@@ -83,9 +128,9 @@ This game requires to be online at all times as it is completely memory based. L
 will not work when playing offline, nor will item collection.
 
 ## How do I finish an objective?
-Meet the alignment character in the stage, select that mission, pause the game, press SELECT and the requirement count
+Meet the alignment character in the stage, select that mission, pause the game, press Z and the requirement count
 will return to normal. This will auto clear for enemy-based missions, but other missions require you to add to the objective count.
-If SELECT does not change your view, you do not have the required archipelago items to finish the stage.
+If Z does not change your view, you do not have the required archipelago items to finish the stage.
 
 For further details, fully read other sections.
 

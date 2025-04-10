@@ -1,5 +1,8 @@
 from typing import List
 
+import os
+import random
+import Utils
 from settings import get_settings
 from . import RomData
 from .Util import *
@@ -7,7 +10,8 @@ from .z80asm.Assembler import Z80Assembler
 from ..data.Constants import *
 from .Constants import *
 from pathlib import Path
-from .. import LOCATIONS_DATA
+
+from .. import LOCATIONS_DATA, OracleOfAgesMasterKeys, OracleOfAgesGoal
 
 
 def get_treasure_addr(rom: RomData, item_name: str):
@@ -46,16 +50,17 @@ def alter_treasures(rom: RomData):
 
 def get_asm_files(patch_data):
     asm_files = ASM_FILES.copy()
-    if patch_data["options"]["quick_flute"]:
+    if get_settings()["tloz_ooa_options"]["qol_quick_flute"]:
         asm_files.append("asm/conditional/quick_flute.yaml")
-    if not(patch_data["options"]["enable_dance_and_joke"]):
-        asm_files.append("asm/conditional/skip_dance_and_joke.yaml")
-    if patch_data["options"]["qol_mermaid_suit"]:
+    if get_settings()["tloz_ooa_options"]["skip_tokkey_dance"]:
+        asm_files.append("asm/conditional/skip_dance.yaml")
+    if get_settings()["tloz_ooa_options"]["skip_boi_joke"]:
+        asm_files.append("asm/conditional/skip_joke.yaml")
+    if get_settings()["tloz_ooa_options"]["qol_mermaid_suit"]:
         asm_files.append("asm/conditional/qol_mermaid_suit.yaml")
-    if patch_data["options"]["warp_to_start"]:
-        asm_files.append("asm/conditional/warp_to_start.yaml")
+    if patch_data["options"]["goal"] == OracleOfAgesGoal.option_beat_ganon:
+        asm_files.append("asm/conditional/ganon_goal.yaml")
     return asm_files
-
 
 def define_location_constants(assembler: Z80Assembler, patch_data):
     for location_name, location_data in LOCATIONS_DATA.items():
@@ -90,10 +95,16 @@ def define_option_constants(assembler: Z80Assembler, patch_data):
     assembler.define_byte("option.defaultSeedType", 0x20 + patch_data["options"]["default_seed"])
     assembler.define_byte("option.receivedDamageModifier", options["combat_difficulty"])
     assembler.define_byte("option.openAdvanceShop", options["advance_shop"])
-    assembler.define_byte("option.warpToStart", options["warp_to_start"])
 
     assembler.define_byte("option.requiredEssences", options["required_essences"])
     assembler.define_byte("option.required_slates", options["required_slates"])
+    
+    assembler.define_byte("option.keysanity_small_keys", patch_data["options"]["keysanity_small_keys"])
+    keysanity = patch_data["options"]["keysanity_small_keys"] or patch_data["options"]["keysanity_boss_keys"]
+    assembler.define_byte("option.customCompassChimes", 1 if keysanity else 0)
+
+    master_keys_as_boss_keys = patch_data["options"]["master_keys"] == OracleOfAgesMasterKeys.option_all_dungeon_keys
+    assembler.define_byte("option.smallKeySprite", 0x43 if master_keys_as_boss_keys else 0x42)
 
 def process_item_name_for_shop_text(item_name: str) -> List[int]:
     words = item_name.split(" ")
@@ -134,9 +145,23 @@ def define_text_constants(assembler: Z80Assembler, patch_data):
             if location_name in patch_data["locations"]:
                 item_name_bytes = process_item_name_for_shop_text(patch_data["locations"][location_name])
                 text_bytes = [0x09, 0x01] + item_name_bytes + [0x09, 0x00, 0x0c, 0x18, 0x01]  # Item name
-                text_bytes.extend([0x20, 0x0c, 0x08, 0x20, 0x03, 0x7b, 0x01])  # Price
-                text_bytes.extend([0x02, 0x00, 0x00])  # OK / No thanks
+                if shop_name != "Tokay Market":
+                    text_bytes.extend([0x20, 0x0c, 0x08, 0x20, 0x03, 0x7b, 0x01])  # Price
+                    text_bytes.extend([0x02, 0x00, 0x00])  # OK / No thanks
             assembler.add_floating_chunk(f"text.{symbolic_name}", text_bytes)
+
+    #Tokay Market
+    shop_name = "Tokay Market"
+    for i in range(1, 3):
+        location_name = f"{shop_name} #{i}"
+        symbolic_name = LOCATIONS_DATA[location_name]["symbolic_name"]
+        text_bytes = []
+        if location_name in patch_data["locations"]:
+            item_name_bytes = process_item_name_for_shop_text(patch_data["locations"][location_name])
+            text_bytes = [0x09, 0x01] + item_name_bytes + [0x09, 0x00, 0x0c, 0x18, 0x00]  # Item name
+            assembler.add_floating_chunk(f"text.{symbolic_name}", text_bytes)
+    text_bytes = [0x31, 0x30, 0x20, 0x02, 0x12, 0x01, 0x02, 0x00, 0x00]
+    assembler.add_floating_chunk(f"text.tokayMarket1Validation", text_bytes)
 
 
 def write_chest_contents(rom: RomData, patch_data):
@@ -162,14 +187,14 @@ def define_compass_rooms_table(assembler: Z80Assembler, patch_data):
     for location_name, item_name in patch_data["locations"].items():
         _, item_subid = get_item_id_and_subid(item_name)
         dungeon = 0xff
-        if item_name.startswith("Small Key") or item_name.startswith("Master Key") or item_name.startswith(
-                "Dungeon Map"):
+        if item_name.startswith("Small Key") or item_name.startswith("Master Key"):
             dungeon = item_subid
         elif item_name.startswith("Boss Key"):
             dungeon = item_subid + 1
 
         if dungeon != 0xff:
             location_data = LOCATIONS_DATA[location_name]
+            print(location_name)
             rooms = location_data["room"]
             if not isinstance(rooms, list):
                 rooms = [rooms]
@@ -366,3 +391,62 @@ def set_file_select_text(assembler: Z80Assembler, slot_name: str):
     text_tiles.extend([0x02] * 12)  # Offscreen tiles
 
     assembler.add_floating_chunk("dma_FileSelectStringTiles", text_tiles)
+
+    
+def set_heart_beep_interval_from_settings(rom: RomData):
+    heart_beep_interval = get_settings()["tloz_ooa_options"]["heart_beep_interval"]
+    if heart_beep_interval == "half":
+        rom.write_byte(0x914B, 0x3f * 2)
+    elif heart_beep_interval == "quarter":
+        rom.write_byte(0x914B, 0x3f * 4)
+    elif heart_beep_interval == "disabled":
+        rom.write_bytes(0x914B, [0x00, 0xc9])  # Put a return to avoid beeping entirely
+
+def set_character_sprite_from_settings(rom: RomData):
+    sprite = get_settings()["tloz_ooa_options"]["character_sprite"]
+    sprite_dir = Path(Utils.local_path(os.path.join('data', 'sprites', 'oos_ooa')))
+    if sprite == "random":
+        sprite_filenames = [f for f in os.listdir(sprite_dir) if sprite_dir.joinpath(f).is_file() and f.endswith(".bin")]
+        sprite = sprite_filenames[random.randint(0, len(sprite_filenames) - 1)]
+    elif not sprite.endswith(".bin"):
+        sprite += ".bin"
+    if sprite != "link.bin":
+        sprite_path = sprite_dir.joinpath(sprite)
+        if not (sprite_path.exists() and sprite_path.is_file()):
+            raise ValueError(f"Path '{sprite_path}' doesn't exist")
+        sprite_bytes = list(Path(sprite_path).read_bytes())
+        rom.write_bytes(0x68000, sprite_bytes)
+
+    palette = get_settings()["tloz_ooa_options"]["character_palette"]
+    if palette == "random":
+        palette = random.choice(get_available_random_colors_from_sprite_name(sprite))
+
+    if palette == "green":
+        return  # Nothing to change
+    if palette not in PALETTE_BYTES:
+        raise ValueError(f"Palette color '{palette}' doesn't exist (must be 'green', 'blue', 'red' or 'orange')")
+    palette_byte = PALETTE_BYTES[palette]
+
+    # Link in-game
+    for addr in range(0x1420e, 0x14221, 2):
+        rom.write_byte(addr, 0x08 | palette_byte)
+    # Link palette restored after Medusa Head / Ganon stun attacks
+    rom.write_byte(0x15271, 0x08 | palette_byte)
+    # Link standing still in file select (fileSelectDrawLink:@sprites0)
+    rom.write_byte(0x8d86, palette_byte)
+    rom.write_byte(0x8d8a, palette_byte)
+    # Link animated in file select (@sprites1 & @sprites2)
+    rom.write_byte(0x8d8f, palette_byte)
+    rom.write_byte(0x8d93, palette_byte)
+    rom.write_byte(0x8d98, 0x20 | palette_byte)
+    rom.write_byte(0x8d9c, 0x20 | palette_byte)
+
+def apply_misc_option(rom: RomData, patch_data):
+    if patch_data["options"]["master_keys"] != OracleOfAgesMasterKeys.option_disabled:
+        # Remove small key consumption on keydoor opened
+        rom.write_byte(0x18366, 0x00)
+        # Change obtention text
+        rom.write_bytes(0x78247, [0x4d, 0x61, 0x73, 0x74, 0x65, 0x72, 0x20, 0x4b, 0x65, 0x79, 0x09, 0x01, 0x21, 0x00]) # I really wish that the dictionnay of ages would be more useful...
+    if patch_data["options"]["master_keys"] == OracleOfAgesMasterKeys.option_all_dungeon_keys:
+        # Remove boss key consumption on boss keydoor opened (boss door behave like normal locked door)
+        rom.write_word(0x1835e, 0x0000)

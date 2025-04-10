@@ -576,6 +576,7 @@ hook_copy_ability:
     PHX
     PHA
     LDA $746D, X
+    AND #$00FF ; ability items are 0x80XX, need to mask off the flag
     LDY #$0000
     SEC
     SBC #$0001
@@ -635,9 +636,9 @@ WriteBWRAM:
     LDY #$2001
     LDA #$EFFE
     MVN $40, $40
-    LDX #$D000 ; seed info 0x3D000
+    LDX #$FD00 ; seed info 0x3D000
     LDY #$9000 ; target location
-    LDA #$1000
+    LDA #$0300
     MVN $40, $07
     LDX #$FFC0 ; ROM name
     LDY #$8100 ; target
@@ -700,18 +701,19 @@ block_ability_essence:
     BRA .Loop2
     .CheckCopy:
     AND !received_copy_abilities, Y
-    BEQ .NoAbility
+    BEQ .PullNoAbility
     PLA
     PLX
     PLY
     BNE .Return
-    .NoAbility:
+    .PullNoAbility:
     PLA
     PLX
     PLY
+    .NoAbility:
     JML $CF7699
     .Return
-    CMP $749F, X
+    CMP $749F
     BEQ .NoAbility
     JML $CF76A4
 
@@ -829,7 +831,7 @@ block_tgco_access:
     LDA !great_cave_gold, X
     PLB
     CMP TreasureRequirements, Y
-    BMI .Block
+    BCC .Block
     BNE .SetWithPull ; branch if greater not equal
     DEX #2
     DEY #2
@@ -839,7 +841,7 @@ block_tgco_access:
     LDA !great_cave_gold, X
     PLB
     CMP TreasureRequirements, Y
-    BMI .Block ; if not minus at this point, has to be greater or equal
+    BCC .Block ; if not minus at this point, has to be greater or equal
     BRA .SetWithPull
     .Block:
     PLB
@@ -879,6 +881,7 @@ check_deluxe_ability:
 org $CF73B1
 hook_deluxe_ability:
     JSL set_treasure
+    NOP #3 ; this is the item count increase
 
 org $CF7694
 hook_ability_essence:

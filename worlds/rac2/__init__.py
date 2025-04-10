@@ -9,11 +9,11 @@ from BaseClasses import Item, Tutorial, ItemClassification
 
 from . import ItemPool
 from .data import Items, Locations, Planets
+from .data.Items import EquipmentData
 from .data.Planets import PlanetData
-from .data.Locations import LocationData
 from .Regions import create_regions
 from .Container import Rac2ProcedurePatch, generate_patch
-from .Rac2Options import Rac2Options, ShuffleWeaponVendors
+from .Rac2Options import Rac2Options
 
 
 def run_client(_url: Optional[str] = None):
@@ -40,8 +40,14 @@ class Rac2Settings(settings.Group):
         Alternatively, set it to a path to a program to open the .iso file with (like PCSX2)
         """
 
+    class GameINI(str):
+        """ Set to file path to an existing PCSX2 game setting INI file to have the patcher
+        create an appropriately named INI with the rest of the patch output. This can be used to
+        allow you to use you own custom PCSX2 setting with patched ISO. """
+
     iso_file: IsoFile = IsoFile(IsoFile.copy_to)
     iso_start: typing.Union[IsoStart, bool] = False
+    game_ini: GameINI = ""
 
 
 class Rac2Web(WebWorld):
@@ -72,12 +78,15 @@ class Rac2World(World):
     topology_present = True
     item_name_to_id = {item.name: item.item_id for item in Items.ALL}
     location_name_to_id = {location.name: location.location_id for location in Planets.ALL_LOCATIONS if location.location_id}
+    item_name_groups = Items.get_item_groups()
+    location_name_groups = Planets.get_location_groups()
     settings: Rac2Settings
     starting_planet: Optional[PlanetData] = None
+    starting_weapons: list[EquipmentData] = []
     prefilled_item_map: Dict[str, str] = {}  # Dict of location name to item name
 
     def get_filler_item_name(self) -> str:
-        return Items.PLATINUM_BOLT.name
+        return Items.BOLT_PACK.name
 
     def create_regions(self) -> None:
         create_regions(self)
@@ -85,7 +94,8 @@ class Rac2World(World):
     def create_item(self, name: str, override: Optional[ItemClassification] = None) -> "Item":
         if override:
             return Rac2Item(name, override, self.item_name_to_id[name], self.player)
-        return Rac2Item(name, ItemPool.get_classification(self, name), self.item_name_to_id[name], self.player)
+        item_data = Items.from_name(name)
+        return Rac2Item(name, ItemPool.get_classification(item_data), self.item_name_to_id[name], self.player)
 
     def create_event(self, name: str) -> "Item":
         return Rac2Item(name, ItemClassification.progression, None, self.player)
@@ -101,13 +111,15 @@ class Rac2World(World):
         items_to_add += ItemPool.create_planets(self)
         items_to_add += ItemPool.create_equipment(self)
         items_to_add += ItemPool.create_collectables(self)
+        items_to_add += ItemPool.create_upgrades(self)
 
         # add platinum bolts in whatever slots we have left
-        remain = (len(Planets.ALL_LOCATIONS) - 1) - len(items_to_add)
+        unfilled = [i for i in self.multiworld.get_unfilled_locations(self.player) if not i.is_event]
+        remain = len(unfilled) - len(items_to_add)
         assert remain >= 0, "There are more items than locations. This is not supported."
-        print(f"Not enough items to fill all locations. Adding {remain} Platinum Bolt(s) to the item pool")
+        print(f"Not enough items to fill all locations. Adding {remain} filler items to the item pool")
         for _ in range(remain):
-            items_to_add.append(self.create_item(Items.PLATINUM_BOLT.name, ItemClassification.filler))
+            items_to_add.append(self.create_item(Items.BOLT_PACK.name, ItemClassification.filler))
 
         self.multiworld.itempool += items_to_add
 
@@ -123,8 +135,16 @@ class Rac2World(World):
                                 f"{self.multiworld.get_out_file_name_base(self.player)}{aprac2.patch_file_ending}")
         aprac2.write(rom_path)
 
-    def fill_slot_data(self) -> Mapping[str, Any]:
+    def get_options_as_dict(self) -> Dict[str, Any]:
         return self.options.as_dict(
             "death_link",
-            "skip_wupash_nebula"
+            "skip_wupash_nebula",
+            "extra_spaceship_challenge_locations",
+            "starting_weapons",
+            "randomize_megacorp_vendor",
+            "randomize_gadgetron_vendor",
+            "extend_weapon_progression",
         )
+
+    def fill_slot_data(self) -> Mapping[str, Any]:
+        return self.get_options_as_dict()

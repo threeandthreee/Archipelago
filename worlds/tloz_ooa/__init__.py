@@ -5,7 +5,7 @@ import settings
 
 from BaseClasses import Tutorial, Region, Location, LocationProgressType
 from Fill import fill_restrictive, FillError
-from Options import Accessibility
+from Options import Accessibility, OptionError
 from worlds.AutoWorld import WebWorld, World
 from typing import Any, Set, List, Dict, Optional, Tuple, ClassVar, TextIO, Union
 from .Data import *
@@ -26,7 +26,51 @@ class OOASettings(settings.Group):
         copy_to = "Legend of Zelda, The - Oracle of Ages (USA).gbc"
         md5s = [ROM_HASH]
 
+    class OoACharacterSprite(str):
+        """
+        The name of the sprite file to use (from "data/sprites/oos_ooa/").
+        Putting "link" as a value uses the default game sprite.
+        Putting "random" as a value randomly picks a sprite from your sprites directory for each generated ROM.
+        """
+    class OoACharacterPalette(str):
+        """
+        The color palette used for character sprite throughout the game.
+        Valid values are: "green", "red", "blue", "orange", and "random"
+        """
+    class OoAHeartBeepInterval(str):
+        """
+        A factor applied to the infamous heart beep sound interval.
+        Valid values are: "vanilla", "half", "quarter", "disabled"
+        """
+    
+    class OoAQolMermaidSuit(str):
+        """
+        Defines if you don't want to spam the buttons to swim with the mermaid suit.
+        """
+        
+    class OoAQuickFlute(str):
+        """
+        When enabled, playing the flute and the harp will immobilize you during a very small amount of time compared to vanilla game.
+        """
+
+    class OoASkipTokkeyDance(str):
+        """
+        Defines if you want to skip the small dance that tokkay does
+        """
+
+    class OoASkipSadBoiJoke(str):
+        """
+        Defines if you want to skip the joke you tell to the sad boi
+        """
+
     rom_file: OOARomFile = OOARomFile(OOARomFile.copy_to)
+    heart_beep_interval: Union[OoAHeartBeepInterval, str] = "vanilla"
+    character_sprite: Union[OoACharacterSprite, str] = "link"
+    character_palette: Union[OoACharacterPalette, str] = "green"
+    qol_mermaid_suit: Union[OoAQolMermaidSuit, bool] = True
+    qol_quick_flute: Union[OoAQuickFlute, bool] = True
+    skip_tokkey_dance: Union[OoASkipTokkeyDance, bool] = False
+    skip_boi_joke: Union[OoASkipSadBoiJoke, bool] = False
 
 class OracleOfAgesWeb(WebWorld):
     theme = "grass"
@@ -76,7 +120,7 @@ class OracleOfAgesWorld(World):
         # TODO MOAR DATA ?
         options = ["goal", "death_link",
                    # Logic-impacting options
-                   "logic_difficulty", "warp_to_start",
+                   "logic_difficulty",
                    "shuffle_dungeons",
                    "default_seed",
                    # Locations
@@ -96,6 +140,10 @@ class OracleOfAgesWorld(World):
         return slot_data
 
     def generate_early(self):
+        conflicting_rings = self.options.required_rings.value & self.options.excluded_rings.value
+        if len(conflicting_rings) > 0:
+            raise OptionError("Required Rings and Excluded Rings contain the same element(s)", conflicting_rings)
+        
         self.restrict_non_local_items()
 
         if self.options.shuffle_dungeons == "shuffle":
@@ -187,7 +235,6 @@ class OracleOfAgesWorld(World):
         elif self.options.goal == OracleOfAgesGoal.option_beat_ganon:
             self.create_event("ganon beaten", "_beaten_game")
 
-        # TODO EVENTS
         self.create_event("ridge move vine seed", "_access_cart")
 
         self.create_event("d3 S crystal", "_d3_S_crystal")
@@ -223,21 +270,42 @@ class OracleOfAgesWorld(World):
         self.multiworld.completion_condition[self.player] = lambda state: state.has("_beaten_game", self.player)
 
     def create_item(self, name: str) -> Item:
+        if name.endswith("!PROG"):
+            # If item name has a "!PROG" suffix, force it to be progression. This is typically used to create the right
+            # amount of progression rupees while keeping them a filler item as default
+            name = name.removesuffix("!PROG")
+            classification = ItemClassification.progression_skip_balancing
+        elif name.endswith("!USEFUL"):
+            # Same for above but with useful. This is typically used for Required Rings,
+            # as we don't want those locked in a barren dungeon
+            name = name.removesuffix("!USEFUL")
+            classification = ITEMS_DATA[name]["classification"]
+            if classification == ItemClassification.filler:
+                classification = ItemClassification.useful
+        else:
+            classification = ITEMS_DATA[name]["classification"]
         ap_code = self.item_name_to_id[name]
-        classification = ITEMS_DATA[name]["classification"]
 
         # A few items become progression only in hard logic
-        progression_items_in_hard_logic = ["Expert's Ring", "Fist Ring", "Swimmer's Ring"]
-        if self.options.logic_difficulty == "hard" and name in progression_items_in_hard_logic:
+        progression_items_in_medium_logic = ["Expert's Ring", "Fist Ring", "Toss Ring", "Energy Ring"]
+        if self.options.logic_difficulty == "medium" and name in progression_items_in_medium_logic:
             classification = ItemClassification.progression
 
         return Item(name, classification, ap_code, self.player)
 
     def build_item_pool_dict(self):
         item_pool_dict = {}
+        filler_item_count = 0
+        remaining_rings = len({name for name, idata in ITEMS_DATA.items() if "ring" in idata}) - len(self.options.excluded_rings.value)
         for loc_name, loc_data in LOCATIONS_DATA.items():
+
+            if "vanilla_item" not in loc_data:
+                #print("Can't create item from location '",loc_name ,"' because it doesn't have one")
+                continue
+
+            item_name = loc_data['vanilla_item']
             if "randomized" in loc_data and loc_data["randomized"] is False:
-                item = self.create_item(loc_data['vanilla_item'])
+                item = self.create_item(item_name)
                 location = self.multiworld.get_location(loc_name, self.player)
                 location.place_locked_item(item)
                 #print("placing locked item '",loc_data['vanilla_item'] ,"' in '",loc_name ,"'")
@@ -245,26 +313,60 @@ class OracleOfAgesWorld(World):
             if not self.location_is_active(loc_name, loc_data):
                 #print("Can't create item '",loc_data['vanilla_item'] ,"' because '",loc_name ,"' is not active")
                 continue
-            if "vanilla_item" not in loc_data:
-                #print("Can't create item from location '",loc_name ,"' because it doesn't have one")
+
+
+            if self.options.master_keys != OracleOfAgesMasterKeys.option_disabled and "Small Key" in item_name:
+                # Small Keys don't exist if Master Keys are set to replace them
+                filler_item_count += 1
+                continue
+            if self.options.master_keys == OracleOfAgesMasterKeys.option_all_dungeon_keys and "Boss Key" in item_name:
+                # Boss keys don't exist if Master Keys are set to replace them
+                filler_item_count += 1
                 continue
 
             item_name = loc_data['vanilla_item']
             if "Ring" in item_name:
-                item_name = "Random Ring"
+                if remaining_rings > 0:
+                    item_name = "Random Ring"
+                    remaining_rings -= 1
+                else:
+                    filler_item_count += 1
+                    continue
 
             item_pool_dict[item_name] = item_pool_dict.get(item_name, 0) + 1
 
+        # If Master Keys are enabled, put one for every dungeon
+        if self.options.master_keys != OracleOfAgesMasterKeys.option_disabled:
+            for small_key_name in ITEM_GROUPS["Master Keys"]:
+                item_pool_dict[small_key_name] = 1
+                filler_item_count -= 1
+
+        # Add the required rings
+        ring_copy = sorted(self.options.required_rings.value.copy())
+        for _ in range(len(ring_copy)):
+            ring_name = f"{ring_copy.pop()}!USEFUL"
+            item_pool_dict[ring_name] = item_pool_dict.get(ring_name, 0) + 1
+
+            if item_pool_dict["Random Ring"] > 0:
+                # Take from set ring pool first
+                item_pool_dict["Random Ring"] -= 1
+            else:
+                # Take from filler after
+                filler_item_count -= 1
+
+        # Add as many filler items as required
+        for _ in range(filler_item_count):
+            random_filler_item = self.get_filler_item_name()
+            item_pool_dict[random_filler_item] = item_pool_dict.get(random_filler_item, 0) + 1
         
         # Perform adjustments on the item pool
         item_pool_adjustements = [
             ["Flute", self.options.animal_companion.current_key.title() + "'s Flute"],  # Put a specific flute
             ["Gasha Seed", "Seed Satchel"],             # Add a 3rd satchel that is usually obtained in linked games (99 seeds)
             ["Gasha Seed", "Bombs (10)"],               # Add one more bomb compared to vanilla to reach 99 max bombs
-            ["Gasha Seed", "Potion"],                   # Too many Gasha Seeds in vanilla pool, add potion which is used for the zora king
+            ["Gasha Seed", "Potion"],                   # Replace some Gasha Seed by 2 potions.
             ["Gasha Seed", "Potion"],                   # ^
-            ["Gasha Seed", "Potion"],                   # ^
-            ["Gasha Seed", "Potion"],                   # ^
+            ["Gasha Seed", "Rupees (200)"],              # and one by rupees
             ["Gasha Seed", "Progressive Sword"],        # Need an additionnal sword to go to L3
         ]
 
@@ -274,31 +376,15 @@ class OracleOfAgesWorld(World):
             item_pool_dict[original_name] -= 1
             item_pool_dict[replacement_name] = item_pool_dict.get(replacement_name, 0) + 1
 
-        # If Master Keys replace Small Keys, remove all Small Keys but one for every dungeon
-        removed_keys = 0
-        if self.options.master_keys != OracleOfAgesMasterKeys.option_disabled:
-            for small_key_name in ITEM_GROUPS["Small Keys"]:
-                removed_keys += item_pool_dict[small_key_name] - 1
-                del item_pool_dict[small_key_name]
-            for small_key_name in ITEM_GROUPS["Master Keys"]:
-                item_pool_dict[small_key_name] = 1
-        # If Master Keys replace Boss Keys, remove Boss Keys from item pool
-        if self.options.master_keys == OracleOfAgesMasterKeys.option_all_dungeon_keys:
-            for boss_key_name in ITEM_GROUPS["Boss Keys"]:
-                removed_keys += 1
-                del item_pool_dict[boss_key_name]
-        for i in range(removed_keys):
-            random_filler_item = self.get_filler_item_name()
-            item_pool_dict[random_filler_item] = item_pool_dict.get(random_filler_item, 0) + 1
-
         return item_pool_dict
 
     def create_items(self):
         item_pool_dict = self.build_item_pool_dict()
         
         # Create items following the dictionary that was previously constructed
-        self.create_rings(item_pool_dict["Random Ring"])
-        del item_pool_dict["Random Ring"]
+        if (item_pool_dict.get("Random Ring")):
+            self.create_rings(item_pool_dict["Random Ring"])
+            del item_pool_dict["Random Ring"]
 
         for item_name, quantity in item_pool_dict.items():
             for i in range(quantity):
@@ -314,16 +400,16 @@ class OracleOfAgesWorld(World):
                     self.multiworld.itempool.append(self.create_item(item_name))        
 
     def create_rings(self, amount):
-        # Get a subset of as many rings as needed, with a potential filter on quality depending on chosen options
-        ring_names = [name for name, idata in ITEMS_DATA.items() if "ring" in idata and idata["ring"] is True]
-        if self.options.ring_quality == "only_useful":
-            forbidden_classes = [ItemClassification.filler, ItemClassification.trap]
-            ring_names = [name for name in ring_names if ITEMS_DATA[name]["classification"] not in forbidden_classes]
+        # Get a subset of as many rings as needed
+        ring_names = [name for name, idata in ITEMS_DATA.items() if "ring" in idata]
+        # Remove excluded rings, and required rings because they'll be added later anyway
+        ring_names = [name for name in ring_names if name not in self.options.required_rings.value and name not in self.options.excluded_rings.value]
 
         self.random.shuffle(ring_names)
         del ring_names[amount:]
         for ring_name in ring_names:
             self.multiworld.itempool.append(self.create_item(ring_name))
+        self.random_rings_pool = ring_names
 
     def get_pre_fill_items(self):
         return self.pre_fill_items
@@ -331,6 +417,18 @@ class OracleOfAgesWorld(World):
     def pre_fill(self) -> None:
         self.pre_fill_seeds()
         self.pre_fill_dungeon_items()
+
+        #self.debug_pre_fill("Dimitri's Flute", "Impa Gift")
+
+    def debug_pre_fill(self, i, l):
+        collection_state = self.multiworld.get_all_state(False)
+        
+        locations = [loc for loc in self.multiworld.get_locations(self.player)
+                                 if l in loc.name]
+        item = [self.create_item(i)]
+        print(item)
+        print(locations)
+        fill_restrictive(self.multiworld, collection_state, locations, item, single_player_placement=True, lock=True, allow_excluded=True)
 
     def pre_fill_dungeon_items(self):
         # If keysanity is off, dungeon items can only be put inside local dungeon locations, and there are not so many
@@ -419,11 +517,15 @@ class OracleOfAgesWorld(World):
 
     def get_filler_item_name(self) -> str:
         FILLER_ITEM_NAMES = [
-            "Rupees (1)", "Rupees (5)", "Rupees (10)", "Rupees (20)", "Rupees (30)", "Rupees (50)",
-            "Gasha Seed", "Potion"
+            "Rupees (1)", "Rupees (5)", "Rupees (5)", "Rupees (10)", "Rupees (10)",
+            "Rupees (20)", "Rupees (30)",
+            "Gasha Seed", "Gasha Seed",
+            "Potion"
         ]
-        return self.random.choice(FILLER_ITEM_NAMES)
 
+        item_name = self.random.choice(FILLER_ITEM_NAMES)
+        return item_name
+    
     def generate_output(self, output_directory: str):
         patch = ooa_create_appp_patch(self)
         rom_path = os.path.join(output_directory, f"{self.multiworld.get_out_file_name_base(self.player)}"

@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from .data import FishData, EncounterMon, StaticPokemon
+from .data import FishData, EncounterMon, StaticPokemon, TreeMonData
 from .pokemon import get_random_pokemon
 
 if TYPE_CHECKING:
@@ -46,6 +46,11 @@ def randomize_wild_pokemon(world: "PokemonCrystalWorld"):
             new_common.append(encounter._replace(pokemon=get_random_pokemon(world)))
         for encounter in tree_data.rare:
             new_rare.append(encounter._replace(pokemon=get_random_pokemon(world)))
+
+        world.generated_wild.tree[tree_name] = TreeMonData(
+            new_common,
+            new_rare
+        )
 
 
 def randomize_static_pokemon(world: "PokemonCrystalWorld"):

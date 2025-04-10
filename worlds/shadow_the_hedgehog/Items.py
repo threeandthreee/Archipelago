@@ -8,19 +8,22 @@ from typing import List, Optional
 
 from BaseClasses import Item, ItemClassification
 from worlds.AutoWorld import World
-from . import Locations, Weapons, Vehicle, Utils as ShadowUtils, Options
+from . import Locations, Weapons, Vehicle, Utils as ShadowUtils, Options, Levels
 from .Levels import LEVEL_ID_TO_LEVEL, ALL_STAGES, MISSION_ALIGNMENT_DARK, \
     MISSION_ALIGNMENT_HERO, MISSION_ALIGNMENT_NEUTRAL, ITEM_TOKEN_TYPE_STANDARD, ITEM_TOKEN_TYPE_FINAL, \
-    ITEM_TOKEN_TYPE_OBJECTIVE, ITEM_TOKEN_TYPE_ALIGNMENT, BOSS_STAGES, BANNED_AVAILABLE_STAGES
+    ITEM_TOKEN_TYPE_OBJECTIVE, ITEM_TOKEN_TYPE_ALIGNMENT, BOSS_STAGES, LAST_STORY_STAGES, ITEM_TOKEN_TYPE_BOSS, \
+    ITEM_TOKEN_TYPE_FINAL_BOSS
 from .Locations import MissionClearLocations, GetAlignmentsForStage
 
 BASE_ID = 1743800000
 ITEM_ID_START_AT_WEAPONS = 2000
 ITEM_ID_START_AT_VEHICLES = 2500
+ITEM_ID_START_AT_RIFLE = 2600
 ITEM_ID_START_AT_JUNK = 3000
 ITEM_ID_START_AT_MISSION = 1000
 ITEM_ID_START_AT_IMPORTANT = 10
 ITEM_ID_START_AT_LEVEL = 100
+ITEM_ID_START_AT_WARP = 150
 ID_START_AT_OTHER = 0
 ITEM_ID_START_AT_TOKEN = 5000
 
@@ -52,17 +55,26 @@ class Progression:
     StandardMissionToken = "Mission Token"
     FinalToken = "Final Token"
     ObjectiveToken = "Objective Token"
+    BossToken = "Boss Token"
+    FinalBossToken = "Final Boss Token"
 
     #FinalHeroToken = "Final Hero Token"
     #FinalDarkToken = "Final Dark Token"
     #ObjectiveDarkToken = "Objective Dark Token"
     #ObjectiveHeroToken = "Objective Hero Token"
 
+class ShadowRifleComponents:
+    ShadowRifleBarrel = "Shadow Rifle Barrel"
+    ShadowRifleAction = "Shadow Rifle Action"
+    ShadowRifleStock = "Shadow Rifle Stock"
+    ShadowRifleReceiver = "Shadow Rifle Receiver"
+    ShadowRifleMagazine = "Shadow Rifle Magazine"
+
 TOKENS = [
     Progression.StandardHeroToken, Progression.StandardDarkToken, Progression.StandardMissionToken,
     #Progression.FinalHeroToken, Progression.ObjectiveDarkToken,
     #Progression.FinalDarkToken, Progression.ObjectiveHeroToken,
-    Progression.FinalToken, Progression.ObjectiveToken
+    Progression.FinalToken, Progression.ObjectiveToken, Progression.BossToken, Progression.FinalBossToken
 ]
 
     # TODO: Add boss token
@@ -111,7 +123,13 @@ def GetLevelTokenItems():
         alignment = MISSION_ALIGNMENT_NEUTRAL
 
         type = ITEM_TOKEN_TYPE_STANDARD
-        if "Final" in token:
+        if "Boss" in token:
+            type = ITEM_TOKEN_TYPE_BOSS
+
+        if "Final Boss" in token:
+            type = ITEM_TOKEN_TYPE_FINAL_BOSS
+
+        if "Final" in token and "Final Boss" not in token:
             type = ITEM_TOKEN_TYPE_FINAL
         if "Objective" in token:
             type = ITEM_TOKEN_TYPE_OBJECTIVE
@@ -130,19 +148,34 @@ def GetLevelTokenItems():
     return level_token_items
 
 
-
 def PopulateLevelUnlockItems():
     level_unlock_items = []
     count = ITEM_ID_START_AT_LEVEL
     for stageId in ALL_STAGES:
-        if stageId in BOSS_STAGES or stageId in BANNED_AVAILABLE_STAGES:
+        #if stageId in BOSS_STAGES or stageId in LAST_STORY_STAGES:
+        #    continue
+
+        if stageId == Levels.BOSS_DEVIL_DOOM:
             continue
+
         item = ItemInfo(count, GetStageUnlockItem(stageId), ItemClassification.progression, stageId=stageId,
                         alignmentId=None, type="level_unlock", value=None)
         count += 1
         level_unlock_items.append(item)
 
     return level_unlock_items
+
+# Upon entering a level, provide the player with a key
+def PopulateLevelWarpPoints():
+    level_warp_points = []
+    count = ITEM_ID_START_AT_WARP
+    for stageId in ALL_STAGES:
+        item = ItemInfo(count, GetStageWarpItem(stageId), ItemClassification.progression, stageId=stageId,
+                        alignmentId=None, type="level_warp", value=None)
+        count += 1
+        level_warp_points.append(item)
+
+    return level_warp_points
 
 
 def PopulateLevelObjectItems():
@@ -176,6 +209,8 @@ def GetStageAlignmentObject(stageId, alignmentId):
 def GetStageUnlockItem(stageId):
     return "Stage:"+LEVEL_ID_TO_LEVEL[stageId]
 
+def GetStageWarpItem(stageId):
+    return "Warp:"+LEVEL_ID_TO_LEVEL[stageId]
 
 
 class ShadowTheHedgehogItem(Item):
@@ -306,10 +341,24 @@ def GetWeapons():
     for weapon in Weapons.WEAPON_INFO:
         weapons.append(
             ItemInfo(id_s + len(weapons), weapon.name, ItemClassification.progression,
-            None, None, "Weapon", None)
+            None, None, "Weapon", weapon.game_id)
         )
 
     return weapons
+
+
+def GetWeaponGroups():
+    weapons_count = len(GetWeapons())
+    id_s = ITEM_ID_START_AT_WEAPONS + weapons_count
+    weapon_groups = []
+
+    for weapon_group in Weapons.WeaponGroups.keys():
+        weapon_groups.append(
+            ItemInfo(id_s + len(weapon_groups), weapon_group, ItemClassification.progression,
+                     None, None, "WeaponGroup", None)
+        )
+
+    return weapon_groups
 
 
 def GetVehicles():
@@ -322,6 +371,18 @@ def GetVehicles():
         )
 
     return vehicles
+
+
+def GetRifleComponents():
+    id_s = ITEM_ID_START_AT_RIFLE
+    rifle_components = []
+    for rifle_name in ShadowRifleComponents.__dict__.keys():
+        if "ShadowRifle" in rifle_name:
+            rifle_components.append(ItemInfo(id_s + len(rifle_components), ShadowRifleComponents.__dict__[rifle_name], ItemClassification.progression,
+                     None, None, "Rifle Component", None)
+        )
+
+    return rifle_components
 
 
 def GetJunkItemInfo():
@@ -345,6 +406,8 @@ def GetJunkItemInfo():
 
 def GetAllItemInfo():
     level_unlocks_item_table: List[ItemInfo] = PopulateLevelUnlockItems()
+    level_warp_item_table = PopulateLevelWarpPoints()
+
     stage_progression_item_table: List[ItemInfo] = PopulateLevelObjectItems()
 
     emerald_items = GetEmeraldItems()
@@ -354,24 +417,31 @@ def GetAllItemInfo():
     for unlock in level_unlocks_item_table:
         level_unlock_items.append(unlock)
 
+    level_warp_items = []
+    for warp in level_warp_item_table:
+        level_warp_items.append(warp)
+
     stage_objective_items = []
     for item in stage_progression_item_table:
-        reference_stage = item.stageId
-        reference_alignment = item.alignmentId
+        stage_objective_items.append(item)
 
-        lookup = [x for x in MissionClearLocations
-                  if x.stageId == reference_stage and x.alignmentId == reference_alignment][0]
+        #lookup = [x for x in MissionClearLocations
+         #         if x.stageId == reference_stage and x.alignmentId == reference_alignment][0]
 
-        for i in range(0, lookup.requirement_count):
-            stage_objective_items.append(item)
+        #for i in range(0, lookup.requirement_count):
+
 
     junk_items = GetJunkItemInfo()
     token_items = GetLevelTokenItems()
     weapon_items = GetWeapons()
+    weapon_group_items = GetWeaponGroups()
     vehicle_items = GetVehicles()
 
+    rifle_components = GetRifleComponents()
+
     return (emerald_items, key_items, level_unlock_items, stage_objective_items, junk_items,
-            token_items, weapon_items, vehicle_items)
+            token_items, weapon_items, vehicle_items, level_warp_items, rifle_components,
+            weapon_group_items)
 
 useful_to_count = {
     "Egg Vacuum": 2,
@@ -398,68 +468,82 @@ def ChooseJunkItems(random, junk, options, junk_count):
             junk_distribution[total+1] = c
             total += 2
 
-    for r,c in RingAmounts.items():
-        r_item = [j for j in junk if j.type == "rings" and j.value == r][0]
-        junk_distribution[total] = c
-        junk_items.append(r_item)
-        total += 1
+    if options.enable_ring_items:
+        for r,c in RingAmounts.items():
+            r_item = [j for j in junk if j.type == "rings" and j.value == r][0]
+            junk_distribution[total] = c
+            junk_items.append(r_item)
+            total += 1
+
+    NothingJunk = [ j for j in junk if j.type == "Junk"][0]
+    junk_items.append(NothingJunk)
+    junk_distribution[total] = 1
+    total += 1
 
     randomised_indicies = random.choices(list(junk_distribution.keys()), k=junk_count, weights=list(junk_distribution.values()))
     return [ junk_items[k] for k in randomised_indicies]
 
 def CountItems(world: World):
-    (emerald_items, key_items, level_unlock_items, stage_objective_items,
-     junk_items, token_items, weapon_items, vehicle_items) = GetAllItemInfo()
+    (emerald_items, key_items, level_unlock_items, stage_objective_items_x,
+     junk_items, token_items, weapon_items, vehicle_items, warp_items, rifle_components,
+     weapon_group_items) = GetAllItemInfo()
 
     if not world.options.objective_sanity:
-        stage_objective_items = []
+        stage_objective_items_x = []
 
-    stage_objective_items = [ s for s in stage_objective_items if s.stageId in world.available_levels ]
+    if not world.options.rifle_components:
+        rifle_components = []
+
+    stage_objective_items_full = [ s for s in stage_objective_items_x if s.stageId in world.available_levels ]
+    using_stage_objective_items = []
+
+    for item in stage_objective_items_full:
+
+        lookup = [x for x in MissionClearLocations
+                  if x.stageId == item.stageId and x.alignmentId == item.alignmentId][0]
+
+        max_available = ShadowUtils.getMaxRequired(
+        ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_OBJECTIVE_AVAILABLE, lookup.mission_object_name,
+                                                  world.options),
+            lookup.requirement_count, lookup.stageId, lookup.alignmentId, world.options.percent_overrides)
+
+        items =  [item] * max_available
+        using_stage_objective_items.extend(items)
 
     # Don't use level unlocks for stages you start with!
     use_level_unlock_items = [l for l in level_unlock_items if l.stageId in world.available_levels
                               and world.options.level_progression != Options.LevelProgression.option_story]
 
+    if len(use_level_unlock_items) > 0:
+        unlock_count = len(use_level_unlock_items) - world.options.starting_stages
+    else:
+        unlock_count = 0
+
     weapon_dict = Weapons.GetWeaponDict()
     special_weapon_extras = [w for w in weapon_items if
                              Weapons.WeaponAttributes.SPECIAL in weapon_dict[w.name].attributes and
-                             w.name != 'Shadow Rifle']
+                             w.name != 'Shadow Rifle' and w.name != "Weapon:Shadow Rifle"]
 
     weapon_items.extend(special_weapon_extras)
 
-    item_count = (len(use_level_unlock_items) + len(stage_objective_items) + 1)  # end item
+    item_count = increment_item_count(0, unlock_count + len(using_stage_objective_items))
     if world.options.goal_chaos_emeralds:
-        item_count += len(emerald_items)
+        item_count = increment_item_count(item_count, len(emerald_items))
 
+    HandleAllWeaponsGroups(world.options, weapon_items, weapon_group_items)
     if world.options.weapon_sanity_unlock:
-        item_count += len(weapon_items)
+        item_count = increment_item_count(item_count, len(weapon_items))
+        if len(rifle_components) > 0:
+            item_count = increment_item_count(item_count, len(rifle_components))
     else:
-        item_count += len(special_weapon_extras) * 2
+        item_count = increment_item_count(item_count, len(special_weapon_extras) * 2)
+        if len(rifle_components) > 0:
+            item_count = increment_item_count(item_count, len(rifle_components))
+        else:
+            item_count = increment_item_count(item_count, 1)
 
     if world.options.vehicle_logic:
-        item_count += len(vehicle_items)
-
-    item_duper = []
-    for item in stage_objective_items:
-        if item.name in item_duper:
-            continue
-        item_duper.append(item.name)
-
-        lookup = [x for x in MissionClearLocations
-                  if x.stageId == item.stageId and x.alignmentId == item.alignmentId][0]
-
-        max_required = ShadowUtils.getMaxRequired(
-            ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_OBJECTIVE_AVAILABLE,
-                                                      lookup.mission_object_name, world.options),
-            lookup.requirement_count, item.stageId, item.alignmentId,
-            world.options.percent_overrides)
-
-        extras = max_required - lookup.requirement_count
-        if extras > 0:
-            print("Add extras", item.name, extras)
-            for i in range(0, max_required - lookup.requirement_count):
-                i_item = copy.copy(item)
-                stage_objective_items.append(i_item)
+        item_count = increment_item_count(item_count, len(vehicle_items))
 
     return item_count
 
@@ -468,7 +552,8 @@ def GetPotentialDowngradeItems(world, mw_stage_items=None):
     to_remove = []
     if mw_stage_items is None:
         (emerald_items, key_items, level_unlock_items, stage_objective_items,
-         junk_items, token_items, weapon_items, vehicle_items) = GetAllItemInfo()
+         junk_items, token_items, weapon_items, vehicle_items, warp_items, rifle_components,
+         weapon_group_items) = GetAllItemInfo()
 
         # Handle available
 
@@ -507,10 +592,48 @@ def GetPotentialDowngradeItems(world, mw_stage_items=None):
 
     return potential_downgrade, to_remove
 
+def GetShadowRifle():
+    (emerald_items, key_items, level_unlock_items, stage_objective_items,
+     junk_items, token_items, weapon_items, vehicle_items, warp_items, rifle_components,
+     weapon_group_items) = GetAllItemInfo()
+
+    return [ w for w in weapon_items if w.name == 'Shadow Rifle' or w.name == 'Weapon:Shadow Rifle' ][0]
+
+def HandleAllWeaponsGroups(options, items, group_items):
+    if not options.weapon_sanity_unlock:
+        return
+
+    weapons_to_remove = []
+    for group in Weapons.WeaponGroups.keys():
+        if group in options.weapon_groups:
+            HandleWeaponGroup(items, group_items, group, weapons_to_remove)
+
+    for weapon in weapons_to_remove:
+        if weapon in items:
+            items.remove(weapon)
+
+def HandleWeaponGroup(items, group_items, weapon_group_name, weapons_to_remove):
+    melee_group = Weapons.WeaponGroups[weapon_group_name]
+    weapon_items_to_remove = [w for w in items if w.value in melee_group]
+
+    if len(weapon_items_to_remove) == 0:
+        # If no items in the group are available, don't add the group
+        return
+
+    weapons_to_remove.extend(weapon_items_to_remove)
+    group_item = [w for w in group_items if w.name == weapon_group_name]
+    items.extend(group_item)
+
+def increment_item_count(count, plus):
+    #print(f"Count={count} + {plus} = {count+plus}")
+    return count + plus
+
+
 def PopulateItemPool(world : World, first_regions):
     # TODO: Do not add item for stages you start with
     (emerald_items, key_items, level_unlock_items, stage_objective_items,
-     junk_items, token_items, weapon_items, vehicle_items) = GetAllItemInfo()
+     junk_items, token_items, weapon_items, vehicle_items, warp_items, rifle_components,
+     weapon_group_items) = GetAllItemInfo()
 
     if not world.options.objective_sanity:
         stage_objective_items = []
@@ -518,19 +641,22 @@ def PopulateItemPool(world : World, first_regions):
     # Don't use level unlocks for stages you start with!
     use_level_unlock_items = [ l for l in level_unlock_items if l.stageId not in first_regions and
                                l.stageId in world.available_levels
+                               #and (l.stageId not in Levels.FINAL_BOSSES
+                               and l.stageId not in Levels.LAST_STORY_STAGES
+                               and (l.stageId not in Levels.BOSS_STAGES or world.options.select_bosses)
                                and world.options.level_progression != Options.LevelProgression.option_story ]
+
 
     # Convert to multiworld items
     mw_em_items = [ ShadowTheHedgehogItem(e, world.player) for e in emerald_items]
     mw_level_unlock_items = [ ShadowTheHedgehogItem(l,world.player) for l in use_level_unlock_items ]
 
     override_settings = world.options.percent_overrides
+    mw_temp_stage_objective_items = []
 
-    item_duper = []
     for item in stage_objective_items:
-        if item.name in item_duper:
+        if item.stageId not in world.available_levels:
             continue
-        item_duper.append(item.name)
 
         lookup = [x for x in MissionClearLocations
                   if x.stageId == item.stageId and x.alignmentId == item.alignmentId][0]
@@ -541,15 +667,9 @@ def PopulateItemPool(world : World, first_regions):
             lookup.requirement_count, item.stageId, item.alignmentId,
             override_settings)
 
-        extras = max_required - lookup.requirement_count
-        if extras > 0:
-            print("Add extras", item.name, extras)
-            for i in range(0, max_required - lookup.requirement_count):
-                i_item = copy.copy(item)
-                stage_objective_items.append(i_item)
+        mw_temp_stage_objective_items.extend([item] * max_required)
 
-    mw_stage_items = [ShadowTheHedgehogItem(s, world.player) for s in stage_objective_items if
-                      s.stageId in world.available_levels]
+    mw_stage_items = [ShadowTheHedgehogItem(s, world.player) for s in mw_temp_stage_objective_items]
 
     potential_downgrade = []
     to_remove = []
@@ -573,24 +693,43 @@ def PopulateItemPool(world : World, first_regions):
     for remove in to_remove:
         mw_stage_items.remove(remove)
 
-
     weapon_dict = Weapons.GetWeaponDict()
     special_weapon_extras = [w for w in weapon_items if
                              Weapons.WeaponAttributes.SPECIAL in weapon_dict[w.name].attributes and
                              w.name != 'Shadow Rifle' and w.name != 'Weapon:Shadow Rifle']
 
+    weapon_items = [w for w in weapon_items if
+                       w.name != "Weapon:Shadow Rifle" and
+                       w.name != "Shadow Rifle"]
+
     weapon_items.extend(special_weapon_extras)
-    mw_weapon_items = [ ShadowTheHedgehogItem(w, world.player) for w in weapon_items ]
+
+    available_weapons = [ w for w in weapon_items if w.name in world.available_weapons ]
+
+
+
+    HandleAllWeaponsGroups(world.options, available_weapons, weapon_group_items)
+
+    mw_weapon_items = [ ShadowTheHedgehogItem(w, world.player) for w in available_weapons]
 
     mw_weapon_special_only = [ ShadowTheHedgehogItem(w, world.player) for w in special_weapon_extras ]
     mw_weapon_special_only_dupes = [ShadowTheHedgehogItem(w, world.player) for w in special_weapon_extras]
     mw_weapon_special_only.extend(mw_weapon_special_only_dupes)
 
+    shadow_rifle = GetShadowRifle()
+    if not world.options.rifle_components:
+        mw_weapon_special_only.append(ShadowTheHedgehogItem(shadow_rifle, world.player))
+        mw_weapon_items.append( ShadowTheHedgehogItem(shadow_rifle, world.player))
+    else:
+        mw_weapon_special_only.extend([ShadowTheHedgehogItem(w, world.player) for w in rifle_components])
+        mw_weapon_items.extend([ShadowTheHedgehogItem(w, world.player) for w in rifle_components])
+
     mw_vehicle_items = [ ShadowTheHedgehogItem(w, world.player) for w in vehicle_items ]
 
     if world.options.weapon_sanity_unlock and \
-        world.options.weapon_sanity_hold != world.options.weapon_sanity_hold.option_unlocked:
+        world.options.weapon_sanity_hold != Options.WeaponsanityHold.option_unlocked:
         for weapon in mw_weapon_items:
+
             matching_w = [ w for w in Weapons.WEAPON_INFO if w.name == weapon.name ]
             if len(matching_w) == 0:
                 continue
@@ -599,17 +738,17 @@ def PopulateItemPool(world : World, first_regions):
                 weapon.classification = ItemClassification.filler
                 #print(weapon.name, "is now filler")
 
-    item_count = (len(mw_level_unlock_items) + len(mw_stage_items) + 1) # end item
+    item_count = increment_item_count(0, (len(mw_level_unlock_items) + len(mw_stage_items)))
     if world.options.goal_chaos_emeralds:
-        item_count += len(mw_em_items)
+        item_count = increment_item_count(item_count, len(mw_em_items))
 
     if world.options.weapon_sanity_unlock:
-        item_count += len(mw_weapon_items)
+        item_count = increment_item_count(item_count, len(mw_weapon_items))
     else:
-        item_count += len(mw_weapon_special_only)
+        item_count = increment_item_count(item_count, len(mw_weapon_special_only))
 
     if world.options.vehicle_logic:
-        item_count += len(mw_vehicle_items)
+        item_count = increment_item_count(item_count, len(mw_vehicle_items))
 
     location_count = Locations.count_locations(world)
 
@@ -619,10 +758,8 @@ def PopulateItemPool(world : World, first_regions):
         if item.name in useful_to_count:
             mw_useful_items.extend([ ShadowTheHedgehogItem(item, world.player) for _ in range(0, useful_to_count[item.name])])
 
-    #junk_items = [ ShadowTheHedgehogItem(
 
     junk_count = location_count - item_count - len(mw_useful_items)
-    print("Create junk items:", junk_count)
     mw_junk_items = [ ShadowTheHedgehogItem(i, world.player) for i in ChooseJunkItems(world.random, junk_items, world.options, junk_count) ]
 
     if world.options.goal_chaos_emeralds:
@@ -633,8 +770,6 @@ def PopulateItemPool(world : World, first_regions):
     world.multiworld.itempool += mw_useful_items
     world.multiworld.itempool += mw_junk_items
 
-    # TODO: Make this work!
-    #if False:
     if world.options.weapon_sanity_unlock:
         world.multiworld.itempool += mw_weapon_items
     else:
@@ -645,14 +780,17 @@ def PopulateItemPool(world : World, first_regions):
 
 def get_item_groups():
     (emerald_items, key_items, level_unlock_items, stage_objective_items,
-     junk_items, token_items, weapon_items, vehicle_items) = GetAllItemInfo()
+     junk_items, token_items, weapon_items, vehicle_items, warp_items, rifle_components,
+     weapon_group_items) = GetAllItemInfo()
 
     item_groups: typing.Dict[str, list] = {
         "Chaos Emeralds": [ e.name for e in emerald_items],
-        "Stage Items": [e.name for e in level_unlock_items],
+        "Unlocks": [e.name for e in level_unlock_items],
         "Weapons": [e.name for e in weapon_items],
         "Vehicles": [e.name for e in vehicle_items],
-        "Vacuums": [w.name for w in weapon_items if "Vacuum" in w.name ]
+        "Vacuums": [w.name for w in weapon_items if "Vacuum" in w.name ],
+        "Rifles": [w.name for w in rifle_components],
+        "Junk": [w.name for w in junk_items]
     }
 
     return item_groups

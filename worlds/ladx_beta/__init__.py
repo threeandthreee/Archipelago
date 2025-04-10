@@ -22,7 +22,8 @@ from .LADXR.logic import Logic as LADXRLogic
 from .LADXR.settings import Settings as LADXRSettings
 from .LADXR.worldSetup import WorldSetup as LADXRWorldSetup
 from .Locations import (LinksAwakeningLocation, LinksAwakeningRegion,
-                        create_regions_from_ladxr, get_locations_to_id,
+                        create_regions_from_ladxr,
+                        links_awakening_location_name_to_id,
                         links_awakening_location_name_groups)
 from .Options import DungeonItemShuffle, ShuffleInstruments, LinksAwakeningOptions, ladx_option_groups
 from .Rom import LADXProcedurePatch, write_patch_data
@@ -61,21 +62,21 @@ class LinksAwakeningSettings(settings.Group):
     class DisplayMsgs(settings.Bool):
         """Display message inside of Bizhawk"""
 
+    class OptionOverrides(str):
+        """
+        Provided options will be used as overrides when patching.
+        Pass the options as you would in an options yaml.
+        Always available option overrides: gfxmod, link_palette, music, music_change_condition, palette
+        Non-race option overrides: ap_title_screen, boots_controls, nag_messages, text_shuffle, trendy_game, warps
+        Example:
+        option_overrides: { palette: { normal: 50, inverted: 50}, boots_controls: bracelet }
+        """
+
     class GfxModFile(settings.FilePath):
         """
         Gfxmod file, get it from upstream: https://github.com/daid/LADXR/tree/master/gfx
         Only .bin or .bdiff files
         The same directory will be checked for a matching text modification file
-        """
-
-    class OptionOverrides(dict):
-        """
-        Provided options will be used as overrides when patching.
-        Pass the options as you would in an options yaml.
-        Always available option overrides: gfxmod, link_palette, music, music_change_condition, palette, low_hp_beep, no_flash
-        Non-race option overrides: ap_title_screen, boots_controls, nag_messages, text_shuffle, trendy_game, warps, quickswap, text_mode
-        Example:
-        option_overrides: { palette: { normal: 50, inverted: 50}, boots_controls: bracelet }
         """
 
     rom_file: RomFile = RomFile(RomFile.copy_to)
@@ -131,7 +132,7 @@ class LinksAwakeningWorld(World):
 
     item_name_to_data = links_awakening_items_by_name
 
-    location_name_to_id = get_locations_to_id()
+    location_name_to_id = links_awakening_location_name_to_id
 
     # Items can be grouped using their names to allow easy checking if any item
     # from that group has been collected. Group names can also be used for !hint
@@ -232,8 +233,6 @@ class LinksAwakeningWorld(World):
     def create_items(self) -> None:
         itempool = []
 
-        exclude = [item.name for item in self.multiworld.precollected_items[self.player]]
-
         self.prefill_original_dungeon = [ [], [], [], [], [], [], [], [], [] ]
         self.prefill_own_dungeons = []
         self.pre_fill_items = []
@@ -250,50 +249,46 @@ class LinksAwakeningWorld(World):
                 continue
             item_name = ladxr_item_to_la_item_name[ladx_item_name]
             for _ in range(count):
-                if item_name in exclude:
-                    exclude.remove(item_name)  # this is destructive. create unique list above
-                    self.multiworld.itempool.append(self.create_item(self.get_filler_item_name()))
-                else:
-                    item = self.create_item(item_name)
+                item = self.create_item(item_name)
 
-                    if not self.options.tradequest and isinstance(item.item_data, TradeItemData):
-                        location = self.multiworld.get_location(item.item_data.vanilla_location, self.player)
-                        location.place_locked_item(item)
-                        location.show_in_spoiler = False
-                        continue
+                if not self.options.tradequest and isinstance(item.item_data, TradeItemData):
+                    location = self.multiworld.get_location(item.item_data.vanilla_location, self.player)
+                    location.place_locked_item(item)
+                    location.show_in_spoiler = False
+                    continue
 
-                    if isinstance(item.item_data, DungeonItemData):
-                        item_type = item.item_data.ladxr_id[:-1]
-                        shuffle_type = self.dungeon_item_types[item_type]
+                if isinstance(item.item_data, DungeonItemData):
+                    item_type = item.item_data.ladxr_id[:-1]
+                    shuffle_type = self.dungeon_item_types[item_type]
 
-                        if item.item_data.dungeon_item_type == DungeonItemType.INSTRUMENT and shuffle_type == ShuffleInstruments.option_vanilla:
-                            # Find instrument, lock
-                            # TODO: we should be able to pinpoint the region we want, save a lookup table please
-                            found = False
-                            for r in self.multiworld.get_regions(self.player):
-                                if r.dungeon_index != item.item_data.dungeon_index:
+                    if item.item_data.dungeon_item_type == DungeonItemType.INSTRUMENT and shuffle_type == ShuffleInstruments.option_vanilla:
+                        # Find instrument, lock
+                        # TODO: we should be able to pinpoint the region we want, save a lookup table please
+                        found = False
+                        for r in self.multiworld.get_regions(self.player):
+                            if r.dungeon_index != item.item_data.dungeon_index:
+                                continue
+                            for loc in r.locations:
+                                if not isinstance(loc, LinksAwakeningLocation):
                                     continue
-                                for loc in r.locations:
-                                    if not isinstance(loc, LinksAwakeningLocation):
-                                        continue
-                                    if not isinstance(loc.ladxr_item, Instrument):
-                                        continue
-                                    loc.place_locked_item(item)
-                                    found = True
-                                    break
-                                if found:
-                                    break
-                        else:
-                            if shuffle_type == DungeonItemShuffle.option_original_dungeon:
-                                self.prefill_original_dungeon[item.item_data.dungeon_index - 1].append(item)
-                                self.pre_fill_items.append(item)
-                            elif shuffle_type == DungeonItemShuffle.option_own_dungeons:
-                                self.prefill_own_dungeons.append(item)
-                                self.pre_fill_items.append(item)
-                            else:
-                                itempool.append(item)
+                                if not isinstance(loc.ladxr_item, Instrument):
+                                    continue
+                                loc.place_locked_item(item)
+                                found = True
+                                break
+                            if found:
+                                break
                     else:
-                        itempool.append(item)
+                        if shuffle_type == DungeonItemShuffle.option_original_dungeon:
+                            self.prefill_original_dungeon[item.item_data.dungeon_index - 1].append(item)
+                            self.pre_fill_items.append(item)
+                        elif shuffle_type == DungeonItemShuffle.option_own_dungeons:
+                            self.prefill_own_dungeons.append(item)
+                            self.pre_fill_items.append(item)
+                        else:
+                            itempool.append(item)
+                else:
+                    itempool.append(item)
 
         self.multi_key = self.generate_multi_key()
 
@@ -336,7 +331,6 @@ class LinksAwakeningWorld(World):
                 collection_state.collect(item)
                 return len(collection_state.reachable_regions[self.player]) > reachable_count
 
-            start_loc = self.get_location("Tarin's Gift (Mabe Village)")
             start_items = [item for item in itempool if is_possible_start_item(item)]
             self.random.shuffle(start_items)
 
@@ -344,6 +338,14 @@ class LinksAwakeningWorld(World):
                 start_item = next((item for item in start_items if item.name in links_awakening_item_name_groups["Bush Breakers"]), None)
 
             else:  # local_progression
+                entrance_mapping = self.ladxr_logic.world_setup.entrance_mapping
+                # Tail key opens a region but not a location if d1 entrance is not mapped to d1 or d4
+                # exclude it in these cases to avoid fill errors
+                if entrance_mapping['d1'] not in ['d1', 'd4']:
+                    start_items = [item for item in start_items if item.name != 'Tail Key']
+                # Exclude shovel unless starting in Mabe Village
+                if entrance_mapping['start_house'] not in ['start_house', 'shop']:
+                    start_items = [item for item in start_items if item.name != 'Shovel']
                 base_collection_state = CollectionState(self.multiworld)
                 base_collection_state.update_reachable_regions(self.player)
                 reachable_count = len(base_collection_state.reachable_regions[self.player])
@@ -365,8 +367,6 @@ class LinksAwakeningWorld(World):
 
         # Set up filter rules
 
-        # The list of items we will pass to fill_restrictive, contains at first the items that go to all dungeons
-        all_dungeon_items_to_fill = list(self.prefill_own_dungeons)
         # set containing the list of all possible dungeon locations for the player
         all_dungeon_locs = set()
 
@@ -376,9 +376,6 @@ class LinksAwakeningWorld(World):
             locs = set(loc for loc in self.dungeon_locations_by_dungeon[dungeon_index] if not loc.item)
             for item in self.prefill_original_dungeon[dungeon_index]:
                 allowed_locations_by_item[item] = locs
-
-            # put the items for this dungeon in the list to fill
-            all_dungeon_items_to_fill.extend(self.prefill_original_dungeon[dungeon_index])
 
             # ...and gather the list of all dungeon locations
             all_dungeon_locs |= locs
@@ -419,22 +416,21 @@ class LinksAwakeningWorld(World):
             if allowed_locations_by_item[item] is all_dungeon_locs:
                 i += 3
             return i
+        all_dungeon_items_to_fill = self.get_pre_fill_items()
         all_dungeon_items_to_fill.sort(key=priority)
 
         # Set up state
         partial_all_state = CollectionState(self.multiworld)
-        # Collect every item from the item pool and every pre-fill item like MultiWorld.get_all_state, but don't sweep.
+        # Collect every item from the item pool and every pre-fill item like MultiWorld.get_all_state, except not our own pre-fill items.
         for item in self.multiworld.itempool:
             partial_all_state.collect(item, prevent_sweep=True)
         for player in self.multiworld.player_ids:
+            if player == self.player:
+                # Don't collect the items we're about to place.
+                continue
             subworld = self.multiworld.worlds[player]
             for item in subworld.get_pre_fill_items():
                 partial_all_state.collect(item, prevent_sweep=True)
-        # get_all_state would normally sweep here, but we need to remove our dungeon items first.
-
-        # Remove dungeon items we are about to put in from the state so that we don't double count
-        for item in all_dungeon_items_to_fill:
-            partial_all_state.remove(item)
 
         # Sweep to pick up already placed items that are reachable with everything but the dungeon items.
         partial_all_state.sweep_for_advancements()

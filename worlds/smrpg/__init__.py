@@ -25,7 +25,7 @@ class SMRPGSettings(settings.Group):
     class RomFile(settings.SNESRomPath):
         """File name of the SMRPG US rom"""
         description = "Super Mario RPG (USA) ROM File"
-        copy_to = "Super Mario RPG - Legend of the Seven Stars (USA).sfc "
+        copy_to = "Super Mario RPG - Legend of the Seven Stars (USA).sfc"
         md5s = [SMRPGDeltaPatch.hash]
 
     rom_file: RomFile = RomFile(RomFile.copy_to)
@@ -56,6 +56,7 @@ class SMRPGWorld(World):
     data_version = 1
     base_id = 850000
     web = SMRPGWeb()
+
     item_name_to_id = {name: data.code for name, data in item_table.items()}
     location_name_to_id = {name: location.id for name, location in location_table.items()}
 

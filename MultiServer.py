@@ -848,6 +848,9 @@ class Ashipelago:
     webhook_thread: WebhookThread
     use_room_hints = False
     room_hints_used = 0
+    max_size: int = 16 * 1024 * 1024
+    server = None
+    server_task: typing.Optional["asyncio.Task[None]"] = None
 
     def __init__(self, ctx: Context):
         self.ctx = ctx
@@ -868,9 +871,14 @@ class Ashipelago:
                 self.webhook_active = True
                 self.webhook_thread = self.WebhookThread(self.ctx, self.webhook_url, self.webhook_is_debug)
                 self.webhook_thread.start()
+                # Start of websocket connection to replace webhook
+                # server_task = asyncio.create_task(self._dynxbot_socket(), name="Dynx Loop")
 
             self._push_player_list(room.is_new, is_tracked)
             if room.is_new:
+                #Get generation data
+                #Build shared point pool map
+                #Update multisave with point pool for future use
                 self._push_game_item_information()
                 room.is_new = webhook_settings["WEBHOOK_DEBUG"]
 
@@ -1096,6 +1104,7 @@ class Ashipelago:
             }
             self._push_to_webhook(information)
 
+    # Helper function used to calculate the amount of room points currently available
     def get_room_points(self, team) -> int:
         result = 0
         locations = 0
@@ -1106,6 +1115,7 @@ class Ashipelago:
         hint_cost = max(1, int(self.ctx.hint_cost * 0.01 * locations / len(self.ctx.clients[team])))
         return result - hint_cost * self.room_hints_used
 
+    # Helper function used to calculate the cost of a hint using a room point value
     def get_room_hint_cost(self, team) -> int:
         if self.ctx.hint_cost:
             locations = 0
@@ -1114,7 +1124,41 @@ class Ashipelago:
             return max(1, int(self.ctx.hint_cost * 0.01 * locations / len(self.ctx.clients[team])))
 
         return 0
-    
+
+    async def _dynxbot_socket(self):
+        try:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            port = 9922
+            address = "127.0.0.1"
+            socket = await websockets.connect(f"ws://{address}:{port}/discord", ping_timeout=None, ping_interval=None,
+                                        ssl=None,
+                                        max_size=self.max_size)
+            self.server = Endpoint(socket)
+            self.ctx.logger.info('Connected to DynxBot')
+            async for data in self.server.socket:
+                await self.process_dynxbot_message(decode(data))
+            self.ctx.logger.warning(f"Disconnected from DynxBot server")
+        except ConnectionRefusedError:
+            self.ctx.logger.warning("Connection refused by the server. "
+                                    "May not be running Archipelago on that address or port.")
+        except websockets.InvalidURI:
+            self.ctx.logger.warning("Failed to connect to the multiworld server (invalid URI)")
+        except OSError:
+            self.ctx.logger.warning("Failed to connect to the multiworld server")
+        except Exception as e:
+            self.ctx.logger.warning(f"Lost connection to the multiworld server: {e}")
+        finally:
+            self.ctx.logger.warning(f"Closing connection with DynxBot")
+            await self.connection_closed()
+
+    async def process_dynxbot_message(self, msg):
+        self.ctx.logger.info(f"Got a message from DynxBot {msg['data']}")
+
+    async def connection_closed(self):
+        if self.server and self.server.socket is not None:
+            await self.server.socket.close()
+
     # Webhook class used to multithread the webhook messages so that the main thread is not stalled
     class WebhookThread(threading.Thread):
         ctx: Context
@@ -1146,7 +1190,6 @@ class Ashipelago:
                         except Exception as e:
                             self.ctx.dynx.webhook_queue.put(message)
                             return
-
 
 def update_aliases(ctx: Context, team: int):
     cmd = ctx.dumper([{"cmd": "RoomUpdate",
@@ -1397,8 +1440,6 @@ def get_remaining(ctx: Context, team: int, slot: int) -> typing.List[typing.Tupl
 
 # Ashipelago customization
 def send_items_to(ctx: Context, team: int, target_slot: int, push_webhook: bool, released: bool, *items: NetworkItem):
-    print("send_items_to", team, target_slot)
-    print(ctx.slot_info)
     for target in ctx.slot_set(target_slot):
         for item in items:
             if item.player != target_slot:

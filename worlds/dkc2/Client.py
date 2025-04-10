@@ -1,10 +1,10 @@
 import logging
-import asyncio
 import time
 import random
 
-from NetUtils import ClientStatus, color
+from NetUtils import ClientStatus, NetworkItem, color
 from worlds.AutoSNIClient import SNIClient
+from .Items import trap_value_to_name, trap_name_to_value
 
 logger = logging.getLogger("Client")
 snes_logger = logging.getLogger("SNES")
@@ -33,6 +33,10 @@ DKC2_RECV_INDEX = DKC2_SRAM + 0x020
 DKC2_INIT_FLAG = DKC2_SRAM + 0x022
 DKC2_DAMAGE_FLAG = DKC2_SRAM + 0x044
 DKC2_INSTA_DEATH_FLAG = DKC2_SRAM + 0x046
+DKC2_DEATH_LINK_FORCE = DKC2_SRAM + 0x05A
+DKC2_DEATH_LINK_FLAG = DKC2_SRAM + 0x058
+
+DKC2_TRACKED_LEVELS = DKC2_SRAM + 0x80
 
 DKC2_GAME_TIME = WRAM_START + 0x00D5
 DKC2_IN_LEVEL = WRAM_START + 0x01FF
@@ -68,30 +72,16 @@ UNCOLLECTABLE_LEVELS = [0x09, 0x21, 0x63, 0x60, 0x0D]
 class DKC2SNIClient(SNIClient):
     game = "Donkey Kong Country 2"
     patch_suffix = ".apdkc2"
+    slot_data: dict
 
     def __init__(self):
         super().__init__()
         self.game_state = False
         self.using_newer_client = False
         self.energy_link_enabled = False
+        self.received_trap_link = False
         self.barrel_request = ""
         self.current_map = 0
-
-    async def deathlink_kill_player(self, ctx):
-        from SNIClient import DeathState, snes_buffered_write, snes_flush_writes, snes_read
-
-        traps = await snes_read(ctx, DKC2_SRAM + 0x46, 0x02)
-        if traps is None:
-            return
-        
-        traps = int.from_bytes(traps, "little") + 1
-        traps &= 0x00FF
-        snes_buffered_write(ctx, DKC2_SRAM + + 0x46, bytes([traps]))
-
-        await snes_flush_writes(ctx)
-
-        ctx.death_state = DeathState.dead
-        ctx.last_death_link = time.time()
 
 
     async def validate_rom(self, ctx):
@@ -104,22 +94,34 @@ class DKC2SNIClient(SNIClient):
             if "barrel" in ctx.command_processor.commands:
                 ctx.command_processor.commands.pop("barrel")
             return False
-        
+
         ctx.game = self.game
         ctx.items_handling = 0b111
         ctx.receive_option = 0
         ctx.send_option = 0
         ctx.allow_collect = True
 
+        update_tags = False
+
         energy_link = setting_data[0x19]
-        if energy_link:
+        if energy_link and "EnergyLink" not in ctx.tags:
+            ctx.tags.add("EnergyLink")
+            update_tags = True
             if "barrel" not in ctx.command_processor.commands:
                 ctx.command_processor.commands["barrel"] = cmd_barrel
+
+        trap_link = setting_data[0x1A]
+        if trap_link and "TrapLink" not in ctx.tags:
+            ctx.tags.add("TrapLink")
+            update_tags = True
 
         death_link = setting_data[0x18]
         if death_link:
             await ctx.update_death_link(bool(death_link & 0b1))
-
+        
+        if update_tags:
+            await ctx.send_msgs([{"cmd": "ConnectUpdate", "tags": ctx.tags}])
+        
         ctx.rom = rom_name
 
         return True
@@ -169,24 +171,19 @@ class DKC2SNIClient(SNIClient):
             return
         
         if "DeathLink" in ctx.tags and ctx.last_death_link + 1 < time.time():
-            currently_dead = player_state[0] & 0x20
-            await ctx.handle_deathlink_state(currently_dead)
+            death_link_flag = await snes_read(ctx, DKC2_DEATH_LINK_FLAG, 0x01)
+            if death_link_flag is not None:
+                is_death_link_active = death_link_flag[0]
+                is_player_dead = player_state[0] & 0x20
+                is_map = nmi_pointer == 0x8CE9 or nmi_pointer == 0x8CF1
+                currently_dead = is_player_dead and not is_death_link_active and not is_map
+                await ctx.handle_deathlink_state(currently_dead)
 
-        # This is going to be rewritten whenever SNIClient supports on_package
-        energy_link = setting_data[0x19]
-        if self.using_newer_client:
-            if energy_link != 0:
-                await self.handle_energy_link(ctx)
-        else:
-            if energy_link != 0:
-                if self.energy_link_enabled and f'EnergyLink{ctx.team}' in ctx.stored_data:
-                    await self.handle_energy_link(ctx)
+        if "EnergyLink" in ctx.tags:
+            await self.handle_energy_link(ctx)
 
-                if ctx.server and ctx.server.socket.open and not self.energy_link_enabled and ctx.team is not None:
-                    self.energy_link_enabled = True
-                    ctx.set_notify(f"EnergyLink{ctx.team}")
-                    ctx.barrel_request = ""
-                    snes_logger.info(f"Initialized EnergyLink{ctx.team}")
+        if "TrapLink" in ctx.tags:
+            await self.handle_trap_link(ctx)
 
         current_level = await snes_read(ctx, DKC2_CURRENT_LEVEL, 0x01)
         loaded_level = await snes_read(ctx, DKC2_LOADED_LEVEL, 0x01)
@@ -204,12 +201,12 @@ class DKC2SNIClient(SNIClient):
         loaded_level = int.from_bytes(loaded_level, "little")
         brightness = int.from_bytes(brightness, "little")
 
-        dk_coins_as_checks = setting_data[0x1A]
-        kong_as_checks = setting_data[0x1B]
-        balloons_as_checks = setting_data[0x1C]
-        coins_as_checks = setting_data[0x1D]
-        bunches_as_checks = setting_data[0x1E]
-        swanky_as_checks = setting_data[0x1F]
+        dk_coins_as_checks = setting_data[0x20]
+        kong_as_checks = setting_data[0x21]
+        balloons_as_checks = setting_data[0x22]
+        coins_as_checks = setting_data[0x23]
+        bunches_as_checks = setting_data[0x24]
+        swanky_as_checks = setting_data[0x25]
 
         kong_flags = misc_flags[0x30]
         stage_flags = game_flags[0x40:0x60]
@@ -294,18 +291,46 @@ class DKC2SNIClient(SNIClient):
                 return
 
         # Send current map to poptracker
+        reached_levels = await snes_read(ctx, DKC2_TRACKED_LEVELS, 0x20)
+        if reached_levels is None:
+            return
+
         if nmi_pointer == 0x8CE9 or nmi_pointer == 0x8CF1:
-            current_map = int.from_bytes(current_map, "little")
-            if self.current_map != current_map:
-                self.current_map = current_map
+            poptracker_id = 0x100 | int.from_bytes(current_map, "little")
+        else:
+            poptracker_id = loaded_level & 0xFF
+
+        if self.current_map != poptracker_id:
+            self.current_map = poptracker_id
+
+            # Save reached levels
+            if poptracker_id < 0x100:
+                reached_levels = bytearray(reached_levels)
+                level_bit = 1 << (poptracker_id & 0x0F)
+                level_offset = (poptracker_id >> 3) & 0x1E
+                level_data = int.from_bytes(reached_levels[level_offset:level_offset+2], "little")
+                level_data |= level_bit
+                reached_levels[level_offset:level_offset+2] = level_data.to_bytes(2, "little")
+                snes_buffered_write(ctx, DKC2_TRACKED_LEVELS, bytearray(reached_levels))
+                await snes_flush_writes(ctx)
+
                 await ctx.send_msgs([{
                     "cmd": "Set", 
-                    "key": f"dkc2_current_map_{ctx.team}_{ctx.slot}", 
+                    "key": f"dkc2_reached_levels_{ctx.team}_{ctx.slot}", 
                     "default": 0,
                     "want_reply": False,
                     "operations":
-                        [{"operation": "replace", "value": self.current_map}],
+                        [{"operation": "replace", "value": list(reached_levels)}],
                 }])
+
+            await ctx.send_msgs([{
+                "cmd": "Set", 
+                "key": f"dkc2_current_map_{ctx.team}_{ctx.slot}", 
+                "default": 0,
+                "want_reply": False,
+                "operations":
+                    [{"operation": "replace", "value": self.current_map}],
+            }])
 
         # Receive items
         rom = await snes_read(ctx, DKC2_ROMHASH_START, ROMHASH_SIZE)
@@ -369,15 +394,12 @@ class DKC2SNIClient(SNIClient):
                 else:
                     addr = WRAM_START + offset
                 sfx = currency_data[item.item][1]
-                currency = await snes_read(ctx, addr, 0x02)
+                currency = await snes_read(ctx, addr, 0x01)
                 if currency is None:
                     recv_index -= 1
                     return
-                currency = int.from_bytes(currency, "little")
-                currency &= 0x00FF
-                if currency < 99:
-                    currency += 1
-                    snes_buffered_write(ctx, addr, currency.to_bytes(1, "little"))
+                currency = min(int.from_bytes(currency, "little") + 1, 99)
+                snes_buffered_write(ctx, addr, currency.to_bytes(1, "little"))
 
             # Give traps 
             elif item.item in trap_data:
@@ -387,8 +409,10 @@ class DKC2SNIClient(SNIClient):
                 if traps is None:
                     recv_index -= 1
                     return
-                traps = (int.from_bytes(traps, "little") + 1) & 0xFFF
+                traps = min(int.from_bytes(traps, "little") + 1, 150)
                 snes_buffered_write(ctx, DKC2_SRAM + offset, bytes([traps]))
+                if "TrapLink" in ctx.tags and item.item in trap_value_to_name:
+                    await self.send_trap_link(ctx, trap_value_to_name[item.item])
 
             if sfx:
                 snes_buffered_write(ctx, DKC2_SOUND_BUFFER, bytearray([sfx, 0x05]))
@@ -518,9 +542,9 @@ class DKC2SNIClient(SNIClient):
             elif self.barrel_request == "successful":
                 barrels += 1
                 barrels &= 0x00FF
-                snes_buffered_write(ctx, DKC2_SRAM + + 0x48, bytes([barrels]))
+                snes_buffered_write(ctx, DKC2_SRAM + 0x48, bytes([barrels]))
                 self.barrel_request = ""
-                logger.info(f"Delivered DK Barrel! You have {barrels}/{DK_BARREL_MAX} barrels pending to be actually delivered in game.")
+                logger.info(f"Delivered DK Barrel! You have {barrels} barrels pending to be actually delivered in game.")
             
             elif self.barrel_request == "not_enough_funds":
                 await ctx.send_msgs([{
@@ -538,31 +562,77 @@ class DKC2SNIClient(SNIClient):
         await snes_flush_writes(ctx)
 
 
+    async def handle_trap_link(self, ctx):
+        from SNIClient import snes_buffered_write, snes_flush_writes, snes_read
+        from .Rom import trap_data
+        
+        setting_data = await snes_read(ctx, DKC2_SETTINGS, 0x40)
+        if setting_data is None:
+            return
+
+        if self.received_trap_link:
+            trap = self.received_trap_link
+
+            offset = trap_data[trap.item][0]
+            traps = await snes_read(ctx, DKC2_SRAM + offset, 0x02)
+            if traps is None:
+                return
+            traps = (int.from_bytes(traps, "little") + 1) & 0xFFF
+            snes_buffered_write(ctx, DKC2_SRAM + offset, bytes([traps]))
+            self.received_trap_link = None
+            
+            await snes_flush_writes(ctx)
+
+
     async def deathlink_kill_player(self, ctx):
         from SNIClient import DeathState, snes_buffered_write, snes_flush_writes, snes_read
 
-        addr = DKC2_INSTA_DEATH_FLAG
-        currency = await snes_read(ctx, addr, 0x02)
-        if currency is None:
+        # Discard killing from death link
+        death_link_flag = await snes_read(ctx, DKC2_DEATH_LINK_FLAG, 0x01)
+        if death_link_flag is None:
             return
-        currency = int.from_bytes(currency, "little") + 1
-        currency &= 0x0FFF
-        snes_buffered_write(ctx, addr, bytes([currency]))
-
+        if death_link_flag[0]:
+            return
+        
+        # Discard killing from the map
+        nmi_pointer = await snes_read(ctx, WRAM_START + 0x0020, 0x2)
+        if nmi_pointer is None:
+            return
+        nmi_pointer = int.from_bytes(nmi_pointer, "little")
+        if nmi_pointer == 0x8CE9 or nmi_pointer == 0x8CF1:
+            return
+            
+        snes_buffered_write(ctx, DKC2_DEATH_LINK_FORCE, bytes([0x01]))
+        snes_buffered_write(ctx, DKC2_DEATH_LINK_FLAG, bytes([0x01]))
         await snes_flush_writes(ctx)
 
         ctx.death_state = DeathState.dead
         ctx.last_death_link = time.time()
 
 
+    async def send_trap_link(self, ctx: SNIClient, trap_name: str):
+        if "TrapLink" not in ctx.tags or ctx.slot == None:
+            return
+
+        await ctx.send_msgs([{
+            "cmd": "Bounce", "tags": ["TrapLink"],
+            "data": {
+                "time": time.time(),
+                "source": ctx.player_names[ctx.slot],
+                "trap_name": trap_name
+            }
+        }])
+        snes_logger.info(f"Sent linked {trap_name}")
+
+
     def on_package(self, ctx, cmd: str, args: dict):
         super().on_package(ctx, cmd, args)
 
         if cmd == "Connected":
-            slot_data = args.get("slot_data", None)
+            self.slot_data = args.get("slot_data", None)
             self.using_newer_client = True
             self.barrel_request = ""
-            if slot_data["energy_link"]:
+            if self.slot_data["energy_link"]:
                 ctx.set_notify(f"EnergyLink{ctx.team}")
                 if ctx.ui:
                     ctx.ui.enable_energy_link()
@@ -570,7 +640,7 @@ class DKC2SNIClient(SNIClient):
                     snes_logger.info(f"Initialized EnergyLink{ctx.team}")
 
         elif cmd == "SetReply" and args["key"].startswith("EnergyLink"):
-            if self.barrel_request == "pending":
+            if self.barrel_request == "pending" and "tag" in args:
                 if args["tag"] == self.barrel_request_tag:
                     self.barrel_request_tag = ""
                     dk_barrel_cost = DKC2_EXCHANGE_RATE * DK_BARREL_BANANA_COST
@@ -593,6 +663,30 @@ class DKC2SNIClient(SNIClient):
             if f"EnergyLink{ctx.team}" in args["keys"] and args["keys"][f"EnergyLink{ctx.team}"] and ctx.ui:
                 pool = (args["keys"][f"EnergyLink{ctx.team}"] or 0) / DKC2_EXCHANGE_RATE
                 ctx.ui.energy_link_label.text = f"Bananas: {float(pool):.2f}"
+        
+        elif cmd == "Bounced":
+            if "tags" not in args:
+                return
+            if not hasattr(self, "instance_id"):
+                self.instance_id = time.time()
+            
+            source_name = args["data"]["source"]
+            if "TrapLink" in ctx.tags and "TrapLink" in args["tags"] and source_name != ctx.slot_info[ctx.slot].name:
+                trap_name: str = args["data"]["trap_name"]
+                if trap_name not in trap_name_to_value:
+                    return
+                
+                trap_id: int = trap_name_to_value[trap_name]
+                if "trap_weights" not in self.slot_data:
+                    return
+                if f"{trap_id}" not in self.slot_data["trap_weights"]:
+                    return
+                if self.slot_data["trap_weights"][f"{trap_id}"] == 0:
+                    # The player disabled this trap type
+                    return
+                
+                self.received_trap_link = NetworkItem(trap_name_to_value[trap_name], None, None)
+
 
 def cmd_barrel(self):
     """

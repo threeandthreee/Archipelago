@@ -123,10 +123,6 @@ def ooa_option_hard_logic(state: CollectionState, player: int):
     return state.multiworld.worlds[player].options.logic_difficulty == "hard"
 
 
-def ooa_option_allow_warp_to_start(state: CollectionState, player: int):
-    return state.multiworld.worlds[player].options.warp_to_start.value
-
-
 def ooa_is_companion_ricky(state: CollectionState, player: int):
     return state.multiworld.worlds[player].options.animal_companion == "ricky"
 
@@ -219,7 +215,7 @@ def ooa_can_trigger_far_switch(state: CollectionState, player: int):
         ooa_has_seedshooter(state, player),
         ooa_has_switch_hook(state, player),
         all([
-            ooa_option_hard_logic(state, player),
+            ooa_option_medium_logic(state, player),
             ooa_has_sword(state, player, False),
             state.has("Energy Ring", player)
         ])
@@ -432,13 +428,6 @@ def ooa_can_use_gale_seeds_offensively(state: CollectionState, player: int, rang
     ])
 
 
-def ooa_can_warp(state: CollectionState, player: int):
-    # Never expect points of no return / risky checks for casual logic
-    if not ooa_option_medium_logic(state, player):
-        return False
-    return ooa_can_warp_using_gale_seeds(state, player) or ooa_option_allow_warp_to_start(state, player)
-
-
 def ooa_can_use_mystery_seeds(state: CollectionState, player: int):
     return all([
         ooa_can_use_seeds(state, player),
@@ -513,7 +502,7 @@ def ooa_can_break_crystal(state: CollectionState, player: int):
         ooa_has_bombs(state, player),
         ooa_has_bracelet(state, player),
         all([
-            ooa_option_hard_logic(state, player),
+            ooa_option_medium_logic(state, player),
             state.has("Expert's Ring", player)
         ])
     ])
@@ -698,7 +687,7 @@ def ooa_can_kill_armos(state: CollectionState, player: int, ranged: bool = False
 
 def ooa_can_punch(state: CollectionState, player: int):
     return all([
-        ooa_option_hard_logic(state, player),
+        ooa_option_medium_logic(state, player),
         any([
             state.has("Fist Ring", player),
             state.has("Expert's Ring", player)
@@ -772,6 +761,13 @@ def ooa_can_remove_dirt(state: CollectionState, player: int, can_summon_companio
 
 def ooa_can_meet_maple(state: CollectionState, player: int):
     return ooa_can_kill_normal_enemy(state, player)
+
+def ooa_can_toss_ring(state: CollectionState, player: int):
+    return all([
+        ooa_option_medium_logic(state, player),
+        ooa_has_bracelet(state, player),
+        state.has("Toss Ring", player)
+    ])
 
 # Self-locking items helper predicates ##########################################
 

@@ -2,8 +2,9 @@
 Option definitions for Pokémon FireRed/LeafGreen
 """
 from dataclasses import dataclass
-from Options import Choice, DefaultOnToggle, NamedRange, OptionSet, PerGameCommonOptions, Range, Toggle
-from .data import data
+from schema import Optional, Schema, And, Use
+from Options import Choice, DefaultOnToggle, NamedRange, OptionDict, OptionSet, PerGameCommonOptions, Range, Toggle
+from .data import data, fly_blacklist_map, fly_plando_maps, starting_town_blacklist_map
 
 
 class GameVersion(Choice):
@@ -44,6 +45,56 @@ class RandomStartingTown(Toggle):
     Indigo Plateau.
     """
     display_name = "Random Starting Town"
+
+
+class StartingTownBlacklist(OptionSet):
+    """
+    Prevents certain towns from being chosen as your random starting town.
+
+    Has no effect if the starting town is not randomized.
+    """
+    display_name = "Starting Town Blacklist"
+    valid_keys = list(starting_town_blacklist_map.keys())
+
+
+class RandomizeFlyDestinations(Toggle):
+    """
+    Randomizes where each fly point takes you. The new fly destinations can be almost any outdoor warp point in the
+    game with a few exceptions (Cycling Road Gates for example).
+    """
+    display_name = "Randomize Fly Destinations"
+
+
+class FlyDestinationPlando(OptionDict):
+    """
+    Plando what map certain fly points will take you to. For example \"Pallet Town Fly Destination\": \"Route 8\"
+    will make it so that unlocking the Pallet Town fly point will let you fly to Route 8.
+
+    Has no effect if fly destinations aren't randomized.
+    """
+    display_name = "Fly Destination Plando"
+    schema = Schema({
+        Optional("Pallet Town Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Viridian City Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Pewter City Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Route 4 Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Cerulean City Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Vermilion City Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Route 10 Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Lavender Town Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Celadon City Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Fuchsia City Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Saffron City Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Cinnabar Island Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Indigo Plateau Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("One Island Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Two Island Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Three Island Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Four Island Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Five Island Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Six Island Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+        Optional("Seven Island Fly Destination"): And(str, lambda s: s in fly_plando_maps),
+    })
 
 
 class ShuffleBadges(DefaultOnToggle):
@@ -93,7 +144,7 @@ class Trainersanity(NamedRange):
     """
     display_name = "Trainersanity"
     default = 0
-    range_start = 1
+    range_start = 0
     range_end = 456
     special_range_names = {
         "none": 0,
@@ -116,7 +167,7 @@ class Dexsanity(NamedRange):
     """
     display_name = "Dexsanity"
     default = 0
-    range_start = 1
+    range_start = 0
     range_end = 386
     special_range_names = {
         "none": 0,
@@ -133,16 +184,16 @@ class Famesanity(Toggle):
     display_name = "Famesanity"
 
 
-class ShuffleFlyDestinationUnlocks(Choice):
+class ShuffleFlyUnlocks(Choice):
     """
     Shuffles the ability to fly to Pokemon Centers into the pool. Entering the map that normally would unlock the
     fly destination gives a random item.
 
-    - Off: Fly Destination Unlocks are not shuffled.
-    - Exclude Indigo: Fly Destination Unlocks are shuffled. Indigo Plateau Fly Unlock is vanilla.
-    - All: Fly Destination Unlocks are shuffled.
+    - Off: Fly Unlocks are not shuffled.
+    - Exclude Indigo: Fly Unlocks are shuffled. Indigo Plateau Fly Unlock is vanilla.
+    - All: Fly Unlocks are shuffled.
     """
-    display_name = "Shuffle Fly Destination Unlocks"
+    display_name = "Shuffle Fly Unlocks"
     default = 0
     option_off = 0
     option_exclude_indigo = 1
@@ -788,6 +839,8 @@ class RandomizeMoves(Choice):
 class MoveBlacklist(OptionSet):
     """
     Prevents species from learning these moves via learnsets, TMs, and move tutors.
+
+    Has no effect is moves are not randomized.
     """
     display_name = "Move Blacklist"
     valid_keys = sorted(data.moves.keys())
@@ -852,33 +905,17 @@ class MinCatchRate(Range):
     default = 3
 
 
-class GuaranteedCatch(Toggle):
-    """
-    Pokeballs are guaranteed to catch wild Pokemon regardless of catch rate.
-    """
-    display_name = "Guaranteed Catch"
-
-
-class NormalizeEncounterRates(Toggle):
-    """
-    Make every slot on an encounter table approximately equally likely.
-
-    This does NOT mean each species is equally likely. Each species may occupy more than one slot and slots vary in
-    probability.
-    """
-    display_name = "Normalize Encounter Rates"
-
-
 class AllPokemonSeen(Toggle):
     """
-    Start will all Pokemon seen in you Pokedex. This allows you to see where the Pokemon can be encountered in the wild.
+    Start will all Pokemon seen in your Pokedex.
+    This allows you to see where the Pokemon can be encountered in the wild.
     """
     display_name = "All Pokemon Seen"
 
 
 class ExpModifier(Range):
     """
-    Multiplies gained EXP by a percentage.
+    Sets the EXP multiplier that is used when the in game option for experience is set to Custom.
 
     100 is default
     50 is half
@@ -901,13 +938,6 @@ class StartingMoney(Range):
     default = 3000
 
 
-class BlindTrainers(Toggle):
-    """
-    Trainers will not start a battle with you unless you talk to them.
-    """
-    display_name = "Blind Trainers"
-
-
 class BetterShops(Toggle):
     """
     Most Pokemarts will sell all normal Pokemart items. The exceptions are the following:
@@ -920,50 +950,35 @@ class BetterShops(Toggle):
     display_name = "Better Shops"
 
 
-class FreeFlyLocation(Choice):
+class FreeFlyLocation(Toggle):
     """
     Enables flying to one random location (excluding cities reachable with no items).
     """
     display_name = "Free Fly Location"
-    default = 0
-    option_off = 0
-    option_exclude_indigo = 1
-    option_any = 2
 
 
-class TownMapFlyLocation(Choice):
+class FreeFlyBlacklist(OptionSet):
+    """
+    Prevents certain towns from being chosen as your free fly location.
+    """
+    display_name = "Starting Town Blacklist"
+    valid_keys = list(fly_blacklist_map.keys())
+
+
+class TownMapFlyLocation(Toggle):
     """
     Enables flying to one random location once the town map has been obtained
     (excluding cities reachable with no items).
     """
     display_name = "Town Map Fly Location"
-    default = 0
-    option_off = 0
-    option_exclude_indigo = 1
-    option_any = 2
 
 
-class TurboA(Toggle):
+class TownMapFlyBlacklist(OptionSet):
     """
-    Holding A will advance most text automatically.
+    Prevents certain towns from being chosen as your town map fly location.
     """
-    display_name = "Turbo A"
-
-
-class ReceiveItemMessages(Choice):
-    """
-    Sets whether you receive an in-game notification when receiving an item. Items can still onlybe received in the
-    overworld.
-
-    - All: Every item shows a message.
-    - Progression: Only progression items show a message
-    - None: All items are added to your bag silently (badges will still show).
-    """
-    display_name = "Receive Item Messages"
-    default = 1
-    option_all = 0
-    option_progression = 1
-    option_none = 2
+    display_name = "Starting Town Blacklist"
+    valid_keys = list(fly_blacklist_map.keys())
 
 
 class RandomizeMusic(Toggle):
@@ -976,10 +991,60 @@ class RandomizeMusic(Toggle):
 class RandomizeFanfares(Toggle):
     """
     Shuffles fanfares for item pickups, healing at the pokecenter, etc.
-
-    When this option is enabled, pressing B will interrupt most fanfares.
     """
     display_name = "Randomize Fanfares"
+
+
+class GameOptions(OptionDict):
+    """
+    Allows you to preset the in game options.
+    The available options and their allowed values are the following:
+
+    - Text Speed: Slow, Mid, Fast, Instant
+    - Turbo A: Off, On
+    - Auto Run: Off, On
+    - Button Mode: Help, LR, L=A
+    - Frame: 1-10
+    - Battle Scene: Off, On
+    - Battle Style: Shift, Set
+    - Show Effectiveness: Off, On
+    - Experience: None, Half, Normal, Double, Triple, Quadruple, Custom
+    - Sound: Mono, Stereo
+    - Low HP Beep: Off, On
+    - Skip Fanfares: Off, On
+    - Bike Music: Off, On
+    - Surf Music: Off, On
+    - Guaranteed Catch: Off, On
+    - Encounter Rates: Vanilla, Normalized
+    - Blind Trainers: Off, On
+    - Item Messages: All, Progression, None
+    """
+    display_name = "Game Options"
+    default = {"Text Speed": "Instant", "Turbo A": "Off", "Auto Run": "Off", "Button Mode": "Help", "Frame": 1,
+               "Battle Scene": "On", "Battle Style": "Shift", "Show Effectiveness": "On", "Experience": "Custom",
+               "Sound": "Mono", "Low HP Beep": "On", "Skip Fanfares": "Off", "Bike Music": "On", "Surf Music": "On",
+               "Guaranteed Catch": "Off", "Encounter Rates": "Vanilla", "Blind Trainers": "Off",
+               "Item Messages": "Progression"}
+    schema = Schema({
+        "Text Speed": And(str, lambda s: s in ("Slow", "Mid", "Fast", "Instant")),
+        "Turbo A": And(str, lambda s: s in ("Off", "On")),
+        "Auto Run": And(str, lambda s: s in ("Off", "On")),
+        "Button Mode": And(str, lambda s: s in ("Help", "LR", "L=A")),
+        "Frame": And(Use(int), lambda n: 1 <= n <= 10),
+        "Battle Scene": And(str, lambda s: s in ("Off", "On")),
+        "Battle Style": And(str, lambda s: s in ("Shift", "Set")),
+        "Show Effectiveness": And(str, lambda s: s in ("Off", "On")),
+        "Experience": And(str, lambda s: s in ("None", "Half", "Normal", "Double", "Triple", "Quadruple", "Custom")),
+        "Sound": And(str, lambda s: s in ("Mono", "Stereo")),
+        "Low HP Beep": And(str, lambda s: s in ("Off", "On")),
+        "Skip Fanfares": And(str, lambda s: s in ("Off", "On")),
+        "Bike Music": And(str, lambda s: s in ("Off", "On")),
+        "Surf Music": And(str, lambda s: s in ("Off", "On")),
+        "Guaranteed Catch": And(str, lambda s: s in ("Off", "On")),
+        "Encounter Rates": And(str, lambda s: s in ("Vanilla", "Normalized")),
+        "Blind Trainers": And(str, lambda s: s in ("Off", "On")),
+        "Item Messages": And(str, lambda s: s in ("All", "Progression", "None"))
+    })
 
 
 class ProvideHints(Toggle):
@@ -998,6 +1063,9 @@ class PokemonFRLGOptions(PerGameCommonOptions):
     goal: Goal
     kanto_only: KantoOnly
     random_starting_town: RandomStartingTown
+    starting_town_blacklist: StartingTownBlacklist
+    randomize_fly_destinations: RandomizeFlyDestinations
+    fly_destination_plando: FlyDestinationPlando
 
     shuffle_badges: ShuffleBadges
     shuffle_hidden: ShuffleHiddenItems
@@ -1005,7 +1073,7 @@ class PokemonFRLGOptions(PerGameCommonOptions):
     trainersanity: Trainersanity
     dexsanity: Dexsanity
     famesanity: Famesanity
-    shuffle_fly_destination_unlocks: ShuffleFlyDestinationUnlocks
+    shuffle_fly_unlocks: ShuffleFlyUnlocks
     pokemon_request_locations: PokemonRequestLocations
     shuffle_running_shoes: ShuffleRunningShoes
     card_key: SilphCoCardKey
@@ -1063,18 +1131,16 @@ class PokemonFRLGOptions(PerGameCommonOptions):
 
     reusable_tm_tutors: ReusableTmsTutors
     min_catch_rate: MinCatchRate
-    guaranteed_catch: GuaranteedCatch
-    normalize_encounter_rates: NormalizeEncounterRates
     all_pokemon_seen: AllPokemonSeen
     exp_modifier: ExpModifier
     starting_money: StartingMoney
-    blind_trainers: BlindTrainers
     better_shops: BetterShops
     free_fly_location: FreeFlyLocation
+    free_fly_blacklist: FreeFlyBlacklist
     town_map_fly_location: TownMapFlyLocation
+    town_map_fly_blacklist: TownMapFlyBlacklist
 
-    turbo_a: TurboA
-    receive_item_messages: ReceiveItemMessages
     randomize_music: RandomizeMusic
     randomize_fanfares: RandomizeFanfares
+    game_options: GameOptions
     provide_hints: ProvideHints

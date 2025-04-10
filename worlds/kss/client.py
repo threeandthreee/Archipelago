@@ -1,10 +1,6 @@
 import logging
-import struct
 import time
 import typing
-import uuid
-
-import NetUtils
 from NetUtils import ClientStatus, color, NetworkItem
 from worlds.AutoSNIClient import SNIClient
 from typing import TYPE_CHECKING
@@ -36,6 +32,7 @@ KSS_BOSS_DEFEATED = SRAM_1_START + 0x1AE7  # 4 bytes
 KSS_TGCO_TREASURE = SRAM_1_START + 0x1B05  # 8 bytes
 KSS_TGC0_GOLD = SRAM_1_START + 0x1B0F  # 3-byte 24-bit int
 KSS_COPY_ABILITIES = SRAM_1_START + 0x1B1D  # originally Milky Way Wishes deluxe essences
+KSS_MWW_ITEMS = SRAM_1_START + 0x1B20
 # Remapped for sending
 KSS_SENT_DYNA_SWITCH = SRAM_1_START + 0x7A64
 KSS_COMPLETED_PLANETS = SRAM_1_START + 0x7A6B
@@ -48,6 +45,8 @@ KSS_RECEIVED_ITEMS = SRAM_1_START + 0x8002
 KSS_RECEIVED_PLANETS = SRAM_1_START + 0x8004
 
 KSS_ROMNAME = SRAM_1_START + 0x8100
+KSS_DEATH_LINK_ADDR = SRAM_1_START + 0x9000
+
 
 class KSSSNIClient(SNIClient):
     game = "Kirby Super Star"
@@ -56,8 +55,12 @@ class KSSSNIClient(SNIClient):
 
     async def deathlink_kill_player(self, ctx: "SNIContext") -> None:
         from SNIClient import DeathState, snes_buffered_write, snes_read, snes_flush_writes
-        ctx.death_state = DeathState.dead
-        ctx.last_death_link = time.time()
+        game_state = int.from_bytes(await snes_read(ctx, KSS_GAME_STATE, 1), "little")
+        if game_state == 3:
+            snes_buffered_write(ctx, KSS_KIRBY_HP, int.to_bytes(0, 2, "little"))
+            await snes_flush_writes(ctx)
+            ctx.death_state = DeathState.dead
+            ctx.last_death_link = time.time()
 
     async def validate_rom(self, ctx: "SNIContext") -> bool:
         from SNIClient import snes_read
@@ -70,7 +73,7 @@ class KSSSNIClient(SNIClient):
         ctx.items_handling = 0b111  # full remote
         ctx.allow_collect = True
 
-        death_link = [False]  # await snes_read(ctx, KSS_DEATH_LINK_ADDR, 1)
+        death_link = await snes_read(ctx, KSS_DEATH_LINK_ADDR, 1)
         if death_link:
             await ctx.update_death_link(bool(death_link[0] & 0b1))
         return True
@@ -96,7 +99,7 @@ class KSSSNIClient(SNIClient):
                 pass
 
     async def game_watcher(self, ctx: "SNIContext") -> None:
-        from SNIClient import snes_read, snes_buffered_write, snes_flush_writes
+        from SNIClient import snes_read, snes_buffered_write, snes_flush_writes, DeathState
 
         demo_state = int.from_bytes(await snes_read(ctx, KSS_DEMO_STATE, 2), "little")
         if not demo_state:
@@ -107,10 +110,24 @@ class KSSSNIClient(SNIClient):
             await ctx.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
             ctx.finished_game = True
 
+        game_state = int.from_bytes(await snes_read(ctx, KSS_GAME_STATE, 1), "little")
+
+        kirby_hp = int.from_bytes(await snes_read(ctx, KSS_KIRBY_HP, 2), "little")
+        if "DeathLink" in ctx.tags and game_state == 3 and ctx.last_death_link + 1 < time.time() \
+                and ctx.death_state == DeathState.alive:
+            if kirby_hp == 0:
+                # TODO: see if I can get gamemode specific messages
+                await ctx.handle_deathlink_state(True, f"Pop Star was too much for {ctx.player_names[ctx.slot]}.")
+        elif "DeathLink" in ctx.tags and game_state == 3 and kirby_hp > 0:
+            ctx.death_state = DeathState.alive
+
         save_abilities = 0
-        for ability in [item for item in ctx.items_received if item.item & 0x100]:
+        i = 0
+        for i, ability in enumerate([item for item in ctx.items_received if item.item & 0x100]):
             save_abilities |= (1 << ((ability.item & 0xFF) - 1))
         snes_buffered_write(ctx, KSS_COPY_ABILITIES, int.to_bytes(save_abilities, 3, "little"))
+        if save_abilities:
+            snes_buffered_write(ctx, KSS_MWW_ITEMS, int.to_bytes(i+1, 1, "little"))
 
         known_treasures = int.from_bytes(await snes_read(ctx, KSS_TGCO_TREASURE, 8), "little")
         treasure_data = 0
@@ -138,9 +155,9 @@ class KSSSNIClient(SNIClient):
         planet_clear = int.from_bytes(await snes_read(ctx, KSS_RAINBOW_STAR, 1), "little")
         current_total = sum(1 for item in ctx.items_received if item.item & 0xFFFF == 0x1004)
         new_clear = 0
-        for i in range(min(current_total + 1, 8)):
+        for i in range(min(current_total, 8)):
             new_clear |= (1 << i)
-        if planet_clear != new_clear:
+        if planet_clear != new_clear and new_clear:
             snes_buffered_write(ctx, KSS_RAINBOW_STAR, int.to_bytes(new_clear, 1, "little"))
 
         recv_count = int.from_bytes(await snes_read(ctx, KSS_RECEIVED_ITEMS, 2), "little")
@@ -161,7 +178,7 @@ class KSSSNIClient(SNIClient):
                 if item.item & 0xF != 4:
                     self.item_queue.append(item)
 
-        await self.pop_item(ctx, int.from_bytes(await snes_read(ctx, KSS_GAME_STATE, 1), "little"))
+        await self.pop_item(ctx, game_state)
 
         await snes_flush_writes(ctx)
 

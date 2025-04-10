@@ -22,7 +22,7 @@ class OoSPatchExtensions(APPatchExtension):
             raise Exception(f"Invalid version: this patch was generated on v{patch_data['version']}, "
                             f"you are currently using v{VERSION}")
 
-        assembler = Z80Assembler(EOB_ADDR, DEFINES)
+        assembler = Z80Assembler(EOB_ADDR, DEFINES, rom)
 
         # Define assembly constants & floating chunks
         define_location_constants(assembler, patch_data)
@@ -34,6 +34,7 @@ class OoSPatchExtensions(APPatchExtension):
         define_additional_tile_replacements(assembler, patch_data)
         define_samasa_combination(assembler, patch_data)
         define_dungeon_items_text_constants(assembler, patch_data)
+        define_essence_sparkle_constants(assembler, patch_data)
         define_lost_woods_sequences(assembler, patch_data)
         set_file_select_text(assembler, caller.player_name)
 

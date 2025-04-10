@@ -1,4 +1,4 @@
-VERSION = "8.0"
+VERSION = "9.0"
 ROM_HASH = "f2dc6c4e093e4f8c6cbea80e8dbd62cb"
 
 DIRECTION_UP = 0
@@ -71,10 +71,10 @@ ESSENCES = [
 ]
 
 JEWELS = [
-   "Square Jewel",
-   "Pyramid Jewel",
-   "Round Jewel",
-   "X-Shaped Jewel"
+    "Square Jewel",
+    "Pyramid Jewel",
+    "Round Jewel",
+    "X-Shaped Jewel"
 ]
 
 VALID_RUPEE_PRICE_VALUES = [
@@ -82,6 +82,9 @@ VALID_RUPEE_PRICE_VALUES = [
 ]
 VALID_RUPEE_ITEM_VALUES = [
     1, 5, 10, 20, 30, 50, 100, 200
+]
+VALID_ORE_ITEM_VALUES = [
+    10, 25, 50
 ]
 MARKET_LOCATIONS = ["subrosianMarket2", "subrosianMarket3", "subrosianMarket4", "subrosianMarket5"]
 
@@ -173,6 +176,19 @@ SUBROSIA_HIDDEN_DIGGING_SPOTS_LOCATIONS = [
     "Subrosia: Northern Volcanoes Digging Spot",
     "Subrosia: D8 Portal Digging Spot",
     "Subrosia: Western Volcanoes Digging Spot"
+]
+
+SECRETS = [
+    "Horon Village: Clock Shop Secret",
+    "Western Coast: Graveyard Secret",
+    "Subrosia: Subrosian Secret",
+    "Sunken City: Diver Secret",
+    "Subrosia: Smith Secret",
+    "Subrosia: Piratian Secret",
+    "Subrosia: Temple Secret",
+    "Natzu: Deku Secret",
+    "Goron Mountain: Biggoron Secret",
+    "Horon Village: Mayor Secret"
 ]
 
 SAMASA_GATE_CODE = [2, 2, 1, 0, 0, 3, 3, 3]
@@ -292,6 +308,7 @@ LOCATION_GROUPS = {
         "Snake's Remains: Chest in Moving Blades Room",
         "Snake's Remains: Chest in Bomb Spiral Maze Room",
         "Snake's Remains: Chest on Terrace",
+        "Snake's Remains: Business Scrub",
         "Snake's Remains: Boss Reward",
         "Snake's Remains: Essence",
     ],
@@ -320,6 +337,7 @@ LOCATION_GROUPS = {
         'Dancing Dragon Dungeon (1F): Crumbling Room Chest',
         'Dancing Dragon Dungeon (1F): Eye Diving Spot Item',
         'Dancing Dragon Dungeon (B1F): Boss Reward',
+        'Dancing Dragon Dungeon (1F): Business Scrub',
         'Dancing Dragon Dungeon: Essence',
     ],
     'D5': [

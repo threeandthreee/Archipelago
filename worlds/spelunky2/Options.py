@@ -28,6 +28,13 @@ class ProgressiveWorlds(DefaultOnToggle):
     display_name = "Progressive Worlds"
 
 
+"""
+# Not implemented yet
+class ProgressiveShortcuts(DefaultOnToggle):
+    \"""Whether new shortcuts should be unlocked individually or progressively.\"""
+    display_name = "Progressive Shortcuts"
+"""
+
 class StartingHealth(Range):
     """How much Health should you initially start with."""
     display_name = "Starting Health"
@@ -138,6 +145,7 @@ class Spelunky2Options(PerGameCommonOptions):
     goal: Goal
     goal_level: GoalLevel
     progressive_worlds: ProgressiveWorlds
+    # progressive_shortcuts: ProgressiveShortcuts - Not implemented yet
     starting_health: StartingHealth
     starting_bombs: StartingBombs
     starting_ropes: StartingRopes

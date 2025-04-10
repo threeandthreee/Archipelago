@@ -1,9 +1,12 @@
-from typing import TYPE_CHECKING, FrozenSet, List, Optional, Set, Union
+from typing import TYPE_CHECKING, List, Optional, Set, Union
 from dataclasses import dataclass
 
-from BaseClasses import CollectionState
+from BaseClasses import CollectionState, MultiWorld
 
+from .data import LocationCategory
+from .locations import PokemonFRLGLocation
 from .options import LevelScaling
+from .regions import PokemonFRLGRegion
 from .util import bound
 
 if TYPE_CHECKING:
@@ -17,7 +20,7 @@ class ScalingData:
     type: Optional[str]
     connections: Optional[List[str]]
     data_ids: Union[str, List[str]]
-    tags: FrozenSet
+    category: LocationCategory
 
 
 def create_scaling_data(world: "PokemonFRLGWorld"):
@@ -25,7 +28,7 @@ def create_scaling_data(world: "PokemonFRLGWorld"):
         return
 
     kanto_trainer_data = {
-        "Professor Oak's Lab": [{"name": "Oak's Lab Rival",
+        "Professor Oak's Lab": [{"name": "Professor Oak's Lab Rival",
                                  "data_ids": ["TRAINER_RIVAL_OAKS_LAB_BULBASAUR", "TRAINER_RIVAL_OAKS_LAB_CHARMANDER",
                                               "TRAINER_RIVAL_OAKS_LAB_SQUIRTLE"]}],
         "Route 22": [{"name": "Route 22 Early Rival",
@@ -402,10 +405,10 @@ def create_scaling_data(world: "PokemonFRLGWorld"):
         "Mt. Ember Exterior Center": [{"name": "Pokemon Ranger Beth", "data_ids": ["TRAINER_PKMN_RANGER_BETH"]},
                                       {"name": "Crush Girl Jocelyn", "data_ids": ["TRAINER_CRUSH_GIRL_JOCELYN"]},
                                       {"name": "Pokemon Ranger Logan", "data_ids": ["TRAINER_PKMN_RANGER_LOGAN"]}],
-        "Three Island Town": [{"name": "Biker Goon 1", "data_ids": ["TRAINER_BIKER_GOON"]},
-                              {"name": "Biker Goon 2", "data_ids": ["TRAINER_BIKER_GOON_2"]},
-                              {"name": "Biker Goon 3", "data_ids": ["TRAINER_BIKER_GOON_3"]},
-                              {"name": "Cue Ball Paxton", "data_ids": ["TRAINER_CUE_BALL_PAXTON"]}],
+        "Three Island Town South": [{"name": "Biker Goon 1", "data_ids": ["TRAINER_BIKER_GOON"]},
+                                    {"name": "Biker Goon 2", "data_ids": ["TRAINER_BIKER_GOON_2"]},
+                                    {"name": "Biker Goon 3", "data_ids": ["TRAINER_BIKER_GOON_3"]},
+                                    {"name": "Cue Ball Paxton", "data_ids": ["TRAINER_CUE_BALL_PAXTON"]}],
         "Bond Bridge": [{"name": "Twins Joy & Meg", "data_ids": ["TRAINER_TWINS_JOY_MEG"]},
                         {"name": "Aroma Lady Violet", "data_ids": ["TRAINER_AROMA_LADY_VIOLET"]},
                         {"name": "Tuber Alexis", "data_ids": ["TRAINER_TUBER_ALEXIS"]},
@@ -869,14 +872,14 @@ def create_scaling_data(world: "PokemonFRLGWorld"):
         "Berry Forest": [{"name": "Static Hypno", "data_ids": ["STATIC_POKEMON_HYPNO"]}]
     }
 
-    def create_scaling_data(region: str, data, tag: str) -> ScalingData:
+    def create_scaling_data(region: str, data, category: LocationCategory) -> ScalingData:
         scaling_data = ScalingData(
             data["name"],
             region,
             data["type"] if "type" in data else None,
             data["connections"] if "connections" in data else None,
             data["data_ids"],
-            frozenset([tag, "Scaling"])
+            category
         )
         return scaling_data
 
@@ -886,17 +889,17 @@ def create_scaling_data(world: "PokemonFRLGWorld"):
 
     for region, trainers in kanto_trainer_data.items():
         for trainer in trainers:
-            scaling_data = create_scaling_data(region, trainer, "Trainer")
+            scaling_data = create_scaling_data(region, trainer, LocationCategory.EVENT_TRAINER_SCALING)
             world.scaling_data.append(scaling_data)
 
     for region, wild_encounters in kanto_wild_encounter_data.items():
         for wild_encounter in wild_encounters:
-            scaling_data = create_scaling_data(region, wild_encounter, "Wild")
+            scaling_data = create_scaling_data(region, wild_encounter, LocationCategory.EVENT_WILD_POKEMON_SCALING)
             world.scaling_data.append(scaling_data)
 
     for region, static_encounters in kanto_static_encounter_data.items():
         for static_encounter in static_encounters:
-            scaling_data = create_scaling_data(region, static_encounter, "Static")
+            scaling_data = create_scaling_data(region, static_encounter, LocationCategory.EVENT_STATIC_POKEMON_SCALING)
             world.scaling_data.append(scaling_data)
 
     if not world.options.kanto_only:
@@ -907,7 +910,7 @@ def create_scaling_data(world: "PokemonFRLGWorld"):
                 if scaling_data is not None:
                     update_scaling_data(scaling_data, trainer["connections"], trainer["data_ids"])
                 else:
-                    scaling_data = create_scaling_data(region, trainer, "Trainer")
+                    scaling_data = create_scaling_data(region, trainer, LocationCategory.EVENT_TRAINER_SCALING)
                     world.scaling_data.append(scaling_data)
 
         for region, wild_encounters in sevii_wild_encounter_data.items():
@@ -917,7 +920,9 @@ def create_scaling_data(world: "PokemonFRLGWorld"):
                 if scaling_data is not None:
                     update_scaling_data(scaling_data, wild_encounter["connections"], wild_encounter["data_ids"])
                 else:
-                    scaling_data = create_scaling_data(region, wild_encounter, "Wild")
+                    scaling_data = create_scaling_data(region,
+                                                       wild_encounter,
+                                                       LocationCategory.EVENT_WILD_POKEMON_SCALING)
                     world.scaling_data.append(scaling_data)
 
         for region, static_encounters in sevii_static_encounter_data.items():
@@ -927,11 +932,13 @@ def create_scaling_data(world: "PokemonFRLGWorld"):
                 if scaling_data is not None:
                     update_scaling_data(scaling_data, static_encounter["connections"], static_encounter["data_ids"])
                 else:
-                    scaling_data = create_scaling_data(region, static_encounter, "Static")
+                    scaling_data = create_scaling_data(region,
+                                                       static_encounter,
+                                                       LocationCategory.EVENT_STATIC_POKEMON_SCALING)
                     world.scaling_data.append(scaling_data)
 
 
-def level_scaling(multiworld):
+def level_scaling(multiworld: MultiWorld):
     battle_events = ["Route 22 - Early Rival Battle", "Pewter Gym - Gym Leader Battle",
                      "Cerulean Gym - Gym Leader Battle", "Vermilion Gym - Gym Leader Battle",
                      "Celadon Gym - Gym Leader Battle", "Fuchsia Gym - Gym Leader Battle",
@@ -941,10 +948,17 @@ def level_scaling(multiworld):
                      "Silph Co. 11F - Giovanni Battle", "Berry Forest - Hypno Battle",
                      "Icefall Cave Back - Team Rocket Grunt Battle"]
 
+    scaling_categories = [LocationCategory.EVENT_TRAINER_SCALING,
+                          LocationCategory.EVENT_WILD_POKEMON_SCALING,
+                          LocationCategory.EVENT_STATIC_POKEMON_SCALING]
+
     level_scaling_required = False
     state = CollectionState(multiworld)
-    locations = {loc for loc in multiworld.get_filled_locations()
-                 if loc.item.advancement or loc.game == "Pokemon FireRed and LeafGreen" and "Scaling" in loc.tags}
+    progression_locations = {loc for loc in multiworld.get_filled_locations() if loc.item.advancement}
+    frlg_locations: Set[PokemonFRLGLocation] = {loc for loc in multiworld.get_filled_locations()
+                                                if loc.game == "Pokemon FireRed and LeafGreen"}
+    scaling_locations = {loc for loc in frlg_locations if loc.category in scaling_categories}
+    locations = progression_locations | scaling_locations
     collected_locations = set()
     spheres = []
 
@@ -1011,12 +1025,15 @@ def level_scaling(multiworld):
 
                     if can_reach():
                         sphere.add(location)
-                        parent_region = location.parent_region
 
-                        if getattr(parent_region, "distance", None) is None:
-                            distance = 0
+                        if location.game == "Pokemon FireRed and LeafGreen":
+                            parent_region: PokemonFRLGRegion = location.parent_region
+                            if getattr(parent_region, "distance", None) is None:
+                                distance = 0
+                            else:
+                                distance = parent_region.distance
                         else:
-                            distance = parent_region.distance
+                            distance = 0
 
                         if distance not in distances:
                             distances[distance] = {location}
@@ -1068,9 +1085,13 @@ def level_scaling(multiworld):
         e4_base_level = 51
 
         for sphere in spheres:
-            scaling_locations = [loc for loc in sphere if loc.player == world.player and "Scaling" in loc.tags]
-            trainer_locations = [loc for loc in scaling_locations if "Trainer" in loc.tags]
-            encounter_locations = [loc for loc in scaling_locations if "Static" in loc.tags or "Wild" in loc.tags]
+            scaling_locations = [loc for loc in sphere if loc.player == world.player
+                                 and loc.category in scaling_categories]
+            trainer_locations = [loc for loc in scaling_locations
+                                 if loc.category == LocationCategory.EVENT_TRAINER_SCALING]
+            encounter_locations = [loc for loc in scaling_locations
+                                   if loc.category in [LocationCategory.EVENT_WILD_POKEMON_SCALING,
+                                                       LocationCategory.EVENT_STATIC_POKEMON_SCALING]]
 
             trainer_locations.sort(key=lambda loc: world.trainer_name_list.index(loc.name))
             encounter_locations.sort(key=lambda loc: world.encounter_name_list.index(loc.name))
@@ -1097,7 +1118,7 @@ def level_scaling(multiworld):
                 old_base_level = world.encounter_name_level_dict[encounter_location.name]
 
                 for data_id in encounter_location.data_ids:
-                    if "Static" in encounter_location.tags:
+                    if encounter_location.category == LocationCategory.EVENT_STATIC_POKEMON_SCALING:
                         pokemon_data = None
 
                         if data_id in world.modified_misc_pokemon:
@@ -1106,11 +1127,11 @@ def level_scaling(multiworld):
                             pokemon_data = world.modified_legendary_pokemon[data_id]
 
                         pokemon_data.level[game_version] = new_base_level
-                    elif "Wild" in encounter_location.tags:
+                    elif encounter_location.category == LocationCategory.EVENT_WILD_POKEMON_SCALING:
                         data_ids = data_id.split()
                         map_data = world.modified_maps[data_ids[0]]
-                        encounters = (map_data.land_encounters if "Land" in encounter_location.tags else
-                                      map_data.water_encounters if "Water" in encounter_location.tags else
+                        encounters = (map_data.land_encounters if "Land" in encounter_location.name else
+                                      map_data.water_encounters if "Water" in encounter_location.name else
                                       map_data.fishing_encounters)
                         encounter_data = encounters.slots[game_version][int(data_ids[1])]
                         new_max_level = round(max((new_base_level * encounter_data.max_level / old_base_level),

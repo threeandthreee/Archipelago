@@ -1,7 +1,7 @@
 import logging
 import random
 import struct
-from typing import ByteString, List, Callable, Optional
+from typing import ByteString, Callable
 import json
 import pymem
 from pymem import pattern
@@ -28,7 +28,7 @@ sizeof_float = 4
 # *****************************************************************************
 # **** This number must match (-> *ap-info-jak1* version) in ap-struct.gc! ****
 # *****************************************************************************
-expected_memory_version = 4
+expected_memory_version = 5
 
 
 # IMPORTANT: OpenGOAL memory structures are particular about the alignment, in memory, of member elements according to
@@ -104,6 +104,11 @@ memory_version_offset = offsets.define(sizeof_uint32)
 
 # Connection status to AP server (not the game!)
 server_connection_offset = offsets.define(sizeof_uint8)
+slot_name_offset = offsets.define(sizeof_uint8, 16)
+slot_seed_offset = offsets.define(sizeof_uint8, 8)
+
+# Trap information.
+trap_duration_offset = offsets.define(sizeof_float)
 
 # The End.
 end_marker_offset = offsets.define(sizeof_uint8, 4)
@@ -156,14 +161,14 @@ def autopsy(cause: int) -> str:
 
 class JakAndDaxterMemoryReader:
     marker: ByteString
-    goal_address = None
+    goal_address: int | None = None
     connected: bool = False
     initiated_connect: bool = False
 
     # The memory reader just needs the game running.
     gk_process: pymem.process = None
 
-    location_outbox: List[int] = []
+    location_outbox: list[int] = []
     outbox_index: int = 0
     finished_game: bool = False
 
@@ -218,7 +223,6 @@ class JakAndDaxterMemoryReader:
     async def main_tick(self):
         if self.initiated_connect:
             await self.connect()
-            await self.verify_memory_version()
             self.initiated_connect = False
 
         if self.connected:
@@ -238,7 +242,6 @@ class JakAndDaxterMemoryReader:
         else:
             return
 
-        # TODO - How drastic of a change is this, to wrap all of main_tick in a self.connected check?
         if self.connected:
 
             # Save some state variables temporarily.
@@ -288,32 +291,47 @@ class JakAndDaxterMemoryReader:
                                                byteorder="little",
                                                signed=False)
             logger.debug("Found the archipelago memory address: " + str(self.goal_address))
-            self.connected = True
+            await self.verify_memory_version()
         else:
-            self.log_error(logger, "Could not find the archipelago memory address!")
+            self.log_error(logger, "Could not find the Archipelago marker address!")
             self.connected = False
 
     async def verify_memory_version(self):
-        if not self.connected:
-            self.log_error(logger, "The Memory Reader is not connected!")
+        if self.goal_address is None:
+            self.log_error(logger, "Could not find the Archipelago memory address!")
+            self.connected = False
+            return
 
-        memory_version: Optional[int] = None
+        memory_version: int | None = None
         try:
             memory_version = self.read_goal_address(memory_version_offset, sizeof_uint32)
             if memory_version == expected_memory_version:
                 self.log_success(logger, "The Memory Reader is ready!")
+                self.connected = True
             else:
                 raise MemoryReadError(memory_version_offset, sizeof_uint32)
         except (ProcessError, MemoryReadError, WinAPIError):
-            msg = (f"The OpenGOAL memory structure is incompatible with the current Archipelago client!\n"
-                   f"   Expected Version: {str(expected_memory_version)}\n"
-                   f"   Found Version: {str(memory_version)}\n"
-                   f"Please follow these steps:\n"
-                   f"   Run the OpenGOAL Launcher, click Jak and Daxter > Features > Mods > ArchipelaGOAL.\n"
-                   f"   Click Update (if one is available).\n"
-                   f"   Click Advanced > Compile. When this is done, click Continue.\n"
-                   f"   Click Versions and verify the latest version is marked 'Active'.\n"
-                   f"   Close all launchers, games, clients, and console windows, then restart Archipelago.")
+            if memory_version is None:
+                msg = (f"Could not find a version number in the OpenGOAL memory structure!\n"
+                       f"   Expected Version: {str(expected_memory_version)}\n"
+                       f"   Found Version: {str(memory_version)}\n"
+                       f"Please follow these steps:\n"
+                       f"   If the game is running, try entering '/memr connect' in the client.\n"
+                       f"   You should see 'The Memory Reader is ready!'\n"
+                       f"   If that did not work, or the game is not running, run the OpenGOAL Launcher.\n"
+                       f"   Click Jak and Daxter > Features > Mods > ArchipelaGOAL.\n"
+                       f"   Then click Advanced > Play in Debug Mode.\n"
+                       f"   Try entering '/memr connect' in the client again.")
+            else:
+                msg = (f"The OpenGOAL memory structure is incompatible with the current Archipelago client!\n"
+                       f"   Expected Version: {str(expected_memory_version)}\n"
+                       f"   Found Version: {str(memory_version)}\n"
+                       f"Please follow these steps:\n"
+                       f"   Run the OpenGOAL Launcher, click Jak and Daxter > Features > Mods > ArchipelaGOAL.\n"
+                       f"   Click Update (if one is available).\n"
+                       f"   Click Advanced > Compile. When this is done, click Continue.\n"
+                       f"   Click Versions and verify the latest version is marked 'Active'.\n"
+                       f"   Close all launchers, games, clients, and console windows, then restart Archipelago.")
             self.log_error(logger, msg)
             self.connected = False
 
@@ -327,7 +345,7 @@ class JakAndDaxterMemoryReader:
         await self.verify_memory_version()
         self.log_info(logger, msg)
 
-    def read_memory(self) -> List[int]:
+    def read_memory(self) -> list[int]:
         try:
             # Need to grab these first and convert to floats, see below.
             citizen_orb_amount = self.read_goal_address(citizen_orb_amount_offset, sizeof_float)

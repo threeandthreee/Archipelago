@@ -1,12 +1,17 @@
-from typing import Optional, Callable, NamedTuple
-
+from typing import Optional, NamedTuple, Dict, Callable, TYPE_CHECKING, Any, Sequence
 from ..Logic import *
+
+if TYPE_CHECKING:
+    from .RamAddresses import Addresses
 
 
 class LocationData(NamedTuple):
     location_id: Optional[int]
     name: str
     access_rule: Optional[Callable[[CollectionState, int], bool]] = None
+    checked_flag_address: Optional[Callable[["Addresses"], int]] = None
+    enable_if: Optional[Callable[[Dict[str, Any]], bool]] = None
+    is_vendor: bool = False
 
 
 """ Oozla """
@@ -51,11 +56,25 @@ BARLOW_HOVERBIKE_RACE_PB = LocationData(
 )
 BARLOW_HOUND_CAVE_PB = LocationData(43, "Barlow: Hound Cave - Platinum Bolt", can_swingshot)
 
-
 """ Feltzin System """
 FELTZIN_DEFEAT_THUG_SHIPS = LocationData(50, "Feltzin: Defeat Thug Ships")
-FELTZIN_RACE_PB = LocationData(51, "Feltzin: Race - Platinum Bolt")
+FELTZIN_RACE_PB = LocationData(51, "Feltzin: Race Through the Asteroids - Platinum Bolt")
 FELTZIN_CARGO_BAY_NT = LocationData(52, "Feltzin: Cargo Bay - Nanotech Boost")
+FELTZIN_DESTROY_SPACE_WASPS = LocationData(
+    53, "Feltzin: Destroy Space Wasps",
+    checked_flag_address=lambda ram: ram.feltzin_challenge_wins + 0x1,
+    enable_if=lambda options_dict: options_dict["extra_spaceship_challenge_locations"]
+)
+FELTZIN_FIGHT_ACE_THUGS = LocationData(
+    54, "Feltzin: Fight Ace Thug Ships",
+    checked_flag_address=lambda ram: ram.feltzin_challenge_wins + 0x2,
+    enable_if=lambda options_dict: options_dict["extra_spaceship_challenge_locations"]
+)
+FELTZIN_RACE = LocationData(
+    55, "Feltzin: Race Through the Asteroids",
+    checked_flag_address=lambda ram: ram.feltzin_challenge_wins + 0x3,
+    enable_if=lambda options_dict: options_dict["extra_spaceship_challenge_locations"]
+)
 
 """ Notak """
 NOTAK_TOP_PIER_TELESCREEN = LocationData(
@@ -64,7 +83,7 @@ NOTAK_TOP_PIER_TELESCREEN = LocationData(
 )
 NOTAK_WORKER_BOTS = LocationData(
     61, "Notak: Worker Bots",
-    lambda state, player: can_improved_jump(state, player) and can_thermanate(state, player)
+    lambda state, player: can_heli(state, player) and can_thermanate(state, player)
 )
 NOTAK_BEHIND_BUILDING_PB = LocationData(62, "Notak: Behind Building - Platinum Bolt")
 NOTAK_PROMENADE_SIGN_PB = LocationData(63, "Notak: Promenade Sign - Platinum Bolt")
@@ -84,7 +103,6 @@ SIBERIUS_FENCED_AREA_PB = LocationData(72, "Siberius: Fenced Area - Platinum Bol
 
 """ Tabora """
 # NOTICE: Heli-Pack and Swingshot are already logically required in order to access this planet
-# TABORA_OMNIWRENCH_10000 = LocationData("Tabora: OmniWrench 10000", )
 TABORA_MEET_ANGELA = LocationData(80, "Tabora: Meet Angela")
 TABORA_UNDERGROUND_MINES_END = LocationData(81, "Tabora: Underground Mines - Glider", can_thermanate)
 TABORA_UNDERGROUND_MINES_PB = LocationData(82, "Tabora: Underground Mines - Platinum Bolt", can_thermanate)
@@ -96,6 +114,10 @@ TABORA_NORTHEAST_DESERT_PB = LocationData(84, "Tabora: Northeast Desert - Platin
 TABORA_CANYON_GLIDE_PILLAR_NT = LocationData(
     85, "Tabora: Canyon Glide Pillar - Nanotech Boost",
     lambda state, player: can_thermanate(state, player) and can_glide(state, player)
+)
+TABORA_OMNIWRENCH_10000 = LocationData(
+    86, "Tabora: OmniWrench 10000",
+    checked_flag_address=lambda ram: ram.tabora_wrench_cutscene_flag
 )
 
 """ Dobbo """
@@ -132,7 +154,22 @@ DOBBO_FACILITY_GLIDE_NT = LocationData(
 
 """ Hrugis """
 HRUGIS_DESTROY_DEFENSES = LocationData(100, "Hrugis Cloud: Destroy Defenses")
-HRUGIS_RACE_PB = LocationData(101, "Hrugis Cloud: Race - Platinum Bolt")
+HRUGIS_RACE_PB = LocationData(101, "Hrugis Cloud: Race Through the Disposal Facility - Platinum Bolt")
+HRUGIS_SABOTEURS = LocationData(
+    102, "Hrugis Cloud: Take Out the Saboteurs",
+    checked_flag_address=lambda ram: ram.hrugis_challenge_wins + 0x1,
+    enable_if=lambda options_dict: options_dict["extra_spaceship_challenge_locations"],
+)
+HRUGIS_BERSERK_DRONES = LocationData(
+    103, "Hrugis Cloud: Destroy the Berserk Repair Drones",
+    checked_flag_address=lambda ram: ram.hrugis_challenge_wins + 0x2,
+    enable_if=lambda options_dict: options_dict["extra_spaceship_challenge_locations"]
+)
+HRUGIS_RACE = LocationData(
+    104, "Hrugis Cloud: Race Through the Disposal Facility",
+    checked_flag_address=lambda ram: ram.hrugis_challenge_wins + 0x3,
+    enable_if=lambda options_dict: options_dict["extra_spaceship_challenge_locations"]
+)
 
 """ Joba """
 JOBA_FIRST_HOVERBIKE_RACE = LocationData(110, "Joba: First Hoverbike Race - Charge Boots", can_swingshot)
@@ -235,10 +272,29 @@ BOLDAN_FOUNTAIN_NT = LocationData(134, "Boldan: Fountain - Nanotech Boost", can_
 ARANOS_CONTROL_ROOM = LocationData(140, "Aranos: Control Room")
 ARANOS_PLUMBER = LocationData(141, "Aranos: Plumber - Qwark Statuette")
 ARANOS_UNDER_SHIP_PB = LocationData(142, "Aranos: Under Ship - Platinum Bolt", can_heli)
+ARANOS_OMNIWRENCH_12000 = LocationData(
+    143, "Aranos: OmniWrench 12000",
+    checked_flag_address=lambda ram: ram.aranos_wrench_cutscene_flag
+)
 
 """ Gorn """
 GORN_DEFEAT_THUG_FLEET = LocationData(150, "Gorn: Defeat Thug Fleet")
-GORN_RACE_PB = LocationData(151, "Gorn: Race - Platinum Bolt")
+GORN_RACE_PB = LocationData(151, "Gorn: Race Through the Docking Bays - Platinum Bolt")
+GORN_FIGHT_BANDITS = LocationData(
+    152, "Gorn: Fight the Bandits",
+    checked_flag_address=lambda ram: ram.gorn_challenge_wins + 0x1,
+    enable_if=lambda options_dict: options_dict["extra_spaceship_challenge_locations"]
+)
+GORN_GHOST_SHIP = LocationData(
+    153, "Gorn: Defeat the Ghost Ship",
+    checked_flag_address=lambda ram: ram.gorn_challenge_wins + 0x2,
+    enable_if=lambda options_dict: options_dict["extra_spaceship_challenge_locations"]
+)
+GORN_RACE = LocationData(
+    154, "Gorn: Race Through the Docking Bays",
+    checked_flag_address=lambda ram: ram.gorn_challenge_wins + 0x3,
+    enable_if=lambda options_dict: options_dict["extra_spaceship_challenge_locations"]
+)
 
 """ Snivelak """
 SNIVELAK_RESCUE_ANGELA = LocationData(
@@ -273,12 +329,13 @@ SMOLG_BALLOON_TRANSMISSION = LocationData(
 )
 SMOLG_DISTRIBUTION_FACILITY_END = LocationData(
     171, "Smolg: Distribution Facility End - Hypnomatic Part",
-    lambda state, player:
+    access_rule=lambda state, player:
         can_improved_jump(state, player)
         and can_dynamo(state, player)
         and can_electrolyze(state, player)
         and can_grind(state, player)
-        and can_infiltrate(state, player)
+        and can_infiltrate(state, player),
+    checked_flag_address=lambda ram: ram.hypnomatic_part1
 )
 SMOLG_MUTANT_CRAB = LocationData(
     172, "Smolg: Mutant Crab",
@@ -302,7 +359,11 @@ DAMOSEL_HYPNOTIST = LocationData(
         and can_thermanate(state, player)
         and has_hypnomatic_parts(state, player)
 )
-DAMOSEL_TRAIN_RAILS = LocationData(181, "Damosel: Train Rails - Hypnomatic Part", can_grind)
+DAMOSEL_TRAIN_RAILS = LocationData(
+    181, "Damosel: Train Rails - Hypnomatic Part",
+    access_rule=can_grind,
+    checked_flag_address=lambda ram: ram.hypnomatic_part2
+)
 DAMOSEL_DEFEAT_MOTHERSHIP = LocationData(182, "Damosel: Defeat Mothership - Mapper")
 DAMOSEL_FROZEN_FOUNTAIN_PB = LocationData(
     183, "Damosel: Frozen Fountain - Platinum Bolt",
@@ -317,7 +378,6 @@ DAMOSEL_PYRAMID_PB = LocationData(
     lambda state, player:
         can_swingshot(state, player)
         and can_improved_jump(state, player)
-        and can_thermanate(state, player)
         and can_hypnotize(state, player)
 )
 
@@ -325,7 +385,8 @@ DAMOSEL_PYRAMID_PB = LocationData(
 GRELBIN_FIND_ANGELA = LocationData(190, "Grelbin: Find Angela", can_hypnotize)
 GRELBIN_MYSTIC_MORE_MOONSTONES = LocationData(
     191, "Grelbin: Mystic More Moonstones - Hypnomatic Part",
-    lambda state, player: can_glide(state, player) and can_infiltrate(state, player)
+    access_rule=lambda state, player: can_glide(state, player) and can_infiltrate(state, player),
+    checked_flag_address=lambda ram: ram.hypnomatic_part3
 )
 GRELBIN_ICE_PLAINS_PB = LocationData(
     192, "Grelbin: Ice Plains - Platinum Bolt",
@@ -364,3 +425,155 @@ YEEDIL_TRACTOR_PILLAR_PB = LocationData(
         and can_tractor(state, player)
         and can_grind(state, player)
 )
+
+""" Megacorp Vendor """
+OOZLA_VENDOR_WEAPON_1 = LocationData(
+    300, "Oozla: Megacorp Vendor - New Weapon 1",
+    checked_flag_address=lambda ram: ram.secondary_inventory + Items.CHOPPER.offset,
+    enable_if=lambda options_dict: options_dict["randomize_megacorp_vendor"],
+    is_vendor=True
+)
+OOZLA_VENDOR_WEAPON_2 = LocationData(
+    301, "Oozla: Megacorp Vendor - New Weapon 2",
+    checked_flag_address=lambda ram: ram.secondary_inventory + Items.BLITZ_GUN.offset,
+    enable_if=lambda options_dict: options_dict["randomize_megacorp_vendor"],
+    is_vendor=True
+)
+ENDAKO_VENDOR_WEAPON_1 = LocationData(
+    302, "Endako: Megacorp Vendor - New Weapon 1",
+    checked_flag_address=lambda ram: ram.secondary_inventory + Items.PULSE_RIFLE.offset,
+    enable_if=lambda options_dict: options_dict["randomize_megacorp_vendor"],
+    is_vendor=True
+)
+ENDAKO_VENDOR_WEAPON_2 = LocationData(
+    303, "Endako: Megacorp Vendor - New Weapon 2",
+    checked_flag_address=lambda ram: ram.secondary_inventory + Items.MINITURRET_GLOVE.offset,
+    enable_if=lambda options_dict: options_dict["randomize_megacorp_vendor"],
+    is_vendor=True
+)
+BARLOW_VENDOR_WEAPON = LocationData(
+    304, "Barlow: Megacorp Vendor - New Weapon",
+    checked_flag_address=lambda ram: ram.secondary_inventory + Items.SEEKER_GUN.offset,
+    enable_if=lambda options_dict: options_dict["randomize_megacorp_vendor"],
+    is_vendor=True
+)
+NOTAK_VENDOR_WEAPON = LocationData(
+    305, "Notak: Megacorp Vendor - New Weapon",
+    checked_flag_address=lambda ram: ram.secondary_inventory + Items.SYNTHENOID.offset,
+    enable_if=lambda options_dict: options_dict["randomize_megacorp_vendor"],
+    is_vendor=True
+)
+TABORA_VENDOR_WEAPON_1 = LocationData(
+    306, "Tabora: Megacorp Vendor - New Weapon 1",
+    checked_flag_address=lambda ram: ram.secondary_inventory + Items.LAVA_GUN.offset,
+    enable_if=lambda options_dict: options_dict["randomize_megacorp_vendor"],
+    is_vendor=True
+)
+TABORA_VENDOR_WEAPON_2 = LocationData(
+    307, "Tabora: Megacorp Vendor - New Weapon 2",
+    checked_flag_address=lambda ram: ram.secondary_inventory + Items.BOUNCER.offset,
+    enable_if=lambda options_dict: options_dict["randomize_megacorp_vendor"],
+    is_vendor=True
+)
+DOBBO_VENDOR_WEAPON = LocationData(
+    308, "Dobbo: Megacorp Vendor - New Weapon",
+    checked_flag_address=lambda ram: ram.secondary_inventory + Items.MINIROCKET_TUBE.offset,
+    enable_if=lambda options_dict: options_dict["randomize_megacorp_vendor"],
+    is_vendor=True
+)
+JOBA_VENDOR_WEAPON_1 = LocationData(
+    309, "Joba: Megacorp Vendor - New Weapon 1",
+    checked_flag_address=lambda ram: ram.secondary_inventory + Items.SPIDERBOT_GLOVE.offset,
+    enable_if=lambda options_dict: options_dict["randomize_megacorp_vendor"],
+    is_vendor=True
+)
+JOBA_VENDOR_WEAPON_2 = LocationData(
+    310, "Joba: Megacorp Vendor - New Weapon 2",
+    checked_flag_address=lambda ram: ram.secondary_inventory + Items.PLASMA_COIL.offset,
+    enable_if=lambda options_dict: options_dict["randomize_megacorp_vendor"],
+    is_vendor=True
+)
+TODANO_VENDOR_WEAPON = LocationData(
+    311, "Todano: Megacorp Vendor - New Weapon",
+    checked_flag_address=lambda ram: ram.secondary_inventory + Items.HOVERBOMB_GUN.offset,
+    enable_if=lambda options_dict: options_dict["randomize_megacorp_vendor"],
+    is_vendor=True
+)
+ARANOS_VENDOR_WEAPON_1 = LocationData(
+    312, "Aranos Prison: Megacorp Vendor - New Weapon 1",
+    checked_flag_address=lambda ram: ram.secondary_inventory + Items.SHIELD_CHARGER.offset,
+    enable_if=lambda options_dict: options_dict["randomize_megacorp_vendor"],
+    is_vendor=True
+)
+ARANOS_VENDOR_WEAPON_2 = LocationData(
+    313, "Aranos Prison: Megacorp Vendor - New Weapon 2",
+    checked_flag_address=lambda ram: ram.secondary_inventory + Items.ZODIAC.offset,
+    enable_if=lambda options_dict: options_dict["randomize_megacorp_vendor"],
+    is_vendor=True
+)
+
+""" Gadgetron Vendor """
+BARLOW_GADGETRON_1 = LocationData(
+    314, "Barlow: Gadgetron Vendor - Weapon 1",
+    checked_flag_address=lambda ram: ram.secondary_inventory + Items.BOMB_GLOVE.offset,
+    enable_if=lambda options_dict: options_dict["randomize_gadgetron_vendor"],
+    is_vendor=True
+)
+BARLOW_GADGETRON_2 = LocationData(
+    315, "Barlow: Gadgetron Vendor - Weapon 2",
+    checked_flag_address=lambda ram: ram.secondary_inventory + Items.VISIBOMB_GUN.offset,
+    enable_if=lambda options_dict: options_dict["randomize_gadgetron_vendor"],
+    is_vendor=True
+)
+BARLOW_GADGETRON_3 = LocationData(
+    316, "Barlow: Gadgetron Vendor - Weapon 3",
+    checked_flag_address=lambda ram: ram.secondary_inventory + Items.TESLA_CLAW.offset,
+    enable_if=lambda options_dict: options_dict["randomize_gadgetron_vendor"],
+    is_vendor=True
+)
+BARLOW_GADGETRON_4 = LocationData(
+    317, "Barlow: Gadgetron Vendor - Weapon 4",
+    checked_flag_address=lambda ram: ram.secondary_inventory + Items.DECOY_GLOVE.offset,
+    enable_if=lambda options_dict: options_dict["randomize_gadgetron_vendor"],
+    is_vendor=True
+)
+BARLOW_GADGETRON_5 = LocationData(
+    318, "Barlow: Gadgetron Vendor - Weapon 5",
+    checked_flag_address=lambda ram: ram.secondary_inventory + Items.RYNO_II.offset,
+    enable_if=lambda options_dict: options_dict["randomize_gadgetron_vendor"],
+    is_vendor=True
+)
+BARLOW_GADGETRON_6 = LocationData(
+    319, "Barlow: Gadgetron Vendor - Weapon 6",
+    checked_flag_address=lambda ram: ram.secondary_inventory + Items.WALLOPER.offset,
+    enable_if=lambda options_dict: options_dict["randomize_gadgetron_vendor"],
+    is_vendor=True
+)
+
+# Keep in correct order
+MEGACORP_VENDOR_LOCATIONS: Sequence[LocationData] = [
+    OOZLA_VENDOR_WEAPON_1,
+    OOZLA_VENDOR_WEAPON_2,
+    ENDAKO_VENDOR_WEAPON_1,
+    ENDAKO_VENDOR_WEAPON_2,
+    BARLOW_VENDOR_WEAPON,
+    NOTAK_VENDOR_WEAPON,
+    TABORA_VENDOR_WEAPON_1,
+    TABORA_VENDOR_WEAPON_2,
+    DOBBO_VENDOR_WEAPON,
+    JOBA_VENDOR_WEAPON_1,
+    JOBA_VENDOR_WEAPON_2,
+    TODANO_VENDOR_WEAPON,
+    ARANOS_VENDOR_WEAPON_1,
+    ARANOS_VENDOR_WEAPON_2,
+]
+
+# Keep in correct order
+GADGETRON_VENDOR_LOCATIONS: Sequence[LocationData] = [
+    BARLOW_GADGETRON_1,
+    BARLOW_GADGETRON_2,
+    BARLOW_GADGETRON_3,
+    BARLOW_GADGETRON_4,
+    BARLOW_GADGETRON_5,
+    BARLOW_GADGETRON_6,
+]

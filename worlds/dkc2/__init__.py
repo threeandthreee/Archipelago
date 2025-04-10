@@ -7,7 +7,7 @@ import pkgutil
 
 from BaseClasses import Item, MultiWorld, Tutorial, ItemClassification
 from worlds.AutoWorld import World, WebWorld
-from .Items import DKC2Item, item_table, misc_table, item_groups
+from .Items import DKC2Item, item_table, misc_table, item_groups, STARTING_ID
 from .Locations import setup_locations, all_locations, location_groups
 from .Regions import create_regions, connect_regions
 from .Names import ItemName, LocationName
@@ -32,10 +32,19 @@ class DKC2Web(WebWorld):
 
     setup_en = Tutorial(
         "Multiworld Setup Guide",
-        "A guide to playing Donkey Kong Country 2 - Diddy's Kong Quest with Archipelago",
+        "A guide to playing Donkey Kong Country 2 with Archipelago",
         "English",
         "setup_en.md",
         "setup/en",
+        ["lx5"]
+    )
+    
+    setup_es = Tutorial(
+        "Guía de configuración de Multiworld",
+        "Guía para jugar Donkey Kong Country 2 en Archipelago",
+        "Spanish",
+        "setup_es.md",
+        "setup/es",
         ["lx5"]
     )
 
@@ -46,10 +55,12 @@ class DKC2Web(WebWorld):
 
 class DKC2World(World):
     """
-    Donkey Kong Country 2 WIP
+    Donkey Kong Country 2 is an action platforming game. 
+    Play as Diddy Kong and his girlfriend Dixie as they go to Crocodile Isle 
+    to rescue Donkey Kong from the clutches of Kaptain K. Rool.
     """
+    # borrowed from DKC3's description
     game = "Donkey Kong Country 2"
-    is_experimental = True
     web = DKC2Web()
 
     settings: typing.ClassVar[DKC2Settings]
@@ -160,6 +171,9 @@ class DKC2World(World):
         trap_weights = []
         trap_weights += ([ItemName.freeze_trap] * self.options.freeze_trap_weight.value)
         trap_weights += ([ItemName.reverse_trap] * self.options.reverse_trap_weight.value)
+        trap_weights += ([ItemName.honey_trap] * self.options.honey_trap_weight.value)
+        trap_weights += ([ItemName.ice_trap] * self.options.ice_trap_weight.value)
+        trap_weights += ([ItemName.tnt_barrel_trap] * self.options.tnt_barrel_trap_weight.value)
         trap_weights += ([ItemName.damage_trap] * self.options.damage_trap_weight.value)
         trap_weights += ([ItemName.death_trap] * self.options.insta_death_trap_weight.value)
         trap_count = 0 if (len(trap_weights) == 0) else math.ceil(junk_count * (self.options.trap_fill_percentage.value / 100.0))
@@ -174,9 +188,9 @@ class DKC2World(World):
 
         # Add junk items into the pool
         junk_weights = []
-        junk_weights += ([ItemName.dk_barrel] * 40)
-        junk_weights += ([ItemName.red_balloon] * 35)
-        junk_weights += ([ItemName.banana_coin] * 25)
+        junk_weights += ([ItemName.dk_barrel] * 30)
+        junk_weights += ([ItemName.red_balloon] * 30)
+        junk_weights += ([ItemName.banana_coin] * 20)
 
         junk_pool = []
         for _ in range(junk_count):
@@ -248,9 +262,22 @@ class DKC2World(World):
         slot_data["coinsanity"] = self.options.coinsanity.value
         slot_data["bananasanity"] = self.options.bananasanity.value
         slot_data["energy_link"] = self.options.energy_link.value
+        slot_data["trap_weights"] = self.output_trap_weights()
 
         return slot_data
 
+    def output_trap_weights(self) -> typing.Dict[int, int]:
+        trap_data = {}
+
+        trap_data[STARTING_ID + 0x0040] = self.options.freeze_trap_weight.value
+        trap_data[STARTING_ID + 0x0041] = self.options.reverse_trap_weight.value
+        trap_data[STARTING_ID + 0x0042] = self.options.honey_trap_weight.value
+        trap_data[STARTING_ID + 0x0043] = self.options.ice_trap_weight.value
+        trap_data[STARTING_ID + 0x0044] = self.options.tnt_barrel_trap_weight.value
+        trap_data[STARTING_ID + 0x0045] = self.options.damage_trap_weight.value
+        trap_data[STARTING_ID + 0x0046] = self.options.insta_death_trap_weight.value
+
+        return trap_data
 
     def generate_early(self):
         self.level_connections = dict()

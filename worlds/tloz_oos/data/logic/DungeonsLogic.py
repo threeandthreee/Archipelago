@@ -5,20 +5,10 @@ def make_d0_logic(player: int):
     return [
         # 0 keys
         ["enter d0", "d0 key chest", False, None],
-        ["enter d0", "d0 rupee chest", False, lambda state: any([
-            all([
-                oos_can_break_bush(state, player, True),
-                # If dungeons are shuffled, jumping down the hole is a dangerous action and requires
-                # a way of warping back to be in logic
-                any([
-                    not oos_option_shuffled_dungeons(state, player),
-                    oos_can_warp(state, player)
-                ])
-            ]),
-
+        ["enter d0", "d0 rupee chest", False, lambda state:
             # If hole is removed, stairs are added inside dungeon to make the chest reachable
             oos_option_no_d0_alt_entrance(state, player),
-        ])],
+         ],
         ["d0 rupee chest", "enter d0", False, None],
         ["enter d0", "d0 hidden 2d section", False, lambda state: any([
             oos_can_kill_normal_enemy(state, player),
@@ -32,7 +22,8 @@ def make_d0_logic(player: int):
         # 1 key
         ["enter d0", "d0 sword chest", False, lambda state: any([
             oos_has_small_keys(state, player, 0, 1),
-            oos_self_locking_small_key(state, player, "d0 sword chest", 0)
+            oos_self_locking_small_key(state, player, "d0 sword chest", 0),
+            oos_self_locking_item(state, player, "d0 sword chest", "Master Key (Hero's Cave)")
         ])],
     ]
 
@@ -88,13 +79,13 @@ def make_d1_logic(player: int):
         ["d1 railway chest", "d1 button chest", False, None],
 
         # 2 keys
-        ["d1 railway chest", "d1 basement", False, lambda state: all([
-            oos_has_bombs(state, player),
-            any([
+        ["d1 railway chest", "d1 basement", False, lambda state: any([
+            oos_self_locking_small_key(state, player, "d1 basement", 1),
+            all([
+                oos_has_bombs(state, player),
                 oos_has_small_keys(state, player, 1, 2),
-                oos_self_locking_small_key(state, player, "d1 basement", 1)
-            ]),
-            oos_can_kill_armored_enemy(state, player)
+                oos_can_kill_armored_enemy(state, player)
+            ])
         ])],
     ]
 
@@ -102,20 +93,12 @@ def make_d1_logic(player: int):
 def make_d2_logic(player: int):
     return [
         # 0 keys
-        ["enter d2", "d2 torch room", False, None],
+        ["enter d2", "d2 torch room", True, None],
         ["d2 torch room", "d2 left from entrance", False, None],
         ["d2 torch room", "d2 rope drop", False, lambda state: oos_can_kill_normal_enemy(state, player)],
         ["d2 torch room", "d2 arrow room", False, lambda state: oos_can_use_ember_seeds(state, player, True)],
 
-        ["d2 arrow room", "d2 torch room", False, lambda state: all([
-            oos_can_kill_normal_enemy(state, player),
-            any([
-                # Backwards path is one-way if we don't have ember seeds, so ensure we have a way to warp out in case
-                # something goes wrong
-                oos_can_use_ember_seeds(state, player, True),
-                oos_can_warp(state, player)
-            ])
-        ])],
+        ["d2 arrow room", "d2 torch room", False, lambda state: oos_can_kill_normal_enemy(state, player)],
         ["d2 arrow room", "d2 rupee room", False, lambda state: oos_has_bombs(state, player)],
         ["d2 arrow room", "d2 rope chest", False, lambda state: oos_can_kill_normal_enemy(state, player)],
         ["d2 arrow room", "d2 blade chest", False, lambda state: oos_can_kill_normal_enemy(state, player)],
@@ -133,7 +116,13 @@ def make_d2_logic(player: int):
         ["d2 alt entrances", "d2 scrub", False, lambda state: oos_has_rupees_for_shop(state, player, "d2Scrub")],
 
         # 2 keys
-        ["d2 roller chest", "d2 spinner", False, lambda state: oos_has_small_keys(state, player, 2, 2)],
+        ["d2 roller chest", "d2 spinner", False, lambda state: all([
+            oos_has_small_keys(state, player, 2, 2),
+            oos_has_bombs(state, player)
+        ])],
+        # You can take the Facade miniboss teleporter to reach dungeon entrance, even if you entered the dungeon
+        # through the alt-entrance
+        ["d2 spinner", "d2 torch room", False, None],
         ["d2 spinner", "dodongo owl", False, lambda state: oos_can_use_mystery_seeds(state, player)],
         ["d2 spinner", "d2 boss", False, lambda state: all([
             oos_has_boss_key(state, player, 2),
@@ -376,10 +365,7 @@ def make_d4_logic(player: int):
                 oos_option_medium_logic(state, player),
                 any([
                     oos_has_noble_sword(state, player),
-                    all([
-                        oos_has_sword(state, player),
-                        state.has("Energy Ring", player)
-                    ])
+                    oos_use_energy_ring(state, player)
                 ])
             ]),
             all([
@@ -583,22 +569,38 @@ def make_d6_logic(player: int):
             oos_has_magnet_gloves(state, player),
             oos_has_feather(state, player),
             any([
-                oos_has_small_keys(state, player, 6, 3),
+                all([
+                    oos_has_small_keys(state, player, 6, 1),
+
+                    # Go through beamos room
+                    oos_has_bombs(state, player),
+
+                    state.has("_can_kill_vire", player)
+                ]),
                 all([
                     oos_has_small_keys(state, player, 6, 2),
-                    oos_has_bombs(state, player)
-                ])
+                    any([
+                        # Go through beamos room
+                        oos_has_bombs(state, player),
+
+                        state.has("_can_kill_vire", player)
+                    ])
+                ]),
+                oos_has_small_keys(state, player, 6, 3),
             ])
         ])],
 
-        ["d6 vire chest", "enter vire", False, lambda state: oos_has_small_keys(state, player, 6, 3)],
-        ["enter vire", "d6 pre-boss room", False, lambda state: all([
+        ["d6 vire chest", "d6 kill vire", False, lambda state: all([
+            oos_has_small_keys(state, player, 6, 1),
             any([
                 # Kill Vire
                 oos_has_sword(state, player, False),
                 oos_has_fools_ore(state, player),
                 # state.has("expert's ring", player)
-            ]),
+            ])
+        ])],
+        ["d6 kill vire", "d6 pre-boss room", False, lambda state: all([
+            oos_has_small_keys(state, player, 6, 3),
             any([
                 # Kill hardhats
                 oos_has_magnet_gloves(state, player),
@@ -726,10 +728,7 @@ def make_d7_logic(player: int):
                     # Pull the right darknut by just going and stalling in the hole
                 ])
             ]),
-            all([
-                oos_has_sword(state, player, False),
-                state.has("Energy Ring", player),
-            ])
+            oos_use_energy_ring(state, player)
         ])],
         ["d7 past darknut bridge", "d7 darknut bridge trampolines", False, lambda state: any([
             # Reach trampolines directly

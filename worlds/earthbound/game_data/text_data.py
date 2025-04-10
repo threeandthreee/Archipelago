@@ -44,7 +44,8 @@ barf_text = {
     "Jeff": [0xFA, 0xC2, 0xEE, 0x10, 0xC4, 0xEE],
     "Poo": [0x1A, 0x74, 0xEF, 0x3E, 0xC4, 0xEE],
     "Flying Man": [0x17, 0xC3, 0xEE, 0x95, 0xC4, 0xEE],
-    "Ness": [0x16, 0x07, 0xF3, 0x2B, 0x07, 0xF3]
+    "Ness": [0x16, 0x07, 0xF3, 0x2B, 0x07, 0xF3],
+    "Photograph": [0x2F, 0x99, 0xC9, 0x2F, 0x99, 0xC9]
 }
 
 eb_text_table = {" ": ([0x50]), "!": ([0x51]), '"': ([0x52]), "■": ([0x53]), "$": ([0x54]), "%": ([0x55]),
@@ -63,7 +64,8 @@ eb_text_table = {" ": ([0x50]), "!": ([0x51]), '"': ([0x52]), "■": ([0x53]), "
                  "o": ([0x9F]), "p": ([0xA0]), "q": ([0xA1]), "r": ([0xA2]), "s": ([0xA3]), "t": ([0xA4]),
                  "u": ([0xA5]), "v": ([0xA6]), "w": ([0xA7]), "x": ([0xA8]), "y": ([0xA9]), "z": ([0xAA]),
                  "[": ([0xAB]), "♪": ([0xAC]), "]": ([0xAD]), "~": ([0xAE]), "◯": ([0xAF]), "_": ([0xB0]),
-                 "<": ([0xB1]), " ": ([0x90]), "&": ([0xB6]), "#": ([0xB7]), "\n": ([0x03, 0x00]), "ñ": 0xB9}
+                 "<": ([0xB1]), " ": ([0x90]), "&": ([0xB6]), "#": ([0xB7]), "\n": ([0x03, 0x00]), "ñ": ([0xB9]),
+                 "ä": ([0xBA])}
 # 0x90 is a half-width space
 
 pixel_width_table = {" ": 2, "!": 2, '"': 3, "■": 2, "$": 5, "%": 9,
@@ -82,7 +84,7 @@ pixel_width_table = {" ": 2, "!": 2, '"': 3, "■": 2, "$": 5, "%": 9,
                      "o": 4, "p": 4, "q": 4, "r": 3, "s": 4, "t": 3,
                      "u": 4, "v": 5, "w": 7, "x": 4, "y": 4, "z": 4,
                      "[": 2, "♪": 5, "]": 2, "~": 6, "◯": 7, "_": 5,
-                     "<": 4, " ": 1, "&": 6, "#": 6}
+                     "<": 4, " ": 1, "&": 6, "#": 6, "ñ": 6, "ä": 5}
 
 
 lumine_hall_text = [
@@ -206,6 +208,10 @@ lumine_hall_text = [
     "Help, I'm trapped in a Lumine Hall factory!",
     "They say that Ice Palace can be found at Ice Palace...",
     "Hey Mom, I'm in AP!",
+    "It says “gullible” on the wall",
+    "64 bits! 32 bits! 16 bits! 8 bits! 4 bits! 2 bits! 1 bit! Half bit! Quarter bit! THE WRIST GAME!!!",
+    "Where did YOU learn to teleport?",
+    "My statistics show about 70% of kids these days don't stop to read bulletin boards anymore. Well, I had to shell out a lot of money for this, but let's see you ignore THIS one, suckers!          ...Brick Road"
 ]
 
 spoiler_psi = {

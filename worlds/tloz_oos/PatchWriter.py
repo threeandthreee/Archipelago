@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 from BaseClasses import ItemClassification
 from worlds.tloz_oos.patching.ProcedurePatch import OoSProcedurePatch
 from .data.Constants import *
+from . import OracleOfSeasonsOptions
 
 if TYPE_CHECKING:
     from . import OracleOfSeasonsWorld
@@ -18,15 +19,9 @@ def oos_create_ap_procedure_patch(world: "OracleOfSeasonsWorld") -> OoSProcedure
     patch_data = {
         "version": VERSION,
         "seed": world.multiworld.seed,
-        "options": world.options.as_dict(*[
-            "advance_shop", "animal_companion", "combat_difficulty", "default_seed",
-            "enforce_potion_in_shop", "fools_ore", "goal", "golden_beasts_requirement", "master_keys",
-            "quick_flute", "remove_d0_alt_entrance", "remove_d2_alt_entrance", "required_essences",
-            "shuffle_golden_ore_spots", "shuffle_old_men", "sign_guy_requirement", "tarm_gate_required_jewels",
-            "treehouse_old_man_requirement", "warp_to_start", "starting_maps_compasses",
-            "keysanity_small_keys", "keysanity_boss_keys", "keysanity_maps_compasses",
-            "deterministic_gasha_locations", "shuffle_essences", "shuffle_business_scrubs"
-        ]),
+        "options": world.options.as_dict(
+            *[option_name for option_name in OracleOfSeasonsOptions.type_hints
+              if hasattr(OracleOfSeasonsOptions.type_hints[option_name], "include_in_patch")]),
         "samasa_gate_sequence": ' '.join([str(x) for x in world.samasa_gate_code]),
         "lost_woods_item_sequence": world.lost_woods_item_sequence,
         "lost_woods_main_sequence": world.lost_woods_main_sequence,

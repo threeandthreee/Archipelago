@@ -1,12 +1,16 @@
 import hashlib
 import shutil
 import mmap
-from typing import Any, Callable, TYPE_CHECKING
+from typing import Any, Callable, TYPE_CHECKING, Optional
 
 import settings
 from worlds.Files import APProcedurePatch, APTokenMixin, APTokenTypes
-from .Rac2Options import ShuffleWeaponVendors
-from .data import Items, IsoAddresses
+from .Rac2Options import Rac2Options
+from .data import ExperienceTables
+from . import MIPS, TextManager
+from .data import IsoAddresses, RamAddresses
+from .data.RamAddresses import PlanetAddresses
+from .data.ExperienceTables import get_weapon_upgrades_table
 
 if TYPE_CHECKING:
     from . import Rac2World
@@ -38,6 +42,14 @@ class Rac2ProcedurePatch(APProcedurePatch, APTokenMixin):
         Rac2ProcedurePatch.hash = md5_hash
 
     @staticmethod
+    def get_game_version_from_iso(iso_path: str) -> Optional[str]:
+        with open(iso_path, "rb") as iso:
+            iso.seek(0x828F5)
+            if iso.read(11) == b"SCUS_972.68":
+                return "SCUS-97268"
+        return None
+
+    @staticmethod
     def apply_tokens_mmap(caller: APProcedurePatch, rom: mmap, token_file: str) -> None:
         token_data = caller.get_file(token_file)
         token_count = int.from_bytes(token_data[0:4], "little")
@@ -67,16 +79,38 @@ class Rac2ProcedurePatch(APProcedurePatch, APTokenMixin):
             bpr += 9 + size
         return
 
-    def patch_mmap(self, target: str, notifier: Callable[[str, float], None]) -> None:
+    def patch_mmap(self, target: str, notifier: Callable[[str, float], None]) -> bool:
         self.read()
+        notifier("First time setup. This may take some time.", 0)
+        settings.FilePath.md5s = [SCUS_97268_HASH]
+        try:
+            iso_file = settings.get_settings().rac2_options.iso_file
+        except ValueError:
+            notifier(
+                "[color=#FF0000][size=20]Error[/size]"
+                "\n\nThe supplied ISO is not a supported version of the game."
+                "\nOnly [b]US Version 1.01 (SCUS-97268)[/b] is supported right now.[/color]"
+                "\n\n[i]You can close this window when you are done reading.[/i]",
+                0
+            )
+            return False
         notifier("Verifying game version...", 0)
-        self.check_hash(settings.get_settings().rac2_options.iso_file)
-        notifier("Game version supported. \n\nCopying and patching ISO...", 0)
-        shutil.copy(settings.get_settings().rac2_options.iso_file, target)
-        notifier("Patching ISO", 0)
+        if not self.get_game_version_from_iso(iso_file):
+            notifier(
+                "[color=#FF0000][size=20]Error[/size]"
+                "\n\nThe [b]Ratchet & Clank 2.iso[/b] in the [b]Archipelago Folder[/b] is invalid."
+                "\nPlease remove is and try again.[/color]"
+                "\n\n[i]You can close this window when you are done reading.[/i]",
+                0
+            )
+            return False
+        notifier("Game version supported. \n\nCreating new copy of ISO...", 0)
+        shutil.copy(iso_file, target)
+        notifier("Patching ISO...", 0)
         with open(target, "r+b") as file:
             self.apply_tokens_mmap(self, mmap.mmap(file.fileno(), 0), "token_data.bin")
         notifier("Patching complete!", 100)
+        return True
 
     def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
@@ -89,6 +123,7 @@ def generate_patch(world: "Rac2World", patch: Rac2ProcedurePatch, instruction=No
     #     patch.hash = ...
     if True:
         addresses = IsoAddresses.AddressesSCUS97268
+        ram = RamAddresses.Addresses("SCUS-97268")
 
     """---------------
     Core
@@ -96,6 +131,11 @@ def generate_patch(world: "Rac2World", patch: Rac2ProcedurePatch, instruction=No
     # Set 'Planet Loaded' byte to 1 when a new planet is done loading and about to start running.
     patch.write_token(APTokenTypes.WRITE, addresses.MAIN_LOOP_FUNC + 0x1C, bytes([0x01, 0x00, 0x11, 0x24]))
     patch.write_token(APTokenTypes.WRITE, addresses.MAIN_LOOP_FUNC + 0x24, bytes([0xF5, 0x8B, 0x91, 0xA3]))
+
+    # Define a custom "game name" for memcard folders & files, so save files are not compatible between different seeds
+    generated_game_name = f"AP{hex((world.multiworld.seed + world.player) & 0xFFFFF)[2:].upper()}"
+    for address in addresses.MEMCARD_GAME_NAMES:
+        patch.write_token(APTokenTypes.WRITE, address, generated_game_name.encode())
 
     """---------------
     Multiple planets
@@ -118,10 +158,13 @@ def generate_patch(world: "Rac2World", patch: Rac2ProcedurePatch, instruction=No
     for address in addresses.IS_BUYABLE_FUNCS:
         patch.write_token(APTokenTypes.WRITE, address + 0x68, NOP)
         patch.write_token(APTokenTypes.WRITE, address + 0x6C, bytes([0x03, 0x00, 0x50, 0x14]))
+    # Make it so the vendor unlocks weapon slots for weapons you own and have upgraded at least once
+    for address in addresses.UNLOCK_VENDOR_SLOT_FUNCS:
+        patch.write_token(APTokenTypes.WRITE, address + 0x18, bytes([0x00, 0x00, 0xC3, 0x24]))  # addiu v1,a2,0x0
 
-    # Disable game failsafe that disable Clank if you don't have heli-pack unlocked when loading into a planet.
+    # Disable game failsafe sets lancer as the equipped weapon if there is no equipped weapon on level start.
     for address in addresses.SETUP_RATCHET_FUNCS:
-        patch.write_token(APTokenTypes.WRITE, address + 0x3BC, NOP)
+        patch.write_token(APTokenTypes.WRITE, address + 0x244, NOP)
 
     # prevent planets from getting added to the ship menu when a new planet is unlocked
     for address in addresses.UNLOCK_PLANET_FUNCS:
@@ -141,6 +184,66 @@ def generate_patch(world: "Rac2World", patch: Rac2ProcedurePatch, instruction=No
     for address in addresses.NANOTECH_BOOST_UPDATE_FUNCS:
         patch.write_token(APTokenTypes.WRITE, address + 0x3A8, NOP)
 
+    # Change variable checked by starmap to display a planet
+    for address in addresses.STARMAP_MENU_FUNCS:
+        patch.write_token(APTokenTypes.WRITE, address + 0x144, bytes([0x20, 0x00, 0x43, 0x90]))
+
+    # Handle options altering rewards
+    if world.options.no_revisit_reward_change:
+        # When loading both base XP and revisit XP to write them in the moby instance, put base XP in both instead
+        for address in addresses.RESET_MOBY_FUNCS:
+            # Use base bolts as revisit bolts
+            patch.write_token(APTokenTypes.WRITE, address + 0x1384, bytes([0x00, 0x00, 0x45, 0x8E]))  # lw a3,(s2)
+            patch.write_token(APTokenTypes.WRITE, address + 0x1388, bytes([0x04, 0x00, 0x52, 0x26]))  # addiu s2,s2,0x4
+            # Use base XP as revisit XP
+            patch.write_token(APTokenTypes.WRITE, address + 0x139C, bytes([0x00, 0x00, 0x47, 0x8E]))  # lw a3,(s2)
+            patch.write_token(APTokenTypes.WRITE, address + 0x13A0, bytes([0x04, 0x00, 0x52, 0x26]))  # addiu s2,s2,0x4
+
+    # Replace factors in the reward degradation by values which depend on
+    for address in addresses.KILL_COUNT_MULT_TABLES:
+        if world.options.no_kill_reward_degradation:
+            # Put 100% XP & Bolts in every case
+            patch.write_token(APTokenTypes.WRITE, address, bytes([100] * 32))
+        elif world.options.no_revisit_reward_change:
+            # Put the base scaling from vanilla game for XP & Bolts even for revisits
+            patch.write_token(APTokenTypes.WRITE, address, bytes([100, 50, 40, 30, 25, 20, 15, 10] * 4))
+
+    """ Normally, when the game gives you equipment (Gadgets/Items/Weapons), it will set a Primary and Secondary byte. 
+    The Primary byte is what the game uses to determine if you have the equipment. The Secondary byte doesn't seem to 
+    be used for anything. For the randomizer, the Primary byte will continue to be used to indicate whether the 
+    equipment is collected but the Secondary byte will be repurposed to keep track of whether the location has been
+    visited. Here, the give equipment function for each planet is modified to only set the Secondary byte to mark that 
+    the locations has been visited and prevent giving normal equipment. """
+    for address in addresses.GIVE_EQUIPMENT_FUNCS:
+        patch.write_token(APTokenTypes.WRITE, address + 0x14, bytes([0x01, 0x00, 0x03, 0x24]))  # addiu v1,zero,0x1
+        patch.write_token(APTokenTypes.WRITE, address + 0x18, bytes([0x21, 0x38, 0x82, 0x00]))  # addu a3,a0,v0
+        patch.write_token(APTokenTypes.WRITE, address + 0x1C, bytes([0x38, 0x00, 0xE3, 0xA0]))  # sb v1,0x38(a3)
+        patch.write_token(APTokenTypes.WRITE, address + 0x20, NOP * 43)
+
+    for address in addresses.VENDOR_CONFIRM_MENU_FUNCS:
+        # Prevent auto-equipping anything purchased at the vendor.
+        patch.write_token(APTokenTypes.WRITE, address + 0x740, NOP)
+
+        # Prevent vendor from overwriting slots after purchases.
+        patch.write_token(APTokenTypes.WRITE, address + 0x60C, NOP)
+        patch.write_token(APTokenTypes.WRITE, address + 0x790, NOP)
+
+    """ Prevent any inference of an upgraded weapon type, always take the base Lv1 weapon so that we know which
+    weapon to edit temporarily into a fake buyable item. """
+    for address in addresses.VENDOR_LOOP_FUNCS:
+        # Take the right item to determine the icon to draw
+        patch.write_token(APTokenTypes.WRITE, address + 0x244, MIPS.nop())
+        patch.write_token(APTokenTypes.WRITE, address + 0x248, bytes([0x00, 0x00, 0x43, 0x24]))  # addiu v1,v0,0x0
+        # Take the right item to determine the icon color
+        patch.write_token(APTokenTypes.WRITE, address + 0x27C, MIPS.nop())
+        patch.write_token(APTokenTypes.WRITE, address + 0x284, bytes([0x00, 0x00, 0x43, 0x24]))  # addiu v1,v0,0x0
+    for address in addresses.VENDOR_ITEM_NAME_HANDLING_FUNCS:
+        patch.write_token(APTokenTypes.WRITE, address + 0x29C, MIPS.nop())
+        patch.write_token(APTokenTypes.WRITE, address + 0x2A8, bytes([0x00, 0x00, 0x62, 0x24]))  # addiu v0,v1,0x0
+    for address in addresses.VENDOR_ITEM_PRICE_HANDLING_FUNCS:
+        patch.write_token(APTokenTypes.WRITE, address + 0xD0, MIPS.nop())
+        patch.write_token(APTokenTypes.WRITE, address + 0xD8, bytes([0x00, 0x00, 0x82, 0x24]))  # addiu v0,a0,0x0
+
     """ Normally, the game will iterate through the entire collected platinum bolt table whenever it needs to get your 
     current platinum bolt count. This changes it to read a single byte that we control to get that count instead. This 
     is done to decouple the platinum bolt count from platinum bolt locations checked. This same concept is also applied 
@@ -149,64 +252,76 @@ def generate_patch(world: "Rac2World", patch: Rac2ProcedurePatch, instruction=No
         patch.write_token(APTokenTypes.WRITE, address + 0x4, bytes([0x13, 0x00, 0x00, 0x10]))
         patch.write_token(APTokenTypes.WRITE, address + 0x8, bytes([0xE4, 0xB2, 0x46, 0x90]))
 
+    # For some reason, the "Weapons" menu sets the secondary inventory flag for any weapon you hover with your cursor.
+    # This is a problem for us since secondary inventory is tied to locations, so we just disable that behavior.
+    for address in addresses.WEAPONS_MENU_FUNCS:
+        patch.write_token(APTokenTypes.WRITE, address + 0x408, MIPS.nop())
+
     # Same for nanotech boosts
-    for address in addresses.NANOTECH_COUNT_FUNCS:
-        patch.write_token(APTokenTypes.WRITE, address + 0x70, bytes([0xE5, 0xB2, 0xA5, 0x90]))
-        patch.write_token(APTokenTypes.WRITE, address + 0x74, bytes([0x00, 0x00, 0xA4, 0x8F]))
-        patch.write_token(APTokenTypes.WRITE, address + 0x7C, bytes([0x09, 0x00, 0x00, 0x10]))
-        patch.write_token(APTokenTypes.WRITE, address + 0x80, bytes([0x00, 0x00, 0xA2, 0xAF]))
+    for address, spaceish_wars_address in zip(addresses.NANOTECH_COUNT_FUNCS, addresses.SPACEISH_WARS_FUNCS):
+        # Inject a custom procedure run on each tick of the main loop of each planet.
+        # It will be called through the NANOTECH_COUNT_FUNC since we are removing a few instructions there,
+        # leaving space for a call.
+        planet = ram.planet[IsoAddresses.get_planet_id_from_iso_address(address)]
+        patch.write_token(APTokenTypes.WRITE, spaceish_wars_address, custom_main_loop(ram, planet))
+
+        patch.write_token(APTokenTypes.WRITE, address + 0x70, bytes([0xE5, 0xB2, 0xA5, 0x90]))  # lbu a1,-0x4D1B(a1)
+        patch.write_token(APTokenTypes.WRITE, address + 0x74, bytes([0x00, 0x00, 0xA4, 0x8F]))  # lw a0,0x0(sp)
+        patch.write_token(APTokenTypes.WRITE, address + 0x78, bytes([0x21, 0x10, 0x85, 0x00]))  # addu v0,a0,a1
+        patch.write_token(APTokenTypes.WRITE, address + 0x7C, MIPS.jal(planet.spaceish_wars_func))
+        patch.write_token(APTokenTypes.WRITE, address + 0x80, bytes([0x00, 0x00, 0xA2, 0xAF]))  # sw v0,0x0(sp)
+        patch.write_token(APTokenTypes.WRITE, address + 0x84, bytes([0x07, 0x00, 0x00, 0x10]))  # beq zero,zero,0x7
+        patch.write_token(APTokenTypes.WRITE, address + 0x88, MIPS.nop())
 
     # Prevent Platinum Bolt received message popup at the end of ship races.
     for address in addresses.RACE_CONTROLLER_FUNCS:
         patch.write_token(APTokenTypes.WRITE, address + 0x1FC, NOP)
         patch.write_token(APTokenTypes.WRITE, address + 0x36C, NOP)
 
+    # Fix crash when breaking ammo crate while having no valid ammo based weapons collected
+    for address in addresses.ROLL_RANDOM_NUMBER_FUNCS:
+        patch.write_token(APTokenTypes.WRITE, address + 0x1C, bytes([0x01, 0x00, 0x10, 0x24]))  # addiu s0,zero,0x1
+
+    # Reuse "Short Cuts" button on special manu to travel to Ship Shack.
+    for address in addresses.SPECIAL_MENU_FUNCS:
+        # Enable button outside of Challenge Mode.
+        patch.write_token(APTokenTypes.WRITE, address + 0x1B8, NOP * 2)
+    for address in addresses.SHORTCUT_MENU_FUNCS:
+        # Branch directly to switch planet function call.
+        patch.write_token(APTokenTypes.WRITE, address + 0x20, bytes([0x63, 0x00, 0x00, 0x10]))
+        # Set arg0 to 0x18 for ship shack
+        patch.write_token(APTokenTypes.WRITE, address + 0x24, bytes([0x18, 0x00, 0x04, 0x24]))
+
+    # Allow first-person mode outside of NG+ if requested in options
+    if world.options.allow_first_person_mode:
+        for address in addresses.SPECIAL_MENU_FUNCS:
+            patch.write_token(APTokenTypes.WRITE, address + 0x1B0, NOP * 2)
+            
+    # Enable bolt multiplier outside of NG+ if requested in options
+    if world.options.enable_bolt_multiplier:
+        for address in addresses.TRACK_KILL_FUNCS:
+            patch.write_token(APTokenTypes.WRITE, address + 0x9C, NOP)  # beq b0,zero,0x1e
+
+    if world.options.free_challenge_selection:
+        patch_free_challenge_selection(patch, addresses)
+
+    if world.options.extend_weapon_progression:
+        patch_extended_weapon_progression(patch, addresses)
+
+    if world.options.nanotech_xp_multiplier != 100:
+        alter_nanotech_xp_tables(patch, addresses, world.options.nanotech_xp_multiplier.value)
+
+    if world.options.weapon_xp_multiplier != 100 or world.options.extend_weapon_progression:
+        alter_weapon_data_tables(patch, addresses, world.options)
+
     """----------------------
-    Shuffle Weapons Vendors
+    Weapons
     ----------------------"""
-    # Handle "weapons" mode.
-    if world.options.shuffle_weapon_vendors == ShuffleWeaponVendors.option_weapons:
-        weapons = Items.WEAPONS
-        weapons.remove(Items.CLANK_ZAPPER)
-        weapons.remove(Items.SHEEPINATOR)
-        weapons.remove(Items.SPIDERBOT_GLOVE)
-        unlock_planets = [1, 1, 3, 3, 4, 6, 8, 8, 9, 11, 12, 14, 14]
-        world.random.shuffle(weapons)
-
-        first_weapon = weapons[0]
-        second_weapon = weapons[1]
-        megacorp_weapons = weapons[2:len(unlock_planets) + 2]
-        gadgetron_weapons = weapons[len(unlock_planets) + 2:]
-
-        # Patch starting weapons.
+    # Prevent game from giving starting weapons so the client can handle it.
+    if world.options.starting_weapons:
         for address in addresses.AVAILABLE_ITEM_FUNCS:
-            # First weapon.
-            weapon_id = first_weapon.offset
-            low = (0x7AF8 + weapon_id).to_bytes(2, "little")
-            patch.write_token(APTokenTypes.WRITE, address + 0x8, low)
-            patch.write_token(APTokenTypes.WRITE, address + 0x18, weapon_id.to_bytes(1, "little"))
-            patch.write_token(APTokenTypes.WRITE, address + 0x20, weapon_id.to_bytes(1, "little"))
-            patch.write_token(APTokenTypes.WRITE, address + 0x24, bytes([0x40, 0x00, 0x83, 0x34]))
-            patch.write_token(APTokenTypes.WRITE, address + 0x28, weapon_id.to_bytes(1, "little"))
-
-            # Second weapon.
-            weapon_id = second_weapon.offset
-            low = (0x7AF8 + weapon_id).to_bytes(2, "little")
-            patch.write_token(APTokenTypes.WRITE, address + 0x40, low)
-            patch.write_token(APTokenTypes.WRITE, address + 0x50, weapon_id.to_bytes(1, "little"))
-            patch.write_token(APTokenTypes.WRITE, address + 0x58, weapon_id.to_bytes(1, "little"))
-            patch.write_token(APTokenTypes.WRITE, address + 0x5C, bytes([0x40, 0x00, 0x83, 0x34]))
-
-        # Patch Megacorp vendor.
-        for address in addresses.VENDOR_REQUIREMENT_TABLES:
-            for i, planet in enumerate(unlock_planets):
-                patch.write_token(APTokenTypes.WRITE, address + i * 8, megacorp_weapons[i].offset.to_bytes(4, "little"))
-                patch.write_token(APTokenTypes.WRITE, address + i * 8 + 4, planet.to_bytes(4, "little"))
-
-        # Patch Gadgetron vendor.
-        for address in addresses.POPULATE_VENDOR_SLOT_FUNCS:
-            for i, offset in enumerate(range(0x8C0, 0x8D8, 4)):
-                patch.write_token(APTokenTypes.WRITE, address + offset, gadgetron_weapons[i].offset.to_bytes(1, "little"))
+            patch.write_token(APTokenTypes.WRITE, address + 0x4, NOP * 3)
+            patch.write_token(APTokenTypes.WRITE, address + 0x14, NOP * 21)
 
     """--------- 
     Oozla 
@@ -357,6 +472,22 @@ def generate_patch(world: "Rac2World", patch: Rac2ProcedurePatch, instruction=No
     # Prevent Planet Controller from spawning player at Glider.
     patch.write_token(APTokenTypes.WRITE, addresses.TABORA_CONTROLLER_FUNC + 0x380, bytes([0x59, 0x00, 0x00, 0x10]))
 
+    # Wrench Pickup
+    # Have Wrench pickup check a custom flag to determine if it has been checked.
+    address = addresses.TABORA_CONTROLLER_FUNC
+    upper_half, lower_half = MIPS.get_address_halves(ram.tabora_wrench_cutscene_flag)
+    patch.write_token(APTokenTypes.WRITE, address + 0x1D4, bytes([
+        *upper_half, 0x03, 0x3C,  # lui v1,...
+        *lower_half, 0x62, 0x90,  # lbu v0,...(v1)
+    ]))
+
+    # Replace the code that upgrades wrench and displays a message by code that just sets a custom flag.
+    # Also removes the wrench skin change + HUD message on pickup.
+    patch.write_token(APTokenTypes.WRITE, address + 0x6C4, bytes([0x01, 0x00, 0x04, 0x24]))  # addiu a0,zero,0x1
+    patch.write_token(APTokenTypes.WRITE, address + 0x6C8, upper_half + bytes([0x02, 0x3C]))  # lui v0,...
+    patch.write_token(APTokenTypes.WRITE, address + 0x6CC, lower_half + bytes([0x44, 0xA0]))  # sb a0,...(v0)
+    patch.write_token(APTokenTypes.WRITE, address + 0x6D0, NOP * 10)
+
     # Glider Pickup
     address = addresses.GLIDER_PICKUP_FUNC
     # Have Glider pickup check Secondary Inventory to determine if the Glider location has been checked.
@@ -415,7 +546,8 @@ def generate_patch(world: "Rac2World", patch: Rac2ProcedurePatch, instruction=No
     # Check Secondary Inventory to determine if the trade has been done.
     patch.write_token(APTokenTypes.WRITE, address + 0x60, bytes([0x37, 0x7B, 0x42, 0x90]))
     patch.write_token(APTokenTypes.WRITE, address + 0x39C, bytes([0x37, 0x7B, 0x42, 0x90]))
-    # Don't remove Qwark Statuette from Secondary Inventory when doing the trade.
+    # Don't remove Qwark Statuette from both main & secondary inventory when doing the trade.
+    patch.write_token(APTokenTypes.WRITE, address + 0x3A8, NOP * 2)
     patch.write_token(APTokenTypes.WRITE, address + 0x3B4, NOP)
     # Replace code that gives Armor Magnetizer and displays message with code that just sets Secondary Inventory flag.
     patch.write_token(APTokenTypes.WRITE, address + 0x3B8, bytes([0x1A, 0x00, 0x02, 0x3C]))
@@ -458,6 +590,25 @@ def generate_patch(world: "Rac2World", patch: Rac2ProcedurePatch, instruction=No
     patch.write_token(APTokenTypes.WRITE, address + 0x4BC, bytes([0x61, 0x7B, 0x42, 0x90]))
     # Just set Secondary Inventory flag when you make the purchase.
     patch.write_token(APTokenTypes.WRITE, address + 0x4D4, NOP)
+
+    # Wrench Pickup
+    # Have Wrench pickup check a custom flag to determine if it has been checked.
+    address = addresses.PRISON_WRENCH_INIT_FUNC
+    upper_half, lower_half = MIPS.get_address_halves(ram.aranos_wrench_cutscene_flag)
+    wrench_pickup_condition = upper_half + bytes([0x03, 0x3C])  # lui v1,0x1A
+    wrench_pickup_condition += lower_half + bytes([0x62, 0x90])  # lbu v0,0x-4D18(v1)
+    wrench_pickup_condition += NOP * 8
+    # The same patch is applied at two different spots, for two different wrench mobies that apply on different
+    # circumstances (depending on the current level of your wrench)
+    patch.write_token(APTokenTypes.WRITE, address + 0x84, wrench_pickup_condition)
+    patch.write_token(APTokenTypes.WRITE, address + 0x12C, wrench_pickup_condition)
+
+    # Replace the code that upgrades wrench and displays a message by code that just sets a custom flag.
+    # Also removes the wrench skin change + HUD message on pickup.
+    patch.write_token(APTokenTypes.WRITE, address + 0x1F8, bytes([0x01, 0x00, 0x04, 0x24]))  # addiu a0,zero,0x1
+    patch.write_token(APTokenTypes.WRITE, address + 0x1FC, upper_half + bytes([0x02, 0x3C]))  # lui v0,...
+    patch.write_token(APTokenTypes.WRITE, address + 0x200, lower_half + bytes([0x44, 0xA0]))  # sb a0,...(v0)
+    patch.write_token(APTokenTypes.WRITE, address + 0x204, NOP * 9)
 
     """--------- 
     Damosel
@@ -509,6 +660,145 @@ def generate_patch(world: "Rac2World", patch: Rac2ProcedurePatch, instruction=No
     patch.write_token(APTokenTypes.WRITE, address + 0x4F0, NOP)
 
     patch.write_file("token_data.bin", patch.get_token_binary())
+
+
+def custom_main_loop(ram: RamAddresses.Addresses, planet: PlanetAddresses) -> bytes:
+    func = bytes()
+
+    upper_half, lower_half = MIPS.get_address_halves(ram.custom_text_notification_trigger)
+    text_id_to_display = TextManager.RESERVED_HUD_NOTIFICATION_TEXT_ID.to_bytes(2, 'little')
+
+    # Store return address on the stack
+    func += bytes([0xF8, 0xFF, 0xBD, 0x27])   # addiu sp,sp,-0x8
+    func += bytes([0x00, 0x00, 0xBF, 0xFF])   # sd ra,(sp)
+
+    # Read some custom variable managed by the client, and display a message if it is non-zero
+    func += upper_half + bytes([0x04, 0x3C])  # lui a0,0x001a
+    func += lower_half + bytes([0x84, 0x90])  # _lbu a0,-0x4D17(a0)
+    func += bytes([0x06, 0x00, 0x80, 0x10])   # beq a0,zero,0x6
+    func += MIPS.nop()
+
+    func += text_id_to_display + bytes([0x04, 0x24])   # li a0,<TEXT_ID>
+    func += MIPS.jal(planet.display_skill_point_message_func)
+    func += bytes([0xff, 0xff, 0x05, 0x24])   # li a1,-0x1
+    func += upper_half + bytes([0x04, 0x3C])  # lui a0,0x001a
+    func += lower_half + bytes([0x80, 0xA0])  # _sb zero,-0x4D17(a0)
+
+    # Load back return address from stack, then return
+    func += bytes([0x00, 0x00, 0xBF, 0xDF])   # ld ra,(sp)
+    func += MIPS.jr_ra()
+    func += bytes([0x08, 0x00, 0xBD, 0x27])   # _addiu sp,sp,0x08
+
+    # The chunk looks like it's way more than 0x800 bytes of contiguous code, but the precise count and the consistency
+    # of that contiguity between planets would need to be proven, so let's use that "small" space until we need more.
+    assert len(func) < 0x800, "Injected code might exceed Space-ish Wars code cave size"
+
+    return func
+
+
+def patch_extended_weapon_progression(patch: Rac2ProcedurePatch, addresses: IsoAddresses):
+    for address in addresses.NANOTECH_COUNT_FUNCS:
+        # Remove the useless condition where non-basic weapons can only get upgraded in NG+
+        patch.write_token(APTokenTypes.WRITE, address + 0x14C, bytes([0x0B, 0x00, 0x00, 0x50]))  # beql zero,zero
+
+    for address in addresses.DRAW_WEAPON_WITH_XP_BAR_FUNCS:
+        # Remove challenge mode being required for any weapon of Lv2+ to have a red XP bar
+        patch.write_token(APTokenTypes.WRITE, address + 0x16C, NOP)
+        # Remove two conditions that really don't make sense (and even cause a vanilla bug, making all XP bars
+        # blue for Lv1 weapons in challenge mode)
+        patch.write_token(APTokenTypes.WRITE, address + 0x218, NOP * 4)
+        # Once all special cases are taken care of, go back to the simpler "@NoChallengeMode" branch
+        patch.write_token(APTokenTypes.WRITE, address + 0x23C, bytes([
+            0x10, 0x00, 0x00, 0x10,  # b @NoChallengeMode
+            0x68, 0x95, 0xC3, 0x26,  # addiu v1,s6,-0x6A98
+        ]))
+        # Finally, remove one of the two conditions from the @NoChallengeMode branch to follow only one rule:
+        # if weapon has level up XP defined, draw a red XP bar. Otherwise, draw a blue XP bar. Simple enough!
+        patch.write_token(APTokenTypes.WRITE, address + 0x29C, NOP)
+
+    for address in addresses.DISPLAY_EQUIPMENT_RECEIVED_MSG_FUNCS:
+        # Replace the special case for wrench upgrade message by RaC1 weapons Lv3 upgrade message handling
+        patch.write_token(APTokenTypes.WRITE, address + 0x140, bytes([
+            # Fetch mega weapon ID into v0
+            0x68, 0x95, 0x23, 0x25,  # addiu    v1,t1,-0x6a98
+            0x21, 0x18, 0x03, 0x02,  # addu     v1,s0,v1
+            0x00, 0x00, 0x62, 0x90,  # lbu      v0,0x0(v1)
+            # Mega weapon ID must be in range [0x72,0x76]
+            0x8E, 0xFF, 0x47, 0x24,  # addiu    a3,v0,-0x72
+            0x0D, 0x00, 0xE0, 0x04,  # bltz     a3,@display
+            0x8A, 0xFF, 0x47, 0x24,  # _addiu   a3,v0,-0x76
+            0x0B, 0x00, 0xE0, 0x1C,  # bgtz     a3,@display
+            0x00, 0x00, 0x00, 0x00,  # _nop
+            # Text ID is (0x268C + mega_weapon_id)
+            0x09, 0x00, 0x00, 0x10,  # b        @display
+            0x8C, 0x26, 0x48, 0x24,  # _addiu   t0,v0,0x268C
+        ]))
+
+
+def patch_free_challenge_selection(patch: Rac2ProcedurePatch, addresses: IsoAddresses):
+    # Make Maktar arena challenges selectable
+    address = addresses.MAKTAR_ARENA_MENU_FUNC
+    patch.write_token(APTokenTypes.WRITE, address + 0xDC, NOP)  # Enable pressing right
+    patch.write_token(APTokenTypes.WRITE, address + 0x204, NOP)  # Enable pressing left
+    patch.write_token(APTokenTypes.WRITE, address + 0x348, NOP * 2)  # Enable starting a challenge without requirements
+    patch.write_token(APTokenTypes.WRITE, addresses.MAKTAR_ARENA_DISPLAY_PREV_FUNC + 0x290, NOP)  # Display "previous"
+    patch.write_token(APTokenTypes.WRITE, addresses.MAKTAR_ARENA_DISPLAY_NEXT_FUNC + 0x324, NOP)  # Display "next"
+
+    # Make Joba arena challenges selectable
+    address = addresses.JOBA_ARENA_MENU_FUNC
+    patch.write_token(APTokenTypes.WRITE, address + 0xDC, NOP)  # Enable pressing right
+    patch.write_token(APTokenTypes.WRITE, address + 0x1CC, NOP)  # Enable pressing left
+    patch.write_token(APTokenTypes.WRITE, address + 0x2F0, NOP * 2)  # Enable starting a challenge without requirements
+    patch.write_token(APTokenTypes.WRITE, addresses.JOBA_ARENA_DISPLAY_PREV_FUNC + 0x288, NOP)  # Display "previous"
+    patch.write_token(APTokenTypes.WRITE, addresses.JOBA_ARENA_DISPLAY_NEXT_FUNC + 0x364, NOP)  # Display "next"
+
+    # Show spaceship challenge as unlocked without winning the previous one
+    for address in addresses.SPACESHIP_MENU_FUNCS:
+        patch.write_token(APTokenTypes.WRITE, address + 0x58C, NOP)
+        patch.write_token(APTokenTypes.WRITE, address + 0x790, NOP)
+        patch.write_token(APTokenTypes.WRITE, address + 0x7A0, NOP)
+        patch.write_token(APTokenTypes.WRITE, address + 0x914, NOP)
+        patch.write_token(APTokenTypes.WRITE, address + 0x924, NOP)
+        patch.write_token(APTokenTypes.WRITE, address + 0x934, NOP)
+    # Enable starting spaceship challenge without winning the previous one
+    for address in addresses.START_SPACESHIP_CHALLENGE_FUNCS:
+        patch.write_token(APTokenTypes.WRITE, address + 0x134, NOP)
+        patch.write_token(APTokenTypes.WRITE, address + 0x144, NOP)
+        patch.write_token(APTokenTypes.WRITE, address + 0x150, NOP)
+        patch.write_token(APTokenTypes.WRITE, address + 0x160, NOP)
+        patch.write_token(APTokenTypes.WRITE, address + 0x170, NOP)
+
+    # Show hoverbike race as unlocked without winning previous one
+    for address in addresses.HOVERBIKE_MENU_FUNCS:
+        patch.write_token(APTokenTypes.WRITE, address + 0x5D0, NOP)
+    # Allow starting hoverbike race without winning previous one
+    for address in addresses.START_HOVERBIKE_CHALLENGE_FUNCS:
+        patch.write_token(APTokenTypes.WRITE, address + 0x214, NOP)
+
+
+def alter_nanotech_xp_tables(patch: Rac2ProcedurePatch, addresses: IsoAddresses, mult_percent: int):
+    # Multiplier given as input is meant to represent gained XP, while this table represents required XP to level up.
+    # Therefore, we need to use the multiplicative inverse of that mult to get the factor we need to apply to this
+    # table to mimic the effect of gained XP increase / decrease.
+    factor = 1.0 / (mult_percent * 0.01)
+    nanotech_xp_table = ExperienceTables.get_nanotech_xp_table(factor)
+    for address in addresses.NANOTECH_XP_TABLES:
+        for xp_amount in nanotech_xp_table:
+            patch.write_token(APTokenTypes.WRITE, address + 0x4, xp_amount.to_bytes(2, 'little'))
+            address += 0x4
+
+
+def alter_weapon_data_tables(patch: Rac2ProcedurePatch, addresses: IsoAddresses, options: Rac2Options):
+    # Multiplier given as input is meant to represent gained XP, while this table represents required XP to level up.
+    # Therefore, we need to use the multiplicative inverse of that mult to get the factor we need to apply to this
+    # table to mimic the effect of gained XP increase / decrease.
+    factor = 1.0 / (options.weapon_xp_multiplier.value * 0.01)
+    weapon_upgrades_table = get_weapon_upgrades_table(factor, options.extend_weapon_progression != 0)
+    for address in addresses.WEAPON_DATA_TABLES:
+        for weapon_id, (required_xp, upgraded_weapon_id) in weapon_upgrades_table.items():
+            weapon_addr = address + (weapon_id * 0xE0)
+            patch.write_token(APTokenTypes.WRITE, weapon_addr + 0x4A, upgraded_weapon_id.to_bytes(1))
+            patch.write_token(APTokenTypes.WRITE, weapon_addr + 0x6C, required_xp.to_bytes(2, 'little'))
 
 
 def get_version_from_iso(iso_path: str) -> str:

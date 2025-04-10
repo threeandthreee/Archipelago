@@ -1,8 +1,9 @@
 from copy import copy
 from typing import Dict
-from .Util import *
+
 from .Errors import *
 from .MnemonicsTree import MNEMONICS
+from .Util import *
 from ..Util import hex_str
 
 
@@ -60,7 +61,7 @@ class Z80Block:
 
 
 class Z80Assembler:
-    def __init__(self, end_of_banks: List[int], defines: Dict[str, str]):
+    def __init__(self, end_of_banks: List[int], defines: Dict[str, str], seasons_rom: bytes):
         self.defines = {}
         for key, value in defines.items():
             self.define(key, value)
@@ -70,6 +71,7 @@ class Z80Assembler:
         self.floating_chunks = {}
         self.global_labels = {}
         self.blocks = []
+        self.seasons_rom = seasons_rom
 
     def define(self, key: str, replacement_string: str):
         if key in self.defines:
@@ -201,6 +203,8 @@ class Z80Assembler:
             if args[0] not in self.floating_chunks:
                 raise UnknownFloatingChunkError(args[0])
             return len(self.floating_chunks[args[0]])
+        if opcode == "/copy":
+            return parse_hex_string_to_value(args[3])
         if opcode == "db":
             return len(args)
         if opcode == "dw" or opcode == "dwbe":
@@ -271,6 +275,12 @@ class Z80Assembler:
         if opcode == "dwbe":
             # Declare word big endian (reversed)
             return [b for arg in args for b in reversed(parse_hex_word(arg))]
+        if opcode == "/copy":
+            address = 0x4000 * parse_hex_string_to_value(args[1]) + parse_hex_string_to_value(args[2])
+            if args[0] == "s":
+                return self.seasons_rom[address:address + parse_hex_string_to_value(args[3])]
+            else:
+                raise NotImplementedError("Ages code import is not implemented yet")
 
         # ...then try matching a mnemonic
         extra_bytes = []

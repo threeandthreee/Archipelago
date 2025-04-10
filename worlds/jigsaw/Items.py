@@ -7,23 +7,34 @@ from typing import Optional
 class ItemData(typing.NamedTuple):
     code: typing.Optional[int]
     classification: ItemClassification
-    piece_nr: int
 
 class JigsawItem(Item):
     game: str = "Jigsaw"
     
-    def __init__(self, name: str, classification: ItemClassification, code: Optional[int], player: int, piece_nr: int):
+    def __init__(self, name: str, classification: ItemClassification, code: Optional[int], player: int):
         self.name = name
         self.classification = classification
         self.player = player
         self.code = code
         self.location = None
-        self.piece_nr = piece_nr
 
-item_table = {f"Puzzle Piece {i}": ItemData(234782000+i, ItemClassification.progression_skip_balancing, i) for i in range(1, 1601)}
-item_table["Squawks"] = ItemData(234781999, ItemClassification.filler, -111111)
+item_table = {
+    "Puzzle Piece": ItemData(234782000, ItemClassification.progression_skip_balancing),
+    "2 Puzzle Pieces": ItemData(234782001, ItemClassification.progression_skip_balancing),
+    "5 Puzzle Pieces": ItemData(234782004, ItemClassification.progression_skip_balancing),
+    "10 Puzzle Pieces": ItemData(234782009, ItemClassification.progression_skip_balancing),
+    "25 Puzzle Pieces": ItemData(234782024, ItemClassification.progression),
+    "100 Puzzle Pieces": ItemData(234782099, ItemClassification.progression),
+    "Squawks": ItemData(234781999, ItemClassification.filler),
+}
 
-# item groups for better hinting
 item_groups = {
-    "Pieces": {f"Puzzle Piece {i}" for i in range(1, 1601)},
+    "Puzzle Pieces": {
+        "Puzzle Piece", 
+        "2 Puzzle Pieces",
+        "5 Puzzle Pieces",
+        "10 Puzzle Pieces",
+        "25 Puzzle Pieces",
+        "100 Puzzle Pieces",
+    }
 }

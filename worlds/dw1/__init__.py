@@ -35,7 +35,6 @@ class DigimonWorldWorld(World):
     """
 
     game: str = "Digimon World"
-    is_experimental = True
     options_dataclass = DigimonWorldOption
     options: DigimonWorldOption
     topology_present: bool = True
@@ -72,7 +71,8 @@ class DigimonWorldWorld(World):
         regions: Dict[str, Region] = {}      
         regions["Menu"] = self.create_region("Menu", [])  
         regions.update({region_name: self.create_region(region_name, location_tables[region_name]) for region_name in [
-            "Start Game","Consumable", "Cards", "Prosperity",
+            "Start Game","Consumable", #"Cards",
+            "Prosperity",
             "Agumon", "Betamon","Greymon","Devimon","Airdramon","Tyrannomon","Meramon","Seadramon","Numemon","MetalGreymon","Mamemon","Monzaemon",
             "Gabumon","Elecmon","Kabuterimon","Angemon","Birdramon","Garurumon","Frigimon","Whamon","Vegiemon","SkullGreymon","MetalMamemon","Vademon",
             "Patamon","Kunemon","Unimon","Ogremon","Shellmon","Centarumon","Bakemon","Drimogemon","Sukamon","Andromon", "Giromon", "Etemon", "Biyomon",
@@ -88,7 +88,7 @@ class DigimonWorldWorld(World):
             connection.connect(regions[to_region])
             #print(f"Connecting {from_region} to {to_region} Using entrance: " + connection.name)
         create_connection("Menu", "Start Game") 
-        create_connection("Start Game", "Cards") 
+        #create_connection("Start Game", "Cards") 
         create_connection("Start Game", "Agumon") 
         create_connection("Start Game", "Prosperity") 
 
@@ -209,9 +209,7 @@ class DigimonWorldWorld(World):
         location.place_locked_item(self.create_item("Agumon Soul"))
         # Add regular items to itempool
         self.multiworld.itempool += itempool
-
         
-
     def create_item(self, name: str) -> Item:
         useful_categories = {
            # DigimonWorldItemCategory.CONSUMABLE,
@@ -464,11 +462,11 @@ class DigimonWorldWorld(World):
         set_rule(self.multiworld.get_location(f"Digitamamon", self.player), lambda state: state.has("Digitamamon Soul", self.player) and calculate_prosperity(self, state) >= 50 and state.has("Agumon Recruited", self.player))
         set_rule(self.multiworld.get_location(f"Digitamamon Recruited", self.player), lambda state: state.has("Digitamamon Soul", self.player) and calculate_prosperity(self, state) >= 50 and state.has("Agumon Recruited", self.player))
 
-        for card in [card for card in self.multiworld.get_locations(self.player) if card.category == DigimonWorldLocationCategory.CARD]:            
-            if(card.name == "Machinedramon Card"):
-                set_rule(card, lambda state: state.has("Digitamamon Soul", self.player) and calculate_prosperity(self, state) >= 50 and state.has("Agumon Recruited", self.player))
-                continue
-            set_rule(card, lambda state: state.has("Meramon Recruited", self.player))
+        #for card in [card for card in self.multiworld.get_locations(self.player) if card.category == DigimonWorldLocationCategory.CARD]:            
+        #    if(card.name == "Machinedramon Card"):
+        #        set_rule(card, lambda state: state.has("Digitamamon Soul", self.player) and calculate_prosperity(self, state) >= 50 and state.has("Agumon Recruited", self.player))
+        #        continue
+        #    set_rule(card, lambda state: state.has("Meramon Recruited", self.player))
 
         set_rule(self.multiworld.get_location(f"1 Prosperity", self.player), lambda state: state.has("Agumon Recruited", self.player))
         for prosperity_location in self.multiworld.get_locations(self.player):   

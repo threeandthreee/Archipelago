@@ -59,40 +59,46 @@ key_items = {
 }
 
 permanent_upgrades = {
-    "Starting Health Increase": Spelunky2ItemData(37, ItemClassification.useful, 16),
-    "Starting Bomb Increase": Spelunky2ItemData(38, ItemClassification.useful, 6),
-    "Starting Rope Increase": Spelunky2ItemData(39, ItemClassification.useful, 6),
+    "Starting Health Upgrade": Spelunky2ItemData(37, ItemClassification.useful, 16),
+    "Starting Bomb Upgrade": Spelunky2ItemData(38, ItemClassification.useful, 6),
+    "Starting Rope Upgrade": Spelunky2ItemData(39, ItemClassification.useful, 6),
     "Paste": Spelunky2ItemData(40, ItemClassification.useful),
     # "Four-Leaf Clover": Spelunky2ItemData(41, ItemClassification.useful),
     "Progressive Compass": Spelunky2ItemData(42, ItemClassification.progression, 2),
     "Eggplant": Spelunky2ItemData(43, ItemClassification.progression),
-    # "Progressive Shortcut": Spelunky2ItemData(44, ItemClassification.useful, 3),
-    "Cosmic Ocean Checkpoint": Spelunky2ItemData(45, ItemClassification.useful)  # No amount set since it depends on player settings
+    "Cosmic Ocean Checkpoint": Spelunky2ItemData(44, ItemClassification.useful)  # No amount set since it depends on player settings
+}
+
+shortcuts = {
+    # "Progressive Shortcut": Spelunky2ItemData(45, ItemClassification.progression, 3),
+    # "Dwelling Shortcut": Spelunky2ItemData(46, ItemClassification.useful),
+    # "Olmec's Lair Shortcut": Spelunky2ItemData(47, ItemClassification.progression),
+    # "Ice Caves Shortcut": Spelunky2ItemData(48, ItemClassification.progression)
 }
 
 world_unlocks = {
-    "Progressive World Unlock": Spelunky2ItemData(46, ItemClassification.progression, 6),
-    "Jungle": Spelunky2ItemData(47, ItemClassification.progression),
-    "Volcana": Spelunky2ItemData(48, ItemClassification.progression),
-    "Olmec's Lair": Spelunky2ItemData(49, ItemClassification.progression),
-    "Tide Pool": Spelunky2ItemData(50, ItemClassification.progression),
-    "Temple": Spelunky2ItemData(51, ItemClassification.progression),
-    "Ice Caves": Spelunky2ItemData(52, ItemClassification.progression),
-    "Neo Babylon": Spelunky2ItemData(53, ItemClassification.progression),
-    "Sunken City": Spelunky2ItemData(54, ItemClassification.progression),
-    "Cosmic Ocean": Spelunky2ItemData(55, ItemClassification.progression),
+    "Progressive World Unlock": Spelunky2ItemData(49, ItemClassification.progression, 7),
+    "Jungle": Spelunky2ItemData(50, ItemClassification.progression),
+    "Volcana": Spelunky2ItemData(51, ItemClassification.progression),
+    "Olmec's Lair": Spelunky2ItemData(52, ItemClassification.progression),
+    "Tide Pool": Spelunky2ItemData(53, ItemClassification.progression),
+    "Temple": Spelunky2ItemData(54, ItemClassification.progression),
+    "Ice Caves": Spelunky2ItemData(55, ItemClassification.progression),
+    "Neo Babylon": Spelunky2ItemData(56, ItemClassification.progression),
+    "Sunken City": Spelunky2ItemData(57, ItemClassification.progression),
+    "Cosmic Ocean": Spelunky2ItemData(58, ItemClassification.progression),
 }
 
 traps = {
-    "Poison Trap": Spelunky2ItemData(56, ItemClassification.trap),
-    "Curse Trap": Spelunky2ItemData(57, ItemClassification.trap),
-    "Ghost Trap": Spelunky2ItemData(58, ItemClassification.trap),
-    "Stun Trap": Spelunky2ItemData(59, ItemClassification.trap),
-    "Loose Bombs Trap": Spelunky2ItemData(60, ItemClassification.trap),
-    "Blindness Trap": Spelunky2ItemData(61, ItemClassification.trap),
-    # "Amnesia Trap": Spelunky2ItemData(62, ItemClassification.trap),
-    # "Angry Shopkeepers Trap": Spelunky2ItemData(63, ItemClassification.trap),
-    "Punish Ball Trap": Spelunky2ItemData(64, ItemClassification.trap)
+    "Poison Trap": Spelunky2ItemData(59, ItemClassification.trap),
+    "Curse Trap": Spelunky2ItemData(60, ItemClassification.trap),
+    "Ghost Trap": Spelunky2ItemData(61, ItemClassification.trap),
+    "Stun Trap": Spelunky2ItemData(62, ItemClassification.trap),
+    "Loose Bombs Trap": Spelunky2ItemData(63, ItemClassification.trap),
+    "Blindness Trap": Spelunky2ItemData(64, ItemClassification.trap),
+    # "Amnesia Trap": Spelunky2ItemData(65, ItemClassification.trap),
+    # "Angry Shopkeepers Trap": Spelunky2ItemData(66, ItemClassification.trap),
+    "Punish Ball Trap": Spelunky2ItemData(67, ItemClassification.trap)
 }
 
 item_data_table = {
@@ -100,6 +106,7 @@ item_data_table = {
     **characters,
     **key_items,
     **permanent_upgrades,
+    # **shortcuts,
     **world_unlocks,
     **traps
 }

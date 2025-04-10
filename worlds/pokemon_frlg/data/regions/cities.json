@@ -853,6 +853,7 @@
     "events": [],
     "exits": {
       "REGION_VERMILION_CITY/NEAR_GYM": "Vermilion City Cuttable Tree",
+      "REGION_VERMILION_CITY/NEAR_HARBOR": "Vermilion City Checkpoint",
       "REGION_VERMILION_CITY/NEAR_SIGN": "Vermilion City Read Sign",
       "REGION_VERMILION_CITY/WATER": "Vermilion City Surfing Spot",
       "REGION_VERMILION_CITY/VISIT": "Vermilion City Visit",
@@ -861,7 +862,6 @@
       "REGION_SEAGALLOP": "Vermilion City Seagallop"
     },
     "warps": {
-      "MAP_VERMILION_CITY:0/MAP_SSANNE_EXTERIOR:0": "Vermilion Harbor",
       "MAP_VERMILION_CITY:1/MAP_VERMILION_CITY_HOUSE1:0": "Vermilion Fishing House",
       "MAP_VERMILION_CITY:2/MAP_VERMILION_CITY_POKEMON_CENTER_1F:0": "Vermilion Pokemon Center",
       "MAP_VERMILION_CITY:3/MAP_VERMILION_CITY_POKEMON_FAN_CLUB:0": "Pokemon Fan Club",
@@ -888,6 +888,23 @@
     },
     "warps": {
       "MAP_VERMILION_CITY:7/MAP_VERMILION_CITY_GYM:0": "Vermilion Gym"
+    }
+  },
+  "REGION_VERMILION_CITY/NEAR_HARBOR": {
+    "parent_map": "MAP_VERMILION_CITY",
+    "name": "Vermilion City Near Harbor",
+    "encounter_region": "Vermilion City",
+    "has_land": false,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {
+      "REGION_VERMILION_CITY/MAIN": "Vermilion City Near Harbor Checkpoint"
+    },
+    "warps": {
+      "MAP_VERMILION_CITY:0/MAP_SSANNE_EXTERIOR:0": "Vermilion Harbor"
     }
   },
   "REGION_VERMILION_CITY/NEAR_SIGN": {
@@ -2577,7 +2594,8 @@
     ],
     "events": [],
     "exits": {
-      "REGION_ONE_ISLAND_POKEMON_CENTER_1F/MAIN": "Follow Bill"
+      "REGION_ONE_ISLAND_POKEMON_CENTER_1F/MAIN": "Follow Bill",
+      "REGION_VERMILION_CITY/MAIN": "Follow Bill"
     },
     "warps": {
       "MAP_CINNABAR_ISLAND_POKEMON_CENTER_1F:0/MAP_CINNABAR_ISLAND:3": "Cinnabar Pokemon Center 1F Exit",

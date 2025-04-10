@@ -137,12 +137,13 @@ enemy_ids = {
     "No Good Fly": 0x9d,
     "Mostly Bad Fly": 0x9e,
     "Spiteful Crow": 0x9f,
+    "Loaded Dice (2)": 0xC3,
     "Black Antoid (2)": 0xD1,
     "Cave Boy (2)": 0xd4,
     "Farm Zombie": 0xde,
     "Criminal Caterpillar": 0xdf,
     "Evil Eye": 0xe0,
-    "Master Criminal Worm": 0xe3,
+    "Master Criminal Worm": 0xe3
 }
 
 base_enemy_table = [
@@ -283,7 +284,8 @@ base_enemy_table = [
     "Farm Zombie",
     "Criminal Caterpillar",
     "Evil Eye",
-    "Master Criminal Worm"
+    "Master Criminal Worm",
+    "Loaded Dice (2)"
 ]
 
 enemy_descriptions = {
@@ -420,7 +422,8 @@ enemy_descriptions = {
     "Farm Zombie": "@Easily subdued by plants.",
     "Criminal Caterpillar": "@He is wanted in seventeen countries for his crimes.",
     "Evil Eye": "@Third-year staring contest champion.",
-    "Master Criminal Worm": "@He is wanted in seventeen countries for his crimes."
+    "Master Criminal Worm": "@He is wanted in seventeen countries for his crimes.",
+    "Loaded Dice (2)": "@Always dangerous at parties.",
 }
 
 enemy_sprites = {
@@ -446,8 +449,8 @@ enemy_sprites = {
     "Evil Elemental": 0x0117,
     "Annoying Old Party Man": 0x0187,
     "Annoying Reveler": 0x0187,
-    "Unassuming Local Guy": 0x0184,
-    "New Age Retro Hippie": 0x0185,
+    "Unassuming Local Guy": 0x0045,
+    "New Age Retro Hippie": 0x0169,
     "Mighty Bear": 0x014B,
     "Mighty Bear Seven": 0x014B,
     "Putrid Moldyman": 0x011D,
@@ -560,8 +563,64 @@ enemy_sprites = {
     "Farm Zombie": 0x0134,
     "Criminal Caterpillar": 0x01A1,
     "Evil Eye": 0x0132,
-    "Master Criminal Worm": 0x01A1
+    "Master Criminal Worm": 0x01CD,
+    "Loaded Dice (2)": 0x00C3,
 }
+
+can_walkthrough = [
+    0x0045,
+    0x004A,
+    0x0065,
+    0x00C3,
+    0x0112,
+    0x0114,
+    0x0115,
+    0x0116,
+    0x0117,
+    0x0118,
+    0x011A,
+    0x011B,
+    0x011C,
+    0x011D,
+    0x011E,
+    0x011F,
+    0x0120,
+    0x0123,
+    0x0124,
+    0x012D,
+    0x012E,
+    0x012F,
+    0x0130,
+    0x0131,
+    0x0132,
+    0x0133,
+    0x0134,
+    0x0135,
+    0x0136,
+    0x0139,
+    0x013A,
+    0x013B,
+    0x013C,
+    0x013D,
+    0x013E,
+    0x013F,
+    0x0140,
+    0x0142,
+    0x0143,
+    0x0144,
+    0x0145,
+    0x0146,
+    0x0169,
+    0x0182,
+    0x0186,
+    0x0187,
+    0x0188,
+    0x019F,
+    0x01A0,
+    0x01A1,
+    0x01BC,
+    0x01CD
+]
 
 
 def shuffle_enemies(world):
@@ -571,6 +630,7 @@ def shuffle_enemies(world):
         world.random.shuffle(shuffled_enemies)
     for index, enemy in enumerate(shuffled_enemies):
         world.acting_enemy_list[base_enemy_table[index]] = enemy
+    
 
 
 def apply_enemy_shuffle(world, rom):
@@ -850,6 +910,8 @@ def apply_enemy_shuffle(world, rom):
     rom.write_bytes(0x10d947, bytearray([enemy_ids[world.acting_enemy_list["Care Free Bomb"]]]))
     rom.write_bytes(0x10d94a, bytearray([enemy_ids[world.acting_enemy_list["Beautiful UFO"]]]))
     rom.write_bytes(0x10d94d, bytearray([enemy_ids[world.acting_enemy_list["High-class UFO"]]]))
+
+    rom.write_bytes(0x10d951, bytearray([enemy_ids[world.acting_enemy_list["Loaded Dice (2)"]]]))
     rom.write_bytes(0x10d954, bytearray([enemy_ids[world.acting_enemy_list["Electro Swoosh"]]]))
     rom.write_bytes(0x10d957, bytearray([enemy_ids[world.acting_enemy_list["Fobby"]]]))
     rom.write_bytes(0x10d95a, bytearray([enemy_ids[world.acting_enemy_list["Uncontrollable Sphere"]]]))
@@ -1245,6 +1307,30 @@ def apply_enemy_shuffle(world, rom):
     rom.write_bytes(0x10df4f, bytearray([enemy_ids[world.acting_enemy_list["Starman Super"]]]))
     rom.write_bytes(0x10df5e, bytearray([enemy_ids[world.acting_enemy_list["Even Slimier Little Pile"]]]))
 
+    # Calls for help
+    rom.write_bytes(0x15A601, bytearray([enemy_ids[world.acting_enemy_list["Care Free Bomb"]]])) # Loaded Dice
+    rom.write_bytes(0x15A602, bytearray([enemy_ids[world.acting_enemy_list["Beautiful UFO"]]]))
+    rom.write_bytes(0x15A603, bytearray([enemy_ids[world.acting_enemy_list["High-class UFO"]]]))
+    rom.write_bytes(0x15A604, bytearray([enemy_ids[world.acting_enemy_list["Care Free Bomb"]]]))
+
+    rom.write_bytes(0x15DD73, bytearray([enemy_ids[world.acting_enemy_list["Electro Swoosh"]]])) # Loaded Dice 2
+    rom.write_bytes(0x15DD74, bytearray([enemy_ids[world.acting_enemy_list["Fobby"]]]))
+    rom.write_bytes(0x15DD75, bytearray([enemy_ids[world.acting_enemy_list["Uncontrollable Sphere"]]]))
+    rom.write_bytes(0x15DD76, bytearray([enemy_ids[world.acting_enemy_list["Electro Swoosh"]]]))
+
+    rom.write_bytes(0x15AD5B, bytearray([enemy_ids[world.acting_enemy_list["Yes Man Junior"]]])) # Skate Punk
+    rom.write_bytes(0x15AD5C, bytearray([enemy_ids[world.acting_enemy_list["Pogo Punk"]]]))
+
+    rom.write_bytes(0x15AED2, bytearray([enemy_ids[world.acting_enemy_list["Starman"]]])) #S Super
+
+    rom.write_bytes(0x15B108, bytearray([enemy_ids[world.acting_enemy_list["Starman Super"]]])) #SDX
+    rom.write_bytes(0x15DA86, bytearray([enemy_ids[world.acting_enemy_list["Starman Super"]]]))
+
+    rom.write_bytes(0x15DC5B, bytearray([enemy_ids[world.acting_enemy_list["Slimy Little Pile"]]])) # Belch
+    rom.write_bytes(0x15B801, bytearray([enemy_ids[world.acting_enemy_list["Slimy Little Pile"]]]))
+
+    rom.write_bytes(0x15DD15, bytearray([enemy_ids[world.acting_enemy_list["Even Slimier Little Pile"]]])) # Barf
+
     rom.write_bytes(0x0F92F4, struct.pack("H", enemy_sprites[world.acting_enemy_list["Skate Punk"]]))
     rom.write_bytes(0x0F9305, struct.pack("H", enemy_sprites[world.acting_enemy_list["Pogo Punk"]]))
     rom.write_bytes(0x0F8997, struct.pack("H", enemy_sprites[world.acting_enemy_list["Yes Man Junior"]]))
@@ -1375,7 +1461,7 @@ def apply_enemy_shuffle(world, rom):
 
     pointer = 0x313000
 
-    if world.options.enemy_shuffle:
+    if enemy_sprites[world.acting_enemy_list["Insane Cultist"]] not in can_walkthrough:
         rom.write_bytes(0x0983D2, bytearray([0x1f, 0x1e, 0x7A, 0x01, 0x00, 0x00, 0x00, 0x00]))
         rom.write_bytes(0x098459, bytearray([0x1f, 0x1e, 0x7B, 0x01, 0x00, 0x00, 0x00, 0x00]))
         rom.write_bytes(0x0984D1, bytearray([0x1f, 0x1e, 0x7C, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,

@@ -124,6 +124,15 @@ class Spelunky2World(World):
         else:
             exclude_items.append("Progressive World Unlock")
 
+        """
+        # Shortcuts not implemented yet
+        if self.options.progressive_shortcuts:
+            exclude_items.extend(["Dwelling Shortcut", "Olmec's Lair Shortcut", "Ice Caves Shortcut"])
+
+        else:
+            exclude_items.append("Progressive Shortcut")
+        """
+
         for name, data in item_data_table.items():
             if name not in exclude_items:
                 for i in range(data.amount):

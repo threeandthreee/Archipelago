@@ -80,9 +80,9 @@ location_data: Dict[str, MemoryLocation] = dict({
     "Chest - Mushroom Way 2": MemoryLocation(treasure_chest_base_address + 9, 7, False),
     "Chest - Mushroom Way 3": MemoryLocation(treasure_chest_base_address + 10, 0, False),
     "Chest - Mushroom Way 4": MemoryLocation(treasure_chest_base_address + 10, 1, False),
-    "Chest - Mushroom Kingdom Vault 1": MemoryLocation(treasure_chest_base_address + 0, 3, False),
-    "Chest - Mushroom Kingdom Vault 2": MemoryLocation(treasure_chest_base_address + 0, 5, False),
-    "Chest - Mushroom Kingdom Vault 3": MemoryLocation(treasure_chest_base_address + 0, 4, False),
+    "Chest - Mushroom Kingdom Vault 1": MemoryLocation(treasure_chest_base_address + 0, 3, False), # non-static RAM map
+    "Chest - Mushroom Kingdom Vault 2": MemoryLocation(treasure_chest_base_address + 0, 4, False), # non-static RAM map
+    "Chest - Mushroom Kingdom Vault 3": MemoryLocation(treasure_chest_base_address + 0, 5, False), # non-static RAM map
     "Chest - Bandit's Way Flower Jump": MemoryLocation(treasure_chest_base_address + 10, 3, False),
     "Chest - Bandit's Way Guard Dog": MemoryLocation(treasure_chest_base_address + 2, 0, False),
     "Chest - Bandit's Way Invincibility Star": MemoryLocation(treasure_chest_base_address + 2, 1, False),
@@ -99,13 +99,13 @@ location_data: Dict[str, MemoryLocation] = dict({
     "Chest - Lazy Shell 2": MemoryLocation(treasure_chest_base_address + 20, 0, False),
     "Chest - Forest Maze 1": MemoryLocation(treasure_chest_base_address + 10, 4, False),
     "Chest - Forest Maze 2": MemoryLocation(treasure_chest_base_address + 10, 5, False),
-    "Chest - Forest Maze Underground 1": MemoryLocation(treasure_chest_base_address + 13, 4, False),
-    "Chest - Forest Maze Underground 2": MemoryLocation(treasure_chest_base_address + 13, 5, False),
-    "Chest - Forest Maze Underground 3": MemoryLocation(treasure_chest_base_address + 13, 3, False),
+    "Chest - Forest Maze Underground 1": MemoryLocation(treasure_chest_base_address + 13, 3, False), # non-static RAM map
+    "Chest - Forest Maze Underground 2": MemoryLocation(treasure_chest_base_address + 13, 4, False), # non-static RAM map
+    "Chest - Forest Maze Underground 3": MemoryLocation(treasure_chest_base_address + 13, 5, False), # non-static RAM map
     "Chest - Forest Maze Red Essence": MemoryLocation(treasure_chest_base_address + 10, 6, False),
-    "Chest - Pipe Vault Slide 1": MemoryLocation(treasure_chest_base_address + 6, 0, False),
-    "Chest - Pipe Vault Slide 2": MemoryLocation(treasure_chest_base_address + 5, 7, False),
-    "Chest - Pipe Vault Slide 3": MemoryLocation(treasure_chest_base_address + 5, 6, False),
+    "Chest - Pipe Vault Slide 1": MemoryLocation(treasure_chest_base_address + 5, 7, False), # non-static RAM map
+    "Chest - Pipe Vault Slide 2": MemoryLocation(treasure_chest_base_address + 5, 6, False), # non-static RAM map
+    "Chest - Pipe Vault Slide 3": MemoryLocation(treasure_chest_base_address + 6, 0, False), # non-static RAM map
     "Chest - Pipe Vault Nippers 1": MemoryLocation(treasure_chest_base_address + 6, 1, False),
     "Chest - Pipe Vault Nippers 2": MemoryLocation(treasure_chest_base_address + 6, 2, False),
     "Chest - Yo'ster Isle": MemoryLocation(treasure_chest_base_address + 0, 6, False),
@@ -123,9 +123,9 @@ location_data: Dict[str, MemoryLocation] = dict({
     "Chest - Booster Tower Masher": MemoryLocation(treasure_chest_base_address + 9, 1, False),
     "Chest - Booster Tower Parachute": MemoryLocation(treasure_chest_base_address + 0, 7, False),
     "Chest - Booster Tower Zoom Shoes": MemoryLocation(treasure_chest_base_address + 1, 1, False),
-    "Chest - Booster Tower Top 1": MemoryLocation(treasure_chest_base_address + 9, 5, False),
-    "Chest - Booster Tower Top 2": MemoryLocation(treasure_chest_base_address + 9, 2, False),
-    "Chest - Booster Tower Top 3": MemoryLocation(treasure_chest_base_address + 9, 4, False),
+    "Chest - Booster Tower Top 1": MemoryLocation(treasure_chest_base_address + 9, 2, False), # non-static RAM map
+    "Chest - Booster Tower Top 2": MemoryLocation(treasure_chest_base_address + 9, 4, False), # non-static RAM map
+    "Chest - Booster Tower Top 3": MemoryLocation(treasure_chest_base_address + 9, 5, False), # non-static RAM map
     "Chest - Marrymore Inn Second Floor": MemoryLocation(treasure_chest_base_address + 0, 0, False),
     "Chest - Sea Invincibility Star": MemoryLocation(treasure_chest_base_address + 6, 7, False),
     "Chest - Sea Save Room 1": MemoryLocation(treasure_chest_base_address + 6, 3, False),
@@ -160,8 +160,8 @@ location_data: Dict[str, MemoryLocation] = dict({
     # "Belome Temple Before Belome 2": MemoryLocation(treasure_chest_base_address + 20, 6, False),
     # "Belome Temple Before Belome 3": MemoryLocation(treasure_chest_base_address + 21, 0, False),
     "Chest - Monstro Town Entrance": MemoryLocation(treasure_chest_base_address + 14, 5, False),
-    "Chest - Bean Valley 1": MemoryLocation(treasure_chest_base_address + 14, 0, False),
-    "Chest - Bean Valley 2": MemoryLocation(treasure_chest_base_address + 13, 7, False),
+    "Chest - Bean Valley 1": MemoryLocation(treasure_chest_base_address + 13, 7, False), # non-static RAM map
+    "Chest - Bean Valley 2": MemoryLocation(treasure_chest_base_address + 14, 0, False), # non-static RAM map
     "Chest - Bean Valley Box Boy Room": MemoryLocation(treasure_chest_base_address + 17, 1, False),
     "Chest - Bean Valley Slot Room": MemoryLocation(treasure_chest_base_address + 17, 3, False),
     "Chest - Bean Valley Piranha Plants": MemoryLocation(treasure_chest_base_address + 13, 6, False),
@@ -187,31 +187,37 @@ location_data: Dict[str, MemoryLocation] = dict({
     "Chest - Barrel Volcano Save Room 2": MemoryLocation(treasure_chest_base_address + 17, 7, False),
     "Chest - Barrel Volcano Hinopio": MemoryLocation(treasure_chest_base_address + 18, 0, False),
     "Chest - Bowser's Keep Dark Room": MemoryLocation(treasure_chest_base_address + 22, 2, False),
-    "Chest - Bowser's Keep Croco Shop 1": MemoryLocation(treasure_chest_base_address + 0, 0, False),
-    "Chest - Bowser's Keep Croco Shop 2": MemoryLocation(treasure_chest_base_address + 0, 0, False),
-    "Chest - Bowser's Keep Invisible Bridge 1": MemoryLocation(treasure_chest_base_address + 15, 7, False),
-    "Chest - Bowser's Keep Invisible Bridge 2": MemoryLocation(treasure_chest_base_address + 16, 0, False),
-    "Chest - Bowser's Keep Invisible Bridge 3": MemoryLocation(treasure_chest_base_address + 16, 1, False),
-    "Chest - Bowser's Keep Invisible Bridge 4": MemoryLocation(treasure_chest_base_address + 16, 2, False),
-    "Chest - Bowser's Keep Moving Platforms 1": MemoryLocation(treasure_chest_base_address + 23, 7, False),
-    "Chest - Bowser's Keep Moving Platforms 2": MemoryLocation(treasure_chest_base_address + 24, 0, False),
-    "Chest - Bowser's Keep Moving Platforms 3": MemoryLocation(treasure_chest_base_address + 24, 1, False),
-    "Chest - Bowser's Keep Moving Platforms 4": MemoryLocation(treasure_chest_base_address + 23, 6, False),
-    "Chest - Bowser's Keep Rotating Platforms 1": MemoryLocation(treasure_chest_base_address + 22, 3, False),
-    "Chest - Bowser's Keep Rotating Platforms 2": MemoryLocation(treasure_chest_base_address + 22, 6, False),
-    "Chest - Bowser's Keep Rotating Platforms 3": MemoryLocation(treasure_chest_base_address + 22, 4, False),
-    "Chest - Bowser's Keep Rotating Platforms 4": MemoryLocation(treasure_chest_base_address + 22, 7, False),
-    "Chest - Bowser's Keep Rotating Platforms 5": MemoryLocation(treasure_chest_base_address + 22, 5, False),
-    "Chest - Bowser's Keep Rotating Platforms 6": MemoryLocation(treasure_chest_base_address + 23, 0, False),
-    "Chest - Bowser's Keep Door Reward 1": MemoryLocation(treasure_chest_base_address + 0, 0, False),
-    "Chest - Bowser's Keep Door Reward 2": MemoryLocation(treasure_chest_base_address + 7, 4, False),
-    "Chest - Bowser's Keep Door Reward 3": MemoryLocation(treasure_chest_base_address + 21, 7, False),
-    "Chest - Bowser's Keep Door Reward 4": MemoryLocation(treasure_chest_base_address + 0, 0, False),
-    "Chest - Bowser's Keep Door Reward 5": MemoryLocation(treasure_chest_base_address + 0, 0, False),
-    "Chest - Bowser's Keep Door Reward 6": MemoryLocation(treasure_chest_base_address + 0, 0, False),
+    "Chest - Bowser's Keep Croco Shop 1": MemoryLocation(treasure_chest_base_address + 22, 0, False),
+    "Chest - Bowser's Keep Croco Shop 2": MemoryLocation(treasure_chest_base_address + 22, 1, False),
+    "Chest - Bowser's Keep Invisible Bridge 1": MemoryLocation(treasure_chest_base_address + 15, 7, False), # non-static RAM map
+    "Chest - Bowser's Keep Invisible Bridge 2": MemoryLocation(treasure_chest_base_address + 16, 0, False), # non-static RAM map
+    "Chest - Bowser's Keep Invisible Bridge 3": MemoryLocation(treasure_chest_base_address + 16, 1, False), # non-static RAM map
+    "Chest - Bowser's Keep Invisible Bridge 4": MemoryLocation(treasure_chest_base_address + 16, 2, False), # non-static RAM map
+    "Chest - Bowser's Keep Moving Platforms 1": MemoryLocation(treasure_chest_base_address + 23, 7, False), # non-static RAM map
+    "Chest - Bowser's Keep Moving Platforms 2": MemoryLocation(treasure_chest_base_address + 24, 0, False), # non-static RAM map
+    "Chest - Bowser's Keep Moving Platforms 3": MemoryLocation(treasure_chest_base_address + 24, 1, False), # non-static RAM map
+    "Chest - Bowser's Keep Moving Platforms 4": MemoryLocation(treasure_chest_base_address + 23, 6, False), # non-static RAM map
+    "Chest - Bowser's Keep Elevator Platforms": MemoryLocation(treasure_chest_base_address + 15, 6, False), # non-static RAM map
+    "Chest - Bowser's Keep Cannonball Room 1": MemoryLocation(treasure_chest_base_address + 23, 3, False), # non-static RAM map
+    "Chest - Bowser's Keep Cannonball Room 2": MemoryLocation(treasure_chest_base_address + 23, 1, False), # non-static RAM map
+    "Chest - Bowser's Keep Cannonball Room 3": MemoryLocation(treasure_chest_base_address + 23, 5, False), # non-static RAM map
+    "Chest - Bowser's Keep Cannonball Room 4": MemoryLocation(treasure_chest_base_address + 23, 4, False), # non-static RAM map
+    "Chest - Bowser's Keep Cannonball Room 5": MemoryLocation(treasure_chest_base_address + 23, 2, False), # non-static RAM map
+    "Chest - Bowser's Keep Rotating Platforms 1": MemoryLocation(treasure_chest_base_address + 22, 3, False), # non-static RAM map
+    "Chest - Bowser's Keep Rotating Platforms 2": MemoryLocation(treasure_chest_base_address + 22, 6, False), # non-static RAM map
+    "Chest - Bowser's Keep Rotating Platforms 3": MemoryLocation(treasure_chest_base_address + 22, 4, False), # non-static RAM map
+    "Chest - Bowser's Keep Rotating Platforms 4": MemoryLocation(treasure_chest_base_address + 22, 7, False), # non-static RAM map
+    "Chest - Bowser's Keep Rotating Platforms 5": MemoryLocation(treasure_chest_base_address + 22, 5, False), # non-static RAM map
+    "Chest - Bowser's Keep Rotating Platforms 6": MemoryLocation(treasure_chest_base_address + 23, 0, False), # non-static RAM map
+    "Chest - Bowser's Keep Door Reward 1": MemoryLocation(treasure_chest_base_address + 7, 4, False), # these chests aren't about the number on the door...
+    "Chest - Bowser's Keep Door Reward 2": MemoryLocation(treasure_chest_base_address + 21, 7, False),
+    "Chest - Bowser's Keep Door Reward 3": MemoryLocation(treasure_chest_base_address + 0, 0, False),  # map me, not obtainable unless you have door requirement set > 2 ?
+    "Chest - Bowser's Keep Door Reward 4": MemoryLocation(treasure_chest_base_address + 0, 0, False),  # map me, not obtainable unless you have door requirement set > 3 ?
+    "Chest - Bowser's Keep Door Reward 5": MemoryLocation(treasure_chest_base_address + 0, 0, False),  # map me, not obtainable unless you have door requirement set > 4 ?
+    "Chest - Bowser's Keep Door Reward 6": MemoryLocation(treasure_chest_base_address + 0, 0, False),  # map me, not obtainable unless you have door requirement set = 6 ?
     "Chest - Factory Save Room": MemoryLocation(treasure_chest_base_address + 13, 1, False),
     "Chest - Factory Bolt Platforms": MemoryLocation(treasure_chest_base_address + 13, 2, False),
-    "Chest - Factory Falling Axems": MemoryLocation(treasure_chest_base_address + 0, 0, False),
+    "Chest - Factory Falling Axems": MemoryLocation(treasure_chest_base_address + 21, 2, False), # not obtainable due to chest re-position bug
     "Chest - Factory Treasure Pit 1": MemoryLocation(treasure_chest_base_address + 21, 5, False),
     "Chest - Factory Treasure Pit 2": MemoryLocation(treasure_chest_base_address + 21, 3, False),
     "Chest - Factory Conveyor Platforms 1": MemoryLocation(treasure_chest_base_address + 24, 2, False),

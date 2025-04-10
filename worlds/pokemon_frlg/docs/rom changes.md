@@ -1,7 +1,29 @@
 ## Base Rom Changes
 
-* Added a new setting for text speed Instant. The game will default to this setting.
-* With an option set, text will advance while A is held.
+* The Options Menu has been expanded with many new options and multiple pages that can be cycled between using the R and L buttons.
+  * General Options
+    * Text Speed: Sets the speed at which text displays
+    * Turbo A: Sets whether holding down A will auto advance text
+    * Auto Run: Sets whether you will run by default without needing to hold B
+    * Button Mode: Sets how the R and L buttons behave
+    * Frame: Sets the frame used for text boxes
+  * Battle Options
+    * Battle Scene: Sets whether battle animations play or not
+    * Battle Style: Sets whether you are asked to swap Pokémon when the opponent is sending out a new Pokémon 
+    * Show Effectiveness: Sets whether move effectiveness is shown in the move detail panel in battle
+    * Experience: Sets how much exp you gain in battle
+  * Sound Options
+    * Sound: Sets whether to use Mono or Stereo
+    * Low HP Beep: Sets whether the low HP beep plays when your Pokémon is at low health
+    * Skip Fanfares: Sets whether you can skip fanfares by pressing the B button
+    * Bike Music: Sets whether the bicycle music will play when you are on the bike
+    * Surf Music: Sets whether the surfing music will play when you are surfing
+  * Quality of Life Options
+    * Guaranteed Catch: Sets whether Poké Balls are guaranteeed to catch Pokémon or not
+    * Encounter Rates: Sets whether encounter rates are vanilla or normalized
+    * Blind Trainers: Sets whether trainers will approach the player when you enter their line of sight
+    * Item Messages: Sets what type of items will display messages in game when received from Archipelago
+* Pressing the START button while you are hovering over a move in battle will open up a textbox with more details about the move including power, accuracy, priority, etc. Pressing any of START, A, or B will close this textbox.
 * Cycling and running is allowed in most maps.
 * The game will prompt you to use another repel when one runs out.
 * Bag and PC space was expanded.
@@ -15,10 +37,9 @@
 predetermined priority.
 * Increased Safari Zone steps from 600 to 60000.
 * You can fly between Kanto and the Sevii Islands.
-* Trainers will not approach the player if Blind Trainers is on.
 * The text displayed when a Trainer is about to send out a new Pokémon has been shortened so that you can still see the name of the Pokémon when deciding if you want to swap.
 * Increased the rate at which a Pokémon's HP drains in battle to be based on the Pokémon's max HP.
-* Added a GO HOME option to the menu that teleports you to Pallet Town.
+* Added a GO HOME option to the menu that teleports you to your starting location.
 * All evolution items have been turned into key items that can be used repeatedly. A new evolution item, the Link Cable, has been added to the game.
 * Talking to the Mystery Gift Man on the 2nd floor of any Pokemon Center will allow you to respawn any static encounters you haven't caught yet.
 * Talking to the Wireless Club Attendant (left) on the 2nd floor of any Pokemon Center will let you fight a random uncatchable Pokemon in order to grind exp and money.
@@ -46,7 +67,7 @@ predetermined priority.
 * Only the last guard on Route 23 will check for badges or gyms.
 * Professor Oak will give you the Mystic and Aurora Ticket in the Hall of Fame.
 * Much of the Sevii Islands has been reworked:
-  * The cutscene after Cinnabar Gym where Bill takes you to the Sevii Islands has been removed. Instead, Bill will immediately be waiting in the Pokémon Center to take you to One Island.
+  * The cutscene after Cinnabar Gym where Bill takes you to the Sevii Islands has been removed. Instead, Bill will immediately be waiting in the Pokémon Center to take you to One Island. If Kanto Only is on, Bill will take you to Vermilion City instead.
   * The Tri Pass allows you to sail to the 1-3 Islands and the Rainbow Pass allows you to sail to the 4-7 Islands from Vermilion City.
   * You will never be trapped on the Sevii Islands and your PC will never be disabled there.
   * Several cutscenes in the One Island Pokémon Center have been reworked or removed.

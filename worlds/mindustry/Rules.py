@@ -181,7 +181,7 @@ def has_plastanium(state: CollectionState, player: int) -> bool:
 
 def has_power_serpulo(state: CollectionState, player: int) -> bool:
     """If the player has acces to electricity on Serpulo"""
-    return state.has("Combustion Generator", player)
+    return state.has("Combustion Generator", player) or state.has("Progressive Generators Serpulo", player, 1)
 
 def has_mechanical_pump(state: CollectionState, player: int) -> bool:
     """If the player has received Mechanical Pump"""
@@ -197,21 +197,22 @@ def has_graphite_press(state: CollectionState, player: int) -> bool:
 def has_pneumatic_drill(state: CollectionState, player: int) -> bool:
     """If the player has received Pneumatic Drill"""
     available: bool = False
-    if state.has("Pneumatic Drill", player) and has_graphite_serpulo(state, player):
+    if ((state.has("Pneumatic Drill", player) or state.has("Progressive Drills Serpulo", player, 1)) and
+            has_graphite_serpulo(state, player)):
         available = True
     return available
 
 def has_cultivator(state: CollectionState, player: int) -> bool:
     """If the player has received Cultivator"""
     available: bool = False
-    if state.has("Cultivator", player) and has_silicon_serpulo(state, player):
+    if state.has("Cultivator", player) and has_silicon_serpulo(state, player) and has_mechanical_pump(state, player):
         available = True
     return available
 
 def has_laser_drill(state: CollectionState, player: int) -> bool:
     """If the player received Laser Drill"""
     available: bool = False
-    if state.has("Laser Drill", player) and has_graphite_serpulo(state, player) and has_silicon_serpulo(state, player) and has_titanium(state, player):
+    if (state.has("Laser Drill", player) or state.has("Progressive Drills Serpulo", player, 2)) and has_graphite_serpulo(state, player) and has_silicon_serpulo(state, player) and has_titanium(state, player):
         available = True
     return available
 
@@ -487,7 +488,8 @@ def has_basin(state: CollectionState, player:int) -> bool:
 
 def has_marsh_requirement(state: CollectionState, player:int) -> bool:
     """If the player has received the research required to clear Marsh"""
-    return state.has_all({"Oxidation Chamber", "Reinforced Pump", "Chemical Combustion Chamber"}, player)
+    return (state.has_all({"Oxidation Chamber", "Reinforced Pump"}, player) and
+            (state.has("Chemical Combustion Chamber", player) or state.has("Progressive Generators Erekir", player, 1)))
 
 def has_marsh(state: CollectionState, player:int) -> bool:
     """If the player captured Marsh"""
@@ -539,9 +541,10 @@ def has_peaks_launch(state: CollectionState, player:int) -> bool:
 
 def has_peaks_requirement(state: CollectionState, player:int) -> bool:
     """If the player has received the research required to clear Peaks"""
-    return (state.has_all({"Beam Tower", "Chemical Combustion Chamber", "Ship Refabricator", "Reinforced Container",
+    return (state.has_all({"Beam Tower", "Ship Refabricator", "Reinforced Container",
                            "Payload Loader", "Payload Unloader"}, player) and
-            state.has_any_count({"Progressive Ships": 2}, player))
+            state.has_any_count({"Progressive Ships": 2}, player) and
+            (state.has("Chemical Combustion Chamber", player) or state.has("Progressive Generators Erekir", player, 1)))
 
 def has_peaks(state: CollectionState, player:int) -> bool:
     """If the player captured Peaks"""
@@ -650,11 +653,11 @@ def has_neoplasia_reactor(state: CollectionState, player:int) -> bool:
 
 def has_impact_drill(state: CollectionState, player:int) -> bool:
     """If the player received Impact Drill"""
-    return state.has_all({"Impact Drill", "Reinforced Conduit"}, player)
+    return (state.has("Impact Drill", player) or state.has("Progressive Drills Erekir", player, 1)) and state.has("Reinforced Conduit", player)
 
 def has_large_plasma_bore(state: CollectionState, player:int) -> bool:
     """If the player received Large Plasma Bore"""
-    return state.has("Large Plasma Bore", player) and has_oxide(state, player) and has_tungsten(state, player)
+    return (state.has("Large Plasma Bore", player) or state.has("Progressive Drills Erekir", player, 2)) and has_oxide(state, player) and has_tungsten(state, player)
 
 @DeprecationWarning
 def has_early_logistics_erekir(state: CollectionState, player:int) -> bool:
