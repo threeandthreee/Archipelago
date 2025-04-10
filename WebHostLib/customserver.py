@@ -262,9 +262,6 @@ def run_server_process(name: str, ponyconfig: dict, static_server_data: dict,
         raise Exception("Worlds system should not be loaded in the custom server.")
 
     import gc
-    from base64 import urlsafe_b64encode
-    ssl_context = load_server_cert(cert_file, cert_key_file) if cert_file else None
-    del cert_file, cert_key_file, ponyconfig
 
     if not cert_file:
         def get_ssl_context():
