@@ -35,6 +35,7 @@ class DigimonWorldWorld(World):
     """
 
     game: str = "Digimon World"
+    is_experimental = True
     options_dataclass = DigimonWorldOption
     options: DigimonWorldOption
     topology_present: bool = True
