@@ -95,8 +95,6 @@ def download_slot_file(room_id, player_id: int):
         # Ashipelago customization
         elif slot_data.game == "Kingdom Hearts Birth by Sleep":
             fname = f"AP_{app.jinja_env.filters['suuid'](room_id)}_P{slot_data.player_id}_{slot_data.player_name}.zip"
-        elif slot_data.game == "The Legend of Zelda - Oracle of Seasons":
-            fname = f"AP+{app.jinja_env.filters['suuid'](room_id)}_P{slot_data.player_id}_{slot_data.player_name}.patcherdata"
         elif slot_data.game == "Final Fantasy 12 Open World":
             fname = f"AP+{app.jinja_env.filters['suuid'](room_id)}_P{slot_data.player_id}_{slot_data.player_name}.json"
         elif slot_data.game == "Metroid Prime":
