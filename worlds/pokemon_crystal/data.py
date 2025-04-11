@@ -1,6 +1,7 @@
-import orjson
 import pkgutil
 from typing import Dict, List, NamedTuple, Set, FrozenSet, Any, Union
+
+import orjson
 
 from BaseClasses import ItemClassification
 
@@ -29,21 +30,18 @@ class EventData(NamedTuple):
     parent_region: str
 
 
-class RegionData:
-    name: str
-    johto: bool
-    silver_cave: bool
-    exits: List[str]
-    warps: List[str]
-    locations: List[str]
-    events: List[EventData]
+class TrainerPokemon(NamedTuple):
+    level: int
+    pokemon: str
+    item: Union[str, None]
+    moves: List[str]
 
-    def __init__(self, name: str):
-        self.name = name
-        self.exits = []
-        self.warps = []
-        self.locations = []
-        self.events = []
+
+class TrainerData(NamedTuple):
+    name: str
+    trainer_type: str
+    pokemon: List[TrainerPokemon]
+    name_length: int
 
 
 class LearnsetData(NamedTuple):
@@ -87,19 +85,6 @@ class TMHMData(NamedTuple):
     move_id: int
 
 
-class TrainerPokemon(NamedTuple):
-    level: int
-    pokemon: str
-    item: Union[str, None]
-    moves: List[str]
-
-
-class TrainerData(NamedTuple):
-    trainer_type: str
-    pokemon: List[TrainerPokemon]
-    name_length: int
-
-
 class MiscWarp(NamedTuple):
     coords: List[int]
     id: int
@@ -114,7 +99,6 @@ class MiscData(NamedTuple):
     fuchsia_gym_trainers: List[List[int]]
     radio_tower_questions: List[str]
     saffron_gym_warps: MiscSaffronWarps
-    ecruteak_gym_warps: List[List[List[int]]]
 
 
 class MusicConst(NamedTuple):
@@ -157,6 +141,41 @@ class StaticPokemon(NamedTuple):
     addresses: List[str]
 
 
+class TradeData(NamedTuple):
+    index: int
+    requested_pokemon: str
+    received_pokemon: str
+    requested_gender: int
+    held_item: str
+
+
+class RegionData:
+    name: str
+    johto: bool
+    silver_cave: bool
+    exits: List[str]
+    warps: List[str]
+    trainers: List[TrainerData]
+    statics: List[StaticPokemon]
+    locations: List[str]
+    events: List[EventData]
+
+    def __init__(self, name: str):
+        self.name = name
+        self.exits = []
+        self.warps = []
+        self.trainers = []
+        self.statics = []
+        self.locations = []
+        self.events = []
+
+
+class FlyRegion(NamedTuple):
+    id: int
+    name: str
+    region_id: str
+
+
 class PokemonCrystalData:
     rom_version: int
     rom_version_11: int
@@ -177,6 +196,8 @@ class PokemonCrystalData:
     misc: MiscData
     music: MusicData
     static: Dict[str, StaticPokemon]
+    trades: List[TradeData]
+    fly_regions: List[FlyRegion]
 
     def __init__(self) -> None:
         self.rom_addresses = {}
@@ -187,6 +208,7 @@ class PokemonCrystalData:
         self.items = {}
         self.trainers = {}
         self.pokemon = {}
+        self.trades = []
         self.moves = {}
 
 
@@ -214,13 +236,34 @@ def _init() -> None:
     type_data = data_json["types"]
     fuchsia_data = data_json["misc"]["fuchsia_gym_trainers"]
     saffron_data = data_json["misc"]["saffron_gym_warps"]
-    ecruteak_data = data_json["misc"]["ecruteak_gym_warps"]
     tmhm_data = data_json["tmhm"]
 
     data.rom_version = data_json["rom_version"]
     data.rom_version_11 = data_json["rom_version11"]
 
     claimed_locations: Set[str] = set()
+
+    data.trainers = {}
+
+    for trainer_name, trainer_attributes in trainer_data.items():
+        trainer_type = trainer_attributes["trainer_type"]
+        pokemon = []
+        for poke in trainer_attributes["pokemon"]:
+            if trainer_type == "TRAINERTYPE_NORMAL":
+                pokemon.append(TrainerPokemon(int(poke[0]), poke[1], None, []))
+            elif trainer_type == "TRAINERTYPE_ITEM":
+                pokemon.append(TrainerPokemon(int(poke[0]), poke[1], poke[2], []))
+            elif trainer_type == "TRAINERTYPE_MOVES":
+                pokemon.append(TrainerPokemon(int(poke[0]), poke[1], None, poke[2:]))
+            else:
+                pokemon.append(TrainerPokemon(int(poke[0]), poke[1], poke[2], poke[3:]))
+
+        data.trainers[trainer_name] = TrainerData(
+            trainer_name,
+            trainer_type,
+            pokemon,
+            trainer_attributes["name_length"]
+        )
 
     data.regions = {}
 
@@ -250,6 +293,11 @@ def _init() -> None:
         # events
         for event in region_json["events"]:
             new_region.events.append(EventData(event, region_name))
+
+        # trainers
+        if "trainers" in region_json:
+            for trainer in region_json["trainers"]:  #
+                new_region.trainers.append(data.trainers[trainer])
 
         # Exits
         for region_exit in region_json["exits"]:
@@ -342,26 +390,6 @@ def _init() -> None:
             move_attributes["name"],
         )
 
-    data.trainers = {}
-    for trainer_name, trainer_attributes in trainer_data.items():
-        trainer_type = trainer_attributes["trainer_type"]
-        pokemon = []
-        for poke in trainer_attributes["pokemon"]:
-            if trainer_type == "TRAINERTYPE_NORMAL":
-                pokemon.append(TrainerPokemon(int(poke[0]), poke[1], None, []))
-            elif trainer_type == "TRAINERTYPE_ITEM":
-                pokemon.append(TrainerPokemon(int(poke[0]), poke[1], poke[2], []))
-            elif trainer_type == "TRAINERTYPE_MOVES":
-                pokemon.append(TrainerPokemon(int(poke[0]), poke[1], None, poke[2:]))
-            else:
-                pokemon.append(TrainerPokemon(int(poke[0]), poke[1], poke[2], poke[3:]))
-
-        data.trainers[trainer_name] = TrainerData(
-            trainer_type,
-            pokemon,
-            trainer_attributes["name_length"]
-        )
-
     grass_dict = {}
     for grass_name, grass_data in wild_data["grass"].items():
         encounter_list = []
@@ -419,8 +447,7 @@ def _init() -> None:
         saffron_warps[warp_name] = MiscWarp(warp_data["coords"], warp_data["id"])
 
     radio_tower_data = ["Y", "Y", "N", "Y", "N"]
-    data.misc = MiscData(fuchsia_data, radio_tower_data, MiscSaffronWarps(saffron_warps, saffron_data["pairs"]),
-                         ecruteak_data)
+    data.misc = MiscData(fuchsia_data, radio_tower_data, MiscSaffronWarps(saffron_warps, saffron_data["pairs"]))
 
     data.types = type_data["types"]
     data.type_ids = type_data["ids"]
@@ -450,6 +477,38 @@ def _init() -> None:
     data.static = {}
     for static_name, static_data in data_json["static"].items():
         data.static[static_name] = StaticPokemon(static_data["pokemon"], static_data["addresses"])
+
+    data.trades = []
+    for trade_data in data_json["trade"]:
+        data.trades.append(
+            TradeData(trade_data["index"],
+                      trade_data["requested_pokemon"],
+                      trade_data["received_pokemon"],
+                      trade_data["requested_gender"],
+                      trade_data["held_item"]))
+
+    data.fly_regions = [
+        FlyRegion(2, "Pallet Town", "REGION_PALLET_TOWN"),
+        FlyRegion(3, "Viridian City", "REGION_VIRIDIAN_CITY"),
+        FlyRegion(4, "Pewter City", "REGION_PEWTER_CITY"),
+        FlyRegion(5, "Cerulean City", "REGION_CERULEAN_CITY"),
+        FlyRegion(7, "Vermilion City", "REGION_VERMILION_CITY"),
+        FlyRegion(8, "Lavender Town", "REGION_LAVENDER_TOWN"),
+        FlyRegion(9, "Saffron City", "REGION_SAFFRON_CITY"),
+        FlyRegion(10, "Celadon City", "REGION_CELADON_CITY"),
+        FlyRegion(11, "Fuchsia City", "REGION_FUCHSIA_CITY"),
+        FlyRegion(12, "Cinnabar Island", "REGION_CINNABAR_ISLAND"),
+
+        FlyRegion(18, "Azalea Town", "REGION_AZALEA_TOWN"),
+        FlyRegion(19, "Cianwood City", "REGION_CIANWOOD_CITY"),
+        FlyRegion(20, "Goldenrod City", "REGION_GOLDENROD_CITY"),
+        FlyRegion(21, "Olivine City", "REGION_OLIVINE_CITY"),
+        FlyRegion(22, "Ecruteak City", "REGION_ECRUTEAK_CITY"),
+        FlyRegion(23, "Mahogany Town", "REGION_MAHOGANY_TOWN"),
+        FlyRegion(24, "Lake of Rage", "REGION_LAKE_OF_RAGE"),
+        FlyRegion(25, "Blackthorn City", "REGION_BLACKTHORN_CITY"),
+        FlyRegion(26, "Silver Cave", "REGION_SILVER_CAVE_OUTSIDE")
+    ]
 
 
 _init()

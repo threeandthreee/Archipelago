@@ -21,7 +21,6 @@ def shuffle_dungeons(world) -> None:
         "Milky Well",
         "Gold Mine",
         "Moonside",
-        "Monkey Caves",
         "Monotoli Building",
         "Magnet Hill",
         "Pink Cloud",
@@ -46,7 +45,6 @@ def shuffle_dungeons(world) -> None:
         "Lilliput Steps": "Happy-Happy Village",
         "Gold Mine": "Dusty Dunes Desert",
         "Moonside": "Fourside",
-        "Monkey Caves": "Dusty Dunes Desert",
         "Monotoli Building": "Fourside",
         "Magnet Hill": "Fourside",
         "Pink Cloud": "Dalaam",
@@ -66,7 +64,6 @@ def shuffle_dungeons(world) -> None:
         "Milky Well": "Milky Well",
         "Gold Mine": "Gold Mine",
         "Moonside": "Moonside",
-        "Monkey Caves": "Monkey Caves",
         "Monotoli Building": "Monotoli Building",
         "Magnet Hill": "Magnet Hill",
         "Pink Cloud": "Pink Cloud",
@@ -82,13 +79,6 @@ def shuffle_dungeons(world) -> None:
     if world.options.magicant_mode:
         # Don't shuffle Magicant when it's important
         single_exit_dungeons.remove("Sea of Eden")
-
-    # FIND A BETTER SOLUTION THAN THIS!
-    # if world.options.dungeon_shuffle and not world.options.shuffle_teleports:
-        # world.options.shuffle_teleports.value = 1
-
-    if world.options.monkey_caves_mode < 3:
-        single_exit_dungeons.remove("Monkey Caves")
 
     shuffled_single_dungeons = single_exit_dungeons.copy()
     shuffled_double_dungeons = double_exit_dungeons.copy()
@@ -110,10 +100,9 @@ def write_dungeon_entrances(world, rom) -> None:
         "Giant Step": ["Giant Step Entrance", "Giant Step Exit"],
         "Happy-Happy HQ": ["Happy-Happy HQ Entrance", "Happy-Happy HQ Exit"],
         "Lilliput Steps": ["Lilliput Steps Entrance", "Lilliput Steps Exit"],
-        "Belch's Factory": ["Factory Entrance", "Factory Exit", "Factory Back Exit", "Factory Back Entrance"],
+        "Belch's Factory": ["Factory Script Warp", "Factory Exit", "Factory Back Exit", "Factory Back Entrance"],
         "Milky Well": ["Milky Well Entrance", "Milky Well Exit"],
         "Gold Mine": ["Mine Entrance", "Mine Exit"],
-        "Monkey Caves": ["Monkey Entrance", "Monkey Exit"],
         "Monotoli Building": ["Monotoli Entrance", "Monotoli Exit"],
         "Moonside": ["Cafe Entrance", "Cafe Exit"],
         "Brickroad Maze": ["Maze Entrance", "Maze Exit", "Maze Back Exit", "Maze Back Entrance"],
@@ -148,8 +137,6 @@ def write_dungeon_entrances(world, rom) -> None:
         "Milky Well Exit": EBDungeonDoor(0x0F11E8, 0x321100, 5),
         "Mine Entrance": EBDungeonDoor(0x0F1378, 0x321110, 7),
         "Mine Exit": EBDungeonDoor(0x0F1400, 0x321120, 5),
-        "Monkey Entrance": EBDungeonDoor(0x0F1458, 0x321130, 7),
-        "Monkey Exit": EBDungeonDoor(0x0F1513, 0x321140, 3),
         "Cafe Entrance": EBDungeonDoor(0x0F165D, 0x321150, 3),
         "Cafe Exit": EBDungeonDoor(0x0F1A25, 0x321160, 7),
         "Monotoli Entrance": EBDungeonDoor(0x0F1928, 0x321170, 7),
@@ -180,23 +167,27 @@ def write_dungeon_entrances(world, rom) -> None:
         "Fire Spring Exit": EBDungeonDoor(0x0F2437, 0x321300, 5),
         "Sea Entrance Script": EBDungeonDoor(0x15F25B, 0x321310, 3, True),
         "Sea Exit Script": EBDungeonDoor(0x15ECEB, 0x321320, 5, True),
-        "Post-Nightmare Script": EBDungeonDoor(0x15ED4B, 0x321330, 5, True)
+        "Post-Nightmare Script": EBDungeonDoor(0x15ED4B, 0x321330, 5, True),
+        "Carpainter Failure Script": EBDungeonDoor(0x15EEF3, 0x321340, 7, True)
     }
 
     paired_doors = {}
 
     for door in all_dungeon_doors:
-        rom.copy_bytes(all_dungeon_doors[door].address, 6, all_dungeon_doors[door].copyaddress)
+        rom.copy_bytes(all_dungeon_doors[door].address, 6, all_dungeon_doors[door].copyaddress) # Copy 6 bytes at the source of the door to the destination of the door
 
     for door in world.dungeon_connections:
+        if world.dungeon_connections[door] == "Sea of Eden":
+            sea_connection = door
         for index, entrance in enumerate(dungeon_entrances[door]):
             if "Exit" in entrance:
                 paired_doors[dungeon_entrances[world.dungeon_connections[door]][index]] = entrance
             else:
                 paired_doors[entrance] = dungeon_entrances[world.dungeon_connections[door]][index]
 
-    paired_doors["Factory Script Warp"] = dungeon_entrances[world.dungeon_connections["Belch's Factory"]][0]
-    paired_doors["Post-Nightmare Script"] = dungeon_entrances[world.dungeon_connections["Sea of Eden"]][1]
+
+    paired_doors["Post-Nightmare Script"] = paired_doors["Sea Exit Script"]
+    paired_doors["Carpainter Failure Script"] = paired_doors["Happy-Happy HQ Exit"]
 
     for door in paired_doors:
         destination = all_dungeon_doors[paired_doors[door]]
@@ -225,6 +216,8 @@ def write_dungeon_entrances(world, rom) -> None:
     rom.write_bytes(0x0F165B, struct.pack("H", 0x8091))  # Lock Cafe
     rom.write_bytes(0x0FC8C6, struct.pack("I", 0xF3120B))  # Everdred script
     rom.write_bytes(0x10784A, struct.pack("H", 0x0000))  # Mook spawn in stonehenge anteroom
+
+    rom.write_bytes(0x0FA4D6, bytearray([0xC7, 0x00, 0x01]))
 
     moonside_reward = world.multiworld.get_location("Fourside - Post-Moonside Delivery", world.player).item
     if (moonside_reward.player != world.player) or world.options.remote_items or moonside_reward.name not in item_id_table:

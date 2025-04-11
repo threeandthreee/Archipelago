@@ -29,8 +29,9 @@
 1e/5569/TX_012a: /include text.hiddenShop2 # (Cutscene Zelda saved)
 1e/56c3/TX_0131: /include text.hiddenShop3 # (Cutscene with zelda)
 
-1f/47ff/TX_0a2a: /include text.tokayMarket1
-1f/4822/TX_0a2b: /include text.tokayMarket1Validation
+1f/482b/TX_0a2c: /include text.tokayMarket1
+1f/481e/: db $2c # move where 2b point too
+1f/4822/: /include text.tokayMarket1Validation # fix 2b market validation
 1f/4894/TX_0a31: /include text.tokayMarket2
 
 # Replace First Deku meeting by essence & slate requirement

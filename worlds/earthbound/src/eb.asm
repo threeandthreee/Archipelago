@@ -50,7 +50,7 @@ db $00, $0A, $00, $61
 
 ORG $C4FD50
 NewSectorPointers:
-dw $FD80,$FD8E,$FD94,$FD9E,$FDA8,$FDC2,$FDD0,$FE74,$FE80,$FEE0,$FEEA
+dw $FD80,$FD8E,$FD94,$FD9E,$FDA8,$FDC2,$FDD0,$FE74,$FE80,$FEE0,$FEEA,$FF00
 
 ORG $D5F880
 SpecialNameTable:
@@ -310,6 +310,12 @@ JML InitializeLoadingEnemies
 ORG $C2EFF7
 JSL SetupVramForSpriteLoad
 
+ORG $C1F3D0
+JSL CloseVersionWindow
+
+ORG $C27F2C
+JSL FixGiygasReflect
+
 ;new jmls
 
 
@@ -374,17 +380,18 @@ db $04
 ORG $D7BB70
 db $04
 
+; Flags for Tenda VIllage, was $02, now $00 to disable mice
 ORG $D7B200
-dw $0002, $0002
+dw $0000, $0000
 
 ORG $D7B240
-dw $0002, $0002, $0002
+dw $0000, $0000, $0000
 
 ORG $D7B280
-dw $0002, $0002, $0002
+dw $0000, $0000, $0000
 
 ORG $D7B2C0
-dw $0002, $0002, $0002
+dw $0000, $0000, $0000
 
 ORG $C13CF4
 NOP
@@ -544,8 +551,8 @@ db $50, $A4, $9F, $00, $50, $50, $97, $9F, $50, $97, $95, $A4, $50, $9C, $A5, $9
 db $93, $98, $5C, $50, $A4, $9F, $9F, $5E, $5E, $5E, $03, $00, $70, $73, $9F, $9D
 db $95, $50, $A7, $99, $A4, $98, $50, $9D, $95, $5E, $5E, $5E, $03, $50, $79, $57
 db $9C, $9C, $50, $A3, $98, $9F, $A7, $50, $A9, $9F, $A5, $00, $50, $50, $A3, $9F
-db $9D, $95, $50, $A2, $95, $91, $9C, $50, $52, $A0, $A2, $9F, $97, $A2, $95, $A3
-db $A3, $99, $9F, $9E, $52, $5C, $50, $91, $9C, $A2, $99, $97, $98, $A4, $51, $13
+db $9D, $95, $50, $A2, $95, $91, $9C, $50, $6C, $A0, $A2, $9F, $97, $A2, $95, $A3
+db $A3, $99, $9F, $9E, $6E, $5C, $50, $91, $9C, $A2, $99, $97, $98, $A4, $51, $13
 db $1D, $01, $FF, $CA, $04, $1B, $02, $0A, $F1, $6A, $C7, $00 ;Captain strong pre-fight text
 
 ORG $C76A6D
@@ -1086,8 +1093,8 @@ db $a0, $9f, $9f, $a2, $50, $a1, $a5, $91, $9c, $99, $a4, $a9, $50, $9f, $96, $5
 db $a4, $98, $95, $50, $96, $9f, $9f, $94, $50, $92, $95, $99, $9e, $97, $50, $a3
 db $95, $a2, $a6, $95, $94, $5c, $10, $15, $50, $91, $9e, $94, $50, $91, $a0, $a0
 db $95, $91, $a2, $a3, $50, $a4, $9f, $50, $92, $95, $50, $a3, $99, $97, $9e, $95
-db $94, $50, $92, $a9, $50, $52, $82, $91, $9d, $50, $82, $91, $99, $a3, $99, $9e
-db $5e, $52, $13, $02
+db $94, $50, $92, $a9, $50, $6C, $82, $91, $9d, $50, $82, $91, $99, $a3, $99, $9e
+db $5e, $6E, $13, $02
 
 ORG $C87209
 db $1d, $05, $ff, $b9, $1b, $02, $20, $72, $c8, $00, $0a, $17, $72, $c8
@@ -1290,8 +1297,8 @@ db $1d, $05, $ff, $cb, $1b, $03, $01, $04, $c6, $00, $70, $78, $95, $a9, $5e, $0
 db $00, $70, $79, $50, $a7, $91, $a3, $50, $9d, $99, $9e, $99, $9e, $97, $50, $96
 db $9f, $a2, $50, $1c, $05, $5a, $a3, $5c, $10, $10, $50, $92, $a5, $a4, $50, $79
 db $50, $9c, $9f, $a3, $a4, $50, $9d, $a9, $50, $a0, $95, $a2, $9d, $99, $a4, $50
-db $92, $95, $93, $91, $a5, $a3, $95, $50, $79, $57, $9d, $50, $52, $9e, $9f, $a4
-db $50, $9c, $99, $93, $95, $9e, $a3, $95, $94, $52, $5e, $03, $00, $70, $79, $96
+db $92, $95, $93, $91, $a5, $a3, $95, $50, $79, $57, $9d, $50, $6C, $9e, $9f, $a4
+db $50, $9c, $99, $93, $95, $9e, $a3, $95, $94, $6E, $5e, $03, $00, $70, $79, $96
 db $50, $a9, $9f, $a5, $50, $92, $a2, $99, $9e, $97, $50, $9d, $95, $50, $91, $50
 db $a0, $95, $a2, $9d, $99, $a4, $5c, $10, $10, $50, $79, $57, $9c, $9c, $50, $a3
 db $98, $91, $a2, $95, $50, $a7, $98, $91, $a4, $95, $a6, $95, $a2, $50, $9c, $9f
@@ -1833,12 +1840,12 @@ db $99, $a4, $98, $50, $9d, $95, $50, $9c, $91, $a4, $95, $a2, $5c, $50, $10, $0
 db $50, $79, $57, $9c, $9c, $50, $92, $95, $50, $91, $a2, $9f, $a5, $9e, $94, $50
 db $74, $a2, $5e, $50, $71, $9e, $94, $9f, $9e, $a5, $a4, $a3, $57, $a3, $50, $9c
 db $91, $92, $5e, $13, $02, $70, $79, $57, $a6, $95, $50, $92, $95, $95, $9e, $50
-db $a4, $98, $99, $9e, $9b, $99, $9e, $97, $50, $91, $92, $9f, $a5, $a4, $50, $52
-db $71, $a2, $93, $98, $99, $a0, $95, $9c, $91, $97, $9f, $52, $50, $9c, $91, $a4
+db $a4, $98, $99, $9e, $9b, $99, $9e, $97, $50, $91, $92, $9f, $a5, $a4, $50, $6C
+db $71, $a2, $93, $98, $99, $a0, $95, $9c, $91, $97, $9f, $6E, $50, $9c, $91, $a4
 db $95, $9c, $a9, $5e, $13, $02; Stonehenge item
 
 ORG $CFB5E7
-db $D8, $02, $01
+db $49, $00, $02
 
 ORG $CFB5E2
 db $8F
@@ -1988,7 +1995,7 @@ db $91, $91, $91, $91, $91, $a2, $a2, $a2, $a2, $97, $98, $51, $51, $03, $18, $0
 db $10, $30, $08, $40, $92, $fe, $00, $0a, $50, $2d, $c8; Dept store spook
 
 ORG $CFC51C
-db $D6
+db $C7
 
 ORG $C86DFE
 db $14, $6E, $C8
@@ -2031,8 +2038,8 @@ db $91, $94, $a9, $50, $98, $95, $a2, $95, $5c, $10, $0f, $50, $9c, $95, $a4, $5
 db $a3, $50, $9a, $a5, $a3, $a4, $50, $a3, $91, $a9, $50, $99, $a4, $50, $99, $a3
 db $50, $a9, $9f, $a5, $5e, $03, $00, $70, $71, $98, $95, $9d, $5e, $5e, $5e, $10
 db $10, $50, $78, $95, $a2, $95, $57, $a3, $50, $a9, $9f, $a5, $a2, $50, $a0, $91
-db $93, $9b, $91, $97, $95, $5c, $50, $52, $75, $94, $a5, $91, $a2, $94, $9f, $5e
-db $52, $03, $1d, $00, $ff, $ac, $1b, $02, $e2, $aa, $c7, $00, $1f, $02, $74, $00
+db $93, $9b, $91, $97, $95, $5c, $50, $6C, $75, $94, $a5, $91, $a2, $94, $9f, $5e
+db $6E, $03, $1d, $00, $ff, $ac, $1b, $02, $e2, $aa, $c7, $00, $1f, $02, $74, $00
 db $10, $30, $70, $58, $1c, $02, $fe, $50, $97, $9f, $a4, $50, $a4, $98, $95, $50
 db $1c, $05, $ac, $5e, $59, $13, $18, $04, $0a, $0F, $b7, $c7, $00, $70, $7f, $98
 db $5c, $10, $0f, $50, $a9, $9f, $a5, $50, $94, $9f, $9e, $57, $a4, $50, $98, $91
@@ -2442,7 +2449,7 @@ db $50, $50, $89, $9f, $a5, $50, $93, $91, $9e, $50, $95, $a6, $95, $9e, $50, $a
 db $9c, $91, $a9, $50, $99, $a4, $50, $a7, $99, $a4, $98, $50, $9f, $a4, $98, $95
 db $a2, $50, $a0, $95, $9f, $a0, $9c, $95, $50, $9f, $a2, $50, $97, $91, $9d, $95
 db $a3, $5e, $03, $00, $70, $79, $57, $9d, $50, $93, $91, $9c, $9c, $99, $9e, $97
-db $50, $99, $a4, $50, $10, $0a, $52, $79, $a3, $9c, $91, $9e, $94, $a3, $52, $5e
+db $50, $99, $a4, $50, $10, $0a, $6C, $79, $a3, $9c, $91, $9e, $94, $a3, $6E, $5e
 db $10, $0a, $50, $87, $91, $9e, $9e, $91, $50, $a4, $a2, $a9, $50, $99, $a4, $5e
 db $5e, $5e, $6f, $10, $10, $50, $7e, $9f, $5c, $50, $79, $50, $97, $a5, $95, $a3
 db $a3, $50, $9e, $9f, $a4, $5e, $03, $01, $70, $87, $95, $9c, $9c, $5c, $50, $79
@@ -3046,7 +3053,7 @@ CPY $98A4
 BEQ CharacterInvalid
 BRA CheckNextChar
 CharacterInvalid:
-JSL KeyItemBlocker
+JSL KeyItemBlockerAndCheckProg
 BEQ SendItemToStorage
 LDA #$69
 RTS
@@ -3562,7 +3569,7 @@ LDA $0000,X
 JML $C18B5B
 
 GetLumiTextMain:
-LDA $C4803B,X
+LDA $C48037
 AND #$00FF
 BEQ .EndLumiText
 JML $C4845A
@@ -4656,7 +4663,7 @@ ORG $C9E510
 db $08, $cf, $dc, $c7, $00, $1b, $05
 
 ORG $C9E7A0
-db $6E, $B5, $EE
+dl Truffle1
 
 ORG $EEB56E
 db $17, $79, $51, $03, $00, $70, $84, $15, $78, $91, $50, $1c, $05, $63, $50, $91
@@ -4664,7 +4671,7 @@ db $16, $0e, $17, $cc, $a4, $5e, $03, $00, $1d, $03, $ff, $1b, $02, $8a, $b5, $e
 db $ff, $1d, $0e, $ff, $01, $08, $cf, $dc, $c7, $ff, $03, $02
 
 ORG $C9E7B9
-db $9A, $B5, $EE
+dl Truffle2
 
 ORG $EEB59A
 db $17, $79, $51, $03, $00, $70, $84, $15, $78, $91, $50, $1c, $05, $63, $50, $91
@@ -4672,7 +4679,7 @@ db $16, $0e, $17, $cc, $a4, $5e, $03, $00, $1d, $03, $ff, $1b, $02, $8a, $b5, $e
 db $ff, $1d, $0e, $ff, $01, $08, $cf, $dc, $c7, $ff, $03, $02
 
 ORG $C9E7D2
-db $C6, $B5, $EE
+dl Truffle3
 
 ORG $EEB5C6
 db $17, $79, $51, $03, $00, $70, $84, $15, $78, $91, $50, $1c, $05, $63, $50, $91
@@ -4680,7 +4687,7 @@ db $16, $0e, $17, $cc, $a4, $5e, $03, $00, $1d, $03, $ff, $1b, $02, $8a, $b5, $e
 db $ff, $1d, $0e, $ff, $01, $08, $cf, $dc, $c7, $ff, $03, $02
 
 ORG $C9E7EB
-db $F2, $B5, $EE
+dl Truffle4
 
 ORG $EEB5F2
 db $17, $79, $51, $03, $00, $70, $84, $15, $78, $91, $50, $1c, $05, $63, $50, $91
@@ -4688,7 +4695,7 @@ db $16, $0e, $17, $cc, $a4, $5e, $03, $00, $1d, $03, $ff, $1b, $02, $8a, $b5, $e
 db $ff, $1d, $0e, $ff, $01, $08, $cf, $dc, $c7, $ff, $03, $02
 
 ORG $C9E804
-db $1E, $B6, $EE
+dl Truffle5
 
 ORG $EEB61E
 db $17, $79, $51, $03, $00, $70, $84, $15, $78, $91, $50, $1c, $05, $63, $50, $91
@@ -4824,8 +4831,8 @@ db $81, $01, $01, $02
 ORG $EEB927
 db $70, $71, $50, $9d, $a9, $a3, $a4, $95, $a2, $99, $9f, $a5, $a3, $50, $9d, $91
 db $93, $98, $99, $9e, $95, $50, $a0, $91, $a2, $a4, $5e, $03, $00, $70, $84, $98
-db $95, $50, $a7, $9f, $a2, $94, $a3, $5c, $10, $0a, $50, $52, $83, $7b, $89, $50
-db $82, $85, $7e, $7e, $75, $82, $50, $7d, $7b, $5e, $50, $61, $52, $50, $91, $a2
+db $95, $50, $a7, $9f, $a2, $94, $a3, $5c, $10, $0a, $50, $6C, $83, $7b, $89, $50
+db $82, $85, $7e, $7e, $75, $82, $50, $7d, $7b, $5e, $50, $61, $6E, $50, $91, $a2
 db $95, $50, $95, $9d, $92, $9c, $91, $aa, $9f, $9e, $95, $94, $50, $9f, $9e, $50
 db $a4, $98, $95, $50, $a3, $99, $94, $95, $5e, $13, $02
 
@@ -5092,76 +5099,6 @@ JML ExitRepelCheck_ForceFlagOn
 RepelsEmpty:
 PLA
 BRA CheckNormal
-
-GetStartingData:
-PHB
-LDA #$000B
-LDX #$FC70
-LDY #$99F3
-MVN $D77E
-PLB
-LDA #$0000
-LDX #$0000
-CheckTeleport:
-LDA StartingTeleports,X
-AND #$00FF
-BEQ EndStartTeleports
-CMP #$0010
-BNE NormalTeleport
-JMP GetStarstorm
-NormalTeleport:
-PHX
-ASL
-TAX
-LDA TeleportFlags,X
-JSL $C2165E
-PLX
-INX
-BRA CheckTeleport
-EndStartTeleports:
-STZ $FF41
-LDA #$0000
-LDX #$0000
-CheckChars:
-LDA StartingChars,X
-AND #$00FF
-BEQ EndStartData
-PHX
-PHA
-CMP #$0001
-BNE .NotNess
-LDA #$0006
-.NotNess:
-DEC
-DEC
-ASL
-TAX
-LDA CharFlags,X
-LDX #$0001
-JSL $C2165E
-PLA
-JSL $C228F8
-PLX
-INX
-BRA CheckChars
-EndStartData:
-JML CheckEndPhotos
-GetStarstorm:
-PHX
-LDA $FF41
-AND #$00FF
-CMP #$0002
-BNE .StarstormYeah
-DEC $FF41
-.StarstormYeah:
-TAX
-LDA StarstormBits,X
-AND #$00FF
-TSB $9839
-PLX
-INX
-INC $FF41
-JMP CheckTeleport
 
 ORG $C57675
 db $0a, $9b, $ba, $ee
@@ -5508,7 +5445,7 @@ MVN $D77E
 PLY
 PLX
 PLB
-JML $C1FEBA
+JML GiveTeddyOnLoad
 
 ResetStatus:
 STZ $9A3B
@@ -6072,8 +6009,8 @@ db $95, $a2, $50, $9f, $96, $50, $a4, $98, $95, $50, $75, $91, $a2, $a4, $98, $5
 db $99, $a4, $a3, $95, $9c, $96, $50, $99, $9e, $a4, $9f, $50, $a9, $9f, $a5, $a2
 db $50, $98, $95, $91, $a2, $a4, $5c, $03, $00, $70, $92, $a9, $50, $a0, $a5, $a2
 db $99, $96, $a9, $99, $9e, $97, $50, $1c, $0a, $01, $00, $00, $00, $50, $9f, $96
-db $50, $a4, $98, $95, $50, $52, $10, $06, $89, $9f, $a5, $a2, $50, $83, $91, $9e
-db $93, $a4, $a5, $91, $a2, $a9, $52, $10, $06, $50, $9c, $9f, $93, $91, $a4, $99
+db $50, $a4, $98, $95, $50, $6C, $10, $06, $89, $9f, $a5, $a2, $50, $83, $91, $9e
+db $93, $a4, $a5, $91, $a2, $a9, $6E, $10, $06, $50, $9c, $9f, $93, $91, $a4, $99
 db $9f, $9e, $a3, $5c, $03, $00, $08, $40, $c1, $ee, $ff, $08, $40, $c1, $ee, $ff
 db $08, $40, $c1, $ee, $ff, $70, $a7, $98, $91, $a4, $95, $a6, $95, $a2, $50, $a4
 db $98, $91, $a4, $50, $9d, $95, $91, $9e, $a3, $5e, $13, $02, $70, $9f, $a2, $50
@@ -6106,7 +6043,7 @@ ORG $EEC2C6
 db $50, $16, $6f, $51, $08, $58, $24, $c9, $ff, $0a, $bc, $d5, $c9
 
 ORG $CF213D
-db $C7, $80
+db $C7, $00
 
 ORG $EEA0E6
 db $01
@@ -6230,7 +6167,7 @@ db $f4, $03
 
 ORG $EEC66A
 ;;;TODO: Test the Shyness Book dialogue after getting an AP item? this
-db $1C, $05, $A4, $0a, $84, $be
+db $0A, $91, $BF, $C6, $84, $be
 db $ee
 
 ORG $C6D3A2
@@ -6506,8 +6443,8 @@ db $70, $7e, $9f, $a4, $50, $a4, $9f, $9f, $50, $9c, $9f, $9e, $97, $50, $91, $9
 db $9f, $5c, $03, $00, $70, $79, $50, $98, $95, $91, $a2, $94, $50, $a3, $9f, $9d
 db $95, $50, $aa, $9f, $9d, $92, $99, $95, $a3, $50, $a4, $91, $9c, $9b, $99, $9e
 db $97, $50, $91, $92, $9f, $a5, $a4, $50, $98, $9f, $a7, $50, $a4, $98, $95, $a9
-db $50, $9c, $9f, $93, $9b, $95, $94, $50, $a3, $9f, $9d, $95, $01, $50, $50, $52
-db $1c, $05, $01, $52, $50, $99, $9e, $50, $a4, $98, $95, $50, $93, $95, $9d, $95
+db $50, $9c, $9f, $93, $9b, $95, $94, $50, $a3, $9f, $9d, $95, $01, $50, $50, $6C
+db $1c, $05, $01, $6E, $50, $99, $9e, $50, $a4, $98, $95, $50, $93, $95, $9d, $95
 db $a4, $95, $a2, $a9, $5e, $03, $00, $70, $78, $9f, $a7, $50, $91, $a7, $96, $a5
 db $9c, $51, $13, $02
 
@@ -8859,6 +8796,9 @@ dd $C9B10B
 ORG $CF00BB
 dd $C9B10B
 
+ORG $CF2396
+dd $C9B10B
+
 ORG $CFBC06
 dd MinerDialogue
 
@@ -8877,7 +8817,7 @@ dl $C9327F
 ;PokeyBattleExpanded:
 
 ORG $CF6BF1
-db $6F
+db $6D, $CF
 
 ORG $D5AD53
 dw $0209
@@ -8956,6 +8896,78 @@ db $8C ; Ruler
 ORG $C74C11
 dd PostFrankGuardText
 
+ORG $D7B200
+db $00
+
+;Tenda lower floor
+ORG $D7B708
+db $80
+
+ORG $D7B748
+db $80
+
+; Tenda Inn
+ORG $D7C4F0
+db $80
+
+ORG $C772F8 ; Magicant Mom
+db $CA
+
+ORG $C1D6B5
+LDA #$03D6
+
+ORG $C7FB56
+db $0A
+dl AddNessToEpilogue
+
+ORG $C9C356
+db $00, $00, $00
+
+ORG $C9C359
+db $00, $00, $00, $00
+
+ORG $CFB374
+db $00
+
+ORG $CF666B
+db $0C, $00
+
+ORG $C4FF00
+db $02, $00, $77, $02, $60, $c8, $AC, $02, $60, $dd ; Winters brickroad and phone
+
+ORG $C5E572
+db $00, $00 ; Fix vanilla storage bug
+
+ORG $C9AF4B
+db $C7, $00
+
+ORG $D56AE9
+db $3B
+
+ORG $C9FD46
+db $0A
+dl NewBikeText
+
+ORG $C6BFA3
+db $5E, $0A
+dl $EEBE84
+
+ORG $C8630A
+db $90, $90
+
+ORG $EEC613
+db $90, $90
+
+ORG $D6FB66
+StartingInvetory:
+dw $99F3
+
+StartingInvAmounts:
+dw $000B
+
+ORG $EF79DE
+db $0A
+dl FixYouWonAlignment
 
 
 ;New data table go here
@@ -11548,7 +11560,7 @@ CMP #$0026
 BEQ GotServerEnergyNum
 CMP #$0027
 BEQ CheckifELOn
-JML $C17DDC
+JML CheckMoreMoreMoreCommands
 
 CheckIfCanWarp:
 PHX
@@ -11570,11 +11582,11 @@ LDA #$0000
 JML $C17F0F
 
 SendRequestForEnergy:
-STZ $1BD8
-STZ $1BDA
-STZ $1BE0
+STZ $0792
+STZ $0794
+STZ $079A
 LDA #$0001
-STA $1BD6
+STA $0790
 LDA #$0000
 JML $C17F0F
 
@@ -11648,7 +11660,8 @@ BNE .CheckStorage
 
 .REALLYdone:
 PLY
-LDA #$0000
+JMP CheckNormalStorage
+.ReallyReallyDoneTheItems:
 JML EndKeyCheck
 .TossDuplicateItem:
 PLA
@@ -11804,9 +11817,9 @@ LDA $B623
 AND #$00FF
 AND #$0010
 BEQ .CheckBank
-LDA $1BD8
+LDA $0792
 STA $06
-LDA $1BDA
+LDA $0794
 STA $08
 JML $C15F48
 .CheckBank:
@@ -11821,9 +11834,9 @@ AND #$00FF
 AND #$0010
 BEQ .DontDisp
 PLA
-LDA $1BD8
+LDA $0792
 STA $06
-LDA $1BDA
+LDA $0794
 STA $08
 JML $C192E9
 .DontDisp:
@@ -11833,12 +11846,12 @@ JML $C192E2
 AuthenticateEnergyLong:
 PHX
 LDA $97D0
-STA $1BDC
+STA $0796
 LDA $97D2
-STA $1BDE
+STA $0798
 LDX #$00B4
 .CountFrames:
-LDA $1BE0
+LDA $079A
 AND #$00FF
 BNE .WithdrawSuccess
 PHX
@@ -11850,8 +11863,8 @@ BNE .CountFrames
 PLX
 LDA #$0000
 STA $97D0
-STA $1BDC
-STA $1BDD
+STA $0796
+STA $0797
 STA $97D2
 .Done:
 LDA #$0000
@@ -11863,7 +11876,7 @@ LDA #$0000
 BRA .Done
 
 GotServerEnergyLong:
-LDA $1BD6
+LDA $0790
 STA $97CC
 LDA #$0000
 JML $C17F0F
@@ -11953,7 +11966,7 @@ db $0A
 dl $C5E1E0
 
 LoadEnemyToVram:
-LDA $1BE2
+LDA $0780
 BEQ .LoadNormal
 LDA $9D11
 AND #$00FF
@@ -11965,7 +11978,7 @@ LDY #$005E
 PHX
 LDX $AAB4
 SEP #$20
-STA $1BE4,X
+STA $0782,X
 REP #$20
 PLX
 JML $C2EF42
@@ -11980,7 +11993,7 @@ PHX
 LDX #$0000
 SEP #$20
 .Check:
-CMP $1BE4,X
+CMP $0782,X
 BEQ .Loaded
 CPX #$0003
 BEQ .DontOverride
@@ -11996,7 +12009,7 @@ PLX
 JML $C2BDEC
 
 AllowEnemyToSpawn:
-LDA $1BE2
+LDA $0780
 BEQ .DontOverride
 LDA $9D11
 AND #$00FF
@@ -12011,7 +12024,7 @@ ForceLoadSingle:
 LDA [$1A],y
 AND #$00FF
 PHA
-LDA $1BE2
+LDA $0780
 BNE .ForceMode
 .Load:
 PLA
@@ -12027,18 +12040,16 @@ PLA
 JML $C2EFD4
 
 InitializeLoadingEnemies:
-LDA $1BE2
-BNE .MidBattle
-STZ $1BE4
-STZ $1BE6
-.MidBattle:
+STZ $0780
+STZ $0782
+STZ $0784
 STZ $AAB4
 STZ $AAB2
 JML $C2EEF5
 
 SetupVramForSpriteLoad:
 PHA
-LDA $1BE2
+LDA $0780
 BEQ .NormalLoad
 LDA $AAB4
 CMP #$04
@@ -12052,6 +12063,286 @@ RTL
 .NormalLoad:
 PLA
 JML $C08616
+
+CloseVersionWindow:
+LDA #$0024
+JSL $C3E521
+JML $C3E4D4
+
+FixGiygasReflectBroken:
+PHA
+LDA $AA96
+BEQ .NotReflection
+LDA #$A26A
+STA $A972
+.NotReflection:
+JML $C23D05
+
+CheckNormalStorage:
+PHY
+LDA $06
+LDX #$0000
+.CheckStorage:
+SEP #$20
+CMP $B590,X
+REP #$20
+BEQ .TossDuplicateItemNoPull
+INX
+CPX #$0045
+BNE .CheckStorage
+PLY
+LDA #$0000
+JML DeleteExtraKeyItem_ReallyReallyDoneTheItems
+.TossDuplicateItemNoPull:
+PLY
+JML RemoveItem
+
+GetStartingData:
+PHB
+LDA StartingInvetory
+TAY
+LDX #$FC70
+LDA StartingInvAmounts
+MVN $D77E
+PLB
+LDA #$0000
+LDX #$0000
+CheckTeleport:
+LDA StartingTeleports,X
+AND #$00FF
+BEQ EndStartTeleports
+CMP #$0010
+BNE NormalTeleport
+JMP GetStarstorm
+NormalTeleport:
+PHX
+ASL
+TAX
+LDA TeleportFlags,X
+JSL $C2165E
+PLX
+INX
+BRA CheckTeleport
+EndStartTeleports:
+STZ $FF41
+LDA #$0000
+LDX #$0000
+CheckChars:
+LDA StartingChars,X
+AND #$00FF
+BEQ EndStartData
+PHX
+PHA
+CMP #$0001
+BNE .NotNess
+LDA #$0006
+.NotNess:
+DEC
+DEC
+ASL
+TAX
+LDA CharFlags,X
+LDX #$0001
+JSL $C2165E
+PLA
+JSL $C228F8
+PLX
+INX
+BRA CheckChars
+EndStartData:
+JML CheckEndPhotos
+GetStarstorm:
+PHX
+LDA $FF41
+AND #$00FF
+CMP #$0002
+BNE .StarstormYeah
+DEC $FF41
+.StarstormYeah:
+TAX
+LDA StarstormBits,X
+AND #$00FF
+TSB $9839
+PLX
+INX
+INC $FF41
+JMP CheckTeleport
+
+KeyItemBlockerAndCheckProg:
+LDA $B570
+CMP #$E3
+BCC .NormalItem
+CMP #$E8
+BCS .NormalItem
+LDA $B5D4
+RTL
+.NormalItem:
+JML KeyItemBlocker
+
+CheckMoreMoreMoreCommands:
+CMP #$0028
+BEQ StorePartyDirections
+CMP #$0029
+BEQ LoadPartyDirections
+JML $C17DDC
+
+StorePartyDirections:
+PHB
+PHX
+PHY
+LDX #$2B26
+LDY #$B43E
+LDA #$000A
+MVN $7E7E
+PLY
+PLX
+PLB
+LDA #$0000
+JML $C17F0F
+
+LoadPartyDirections:
+PHX
+PHY
+.Ness:
+  LDA #$0001
+  LDX $B43E
+  JSL $C46363
+.Paula:
+  LDA #$0002
+  LDX $B440
+  JSL $C46363
+.Jeff:
+  LDA #$0003
+  LDX $B442
+  JSL $C46363
+.Poo:
+  LDA #$0004
+  LDX $B444
+  JSL $C46363
+.Temp1:
+LDA $B446
+STA $2B2E
+LDA $B448
+STA $2B30
+  LDA $98A4
+  ASL
+  TAX
+  LDA $9897,X
+  ASL
+  TAX
+  LDA $2AF6,x
+  STZ $2AF6,X
+  TAX
+  PHX
+  LDA $98A4
+  TAX
+  LDA $988B,X
+  AND #$00FF
+  PLX
+  JSL $C46363 ; not working
+.Temp2:
+  LDA $98A4
+  INC
+  ASL
+  TAX
+  LDA $9897,X
+  ASL
+  TAX
+  LDA $2AF6,x
+  STZ $2AF6,X
+  TAX
+  PHX
+  LDA $98A4
+  INC
+  TAX
+  LDA $988B,X
+  AND #$00FF
+  PLX
+  JSL $C46363 ;not working
+PLY
+PLX
+LDA #$0000
+JML $C17F0F
+
+GiveTeddyOnLoad:
+PHX
+PHY
+LDA #$0000
+LDX #$0000
+LDY #$0000
+SEP #$20
+LDA $98A3
+BNE .End
+LDA $C0B672
+TAX
+REP #$20
+LDA #$99F1
+.CheckChar:
+CPX #$0001
+BEQ .GotChar
+CLC
+ADC #$005F
+DEX
+BRA .CheckChar
+.GotChar:
+TAX
+SEP #$20
+.CheckSlot:
+LDA $0000,X
+BEQ .End
+CMP #$02
+BEQ .GiveTeddy
+CMP #$03
+BEQ .GiveSuper
+.KeepGoing:
+CPY #$000D
+BEQ .End
+INY
+INX
+BRA .CheckSlot
+.End:
+REP #$20
+PLY
+PLX
+JML $C1FEBA
+.GiveTeddy:
+INC $B44A
+PHA
+PHX
+PHY
+REP #$20
+LDA #$0010
+JSL $C228F8
+SEP #$20
+PLY
+PLX
+PLA
+BRA .KeepGoing
+.GiveSuper:
+REP #$20
+LDA $B44A
+BNE .ReplaceBear
+.AddSuper:
+LDA #$0011
+JSL $C228F8
+BRA .End
+.ReplaceBear:
+LDA #$0010
+INC $98A3
+JSL $C229BB
+DEC $98A3
+BRA .AddSuper
+
+FixGiygasReflect:
+PHA
+LDA $AA96
+BEQ .NotReflection
+LDA #$A26A
+STA $A972
+.NotReflection:
+PLA
+JML $C23D05
+
 
 ;new code go here
 
@@ -12138,11 +12429,11 @@ ORG $C5E0F2
 
 
 
-ORG $F400A8
+ORG $F4002A
 ;Item ID, 2-byte price, Item Type, 2-bytelocation ID/flag number
-;db $4A, $00, $00, $00, $00, $00; Non-remote local item. Franklin Badge.
-;db $5A, $00, $00, $00, $01, $00; Non-remote local Teleport.
-;db $96, $ff, $ff, $05, $02, $00; A remote regular item
+;db $05, $00, $00, $02, $00, $00; Non-remote local item. Franklin Badge.
+;db $5A, $00, $00, $01, $01, $00; Non-remote local Teleport.
+;db $96, $00, $00, $05, $02, $00; A remote regular item
 ;db $01, $ff, $ff, $02, $03, $00; Non-remote local Character
 ;db $ad, $ff, $ff, $04, $04, $00; Item that the player already bought and got the flag for
 ;db $ad, $ff, $ff, $04, $05, $00; Item for another player 
@@ -12156,6 +12447,7 @@ ORG $F400D2
 ;type 3- item that's already been bought- SOLD OUT
 ;type 4; Item for another player
 ;type 5- Remote local item
+;type 6- Photograph
 
 ;ORG $F41280
 ;db $73, $9F, $9F, $9C, $50, $79, $A4, $95, $9D, $00
@@ -12232,7 +12524,12 @@ dd .NormalItem
 db $0b, $06
 db $1B, $03
 dd .Photo
-db $70, $83, $9f, $5c, $10, $02, $50, $a9, $9f, $a5, $50, $a7, $91, $9e, $a4, $50
+db $70
+db $0A
+dl .CheckSaturnText
+.NonSaturnTetx:
+db $83, $9f, $5c, $10, $02, $50, $a9, $9f, $a5, $50, $a7, $91, $9e, $a4, $50
+.BackSaturnText:
 db $1B, $06
 db $09, $05
 dd .Teleport
@@ -12253,14 +12550,33 @@ dl $C50660
   db $1B, $03
   dd ..PooPsi
   db $1B, $01
+  db $06
+  db $F8, $00
+  dd .TeleportActiveSaturn
+  db $06
+  db $F9, $00
+  dd .TeleportActiveSaturn
+  db $06
+  db $FA, $00
+  dd .TeleportActiveSaturn
   db $a4, $98, $95, $50, $91, $92, $99, $9c, $99, $a4, $a9, $50, $a4, $9f, $50, $a4
   db $95, $9c, $95, $a0, $9f, $a2, $a4, $50, $a4, $9f, $50
+  ..ContinueTeleport:
   db $08
   dd ..TeleportShopNameTable
   db $6F
   db $02
 
   ..PooPsi:
+  db $06
+  db $F8, $00
+  dd .PooPsiSaturn
+  db $06
+  db $F9, $00
+  dd .PooPsiSaturn
+  db $06
+  db $FA, $00
+  dd .PooPsiSaturn
   db $a4, $9f, $50, $9c, $95, $91, $a2, $9e, $50, $91, $50, $9e, $95, $a7, $50, $80
   db $83, $79, $50, $91, $92, $99, $9c, $99, $a4, $a9, $6f, $02
 
@@ -12287,8 +12603,18 @@ dl $C50660
 .Character:
   db $1B, $01
   db $1B, $04
+  db $06
+  db $F8, $00
+  dd .CharacterSaturn
+  db $06
+  db $F9, $00
+  dd .CharacterSaturn
+  db $06
+  db $FA, $00
+  dd .CharacterSaturn
   db $a4, $9f, $50, $98, $99, $a2, $95, $50, $9d, $a9, $50, $91, $a0, $a0, $a2, $95
   db $9e, $a4, $99, $93, $95, $5c, $50
+  ..ContinueCharacter
   db $08
   dd ..CharShopNameTable
   db $6F
@@ -12314,6 +12640,15 @@ db $98, $99, $a3, $50, $91, $a3, $50, $91, $50, $92, $a5, $97, $51, $51, $02
 
 .OffWorld:
 db $1B, $01
+  db $06
+  db $F8, $00
+  dd .OffworldSaturn
+  db $06
+  db $F9, $00
+  dd .OffworldSaturn
+  db $06
+  db $FA, $00
+  dd .OffworldSaturn
 db $A4, $98, $95, $50
 db $1C, $05, $00, $50
 db $96, $9F, $A2, $50
@@ -12322,6 +12657,15 @@ db $6F, $02
 
 .RemoteLocal:
 db $1B, $01
+  db $06
+  db $F8, $00
+  dd .RemoteSaturn
+  db $06
+  db $F9, $00
+  dd .RemoteSaturn
+  db $06
+  db $FA, $00
+  dd .RemoteSaturn
 db $A4, $98, $95, $50
 db $1C, $05, $AD, $50
 db $96, $9F, $A2, $50
@@ -12331,6 +12675,30 @@ db $6F, $02
 .Photo:
 db $02
 
+.TeleportActiveSaturn:
+db $97, $9F, $50, $A4, $9F, $50
+db $0A
+dl .Teleport_ContinueTeleport
+
+.PooPsiSaturn:
+db $9E, $95, $A7, $50, $80, $83, $79, $6F, $02
+
+.CharacterSaturn:
+db $92, $A5, $A9, $50
+db $0A
+dl .Character_ContinueCharacter
+
+.OffworldSaturn:
+db $1C, $05, $00, $50
+db $96, $9F, $A2, $50
+db $1C, $02, $00
+db $6F, $02
+
+.RemoteSaturn:
+db $1C, $05, $AD, $50
+db $96, $9F, $A2, $50
+db $1C, $02, $00
+db $6F, $02
 
 .ShopOnett:
 db $7F, $9E, $95, $A4, $A4, $02
@@ -12380,6 +12748,25 @@ db $76, $9C, $A9, $99, $9E, $97, $50, $7D, $91, $9E, $02
 .Ness:
 db $1C, $02, $01, $02
 
+.CheckSaturnText:
+db $06
+db $F8, $00
+dd .SaturnText
+db $06
+db $F9, $00
+dd .SaturnText
+db $06
+db $FA, $00
+dd .SaturnText
+db $0A
+dl .NonSaturnTetx
+.SaturnText:
+db $1F, $31
+db $89, $9F, $A5, $50, $A7, $91, $9E
+db $A4, $50
+db $0A
+dl .BackSaturnText
+
 ShopsanityPurchaseHandler:
 ;Set the flag here, probably?
 db $1B, $06
@@ -12390,6 +12777,10 @@ db $1B, $06
 db $1B, $02
 dd .NormalItem
 db $01
+db $1F, $30
+db $06
+db $93, $02
+dd .SpecialMoonsideFlagHandler
 db $19, $02
 db $89, $95, $A3, $02
 db $19, $02
@@ -12599,13 +12990,29 @@ db $1B, $06
 db $0A
 dl .ConfirmRemotePurchase
 .Photo:
+db $1C, $28, $01
 db $1B, $06
 db $04, $91, $02
 db $1C, $20, $01
 db $08
 dd DynamicPhotoSetter
+db $1C, $29, $01
 db $18, $01, $01
 db $02
+
+.SpecialMoonsideFlagHandler:
+db $19, $02
+db $89, $95, $A3, $02
+db $19, $02
+db $7E, $9F, $02
+db $1C, $07, $02, $11
+db $12
+db $09, $02
+dd .Cancel
+dd .Purchase
+db $0A
+dl .Purchase
+
 
 OverrideSpaceCheckOnSpecialItem:
 db $1B, $06
@@ -14412,23 +14819,23 @@ BCS .skip_vram_load ; 4 is the max enemies the game can handle. If we already lo
 LDA $9D11
 AND #$00FF
 SEP #$20
-CMP $1BE4
+CMP $0782
 BEQ .skip_vram_load
-CMP $1BE5
+CMP $0783
 BEQ .skip_vram_load
-CMP $1BE6
+CMP $0784
 BEQ .skip_vram_load
-CMP $1BE7
+CMP $0785
 BEQ .skip_vram_load ;If the enemy is already loaded, don't load it into a new slot
 REP #$20
 LDA #$0090
 LDY #$005E
-INC $1BE2
+INC $0780
 JSL goto_vramload
 .skip_vram_load:
 REP #$31
 JSL $C2C145 ;Do the enemy call
-STZ $1BE2
+STZ $0780
 STZ $B5ED
 RTL
 
@@ -14473,7 +14880,7 @@ InvPointers:
 dw $0000, $005F, $005F, $00BE, $011D
 
 ProgBats:
-db $13, $14, $15, $D4, $16, $17, $D6, $1B, $18, $19
+db $13, $14, $15, $D4, $16, $17, $D6, $1B, $18, $19, $1A
 
 ProgPans:
 db $1C, $1D, $1E, $1F, $F8, $20, $22, $21
@@ -14489,7 +14896,8 @@ ProgOther:
 db $4A, $4C, $4B, $4D, $51, $52, $DD, $F9, $DE, $53, $54, $55, $56
 
 ProgCaps:
-db $09, $07, $0D, $08, $0C
+db $0A, $07, $0D, $08, $0C
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;Repointed PSI table
 macro PSIAddress06(address)
@@ -14954,6 +15362,7 @@ db $06 ;#
 db $05 ;arrows
 db $06 ;n
 db $05 ;ä
+db $05 ;é
 
 ORG $FA0100
 SaturnFontTable:
@@ -14971,6 +15380,7 @@ db $0B
 db $0B
 db $09
 db $08
+db $0B
 
 ORG $FC0000
 FontGFXTable:
@@ -15497,14 +15907,15 @@ Gift_menu:
   dl .declined_to_send_gift
   .send_gift_to_gift_buffer:
   db $18, $04
+  db $1C, $28, $01
   db $1F, $00, $01, $59
   db $1f, $15, $87, $00, $99, $02, $01 
   db $10, $05
   db $1F, $13, $FF, $03
   db $10, $20
   db $1F, $03
+  db $1C, $29, $01
   db $18, $01, $01
-  db $1F, $13, $FF, $01
   db $1b, $06
   db $1F, $02, $76
   db $10, $15
@@ -15697,14 +16108,15 @@ Gift_menu:
   db $1B, $02
   dd .SelectedCharFull
   db $18, $04
+  db $1C, $28, $01
   db $1F, $00, $01, $59
   db $1f, $15, $87, $00, $99, $02, $01 
   db $10, $05
   db $1F, $13, $FF, $03
   db $10, $20
   db $1F, $03
+  db $1C, $29, $01
   db $18, $01, $01
-  db $1F, $13, $FF, $01
   db $1F, $02, $74
 
   db $1B, $04
@@ -15954,7 +16366,12 @@ MagicantTentacleText:
 db $06, $17, $04
 dd $C77D9F
 db $70, $58, $71, $50, $a6, $9f, $99, $93, $95, $50, $93, $a2, $95, $95, $a0, $a3
-db $50, $99, $9e, $a4, $9f, $50, $19, $10, $01, $1c, $02, $00, $57, $a3, $50, $9d
+db $50, $99, $9e, $a4, $9f, $50
+db $0A
+dl MagicantTentaGetNessName
+db $02, $00
+MagicantNameReturn:
+db $57, $a3, $50, $9d
 db $99, $9e, $94, $5e, $5e, $5e, $03, $00, $70, $79, $a4, $50, $a3, $91, $a9, $a3
 db $5c, $10, $08, $50, $6c, $1c, $02, $01, $50, $9d, $a5, $a3, $a4, $50, $92, $95
 db $50, $a0, $a2, $95, $a3, $95, $9e, $a4, $50, $a4, $9f, $50, $a0, $a2, $9f, $93
@@ -17249,6 +17666,83 @@ db $9e, $50, $79, $57, $9c, $9c, $50, $9d, $9f, $a6, $95, $50, $96, $9f, $a2, $5
 db $a0, $a5, $9e, $9b, $a3, $50, $9c, $99, $9b, $95, $50, $a9, $9f, $a5, $51, $03
 db $0A
 dl $C74C58
+
+MagicantTentaGetNessName:
+db $19, $10, $01, $1B, $04, $1C, $02, $00
+db $0A
+dl MagicantNameReturn
+
+AddNessToEpilogue:
+db $1F, $11, $01
+db $18, $01, $01, $70
+db $0A
+dl $C7FB5A
+
+NewBikeText:
+db $1C, $22
+db $1B, $06
+db $1B, $03
+dd $C7C6F1
+db $19, $10, $01
+db $0B, $01
+db $1B, $02
+dd .OtherCharBike
+db $70, $1C, $0D, $50
+db $0A
+dl $C9FD4A
+.OtherCharBike:
+db $70, $1C, $0D, $50
+db $a4, $a2, $99, $95, $94, $50, $a4, $9f, $50, $a2, $99, $94, $95, $50, $91, $50
+db $92, $99, $93, $a9, $93, $9c, $95, $5c, $03, $01, $70, $92, $a5, $a4, $50
+db $1C, $14, $01
+db $08
+dd $C7E602
+db $50
+db $94
+db $99, $94, $9e, $57, $a4, $50, $9b, $9e, $9f, $a7, $50, $98, $9f, $a7, $5e, $13
+db $02
+
+Truffle1:
+db $17, $79, $51, $03, $00, $70, $84, $15, $78, $91, $50, $1c, $05, $63, $50, $91
+db $16, $0e, $17, $cc, $a4, $5e, $03, $00, $1d, $03, $ff, $1b, $02, $8a, $b5, $ee
+db $ff, $1d, $0e, $ff, $01, $08, $cf, $dc, $c7, $ff, $03
+db $19, $20
+db $02
+
+Truffle2:
+db $17, $79, $51, $03, $00, $70, $84, $15, $78, $91, $50, $1c, $05, $63, $50, $91
+db $16, $0e, $17, $cc, $a4, $5e, $03, $00, $1d, $03, $ff, $1b, $02, $8a, $b5, $ee
+db $ff, $1d, $0e, $ff, $01, $08, $cf, $dc, $c7, $ff, $03
+db $19, $20
+db $02
+
+Truffle3:
+db $17, $79, $51, $03, $00, $70, $84, $15, $78, $91, $50, $1c, $05, $63, $50, $91
+db $16, $0e, $17, $cc, $a4, $5e, $03, $00, $1d, $03, $ff, $1b, $02, $8a, $b5, $ee
+db $ff, $1d, $0e, $ff, $01, $08, $cf, $dc, $c7, $ff, $03
+db $19, $20
+db $02
+
+Truffle4:
+db $17, $79, $51, $03, $00, $70, $84, $15, $78, $91, $50, $1c, $05, $63, $50, $91
+db $16, $0e, $17, $cc, $a4, $5e, $03, $00, $1d, $03, $ff, $1b, $02, $8a, $b5, $ee
+db $ff, $1d, $0e, $ff, $01, $08, $cf, $dc, $c7, $ff, $03
+db $19, $20
+db $02
+
+Truffle5:
+db $17, $79, $51, $03, $00, $70, $84, $15, $78, $91, $50, $1c, $05, $63, $50, $91
+db $16, $0e, $17, $cc, $a4, $5e, $03, $00, $1d, $03, $ff, $1b, $02, $8a, $b5, $ee
+db $ff, $1d, $0e, $ff, $01, $08, $cf, $dc, $c7, $ff, $03
+db $19, $20
+db $02
+
+FixYouWonAlignment:
+db $15, $1D
+db $18, $05, $06, $01
+db $1C, $08, $02
+db $0A
+dl $EF79E3
 
 
 ;ORG $C62B87

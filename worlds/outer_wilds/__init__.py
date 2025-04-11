@@ -43,6 +43,9 @@ class OuterWildsWorld(World):
     def interpret_slot_data(slot_data: Dict[str, Any]) -> Dict[str, Any]:
         return slot_data
 
+    # and this is how we tell Universal Tracker we don't need the yaml
+    ut_can_gen_without_yaml = True
+
     def generate_early(self) -> None:
         # apply options that edit other options or themselves
         if self.options.dlc_only:
@@ -75,13 +78,22 @@ class OuterWildsWorld(World):
         # when items.py tries to lock Launch Codes on a location that doesn't exist.
         self.spawn = self.options.spawn
 
-        # implement Universal Tracker support
+        # implement .yaml-less Universal Tracker support
         if hasattr(self.multiworld, "generation_is_fake"):
             if hasattr(self.multiworld, "re_gen_passthrough"):
                 if "Outer Wilds" in self.multiworld.re_gen_passthrough:
                     slot_data = self.multiworld.re_gen_passthrough["Outer Wilds"]
                     self.warps = slot_data["warps"]
                     self.spawn = slot_data["spawn"]
+                    self.options.logsanity.value = slot_data["logsanity"]
+                    self.options.enable_eote_dlc.value = slot_data["enable_eote_dlc"]
+                    self.options.dlc_only.value = slot_data["dlc_only"]
+                    self.options.enable_hn1_mod.value = slot_data["enable_hn1_mod"]
+                    self.options.enable_hn2_mod.value = slot_data["enable_hn2_mod"]
+                    self.options.enable_outsider_mod.value = slot_data["enable_outsider_mod"]
+                    self.options.enable_ac_mod.value = slot_data["enable_ac_mod"]
+                    self.options.enable_fq_mod.value = slot_data["enable_fq_mod"]
+                    self.options.split_translator.value = slot_data["split_translator"]
             return
 
         # generate game-specific randomizations separate from AP items/locations
@@ -163,7 +175,7 @@ class OuterWildsWorld(World):
         slot_data["warps"] = self.warps
         # Archipelago does not yet have apworld versions (data_version is deprecated),
         # so we have to roll our own with slot_data for the time being
-        slot_data["apworld_version"] = "0.3.12"
+        slot_data["apworld_version"] = "0.3.14"
         return slot_data
 
     def write_spoiler(self, spoiler_handle: TextIO) -> None:

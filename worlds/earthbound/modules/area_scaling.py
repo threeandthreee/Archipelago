@@ -13,7 +13,7 @@ expected_level_gains = {
     "Peaceful Rest Valley": 2,
     "Happy-Happy Village": 1,
     "Happy-Happy HQ": 0,
-    "Lilliput Steps": 3,
+    "Lilliput Steps": 2,
     "Threed": 2,
     "Boogey Tent": 0,
     "Threed Underground": 2,
@@ -37,7 +37,7 @@ expected_level_gains = {
     "Andonuts Lab Area": 1,
     "Rainy Circle": 0,
     "Stonehenge Base": 2,
-    "Summers": 1,
+    "Summers": 0,
     "Summers Museum": 0,
     "Dalaam": 0,
     "Pink Cloud": 2,
@@ -46,12 +46,12 @@ expected_level_gains = {
     "Southern Scaraba": 0,
     "Dungeon Man": 2,
     "Deep Darkness": 0,
-    "Deep Darkness Darkness": 3,
+    "Deep Darkness Darkness": 2,
     "Tenda Village": 0,
     "Lumine Hall": 5,
     "Lost Underworld": 2,
-    "Fire Spring": 4,
-    "Magicant": 2,
+    "Fire Spring": 2,
+    "Magicant": 1,
     "Sea of Eden": 2,
     "Cave of the Present": 0,
     "Cave of the Past": 4,
@@ -139,7 +139,6 @@ def calculate_scaling(world) -> None:
     belch_factory = world.dungeon_connections["Belch's Factory"]
     milky_well = world.dungeon_connections["Milky Well"]
     gold_mine = world.dungeon_connections["Gold Mine"]
-    monkey_caves = world.dungeon_connections["Monkey Caves"]
     monotoli_building = world.dungeon_connections["Monotoli Building"]
     magnet_hill = world.dungeon_connections["Magnet Hill"]
     moonside = world.dungeon_connections["Moonside"]
@@ -174,7 +173,7 @@ def calculate_scaling(world) -> None:
         belch_factory: ["Upper Saturn Valley"],
         "Upper Saturn Valley": ["Saturn Valley", world.dungeon_connections["Milky Well"]],
         "Milky Well": ["Milky Well"],
-        "Dusty Dunes Desert": ["Threed", monkey_caves, gold_mine, "Fourside"],
+        "Dusty Dunes Desert": ["Threed", "Monkey Caves", gold_mine, "Fourside"],
         "Monkey Caves": ["Monkey Caves"],
         "Gold Mine": ["Gold Mine"],
         "Fourside": ["Dusty Dunes Desert", monotoli_building, magnet_hill, "Threed", "Fourside Dept. Store", moonside],
@@ -285,7 +284,7 @@ def calculate_scaling(world) -> None:
         "Milky Well": {"Milky Well": [["Nothing"]]},
 
         "Dusty Dunes Desert": {"Threed": [["Threed Tunnels Clear"]],
-                               monkey_caves: [["King Banana"]],
+                               "Monkey Caves": [["King Banana"]],
                                gold_mine: [["Mining Permit"]],
                                "Fourside": [["Nothing"]]},
 
@@ -320,8 +319,8 @@ def calculate_scaling(world) -> None:
                          brickroad_maze: [["Nothing"]]},
 
         rainy_circle: {rainy_circle: [["Nothing"]],
-        "Andonuts Lab Area": [["Nothing"]],
-        brickroad_maze: [["Nothing"]]},
+                       "Andonuts Lab Area": [["Nothing"]],
+                       brickroad_maze: [["Nothing"]]},
 
         "Andonuts Lab Area": {rainy_circle: [["Nothing"]],
                               stonehenge_base: [["Eraser Eraser"]],

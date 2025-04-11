@@ -1,46 +1,48 @@
+from worlds.anodyne.Options import EndgameRequirement, PostgameEnd
+
 events_by_region = {
     "Bedroom exit": {
         "Defeat Seer": ["Combat"],
-        "Green Key": []
+        "Grab Green Key": []
     },
     "Crowd floor 1": {
         "Defeat The Wall": ["Combat", "Jump Shoes"],
-        "Blue Key": ["Defeat The Wall"]
+        "Grab Blue Key": ["Defeat The Wall"]
     },
     "Windmill": {
         "Windmill activated": [],
     },
     "Hotel floor 1": {
-        "Defeat Manager": ["Keys:Hotel:6", "Combat"],
+        "Defeat Manager": ["Small Key (Hotel):6", "Combat"],
     },
     "Circus 4": {
         "Defeat Servants": ["Combat", "Jump Shoes"],
     },
     "Apartment floor 3": {
-        "Defeat Watcher": ["Combat", "Keys:Apartment:4"],
+        "Defeat Watcher": ["Combat", "Small Key (Apartment):4"],
     },
     "Terminal": {
-        "Defeat Sage": ["Combat", "Cards:36"],
+        "Defeat Sage": ["Combat", EndgameRequirement.typename()],
     },
     "Go top": {
         "Defeat Briar": ["Jump Shoes", "Combat"],
     },
     "Nexus top": {
-        "Open 49 card gate": ["Cards:49"],
+        "Open final gate": [PostgameEnd.typename()],
     },
     "Red Cave center": {
         "Center left tentacle hit": ["Combat"],
         "Center right tentacle hit": ["Combat"],
     },
     "Red Cave left": {
-        "Left tentacle hit": ["Combat", "Keys:Red Cave:6"],
+        "Left tentacle hit": ["Combat", "Small Key (Red Cave):6"],
     },
     "Red Cave right": {
-        "Right tentacle hit": ["Combat", "Keys:Red Cave:6"],
+        "Right tentacle hit": ["Combat", "Small Key (Red Cave):6"],
     },
     "Red Cave top": {
         "Defeat Rogue": ["Combat"],
-        "Red Key": ["Defeat Rogue"]
+        "Grab Red Key": ["Defeat Rogue"]
     },
 }
 

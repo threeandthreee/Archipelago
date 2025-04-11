@@ -17,20 +17,9 @@ Items belonging to other worlds use an easily recognizable Archipelago sprite, w
 
 ## Currently Known Bugs
 
-- Some locations doesn't show their item properly (and show instead the vanilla item). This include :
-    - Cheval Invention
-    - Cheval Test
-    - Past Library
-    - Present Library
-- Maku Tree gift doesn't drop properly (instead just spawn on the ground)
-- Flute sprite show the strange flute sprite instead of the correct companion flute sprite
-- Progressive Shield doesn't work properly if you lose your shield to a like-like
-- Trees aren't properly tracked
-- Cheating in an essence break the second screen of the inventory (Please don't)
-- Gasha trees are turbo broken
-- send_location command doesn't seems to work properly with the trees
-- The harp can become cursed when you get the seedshooter (you can select it and reselect a song to fix it)
-- Seed satchel upgrade think it's a key.
+* Cheating in an essence break the second screen of the inventory (Please don't)
+* Some key door are only locked in one side, which create situation when you enter a screen and you are softlock if don't have the key.
+* Trade items aren't displayed properly in the second screen
 
 ## Frequently Asked Questions
 
@@ -54,9 +43,8 @@ Items belonging to other worlds use an easily recognizable Archipelago sprite, w
 
 **What feature can we expect in a near future ?**
 
-> - Keyrings
 > - Various QOL
-> - The possibility to fight Ganon
-> - Impa refilling your items
-> - Check in the Tokay Market
+> - Secrets (?)
+> - Deku scrub selling checks
+> - The same Gasha tree madness that got implemented in season x)
 > - And more.

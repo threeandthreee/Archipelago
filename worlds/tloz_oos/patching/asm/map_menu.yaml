@@ -297,6 +297,7 @@
     ld a,c
     rlc a
     jr nc,@lookForMapFlag
+    ; d8 is on the next byte
     inc hl
     @lookForMapFlag:
     and (hl)

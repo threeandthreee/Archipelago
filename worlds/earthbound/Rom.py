@@ -21,6 +21,9 @@ from .modules.shopsanity import write_shop_checks
 from .modules.enemy_shuffler import apply_enemy_shuffle
 from .modules.dungeon_er import write_dungeon_entrances
 from .modules.foodamizer import randomize_food
+from .modules.enemizer.randomize_enemy_attributes import randomize_enemy_attributes
+from .modules.enemizer.randomize_enemy_stats import randomize_enemy_stats
+from .modules.enemizer.randomize_enemy_attacks import randomize_enemy_attacks
 from .game_data.static_location_data import location_groups
 from BaseClasses import ItemClassification
 from typing import TYPE_CHECKING, Optional
@@ -85,6 +88,7 @@ def patch_rom(world, rom, player: int):
     rom.copy_bytes(0x34A020, 0x1F, 0x15793A)
     rom.copy_bytes(0x34A040, 0x1F, 0x157A51)
     rom.copy_bytes(0x34A060, 0x3E, 0x1578FC)
+    rom.copy_bytes(0x15ED4B, 0x06, 0x15F1FB)
 
     starting_area_coordinates = {
                     0: [0x50, 0x04, 0xB5, 0x1F],  # North Onett
@@ -331,6 +335,7 @@ def patch_rom(world, rom, player: int):
                     rom.write_bytes(0x15F765, special_name_table[item][1].to_bytes(3, byteorder="little"))  # This might be offset, check if it is
                     rom.write_bytes(0x2EC618, bytearray([(special_name_table[item][0] + 1)]))
                     rom.write_bytes(0x2EC61A, bytearray([0xA5, 0xAA, 0xEE]))
+                    rom.write_bytes(0x2EC613, bytearray([0x03, 0x01]))
 
             if location.address >= 0xEB1000:
                 world.handled_locations.append(name)
@@ -357,7 +362,7 @@ def patch_rom(world, rom, player: int):
                 else:
                     world.present_type = "filler"
 
-                if location.item.player == world.player:
+                if location.item.player == world.player or world.options.nonlocal_items_use_local_presents:
                     rom.write_bytes(present_locations[name] - 12, bytearray(local_present_types[world.present_type]))
                     if name != "Threed - Boogey Tent Trashcan":
                         rom.write_bytes(present_locations[name] - 4, bytearray(present_text_pointers[world.present_type]))
@@ -509,13 +514,22 @@ def patch_rom(world, rom, player: int):
         "Poo": 0x9B10
     }
 
+    starting_inv_amounts = {
+        "Ness": 0x0B,
+        "Paula": 0x0A,
+        "Jeff": 0x08,
+        "Poo": 0x0B
+    }
+
     if world.starting_character == "Poo" and world.multiworld.get_location(
             "Poo - Starting Item", world.player).item.name not in item_id_table:
         starting_inventory_pointers["Poo"] = 0x9B0F
+        starting_inv_amounts["Poo"] = 0x0C
     rom.write_bytes(0x16FB66, struct.pack("H", starting_inventory_pointers[world.starting_character]))
+    rom.write_bytes(0x16FB68, struct.pack("H", starting_inv_amounts[world.starting_character]))
     
     for item in world.multiworld.precollected_items[player]:
-        if item.name == world.starting_character:
+        if item.name == world.starting_character: # Write the starting character
             rom.write_bytes(0x00B672, bytearray([world.options.starting_character.value + 1]))
 
         if world.options.remote_items:
@@ -524,7 +538,7 @@ def patch_rom(world, rom, player: int):
         if item.name == "Photograph":
             rom.write_bytes(0x17FEA8, bytearray([0x01]))
 
-        if item.name == "Poo" and world.multiworld.get_location("Poo - Starting Item", world.player).item.name in special_name_table: #TODO; this might break if someone else's teleport is on my poo start
+        if item.name == "Poo" and world.multiworld.get_location("Poo - Starting Item", world.player).item.name in special_name_table and item.player == world.player:
             world.multiworld.push_precollected(world.multiworld.get_location("Poo - Starting Item", world.player).item)
 
         # if item.name == "Poo" and world.multiworld.get_location("Poo - Starting Item", world.player).item.name == "Photograph":
@@ -598,12 +612,12 @@ def patch_rom(world, rom, player: int):
         rom.write_bytes(0x300273, bytearray([world.random.randint(0x00, 0x1F)]))
 
     if not world.options.prefixed_items:
-        rom.write_bytes(0x15F9DB, bytearray([0x06]))
-        rom.write_bytes(0x15F9DD, bytearray([0x08]))
-        rom.write_bytes(0x15F9DF, bytearray([0x05]))
-        rom.write_bytes(0x15F9E1, bytearray([0x0B]))
-        rom.write_bytes(0x15F9E3, bytearray([0x0F]))
-        rom.write_bytes(0x15F9E4, bytearray([0x10]))
+        rom.write_bytes(0x15F9DC, bytearray([0x06]))
+        rom.write_bytes(0x15F9DE, bytearray([0x08]))
+        rom.write_bytes(0x15F9E0, bytearray([0x05]))
+        rom.write_bytes(0x15F9E2, bytearray([0x0B]))
+        rom.write_bytes(0x15F9E4, bytearray([0x0F]))
+        rom.write_bytes(0x15F9E6, bytearray([0x10]))
         # change if necessary
 
     if world.options.psi_shuffle:
@@ -619,6 +633,15 @@ def patch_rom(world, rom, player: int):
     music_randomizer(world, rom)
     if world.options.randomize_psi_palettes:
         randomize_psi_palettes(world, rom)
+
+    if world.options.randomize_enemy_attributes:
+        randomize_enemy_attributes(world, rom)
+
+    if world.options.randomize_enemy_stats:
+        randomize_enemy_stats(world, rom)
+
+    if world.options.randomize_enemy_attacks:
+        randomize_enemy_attacks(world, rom)
 
     apply_enemy_shuffle(world, rom)
     # randomize_food(world,rom)
@@ -736,10 +759,12 @@ class EBPatchExtensions(APPatchExtension):
         saturn_font_gfx = rom.read_bytes(0x2013B9, 0x0C00)
         letter_n = rom.read_bytes(0x21169F, 6)
         letter_a = rom.read_bytes(0x2114FF, 6)
+        letter_e = rom.read_bytes(0x21157F, 6)
         saturn_a = rom.read_bytes(0x2017DD, 9)
+        saturn_n = rom.read_bytes(0x20197E, 8)
+        saturn_e = rom.read_bytes(0x20185C, 24)
 
         accent_tilde = rom.read_bytes(0x2118A1, 2)
-        saturn_n = rom.read_bytes(0x20197E, 8)
         saturn_tilde = rom.read_bytes(0x201F7F, 2)
 
         rom.write_bytes(0x3A0000, main_font_data)
@@ -749,10 +774,12 @@ class EBPatchExtensions(APPatchExtension):
         rom.write_bytes(0x3C1000, saturn_font_gfx)
         rom.write_bytes(0x3C0D25, letter_n)  # Setup n
         rom.write_bytes(0x3C0D45, letter_a)  # Setup a
+        rom.write_bytes(0x3C0D65, letter_e)
         rom.write_bytes(0x3C0D22, accent_tilde)
 
         rom.write_bytes(0x3C1D25, saturn_n)  # Setup n
         rom.write_bytes(0x3C1D45, saturn_a)
+        rom.write_bytes(0x3C1D63, saturn_e)
         rom.write_bytes(0x3C1D22, saturn_tilde)
 
         # ---------------------------------------

@@ -103,7 +103,6 @@ class OracleOfAgesDungeonShuffle(Choice):
 
 class OracleOfAgesMasterKeys(Choice):
     """
-    <NOT IMPLEMENTED RIGHT NOW>
     - Disabled: All dungeon keys must be obtained individually, just like in vanilla
     - All Small Keys: Small Keys are replaced by a single Master Key for each dungeon which is capable of opening
       every small keydoor for that dungeon

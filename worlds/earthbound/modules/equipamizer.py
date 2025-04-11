@@ -28,19 +28,14 @@ def price_weapons(weapons, rom):
             rom.write_bytes((weapon.address + 26), struct.pack("H", price))
 
 
-def price_armors(armor_pricing_list, rom):
+def price_armors(armor_pricing_list, rom, item):
     price = 0
     for index, armor in enumerate(armor_pricing_list):
         price = ((99 * (index + 1) + price) +
                  (50 * armor.flash_res + armor.fire_res + armor.freeze_res + armor.par_res) + armor.defense)
-        if "Summers" in armor.name:
-            armor.name = armor.name.replace("Summers", "")
-            rom.write_bytes((armor.address + 26), struct.pack("H", min((price * 2), 50000)))
-            item_name = text_encoder(armor.name, 25)
-            item_name.extend([0x00])
-            rom.write_bytes(armor.address, item_name)
-        else:
-            rom.write_bytes((armor.address + 26), struct.pack("H", price))
+        rom.write_bytes((armor.address + 26), struct.pack("H", price))
+        if item in ["Platinum Band", "Diamond Band"]:
+            rom.write_bytes((summers_addresses[item] + 26), struct.pack("H", price))
 
 
 def apply_progressive_weapons(world, weapons, progressives, rom):
@@ -258,8 +253,8 @@ type_bytes = {
 }
 
 summers_addresses = {
-    "Summers Platinum Band": 0x155A5C,
-    "Summers Diamond Band": 0x155A83,
+    "Platinum Band": 0x155A5C,
+    "Diamond Band": 0x155A83,
     "Summers Big League Bat": 0x15535A
 }
 
@@ -293,6 +288,7 @@ def randomize_armor(world, rom):
     other_adjectives = adjectives.copy()
     arm_adjectives = adjectives.copy()
     body_adjectives = adjectives.copy()
+    taken_names = []
 
     armor_dict = {
         "arm": arm_adjectives,
@@ -378,8 +374,8 @@ def randomize_armor(world, rom):
         "Coin of Defense",
         "Coin of Silence",
         "Mr. Saturn Coin",
-        "Lucky Coin",
         "Charm Coin",
+        "Lucky Coin",
         "Talisman Coin",
         "Shiny Coin",
         "Souvenir Coin",
@@ -391,9 +387,6 @@ def randomize_armor(world, rom):
         "Defense Ribbon",
         "Talisman Ribbon",
         "Goddess Ribbon",
-        "Summers Platinum Band",
-        "Summers Diamond Band"
-
     ]
 
     char_armor_names = {
@@ -483,18 +476,9 @@ def randomize_armor(world, rom):
         "Defense Ribbon": EBArmor(0x157136, "other"),
         "Talisman Ribbon": EBArmor(0x15715D, "other"),
         "Saturn Ribbon": EBArmor(0x157184, "other"),
-        "Summers Platinum Band": EBArmor(0x0, "other"),
-        "Summers Diamond Band": EBArmor(0x0, "other"),
     }
 
     for item in all_armor:
-        if "Summers" in item:
-            world.armor_list[item] = dataclasses.replace(
-                world.armor_list[item.replace("Summers ", "")], address=summers_addresses[item]
-                )
-            world.armor_list[item].name += "Summers"
-            continue
-
         armor = world.armor_list[item]
         if world.options.armorizer == 2:
             armor.equip_type = world.random.choice(["arm", "body", "other"])
@@ -551,11 +535,6 @@ def randomize_armor(world, rom):
         else:
             armor.can_equip = "All"
 
-        if armor.can_equip != "Poo":
-            armor.poo_def = 216  # defense is signed, all non-kings equipment has this value
-        else:
-            armor.poo_def = armor.defense
-
         if armor.can_equip == "Poo":
             back_name = world.random.choice(royal_names)
             front_name = world.random.choice(armor_names[armor.equip_type]).capitalize()
@@ -565,6 +544,11 @@ def randomize_armor(world, rom):
             back_name = world.random.choice(armor_names[armor.equip_type])
 
         armor.name = front_name + " " + back_name
+        if armor.name in taken_names:
+            front_name = world.random.choice(armor_dict[armor.equip_type])
+            armor_dict[armor.equip_type].remove(front_name)
+            armor.name = front_name + " " + back_name
+        taken_names.append(armor.name)
 
         pixel_length = calc_pixel_width(armor.name)
         first_armor = False
@@ -593,9 +577,8 @@ def randomize_armor(world, rom):
 
             pixel_length = calc_pixel_width(armor.name)
             
-        rom.write_bytes(armor.address + 28, bytearray([usage_bytes[armor.can_equip]]))
         resistance = (1 * armor.fire_res) + (4 * armor.freeze_res) + (16 * armor.flash_res) + (64 * armor.par_res)
-        rom.write_bytes(armor.address + 31, bytearray([armor.defense, armor.poo_def, armor.aux_stat, resistance]))
+        rom.write_bytes(armor.address + 28, bytearray([usage_bytes[armor.can_equip]]))
         rom.write_bytes(armor.address + 25, bytearray([type_bytes[armor.equip_type]]))
     
     sortable_armor = copy.deepcopy(world.armor_list)
@@ -621,13 +604,18 @@ def randomize_armor(world, rom):
             apply_progressive_armor(world, prog_armors[i], sorts[i], rom)
 
     for i in range(3):
-        price_armors(sorts[i], rom)
+        price_armors(sorts[i], rom, item)
 
     for item in all_armor:
         armor = world.armor_list[item]
 
-        if "Summers" in armor.name:
-            armor.name = armor.name.replace("Summers", "")
+        if armor.can_equip != "Poo":
+            armor.poo_def = 216  # defense is signed, all non-kings equipment has this value
+        else:
+            armor.poo_def = armor.defense
+        
+        rom.write_bytes(armor.address + 31, bytearray([armor.defense, armor.poo_def, armor.aux_stat, resistance]))
+
         item_name = text_encoder(armor.name, 25)
         item_name.extend([0x00])
 
@@ -661,7 +649,7 @@ def randomize_armor(world, rom):
 
         if armor.sleep_res > 0:
             description += f"@Protects against Sleep{res_strength[armor.sleep_res - 1]}.\n"
-        
+
         description = text_encoder(description, 0x100)
         description = description[:-2]
         description.extend([0x13, 0x02])
@@ -673,6 +661,12 @@ def randomize_armor(world, rom):
         rom.write_bytes(armor.address, item_name)
         rom.write_bytes((0x310000 + world.description_pointer), description)
         rom.write_bytes((armor.address + 35), struct.pack("I", (0xF10000 + world.description_pointer)))
+        if item in ["Platinum Band", "Diamond Band"]:
+            rom.write_bytes(summers_addresses[item] + 28, bytearray([usage_bytes[armor.can_equip]]))
+            rom.write_bytes(summers_addresses[item] + 31, bytearray([armor.defense, armor.poo_def, armor.aux_stat, resistance]))
+            rom.write_bytes(summers_addresses[item] + 25, bytearray([type_bytes[armor.equip_type]]))
+            rom.write_bytes(summers_addresses[item], item_name)
+            rom.write_bytes((summers_addresses[item] + 35), struct.pack("I", (0xF10000 + world.description_pointer)))
         world.description_pointer += len(description)
 
 
@@ -687,7 +681,7 @@ def randomize_weapons(world, rom):
         "Paula": ["fry pan", "frypan", "skillet", "whisk", "saucepan", "pin"],
         "Jeff": ["gun", "beam", "air gun", "beam gun", "cannon", "blaster", "pistol", "revolver", "shotgun"],
         "Poo": ["Sword", "Katana", "Knife", "Scisscors", "Cutter", "Blade", "Chisel", "Saw", "Axe"],
-        "All": ["Yo-yo", "Slingshot", "Boomerang"]
+        "All": ["yo-yo", "slingshot", "boomerang"]
     }
 
     miss_rates = {
@@ -843,11 +837,9 @@ def randomize_weapons(world, rom):
             weapon.offense = world.random.randint(1, weapon_cap)
 
         if weapon.can_equip == "Poo":
-            weapon.poo_off = weapon.offense
             front_name = world.random.choice(weapon_names[weapon.can_equip])
             back_name = world.random.choice(royal_names)
         else:
-            weapon.poo_off = 250
             front_name = world.random.choice(adjectives)
             back_name = world.random.choice(weapon_names[weapon.can_equip])
 
@@ -898,8 +890,6 @@ def randomize_weapons(world, rom):
             pixel_length = calc_pixel_width(weapon.name)
 
         rom.write_bytes(weapon.address + 28, bytearray([usage_bytes[weapon.can_equip]]))
-        rom.write_bytes(weapon.address + 31, bytearray([
-            weapon.offense, weapon.poo_off, weapon.aux_stat, weapon.miss_rate]))
         rom.write_bytes(weapon.address + 25, bytearray([type_bytes[weapon.equip_type]]))
 
     sortable_weapons = copy.deepcopy(world.weapon_list)
@@ -935,6 +925,15 @@ def randomize_weapons(world, rom):
 
     for item in all_weapons:
         weapon = world.weapon_list[item]
+
+        if weapon.can_equip == "Poo":
+            weapon.poo_off = weapon.offense
+        else:
+            weapon.poo_off = 250
+
+        rom.write_bytes(weapon.address + 31, bytearray([
+            weapon.offense, weapon.poo_off, weapon.aux_stat, weapon.miss_rate]))
+
         if "Summers" in item:
             weapon.offense = world.weapon_list["Big League Bat"].offense
             rom.write_bytes(weapon.address + 31, bytearray([world.weapon_list["Big League Bat"].offense]))

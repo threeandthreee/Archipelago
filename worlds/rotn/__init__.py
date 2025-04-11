@@ -7,7 +7,7 @@ from Options import PerGameCommonOptions
 from .options import RotNOptions
 from .RiftCollections import RotNCollections
 from .items import RotNSongItem, RotNFixedItem
-from. locations import RotNLocation
+from .locations import RotNLocation
 
 class RotNWeb(WebWorld):
     theme = "stone"
@@ -50,7 +50,7 @@ class RotNWorld(World):
         starter_song_count = self.options.starting_song_count.value
 
         while True:
-            available_song_keys = self.rift_collection.getSongsWithSettings(min_diff, max_diff)
+            available_song_keys = self.rift_collection.getSongsWithSettings(self.options.dlc_songs ,min_diff, max_diff)
             available_song_keys = self.handle_plando(available_song_keys)
 
             count_needed_for_start = max(0, starter_song_count - len(self.starting_songs))
@@ -165,7 +165,7 @@ class RotNWorld(World):
 
         # When it comes to filling remaining spaces, we have 2 options. A useless filler or additional songs.
         # First fill 50% with the filler. The rest is to be duplicate songs.
-        filler_count = floor(0.5 * items_left)
+        filler_count = floor(items_left * (self.options.duplicate_song_percentage / 100))
         items_left -= filler_count
 
         for _ in range(0, filler_count):

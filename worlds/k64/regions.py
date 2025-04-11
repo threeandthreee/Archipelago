@@ -1,8 +1,9 @@
 import typing
 
-from BaseClasses import Region, CollectionState
+from BaseClasses import Region, CollectionState, ItemClassification
 from .locations import K64Location, location_table
-from .names import LocationName
+from .items import K64Item
+from .names import LocationName, ItemName
 from .rules import (burn_levels, needle_levels, stone_levels,
                     spark_levels, bomb_levels, ice_levels, cutter_levels)
 
@@ -68,8 +69,8 @@ def generate_valid_levels(world: "K64World", enforce_world: bool) -> dict:
         for stage in range(len(default_levels[level]) - 1):
             possible_stages.append(default_levels[level][stage])
 
-    if world.multiworld.plando_connections[world.player]:
-        for connection in world.multiworld.plando_connections[world.player]:
+    if world.options.plando_connections:
+        for connection in world.options.plando_connections:
             try:
                 entrance_world, entrance_stage = connection.entrance.rsplit(" ", 1)
                 stage_world, stage_stage = connection.exit.rsplit(" ", 1)
@@ -193,3 +194,7 @@ def create_levels(world: "K64World") -> None:
     level5.connect(level6, "To Level 6")
     menu.connect(level7, "To Level 7")  # put the connection on menu, since you can reach it before level 6 on fast goal
     world.multiworld.regions.extend([menu, level1, level2, level3, level4, level5, level6, level7])
+
+    goal_location = world.get_location(LocationName.dark_star)
+    goal_location.place_locked_item(
+        K64Item(ItemName.ribbons_crystal, ItemClassification.progression, None, world.player))

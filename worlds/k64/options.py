@@ -1,10 +1,18 @@
 import random
 from dataclasses import dataclass
 
-from Options import DeathLink, Choice, Toggle, OptionDict, Range, PlandoBosses, DefaultOnToggle, \
-    PerGameCommonOptions, Visibility
+from Options import DeathLinkMixin, Choice, Toggle, OptionDict, Range, PlandoBosses, DefaultOnToggle, \
+    PerGameCommonOptions, Visibility, StartInventoryPool, PlandoConnections
 from .names import LocationName
 import typing
+
+
+class K64PlandoConnections(PlandoConnections):
+    display_name = "Plando Connections"
+    entrances = [f"{level} {i}"
+                 for idx, level in LocationName.level_names.items()
+                 for i in range(LocationName.level_max[idx])]
+    exits = entrances
 
 
 class GoalSpeed(Choice):
@@ -108,23 +116,68 @@ class KirbyFlavorPreset(Choice):
     display_name = "Kirby Flavor"
     option_default = 0
     option_bubblegum = 1
-    #option_cherry = 2
+    option_cherry = 2
     option_blueberry = 3
     option_lemon = 4
     option_kiwi = 5
-    #option_grape = 6
-    #option_chocolate = 7
-    #option_marshmallow = 8
-    #option_licorice = 9
-    #option_watermelon = 10
-    #option_orange = 11
+    option_grape = 6
+    option_chocolate = 7
+    option_marshmallow = 8
+    option_licorice = 9
+    option_watermelon = 10
+    option_orange = 11
     option_lime = 12
-    option_lavender = 13
-    option_miku = 14
-    option_nostalgic = 15
     option_kusamochi = 16
+    option_citrus = 23
+    option_wafer = 24
+    option_ice = 25
+    option_cream = 26
+    option_snowcone = 31
+    option_cotton_candy = 48
+    option_chocomint = 49
+    option_cheeseburger = 50
+    option_rose = 27
+    option_daisy = 28
+    option_lavender = 29
+    option_lilac = 13
+    option_blue_poppy = 32
+    option_fuschia = 47
+    option_canary = 22
+    option_carbon = 17
+    option_snow = 18
+    option_ivory = 21
+    option_chalk = 44
+    option_sapphire = 19
+    option_emerald = 20
+    option_gameboy = 45
+    option_nostalgic = 15
+    option_halloween = 43
+    option_bright = 30
+    option_ocean = 42
+    option_miku = 14
+    option_rin = 51
+    option_len = 52
+    option_luka = 53
+    option_meiko = 54
+    option_kaito = 55
+    option_mirror = 46
+    option_dedede = 33
+    option_waddle_dee = 34
+    option_susie = 35
+    option_mogeko = 36
+    option_link = 37
+    option_callie = 38
+    option_marie = 39
+    option_pearl = 40
+    option_marina = 41
     option_custom = -1
     default = 0
+
+    @classmethod
+    def get_option_name(cls, value: int) -> str:
+        if value in (cls.option_meiko, cls.option_kaito):
+            return cls.name_lookup[value].upper()
+        return super().get_option_name(value)
 
     @classmethod
     def from_text(cls, text: str) -> Choice:
@@ -142,30 +195,31 @@ class KirbyFlavor(OptionDict):
     "17", with their values being an HTML hex color.
     """
     default = {
-      "1": "080000",
-      "2": "F64A5A",
-      "3": "6A4152",
-      "4": "F6F6F6",
-      "5": "F7A5B5",
-      "6": "E66A62",
-      "7": "00085A",
-      "8": "EE8BA4",
-      "9": "733141",
-      "10": "D5D5D5",
-      "11": "312029",
-      "12": "8B949C",
-      "13": "0000D5",
-      "14": "8B626A",
-      "15": "BD838B",
-      "16": "FF6946",
-      "17": "FF2600",
+      "1": "#080000",
+      "2": "#F64A5A",
+      "3": "#6A4152",
+      "4": "#F6F6F6",
+      "5": "#F7A5B5",
+      "6": "#E66A62",
+      "7": "#00085A",
+      "8": "#EE8BA4",
+      "9": "#733141",
+      "10": "#D5D5D5",
+      "11": "#312029",
+      "12": "#8B949C",
+      "13": "#0000D5",
+      "14": "#8B626A",
+      "15": "#BD838B",
+      "16": "#FF6946",
+      "17": "#FF2600",
     }
     visibility = Visibility.complex_ui | Visibility.template
 
 
 @dataclass
-class K64Options(PerGameCommonOptions):
-    death_link: DeathLink
+class K64Options(PerGameCommonOptions, DeathLinkMixin):
+    start_inventory_from_pool: StartInventoryPool
+    plando_connections: PlandoConnections
     goal_speed: GoalSpeed
     split_power_combos: SplitPowerCombos
     stage_shuffle: LevelShuffle

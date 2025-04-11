@@ -69,22 +69,6 @@
     rst 10
     jr @loop
 
-# (de) = array of map IDs ($FF terminated)
-# (hl) = beginning of map flags array for map group
-# returns nz if any of the maps has item flag set, z otherwise
-00//scanItemGetFlagsForMaps: |
-    @loop:
-    ld a,(de)
-    cp $ff
-    jr z,@done
-    ld l,a
-    bit 5,(hl)
-    jr nz,@done
-    inc de
-    jr @loop
-    @done:
-    ret
-
 # b = treasure id
 # c = treasure subid
 00//spawnTreasureOnLink: |

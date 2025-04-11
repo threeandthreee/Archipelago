@@ -31,12 +31,16 @@ class OracleOfSeasonsSettings(settings.Group):
         The name of the sprite file to use (from "data/sprites/oos_ooa/").
         Putting "link" as a value uses the default game sprite.
         Putting "random" as a value randomly picks a sprite from your sprites directory for each generated ROM.
+        If you want some weighted result, you can arrange the options like in your option yaml.
         """
 
     class OoSCharacterPalette(str):
         """
         The color palette used for character sprite throughout the game.
         Valid values are: "green", "red", "blue", "orange", and "random"
+        If you want some weighted result, you can arrange the options like in your option yaml.
+        If you want a color weight to only apply to a specific sprite, you can write color|sprite: weight.
+        For example, red|link: 1 would add red in the possible palettes with a weight of 1 only if link is the selected sprite
         """
 
     class OoSRevealDiggingSpots(str):
@@ -129,6 +133,9 @@ class OracleOfSeasonsWorld(World):
     def generate_early(self):
         if self.interpret_slot_data(None):
             return
+
+        if self.options.randomize_ai:
+            self.options.golden_beasts_requirement.value = 0
 
         conflicting_rings = self.options.required_rings.value & self.options.excluded_rings.value
         if len(conflicting_rings) > 0:
@@ -570,6 +577,10 @@ class OracleOfSeasonsWorld(World):
         if self.options.logic_difficulty in difficulties and not self.options.randomize_lost_woods_item_sequence and name == "Phonograph":
             classification = ItemClassification.filler
 
+        # UT doesn't let us know if the item is progression or not, so it is always progression
+        if hasattr(self.multiworld, "generation_is_fake"):
+            classification = ItemClassification.progression
+
         return Item(name, classification, ap_code, self.player)
 
     def build_item_pool_dict(self):
@@ -891,7 +902,7 @@ class OracleOfSeasonsWorld(World):
 
     def fill_slot_data(self) -> dict:
         # Put options that are useful to the tracker inside slot data
-        options = ["goal", "death_link",
+        options = ["goal", "death_link", "move_link",
                    # Logic-impacting options
                    "logic_difficulty", "normalize_horon_village_season",
                    "shuffle_dungeons", "shuffle_portals",
@@ -978,8 +989,6 @@ class OracleOfSeasonsWorld(World):
         self.options.shuffle_golden_ore_spots = OracleOfSeasonsGoldenOreSpotsShuffle.from_any(slot_data["shuffle_golden_ore_spots"])
         self.options.normalize_horon_village_season = OracleOfSeasonsHoronSeason.from_any(slot_data["normalize_horon_village_season"])
         self.options.deterministic_gasha_locations = OracleOfSeasonsGashaLocations.from_any(slot_data["deterministic_gasha_locations"])
-
-        self.remaining_progressive_gasha_seeds = 999999  # All gasha seeds need to be progression
 
         self.default_seasons = slot_data["default_seasons"]
         self.lost_woods_item_sequence = []  # Unknown

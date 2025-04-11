@@ -139,6 +139,10 @@ class PresentSprites(DefaultOnToggle):
     """If enabled, Presents, Trash cans, and chests will have their appearance modified to be indicative of the item they contain."""
     display_name = "Match Present Sprites"
 
+class NoAPPresents(Toggle):
+    """If enabled, present that contain items for other players will appear as EarthBound presents (trashcan, present, and chest) instead of Archipelago boxes.
+       Does nothing if Presents Match Contents is disabled."""
+
 
 class ShuffleDrops(Toggle):
     """If enabled, enemies will drop random filler items. This does not put checks on enemy drops.
@@ -278,9 +282,13 @@ class NoFreeSancs(Toggle):
     display_name = "No Free Sanctuaries"
 
 
-class RandomizeFanfares(Toggle):
+class RandomizeFanfares(Choice):
     """Randomizes fanfares."""
     display_name = "Randomize Fanfares"
+    option_off = 0
+    option_on = 1
+    option_on_no_sound_stone_fanfares = 2
+    default = 0
 
 
 class RandomizeBattleMusic(Toggle):
@@ -386,6 +394,22 @@ class PhotoCount(Range):
     range_end = 32
     default = 20
 
+class EasyCombat(Toggle):
+    """Automatically halves all scaled enemy levels."""
+    display_name = "Easy Combat"
+
+class EnemizerStats(Toggle):
+    """Randomizes base stats and level of non-boss enemies."""
+    display_name = "Randomize Enemy Stats"
+
+class EnemizerAttacks(Toggle):
+    """Randomizes attacks of non-boss enemies."""
+    display_name = "Randomize Enemy Attacks"
+
+class EnemizerAttributes(Toggle):
+    """Randomizes most attributes of non-boss enemies."""
+    display_name = "Randomize Enemy Attributes"
+
 
 @dataclass
 class EBOptions(PerGameCommonOptions):
@@ -405,10 +429,14 @@ class EBOptions(PerGameCommonOptions):
     boss_shuffle: BossShuffle
     decouple_diamond_dog: DecoupleDiamondDog
     boss_shuffle_add_giygas: ShuffleGiygas
+    randomize_enemy_attributes: EnemizerAttributes
+    randomize_enemy_stats: EnemizerStats
+    randomize_enemy_attacks: EnemizerAttacks
     experience_modifier: ExperienceModifier
     money_drop_multiplier: MoneyDropMultiplier
     starting_money: StartingMoney
     easy_deaths: EasyDeaths
+    easy_combat: EasyCombat
     progressive_weapons: ProgressiveWeapons
     progressive_armor: ProgressiveArmor
     armorizer: Armorizer
@@ -421,6 +449,7 @@ class EBOptions(PerGameCommonOptions):
     random_battle_backgrounds: RandomBattleBG
     random_swirl_colors: RandomSwirlColors
     presents_match_contents: PresentSprites
+    nonlocal_items_use_local_presents: NoAPPresents
     prefixed_items: PreFixItems
     total_photos: PhotoCount
     randomize_franklinbadge_protection: RandomFranklinBadge
@@ -494,6 +523,12 @@ eb_option_groups = [
         MoneyDropMultiplier
     ]),
 
+    OptionGroup("Enemizer", [
+        EnemizerAttributes,
+        EnemizerAttacks,
+        EnemizerStats
+    ]),
+
     OptionGroup("Shop Randomization", [
         ShopRandomizer,
         ScoutShopChecks
@@ -509,7 +544,8 @@ eb_option_groups = [
         StartingMoney,
         RemoteItems,
         AutoscaleParty,
-        SkipEpilogue
+        SkipEpilogue,
+        EasyCombat
     ]),
 
     OptionGroup("Aesthetic Settings", [
@@ -517,6 +553,7 @@ eb_option_groups = [
         RandomSwirlColors,
         RandomBattleBG,
         PresentSprites,
+        NoAPPresents,
         RandomizePSIPalettes,
         PlandoLumineHallText
     ]),

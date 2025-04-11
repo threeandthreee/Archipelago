@@ -102,8 +102,10 @@ def make_holodrum_logic(player: int, origin_name: str, options: OracleOfSeasonsO
         ])],
 
         ["western coast", "d0 entrance", True, None],
-        ["western coast", "d0 rupee chest", False, lambda state: \
-            oos_can_break_bush(state, player, True)],
+        ["western coast", "d0 rupee chest", False, lambda state: all([
+            not oos_option_no_d0_alt_entrance(state, player),
+            oos_can_break_bush(state, player, True)
+        ])],
 
         ["western coast after ship", "western coast", False, lambda state: all([
             state.has("_met_pirates", player),

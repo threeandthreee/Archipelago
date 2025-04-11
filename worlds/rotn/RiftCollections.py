@@ -40,14 +40,29 @@ class RotNCollections:
         "Final Fugue": SongData(79, "TrackName_FinalFugue", "Base", 6, 13, 20, 30),
         "Twombtorial": SongData(80, "TrackName_Twombtorial", "Base", 5, 13, 19, 23),
         "Portamello": SongData(81, "TrackName_Portamello", "Base", 5, 10, 15, 20),
-        "Slugger's Refrain": SongData(82, "TrackName_DLC_Apricot01", "Apricot", 6, 14, 21, 30),
-        "Got Danged": SongData(83, "TrackName_DLC_Apricot02", "Apricot", 5, 12, 20, 30),
-        "Bootus Bleez": SongData(84, "TrackName_DLC_Apricot03", "Apricot", 6, 10, 19, 29),
+        "Slugger's Refrain": SongData(82, "TrackName_DLC_Apricot01", "MeatBoy", 6, 14, 21, 30),
+        "Got Danged": SongData(83, "TrackName_DLC_Apricot02", "MeatBoy", 5, 12, 20, 30),
+        "Bootus Bleez": SongData(84, "TrackName_DLC_Apricot03", "MeatBoy", 6, 10, 19, 29),
+        "Resurrections (dannyBstyle Remix)": SongData(85, "TrackName_DLC_Banana01", "CelesteFree", 6, 10, 17, 27),
+        "Scattered and Lost": SongData(86, "Scattered and Lost", "Celeste", 4, 8, 16, 25),
+        "Reach for the Summit": SongData(87, "Reach for the Summit", "Celeste", 7, 11, 18, 30),
+        "Confronting Myself": SongData(88, "Confronting Myself", "Celeste", 6, 9, 17, 26),
+        "Resurrections": SongData(89, "Resurrections", "Celeste", 6, 10, 17, 27),
     }
 
     FREE_PACKS: List[str] = [
         "Base",
-        "Apricot"
+        "MeatBoy",
+        "CelesteFree"
+    ]
+
+    DLC: List[str] = [
+        "Celeste",
+        "Resurrections (dannyBstyle Remix)",
+        "Scattered and Lost",
+        "Reach for the Summit",
+        "Confronting Myself",
+        "Resurrections"
     ]
 
     song_locations: Dict[str, int] = {}
@@ -86,10 +101,13 @@ class RotNCollections:
             self.song_locations[f"{name}-1"] = location_id_index + 1
             location_id_index += 2
 
-    def getSongsWithSettings(self, diff_lower: int, diff_higher:int) -> List[str]:
+    def getSongsWithSettings(self, dlc_songs: Set[str], diff_lower: int, diff_higher:int) -> List[str]:
         filtered_list = []
 
         for key, data in self.song_items.items():
+            if not self.songMatchesDlcFilter(data, dlc_songs):
+                continue
+
             if data.diff_easy != -1 and diff_lower <= data.diff_easy <= diff_higher:
                 filtered_list.append(key)
                 continue
@@ -107,3 +125,12 @@ class RotNCollections:
                 continue
 
         return filtered_list
+    
+    def songMatchesDlcFilter(self, song: SongData, dlc_songs: Set[str]) -> bool:
+        if song.DLC in self.FREE_PACKS:
+            return True
+
+        if song.DLC in dlc_songs or song.song_name in dlc_songs:
+            return True
+
+        return False
