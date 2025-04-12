@@ -23,6 +23,7 @@ import typing
 from CommonClient import (CommonContext, ClientCommandProcessor, get_base_parser, gui_enabled, logger,
                           server_loop)
 from NetUtils import ClientStatus
+from . import LinksAwakeningWorld
 from . import Common
 from .GpsTracker import GpsTracker
 from .ItemTracker import ItemTracker
@@ -677,9 +678,7 @@ class LinksAwakeningContext(CommonContext):
 
     def run_gui(self) -> None:
         import webbrowser
-        import kvui
-        from kvui import Button, GameManager
-        from kivy.uix.image import Image
+        from kvui import GameManager, ImageButton
 
         class LADXManager(GameManager):
             logging_pairs = [
@@ -692,16 +691,10 @@ class LinksAwakeningContext(CommonContext):
                 b = super().build()
 
                 if self.ctx.magpie_enabled:
-                    button = Button(text="", size=(30, 30), size_hint_x=None,
-                                    on_press=lambda _: webbrowser.open('https://magpietracker.us/?enable_autotracker=1'))
-                    image = Image(size=(16, 16), texture=magpie_logo())
-                    button.add_widget(image)
-
-                    def set_center(_, center):
-                        image.center = center
-                    button.bind(center=set_center)
-
+                    button = ImageButton(texture=magpie_logo(), fit_mode="cover", image_size=(32, 32), size_hint_x=None,
+                                on_press=lambda _: webbrowser.open('https://magpietracker.us/?enable_autotracker=1'))
                     self.connect_layout.add_widget(button)
+
                 return b
 
         self.ui = LADXManager(self)
@@ -916,8 +909,8 @@ class LinksAwakeningContext(CommonContext):
                 await asyncio.sleep(1.0)
 
 def run_game(romfile: str) -> None:
-    auto_start = typing.cast(typing.Union[bool, str],
-                            Utils.get_options()["ladx_beta_options"].get("rom_start", True))
+    auto_start = LinksAwakeningWorld.settings.rom_start
+
     if auto_start is True:
         import webbrowser
         webbrowser.open(romfile)
