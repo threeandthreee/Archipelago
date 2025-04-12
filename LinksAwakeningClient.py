@@ -360,9 +360,9 @@ class LinksAwakeningClient():
         s = f"SHOW_MSG {m}\n"
         self.gameboy.send(s)
 
-    def __init__(self, retroarch_address="127.0.0.1", retroarch_port=55355):
-        self.retroarch_address = retroarch_address
-        self.retroarch_port = retroarch_port
+    def __init__(self, retroarch_host="127.0.0.1:55355"):
+        self.retroarch_address = retroarch_host.split(':')[0]
+        self.retroarch_port = int(retroarch_host.split(':')[1])
         pass
 
     stop_bizhawk_spam = False
@@ -519,8 +519,8 @@ class LinksAwakeningContext(CommonContext):
     def slot_storage_key(self):
         return f"{self.slot_info[self.slot].name}_{storage_key}"
 
-    def __init__(self, server_address: typing.Optional[str], password: typing.Optional[str], magpie: typing.Optional[bool]) -> None:
-        self.client = LinksAwakeningClient()
+    def __init__(self, server_address: typing.Optional[str], password: typing.Optional[str], magpie: typing.Optional[bool], retroarch_host: typing.Optional[str]) -> None:
+        self.client = LinksAwakeningClient(retroarch_host)
         self.slot_data = {}
 
         if magpie:
@@ -770,6 +770,7 @@ async def main():
     parser.add_argument("--no-magpie", dest='magpie', default=True, action='store_false', help="Disable magpie bridge")
     parser.add_argument('diff_file', default="", type=str, nargs="?",
                         help='Path to a .apladx Archipelago Binary Patch file')
+    parser.add_argument("--retroarch-host", dest="retroarch_host", help="Retroarch connection address and port")
 
     args = parser.parse_args()
 
@@ -782,7 +783,7 @@ async def main():
         logger.info(f"wrote rom file to {rom_file}")
 
 
-    ctx = LinksAwakeningContext(args.connect, args.password, args.magpie)
+    ctx = LinksAwakeningContext(args.connect, args.password, args.magpie, args.retroarch_host)
 
     ctx.server_task = asyncio.create_task(server_loop(ctx), name="server loop")
 
