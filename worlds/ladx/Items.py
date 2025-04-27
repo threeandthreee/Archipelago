@@ -221,8 +221,6 @@ links_awakening_items = [
     ItemData(ItemName.HEART_CONTAINER, "HEART_CONTAINER", ItemClassification.useful),
     #ItemData(ItemName.BAD_HEART_CONTAINER, "BAD_HEART_CONTAINER", ItemClassification.trap),
     ItemData(ItemName.TOADSTOOL, "TOADSTOOL", ItemClassification.progression),
-    ItemData(ItemName.GUARDIAN_ACORN, "GUARDIAN_ACORN", ItemClassification.filler),
-    DungeonItemData(ItemName.KEY, "KEY", ItemClassification.progression),
     DungeonItemData(ItemName.KEY1, "KEY1", ItemClassification.progression),
     DungeonItemData(ItemName.KEY2, "KEY2", ItemClassification.progression),
     DungeonItemData(ItemName.KEY3, "KEY3", ItemClassification.progression),
@@ -232,7 +230,6 @@ links_awakening_items = [
     DungeonItemData(ItemName.KEY7, "KEY7", ItemClassification.progression),
     DungeonItemData(ItemName.KEY8, "KEY8", ItemClassification.progression),
     DungeonItemData(ItemName.KEY9, "KEY9", ItemClassification.progression),
-    DungeonItemData(ItemName.NIGHTMARE_KEY, "NIGHTMARE_KEY", ItemClassification.progression),
     DungeonItemData(ItemName.NIGHTMARE_KEY1, "NIGHTMARE_KEY1", ItemClassification.progression),
     DungeonItemData(ItemName.NIGHTMARE_KEY2, "NIGHTMARE_KEY2", ItemClassification.progression),
     DungeonItemData(ItemName.NIGHTMARE_KEY3, "NIGHTMARE_KEY3", ItemClassification.progression),
@@ -242,7 +239,6 @@ links_awakening_items = [
     DungeonItemData(ItemName.NIGHTMARE_KEY7, "NIGHTMARE_KEY7", ItemClassification.progression),
     DungeonItemData(ItemName.NIGHTMARE_KEY8, "NIGHTMARE_KEY8", ItemClassification.progression),
     DungeonItemData(ItemName.NIGHTMARE_KEY9, "NIGHTMARE_KEY9", ItemClassification.progression),
-    DungeonItemData(ItemName.MAP, "MAP", ItemClassification.filler),
     DungeonItemData(ItemName.MAP1, "MAP1", ItemClassification.filler),
     DungeonItemData(ItemName.MAP2, "MAP2", ItemClassification.filler),
     DungeonItemData(ItemName.MAP3, "MAP3", ItemClassification.filler),
@@ -252,7 +248,6 @@ links_awakening_items = [
     DungeonItemData(ItemName.MAP7, "MAP7", ItemClassification.filler),
     DungeonItemData(ItemName.MAP8, "MAP8", ItemClassification.filler),
     DungeonItemData(ItemName.MAP9, "MAP9", ItemClassification.filler),
-    DungeonItemData(ItemName.COMPASS, "COMPASS", ItemClassification.filler),
     DungeonItemData(ItemName.COMPASS1, "COMPASS1", ItemClassification.filler),
     DungeonItemData(ItemName.COMPASS2, "COMPASS2", ItemClassification.filler),
     DungeonItemData(ItemName.COMPASS3, "COMPASS3", ItemClassification.filler),
@@ -262,7 +257,6 @@ links_awakening_items = [
     DungeonItemData(ItemName.COMPASS7, "COMPASS7", ItemClassification.filler),
     DungeonItemData(ItemName.COMPASS8, "COMPASS8", ItemClassification.filler),
     DungeonItemData(ItemName.COMPASS9, "COMPASS9", ItemClassification.filler),
-    DungeonItemData(ItemName.STONE_BEAK, "STONE_BEAK", ItemClassification.filler),
     DungeonItemData(ItemName.STONE_BEAK1, "STONE_BEAK1", ItemClassification.filler),
     DungeonItemData(ItemName.STONE_BEAK2, "STONE_BEAK2", ItemClassification.filler),
     DungeonItemData(ItemName.STONE_BEAK3, "STONE_BEAK3", ItemClassification.filler),
@@ -297,7 +291,6 @@ links_awakening_items = [
     TradeItemData(ItemName.TRADING_ITEM_NECKLACE, "TRADING_ITEM_NECKLACE", trade_item_prog, "Fisher (Martha's Bay)"),
     TradeItemData(ItemName.TRADING_ITEM_SCALE, "TRADING_ITEM_SCALE", trade_item_prog, "Mermaid (Martha's Bay)"),
     TradeItemData(ItemName.TRADING_ITEM_MAGNIFYING_GLASS, "TRADING_ITEM_MAGNIFYING_GLASS", trade_item_prog, "Mermaid Statue (Martha's Bay)"),
-    ItemData(ItemName.PIECE_OF_POWER, "PIECE_OF_POWER", ItemClassification.filler),
 ]
 
 ladxr_item_to_la_item_name = {
