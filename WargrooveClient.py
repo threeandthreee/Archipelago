@@ -214,11 +214,17 @@ class WargrooveContext(CommonContext):
     def run_gui(self):
         """Import kivy UI system and start running it as self.ui_task."""
         from kvui import GameManager, HoverBehavior, ServerToolTip
-        from kivymd.uix.tab import MDTabsItem, MDTabsItemText
+        from kivy.uix.tabbedpanel import TabbedPanelItem
         from kivy.lang import Builder
+        from kivy.uix.button import Button
         from kivy.uix.togglebutton import ToggleButton
         from kivy.uix.boxlayout import BoxLayout
+        from kivy.uix.gridlayout import GridLayout
+        from kivy.uix.image import AsyncImage, Image
+        from kivy.uix.stacklayout import StackLayout
         from kivy.uix.label import Label
+        from kivy.properties import ColorProperty
+        from kivy.uix.image import Image
         import pkgutil
 
         class TrackerLayout(BoxLayout):

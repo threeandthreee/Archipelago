@@ -16,8 +16,17 @@ class MessengerAccessibility(ItemsAccessibility):
 
 class PortalPlando(PlandoConnections):
     """
-    Plando connections to be used with portal shuffle.
-    Documentation on using this can be found in The Messenger plando guide.
+    Plando connections to be used with portal shuffle. Direction is ignored.
+    List of valid connections can be found here: https://github.com/ArchipelagoMW/Archipelago/blob/main/worlds/messenger/portals.py#L12.
+    The entering Portal should *not* have "Portal" appended.
+    For the exits, those in checkpoints and shops should just be the name of the spot, while portals should have " Portal" at the end.
+    Example:
+    - entrance: Riviere Turquoise
+      exit: Wingsuit
+    - entrance: Sunken Shrine
+      exit: Sunny Day
+    - entrance: Searing Crags
+      exit: Glacial Peak Portal
     """
     display_name = "Portal Plando Connections"
     portals = [f"{portal} Portal" for portal in PORTALS]
@@ -31,7 +40,14 @@ class PortalPlando(PlandoConnections):
 class TransitionPlando(PlandoConnections):
     """
     Plando connections to be used with transition shuffle.
-    Documentation on using this can be found in The Messenger plando guide.
+    List of valid connections can be found at https://github.com/ArchipelagoMW/Archipelago/blob/main/worlds/messenger/connections.py#L641.
+    Dictionary keys (left) are entrances and values (right) are exits. If transition shuffle is on coupled all plando
+    connections will be coupled. If on decoupled, "entrance" and "exit" will be treated the same, simply making the
+    plando connection one-way from entrance to exit.
+    Example:
+    - entrance: Searing Crags - Top
+      exit: Dark Cave - Right
+      direction: both
     """
     display_name = "Transition Plando Connections"
     entrances = frozenset(RANDOMIZED_CONNECTIONS.keys())
@@ -131,9 +147,7 @@ class MusicBox(DefaultOnToggle):
 
 
 class NotesNeeded(Range):
-    """
-    How many notes need to be found in order to access the Music Box. 6 are always needed to enter, so this places the others in your start inventory.
-    """
+    """How many notes are needed to access the Music Box."""
     display_name = "Notes Needed"
     range_start = 1
     range_end = 6

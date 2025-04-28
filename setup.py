@@ -629,13 +629,12 @@ cx_Freeze.setup(
     ext_modules=cythonize("_speedups.pyx"),
     options={
         "build_exe": {
-            "packages": ["worlds", "kivy", "cymem", "websockets", "kivymd"],
+            "packages": ["worlds", "kivy", "cymem", "websockets"],
             "includes": [],
             "excludes": ["numpy", "Cython", "PySide2", "PIL",
-                         "pandas"],
-            "zip_includes": [],
+                         "pandas", "zstandard"],
             "zip_include_packages": ["*"],
-            "zip_exclude_packages": ["worlds", "sc2", "kivymd"],
+            "zip_exclude_packages": ["worlds", "sc2"],
             "include_files": [],  # broken in cx 6.14.0, we use more special sauce now
             "include_msvcr": False,
             "replace_paths": ["*."],

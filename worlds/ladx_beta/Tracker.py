@@ -194,6 +194,12 @@ class MagpieBridge:
                and "entrance_mapping" in self.slot_data \
                and any([k != v for k, v in self.slot_data["entrance_mapping"].items()])
 
+    def use_entrance_tracker(self):
+        return "entrances" in self.features \
+               and self.slot_data \
+               and "entrance_mapping" in self.slot_data \
+               and any([k != v for k, v in self.slot_data["entrance_mapping"].items()])
+
     async def handler(self, websocket):
         self.ws = websocket
         while True:

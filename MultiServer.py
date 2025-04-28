@@ -66,13 +66,9 @@ def pop_from_container(container, value):
     return container
 
 
-def update_container_unique(container, entries):
-    if isinstance(container, list):
-        existing_container_as_set = set(container)
-        container.extend([entry for entry in entries if entry not in existing_container_as_set])
-    else:
-        container.update(entries)
-    return container
+def update_dict(dictionary, entries):
+    dictionary.update(entries)
+    return dictionary
 
 
 def queue_gc():
@@ -113,7 +109,7 @@ modify_functions = {
     # lists/dicts:
     "remove": remove_from_list,
     "pop": pop_from_container,
-    "update": update_container_unique,
+    "update": update_dict,
 }
 
 
@@ -2041,7 +2037,7 @@ async def process_client_cmd(ctx: Context, client: Client, args: dict):
                 value = func(value, operation["value"])
             ctx.stored_data[args["key"]] = args["value"] = value
             targets = set(ctx.stored_data_notification_clients[args["key"]])
-            if args.get("want_reply", False):
+            if args.get("want_reply", True):
                 targets.add(client)
             if targets:
                 ctx.broadcast(targets, [args])

@@ -8,7 +8,6 @@ from .fishing_logic import FishingLogicMixin
 from .has_logic import HasLogicMixin
 from .quest_logic import QuestLogicMixin
 from .received_logic import ReceivedLogicMixin
-from .region_logic import RegionLogicMixin
 from .relationship_logic import RelationshipLogicMixin
 from .season_logic import SeasonLogicMixin
 from .skill_logic import SkillLogicMixin
@@ -17,7 +16,7 @@ from .tool_logic import ToolLogicMixin
 from .walnut_logic import WalnutLogicMixin
 from ..data.game_item import Requirement
 from ..data.requirement import ToolRequirement, BookRequirement, SkillRequirement, SeasonRequirement, YearRequirement, CombatRequirement, QuestRequirement, \
-    RelationshipRequirement, FishingRequirement, WalnutRequirement, RegionRequirement
+    RelationshipRequirement, FishingRequirement, WalnutRequirement
 
 
 class RequirementLogicMixin(BaseLogicMixin):
@@ -27,7 +26,7 @@ class RequirementLogicMixin(BaseLogicMixin):
 
 
 class RequirementLogic(BaseLogic[Union[RequirementLogicMixin, HasLogicMixin, ReceivedLogicMixin, ToolLogicMixin, SkillLogicMixin, BookLogicMixin,
-SeasonLogicMixin, TimeLogicMixin, CombatLogicMixin, QuestLogicMixin, RelationshipLogicMixin, FishingLogicMixin, WalnutLogicMixin, RegionLogicMixin]]):
+SeasonLogicMixin, TimeLogicMixin, CombatLogicMixin, QuestLogicMixin, RelationshipLogicMixin, FishingLogicMixin, WalnutLogicMixin]]):
 
     def meet_all_requirements(self, requirements: Iterable[Requirement]):
         if not requirements:
@@ -45,10 +44,6 @@ SeasonLogicMixin, TimeLogicMixin, CombatLogicMixin, QuestLogicMixin, Relationshi
     @meet_requirement.register
     def _(self, requirement: SkillRequirement):
         return self.logic.skill.has_level(requirement.skill, requirement.level)
-
-    @meet_requirement.register
-    def _(self, requirement: RegionRequirement):
-        return self.logic.region.can_reach(requirement.region)
 
     @meet_requirement.register
     def _(self, requirement: BookRequirement):
@@ -81,3 +76,5 @@ SeasonLogicMixin, TimeLogicMixin, CombatLogicMixin, QuestLogicMixin, Relationshi
     @meet_requirement.register
     def _(self, requirement: FishingRequirement):
         return self.logic.fishing.can_fish_at(requirement.region)
+
+

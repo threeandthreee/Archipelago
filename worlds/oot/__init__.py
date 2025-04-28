@@ -130,7 +130,6 @@ class OOTWeb(WebWorld):
 
     tutorials = [setup, setup_fr, setup_de]
     option_groups = oot_option_groups
-    game_info_languages = ["en", "de"]
 
 
 class OOTWorld(World):
