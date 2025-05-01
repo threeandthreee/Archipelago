@@ -1,14 +1,15 @@
-import settings
 import worlds.Files
 import hashlib
 import Utils
 import os
+from . import LinksAwakeningWorld
+from . import Common
 LADX_HASH = "07c211479386825042efb4ad31bb525f"
 
 class LADXDeltaPatch(worlds.Files.APDeltaPatch):
     hash = LADX_HASH
-    game = "Links Awakening DX"
-    patch_file_ending = ".apladx"
+    game = Common.LINKS_AWAKENING
+    patch_file_ending = Common.SUFFIX
     result_file_ending: str = ".gbc"
 
     @classmethod
@@ -32,9 +33,8 @@ def get_base_rom_bytes(file_name: str = "") -> bytes:
 
 
 def get_base_rom_path(file_name: str = "") -> str:
-    options = settings.get_settings()
     if not file_name:
-        file_name = options["ladx_options"]["rom_file"]
+        file_name = LinksAwakeningWorld.settings.rom_file
     if not os.path.exists(file_name):
         file_name = Utils.user_path(file_name)
     return file_name
