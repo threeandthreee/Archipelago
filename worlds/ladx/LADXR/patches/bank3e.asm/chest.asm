@@ -41,7 +41,7 @@ GiveItemFromChestMultiworld:
     ld   hl, $0055
     cp   [hl]
     ret nz
-    
+
 GiveItemFromChest:
     ldh  a, [$F1] ; Load active sprite variant
 
@@ -977,6 +977,45 @@ RenderItemForRoom:
     ld   a, [hl]
     ldh  [$F1], a
     jp   RenderChestItem
+
+HandleSeashellMansionItem:
+    ld   a, b
+    cp   $05 ; check if modified seashell count is 5
+    jr   nz, .checkSecond
+    ld   a, [$7E30]
+    jr   .giveItem
+.checkSecond:
+    cp   $10
+    ret  nz
+    ld   a, [$7E31]
+.giveItem:
+    ldh  [$F1], a
+    push bc
+    call ItemMessage
+    call GiveItemFromChest
+    ; For player convenience, check if another reward is available
+    pop  af
+    cp   $05
+    jr   z, .check10
+.check20:
+    ld   a, [wSeashellsCount]
+    cp   $20
+    jr   nc, .resetMansionState
+    ret
+.check10:
+    ld   a, [wSeashellsCount]
+    cp   $10
+    ret  c
+.resetMansionState:
+    ; For safety, make sure we have the expected entity and state
+    ld   a, [$C3A0]
+    cp   $CF
+    ret  nz
+    ld   a, [$C290]
+    sub  $07
+    ret  nz
+    ld   [$C290], a
+    ret
 
 ; Increase the amount of checks we completed, unless we are on the multichest room.
 IncreaseCheckCounter:
