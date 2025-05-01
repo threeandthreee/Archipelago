@@ -27,7 +27,7 @@ from CommonClient import (CommonContext, get_base_parser, gui_enabled, logger,
                           server_loop)
 from NetUtils import ClientStatus
 from worlds.ladx import LinksAwakeningWorld
-from worlds.ladx.Common import BASE_ID as LABaseID
+from worlds.ladx import Common
 from worlds.ladx.GpsTracker import GpsTracker
 from worlds.ladx.TrackerConsts import storage_key
 from worlds.ladx.ItemTracker import ItemTracker
@@ -411,7 +411,7 @@ class LinksAwakeningClient():
             time.sleep(0.1)
             status = (await self.gameboy.async_read_memory_safe(LAClientConstants.wLinkStatusBits))[0]
 
-        item_id -= LABaseID
+        item_id -= Common.BASE_ID
         # The player name table only goes up to 100, so don't go past that
         # Even if it didn't, the remote player _index_ byte is just a byte, so 255 max
         if from_player > 100:
@@ -485,7 +485,7 @@ def create_task_log_exception(awaitable) -> asyncio.Task:
 
 class LinksAwakeningContext(CommonContext):
     tags = {"AP"}
-    game = "Links Awakening DX"
+    game = Common.LINKS_AWAKENING
     items_handling = 0b101
     want_slot_data = True
     la_task = None
@@ -523,7 +523,7 @@ class LinksAwakeningContext(CommonContext):
                 ("Client", "Archipelago"),
                 ("Tracker", "Tracker"),
             ]
-            base_title = "Archipelago Links Awakening DX Client"
+            base_title = f"Archipelago {Common.LINKS_AWAKENING} Client"
 
             def build(self):
                 b = super().build()
