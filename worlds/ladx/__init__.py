@@ -44,7 +44,7 @@ components.append(Component(f"{LINKS_AWAKENING} Client",
                             func=launch_client,
                             component_type=Type.CLIENT,
                             icon=LINKS_AWAKENING,
-                            file_identifier=SuffixIdentifier('.apladx')))
+                            file_identifier=SuffixIdentifier(SUFFIX)))
 
 icon_paths[LINKS_AWAKENING] = "ap:worlds.ladx/assets/MarinV-3_small.png"
 
