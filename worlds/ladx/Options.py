@@ -4,7 +4,7 @@ import os.path
 import typing
 import logging
 from Options import (Choice, Toggle, DefaultOnToggle, Range, FreeText, PerGameCommonOptions, OptionGroup, Removed,
-                     DeathLink)
+                     DeathLink, StartInventoryPool)
 from collections import defaultdict
 import Utils
 
@@ -623,6 +623,7 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     overworld: Overworld
     stabilize_item_pool: StabilizeItemPool
     death_link: DeathLink
+    start_inventory_from_pool: StartInventoryPool
 
     warp_improvements: Removed
     additional_warp_points: Removed
