@@ -40,7 +40,7 @@ components.append(Component(f"{LINKS_AWAKENING} Client",
                             icon=LINKS_AWAKENING,
                             file_identifier=SuffixIdentifier(SUFFIX)))
 
-icon_paths[LINKS_AWAKENING] = "ap:worlds.ladx/assets/MarinV-3_small.png"
+icon_paths[LINKS_AWAKENING] = f"ap:worlds.{DIRECTORY}/assets/MarinV-3_small.png"
 
 
 class LinksAwakeningSettings(settings.Group):
