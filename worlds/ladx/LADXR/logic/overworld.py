@@ -211,6 +211,8 @@ class World:
 
         seashell_mansion = Location()
         if options.goal != "seashells":
+            Location().add(SeashellMansionBonus(0)).connect(seashell_mansion, COUNT(SEASHELL, 5))
+            Location().add(SeashellMansionBonus(1)).connect(seashell_mansion, COUNT(SEASHELL, 10))
             Location().add(SeashellMansion(0x2E9)).connect(seashell_mansion, COUNT(SEASHELL, 20))
         else:
             seashell_mansion.add(DroppedKey(0x2E9))
