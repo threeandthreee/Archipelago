@@ -14,13 +14,17 @@ def gen_template(world, outdir):
     shutil.copy(os.path.join(target, world), outfile)
 
 
-def pack_apworld(src_dir, dst_dir, zip_name):
+def pack_apworld(src_world, dst_world, outdir):
+    src_dir = os.path.join('worlds', src_world)
+    dst_dir = 'tmp'
+    zip_name = os.path.join(outdir, f"{dst_world}.apworld")
+
     if os.path.exists(dst_dir):
         shutil.rmtree(dst_dir)
     if os.path.exists(zip_name):
         os.remove(zip_name)
 
-    shutil.copytree(src_dir, dst_dir)
+    shutil.copytree(src_dir, os.path.join(dst_dir, dst_world))
 
     # remove pycache
     for root, dirs, files in os.walk(dst_dir, topdown=False):
@@ -44,7 +48,7 @@ def pack_apworld(src_dir, dst_dir, zip_name):
 
 def main(args):
     gen_template("Links Awakening DX Beta.yaml", args.outdir)
-    pack_apworld(os.path.join('worlds', 'ladx'), 'ladx_beta', os.path.join(args.outdir, 'ladx_beta.apworld'))
+    pack_apworld('ladx', 'ladx_beta', args.outdir)
 
     connector = 'connector_ladx_bizhawk.lua'
     connector_file = os.path.join(args.outdir, connector)
