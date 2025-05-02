@@ -1,8 +1,8 @@
+import settings
 import worlds.Files
 import hashlib
 import Utils
 import os
-from . import LinksAwakeningWorld
 from . import Common
 LADX_HASH = "07c211479386825042efb4ad31bb525f"
 
@@ -33,8 +33,9 @@ def get_base_rom_bytes(file_name: str = "") -> bytes:
 
 
 def get_base_rom_path(file_name: str = "") -> str:
+    options = settings.get_settings()
     if not file_name:
-        file_name = LinksAwakeningWorld.settings.rom_file
+        file_name = options[f"{Common.DIRECTORY}_options"]["rom_file"]
     if not os.path.exists(file_name):
         file_name = Utils.user_path(file_name)
     return file_name
