@@ -47,18 +47,21 @@ def pack_apworld(src_world, dst_world, outdir):
     shutil.rmtree(dst_dir)
 
 def main(args):
-    gen_template("Links Awakening DX Beta.yaml", args.outdir)
     pack_apworld('ladx', 'ladx_beta', args.outdir)
 
-    connector = 'connector_ladx_bizhawk.lua'
-    connector_file = os.path.join(args.outdir, connector)
-    if os.path.exists(connector_file):
-        os.remove(connector_file)
-    shutil.copy(os.path.join('data', 'lua', connector), connector_file)
+    if args.include_artifacts:
+        gen_template("Links Awakening DX Beta.yaml", args.outdir)
+
+        connector = 'connector_ladx_bizhawk.lua'
+        connector_file = os.path.join(args.outdir, connector)
+        if os.path.exists(connector_file):
+            os.remove(connector_file)
+        shutil.copy(os.path.join('data', 'lua', connector), connector_file)
 
 
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
+    parser.add_argument("--apworld-only", dest="include_artifacts", action="store_false")
     parser.add_argument("outdir", default=".", help="Output directory")
     main(parser.parse_args())
