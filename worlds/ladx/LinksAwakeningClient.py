@@ -362,10 +362,9 @@ class LinksAwakeningClient():
     retroarch_port = None
     gameboy = None
 
-    def __init__(self, retroarch_address="127.0.0.1", retroarch_port=55355):
-        self.retroarch_address = retroarch_address
-        self.retroarch_port = retroarch_port
-        pass
+    def __init__(self, retroarch_host="127.0.0.1:55355"):
+        self.retroarch_address = retroarch_host.split(':')[0]
+        self.retroarch_port = int(retroarch_host.split(':')[1])
 
     stop_bizhawk_spam = False
     async def wait_for_retroarch_connection(self):
@@ -603,8 +602,8 @@ class LinksAwakeningContext(CommonContext):
     def slot_storage_key(self):
         return f"{self.slot_info[self.slot].name}_{storage_key}"
 
-    def __init__(self, server_address: str | None, password: str | None, magpie: bool) -> None:
-        self.client = LinksAwakeningClient()
+    def __init__(self, server_address: str | None, password: str | None, magpie: bool, retroarch_host: str | None) -> None:
+        self.client = LinksAwakeningClient(retroarch_host)
         self.slot_data = {}
 
         if magpie:
@@ -859,6 +858,7 @@ def launch(*launch_args):
         parser = get_base_parser(description="Link's Awakening Client.")
         parser.add_argument("--url", help="Archipelago connection url")
         parser.add_argument("--no-magpie", dest='magpie', default=True, action='store_false', help="Disable magpie bridge")
+        parser.add_argument("--retroarch-host", help="Retroarch connection address and port")
         parser.add_argument('diff_file', default="", type=str, nargs="?",
                             help='Path to a .apladx Archipelago Binary Patch file')
 
@@ -873,7 +873,7 @@ def launch(*launch_args):
             logger.info(f"wrote rom file to {rom_file}")
 
 
-        ctx = LinksAwakeningContext(args.connect, args.password, args.magpie)
+        ctx = LinksAwakeningContext(args.connect, args.password, args.magpie, args.retroarch_host)
 
         ctx.server_task = asyncio.create_task(server_loop(ctx), name="server loop")
 
