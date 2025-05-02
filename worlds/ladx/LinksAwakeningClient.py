@@ -851,7 +851,7 @@ def launch(*launch_args):
         parser = get_base_parser(description="Link's Awakening Client.")
         parser.add_argument("--url", help="Archipelago connection url")
         parser.add_argument("--no-magpie", dest='magpie', default=True, action='store_false', help="Disable magpie bridge")
-        parser.add_argument("--retroarch-host", help="Retroarch connection address and port")
+        parser.add_argument("--retroarch-host", default="127.0.0.1:55355", help="Retroarch connection address and port")
         parser.add_argument('diff_file', default="", type=str, nargs="?",
                             help='Path to a .apladx Archipelago Binary Patch file')
 
