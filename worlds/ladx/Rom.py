@@ -1,3 +1,4 @@
+import settings
 import worlds.Files
 import hashlib
 import Utils
@@ -9,7 +10,6 @@ import binascii
 import pickle
 import logging
 from typing import TYPE_CHECKING
-from . import LinksAwakeningWorld
 from . import Common
 from .LADXR import generator
 from .LADXR.main import get_parser
@@ -99,8 +99,9 @@ def get_base_rom_bytes(file_name: str = "") -> bytes:
 
 
 def get_base_rom_path(file_name: str = "") -> str:
+    options = settings.get_settings()
     if not file_name:
-        file_name = LinksAwakeningWorld.settings.rom_file
+        file_name = options[f"{Common.DIRECTORY}_options"]["rom_file"]
     if not os.path.exists(file_name):
         file_name = Utils.user_path(file_name)
     return file_name
@@ -112,8 +113,8 @@ def apply_overrides(patch_data: dict) -> None:
     if not option_overrides:
         return
     wrapped_overrides = {
-        "game": LINKS_AWAKENING,
-        LINKS_AWAKENING: option_overrides,
+        "game": Common.LINKS_AWAKENING,
+        Common.LINKS_AWAKENING: option_overrides,
     }
     from Generate import roll_settings
     try:
