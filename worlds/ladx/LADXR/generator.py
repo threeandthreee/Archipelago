@@ -215,7 +215,7 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
         patches.hardMode.oracleMode(rom)
     elif options["hard_mode"] == Options.HardMode.option_hero:
         patches.hardMode.heroMode(rom)
-    elif options["hard_mode"] == Options.HardMode.option_ohko:
+    elif options["hard_mode"] == Options.HardMode.option_one_hit_ko:
         patches.hardMode.oneHitKO(rom)
     #if ladxr_settings["superweapons"]:
     #    patches.weapons.patchSuperWeapons(rom)
@@ -258,21 +258,22 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
     random.seed(patch_data["seed"] + patch_data["player"])
     hints.addHints(rom, random, patch_data["hint_texts"])
 
-    if patch_data["world_setup"]["goal"] == "raft":
+    world_setup = patch_data["world_setup"]
+    if world_setup["goal"] == "raft":
         patches.goal.setRaftGoal(rom)
-    elif patch_data["world_setup"]["goal"] in ("bingo", "bingo-full"):
-        patches.bingo.setBingoGoal(rom, patch_data["world_setup"]["bingo_goals"], patch_data["world_setup"]["goal"])
-    elif patch_data["world_setup"]["goal"] == "seashells":
+    elif world_setup["goal"] in ("bingo", "bingo-full"):
+        patches.bingo.setBingoGoal(rom, world_setup["bingo_goals"], world_setup["goal"])
+    elif world_setup["goal"] == "seashells":
         patches.goal.setSeashellGoal(rom, 20)
-    elif isinstance(world_setup.goal, str) and world_setup.goal.startswith("="):
-        patches.goal.setSpecificInstruments(rom, [int(c) for c in world_setup.goal[1:]])
+    elif isinstance(world_setup["goal"], str) and world_setup["goal"].startswith("="):
+        patches.goal.setSpecificInstruments(rom, [int(c) for c in world_setup["goal"][1:]])
     else:
-        patches.goal.setRequiredInstrumentCount(rom, patch_data["world_setup"]["goal"])
+        patches.goal.setRequiredInstrumentCount(rom, world_setup["goal"])
 
     # Patch the generated logic into the rom
-    patches.chest.setMultiChest(rom, patch_data["world_setup"]["multichest"])
+    patches.chest.setMultiChest(rom, world_setup["multichest"])
     #if ladxr_settings["overworld"] not in {"dungeondive", "random"}:
-    patches.entrances.changeEntrances(rom, patch_data["world_setup"]["entrance_mapping"])
+    patches.entrances.changeEntrances(rom, world_setup["entrance_mapping"])
     for spot in item_list:
         if spot.item and spot.item.startswith("*"):
             spot.item = spot.item[1:]
@@ -283,8 +284,8 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
                 # There are only 101 player name slots (99 + "The Server" + "another world"), so don't use more than that
                 mw = 100
         spot.patch(rom, spot.item, multiworld=mw)
-    patches.enemies.changeBosses(rom, patch_data["world_setup"]["boss_mapping"])
-    patches.enemies.changeMiniBosses(rom, patch_data["world_setup"]["miniboss_mapping"])
+    patches.enemies.changeBosses(rom, world_setup["boss_mapping"])
+    patches.enemies.changeMiniBosses(rom, world_setup["miniboss_mapping"])
 
     if not args.romdebugmode:
         patches.core.addFrameCounter(rom, len(item_list))
