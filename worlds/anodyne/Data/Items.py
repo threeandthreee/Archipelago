@@ -93,6 +93,12 @@ early_secret_items = [
     "Heart",
 ]
 
+secret_items_secret_paths = [
+    "Glitch",
+    "Spam Can",
+    "Electric Monster"
+]
+
 small_key_item_count = {
     "Small Key (Apartment)": 4,
     "Small Key (Temple of the Seeing One)": 3,
@@ -100,13 +106,23 @@ small_key_item_count = {
     "Small Key (Mountain Cavern)": 4,
     "Small Key (Hotel)": 7,
     "Small Key (Red Cave)": 6,
-    "Small Key (Street)": 1,
+    "Small Key (Street)": 1
 }
 
 big_keys = [
     "Green Key",
     "Red Key",
     "Blue Key",
+]
+
+key_rings = [
+    "Key Ring (Apartment)",
+    "Key Ring (Temple of the Seeing One)",
+    "Key Ring (Circus)",
+    "Key Ring (Mountain Cavern)",
+    "Key Ring (Hotel)",
+    "Key Ring (Red Cave)",
+    "Key Ring (Street)"
 ]
 
 statue_items = [
@@ -117,6 +133,7 @@ statue_items = [
 
 non_secret_filler_items = [
     "Heal",
+    "Big Heal"
 ]
 
 nexus_gate_items = {
@@ -167,9 +184,10 @@ all_items = [
     "Progressive Red Cave",
     *statue_items,
     "Progressive Swap",
-    "Heal",
+    *non_secret_filler_items,
     *nexus_gate_items.keys(),
-    *trap_items
+    *trap_items,
+    *key_rings
 ]
 
 progression_items = [
@@ -187,6 +205,7 @@ progression_items = [
     *statue_items,
     "Progressive Swap",
     *nexus_gate_items.keys(),
+    *key_rings
 ]
 
 useful_items = [

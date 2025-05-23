@@ -1,7 +1,8 @@
 from dataclasses import dataclass
+from datetime import datetime
 
 from Options import Choice, DeathLink, DefaultOnToggle, PerGameCommonOptions, Range, Toggle, StartInventoryPool, \
-    ItemDict, ItemsAccessibility, ItemSet
+    ItemDict, ItemsAccessibility, ItemSet, Visibility
 from worlds.tloz_oos.data.Items import ITEMS_DATA
 
 
@@ -562,6 +563,21 @@ class OracleOfSeasonsStartingMapsCompasses(Toggle):
     include_in_patch = True
 
 
+class OracleOfSeasonsRandomizeAi(Toggle):
+    """
+    When enabled, enemy AI will be randomized.
+    This option is only visible on yamls generated in April.
+
+    ⚠ This option may cause logic issues or unbeatable seeds due to some untested combos caused
+    by the high number of possibilities. Some graphical oddities are also to be expected.
+    ⚠ Required golden beasts is 0 because you are not guaranteed to get an enemy
+    with a golden beast AI that would be counted for the old man
+    """
+    display_name = "Randomize AI"
+    include_in_patch = True
+    visibility = Visibility.all if (datetime.now().month == 4) else Visibility.none  # Only visible in april
+
+
 class OracleOfSeasonsRemoveItemsFromPool(ItemDict):
     """
     Removes specified amount of given items from the item pool, replacing them with random filler items.
@@ -572,12 +588,23 @@ class OracleOfSeasonsRemoveItemsFromPool(ItemDict):
     verify_item_name = False
 
 
-class OracleOfSeasonsIncludeSecretLocations(DefaultOnToggle):
+class OracleOfSeasonsIncludeSecretLocations(Toggle):
     """
     When enabled, add the linked game secrets to the list of locations
     """
     display_name = "Secret Locations"
     include_in_patch = True
+
+
+class OracleOfSeasonsMoveLink(Toggle):
+    """
+    When enabled, movement will be linked between games that enabled this option.
+    This option is only visible on yamls generated in April.
+
+    ⚠ This option may easily cause softlocks and may cause some issues. Some graphical oddities are also to be expected.
+    """
+    display_name = "Randomize AI"
+    visibility = Visibility.all if (datetime.now().month == 4) else Visibility.none  # Only visible in april
 
 
 @dataclass
@@ -643,6 +670,8 @@ class OracleOfSeasonsOptions(PerGameCommonOptions):
     quick_flute: OracleOfSeasonsQuickFlute
     rosa_quick_unlock: OracleOfSeasonsRosaQuickUnlock
     starting_maps_compasses: OracleOfSeasonsStartingMapsCompasses
+    randomize_ai: OracleOfSeasonsRandomizeAi
 
     remove_items_from_pool: OracleOfSeasonsRemoveItemsFromPool
     death_link: DeathLink
+    move_link: OracleOfSeasonsMoveLink

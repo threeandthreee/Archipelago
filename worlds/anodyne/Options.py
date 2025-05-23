@@ -1,15 +1,32 @@
+import sys
+import typing
 from dataclasses import dataclass
+from enum import Enum, IntEnum
+from typing import Type, List, Dict
 
-from Options import Choice, DeathLink, PerGameCommonOptions, StartInventoryPool, Toggle, Range, OptionSet, \
-    DefaultOnToggle
+from Options import (Choice, DeathLink, PerGameCommonOptions, StartInventoryPool, Toggle, Range, OptionSet, TextChoice,
+                     DefaultOnToggle, NamedRange)
 from .Data import Regions
+
+
+class SmallKeyMode(Choice):
+    """
+    Select how the small keys will be handled.
+    [Unlocked] The key-locked gates in each dungeon will open automatically.
+    [Small Keys] Small keys act like they do in the original game. Each opens one gate.
+    [Key Rings] Only one key ring item is required to open every key-locked gate in a dungeon.
+    """
+    display_name = "Small Key Mode"
+    option_unlocked = 0
+    option_small_keys = 1
+    option_key_rings = 2
+    default = 1
 
 
 class SmallKeyShuffle(Choice):
     """
-    Select how the small keys will be handled.
+    Select how the small keys or key rings will be randomized. Does nothing when small key mode is set to unlocked.
     [Vanilla] The small keys will be placed in the vanilla locations.
-    [Unlocked] The key-locked gates in each dungeon will open automatically.
     [Original Dungeon] The small keys will be shuffled within their own dungeons.
     [Own World] The small keys will be shuffled within your own world.
     [Any World] The small keys will be shuffled throughout the entire multiworld.
@@ -17,7 +34,6 @@ class SmallKeyShuffle(Choice):
     """
     display_name = "Shuffle Small Keys"
     option_vanilla = 0
-    option_unlocked = 1
     option_original_dungeon = 2
     option_own_world = 3
     option_any_world = 4
@@ -57,6 +73,15 @@ class HealthCicadaShuffle(Choice):
     option_any_world = 2
     option_different_world = 3
     default = 2
+
+
+class Dustsanity(Toggle):
+    """
+    Select if picking up dust counts as a check.
+    [Off] Dust behaves as in the normal game.
+    [On] Picking up dust counts as a check the first time it gets picked up by a broom. Dust will appear gold if it has yet to be picked up.
+    """
+    display_name = "Dustsanity"
 
 
 class RedCaveAccess(Choice):
@@ -145,31 +170,198 @@ class CustomNexusGatesOpen(OptionSet):
     Note that the Street Nexus Gate will always be open.
     """
     display_name = "Custom Open Nexus Gates"
-    valid_keys = Regions.regions_with_nexus_gate
+    valid_keys = set(Regions.regions_with_nexus_gate) - {"Happy","Blue"}
 
 
 class VictoryCondition(Choice):
     """
     Select the end goal of your game.
     [Defeat Briar] Reach the credits screen after defeating the Briar.
-    [All Cards] Open the 49 card gate in the top section of the Nexus. Postgame must be enabled for this.
+    [Final Gate] Open the final gate in the top section of the Nexus and interact with the console beyond it. Postgame must be enabled for this, else the goal will revert to Briar.
     """
     display_name = "Victory Condition"
     option_defeat_briar = 0
-    option_all_cards = 1
+    option_final_gate = 1
     default = 0
 
 
-class EndgameCardRequirement(Range):
+class FieldsSecretPaths(Toggle):
     """
-    Choose how many cards are required to open the big card gate in Terminal that leads to the endgame areas.
-    In vanilla, this is the 36 card gate.
-    Postgame must be enabled to choose a number above 37.
+    Toggles whether the secret paths towards three of the secret chests in Fields are in logic.
     """
-    display_name = "Endgame Card Requirement"
-    range_start = 0
-    range_end = 49
-    default = 36
+    display_name = "Fields Secret Paths"
+
+
+class GateType(IntEnum):
+    UNLOCKED = 0
+    CARDS = 1
+    GREEN = 2
+    RED = 3
+    BLUE = 4
+    BOSSES = 5
+
+
+class GateRequirements:
+    name: str
+
+    @classmethod
+    def typename(cls):
+        return cls.name.lower().replace(' ', '_') + '_gate'
+
+    @classmethod
+    def cardname(cls):
+        return cls.typename() + '_cards'
+
+    @classmethod
+    def bossname(cls):
+        return cls.typename() + '_bosses'
+
+    @classmethod
+    def typeoption(cls, options: 'AnodyneGameOptions'):
+        return typing.cast(cls.Gate, options.__getattribute__(cls.typename()))
+
+    @classmethod
+    def cardoption(cls, options: 'AnodyneGameOptions'):
+        return typing.cast(cls.GateCardReq, options.__getattribute__(cls.cardname()))
+
+    @classmethod
+    def bossoption(cls, options: 'AnodyneGameOptions'):
+        return typing.cast(cls.GateBossReq, options.__getattribute__(cls.bossname()))
+
+    @classmethod
+    def shorthand(cls, options: 'AnodyneGameOptions'):
+        t = cls.typeoption(options)
+        if t == GateType.CARDS:
+            num = cls.cardoption(options)
+            return f"cards_{num}"
+        elif t == GateType.BOSSES:
+            num = cls.bossoption(options)
+            return f"bosses_{num}"
+        return t.current_key
+
+    class Gate(Choice):
+        """
+        Select the type of the {0} gate. Note that the big key requirements will cause the gate to unlock if the Big Key Shuffle is set to unlocked.
+        [Unlocked] This gate starts unlocked.
+        [Cards] This gate opens with a number of cards specified in the {0} gate card requirement option.
+        [Green Key] This gate opens with the green key.
+        [Red Key] This gate opens with the red key.
+        [Blue Key] This gate opens with the blue key.
+        [Bosses] This gate has a configurable amount of bosses required to be defeated, specified in the {0} gate boss requirement option.
+        """
+        option_unlocked = GateType.UNLOCKED
+        option_cards = GateType.CARDS
+        option_green_key = GateType.GREEN
+        option_red_key = GateType.RED
+        option_blue_key = GateType.BLUE
+        option_bosses = GateType.BOSSES
+
+    class GateCardReq(Range):
+        """
+        Choose how many cards are required to open the {0} gate. Postgame must be enabled to choose a number above 37 for all but the nexus and final gates.
+        """
+        range_start = 1
+        range_end = 49
+
+    class GateBossReq(Range):
+        """
+        Choose how many bosses are required to open the {0} gate. Boss rush kills don't count for this.
+        """
+        range_start = 1
+        range_end = 8
+        default = 1
+
+
+gatereq_classes: List[Type[GateRequirements]] = []
+gate_lookup: Dict[str,Type[GateRequirements]] = dict()
+
+
+def gate_req(gate_type: GateType, cards: int = 1):
+    def decorator(cls: Type[GateRequirements]):
+        # Need to reset module from abc to this module, and put the classes into global scope to make pickle work on them
+        cls.Gate = type(f"{cls.__name__}_Type", (cls.Gate,), {"__doc__": cls.Gate.__doc__.format(cls.name), "default": int(gate_type), '__module__':__name__})
+
+        cls.GateCardReq = type(f"{cls.__name__}_CardReq", (cls.GateCardReq,),
+                               {"__doc__": cls.GateCardReq.__doc__.format(cls.name), "default": cards, '__module__':__name__})
+        cls.GateBossReq = type(f"{cls.__name__}_BossReq", (cls.GateBossReq,), {"__doc__": cls.GateBossReq.__doc__.format(cls.name), '__module__':__name__})
+        globals()[cls.Gate.__name__] = cls.Gate
+        globals()[cls.GateCardReq.__name__] = cls.GateCardReq
+        globals()[cls.GateBossReq.__name__] = cls.GateBossReq
+        gatereq_classes.append(cls)
+        gate_lookup[cls.typename()] = cls
+        return cls
+
+    return decorator
+
+
+def add_options(cls: Type[PerGameCommonOptions]):
+    for c in gatereq_classes:
+        cls.__annotations__.update({
+            c.typename(): c.Gate,
+            c.cardname(): c.GateCardReq,
+            c.bossname(): c.GateBossReq
+        })
+    return cls
+
+
+@gate_req(GateType.CARDS, 4)
+class OverworldGauntletGate(GateRequirements):
+    name = "Overworld Gauntlet"
+
+
+@gate_req(GateType.GREEN)
+class OverworldFieldsGate(GateRequirements):
+    name = "Overworld Fields"
+
+
+@gate_req(GateType.RED)
+class FieldsGate(GateRequirements):
+    name = "Fields Terminal"
+
+
+@gate_req(GateType.CARDS, 8)
+class BeachGauntletGate(GateRequirements):
+    name = "Beach Gauntlet"
+
+
+@gate_req(GateType.GREEN)
+class WindmillEntranceGate(GateRequirements):
+    name = "Windmill Entrance"
+
+
+@gate_req(GateType.RED)
+class WindmillMiddleGate(GateRequirements):
+    name = "Windmill Middle"
+
+
+@gate_req(GateType.BLUE)
+class WindmillTopGate(GateRequirements):
+    name = "Windmill Top"
+
+
+@gate_req(GateType.CARDS, 16)
+class SuburbGate(GateRequirements):
+    name = "Suburb"
+
+
+@gate_req(GateType.CARDS, 24)
+class CellGate(GateRequirements):
+    name = "Cell"
+
+
+@gate_req(GateType.CARDS, 36)
+class EndgameRequirement(GateRequirements):
+    name = "Terminal Endgame"
+
+
+@gate_req(GateType.CARDS, 47)
+class PostgameBlank(GateRequirements):
+    name = "Blank Postgame"
+
+
+@gate_req(GateType.CARDS, 49)
+class PostgameEnd(GateRequirements):
+    name = "Nexus North Final"
 
 
 class RandomizeColorPuzzle(DefaultOnToggle):
@@ -202,39 +394,67 @@ class IncludeForestBunnyChest(Toggle):
     display_name = "Include Forest Bunny Chest"
 
 
-class TrapsMode(Choice):
-    """
-    Determines how many traps will be generated.
-    [None] No traps will be added to the pool.
-    [Normal] A regular amount of traps will be added to the pool.
-    [Many] A big portion of the filler items will be traps.
-    [Chaos] All filler items are traps.
-    """
-    display_name = "Traps Enabled"
-    option_none = 0
-    option_low = 1
-    option_normal = 2
-    option_many = 3
-    option_chaos = 4
-    default = 1
+class TrapPercentage(Range):
+    """Determines how many traps will be generated."""
+    display_name = "Traps Percentage"
+    range_end = 100
+    default = 25
 
 
-class PlayerSprite(Choice):
+class CardAmount(NamedRange):
     """
-    Sets the player sprite.
+    Sets the amount of cards available in the item pool.
+    If there are not enough locations or card slots available when "Extra cards" is added, this number will automatically get lowered.
+    This setting will then be used as the actual maximum for card requirements of any big gates in logic.
+    Special values:
+    [Vanilla] 37 with postgame disabled, 49 otherwise.
+    [Auto] Maximum of all in-logic big card gates(postgame gates excluded if postgame is disabled).
     """
-    display_name = "Player Sprite"
-    option_young = 0
-    option_jplayer = 1
-    option_nova = 2
+    display_name = "Base cards in item pool"
+    option_vanilla = -1
+    option_auto = -2
+    range_start = 0
+    range_end = 49
+    default = option_vanilla
+    special_range_names = {
+        "vanilla": -1,
+        "auto": -2,
+    }
+
+
+class ExtraCardAmount(Range):
+    """
+    Sets the amount of extra cards in the item pool. Note that this setting combined with "Base cards in item pool"
+    will never exceed the maximum of 49 cards.
+    """
+    range_start = 0
+    range_end = 49
     default = 0
 
 
+class MitraHints(Choice):
+    """
+    Sets how Mitra's hints work. She gives one free hint and then gives additional hints after defeating bosses.
+    [None] Mitra does not give any hints.
+    [Vague] Mitra only tells you the location of a progression item, but not what it is.
+    [Precise] Mitra tells you the exact location of one of your progression items. This will be sent out as a hint.
+    """
+    display_name = "Mitra Hint Mode"
+    option_none = 0
+    option_vague = 1
+    option_precise = 2
+    default = 1
+
+
 @dataclass
+@add_options
 class AnodyneGameOptions(PerGameCommonOptions):
+    small_key_mode: SmallKeyMode
     small_key_shuffle: SmallKeyShuffle
     health_cicada_shuffle: HealthCicadaShuffle
     big_key_shuffle: BigKeyShuffle
+    fields_secret_paths: FieldsSecretPaths
+    dustsanity: Dustsanity
     red_cave_access: RedCaveAccess
     split_windmill: SplitWindmill
     start_broom: StartBroom
@@ -243,11 +463,12 @@ class AnodyneGameOptions(PerGameCommonOptions):
     random_nexus_gate_open_count: RandomNexusGateOpenCount
     custom_nexus_gates_open: CustomNexusGatesOpen
     victory_condition: VictoryCondition
-    endgame_card_requirement: EndgameCardRequirement
     randomize_color_puzzle: RandomizeColorPuzzle
     postgame_mode: PostgameMode
     forest_bunny_chest: IncludeForestBunnyChest
-    traps_mode: TrapsMode
+    traps_percentage: TrapPercentage
+    card_amount: CardAmount
+    extra_cards: ExtraCardAmount
+    #mitra_hints: MitraHints
     death_link: DeathLink
     start_inventory_from_pool: StartInventoryPool
-    player_sprite: PlayerSprite

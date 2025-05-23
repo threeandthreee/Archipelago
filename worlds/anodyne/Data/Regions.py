@@ -6,6 +6,7 @@ all_regions = [
     "Apartment floor 2 top left",
     "Apartment floor 3",
     "Beach",
+    "Beach Gauntlet",
     "Bedroom",
     "Bedroom drawer",
     "Bedroom exit",
@@ -29,6 +30,9 @@ all_regions = [
     "Drawer",
     "Drawer dark",
     "Fields",
+    "Fields Lake",
+    "Fields Past Gate",
+    "Fields North Secret Area",
     "Forest",
     "Go bottom",
     "Go top",
@@ -42,6 +46,7 @@ all_regions = [
     "Nexus bottom",
     "Nexus top",
     "Overworld",
+    "Overworld Gauntlet",
     "Overworld post windmill",
     "Red Cave top",
     "Red Cave left",
@@ -54,6 +59,7 @@ all_regions = [
     "Suburb",
     "Suburb card house",
     "Space",
+    "Space Gauntlet",
     "Street",
     "Terminal",
     "Windmill entrance",
@@ -131,6 +137,12 @@ endgame_nexus_gates = [
     "Happy",
 ]
 
+wrong_big_key_early_locked_nexus_gates = [
+    "Apartment floor 1",
+    "Bedroom exit",
+    "Suburb"
+]
+
 postgame_regions = [
     "Bedroom drawer",
     "Blank windmill",
@@ -140,6 +152,11 @@ postgame_regions = [
     "Drawer dark",
     "Boss Rush",
     "Nexus top",
+    "Space Gauntlet"
+]
+
+postgame_without_secret_paths = [
+    "Fields North Secret Area"
 ]
 
 post_temple_boss_regions = [

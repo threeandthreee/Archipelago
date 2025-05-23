@@ -78,30 +78,31 @@
 
 ##### SUBROSIA SEASIDE ########################################
 
-# Replace the check for GLOBALFLAG_STAR_ORE_FOUND by a check which tests treasure collection flags on all 4 seaside rooms
-08//starOreRooms: db $65,$66,$75,$76,$ff
-08//checkBeachItemObtained: |
-    ld de,starOreRooms
-    ld h,$c8
-    jp scanItemGetFlagsForMaps
+# Note for the future, INTERAC_DATING_ROSA_EVENT subid 2 is an interaction that follows the player until they leave the beach
+# (warp (can't find why) or walk to a room <60) and creates the treasure if the right tile is dug
 
 08/22a5/: |  # Replace "checkGlobalFlag" on GLOBALFLAG_STAR_ORE_FOUND
-    push de
-    call checkBeachItemObtained
-    pop de
-08/22fd/: |  # Replace "call checkTreasureObtained"
-    push de
-    call checkBeachItemObtained
-    pop de
+    call getThisRoomFlags
+    bit 5,a
+
+08/22fd/checkGotBeachCheckInThisRoom: |  # Replace "call checkTreasureObtained"
+    call getThisRoomFlags
+    bit 5,a
     db $20  ; Replace "jr c" by "jr nz"
 
 # Star Ore item doesn't get a subid in vanilla game, we need to optimize that procedure to be able to set one
-08/22ec/: |
+08/22e3/: |
+    jr z,$18
+    /copy s,$08,$22e4,$06
+    jr nz,$10
     push bc
     ld bc,locations.subrosiaSeaside
     call createTreasure
     pop bc
-    nop
+
+08/230F/: |
+    ld hl,$c866
+    set 5,(hl)
 
 
 ##### BOMB FLOWER ############################################

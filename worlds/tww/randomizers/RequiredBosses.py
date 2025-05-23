@@ -24,10 +24,10 @@ class RequiredBossesRandomizer:
         self.multiworld = world.multiworld
 
         self.required_boss_item_locations: list[str] = []
-        self.required_dungeons: list[str] = []
+        self.required_dungeons: set[str] = set()
         self.required_bosses: list[str] = []
         self.banned_locations: set[str] = set()
-        self.banned_dungeons: list[str] = []
+        self.banned_dungeons: set[str] = set()
         self.banned_bosses: list[str] = []
 
     def validate_boss_options(self, options: TWWOptions) -> None:
@@ -78,12 +78,12 @@ class RequiredBossesRandomizer:
         if len(remaining_dungeon_options) < num_remaining:
             raise OptionError(
                 "Could not select required bosses to satisfy options set by the user. "
-                "After removing the excluded dungeons, there are not enough to meet the desired number of required"
+                "After removing the excluded dungeons, there are not enough to meet the desired number of required "
                 "bosses."
             )
 
         # Finish selecting required bosses.
-        required_dungeons.update(self.multiworld.random.sample(list(remaining_dungeon_options), num_remaining))
+        required_dungeons.update(self.world.random.sample(sorted(remaining_dungeon_options), num_remaining))
 
         # Exclude locations that are not in the dungeon of a required boss.
         banned_dungeons = dungeon_names - required_dungeons
@@ -117,5 +117,5 @@ class RequiredBossesRandomizer:
                 self.required_bosses.append(boss_name)
             else:
                 self.banned_bosses.append(boss_name)
-        self.required_dungeons = list(required_dungeons)
-        self.banned_dungeons = list(banned_dungeons)
+        self.required_dungeons = required_dungeons
+        self.banned_dungeons = banned_dungeons

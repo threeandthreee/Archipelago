@@ -1,31 +1,31 @@
 from typing import Dict
-from .data import BASE_LOCATION_ID, LOCATIONS_DATA, BASE_ITEM_ID, ITEMS_DATA
+from .data import LOCATIONS_DATA, ITEMS_DATA
 
 
 def build_location_name_to_id_dict() -> Dict[str, int]:
     location_name_to_id: Dict[str, int] = {}
-    current_index = BASE_LOCATION_ID
-    for loc_name in LOCATIONS_DATA:
-        location_name_to_id[loc_name] = current_index
-        current_index += 1
+    for loc_name, location in LOCATIONS_DATA.items():
+        if "id" in location:
+            index = location["id"]
+        else:
+            index = location["flag_byte"] * 0x100 + (location["bit_mask"] if "bit_mask" in location else 0x20)
+        location_name_to_id[loc_name] = index
     return location_name_to_id
 
 
 def build_item_name_to_id_dict() -> Dict[str, int]:
     item_name_to_id: Dict[str, int] = {}
-    current_index = BASE_ITEM_ID
-    for item_name in ITEMS_DATA.keys():
-        item_name_to_id[item_name] = current_index
-        current_index += 1
+    for item_name, item in ITEMS_DATA.items():
+        index = item["id"] * 0x100 + (item["subid"] if "subid" in item else 0)
+        item_name_to_id[item_name] = index
     return item_name_to_id
 
 
 def build_item_id_to_name_dict() -> Dict[int, str]:
     item_id_to_name: Dict[int, str] = {}
-    current_index = BASE_ITEM_ID
-    for item_name in ITEMS_DATA.keys():
-        item_id_to_name[current_index] = item_name
-        current_index += 1
+    for item_name, item in ITEMS_DATA.items():
+        index = item["id"] * 0x100 + (item["subid"] if "subid" in item else 0)
+        item_id_to_name[index] = item_name
     return item_id_to_name
 
 

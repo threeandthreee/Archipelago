@@ -6,9 +6,14 @@ from schema import And, Schema
 from dataclasses import dataclass
 
 from Options import (
-    Choice, DeathLink, DefaultOnToggle, OptionDict, OptionGroup, StartInventoryPool, Toggle,
+    Choice, DeathLink, DefaultOnToggle, OptionDict, OptionGroup, OptionSet, StartInventoryPool, Toggle,
     PerGameCommonOptions, Visibility
 )
+
+from . import rom_data
+
+
+PIXEL_SIZE = 4
 
 
 class Goal(Choice):
@@ -21,6 +26,24 @@ class Goal(Choice):
     option_mecha_ridley = 0
     option_bosses = 1
     default = option_bosses
+
+
+# TODO: test Hard mode logic more
+class GameDifficulty(Choice):
+    """
+    Which in-game difficulty you will play on.
+    Normal: Easy and Normal will be available, and Hard will not.
+    Hard: Hard will be the only available difficulty.
+    Either: All difficulty options will be available.
+    Hard has a small effect on logic due to enemy placements. If Either is selected, logic will not require any tricks
+    that can't be done on all three difficulties. Either also forces logic to assume Hard Mode tank amounts, which may
+    slightly influence item placements.
+    """
+    display_name = "Game Difficulty"
+    option_normal = 1
+    option_hard = 2
+    option_either = 3
+    default = option_either
 
 
 class ChozodiaAccess(Choice):
@@ -56,19 +79,44 @@ class StartWithMaps(DefaultOnToggle):
     display_name = "Start with Maps"
 
 
+class BuffPowerBombDrops(Toggle):
+    """Make Power Bombs drop from enemies twice as often and give 2 units of ammo."""
+    display_name = "Buff Power Bomb Drops"
+
+
 class LogicDifficulty(Choice):
     """
-    Determines the general difficulty of the game's logic. On advanced difficulty, more niche techniques and game
-    knowledge may be required to collect items or progress, and you may be required to complete areas or bosses
-    with the minimum required resources. Examples of "tricks" this may put in logic include entering invisible tunnels,
-    jump extends, and Acid Worm skip.
+    Determines the difficulty of room traversal and game knowledge required by the game's logic.
+    Simple: For beginners to Zero Mission randomizer. Should be comfortable to anyone who has beaten the game. Includes
+    mostly routes similar to vanilla or otherwise intuitive to players that have not sequence broken the game.
+    Normal: For players with more familiarity with the game. Should be comfortable to anyone who has sequence broken or
+    skipped items. Includes developer-intended sequence breaks, unintuitive paths, and some tricks.
+    Advanced: For experts who want all their skills challenged. Should be comfortable to MZM Randomizer veterans and
+    speedrunners. Includes all tricks, very difficult shinespark chains, crumble jumps, Acid Worm Skip, etc.
 
-    Other specific tricks (such as difficult Shinesparks and horizontal IBJ) have individual difficulty settings that
-    this does not affect.
+    This setting does not affect the difficulty of non-suited runs through heated rooms or acid/lava.
+    Specific tricks can be included or excluded in other options.
     """
     display_name = "Logic Difficulty"
-    option_normal = 0
-    option_advanced = 1
+    option_simple = 0
+    option_normal = 1
+    option_advanced = 2
+
+
+class CombatLogicDifficulty(Choice):
+    """
+    Determines the difficulty of combat required by the game's logic.
+    Relaxed: Requires the player have an ample amount of resources to defeat bosses and traverse areas. Should be
+    comfortable to anyone who has beaten the game. Bosses will not be a problem.
+    Normal: Requires the player have enough resources to defeat bosses and traverse areas with some wiggle room.
+    Bosses may be somewhat challenging.
+    Minimal: Requires only the minimum amount of resources to complete the game. You may have to fight bosses like in
+    a low% run or find progression items deep in late-game areas with low energy.
+    """
+    display_name = "Combat Logic Difficulty"
+    option_relaxed = 0
+    option_normal = 1
+    option_minimal = 2
 
 
 class IBJInLogic(Choice):
@@ -85,8 +133,8 @@ class IBJInLogic(Choice):
     option_horizontal_and_vertical = 2
 
 
-# TODO: split into none/simple/advanced
-class HeatRunsAndLavaDives(Toggle):
+# TODO: split into none/comfortable/minimal
+class HazardRuns(Toggle):
     """
     Allows for traversing heated rooms and acid/lava dives without the appropriate suit(s) in logic.
 
@@ -94,7 +142,7 @@ class HeatRunsAndLavaDives(Toggle):
     run. When disabled, you will not be required to endure any environmental damage before receiving the appropriate
     mitigating suit.
     """
-    display_name = "Heat Runs/Lava Dives"
+    display_name = "Hazard Runs"
 
 
 class WalljumpsInLogic(DefaultOnToggle):
@@ -107,6 +155,7 @@ class WalljumpsInLogic(DefaultOnToggle):
     display_name = "Wall Jumps In Logic"
 
 
+# TODO: turn into a general trick include/exclude option
 class TrickyShinesparks(Toggle):
     """
     If enabled, logic will include long, difficult, and/or unintuitive Shinesparks as valid methods of collecting
@@ -118,13 +167,25 @@ class TrickyShinesparks(Toggle):
     display_name = "Tricky Shinesparks"
 
 
-class LayoutPatches(DefaultOnToggle):
+class LayoutPatches(Choice):
     """
     Slightly modify the layout of some rooms to reduce softlocks.
     NOTE: You can warp to the starting room from any save station or Samus' ship by holding L+R while selecting "No"
     when asked to save.
     """
     display_name = "Layout Patches"
+    option_false = 0
+    option_true = 1
+    option_choice = 2
+    default = option_true
+
+
+class SelectedPatches(OptionSet):
+    """
+    If Layout Patches is set to Choice, list of layout patches to apply.
+    """
+    display_name = "Selected Layout Patches"
+    valid_keys = rom_data.layout_patches
 
 
 class MorphBallPlacement(Choice):
@@ -147,6 +208,14 @@ class FastItemBanners(DefaultOnToggle):
     display_name = "Fast Item Banners"
 
 
+class SkipTourianOpeningCutscenes(DefaultOnToggle):
+    """
+    Skip the cutscenes that show the Tourian statue's eyes lighting up when you defeat Ridley and Kraid, as well as the
+    animation of the statue's mouths opening.
+    """
+    display_name = "Skip Tourian Opening Sequence"
+
+
 class DisplayNonLocalItems(Choice):
     """
     How to display items that will be sent to other players.
@@ -160,6 +229,20 @@ class DisplayNonLocalItems(Choice):
     option_match_game = 1
     option_match_series = 2
     default = option_match_series
+
+
+class ElevatorSpeed(Choice):
+    """
+    Speed up elevators.
+
+    Fast: Double the vanilla speed
+    Way Too Fast: Triple the vanilla speed
+    """
+    display_name = "Elevator Speed"
+    option_vanilla = PIXEL_SIZE * 2
+    option_fast = option_vanilla * 2
+    option_way_too_fast = option_vanilla * 3
+    default = option_fast
 
 
 class JunkFillWeights(OptionDict):
@@ -194,21 +277,28 @@ class RemoteItems(DefaultOnToggle):
 mzm_option_groups = [
     OptionGroup("World", [
         ChozodiaAccess,
-        SkipChozodiaStealth,
         UnknownItemsAlwaysUsable,
         LayoutPatches,
+        SelectedPatches,
         MorphBallPlacement,  # TODO: Shuffle settings group?
-        StartWithMaps,
     ]),
     OptionGroup("Logic", [
         LogicDifficulty,
+        CombatLogicDifficulty,
         IBJInLogic,
-        HeatRunsAndLavaDives,
+        HazardRuns,
         WalljumpsInLogic,
         TrickyShinesparks
     ]),
-    OptionGroup("Cosmetic", [
+    OptionGroup("Quality of Life", [
+        SkipChozodiaStealth,
+        BuffPowerBombDrops,
+        ElevatorSpeed,
+        StartWithMaps,
         FastItemBanners,
+        SkipTourianOpeningCutscenes,
+    ]),
+    OptionGroup("Cosmetic", [
         DisplayNonLocalItems,
     ]),
     OptionGroup("Item & Location Options", [
@@ -220,20 +310,26 @@ mzm_option_groups = [
 @dataclass
 class MZMOptions(PerGameCommonOptions):
     goal: Goal
+    game_difficulty: GameDifficulty
     remote_items: RemoteItems
     death_link: DeathLink
     chozodia_access: ChozodiaAccess
-    skip_chozodia_stealth: SkipChozodiaStealth
     unknown_items_always_usable: UnknownItemsAlwaysUsable
     layout_patches: LayoutPatches
+    selected_patches: SelectedPatches
     morph_ball: MorphBallPlacement
-    start_with_maps: StartWithMaps
     logic_difficulty: LogicDifficulty
+    combat_logic_difficulty: CombatLogicDifficulty
     ibj_in_logic: IBJInLogic
-    heatruns_lavadives: HeatRunsAndLavaDives
+    hazard_runs: HazardRuns
     walljumps_in_logic: WalljumpsInLogic
     tricky_shinesparks: TrickyShinesparks
+    skip_chozodia_stealth: SkipChozodiaStealth
+    buff_pb_drops: BuffPowerBombDrops
+    elevator_speed: ElevatorSpeed
+    start_with_maps: StartWithMaps
     fast_item_banners: FastItemBanners
+    skip_tourian_opening_cutscenes: SkipTourianOpeningCutscenes
     display_nonlocal_items: DisplayNonLocalItems
     start_inventory_from_pool: StartInventoryPool
     junk_fill_weights: JunkFillWeights

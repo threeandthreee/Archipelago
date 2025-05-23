@@ -1,5 +1,16 @@
 from Options import Toggle, Range, Choice, DeathLink, ItemSet, OptionSet, PerGameCommonOptions, OptionGroup, Removed
 from dataclasses import dataclass
+from .RiftCollections import RotNCollections
+
+class DLCMusicPacks(OptionSet):
+    """
+    Choose which DLC Packs will be included in the pool of chooseable songs.
+    Both individual songs and dlc pack names work.
+
+    Current DLC Pack Groups: "Celeste"
+    """
+    display_name = "DLC Packs"
+    valid_keys = [dlc for dlc in RotNCollections.DLC]
 
 class StartingSongs(Range):
     """The number of songs that will be unlocked from the start"""
@@ -113,6 +124,7 @@ class ExcludeSongs(ItemSet):
 
 @dataclass
 class RotNOptions(PerGameCommonOptions):
+    dlc_songs: DLCMusicPacks
     starting_song_count: StartingSongs
     additional_song_count: AdditionalSongs
     duplicate_song_percentage: DuplicateSongPercentage

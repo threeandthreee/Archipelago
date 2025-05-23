@@ -92,8 +92,9 @@ class OracleOfAgesWorld(World):
     game = "The Legend of Zelda - Oracle of Ages"
     options_dataclass = OracleOfAgesOptions
     options: OracleOfAgesOptions
-    required_client_version = (0, 4, 5)
+    required_client_version = (0, 5, 1)
     web = OracleOfAgesWeb()
+    topology_present = True
 
     location_name_to_id = build_location_name_to_id_dict()
     item_name_to_id = build_item_name_to_id_dict()

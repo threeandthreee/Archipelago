@@ -1,4 +1,4 @@
-VERSION = "9.0"
+VERSION = "9.3"
 ROM_HASH = "f2dc6c4e093e4f8c6cbea80e8dbd62cb"
 
 DIRECTION_UP = 0
@@ -186,7 +186,7 @@ SECRETS = [
     "Subrosia: Smith Secret",
     "Subrosia: Piratian Secret",
     "Subrosia: Temple Secret",
-    "Natzu: Deku Secret",
+    "Natzu Region: Deku Secret",
     "Goron Mountain: Biggoron Secret",
     "Horon Village: Mayor Secret"
 ]

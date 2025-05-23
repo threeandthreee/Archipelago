@@ -56,6 +56,8 @@ class OoSPatchExtensions(APPatchExtension):
         set_portal_warps(rom_data, patch_data)
         apply_miscellaneous_options(rom_data, patch_data)
         set_fixed_subrosia_seaside_location(rom_data, patch_data)
+        if patch_data["options"]["randomize_ai"]:
+            randomize_ai_for_april_fools(rom_data, patch_data["seed"] + caller.player)
 
         # Initialize random seed with the one used for generation + the player ID, so that cosmetic stuff set
         # to "random" always generate the same for successive patchings for a given slot

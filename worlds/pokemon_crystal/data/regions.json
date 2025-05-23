@@ -4,6 +4,14 @@
     "exits": [
       "REGION_AZALEA_TOWN"
     ],
+    "trainers": [
+      "TWINS_1",
+      "TWINS_4",
+      "BUG_CATCHER_5",
+      "BUG_CATCHER_6",
+      "BUG_CATCHER_7",
+      "BUGSY_1"
+    ],
     "locations": [
       "TM49_FURY_CUTTER",
       "HIVE_BADGE_FROM_BUGSY",
@@ -45,11 +53,18 @@
       "REGION_ILEX_FOREST_AZALEA_GATE",
       "REGION_ROUTE_33"
     ],
+    "trainers": [
+      "RIVAL_QUILAVA_1",
+      "RIVAL_BAYLEEF_1",
+      "RIVAL_CROCONAW_1"
+    ],
     "locations": [
       "AZALEA_TOWN_HIDDEN_FULL_HEAL",
       "FRUITTREE_AZALEA_TOWN"
     ],
-    "events": []
+    "events": [
+      "EVENT_RIVAL_AZALEA_TOWN"
+    ]
   },
   "REGION_BATTLE_TOWER_1F": {
     "johto": true,
@@ -107,6 +122,9 @@
     "exits": [
       "REGION_GOLDENROD_CITY"
     ],
+    "statics": [
+      "Eevee"
+    ],
     "locations": [],
     "events": []
   },
@@ -158,8 +176,12 @@
       "REGION_BLACKTHORN_CITY",
       "REGION_BLACKTHORN_GYM_2F"
     ],
+    "trainers": [
+      "COOLTRAINERM_3"
+    ],
     "locations": [
-      "ITEM_FROM_COOLTRAINERM_PAUL"
+      "ITEM_FROM_COOLTRAINERM_PAUL",
+      "ITEM_FROM_COOLTRAINERM_MIKE"
     ],
     "events": []
   },
@@ -169,8 +191,12 @@
     "locations": [
       "TM24_DRAGONBREATH",
       "RISING_BADGE_FROM_CLAIR",
-      "ITEM_FROM_COOLTRAINERM_MIKE",
       "ITEM_FROM_COOLTRAINERF_LOLA"
+    ],
+    "trainers": [
+      "COOLTRAINERM_5",
+      "COOLTRAINERF_4",
+      "CLAIR_1"
     ],
     "events": [
       "EVENT_BEAT_CLAIR",
@@ -182,6 +208,10 @@
     "exits": [
       "REGION_BLACKTHORN_GYM_1F",
       "REGION_BLACKTHORN_GYM_1F:STRENGTH"
+    ],
+    "trainers": [
+      "COOLTRAINERM_4",
+      "COOLTRAINERF_3"
     ],
     "locations": [
       "ITEM_FROM_COOLTRAINERM_CODY",
@@ -220,8 +250,13 @@
       "REGION_KOGAS_ROOM",
       "REGION_KARENS_ROOM"
     ],
+    "trainers": [
+      "BRUNO_1"
+    ],
     "locations": [],
-    "events": []
+    "events": [
+      "EVENT_BEAT_ELITE_4_BRUNO"
+    ]
   },
   "REGION_BURNED_TOWER_1F": {
     "johto": true,
@@ -229,17 +264,28 @@
       "REGION_ECRUTEAK_CITY",
       "REGION_BURNED_TOWER_B1F"
     ],
+    "trainers": [
+      "RIVAL_QUILAVA_2",
+      "RIVAL_BAYLEEF_2",
+      "RIVAL_CROCONAW_2"
+    ],
     "locations": [
       "BURNED_TOWER_1F_HIDDEN_ETHER",
       "BURNED_TOWER_1F_HIDDEN_ULTRA_BALL",
       "BURNED_TOWER_1F_HP_UP"
     ],
-    "events": []
+    "events": [
+      "EVENT_RIVAL_BURNED_TOWER"
+    ]
   },
   "REGION_BURNED_TOWER_B1F": {
     "johto": true,
     "exits": [
       "REGION_BURNED_TOWER_1F"
+    ],
+    "statics": [
+      "Raikou",
+      "Entei"
     ],
     "locations": [
       "BURNED_TOWER_B1F_TM_ENDURE"
@@ -253,7 +299,9 @@
     "exits": [
       "REGION_CELADON_CITY"
     ],
-    "locations": [],
+    "locations": [
+      "CELADON_CAFE_LEFTOVERS"
+    ],
     "events": []
   },
   "REGION_CELADON_CITY": {
@@ -354,6 +402,11 @@
     "exits": [
       "REGION_CELADON_CITY"
     ],
+    "statics": [
+      "Pikachu",
+      "Porygon",
+      "Larvitar"
+    ],
     "locations": [],
     "events": []
   },
@@ -361,6 +414,14 @@
     "johto": false,
     "exits": [
       "REGION_CELADON_CITY"
+    ],
+    "trainers": [
+      "LASS_9",
+      "PICNICKER_19",
+      "BEAUTY_14",
+      "TWINS_5",
+      "TWINS_6",
+      "ERIKA_1"
     ],
     "locations": [
       "TM19_GIGA_DRAIN",
@@ -380,7 +441,9 @@
       "REGION_CELADON_CITY",
       "REGION_CELADON_MANSION_2F"
     ],
-    "locations": [],
+    "locations": [
+      "CELADON_MANSION_1F_TEA"
+    ],
     "events": []
   },
   "REGION_CELADON_MANSION_2F": {
@@ -451,6 +514,12 @@
     "johto": false,
     "exits": [
       "REGION_CERULEAN_CITY"
+    ],
+    "trainers": [
+      "SWIMMERF_18",
+      "SWIMMERF_19",
+      "SWIMMERM_21",
+      "MISTY_1"
     ],
     "locations": [
       "CERULEAN_GYM_MACHINE_PART",
@@ -525,11 +594,18 @@
       "REGION_ROUTE_30",
       "REGION_ROUTE_29"
     ],
+    "trainers": [
+      "RIVAL_CYNDAQUIL",
+      "RIVAL_CHIKORITA",
+      "RIVAL_TOTODILE"
+    ],
     "locations": [
       "MYSTIC_WATER_IN_CHERRYGROVE",
       "MAP_CARD"
     ],
-    "events": []
+    "events": [
+      "EVENT_RIVAL_CHERRYGROVE_CITY"
+    ]
   },
   "REGION_CHERRYGROVE_EVOLUTION_SPEECH_HOUSE": {
     "johto": true,
@@ -576,18 +652,28 @@
       "REGION_POKE_SEERS_HOUSE",
       "REGION_ROUTE_41"
     ],
+    "trainers": [
+      "MYSTICALMAN_1"
+    ],
     "locations": [
       "CIANWOOD_CITY_HIDDEN_MAX_ETHER",
       "CIANWOOD_CITY_HIDDEN_REVIVE",
       "HM02_FLY"
     ],
-    "events": []
+    "events": [
+      "EVENT_FOUGHT_EUSINE"
+    ]
   },
   "REGION_CIANWOOD_GYM": {
     "johto": true,
     "exits": [
       "REGION_CIANWOOD_CITY",
       "REGION_CIANWOOD_GYM:STRENGTH"
+    ],
+    "trainers": [
+      "BLACKBELT_T_2",
+      "BLACKBELT_T_4",
+      "BLACKBELT_T_5"
     ],
     "locations": [
       "ITEM_FROM_BLACKBELT_YOSHI",
@@ -600,6 +686,10 @@
     "johto": true,
     "exits": [
       "REGION_CIANWOOD_GYM"
+    ],
+    "trainers": [
+      "BLACKBELT_T_7",
+      "CHUCK_1"
     ],
     "locations": [
       "TM01_DYNAMICPUNCH",
@@ -703,6 +793,13 @@
     "exits": [
       "REGION_ECRUTEAK_CITY"
     ],
+    "trainers": [
+      "KIMONO_GIRL_2",
+      "KIMONO_GIRL_3",
+      "KIMONO_GIRL_4",
+      "KIMONO_GIRL_5",
+      "KIMONO_GIRL_6"
+    ],
     "locations": [
       "HM03_SURF",
       "ITEM_FROM_KIMONO_GIRL_NAOKO",
@@ -711,7 +808,9 @@
       "ITEM_FROM_KIMONO_GIRL_KUNI",
       "ITEM_FROM_KIMONO_GIRL_MIKI"
     ],
-    "events": []
+    "events": [
+      "EVENT_BEAT_KIMONO_GIRL_MIKI"
+    ]
   },
   "REGION_DARK_CAVE_BLACKTHORN_ENTRANCE": {
     "johto": true,
@@ -761,7 +860,6 @@
     "johto": false,
     "exits": [
       "REGION_VERMILION_CITY",
-      "REGION_DIGLETTS_CAVE",
       "REGION_ROUTE_2:NORTHEAST"
     ],
     "locations": [
@@ -793,17 +891,27 @@
       "REGION_DRAGONS_DEN_1F",
       "REGION_DRAGONS_DEN_B1F:WATER"
     ],
+    "trainers": [
+      "COOLTRAINERM_20"
+    ],
     "locations": [
       "DRAGONS_DEN_B1F_CALCIUM",
       "ITEM_FROM_COOLTRAINERM_DARIN"
     ],
-    "events": []
+    "events": [
+      "EVENT_BEAT_COOLTRAINERM_DARIN"
+    ]
   },
   "REGION_DRAGONS_DEN_B1F:WATER": {
     "johto": true,
     "exits": [
       "REGION_DRAGONS_DEN_B1F",
       "REGION_DRAGONS_DEN_B1F:WHIRLPOOL"
+    ],
+    "trainers": [
+      "COOLTRAINERF_21",
+      "TWINS_9",
+      "TWINS_10"
     ],
     "locations": [
       "DRAGONS_DEN_B1F_HIDDEN_MAX_POTION",
@@ -861,6 +969,13 @@
     "exits": [
       "REGION_ECRUTEAK_CITY",
       "REGION_ECRUTEAK_GYM"
+    ],
+    "trainers": [
+      "SAGE_5",
+      "SAGE_6",
+      "MEDIUM_1",
+      "MEDIUM_2",
+      "MORTY_1"
     ],
     "locations": [
       "TM30_SHADOW_BALL",
@@ -960,6 +1075,15 @@
     "exits": [
       "REGION_FAST_SHIP_1F"
     ],
+    "trainers": [
+      "SAILOR_7",
+      "FISHER_12",
+      "BLACKBELT_T_9",
+      "SAILOR_8",
+      "TEACHER_3",
+      "SCHOOLBOY_11",
+      "SCHOOLBOY_12"
+    ],
     "locations": [
       "ITEM_FROM_SAILOR_GARRETT",
       "ITEM_FROM_FISHER_JONAH",
@@ -976,6 +1100,14 @@
     "exits": [
       "REGION_FAST_SHIP_1F"
     ],
+    "trainers": [
+      "SAILOR_9",
+      "COOLTRAINERM_16",
+      "COOLTRAINERF_13",
+      "POKEMANIAC_8",
+      "GENTLEMAN_2",
+      "BURGLAR_3"
+    ],
     "locations": [
       "ITEM_FROM_COOLTRAINERM_SEAN",
       "ITEM_FROM_COOLTRAINERF_CAROL",
@@ -983,12 +1115,20 @@
       "ITEM_FROM_GENTLEMAN_EDWARD",
       "ITEM_FROM_BURGLAR_COREY"
     ],
-    "events": []
+    "events": [
+      "EVENT_FAST_SHIP_LAZY_SAILOR"
+    ]
   },
   "REGION_FAST_SHIP_CABINS_SE_SSE_CAPTAINS_CABIN": {
     "johto": false,
     "exits": [
       "REGION_FAST_SHIP_1F"
+    ],
+    "trainers": [
+      "PSYCHIC_T_12",
+      "POKEFANM_8",
+      "POKEFANF_5",
+      "SUPER_NERD_9"
     ],
     "locations": [
       "METAL_COAT_FROM_GRANDPA_ON_SS_AQUA",
@@ -1003,6 +1143,11 @@
     "johto": false,
     "exits": [
       "REGION_FAST_SHIP_1F"
+    ],
+    "trainers": [
+      "BUG_CATCHER_9",
+      "BEAUTY_6",
+      "GUITARIST_1"
     ],
     "locations": [
       "ITEM_FROM_BUG_CATCHER_KEN",
@@ -1044,6 +1189,13 @@
     "johto": false,
     "exits": [
       "REGION_FUCHSIA_CITY"
+    ],
+    "trainers": [
+      "LASS_3",
+      "LASS_6",
+      "PICNICKER_5",
+      "CAMPER_5",
+      "JANINE_1"
     ],
     "locations": [
       "TM06_TOXIC",
@@ -1220,6 +1372,11 @@
     "exits": [
       "REGION_GOLDENROD_CITY"
     ],
+    "statics": [
+      "Abra",
+      "Cubone",
+      "Wobbuffet"
+    ],
     "locations": [],
     "events": []
   },
@@ -1227,6 +1384,13 @@
     "johto": true,
     "exits": [
       "REGION_GOLDENROD_CITY"
+    ],
+    "trainers": [
+      "LASS_1",
+      "LASS_2",
+      "BEAUTY_1",
+      "BEAUTY_2",
+      "WHITNEY_1"
     ],
     "locations": [
       "TM45_ATTRACT",
@@ -1291,6 +1455,12 @@
       "REGION_GOLDENROD_UNDERGROUND_SWITCH_ROOM_ENTRANCES",
       "REGION_GOLDENROD_CITY"
     ],
+    "trainers": [
+      "SUPER_NERD_2",
+      "SUPER_NERD_10",
+      "POKEMANIAC_11",
+      "POKEMANIAC_12"
+    ],
     "locations": [
       "GOLDENROD_UNDERGROUND_COIN_CASE",
       "GOLDENROD_UNDERGROUND_HIDDEN_ANTIDOTE",
@@ -1310,18 +1480,33 @@
       "REGION_GOLDENROD_UNDERGROUND_WAREHOUSE",
       "REGION_GOLDENROD_UNDERGROUND_SWITCH_ROOM_ENTRANCES:TAKEOVER"
     ],
+    "trainers": [
+      "RIVAL_MEGANIUM_1",
+      "RIVAL_TYPHLOSION_1",
+      "RIVAL_FERALIGATR_1"
+    ],
     "locations": [
       "GOLDENROD_UNDERGROUND_SWITCH_ROOM_ENTRANCES_FULL_HEAL",
       "GOLDENROD_UNDERGROUND_SWITCH_ROOM_ENTRANCES_HIDDEN_MAX_POTION",
       "GOLDENROD_UNDERGROUND_SWITCH_ROOM_ENTRANCES_HIDDEN_REVIVE",
       "GOLDENROD_UNDERGROUND_SWITCH_ROOM_ENTRANCES_SMOKE_BALL"
     ],
-    "events": []
+    "events": [
+      "EVENT_RIVAL_GOLDENROD_UNDERGROUND"
+    ]
   },
   "REGION_GOLDENROD_UNDERGROUND_SWITCH_ROOM_ENTRANCES:TAKEOVER": {
     "johto": true,
     "exits": [
       "REGION_GOLDENROD_UNDERGROUND_SWITCH_ROOM_ENTRANCES"
+    ],
+    "trainers": [
+      "GRUNTM_11",
+      "GRUNTM_25",
+      "GRUNTM_13",
+      "BURGLAR_1",
+      "BURGLAR_2",
+      "GRUNTF_3"
     ],
     "locations": [
       "ITEM_FROM_ROCKET_GRUNTM_11",
@@ -1331,7 +1516,9 @@
       "ITEM_FROM_ROCKET_GRUNTM_13",
       "ITEM_FROM_ROCKET_GRUNTF_3"
     ],
-    "events": []
+    "events": [
+      "EVENT_BEAT_GRUNTF_3"
+    ]
   },
   "REGION_GOLDENROD_UNDERGROUND_WAREHOUSE": {
     "johto": true,
@@ -1353,12 +1540,19 @@
     "exits": [
       "REGION_GOLDENROD_UNDERGROUND_WAREHOUSE"
     ],
+    "trainers": [
+      "GRUNTM_24",
+      "GRUNTM_14",
+      "GRUNTM_15"
+    ],
     "locations": [
       "ITEM_FROM_ROCKET_GRUNTM_24",
       "ITEM_FROM_ROCKET_GRUNTM_14",
       "ITEM_FROM_ROCKET_GRUNTM_15"
     ],
-    "events": []
+    "events": [
+      "EVENT_BEAT_GRUNTM_24"
+    ]
   },
   "REGION_GUIDE_GENTS_HOUSE": {
     "johto": true,
@@ -1476,6 +1670,9 @@
       "REGION_ROUTE_34_ILEX_FOREST_GATE",
       "REGION_ILEX_FOREST:SOUTH"
     ],
+    "trainers": [
+      "BUG_CATCHER_19"
+    ],
     "locations": [
       "ILEX_FOREST_ANTIDOTE",
       "ILEX_FOREST_ETHER",
@@ -1493,6 +1690,9 @@
     "exits": [
       "REGION_ILEX_FOREST:NORTH",
       "REGION_ILEX_FOREST_AZALEA_GATE"
+    ],
+    "statics": [
+      "Celebi"
     ],
     "locations": [
       "HM01_CUT",
@@ -1516,6 +1716,11 @@
       "REGION_POKECENTER_2F",
       "REGION_WILLS_ROOM"
     ],
+    "trainers": [
+      "RIVAL_MEGANIUM_4",
+      "RIVAL_TYPHLOSION_4",
+      "RIVAL_FERALIGATR_4"
+    ],
     "locations": [],
     "events": []
   },
@@ -1525,8 +1730,13 @@
       "REGION_BRUNOS_ROOM",
       "REGION_LANCES_ROOM"
     ],
+    "trainers": [
+      "KAREN_1"
+    ],
     "locations": [],
-    "events": []
+    "events": [
+      "EVENT_BEAT_ELITE_4_KAREN"
+    ]
   },
   "REGION_KOGAS_ROOM": {
     "johto": true,
@@ -1534,8 +1744,13 @@
       "REGION_WILLS_ROOM",
       "REGION_BRUNOS_ROOM"
     ],
+    "trainers": [
+      "KOGA_1"
+    ],
     "locations": [],
-    "events": []
+    "events": [
+      "EVENT_BEAT_ELITE_4_KOGA"
+    ]
   },
   "REGION_KURTS_HOUSE": {
     "johto": true,
@@ -1555,6 +1770,11 @@
       "REGION_LAKE_OF_RAGE_MAGIKARP_HOUSE",
       "REGION_LAKE_OF_RAGE:WATER"
     ],
+    "trainers": [
+      "FISHER_8",
+      "FISHER_9",
+      "COOLTRAINERF_2"
+    ],
     "locations": [
       "LAKE_OF_RAGE_HIDDEN_FULL_RESTORE",
       "LAKE_OF_RAGE_HIDDEN_MAX_POTION",
@@ -1569,6 +1789,9 @@
     "exits": [
       "REGION_LAKE_OF_RAGE"
     ],
+    "statics": [
+      "RedGyarados"
+    ],
     "locations": [
       "RED_SCALE"
     ],
@@ -1581,6 +1804,9 @@
     "exits": [
       "REGION_LAKE_OF_RAGE",
       "REGION_LAKE_OF_RAGE_HIDDEN_POWER_HOUSE"
+    ],
+    "trainers": [
+      "COOLTRAINERM_2"
     ],
     "locations": [
       "LAKE_OF_RAGE_ELIXER",
@@ -1614,6 +1840,9 @@
     "exits": [
       "REGION_KARENS_ROOM",
       "REGION_HALL_OF_FAME"
+    ],
+    "trainers": [
+      "CHAMPION_1"
     ],
     "locations": [],
     "events": []
@@ -1685,6 +1914,14 @@
     "exits": [
       "REGION_MAHOGANY_TOWN"
     ],
+    "trainers": [
+      "SKIER_1",
+      "SKIER_2",
+      "BOARDER_1",
+      "BOARDER_2",
+      "BOARDER_3",
+      "PRYCE_1"
+    ],
     "locations": [
       "TM16_ICY_WIND",
       "GLACIER_BADGE_FROM_PRYCE",
@@ -1743,6 +1980,9 @@
     "exits": [
       "REGION_CIANWOOD_CITY"
     ],
+    "statics": [
+      "Shuckie"
+    ],
     "locations": [],
     "events": []
   },
@@ -1767,11 +2007,17 @@
     "exits": [
       "REGION_ROUTE_3",
       "REGION_ROUTE_4",
-      "REGION_MOUNT_MOON",
       "REGION_MOUNT_MOON_SQUARE"
     ],
+    "trainers": [
+      "RIVAL_MEGANIUM_3",
+      "RIVAL_TYPHLOSION_3",
+      "RIVAL_FERALIGATR_3"
+    ],
     "locations": [],
-    "events": []
+    "events": [
+      "EVENT_BEAT_RIVAL_IN_MT_MOON"
+    ]
   },
   "REGION_MOUNT_MOON_GIFT_SHOP": {
     "johto": false,
@@ -1787,7 +2033,9 @@
       "REGION_MOUNT_MOON",
       "REGION_MOUNT_MOON_GIFT_SHOP"
     ],
-    "locations": [],
+    "locations": [
+      "MOUNT_MOON_SQUARE_HIDDEN_MOON_STONE"
+    ],
     "events": []
   },
   "REGION_MOUNT_MORTAR_1F_INSIDE:FRONT": {
@@ -1799,6 +2047,9 @@
       "REGION_MOUNT_MORTAR_3F_OUTSIDE:EAST",
       "REGION_MOUNT_MORTAR_1F_INSIDE:STRENGTH"
     ],
+    "trainers": [
+      "POKEMANIAC_15"
+    ],
     "locations": [
       "ITEM_FROM_POKEMANIAC_MILLER"
     ],
@@ -1808,6 +2059,9 @@
     "johto": true,
     "exits": [
       "REGION_MOUNT_MORTAR_1F_INSIDE:FRONT"
+    ],
+    "trainers": [
+      "SUPER_NERD_14"
     ],
     "locations": [
       "MOUNT_MORTAR_1F_INSIDE_ESCAPE_ROPE",
@@ -1899,6 +2153,9 @@
       "REGION_MOUNT_MORTAR_2F_OUTSIDE",
       "REGION_MOUNT_MORTAR_1F_INSIDE:BACK"
     ],
+    "trainers": [
+      "SUPER_NERD_13"
+    ],
     "locations": [
       "MOUNT_MORTAR_2F_INSIDE_DRAGON_SCALE",
       "MOUNT_MORTAR_2F_INSIDE_ELIXER",
@@ -1930,6 +2187,12 @@
     "exits": [
       "REGION_MOUNT_MORTAR_B1F",
       "REGION_MOUNT_MORTAR_1F_INSIDE:BACK"
+    ],
+    "trainers": [
+      "BLACKBELT_T_6"
+    ],
+    "statics": [
+      "Tyrogue"
     ],
     "locations": [
       "MOUNT_MORTAR_B1F_HIDDEN_MAX_REVIVE"
@@ -1980,6 +2243,12 @@
     "exits": [
       "REGION_ROUTE_36_NATIONAL_PARK_GATE",
       "REGION_ROUTE_35_NATIONAL_PARK_GATE"
+    ],
+    "trainers": [
+      "SCHOOLBOY_1",
+      "POKEFANM_1",
+      "POKEFANF_1",
+      "LASS_4"
     ],
     "locations": [
       "NATIONAL_PARK_HIDDEN_FULL_HEAL",
@@ -2058,6 +2327,9 @@
     "exits": [
       "REGION_OLIVINE_CITY"
     ],
+    "trainers": [
+      "JASMINE_1"
+    ],
     "locations": [
       "TM23_IRON_TAIL",
       "MINERAL_BADGE_FROM_JASMINE"
@@ -2089,6 +2361,10 @@
       "REGION_OLIVINE_LIGHTHOUSE_1F",
       "REGION_OLIVINE_LIGHTHOUSE_3F"
     ],
+    "trainers": [
+      "GENTLEMAN_5",
+      "SAILOR_2"
+    ],
     "locations": [
       "ITEM_FROM_GENTLEMAN_ALFRED",
       "ITEM_FROM_SAILOR_HUEY"
@@ -2100,6 +2376,11 @@
     "exits": [
       "REGION_OLIVINE_LIGHTHOUSE_4F",
       "REGION_OLIVINE_LIGHTHOUSE_2F"
+    ],
+    "trainers": [
+      "BIRD_KEEPER_4",
+      "GENTLEMAN_1",
+      "SAILOR_3"
     ],
     "locations": [
       "OLIVINE_LIGHTHOUSE_3F_ETHER",
@@ -2115,6 +2396,10 @@
       "REGION_OLIVINE_LIGHTHOUSE_3F",
       "REGION_OLIVINE_LIGHTHOUSE_5F"
     ],
+    "trainers": [
+      "LASS_5",
+      "SAILOR_4"
+    ],
     "locations": [
       "ITEM_FROM_LASS_CONNIE",
       "ITEM_FROM_SAILOR_KENT"
@@ -2127,11 +2412,17 @@
       "REGION_OLIVINE_LIGHTHOUSE_6F",
       "REGION_OLIVINE_LIGHTHOUSE_4F"
     ],
+    "trainers": [
+      "SAILOR_5",
+      "BIRD_KEEPER_6"
+    ],
     "locations": [
       "OLIVINE_LIGHTHOUSE_5F_RARE_CANDY",
       "OLIVINE_LIGHTHOUSE_5F_SUPER_REPEL",
       "OLIVINE_LIGHTHOUSE_5F_TM_SWAGGER",
-      "OLIVINE_LIGHTHOUSE_5F_HIDDEN_HYPER_POTION"
+      "OLIVINE_LIGHTHOUSE_5F_HIDDEN_HYPER_POTION",
+      "ITEM_FROM_SAILOR_ERNEST",
+      "ITEM_FROM_BIRD_KEEPER_DENIS"
     ],
     "events": []
   },
@@ -2141,9 +2432,7 @@
       "REGION_OLIVINE_LIGHTHOUSE_5F"
     ],
     "locations": [
-      "OLIVINE_LIGHTHOUSE_6F_SUPER_POTION",
-      "ITEM_FROM_BIRD_KEEPER_DENIS",
-      "ITEM_FROM_SAILOR_ERNEST"
+      "OLIVINE_LIGHTHOUSE_6F_SUPER_POTION"
     ],
     "events": [
       "EVENT_JASMINE_EXPLAINED_AMPHYS_SICKNESS",
@@ -2238,6 +2527,10 @@
     "johto": false,
     "exits": [
       "REGION_PEWTER_CITY"
+    ],
+    "trainers": [
+      "CAMPER_18",
+      "BROCK_1"
     ],
     "locations": [
       "BOULDER_BADGE_FROM_BROCK",
@@ -2367,6 +2660,9 @@
       "REGION_GOLDENROD_CITY",
       "REGION_RADIO_TOWER_2F"
     ],
+    "trainers": [
+      "GRUNTM_3"
+    ],
     "locations": [
       "RADIO_CARD",
       "ITEM_FROM_ROCKET_GRUNTM_3"
@@ -2380,6 +2676,12 @@
     "exits": [
       "REGION_RADIO_TOWER_3F:NOCARDKEY",
       "REGION_RADIO_TOWER_1F"
+    ],
+    "trainers": [
+      "GRUNTM_4",
+      "GRUNTM_5",
+      "GRUNTM_6",
+      "GRUNTF_2"
     ],
     "locations": [
       "BUENA_BLUE_CARD",
@@ -2397,6 +2699,11 @@
       "REGION_RADIO_TOWER_3F:CARDKEY",
       "REGION_RADIO_TOWER_4F:NOCARDKEY"
     ],
+    "trainers": [
+      "GRUNTM_8",
+      "GRUNTM_7",
+      "SCIENTIST_4"
+    ],
     "locations": [
       "SUNNY_DAY_FROM_RADIO_TOWER",
       "ITEM_FROM_ROCKET_GRUNTM_7",
@@ -2411,6 +2718,9 @@
       "REGION_RADIO_TOWER_3F:NOCARDKEY",
       "REGION_RADIO_TOWER_4F:CARDKEY"
     ],
+    "trainers": [
+      "GRUNTM_9"
+    ],
     "locations": [
       "ITEM_FROM_ROCKET_GRUNTM_9"
     ],
@@ -2421,6 +2731,10 @@
     "exits": [
       "REGION_RADIO_TOWER_5F:NOCARDKEY",
       "REGION_RADIO_TOWER_3F:NOCARDKEY"
+    ],
+    "trainers": [
+      "GRUNTM_10",
+      "SCIENTIST_5"
     ],
     "locations": [
       "ITEM_FROM_ROCKET_GRUNTM_10",
@@ -2434,6 +2748,10 @@
       "REGION_RADIO_TOWER_5F:CARDKEY",
       "REGION_RADIO_TOWER_3F:CARDKEY"
     ],
+    "trainers": [
+      "EXECUTIVEM_2",
+      "GRUNTF_4"
+    ],
     "locations": [
       "PINK_BOW_FROM_MARY",
       "ITEM_FROM_ROCKET_EXECUTIVEM_2",
@@ -2446,15 +2764,24 @@
     "exits": [
       "REGION_RADIO_TOWER_4F:NOCARDKEY"
     ],
+    "trainers": [
+      "EXECUTIVEM_3"
+    ],
     "locations": [
       "BEAT_ROCKET_EXECUTIVEM_3"
     ],
-    "events": []
+    "events": [
+      "EVENT_BEAT_ROCKET_EXECUTIVEM_3"
+    ]
   },
   "REGION_RADIO_TOWER_5F:CARDKEY": {
     "johto": true,
     "exits": [
       "REGION_RADIO_TOWER_4F:CARDKEY"
+    ],
+    "trainers": [
+      "EXECUTIVEF_1",
+      "EXECUTIVEM_1"
     ],
     "locations": [
       "RADIO_TOWER_5F_ULTRA_BALL",
@@ -2516,6 +2843,10 @@
       "REGION_VIRIDIAN_CITY",
       "REGION_PALLET_TOWN"
     ],
+    "trainers": [
+      "SCHOOLBOY_5",
+      "COOLTRAINERF_14"
+    ],
     "locations": [
       "ITEM_FROM_SCHOOLBOY_DANNY",
       "ITEM_FROM_COOLTRAINERF_QUINN",
@@ -2548,6 +2879,10 @@
       "REGION_LAVENDER_TOWN",
       "REGION_ROCK_TUNNEL_1F"
     ],
+    "trainers": [
+      "HIKER_17",
+      "POKEFANM_3"
+    ],
     "locations": [
       "ITEM_FROM_HIKER_JIM",
       "ITEM_FROM_POKEFANM_ROBERT"
@@ -2559,6 +2894,12 @@
     "exits": [
       "REGION_VERMILION_CITY",
       "REGION_ROUTE_12"
+    ],
+    "trainers": [
+      "YOUNGSTER_11",
+      "YOUNGSTER_12",
+      "PSYCHIC_T_3",
+      "PSYCHIC_T_4"
     ],
     "locations": [
       "ROUTE_11_HIDDEN_REVIVE",
@@ -2577,6 +2918,12 @@
       "REGION_ROUTE_13",
       "REGION_ROUTE_11",
       "REGION_ROUTE_12_SUPER_ROD_HOUSE"
+    ],
+    "trainers": [
+      "FISHER_4",
+      "FISHER_13",
+      "FISHER_14",
+      "FISHER_15"
     ],
     "locations": [
       "ROUTE_12_CALCIUM",
@@ -2605,6 +2952,13 @@
       "REGION_ROUTE_12",
       "REGION_ROUTE_14"
     ],
+    "trainers": [
+      "POKEFANM_12",
+      "POKEFANM_4",
+      "BIRD_KEEPER_15",
+      "BIRD_KEEPER_16",
+      "HIKER_16"
+    ],
     "locations": [
       "ROUTE_13_HIDDEN_CALCIUM",
       "ITEM_FROM_POKEFANM_ALEX",
@@ -2621,6 +2975,11 @@
       "REGION_ROUTE_13",
       "REGION_ROUTE_15"
     ],
+    "trainers": [
+      "POKEFANM_5",
+      "BIRD_KEEPER_9",
+      "POKEFANM_6"
+    ],
     "locations": [
       "ITEM_FROM_POKEFANM_CARTER",
       "ITEM_FROM_BIRD_KEEPER_ROY",
@@ -2633,6 +2992,14 @@
     "exits": [
       "REGION_ROUTE_14",
       "REGION_ROUTE_15_FUCHSIA_GATE"
+    ],
+    "trainers": [
+      "TEACHER_1",
+      "TEACHER_2",
+      "SCHOOLBOY_2",
+      "SCHOOLBOY_6",
+      "SCHOOLBOY_4",
+      "SCHOOLBOY_9"
     ],
     "locations": [
       "ROUTE_15_PP_UP",
@@ -2687,6 +3054,12 @@
       "REGION_ROUTE_16",
       "REGION_ROUTE_17_ROUTE_18_GATE"
     ],
+    "trainers": [
+      "BIKER_6",
+      "BIKER_7",
+      "BIKER_8",
+      "BIKER_9"
+    ],
     "locations": [
       "ROUTE_17_HIDDEN_MAX_ELIXER",
       "ROUTE_17_HIDDEN_MAX_ETHER",
@@ -2712,17 +3085,29 @@
       "REGION_FUCHSIA_CITY",
       "REGION_ROUTE_17_ROUTE_18_GATE"
     ],
+    "trainers": [
+      "BIRD_KEEPER_10",
+      "BIRD_KEEPER_11"
+    ],
     "locations": [
       "ITEM_FROM_BIRD_KEEPER_BORIS",
       "ITEM_FROM_BIRD_KEEPER_BOB"
     ],
-    "events": []
+    "events": [
+      "EVENT_BEAT_BIRD_KEEPER_BOB"
+    ]
   },
   "REGION_ROUTE_19": {
     "johto": false,
     "exits": [
       "REGION_ROUTE_20",
       "REGION_ROUTE_19_FUCHSIA_GATE"
+    ],
+    "trainers": [
+      "SWIMMERF_12",
+      "SWIMMERM_1",
+      "SWIMMERM_14",
+      "SWIMMERM_15"
     ],
     "locations": [
       "ITEM_FROM_SWIMMERF_DAWN",
@@ -2749,6 +3134,11 @@
       "REGION_ROUTE_2:NORTHEAST",
       "REGION_ROUTE_2:SOUTHEAST"
     ],
+    "trainers": [
+      "BUG_CATCHER_3",
+      "BUG_CATCHER_2",
+      "BUG_CATCHER_12"
+    ],
     "locations": [
       "ROUTE_2_DIRE_HIT",
       "ROUTE_2_HIDDEN_FULL_HEAL",
@@ -2756,7 +3146,10 @@
       "ROUTE_2_HIDDEN_MAX_ETHER",
       "ROUTE_2_HIDDEN_REVIVE",
       "ROUTE_2_MAX_POTION",
-      "FRUITTREE_ROUTE_2"
+      "FRUITTREE_ROUTE_2",
+      "ITEM_FROM_BUG_CATCHER_ED",
+      "ITEM_FROM_BUG_CATCHER_ROB",
+      "ITEM_FROM_BUG_CATCHER_DOUG"
     ],
     "events": []
   },
@@ -2799,10 +3192,7 @@
       "REGION_ROUTE_2:NORTHEAST"
     ],
     "locations": [
-      "NUGGET_FROM_GUY",
-      "ITEM_FROM_BUG_CATCHER_ROB",
-      "ITEM_FROM_BUG_CATCHER_DOUG",
-      "ITEM_FROM_BUG_CATCHER_ED"
+      "NUGGET_FROM_GUY"
     ],
     "events": []
   },
@@ -2812,6 +3202,11 @@
       "REGION_CINNABAR_ISLAND",
       "REGION_ROUTE_19",
       "REGION_SEAFOAM_GYM"
+    ],
+    "trainers": [
+      "SWIMMERF_14",
+      "SWIMMERF_15",
+      "SWIMMERM_17"
     ],
     "locations": [
       "ITEM_FROM_SWIMMERF_NICOLE",
@@ -2827,6 +3222,11 @@
     "exits": [
       "REGION_PALLET_TOWN",
       "REGION_CINNABAR_ISLAND"
+    ],
+    "trainers": [
+      "SWIMMERM_18",
+      "SWIMMERF_17",
+      "FISHER_3"
     ],
     "locations": [
       "ITEM_FROM_SWIMMERM_SETH",
@@ -2868,6 +3268,16 @@
       "REGION_ROUTE_24",
       "REGION_BILLS_HOUSE"
     ],
+    "trainers": [
+      "SCHOOLBOY_7",
+      "LASS_11",
+      "SCHOOLBOY_8",
+      "LASS_7",
+      "CAMPER_6",
+      "LASS_8",
+      "SUPER_NERD_8",
+      "COOLTRAINERM_17"
+    ],
     "locations": [
       "ROUTE_25_HIDDEN_POTION",
       "ROUTE_25_PROTEIN",
@@ -2880,7 +3290,9 @@
       "ITEM_FROM_LASS_SHANNON",
       "ITEM_FROM_SUPER_NERD_PAT"
     ],
-    "events": []
+    "events": [
+      "EVENT_BEAT_COOLTRAINERM_KEVIN"
+    ]
   },
   "REGION_ROUTE_26": {
     "johto": true,
@@ -2889,6 +3301,14 @@
       "REGION_VICTORY_ROAD_GATE",
       "REGION_ROUTE_26_HEAL_HOUSE",
       "REGION_DAY_OF_WEEK_SIBLINGS_HOUSE"
+    ],
+    "trainers": [
+      "COOLTRAINERM_9",
+      "COOLTRAINERM_10",
+      "COOLTRAINERF_8",
+      "COOLTRAINERF_9",
+      "PSYCHIC_T_9",
+      "FISHER_21"
     ],
     "locations": [
       "ROUTE_26_MAX_ELIXER",
@@ -2938,6 +3358,9 @@
       "REGION_ROUTE_27:WEST",
       "REGION_ROUTE_27:EAST"
     ],
+    "trainers": [
+      "COOLTRAINERF_11"
+    ],
     "locations": [
       "ITEM_FROM_COOLTRAINERF_MEGAN"
     ],
@@ -2949,6 +3372,12 @@
       "REGION_ROUTE_26",
       "REGION_ROUTE_27:CENTER",
       "REGION_ROUTE_27:EASTWHIRLPOOL"
+    ],
+    "trainers": [
+      "PSYCHIC_T_10",
+      "COOLTRAINERM_11",
+      "COOLTRAINERM_12",
+      "COOLTRAINERF_10"
     ],
     "locations": [
       "ITEM_FROM_PSYCHIC_GILBERT",
@@ -2962,6 +3391,9 @@
     "johto": true,
     "exits": [
       "REGION_ROUTE_27:EAST"
+    ],
+    "trainers": [
+      "BIRD_KEEPER_14"
     ],
     "locations": [
       "ROUTE_27_TM_SOLARBEAM",
@@ -3032,6 +3464,12 @@
       "REGION_ROUTE_4",
       "REGION_MOUNT_MOON"
     ],
+    "trainers": [
+      "FIREBREATHER_1",
+      "YOUNGSTER_9",
+      "YOUNGSTER_10",
+      "FIREBREATHER_4"
+    ],
     "locations": [
       "ITEM_FROM_FIREBREATHER_OTIS",
       "ITEM_FROM_YOUNGSTER_WARREN",
@@ -3047,6 +3485,11 @@
       "REGION_CHERRYGROVE_CITY",
       "REGION_ROUTE_30_BERRY_HOUSE",
       "REGION_MR_POKEMONS_HOUSE"
+    ],
+    "trainers": [
+      "YOUNGSTER_2",
+      "YOUNGSTER_1",
+      "BUG_CATCHER_1"
     ],
     "locations": [
       "ROUTE_30_ANTIDOTE",
@@ -3075,6 +3518,9 @@
       "REGION_ROUTE_30",
       "REGION_ROUTE_31_VIOLET_GATE",
       "REGION_DARK_CAVE_VIOLET_ENTRANCE"
+    ],
+    "trainers": [
+      "BUG_CATCHER_4"
     ],
     "locations": [
       "ROUTE_31_POKE_BALL",
@@ -3115,6 +3561,16 @@
       "REGION_ROUTE_33",
       "REGION_ROUTE_32_POKECENTER_1F",
       "REGION_UNION_CAVE_1F"
+    ],
+    "trainers": [
+      "CAMPER_1",
+      "FISHER_1",
+      "FISHER_2",
+      "FISHER_5",
+      "PICNICKER_1",
+      "YOUNGSTER_3",
+      "YOUNGSTER_4",
+      "BIRD_KEEPER_13"
     ],
     "locations": [
       "ROUTE_32_GREAT_BALL",
@@ -3160,6 +3616,9 @@
       "REGION_AZALEA_TOWN",
       "REGION_UNION_CAVE_1F"
     ],
+    "trainers": [
+      "HIKER_5"
+    ],
     "locations": [
       "ITEM_FROM_HIKER_ANTHONY",
       "FRUITTREE_ROUTE_33"
@@ -3173,6 +3632,14 @@
       "REGION_ROUTE_34_ILEX_FOREST_GATE",
       "REGION_ROUTE_34:WATER",
       "REGION_DAY_CARE"
+    ],
+    "trainers": [
+      "CAMPER_2",
+      "PICNICKER_2",
+      "YOUNGSTER_5",
+      "YOUNGSTER_6",
+      "POKEFANM_7",
+      "OFFICER_1"
     ],
     "locations": [
       "ROUTE_34_HIDDEN_SUPER_POTION",
@@ -3188,6 +3655,11 @@
     "johto": true,
     "exits": [
       "REGION_ROUTE_34"
+    ],
+    "trainers": [
+      "COOLTRAINERF_6",
+      "COOLTRAINERF_17",
+      "COOLTRAINERF_5"
     ],
     "locations": [
       "ROUTE_34_NUGGET",
@@ -3218,6 +3690,17 @@
       "REGION_ROUTE_36:WEST",
       "REGION_ROUTE_35:FRUITTREE"
     ],
+    "trainers": [
+      "BIRD_KEEPER_3",
+      "JUGGLER_1",
+      "CAMPER_3",
+      "CAMPER_4",
+      "PICNICKER_3",
+      "PICNICKER_4",
+      "BUG_CATCHER_8",
+      "FIREBREATHER_6",
+      "OFFICER_2"
+    ],
     "locations": [
       "ROUTE_35_TM_ROLLOUT",
       "ITEM_FROM_BIRD_KEEPER_BRYAN",
@@ -3247,6 +3730,9 @@
       "REGION_ROUTE_35",
       "REGION_GOLDENROD_CITY"
     ],
+    "statics": [
+      "Kenya"
+    ],
     "locations": [
       "HP_UP_FROM_RANDY"
     ],
@@ -3271,6 +3757,9 @@
       "REGION_VIOLET_CITY",
       "REGION_ROUTE_36_RUINS_OF_ALPH_GATE"
     ],
+    "statics": [
+      "Sudowoodo"
+    ],
     "locations": [
       "TM08_ROCK_SMASH",
       "HARD_STONE_FROM_ARTHUR"
@@ -3284,6 +3773,10 @@
       "REGION_ROUTE_36_NATIONAL_PARK_GATE",
       "REGION_ROUTE_36:EAST",
       "REGION_ROUTE_37"
+    ],
+    "trainers": [
+      "SCHOOLBOY_3",
+      "PSYCHIC_T_7"
     ],
     "locations": [
       "FRUITTREE_ROUTE_36",
@@ -3317,6 +3810,11 @@
       "REGION_ROUTE_36:EAST",
       "REGION_ROUTE_36:WEST"
     ],
+    "trainers": [
+      "TWINS_2",
+      "TWINS_3",
+      "PSYCHIC_T_5"
+    ],
     "locations": [
       "ROUTE_37_HIDDEN_ETHER",
       "MAGNET_FROM_SUNNY",
@@ -3333,6 +3831,14 @@
     "exits": [
       "REGION_ROUTE_39",
       "REGION_ROUTE_38_ECRUTEAK_GATE"
+    ],
+    "trainers": [
+      "BIRD_KEEPER_5",
+      "SAILOR_10",
+      "LASS_10",
+      "SCHOOLBOY_10",
+      "BEAUTY_16",
+      "BEAUTY_17"
     ],
     "locations": [
       "ITEM_FROM_BIRD_KEEPER_TOBY",
@@ -3362,6 +3868,13 @@
       "REGION_ROUTE_39_BARN",
       "REGION_ROUTE_39_FARMHOUSE"
     ],
+    "trainers": [
+      "POKEFANM_2",
+      "POKEFANF_2",
+      "SAILOR_1",
+      "PSYCHIC_T_6",
+      "POKEFANF_6"
+    ],
     "locations": [
       "ROUTE_39_HIDDEN_NUGGET",
       "ITEM_FROM_POKEFANM_DEREK",
@@ -3370,7 +3883,9 @@
       "ITEM_FROM_PSYCHIC_NORMAN",
       "FRUITTREE_ROUTE_39"
     ],
-    "events": []
+    "events": [
+      "EVENT_BEAT_POKEFANM_2"
+    ]
   },
   "REGION_ROUTE_39_BARN": {
     "johto": true,
@@ -3396,6 +3911,11 @@
       "REGION_ROUTE_3",
       "REGION_CERULEAN_CITY",
       "REGION_MOUNT_MOON"
+    ],
+    "trainers": [
+      "BIRD_KEEPER_8",
+      "PICNICKER_6",
+      "PICNICKER_7"
     ],
     "locations": [
       "ROUTE_4_HIDDEN_ULTRA_BALL",
@@ -3425,6 +3945,12 @@
       "REGION_ROUTE_40",
       "REGION_ROUTE_41"
     ],
+    "trainers": [
+      "SWIMMERF_1",
+      "SWIMMERF_2",
+      "SWIMMERM_2",
+      "SWIMMERM_3"
+    ],
     "locations": [
       "ITEM_FROM_SWIMMERF_ELAINE",
       "ITEM_FROM_SWIMMERF_PAULA",
@@ -3451,6 +3977,18 @@
       "REGION_WHIRL_ISLAND_NE",
       "REGION_WHIRL_ISLAND_SW",
       "REGION_WHIRL_ISLAND_SE"
+    ],
+    "trainers": [
+      "SWIMMERF_3",
+      "SWIMMERF_4",
+      "SWIMMERF_5",
+      "SWIMMERF_6",
+      "SWIMMERF_7",
+      "SWIMMERM_4",
+      "SWIMMERM_5",
+      "SWIMMERM_6",
+      "SWIMMERM_7",
+      "SWIMMERM_8"
     ],
     "locations": [
       "ROUTE_41_HIDDEN_MAX_ETHER",
@@ -3512,6 +4050,11 @@
       "REGION_MOUNT_MORTAR_1F_OUTSIDE:EAST",
       "REGION_ROUTE_42:CENTER"
     ],
+    "trainers": [
+      "FISHER_7",
+      "POKEMANIAC_4",
+      "HIKER_6"
+    ],
     "locations": [
       "ITEM_FROM_FISHER_TULLY",
       "ITEM_FROM_POKEMANIAC_SHANE",
@@ -3535,6 +4078,14 @@
       "REGION_ROUTE_43_MAHOGANY_GATE",
       "REGION_ROUTE_43_GATE",
       "REGION_ROUTE_43:FRUITTREE"
+    ],
+    "trainers": [
+      "CAMPER_19",
+      "POKEMANIAC_5",
+      "POKEMANIAC_6",
+      "POKEMANIAC_7",
+      "FISHER_6",
+      "PICNICKER_20"
     ],
     "locations": [
       "ROUTE_43_MAX_ETHER",
@@ -3582,6 +4133,15 @@
       "REGION_MAHOGANY_TOWN",
       "REGION_ICE_PATH_1F:WEST"
     ],
+    "trainers": [
+      "BIRD_KEEPER_7",
+      "PSYCHIC_T_8",
+      "FISHER_10",
+      "FISHER_11",
+      "COOLTRAINERF_16",
+      "POKEMANIAC_13",
+      "COOLTRAINERM_19"
+    ],
     "locations": [
       "ROUTE_44_HIDDEN_ELIXER",
       "ROUTE_44_MAX_REPEL",
@@ -3605,6 +4165,15 @@
       "REGION_ROUTE_46",
       "REGION_DARK_CAVE_BLACKTHORN_ENTRANCE"
     ],
+    "trainers": [
+      "BLACKBELT_T_8",
+      "HIKER_7",
+      "HIKER_8",
+      "HIKER_20",
+      "HIKER_10",
+      "COOLTRAINERM_8",
+      "COOLTRAINERF_7"
+    ],
     "locations": [
       "ROUTE_45_ELIXER",
       "ROUTE_45_HIDDEN_PP_UP",
@@ -3627,6 +4196,11 @@
     "exits": [
       "REGION_ROUTE_29_ROUTE_46_GATE",
       "REGION_DARK_CAVE_VIOLET_ENTRANCE"
+    ],
+    "trainers": [
+      "CAMPER_11",
+      "PICNICKER_10",
+      "HIKER_11"
     ],
     "locations": [
       "ROUTE_46_X_SPEED",
@@ -3684,6 +4258,10 @@
       "REGION_ROUTE_6_UNDERGROUND_PATH_ENTRANCE",
       "REGION_ROUTE_6_SAFFRON_GATE"
     ],
+    "trainers": [
+      "POKEFANM_13",
+      "POKEFANM_14"
+    ],
     "locations": [
       "ITEM_FROM_POKEFANM_REX",
       "ITEM_FROM_POKEFANM_ALLAN"
@@ -3732,6 +4310,13 @@
       "REGION_LAVENDER_TOWN",
       "REGION_ROUTE_8_SAFFRON_GATE"
     ],
+    "trainers": [
+      "BIKER_3",
+      "BIKER_4",
+      "BIKER_5",
+      "SUPER_NERD_6",
+      "SUPER_NERD_7"
+    ],
     "locations": [
       "ITEM_FROM_BIKER_DWAYNE",
       "ITEM_FROM_BIKER_HARRIS",
@@ -3757,6 +4342,14 @@
       "REGION_ROUTE_10_NORTH",
       "REGION_CERULEAN_CITY",
       "REGION_ROCK_TUNNEL_1F"
+    ],
+    "trainers": [
+      "CAMPER_7",
+      "PICNICKER_13",
+      "CAMPER_8",
+      "PICNICKER_14",
+      "HIKER_13",
+      "HIKER_15"
     ],
     "locations": [
       "ROUTE_9_HIDDEN_ETHER",
@@ -3951,6 +4544,9 @@
       "REGION_UNION_CAVE_B1F:NORTH",
       "REGION_RUINS_OF_ALPH_HO_OH_CHAMBER"
     ],
+    "trainers": [
+      "PSYCHIC_T_1"
+    ],
     "locations": [
       "ITEM_FROM_PSYCHIC_NATHAN"
     ],
@@ -4022,6 +4618,13 @@
       "REGION_SAFFRON_CITY",
       "REGION_SAFFRON_GYM"
     ],
+    "trainers": [
+      "MEDIUM_6",
+      "PSYCHIC_T_2",
+      "MEDIUM_7",
+      "PSYCHIC_T_11",
+      "SABRINA_1"
+    ],
     "locations": [
       "MARSH_BADGE_FROM_SABRINA",
       "ITEM_FROM_MEDIUM_REBECCA",
@@ -4063,6 +4666,9 @@
     "johto": false,
     "exits": [
       "REGION_ROUTE_20"
+    ],
+    "trainers": [
+      "BLAINE_1"
     ],
     "locations": [
       "VOLCANO_BADGE_FROM_BLAINE"
@@ -4155,6 +4761,7 @@
     "exits": [
       "REGION_SILVER_CAVE_ROOM_2"
     ],
+    "trainers": [],
     "locations": [],
     "events": [
       "EVENT_BEAT_RED"
@@ -4165,6 +4772,12 @@
     "exits": [
       "REGION_AZALEA_TOWN",
       "REGION_SLOWPOKE_WELL_B2F"
+    ],
+    "trainers": [
+      "GRUNTM_29",
+      "GRUNTM_2",
+      "GRUNTF_1",
+      "GRUNTM_1"
     ],
     "locations": [
       "SLOWPOKE_WELL_B1F_SUPER_POTION",
@@ -4201,10 +4814,12 @@
       "REGION_VIOLET_CITY",
       "REGION_SPROUT_TOWER_2F"
     ],
+    "trainers": [
+      "SAGE_1"
+    ],
     "locations": [
       "SPROUT_TOWER_1F_PARLYZ_HEAL",
-      "ITEM_FROM_SAGE_CHOW",
-      "FRUITTREE_VIOLET_CITY"
+      "ITEM_FROM_SAGE_CHOW"
     ],
     "events": []
   },
@@ -4213,6 +4828,10 @@
     "exits": [
       "REGION_SPROUT_TOWER_1F",
       "REGION_SPROUT_TOWER_3F"
+    ],
+    "trainers": [
+      "SAGE_2",
+      "SAGE_7"
     ],
     "locations": [
       "SPROUT_TOWER_2F_X_ACCURACY",
@@ -4226,6 +4845,12 @@
     "exits": [
       "REGION_SPROUT_TOWER_2F"
     ],
+    "trainers": [
+      "SAGE_3",
+      "SAGE_4",
+      "SAGE_8",
+      "SAGE_9"
+    ],
     "locations": [
       "SPROUT_TOWER_3F_ESCAPE_ROPE",
       "SPROUT_TOWER_3F_POTION",
@@ -4234,7 +4859,9 @@
       "ITEM_FROM_SAGE_TROY",
       "ITEM_FROM_SAGE_NEAL"
     ],
-    "events": []
+    "events": [
+      "EVENT_BEAT_SAGE_LI"
+    ]
   },
   "REGION_TEAM_ROCKET_BASE_B1F": {
     "johto": true,
@@ -4242,6 +4869,15 @@
       "REGION_MAHOGANY_MART_1F",
       "REGION_TEAM_ROCKET_BASE_B2F",
       "REGION_TEAM_ROCKET_BASE_B1F"
+    ],
+    "trainers": [
+      "GRUNTM_16",
+      "SCIENTIST_3"
+    ],
+    "statics": [
+      "RocketHQTrap1",
+      "RocketHQTrap2",
+      "RocketHQTrap3"
     ],
     "locations": [
       "TEAM_ROCKET_BASE_B1F_GUARD_SPEC",
@@ -4259,6 +4895,17 @@
       "REGION_TEAM_ROCKET_BASE_B1F",
       "REGION_TEAM_ROCKET_BASE_B3F"
     ],
+    "trainers": [
+      "GRUNTM_17",
+      "GRUNTM_18",
+      "GRUNTM_19",
+      "EXECUTIVEF_2"
+    ],
+    "statics": [
+      "RocketHQElectrode1",
+      "RocketHQElectrode2",
+      "RocketHQElectrode3"
+    ],
     "locations": [
       "TEAM_ROCKET_BASE_B2F_HIDDEN_FULL_HEAL",
       "TEAM_ROCKET_BASE_B2F_TM_THIEF",
@@ -4275,6 +4922,13 @@
     "johto": true,
     "exits": [
       "REGION_TEAM_ROCKET_BASE_B2F"
+    ],
+    "trainers": [
+      "GRUNTF_5",
+      "GRUNTM_28",
+      "SCIENTIST_1",
+      "SCIENTIST_2",
+      "EXECUTIVEM_4"
     ],
     "locations": [
       "TEAM_ROCKET_BASE_B3F_FULL_HEAL",
@@ -4302,6 +4956,9 @@
     "exits": [
       "REGION_ECRUTEAK_CITY",
       "REGION_TIN_TOWER_2F"
+    ],
+    "statics": [
+      "Suicune"
     ],
     "locations": [
       "TIN_TOWER_1F_RAINBOW_WING"
@@ -4409,6 +5066,9 @@
     "exits": [
       "REGION_TIN_TOWER_9F"
     ],
+    "statics": [
+      "Ho_Oh"
+    ],
     "locations": [],
     "events": []
   },
@@ -4477,6 +5137,13 @@
       "REGION_ROUTE_33",
       "REGION_ROUTE_32:SOUTH"
     ],
+    "trainers": [
+      "POKEMANIAC_1",
+      "HIKER_2",
+      "HIKER_18",
+      "FIREBREATHER_5",
+      "FIREBREATHER_7"
+    ],
     "locations": [
       "UNION_CAVE_1F_AWAKENING",
       "UNION_CAVE_1F_GREAT_BALL",
@@ -4509,6 +5176,10 @@
       "REGION_RUINS_OF_ALPH_OUTSIDE:SOUTH:UNION_LEDGE",
       "REGION_UNION_CAVE_1F"
     ],
+    "trainers": [
+      "HIKER_3",
+      "HIKER_4"
+    ],
     "locations": [
       "ITEM_FROM_HIKER_PHILLIP",
       "ITEM_FROM_HIKER_LEONARD"
@@ -4521,6 +5192,10 @@
       "REGION_UNION_CAVE_1F",
       "REGION_UNION_CAVE_B2F"
     ],
+    "trainers": [
+      "POKEMANIAC_2",
+      "POKEMANIAC_3"
+    ],
     "locations": [
       "ITEM_FROM_POKEMANIAC_ANDREW",
       "ITEM_FROM_POKEMANIAC_CALVIN"
@@ -4531,6 +5206,14 @@
     "johto": true,
     "exits": [
       "REGION_UNION_CAVE_B1F"
+    ],
+    "trainers": [
+      "COOLTRAINERM_1",
+      "COOLTRAINERF_1",
+      "COOLTRAINERF_15"
+    ],
+    "statics": [
+      "UnionCaveLapras"
     ],
     "locations": [
       "UNION_CAVE_B2F_ELIXER",
@@ -4555,6 +5238,9 @@
       "REGION_VERMILION_GYM",
       "REGION_VERMILION_PORT_PASSAGE",
       "REGION_DIGLETTS_CAVE"
+    ],
+    "statics": [
+      "Snorlax"
     ],
     "locations": [
       "VERMILION_CITY_HIDDEN_FULL_HEAL",
@@ -4584,6 +5270,12 @@
     "johto": false,
     "exits": [
       "REGION_VERMILION_CITY"
+    ],
+    "trainers": [
+      "GENTLEMAN_3",
+      "GUITARIST_2",
+      "JUGGLER_3",
+      "LT_SURGE_1"
     ],
     "locations": [
       "THUNDER_BADGE_FROM_LTSURGE",
@@ -4647,6 +5339,11 @@
       "REGION_VICTORY_ROAD_GATE",
       "REGION_ROUTE_23"
     ],
+    "trainers": [
+      "RIVAL_MEGANIUM_2",
+      "RIVAL_TYPHLOSION_2",
+      "RIVAL_FERALIGATR_2"
+    ],
     "locations": [
       "VICTORY_ROAD_FULL_HEAL",
       "VICTORY_ROAD_FULL_RESTORE",
@@ -4656,7 +5353,9 @@
       "VICTORY_ROAD_MAX_REVIVE",
       "VICTORY_ROAD_TM_EARTHQUAKE"
     ],
-    "events": []
+    "events": [
+      "EVENT_RIVAL_VICTORY_ROAD"
+    ]
   },
   "REGION_VICTORY_ROAD_GATE": {
     "johto": true,
@@ -4688,7 +5387,8 @@
     "locations": [
       "VIOLET_CITY_HIDDEN_HYPER_POTION",
       "VIOLET_CITY_PP_UP",
-      "VIOLET_CITY_RARE_CANDY"
+      "VIOLET_CITY_RARE_CANDY",
+      "FRUITTREE_VIOLET_CITY"
     ],
     "events": []
   },
@@ -4696,6 +5396,11 @@
     "johto": true,
     "exits": [
       "REGION_VIOLET_CITY"
+    ],
+    "trainers": [
+      "BIRD_KEEPER_1",
+      "BIRD_KEEPER_2",
+      "FALKNER_1"
     ],
     "locations": [
       "TM31_MUD_SLAP",
@@ -4766,6 +5471,9 @@
     "johto": false,
     "exits": [
       "REGION_VIRIDIAN_CITY"
+    ],
+    "trainers": [
+      "BLUE_1"
     ],
     "locations": [
       "EARTH_BADGE_FROM_BLUE"
@@ -4849,6 +5557,9 @@
     "exits": [
       "REGION_WHIRL_ISLAND_B2F"
     ],
+    "statics": [
+      "Lugia"
+    ],
     "locations": [],
     "events": []
   },
@@ -4902,8 +5613,13 @@
       "REGION_INDIGO_PLATEAU_POKECENTER_1F",
       "REGION_KOGAS_ROOM"
     ],
+    "trainers": [
+      "WILL_1"
+    ],
     "locations": [],
-    "events": []
+    "events": [
+      "EVENT_BEAT_ELITE_4_WILL"
+    ]
   },
   "REGION_WISE_TRIOS_ROOM": {
     "johto": true,
@@ -4911,8 +5627,15 @@
       "REGION_ECRUTEAK_CITY",
       "REGION_ECRUTEAK_TIN_TOWER_ENTRANCE"
     ],
+    "trainers": [
+      "SAGE_10",
+      "SAGE_11",
+      "SAGE_12"
+    ],
     "locations": [],
-    "events": []
+    "events": [
+      "EVENT_KOJI_ALLOWS_YOU_PASSAGE_TO_TIN_TOWER"
+    ]
   },
   "REGION_FLY": {
     "johto": true,

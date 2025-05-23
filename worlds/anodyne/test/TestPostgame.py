@@ -16,7 +16,7 @@ class TestDisabledPostgame(AnodyneTestBase):
 
 class TestVanillaPostgame(AnodyneTestBase):
     options = {
-        "victory_condition": "all_cards",
+        "victory_condition": "final_gate",
         "custom_nexus_gates_open": ["Windmill entrance", "Blue"],
         "postgame_mode": "vanilla",
         "big_key_shuffle": "unlocked",
@@ -38,7 +38,7 @@ class TestVanillaPostgame(AnodyneTestBase):
 
 class TestUnlockedPostgame(AnodyneTestBase):
     options = {
-        "victory_condition": "all_cards",
+        "victory_condition": "final_gate",
         "custom_nexus_gates_open": ["Windmill entrance"],
         "postgame_mode": "unlocked",
         "big_key_shuffle": "unlocked",
@@ -56,11 +56,11 @@ class TestUnlockedPostgame(AnodyneTestBase):
 
 class TestProgressivePostgame(AnodyneTestBase):
     options = {
-        "victory_condition": "all_cards",
+        "victory_condition": "final_gate",
         "custom_nexus_gates_open": ["Windmill entrance", "Go bottom", "Hotel floor 4", "Apartment floor 1", "Circus"],
         "postgame_mode": "progressive",
         "big_key_shuffle": "unlocked",
-        "small_key_shuffle": "unlocked",
+        "small_key_mode": "unlocked",
     }
 
     def test_requirement(self):

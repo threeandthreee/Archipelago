@@ -1,7 +1,5 @@
 from .Constants import *
 
-BASE_LOCATION_ID = 27022001000
-
 LOCATIONS_DATA = {
     "North Horon: Chest Across Bridge": {
         "region_id": "eyeglass lake, across bridge",
@@ -14,7 +12,7 @@ LOCATIONS_DATA = {
         "region_id": "maku tree",
         "vanilla_item": "Gnarled Key",
         # Maku Tree has several rooms depending on the amount of essences owned
-        "flag_byte": [0xc80b, 0xc80c, 0xc82b, 0xc82c, 0xc82d, 0xc85b, 0xc85c, 0xc85d, 0xc85e, 0xc87b],
+        "flag_byte": 0xc80b,
         "room": [0x020b, 0x020c, 0x022b, 0x022c, 0x022d, 0x025b, 0x025c, 0x025d, 0x025e, 0x027b],
         "collect": COLLECT_MAKU_TREE,
         "map_tile": 0xc9,
@@ -50,7 +48,7 @@ LOCATIONS_DATA = {
         "room": 0x008e,
         "collect": COLLECT_CHEST,
     },
-    "North Horon: Blaino's Gym Prize": {
+    "Holodrum Plain: Blaino's Gym Prize": {
         "region_id": "blaino prize",
         "vanilla_item": "Progressive Sword",  # Ricky's gloves are useless in current logic
         "flag_byte": 0xc8b4,
@@ -519,7 +517,7 @@ LOCATIONS_DATA = {
     "Subrosia: Seaside Digging Spot": {
         "region_id": "subrosia seaside",
         "vanilla_item": "Star Ore",
-        "flag_byte": [0xc865, 0xc866, 0xc875, 0xc876],
+        "flag_byte": 0xc866,
         "room": [0x0165, 0x0166, 0x0175, 0x0176],
         "collect": COLLECT_DIG,
         "map_tile": 0xb0,
@@ -2107,96 +2105,112 @@ LOCATIONS_DATA = {
         "region_id": "gasha tree 1",
         "vanilla_item": "Piece of Heart",
         "conditional": True,
+        "id": 0xC64900,
         "room": [],
     },
     "Gasha Nut #2": {
         "region_id": "gasha tree 2",
         "vanilla_item": "Filler Item",
         "conditional": True,
+        "id": 0xC64901,
         "room": [],
     },
     "Gasha Nut #3": {
         "region_id": "gasha tree 3",
         "vanilla_item": "Filler Item",
         "conditional": True,
+        "id": 0xC64902,
         "room": [],
     },
     "Gasha Nut #4": {
         "region_id": "gasha tree 4",
         "vanilla_item": "Filler Item",
         "conditional": True,
+        "id": 0xC64903,
         "room": [],
     },
     "Gasha Nut #5": {
         "region_id": "gasha tree 5",
         "vanilla_item": "Filler Item",
         "conditional": True,
+        "id": 0xC64904,
         "room": [],
     },
     "Gasha Nut #6": {
         "region_id": "gasha tree 6",
         "vanilla_item": "Filler Item",
         "conditional": True,
+        "id": 0xC64905,
         "room": [],
     },
     "Gasha Nut #7": {
         "region_id": "gasha tree 7",
         "vanilla_item": "Filler Item",
         "conditional": True,
+        "id": 0xC64906,
         "room": [],
     },
     "Gasha Nut #8": {
         "region_id": "gasha tree 8",
         "vanilla_item": "Filler Item",
         "conditional": True,
+        "id": 0xC64907,
         "room": [],
     },
     "Gasha Nut #9": {
         "region_id": "gasha tree 9",
         "vanilla_item": "Filler Item",
         "conditional": True,
+        "id": 0xC64908,
         "room": [],
     },
     "Gasha Nut #10": {
         "region_id": "gasha tree 10",
         "vanilla_item": "Filler Item",
         "conditional": True,
+        "id": 0xC64909,
         "room": [],
     },
     "Gasha Nut #11": {
         "region_id": "gasha tree 11",
         "vanilla_item": "Filler Item",
         "conditional": True,
+        "id": 0xC6490A,
         "room": [],
     },
     "Gasha Nut #12": {
         "region_id": "gasha tree 12",
         "vanilla_item": "Filler Item",
         "conditional": True,
+        "id": 0xC6490B,
         "room": [],
     },
     "Gasha Nut #13": {
         "region_id": "gasha tree 13",
         "vanilla_item": "Filler Item",
         "conditional": True,
+        "id": 0xC6490C,
         "room": [],
     },
     "Gasha Nut #14": {
         "region_id": "gasha tree 14",
         "vanilla_item": "Filler Item",
         "conditional": True,
+        "id": 0xC6490D,
         "room": [],
     },
     "Gasha Nut #15": {
         "region_id": "gasha tree 15",
         "vanilla_item": "Filler Item",
         "conditional": True,
+        "id": 0xC6490E,
         "room": [],
     },
     "Gasha Nut #16": {
         "region_id": "gasha tree 16",
         "vanilla_item": "Filler Item",
         "conditional": True,
+        "id": 0xC6490F,
         "room": [],
     },
     "Spool Swamp: Business Scrub": {
@@ -2328,7 +2342,7 @@ LOCATIONS_DATA = {
         "map_tile": 0xb0,
         "symbolic_name": "templeSecret",
     },
-    "Natzu: Deku Secret": {
+    "Natzu Region: Deku Secret": {
         "region_id": "deku secret",
         "vanilla_item": "Filler Item",
         "conditional": True,

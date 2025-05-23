@@ -1,7 +1,5 @@
 from BaseClasses import ItemClassification
 
-BASE_ITEM_ID = 27022001000
-
 ITEMS_DATA = {
     #   "No Item": {
     #   'classification': ItemClassification.filler,
@@ -242,47 +240,47 @@ ITEMS_DATA = {
     "Master Key (Hero's Cave)": {
         'classification': ItemClassification.progression,
         'id': 0x30,
-        'subid': 0x00
+        'subid': 0x80
     },
     "Master Key (Gnarled Root Dungeon)": {
         'classification': ItemClassification.progression,
         'id': 0x30,
-        'subid': 0x01
+        'subid': 0x81
     },
     "Master Key (Snake's Remains)": {
         'classification': ItemClassification.progression,
         'id': 0x30,
-        'subid': 0x02
+        'subid': 0x82
     },
     "Master Key (Poison Moth's Lair)": {
         'classification': ItemClassification.progression,
         'id': 0x30,
-        'subid': 0x03
+        'subid': 0x83
     },
     "Master Key (Dancing Dragon Dungeon)": {
         'classification': ItemClassification.progression,
         'id': 0x30,
-        'subid': 0x04
+        'subid': 0x84
     },
     "Master Key (Unicorn's Cave)": {
         'classification': ItemClassification.progression,
         'id': 0x30,
-        'subid': 0x05
+        'subid': 0x85
     },
     "Master Key (Ancient Ruins)": {
         'classification': ItemClassification.progression,
         'id': 0x30,
-        'subid': 0x06
+        'subid': 0x86
     },
     "Master Key (Explorer's Crypt)": {
         'classification': ItemClassification.progression,
         'id': 0x30,
-        'subid': 0x07
+        'subid': 0x87
     },
     "Master Key (Sword & Shield Dungeon)": {
         'classification': ItemClassification.progression,
         'id': 0x30,
-        'subid': 0x08
+        'subid': 0x88
     },
     "Boss Key (Gnarled Root Dungeon)": {
         'classification': ItemClassification.progression,

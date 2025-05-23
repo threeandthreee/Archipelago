@@ -4,7 +4,6 @@ Classes and functions related to interfacing with the BizHawk Client for Metroid
 
 from __future__ import annotations
 
-import asyncio
 import itertools
 import struct
 from typing import TYPE_CHECKING, Counter, Dict, Iterable, Iterator, List, NamedTuple, Optional, Set, Tuple
@@ -14,11 +13,12 @@ import Utils
 import worlds._bizhawk as bizhawk
 from worlds._bizhawk.client import BizHawkClient
 
-from .data import encode_str, get_symbol
-from .items import AP_MZM_ID_BASE, ItemID, ItemType, item_data_table
+from .data import get_symbol
+from .items import ItemID, ItemType, item_data_table
 from .locations import (brinstar_location_table, kraid_location_table, norfair_location_table,
                         ridley_location_table, tourian_location_table, crateria_location_table,
                         chozodia_location_table)
+from .text import LINE_WIDTH, TERMINATOR_CHAR, Message
 
 if TYPE_CHECKING:
     from worlds._bizhawk.context import BizHawkClientContext
@@ -75,14 +75,10 @@ def batched(iterable, n):
         yield batch
 
 
-# Potential future use to properly identify Deorem kill
-DEOREM_FLAGS = {
-        "EVENT_DEOREM_ENCOUNTERED_AT_FIRST_LOCATION_OR_KILLED": 0x19,
-        "EVENT_DEOREM_ENCOUNTERED_AT_SECOND_LOCATION_OR_KILLED": 0x1A,
-        "EVENT_DEOREM_KILLED_AT_SECOND_LOCATION": 0x1B,
-}
-
+# DEOREM_KILLED and RUINS_TEST_PASSED are out of order to maintain tracker compatibility. DEOREM_KILLED was before any
+# of the vanilla events, and RUINS_TEST_PASSED replaces the vanilla FULLY_POWERED_SUIT_OBTAINED.
 EVENT_FLAGS = {
+    "EVENT_DEOREM_KILLED": 0x4F,
     "EVENT_ACID_WORM_KILLED": 0x1C,
     "EVENT_KRAID_KILLED": 0x1E,
     "EVENT_IMAGO_COCOON_KILLED": 0x22,
@@ -90,19 +86,13 @@ EVENT_FLAGS = {
     "EVENT_RIDLEY_KILLED": 0x25,
     "EVENT_MOTHER_BRAIN_KILLED": 0x27,
     "EVENT_ESCAPED_ZEBES": 0x41,
-    "EVENT_FULLY_POWERED_SUIT_OBTAINED": 0x43,
+    "EVENT_RUINS_TEST_PASSED": 0x50,
     "EVENT_MECHA_RIDLEY_KILLED": 0x4A,
     "EVENT_ESCAPED_CHOZODIA": 0x4B,
 }
 
 
-TRACKER_EVENT_FLAGS = [
-    "EVENT_DEOREM_KILLED",
-    *EVENT_FLAGS.keys(),
-]
-
-
-TERMINATOR_CHAR = 0xFF00.to_bytes(2, "little")
+TRACKER_EVENT_FLAGS = list(EVENT_FLAGS.keys())
 
 
 def cmd_deathlink(self):
@@ -321,10 +311,6 @@ class MZMClient(BizHawkClient):
                         checked_locations.add(location.code)
                     location_flags >>= 1
 
-        # Deorem flags are in a weird arrangement, but he also drops Charge Beam so whatever just look for that check
-        if not self.local_set_events["EVENT_DEOREM_KILLED"] and brinstar_location_table["Brinstar Worm Drop"] in checked_locations:
-            set_events["EVENT_DEOREM_KILLED"] = True
-
         for name, number in EVENT_FLAGS.items():
             block = gEventsTriggered[number // 32]
             flag = 1 << (number & 31)
@@ -473,7 +459,7 @@ class MZMClient(BizHawkClient):
                         await write_amounts(size, new_capacity, max(new_capacity - consumed, 0), current)
                 except bizhawk.RequestFailedError:
                     return
-            unknown_items = client_ctx.slot_data["unknown_items"] or self.local_set_events["EVENT_FULLY_POWERED_SUIT_OBTAINED"]
+            unknown_items = client_ctx.slot_data["unknown_items_always_usable"] or self.local_set_events["EVENT_FULLY_POWERED_SUIT_OBTAINED"]
             if item.type == ItemType.beam:
                 beams |= item.bits
                 if item.id != ItemID.PlasmaBeam or unknown_items:
@@ -526,16 +512,18 @@ class MZMClient(BizHawkClient):
         item_data = item_data_table[client_ctx.item_names.lookup_in_game(next_item.item)]
         copies = len(self.queued_item.network_items)
         if next_item.player == client_ctx.slot:
-            sender = TERMINATOR_CHAR
+            sender = Message([TERMINATOR_CHAR])
         else:
-            sender = encode_str(client_ctx.player_names[next_item.player]) + TERMINATOR_CHAR
+            sender = (Message(client_ctx.player_names[next_item.player])
+                        .trim_to_max_width(LINE_WIDTH - 79)
+                        .append(TERMINATOR_CHAR))
 
         try:
             await bizhawk.guarded_write(
                 bizhawk_ctx,
                 [write8(ZMConstants.gIncomingItemId, item_data.id),
                  write8(ZMConstants.gIncomingItemCount, copies),
-                 write(ZMConstants.gMultiworldItemSenderName, sender)],
+                 write(ZMConstants.gMultiworldItemSenderName, sender.to_bytes())],
                 guard_list)
         except bizhawk.RequestFailedError:
             return

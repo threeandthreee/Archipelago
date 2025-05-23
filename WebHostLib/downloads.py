@@ -95,14 +95,12 @@ def download_slot_file(room_id, player_id: int):
         # Ashipelago customization
         elif slot_data.game == "Kingdom Hearts Birth by Sleep":
             fname = f"AP_{app.jinja_env.filters['suuid'](room_id)}_P{slot_data.player_id}_{slot_data.player_name}.zip"
-        elif slot_data.game == "The Legend of Zelda - Oracle of Seasons":
-            fname = f"AP+{app.jinja_env.filters['suuid'](room_id)}_P{slot_data.player_id}_{slot_data.player_name}.patcherdata"
         elif slot_data.game == "Final Fantasy 12 Open World":
             fname = f"AP+{app.jinja_env.filters['suuid'](room_id)}_P{slot_data.player_id}_{slot_data.player_name}.json"
-        elif slot_data.game == "The Wind Waker":
-            fname = f"AP+{app.jinja_env.filters['suuid'](room_id)}_P{slot_data.player_id}_{slot_data.player_name}.aptww"
         elif slot_data.game == "Metroid Prime":
             fname = f"AP+{app.jinja_env.filters['suuid'](room_id)}_P{slot_data.player_id}_{slot_data.player_name}.apmp1"
+        elif slot_data.game == "Donkey Kong 64":
+            fname = f"AP+{app.jinja_env.filters['suuid'](room_id)}_P{slot_data.player_id}_{slot_data.player_name}.lanky"
         else:
             return "Game download not supported."
         return send_file(io.BytesIO(slot_data.data), as_attachment=True, download_name=fname)

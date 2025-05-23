@@ -7,7 +7,7 @@ import dolphin_memory_engine
 
 import Utils
 from CommonClient import ClientCommandProcessor, CommonContext, get_base_parser, gui_enabled, logger, server_loop
-from NetUtils import ClientStatus, NetworkItem
+from NetUtils import ClientStatus
 
 from .Items import ITEM_TABLE, LOOKUP_ID_TO_NAME
 from .Locations import ISLAND_NAME_TO_SALVAGE_BIT, LOCATION_TABLE, TWWLocation, TWWLocationData, TWWLocationType
@@ -132,11 +132,9 @@ class TWWContext(CommonContext):
         """
 
         super().__init__(server_address, password)
-        self.items_received_2: list[tuple[NetworkItem, int]] = []
         self.dolphin_sync_task: Optional[asyncio.Task[None]] = None
         self.dolphin_status: str = CONNECTION_INITIAL_STATUS
         self.awaiting_rom: bool = False
-        self.last_rcvd_index: int = -1
         self.has_send_death: bool = False
 
         # Bitfields used for checking locations.
@@ -188,7 +186,7 @@ class TWWContext(CommonContext):
         :param password_requested: Whether the server requires a password. Defaults to `False`.
         """
         if password_requested and not self.password:
-            await super(TWWContext, self).server_auth(password_requested)
+            await super().server_auth(password_requested)
         if not self.auth:
             if self.awaiting_rom:
                 return
@@ -205,21 +203,12 @@ class TWWContext(CommonContext):
         :param args: The command arguments.
         """
         if cmd == "Connected":
-            self.items_received_2 = []
-            self.last_rcvd_index = -1
             self.update_salvage_locations_map()
             if "death_link" in args["slot_data"]:
                 Utils.async_start(self.update_death_link(bool(args["slot_data"]["death_link"])))
             # Request the connected slot's dictionary (used as a set) of visited stages.
             visited_stages_key = AP_VISITED_STAGE_NAMES_KEY_FORMAT % self.slot
             Utils.async_start(self.send_msgs([{"cmd": "Get", "keys": [visited_stages_key]}]))
-        elif cmd == "ReceivedItems":
-            if args["index"] >= self.last_rcvd_index:
-                self.last_rcvd_index = args["index"]
-                for item in args["items"]:
-                    self.items_received_2.append((item, self.last_rcvd_index))
-                    self.last_rcvd_index += 1
-            self.items_received_2.sort(key=lambda v: v[1])
         elif cmd == "Retrieved":
             requested_keys_dict = args["keys"]
             # Read the connected slot's dictionary (used as a set) of visited stages.
@@ -378,19 +367,25 @@ async def give_items(ctx: TWWContext) -> None:
     :param ctx: The Wind Waker client context.
     """
     if check_ingame() and dolphin_memory_engine.read_byte(CURR_STAGE_ID_ADDR) != 0xFF:
-        # Read the expected index of the player, which is the index of the latest item they've received.
+        # Read the expected index of the player, which is the index of the next item they're expecting to receive.
+        # The expected index starts at 0 for a fresh save file.
         expected_idx = read_short(EXPECTED_INDEX_ADDR)
 
-        # Loop through items to give.
-        for item, idx in ctx.items_received_2:
-            # If the item's index is greater than the player's expected index, give the player the item.
-            if expected_idx <= idx:
-                # Attempt to give the item and increment the expected index.
-                while not _give_item(ctx, LOOKUP_ID_TO_NAME[item.item]):
-                    await asyncio.sleep(0.01)
+        # Check if there are new items.
+        received_items = ctx.items_received
+        if len(received_items) <= expected_idx:
+            # There are no new items.
+            return
 
-                # Increment the expected index.
-                write_short(EXPECTED_INDEX_ADDR, idx + 1)
+        # Loop through items to give.
+        # Give the player all items at an index greater than or equal to the expected index.
+        for idx, item in enumerate(received_items[expected_idx:], start=expected_idx):
+            # Attempt to give the item and increment the expected index.
+            while not _give_item(ctx, LOOKUP_ID_TO_NAME[item.item]):
+                await asyncio.sleep(0.01)
+
+            # Increment the expected index.
+            write_short(EXPECTED_INDEX_ADDR, idx + 1)
 
 
 def check_special_location(location_name: str, data: TWWLocationData) -> bool:
@@ -639,13 +634,23 @@ async def dolphin_sync_task(ctx: TWWContext) -> None:
     :param ctx: The Wind Waker client context.
     """
     logger.info("Starting Dolphin connector. Use /dolphin for status information.")
+    sleep_time = 0.0
     while not ctx.exit_event.is_set():
+        if sleep_time > 0.0:
+            try:
+                # ctx.watcher_event gets set when receiving ReceivedItems or LocationInfo, or when shutting down.
+                await asyncio.wait_for(ctx.watcher_event.wait(), sleep_time)
+            except asyncio.TimeoutError:
+                pass
+            sleep_time = 0.0
+        ctx.watcher_event.clear()
+
         try:
             if dolphin_memory_engine.is_hooked() and ctx.dolphin_status == CONNECTION_CONNECTED_STATUS:
                 if not check_ingame():
                     # Reset the give item array while not in the game.
                     dolphin_memory_engine.write_bytes(GIVE_ITEM_ARRAY_ADDR, bytes([0xFF] * ctx.len_give_item_array))
-                    await asyncio.sleep(0.1)
+                    sleep_time = 0.1
                     continue
                 if ctx.slot is not None:
                     if "DeathLink" in ctx.tags:
@@ -658,7 +663,7 @@ async def dolphin_sync_task(ctx: TWWContext) -> None:
                         ctx.auth = read_string(SLOT_NAME_ADDR, 0x40)
                     if ctx.awaiting_rom:
                         await ctx.server_auth()
-                await asyncio.sleep(0.1)
+                sleep_time = 0.1
             else:
                 if ctx.dolphin_status == CONNECTION_CONNECTED_STATUS:
                     logger.info("Connection to Dolphin lost, reconnecting...")
@@ -670,7 +675,7 @@ async def dolphin_sync_task(ctx: TWWContext) -> None:
                         logger.info(CONNECTION_REFUSED_GAME_STATUS)
                         ctx.dolphin_status = CONNECTION_REFUSED_GAME_STATUS
                         dolphin_memory_engine.un_hook()
-                        await asyncio.sleep(5)
+                        sleep_time = 5
                     else:
                         logger.info(CONNECTION_CONNECTED_STATUS)
                         ctx.dolphin_status = CONNECTION_CONNECTED_STATUS
@@ -679,7 +684,7 @@ async def dolphin_sync_task(ctx: TWWContext) -> None:
                     logger.info("Connection to Dolphin failed, attempting again in 5 seconds...")
                     ctx.dolphin_status = CONNECTION_LOST_STATUS
                     await ctx.disconnect()
-                    await asyncio.sleep(5)
+                    sleep_time = 5
                     continue
         except Exception:
             dolphin_memory_engine.un_hook()
@@ -687,7 +692,7 @@ async def dolphin_sync_task(ctx: TWWContext) -> None:
             logger.error(traceback.format_exc())
             ctx.dolphin_status = CONNECTION_LOST_STATUS
             await ctx.disconnect()
-            await asyncio.sleep(5)
+            sleep_time = 5
             continue
 
 
@@ -711,12 +716,14 @@ def main(connect: Optional[str] = None, password: Optional[str] = None) -> None:
         ctx.dolphin_sync_task = asyncio.create_task(dolphin_sync_task(ctx), name="DolphinSync")
 
         await ctx.exit_event.wait()
+        # Wake the sync task, if it is currently sleeping, so it can start shutting down when it sees that the
+        # exit_event is set.
+        ctx.watcher_event.set()
         ctx.server_address = None
 
         await ctx.shutdown()
 
         if ctx.dolphin_sync_task:
-            await asyncio.sleep(3)
             await ctx.dolphin_sync_task
 
     import colorama

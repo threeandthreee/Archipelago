@@ -186,7 +186,19 @@ def create_regions(world: "OuterWildsWorld") -> None:
 
         mw.get_region("White Hole Station", p).add_exits(["Brittle Hollow"], {"Brittle Hollow": has_codes})
     else:
+        # Hang on to the pertinent warp connections
+        bhf_connection = None
+        bhng_connection = None
+        whs_connection = None
+
         for (platform_1, platform_2) in world.warps:
+            if platform_1 == "BHF": bhf_connection = platform_2
+            elif platform_1 == "BHNG": bhng_connection = platform_2
+            elif platform_1 == "WHS": whs_connection = platform_2
+            if platform_2 == "BHF": bhf_connection = platform_1
+            elif platform_2 == "BHNG": bhng_connection = platform_1
+            elif platform_2 == "WHS": whs_connection = platform_1
+
             region_name_1 = warp_platform_to_logical_region[platform_1]
             region_name_2 = warp_platform_to_logical_region[platform_2]
             if region_name_1 == region_name_2:
@@ -202,6 +214,18 @@ def create_regions(world: "OuterWildsWorld") -> None:
             r2 = mw.get_region(region_name_2, p)
             r1.connect(r2, "%s->%s warp" % (region_name_1, region_name_2), rule)
             r2.connect(r1, "%s->%s warp" % (region_name_2, region_name_1), rule)
+        
+        # To access the Black Hole Forge without the Launch Codes, there needs to be
+        # a path from Brittle Hollow proper to the Hanging City Ceiling. This path
+        # exists if the BHF warp is connected to one of the other two warps accessible
+        # from Brittle Hollow (BHNG/WHS) either directly, or indirectly through the
+        # Hourglass Twins. This means that there is no path if either BHF or both of
+        # BHNG & WHS connect to an isolated warp pad (i.e. SS, ATP, TH, GD).
+        hourglass_twins = ("ET", "ST", "ETT", "ATT", "THT", "BHT", "GDT")
+        if bhf_connection in ("BHNG", "WHS") or (
+            bhf_connection in hourglass_twins and (
+            bhng_connection in hourglass_twins or whs_connection in hourglass_twins)):
+            mw.get_region("Forge via Warps Only", p).connect(mw.get_region("Black Hole Forge", p), "Forge Warp Path")
 
 
 # In the .jsonc files we use, a location or region connection's "access rule" is defined

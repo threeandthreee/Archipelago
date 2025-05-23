@@ -53,18 +53,15 @@
                             {% elif patch.game == "Kingdom Hearts Birth by Sleep" %}
                             <a href="{{ url_for("download_slot_file", room_id=room.id, player_id=patch.player_id) }}" download>
                                 Download Kingdom Hearts Birth by Sleep Mod...</a>
-                            {% elif patch.game == "The Legend of Zelda - Oracle of Seasons" %}
-                            <a href="{{ url_for("download_slot_file", room_id=room.id, player_id=patch.player_id) }}" download>
-                                Download PatcherData File...</a>
                             {% elif patch.game == "Final Fantasy 12 Open World" %}
                             <a href="{{ url_for("download_slot_file", room_id=room.id, player_id=patch.player_id) }}" download>
                                 Download JSON File...</a>
-                            {% elif patch.game == "The Wind Waker" %}
-                                <a href="{{ url_for("download_slot_file", room_id=room.id, player_id=patch.player_id) }}" download>
-                                    Download .aptww File...</a>
                             {% elif patch.game == "Metroid Prime" %}
                                 <a href="{{ url_for("download_slot_file", room_id=room.id, player_id=patch.player_id) }}" download>
                                     Download .apmp1 File...</a>
+                            {% elif patch.game == "Donkey Kong 64" %}
+                                <a href="{{ url_for("download_slot_file", room_id=room.id, player_id=patch.player_id) }}" download>
+                                    Download .lanky File...</a>
                             {% else %}
                                 Unsupported game patch file for this game.
                             {% endif %}

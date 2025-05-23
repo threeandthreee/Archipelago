@@ -42,6 +42,9 @@
 # ChecksFinder
 /worlds/checksfinder/ @SunCatMC
 
+# Civilization VI
+/worlds/civ6/ @hesto2
+
 # Clique
 /worlds/clique/ @ThePhar
 
@@ -92,6 +95,9 @@
 
 # Lingo
 /worlds/lingo/ @hatkirby
+
+# Links Awakening DX
+/worlds/ladx/ @threeandthreee
 
 # Lufia II Ancient Cave
 /worlds/lufia2ac/ @el-u
@@ -199,6 +205,9 @@
 # Wargroove
 /worlds/wargroove/ @FlySniper
 
+# The Wind Waker
+/worlds/tww/ @tanjo3
+
 # The Witness
 /worlds/witness/ @NewSoupVi @blastron
 
@@ -226,9 +235,6 @@
 
 # Final Fantasy (1)
 # /worlds/ff1/
-
-# Links Awakening DX
-# /worlds/ladx/
 
 # Ocarina of Time
 # /worlds/oot/

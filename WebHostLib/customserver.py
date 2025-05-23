@@ -120,6 +120,7 @@ class WebHostContext(Context):
         self.gamespackage = {"Archipelago": static_gamespackage.get("Archipelago", {})}  # this may be modified by _load
         self.item_name_groups = {"Archipelago": static_item_name_groups.get("Archipelago", {})}
         self.location_name_groups = {"Archipelago": static_location_name_groups.get("Archipelago", {})}
+        missing_checksum = False
 
         # Ashipelago customization
         self.room_is_tracked = multidata["server_options"]["track_in_discord"]
@@ -142,11 +143,13 @@ class WebHostContext(Context):
                         continue
                     else:
                         self.logger.warning(f"Did not find game_data_package for {game}: {game_data['checksum']}")
+            else:
+                missing_checksum = True  # Game rolled on old AP and will load data package from multidata
             self.gamespackage[game] = static_gamespackage.get(game, {})
             self.item_name_groups[game] = static_item_name_groups.get(game, {})
             self.location_name_groups[game] = static_location_name_groups.get(game, {})
 
-        if not game_data_packages:
+        if not game_data_packages and not missing_checksum:
             # all static -> use the static dicts directly
             self.gamespackage = static_gamespackage
             self.item_name_groups = static_item_name_groups
@@ -236,6 +239,9 @@ def set_up_logging(room_id) -> logging.Logger:
 def run_server_process(name: str, ponyconfig: dict, static_server_data: dict,
                        cert_file: typing.Optional[str], cert_key_file: typing.Optional[str],
                        host: str, rooms_to_run: multiprocessing.Queue, rooms_shutting_down: multiprocessing.Queue, webhook: dict, admin_password):
+    from setproctitle import setproctitle
+
+    setproctitle(name)
     Utils.init_logging(name)
     try:
         import resource
@@ -256,9 +262,23 @@ def run_server_process(name: str, ponyconfig: dict, static_server_data: dict,
         raise Exception("Worlds system should not be loaded in the custom server.")
 
     import gc
-    from base64 import urlsafe_b64encode
-    ssl_context = load_server_cert(cert_file, cert_key_file) if cert_file else None
-    del cert_file, cert_key_file, ponyconfig
+
+    if not cert_file:
+        def get_ssl_context():
+            return None
+    else:
+        load_date = None
+        ssl_context = load_server_cert(cert_file, cert_key_file)
+
+        def get_ssl_context():
+            nonlocal load_date, ssl_context
+            today = datetime.date.today()
+            if load_date != today:
+                ssl_context = load_server_cert(cert_file, cert_key_file)
+                load_date = today
+            return ssl_context
+
+    del ponyconfig
     gc.collect()  # free intermediate objects used during setup
 
     loop = asyncio.get_event_loop()
@@ -273,12 +293,12 @@ def run_server_process(name: str, ponyconfig: dict, static_server_data: dict,
                 assert ctx.server is None
                 try:
                     ctx.server = websockets.serve(
-                        functools.partial(server, ctx=ctx), ctx.host, ctx.port, ssl=ssl_context)
+                        functools.partial(server, ctx=ctx), ctx.host, ctx.port, ssl=get_ssl_context())
 
                     await ctx.server
                 except OSError:  # likely port in use
                     ctx.server = websockets.serve(
-                        functools.partial(server, ctx=ctx), ctx.host, 0, ssl=ssl_context)
+                        functools.partial(server, ctx=ctx), ctx.host, 0, ssl=get_ssl_context())
 
                     await ctx.server
                 port = 0
