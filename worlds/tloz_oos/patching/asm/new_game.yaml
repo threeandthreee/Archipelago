@@ -9,6 +9,7 @@
 07/0195/: db option.startingRoom        # Room
 07/0197/: db option.startingPosY        # Y
 07/0199/: db option.startingPosX        # X
+07/01a4/: db $00                        # Set shield level to 0. Should not have any effect before obtaining a shield and can be used to know if a shield have been obtained this way
 07/01a6/: db option.animalCompanion     # Natzu layout
 
 # Set new game max bombs to 0 instead of 10

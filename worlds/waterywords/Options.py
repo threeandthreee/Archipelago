@@ -10,8 +10,8 @@ class ScoreForLastCheck(Range):
 
     display_name = "Score for last check"
     range_start = 160
-    range_end = 1000
-    default = 300
+    range_end = 777
+    default = 250
 
 
 class ScoreForGoal(Range):
@@ -22,7 +22,7 @@ class ScoreForGoal(Range):
 
     display_name = "Score for goal"
     range_start = 160
-    range_end = 1000
+    range_end = 777
     default = 200
 
 

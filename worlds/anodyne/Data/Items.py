@@ -217,7 +217,18 @@ filler_items = [
     *non_secret_filler_items,
 ]
 
+brooms = [
+    "Broom",
+    "Widen",
+    "Extend"
+]
+
 item_groups = {
     "Cards": cards,
     "Nexus Gates": nexus_gate_items.keys(),
+    "Keys": small_key_item_count.keys(),
+    "Key Rings": small_key_item_count.keys(),
+    "Big Keys": big_keys,
+    "Statues": statue_items,
+    "Brooms": brooms,
 }

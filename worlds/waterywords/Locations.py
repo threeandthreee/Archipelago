@@ -35,7 +35,7 @@ def ini_locations(goal_score, max_score, number_of_locations, packs):
     """
     scaling = 2  # parameter that determines how many low-score location there are.
     if packs:
-        scaling = 1.4
+        scaling = 1.8
 
     scores = []
     # the scores follow the function int( 1 + (percentage ** scaling) * (max_score-1) )

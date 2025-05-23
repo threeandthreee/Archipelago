@@ -1,4 +1,4 @@
-from . import OuterWildsTestBase
+from .bases import OuterWildsTestBase
 from ..options import EarlyKeyItem, Spawn
 
 

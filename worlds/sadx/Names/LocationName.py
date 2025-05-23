@@ -27,10 +27,10 @@ class Gamma:
 class Big:
     LifeBelt = "Life Belt Upgrade Point"
     PowerRod = "Power Rod Upgrade Point"
-    Lure1 = "Lure 1 Upgrade Point"
-    Lure2 = "Lure 2 Upgrade Point"
-    Lure3 = "Lure 3 Upgrade Point"
-    Lure4 = "Lure 4 Upgrade Point"
+    Lure1 = "Lure 1 (Sewers) Upgrade Point"
+    Lure2 = "Lure 2 (Jungle) Upgrade Point"
+    Lure3 = "Lure 3 (Ice Cap) Upgrade Point"
+    Lure4 = "Lure 4 (Jail) Upgrade Point"
 
 
 class Boss:

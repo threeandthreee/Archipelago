@@ -11,7 +11,6 @@ from .Items import DigimonWorldItem, DigimonWorldItemCategory, item_dictionary, 
 from .Locations import DigimonWorldLocation, DigimonWorldLocationCategory, location_tables, location_dictionary
 from .Options import DigimonWorldOption
 from .RecruitDigimon import recruit_digimon_list
-import random
 
 class DigimonWorldWeb(WebWorld):
     bug_report_page = ""
@@ -72,7 +71,8 @@ class DigimonWorldWorld(World):
         regions: Dict[str, Region] = {}      
         regions["Menu"] = self.create_region("Menu", [])  
         regions.update({region_name: self.create_region(region_name, location_tables[region_name]) for region_name in [
-            "Start Game","Consumable", "Cards", "Prosperity",
+            "Start Game","Consumable", "Cards",
+            "Prosperity",
             "Agumon", "Betamon","Greymon","Devimon","Airdramon","Tyrannomon","Meramon","Seadramon","Numemon","MetalGreymon","Mamemon","Monzaemon",
             "Gabumon","Elecmon","Kabuterimon","Angemon","Birdramon","Garurumon","Frigimon","Whamon","Vegiemon","SkullGreymon","MetalMamemon","Vademon",
             "Patamon","Kunemon","Unimon","Ogremon","Shellmon","Centarumon","Bakemon","Drimogemon","Sukamon","Andromon", "Giromon", "Etemon", "Biyomon",
@@ -191,7 +191,7 @@ class DigimonWorldWorld(World):
             
         
         print(f"Itempool size after adding souls: {itempoolSize}")
-        filler_pool = BuildItemPool(itempoolSize, self.options)
+        filler_pool = BuildItemPool(self.multiworld, itempoolSize, self.options)
         for item in filler_pool:
             itempool.append(self.create_item(self.get_filler_item_name()))
             itempool.append(self.create_item(item.name))
@@ -209,9 +209,7 @@ class DigimonWorldWorld(World):
         location.place_locked_item(self.create_item("Agumon Soul"))
         # Add regular items to itempool
         self.multiworld.itempool += itempool
-
         
-
     def create_item(self, name: str) -> Item:
         useful_categories = {
            # DigimonWorldItemCategory.CONSUMABLE,
@@ -256,8 +254,10 @@ class DigimonWorldWorld(World):
                     return True            
                 has_soul = state.has(digimon.name + " Soul", self.player)
                 return has_soul
-  
-        self.multiworld.completion_condition[self.player] = lambda state: state.has("Digitamamon Recruited", self.player)
+        if self.options.goal.value == 0:
+            self.multiworld.completion_condition[self.player] = lambda state: calculate_prosperity(self, state) >= self.options.required_prosperity.value
+        else:        
+            self.multiworld.completion_condition[self.player] = lambda state: state.has("Digitamamon Recruited", self.player)
 
         #for region in self.multiworld.get_regions(self.player):
         #    for location in region.locations:
@@ -304,9 +304,9 @@ class DigimonWorldWorld(World):
         set_rule(self.multiworld.get_location(f"Monochromon", self.player), lambda state: state.has("Monochromon Soul", self.player) and calculate_prosperity(self, state) >= 6 and state.has("Agumon Recruited", self.player))
         set_rule(self.multiworld.get_location(f"Monochromon Recruited", self.player), lambda state: state.has("Monochromon Soul", self.player) and calculate_prosperity(self, state) >= 6 and state.has("Agumon Recruited", self.player))   
 
-        set_rule(self.multiworld.get_entrance(f"Agumon -> Meramon", self.player), lambda state: state.has("Meramon Soul", self.player) and state.has("Agumon Recruited", self.player))
-        set_rule(self.multiworld.get_location(f"Meramon", self.player), lambda state: state.has("Meramon Soul", self.player) and state.has("Agumon Recruited", self.player))
-        set_rule(self.multiworld.get_location(f"Meramon Recruited", self.player), lambda state: state.has("Meramon Soul", self.player) and state.has("Agumon Recruited", self.player))
+        set_rule(self.multiworld.get_entrance(f"Agumon -> Meramon", self.player), lambda state: state.has("Meramon Soul", self.player) and state.has("Agumon Recruited", self.player) and (state.has("Coelamon Recruited", self.player) or state.has("Betamon Recruited", self.player)))
+        set_rule(self.multiworld.get_location(f"Meramon", self.player), lambda state: state.has("Meramon Soul", self.player) and state.has("Agumon Recruited", self.player) and (state.has("Coelamon Recruited", self.player) or state.has("Betamon Recruited", self.player)))
+        set_rule(self.multiworld.get_location(f"Meramon Recruited", self.player), lambda state: state.has("Meramon Soul", self.player) and state.has("Agumon Recruited", self.player) and (state.has("Coelamon Recruited", self.player) or state.has("Betamon Recruited", self.player)))
 
         set_rule(self.multiworld.get_entrance(f"Agumon -> Elecmon", self.player), lambda state: state.has("Elecmon Soul", self.player) and state.has("Agumon Recruited", self.player))
         set_rule(self.multiworld.get_location(f"Elecmon", self.player), lambda state: state.has("Elecmon Soul", self.player) and state.has("Agumon Recruited", self.player))
@@ -476,10 +476,7 @@ class DigimonWorldWorld(World):
                 prosperity_value = int(prosperity_location.name.split(" ")[0])
                 current_prosperity = lambda state, player: sum(digimon.prosperity_value for digimon in recruit_digimon_list if self.multiworld.get_location(digimon.name, player).can_reach(state))                
                 set_rule(prosperity_location, lambda state: current_prosperity(state, self.player) >= prosperity_value and state.has("Agumon Recruited", self.player))
-        #completionLocation = self.multiworld.get_location("Digitamamon", self.player)    
 
-            #completionLocation.can_reach(state)
-        #    calculate_prosperity(self, state) >= 1#self.options.required_prosperity.value 
     def fill_slot_data(self) -> Dict[str, object]:
         slot_data: Dict[str, object] = {}
 
@@ -511,14 +508,16 @@ class DigimonWorldWorld(World):
 
         slot_data = {
             "options": {
-                #"goal": self.options.goal.value,
+                "goal": self.options.goal.value,
                 "required_prosperity": self.options.required_prosperity.value,
                 "guaranteed_items": self.options.guaranteed_items.value,
                 "exp_multiplier": self.options.exp_multiplier.value,
                 "progressive_stats": self.options.progressive_stats.value,
                 "random_starter": self.options.random_starter.value,
                 "early_statcap": self.options.early_statcap.value,
-                "random_techniques": self.options.random_techniques.value
+                "random_techniques": self.options.random_techniques.value,
+                "easy_monochromon": self.options.easy_monochromon.value,
+                "fast_drimogemon": self.options.fast_drimogemon.value
             },
             "seed": self.multiworld.seed_name,  # to verify the server's multiworld
             "slot": self.multiworld.player_name[self.player],  # to connect to server

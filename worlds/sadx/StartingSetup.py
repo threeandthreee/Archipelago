@@ -157,6 +157,8 @@ def validate_settings(options):
         for mission in mission_location_table:
             if str(mission.missionNumber) in options.mission_blacklist.value:
                 continue
+            if str(mission.character.name) in options.mission_blacklist.value:
+                continue
             if is_character_playable(mission.character, options):
                 mission_quantity += 1
         if mission_quantity == 0:
@@ -248,6 +250,8 @@ def get_possible_starting_area_information(character: Character, area: Area, opt
     if options.mission_mode_checks:
         for mission in mission_location_table:
             if str(mission.missionNumber) in options.mission_blacklist.value:
+                continue
+            if str(mission.character.name) in options.mission_blacklist.value:
                 continue
             if (mission.character == character and mission.cardArea == area
                     and mission.objectiveArea == area and not mission.get_logic_items(options)):

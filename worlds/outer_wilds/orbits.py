@@ -1,5 +1,4 @@
 from random import Random
-from typing import Dict, List
 from .options import OuterWildsGameOptions
 
 
@@ -8,7 +7,7 @@ from .options import OuterWildsGameOptions
 #     {"HGT":30, "TH":60, "BH":90, "GD":120, "DB":150, "SS":180, "AR":210, "HL":240, "OPC":270},
 #     {"ET":"up", "AT":"down", "TH":"left", "BH":"right"}
 # )
-def generate_random_orbits(random: Random, options: OuterWildsGameOptions) -> (List[str], Dict[str, int]):
+def generate_random_orbits(random: Random, options: OuterWildsGameOptions) -> (list[str], dict[str, int]):
     # The Outsider relies on GD and DB coming together at the end of a loop, so they stay in the last two lanes
     if options.enable_outsider_mod:
         inner_planets = ["HGT", "TH", "BH"]
@@ -34,7 +33,7 @@ def generate_random_orbits(random: Random, options: OuterWildsGameOptions) -> (L
     # angles without it being too obvious that we're only using a fixed set of choices.
     all_possible_angles = [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330]
 
-    orbit_angles: Dict[str, int] = {}
+    orbit_angles: dict[str, int] = {}
     for index, planet in enumerate(planet_order):
         possible_angles = all_possible_angles.copy()
 
@@ -67,7 +66,7 @@ def generate_random_orbits(random: Random, options: OuterWildsGameOptions) -> (L
     return planet_order, orbit_angles
 
 
-def generate_random_rotations(random: Random) -> Dict[str, str]:
+def generate_random_rotations(random: Random) -> dict[str, str]:
     # These are static properties of Unity's Vector3 class, e.g. Vector3.up is (0, 1, 0)
     possible_axis_directions = ["up", "down", "left", "right", "forward", "back", "zero"]
 
@@ -75,7 +74,7 @@ def generate_random_rotations(random: Random) -> Dict[str, str]:
     # can change rotation, so for this part of the code those are two separate "planets".
     # GD and DB do not rotate, and I've heard GD's islands would stop working if it did rotate.
     # The satellites' axes can also be changed, but it's not noticeable enough to bother.
-    rotation_axes: Dict[str, str] = {}
+    rotation_axes: dict[str, str] = {}
     for planet in ("ET", "AT", "TH", "BH"):
         rotation_axes[planet] = random.choice(possible_axis_directions)
 

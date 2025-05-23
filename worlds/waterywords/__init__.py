@@ -7,7 +7,7 @@ from worlds.AutoWorld import WebWorld, World
 
 from .Items import YachtDiceItem, item_table, group_table, bonus_item_list
 from .Locations import YachtDiceLocation, all_locations, ini_locations
-from .Rules import set_yacht_completion_rules, set_yacht_rules, calculate_score_in_logic
+from .Rules import set_yacht_completion_rules, set_yacht_rules
 
 from .Options import YachtDiceOptions
 
@@ -46,7 +46,7 @@ class YachtDiceWorld(World):
     
     item_name_groups = group_table
 
-    ap_world_version = "0.0.1"
+    ap_world_version = "0.1.0"
 
     def _get_yachtdice_data(self):
         return {
@@ -106,7 +106,6 @@ class YachtDiceWorld(World):
                 
         self.slotdata_bonus_tiles_packs = []
         if self.options.merge_items:
-            print("YES")
             self.itempool += ["5 Bonus Tiles"] * 9
             self.random.shuffle(bonus_tiles)
             self.slotdata_bonus_tiles_packs = [bonus_tiles[i:i+5] for i in range(0, len(bonus_tiles), 5)]
@@ -171,7 +170,7 @@ class YachtDiceWorld(World):
         set rules per location, and add the rule for beating the game
         """
 
-        self.logic_factor = max(1.1 * self.max_score / (min(self.max_letters * 2, self.max_turns * 20) * (1 + 0.03 * self.max_bonus_tiles)), 1)
+        self.logic_factor = max(1.1 * self.max_score / (min(self.max_letters * 2, self.max_turns * 18) * (1 + 0.025 * self.max_bonus_tiles)), 1)
         
         set_yacht_rules(
             self.multiworld,

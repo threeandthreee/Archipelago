@@ -1,4 +1,7 @@
 from worlds.generic.Rules import set_rule, add_rule
+from worlds.AutoWorld import LogicMixin
+from BaseClasses import MultiWorld
+from copy import deepcopy
 from .names import LocationName, ItemName
 import typing
 
@@ -15,7 +18,6 @@ burn_levels = [
     "Rock Star 3",
     "Aqua Star 1",
     "Aqua Star 2",
-    "Aqua Star 3",
     "Neo Star 1",
     "Neo Star 3",
     "Neo Star 4",
@@ -33,12 +35,10 @@ needle_levels = [
     "Rock Star 2",
     "Aqua Star 1",
     "Neo Star 3",
-    "Neo Star 4",
     "Shiver Star 1",
     "Shiver Star 2",
     "Shiver Star 3",
     "Ripple Star 1",
-    "Ripple Star 2",
     "Ripple Star 3",
 ]
 
@@ -51,7 +51,6 @@ bomb_levels = [
     "Aqua Star 2",
     "Aqua Star 3",
     "Aqua Star 4",
-    "Neo Star 4",
     "Shiver Star 1",
     "Shiver Star 2",
     "Shiver Star 3",
@@ -62,17 +61,13 @@ bomb_levels = [
 
 spark_levels = [
     "Pop Star 2",
-    "Rock Star 1",
     "Rock Star 2",
     "Rock Star 4",
     "Aqua Star 1",
     "Aqua Star 2",
     "Aqua Star 4",
-    "Neo Star 2",
-    "Neo Star 4",
     "Shiver Star 2",
     "Shiver Star 3",
-    "Shiver Star 4",
     "Ripple Star 1",
     "Ripple Star 3",
 ]
@@ -84,14 +79,10 @@ cutter_levels = [
     "Rock Star 2",
     "Rock Star 3",
     "Aqua Star 1",
-    "Aqua Star 2",
     "Aqua Star 3",
     "Aqua Star 4",
     "Neo Star 1",
-    "Neo Star 2",
     "Neo Star 3",
-    "Neo Star 4",
-    "Shiver Star 1",
     "Shiver Star 2",
     "Shiver Star 3",
     "Shiver Star 4",
@@ -130,6 +121,55 @@ ice_levels = [
     "Ripple Star 1",
     "Ripple Star 3",
 ]
+
+waddle_copy_levels = {
+    "Spark Ability": [
+        "Rock Star 1",
+        "Neo Star 2"
+    ],
+    "Cutter Ability": [
+        "Aqua Star 2",
+        "Neo Star 2",
+        "Shiver Star 1"
+    ]
+}
+
+
+dedede_copy_levels = {
+    "Burning Ability": [
+        "Aqua Star 3"
+    ],
+    "Needle Ability": [
+        "Neo Star 4",
+        "Ripple Star 2",
+    ],
+    "Bomb Ability": [
+        "Neo Star 4",
+    ],
+    "Spark Ability": [
+        "Neo Star 4",
+        "Shiver Star 4",
+    ],
+    "Cutter Ability": [
+        "Neo Star 4",
+    ]
+}
+
+
+class K64LogicMixin(LogicMixin):
+    game: str = "Kirby 64 - The Crystal Shards"
+    k64_stale: dict[int, bool]
+    k64_level_state: dict[int, list[bool]]
+
+    def init_mixin(self, multiworld: MultiWorld):
+        k64_players = multiworld.get_game_players(self.game)
+        self.k64_stale = {player: True for player in k64_players}
+        self.k64_level_state = {player: [False, False, False, False, False, False] for player in k64_players}
+
+    def copy_mixin(self, other: "K64LogicMixin"):
+        other.k64_stale = self.k64_stale.copy()
+        other.k64_level_state = deepcopy(self.k64_level_state)
+        return other
 
 
 def has_any_bomb(state: "CollectionState", player: int):
@@ -370,9 +410,11 @@ def set_rules(world: "K64World") -> None:
              lambda state: has_volcano(state, world.player, world.options.split_power_combos.value))
     for location in (LocationName.aqua_star_2, LocationName.aqua_star_2_s2, LocationName.aqua_star_2_s3):
         set_rule(world.get_location(location), lambda state: has_waddle_dee(state, world.player))
+    for location in (LocationName.aqua_star_3, LocationName.aqua_star_3_s2, LocationName.aqua_star_3_s3):
+        set_rule(world.get_location(location), lambda state: has_king_dedede(state, world.player))
     set_rule(world.get_location(LocationName.aqua_star_3_s1),
              lambda state: has_shurikens(state, world.player, world.options.split_power_combos.value))
-    set_rule(world.get_location(LocationName.aqua_star_3_s3),
+    add_rule(world.get_location(LocationName.aqua_star_3_s3),
              lambda state: has_stone_friends(state, world.player, world.options.split_power_combos.value))
     # Level 4
     for location in (LocationName.neo_star_2, LocationName.neo_star_2_s2, LocationName.neo_star_2_s3):

@@ -1,12 +1,14 @@
 """
 Functions related to AP regions for Pokémon FireRed and LeafGreen (see ./data/regions for region definitions)
 """
-from typing import TYPE_CHECKING, Dict, List, Tuple, Optional, Callable
-from BaseClasses import Region, CollectionState, ItemClassification
-from .data import data, LocationCategory, kanto_fly_destinations, sevii_fly_destinations, starting_town_blacklist_map
+from typing import TYPE_CHECKING, Dict, List, Tuple, Callable
+from BaseClasses import Entrance, Region, CollectionState, ItemClassification
+from entrance_rando import ERPlacementState
+from .data import (data, LocationCategory, fly_plando_maps, kanto_fly_destinations, sevii_fly_destinations,
+                   starting_town_blacklist_map)
 from .items import PokemonFRLGItem
 from .locations import PokemonFRLGLocation
-from .options import GameVersion, LevelScaling
+from .options import LevelScaling
 
 if TYPE_CHECKING:
     from . import PokemonFRLGWorld
@@ -21,11 +23,13 @@ INDIRECT_CONDITIONS: Dict[str, List[str]] = {
     "Vermilion City": ["Navel Rock Arrival", "Birth Island Arrival"]
 }
 
-SEVII_REQUIRED_EVENTS = [
-    "Champion's Room - Champion Rematch Reward"
-]
-
 STATIC_POKEMON_SPOILER_NAMES = {
+    "TRADE_POKEMON_MR_MIME": "Route 2 Trade House",
+    "GIFT_POKEMON_MAGIKARP": "Route 4 Pokemon Center 1F",
+    "TRADE_POKEMON_JYNX": "Cerulean Trade House",
+    "TRADE_POKEMON_NIDORAN": "Underground Path North Entrance",
+    "TRADE_POKEMON_FARFETCHD": "Vermilion Trade House",
+    "TRADE_POKEMON_NIDORINOA": "Route 11 Gate 2F",
     "STATIC_POKEMON_ELECTRODE_1": "Power Plant (Static)",
     "STATIC_POKEMON_ELECTRODE_2": "Power Plant (Static)",
     "LEGENDARY_POKEMON_ZAPDOS": "Power Plant (Static)",
@@ -37,13 +41,17 @@ STATIC_POKEMON_SPOILER_NAMES = {
     "GIFT_POKEMON_EEVEE": "Celadon Condominiums Roof Room",
     "STATIC_POKEMON_ROUTE12_SNORLAX": "Route 12 (Static)",
     "STATIC_POKEMON_ROUTE16_SNORLAX": "Route 16 (Static)",
+    "TRADE_POKEMON_LICKITUNG": "Route 18 Gate 2F",
     "GIFT_POKEMON_HITMONCHAN": "Saffron Dojo",
     "GIFT_POKEMON_HITMONLEE": "Saffron Dojo",
     "GIFT_POKEMON_LAPRAS": "Silph Co. 7F",
     "LEGENDARY_POKEMON_ARTICUNO": "Seafoam Islands B4F (Static)",
+    "TRADE_POKEMON_ELECTRODE": "Pokemon Lab Lounge",
+    "TRADE_POKEMON_TANGELA": "Pokemon Lab Lounge",
     "GIFT_POKEMON_OMANYTE": "Pokemon Lab Experiment Room (Helix)",
     "GIFT_POKEMON_KABUTO": "Pokemon Lab Experiment Room (Dome)",
     "GIFT_POKEMON_AERODACTYL": "Pokemon Lab Experiment Room (Amber)",
+    "TRADE_POKEMON_SEEL": "Pokemon Lab Experiment Room (Trade)",
     "LEGENDARY_POKEMON_MOLTRES": "Mt. Ember Summit",
     "STATIC_POKEMON_HYPNO": "Berry Forest (Static)",
     "EGG_POKEMON_TOGEPI": "Water Labyrinth (Egg)",
@@ -100,8 +108,18 @@ fly_destination_entrance_map = {
 }
 
 
+class PokemonFRLGEntrance(Entrance):
+    connected_entrance_name: str | None = None
+
+    def can_connect_to(self, other: Entrance, dead_end: bool, er_state: "ERPlacementState") -> bool:
+        return (self.randomization_type == other.randomization_type
+                and (not er_state.coupled or self.name != other.name)
+                and (self.connected_entrance_name is None or self.connected_entrance_name == other.name))
+
+
 class PokemonFRLGRegion(Region):
-    distance: Optional[int]
+    distance: int | None
+    entrance_type = PokemonFRLGEntrance
 
     def __init__(self, name, player, multiworld):
         super().__init__(name, player, multiworld)
@@ -116,7 +134,7 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
 
     # Used in connect_to_map_encounters. Splits encounter categories into "subcategories" and gives them names
     # and rules so the rods can only access their specific slots.
-    encounter_categories: Dict[str, List[Tuple[Optional[str], range, Optional[Callable[[CollectionState], bool]]]]] = {
+    encounter_categories: Dict[str, List[Tuple[str | None, range, Callable[[CollectionState], bool] | None]]] = {
         "Land": [(None, range(0, 12), None)],
         "Water": [(None, range(0, 5), None)],
         "Fishing": [
@@ -127,7 +145,6 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
     }
 
     game_version = world.options.game_version.current_key
-    kanto_only = world.options.kanto_only
 
     def connect_to_map_encounters(regions: Dict[str, Region], region: Region, map_name: str, encounter_region_name: str,
                                   include_slots: Tuple[bool, bool, bool]):
@@ -193,7 +210,8 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
                                 None,
                                 world.player
                             ))
-                            world.repeatable_pokemon.add(data.species[species_id].name)
+                            if data.species[species_id].name not in world.logic.wild_pokemon:
+                                world.logic.wild_pokemon.append(data.species[species_id].name)
                             encounter_region.locations.append(encounter_location)
 
                     # Add the new encounter region to the multiworld
@@ -202,39 +220,122 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
                 # Encounter region exists, just connect to it
                 region.connect(encounter_region, f"{region.name} ({encounter_category[0]} Battle)")
 
+    def exclude_region(region_id: str):
+        elite_four_ids = [
+            "REGION_POKEMON_LEAGUE_LORELEIS_ROOM/MAIN", "REGION_POKEMON_LEAGUE_BRUNOS_ROOM/MAIN",
+            "REGION_POKEMON_LEAGUE_AGATHAS_ROOM/MAIN", "REGION_POKEMON_LEAGUE_LANCES_ROOM/MAIN"
+        ]
+
+        if world.options.kanto_only and not data.regions[region_id].kanto:
+            return True
+        if world.options.skip_elite_four and region_id in elite_four_ids:
+            return True
+        return False
+
+    def exclude_event(event_id: str):
+        if world.options.kanto_only and event_id == "EVENT_DEFEAT_CHAMPION_REMATCH":
+            return True
+        if data.events[event_id].category == LocationCategory.EVENT_SHOP and world.options.shopsanity:
+            return True
+        return False
+
+    def exclude_exit(region_id: str, exit_region_id: str):
+        if world.options.kanto_only and not data.regions[exit_region_id].kanto:
+            return True
+        if (not world.options.kanto_only and
+                region_id == "REGION_CINNABAR_ISLAND_POKEMON_CENTER_1F/MAIN" and
+                exit_region_id == "REGION_VERMILION_CITY/MAIN"):
+            return True
+        return False
+
+    def exclude_warp(warp: str):
+        source_warp = data.warps[warp]
+        dest_warp = data.warps[data.warp_map[warp]]
+        if source_warp.name == "":
+            return True
+        if dest_warp.parent_region_id is None:
+            return True
+        if world.options.kanto_only and not data.regions[dest_warp.parent_region_id].kanto:
+            return True
+        return False
+
+    def exclude_scaling(scaling_id: str):
+        elite_four_ids = [
+            "TRAINER_SCALING_POKEMON_LEAGUE_ELITE_FOUR/MAIN",
+            "TRAINER_SCALING_POKEMON_LEAGUE_ELITE_FOUR_REMATCH/MAIN"
+        ]
+        champion_ids = [
+            "TRAINER_SCALING_POKEMON_LEAGUE_CHAMPIONS_ROOM/MAIN",
+            "TRAINER_SCALING_POKEMON_LEAGUE_CHAMPIONS_ROOM_REMATCH/MAIN"
+        ]
+
+        if world.options.kanto_only and not data.scaling[scaling_id].kanto:
+            return True
+        if world.options.skip_elite_four and scaling_id in elite_four_ids:
+            return True
+        if not world.options.skip_elite_four and scaling_id in champion_ids:
+            return True
+        return False
+
+    def modify_entrance_name(world: "PokemonFRLGWorld", name: str) -> str:
+        route_2_modification = {
+            "Route 2 Northwest Cuttable Tree": "Route 2 Northwest Smashable Rock",
+            "Route 2 Northeast Cuttable Tree (North)": "Route 2 Northeast Smashable Rock",
+            "Route 2 Northeast Cuttable Tree (South)": "Route 2 Northeast Cuttable Tree"
+        }
+        block_tunnels = {
+            "Route 5 Unobstructed Path": "Route 5 Smashable Rocks",
+            "Route 5 Near Tunnel Unobstructed Path": "Route 5 Near Tunnel Smashable Rocks",
+            "Route 6 Unobstructed Path": "Route 6 Smashable Rocks",
+            "Route 6 Near Tunnel Unobstructed Path": "Route 6 Near Tunnel Smashable Rocks",
+            "Route 7 Unobstructed Path": "Route 7 Smashable Rocks",
+            "Route 7 Near Tunnel Unobstructed Path": "Route 7 Near Tunnel Smashable Rocks",
+            "Route 8 Unobstructed Path": "Route 8 Smashable Rocks",
+            "Route 8 Near Tunnel Unobstructed Path": "Route 8 Near Tunnel Smashable Rocks"
+        }
+        block_pokemon_tower = {
+            "Pokemon Tower 1F Unobstructed Path": "Pokemon Tower 1F Reveal Ghost",
+            "Pokemon Tower 1F Near Stairs Unobstructed Path": "Pokemon Tower 1F Near Stairs Pass Ghost"
+        }
+        rotue_23_trees = {
+            "Route 23 Near Water Unobstructed Path": "Route 23 Near Water Cuttable Trees",
+            "Route 23 Center Unobstructed Path": "Route 23 Center Cuttable Trees"
+        }
+        route_23_modification = {
+            "Route 23 South Water Unobstructed Path": "Route 23 Waterfall Ascend",
+            "Route 23 North Water Unobstructed Path": "Route 23 Waterfall Drop"
+        }
+
+        if "Modify Route 2" in world.options.modify_world_state.value and name in route_2_modification.keys():
+            return route_2_modification[name]
+        if "Block Tunnels" in world.options.modify_world_state.value and name in block_tunnels.keys():
+            return block_tunnels[name]
+        if "Block Tower" in world.options.modify_world_state.value and name in block_pokemon_tower.keys():
+            return block_pokemon_tower[name]
+        if "Route 23 Trees" in world.options.modify_world_state.value and name in rotue_23_trees.keys():
+            return rotue_23_trees[name]
+        if "Modify Route 23" in world.options.modify_world_state.value and name in route_23_modification.keys():
+            return route_23_modification[name]
+        return name
+
     regions: Dict[str, Region] = {}
     connections: List[Tuple[str, str, str]] = []
-    for region_data in data.regions.values():
-        if kanto_only and not region_data.kanto:
+    for region_id, region_data in data.regions.items():
+        if exclude_region(region_id):
             continue
 
         region_name = region_data.name
+
         new_region = PokemonFRLGRegion(region_name, world.player, world.multiworld)
 
         for event_id in region_data.events:
             event_data = world.modified_events[event_id]
 
-            if world.options.kanto_only and event_data.name in SEVII_REQUIRED_EVENTS:
+            if exclude_event(event_id):
                 continue
 
-            if type(event_data.name) is list:
-                if world.options.game_version == GameVersion.option_firered:
-                    name = event_data.name[0]
-                else:
-                    name = event_data.name[1]
-            else:
-                name = event_data.name
-
-            if type(event_data.item) is list:
-                if world.options.game_version == GameVersion.option_firered:
-                    item = event_data.item[0]
-                else:
-                    item = event_data.item[1]
-            else:
-                item = event_data.item
-
             event = PokemonFRLGLocation(world.player,
-                                        name,
+                                        event_data.name,
                                         None,
                                         event_data.category,
                                         new_region,
@@ -242,34 +343,30 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
                                         None,
                                         spoiler_name=STATIC_POKEMON_SPOILER_NAMES[event_id]
                                         if event_id in STATIC_POKEMON_SPOILER_NAMES else None)
-            event.place_locked_item(PokemonFRLGItem(item,
+            event.place_locked_item(PokemonFRLGItem(event_data.item,
                                                     ItemClassification.progression,
                                                     None,
                                                     world.player))
             event.show_in_spoiler = False
             new_region.locations.append(event)
 
-            if "Trade" in name:
-                world.trade_pokemon.append([region_name, name])
-
-        for region_id, exit_name in region_data.exits.items():
-            if kanto_only and not data.regions[region_id].kanto:
+        for exit_region_id, exit_name in region_data.exits.items():
+            if exclude_exit(region_id, exit_region_id):
                 continue
-            region_exit = data.regions[region_id].name
-            if not kanto_only and region_exit == "Vermilion City" and exit_name == "Follow Bill":
-                continue
-            connections.append((exit_name, region_name, region_exit))
+            exit_region_name = data.regions[exit_region_id].name
+            connections.append((exit_name, region_name, exit_region_name))
 
         for warp in region_data.warps:
+            if exclude_warp(warp):
+                continue
             source_warp = data.warps[warp]
-            if source_warp.name == "":
-                continue
             dest_warp = data.warps[data.warp_map[warp]]
-            if dest_warp.parent_region_id is None:
-                continue
-            if kanto_only and not data.regions[dest_warp.parent_region_id].kanto:
-                continue
             dest_region_name = data.regions[dest_warp.parent_region_id].name
+            if world.options.skip_elite_four:
+                if source_warp.name == "Pokemon League":
+                    dest_region_name = "Pokemon League Champion's Room"
+                elif source_warp.name == "Pokemon League Champion's Room Exit (South)":
+                    dest_region_name = "Indigo Plateau Pokemon Center 1F"
             connections.append((source_warp.name, region_name, dest_region_name))
 
         regions[region_name] = new_region
@@ -286,93 +383,98 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
         trainer_name_level_list: List[Tuple[str, int]] = []
         encounter_name_level_list: List[Tuple[str, int]] = []
 
-        game_version = world.options.game_version.current_key
-
-        for scaling_data in world.scaling_data:
+        for scaling_id, scaling_data in data.scaling.items():
+            if exclude_scaling(scaling_id):
+                continue
             if scaling_data.region not in regions:
                 region = PokemonFRLGRegion(scaling_data.region, world.player, world.multiworld)
                 regions[scaling_data.region] = region
 
                 for connection in scaling_data.connections:
+                    if connection not in regions:
+                        continue
                     name = f"{regions[connection].name} -> {region.name}"
                     regions[connection].connect(region, name)
             else:
                 region = regions[scaling_data.region]
 
-            if scaling_data.category == LocationCategory.EVENT_TRAINER_SCALING:
-                scaling_event = PokemonFRLGLocation(
-                    world.player,
-                    scaling_data.name,
-                    None,
-                    scaling_data.category,
-                    region,
-                    None,
-                    None,
-                    scaling_data.data_ids
-                )
-                scaling_event.place_locked_item(PokemonFRLGItem("Trainer Party",
-                                                                ItemClassification.filler,
-                                                                None,
-                                                                world.player))
-                scaling_event.show_in_spoiler = False
-                region.locations.append(scaling_event)
-            elif scaling_data.category == LocationCategory.EVENT_STATIC_POKEMON_SCALING:
-                scaling_event = PokemonFRLGLocation(
-                    world.player,
-                    scaling_data.name,
-                    None,
-                    scaling_data.category,
-                    region,
-                    None,
-                    None,
-                    scaling_data.data_ids
-                )
-                scaling_event.place_locked_item(PokemonFRLGItem("Static Encounter",
-                                                                ItemClassification.filler,
-                                                                None,
-                                                                world.player))
-                scaling_event.show_in_spoiler = False
-                region.locations.append(scaling_event)
-            elif scaling_data.category == LocationCategory.EVENT_WILD_POKEMON_SCALING:
-                index = 1
-                events: Dict[str, Tuple[str, List[str], Optional[Callable[[CollectionState], bool]]]] = {}
-                encounter_category_data = encounter_categories[scaling_data.type]
-                for data_id in scaling_data.data_ids:
-                    map_data = data.maps[data_id]
-                    encounters = (map_data.land_encounters if scaling_data.type == "Land" else
-                                  map_data.water_encounters if scaling_data.type == "Water" else
-                                  map_data.fishing_encounters)
-                    for subcategory in encounter_category_data:
-                        for i in subcategory[1]:
-                            subcategory_name = subcategory[0] if subcategory[0] is not None else scaling_data.type
-                            species_name = f"{subcategory_name} {encounters.slots[game_version][i].species_id}"
-                            if species_name not in events:
-                                encounter_data = (f"{scaling_data.name} {index}", [f"{data_id} {i}"], subcategory[2])
-                                events[species_name] = encounter_data
-                                index = index + 1
-                            else:
-                                events[species_name][1].append(f"{data_id} {i}")
-
-                for event in events.values():
+            for location_name, data_ids in scaling_data.locations.items():
+                if scaling_data.category == LocationCategory.EVENT_TRAINER_SCALING:
                     scaling_event = PokemonFRLGLocation(
                         world.player,
-                        event[0],
+                        location_name,
                         None,
                         scaling_data.category,
                         region,
                         None,
                         None,
-                        event[1]
+                        data_ids
                     )
-
-                    scaling_event.place_locked_item(PokemonFRLGItem("Wild Encounter",
+                    scaling_event.place_locked_item(PokemonFRLGItem("Trainer Party",
                                                                     ItemClassification.filler,
                                                                     None,
                                                                     world.player))
                     scaling_event.show_in_spoiler = False
-                    if event[2] is not None:
-                        scaling_event.access_rule = event[2]
                     region.locations.append(scaling_event)
+                elif scaling_data.category == LocationCategory.EVENT_STATIC_POKEMON_SCALING:
+                    scaling_event = PokemonFRLGLocation(
+                        world.player,
+                        location_name,
+                        None,
+                        scaling_data.category,
+                        region,
+                        None,
+                        None,
+                        data_ids
+                    )
+                    scaling_event.place_locked_item(PokemonFRLGItem("Static Encounter",
+                                                                    ItemClassification.filler,
+                                                                    None,
+                                                                    world.player))
+                    scaling_event.show_in_spoiler = False
+                    region.locations.append(scaling_event)
+                elif scaling_data.category == LocationCategory.EVENT_WILD_POKEMON_SCALING:
+                    index = 1
+                    events: Dict[str, Tuple[str, List[str], Callable[[CollectionState], bool] | None]] = {}
+                    encounter_category_data = encounter_categories[scaling_data.type]
+                    for data_id in data_ids:
+                        map_data = data.maps[data_id]
+                        if world.options.kanto_only and not map_data.kanto:
+                            continue
+                        encounters = (map_data.land_encounters if scaling_data.type == "Land" else
+                                      map_data.water_encounters if scaling_data.type == "Water" else
+                                      map_data.fishing_encounters)
+                        for subcategory in encounter_category_data:
+                            for i in subcategory[1]:
+                                subcategory_name = subcategory[0] if subcategory[0] is not None else scaling_data.type
+                                species_name = f"{subcategory_name} {encounters.slots[game_version][i].species_id}"
+                                if species_name not in events:
+                                    encounter_data = (f"{location_name} {index}", [f"{data_id} {i}"], subcategory[2])
+                                    events[species_name] = encounter_data
+                                    index = index + 1
+                                else:
+                                    events[species_name][1].append(f"{data_id} {i}")
+
+                    for event in events.values():
+                        scaling_event = PokemonFRLGLocation(
+                            world.player,
+                            event[0],
+                            None,
+                            scaling_data.category,
+                            region,
+                            None,
+                            None,
+                            event[1]
+                        )
+
+                        scaling_event.place_locked_item(PokemonFRLGItem("Wild Encounter",
+                                                                        ItemClassification.filler,
+                                                                        None,
+                                                                        world.player))
+                        scaling_event.show_in_spoiler = False
+                        if event[2] is not None:
+                            scaling_event.access_rule = event[2]
+                        region.locations.append(scaling_event)
 
         for region in regions.values():
             for location in region.locations:
@@ -410,7 +512,7 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
                         encounter_max_level = encounters.slots[game_version][int(data_ids[1])].max_level
                         max_level = max(max_level, encounter_max_level)
 
-                    encounter_name_level_list.append((location.name, max_level)),
+                    encounter_name_level_list.append((location.name, max_level))
                     world.encounter_name_level_dict[location.name] = max_level
 
         trainer_name_level_list.sort(key=lambda i: i[1])
@@ -421,7 +523,9 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
         world.encounter_level_list = [i[1] for i in encounter_name_level_list]
 
     if world.options.random_starting_town:
-        forbidden_starting_towns = ["SPAWN_INDIGO_PLATEAU", "SPAWN_ROUTE10"]
+        forbidden_starting_towns = ["SPAWN_INDIGO_PLATEAU"]
+        if not world.options.shuffle_badges:
+            forbidden_starting_towns.append("SPAWN_ROUTE10")
         if world.options.kanto_only:
             forbidden_starting_towns.extend(["SPAWN_ONE_ISLAND", "SPAWN_TWO_ISLAND", "SPAWN_THREE_ISLAND",
                                              "SPAWN_FOUR_ISLAND", "SPAWN_FIVE_ISLAND", "SPAWN_SIX_ISLAND",
@@ -440,21 +544,18 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
             fly_destinations.update(sevii_fly_destinations)
         maps_already_chosen = set()
         exit_already_randomized = set()
-        for exit_name, map in world.options.fly_destination_plando.value.items():
-            if map in maps_already_chosen or map not in fly_destinations.keys():
+        for exit_name, warp_name in world.options.fly_destination_plando.value.items():
+            fly_plando = fly_plando_maps[warp_name]
+            if fly_plando[0] in maps_already_chosen or fly_plando[0] not in fly_destinations.keys():
                 continue
             exit = world.multiworld.get_entrance(exit_name, world.player)
             regions[exit.connected_region.name].entrances.remove(exit)
             exit.connected_region = None
-            allowed_regions = list(fly_destinations[map].keys())
-            region = world.random.choice(allowed_regions)
-            allowed_warps = fly_destinations[map][region]
-            warp = world.random.choice(allowed_warps)
-            maps_already_chosen.add(map)
+            maps_already_chosen.add(fly_plando[0])
             exit_already_randomized.add(exit_name)
-            exit.connected_region = regions[region]
-            regions[region].entrances.append(exit)
-            world.fly_destination_data[fly_destination_entrance_map[exit.name]] = warp
+            exit.connected_region = regions[fly_plando[1]]
+            regions[fly_plando[1]].entrances.append(exit)
+            world.fly_destination_data[fly_destination_entrance_map[exit.name]] = fly_plando[2]
         for exit in regions["Sky"].exits:
             if exit.name in exit_already_randomized:
                 continue
@@ -463,20 +564,19 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
             allowed_maps = [k for k in fly_destinations.keys() if k not in maps_already_chosen]
             map = world.random.choice(allowed_maps)
             allowed_regions = list(fly_destinations[map].keys())
-            region = world.random.choice(allowed_regions)
-            allowed_warps = fly_destinations[map][region]
-            warp = world.random.choice(allowed_warps)
+            map_region = world.random.choice(allowed_regions)
+            allowed_warps = fly_destinations[map][map_region]
+            map_warp = world.random.choice(allowed_warps)
             maps_already_chosen.add(map)
-            exit.connected_region = regions[region]
-            regions[region].entrances.append(exit)
-            world.fly_destination_data[fly_destination_entrance_map[exit.name]] = warp
+            exit.connected_region = regions[map_region]
+            regions[map_region].entrances.append(exit)
+            world.fly_destination_data[fly_destination_entrance_map[exit.name]] = map_warp
 
-    regions["Menu"] = PokemonFRLGRegion("Menu", world.player, world.multiworld)
-    regions["Menu"].connect(regions[starting_town_map[world.starting_town]], "Start Game")
-    regions["Menu"].connect(regions["Player's PC"], "Use PC")
-    regions["Menu"].connect(regions["Pokedex"], "Pokedex")
-    regions["Menu"].connect(regions["Evolutions"], "Evolve")
-    regions["Menu"].connect(regions["Sky"], "Flying")
+    regions["Title Screen"].connect(regions[starting_town_map[world.starting_town]], "Start Game")
+    regions["Title Screen"].connect(regions["Player's PC"], "Use PC")
+    regions["Title Screen"].connect(regions["Pokedex"], "Pokedex")
+    regions["Title Screen"].connect(regions["Evolutions"], "Evolve")
+    regions["Title Screen"].connect(regions["Sky"], "Flying")
 
     return regions
 
@@ -485,45 +585,3 @@ def create_indirect_conditions(world: "PokemonFRLGWorld"):
     for region, entrances in INDIRECT_CONDITIONS.items():
         for entrance in entrances:
             world.multiworld.register_indirect_condition(world.get_region(region), world.get_entrance(entrance))
-
-
-def modify_entrance_name(world: "PokemonFRLGWorld", name: str) -> str:
-    route_2_modification = {
-        "Route 2 Northwest Cuttable Tree": "Route 2 Northwest Smashable Rock",
-        "Route 2 Northeast Cuttable Tree (North)": "Route 2 Northeast Smashable Rock",
-        "Route 2 Northeast Cuttable Tree (South)": "Route 2 Northeast Cuttable Tree"
-    }
-    block_tunnels = {
-        "Route 5 Unobstructed Path": "Route 5 Smashable Rocks",
-        "Route 5 Near Tunnel Unobstructed Path": "Route 5 Near Tunnel Smashable Rocks",
-        "Route 6 Unobstructed Path": "Route 6 Smashable Rocks",
-        "Route 6 Near Tunnel Unobstructed Path": "Route 6 Near Tunnel Smashable Rocks",
-        "Route 7 Unobstructed Path": "Route 7 Smashable Rocks",
-        "Route 7 Near Tunnel Unobstructed Path": "Route 7 Near Tunnel Smashable Rocks",
-        "Route 8 Unobstructed Path": "Route 8 Smashable Rocks",
-        "Route 8 Near Tunnel Unobstructed Path": "Route 8 Near Tunnel Smashable Rocks"
-    }
-    block_pokemon_tower = {
-        "Pokemon Tower 1F Unobstructed Path": "Pokemon Tower 1F Reveal Ghost",
-        "Pokemon Tower 1F Near Stairs Unobstructed Path": "Pokemon Tower 1F Near Stairs Pass Ghost"
-    }
-    rotue_23_trees = {
-        "Route 23 Near Water Unobstructed Path": "Route 23 Near Water Cuttable Trees",
-        "Route 23 Center Unobstructed Path": "Route 23 Center Cuttable Trees"
-    }
-    route_23_modification = {
-        "Route 23 South Water Unobstructed Path": "Route 23 Waterfall Ascend",
-        "Route 23 North Water Unobstructed Path": "Route 23 Waterfall Drop"
-    }
-
-    if "Modify Route 2" in world.options.modify_world_state.value and name in route_2_modification.keys():
-        return route_2_modification[name]
-    if "Block Tunnels" in world.options.modify_world_state.value and name in block_tunnels.keys():
-        return block_tunnels[name]
-    if "Block Tower" in world.options.modify_world_state.value and name in block_pokemon_tower.keys():
-        return block_pokemon_tower[name]
-    if "Route 23 Trees" in world.options.modify_world_state.value and name in rotue_23_trees.keys():
-        return rotue_23_trees[name]
-    if "Modify Route 23" in world.options.modify_world_state.value and name in route_23_modification.keys():
-        return route_23_modification[name]
-    return name

@@ -17,7 +17,7 @@ item_table: Dict[str, ItemData] = {
     "Flute": ItemData("Items", 0x05, ItemClassification.progression),
     "Cross": ItemData("Items", 0x06, ItemClassification.progression),
     "Hammer": ItemData("Items", 0x07, ItemClassification.progression),
-    "Magical Key": ItemData("Items", 0x08, ItemClassification.progression_skip_balancing),
+    "Magical Key": ItemData("Items", 0x08, ItemClassification.progression_skip_balancing, 0),
 
     "Shield Spell": ItemData("Items", 0x10, ItemClassification.useful, 0),
     "Jump Spell": ItemData("Spells", 0x11, ItemClassification.progression, 0),

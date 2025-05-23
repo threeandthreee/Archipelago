@@ -376,7 +376,12 @@ class BalatroWorld(World):
             item_name = item_table[item]
 
         if classification is None:
-            classification = ItemClassification.filler
+            if is_progression(item_name):
+                classification = ItemClassification.progression
+            elif is_useful(item_name):
+                classification = ItemClassification.useful
+            else:
+                classification = ItemClassification.filler
 
         # print(item_name + str(classification))
         

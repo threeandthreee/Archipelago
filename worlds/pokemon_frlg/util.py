@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List
 
 HM_TO_COMPATIBILITY_ID = {
     "Cut": 50,
@@ -52,7 +52,7 @@ CHARACTER_ENCODING_MAP.update({
 })
 
 
-def encode_string(string: str, length: Optional[int] = None) -> bytes:
+def encode_string(string: str, length: int | None = None) -> bytes:
     arr = []
     length = len(string) if length is None else length
 

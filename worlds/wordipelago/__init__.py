@@ -1,13 +1,13 @@
 from typing import List
 
 from BaseClasses import Region, Tutorial, ItemClassification
+from Options import OptionError
 from worlds.AutoWorld import WebWorld, World
 from .items import WordipelagoItem, item_data_table, item_table
 from .locations import WordipelagoLocation, location_data_table, get_location_table
 from .options import WordipelagoOptions
-from Options import OptionError
 from .regions import region_data_table
-from .rules import create_rules, needed_for_words
+from .rules import create_rules
 
 
 
@@ -36,9 +36,8 @@ class WordipelagoWorld(World):
     location_name_to_id = get_location_table()
     item_name_to_id = item_table
     starting_items = []
-    
+
     def generate_early(self):
-        print("checking rule options")
         location_count = self.options.words_to_win - 1 # Victory Event
         if(self.options.letter_checks >= 1):
             location_count += 6
@@ -53,15 +52,11 @@ class WordipelagoWorld(World):
         if(self.options.yellow_checks == 1):
             location_count += 31
         
-        print(location_count)
         if(self.multiworld.players == 1):
             checks_needed = max(4 - self.options.starting_guesses, 0) + max(8 - self.options.starting_letters, 0)
             if(not self.options.starting_guesses):
                 checks_needed += 1
-                
-            
-            print(location_count)
-            print(checks_needed)
+
             can_reach_words = self.options.starting_letters >= 8 and self.options.yellow_unlocked and self.options.starting_guesses >= 4
             yellow_checks_available = self.options.yellow_checks == 1 and (self.options.green_checks != 0 or self.options.letter_checks != 0)
             enough_checks = self.options.letter_checks >= 2 or self.options.green_checks >= 2
@@ -92,7 +87,7 @@ class WordipelagoWorld(World):
             )
             return {
                 **wordipelago_options,
-                "world_version": "0.8.4"
+                "world_version": "0.8.6"
             }
             
     def create_item(self, name: str) -> WordipelagoItem:
@@ -249,9 +244,8 @@ class WordipelagoWorld(World):
 
         # Change the victory location to an event and place the Victory item there.
         victory_location_name = f"Word {self.options.words_to_win}"
-        self.get_location(victory_location_name).address = None
         self.get_location(victory_location_name).place_locked_item(
-            WordipelagoItem("Word Master", ItemClassification.progression, None, self.player)
+            WordipelagoItem("Word Master", ItemClassification.progression, 1000, self.player)
         )
 
     def set_rules(self):

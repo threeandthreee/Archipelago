@@ -45,7 +45,7 @@ GASHA_ADDRS = {
     "North Horon Gasha Spot": (0xc7a6, 0x0a),
     "Eastern Suburbs Gasha Spot": (0xc7ac, 0x0b),
     "Spool Swamp South Gasha Spot": (0xc7c0, 0x0c),
-    "Samasa Desert Gasha Spot": (0xc7ce, 0x0d),
+    "Samasa Desert Gasha Spot": (0xc7ef, 0x0d),
     "Western Coast Gasha Spot": (0xc7f0, 0x0e),
     "Horon Village Gasha Spot": (0xc7c8, 0x0f),
 }

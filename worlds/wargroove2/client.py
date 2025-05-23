@@ -11,7 +11,7 @@ import Utils
 import json
 import logging
 import ModuleUpdate
-from typing import Tuple, List, Iterable, Dict
+from typing import Tuple, List, Iterable, Dict, Any
 
 from settings import get_settings
 from . import Wargroove2World
@@ -19,7 +19,7 @@ from .Items import item_table, faction_table, CommanderData, ItemData, item_id_n
 
 from .Levels import LEVEL_COUNT, FINAL_LEVEL_COUNT, region_names, \
     low_victory_checks_levels, high_victory_checks_levels, \
-    FINAL_LEVEL_1, FINAL_LEVEL_2, FINAL_LEVEL_3, FINAL_LEVEL_4, final_levels
+    FINAL_LEVEL_1, FINAL_LEVEL_2, FINAL_LEVEL_3, FINAL_LEVEL_4, final_levels, final_filler_levels
 from .Locations import location_table, location_id_name
 from .RegionFilter import Wargroove2LogicFilter
 from NetUtils import ClientStatus
@@ -35,12 +35,40 @@ wg2_logger = logging.getLogger("WG2")
 
 
 class Wargroove2ClientCommandProcessor(ClientCommandProcessor):
+    def _cmd_sacrifice_summon(self):
+        """Toggles sacrifices and summons On/Off"""
+        if isinstance(self.ctx, Wargroove2Context):
+            self.ctx.has_sacrifice_summon = not self.ctx.has_sacrifice_summon
+            if self.ctx.has_sacrifice_summon:
+                self.output(f"Sacrifices and summons are enabled.")
+            else:
+                unit_summon_response_file = os.path.join(self.ctx.game_communication_path, "unitSummonResponse")
+                if os.path.exists(unit_summon_response_file):
+                    os.remove(unit_summon_response_file)
+                self.output(f"Sacrifices and summons are disabled.")
+
+    def _cmd_deathlink(self):
+        """Toggles deathlink On/Off"""
+        if isinstance(self.ctx, Wargroove2Context):
+            self.ctx.has_death_link = not self.ctx.has_death_link
+            if self.ctx.has_death_link:
+                death_link_send_file = os.path.join(self.ctx.game_communication_path, "deathLinkSend")
+                if os.path.exists(death_link_send_file):
+                    os.remove(death_link_send_file)
+                self.output(f"Deathlink enabled.")
+            else:
+                death_link_receive_file = os.path.join(self.ctx.game_communication_path, "deathLinkReceive")
+                if os.path.exists(death_link_receive_file):
+                    os.remove(death_link_receive_file)
+                self.output(f"Deathlink disabled.")
+
     def _cmd_resync(self):
         """Manually trigger a resync."""
         self.output(f"Syncing items.")
         self.ctx.syncing = True
 
     def _cmd_commander(self, *commander_name: Iterable[str]):
+
         """Set the current commander to the given commander."""
         if commander_name:
             self.ctx.set_commander(' '.join(commander_name[0]))
@@ -64,15 +92,16 @@ class Wargroove2Context(CommonContext):
     commander_defense_boost_multiplier: int = 0
     income_boost_multiplier: int = 0
     starting_groove_multiplier: int = 0
+    has_death_link: bool = False
+    has_sacrifice_summon: bool = True
     victory_locations: int = 1
     objective_locations: int = 1
-    has_death_link: bool = False
-    has_death_link: bool = False
     final_levels: int = 1
     level_shuffle_seed: int = 0
-    slot_data: dict
+    slot_data: dict[str, Any]
     stored_finale_key: str = ""
-    completed_final_regions: list = []
+    player_stored_units_key: str = ""
+    ai_stored_units_key: str = ""
     faction_item_ids = {
         'Starter': 0,
         'Cherrystone': 252034,
@@ -94,49 +123,71 @@ class Wargroove2Context(CommonContext):
         self.send_index = 0
         self.syncing = False
         self.awaiting_bridge = False
-        # self.game_communication_path: files go in this path to pass data between us and the actual game
-        if "appdata" in os.environ:
-            options = get_settings()
-            root_directory = os.path.join(options["wargroove2_options"]["root_directory"])
-            self.level_directory = "levels"
-            appdata_wargroove = os.path.expandvars(os.path.join("%APPDATA%", "Chucklefish", "Wargroove2"))
-            if not os.path.isfile(os.path.join(root_directory, "win64_bin", "wargroove64.exe")):
-                print_error_and_close("Wargroove2Client couldn't find wargroove64.exe. "
-                                      "Unable to infer required game_communication_path")
-            self.game_communication_path = os.path.join(root_directory, "AP")
-            if not os.path.exists(self.game_communication_path):
-                os.makedirs(self.game_communication_path)
-            self.remove_communication_files()
-            atexit.register(self.remove_communication_files)
-            if not os.path.isdir(appdata_wargroove):
-                print_error_and_close("Wargroove2Client couldn't find Wargoove 2 in appdata!"
-                                      "Boot Wargroove 2 and then close it to attempt to fix this error")
-            mods_directory = os.path.join(appdata_wargroove, "mods", "ArchipelagoMod")
-            save_directory = os.path.join(appdata_wargroove, "save")
 
-            # Wargroove 2 doesn't always create the mods directory, so we have to do it
-            if not os.path.isdir(mods_directory):
-                os.makedirs(mods_directory)
-            resources = [os.path.join("data", "mods", "ArchipelagoMod", "maps.dat"),
-                         os.path.join("data", "mods", "ArchipelagoMod", "mod.dat"),
-                         os.path.join("data", "mods", "ArchipelagoMod", "modAssets.dat"),
-                         os.path.join("data", "save", "campaign-45747c660b6a2f09601327a18d662a7d.cmp"),
-                         os.path.join("data", "save", "campaign-45747c660b6a2f09601327a18d662a7d.cmp.bak")]
-            file_paths = [os.path.join(mods_directory, "maps.dat"),
-                          os.path.join(mods_directory, "mod.dat"),
-                          os.path.join(mods_directory, "modAssets.dat"),
-                          os.path.join(save_directory, "campaign-45747c660b6a2f09601327a18d662a7d.cmp"),
-                          os.path.join(save_directory, "campaign-45747c660b6a2f09601327a18d662a7d.cmp.bak")]
-            for i in range(0, len(resources)):
-                file_data = pkgutil.get_data("worlds.wargroove2", resources[i])
-                if file_data is None:
-                    print_error_and_close("Wargroove2Client couldn't find Wargoove 2 mod and save files in install!")
-                with open(file_paths[i], 'wb') as f:
-                    f.write(file_data)
-                    f.close()
+        options = get_settings()
+        # self.game_communication_path: files go in this path to pass data between us and the actual game
+        game_options = options.wargroove2_options
+
+        # Validate the AppData directory with Wargroove save data.
+        # By default, Windows sets an environment variable we can leverage.
+        # However, other OSes don't usually have this value set, so we need to rely on a settings value instead.
+        appdata_wargroove = None
+        if "appdata" in os.environ:
+            self.level_directory = "levels"
+            appdata_wargroove = os.environ['appdata']
         else:
-            print_error_and_close("Wargroove2Client couldn't detect system type. "
-                                  "Unable to infer required game_communication_path")
+            try:
+                appdata_wargroove = game_options.save_directory
+            except FileNotFoundError:
+                print_error_and_close("Wargroove2Client couldn't detect a path to the AppData folder.\n"
+                                      "Unable to infer required game_communication_path.\n"
+                                      "Try setting the \"save_directory\" value in your local options file "
+                                      "to the AppData folder containing your Wargroove 2 saves.")
+        appdata_wargroove = os.path.expandvars(os.path.join(appdata_wargroove, "Chucklefish", "Wargroove2"))
+        if not os.path.isdir(appdata_wargroove):
+            print_error_and_close(f"Wargroove2Client couldn't find Wargroove 2 data in your AppData folder.\n"
+                                  f"Looked in \"{appdata_wargroove}\".\n"
+                                  f"If you haven't yet booted the game at least once, boot Wargroove 2 "
+                                  f"and then close it to attempt to fix this error.\n"
+                                  f"If the AppData folder above seems wrong, try setting the "
+                                  f"\"save_directory\" value in your local options file "
+                                  f"to the AppData folder containing your Wargroove 2 saves.")
+
+        root_directory = os.path.join(game_options.root_directory)
+        if not os.path.isfile(os.path.join(root_directory, "win64_bin", "wargroove64.exe")):
+            print_error_and_close(f"WargrooveClient couldn't find wargroove64.exe in "
+                                  f"\"{root_directory}/win64_bin/\".\n"
+                                  f"Unable to infer required game_communication_path.\n"
+                                  f"Please verify the \"root_directory\" value in your local "
+                                  f"options file is set correctly.")
+        self.game_communication_path = os.path.join(root_directory, "AP")
+        if not os.path.exists(self.game_communication_path):
+            os.makedirs(self.game_communication_path)
+        self.remove_communication_files()
+        atexit.register(self.remove_communication_files)
+
+        mods_directory = os.path.join(appdata_wargroove, "mods", "ArchipelagoMod")
+        save_directory = os.path.join(appdata_wargroove, "save")
+
+        # Wargroove 2 doesn't always create the mods directory, so we have to do it
+        if not os.path.isdir(mods_directory):
+            os.makedirs(mods_directory)
+        resources = [os.path.join("data", "mods", "ArchipelagoMod", "maps.dat"),
+                     os.path.join("data", "mods", "ArchipelagoMod", "mod.dat"),
+                     os.path.join("data", "mods", "ArchipelagoMod", "modAssets.dat"),
+                     os.path.join("data", "save", "campaign-45747c660b6a2f09601327a18d662a7d.cmp"),
+                     os.path.join("data", "save", "campaign-45747c660b6a2f09601327a18d662a7d.cmp.bak")]
+        file_paths = [os.path.join(mods_directory, "maps.dat"),
+                      os.path.join(mods_directory, "mod.dat"),
+                      os.path.join(mods_directory, "modAssets.dat"),
+                      os.path.join(save_directory, "campaign-45747c660b6a2f09601327a18d662a7d.cmp"),
+                      os.path.join(save_directory, "campaign-45747c660b6a2f09601327a18d662a7d.cmp.bak")]
+        for i in range(0, len(resources)):
+            file_data = pkgutil.get_data("worlds.wargroove2", resources[i])
+            if file_data is None:
+                print_error_and_close("Wargroove2Client couldn't find Wargoove 2 mod and save files in install!")
+            with open(file_paths[i], 'wb') as f:
+                f.write(file_data)
 
     def on_deathlink(self, data: typing.Dict[str, typing.Any]) -> None:
         with open(os.path.join(self.game_communication_path, "deathLinkReceive"), 'w+') as f:
@@ -145,7 +196,6 @@ class Wargroove2Context(CommonContext):
                 f.write(f"DeathLink: {text}")
             else:
                 f.write(f"DeathLink: Received from {data['source']}")
-            f.close()
         super(Wargroove2Context, self).on_deathlink(data)
 
     async def server_auth(self, password_requested: bool = False):
@@ -183,12 +233,11 @@ class Wargroove2Context(CommonContext):
     def on_package(self, cmd: str, args: dict):
         if cmd in {"Connected"}:
             self.slot_data = args["slot_data"]
-            self.victory_locations = self.slot_data["victory_locations"]
-            self.objective_locations = self.slot_data["objective_locations"]
-            self.has_death_link = self.slot_data["death_link"]
-            self.has_death_link = self.slot_data["death_link"]
-            self.final_levels = self.slot_data["final_levels"]
-            self.level_shuffle_seed = self.slot_data["level_shuffle_seed"]
+            self.victory_locations = self.slot_data.get("victory_locations", 1)
+            self.objective_locations = self.slot_data.get("objective_locations", 1)
+            self.has_death_link = self.slot_data.get("death_link", False)
+            self.final_levels = self.slot_data.get("final_levels", 1)
+            self.level_shuffle_seed = self.slot_data.get("level_shuffle_seed", 0)
             filename = f"AP_settings.json"
             with open(os.path.join(self.game_communication_path, filename), 'w') as f:
                 json.dump(args["slot_data"], f)
@@ -196,14 +245,18 @@ class Wargroove2Context(CommonContext):
                 self.starting_groove_multiplier = self.slot_data["groove_boost"]
                 self.income_boost_multiplier = self.slot_data["income_boost"]
                 self.commander_defense_boost_multiplier = self.slot_data["commander_defense_boost"]
-                f.close()
             for ss in self.checked_locations:
                 filename = f"send{ss}"
                 with open(os.path.join(self.game_communication_path, filename), 'w') as f:
-                    f.close()
+                    pass
 
             self.stored_finale_key = f"wargroove_2_{self.slot}_{self.team}"
             self.set_notify(self.stored_finale_key)
+            self.player_stored_units_key = f"wargroove_player_units_{self.team}"
+            self.set_notify(self.player_stored_units_key)
+            self.ai_stored_units_key = f"wargroove_ai_units_{self.team}"
+            self.set_notify(self.ai_stored_units_key)
+
             self.update_commander_data()
             self.ui.update_ui()
 
@@ -213,7 +266,6 @@ class Wargroove2Context(CommonContext):
                 filename = f"seed{i}"
                 with open(os.path.join(self.game_communication_path, filename), 'w') as f:
                     f.write(str(random.randint(0, 4294967295)))
-                    f.close()
             for i in range(0, LEVEL_COUNT):
                 filename = f"AP_{i + 1}.map"
                 level_file_name = self.slot_data[f"Level File #{i}"]
@@ -223,7 +275,6 @@ class Wargroove2Context(CommonContext):
                 else:
                     with open(os.path.join(self.game_communication_path, filename), 'wb') as f:
                         f.write(file_data)
-                        f.close()
             for i in range(0, FINAL_LEVEL_COUNT):
                 filename = f"AP_{i + LEVEL_COUNT + 1}.map"
                 level_file_name = self.slot_data[f"Final Level File #{i}"]
@@ -233,7 +284,6 @@ class Wargroove2Context(CommonContext):
                 else:
                     with open(os.path.join(self.game_communication_path, filename), 'wb') as f:
                         f.write(file_data)
-                        f.close()
 
         if cmd in {"RoomInfo"}:
             self.seed_name = args["seed_name"]
@@ -246,7 +296,6 @@ class Wargroove2Context(CommonContext):
 
                 # Newly-obtained items
                 if not os.path.isfile(path):
-                    open(path, 'w').close()
                     # Announcing commander unlocks
                     item_name = self.item_names.lookup_in_slot(network_item.item)
                     if item_name in faction_table.keys():
@@ -263,9 +312,8 @@ class Wargroove2Context(CommonContext):
                         f.write(f"{item_count * self.starting_groove_multiplier}")
                     else:
                         f.write(f"{item_count}")
-                    f.close()
 
-                print_filename = f"AP_{str(network_item.item)}.item.print"
+                print_filename = f"AP_{network_item.item}.item.print"
                 print_path = os.path.join(self.game_communication_path, print_filename)
                 if not os.path.isfile(print_path):
                     open(print_path, 'w').close()
@@ -274,7 +322,6 @@ class Wargroove2Context(CommonContext):
                                 self.item_names.lookup_in_slot(network_item.item) +
                                 " from " +
                                 self.player_names[network_item.player])
-                        f.close()
             self.update_commander_data()
             self.ui.update_ui()
 
@@ -283,7 +330,7 @@ class Wargroove2Context(CommonContext):
                 for ss in self.checked_locations:
                     filename = f"send{ss}"
                     with open(os.path.join(self.game_communication_path, filename), 'w') as f:
-                        f.close()
+                        pass
             self.ui.update_ui()
 
         if cmd in {"Retrieved"}:
@@ -397,29 +444,41 @@ class Wargroove2Context(CommonContext):
                     if level_counter <= LEVEL_COUNT and hasattr(self.ctx, 'slot_data'):
                         level_name = self.ctx.slot_data[region_name]
                         level_name_text = f"\n{level_name}"
-                        for location_name in level_rules[level_name].keys():
-                            is_beatable = level_rules[level_name][location_name](region_filter, self.ctx.slot)()
-                            is_fully_beaten = is_fully_beaten and \
-                                              location_table[location_name] in self.ctx.checked_locations
-                            if location_name.endswith(": Victory"):
-                                if location_table[location_name] in self.ctx.checked_locations:
-                                    is_victory_reached = True
-                                    status_color = (1.0, 1.0, 1.0, 1)
-                                    if level_counter <= 4:
-                                        next_level = (level_counter - 1) * 4 + 6 - level_counter
-                                        unreachable_levels.remove(next_level)
-                                        unreachable_levels.remove(next_level + 1)
-                                        unreachable_levels.remove(next_level + 2)
-                                    elif level_counter <= 16:
-                                        unreachable_levels.remove(level_counter + 12)
-                                elif level_counter in unreachable_levels:
-                                    status_color = (0.35, 0.2, 0.2, 1)
-                                    level_name_text = ""
-                                    break
-                                elif is_beatable:
-                                    status_color = (0.6, 0.6, 0.2, 1)
-                            elif is_beatable and location_table[location_name] not in self.ctx.checked_locations:
-                                fully_beaten_text = "*"
+                        if level_name in level_rules:
+                            for location_name in level_rules[level_name].keys():
+                                rule_factory = level_rules[level_name][location_name]
+                                is_beatable = rule_factory is None or rule_factory(self.ctx.slot)(region_filter)
+                                is_fully_beaten = is_fully_beaten and \
+                                                  location_table[location_name] in self.ctx.checked_locations
+                                if location_name.endswith(": Victory"):
+                                    if location_table[location_name] in self.ctx.checked_locations:
+                                        is_victory_reached = True
+                                        status_color = (1.0, 1.0, 1.0, 1)
+                                        if level_counter <= 4:
+                                            next_level = (level_counter - 1) * 4 + 6 - level_counter
+                                            unreachable_levels.remove(next_level)
+                                            unreachable_levels.remove(next_level + 1)
+                                            unreachable_levels.remove(next_level + 2)
+                                        elif level_counter <= 16:
+                                            unreachable_levels.remove(level_counter + 12)
+                                    elif level_counter in unreachable_levels:
+                                        status_color = (0.35, 0.2, 0.2, 1)
+                                        level_name_text = ""
+                                        break
+                                    elif is_beatable:
+                                        status_color = (0.6, 0.6, 0.2, 1)
+                                elif is_beatable and location_table[location_name] not in self.ctx.checked_locations:
+                                    fully_beaten_text = "*"
+                        else:
+                            is_victory_reached = True
+                            status_color = (1.0, 1.0, 1.0, 1)
+                            if level_counter <= 4:
+                                next_level = (level_counter - 1) * 4 + 6 - level_counter
+                                unreachable_levels.remove(next_level)
+                                unreachable_levels.remove(next_level + 1)
+                                unreachable_levels.remove(next_level + 2)
+                            elif level_counter <= 16:
+                                unreachable_levels.remove(level_counter + 12)
 
                     if is_fully_beaten and is_victory_reached:
                         fully_beaten_text = " (100%)"
@@ -452,6 +511,9 @@ class Wargroove2Context(CommonContext):
                     level_counter += 1
 
                 final_level_rules = {final_level.name: final_level.location_rules for final_level in final_levels}
+                filler_final_level_rules = {final_level.name: final_level.location_rules
+                                            for final_level in final_filler_levels}
+                final_level_rules = final_level_rules | filler_final_level_rules
                 final_level_1_name = None
                 final_level_2_name = None
                 final_level_3_name = None
@@ -471,12 +533,15 @@ class Wargroove2Context(CommonContext):
                 elif final_level_1_name is not None and region_filter.has_all(["Final North", "Final Center"],
                                                                               self.ctx.slot):
                     level_name_text = f"\n{final_level_1_name}"
-                    is_beatable = final_level_rules[final_level_1_name] \
-                        [f"{final_level_1_name}: Victory"](region_filter, self.ctx.slot)()
-                    if is_beatable:
+                    final_level_rule = final_level_rules[final_level_1_name][f"{final_level_1_name}: Victory"]
+                    if final_level_rule is None:
                         status_color = (0.6, 0.6, 0.2, 1)
                     else:
-                        status_color = (0.6, 0.2, 0.2, 1)
+                        is_beatable = final_level_rule(self.ctx.slot)(region_filter)
+                        if is_beatable:
+                            status_color = (0.6, 0.6, 0.2, 1)
+                        else:
+                            status_color = (0.6, 0.2, 0.2, 1)
                 else:
                     status_color = (0.35, 0.2, 0.2, 1)
                 label = ItemLabel(text=FINAL_LEVEL_1 + level_name_text, color=status_color)
@@ -488,12 +553,15 @@ class Wargroove2Context(CommonContext):
                 elif final_level_2_name is not None and region_filter.has_all(["Final East", "Final Center"],
                                                                               self.ctx.slot):
                     level_name_text = f"\n{final_level_2_name}"
-                    is_beatable = final_level_rules[final_level_2_name] \
-                        [f"{final_level_2_name}: Victory"](region_filter, self.ctx.slot)()
-                    if is_beatable:
+                    final_level_rule = final_level_rules[final_level_2_name][f"{final_level_2_name}: Victory"]
+                    if final_level_rule is None:
                         status_color = (0.6, 0.6, 0.2, 1)
                     else:
-                        status_color = (0.6, 0.2, 0.2, 1)
+                        is_beatable = final_level_rule(self.ctx.slot)(region_filter)
+                        if is_beatable:
+                            status_color = (0.6, 0.6, 0.2, 1)
+                        else:
+                            status_color = (0.6, 0.2, 0.2, 1)
                 else:
                     status_color = (0.35, 0.2, 0.2, 1)
                 label = ItemLabel(text=FINAL_LEVEL_2 + level_name_text, color=status_color)
@@ -505,12 +573,15 @@ class Wargroove2Context(CommonContext):
                 elif final_level_3_name is not None and region_filter.has_all(["Final South", "Final Center"],
                                                                               self.ctx.slot):
                     level_name_text = f"\n{final_level_3_name}"
-                    is_beatable = final_level_rules[final_level_3_name] \
-                        [f"{final_level_3_name}: Victory"](region_filter, self.ctx.slot)()
-                    if is_beatable:
+                    final_level_rule = final_level_rules[final_level_3_name][f"{final_level_3_name}: Victory"]
+                    if final_level_rule is None:
                         status_color = (0.6, 0.6, 0.2, 1)
                     else:
-                        status_color = (0.6, 0.2, 0.2, 1)
+                        is_beatable = final_level_rule(self.ctx.slot)(region_filter)
+                        if is_beatable:
+                            status_color = (0.6, 0.6, 0.2, 1)
+                        else:
+                            status_color = (0.6, 0.2, 0.2, 1)
                 else:
                     status_color = (0.35, 0.2, 0.2, 1)
                 label = ItemLabel(text=FINAL_LEVEL_3 + level_name_text, color=status_color)
@@ -522,12 +593,15 @@ class Wargroove2Context(CommonContext):
                 elif final_level_4_name is not None and region_filter.has_all(["Final West", "Final Center"],
                                                                               self.ctx.slot):
                     level_name_text = f"\n{final_level_4_name}"
-                    is_beatable = final_level_rules[final_level_4_name] \
-                        [f"{final_level_4_name}: Victory"](region_filter, self.ctx.slot)()
-                    if is_beatable:
+                    final_level_rule = final_level_rules[final_level_4_name][f"{final_level_4_name}: Victory"]
+                    if final_level_rule is None:
                         status_color = (0.6, 0.6, 0.2, 1)
                     else:
-                        status_color = (0.6, 0.2, 0.2, 1)
+                        is_beatable = final_level_rule(self.ctx.slot)(region_filter)
+                        if is_beatable:
+                            status_color = (0.6, 0.6, 0.2, 1)
+                        else:
+                            status_color = (0.6, 0.2, 0.2, 1)
                 else:
                     status_color = (0.35, 0.2, 0.2, 1)
                 label = ItemLabel(text=FINAL_LEVEL_4 + level_name_text, color=status_color)
@@ -662,23 +736,23 @@ async def game_watcher(ctx: Wargroove2Context):
                 sync_msg.append({"cmd": "LocationChecks", "locations": list(ctx.locations_checked)})
             await ctx.send_msgs(sync_msg)
             ctx.syncing = False
-        sending: list = []
+        sending: set = set()
         victory = False
         await ctx.update_death_link(ctx.has_death_link)
-        for root, dirs, files in os.walk(ctx.game_communication_path):
+        for _root, _dirs, files in os.walk(ctx.game_communication_path):
             for file in files:
                 if file.find("send") > -1:
                     st = int(file.split("send", -1)[1])
                     loc_name = location_id_name[st]
-                    extras = 1
+                    total_locations = 1
                     if loc_name is not None and loc_name.endswith("Victory"):
-                        extras = ctx.victory_locations
+                        total_locations = ctx.victory_locations
                     elif loc_name is not None and \
-                            st < location_table["Humble Beginnings Rebirth: Talk to Nadia Extra 1"]:
-                        extras = ctx.objective_locations
-                    for i in range(1, extras):
-                        sending = sending + [location_table[loc_name + f" Extra {i}"]]
-                    sending = sending + [st]
+                            st < location_table["Humble Beginnings Rebirth: Talk to Nadia Extra 1"]:  # type: ignore
+                        total_locations = ctx.objective_locations
+                    for i in range(1, total_locations):
+                        sending.add(location_table[loc_name + f" Extra {i}"])
+                    sending.add(st)
 
                     os.remove(os.path.join(ctx.game_communication_path, file))
                 if file == "deathLinkSend" and ctx.has_death_link:
@@ -686,7 +760,6 @@ async def game_watcher(ctx: Wargroove2Context):
                         failed_mission = f.read()
                         if ctx.slot is not None:
                             await ctx.send_death(f"{ctx.player_names[ctx.slot]} failed {failed_mission}")
-                            f.close()
                     os.remove(os.path.join(ctx.game_communication_path, file))
                 if file == "victory":
                     with open(os.path.join(ctx.game_communication_path, file), 'r') as f:
@@ -712,11 +785,40 @@ async def game_watcher(ctx: Wargroove2Context):
                                     f"{completed_levels}")
                         if final_levels_won >= ctx.final_levels:
                             victory = True
-                        f.close()
                     os.remove(os.path.join(ctx.game_communication_path, file))
                     ctx.ui.update_levels()
+                if file == "unitSacrifice" or file == "unitSacrificeAI":
+                    if ctx.has_sacrifice_summon:
+                        stored_units_key = ctx.player_stored_units_key
+                        if file == "unitSacrificeAI":
+                            stored_units_key = ctx.ai_stored_units_key
+                        with open(os.path.join(ctx.game_communication_path, file), 'r') as f:
+                            unit_class = f.read()
+                            message = [{"cmd": 'Set', "key": stored_units_key,
+                                        "default": [],
+                                        "want_reply": True,
+                                        "operations": [{"operation": "add", "value": [unit_class[:64]]}]}]
+                            await ctx.send_msgs(message)
+                    os.remove(os.path.join(ctx.game_communication_path, file))
+                if file == "unitSummonRequest" or file == "unitSummonRequestAI":
+                    if ctx.has_sacrifice_summon:
+                        stored_units_key = ctx.player_stored_units_key
+                        if file == "unitSummonRequestAI":
+                            stored_units_key = ctx.ai_stored_units_key
+                        with open(os.path.join(ctx.game_communication_path, "unitSummonResponse"), 'w') as f:
+                            if stored_units_key in ctx.stored_data:
+                                stored_units = ctx.stored_data[stored_units_key]
+                                if stored_units is not None and len(stored_units) != 0:
+                                    summoned_unit = random.choice(stored_units)
+                                    message = [{"cmd": 'Set', "key": stored_units_key,
+                                                "default": [],
+                                                "want_reply": True,
+                                                "operations": [{"operation": "remove", "value": summoned_unit[:64]}]}]
+                                    await ctx.send_msgs(message)
+                                    f.write(summoned_unit)
+                    os.remove(os.path.join(ctx.game_communication_path, file))
         ctx.locations_checked = sending
-        message = [{"cmd": 'LocationChecks', "locations": sending}]
+        message = [{"cmd": "LocationChecks", "locations": list(sending)}]
         await ctx.send_msgs(message)
         if not ctx.finished_game and victory:
             await ctx.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
@@ -752,6 +854,6 @@ def launch():
     parser = get_base_parser(description="Wargroove 2 Client, for text interfacing.")
 
     args, rest = parser.parse_known_args()
-    colorama.init()
+    colorama.just_fix_windows_console()
     asyncio.run(main(args))
     colorama.deinit()

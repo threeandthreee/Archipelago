@@ -96,6 +96,13 @@ JMP $7A90
 #ORG $9610, $9620
 LDA #$12
 
+#ORG $87AE, $87BE
+JMP $87CB
+
+#ORG $CA5F, $1CA6F
+STA $0756
+STA $0756
+
 ; #ORG $E7D7, $1E7E7
 ; CMP #$FF
 
@@ -140,6 +147,8 @@ PalaceScenes:
 #org $AA44, $2A54
 GetAPItem:
 LDA $0C9C
+BNE ItemHandler_Return
+LDA $074C
 BNE ItemHandler_Return
 LDA $7A10
 BNE HandleItem
@@ -602,7 +611,7 @@ ContainerCheck:
 BNE MagicFlagDone
 PHA
 LDA $0783
-CMP #$07
+CMP #$06
 BCC LessThanSevenMagic
 LDA #$08
 ORA $079D

@@ -499,7 +499,8 @@ item_data: Dict[str, ItemData] = {
     "One Hundred Fifty Coins": ItemData(150, ItemCategory.coin),
     "Frog Coin": ItemData(1, ItemCategory.frog_coin),
     "Flower": ItemData(1, ItemCategory.flower),
-    "Recovery Mushroom": ItemData(0, ItemCategory.recovery)
+    "Recovery Mushroom": ItemData(0, ItemCategory.recovery),
+    "You Missed!": ItemData(0, ItemCategory.coin) # Sends 0 coins as a temporary measure to prevent an SNI Disconnect if "You Missed!" ends up non-local
 }
 
 

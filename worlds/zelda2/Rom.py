@@ -42,7 +42,7 @@ def patch_rom(world, rom, player: int):
         shield_color = world.random.randint(0x10, 0x3E)
         tunic_color = world.random.randint(0x10, 0x3E)
 
-        rom.write_bytes(0x00E8E, bytearray([shield_color])) #Shield palette
+        rom.write_bytes(0x00E9E, bytearray([shield_color])) #Shield palette
         rom.write_bytes(0x040B1, bytearray([tunic_color])) # Normal palette
         rom.write_bytes(0x040C1, bytearray([tunic_color])) # Normal palette
         rom.write_bytes(0x040D1, bytearray([tunic_color])) # Normal palette
@@ -136,8 +136,13 @@ def patch_rom(world, rom, player: int):
         rom.write_bytes(0x052B5, bytearray([0x3D]))
         rom.write_bytes(0x052AA, bytearray([0x3D]))
         rom.write_bytes(0x052C0, bytearray([0x2D]))
+
+    # if not world.options.encounter_rate:
+        # rom.write_bytes(0x0573, bytearray([0xEA, 0xEA, 0xEA])) # Prevent the game from calling the encounter check
+        # rom.write_bytes(0x02A3, bytearray([0x4C, 0xAF, 0x82]))
     
     rom.write_bytes(0x3A2B0, world.world_version.encode("ascii"))
+    rom.write_bytes(0x3A2E0, bytearray([world.options.encounter_rate.value]))
 
 
     from Main import __version__
@@ -193,7 +198,14 @@ class Z2PatchExtensions(APPatchExtension):
         if client_version != version_check_str and version_check_str != "":
             raise Exception(f"Error! Patch generated on Zelda II APWorld version {version_check_str} doesn't match client version {client_version}! " +
                             f"Please use Zelda II APWorld version {version_check_str} for patching.")
-
+        multipliers = [2.5, 2, 1, 0.5, 0.3]
+        new_time_table = []
+        encounter_rate = multipliers[int.from_bytes(rom.read_bytes(0x3A2E0, 1))]
+        enemy_timer_table = list(rom.read_bytes(0x250, 6))
+        for timer in enemy_timer_table:
+            new_time_table.append(int(timer * encounter_rate))
+        rom.write_bytes(0x250, bytearray(new_time_table))
+        rom.write_bytes(0x088A, bytearray([int(encounter_rate * 8)]))
         return rom.get_bytes()
 
 header = b"\x4E\x45\x53\x1A\x08\x10\x12\x00\x00\x00\x00\x00\x00\x00\x00\x00"

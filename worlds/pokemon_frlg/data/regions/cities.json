@@ -177,7 +177,9 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [],
+    "locations": [
+      "NPC_GIFT_GOT_VIRIDIAN_KEY"
+    ],
     "events": [],
     "exits": {
       "REGION_VIRIDIAN_CITY/SOUTH": "Viridian City North Ledge Drop",
@@ -306,7 +308,11 @@
     "has_fishing": false,
     "kanto": true,
     "locations": [
-      "NPC_GIFT_GOT_OAKS_PARCEL"
+      "NPC_GIFT_GOT_OAKS_PARCEL",
+      "SHOP_VIRIDIAN_CITY_1",
+      "SHOP_VIRIDIAN_CITY_2",
+      "SHOP_VIRIDIAN_CITY_3",
+      "SHOP_VIRIDIAN_CITY_4"
     ],
     "events": [],
     "exits": {},
@@ -377,7 +383,7 @@
       "MAP_PEWTER_CITY:1/MAP_PEWTER_CITY_MUSEUM_1F:1": "Pewter Museum (East)"
     }
   },
-  "REGION_MAP_PEWTER_CITY_MUSEUM_1F/WEST": {
+  "REGION_PEWTER_CITY_MUSEUM_1F/WEST": {
     "parent_map": "MAP_PEWTER_CITY_MUSEUM_1F",
     "name": "Pewter Museum 1F West",
     "encounter_region": null,
@@ -393,7 +399,7 @@
       "MAP_PEWTER_CITY_MUSEUM_1F:2/MAP_PEWTER_CITY_MUSEUM_2F:0": "Pewter Museum 1F Stairs"
     }
   },
-  "REGION_MAP_PEWTER_CITY_MUSEUM_1F/EAST": {
+  "REGION_PEWTER_CITY_MUSEUM_1F/EAST": {
     "parent_map": "MAP_PEWTER_CITY_MUSEUM_1F",
     "name": "Pewter Museum 1F East",
     "encounter_region": null,
@@ -411,7 +417,7 @@
       "MAP_PEWTER_CITY_MUSEUM_1F:1/MAP_PEWTER_CITY:1": "Pewter Museum 1F Exit (East)"
     }
   },
-  "REGION_MAP_PEWTER_CITY_MUSEUM_2F/MAIN": {
+  "REGION_PEWTER_CITY_MUSEUM_2F/MAIN": {
     "parent_map": "MAP_PEWTER_CITY_MUSEUM_2F",
     "name": "Pewter Museum 2F",
     "encounter_region": null,
@@ -419,14 +425,16 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [],
+    "locations": [
+      "ITEM_PEWTER_MUSEUM_2F_PEWTER_KEY"
+    ],
     "events": [],
     "exits": {},
     "warps": {
       "MAP_PEWTER_CITY_MUSEUM_2F:0/MAP_PEWTER_CITY_MUSEUM_1F:2": "Pewter Museum 2F Stairs"
     }
   },
-  "REGION_MAP_PEWTER_CITY_GYM/MAIN": {
+  "REGION_PEWTER_CITY_GYM/MAIN": {
     "parent_map": "MAP_PEWTER_CITY_GYM",
     "name": "Pewter Gym",
     "encounter_region": null,
@@ -457,7 +465,16 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [],
+    "locations": [
+      "SHOP_PEWTER_CITY_1",
+      "SHOP_PEWTER_CITY_2",
+      "SHOP_PEWTER_CITY_3",
+      "SHOP_PEWTER_CITY_4",
+      "SHOP_PEWTER_CITY_5",
+      "SHOP_PEWTER_CITY_6",
+      "SHOP_PEWTER_CITY_7",
+      "SHOP_PEWTER_CITY_8"
+    ],
     "events": [],
     "exits": {},
     "warps": {
@@ -785,7 +802,17 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [],
+    "locations": [
+      "SHOP_CERULEAN_CITY_1",
+      "SHOP_CERULEAN_CITY_2",
+      "SHOP_CERULEAN_CITY_3",
+      "SHOP_CERULEAN_CITY_4",
+      "SHOP_CERULEAN_CITY_5",
+      "SHOP_CERULEAN_CITY_6",
+      "SHOP_CERULEAN_CITY_7",
+      "SHOP_CERULEAN_CITY_8",
+      "SHOP_CERULEAN_CITY_9"
+    ],
     "events": [],
     "exits": {},
     "warps": {
@@ -1032,7 +1059,15 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [],
+    "locations": [
+      "SHOP_VERMILION_CITY_1",
+      "SHOP_VERMILION_CITY_2",
+      "SHOP_VERMILION_CITY_3",
+      "SHOP_VERMILION_CITY_4",
+      "SHOP_VERMILION_CITY_5",
+      "SHOP_VERMILION_CITY_6",
+      "SHOP_VERMILION_CITY_7"
+    ],
     "events": [],
     "exits": {},
     "warps": {
@@ -1212,7 +1247,17 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [],
+    "locations": [
+      "SHOP_LAVENDER_TOWN_1",
+      "SHOP_LAVENDER_TOWN_2",
+      "SHOP_LAVENDER_TOWN_3",
+      "SHOP_LAVENDER_TOWN_4",
+      "SHOP_LAVENDER_TOWN_5",
+      "SHOP_LAVENDER_TOWN_6",
+      "SHOP_LAVENDER_TOWN_7",
+      "SHOP_LAVENDER_TOWN_8",
+      "SHOP_LAVENDER_TOWN_9"
+    ],
     "events": [],
     "exits": {},
     "warps": {
@@ -1361,6 +1406,21 @@
     "has_fishing": false,
     "kanto": true,
     "locations": [
+      "SHOP_CELADON_CITY_DEPT_ITEM_1",
+      "SHOP_CELADON_CITY_DEPT_ITEM_2",
+      "SHOP_CELADON_CITY_DEPT_ITEM_3",
+      "SHOP_CELADON_CITY_DEPT_ITEM_4",
+      "SHOP_CELADON_CITY_DEPT_ITEM_5",
+      "SHOP_CELADON_CITY_DEPT_ITEM_6",
+      "SHOP_CELADON_CITY_DEPT_ITEM_7",
+      "SHOP_CELADON_CITY_DEPT_ITEM_8",
+      "SHOP_CELADON_CITY_DEPT_ITEM_9",
+      "SHOP_CELADON_CITY_DEPT_TM_1",
+      "SHOP_CELADON_CITY_DEPT_TM_2",
+      "SHOP_CELADON_CITY_DEPT_TM_3",
+      "SHOP_CELADON_CITY_DEPT_TM_4",
+      "SHOP_CELADON_CITY_DEPT_TM_5",
+      "SHOP_CELADON_CITY_DEPT_TM_6",
       "FAME_CHECKER_LANCE_4"
     ],
     "events": [],
@@ -1398,14 +1458,19 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [],
+    "locations": [
+      "SHOP_CELADON_CITY_DEPT_EVO_1",
+      "SHOP_CELADON_CITY_DEPT_EVO_2",
+      "SHOP_CELADON_CITY_DEPT_EVO_3",
+      "SHOP_CELADON_CITY_DEPT_EVO_4",
+      "SHOP_CELADON_CITY_DEPT_EVO_5",
+      "SHOP_CELADON_CITY_DEPT_EVO_6"
+    ],
     "events": [
       "EVENT_BUY_FIRE_STONE",
       "EVENT_BUY_THUNDER_STONE",
       "EVENT_BUY_WATER_STONE",
       "EVENT_BUY_LEAF_STONE",
-      "EVENT_BUY_MOON_STONE",
-      "EVENT_BUY_SUN_STONE",
       "EVENT_BUY_KINGS_ROCK",
       "EVENT_BUY_METAL_COAT",
       "EVENT_BUY_DRAGON_SCALE",
@@ -1430,7 +1495,21 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [],
+    "locations": [
+      "SHOP_CELADON_CITY_DEPT_VITAMIN_1",
+      "SHOP_CELADON_CITY_DEPT_VITAMIN_2",
+      "SHOP_CELADON_CITY_DEPT_VITAMIN_3",
+      "SHOP_CELADON_CITY_DEPT_VITAMIN_4",
+      "SHOP_CELADON_CITY_DEPT_VITAMIN_5",
+      "SHOP_CELADON_CITY_DEPT_VITAMIN_6",
+      "SHOP_CELADON_CITY_DEPT_BATTLE_1",
+      "SHOP_CELADON_CITY_DEPT_BATTLE_2",
+      "SHOP_CELADON_CITY_DEPT_BATTLE_3",
+      "SHOP_CELADON_CITY_DEPT_BATTLE_4",
+      "SHOP_CELADON_CITY_DEPT_BATTLE_5",
+      "SHOP_CELADON_CITY_DEPT_BATTLE_6",
+      "SHOP_CELADON_CITY_DEPT_BATTLE_7"
+    ],
     "events": [],
     "exits": {
       "REGION_CELADON_CITY_DEPARTMENT_STORE_ELEVATOR/MAIN": "Celadon Department Store 5F Elevator"
@@ -1774,7 +1853,9 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [],
+    "locations": [
+      "ITEM_CELADON_CITY_HOTEL_CELADON_KEY"
+    ],
     "events": [],
     "exits": {},
     "warps": {
@@ -1903,7 +1984,14 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [],
+    "locations": [
+      "SHOP_FUCHSIA_CITY_1",
+      "SHOP_FUCHSIA_CITY_2",
+      "SHOP_FUCHSIA_CITY_3",
+      "SHOP_FUCHSIA_CITY_4",
+      "SHOP_FUCHSIA_CITY_5",
+      "SHOP_FUCHSIA_CITY_6"
+    ],
     "events": [],
     "exits": {},
     "warps": {
@@ -2130,7 +2218,8 @@
       "TRAINER_BLACK_BELT_HITOSHI_REWARD",
       "TRAINER_BLACK_BELT_MIKE_REWARD",
       "TRAINER_BLACK_BELT_AARON_REWARD",
-      "TRAINER_BLACK_BELT_KOICHI_REWARD"
+      "TRAINER_BLACK_BELT_KOICHI_REWARD",
+      "ITEM_SAFFRON_CITY_DOJO_SAFFRON_KEY"
     ],
     "events": [
       "GIFT_POKEMON_HITMONCHAN",
@@ -2344,7 +2433,14 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [],
+    "locations": [
+      "SHOP_SAFFRON_CITY_1",
+      "SHOP_SAFFRON_CITY_2",
+      "SHOP_SAFFRON_CITY_3",
+      "SHOP_SAFFRON_CITY_4",
+      "SHOP_SAFFRON_CITY_5",
+      "SHOP_SAFFRON_CITY_6"
+    ],
     "events": [],
     "exits": {},
     "warps": {
@@ -2625,7 +2721,15 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [],
+    "locations": [
+      "SHOP_CINNABAR_ISLAND_1",
+      "SHOP_CINNABAR_ISLAND_2",
+      "SHOP_CINNABAR_ISLAND_3",
+      "SHOP_CINNABAR_ISLAND_4",
+      "SHOP_CINNABAR_ISLAND_5",
+      "SHOP_CINNABAR_ISLAND_6",
+      "SHOP_CINNABAR_ISLAND_7"
+    ],
     "events": [],
     "exits": {},
     "warps": {
@@ -2674,6 +2778,13 @@
     "has_fishing": false,
     "kanto": true,
     "locations": [
+      "SHOP_INDIGO_PLATEAU_1",
+      "SHOP_INDIGO_PLATEAU_2",
+      "SHOP_INDIGO_PLATEAU_3",
+      "SHOP_INDIGO_PLATEAU_4",
+      "SHOP_INDIGO_PLATEAU_5",
+      "SHOP_INDIGO_PLATEAU_6",
+      "SHOP_INDIGO_PLATEAU_7",
       "FAME_CHECKER_AGATHA_2",
       "FAME_CHECKER_AGATHA_3",
       "FAME_CHECKER_LANCE_5",

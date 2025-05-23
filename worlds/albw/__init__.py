@@ -1,6 +1,6 @@
 import os
-import pickle
-from typing import ClassVar, Dict, List, Optional, Sequence, Tuple
+import orjson
+from typing import Any, ClassVar, Dict, List, Optional, Sequence, Tuple
 from worlds.AutoWorld import WebWorld, World
 from BaseClasses import CollectionState, Item, ItemClassification, Location, LocationProgressType, MultiWorld, \
     Region, Tutorial
@@ -14,8 +14,8 @@ from .Locations import ALBWLocation, LocationData, LocationType, all_locations, 
     dungeon_item_excludes, starting_weapon_locations
 from .Options import ALBWOptions, CrackShuffle, InitialCrackState, Keysy, LogicMode, NiceItems, WeatherVanes, \
     create_randomizer_settings
-from .Patch import PatchInfo, ALBWProcedurePatch
-from albwrandomizer import ArchipelagoInfo, PyRandomizable, SeedInfo, randomize_pre_fill
+from .Patch import PatchInfo, PatchItemInfo, ALBWProcedurePatch
+from albwrandomizer import ArchipelagoInfo, Cracksanity, PyRandomizable, SeedInfo, randomize_pre_fill
 
 albw_base_id = 6242624000
 
@@ -28,7 +28,8 @@ components.append(
         "A Link Between Worlds Client",
         func=launch_client,
         component_type=Type.CLIENT,
-        file_identifier=SuffixIdentifier(".apalbw")
+        file_identifier=SuffixIdentifier(".apalbw"),
+        cli=True,
     )
 )
 
@@ -99,11 +100,19 @@ class ALBWWorld(World):
         return self.random.choice(filler_items)
     
     def generate_early(self) -> None:
-        self.seed = self.random.randrange(2**32)
         settings = create_randomizer_settings(self.options)
         archipelago_info = ArchipelagoInfo()
         archipelago_info.name = self.player_name
-        self.seed_info = randomize_pre_fill(self.seed, settings, archipelago_info)
+        max_tries = 20
+        for num_tries in range(max_tries + 1):
+            if num_tries == max_tries:
+                print(f"Too many attempts to generate world graph for player {self.player_name}. Turning off Crack Shuffle.")
+                self.options.crack_shuffle.value = CrackShuffle.option_off
+                settings.cracksanity = Cracksanity.Off
+            self.seed = self.random.randrange(2**32)
+            self.seed_info = randomize_pre_fill(self.seed, settings, archipelago_info)
+            if self.seed_info.access_check():
+                break
 
         # add starting weather vanes
         starting_vanes = []
@@ -229,18 +238,39 @@ class ALBWWorld(World):
             starting_weapon_itempool = [item for item in self.pre_fill_items if item.name == self.starting_weapon.name]
             self._initial_fill(starting_weapon_itempool, starting_weapon_locations)
     
-    def fill_slot_data(self) -> None:
-        return {"seed": self.seed}
+    def fill_slot_data(self) -> Dict[str, Any]:
+        slot_data = self.options.as_dict(
+            "logic_mode",
+            "lorule_castle_requirement",
+            "pedestal_requirement",
+            "nice_items",
+            "lamp_and_net_as_weapons",
+            "no_progression_enemies",
+            "maiamai_mayhem",
+            "initial_crack_state",
+            "crack_shuffle",
+            "minigames_excluded",
+            "trials_required",
+            "open_trials_door",
+            "weather_vanes",
+            "dark_rooms_lampless",
+            "swordless_mode",
+            "chest_size_matches_contents",
+        )
+        slot_data["seed"] = self.seed
+        return slot_data
 
     def generate_output(self, output_directory: str) -> None:
         # Create patch info object
         check_map = self._build_check_map()
-        item_names = {loc.name: loc.item.name for loc in self.multiworld.get_locations(self.player)}
-        patch_info = PatchInfo(PatchInfo.version, self.seed, self.player_name, self.options, check_map, item_names)
+        items = {loc.name: PatchItemInfo(loc.item.name, loc.item.classification.as_flag())
+                        for loc in self.multiworld.get_locations(self.player)}
+        patch_info = PatchInfo(PatchInfo.cur_version.as_simple_string(), self.seed, self.player_name,
+                               self.options, check_map, items)
 
-        # Write patch info to binary file
+        # Write patch info to json file
         patch = ALBWProcedurePatch(player=self.player, player_name=self.player_name)
-        patch.write_file("patch_info.bin", pickle.dumps(patch_info))
+        patch.write_file("patch_info.json", patch_info.to_json())
 
         # Write patch file
         out_file_name = self.multiworld.get_out_file_name_base(self.player)

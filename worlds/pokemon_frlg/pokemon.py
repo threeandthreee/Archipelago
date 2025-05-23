@@ -4,9 +4,10 @@ from typing import TYPE_CHECKING, Dict, List, Set, Tuple
 
 from .data import (data, LEGENDARY_POKEMON, NUM_REAL_SPECIES, NAME_TO_SPECIES_ID, EncounterSpeciesData, EventData,
                    LearnsetMove, SpeciesData, TrainerPokemonData)
-from .options import (Dexsanity, GameVersion, HmCompatibility, RandomizeAbilities, RandomizeLegendaryPokemon,
-                      RandomizeMiscPokemon, RandomizeMoves, RandomizeStarters, RandomizeTrainerParties, RandomizeTypes,
-                      RandomizeWildPokemon, TmTutorCompatibility, WildPokemonGroups)
+from .options import (Dexsanity, HmCompatibility, RandomizeAbilities, RandomizeDamageCategories,
+                      RandomizeLegendaryPokemon, RandomizeMiscPokemon, RandomizeMoves, RandomizeMoveTypes,
+                      RandomizeStarters, RandomizeTrainerParties, RandomizeTypes, RandomizeWildPokemon,
+                      TmTutorCompatibility, WildPokemonGroups)
 from .util import bool_array_to_int, int_to_bool_array, HM_TO_COMPATIBILITY_ID
 
 if TYPE_CHECKING:
@@ -158,24 +159,44 @@ def _get_random_type(random: "Random") -> int:
     return picked_type
 
 
-def _get_random_move(random: "Random", blacklists: List[Set[int]]) -> int:
-    blacklist_length = len(blacklists)
-    allowed_moves = list()
+def _get_random_move(world: "PokemonFRLGWorld",
+                     blacklists: List[Set[int]],
+                     use_bias: bool = False,
+                     types: Tuple[int, int] | None = None) -> int:
+    allowed_moves = []
+    moves_by_type = set()
+
+    if use_bias:
+        type_bias = world.options.move_match_type_bias.value
+        normal_bias = world.options.move_normal_type_bias.value
+        bias = world.random.random() * 100
+        if bias < type_bias:
+            moves_by_type.update(world.moves_by_type[types[0]])
+            if types[0] != types[1]:
+                moves_by_type |= world.moves_by_type[types[1]]
+            blacklists.append({move for move in range(data.constants["MOVES_COUNT"])
+                               if move not in moves_by_type})
+        elif bias < type_bias + ((100 - type_bias) * (normal_bias / 100)):
+            blacklists.append({move for move in range(data.constants["MOVES_COUNT"])
+                               if move not in world.moves_by_type[0]})
 
     while len(allowed_moves) == 0:
         merged_blacklist = _HM_MOVES | _DUMMY_MOVES
-        for i in range(blacklist_length):
-            merged_blacklist |= blacklists[i]
+        for blacklist in blacklists:
+            merged_blacklist |= blacklist
         allowed_moves = [i for i in range(data.constants["MOVES_COUNT"]) if i not in merged_blacklist]
-        blacklist_length -= 1
+        blacklists.pop()
 
-    return random.choice(allowed_moves)
+    return world.random.choice(allowed_moves)
 
 
-def _get_random_damaging_move(random: "Random", blacklists: List[Set[int]]) -> int:
+def _get_random_damaging_move(world: "PokemonFRLGWorld",
+                              blacklists: List[Set[int]],
+                              use_bias: bool = False,
+                              types: Tuple[int, int] | None = None) -> int:
     non_damage_blacklist = {i for i in range(data.constants["MOVES_COUNT"]) if i not in _DAMAGING_MOVES}
     blacklists.insert(0, non_damage_blacklist)
-    return _get_random_move(random, blacklists)
+    return _get_random_move(world, blacklists, use_bias, types)
 
 
 def _filter_species_by_nearby_bst(species: List[SpeciesData], target_bst: int) -> List[SpeciesData]:
@@ -326,6 +347,76 @@ def randomize_abilities(world: "PokemonFRLGWorld") -> None:
             species.abilities = new_abilities
 
 
+def randomize_move_types(world: "PokemonFRLGWorld") -> None:
+    if world.options.move_types == RandomizeMoveTypes.option_shuffle:
+        type_map = list(range(18))
+        world.random.shuffle(type_map)
+
+        # Map the ??? type to itself. Moves of that type should remain that type.
+        mystery_type_index = type_map.index(9)
+        type_map[mystery_type_index], type_map[9] = type_map[9], type_map[mystery_type_index]
+
+        for name, move in world.modified_moves.items():
+            if data.constants[name] in _DUMMY_MOVES:
+                continue
+            move.type = type_map[move.type]
+    elif world.options.move_types == RandomizeMoveTypes.option_completely_random:
+        for name, move in world.modified_moves.items():
+            if data.constants[name] in _DUMMY_MOVES:
+                continue
+            move.type = _get_random_type(world.random)
+
+    for name, move in world.modified_moves.items():
+        if data.constants[name] in _DUMMY_MOVES:
+            continue
+        if move.type not in world.moves_by_type:
+            world.moves_by_type[move.type] = set()
+        world.moves_by_type[move.type].add(data.constants[name])
+
+
+def randomize_damage_categories(world: "PokemonFRLGWorld") -> None:
+    if world.options.damage_categories == RandomizeDamageCategories.option_shuffle:
+        new_type_damage_categories = list()
+        num_moves_per_damage_category = {0: data.num_moves_per_damage_category[0],
+                                         1: data.num_moves_per_damage_category[1]}
+        type_map = list(range(18))
+        world.random.shuffle(type_map)
+
+        # Map the ??? type to itself. Its damage category should stay with it.
+        mystery_type_index = type_map.index(9)
+        type_map[mystery_type_index], type_map[9] = type_map[9], type_map[mystery_type_index]
+
+        for type in type_map:
+            new_type_damage_categories.append(world.modified_type_damage_categories[type])
+        world.modified_type_damage_categories = new_type_damage_categories
+
+        for name, move in world.modified_moves.items():
+            if move.category == 2 or data.constants[name] in _DUMMY_MOVES:
+                continue
+            if num_moves_per_damage_category[0] and num_moves_per_damage_category[1]:
+                new_category = world.random.randint(0, 1)
+                move.category = new_category
+                num_moves_per_damage_category[new_category] -= 1
+            elif num_moves_per_damage_category[0]:
+                move.category = 0
+                num_moves_per_damage_category[0] -= 1
+            elif num_moves_per_damage_category[1]:
+                move.category = 1
+                num_moves_per_damage_category[1] -= 1
+            else:  # We should never get here
+                raise RuntimeError("Pokemon FRLG: Error in randomize_damage_categories that shouldn't happen")
+    elif world.options.damage_categories == RandomizeDamageCategories.option_completely_random:
+        for i, _ in enumerate(world.modified_type_damage_categories):
+            if world.modified_type_damage_categories[i] == 2:
+                continue
+            world.modified_type_damage_categories[i] = world.random.randint(0, 1)
+
+        for name, move in world.modified_moves.items():
+            if move.category == 2 or data.constants[name] in _DUMMY_MOVES:
+                continue
+            move.category = world.random.randint(0, 1)
+
+
 def randomize_moves(world: "PokemonFRLGWorld") -> None:
     if world.options.moves == RandomizeMoves.option_vanilla:
         return
@@ -340,8 +431,10 @@ def randomize_moves(world: "PokemonFRLGWorld") -> None:
         move_index = 0
         while old_learnset[move_index].move_id == 0:
             if world.options.moves == RandomizeMoves.option_start_with_four_moves:
-                new_move = _get_random_move(world.random,
-                                            [{move.move_id for move in new_learnset}, world.blacklisted_moves])
+                new_move = _get_random_move(world,
+                                            [{move.move_id for move in new_learnset}, world.blacklisted_moves],
+                                            True,
+                                            species.types)
             else:
                 new_move = 0
             new_learnset.append(LearnsetMove(old_learnset[move_index].level, new_move))
@@ -349,10 +442,16 @@ def randomize_moves(world: "PokemonFRLGWorld") -> None:
 
         while move_index < len(old_learnset):
             if move_index == 3:
-                new_move = _get_random_damaging_move(world.random, [{move.move_id for move in new_learnset}])
+                new_move = _get_random_damaging_move(world,
+                                                     [{move.move_id for move in new_learnset},
+                                                      world.blacklisted_moves],
+                                                     True,
+                                                     species.types)
             else:
-                new_move = _get_random_move(world.random,
-                                            [{move.move_id for move in new_learnset}, world.blacklisted_moves])
+                new_move = _get_random_move(world,
+                                            [{move.move_id for move in new_learnset}, world.blacklisted_moves],
+                                            True,
+                                            species.types)
             new_learnset.append(LearnsetMove(old_learnset[move_index].level, new_move))
             move_index += 1
 
@@ -410,7 +509,7 @@ def randomize_wild_encounters(world: "PokemonFRLGWorld") -> None:
         dexsanity_priority_locations = [loc for loc in world.options.priority_locations.value
                                         if loc.startswith("Pokedex -")]
         for location in dexsanity_priority_locations:
-            priority_species.add(NAME_TO_SPECIES_ID[location.split("-")[1].strip()])
+            priority_species.add(NAME_TO_SPECIES_ID[location.split(" - ")[1].strip()])
 
     map_names = list(world.modified_maps.keys())
     world.random.shuffle(map_names)
@@ -524,9 +623,10 @@ def randomize_wild_encounters(world: "PokemonFRLGWorld") -> None:
 
                             new_species_id = world.random.choice(candidates).species_id
 
-                            if not placed_priority_species:
-                                for priority_species_id in priority_species:
-                                    if priority_species_id in [species.species_id for species in candidates]:
+                            if not placed_priority_species and len(priority_species) > 0:
+                                candidate_ids = [species.species_id for species in candidates]
+                                for priority_species_id in list(sorted(priority_species.copy())):
+                                    if priority_species_id in candidate_ids:
                                         new_species_id = priority_species_id
                                         priority_species.remove(priority_species_id)
                                         placed_priority_species = True
@@ -650,42 +750,40 @@ def randomize_starters(world: "PokemonFRLGWorld") -> None:
 
 
 def randomize_legendaries(world: "PokemonFRLGWorld") -> None:
-    if world.options.legendary_pokemon == RandomizeLegendaryPokemon.option_vanilla:
-        return
-
     game_version = world.options.game_version.current_key
 
-    should_match_bst = world.options.legendary_pokemon in {
-        RandomizeLegendaryPokemon.option_match_base_stats,
-        RandomizeLegendaryPokemon.option_match_base_stats_and_type
-    }
-    should_match_type = world.options.legendary_pokemon in {
-        RandomizeLegendaryPokemon.option_match_type,
-        RandomizeLegendaryPokemon.option_match_base_stats_and_type
-    }
+    if world.options.legendary_pokemon != RandomizeLegendaryPokemon.option_vanilla:
+        should_match_bst = world.options.legendary_pokemon in {
+            RandomizeLegendaryPokemon.option_match_base_stats,
+            RandomizeLegendaryPokemon.option_match_base_stats_and_type
+        }
+        should_match_type = world.options.legendary_pokemon in {
+            RandomizeLegendaryPokemon.option_match_type,
+            RandomizeLegendaryPokemon.option_match_base_stats_and_type
+        }
 
-    placed_species = set()
+        placed_species = set()
 
-    for name, legendary in data.legendary_pokemon.items():
-        original_species = world.modified_species[legendary.species_id[game_version]]
+        for name, legendary in data.legendary_pokemon.items():
+            original_species = world.modified_species[legendary.species_id[game_version]]
 
-        if world.options.legendary_pokemon == RandomizeLegendaryPokemon.option_legendaries:
-            candidates = [species for species in world.modified_species.values() if
-                          species.species_id in LEGENDARY_POKEMON and species.species_id not in placed_species]
-        else:
-            candidates = list(world.modified_species.values())
-        if should_match_type:
-            candidates = [
-                species
-                for species in candidates
-                if bool(set(species.types) & set(original_species.types))
-            ]
-        if should_match_bst:
-            candidates = _filter_species_by_nearby_bst(candidates, sum(original_species.base_stats))
+            if world.options.legendary_pokemon == RandomizeLegendaryPokemon.option_legendaries:
+                candidates = [species for species in world.modified_species.values() if
+                              species.species_id in LEGENDARY_POKEMON and species.species_id not in placed_species]
+            else:
+                candidates = list(world.modified_species.values())
+            if should_match_type:
+                candidates = [
+                    species
+                    for species in candidates
+                    if bool(set(species.types) & set(original_species.types))
+                ]
+            if should_match_bst:
+                candidates = _filter_species_by_nearby_bst(candidates, sum(original_species.base_stats))
 
-        new_species_id = world.random.choice(candidates).species_id
-        world.modified_legendary_pokemon[name].species_id[game_version] = new_species_id
-        placed_species.add(new_species_id)
+            new_species_id = world.random.choice(candidates).species_id
+            world.modified_legendary_pokemon[name].species_id[game_version] = new_species_id
+            placed_species.add(new_species_id)
 
     # Update the events that correspond to the legendary Pokémon
     for name, legendary_pokemon in world.modified_legendary_pokemon.items():
@@ -693,74 +791,11 @@ def randomize_legendaries(world: "PokemonFRLGWorld") -> None:
             continue
 
         species = world.modified_species[legendary_pokemon.species_id[game_version]]
-        item_name = data.events[name].item.split()
+        item = world.modified_events[name].item
 
-        if item_name[0] == "Static":
+        if item.startswith("Static"):
             item = f"Static {species.name}"
-        elif item_name[0] == "Missable":
-            item = f"Missable {species.name}"
-        else:
-            item = item_name[0]
-
-        new_event = EventData(
-            world.modified_events[name].id,
-            world.modified_events[name].name,
-            item,
-            world.modified_events[name].parent_region_id,
-            world.modified_events[name].category
-        )
-
-        world.modified_events[name] = new_event
-
-
-def randomize_misc_pokemon(world: "PokemonFRLGWorld") -> None:
-    if world.options.misc_pokemon == RandomizeMiscPokemon.option_vanilla:
-        return
-
-    game_version = world.options.game_version.current_key
-
-    should_match_bst = world.options.misc_pokemon in {
-        RandomizeMiscPokemon.option_match_base_stats,
-        RandomizeMiscPokemon.option_match_base_stats_and_type
-    }
-    should_match_type = world.options.misc_pokemon in {
-        RandomizeMiscPokemon.option_match_type,
-        RandomizeMiscPokemon.option_match_base_stats_and_type
-    }
-
-    for name, misc_pokemon in data.misc_pokemon.items():
-        original_species = world.modified_species[misc_pokemon.species_id[game_version]]
-
-        candidates = list(world.modified_species.values())
-        if should_match_type:
-            candidates = [
-                species
-                for species in candidates
-                if bool(set(species.types) & set(original_species.types))
-            ]
-        if should_match_bst:
-            candidates = _filter_species_by_nearby_bst(candidates, sum(original_species.base_stats))
-
-        world.modified_misc_pokemon[name].species_id[game_version] = world.random.choice(candidates).species_id
-
-    # Update the events that correspond to the misc Pokémon
-    for name, misc_pokemon in world.modified_misc_pokemon.items():
-        if name not in world.modified_events:
-            continue
-
-        species = world.modified_species[misc_pokemon.species_id[game_version]]
-
-        if type(data.events[name].item) is list:
-            if game_version == GameVersion.option_firered:
-                item_name = data.events[name].item[0].split()
-            else:
-                item_name = data.events[name].item[1].split()
-        else:
-            item_name = data.events[name].item.split()
-
-        if item_name[0] == "Static":
-            item = f"Static {species.name}"
-        elif item_name[0] == "Missable":
+        elif item.startswith("Missable"):
             item = f"Missable {species.name}"
         else:
             item = species.name
@@ -774,6 +809,119 @@ def randomize_misc_pokemon(world: "PokemonFRLGWorld") -> None:
         )
 
         world.modified_events[name] = new_event
+
+
+def randomize_misc_pokemon(world: "PokemonFRLGWorld") -> None:
+    game_version = world.options.game_version.current_key
+
+    if world.options.misc_pokemon != RandomizeMiscPokemon.option_vanilla:
+        should_match_bst = world.options.misc_pokemon in {
+            RandomizeMiscPokemon.option_match_base_stats,
+            RandomizeMiscPokemon.option_match_base_stats_and_type
+        }
+        should_match_type = world.options.misc_pokemon in {
+            RandomizeMiscPokemon.option_match_type,
+            RandomizeMiscPokemon.option_match_base_stats_and_type
+        }
+
+        prize_pokemon = set()
+
+        for name, misc_pokemon in data.misc_pokemon.items():
+            original_species = world.modified_species[misc_pokemon.species_id[game_version]]
+
+            candidates = list(world.modified_species.values())
+            if should_match_type:
+                candidates = [
+                    species
+                    for species in candidates
+                    if bool(set(species.types) & set(original_species.types))
+                ]
+            if should_match_bst:
+                candidates = _filter_species_by_nearby_bst(candidates, sum(original_species.base_stats))
+            if "CELADON_PRIZE_POKEMON" in name:
+                candidates = [species for species in candidates if species.species_id not in prize_pokemon]
+
+            new_species_id = world.random.choice(candidates).species_id
+
+            if "CELADON_PRIZE_POKEMON" in name:
+                prize_pokemon.add(new_species_id)
+
+            world.modified_misc_pokemon[name].species_id[game_version] = new_species_id
+
+        for name, trade_pokemon in data.trade_pokemon.items():
+            original_species = world.modified_species[trade_pokemon.species_id[game_version]]
+
+            candidates = list(world.modified_species.values())
+            if should_match_type:
+                candidates = [
+                    species
+                    for species in candidates
+                    if bool(set(species.types) & set(original_species.types))
+                ]
+            if should_match_bst:
+                candidates = _filter_species_by_nearby_bst(candidates, sum(original_species.base_stats))
+
+            new_species_id = world.random.choice(candidates).species_id
+
+            world.modified_trade_pokemon[name].species_id[game_version] = new_species_id
+
+    # Update the events that correspond to the misc Pokémon
+    for name, misc_pokemon in world.modified_misc_pokemon.items():
+        if name not in world.modified_events:
+            continue
+
+        species = world.modified_species[misc_pokemon.species_id[game_version]]
+        item = world.modified_events[name].item
+
+        if item.startswith("Static"):
+            item = f"Static {species.name}"
+        elif item.startswith("Missable"):
+            item = f"Missable {species.name}"
+        else:
+            item = species.name
+
+        new_event = EventData(
+            world.modified_events[name].id,
+            world.modified_events[name].name,
+            item,
+            world.modified_events[name].parent_region_id,
+            world.modified_events[name].category
+        )
+
+        world.modified_events[name] = new_event
+
+    for name, trade_pokemon in world.modified_trade_pokemon.items():
+        if name not in world.modified_events:
+            continue
+
+        species = world.modified_species[trade_pokemon.species_id[game_version]]
+        item = world.modified_events[name].item
+
+        if item.startswith("Static"):
+            item = f"Static {species.name}"
+        elif item.startswith("Missable"):
+            item = f"Missable {species.name}"
+        else:
+            item = species.name
+
+        new_event = EventData(
+            world.modified_events[name].id,
+            world.modified_events[name].name,
+            item,
+            world.modified_events[name].parent_region_id,
+            world.modified_events[name].category
+        )
+
+        world.modified_events[name] = new_event
+
+
+def randomize_requested_trade_pokemon(world: "PokemonFRLGWorld") -> None:
+    game_version = world.options.game_version.current_key
+    for trade_id, trade_pokemon in world.modified_trade_pokemon.items():
+        species = world.random.choice(world.logic.wild_pokemon)
+        species_id = NAME_TO_SPECIES_ID[species]
+        trade_pokemon.requested_species_id[game_version] = species_id
+        world.logic.required_trade_pokemon[data.events[trade_id].name] = species
 
 
 def randomize_trainer_parties(world: "PokemonFRLGWorld") -> None:
@@ -854,7 +1002,7 @@ def randomize_tm_moves(world: "PokemonFRLGWorld") -> None:
     new_moves: Set[int] = set()
 
     for i in range(50):
-        new_move = _get_random_move(world.random, [new_moves, world.blacklisted_moves])
+        new_move = _get_random_move(world, [new_moves, world.blacklisted_moves])
         new_moves.add(new_move)
         world.modified_tmhm_moves[i] = new_move
 
@@ -863,7 +1011,7 @@ def randomize_tutor_moves(world: "PokemonFRLGWorld") -> List[int]:
     new_moves = []
 
     for i in range(15):
-        new_move = _get_random_move(world.random, [set(new_moves), world.blacklisted_moves])
+        new_move = _get_random_move(world, [set(new_moves), world.blacklisted_moves])
         new_moves.append(new_move)
 
     return new_moves

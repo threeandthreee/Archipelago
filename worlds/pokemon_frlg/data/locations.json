@@ -207,7 +207,7 @@
     "category": "KEY_ITEM"
   },
   "NPC_GIFT_GOT_TEACHY_TV": {
-    "name": "Viridian City - Old Man Gift",
+    "name": "Viridian City - Tutorial Man Gift",
     "tags": ["NPC Gifts", "Kanto", "Viridian City"],
     "category": "KEY_ITEM"
   },
@@ -441,6 +441,42 @@
     "name": "Celadon Condominiums 1F - Erika Gift",
     "tags": ["NPC Gifts", "Kanto", "Celadon City"],
     "category": "SPLIT_TEA"
+  },
+
+  "ITEM_PEWTER_MUSEUM_2F_PEWTER_KEY": {
+    "name": "Pewter Museum 2F - Item",
+    "tags": ["Overworld Items", "Kanto", "Pewter City"],
+    "category": "GYM_KEY"
+  },
+  "NPC_GIFT_GOT_CERULEAN_KEY": {
+    "name": "Route 25 - Man Gift",
+    "tags": ["NPC Gifts", "Kanto", "Rotue 25"],
+    "category": "GYM_KEY"
+  },
+  "ITEM_DIGLETTS_CAVE_B1F_VERMILION_KEY": {
+    "name": "Diglett's Cave B1F - Item",
+    "tags": ["Overworld Items", "Kanto", "Diglett's Cave"],
+    "category": "GYM_KEY"
+  },
+  "ITEM_CELADON_CITY_HOTEL_CELADON_KEY": {
+    "name": "Celadon Hotel - Item",
+    "tags": ["Overworld Items", "Kanto", "Celadon City"],
+    "category": "GYM_KEY"
+  },
+  "ITEM_SAFARI_ZONE_EAST_RESTHOUSE_FUCHSIA_KEY": {
+    "name": "Safari Zone East Rest House - Item",
+    "tags": ["Overworld Items", "Kanto", "Safari Zone"],
+    "category": "GYM_KEY"
+  },
+  "ITEM_SAFFRON_CITY_DOJO_SAFFRON_KEY": {
+    "name": "Saffron Dojo - Item (Center)",
+    "tags": ["Overworld Items", "Kanto", "Saffron City"],
+    "category": "GYM_KEY"
+  },
+  "NPC_GIFT_GOT_VIRIDIAN_KEY": {
+    "name": "Viridian City - Old Man Gift",
+    "tags": ["NPC Gifts", "Kanto", "Viridian City"],
+    "category": "GYM_KEY"
   },
 
   "ITEM_CELADON_CITY_ETHER": {
@@ -2180,8 +2216,18 @@
     "category": "HIDDEN_ITEM"
   },
 
+  "STARTING_ITEM_BERRY_POUCH": {
+    "name": "Title Screen - Starting Item 1",
+    "tags": ["Starting Items"],
+    "category": "STARTING_ITEM"
+  },
+  "STARTING_ITEM_TM_CASE": {
+    "name": "Title Screen - Starting Item 2",
+    "tags": ["Starting Items"],
+    "category": "STARTING_ITEM"
+  },
   "PC_ITEM_POTION": {
-    "name": "Player's PC - Starting Item",
+    "name": "Player's PC - PC Item",
     "tags": ["Starting Items"],
     "category": "STARTING_ITEM"
   },
@@ -2242,7 +2288,7 @@
     "category": "NPC_GIFT"
   },
   "NPC_GIFT_GOT_LUXURY_BALL_FROM_RESORT_GORGEOUS_HOUSE": {
-    "name": "Resort Gorgeous House - Selphy Gift (Show Pokemon)",
+    "name": "Selphy's House - Selphy Gift (Show Pokemon)",
     "tags": ["NPC Gifts", "Sevii Islands", "Five Island", "Resort Gorgeous"],
     "category": "POKEMON_REQUEST"
   },
@@ -2375,6 +2421,737 @@
     "name": "Berry Forest - Lostelle Gift",
     "tags": ["NPC Gifts", "Sevii Islands", "Three Island", "Berry Forest"],
     "category": "NPC_GIFT"
+  },
+
+  "SHOP_CELADON_CITY_DEPT_BATTLE_1": {
+    "name": "Celadon Department Store 5F - Battle Shop Item 1",
+    "tags": ["Shops", "Kanto", "Celadon City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CELADON_CITY_DEPT_BATTLE_2": {
+    "name": "Celadon Department Store 5F - Battle Shop Item 2",
+    "tags": ["Shops", "Kanto", "Celadon City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CELADON_CITY_DEPT_BATTLE_3": {
+    "name": "Celadon Department Store 5F - Battle Shop Item 3",
+    "tags": ["Shops", "Kanto", "Celadon City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CELADON_CITY_DEPT_BATTLE_4": {
+    "name": "Celadon Department Store 5F - Battle Shop Item 4",
+    "tags": ["Shops", "Kanto", "Celadon City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CELADON_CITY_DEPT_BATTLE_5": {
+    "name": "Celadon Department Store 5F - Battle Shop Item 5",
+    "tags": ["Shops", "Kanto", "Celadon City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CELADON_CITY_DEPT_BATTLE_6": {
+    "name": "Celadon Department Store 5F - Battle Shop Item 6",
+    "tags": ["Shops", "Kanto", "Celadon City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CELADON_CITY_DEPT_BATTLE_7": {
+    "name": "Celadon Department Store 5F - Battle Shop Item 7",
+    "tags": ["Shops", "Kanto", "Celadon City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CELADON_CITY_DEPT_EVO_1": {
+    "name": "Celadon Department Store 4F - Evo Shop Item 1",
+    "tags": ["Shops", "Kanto", "Celadon City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CELADON_CITY_DEPT_EVO_2": {
+    "name": "Celadon Department Store 4F - Evo Shop Item 2",
+    "tags": ["Shops", "Kanto", "Celadon City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CELADON_CITY_DEPT_EVO_3": {
+    "name": "Celadon Department Store 4F - Evo Shop Item 3",
+    "tags": ["Shops", "Kanto", "Celadon City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CELADON_CITY_DEPT_EVO_4": {
+    "name": "Celadon Department Store 4F - Evo Shop Item 4",
+    "tags": ["Shops", "Kanto", "Celadon City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CELADON_CITY_DEPT_EVO_5": {
+    "name": "Celadon Department Store 4F - Evo Shop Item 5",
+    "tags": ["Shops", "Kanto", "Celadon City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CELADON_CITY_DEPT_EVO_6": {
+    "name": "Celadon Department Store 4F - Evo Shop Item 6",
+    "tags": ["Shops", "Kanto", "Celadon City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CELADON_CITY_DEPT_ITEM_1": {
+    "name": "Celadon Department Store 2F - Shop Item 1",
+    "tags": ["Shops", "Kanto", "Celadon City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CELADON_CITY_DEPT_ITEM_2": {
+    "name": "Celadon Department Store 2F - Shop Item 2",
+    "tags": ["Shops", "Kanto", "Celadon City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CELADON_CITY_DEPT_ITEM_3": {
+    "name": "Celadon Department Store 2F - Shop Item 3",
+    "tags": ["Shops", "Kanto", "Celadon City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CELADON_CITY_DEPT_ITEM_4": {
+    "name": "Celadon Department Store 2F - Shop Item 4",
+    "tags": ["Shops", "Kanto", "Celadon City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CELADON_CITY_DEPT_ITEM_5": {
+    "name": "Celadon Department Store 2F - Shop Item 5",
+    "tags": ["Shops", "Kanto", "Celadon City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CELADON_CITY_DEPT_ITEM_6": {
+    "name": "Celadon Department Store 2F - Shop Item 6",
+    "tags": ["Shops", "Kanto", "Celadon City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CELADON_CITY_DEPT_ITEM_7": {
+    "name": "Celadon Department Store 2F - Shop Item 7",
+    "tags": ["Shops", "Kanto", "Celadon City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CELADON_CITY_DEPT_ITEM_8": {
+    "name": "Celadon Department Store 2F - Shop Item 8",
+    "tags": ["Shops", "Kanto", "Celadon City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CELADON_CITY_DEPT_ITEM_9": {
+    "name": "Celadon Department Store 2F - Shop Item 9",
+    "tags": ["Shops", "Kanto", "Celadon City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CELADON_CITY_DEPT_TM_1": {
+    "name": "Celadon Department Store 2F - TM Shop Item 1",
+    "tags": ["Shops", "Kanto", "Celadon City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CELADON_CITY_DEPT_TM_2": {
+    "name": "Celadon Department Store 2F - TM Shop Item 2",
+    "tags": ["Shops", "Kanto", "Celadon City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CELADON_CITY_DEPT_TM_3": {
+    "name": "Celadon Department Store 2F - TM Shop Item 3",
+    "tags": ["Shops", "Kanto", "Celadon City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CELADON_CITY_DEPT_TM_4": {
+    "name": "Celadon Department Store 2F - TM Shop Item 4",
+    "tags": ["Shops", "Kanto", "Celadon City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CELADON_CITY_DEPT_TM_5": {
+    "name": "Celadon Department Store 2F - TM Shop Item 5",
+    "tags": ["Shops", "Kanto", "Celadon City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CELADON_CITY_DEPT_TM_6": {
+    "name": "Celadon Department Store 2F - TM Shop Item 6",
+    "tags": ["Shops", "Kanto", "Celadon City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CELADON_CITY_DEPT_VITAMIN_1": {
+    "name": "Celadon Department Store 5F - Vitamin Shop Item 1",
+    "tags": ["Shops", "Kanto", "Celadon City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CELADON_CITY_DEPT_VITAMIN_2": {
+    "name": "Celadon Department Store 5F - Vitamin Shop Item 2",
+    "tags": ["Shops", "Kanto", "Celadon City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CELADON_CITY_DEPT_VITAMIN_3": {
+    "name": "Celadon Department Store 5F - Vitamin Shop Item 3",
+    "tags": ["Shops", "Kanto", "Celadon City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CELADON_CITY_DEPT_VITAMIN_4": {
+    "name": "Celadon Department Store 5F - Vitamin Shop Item 4",
+    "tags": ["Shops", "Kanto", "Celadon City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CELADON_CITY_DEPT_VITAMIN_5": {
+    "name": "Celadon Department Store 5F - Vitamin Shop Item 5",
+    "tags": ["Shops", "Kanto", "Celadon City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CELADON_CITY_DEPT_VITAMIN_6": {
+    "name": "Celadon Department Store 5F - Vitamin Shop Item 6",
+    "tags": ["Shops", "Kanto", "Celadon City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CERULEAN_CITY_1": {
+    "name": "Cerulean Poke Mart - Shop Item 1",
+    "tags": ["Shops", "Kanto", "Cerulean City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CERULEAN_CITY_2": {
+    "name": "Cerulean Poke Mart - Shop Item 2",
+    "tags": ["Shops", "Kanto", "Cerulean City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CERULEAN_CITY_3": {
+    "name": "Cerulean Poke Mart - Shop Item 3",
+    "tags": ["Shops", "Kanto", "Cerulean City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CERULEAN_CITY_4": {
+    "name": "Cerulean Poke Mart - Shop Item 4",
+    "tags": ["Shops", "Kanto", "Cerulean City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CERULEAN_CITY_5": {
+    "name": "Cerulean Poke Mart - Shop Item 5",
+    "tags": ["Shops", "Kanto", "Cerulean City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CERULEAN_CITY_6": {
+    "name": "Cerulean Poke Mart - Shop Item 6",
+    "tags": ["Shops", "Kanto", "Cerulean City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CERULEAN_CITY_7": {
+    "name": "Cerulean Poke Mart - Shop Item 7",
+    "tags": ["Shops", "Kanto", "Cerulean City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CERULEAN_CITY_8": {
+    "name": "Cerulean Poke Mart - Shop Item 8",
+    "tags": ["Shops", "Kanto", "Cerulean City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CERULEAN_CITY_9": {
+    "name": "Cerulean Poke Mart - Shop Item 9",
+    "tags": ["Shops", "Kanto", "Cerulean City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CINNABAR_ISLAND_1": {
+    "name": "Cinnabar Poke Mart - Shop Item 1",
+    "tags": ["Shops", "Kanto", "Cinnabar Island"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CINNABAR_ISLAND_2": {
+    "name": "Cinnabar Poke Mart - Shop Item 2",
+    "tags": ["Shops", "Kanto", "Cinnabar Island"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CINNABAR_ISLAND_3": {
+    "name": "Cinnabar Poke Mart - Shop Item 3",
+    "tags": ["Shops", "Kanto", "Cinnabar Island"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CINNABAR_ISLAND_4": {
+    "name": "Cinnabar Poke Mart - Shop Item 4",
+    "tags": ["Shops", "Kanto", "Cinnabar Island"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CINNABAR_ISLAND_5": {
+    "name": "Cinnabar Poke Mart - Shop Item 5",
+    "tags": ["Shops", "Kanto", "Cinnabar Island"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CINNABAR_ISLAND_6": {
+    "name": "Cinnabar Poke Mart - Shop Item 6",
+    "tags": ["Shops", "Kanto", "Cinnabar Island"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_CINNABAR_ISLAND_7": {
+    "name": "Cinnabar Poke Mart - Shop Item 7",
+    "tags": ["Shops", "Kanto", "Cinnabar Island"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_FOUR_ISLAND_1": {
+    "name": "Four Island Poke Mart - Shop Item 1",
+    "tags": ["Shops", "Sevii Islands", "Four Island", "Four Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_FOUR_ISLAND_2": {
+    "name": "Four Island Poke Mart - Shop Item 2",
+    "tags": ["Shops", "Sevii Islands", "Four Island", "Four Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_FOUR_ISLAND_3": {
+    "name": "Four Island Poke Mart - Shop Item 3",
+    "tags": ["Shops", "Sevii Islands", "Four Island", "Four Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_FOUR_ISLAND_4": {
+    "name": "Four Island Poke Mart - Shop Item 4",
+    "tags": ["Shops", "Sevii Islands", "Four Island", "Four Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_FOUR_ISLAND_5": {
+    "name": "Four Island Poke Mart - Shop Item 5",
+    "tags": ["Shops", "Sevii Islands", "Four Island", "Four Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_FOUR_ISLAND_6": {
+    "name": "Four Island Poke Mart - Shop Item 6",
+    "tags": ["Shops", "Sevii Islands", "Four Island", "Four Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_FOUR_ISLAND_7": {
+    "name": "Four Island Poke Mart - Shop Item 7",
+    "tags": ["Shops", "Sevii Islands", "Four Island", "Four Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_FOUR_ISLAND_8": {
+    "name": "Four Island Poke Mart - Shop Item 8",
+    "tags": ["Shops", "Sevii Islands", "Four Island", "Four Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_FUCHSIA_CITY_1": {
+    "name": "Fuchsia Poke Mart - Shop Item 1",
+    "tags": ["Shops", "Kanto", "Fuchsia City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_FUCHSIA_CITY_2": {
+    "name": "Fuchsia Poke Mart - Shop Item 2",
+    "tags": ["Shops", "Kanto", "Fuchsia City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_FUCHSIA_CITY_3": {
+    "name": "Fuchsia Poke Mart - Shop Item 3",
+    "tags": ["Shops", "Kanto", "Fuchsia City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_FUCHSIA_CITY_4": {
+    "name": "Fuchsia Poke Mart - Shop Item 4",
+    "tags": ["Shops", "Kanto", "Fuchsia City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_FUCHSIA_CITY_5": {
+    "name": "Fuchsia Poke Mart - Shop Item 5",
+    "tags": ["Shops", "Kanto", "Fuchsia City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_FUCHSIA_CITY_6": {
+    "name": "Fuchsia Poke Mart - Shop Item 6",
+    "tags": ["Shops", "Kanto", "Fuchsia City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_INDIGO_PLATEAU_1": {
+    "name": "Indigo Plateau Pokemon Center 1F - Shop Item 1",
+    "tags": ["Shops", "Kanto", "Indigo Plateau"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_INDIGO_PLATEAU_2": {
+    "name": "Indigo Plateau Pokemon Center 1F - Shop Item 2",
+    "tags": ["Shops", "Kanto", "Indigo Plateau"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_INDIGO_PLATEAU_3": {
+    "name": "Indigo Plateau Pokemon Center 1F - Shop Item 3",
+    "tags": ["Shops", "Kanto", "Indigo Plateau"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_INDIGO_PLATEAU_4": {
+    "name": "Indigo Plateau Pokemon Center 1F - Shop Item 4",
+    "tags": ["Shops", "Kanto", "Indigo Plateau"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_INDIGO_PLATEAU_5": {
+    "name": "Indigo Plateau Pokemon Center 1F - Shop Item 5",
+    "tags": ["Shops", "Kanto", "Indigo Plateau"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_INDIGO_PLATEAU_6": {
+    "name": "Indigo Plateau Pokemon Center 1F - Shop Item 6",
+    "tags": ["Shops", "Kanto", "Indigo Plateau"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_INDIGO_PLATEAU_7": {
+    "name": "Indigo Plateau Pokemon Center 1F - Shop Item 7",
+    "tags": ["Shops", "Kanto", "Indigo Plateau"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_LAVENDER_TOWN_1": {
+    "name": "Lavender Poke Mart - Shop Item 1",
+    "tags": ["Shops", "Kanto", "Lavender Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_LAVENDER_TOWN_2": {
+    "name": "Lavender Poke Mart - Shop Item 2",
+    "tags": ["Shops", "Kanto", "Lavender Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_LAVENDER_TOWN_3": {
+    "name": "Lavender Poke Mart - Shop Item 3",
+    "tags": ["Shops", "Kanto", "Lavender Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_LAVENDER_TOWN_4": {
+    "name": "Lavender Poke Mart - Shop Item 4",
+    "tags": ["Shops", "Kanto", "Lavender Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_LAVENDER_TOWN_5": {
+    "name": "Lavender Poke Mart - Shop Item 5",
+    "tags": ["Shops", "Kanto", "Lavender Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_LAVENDER_TOWN_6": {
+    "name": "Lavender Poke Mart - Shop Item 6",
+    "tags": ["Shops", "Kanto", "Lavender Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_LAVENDER_TOWN_7": {
+    "name": "Lavender Poke Mart - Shop Item 7",
+    "tags": ["Shops", "Kanto", "Lavender Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_LAVENDER_TOWN_8": {
+    "name": "Lavender Poke Mart - Shop Item 8",
+    "tags": ["Shops", "Kanto", "Lavender Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_LAVENDER_TOWN_9": {
+    "name": "Lavender Poke Mart - Shop Item 9",
+    "tags": ["Shops", "Kanto", "Lavender Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_PEWTER_CITY_1": {
+    "name": "Pewter Poke Mart - Shop Item 1",
+    "tags": ["Shops", "Kanto", "Pewter City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_PEWTER_CITY_2": {
+    "name": "Pewter Poke Mart - Shop Item 2",
+    "tags": ["Shops", "Kanto", "Pewter City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_PEWTER_CITY_3": {
+    "name": "Pewter Poke Mart - Shop Item 3",
+    "tags": ["Shops", "Kanto", "Pewter City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_PEWTER_CITY_4": {
+    "name": "Pewter Poke Mart - Shop Item 4",
+    "tags": ["Shops", "Kanto", "Pewter City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_PEWTER_CITY_5": {
+    "name": "Pewter Poke Mart - Shop Item 5",
+    "tags": ["Shops", "Kanto", "Pewter City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_PEWTER_CITY_6": {
+    "name": "Pewter Poke Mart - Shop Item 6",
+    "tags": ["Shops", "Kanto", "Pewter City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_PEWTER_CITY_7": {
+    "name": "Pewter Poke Mart - Shop Item 7",
+    "tags": ["Shops", "Kanto", "Pewter City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_PEWTER_CITY_8": {
+    "name": "Pewter Poke Mart - Shop Item 8",
+    "tags": ["Shops", "Kanto", "Pewter City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_SAFFRON_CITY_1": {
+    "name": "Saffron Poke Mart - Shop Item 1",
+    "tags": ["Shops", "Kanto", "Saffron City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_SAFFRON_CITY_2": {
+    "name": "Saffron Poke Mart - Shop Item 2",
+    "tags": ["Shops", "Kanto", "Saffron City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_SAFFRON_CITY_3": {
+    "name": "Saffron Poke Mart - Shop Item 3",
+    "tags": ["Shops", "Kanto", "Saffron City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_SAFFRON_CITY_4": {
+    "name": "Saffron Poke Mart - Shop Item 4",
+    "tags": ["Shops", "Kanto", "Saffron City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_SAFFRON_CITY_5": {
+    "name": "Saffron Poke Mart - Shop Item 5",
+    "tags": ["Shops", "Kanto", "Saffron City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_SAFFRON_CITY_6": {
+    "name": "Saffron Poke Mart - Shop Item 6",
+    "tags": ["Shops", "Kanto", "Saffron City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_SEVEN_ISLAND_1": {
+    "name": "Seven Island Poke Mart - Shop Item 1",
+    "tags": ["Shops", "Sevii Islands", "Seven Island", "Seven Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_SEVEN_ISLAND_2": {
+    "name": "Seven Island Poke Mart - Shop Item 2",
+    "tags": ["Shops", "Sevii Islands", "Seven Island", "Seven Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_SEVEN_ISLAND_3": {
+    "name": "Seven Island Poke Mart - Shop Item 3",
+    "tags": ["Shops", "Sevii Islands", "Seven Island", "Seven Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_SEVEN_ISLAND_4": {
+    "name": "Seven Island Poke Mart - Shop Item 4",
+    "tags": ["Shops", "Sevii Islands", "Seven Island", "Seven Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_SEVEN_ISLAND_5": {
+    "name": "Seven Island Poke Mart - Shop Item 5",
+    "tags": ["Shops", "Sevii Islands", "Seven Island", "Seven Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_SEVEN_ISLAND_6": {
+    "name": "Seven Island Poke Mart - Shop Item 6",
+    "tags": ["Shops", "Sevii Islands", "Seven Island", "Seven Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_SEVEN_ISLAND_7": {
+    "name": "Seven Island Poke Mart - Shop Item 7",
+    "tags": ["Shops", "Sevii Islands", "Seven Island", "Seven Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_SEVEN_ISLAND_8": {
+    "name": "Seven Island Poke Mart - Shop Item 8",
+    "tags": ["Shops", "Sevii Islands", "Seven Island", "Seven Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_SEVEN_ISLAND_9": {
+    "name": "Seven Island Poke Mart - Shop Item 9",
+    "tags": ["Shops", "Sevii Islands", "Seven Island", "Seven Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_SIX_ISLAND_1": {
+    "name": "Six Island Poke Mart - Shop Item 1",
+    "tags": ["Shops", "Sevii Islands", "Six Island", "Six Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_SIX_ISLAND_2": {
+    "name": "Six Island Poke Mart - Shop Item 2",
+    "tags": ["Shops", "Sevii Islands", "Six Island", "Six Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_SIX_ISLAND_3": {
+    "name": "Six Island Poke Mart - Shop Item 3",
+    "tags": ["Shops", "Sevii Islands", "Six Island", "Six Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_SIX_ISLAND_4": {
+    "name": "Six Island Poke Mart - Shop Item 4",
+    "tags": ["Shops", "Sevii Islands", "Six Island", "Six Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_SIX_ISLAND_5": {
+    "name": "Six Island Poke Mart - Shop Item 5",
+    "tags": ["Shops", "Sevii Islands", "Six Island", "Six Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_SIX_ISLAND_6": {
+    "name": "Six Island Poke Mart - Shop Item 6",
+    "tags": ["Shops", "Sevii Islands", "Six Island", "Six Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_SIX_ISLAND_7": {
+    "name": "Six Island Poke Mart - Shop Item 7",
+    "tags": ["Shops", "Sevii Islands", "Six Island", "Six Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_SIX_ISLAND_8": {
+    "name": "Six Island Poke Mart - Shop Item 8",
+    "tags": ["Shops", "Sevii Islands", "Six Island", "Six Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_THREE_ISLAND_1": {
+    "name": "Three Island Poke Mart - Shop Item 1",
+    "tags": ["Shops", "Sevii Islands", "Three Island", "Three Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_THREE_ISLAND_2": {
+    "name": "Three Island Poke Mart - Shop Item 2",
+    "tags": ["Shops", "Sevii Islands", "Three Island", "Three Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_THREE_ISLAND_3": {
+    "name": "Three Island Poke Mart - Shop Item 3",
+    "tags": ["Shops", "Sevii Islands", "Three Island", "Three Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_THREE_ISLAND_4": {
+    "name": "Three Island Poke Mart - Shop Item 4",
+    "tags": ["Shops", "Sevii Islands", "Three Island", "Three Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_THREE_ISLAND_5": {
+    "name": "Three Island Poke Mart - Shop Item 5",
+    "tags": ["Shops", "Sevii Islands", "Three Island", "Three Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_THREE_ISLAND_6": {
+    "name": "Three Island Poke Mart - Shop Item 6",
+    "tags": ["Shops", "Sevii Islands", "Three Island", "Three Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_TRAINER_TOWER_1": {
+    "name": "Trainer Tower Lobby - Shop Item 1",
+    "tags": ["Shops", "Sevii Islands", "Seven Island", "Trainer Tower"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_TRAINER_TOWER_2": {
+    "name": "Trainer Tower Lobby - Shop Item 2",
+    "tags": ["Shops", "Sevii Islands", "Seven Island", "Trainer Tower"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_TRAINER_TOWER_3": {
+    "name": "Trainer Tower Lobby - Shop Item 3",
+    "tags": ["Shops", "Sevii Islands", "Seven Island", "Trainer Tower"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_TRAINER_TOWER_4": {
+    "name": "Trainer Tower Lobby - Shop Item 4",
+    "tags": ["Shops", "Sevii Islands", "Seven Island", "Trainer Tower"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_TRAINER_TOWER_5": {
+    "name": "Trainer Tower Lobby - Shop Item 5",
+    "tags": ["Shops", "Sevii Islands", "Seven Island", "Trainer Tower"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_TRAINER_TOWER_6": {
+    "name": "Trainer Tower Lobby - Shop Item 6",
+    "tags": ["Shops", "Sevii Islands", "Seven Island", "Trainer Tower"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_TRAINER_TOWER_7": {
+    "name": "Trainer Tower Lobby - Shop Item 7",
+    "tags": ["Shops", "Sevii Islands", "Seven Island", "Trainer Tower"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_TRAINER_TOWER_8": {
+    "name": "Trainer Tower Lobby - Shop Item 8",
+    "tags": ["Shops", "Sevii Islands", "Seven Island", "Trainer Tower"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_TRAINER_TOWER_9": {
+    "name": "Trainer Tower Lobby - Shop Item 9",
+    "tags": ["Shops", "Sevii Islands", "Seven Island", "Trainer Tower"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_TWO_ISLAND_EXPANDED3_1": {
+    "name": "Two Island Town - Market Stall Item 1",
+    "tags": ["Shops", "Sevii Islands", "Two Island", "Two Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_TWO_ISLAND_EXPANDED3_2": {
+    "name": "Two Island Town - Market Stall Item 2",
+    "tags": ["Shops", "Sevii Islands", "Two Island", "Two Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_TWO_ISLAND_EXPANDED3_3": {
+    "name": "Two Island Town - Market Stall Item 3",
+    "tags": ["Shops", "Sevii Islands", "Two Island", "Two Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_TWO_ISLAND_EXPANDED3_4": {
+    "name": "Two Island Town - Market Stall Item 4",
+    "tags": ["Shops", "Sevii Islands", "Two Island", "Two Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_TWO_ISLAND_EXPANDED3_5": {
+    "name": "Two Island Town - Market Stall Item 5",
+    "tags": ["Shops", "Sevii Islands", "Two Island", "Two Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_TWO_ISLAND_EXPANDED3_6": {
+    "name": "Two Island Town - Market Stall Item 6",
+    "tags": ["Shops", "Sevii Islands", "Two Island", "Two Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_TWO_ISLAND_EXPANDED3_7": {
+    "name": "Two Island Town - Market Stall Item 7",
+    "tags": ["Shops", "Sevii Islands", "Two Island", "Two Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_TWO_ISLAND_EXPANDED3_8": {
+    "name": "Two Island Town - Market Stall Item 8",
+    "tags": ["Shops", "Sevii Islands", "Two Island", "Two Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_TWO_ISLAND_EXPANDED3_9": {
+    "name": "Two Island Town - Market Stall Item 9",
+    "tags": ["Shops", "Sevii Islands", "Two Island", "Two Island Town"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_VERMILION_CITY_1": {
+    "name": "Vermilion Poke Mart - Shop Item 1",
+    "tags": ["Shops", "Kanto", "Vermilion City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_VERMILION_CITY_2": {
+    "name": "Vermilion Poke Mart - Shop Item 2",
+    "tags": ["Shops", "Kanto", "Vermilion City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_VERMILION_CITY_3": {
+    "name": "Vermilion Poke Mart - Shop Item 3",
+    "tags": ["Shops", "Kanto", "Vermilion City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_VERMILION_CITY_4": {
+    "name": "Vermilion Poke Mart - Shop Item 4",
+    "tags": ["Shops", "Kanto", "Vermilion City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_VERMILION_CITY_5": {
+    "name": "Vermilion Poke Mart - Shop Item 5",
+    "tags": ["Shops", "Kanto", "Vermilion City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_VERMILION_CITY_6": {
+    "name": "Vermilion Poke Mart - Shop Item 6",
+    "tags": ["Shops", "Kanto", "Vermilion City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_VERMILION_CITY_7": {
+    "name": "Vermilion Poke Mart - Shop Item 7",
+    "tags": ["Shops", "Kanto", "Vermilion City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_VIRIDIAN_CITY_1": {
+    "name": "Viridian Poke Mart - Shop Item 1",
+    "tags": ["Shops", "Kanto", "Viridian City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_VIRIDIAN_CITY_2": {
+    "name": "Viridian Poke Mart - Shop Item 2",
+    "tags": ["Shops", "Kanto", "Viridian City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_VIRIDIAN_CITY_3": {
+    "name": "Viridian Poke Mart - Shop Item 3",
+    "tags": ["Shops", "Kanto", "Viridian City"],
+    "category": "SHOPSANITY"
+  },
+  "SHOP_VIRIDIAN_CITY_4": {
+    "name": "Viridian Poke Mart - Shop Item 4",
+    "tags": ["Shops", "Kanto", "Viridian City"],
+    "category": "SHOPSANITY"
   },
 
   "TRAINER_AROMA_LADY_MIAH_REWARD": {
@@ -4744,7 +5521,7 @@
     "category": "FAMESANITY"
   },
   "FAME_CHECKER_BLAINE_6": {
-    "name": "Resort Gorgeous House - Bookshelf Info",
+    "name": "Selphy's House - Bookshelf Info",
     "tags": ["Fame Entries", "Blaine Fame Entries", "Sevii Islands", "Five Island", "Resort Gorgeous"],
     "category": "FAMESANITY"
   },

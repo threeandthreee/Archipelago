@@ -60,7 +60,14 @@ def place_static_items(world):
 
 
 def add_keys(world):
+    if not world.options.remove_magical_key:
+        world.extra_items.append(world.set_classifications("Magical Key"))
+        three_eye_keys = 2
+    else:
+        three_eye_keys = 7
+
     if world.options.key_shuffle == 2:
+
         for i in range(3):
             world.multiworld.itempool.append(world.create_item("Parapa Palace Key"))
 
@@ -76,7 +83,7 @@ def add_keys(world):
         for i in range(5):
             world.multiworld.itempool.append(world.create_item("Sea Palace Key"))
 
-        for i in range(2):
+        for i in range(three_eye_keys):
             world.multiworld.itempool.append(world.create_item("Three-Eye Rock Palace Key"))
 
     if world.options.spell_locations == 2:

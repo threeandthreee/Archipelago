@@ -54,6 +54,8 @@ class AnodyneWorld(World):
     options: AnodyneGameOptions
     topology_present = False  # show path to required location checks in spoiler
 
+    ut_can_gen_without_yaml = True
+
     data_version = 1
 
     item_name_to_id = Constants.item_name_to_id
@@ -825,6 +827,7 @@ class AnodyneWorld(World):
                 next(l for l in Locations.all_locations if l.dust).name] if self.options.dustsanity else "Disabled",
             "seed": self.random.randint(0, 1000000),
             "card_amount": self.options.card_amount + self.options.extra_cards,
+            "fields_secret_paths": bool(self.options.fields_secret_paths),
             #"shop_items": self.get_shop_items(),
             #"mitra_hints": self.get_mitra_hints(0 if self.options.mitra_hints == MitraHints.option_none else 8 + 1),
             **{c.typename(): c.shorthand(self.options) for c in gatereq_classes}

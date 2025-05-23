@@ -8,13 +8,14 @@ from .Enums import Character, SADX_BASE_ID, Area, remove_character_suffix, pasca
 from .ItemPool import create_sadx_items, get_item_names, ItemDistribution
 from .Items import SonicAdventureDXItem, group_item_table, item_name_to_info, filler_item_table
 from .Locations import all_location_table, group_location_table
+from .Logic import mission_location_table
 from .Names import ItemName, LocationName
 from .Options import sadx_option_groups, SonicAdventureDXOptions
 from .Regions import create_sadx_regions, get_location_ids_for_area
 from .Rules import create_sadx_rules, LocationDistribution
 from .StartingSetup import StarterSetup, generate_early_sadx, write_sadx_spoiler, CharacterArea, level_areas
 
-sadx_version = 110
+sadx_version = 112
 
 
 class SonicAdventureDXWeb(WebWorld):
@@ -124,6 +125,7 @@ class SonicAdventureDXWorld(World):
                     "ChaoRacesLevelsToAccessPercentage"]
                 self.options.mission_mode_checks.value = passthrough["MissionModeChecks"]
                 self.options.auto_start_missions.value = passthrough["AutoStartMissions"]
+                self.options.mission_blacklist.value = list(passthrough["MissionBlackList"].keys())
 
                 self.options.twinkle_circuit_check.value = passthrough["TwinkleCircuitCheck"]
                 self.options.twinkle_circuit_multiple_check.value = passthrough["MultipleTwinkleCircuitChecks"]
@@ -250,7 +252,13 @@ class SonicAdventureDXWorld(World):
             "ChaoRacesLevelsToAccessPercentage": self.options.chao_races_levels_to_access_percentage.value,
             "MissionModeChecks": self.options.mission_mode_checks.value,
             "AutoStartMissions": self.options.auto_start_missions.value,
-            "MissionBlackList": {int(mission): int(mission) for mission in self.options.mission_blacklist.value},
+
+            "MissionBlackList": {
+                mission.missionNumber: mission.missionNumber
+                for mission in mission_location_table
+                if str(mission.missionNumber) in self.options.mission_blacklist.value
+                   or str(mission.character.name) in self.options.mission_blacklist.value
+            },
 
             "EnemySanity": self.options.enemy_sanity.value,
             "SonicEnemySanity": self.options.sonic_enemy_sanity.value,
@@ -283,12 +291,19 @@ class SonicAdventureDXWorld(World):
             "CasinopolisRingLink": self.options.casinopolis_ring_link.value,
             "HardRingLink": self.options.hard_ring_link.value,
             "RingLoss": self.options.ring_loss.value,
+            "TrapLink": self.options.trap_link.value,
             "TwinkleCircuitCheck": self.options.twinkle_circuit_check.value,
             "MultipleTwinkleCircuitChecks": self.options.twinkle_circuit_multiple_check.value,
             "SandHillCheck": self.options.sand_hill_check.value,
             "SandHillCheckHard": self.options.sand_hill_check_hard.value,
             "SkyChaseChecks": self.options.sky_chase_checks.value,
             "SkyChaseChecksHard": self.options.sky_chase_checks_hard.value,
+
+            "MusicSource": self.options.music_source.value,
+            "MusicShuffle": self.options.music_shuffle.value,
+            "MusicShuffleConsistency": self.options.music_shuffle_consistency.value,
+            "LifeCapsulesChangeSongs": self.options.life_capsules_change_songs.value,
+            "MusicShuffleSeed": self.multiworld.seed % (2 ** 31),
 
             "BossChecks": self.options.boss_checks.value,
             "UnifyChaos4": self.options.unify_chaos4.value,

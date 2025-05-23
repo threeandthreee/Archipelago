@@ -2,16 +2,16 @@
 
 ## Required Software
 
-* [Archipelago](https://github.com/ArchipelagoMW/Archipelago/releases) v0.5.0
+* [Archipelago](https://github.com/ArchipelagoMW/Archipelago/releases)
 * [Pokémon FireRed and LeafGreen apworld](https://github.com/vyneras/Archipelago/releases/latest)
-* [Bizhawk](https://tasvideos.org/BizHawk/ReleaseHistory) (Has only been tested on v2.9.1)
+* [Bizhawk](https://tasvideos.org/BizHawk/ReleaseHistory)
 * An English FireRed or LeafGreen ROM
   * FireRed 1.0 `sha1: 41cb23d8dccc8ebd7c649cd8fbb58eeace6e2fdc`
   * FireRed 1.1 `sha1: dd5945db9b930750cb39d00c84da8571feebf417`
   * LeafGreen 1.0 `sha1: 574fa542ffebb14be69902d1d36f1ec0a4afd71e`
   * LeafGreen 1.1 `sha1: 7862c67bdecbe21d1d69ce082ce34327e1c6ed5e`
 
- Place the `pokemon_frlg.apworld` file in your Archipelago installation's `lib/worlds` or `custom_worlds` folder (Default location for Windows: `%programdata%/Archipelago`). Do not place it into both folders.
+ Place the `pokemon_frlg.apworld` file in your Archipelago installation's `custom_worlds` folder (Default location for Windows: `%programdata%/Archipelago`).
 
 It is recommended you follow the setup guide for Bizhawk in the [Pokémon Emerald Setup Guide](https://archipelago.gg/tutorial/Pokemon%20Emerald/setup/en#configuring-bizhawk).
 
@@ -22,14 +22,15 @@ It is recommended you follow the setup guide for Bizhawk in the [Pokémon Emeral
 ## Generating and Patching
 
 1. Open `ArchipelagoLauncher.exe` and select "Generate Template Options" to create a default YAML.
-2. Launch `ArchipelagoGenerate.exe`. This will generate an output file for you. Your patch file will have one of the following file extensions:
+2. Modify the default YAML and place it into the `Players` folder
+3. Launch `ArchipelagoGenerate.exe`. This will generate an output file for you. Your patch file will have one of the following file extensions:
    * `.apfirered`
    * `.apleafgreen`
-3. Open `ArchipelagoLauncher.exe`
-4. Select "Open Patch" on the left side and select your patch file.
-5. If this is your first time patching, you will be prompted to locate your vanilla ROM.
-6. A patched `.gba` file will be created in the same place as the patch file.
-7. On your first time opening a patch with BizHawk Client, you will also be asked to locate `EmuHawk.exe` in your
+4. Open `ArchipelagoLauncher.exe`
+5. Select "Open Patch" on the left side and select your patch file.
+6. If this is your first time patching, you will be prompted to locate your vanilla ROM.
+7. A patched `.gba` file will be created in the same place as the patch file.
+8. On your first time opening a patch with BizHawk Client, you will also be asked to locate `EmuHawk.exe` in your
 BizHawk install.
 
 If you're playing a single-player seed and you don't care about autotracking or hints, you can stop here, close the

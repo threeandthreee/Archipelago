@@ -84,6 +84,11 @@ class BuffPowerBombDrops(Toggle):
     display_name = "Buff Power Bomb Drops"
 
 
+class PlasmaBeamHint(DefaultOnToggle):
+    """Display a hint for the location of the Plasma Beam when you defeat Mother Brain."""
+    display_name = "Plasma Beam Hint"
+
+
 class LogicDifficulty(Choice):
     """
     Determines the difficulty of room traversal and game knowledge required by the game's logic.
@@ -183,6 +188,10 @@ class LayoutPatches(Choice):
 class SelectedPatches(OptionSet):
     """
     If Layout Patches is set to Choice, list of layout patches to apply.
+    The names of valid layout patches can be found in the compatible_patches and
+    expansion_required_patches lists in rom_data here:
+    https://github.com/lilDavid/Archipelago-Metroid-Zero-Mission/blob/main/rom_data.py#L486
+    Descriptions can be found in the apply_layout_patches function below that.
     """
     display_name = "Selected Layout Patches"
     valid_keys = rom_data.layout_patches
@@ -293,6 +302,7 @@ mzm_option_groups = [
     OptionGroup("Quality of Life", [
         SkipChozodiaStealth,
         BuffPowerBombDrops,
+        PlasmaBeamHint,
         ElevatorSpeed,
         StartWithMaps,
         FastItemBanners,
@@ -326,6 +336,7 @@ class MZMOptions(PerGameCommonOptions):
     tricky_shinesparks: TrickyShinesparks
     skip_chozodia_stealth: SkipChozodiaStealth
     buff_pb_drops: BuffPowerBombDrops
+    plasma_beam_hint: PlasmaBeamHint
     elevator_speed: ElevatorSpeed
     start_with_maps: StartWithMaps
     fast_item_banners: FastItemBanners

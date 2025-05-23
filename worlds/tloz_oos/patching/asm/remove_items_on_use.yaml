@@ -15,7 +15,7 @@
     ret
 06/020d/: call loseKeyInsideKeyhole
 
-# Inject removal subscripts in some unused space (linked game twinrova cutscene 1 and 2; 0b:79b4 to 0b:7a29)
+# Inject removal subscripts in some unused space (linked game twinrova cutscene 1 and 2; 0b:79b4 to 0b:79e9 and 0b:39f5 to 0b:7a29)
 0b/39b4/removeCuccodex: |
     db orroomflag,$40
     db loseitem,TREASURE_CUCCODEX
@@ -77,7 +77,7 @@
     dwbe $521e  ; jump back to 521e
 0b/121c/: dwbe removeWoodenBird
 
-0b/39ea/removeEngineGrease: |
+0b/39f5/removeEngineGrease: |
     db orroomflag,$40
     db loseitem,TREASURE_ENGINE_GREASE
     dwbe $63e9  ; jump back to 63e9

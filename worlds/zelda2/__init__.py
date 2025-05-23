@@ -21,6 +21,7 @@ from .Rules import set_location_rules, set_region_rules
 from .Rom import patch_rom, get_base_rom_path, Z2ProcPatch
 from .game_data import world_version
 from worlds.generic.Rules import add_item_rule, forbid_items_for_player
+from logging import warning
 
 
 class Z2Settings(settings.Group):
@@ -80,12 +81,28 @@ class Z2World(World):
 
         self.locked_locations = []
         self.location_cache = []
+        self.extra_items = []
         self.extra_count = 39
         self.world_version = world_version
         self.filler_items = ["50 Point P-Bag", "100 Point P-Bag", "200 Point P-Bag", "500 Point P-Bag",
                              "1-Up Doll", "Blue Magic Jar", "Red Magic Jar"]
 
     def generate_early(self):  # Todo: place locked items in generate_early
+        if self.options.key_shuffle < 2:
+            self.options.local_items.value.add("Parapa Palace Key")
+            self.options.local_items.value.add("Midoro Palace Key")
+            self.options.local_items.value.add("Island Palace Key")
+            self.options.local_items.value.add("Maze Palace Key")
+            self.options.local_items.value.add("Sea Palace Key")
+            self.options.local_items.value.add("Three-Eye Rock Palace Key")
+
+        if self.options.remove_magical_key and not self.options.key_shuffle:
+            warning(f"Warning: {self.multiworld.get_player_name(self.player)} attempted to have Vanilla keys with no Magic Key. Magic Key will be added.")
+            self.options.remove_magical_key.value = 0
+
+        if self.options.remove_magical_key and self.options.key_shuffle:
+            self.extra_count += 5
+
         setup_gamevars(self)
         add_keys(self)
 
@@ -94,6 +111,7 @@ class Z2World(World):
 
     def create_items(self) -> None:
         pool = self.get_item_pool()
+        pool += self.extra_items
         self.generate_filler(pool)
 
         self.multiworld.itempool += pool
@@ -248,6 +266,15 @@ class Z2World(World):
                 self.create_item("Three-Eye Rock Palace Key")
             ]
 
+            if self.options.remove_magical_key:
+                rock_keys.extend([
+                    self.create_item("Three-Eye Rock Palace Key"),
+                    self.create_item("Three-Eye Rock Palace Key"),
+                    self.create_item("Three-Eye Rock Palace Key"),
+                    self.create_item("Three-Eye Rock Palace Key"),
+                    self.create_item("Three-Eye Rock Palace Key"),
+                ])
+
             self.random.shuffle(parapa_palace_checks)
             self.random.shuffle(midoro_palace_checks)
             self.random.shuffle(island_palace_checks)
@@ -329,3 +356,4 @@ class Z2World(World):
                 item = self.set_classifications(name)
                 pool.append(item)
         return pool
+        

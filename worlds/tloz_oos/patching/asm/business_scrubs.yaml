@@ -156,6 +156,7 @@
     @refill:
     push hl
     push de
+    ld c,$99
     ld e,$3f
     ld hl,refillInventory
     call interBankCall

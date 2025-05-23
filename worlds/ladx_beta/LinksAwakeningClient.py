@@ -18,20 +18,21 @@ import sys
 import subprocess
 import time
 import typing
+from enum import IntEnum
 
 
-from CommonClient import (CommonContext, ClientCommandProcessor, get_base_parser, gui_enabled, logger,
-                          server_loop)
+from CommonClient import (CommonContext, ClientCommandProcessor, get_base_parser, gui_enabled, logger, server_loop)
 from NetUtils import ClientStatus
+from . import LinksAwakeningWorld
 from . import Common
 from .GpsTracker import GpsTracker
-from .ItemTracker import ItemTracker
-from .Items import links_awakening_items
-from .Locations import links_awakening_location_meta_to_id
-from .Tracker import LocationTracker, MagpieBridge
 from .TrackerConsts import storage_key
+from .ItemTracker import ItemTracker
+from .Locations import links_awakening_location_meta_to_id
+from .Tracker import LocationTracker, MagpieBridge, Check
 
 links_awakening_location_id_to_meta = {v:k for k,v in links_awakening_location_meta_to_id.items()}
+
 
 class GameboyException(Exception):
     pass
@@ -49,56 +50,28 @@ class BadRetroArchResponse(GameboyException):
     pass
 
 
-def magpie_logo():
-    from kivy.uix.image import CoreImage
-    binary_data = """
-iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAAXN
-SR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA
-7DAcdvqGQAAADGSURBVDhPhVLBEcIwDHOYhjHCBuXHj2OTbAL8+
-MEGZIxOQ1CinOOk0Op0bmo7tlXXeR9FJMYDLOD9mwcLjQK7+hSZ
-wgcWMZJOAGeGKtChNHFL0j+FZD3jSCuo0w7l03wDrWdg00C4/aW
-eDEYNenuzPOfPspBnxf0kssE80vN0L8361j10P03DK4x6FHabuV
-ear8fHme+b17rwSjbAXeUMLb+EVTV2QHm46MWQanmnydA98KsVS
-XkV+qFpGQXrLhT/fqraQeQLuplpNH5g+WkAAAAASUVORK5CYII="""
-    binary_data = base64.b64decode(binary_data)
-    data = io.BytesIO(binary_data)
-    return CoreImage(data, ext="png").texture
+def clamp(minimum, number, maximum):
+    return max(minimum, min(maximum, number))
 
 
 class LAClientConstants:
-    # Connector version
-    VERSION = 0x01
-    #
-    # Memory locations of LADXR
+    # Memory locations
     ROMGameID = 0x0051  # 4 bytes
     SlotName = 0x0134
-    # Unused
-    # ROMWorldID = 0x0055
-    # ROMConnectorVersion = 0x0056
-    wTradeSequenceItem1 = 0xDB40
-    wTradeSequenceItem2 = 0xDB7F
-    wLinkHealth = 0xDB5A
-    wAddHealthBuffer = 0xDB93
-    wSubtractHealthBuffer = 0xDB94
-    # RO: We should only act if this is higher then 6, as it indicates that the game is running normally
     wGameplayType = 0xDB95
-    # RO: Starts at 0, increases every time an item is received from the server and processed
-    wLinkSyncSequenceNumber = 0xDDF6
-    wLinkStatusBits = 0xDDF7          # RW:
-    #      Bit0: wLinkGive* contains valid data, set from script cleared from ROM.
-    wLinkGiveItem = 0xDDF8  # RW
-    wLinkGiveItemFrom = 0xDDF9  # RW
-    # All of these six bytes are unused, we can repurpose
-    # wLinkSendItemRoomHigh = 0xDDFA  # RO
-    # wLinkSendItemRoomLow = 0xDDFB  # RO
-    # wLinkSendItemTarget = 0xDDFC  # RO
-    # wLinkSendItemItem = 0xDDFD  # RO
-    # wLinkSendShopItem = 0xDDFE # RO, which item to send (1 based, order of the shop items)
-    # RO, which player to send to, but it's just the X position of the NPC used, so 0x18 is player 0
-    # wLinkSendShopTarget = 0xDDFF
+    wHealth = 0xDB5A
 
+    wMWRecvIndexHi = 0xDDF6   # RO: The index of the next item to receive.
+    wMWRecvIndexLo = 0xDDF7   #     If given something different it will be ignored.
+    wMWCommand = 0xDDF8       # RW: See MWCommands
+    wMWItemCode = 0xDDF9      # RW: Item code to give the player
+    wMWItemSenderHi = 0xDDFA  # RW: Unused, but maybe will set up more rom banks in the future
+    wMWItemSenderLo = 0xDDFB  # RW: ID for sending player
+    wMWMultipurposeC = 0xDDFC # RW
+    wMWMultipurposeD = 0xDDFD # RW
+    wMWMultipurposeE = 0xDDFE # RW
+    wMWMultipurposeF = 0xDDFF # RW
 
-    wRecvIndex = 0xDDFD # Two bytes
     wCheckAddress = 0xC0FF - 0x4
     WRamCheckSize = 0x4
     WRamSafetyValue = bytearray([0]*WRamCheckSize)
@@ -110,6 +83,29 @@ class LAClientConstants:
     MinGameplayValue = 0x06
     MaxGameplayValue = 0x1A
     VictoryGameplayAndSub = 0x0102
+
+
+class MWCommands(IntEnum):
+    # bit 0: send item
+    # bit 1: consider receive index for item send and tick up
+    # bit 2: collect location
+    # bit 3: send death link
+    # bit 4,5: clear trade item (bit in wMWMultipurposeF)
+    NONE =              0b00000000
+    SEND_ITEM_SPECIAL = 0b00000001
+    SEND_ITEM =         0b00000011
+    COLLECT =           0b00000100
+    COLLECT_WITH_ITEM = 0b00000101
+    DEATH_LINK =        0b00001000
+    CLEAR_TRADE_1 =     0b00010000
+    CLEAR_TRADE_2 =     0b00100000
+
+
+class DeathLinkStatus(IntEnum):
+    NONE = 0
+    PENDING = 1
+    DYING = 2
+
 
 class RAGameboy():
     cache = []
@@ -198,7 +194,7 @@ class RAGameboy():
         self.cache = []
 
         if not await self.check_safe_gameplay():
-            return False
+            return
 
         attempts = 0
         while True:
@@ -220,12 +216,12 @@ class RAGameboy():
 
             # Shouldn't really happen, but keep it from choking
             if attempts > 5:
-                return False
+                return
 
         checks_block = await self.read_memory_block(self.checks_start, self.checks_size)
 
         if not await self.check_safe_gameplay():
-            return False
+            return
 
         self.cache = bytearray(self.cache_size)
 
@@ -239,7 +235,6 @@ class RAGameboy():
         self.cache[start:start + len(hram_block)] = hram_block
 
         self.last_cache_read = time.time()
-        return True
 
     async def read_memory_block(self, address: int, size: int):
         block = bytearray()
@@ -248,6 +243,7 @@ class RAGameboy():
             chunk = await self.async_read_memory(address + len(block), remaining_size)
             remaining_size -= len(chunk)
             block += chunk
+
         return block
 
     async def read_memory_cache(self, addresses):
@@ -342,6 +338,17 @@ class RAGameboy():
         if splits[2] == "-1":
             logger.info(splits[3])
 
+    def send_mw_command(self, command, item_code=0xFF, item_sender=0x0000,
+                        mp_c=0x00, mp_d=0x00, mp_e=0x00, mp_f=0x00,
+                        mp_cd=0x0000, mp_ef=0x0000):
+        [sender_high, sender_low] = struct.pack('>H', item_sender)
+        if mp_cd:
+            [mp_c, mp_d] = struct.pack('>H', mp_cd)
+        if mp_ef:
+            [mp_e, mp_f] = struct.pack('>H', mp_ef)
+        msg = [command, item_code, sender_high, sender_low, mp_c, mp_d, mp_e, mp_f]
+        self.write_memory(LAClientConstants.wMWCommand, msg)
+
 
 class LinksAwakeningClient():
     socket = None
@@ -350,21 +357,14 @@ class LinksAwakeningClient():
     auth = None
     game_crc = None
     collect_enabled = True
-    deathlink_status = None
-    queue_trade_item_fix = False
+    death_link_status = DeathLinkStatus.NONE
     retroarch_address = None
     retroarch_port = None
     gameboy = None
 
-    def msg(self, m):
-        logger.info(m)
-        s = f"SHOW_MSG {m}\n"
-        self.gameboy.send(s)
-
-    def __init__(self, retroarch_address="127.0.0.1", retroarch_port=55355):
-        self.retroarch_address = retroarch_address
-        self.retroarch_port = retroarch_port
-        pass
+    def __init__(self, retroarch_host="127.0.0.1:55355"):
+        self.retroarch_address = retroarch_host.split(':')[0]
+        self.retroarch_port = int(retroarch_host.split(':')[1])
 
     stop_bizhawk_spam = False
     async def wait_for_retroarch_connection(self):
@@ -404,7 +404,7 @@ class LinksAwakeningClient():
                 pass
 
     async def reset_auth(self):
-        auth = binascii.hexlify(await self.gameboy.async_read_memory(0x0134, 12)).decode()
+        auth = binascii.hexlify(await self.gameboy.async_read_memory(LAClientConstants.SlotName, 12)).decode()
         self.auth = auth
 
     async def wait_and_init_tracker(self, magpie: MagpieBridge):
@@ -413,33 +413,6 @@ class LinksAwakeningClient():
         self.item_tracker = ItemTracker(self.gameboy)
         self.gps_tracker = GpsTracker(self.gameboy)
         magpie.gps_tracker = self.gps_tracker
-
-    async def give_item(self, item):
-        # Spin until we either:
-        # get an exception from a bad read (emu shut down or reset)
-        # beat the game
-        # the client handles the last pending item
-        status = (await self.gameboy.async_read_memory_safe(LAClientConstants.wLinkStatusBits))[0]
-        while not (await self.is_victory()) and status & 1 == 1:
-            time.sleep(0.1)
-            status = (await self.gameboy.async_read_memory_safe(LAClientConstants.wLinkStatusBits))[0]
-
-        item_id = item.item - Common.BASE_ID
-        # The player name table only goes up to 100, so don't go past that
-        # Even if it didn't, the remote player _index_ byte is just a byte, so 255 max
-        from_player = item.player
-        if from_player > 100:
-            from_player = 100
-
-        self.gameboy.write_memory(LAClientConstants.wLinkGiveItem, [item_id, from_player])
-        status |= 1
-        status = self.gameboy.write_memory(LAClientConstants.wLinkStatusBits, [status])
-
-    async def recved_item_from_ap(self, ctx, item, next_index):
-        if item.location <= 0 or item.player != ctx.slot: # items from server or other slots
-            await self.give_item(item)
-        next_index += 1
-        self.gameboy.write_memory(LAClientConstants.wRecvIndex, struct.pack(">H", next_index))
 
     # The key location is blocked from collection unless the value location
     # has also been checked.
@@ -459,83 +432,60 @@ class LinksAwakeningClient():
         links_awakening_location_meta_to_id[k]: links_awakening_location_meta_to_id[v]
         for k, v in dependent_location_meta_ids.items()}
 
+    # for these locations, only collect if the player has the trade item, and then take the trade item
+    restricted_trades = {
+        "0x2A6-Trade": {"cmd": MWCommands.CLEAR_TRADE_1, "mask": ~(1<<0)&0xFF, "item": "TRADING_ITEM_YOSHI_DOLL" },
+        "0x2B2-Trade": {"cmd": MWCommands.CLEAR_TRADE_1, "mask": ~(1<<1)&0xFF, "item": "TRADING_ITEM_RIBBON" },
+        "0x2FE-Trade": {"cmd": MWCommands.CLEAR_TRADE_1, "mask": ~(1<<2)&0xFF, "item": "TRADING_ITEM_DOG_FOOD" },
+        "0x07B-Trade": {"cmd": MWCommands.CLEAR_TRADE_1, "mask": ~(1<<3)&0xFF, "item": "TRADING_ITEM_BANANAS" },
+        "0x087-Trade": {"cmd": MWCommands.CLEAR_TRADE_1, "mask": ~(1<<4)&0xFF, "item": "TRADING_ITEM_STICK" },
+        "0x2D7-Trade": {"cmd": MWCommands.CLEAR_TRADE_1, "mask": ~(1<<5)&0xFF, "item": "TRADING_ITEM_HONEYCOMB" },
+        "0x019-Trade": {"cmd": MWCommands.CLEAR_TRADE_1, "mask": ~(1<<6)&0xFF, "item": "TRADING_ITEM_PINEAPPLE" },
+        "0x2D9-Trade": {"cmd": MWCommands.CLEAR_TRADE_1, "mask": ~(1<<7)&0xFF, "item": "TRADING_ITEM_HIBISCUS" },
+        "0x2A8-Trade": {"cmd": MWCommands.CLEAR_TRADE_2, "mask": ~(1<<0)&0xFF, "item": "TRADING_ITEM_LETTER" },
+        "0x0CD-Trade": {"cmd": MWCommands.CLEAR_TRADE_2, "mask": ~(1<<1)&0xFF, "item": "TRADING_ITEM_BROOM" },
+        "0x2F5-Trade": {"cmd": MWCommands.CLEAR_TRADE_2, "mask": ~(1<<2)&0xFF, "item": "TRADING_ITEM_FISHING_HOOK" },
+        "0x0C9-Trade": {"cmd": MWCommands.CLEAR_TRADE_2, "mask": ~(1<<3)&0xFF, "item": "TRADING_ITEM_NECKLACE" },
+    }
+
     async def collect(self, ctx):
         if not self.gps_tracker.room or self.gps_tracker.is_transitioning:
             return
-        unhandled_locations = ctx.checked_locations - ctx.handled_locations
-        for id, dep in self.dependent_location_ids.items():
-            if id in unhandled_locations and dep not in ctx.checked_locations:
-                unhandled_locations.remove(id)
         current_room = '0x' + hex(self.gps_tracker.room)[2:].zfill(3).upper()
-        for id in unhandled_locations:
+        for id in ctx.checked_locations:
             meta_id = links_awakening_location_id_to_meta[id]
             is_checked = next(x for x in self.tracker.all_checks if x.id == meta_id).value
-            if(is_checked):
-                ctx.handled_locations.add(id)
-                continue
-            if(current_room == meta_id[:5]):
+            trade = self.restricted_trades.get(meta_id)
+            if(is_checked
+               or current_room == meta_id[:5] # player is in the location room
+               or id not in ctx.locations_info # location scout data not in yet
+               or (trade and not self.item_tracker.itemDict[trade["item"]].value) # restricted trade not met
+               or (id in self.dependent_location_ids
+                   and self.dependent_location_ids.get(id) not in ctx.checked_locations)): # location dependency not met
                 continue
             check = self.tracker.meta_to_check[meta_id]
-            did_collect = await self.collect_check(check)
-            ctx.handled_locations.add(id)
-            if did_collect:
-                self.queue_trade_item_fix = True
-                our_item = next((x for x in ctx.recvd_checks.values() if x.location == id), None)
-                if our_item:
-                    await self.give_item(our_item)
+            item = ctx.locations_info[id]
+            args = {
+                "command": MWCommands.COLLECT,
+                "mp_cd": check.address,
+                "mp_e": check.mask,
+            }
+            if item.player == ctx.slot:
+                args["command"] |= MWCommands.SEND_ITEM_SPECIAL
+                args["item_code"] = item.item - Common.BASE_ID
+                args["item_sender"] = clamp(0, ctx.slot, 100)
+            if trade:
+                args["command"] |= trade["cmd"]
+                args["mp_f"] = trade["mask"]
+            self.gameboy.send_mw_command(**args)
             break # one per cycle
-
-    async def collect_check(self, check):
-        current_value = int.from_bytes(await self.gameboy.async_read_memory(check.address), 'big')
-        already_collected = bool(current_value & check.mask)
-        if not already_collected:
-            new_value = current_value | check.mask
-            self.gameboy.write_memory(check.address, [new_value])
-        return not already_collected
-
-    trade_items = {
-        "TRADING_ITEM_YOSHI_DOLL": "0x2A6-Trade",
-        "TRADING_ITEM_RIBBON": "0x2B2-Trade",
-        "TRADING_ITEM_DOG_FOOD": "0x2FE-Trade",
-        "TRADING_ITEM_BANANAS": "0x07B-Trade",
-        "TRADING_ITEM_STICK": "0x087-Trade",
-        "TRADING_ITEM_HONEYCOMB": "0x2D7-Trade",
-        "TRADING_ITEM_PINEAPPLE": "0x019-Trade",
-        "TRADING_ITEM_HIBISCUS": "0x2D9-Trade",
-        "TRADING_ITEM_LETTER": "0x2A8-Trade",
-        "TRADING_ITEM_BROOM": "0x0CD-Trade",
-        "TRADING_ITEM_FISHING_HOOK": "0x2F5-Trade",
-        "TRADING_ITEM_NECKLACE": "0x0C9-Trade",
-        "TRADING_ITEM_SCALE": "0x297-Trade",
-        "TRADING_ITEM_MAGNIFYING_GLASS": None,
-    }
-    async def fix_trade_items(self, recvd_checks):
-        expected_trade_items = []
-        held_trade_items = []
-        for item, location in self.trade_items.items():
-            item_id = next(x.item_id for x in links_awakening_items
-                           if x.ladxr_id == item) + Common.BASE_ID
-            item_received = next((x for x in recvd_checks.values()
-                                  if x.item == item_id), False)
-            all_checks = [x for x in self.tracker.all_checks if x.id == location]
-            remaining_checks = [x for x in self.tracker.remaining_checks if x.id == location]
-            destination_checked = location and (not remaining_checks or (len(remaining_checks) < len(all_checks)))
-            expected_trade_items.append(int(item_received and not destination_checked))
-
-            inventory = self.item_tracker.itemDict[item].value
-            if item in self.item_tracker.extraItems:
-                inventory -= self.item_tracker.extraItems[item]
-            held_trade_items.append(inventory)
-        if expected_trade_items != held_trade_items:
-            trade1 = 0
-            for i, x in enumerate(expected_trade_items[:8]):
-                trade1 += x << i
-            trade2 = 0
-            for i, x in enumerate(expected_trade_items[8:]):
-                trade2 += x << i
-            self.gameboy.write_memory(LAClientConstants.wTradeSequenceItem1, [trade1])
-            self.gameboy.write_memory(LAClientConstants.wTradeSequenceItem2, [trade2])
-
+        locations_to_scout = ctx.checked_locations - ctx.scouted_locations
+        if len(locations_to_scout):
+            await ctx.send_msgs([{
+                "cmd": "LocationScouts",
+                "locations": locations_to_scout
+            }])
+            ctx.scouted_locations.update(locations_to_scout)
 
     should_reset_auth = False
     async def wait_for_game_ready(self):
@@ -546,11 +496,9 @@ class LinksAwakeningClient():
                 raise GameboyException("Resetting due to wrong archipelago server")
         logger.info("Game connection ready!")
 
-    async def is_victory(self):
-        return (await self.gameboy.read_memory_cache([LAClientConstants.wGameplayType]))[LAClientConstants.wGameplayType] == 1
+    async def main_tick(self, ctx, item_get_cb, win_cb, death_link_cb):
+        await self.gameboy.update_cache()
 
-    async def main_tick(self, ctx, item_get_cb, win_cb, deathlink_cb):
-        cache_is_fresh = await self.gameboy.update_cache()
         await self.tracker.readChecks(item_get_cb)
         await self.item_tracker.readItems()
         await self.gps_tracker.read_location()
@@ -559,46 +507,38 @@ class LinksAwakeningClient():
         if not ctx.slot or not self.tracker.has_start_item():
             return
 
-        # fix trade items during transitions when inventory is stable
-        if self.queue_trade_item_fix and cache_is_fresh and self.gps_tracker.is_transitioning:
-            await self.fix_trade_items(ctx.recvd_checks)
-            self.queue_trade_item_fix = False
-            return
+        wGameplayType = (await self.gameboy.async_read_memory(LAClientConstants.wGameplayType))[0]
+        wHealth = (await self.gameboy.async_read_memory(LAClientConstants.wHealth))[0]
+        cmd_block = await self.gameboy.async_read_memory(LAClientConstants.wMWRecvIndexHi, 3)
+        [wMWRecvIndexHi, wMWRecvIndexLo, wMWCommand] = cmd_block
 
-        if await self.is_victory():
+        if wGameplayType == 1: # Credits
             await win_cb()
 
-        current_health = (await self.gameboy.read_memory_cache([LAClientConstants.wLinkHealth]))[LAClientConstants.wLinkHealth]
-        health_to_remove = (await self.gameboy.read_memory_cache([LAClientConstants.wSubtractHealthBuffer]))[LAClientConstants.wSubtractHealthBuffer]
+        if self.death_link_status == DeathLinkStatus.NONE:
+            if not wHealth: # natural death
+                death_link_cb()
+                self.death_link_status = DeathLinkStatus.DYING
+        elif self.death_link_status == DeathLinkStatus.PENDING:
+            self.gameboy.send_mw_command(command=MWCommands.DEATH_LINK)
+            self.death_link_status = DeathLinkStatus.DYING
+        elif self.death_link_status == DeathLinkStatus.DYING:
+            if wHealth:
+                self.death_link_status = DeathLinkStatus.NONE
 
-        if self.deathlink_status == 'pending':
-            self.gameboy.write_memory(LAClientConstants.wAddHealthBuffer, [0]) # Stop any health gain
-            self.gameboy.write_memory(LAClientConstants.wLinkHealth, [1]) #  Almost dead
-            self.gameboy.write_memory(LAClientConstants.wSubtractHealthBuffer, [1]) # Deal remaining damage this way to trigger medicine
-            self.deathlink_status = 'in_progress'
+        if wMWCommand or self.death_link_status:
             return
-        elif self.deathlink_status == 'in_progress':
-            if not current_health: # Died from deathlink
-                self.deathlink_status = 'complete'
-                self.queue_trade_item_fix = True
-            elif not health_to_remove: # Survived deathlink (medicine)
-                self.deathlink_status = None
-            return
-        elif not self.deathlink_status and not current_health: # Died naturally
-            await deathlink_cb()
-            self.deathlink_status = 'complete'
-        elif self.deathlink_status == 'complete' and current_health:
-            self.deathlink_status = None
 
-        # receive items
-        recv_index = struct.unpack(">H", await self.gameboy.async_read_memory(LAClientConstants.wRecvIndex, 2))[0]
+        recv_index = wMWRecvIndexHi << 8 | wMWRecvIndexLo
         if recv_index in ctx.recvd_checks:
             item = ctx.recvd_checks[recv_index]
-            await self.recved_item_from_ap(ctx, item, recv_index)
+            self.gameboy.send_mw_command(command=MWCommands.SEND_ITEM,
+                                         item_code=item.item - Common.BASE_ID,
+                                         item_sender=clamp(0, item.player, 100),
+                                         mp_cd=recv_index)
             return
 
-        # collect
-        if self.collect_enabled and cache_is_fresh:
+        if self.collect_enabled:
             await self.collect(ctx)
 
 all_tasks = set()
@@ -615,14 +555,10 @@ def create_task_log_exception(awaitable) -> asyncio.Task:
     task = asyncio.create_task(_log_exception(awaitable))
     all_tasks.add(task)
 
+
 class LinksAwakeningCommandProcessor(ClientCommandProcessor):
     def __init__(self, ctx):
         super().__init__(ctx)
-
-    def _cmd_fix_trade_items(self):
-        """Forces fix of trade items. Ideally you should never need to trigger this manually."""
-        if isinstance(self.ctx, LinksAwakeningContext):
-            self.ctx.client.queue_trade_item_fix = True
 
     def _cmd_toggle_collect(self):
         """Toggles collect."""
@@ -633,27 +569,27 @@ class LinksAwakeningCommandProcessor(ClientCommandProcessor):
             else:
                 logger.info("Collect disabled")
 
-    def _cmd_deathlink(self):
-        """Toggles deathlink."""
+    def _cmd_death_link(self):
+        """Toggles death link."""
         if isinstance(self.ctx, LinksAwakeningContext):
             Utils.async_start(self.ctx.update_death_link("DeathLink" not in self.ctx.tags))
 
     def _cmd_die(self):
-        """Die."""
+        """Simulate received death link."""
         if isinstance(self.ctx, LinksAwakeningContext):
-            self.ctx.client.deathlink_status = 'pending'
+            self.ctx.client.death_link_status = DeathLinkStatus.PENDING
+
 
 class LinksAwakeningContext(CommonContext):
     tags = {"AP"}
     game = Common.LINKS_AWAKENING
     command_processor = LinksAwakeningCommandProcessor
-    items_handling = 0b111
+    items_handling = 0b101
     want_slot_data = True
     la_task = None
     client = None
-    # TODO: does this need to re-read on reset?
     found_checks = set()
-    handled_locations = set()
+    scouted_locations = set()
     recvd_checks = {}
     last_resend = time.time()
 
@@ -666,8 +602,8 @@ class LinksAwakeningContext(CommonContext):
     def slot_storage_key(self):
         return f"{self.slot_info[self.slot].name}_{storage_key}"
 
-    def __init__(self, server_address: typing.Optional[str], password: typing.Optional[str], magpie: typing.Optional[bool]) -> None:
-        self.client = LinksAwakeningClient()
+    def __init__(self, server_address: str | None, password: str | None, magpie: bool, retroarch_host: str | None) -> None:
+        self.client = LinksAwakeningClient(retroarch_host)
         self.slot_data = {}
 
         if magpie:
@@ -676,10 +612,7 @@ class LinksAwakeningContext(CommonContext):
         super().__init__(server_address, password)
 
     def run_gui(self) -> None:
-        import webbrowser
-        import kvui
-        from kvui import Button, GameManager
-        from kivy.uix.image import Image
+        from kvui import GameManager
 
         class LADXManager(GameManager):
             logging_pairs = [
@@ -687,22 +620,6 @@ class LinksAwakeningContext(CommonContext):
                 ("Tracker", "Tracker"),
             ]
             base_title = f"Archipelago {Common.LINKS_AWAKENING} Client"
-
-            def build(self):
-                b = super().build()
-
-                if self.ctx.magpie_enabled:
-                    button = Button(text="", size=(30, 30), size_hint_x=None,
-                                    on_press=lambda _: webbrowser.open('https://magpietracker.us/?enable_autotracker=1'))
-                    image = Image(size=(16, 16), texture=magpie_logo())
-                    button.add_widget(image)
-
-                    def set_center(_, center):
-                        image.center = center
-                    button.bind(center=set_center)
-
-                    self.connect_layout.add_widget(button)
-                return b
 
         self.ui = LADXManager(self)
         self.ui_task = asyncio.create_task(self.ui.async_run(), name="UI")
@@ -717,15 +634,6 @@ class LinksAwakeningContext(CommonContext):
             "operations": [{"operation": "update", "value": entrances}],
         }]
 
-    async def send_new_entrances(self, entrances: typing.Dict[str, str]):
-        # Store the entrances we find on the server for future sessions
-        message = [{
-            "cmd": "Set",
-            "key": self.slot_storage_key,
-            "default": {},
-            "want_reply": False,
-            "operations": [{"operation": "update", "value": entrances}],
-        }]
         await self.send_msgs(message)
 
     had_invalid_slot_data = None
@@ -737,7 +645,7 @@ class LinksAwakeningContext(CommonContext):
         self.disconnected_intentionally = True
         CommonContext.event_invalid_slot(self)
 
-    async def send_deathlink(self):
+    async def send_death_link(self):
         if "DeathLink" in self.tags:
             logger.info("DeathLink: Sending death to your friends...")
             self.last_death_link = time.time()
@@ -764,15 +672,9 @@ class LinksAwakeningContext(CommonContext):
         # Ask for updates so that players can co-op entrances in a seed
         await self.send_msgs([{"cmd": "SetNotify", "keys": [self.slot_storage_key]}])
 
-    async def request_found_entrances(self):
-        await self.send_msgs([{"cmd": "Get", "keys": [self.slot_storage_key]}])
-
-        # Ask for updates so that players can co-op entrances in a seed
-        await self.send_msgs([{"cmd": "SetNotify", "keys": [self.slot_storage_key]}])
-
-    def on_deathlink(self, data: typing.Dict[str, typing.Any]) -> None:
-        self.client.deathlink_status = 'pending'
-        super(LinksAwakeningContext, self).on_deathlink(data)
+    def on_death_link(self, data: typing.Dict[str, typing.Any]) -> None:
+        self.client.death_link_status = DeathLinkStatus.PENDING
+        super(LinksAwakeningContext, self).on_death_link(data)
 
     def new_checks(self, item_ids, ladxr_ids):
         self.found_checks.update(item_ids)
@@ -809,10 +711,14 @@ class LinksAwakeningContext(CommonContext):
                 "server_address": self.server_address,
                 "slot_name": self.player_names[self.slot],
                 "password": self.password,
-                "client_version": Common.VERSION,
             })
             if self.slot_data.get("death_link"):
                 Utils.async_start(self.update_death_link(True))
+
+            # We can process linked items on already-checked checks now that we have slot_data
+            if self.client.tracker:
+                checked_checks = set(self.client.tracker.all_checks) - set(self.client.tracker.remaining_checks)
+                self.add_linked_items(checked_checks)
 
         # TODO - use watcher_event
         if cmd == "ReceivedItems":
@@ -829,22 +735,25 @@ class LinksAwakeningContext(CommonContext):
         sync_msg = [{'cmd': 'Sync'}]
         await self.send_msgs(sync_msg)
 
+    def add_linked_items(self, checks: typing.List[Check]):
+        for check in checks:
+            if check.value and check.linkedItem:
+                linkedItem = check.linkedItem
+                if 'condition' not in linkedItem or (self.slot_data and linkedItem['condition'](self.slot_data)):
+                    self.client.item_tracker.setExtraItem(check.linkedItem['item'], check.linkedItem['qty'])
+
     async def run_game_loop(self):
         def on_item_get(ladxr_checks):
             checks = [links_awakening_location_meta_to_id[check.id] for check in ladxr_checks]
             self.new_checks(checks, [check.id for check in ladxr_checks])
 
-            for check in ladxr_checks:
-                if check.value and check.linkedItem:
-                    linkedItem = check.linkedItem
-                    if 'condition' not in linkedItem or linkedItem['condition'](self.slot_data):
-                        self.client.item_tracker.setExtraItem(check.linkedItem['item'], check.linkedItem['qty'])
+            self.add_linked_items(ladxr_checks)
 
         async def victory():
             await self.send_victory()
 
-        async def deathlink():
-            await self.send_deathlink()
+        async def death_link():
+            await self.send_death_link()
 
         if self.magpie_enabled:
             self.magpie_task = asyncio.create_task(self.magpie.serve())
@@ -858,7 +767,6 @@ class LinksAwakeningContext(CommonContext):
                 if not self.client.stop_bizhawk_spam:
                     logger.info("(Re)Starting game loop")
                 self.found_checks.clear()
-                self.handled_locations.clear()
                 # On restart of game loop, clear all checks, just in case we swapped ROMs
                 # this isn't totally neccessary, but is extra safety against cross-ROM contamination
                 self.recvd_checks.clear()
@@ -879,7 +787,7 @@ class LinksAwakeningContext(CommonContext):
                 min_tick_duration = 0.1
                 last_tick = time.time()
                 while True:
-                    await self.client.main_tick(self, on_item_get, victory, deathlink)
+                    await self.client.main_tick(self, on_item_get, victory, death_link)
 
                     now = time.time()
                     tick_duration = now - last_tick
@@ -903,7 +811,7 @@ class LinksAwakeningContext(CommonContext):
                                 await self.request_found_entrances()
                                 self.client.gps_tracker.needs_found_entrances = False
 
-                            new_entrances = await self.magpie.send_gps()
+                            new_entrances = await self.magpie.send_gps(self.client.gps_tracker)
                             if new_entrances:
                                 await self.send_new_entrances(new_entrances)
                         except Exception:
@@ -916,8 +824,8 @@ class LinksAwakeningContext(CommonContext):
                 await asyncio.sleep(1.0)
 
 def run_game(romfile: str) -> None:
-    auto_start = typing.cast(typing.Union[bool, str],
-                            Utils.get_options()["ladx_beta_options"].get("rom_start", True))
+    auto_start = LinksAwakeningWorld.settings.rom_start
+
     if auto_start is True:
         import webbrowser
         webbrowser.open(romfile)
@@ -943,6 +851,7 @@ def launch(*launch_args):
         parser = get_base_parser(description="Link's Awakening Client.")
         parser.add_argument("--url", help="Archipelago connection url")
         parser.add_argument("--no-magpie", dest='magpie', default=True, action='store_false', help="Disable magpie bridge")
+        parser.add_argument("--retroarch-host", default="127.0.0.1:55355", help="Retroarch connection address and port")
         parser.add_argument('diff_file', default="", type=str, nargs="?",
                             help='Path to a .apladx Archipelago Binary Patch file')
 
@@ -957,7 +866,7 @@ def launch(*launch_args):
             logger.info(f"wrote rom file to {rom_file}")
 
 
-        ctx = LinksAwakeningContext(args.connect, args.password, args.magpie)
+        ctx = LinksAwakeningContext(args.connect, args.password, args.magpie, args.retroarch_host)
 
         ctx.server_task = asyncio.create_task(server_loop(ctx), name="server loop")
 

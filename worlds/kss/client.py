@@ -5,7 +5,7 @@ from NetUtils import ClientStatus, color, NetworkItem
 from worlds.AutoSNIClient import SNIClient
 from typing import TYPE_CHECKING
 from .items import treasures, BASE_ID
-from .client_data import treasure_base_id, boss_flags, deluxe_essence_flags, planet_flags
+from .client_data import treasure_base_id, boss_flags, deluxe_essence_flags, planet_flags, consumable_table
 
 if TYPE_CHECKING:
     from SNIClient import SNIContext
@@ -43,15 +43,19 @@ KSS_SENT_DELUXE_ESSENCE = SRAM_1_START + 0x7B1D  # 3 bytes
 KSS_RECEIVED_SUBGAMES = SRAM_1_START + 0x8000
 KSS_RECEIVED_ITEMS = SRAM_1_START + 0x8002
 KSS_RECEIVED_PLANETS = SRAM_1_START + 0x8004
+KSS_PLAY_SFX = SRAM_1_START + 0x8006
+KSS_ACTIVATE_CANDY = SRAM_1_START + 0x8008
 
 KSS_ROMNAME = SRAM_1_START + 0x8100
 KSS_DEATH_LINK_ADDR = SRAM_1_START + 0x9000
+KSS_CONSUMABLE_FILTER = SRAM_1_START + 0x9001
 
 
 class KSSSNIClient(SNIClient):
     game = "Kirby Super Star"
     patch_suffix = ".apkss"
     item_queue: typing.List[NetworkItem] = []
+    consumable_filter: int = 0
 
     async def deathlink_kill_player(self, ctx: "SNIContext") -> None:
         from SNIClient import DeathState, snes_buffered_write, snes_read, snes_flush_writes
@@ -76,25 +80,33 @@ class KSSSNIClient(SNIClient):
         death_link = await snes_read(ctx, KSS_DEATH_LINK_ADDR, 1)
         if death_link:
             await ctx.update_death_link(bool(death_link[0] & 0b1))
+        consumable_filter = await snes_read(ctx, KSS_CONSUMABLE_FILTER, 2)
+        self.consumable_filter = int.from_bytes(consumable_filter, "little")
         return True
 
     async def pop_item(self, ctx: "SNIContext", game_state: int):
         from SNIClient import snes_read, snes_buffered_write
-        if game_state != 3:
+        if game_state not in (0x3, 0xC):
             return
         if self.item_queue:
             item = self.item_queue.pop()
-            if item.item & 0xF == 1:
-                # 1-Up
-                lives = int.from_bytes(await snes_read(ctx, KSS_KIRBY_LIVES, 2), "little")
-                snes_buffered_write(ctx, KSS_KIRBY_LIVES, int.to_bytes(lives + 1, 2, "little"))
-            elif item.item & 0xF == 2:
+            if item.item & 0xF == 2:
                 # Maxim
                 snes_buffered_write(ctx, KSS_KIRBY_HP, int.to_bytes(0x46, 2, "little"))
                 snes_buffered_write(ctx, KSS_KIRBY_HP + 2, int.to_bytes(0x46, 2, "little"))
+                snes_buffered_write(ctx, KSS_PLAY_SFX, int.to_bytes(0x2C, 2, "little"))
             elif item.item & 0xF == 3:
-                pass # Invincibility, not implemented
-                # it needs to hit IRAM, so have to setup in the rom
+                # Invincibility
+                snes_buffered_write(ctx, KSS_ACTIVATE_CANDY, int.to_bytes(1, 2, "little"))
+                snes_buffered_write(ctx, KSS_PLAY_SFX, int.to_bytes(0x2C, 2, "little"))
+            elif game_state != 3:
+                self.item_queue.insert(0, item)
+                return
+            elif item.item & 0xF == 1:
+                # 1-Up
+                lives = int.from_bytes(await snes_read(ctx, KSS_KIRBY_LIVES, 2), "little")
+                snes_buffered_write(ctx, KSS_KIRBY_LIVES, int.to_bytes(lives + 1, 2, "little"))
+                snes_buffered_write(ctx, KSS_PLAY_SFX, int.to_bytes(0x3E, 2, "little"))
             else:
                 pass
 
@@ -133,7 +145,7 @@ class KSSSNIClient(SNIClient):
         treasure_data = 0
         treasure_value = 0
         for treasure in [item for item in ctx.items_received if item.item & 0x200]:
-            treasure_info = treasures[ctx.item_names[treasure.item]]
+            treasure_info = treasures[ctx.item_names.lookup_in_game(treasure.item)]
             treasure_value += treasure_info.value
             treasure_data |= (1 << ((treasure.item & 0xFF) - 1))
         if treasure_data != known_treasures:
@@ -174,9 +186,19 @@ class KSSSNIClient(SNIClient):
                 unlocked_subgames = int.from_bytes(await snes_read(ctx, KSS_RECEIVED_SUBGAMES, 2), "little")
                 unlocked_subgames |= (1 << (item.item & 0xFF))
                 snes_buffered_write(ctx, KSS_RECEIVED_SUBGAMES, unlocked_subgames.to_bytes(2, "little"))
+            elif item.item & 0x100 != 0:
+                snes_buffered_write(ctx, KSS_PLAY_SFX, int.to_bytes(0x44, 2, "little"))
+            elif item.item & 0x200 != 0:
+                snes_buffered_write(ctx, KSS_PLAY_SFX, int.to_bytes(0x86, 2, "little"))
+            elif item.item & 0x400 != 0:
+                snes_buffered_write(ctx, KSS_PLAY_SFX, int.to_bytes(0x42, 2, "little"))
+            elif item.item & 0x800 != 0:
+                snes_buffered_write(ctx, KSS_PLAY_SFX, int.to_bytes(0x4D, 2, "little"))
             elif item.item & 0x1000 != 0:
                 if item.item & 0xF != 4:
                     self.item_queue.append(item)
+                else:
+                    snes_buffered_write(ctx, KSS_PLAY_SFX, int.to_bytes(0x43, 2, "little"))
 
         await self.pop_item(ctx, game_state)
 
@@ -241,10 +263,20 @@ class KSSSNIClient(SNIClient):
             if location not in ctx.checked_locations:
                 new_checks.append(location)
 
+        if self.consumable_filter:
+            consumables = await snes_read(ctx, SRAM_1_START + 0x10000, 0xFFFF)
+            for consumable, data in consumable_table.items():
+                if consumable & self.consumable_filter:
+                    location = consumable + BASE_ID
+                    offset, mask = data
+                    if consumables[offset] & mask:
+                        if location not in ctx.checked_locations:
+                            new_checks.append(location)
+
+        await ctx.check_locations(new_checks)
         for new_check_id in new_checks:
             ctx.locations_checked.add(new_check_id)
             location = ctx.location_names.lookup_in_game(new_check_id)
             snes_logger.info(
                 f'New Check: {location} ({len(ctx.locations_checked)}/'
                 f'{len(ctx.missing_locations) + len(ctx.checked_locations)})')
-            await ctx.send_msgs([{"cmd": 'LocationChecks', "locations": [new_check_id]}])

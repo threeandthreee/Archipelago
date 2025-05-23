@@ -1,16 +1,14 @@
-from typing import Optional
-
 from .options import OuterWildsGameOptions
 
 
 # logsanity only matters for locations, not items or connections
-def should_generate_location(category: Optional[str], requires_logsanity: bool, options: OuterWildsGameOptions) -> bool:
+def should_generate_location(category: str | None, requires_logsanity: bool, options: OuterWildsGameOptions) -> bool:
     if requires_logsanity and not options.logsanity:
         return False
     return should_generate(category, options)
 
 
-def should_generate(category: Optional[str], options: OuterWildsGameOptions) -> bool:
+def should_generate(category: str | None, options: OuterWildsGameOptions) -> bool:
     if category is None:  # this item/location/connection gets generated no matter what the player options are
         return True
     elif '&' in category:

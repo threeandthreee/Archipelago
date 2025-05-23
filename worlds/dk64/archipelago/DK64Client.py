@@ -21,16 +21,19 @@ from client.check_flag_locations import location_flag_to_name, location_name_to_
 from client.ap_check_ids import check_id_to_name, check_names_to_id
 from CommonClient import CommonContext, get_base_parser, gui_enabled, logger, server_loop
 from NetUtils import ClientStatus
+from ap_version import version as ap_version
 
 
 class DK64Client:
     """Client for Donkey Kong 64."""
 
-    n64_client = PJ64Client()
+    n64_client = None
     tracker = None
     game = None
     auth = None
-    recvd_checks = []
+    locations_scouted = {}
+    recvd_checks = {}
+    pending_checks = []
     players = None
     stop_bizhawk_spam = False
     remaining_checks = []
@@ -45,6 +48,7 @@ class DK64Client:
     send_mode = 1
     ENABLE_DEATHLINK = False
     current_speed = 130
+    current_map = 0
 
     async def wait_for_pj64(self):
         """Wait for PJ64 to connect to the game."""
@@ -52,7 +56,7 @@ class DK64Client:
         if not self.stop_bizhawk_spam:
             logger.info("Waiting on connection to PJ64...")
             self.stop_bizhawk_spam = True
-
+            self.n64_client = PJ64Client()
         while True:
             try:
                 socket_connected = False
@@ -81,7 +85,7 @@ class DK64Client:
         """Check if the game is in a valid state for sending items."""
         current_gamemode = self.n64_client.read_u8(DK64MemoryMap.CurrentGamemode)
         next_gamemode = self.n64_client.read_u8(DK64MemoryMap.NextGamemode)
-        return current_gamemode in [6, 0xD] and next_gamemode in [6, 0xD]
+        return current_gamemode in [6, 0xD] and next_gamemode in [6, 0xA, 0xD]
 
     def safe_to_send(self):
         """Check if it's safe to send an item."""
@@ -168,7 +172,7 @@ class DK64Client:
             elif self.send_mode == 2:
                 # If we have more than 5 items queued, from 130 to 50, do a percentage of the total items
                 # But only display progression items, discard the rest
-                length = len(self.recvd_checks) - index
+                length = len(self.pending_checks) - index
                 if length <= 5:
                     if self.current_speed != 130:
                         self.current_speed = 130
@@ -189,7 +193,7 @@ class DK64Client:
             elif self.send_mode == 1:
                 # If we have more than 5 items queued, from 130 to 50, do a percentage of the total items
                 # If we have 5 or less, do 130
-                length = len(self.recvd_checks) - index
+                length = len(self.pending_checks) - index
                 if length <= 5:
                     if self.current_speed != 130:
                         self.current_speed = 130
@@ -248,6 +252,9 @@ class DK64Client:
 
     def _build_flag_lookup(self):
         """Cache flag mappings to avoid repeated reads."""
+        # Verify if the lookup table is already built, and that we've checked some locations
+        if self.flag_lookup is not None:
+            return
         self.flag_lookup = {}
         for flut_index in range(0x400):
             raw_flag = self.n64_client.read_u16(0x807E2EE0 + (4 * flut_index))
@@ -295,8 +302,7 @@ class DK64Client:
 
             return self._getShopStatus(purchase_type, purchase_value, purchase_kong)
         else:
-            if self.flag_lookup is None:
-                self._build_flag_lookup()
+            self._build_flag_lookup()
             # Check if the flag exists in the lookup table
             if self.flag_lookup.get(flag_index):
                 target_flag = self.flag_lookup[flag_index]
@@ -312,8 +318,7 @@ class DK64Client:
 
     def bulk_lookup(self, flag_index, _bulk_read_dict):
         """Bulk lookup of flags."""
-        if self.flag_lookup is None:
-            self._build_flag_lookup()
+        self._build_flag_lookup()
         if self.flag_lookup.get(flag_index):
             target_flag = self.flag_lookup[flag_index]
             byte_index = target_flag >> 3
@@ -363,6 +368,8 @@ class DK64Client:
                     # logger.info(f"Found {name} via location_name_to_flag")
                     self.remaining_checks.remove(id)
                     new_checks.append(id)
+                    if self.locations_scouted.get(id):
+                        self.sent_checks.append((self.locations_scouted.get(id).get("item_name"), self.locations_scouted.get(id).get("player")))
             # If its not there using the id lets try to get it via item_ids
             else:
                 # If the content is 3 parts separated by a space, we can assume it's a shop check
@@ -373,6 +380,8 @@ class DK64Client:
                         # logger.info(f"Found {name} via location_name_to_flag")
                         self.remaining_checks.remove(id)
                         new_checks.append(id)
+                        if self.locations_scouted.get(id):
+                            self.sent_checks.append((self.locations_scouted.get(id).get("item_name"), self.locations_scouted.get(id).get("player")))
                     continue
                 elif ("Cranky" in name or "Candy" in name or "Funky" in name) and len(content) == 3:
                     level_mapping = {"Japes": 0, "Aztec": 1, "Factory": 2, "Galleon": 3, "Forest": 4, "Caves": 5, "Castle": 6, "Isles": 7}
@@ -392,6 +401,8 @@ class DK64Client:
                         # print(f"Found {name} via shop check")
                         self.remaining_checks.remove(id)
                         new_checks.append(id)
+                        if self.locations_scouted.get(id):
+                            self.sent_checks.append((self.locations_scouted.get(id).get("item_name"), self.locations_scouted.get(id).get("player")))
                     continue
                 else:
                     check = item_ids.get(id)
@@ -406,6 +417,9 @@ class DK64Client:
                                 # logger.info(f"Found {name} via item_ids")
                                 self.remaining_checks.remove(id)
                                 new_checks.append(id)
+                                if self.locations_scouted.get(id):
+                                    self.sent_checks.append((self.locations_scouted.get(id).get("item_name"), self.locations_scouted.get(id).get("player")))
+
         if new_checks:
             cb(new_checks)
         return True
@@ -459,16 +473,33 @@ class DK64Client:
         """Check if the game is in a victory state."""
         return self.readFlag(DK64MemoryMap.end_credits) == 1
 
+    async def get_current_map(self):
+        """Get the current map."""
+        return self.n64_client.read_u32(DK64MemoryMap.current_map)
+
     def get_current_deliver_count(self):
         """Get the current deliver count."""
-        return self.n64_client.read_u16(self.memory_pointer + DK64MemoryMap.counter_offset)
+        data = self.n64_client.read_u16(self.memory_pointer + DK64MemoryMap.counter_offset)
+        # If our data is too high, (Above 10000) we need to reset it
+        if data > 10000:
+            # Try reading again
+            data = self.n64_client.read_u16(self.memory_pointer + DK64MemoryMap.counter_offset)
+            # If its still too high, raise an exception
+            if data > 10000:
+                return None
+            else:
+                return data
+        return data
 
-    async def main_tick(self, item_get_cb, win_cb, deathlink_cb):
+    async def main_tick(self, item_get_cb, win_cb, deathlink_cb, map_change_cb):
         """Game loop tick."""
         await self.readChecks(item_get_cb)
         # await self.item_tracker.readItems()
         if await self.is_victory():
             await win_cb()
+        if await self.get_current_map() != self.current_map:
+            self.current_map = await self.get_current_map()
+            await map_change_cb(self.current_map)
 
         def check_safe_death():
             """Check if it's safe to send a death."""
@@ -497,15 +528,24 @@ class DK64Client:
         current_deliver_count = self.get_current_deliver_count()
         # If current_deliver_count is None
         if current_deliver_count is None:
-            # Reset the current_deliver_count to 0
-            current_deliver_count = 0
+            return
 
-        if len(self.recvd_checks) > current_deliver_count:
+        if current_deliver_count > 10000:
+            logger.info(f"Current deliver count: {current_deliver_count}")
+            logger.info(f"Recieved checks: {len(self.recvd_checks)}")
+            logger.info(f"Pending checks: {len(self.pending_checks)}")
+            logger.info("Current deliver count is too high, PLEASE REPORT THIS TO THE DK64 TEAM")
+        if current_deliver_count in self.recvd_checks:
             # Get the next item in recvd_checks
             item = self.recvd_checks[current_deliver_count]
             item_name = self.item_names.lookup_in_game(item.item)
             player_name = self.players.get(item.player)
             await self.recved_item_from_ap(item.item, item_name, player_name, current_deliver_count)
+            # Remove the item from pending_checks
+            self.pending_checks.remove(item)
+        else:
+            for item in self.pending_checks.copy():
+                self.pending_checks.remove(item)
 
         if len(self.sent_checks) > 0:
             cloned_checks = self.sent_checks.copy()
@@ -529,17 +569,25 @@ class DK64Context(CommonContext):
     la_task = None
     found_checks = []
     last_resend = time.time()
-    remaining_checks = list(check_id_to_name.keys())
     ENABLE_DEATHLINK = False
 
     won = False
+
+    def reset_checks(self):
+        """Reset the checks."""
+        self.remaining_checks = list(check_id_to_name.keys()).copy()
+        self.client.remaining_checks = self.remaining_checks
+        self.client.recvd_checks = {}
+        self.client.pending_checks = []
+        self.found_checks = []
+        self.client.flag_lookup = None
 
     def __init__(self, server_address: typing.Optional[str], password: typing.Optional[str]) -> None:
         """Initialize the DK64 context."""
         self.client = DK64Client()
         self.client.game = self.game.upper()
-        self.client.remaining_checks = self.remaining_checks
         self.slot_data = {}
+        self.reset_checks()
 
         super().__init__(server_address, password)
 
@@ -565,7 +613,7 @@ class DK64Context(CommonContext):
                 ("Client", "Archipelago"),
                 ("Tracker", "Tracker"),
             ]
-            base_title = "Archipelago Donkey Kong 64 Client"
+            base_title = f"Archipelago Donkey Kong 64 Client (Version {ap_version})"
 
             def build(self):
                 b = super().build()
@@ -613,7 +661,7 @@ class DK64Context(CommonContext):
             # allow a successful reconnect
             self.client.should_reset_auth = True
             self.had_invalid_slot_data = False
-            self.client.recvd_checks.clear()
+            self.reset_checks()
 
         while self.client.auth is None:
             await asyncio.sleep(0.1)
@@ -639,20 +687,22 @@ class DK64Context(CommonContext):
             if self.slot_data.get("receive_notifications"):
                 self.client.send_mode = self.slot_data.get("receive_notifications")
             self.client.players = self.player_names
-            self.client.recvd_checks.clear()
-
+            self.reset_checks()
+            missing_locations = self.missing_locations
+            asyncio.create_task(self.send_msgs([{"cmd": "LocationScouts", "locations": list(missing_locations)}]))
         if cmd == "ReceivedItems":
             for index, item in enumerate(args["items"], start=args["index"]):
-                self.client.recvd_checks.append(item)
-        if cmd == "PrintJSON":
-            # For each item in the list, if theres a LocationID in it, check if the player is our slot
-            if args.get("type") == "ItemSend":
-                sender = args.get("item").player == self.slot
-                player = args.get("receiving")
-                item_name = self.item_names.lookup_in_game(args.get("item").item, self.slot_info[player].game)
-                if sender and player != self.slot:
-                    player_name = self.player_names.get(player)
-                    self.client.sent_checks.append((item_name, player_name))
+                self.client.recvd_checks[index] = item
+                self.client.pending_checks.append(item)
+        if cmd == "LocationInfo":
+            self.client.locations_scouted = {}
+            for location in args.get("locations"):
+                if location.player != self.slot:
+                    # If the location is in the list, remove it
+                    player_name = self.player_names.get(location.player)
+                    location_id = location.location
+                    item_name = self.item_names.lookup_in_game(location.item, self.slot_info[location.player].game)
+                    self.client.locations_scouted[location_id] = {"player": player_name, "item_name": item_name}
 
     async def sync(self):
         """Sync the game."""
@@ -682,6 +732,10 @@ class DK64Context(CommonContext):
             """Handle a deathlink."""
             await self.send_deathlink()
 
+        async def map_change(map_id):
+            """Send a current map id on map change."""
+            await self.send_msgs([{"cmd": "Set", "key": f"DK64Rando_{self.team}_{self.slot}_map", "default": hex(0), "want_reply": False, "operations": [{"operation": "replace", "value": map_id}]}])
+
         def on_item_get(dk64_checks):
             """Handle an item get."""
             built_checks_list = []
@@ -703,10 +757,9 @@ class DK64Context(CommonContext):
             try:
                 if not self.client.stop_bizhawk_spam:
                     logger.info("(Re)Starting game loop")
-                self.found_checks.clear()
                 # On restart of game loop, clear all checks, just in case we swapped ROMs
                 # this isn't totally neccessary, but is extra safety against cross-ROM contamination
-                self.client.recvd_checks.clear()
+                self.reset_checks()
                 await self.client.wait_for_pj64()
 
                 async def disconnect_check():
@@ -734,7 +787,7 @@ class DK64Context(CommonContext):
                     if status is False:
                         await asyncio.sleep(0.5)
                         continue
-                    await self.client.main_tick(on_item_get, victory, deathlink)
+                    await self.client.main_tick(on_item_get, victory, deathlink, map_change)
                     await asyncio.sleep(1)
                     now = time.time()
                     if self.last_resend + 0.5 < now:

@@ -35,7 +35,7 @@ DEFAULT_ITEM_POOL = {
     RUPEES_200: 3,
     RUPEES_50: 19,
 
-    SEASHELL: 24,
+    SEASHELL: 26,
     MEDICINE: 3,
     GEL: 4,
     MESSAGE: 1,
@@ -45,7 +45,7 @@ DEFAULT_ITEM_POOL = {
     MAP1: 1, MAP2: 1, MAP3: 1, MAP4: 1, MAP5: 1, MAP6: 1, MAP7: 1, MAP8: 1, MAP9: 1,
     NIGHTMARE_KEY1: 1, NIGHTMARE_KEY2: 1, NIGHTMARE_KEY3: 1, NIGHTMARE_KEY4: 1, NIGHTMARE_KEY5: 1, NIGHTMARE_KEY6: 1, NIGHTMARE_KEY7: 1, NIGHTMARE_KEY8: 1, NIGHTMARE_KEY9: 1,
     STONE_BEAK1: 1, STONE_BEAK2: 1, STONE_BEAK3: 1, STONE_BEAK4: 1, STONE_BEAK5: 1, STONE_BEAK6: 1, STONE_BEAK7: 1, STONE_BEAK8: 1, STONE_BEAK9: 1,
-    
+
     INSTRUMENT1: 1, INSTRUMENT2: 1, INSTRUMENT3: 1, INSTRUMENT4: 1, INSTRUMENT5: 1, INSTRUMENT6: 1, INSTRUMENT7: 1, INSTRUMENT8: 1,
 
     TRADING_ITEM_YOSHI_DOLL: 1,
@@ -136,6 +136,9 @@ class ItemPool:
         elif settings.hpmode == 'extralow':
             self.add(RUPEES_20, self.get(HEART_CONTAINER))
             self.remove(HEART_CONTAINER, self.get(HEART_CONTAINER))
+
+        if settings.goal == 'seashells':
+            self.remove(SEASHELL, 2)
 
         if settings.itempool == 'casual':
             self.add(FLIPPERS)
@@ -257,7 +260,7 @@ class ItemPool:
         #     rupees50 = self.__pool.get(RUPEES_50, 0)
         #     self.add(RUPEES_200, rupees50 // 5)
         #     self.remove(RUPEES_50, rupees50 // 5)
-        
+
     def __randomizeRupees(self, options, rnd):
         # Remove rupees from the item pool and replace them with other items to create more variety
         rupee_item = []

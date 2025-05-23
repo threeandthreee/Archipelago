@@ -81,6 +81,11 @@
     "classification": "PROGRESSION",
     "tags": ["Key Items", "Event Tickets", "Unique Items"]
   },
+  "ITEM_BERRY_POUCH": {
+    "name": "Berry Pouch",
+    "classification": "PROGRESSION",
+    "tags": ["Key Items", "Unique Items"]
+  },
   "ITEM_BICYCLE": {
     "name": "Bicycle",
     "classification": "PROGRESSION",
@@ -151,10 +156,25 @@
     "classification": "PROGRESSION",
     "tags": ["Key Items", "Card Keys", "Unique Items"]
   },
+  "ITEM_CELADON_KEY": {
+    "name": "Celadon Key",
+    "classification": "PROGRESSION",
+    "tags": ["Key Items", "Gym Keys", "Unique Items"]
+  },
+  "ITEM_CERULEAN_KEY": {
+    "name": "Cerulean Key",
+    "classification": "PROGRESSION",
+    "tags": ["Key Items", "Gym Keys", "Unique Items"]
+  },
   "ITEM_COIN_CASE": {
     "name": "Coin Case",
     "classification": "PROGRESSION",
     "tags": ["Key Items", "Unique Items"]
+  },
+  "ITEM_CINNABAR_KEY": {
+    "name": "Cinnabar Key",
+    "classification": "PROGRESSION",
+    "tags": ["Key Items", "Gym Keys", "Unique Items"]
   },
   "ITEM_DOME_FOSSIL": {
     "name": "Dome Fossil",
@@ -180,6 +200,11 @@
     "name": "Four Pass",
     "classification": "PROGRESSION",
     "tags": ["Key Items", "Island Passes", "Unique Items"]
+  },
+  "ITEM_FUCHSIA_KEY": {
+    "name": "Fuchsia Key",
+    "classification": "PROGRESSION",
+    "tags": ["Key Items", "Gym Keys", "Unique Items"]
   },
   "ITEM_GOOD_ROD": {
     "name": "Good Rod",
@@ -271,6 +296,11 @@
     "classification": "PROGRESSION",
     "tags": ["Key Items", "Island Passes", "Unique Items"]
   },
+  "ITEM_PEWTER_KEY": {
+    "name": "Pewter Key",
+    "classification": "PROGRESSION",
+    "tags": ["Key Items", "Gym Keys", "Unique Items"]
+  },
   "ITEM_POKE_FLUTE": {
     "name": "Poke Flute",
     "classification": "PROGRESSION",
@@ -284,12 +314,12 @@
   "ITEM_PROG_CARD_KEY": {
     "name": "Progressive Card Key",
     "classification": "PROGRESSION",
-    "tags": ["Key Items", "Card Keys", "Unique Items"]
+    "tags": ["Key Items", "Card Keys", "Progressive Items"]
   },
   "ITEM_PROG_PASS": {
     "name": "Progressive Pass",
     "classification": "PROGRESSION",
-    "tags": ["Key Items", "Island Passes", "Unique Items"]
+    "tags": ["Key Items", "Island Passes", "Progressive Items"]
   },
   "ITEM_PURPLE_TEA": {
     "name": "Purple Tea",
@@ -321,6 +351,11 @@
     "classification": "PROGRESSION",
     "tags": ["Key Items", "Unique Items"]
   },
+  "ITEM_SAFFRON_KEY": {
+    "name": "Saffron Key",
+    "classification": "PROGRESSION",
+    "tags": ["Key Items", "Gym Keys", "Unique Items"]
+  },
   "ITEM_SAPPHIRE": {
     "name": "Sapphire",
     "classification": "PROGRESSION",
@@ -334,7 +369,7 @@
   "ITEM_SECRET_KEY": {
     "name": "Secret Key",
     "classification": "PROGRESSION",
-    "tags": ["Key Items", "Unique Items"]
+    "tags": ["Key Items", "Gym Keys", "Unique Items"]
   },
   "ITEM_SEVEN_PASS": {
     "name": "Seven Pass",
@@ -386,6 +421,11 @@
     "classification": "PROGRESSION",
     "tags": ["Key Items", "Evolution Items","Unique Items"]
   },
+  "ITEM_TM_CASE": {
+    "name": "TM Case",
+    "classification": "PROGRESSION",
+    "tags": ["Key Items", "Unique Items"]
+  },
   "ITEM_TOWN_MAP": {
     "name": "Town Map",
     "classification": "PROGRESSION",
@@ -401,6 +441,16 @@
     "classification": "PROGRESSION",
     "tags": ["Key Items", "Island Passes", "Unique Items"]
   },
+  "ITEM_VERMILION_KEY": {
+    "name": "Vermilion Key",
+    "classification": "PROGRESSION",
+    "tags": ["Key Items", "Gym Keys", "Unique Items"]
+  },
+  "ITEM_VIRIDIAN_KEY": {
+    "name": "Viridian Key",
+    "classification": "PROGRESSION",
+    "tags": ["Key Items", "Gym Keys", "Unique Items"]
+  },
   "ITEM_VS_SEEKER": {
     "name": "Vs. Seeker",
     "classification": "USEFUL",
@@ -413,104 +463,104 @@
   },
 
   "ITEM_FLY_PALLET": {
-    "name": "Fly Pallet Town",
+    "name": "Fly Unlock (Pallet Town)",
     "classification": "PROGRESSION",
-    "tags": ["Fly Points", "Unique Items"]
+    "tags": ["Fly Unlocks", "Unique Items"]
   },
   "ITEM_FLY_VIRIDIAN": {
-    "name": "Fly Viridian City",
+    "name": "Fly Unlock (Viridian City)",
     "classification": "PROGRESSION",
-    "tags": ["Fly Points", "Unique Items"]
+    "tags": ["Fly Unlocks", "Unique Items"]
   },
   "ITEM_FLY_PEWTER": {
-    "name": "Fly Pewter City",
+    "name": "Fly Unlock (Pewter City)",
     "classification": "PROGRESSION",
-    "tags": ["Fly Points", "Unique Items"]
+    "tags": ["Fly Unlocks", "Unique Items"]
   },
   "ITEM_FLY_CERULEAN": {
-    "name": "Fly Cerulean City",
+    "name": "Fly Unlock (Cerulean City)",
     "classification": "PROGRESSION",
-    "tags": ["Fly Points", "Unique Items"]
+    "tags": ["Fly Unlocks", "Unique Items"]
   },
   "ITEM_FLY_LAVENDER": {
-    "name": "Fly Lavender Town",
+    "name": "Fly Unlock (Lavender Town)",
     "classification": "PROGRESSION",
-    "tags": ["Fly Points", "Unique Items"]
+    "tags": ["Fly Unlocks", "Unique Items"]
   },
   "ITEM_FLY_VERMILION": {
-    "name": "Fly Vermilion City",
+    "name": "Fly Unlock (Vermilion City)",
     "classification": "PROGRESSION",
-    "tags": ["Fly Points", "Unique Items"]
+    "tags": ["Fly Unlocks", "Unique Items"]
   },
   "ITEM_FLY_CELADON": {
-    "name": "Fly Celadon City",
+    "name": "Fly Unlock (Celadon City)",
     "classification": "PROGRESSION",
-    "tags": ["Fly Points", "Unique Items"]
+    "tags": ["Fly Unlocks", "Unique Items"]
   },
   "ITEM_FLY_FUCHSIA": {
-    "name": "Fly Fuchsia City",
+    "name": "Fly Unlock (Fuchsia City)",
     "classification": "PROGRESSION",
-    "tags": ["Fly Points", "Unique Items"]
+    "tags": ["Fly Unlocks", "Unique Items"]
   },
   "ITEM_FLY_CINNABAR": {
-    "name": "Fly Cinnabar Island",
+    "name": "Fly Unlock (Cinnabar Island)",
     "classification": "PROGRESSION",
-    "tags": ["Fly Points", "Unique Items"]
+    "tags": ["Fly Unlocks", "Unique Items"]
   },
   "ITEM_FLY_INDIGO": {
-    "name": "Fly Indigo Plateau",
+    "name": "Fly Unlock (Indigo Plateau)",
     "classification": "PROGRESSION",
-    "tags": ["Fly Points", "Unique Items"]
+    "tags": ["Fly Unlocks", "Unique Items"]
   },
   "ITEM_FLY_SAFFRON": {
-    "name": "Fly Saffron City",
+    "name": "Fly Unlock (Saffron City)",
     "classification": "PROGRESSION",
-    "tags": ["Fly Points", "Unique Items"]
+    "tags": ["Fly Unlocks", "Unique Items"]
   },
   "ITEM_FLY_ONE_ISLAND": {
-    "name": "Fly One Island",
+    "name": "Fly Unlock (One Island)",
     "classification": "PROGRESSION",
-    "tags": ["Fly Points", "Unique Items"]
+    "tags": ["Fly Unlocks", "Unique Items"]
   },
   "ITEM_FLY_TWO_ISLAND": {
-    "name": "Fly Two Island",
+    "name": "Fly Unlock (Two Island)",
     "classification": "PROGRESSION",
-    "tags": ["Fly Points", "Unique Items"]
+    "tags": ["Fly Unlocks", "Unique Items"]
   },
   "ITEM_FLY_THREE_ISLAND": {
-    "name": "Fly Three Island",
+    "name": "Fly Unlock (Three Island)",
     "classification": "PROGRESSION",
-    "tags": ["Fly Points", "Unique Items"]
+    "tags": ["Fly Unlocks", "Unique Items"]
   },
   "ITEM_FLY_FOUR_ISLAND": {
-    "name": "Fly Four Island",
+    "name": "Fly Unlock (Four Island)",
     "classification": "PROGRESSION",
-    "tags": ["Fly Points", "Unique Items"]
+    "tags": ["Fly Unlocks", "Unique Items"]
   },
   "ITEM_FLY_FIVE_ISLAND": {
-    "name": "Fly Five Island",
+    "name": "Fly Unlock (Five Island)",
     "classification": "PROGRESSION",
-    "tags": ["Fly Points", "Unique Items"]
+    "tags": ["Fly Unlocks", "Unique Items"]
   },
   "ITEM_FLY_SEVEN_ISLAND": {
-    "name": "Fly Seven Island",
+    "name": "Fly Unlock (Seven Island)",
     "classification": "PROGRESSION",
-    "tags": ["Fly Points", "Unique Items"]
+    "tags": ["Fly Unlocks", "Unique Items"]
   },
   "ITEM_FLY_SIX_ISLAND": {
-    "name": "Fly Six Island",
+    "name": "Fly Unlock (Six Island)",
     "classification": "PROGRESSION",
-    "tags": ["Fly Points", "Unique Items"]
+    "tags": ["Fly Unlocks", "Unique Items"]
   },
   "ITEM_FLY_ROUTE4": {
-    "name": "Fly Route 4",
+    "name": "Fly Unlock (Route 4)",
     "classification": "PROGRESSION",
-    "tags": ["Fly Points", "Unique Items"]
+    "tags": ["Fly Unlocks", "Unique Items"]
   },
   "ITEM_FLY_ROUTE10": {
-    "name": "Fly Route 10",
+    "name": "Fly Unlock (Route 10)",
     "classification": "PROGRESSION",
-    "tags": ["Fly Points", "Unique Items"]
+    "tags": ["Fly Unlocks", "Unique Items"]
   },
 
   "ITEM_MASTER_BALL": {
@@ -651,7 +701,7 @@
   },
   "ITEM_LEMONADE": {
     "name": "Lemonade",
-    "classification": "FILLER",
+    "classification": "PROGRESSION",
     "tags": ["Healing Items", "HP Healing Items"]
   },
   "ITEM_MOOMOO_MILK": {
@@ -922,7 +972,7 @@
 
   "ITEM_HEART_SCALE": {
     "name": "Heart Scale",
-    "classification": "FILLER",
+    "classification": "USEFUL",
     "tags": ["Held Items", "Evolution Items"]
   },
 

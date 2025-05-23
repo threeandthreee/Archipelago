@@ -1,6 +1,6 @@
 import typing
 
-from .GpsTracker import GpsTracker
+from worlds.ladx.GpsTracker import GpsTracker
 from .LADXR.checkMetadata import checkMetadataTable
 import json
 import logging
@@ -64,6 +64,8 @@ class LocationTracker:
             '0x1F5': 0x06,
             '0x301-0': 0x10,
             '0x301-1': 0x10,
+            '0x2E9-0': 0x20,
+            '0x2E9-1': 0x40,
         }
 
         addressOverrides = {
@@ -187,12 +189,6 @@ class MagpieBridge:
     features = []
     slot_data = {}
     has_sent_slot_data = False
-
-    def use_entrance_tracker(self):
-        return "entrances" in self.features \
-               and self.slot_data \
-               and "entrance_mapping" in self.slot_data \
-               and any([k != v for k, v in self.slot_data["entrance_mapping"].items()])
 
     def use_entrance_tracker(self):
         return "entrances" in self.features \

@@ -3,11 +3,12 @@ import dataclasses
 import os
 import typing
 import logging
+
 import settings
-from BaseClasses import Entrance, Item, ItemClassification, Location, Tutorial, CollectionState
+from BaseClasses import CollectionState, Entrance, Item, ItemClassification, Location, Tutorial
 from Fill import fill_restrictive
 from worlds.AutoWorld import WebWorld, World
-from worlds.LauncherComponents import Component, components, SuffixIdentifier, Type, launch_subprocess
+from worlds.LauncherComponents import Component, components, SuffixIdentifier, Type, launch_subprocess, icon_paths
 from .Common import *
 from .ForeignItemIcons import ForeignItemIconMatcher
 from .Items import (DungeonItemData, DungeonItemType, ItemName, LinksAwakeningItem, TradeItemData,
@@ -18,7 +19,8 @@ from .LADXR.locations.instrument import Instrument
 from .LADXR.logic import Logic as LADXRLogic
 from .LADXR.settings import Settings as LADXRSettings
 from .LADXR.worldSetup import WorldSetup as LADXRWorldSetup
-from .Locations import (LinksAwakeningLocation, LinksAwakeningRegion,
+from .Locations import (LinksAwakeningLocation,
+                        LinksAwakeningRegion,
                         create_regions_from_ladxr,
                         links_awakening_location_name_to_id,
                         links_awakening_location_name_groups)
@@ -30,12 +32,16 @@ DEVELOPER_MODE = False
 
 def launch_client(*args):
     from .LinksAwakeningClient import launch
-    launch_subprocess(launch, name="Links Awakening DX Beta Client", args=args)
+    launch_subprocess(launch, name=f"{LINKS_AWAKENING} Client", args=args)
 
-components.append(Component("Links Awakening DX Beta Client",
+components.append(Component(f"{LINKS_AWAKENING} Client",
                             func=launch_client,
                             component_type=Type.CLIENT,
-                            file_identifier=SuffixIdentifier('.apladxb')))
+                            icon=LINKS_AWAKENING,
+                            file_identifier=SuffixIdentifier(SUFFIX)))
+
+icon_paths[LINKS_AWAKENING] = f"ap:worlds.{DIRECTORY}/assets/MarinV-3_small.png"
+
 
 class LinksAwakeningSettings(settings.Group):
     class RomFile(settings.UserFilePath):
@@ -79,7 +85,6 @@ class LinksAwakeningSettings(settings.Group):
     rom_file: RomFile = RomFile(RomFile.copy_to)
     rom_start: typing.Union[RomStart, bool] = True
     gfx_mod_file: GfxModFile = GfxModFile()
-    option_overrides: OptionOverrides = {}
 
 class LinksAwakeningWebWorld(WebWorld):
     tutorials = [Tutorial(
@@ -90,7 +95,7 @@ class LinksAwakeningWebWorld(WebWorld):
         "setup/en",
         ["zig"]
     )]
-    theme = "dirt"
+    theme = "ocean"
     option_groups = ladx_option_groups
     options_presets: typing.Dict[str, typing.Dict[str, typing.Any]] = {
         "Keysanity": {
@@ -459,7 +464,7 @@ class LinksAwakeningWorld(World):
                             loc.ladxr_item.item = 'PIECE_OF_POWER'
                         else:
                             loc.ladxr_item.item = 'GUARDIAN_ACORN'
-                        loc.ladxr_item.setCustomItemName = loc.item.name
+                        loc.ladxr_item.setCustomItemName(loc.item.name)
 
                     if loc.item:
                         loc.ladxr_item.item_owner = loc.item.player
@@ -505,12 +510,7 @@ class LinksAwakeningWorld(World):
         return self.random.choices(self.filler_choices, self.filler_weights)[0]
 
     def fill_slot_data(self):
-        slot_data = {
-            "game_name": LINKS_AWAKENING,
-            "pre_release": True,
-            "version": VERSION,
-            "death_link": self.options.death_link.value,
-        }
+        slot_data = { "death_link": self.options.death_link.value }
 
         if not self.multiworld.is_race:
             # all of these option are NOT used by the LADX- or Text-Client.

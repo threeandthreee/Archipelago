@@ -2,9 +2,14 @@ from dataclasses import dataclass
 
 from schema import Schema, And, Optional
 
-from Options import OptionGroup, Choice, Range, DefaultOnToggle, Toggle, DeathLink, OptionSet, OptionDict
+from Options import OptionGroup, Choice, Range, DefaultOnToggle, Toggle, DeathLink, OptionSet, OptionDict, \
+    ProgressionBalancing
 from Options import PerGameCommonOptions
 from .Enums import level_areas, pascal_to_space
+
+
+class SADXProgressionBalancing(ProgressionBalancing):
+    default = 80
 
 
 class GoalRequiresLevels(DefaultOnToggle):
@@ -93,12 +98,14 @@ class LogicLevel(Choice):
     Hard Logic (1): Less forgiving logic, some checks require performing spindash jumps or dying to get the check.
     Expert DC Logic (2): The most unforgiving logic, some checks require performing out-of-bounds jumps (DC conversion).
     Expert DX Logic (3): The most unforgiving logic, some checks require performing out-of-bounds jumps (vanilla DX).
+    Expert+ DX Logic (4): Same as Expert DX but with extra speed runner level tricks (vanilla DX).
     """
     display_name = "Logic Level"
     option_normal_logic = 0
     option_hard_logic = 1
     option_expert_dc_logic = 2
     option_expert_dx_logic = 3
+    option_expert_plus_dx_logic = 4
     default = 0
 
 
@@ -231,6 +238,13 @@ class RingLoss(Choice):
     default = 0
 
 
+class TrapLink(Toggle):
+    """
+    Whether your received traps are linked to other players
+    """
+    display_name = "Trap Link"
+
+
 class PlayableSonic(DefaultOnToggle):
     """Determines whether Sonic is playable."""
     display_name = "Playable Sonic"
@@ -306,6 +320,74 @@ class GammaActionStageMissions(BaseActionStageMissionChoice):
 class BigActionStageMissions(BaseActionStageMissionChoice):
     """Choose what action stage missions will be a location check for Big."""
     display_name = "Big's Action Stage Missions"
+
+
+class MusicSource(Choice):
+    """
+    Selects the source of the game's music.
+
+    You can mix and match music from SADX, SA2B, and custom tracks.
+    Custom songs are mapped to the Sonic Heroes soundtrack by default,
+    but you're free to replace them with any songs you prefer.
+
+    Choose between: SADX (0), SADX + Custom (1), SA2B (2), SA2B + Custom (3), SADX + SA2B (4), and SADX + SA2B + Custom (5).
+
+    NOTE: You must own SA2B and/or Sonic Heroes on PC to use their music.
+    """
+    display_name = "MusicSource"
+    option_sadx = 0
+    option_sadx_custom = 1
+    option_sa2b = 2
+    option_sa2b_custom = 3
+    option_sadx_sa2b = 4
+    option_sadx_sa2b_custom = 5
+    default = 0
+
+
+class MusicShuffle(Choice):
+    """
+    Controls how music is randomized in the game.
+
+    Disabled (0 - default): Use original tracks without randomization.
+    Curated (1): Randomize music using a hand-picked list that fits the original tone.
+    By Type (2): Randomize songs within the same category (e.g., levels, bosses).
+    Full (3): Randomize across the entire pool of available tracks.
+    Singularity (4): Replace every song with the same single track.
+
+    Options 1 and 2 are recommended for the most coherent experience.
+    """
+    display_name = "Music Shuffle"
+    option_disabled = 0
+    option_curated = 1
+    option_by_type = 2
+    option_full = 3
+    option_singularity = 4
+    default = 0
+
+
+class MusicShuffleConsistency(Choice):
+    """
+    Defines how frequently music changes during gameplay.
+
+    Static (0 - default): Music remains the same for the seed/slot.
+    On Restart (1): Music is reshuffled every time the game is restarted.
+    Per Play (2): Music changes every time it starts playing.
+
+    Note: Shuffling is handled on the client side, using the seed and song.json file.
+    """
+    display_name = "Music Shuffle Consistency"
+    option_static = 0
+    option_on_restart = 1
+    option_per_play = 2
+    default = 0
+
+
+class LifeCapsulesChangeSongs(Toggle):
+    """
+    If enabled, collecting a Life Capsule will trigger a music change, based on your current Music Shuffle settings.
+    Only available if Music Shuffle is consistency is set to Per Play (2).
+    """
+    display_name = "Life Capsules Change Songs"
 
 
 class RandomizedSonicUpgrades(DefaultOnToggle):
@@ -400,10 +482,11 @@ class MissionBlackList(OptionSet):
     Mission 53 (Triple Jump in the Snowboard section of Ice Cap).
     Mission 54 (Flags in the Snowboard section of Ice Cap).
     Mission 58 (Flags in the rolling bounce section of Lost World).
+    Also, you can blacklist all the missions by using the character names. i.e. {'Big', 'Sonic'}
     """
     display_name = "Mission Blacklist"
     default = {'49', '53', '54', '58'}
-    valid_keys = [str(i) for i in range(1, 61)]
+    valid_keys = [str(i) for i in range(1, 61)] + ["Sonic", "Tails", "Knuckles", "Amy", "Big", "Gamma"]
 
 
 class TwinkleCircuitCheck(DefaultOnToggle):
@@ -551,13 +634,21 @@ class FishSanity(Toggle):
     display_name = "Fish Sanity"
 
 
-class LazyFishing(Toggle):
+class LazyFishing(Choice):
     """
-    Enabling Lazy Fishing does two things:
-    Grants infinite tension during fishing if you have the Power Rod upgrade.
-    Adds the Power Rod as a logic requirement for all fish in fish-sanity, B/A/S ranks and every "Keeper" mission for Big.
+    Enabling Lazy Fishing grants infinite tension during fishing if you have the Power Rod upgrade.
+    Depending on your option, the Power Rod will be a logic requirement or not for your locations:
+    0: Disabled (default).
+    1: Enabled, no requirements (Power Rod is not a logic requirement for any location check).
+    2: Enabled, fishsanity (Power Rod is a logic requirement for fish-sanity only).
+    3: Enabled, all (Power Rod is a logic requirement for fish-sanity, B/A/S ranks and every "Keeper" mission for Big).
     """
     display_name = "Lazy Fishing"
+    option_disabled = 0
+    option_enabled_no_requirements = 1
+    option_enabled_fishsanity = 2
+    option_enabled_all = 3
+    default = 0
 
 
 class JunkFillPercentage(Range):
@@ -664,6 +755,7 @@ class TrapsAndFillerOnPerfectChaosFight(Toggle):
 
 @dataclass
 class SonicAdventureDXOptions(PerGameCommonOptions):
+    progression_balancing: SADXProgressionBalancing
     goal_requires_levels: GoalRequiresLevels
     levels_percentage: LevelPercentage
     goal_requires_chaos_emeralds: GoalRequiresChaosEmeralds
@@ -691,6 +783,7 @@ class SonicAdventureDXOptions(PerGameCommonOptions):
     casinopolis_ring_link: CasinopolisRingLink
     hard_ring_link: HardRingLink
     ring_loss: RingLoss
+    trap_link: TrapLink
 
     playable_sonic: PlayableSonic
     playable_tails: PlayableTails
@@ -705,6 +798,11 @@ class SonicAdventureDXOptions(PerGameCommonOptions):
     amy_action_stage_missions: AmyActionStageMissions
     big_action_stage_missions: BigActionStageMissions
     gamma_action_stage_missions: GammaActionStageMissions
+
+    music_source: MusicSource
+    music_shuffle: MusicShuffle
+    music_shuffle_consistency: MusicShuffleConsistency
+    life_capsules_change_songs: LifeCapsulesChangeSongs
 
     randomized_sonic_upgrades: RandomizedSonicUpgrades
     randomized_tails_upgrades: RandomizedTailsUpgrades
@@ -799,6 +897,7 @@ sadx_option_groups = [
         CasinopolisRingLink,
         HardRingLink,
         RingLoss,
+        TrapLink,
     ]),
     OptionGroup("Characters Options", [
         PlayableSonic,
@@ -815,6 +914,12 @@ sadx_option_groups = [
         AmyActionStageMissions,
         BigActionStageMissions,
         GammaActionStageMissions
+    ]),
+    OptionGroup("Music Options", [
+        MusicSource,
+        MusicShuffle,
+        MusicShuffleConsistency,
+        LifeCapsulesChangeSongs,
     ]),
     OptionGroup("Upgrade Options", [
         RandomizedSonicUpgrades,

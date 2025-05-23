@@ -68,7 +68,7 @@
       "REGION_ROUTE2/EAST": "Route 2 Northeast Cuttable Tree (South)"
     },
     "warps": {
-      "MAP_ROUTE2:4/MAP_DIGLETTS_CAVE_NORTH_ENTRANCE:1": "Diglett's Cave (North)",
+      "MAP_ROUTE2:4/MAP_DIGLETTS_CAVE_NORTH_ENTRANCE:1": "Diglett's Cave North Entrance",
       "MAP_ROUTE2:5/MAP_ROUTE2_HOUSE:0": "Route 2 Trade House"
     }
   },
@@ -155,8 +155,8 @@
     "events": [],
     "exits": {},
     "warps": {
-      "MAP_ROUTE2_EAST_BUILDING:0/MAP_ROUTE2:6": "Route 2 Gate Exit (South)",
-      "MAP_ROUTE2_EAST_BUILDING:1/MAP_ROUTE2:8": "Route 2 Gate Exit (North)"
+      "MAP_ROUTE2_EAST_BUILDING:0/MAP_ROUTE2:6": "Route 2 Gate Exit (North)",
+      "MAP_ROUTE2_EAST_BUILDING:1/MAP_ROUTE2:8": "Route 2 Gate Exit (South)"
     }
   },
   "REGION_ROUTE2_HOUSE/MAIN": {
@@ -2145,6 +2145,7 @@
       "HIDDEN_ITEM_ROUTE25_BLUK_BERRY",
       "TRAINER_LASS_HALEY_REWARD",
       "FAME_CHECKER_MISTY_5",
+      "NPC_GIFT_GOT_CERULEAN_KEY",
       "HIDDEN_ITEM_ROUTE25_ETHER"
     ],
     "events": [],

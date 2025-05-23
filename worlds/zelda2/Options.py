@@ -51,6 +51,16 @@ class SpellLocations(Choice):
     option_anywhere = 2
     default = 2
 
+class EncounterRate(Choice):
+    """The rate at which random enemy encounters spawn. """
+    display_name = "Encounter Rate"
+    # option_none = 0 This needs work
+    option_quarter = 0
+    option_half = 1
+    option_1x = 2
+    option_2x = 3
+    default = 1
+
 class RemoveEarlyBoulder(Toggle):
     """Removes the boulder blocking the south part of the western continent."""
     display_name = "Remove Early Boulder"
@@ -81,7 +91,7 @@ class RandomPalaceGraphics(Toggle):
     display_name = "Random Palace Graphics"
 
 class PalaceRespawn(DefaultOnToggle):
-    """If enabled, you will respawn at the current Palace entrance if you game over,
+    """If enabled, you will respawn at the current Palace entrance if you continue,
        but not if you save and reset. If disabled, this only applies to the Great Palace."""
     display_name = "Respawn at Palaces"
 
@@ -95,7 +105,7 @@ class StartingLives(Range):
     default = 3
 
 class KeepExp(DefaultOnToggle):
-    """If enabled, you will retain your EXP after game over, and it will be saved to your file."""
+    """If enabled, you will retain your EXP after continuing, and it will be saved to your file."""
     display_name = "Keep EXP"
 
 class FastPalace(Toggle):
@@ -106,6 +116,10 @@ class BetterBoots(Toggle):
     """If enabled, the water near Saria Town will be changed so that it can be walked on using the Boots."""
     display_name = "Better Boots"
 
+class RemoveMagicKey(Toggle):
+    """Removes the Magical Key from the item pool. If enabled, 4 more Three-Eye Rock Palace Keys are placed."""
+    display_name = "Remove Magical Key"
+
 @dataclass
 class Z2Options(PerGameCommonOptions):
     required_crystals: RequiredCrystals
@@ -114,6 +128,7 @@ class Z2Options(PerGameCommonOptions):
     early_candle: EarlyCandle
     candle_required: RequireCandle
     cross_required: RequireCross
+    remove_magical_key: RemoveMagicKey
     remove_early_boulder: RemoveEarlyBoulder
     better_boots: BetterBoots
     palace_respawn: PalaceRespawn
@@ -122,6 +137,7 @@ class Z2Options(PerGameCommonOptions):
     starting_magic: StartingMagic
     starting_attack: StartingAttack
     starting_lives: StartingLives
+    encounter_rate: EncounterRate
     keep_exp: KeepExp
     random_tunic_color: RandomTunicColor
     random_palace_graphics: RandomPalaceGraphics
@@ -135,7 +151,8 @@ z2_option_groups = [
     OptionGroup("Item Settings", [
         EarlyCandle,
         KeyShuffle,
-        SpellLocations
+        SpellLocations,
+        RemoveMagicKey
     ]),
 
     OptionGroup("Logic Settings", [
@@ -149,7 +166,8 @@ z2_option_groups = [
         PalaceRespawn,
         FastPalace,
         StartingLives,
-        KeepExp
+        KeepExp,
+        EncounterRate
     ]),
 
     OptionGroup("Starting Stats", [

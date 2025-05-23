@@ -223,6 +223,10 @@ CanHiGrip = all(
     HiJump,
     PowerGrip
 )
+CanHiWallJump = all(
+    HiJump,
+    CanWallJump
+)
 CanEnterHighMorphTunnel = any(
     CanIBJ,
     all(
@@ -319,22 +323,23 @@ ChozodiaCombat = any(
     all(
         NormalCombat,
         any(
-            MissileTanks(2),
+            MissileTanks(4),
             IceBeam,
             PlasmaBeam
         ),
-        EnergyTanks(2)
+        EnergyTanks(3)
     ),
     all(
         any(
-           IceBeam,
-           PlasmaBeam
+            MissileTanks(10),
+            IceBeam,
+            PlasmaBeam
         ),
         any(
             VariaSuit,
             GravitySuit
         ),
-        EnergyTanks(4)
+        EnergyTanks(5)
     ),
 )
 # Currently combat logic assumes non-100% Mecha Ridley

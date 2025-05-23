@@ -41,3 +41,16 @@
 0c/7689/ : |
   db $be
   db $00
+
+0a//checkSatchelAndShooter : |
+  call checkTreasureObtained
+  jp c,$629e
+  ld a,TREASURE_SHOOTER
+  call checkTreasureObtained
+  jp c,$629e
+  jp $62b4
+
+#Allow buy if you have seed satchel OR seed launcher
+0a/6299/ : jp checkSatchelAndShooter
+
+

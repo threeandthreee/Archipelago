@@ -187,7 +187,7 @@ class VictoryCondition(Choice):
 
 class FieldsSecretPaths(Toggle):
     """
-    Toggles whether the secret paths towards three of the secret chests in Fields are in logic.
+    Toggles whether the secret paths towards three of the secret chests in Fields are in logic without Expanded Swap.
     """
     display_name = "Fields Secret Paths"
 

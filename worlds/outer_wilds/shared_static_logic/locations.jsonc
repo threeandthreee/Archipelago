@@ -1235,7 +1235,7 @@
     },
     {
         "category": "dlc", "address": 1085040015, "name": "DW: Endless Canyon Mural",
-        "region": "Endless Canyon", "requires": [
+        "region": "Endless Canyon Lodge Bottom Floor", "requires": [
             { "anyOf": [
                 // the intended vanilla route: project bridge into lodge, hand warp inside, project bridge inside lodge
                 { "item": "Dream Totem Patch" },
@@ -1493,11 +1493,11 @@
     },
     {
         "category": "dlc", "logsanity": true, "address": 1085041032, "name": "DW Ship Log: Endless Canyon 1 - Visit",
-        "region": "Endless Canyon", "requires": []
+        "region": "Endless Canyon Start", "requires": []
     },
     {
         "category": "dlc", "logsanity": true, "address": 1085041033, "name": "DW Ship Log: Endless Canyon 2 - Mural",
-        "region": "Endless Canyon", "requires": [
+        "region": "Endless Canyon Lodge Bottom Floor", "requires": [
             { "anyOf": [
                 // the intended vanilla route: project bridge into lodge, hand warp inside, project bridge inside lodge
                 { "item": "Dream Totem Patch" },

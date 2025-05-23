@@ -6,8 +6,8 @@ def make_d0_logic(player: int):
         # 0 keys
         ["enter d0", "d0 key chest", False, None],
         ["enter d0", "d0 rupee chest", False, lambda state:
-            # If hole is removed, stairs are added inside dungeon to make the chest reachable
-            oos_option_no_d0_alt_entrance(state, player),
+        # If hole is removed, stairs are added inside dungeon to make the chest reachable
+        oos_option_no_d0_alt_entrance(state, player),
          ],
         ["d0 rupee chest", "enter d0", False, None],
         ["enter d0", "d0 hidden 2d section", False, lambda state: any([
@@ -120,6 +120,11 @@ def make_d2_logic(player: int):
             oos_has_small_keys(state, player, 2, 2),
             oos_has_bombs(state, player)
         ])],
+        # terrace self-locking rules
+        ["d2 arrow room", "d2 terrace chest", False, lambda state: all([
+            oos_has_small_keys(state, player, 2, 2),
+            oos_self_locking_small_key(state, player, "d2 terrace chest", 2)
+        ])],
         # You can take the Facade miniboss teleporter to reach dungeon entrance, even if you entered the dungeon
         # through the alt-entrance
         ["d2 spinner", "d2 torch room", False, None],
@@ -139,10 +144,7 @@ def make_d2_logic(player: int):
                 oos_can_kill_d2_far_moblin(state, player)
             ])
         ])],
-        ["d2 spinner", "d2 terrace chest", False, lambda state: any([
-            oos_has_small_keys(state, player, 2, 3),
-            oos_self_locking_small_key(state, player, "d2 terrace chest", 2)
-        ])],
+        ["d2 spinner", "d2 terrace chest", False, lambda state: oos_has_small_keys(state, player, 2, 3)],
     ]
 
 
@@ -308,13 +310,17 @@ def make_d4_logic(player: int):
             oos_self_locking_small_key(state, player, "d4 cracked floor room", 4)
         ])],
         ["d4 final minecart", "d4 dive spot", False, lambda state: all([
-            any([  # hit distant levers
-                oos_has_magic_boomerang(state, player),
-                oos_has_slingshot(state, player)
-            ]),
-            oos_can_jump_2_wide_pit(state, player),
             any([
-                oos_has_small_keys(state, player, 4, 5),
+                all([
+                    any([  # hit distant levers
+                        oos_has_magic_boomerang(state, player),
+                        oos_has_slingshot(state, player)
+                    ]),
+                    oos_can_jump_2_wide_pit(state, player),
+                    oos_has_small_keys(state, player, 4, 5),
+                ]),
+                # For self-locking, we don't need to check if the player is able to
+                # waste the key first to then get it back, only to get it back if they waste it
                 oos_self_locking_small_key(state, player, "d4 dive spot", 4)
             ]),
             oos_has_flippers(state, player)
@@ -430,7 +436,9 @@ def make_d5_logic(player: int):
                 oos_can_kill_armored_enemy(state, player),
                 all([
                     oos_option_medium_logic(state, player),
-                    oos_has_shield(state, player)
+                    # Pull the darknut in the water
+                    oos_has_magnet_gloves(state, player),
+                    # Shield is also an option but doesn't impact logic in any way
                 ])
             ])
         ])],
@@ -468,6 +476,21 @@ def make_d5_logic(player: int):
             oos_can_kill_armored_enemy(state, player)
         ])],
 
+        ["d5 entrance", "d5 magnet ball chest", False, lambda state: \
+            oos_self_locking_small_key(state, player, "d5 magnet ball chest", 5)],
+        ["d5 entrance", "d5 basement", False, lambda state: all([
+            oos_self_locking_small_key(state, player, "d5 basement", 5),
+            state.has("_dropped_d5_magnet_ball", player),
+            oos_has_magnet_gloves(state, player),
+            any([
+                oos_can_kill_magunesu(state, player),
+                all([
+                    oos_option_medium_logic(state, player),
+                    oos_has_feather(state, player)
+                ])
+            ])
+        ])],
+
         ["d5 pot room", "d5 magnet ball chest", False, lambda state: all([
             any([
                 oos_has_flippers(state, player),
@@ -481,17 +504,11 @@ def make_d5_logic(player: int):
                     # which makes the lower route always better when in medium+.
                 ])
             ]),
-            any([
-                oos_has_small_keys(state, player, 5, 5),
-                oos_self_locking_small_key(state, player, "d5 magnet ball chest", 5)
-            ])
+            oos_has_small_keys(state, player, 5, 5),
         ])],
 
         ["d5 post syger", "d5 basement", False, lambda state: all([
-            any([
-                oos_has_small_keys(state, player, 5, 5),
-                oos_self_locking_small_key(state, player, "d5 basement", 5)
-            ]),
+            oos_has_small_keys(state, player, 5, 5),
             state.has("_dropped_d5_magnet_ball", player),
             oos_has_magnet_gloves(state, player),
             any([
@@ -596,7 +613,15 @@ def make_d6_logic(player: int):
                 # Kill Vire
                 oos_has_sword(state, player, False),
                 oos_has_fools_ore(state, player),
-                # state.has("expert's ring", player)
+                all([
+                    oos_option_medium_logic(state, player),
+                    oos_has_bombs(state, player, 4)
+                ]),
+                all([
+                    # Fist Ring doesn't damage Vire
+                    state.has("expert's ring", player),
+                    oos_option_medium_logic(state, player)
+                ])
             ])
         ])],
         ["d6 kill vire", "d6 pre-boss room", False, lambda state: all([
@@ -768,11 +793,19 @@ def make_d7_logic(player: int):
         ])],
 
         # 5 keys
-        ["d7 maze chest", "d7 stalfos chest", False, lambda state: all([
+        ["d7 entrance", "d7 stalfos chest", False, lambda state: all([
+            oos_self_locking_small_key(state, player, "d7 stalfos chest", 7),
             any([
-                oos_has_small_keys(state, player, 7, 5),
-                oos_self_locking_small_key(state, player, "d7 stalfos chest", 7)
+                oos_can_jump_5_wide_pit(state, player),
+                all([
+                    oos_option_hard_logic(state, player),
+                    oos_can_jump_1_wide_pit(state, player, False)
+                ])
             ]),
+            oos_can_kill_stalfos(state, player),
+        ])],
+        ["d7 maze chest", "d7 stalfos chest", False, lambda state: all([
+            oos_has_small_keys(state, player, 7, 5),
             any([
                 oos_can_jump_5_wide_pit(state, player),
                 all([
