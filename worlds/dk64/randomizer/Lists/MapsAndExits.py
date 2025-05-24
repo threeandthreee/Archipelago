@@ -156,7 +156,6 @@ RegionMapList = {
     Regions.MushroomLowerMid: Maps.ForestGiantMushroom,
     Regions.MushroomMiddle: Maps.ForestGiantMushroom,
     Regions.MushroomUpperMid: Maps.ForestGiantMushroom,
-    Regions.MushroomUpperVineFloor: Maps.ForestGiantMushroom,
     Regions.MushroomLowerExterior: Maps.FungiForest,
     Regions.MushroomBlastLevelExterior: Maps.FungiForest,
     Regions.MushroomUpper: Maps.ForestGiantMushroom,
