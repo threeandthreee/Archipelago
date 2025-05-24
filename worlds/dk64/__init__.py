@@ -198,6 +198,7 @@ if baseclasses_loaded:
         """
 
         game: str = "Donkey Kong 64"
+        is_experimental = True
         options_dataclass = DK64Options
         options: DK64Options
         topology_present = False
