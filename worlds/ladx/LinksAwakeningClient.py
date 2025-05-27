@@ -721,6 +721,11 @@ class LinksAwakeningContext(CommonContext):
                 checked_checks = set(self.client.tracker.all_checks) - set(self.client.tracker.remaining_checks)
                 self.add_linked_items(checked_checks)
 
+            # We can process linked items on already-checked checks now that we have slot_data
+            if self.client.tracker:
+                checked_checks = set(self.client.tracker.all_checks) - set(self.client.tracker.remaining_checks)
+                self.add_linked_items(checked_checks)
+
         # TODO - use watcher_event
         if cmd == "ReceivedItems":
             for index, item in enumerate(args["items"], start=args["index"]):
