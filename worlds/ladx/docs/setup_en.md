@@ -1,4 +1,4 @@
-# Links Awakening DX Multiworld Setup Guide
+# Links Awakening DX Beta Multiworld Setup Guide
 
 ## Required Software
 
@@ -35,7 +35,7 @@ options.
 
 ### Where do I get a config file?
 
-The [Player Options](/games/Links%20Awakening%20DX/player-options) page on the website allows you to configure
+The [Player Options](/games/Links%20Awakening%20DX%20Beta/player-options) page on the website allows you to configure
 your personal options and export a config file from them.
 
 ### Verifying your config file
@@ -45,7 +45,7 @@ If you would like to validate your config file to make sure it works, you may do
 
 ## Generating a Single-Player Game
 
-1. Navigate to the [Player Options](/games/Links%20Awakening%20DX/player-options) page, configure your options,
+1. Navigate to the [Player Options](/games/Links%20Awakening%20DX%20Beta/player-options) page, configure your options,
    and click the "Generate Game" button.
 2. You will be presented with a "Seed Info" page.
 3. Click the "Create New Room" link.
