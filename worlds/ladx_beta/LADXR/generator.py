@@ -63,7 +63,7 @@ from .patches import bank34
 from .roomEditor import RoomEditor, Object
 from .patches.aesthetics import rgb_to_bin, bin_to_rgb
 
-from . import Common
+from .. import Common
 from .. import Options
 
 # Function to generate a final rom, this patches the rom with all required patches
