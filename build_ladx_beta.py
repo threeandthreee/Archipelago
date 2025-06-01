@@ -47,7 +47,7 @@ def pack_apworld(src_world, dst_world, outdir):
     shutil.rmtree(dst_dir)
 
 def main(args):
-    pack_apworld('ladx', 'ladx_beta', args.outdir)
+    pack_apworld('ladx_beta', 'ladx_beta', args.outdir)
 
     if args.include_artifacts:
         gen_template("Links Awakening DX Beta.yaml", args.outdir)
