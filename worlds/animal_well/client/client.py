@@ -91,6 +91,66 @@ class AnimalWellCommandProcessor(ClientCommandProcessor):
                 logger.info(f"Enabling fullbright...")
                 self.ctx.bean_patcher.enable_fullbright()
 
+    def _cmd_goodboy(self, val=""):
+        """
+        Disables ghost dog contact damage and the looping sound that plays while it's aggro
+        """
+        if isinstance(self.ctx, AnimalWellContext):
+            if val == "":
+                self.ctx.bean_patcher.toggle_goodboy()
+            elif val == "off":
+                logger.info(f"Disabling goodboy...")
+                self.ctx.bean_patcher.disable_goodboy()
+            else:
+                logger.info(f"Enabling goodboy...")
+                self.ctx.bean_patcher.enable_goodboy()
+
+    def _cmd_gooddog(self, val=""):
+        """
+        Alias for /goodboy
+        """
+        self._cmd_goodboy(val)
+
+    def _cmd_nodog(self, val=""):
+        """
+        Disables ghost dog entirely
+        """
+        if isinstance(self.ctx, AnimalWellContext):
+            if val == "":
+                self.ctx.bean_patcher.toggle_no_dog()
+            elif val == "off":
+                logger.info(f"Disabling no_dog...")
+                self.ctx.bean_patcher.disable_no_dog()
+            else:
+                logger.info(f"Enabling no_dog...")
+                self.ctx.bean_patcher.enable_no_dog()
+
+    def _cmd_noghost(self, val=""):
+        """
+        Alias for /nodog
+        """
+        self._cmd_nodog(val)
+
+    def _cmd_alwaysdog(self, val=""):
+        """
+        Ghost dog hunts you eternally
+        """
+        if isinstance(self.ctx, AnimalWellContext):
+            if val == "":
+                self.ctx.bean_patcher.toggle_always_dog()
+            elif val == "off":
+                logger.info(f"Disabling always_dog...")
+                self.ctx.bean_patcher.disable_always_dog()
+            else:
+                logger.info(f"Enabling always_dog...")
+                self.ctx.bean_patcher.enable_always_dog()
+
+    def _cmd_alwaysghost(self, val=""):
+        """
+        Alias for /alwaysdog
+        """
+        self._cmd_alwaysdog(val)
+
     def _cmd_deathlink(self, val=""):
         """
         Toggles deathlink.
@@ -364,7 +424,7 @@ class AnimalWellContext(CommonContext):
         self.stamps = []
         self.tiles = {}
         self.logic_tracker = AnimalWellTracker()
-        self.console_task = None
+        # self.console_task = None  # pulled out for now for compatibility with current AP
 
         self.disconnected_intentionally = True
 
@@ -680,7 +740,6 @@ class AnimalWellContext(CommonContext):
         self.bean_patcher.tracker_total = len(self.server_locations)
         self.bean_patcher.tracker_checked = len(self.checked_locations)
         self.bean_patcher.tracker_missing = len(self.missing_locations)
-        # self.bean_patcher.tracker_in_logic = countOf(self.logic_tracker.check_logic_status.values(), CheckStatus.in_logic.value)
         self.bean_patcher.tracker_in_logic = len({k: v for (k, v) in self.logic_tracker.check_logic_status.items()
                                                   if v == CheckStatus.in_logic
                                                   and k in location_name_to_id
@@ -1620,7 +1679,12 @@ def launch(*args):
         ctx.run_cli()
 
         ctx.process_sync_task = asyncio.create_task(process_sync_task(ctx), name="Animal Well Process Sync")
-        ctx.console_task = asyncio.create_task(console_task(ctx), name="Animal Well Console")
+        try:
+            import win32api, win32gui
+        except ImportError:
+            pass
+        else:
+            ctx.console_task = asyncio.create_task(console_task(ctx), name="Animal Well Console")
 
         await ctx.exit_event.wait()
         ctx.server_address = None

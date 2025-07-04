@@ -1,9 +1,5 @@
 # The Legend of Zelda : Oracle of Seasons
 
-## Où se trouve la page des paramètres ?
-
-La [page des paramètres du joueur pour ce jeu](../player-settings) contient la plupart des options dont vous avez besoin pour configurer et exporter un fichier de configuration. 
-
 ## Qu'apporte la randomisation à ce jeu ?
 
 La plupart des objets à acquérir sont mélangés les uns aux autres, en suivant une certaine logique pour s'assurer que le jeu peut être complété.
@@ -24,12 +20,21 @@ Lorsque vous le collectez, le jeu vous informe que vous venez d'envoyer un item 
 > - La **logique Casual** attend du joueur ce qui est obligé d'être su en faisant une partie normale complète sur le jeu
 > - La **logique Medium** attend du joueur d'avoir une connaissance complète du jeu et des façons alternatives de faire les choses, mais ne requiert rien qui demande un bon niveau d'exécution (pas de tricks / glitches)
 > - La **logique Hard** attend du joueur de connaître et d'utiliser des glitches et tricks tels que les bomb jumps
+> - La **logique Hell** attend du joueur d'utiliser des glitches vraiment dur comme H&S skip. Rooster adventure y est inclus, mais pas pour skip la barrière
 > 
 > Un [document](https://docs.google.com/document/d/1IVYvvZS6NuTDoeWJlbFA5AW2Lj-nIaweRJkKuq7ncqc/) a été fait par Ishigh et la communauté pour décrire les différences entre les niveaux de logique plus en détail. 
 
 **Y a-t-il un tracker pour ce jeu?**
 
-> Oui, Seto a mis au point un pack Poptracker qui peut être téléchargé [ici](https://github.com/seto10987/Oracle-of-Seasons-AP-Poptracker-Pack/releases).
+> Oui, Seto et OmegaZeron ont mis au point un pack Poptracker qui peut être téléchargé [ici](https://github.com/OmegaZeron/Oracle-of-Seasons-AP-Poptracker-Pack/releases/latest).
+
+**Suis-je obligé d'utiliser Bizhawk?**
+
+> Si vous jouez à un multimonde contenant plus d'un monde, la réponse est oui*.
+> 
+> En solo en revanche, après avoir patché le jeu, vous pouvez jouer sur n'importe quel émulateur ou même une console originale. Cependant, puisque vous ne pourrez pas vous connecter, Vous n'aurez accès ni au système d'indice, ni au journal des derniers objets obtenus, ni à un tracker, à moins de repasser à Bizhawk en apportant votre sauvegarde.
+> 
+> \*Zunawe a aussi créé un connecteur pour utiliser mgba à la place. Les instructions (en anglais) sur comment le télécharger sont [ici](https://discord.com/channels/731205301247803413/1192236871468711966/1193963132377374762), sur le serveur Discord d'Archipelago
 
 **Comment est-ce que je peux me téléporter au point de départ?**
 
@@ -42,4 +47,10 @@ Lorsque vous le collectez, le jeu vous informe que vous venez d'envoyer un item 
 
 **Est-ce que je peux faire un jeu lié avec un code provenant d'Oracle of Ages?**
 
-> Non, l'ensemble des fonctionnalités de jeu lié sont entièrement désactivées dans ce randomizer.
+> Non, la plupart des fonctionnalités de jeu lié sont entièrement désactivées dans ce randomizer.
+> Cependant, les secrets du jeu lié peuvent être activés grâce à une option
+
+**Comment changer d'objet actif sans ouvrir l'inventaire?**
+
+> Vous pouvez appuyer sur B ou A et START sur la même frame pour échanger l'objet en B avec le premier objet de l'inventaire ou l'objet en A avec le deuxième objet de l'inventaire. Il est recommendé de faire appel à une macro pour effectuer cette commande
+> Sur Bizhawk, vous pouvez faire ça en allant dans controller config, untick "Auto Tab" puis utiliser la même touche pour B et START (puis encore pour A et START)

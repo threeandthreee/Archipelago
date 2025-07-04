@@ -664,7 +664,8 @@ def write_tokens(world: "PokemonFRLGWorld") -> None:
     patch.write_token(options_address, 0x3A, struct.pack("<B", kanto_only))
 
     # Set fly unlocks
-    fly_unlocks = 1 if world.options.shuffle_fly_unlocks.value != ShuffleFlyUnlocks.option_off else 0
+    fly_unlocks = 1 if (world.options.shuffle_fly_unlocks.value != ShuffleFlyUnlocks.option_off or
+                        world.options.randomize_fly_destinations) else 0
     patch.write_token(options_address, 0x3B, struct.pack("<B", fly_unlocks))
 
     # Set famesanity

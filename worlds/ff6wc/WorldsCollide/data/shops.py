@@ -226,6 +226,8 @@ class Shops():
             exclude.append(self.items.get_id("Exp. Egg"))
         if self.args.shops_no_illuminas:
             exclude.append(self.items.get_id("Illumina"))
+        # for AP seeds, do NOT include ArchplgoItem b/c it's confusing and not necessary to sell Rename Cards anyways
+        exclude.append(self.items.get_id("ArchplgoItem"))
 
         for shop in self.shops:
             for item in exclude:

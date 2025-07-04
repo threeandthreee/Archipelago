@@ -46,6 +46,9 @@ def init(ctx: 'Rac2Context'):
     if ctx.current_planet is Rac2Planet.Title_Screen or ctx.current_planet is None:
         return
 
+    # Allow skipping cutscenes by only pressing START on loaded saves.
+    ctx.game_interface.pcsx2_interface.write_int8(ctx.game_interface.addresses.easy_cutscene_skip, 0x1)
+
     # Ship Wupash if option is enabled.
     if ctx.slot_data.get("skip_wupash_nebula", False):
         ctx.game_interface.pcsx2_interface.write_int8(ctx.game_interface.addresses.wupash_complete_flag, 1)
@@ -230,10 +233,13 @@ def handle_vendor(ctx: "Rac2Context"):
     # Use Down/Up to toggle between ammo/weapon mode
     holding_down: bool = interface.pcsx2_interface.read_int16(addresses.controller_input) == 0x4000
     holding_up: bool = interface.pcsx2_interface.read_int16(addresses.controller_input) == 0x1000
-    if holding_down and interface.vendor.mode is Vendor.Mode.MEGACORP:
+    if holding_down and interface.vendor.mode in [Vendor.Mode.MEGACORP, Vendor.Mode.GADGETRON]:
         interface.vendor.change_mode(ctx, Vendor.Mode.AMMO)
     if holding_up and interface.vendor.mode is Vendor.Mode.AMMO:
-        interface.vendor.change_mode(ctx, Vendor.Mode.MEGACORP)
+        if interface.vendor.is_megacorp():
+            interface.vendor.change_mode(ctx, Vendor.Mode.MEGACORP)
+        else:
+            interface.vendor.change_mode(ctx, Vendor.Mode.GADGETRON)
 
 
 def process_vendor_text(manager: TextManager, ctx: "Rac2Context") -> None:

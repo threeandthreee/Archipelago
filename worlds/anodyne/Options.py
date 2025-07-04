@@ -437,12 +437,14 @@ class MitraHints(Choice):
     Sets how Mitra's hints work. She gives one free hint and then gives additional hints after defeating bosses.
     [None] Mitra does not give any hints.
     [Vague] Mitra only tells you the location of a progression item, but not what it is.
-    [Precise] Mitra tells you the exact location of one of your progression items. This will be sent out as a hint.
+    [Precise] Mitra tells you the exact location of one of your progression items.
+    [Precise Hint] Same as Precise, but will be sent out as a hint (if it's at a local location).
     """
     display_name = "Mitra Hint Mode"
     option_none = 0
     option_vague = 1
     option_precise = 2
+    option_precise_hint = 3
     default = 1
 
 
@@ -469,6 +471,6 @@ class AnodyneGameOptions(PerGameCommonOptions):
     traps_percentage: TrapPercentage
     card_amount: CardAmount
     extra_cards: ExtraCardAmount
-    #mitra_hints: MitraHints
+    mitra_hints: MitraHints
     death_link: DeathLink
     start_inventory_from_pool: StartInventoryPool

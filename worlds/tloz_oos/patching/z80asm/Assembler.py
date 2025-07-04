@@ -32,10 +32,14 @@ class Z80Block:
         if split_metalabel[1] == "":
             split_metalabel[1] = "ffff"  # <-- means that it needs to be injected in some code cave
 
+        bank = int(split_metalabel[0], 16)
         offset = int(split_metalabel[1], 16)
-        if offset >= 0x4000 and offset != 0xffff:
-            raise InvalidAddressError(offset)
-        self.addr = GameboyAddress(int(split_metalabel[0], 16), offset)
+        if offset != 0xffff:
+            if bank > 0:
+                offset -= 0x4000
+            if offset < 0x0000 or offset >= 0x4000:
+                raise InvalidAddressError(split_metalabel[1])
+        self.addr = GameboyAddress(bank, offset)
 
         self.label = split_metalabel[2]
 
@@ -124,6 +128,10 @@ class Z80Assembler:
 
         if block.label:
             self.add_global_label(block.label, block.addr)
+        for label in block.local_labels:
+            if not label.startswith('@'):
+                self.add_global_label(label, block.local_labels[label])
+
         self.blocks.append(block)
 
     def resolve_names(self, arg: str, current_addr: GameboyAddress, local_labels: Dict[str, GameboyAddress], opcode: str):
@@ -141,7 +149,8 @@ class Z80Assembler:
 
         output = arg
         if arg in self.defines:
-            output = self.defines[arg]
+            # Do another pass in case the define is a label
+            return self.resolve_names(self.defines[arg], current_addr, local_labels, opcode)
         else:
             addr = None
             if arg in local_labels:

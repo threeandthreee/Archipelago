@@ -7,7 +7,7 @@ from .data.BlastShieldRegions import get_valid_blast_shield_regions_by_area
 from .data.RoomNames import RoomName
 from .PrimeOptions import BlastShieldAvailableTypes, BlastShieldRandomization
 from .data.AreaNames import MetroidPrimeArea
-from typing import TYPE_CHECKING, Any, Dict, List, cast
+from typing import TYPE_CHECKING, Any, Dict, List
 
 if TYPE_CHECKING:
     from . import MetroidPrimeWorld
@@ -44,9 +44,18 @@ class AreaBlastShieldMapping(AreaMapping[BlastShieldMapping]):
 class WorldBlastShieldMapping(WorldMapping[BlastShieldMapping]):
     @classmethod
     def from_option_value(cls, data: Dict[str, Any]) -> "WorldBlastShieldMapping":
-        return WorldBlastShieldMapping(
+        mapping = WorldBlastShieldMapping(
             super().from_option_value_generic(data, AreaBlastShieldMapping)
         )
+
+        for area_mapping in mapping.values():
+            for door_mapping in area_mapping.type_mapping.values():
+                new_dict_with_ints_as_keys: Dict[int, BlastShieldType] = dict()
+                for door_id, shield_type in door_mapping.items():
+                    new_dict_with_ints_as_keys[int(door_id)] = shield_type
+                door_mapping.clear()
+                door_mapping.update(new_dict_with_ints_as_keys)
+        return mapping
 
     def to_option_value(self) -> Dict[str, AreaMappingDict]:
         """This needs to convert these to raw dictionaries otherwise the AP server interprets the slot data as a class and fails"""
@@ -88,7 +97,7 @@ def get_world_blast_shield_mapping(
         )
 
     if (
-        cast(str, world.options.blast_shield_randomization.value)
+        world.options.blast_shield_randomization.value
         != BlastShieldRandomization.option_none
     ):
         for area in MetroidPrimeArea:
@@ -115,7 +124,7 @@ def _generate_blast_shield_mapping_for_area(
     total_beam_combo_doors = 0
 
     if (
-        cast(str, world.options.blast_shield_randomization.value)
+        world.options.blast_shield_randomization.value
         == BlastShieldRandomization.option_mix_it_up
     ):
         blast_shield_regions = get_valid_blast_shield_regions_by_area(world, area)
@@ -146,7 +155,7 @@ def _generate_blast_shield_mapping_for_area(
                 total_beam_combo_doors += 1
 
     elif (
-        cast(str, world.options.blast_shield_randomization.value)
+        world.options.blast_shield_randomization.value
         == BlastShieldRandomization.option_replace_existing
     ):
         for room_name, room_data in world.game_region_data[area].rooms.items():
@@ -196,13 +205,13 @@ def _get_available_blast_shields(
         if shield not in [BlastShieldType.Disabled, BlastShieldType.No_Blast_Shield]
     ]
     if (
-        cast(str, world.options.blast_shield_randomization.value)
+        world.options.blast_shield_randomization
         == BlastShieldRandomization.option_replace_existing
     ):
         available_shields.remove(BlastShieldType.Missile)
 
     if (
-        world.options.blast_shield_available_types.value
+        world.options.blast_shield_available_types
         == BlastShieldAvailableTypes.option_all
         and not force_exclude_combo_doors
     ):

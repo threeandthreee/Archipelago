@@ -2,13 +2,11 @@ import typing
 import logging
 from logging import Logger
 
-from NetUtils import ClientStatus, color
+from NetUtils import ClientStatus
 from worlds.AutoSNIClient import SNIClient
 from . import rom as Rom
 from . import items
 from . import locations
-from .items import character
-from .rom import objective_threshold_size
 
 if typing.TYPE_CHECKING:
     from SNIClient import SNIContext, snes_buffered_write
@@ -32,6 +30,7 @@ class FF4FEClient(SNIClient):
         self.no_earned_characters = False
         self.junked_items = None
         self.kept_items = None
+        self.logged_version = False
 
     async def validate_rom(self, ctx: SNIContext) -> bool:
         from SNIClient import snes_read
@@ -41,6 +40,10 @@ class FF4FEClient(SNIClient):
             return False
 
         ctx.game = self.game
+        if self.logged_version is False:
+            from . import FF4FEWorld
+            snes_logger.info(f"FF4FE APWorld version v{FF4FEWorld.version} used for playing.")
+            self.logged_version = True
 
         # We're not actually full remote items, but some are so we let the server know to send us all items;
         # we'll handle the ones that are actually local separately.
@@ -66,7 +69,7 @@ class FF4FEClient(SNIClient):
         await snes_flush_writes(ctx)
 
     async def connection_check(self, ctx: SNIContext):
-        from SNIClient import snes_buffered_write, snes_flush_writes, snes_read
+        from SNIClient import snes_read
         rom: bytes = await snes_read(ctx, Rom.ROM_NAME, 20)
         if rom != ctx.rom:
             ctx.rom = None
@@ -156,7 +159,7 @@ class FF4FEClient(SNIClient):
 
 
     async def location_check(self, ctx: SNIContext):
-        from SNIClient import snes_buffered_write, snes_flush_writes, snes_read
+        from SNIClient import snes_read
         treasure_data = await snes_read(ctx, Rom.treasure_found_locations_start, Rom.treasure_found_size)
         if treasure_data is None:
             return False
@@ -178,7 +181,7 @@ class FF4FEClient(SNIClient):
 
 
     async def reward_check(self, ctx: SNIContext):
-        from SNIClient import snes_buffered_write, snes_flush_writes, snes_read
+        from SNIClient import snes_read
         reward_data = await snes_read(ctx, Rom.checked_reward_locations_start, Rom.checked_reward_size)
         if reward_data is None:
             return False
@@ -221,7 +224,7 @@ class FF4FEClient(SNIClient):
 
 
     async def objective_check(self, ctx):
-        from SNIClient import snes_buffered_write, snes_flush_writes, snes_read
+        from SNIClient import snes_read
         objective_progress_data = await snes_read(ctx, Rom.objective_progress_start_location, Rom.objective_progress_size)
         if objective_progress_data is None:
             return False
@@ -266,7 +269,7 @@ class FF4FEClient(SNIClient):
 
 
     async def received_items_check(self, ctx: SNIContext):
-        from SNIClient import snes_buffered_write, snes_flush_writes, snes_read
+        from SNIClient import snes_buffered_write, snes_read
         items_received_data = await snes_read(ctx, Rom.items_received_location_start, Rom.items_received_size)
         if items_received_data is None:
             return
@@ -287,10 +290,10 @@ class FF4FEClient(SNIClient):
         item_received = ctx.items_received[items_received_amount]
         item_received_id = item_received.item
         item_received_name = ctx.item_names.lookup_in_game(item_received_id, ctx.game)
-        item_received_location_name = ctx.location_names.lookup_in_game(item_received.location, ctx.game)
+        item_received_location_name = ctx.location_names.lookup_in_slot(item_received.location, item_received.player)
         item_received_game_data = [item for item in items.all_items if item.name == item_received_name].pop()
         item_received_game_id = item_received_game_data.fe_id
-        # Characters are handled entirely ingame.
+        # Characters are handled entirely ingame, for now
         if item_received_name in items.characters:
             self.increment_items_received(ctx, items_received_amount)
             return
@@ -310,7 +313,7 @@ class FF4FEClient(SNIClient):
                 snes_logger.info('Received %s from %s (%s)' % (
                     item_received_name,
                     ctx.player_names[item_received.player],
-                    ctx.location_names[item_received.location]))
+                    item_received_location_name))
                 return
         # Any non MIAB items that come from ourself are actually local items in a trenchcoat and so we just move on,
         # since we got them ingame.
@@ -341,7 +344,7 @@ class FF4FEClient(SNIClient):
                 snes_logger.info('Received %s from %s (%s)' % (
                     item_received_name,
                     ctx.player_names[item_received.player],
-                    ctx.location_names[item_received.location]))
+                    item_received_location_name))
                 snes_logger.info(f"Automatically sold {item_received_name} for {item_price} GP.")
                 return
         # If we've made it this far, this is an item that actually goes in the inventory.
@@ -365,7 +368,7 @@ class FF4FEClient(SNIClient):
                 snes_logger.info('Received %s from %s (%s)' % (
                     item_received_name,
                     ctx.player_names[item_received.player],
-                    ctx.location_names[item_received.location]))
+                    item_received_location_name))
                 break
 
     async def check_victory(self, ctx):

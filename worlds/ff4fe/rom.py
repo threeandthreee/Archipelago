@@ -75,6 +75,8 @@ class FF4FEPatchExtension(APPatchExtension):
 
     @staticmethod
     def call_fe(caller, rom, placement_file):
+        from . import FF4FEWorld
+        logging.info(f"FF4FE APWorld version v{FF4FEWorld.version} used for patching.")
         placements = json.loads(caller.get_file(placement_file))
         seed = placements["seed"]
         output_file = placements["output_file"]
@@ -86,7 +88,7 @@ class FF4FEPatchExtension(APPatchExtension):
         data_dir = Utils.user_path("data", "ff4fe")
         placements["data_dir"] = data_dir
         placement_string = json.dumps(placements)
-        # We try to fetch FE from the data directory in case up patcher updates...
+        # We try to fetch FE from the data directory in case of patcher updates...
         try:
             logging.info(f"Loading Free Enterprise from {data_dir}")
             import sys

@@ -4,7 +4,7 @@
 
 ## Where is the settings page?
 
-The [player settings page for this game](../player-settings)
+The [player settings page for this game](../player-options)
 contains all the options you need to configure and export a config file.
 
 > ⚠ Pre-Release Note: The above link does not work because it would go to the live Archipelago site.
@@ -18,15 +18,23 @@ causing technologies to be obtained in a non-standard order.
 Hard Drive scanning results also contain Archipelago items,
 meaning alternate recipes could now become part of your required progression path.
 There are also a few new purchases in the AWESOME Shop.
+The materials required for constructing Assemblers and Foundries is altered to increase early game recipe variety.
 
 ## What is the goal of Satisfactory?
 
 The player can choose from a number of goals using their YAML settings:
 
-- Complete a certain [Space Elevator](https://satisfactory.wiki.gg/wiki/Space_Elevator) tier
-- Supply items to the [AWESOME Sink](https://satisfactory.wiki.gg/wiki/AWESOME_Sink) totalling a configurable amount of points to finish.
+- Complete a certain [Space Elevator](https://satisfactory.wiki.gg/wiki/Space_Elevator) tier.
+  - Expect 1 package to take ~3 hours to finish, 2 packages to take ~8 hours, 3 packages to take ~2 days, and 4 packages to take ~1 week on default settings.
+- Supply items to the [AWESOME Sink](https://satisfactory.wiki.gg/wiki/AWESOME_Sink) **totalling a configurable amount of points** to finish.
+  - Time to finish this goal varies significantly depending on your goal level and Free Sample settings, and can technically be reached by AFKing at any point after you unlock the Sink.
+- Supply items to the [AWESOME Sink](https://satisfactory.wiki.gg/wiki/AWESOME_Sink) **maintaining a configurable level of points per minute** to finish.
+  - This goal requires establishing a more robust factory since it can't be AFKed like the points total goal.
+  - Time to finish this goal varies significantly depending on your Space Elevator shipments in logic and the resource sink point improvement ratios of the recipes you have access to.
+- **Explore the world to gather exotic items** and submit them in the HUB.
+  - Time to finish this goal varies significantly depending on your map knowledge, equipment, and movement skills.
 
-You can select whether completing your slot requires one or all goals to be met.
+You can select whether completing your slot requires *one* or *all* goals to be met.
 
 ## What Satisfactory items can appear in other players' worlds?
 
@@ -47,15 +55,20 @@ would give you one Nobelisk Detonator and 50 Nobelisk,
 receiving the [Jump Pads Milestone](https://satisfactory.wiki.gg/wiki/Milestones#Tier_2)
 would give you the ingredients to construct 5 Jump Pads and 5 U-Jelly Landing Pads, etc.
 In Satisfactory multiplayer, each Satisfactory player gets a copy of the sample.
+Certain recipes and items, like Somersloops, are always excluded from samples.
 
 You can separately configure how many samples to receive for buildings, equipment, and crafting components
 in your player settings.
 
 ## What is a Resource Bundle?
 
-A resource bundle is a package of items received as a check from another world.
+A Resource Bundle is a package of items received as a check from another world.
+All resource bundle type items are named either `Single: <item name>` or `Bundle: <item name>` to distinguish them from component recipes.
 They must be collected by constructing an Archipelago Portal.
-For example, `Bundle: Jetpack` would contain a single jetpack.
+For example, `Single: Jetpack` would contain a single jetpack, and `Bundle: Biomass` would contain one stack of biomass.
+
+Any Resource Bundle type items added to your starting inventory will be delivered to your player inventory when you initally spawn,
+unless they can't fit, in which case they can be collected by building an Archipelago Portal.
 
 ## What is a Trap?
 
@@ -64,6 +77,9 @@ Satisfactory's traps currently include spawning disruptive creatures or sending 
 The player settings page gives full control over which traps are enabled,
 how many traps replace filler items,
 as well as some pre-selected groups of themed traps.
+
+A complete list of traps and their effects is intentionally omitted to keep some surprise and mystery.
+In the current implementation, the most severe traps could temporarily lock you out of a small area until you have gas/radiation protection.
 
 ## What does another world's item look like in Satisfactory?
 
@@ -105,7 +121,7 @@ You can find a list of Energy Link compatible games on the
 The Archipelago Portal is a building that serves multiple purposes:
 
 - Collecting received "Resource Bundle"-type items.
-- Transfering items within your Satisfactory world
+- Transfering items within your Satisfactory world to other Portals
 - Transfering items between multiple Satisfactory worlds
 - Gifting items to other games that support the **Archipelago Gifting** system.
 
@@ -137,7 +153,7 @@ the rest are filler or useful.
 You can use the game's build-in chat menu.
 Check the game's keybinding options to see how to open it.
 Run the `/help` command to list all available commands.
-Note that Archipelago commands are _not_ prefixed with `!` inside of Satisfactory.
+Note that Archipelago commands are *not* prefixed with `!` inside of Satisfactory.
 
 Note that multiple base-game bugs affect the chat menu's functionality
 and Archipelago can put a lot of info into the chat.
@@ -185,8 +201,13 @@ The following mods are known to work with Archipelago:
 
 <!-- Nog's Chat currently broken -->
 <!-- - [Nog's Chat](https://ficsit.app/mod/NogsChat) - Easily repeat past chat messages, improving the user experience of running Archipelago commands in the game's chat window. -->
-- [TFIT - FICSIT Information Tool](https://ficsit.app/mod/TFIT) - View how many Sink Points items are worth and how points-profitable recipes are. Helpful for the AWESOME Points goal.
+- [TFIT - FICSIT Information Tool](https://ficsit.app/mod/TFIT) - View how many Sink Points items are worth and how points-profitable recipes are. Helpful for the AWESOME Sink goals.
 - [Faster Manual Crafting Redux](https://ficsit.app/mod/FasterManualCraftingRedux) - Reduce the early game manual crafting grind with a manual crafting speed that ramps up as you craft larger batches at once.
 <!-- TODO Test these  -->
 <!-- - [Infinite Zoop](https://ficsit.app/mod/InfiniteZoop) - Adds a research tree in the MAM where you can improve your Zoop capacity. Also enables multi-row & column Wall and Foundation construction.  -->
 <!-- - [Nog's Research](https://ficsit.app/mod/NogsResearch/) - Queue Milestones and MAM Nodes for automatic research in the style of Factorio's research queue. Queue type might need to be changed to soft class reference to save CL schematics. -->
+
+The following mods have been used successfully by other players but have not been thoroughly tested with Archipelago:
+
+- [Resource Roulette](https://ficsit.app/mod/ResourceRoulette) - Randomize the location of resource nodes
+- [Infinite Zoop](https://ficsit.app/mod/InfiniteZoop) - Adds a research tree in the MAM where you can improve your Zoop capacity. Also enables multi-row & column Wall and Foundation construction.

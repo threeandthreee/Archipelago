@@ -1,4 +1,4 @@
-
+from ..Options import RandomizeOverworldMusic, RandomizeFanfares
 
 town_songs = [
     0x2E,
@@ -184,7 +184,7 @@ battle_songs = [
 ]
 
 
-def music_randomizer(world, rom):
+def music_randomizer(world, rom) -> None:
     fanfares = [
         0x05,
         0x08,
@@ -231,7 +231,7 @@ def music_randomizer(world, rom):
     # Todo; options here
     global_tracklist = list(range(0xC0))  # Initialize the list; this ideally should be vanilla
 
-    if world.options.randomize_fanfares == 2:
+    if world.options.randomize_fanfares == RandomizeFanfares.option_on_no_sound_stone_fanfares:
         for i in range(9):
             fanfares.remove(0xA0 + i)
 
@@ -247,7 +247,7 @@ def music_randomizer(world, rom):
         for track_id, song in enumerate(battle_songs):
             global_tracklist[song] = shuffled_battle_songs[track_id]
 
-    if world.options.randomize_overworld_music == 1:
+    if world.options.randomize_overworld_music == RandomizeOverworldMusic.option_match_type:
         shuffled_town_songs = town_songs.copy()
         shuffled_overworld_songs = overworld_songs.copy()
         shuffled_interior_songs = interior_songs.copy()
@@ -285,7 +285,7 @@ def music_randomizer(world, rom):
         for track_id, song in enumerate(wakeup_songs):
             global_tracklist[song] = shuffled_wakeup_songs[track_id]
 
-    elif world.options.randomize_overworld_music == 2:
+    elif world.options.randomize_overworld_music == RandomizeOverworldMusic.option_full:
         all_overworld_songs = (town_songs + overworld_songs + interior_songs +
                                dungeon_songs + cutscene_songs + rare_songs + wakeup_songs)
 

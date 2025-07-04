@@ -237,6 +237,12 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
             return True
         if data.events[event_id].category == LocationCategory.EVENT_SHOP and world.options.shopsanity:
             return True
+        if data.events[event_id].category == LocationCategory.EVENT_EVOLUTION_POKEMON:
+            # Exclude the event if the evolution method is not required for logic.
+            event_data = data.events[event_id]
+            pokemon = event_data.name.split(" - ")[1].strip()
+            evo_data = data.evolutions[pokemon]
+            return evo_data.method not in world.logic.evo_methods_required
         return False
 
     def exclude_exit(region_id: str, exit_region_id: str):

@@ -1,5 +1,6 @@
 import os
 import random
+from collections import defaultdict
 from typing import List
 import Utils
 from settings import get_settings
@@ -7,6 +8,7 @@ from . import RomData
 from .Util import *
 from .z80asm.Assembler import Z80Assembler
 from .Constants import *
+from .z80asm.Util import parse_hex_string_to_value
 from ..data.Constants import *
 from .. import LOCATIONS_DATA, OracleOfSeasonsOldMenShuffle, OracleOfSeasonsGoal, OracleOfSeasonsAnimalCompanion, \
     OracleOfSeasonsMasterKeys, OracleOfSeasonsFoolsOre, OracleOfSeasonsShowDungeonsWithEssence
@@ -130,9 +132,9 @@ def define_collect_properties_table(assembler: Z80Assembler, patch_data):
             continue
         mode = location_data["collect"]
 
-        # Use no pickup animation for falling small keys
+        # Use no pickup animation for drop or diving small keys
         item_id, _ = get_item_id_and_subid(item)
-        if mode == COLLECT_DROP and item_id == 0x30:
+        if item_id == 0x30 and (mode == COLLECT_DROP or mode == COLLECT_DIVE):
             mode &= 0xf8  # Set grab mode to TREASURE_GRAB_INSTANT
 
         rooms = location_data["room"]
@@ -244,13 +246,11 @@ def define_option_constants(assembler: Z80Assembler, patch_data):
     assembler.define_byte("option.startingPosX", 0x58)
     assembler.define_byte("option.startingPos", 0x55)
     assembler.define_byte("option.startingSeason", patch_data["default_seasons"]["EYEGLASS_LAKE"])
-    assembler.define_byte("option.startingMapsCompasses", patch_data["options"]["starting_maps_compasses"])
 
     assembler.define_byte("option.animalCompanion", 0x0b + patch_data["options"]["animal_companion"])
     assembler.define_byte("option.defaultSeedType", 0x20 + patch_data["options"]["default_seed"])
     assembler.define_byte("option.receivedDamageModifier", options["combat_difficulty"])
     assembler.define_byte("option.openAdvanceShop", options["advance_shop"])
-    assembler.define_byte("option.warpToStart", True)
 
     assembler.define_byte("option.requiredEssences", options["required_essences"])
     assembler.define_byte("option.goldenBeastsRequirement", options["golden_beasts_requirement"])
@@ -315,6 +315,37 @@ def process_lost_woods_sequence(sequence):
     return sequence_bytes, text_bytes
 
 
+def define_tree_sprites(assembler: Z80Assembler, patch_data):
+    tree_data = {  # Name: (map, position)
+        "Horon Village: Seed Tree": (0xf8, 0x48),
+        "Woods of Winter: Seed Tree": (0x9e, 0x88),
+        "Holodrum Plain: Seed Tree": (0x67, 0x88),
+        "Spool Swamp: Seed Tree": (0x72, 0x88),
+        "Sunken City: Seed Tree": (0x5f, 0x86),
+        "Tarm Ruins: Seed Tree": (0x10, 0x48),
+    }
+    i = 1
+    for tree_name in tree_data:
+        seed = patch_data["locations"][tree_name]
+        if seed["item"] == "Ember Seeds":
+            continue
+        seed_id, _ = get_item_id_and_subid(seed)
+        assembler.define_byte(f"seedTree{i}.map", tree_data[tree_name][0])
+        assembler.define_byte(f"seedTree{i}.position", tree_data[tree_name][1])
+        assembler.define_byte(f"seedTree{i}.gfx", seed_id - 26)
+        assembler.define(f"seedTree{i}.rectangle", f"treeRect{seed_id}")
+        i += 1
+    if i == 5:
+        # Duplicate ember, we have to blank some data
+        assembler.define_byte("seedTree5.enabled", 0x0e)
+        assembler.define_byte("seedTree5.map", 0xff)
+        assembler.define_byte("seedTree5.position", 0)
+        assembler.define_byte("seedTree5.gfx", 0)
+        assembler.define_word("seedTree5.rectangle", 0)
+    else:
+        assembler.define_byte("seedTree5.enabled", 0x0d)
+
+
 def get_treasure_addr(rom: RomData, item_name: str):
     item_id, item_subid = get_item_id_and_subid({"item": item_name})
     addr = 0x55129 + (item_id * 4)
@@ -334,6 +365,151 @@ def set_treasure_data(rom: RomData,
         rom.write_byte(addr + 0x03, sprite_id)
     if param_value is not None:
         rom.write_byte(addr + 0x01, param_value)
+
+
+def set_player_start_inventory(assembler: Z80Assembler, patch_data):
+    start_inventory_changes = defaultdict(int)
+
+    # ###### Base changes ##############################################
+    start_inventory_changes[parse_hex_string_to_value(DEFINES["wIsLinkedGame"])] = 0x00  # No linked gaming
+    start_inventory_changes[parse_hex_string_to_value(DEFINES["wAnimalTutorialFlags"])] = 0xff  # Animal vars
+    # Remove the requirement to go in the screen under Sunken City tree to make Dimitri bullies appear
+    start_inventory_changes[parse_hex_string_to_value(DEFINES["wDimitriState"])] = 0x20
+    # Give L-3 ring box
+    start_inventory_changes[0xc697] = 0x10
+    start_inventory_changes[parse_hex_string_to_value(DEFINES["wRingBoxLevel"])] = 0x03
+
+    # Starting map/compass
+    if patch_data["options"]["starting_maps_compasses"]:
+        dungeon_compass = parse_hex_string_to_value(DEFINES["wDungeonCompasses"])
+        for i in range(dungeon_compass, dungeon_compass + 4):
+            start_inventory_changes[i] = 0xff
+
+    start_inventory_data: dict[str, int] = patch_data["start_inventory"]
+    # Handle leveled items
+    if "Progressive Shield" in start_inventory_data:
+        start_inventory_changes[parse_hex_string_to_value(DEFINES["wShieldLevel"])] \
+            = start_inventory_data["Progressive Shield"]
+    if "Bombs (10)" in start_inventory_data:
+        start_inventory_changes[parse_hex_string_to_value(DEFINES["wCurrentBombs"])] \
+            = start_inventory_changes[parse_hex_string_to_value(DEFINES["wMaxBombs"])] \
+            = min(start_inventory_data["Bombs (10)"] * 0x10, 0x99)
+        # The bomb amounts are stored in decimal
+    if "Progressive Sword" in start_inventory_data:
+        start_inventory_changes[0xc6ac] = start_inventory_data["Progressive Sword"]
+    if "Progressive Boomerang" in start_inventory_data:
+        start_inventory_changes[0xc6b1] = start_inventory_data["Progressive Boomerang"]  # Boomerang level
+    if "Ricky's Flute" in start_inventory_data:
+        start_inventory_changes[parse_hex_string_to_value(DEFINES["wFluteIcon"])] = 0x01  # Flute icon
+        start_inventory_changes[0xc643] |= 0x80  # Ricky State
+    if "Dimitri's Flute" in start_inventory_data:
+        start_inventory_changes[parse_hex_string_to_value(DEFINES["wFluteIcon"])] = 0x02  # Flute icon
+        start_inventory_changes[0xc644] |= 0x80  # Dimitri State
+    if "Moosh's Flute" in start_inventory_data:
+        start_inventory_changes[parse_hex_string_to_value(DEFINES["wFluteIcon"])] = 0x03  # Flute icon
+        start_inventory_changes[0xc645] |= 0x20  # Moosh State
+    if "Progressive Feather" in start_inventory_data:
+        start_inventory_changes[parse_hex_string_to_value(DEFINES["wFeatherLevel"])] \
+            = start_inventory_data["Progressive Feather"]
+    seed_amount = 0
+    if "Progressive Slingshot" in start_inventory_data:
+        start_inventory_changes[0xc6b3] = start_inventory_data["Progressive Slingshot"]  # Slingshot level
+        seed_amount = 0x20
+    if "Seed Satchel" in start_inventory_data:
+        satchel_level = start_inventory_data["Seed Satchel"]
+        start_inventory_changes[parse_hex_string_to_value(DEFINES["wSeedSatchelLevel"])] = satchel_level
+        if satchel_level == 1:
+            seed_amount = 0x20
+        elif satchel_level == 2:
+            seed_amount = 0x50
+        else:
+            seed_amount = 0x99
+    if seed_amount:
+        start_inventory_data[SEED_ITEMS[patch_data["options"]["default_seed"]]] = 1  # Add seeds to the start inventory
+
+    # Inventory obtained flags
+    obtained_treasures_address = parse_hex_string_to_value(DEFINES["wObtainedTreasureFlags"])
+    current_inventory_index = parse_hex_string_to_value(DEFINES["wInventoryB"])
+    for item in start_inventory_data:
+        item_id = ITEMS_DATA[item]["id"]
+        item_address = obtained_treasures_address + item_id // 8
+        item_mask = 0x01 << (item_id % 8)
+
+        start_inventory_changes[item_address] |= item_mask
+        if item_id < 0x20:  # items prior to 0x20 are all usable
+            if item == "Biggoron's Sword":
+                # Biggoron needs special care since it occupies both hands
+                if current_inventory_index == parse_hex_string_to_value(DEFINES["wInventoryB"]):
+                    start_inventory_changes[current_inventory_index] \
+                        = start_inventory_changes[current_inventory_index + 1] \
+                        = item_id
+                    current_inventory_index += 2
+                elif current_inventory_index == parse_hex_string_to_value(DEFINES["wInventoryB"]) + 1:
+                    current_inventory_index += 1
+                    start_inventory_changes[current_inventory_index] = item_id
+                    current_inventory_index += 1
+            else:
+                start_inventory_changes[current_inventory_index] = item_id  # Place the item in the inventory
+                current_inventory_index += 1
+
+        if item_id == 0x07:  # Rod of Seasons
+            season = ITEMS_DATA[item]["subid"] - 2
+            start_inventory_changes[0xc6b0] |= 0x01 << season
+        elif item_id == 0x28:  # Rupees
+            amount = int(item.split("(")[1][:-1])  # Find the value in the item name
+            start_inventory_changes[0xc6a5] += amount * start_inventory_data[item]
+        elif item_id == 0x37:  # Ore Chunks
+            amount = int(item.split("(")[1][:-1])  # Find the value in the item name
+            start_inventory_changes[0xc6a7] += amount * start_inventory_data[item]
+        elif item_id == 0x30:  # Small keys
+            subid = ITEMS_DATA[item]["subid"] % 0x80
+            start_inventory_changes[0xc66e + subid] += start_inventory_data[item]
+        elif item_id == 0x31:  # Boss keys
+            subid = ITEMS_DATA[item]["subid"]
+            start_inventory_changes[0xc67a + subid // 8] |= 0x01 << subid % 8
+        elif item_id == 0x32:  # Compasses
+            subid = ITEMS_DATA[item]["subid"]
+            start_inventory_changes[0xc67c + subid // 8] |= 0x01 << subid % 8
+        elif item_id == 0x33:  # Maps
+            subid = ITEMS_DATA[item]["subid"]
+            start_inventory_changes[0xc67e + subid // 8] |= 0x01 << subid % 8
+        elif item_id == 0x2d:  # Rings
+            subid = ITEMS_DATA[item]["subid"] - 4
+            start_inventory_changes[parse_hex_string_to_value(DEFINES["wRingsObtained"]) + subid // 8] |= 0x01 << subid % 8
+        elif item_id == 0x40:  # Essences
+            subid = ITEMS_DATA[item]["subid"]
+            start_inventory_changes[parse_hex_string_to_value(DEFINES["wEssencesObtained"])] |= 0x01 << subid % 8
+        elif 0x20 <= item_id <= 0x24:  # Seeds
+            seed_address = parse_hex_string_to_value(DEFINES["wNumEmberSeeds"]) + item_id - 0x20
+            start_inventory_changes[seed_address] = seed_amount
+
+    if 0xc6a5 in start_inventory_changes:
+        hex_rupee_count = parse_hex_string_to_value(f"${start_inventory_changes[0xc6a5]}")
+        start_inventory_changes[0xc6a5] = hex_rupee_count % 0x100
+        start_inventory_changes[0xc6a6] = hex_rupee_count // 0x100
+    if 0xc6a7 in start_inventory_changes:
+        hex_ore_count = parse_hex_string_to_value(f"${start_inventory_changes[0xc6a7]}")
+        start_inventory_changes[0xc6a7] = hex_ore_count % 0x100
+        start_inventory_changes[0xc6a8] = hex_ore_count // 0x100
+
+    heart_pieces = (start_inventory_data.get("Piece of Heart", 0) + start_inventory_data.get("Rare Peach Stone", 0))
+    additional_hearts = (start_inventory_data.get("Heart Container", 0) + heart_pieces // 4)
+    if additional_hearts:
+        start_inventory_changes[0xc6a2] = start_inventory_changes[0xc6a3] = 12 + additional_hearts * 4
+    if heart_pieces % 4:
+        start_inventory_changes[0xc6a4] = heart_pieces % 4
+    if "Gasha Seed" in start_inventory_data:
+        start_inventory_changes[0xc6ba] = start_inventory_data["Gasha Seed"]
+
+    # Make the list used in asm
+    start_inventory = []
+    for address in start_inventory_changes:
+        start_inventory.append(address // 0x100)
+        start_inventory.append(address % 0x100)
+        start_inventory.append(start_inventory_changes[address])
+
+    start_inventory.append(0x00)  # End of the list
+    assembler.add_floating_chunk("startingInventory", start_inventory)
 
 
 def alter_treasure_types(rom: RomData):
@@ -422,7 +598,7 @@ def set_file_select_text(assembler: Z80Assembler, slot_name: str):
         else:
             return 0xfc  # All other chars are blank spaces
 
-    row_1 = [char_to_tile(c) for c in f"ARCHIPELAGO {VERSION[0]},{VERSION[1]}".ljust(16, " ")]
+    row_1 = [char_to_tile(c) for c in f"ARCHIPELAGO {VERSION[0]}.{VERSION[1]}".ljust(16, " ")]
     row_2 = [char_to_tile(c) for c in slot_name.replace("-", " ").upper()]
     row_2_left_padding = int((16 - len(row_2)) / 2)
     row_2_right_padding = int(16 - row_2_left_padding - len(row_2))

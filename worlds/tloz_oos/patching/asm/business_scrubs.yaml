@@ -12,18 +12,18 @@
 #   $02 => D2
 #   $03 => D4
 #   $04 => Generic refill scrub (infinitely re-buyable)
-11/0537/: db var.spoolSwampScrubSubid  # option.randomizeScrubs ? $00 : $04
-11/0188/: db var.samasaCaveScrubSubid  # option.randomizeScrubs ? $01 : $04
-11/32b7/: db var.d2ScrubSubid          # option.randomizeScrubs ? $02 : $04
-11/3480/: db var.d4ScrubSubid          # option.randomizeScrubs ? $03 : $04
+11/4537/: db var.spoolSwampScrubSubid  # option.randomizeScrubs ? $00 : $04
+11/4188/: db var.samasaCaveScrubSubid  # option.randomizeScrubs ? $01 : $04
+11/72b7/: db var.d2ScrubSubid          # option.randomizeScrubs ? $02 : $04
+11/7480/: db var.d4ScrubSubid          # option.randomizeScrubs ? $03 : $04
 
 # In vanilla, falling into a Samasa Desert quicksand has 1/2 chance of leading you into a Business Scrub cave or in
 # a cave filled with Like-Likes. Going to that cave through stairs always gives the Like-Like variant.
 # This patch makes it mandatory to fall in the scrub variant from quicksands (while stairs still lead to Like-Likes)
-09/0c86/: db $d1
+09/4c86/: db $d1
 
 # Adapt @treasuresToSell to match new subids
-0f/35a7/: |
+0f/75a7/: |
     dwbe locations.spoolSwampScrub
     dwbe locations.samasaCaveScrub
     dwbe locations.d2Scrub
@@ -31,7 +31,7 @@
     dwbe $0000
 # Replace the second half of @treasuresToSell by a new table used to determine
 # which flag is set when item is bought
-0f/35b1/boughtScrubItemFlags: |
+0f/75b1/boughtScrubItemFlags: |
     db $3f,$04  ; bit 2 of wBoughtShopItems1
     db $3f,$10  ; bit 4 of wBoughtShopItems1
     db $42,$20  ; bit 5 of wBoughtSubrosianShopItems
@@ -39,7 +39,7 @@
     db $00,$00  ; not saved
 
 # Adapt @offerItemTextIndices to match new subids
-0f/358e/scrubTextIndices: |
+0f/758e/scrubTextIndices: |
     db $45,$09
     db $56,$30
     db $45,$02
@@ -47,7 +47,7 @@
     db $56,$31   ; generic refill scrub text
 
 # Adapt @rupeeValues to match new subids
-0f/359c/rupeeEnumCosts: |
+0f/759c/rupeeEnumCosts: |
     db shopPrices.spoolSwampScrub
     db shopPrices.samasaCaveScrub
     db shopPrices.d2Scrub
@@ -55,7 +55,7 @@
     db $07      ; 30 Rupees
 
 # Adapt @itemPrices to match new subids
-0f/35bd/scrubPricesAsText: |
+0f/75bd/scrubPricesAsText: |
     dw text.spoolSwampScrubPrice
     dw text.samasaCaveScrubPrice
     dw text.d2ScrubPrice
@@ -95,8 +95,8 @@
 
 
 # Replace all init code specific to shield to init price text
-0f/3434/: jr @scrubInitEnd
-0f/3455/@scrubInitEnd: ; # Label to mark end of empty block
+0f/7434/: jr @scrubInitEnd
+0f/7455/@scrubInitEnd: ; # Label to mark end of empty block
 
 # Read the item flag for scrub of subid [a], and if set, permanently turn it into
 # a generic inventory refill scrub.
@@ -129,7 +129,7 @@
     ld c,(hl)     ; TX_bbcc
     ret
 # Call the above function at the end of @linkIsClose
-0f/34d3/: |
+0f/74d3/: |
     call getScrubItemFlag
     and c
     call updateScrubSubidAndGetText
@@ -137,7 +137,7 @@
 
 # Replace all special cases from vanilla scrubs by a generic "spawnTreasureOnLink", and set a permanent item flag
 # when buying the item to avoid doing it several times
-0f/3544/: |
+0f/7544/: |
     or a
     jr z,@refill
     ld b,(hl)
@@ -163,7 +163,7 @@
     pop de
     pop hl
     jr @scrubBuyEnd
-0f/357A/@scrubBuyEnd: ; # Label to mark end of empty block
+0f/757A/@scrubBuyEnd: ; # Label to mark end of empty block
 
 
 

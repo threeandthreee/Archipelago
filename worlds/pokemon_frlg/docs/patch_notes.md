@@ -1,3 +1,28 @@
+# 0.9.4
+## Updates
++ Improvements made to reduce generation time (credit to [Mysteryem](https://github.com/Mysteryem))
++ Support added for the Pokémon Gen III Adjuster (credit to [Rhenny](https://github.com/RhenaudTheLukark))
++ If `randomize_fly_destinations` is on, the game will state what destination a fly unlock goes to regardless of if fly unlocks are shuffled
++ Updated the client to send entrance data to the tracker for auto entrance tracking
++ The fossil Pokémon can be obtained immediately after giving them to the scientist in the Pokémon Lab without needing to reload the map
++ Updated option `provide_hints`
+  + Will now also hint `shopsanity` locations
+  + Can now specify whether it should hint progression, progression and useful, or all items.
++ New option `legendary_pokemon_blacklist`
++ New option `misc_pokemon_blacklist`
++ New option `tm_tutor_moves_blacklist`
+  + Allows you to blacklist the moves that can be on TMs and move tutors separately from the moves in learnsets
+
+## Bug Fixes
++ Fixed an issue where the Cinnabar Gym door would be locked again after battling a surfing trainer on Routes 20 or 21
++ Fixed an issue where Pokémon with branching evolutions has their evolved forms never be expected by the logic
++ Fixed a logic issue with the Water Labyrinth - Gentleman Info location assuming you need both Togepi and Togetic
++ Fixed an issue with the Saffron Dojo Leader and Team Rocket Warehouse Admin where if you lost to them, the trigger that caused them to face you and battle would no longer be triggered
++ Fixed an issue where the `Cerulean City - Rival Gift` location was a part of the "Overworld Items" location group instead of "NPC Gifts"
++ Fixed an issue where if Pokémon Request locations weren't randomized then the NPC would say they have an AP ITEM instead of the vanilla item
++ Fixed an issue where sometimes a Pokédex update was sent to the Tracker that didn't include any seen Pokémon
++ Fixed an issue where the Pewter roadblock boy and Oak's Aide would pop into existence when entering from Route 3
+
 # 0.9.3
 ## Updates
 + New option `remote_items`

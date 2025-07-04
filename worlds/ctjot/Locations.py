@@ -1,6 +1,4 @@
-from BaseClasses import MultiWorld, Region, Location, ItemClassification
-
-from . import CTJoTDefaults
+from BaseClasses import Region, Location, ItemClassification
 
 import json
 from typing import NamedTuple
@@ -63,7 +61,7 @@ class CTJoTLocationManager:
         """
         return self._name_to_id_mapping
 
-    def add_filler_locations(self, multiworld: MultiWorld, player: int, region: Region):
+    def add_filler_locations(self, regions_from_config, game_mode, player: int, region: Region):
         """
         Create locations to be used for filler/useful items.  These locations will not
         allow progression items to be placed and will change based on game mode/flags.
@@ -73,15 +71,32 @@ class CTJoTLocationManager:
         lead to progression.  This way we don't force normal mode players to learn/check every treasure
         chest or risk locking someone else out of an important key item.
 
-        :param multiworld: Multiworld instance for this session
-        :param player: Player ID of the player we're generating a world for
+        :param regions_from_config: region dictionary
+        :param game_mode: Player's chosen game mode
+        :param player: Player ID for the current player
         :param region: Region to add the filler locations to
         :return: List of filler location IDs
         """
-        filler_location_ids = self.get_filler_location_ids(multiworld, player)
+        # Get a full list of locations for this game mode
+        location_ids = self.get_location_ids(game_mode)
+        config_locations = []
+
+        # Get a list of locations configured in the yaml
+        for region_name, location_list in regions_from_config.items():
+            for location_name in location_list:
+                config_locations.append(location_name)
+
+        if len(location_ids) == len(config_locations):
+            # We're done here. There are no extra filler locations
+            return
+
+        # We're missing locations in the yaml.  This means it's a non-chronosanity game.
+        # Remove the configured locations from the full list of locations
+        for location_entry in config_locations:
+            location_ids.remove(self._name_to_id_mapping[location_entry] - self._LOCATION_ID_START)
 
         # Create locations for all filler locations that are limited to non-progression items.
-        for loc_id in filler_location_ids:
+        for loc_id in location_ids:
             location_data = self._location_data[self._id_to_name_mapping[loc_id + self._LOCATION_ID_START]]
             location = Location(player,
                                 location_data.name,
@@ -94,30 +109,26 @@ class CTJoTLocationManager:
                                                      ItemClassification.trap]
             region.locations.append(location)
 
-    def get_location(self, player: int, location_entry, region: Region) -> Location:
+    def get_location(self, player: int, location_name: str, region: Region) -> Location:
         """
         Get a Location object for the given location entry from the player's yaml file.
 
         :param player: Player ID to assign to this location
-        :param location_entry: Location data from the player's settings
+        :param location_name: Location name from the player's settings
         :param region: Region this location is to be added to
         :return: Configured location object
         """
-        location_name = location_entry["name"]
         location_id = self._name_to_id_mapping[location_name]
         return Location(player, location_name, location_id, region)
 
-    def get_filler_location_ids(self, multiworld: MultiWorld, player: int) -> list[int]:
+    def get_location_ids(self, game_mode: str) -> list[int]:
         """
-        Determine which location IDs are used for filler based on game mode
-        and which locations were selected for key items.
+        Determine location IDs based on game type.
 
-        :param multiworld: Multiworld instance for this game
-        :param player: Player ID to whom these locations belong
+        :param game_mode: Game mode chosen by the player
         :return: List of filler location IDs
         """
         filler_location_ids = []
-        game_mode = getattr(multiworld, "game_mode")[player].value
 
         if game_mode == "Lost worlds":
             # Add locations for prehistory, dark ages, and future
@@ -129,6 +140,12 @@ class CTJoTLocationManager:
             filler_location_ids.extend(self._locations_prehistory)
             filler_location_ids.extend(self._locations_darkages)
             filler_location_ids.extend(self._locations_600ad_1000ad)
+        elif game_mode == "Ice Age":
+            # Ice Age doesn't get Mt. Woe locations
+            filler_location_ids.extend(self._locations_prehistory)
+            filler_location_ids.extend(self._locations_600ad_1000ad)
+            filler_location_ids.extend(self._locations_prison_tower_1000ad)
+            filler_location_ids.extend(self._locations_future)
         else:
             # Add all chronosanity locations
             filler_location_ids.extend(self._locations_prehistory)
@@ -140,14 +157,5 @@ class CTJoTLocationManager:
         if game_mode == "Vanilla rando":
             # Add the vanilla rando exclusive Bekkler's tent and Cyrus' Grave locations
             filler_location_ids.extend([312, 313])
-
-        # Filter out locations chosen for key items
-        locations_from_config = getattr(multiworld, "locations")[player].value
-        if len(locations_from_config) == 0:
-            locations_from_config = CTJoTDefaults.DEFAULT_LOCATIONS
-        for location_entry in locations_from_config:
-            if location_entry["classification"] != "event":
-                filler_location_ids.remove(
-                    self._name_to_id_mapping[location_entry["name"]] - self._LOCATION_ID_START)
 
         return filler_location_ids

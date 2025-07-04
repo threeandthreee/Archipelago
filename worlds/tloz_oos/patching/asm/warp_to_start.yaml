@@ -3,25 +3,21 @@
     jp nz,$6560     ; _mapMenu_checkRoomVisited
     or a
     ret
-02/1ec8/: call checkTreeVisited
-02/25e1/: call checkTreeVisited
+02/5ec8/: call checkTreeVisited
+02/65e1/: call checkTreeVisited
 
 # always treat starting seed tree as visited for warping purposes.
 02//checkCursorVisited: |
     ld a,(wMapMenuCursorIndex)
     jp checkTreeVisited
-02/209b/: call checkCursorVisited
+02/609b/: call checkCursorVisited
 
 # warp to horon village tree if holding start when opening the map screen.
 02//checkWarpToStart: |
-    ld a,option.warpToStart
-    or a
-    jr z,@done
-    
     ld a,(wKeysPressed)
     and BTN_B | BTN_A
     cp BTN_B | BTN_A
-    jr nz,@done
+    jp nz,$5029 ; @openMenu, we're done
     
     ld a,option.startingGroup
     set 7,a
@@ -66,10 +62,14 @@
     
     ld a,$03
     ld (wMenuLoadState),a
+    
+    ld a,(wActiveMusic)
+    or a
+    jr nz,@noResetMusic
+    ld a,$ff
+    ld (wActiveMusic),a
+    @noResetMusic:
     pop af      ; pop return addr from stack
     ret
-    
-    @done:
-    jp $5029    ; @openMenu
 # Replace the unique call to @openMenu by the above extension checking for warp to start
-02/101f/: call checkWarpToStart
+02/501f/: call checkWarpToStart

@@ -27,12 +27,14 @@ class OracleOfSeasonsLogicDifficulty(Choice):
     - Casual: expects you to know what you would know when playing the game for the first time
     - Medium: expects you to know well the alternatives on how to do basic things, but won't expect any trick
     - Hard: expects you to know difficult tricks such as bomb jumps
+    - Hell: expects you to use tricks and glitches that span over more than a few inputs
     """
     display_name = "Logic Difficulty"
 
     option_casual = 0
     option_medium = 1
     option_hard = 2
+    option_hell = 3
 
     default = 0
 

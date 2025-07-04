@@ -179,23 +179,25 @@ def make_holodrum_logic(player: int, origin_name: str, options: OracleOfSeasonsO
         ["eastern suburbs portal", "suburbs", False, lambda state: oos_can_break_bush(state, player, False)],
         ["suburbs", "eastern suburbs portal", False, lambda state: oos_can_break_bush(state, player, True)],
 
-        ["suburbs", "suburbs fairy fountain", True, lambda state: any([
-            oos_can_swim(state, player, True),
-            oos_can_jump_1_wide_liquid(state, player, True)
+        ["suburbs", "suburbs fairy fountain", True, lambda state: all([
+            any([
+                oos_can_swim(state, player, True),
+                oos_can_jump_1_wide_liquid(state, player, True)
+            ]),
+            oos_not_season_in_eastern_suburbs(state, player, SEASON_WINTER)
         ])],
         ["suburbs fairy fountain", "maple encounter", False, lambda state: oos_can_meet_maple(state, player)],
-        ["suburbs", "suburbs fairy fountain (winter)", True, lambda state: any([
-            oos_season_in_eastern_suburbs(state, player, SEASON_WINTER)
-        ])],
+        ["suburbs fairy fountain", "suburbs fairy fountain (winter)", False, lambda state: \
+            oos_has_winter(state, player)],  # Should be a useless transition, but it might be useful someday
+        ["suburbs", "suburbs fairy fountain (winter)", True, lambda state: oos_season_in_eastern_suburbs(state, player, SEASON_WINTER)],
         ["suburbs fairy fountain (winter)", "maple encounter", False, lambda state: oos_can_meet_maple(state, player)],
         ["suburbs fairy fountain (winter)", "suburbs fairy fountain", False, lambda state: \
             oos_can_remove_season(state, player, SEASON_WINTER)],
-        ["suburbs fairy fountain", "suburbs fairy fountain (winter)", False, lambda state: \
-            oos_has_winter(state, player)],
 
         ["suburbs fairy fountain", "sunken city", False, lambda state: \
             oos_season_in_eastern_suburbs(state, player, SEASON_SPRING)],
-        ["sunken city", "suburbs fairy fountain", False, None],
+        ["sunken city", "suburbs fairy fountain", False, lambda state: oos_not_season_in_eastern_suburbs(state, player, SEASON_WINTER)],
+        ["sunken city", "suburbs fairy fountain (winter)", False, lambda state: oos_season_in_eastern_suburbs(state, player, SEASON_WINTER)],
 
         # WOODS OF WINTER / 2D SECTOR ################################################################################
 
@@ -652,9 +654,7 @@ def make_holodrum_logic(player: int, origin_name: str, options: OracleOfSeasonsO
             oos_has_flippers(state, player),
             oos_can_jump_4_wide_liquid(state, player)
         ])],
-        ["moblin keep", "moblin keep chest", False, lambda state: any([
-            oos_has_bracelet(state, player)
-        ])],
+        ["moblin keep", "moblin keep chest", False, lambda state: oos_has_bracelet(state, player)],
         ["moblin keep", "sunken city", False, None],
 
         ["natzu river bank", "goron mountain entrance", True, lambda state: oos_can_swim(state, player, True)],
@@ -707,16 +707,7 @@ def make_holodrum_logic(player: int, origin_name: str, options: OracleOfSeasonsO
         ])],
 
         ["sunken city", "syrup trade", False, lambda state: all([
-            any([
-                oos_get_default_season(state, player, "SUNKEN_CITY") == SEASON_WINTER,
-                all([
-                    oos_has_winter(state, player),
-                    any([
-                        oos_can_swim(state, player, True),
-                        state.has("_saved_dimitri_in_sunken_city", player)
-                    ])
-                ])
-            ]),
+            oos_season_in_sunken_city(state, player, SEASON_WINTER),
             state.has("Mushroom", player)
         ])],
         ["syrup trade", "syrup shop", False, lambda state: oos_has_rupees_for_shop(state, player, "syrupShop")],
@@ -804,7 +795,13 @@ def make_holodrum_logic(player: int, origin_name: str, options: OracleOfSeasonsO
 
         ["mt. cucco, talon's cave entrance", "mt. cucco heart piece", False, None],
 
-        ["mt. cucco, talon's cave entrance", "diving spot outside D4", False, lambda state: oos_has_flippers(state, player)],
+        ["mt. cucco, talon's cave entrance", "diving spot outside D4", False, lambda state: all([
+            oos_has_flippers(state, player),
+            any([
+                oos_get_default_season(state, player, "SUNKEN_CITY") != SEASON_WINTER,
+                oos_can_remove_season(state, player, SEASON_WINTER)
+            ])
+        ])],
 
         ["mt. cucco, talon's cave entrance", "dragon keyhole", False, lambda state: all([
             oos_has_winter(state, player),  # to reach cave
@@ -913,16 +910,28 @@ def make_holodrum_logic(player: int, origin_name: str, options: OracleOfSeasonsO
             oos_season_in_tarm_ruins(state, player, SEASON_WINTER),
             any([
                 oos_has_shovel(state, player),
-                oos_can_use_ember_seeds(state, player, False)
+                oos_can_use_ember_seeds(state, player, False),
+                all([
+                    oos_can_reach_rooster_adventure(state, player),
+                    oos_roosters(state, player)["swamp"][0] > 0
+                ])
             ]),
             oos_season_in_tarm_ruins(state, player, SEASON_SPRING),
             oos_can_break_flowers(state, player)
         ])],
         ["d6 sector", "old man near d6", False, lambda state: all([
             oos_season_in_tarm_ruins(state, player, SEASON_WINTER),
-            oos_season_in_tarm_ruins(state, player, SEASON_SPRING),
-            oos_can_break_flowers(state, player),
-            oos_can_use_ember_seeds(state, player, False)
+            oos_can_use_ember_seeds(state, player, False),
+            any([
+                all([
+                    oos_season_in_tarm_ruins(state, player, SEASON_SPRING),
+                    oos_can_break_flowers(state, player)
+                ]),
+                all([
+                    oos_can_reach_rooster_adventure(state, player),
+                    oos_roosters(state, player)["swamp"][1] > 0
+                ])
+            ])
         ])],
         # When coming from D6 entrance, the pillar needs to be broken during spring to be able to go backwards
         ["d6 entrance", "d6 sector", False, lambda state: all([
@@ -1105,7 +1114,8 @@ def make_holodrum_logic(player: int, origin_name: str, options: OracleOfSeasonsO
             ]),
             any([
                 oos_has_sword(state, player),
-                oos_has_fools_ore(state, player)
+                oos_has_fools_ore(state, player),
+                oos_can_summon_dimitri(state, player)
             ])
         ])],
         ["tarm ruins", "golden lynel", False, lambda state: all([
@@ -1135,13 +1145,15 @@ def make_holodrum_logic(player: int, origin_name: str, options: OracleOfSeasonsO
                 # Moblin has the interesting property of being one-shottable using an ember seed
                 all([
                     oos_option_medium_logic(state, player),
-                    oos_can_use_ember_seeds(state, player, False)
-                ])
+                    oos_can_use_ember_seeds(state, player, True)
+                ]),
+                oos_can_summon_dimitri(state, player)
             ])
         ])],
         ["spool swamp south (summer)", "golden octorok", False, lambda state: any([
             oos_has_sword(state, player),
-            oos_has_fools_ore(state, player)
+            oos_has_fools_ore(state, player),
+            oos_can_summon_dimitri(state, player)
         ])],
 
         # GASHA TREES #############################################################################################
@@ -1185,23 +1197,19 @@ def make_holodrum_logic(player: int, origin_name: str, options: OracleOfSeasonsO
     ]
     if options.animal_companion == "ricky":
         holodrum_logic.extend([
-            ["natzu west", "natzu west (ricky)", True, lambda state: oos_is_companion_ricky(state, player)],
+            ["natzu west", "natzu west (ricky)", True, None],
             ["natzu west (ricky)", "natzu east (ricky)", True, lambda state: oos_can_summon_ricky(state, player)],
-            ["natzu east (ricky)", "sunken city", True, lambda state: oos_is_companion_ricky(state, player)],
+            ["natzu east (ricky)", "sunken city", True, None],
             ["natzu east (ricky)", "moblin keep bridge", False, None],
             ["natzu east (ricky)", "natzu river bank", True, lambda state: oos_can_summon_ricky(state, player)],
-            ["natzu east (ricky)", "natzu deku", False, lambda state: oos_can_break_bush(state, player)],
+            ["natzu east (ricky)", "natzu deku", False, lambda state: oos_can_break_bush(state, player, True)],
         ])
     elif options.animal_companion == "dimitri":
         holodrum_logic.extend([
-            ["natzu west", "natzu west (dimitri)", True, lambda state: oos_is_companion_dimitri(state, player)],
+            ["natzu west", "natzu west (dimitri)", True, None],
             ["natzu west (dimitri)", "natzu east (dimitri)", True, lambda state: oos_can_swim(state, player, True)],
-            ["natzu east (dimitri)", "sunken city", True, lambda state: all([
-                oos_is_companion_dimitri(state, player),
-                oos_can_jump_1_wide_pit(state, player, False)
-            ])],
-            ["natzu east (dimitri)", "natzu region, across water", False, lambda state: \
-                oos_can_jump_5_wide_liquid(state, player)],
+            ["natzu east (dimitri)", "sunken city", True, lambda state: oos_can_jump_1_wide_pit(state, player, False)],
+            ["natzu east (dimitri)", "natzu region, across water", False, lambda state: oos_can_jump_5_wide_liquid(state, player)],
             ["natzu east (dimitri)", "moblin keep bridge", False, lambda state: any([
                 oos_can_summon_dimitri(state, player),
                 all([
@@ -1210,7 +1218,7 @@ def make_holodrum_logic(player: int, origin_name: str, options: OracleOfSeasonsO
                     state.has("Swimmer's Ring", player)
                 ])
             ])],
-            ["natzu east (dimitri)", "natzu river bank", True, lambda state: oos_is_companion_dimitri(state, player)],
+            ["natzu east (dimitri)", "natzu river bank", True, None],
             ["natzu west (dimitri)", "natzu deku", False, lambda state: oos_can_summon_dimitri(state, player)],
         ])
     elif options.animal_companion == "moosh":
@@ -1224,12 +1232,9 @@ def make_holodrum_logic(player: int, origin_name: str, options: OracleOfSeasonsO
                     oos_can_jump_3_wide_pit(state, player)
                 ])
             ])],
-            ["natzu east (moosh)", "sunken city", True, lambda state: all([
-                oos_is_companion_moosh(state, player),
-                any([
-                    oos_can_summon_moosh(state, player),
-                    oos_can_jump_3_wide_liquid(state, player)  # Not a liquid, but it's a diagonal jump so that's the same
-                ])
+            ["natzu east (moosh)", "sunken city", True, lambda state: any([
+                oos_can_summon_moosh(state, player),
+                oos_can_jump_3_wide_liquid(state, player)  # Not a liquid, but it's a diagonal jump so that's the same
             ])],
             ["natzu east (moosh)", "moblin keep bridge", False, lambda state: any([
                 oos_can_summon_moosh(state, player),
@@ -1245,6 +1250,126 @@ def make_holodrum_logic(player: int, origin_name: str, options: OracleOfSeasonsO
                 all([
                     oos_can_jump_4_wide_pit(state, player),
                     oos_can_break_bush(state, player)
+                ])
+            ])],
+        ])
+
+    if options.logic_difficulty == OracleOfSeasonsLogicDifficulty.option_hell:
+        # Rooster adventure
+        holodrum_logic.extend([
+            ["d4 entrance", "dragon keyhole", False, lambda state: all([
+                # Rule specifically to get to the dragon keyhole from a side entrance, only useful for rooster's adventure
+                oos_get_default_season(state, player, "SUNKEN_CITY") == SEASON_WINTER,  # to reach cave
+                oos_has_feather(state, player),  # to jump in cave
+                oos_has_bracelet(state, player)  # to grab the rooster
+            ])],
+
+            # Item assumptions for the rest of that logic :
+            # Bracelet
+            # Feather
+            ["dragon keyhole", "rooster adventure", False, lambda state: all([
+                oos_has_gale_seeds(state, player),
+                oos_has_satchel(state, player),
+                any([
+                    oos_has_shovel(state, player),
+                    state.has("Spring Banana", player)
+                ])
+            ])],
+
+            ["rooster adventure", "goron mountain entrance", False, lambda state: oos_roosters(state, player)["cucco mountain"][0] != -1],
+            ["rooster adventure", "moblin keep", False, lambda state: any([
+                all([
+                    oos_roosters(state, player)["sunken"][1] > 0,
+                    oos_is_companion_ricky(state, player)
+                ]),
+                all([
+                    oos_roosters(state, player)["horon"][1] > 0,
+                    any([
+                        oos_has_flute(state, player),
+                        all([
+                            oos_is_companion_moosh(state, player),
+                            oos_can_jump_3_wide_pit(state, player)
+                        ])
+                    ])
+                ])
+            ])],
+
+            ["rooster adventure", "sunken city", False, lambda state: oos_roosters(state, player)["sunken"][0] >= 0],
+            ["rooster adventure", "sunken city gasha spot", False, lambda state: all([
+                oos_roosters(state, player)["sunken"][2] > 0,
+                oos_season_in_sunken_city(state, player, SEASON_WINTER)
+            ])],
+            ["rooster adventure", "syrup trade", False, lambda state: all([
+                oos_roosters(state, player)["sunken"][2] > 0,
+                state.has("Mushroom", player)
+            ])],
+
+            ["rooster adventure", "suburbs", False, lambda state: oos_roosters(state, player)["suburbs"][0] >= 0],
+            ["rooster adventure", "eastern suburbs spring cave", False, lambda state: all([
+                oos_roosters(state, player)["suburbs"][2] > 0,
+                oos_season_in_eastern_suburbs(state, player, SEASON_SPRING),
+                any([
+                    oos_has_magnet_gloves(state, player),
+                    oos_can_jump_3_wide_pit(state, player)
+                ])
+            ])],
+            ["rooster adventure", "windmill heart piece", False, lambda state: oos_roosters(state, player)["suburbs"][1] > 0],
+            ["rooster adventure", "samasa desert chest", False, lambda state: all([
+                oos_roosters(state, player)["suburbs"][1] > 0,
+                state.has("_met_pirates", player),
+            ])],
+
+            ["rooster adventure", "moblin road", False, lambda state: oos_roosters(state, player)["moblin road"][0] >= 0],
+            ["rooster adventure", "holly's house", False, lambda state: oos_roosters(state, player)["moblin road"][1] > 0],
+
+            ["rooster adventure", "horon heart piece", False, lambda state: oos_roosters(state, player)["horon"][1] > 0],
+            ["rooster adventure", "graveyard heart piece", False, lambda state: all([
+                oos_roosters(state, player)["horon"][1] > 0,
+                state.has("_met_pirates", player),
+                state.has("Pirate's Bell", player),
+                oos_get_default_season(state, player, "WESTERN_COAST") == SEASON_SUMMER
+            ])],
+
+            ["rooster adventure", "spool swamp north", False, lambda state: oos_roosters(state, player)["swamp"][0] >= 0],
+            ["rooster adventure", "spool swamp cave", False, lambda state: any([
+                all([
+                    oos_can_swim(state, player, True),
+                    oos_roosters(state, player)["horon"][0] > 0
+                ]),
+                all([
+                    # We can assume jump 3 holes here, coming from the north
+                    state.has("Floodgate Key", player),
+                    any([
+                        oos_get_default_season(state, player, "SPOOL_SWAMP") != SEASON_SPRING,
+                        oos_can_remove_season(state, player, SEASON_SPRING)
+                    ]),
+                    oos_roosters(state, player)["swamp"][0] > 0
+                ])
+            ])],
+
+            ["rooster adventure", "temple remains upper stump", False, lambda state: all([
+                oos_can_jump_3_wide_pit(state, player),
+                oos_roosters(state, player)["cucco mountain"][0] > 0,
+                any([
+                    # autumn doesn't matter since regular logic already covers that case
+                    oos_season_in_temple_remains(state, player, SEASON_SUMMER),
+                    all([
+                        oos_season_in_temple_remains(state, player, SEASON_WINTER),
+                        oos_has_shovel(state, player)
+                    ]),
+                    all([
+                        oos_season_in_temple_remains(state, player, SEASON_SPRING),
+                        oos_can_break_flowers(state, player)
+                    ])
+                ])
+            ])],
+            ["rooster adventure", "temple remains upper portal", False, lambda state: all([
+                state.has("_triggered_volcano", player),
+                oos_can_jump_3_wide_pit(state, player),
+                oos_roosters(state, player)["cucco mountain"][1] > 0,
+                any([
+                    oos_has_magnet_gloves(state, player),
+                    oos_can_jump_6_wide_pit(state, player)
                 ])
             ])],
         ])

@@ -17,20 +17,22 @@ all_exits = [
     ["Fields", "Beach", []],
     ["Beach", "Red Sea", ["Combat"]],
     ["Red Sea", "Beach", []],
-    ["Beach", "Beach Gauntlet", ["Combat",BeachGauntletGate.typename()]],
+    ["Beach", "Beach Gauntlet", ["Combat", BeachGauntletGate.typename()]],
     ["Bedroom entrance", "Overworld", []],
     ["Overworld", "Bedroom entrance", []],
-    ["Bedroom entrance", "Bedroom core", ["Combat"]], #pick up dust
+    ["Bedroom entrance", "Bedroom core", ["Combat"]],  #pick up dust
     ["Bedroom core", "Bedroom entrance", ["Combat"]],
     ["Bedroom core", "Bedroom exit", ["Temple Boss Access"]],
     ["Bedroom core", "Bedroom shieldy room", ["Small Key (Temple of the Seeing One):3"]],
     ["Bedroom exit", "Bedroom after statue", ["Temple of the Seeing One Statue", "Combat"]],
-    ["Bedroom exit", "Bedroom entrance", []], #return to entrance
-    ["Overworld post windmill", "Bedroom entrance", []], #return to entrance
-    ["Bedroom exit", "Overworld post windmill", ["Temple of the Seeing One Statue", "Small Key (Temple of the Seeing One):3",
-                                                 "Combat"]],
-    ["Overworld post windmill", "Bedroom exit", ["Temple of the Seeing One Statue", "Small Key (Temple of the Seeing One):3",
-                                                 "Combat"]],
+    ["Bedroom exit", "Bedroom entrance", []],  #return to entrance
+    ["Overworld post windmill", "Bedroom entrance", []],  #return to entrance
+    ["Bedroom exit", "Overworld post windmill",
+     ["Temple of the Seeing One Statue", "Small Key (Temple of the Seeing One):3",
+      "Combat"]],
+    ["Overworld post windmill", "Bedroom exit",
+     ["Temple of the Seeing One Statue", "Small Key (Temple of the Seeing One):3",
+      "Combat"]],
     ["Bedroom drawer", "Drawer", ["Progressive Swap:2"]],
     ["Drawer", "Bedroom drawer", ["Progressive Swap:2"]],
     ["Bedroom drawer", "Overworld", ["Progressive Swap:2"]],
@@ -46,7 +48,7 @@ all_exits = [
     ["Go top", "Blue", []],
     ["Cell", "Circus", []],
     ["Circus", "Cell", []],
-    ["Circus", "Circus entrance lake", ["Combat"]], #Pick up dust
+    ["Circus", "Circus entrance lake", ["Combat"]],  #Pick up dust
     ["Circus entrance lake", "Circus entry gauntlets", ["Jump Shoes"]],
     ["Circus entrance lake", "Circus past entrance lake", ["Small Key (Circus):1"]],
     ["Circus past entrance lake", "Circus circlejump gauntlets", ["Jump Shoes"]],
@@ -73,7 +75,7 @@ all_exits = [
     # logically the same as only this entrance existing.
     ["Crowd floor 3", "Crowd floor 1", []],
     ["Crowd floor 2", "Crowd floor 2 gauntlets", ["Combat", "Jump Shoes"]],
-    #Need to get through floor 2 gauntlets to activate gate on top of needing a key, and a second key is needed to get anywhere in floor 3
+    # Need to get through floor 2 gauntlets to activate gate on top of needing a key, and a second key is needed to get anywhere in floor 3
     ["Crowd floor 2 gauntlets", "Crowd floor 3", ["Small Key (Mountain Cavern):3"]],
     ["Crowd floor 3", "Crowd floor 3 center", ["Small Key (Mountain Cavern):4"]],
     # Return to entrance
@@ -86,8 +88,14 @@ all_exits = [
     ["Overworld west", "Fields", [OverworldFieldsGate.typename()]],
     ["Overworld", "Overworld west", ["Combat"]],
     ["Overworld west", "Overworld", ["Combat"]],
-    ["Fields", "Forest", ["Combat"]],
-    ["Forest", "Fields", []],
+    # The exit that needs rafting
+    ["Fields", "Fields East", ["Combat"]],
+    ["Fields East", "Fields", []],
+    ["Fields East", "Forest", ["Combat"]],
+    ["Forest", "Fields East", []],
+    ["Fields", "Fields Goldman's Cave", ["Miao"]],
+    ["Fields Goldman's Cave", "Fields East", []],
+    ["Fields Goldman's Cave", "Fields", ["Miao"]],
     ["Fields", "Fields Lake", ["Combat", "Jump Shoes"]],
     ["Fields", "Fields Past Gate", [FieldsGate.typename()]],
     ["Fields Past Gate", "Fields", [FieldsGate.typename()]],
@@ -97,8 +105,8 @@ all_exits = [
     ["Fields North Secret Area", "Fields", ["Progressive Swap:2"]],
     ["Fields", "Windmill entrance", [WindmillEntranceGate.typename()]],
     ["Windmill entrance", "Fields", [WindmillEntranceGate.typename()]],
-    ["Windmill entrance", "Windmill", [WindmillMiddleGate.typename(),WindmillTopGate.typename()]],
-    ["Windmill", "Windmill entrance", [WindmillMiddleGate.typename(),WindmillTopGate.typename()]],
+    ["Windmill entrance", "Windmill", [WindmillMiddleGate.typename(), WindmillTopGate.typename()]],
+    ["Windmill", "Windmill entrance", [WindmillMiddleGate.typename(), WindmillTopGate.typename()]],
     ["Terminal top", "Terminal", [EndgameRequirement.typename(), "Defeat Sage"]],
     ["Terminal", "Terminal top", [EndgameRequirement.typename()]],
     ["Terminal top", "Go bottom", ["Defeat Sage"]],
@@ -128,7 +136,7 @@ all_exits = [
     ["Hotel floor 1", "Hotel floor 2", []],
     ["Nexus bottom", "Street", []],
     ["Street", "Nexus bottom", []],
-    ["Nexus top", "Boss Rush", ["Combat","Jump Shoes"]],
+    ["Nexus top", "Boss Rush", ["Combat", "Jump Shoes"]],
     ["Boss Rush", "Nexus top", []],
     ["Nexus top", "Blank ending", [PostgameEnd.typename()]],
     ["Blank ending", "Nexus top", [PostgameEnd.typename()]],
@@ -148,7 +156,7 @@ all_exits = [
     ["Red Cave top", "Red Cave exit", ["Defeat Rogue"]],
     # Return to entrance
     ["Red Cave exit", "Red Cave top", []],
-    ["Cell", "Red Cave top",[]],
+    ["Cell", "Red Cave top", []],
     # Hidden path
     ["Red Cave Isaac", "Red Sea", []],
     ["Red Sea", "Red Cave Isaac", []],

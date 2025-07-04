@@ -5,6 +5,11 @@ trap_names = [
     "Ship Damage Trap",
     "Audio Trap",
     "Nap Trap",
+    "Suit Puncture Trap",
+    "Map Disable Trap",
+    "HUD Corruption Trap",
+    "Ice Physics Trap",
+    "Supernova Trap",
 ]
 
 
@@ -41,6 +46,11 @@ class TestAllAudioTrapsWorld(OuterWildsTestBase):
             "Ship Damage Trap": 0,
             "Nap Trap": 0,
             "Audio Trap": 1,
+            "Suit Puncture Trap": 0,
+            "Map Disable Trap": 0,
+            "HUD Corruption Trap": 0,
+            "Ice Physics Trap": 0,
+            "Supernova Trap": 0,
         }
     }
 
@@ -61,6 +71,11 @@ class TestAllShipDamageTrapsWorld(OuterWildsTestBase):
             "Ship Damage Trap": 1,
             "Nap Trap": 0,
             "Audio Trap": 0,
+            "Suit Puncture Trap": 0,
+            "Map Disable Trap": 0,
+            "HUD Corruption Trap": 0,
+            "Ice Physics Trap": 0,
+            "Supernova Trap": 0,
         }
     }
 
@@ -84,6 +99,11 @@ class TestEveryKindOfTrapWorld(OuterWildsTestBase):
             "Ship Damage Trap": 1,
             "Nap Trap": 1,
             "Audio Trap": 1,
+            "Suit Puncture Trap": 1,
+            "Map Disable Trap": 1,
+            "HUD Corruption Trap": 1,
+            "Ice Physics Trap": 1,
+            "Supernova Trap": 1,
         }
     }
 

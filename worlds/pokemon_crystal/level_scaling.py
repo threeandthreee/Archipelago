@@ -1,11 +1,10 @@
 import logging
-from typing import List, Set
+from dataclasses import replace
 
 from BaseClasses import CollectionState, MultiWorld
-from .data import RegionData
+from . import EncounterKey
 from .locations import PokemonCrystalLocation
 from .options import LevelScaling
-from .regions import RegionData
 from .utils import bound
 
 
@@ -63,7 +62,7 @@ def perform_level_scaling(multiworld: MultiWorld):
     level_scaling_required = False
     state = CollectionState(multiworld)
     progression_locations = {loc for loc in multiworld.get_filled_locations() if loc.item.advancement}
-    crystal_locations: Set[PokemonCrystalLocation] = {loc for loc in multiworld.get_filled_locations() if
+    crystal_locations: set[PokemonCrystalLocation] = {loc for loc in multiworld.get_filled_locations() if
                                                       loc.game == "Pokemon Crystal"}
     scaling_locations = {loc for loc in crystal_locations if
                          ("trainer scaling" in loc.tags) or ("static scaling" in loc.tags)}
@@ -83,7 +82,7 @@ def perform_level_scaling(multiworld: MultiWorld):
     # AP runs through the seed and starts collecting locations and counting spheres
     # to find battle milestones as listed above. this is important for creating our level curve.
     while len(locations) > 0:
-        new_spheres: List[Set] = []
+        new_spheres: list[set] = []
         new_battle_events = set()
         battle_events_found = True
 
@@ -105,17 +104,17 @@ def perform_level_scaling(multiworld: MultiWorld):
                     checked_regions = set()
                     distance = 0
                     while regions:
-                        update_regions = True
-                        while update_regions:
-                            update_regions = False
-                            same_distance_regions = set()
-                            for region in regions:
-                                encounter_regions = {e.connected_region for e in region.exits if e.access_rule(state)}
-                                same_distance_regions.update(encounter_regions)
-                            regions_len = len(regions)
-                            regions.update(same_distance_regions)
-                            if len(regions) > regions_len:
-                                update_regions = True
+                        # update_regions = True
+                        # while update_regions:
+                        # update_regions = False
+                        # same_distance_regions = set()
+                        # for region in regions:
+                        # encounter_regions = {e.connected_region for e in region.exits if e.access_rule(state)}
+                        # same_distance_regions.update(encounter_regions)
+                        # regions_len = len(regions)
+                        # regions.update(same_distance_regions)
+                        # if len(regions) > regions_len:
+                        # update_regions = True
                         next_regions = set()
                         for region in regions:
                             if not hasattr(region, "distance") or distance < region.distance:
@@ -136,7 +135,7 @@ def perform_level_scaling(multiworld: MultiWorld):
                         sphere.add(location)
 
                         if location.game == "Pokemon Crystal":
-                            parent_region: RegionData = location.parent_region
+                            parent_region = location.parent_region
                             if getattr(parent_region, "distance", None) is None:
                                 distance = 0
                             else:
@@ -214,17 +213,18 @@ def perform_level_scaling(multiworld: MultiWorld):
                     new_level = round(min((new_base_level * pokemon.level / old_base_level),
                                           (new_base_level + pokemon.level - old_base_level)))
                     new_level = bound(new_level, 1, 100)
-                    new_pokemon.append(pokemon._replace(level=new_level))
+                    new_pokemon.append(replace(pokemon, level=new_level))
                     logging.debug(
                         f"Setting level {new_level} {pokemon.pokemon} for {trainer_location.name} for {world.player_name}")
-                world.generated_trainers[trainer_location.name] = trainer_data._replace(pokemon=new_pokemon)
+                world.generated_trainers[trainer_location.name] = replace(trainer_data, pokemon=new_pokemon)
 
             for encounter_location in encounter_locations:
                 new_base_level = world.encounter_level_list.pop(0)
 
-                pokemon_data = world.generated_static[encounter_location.name]
-                new_pokemon = pokemon_data._replace(level=new_base_level)
-                world.generated_static[encounter_location.name] = new_pokemon
+                encounter_key = EncounterKey.static(encounter_location.name)
+                pokemon_data = world.generated_static[encounter_key]
+                new_pokemon = replace(pokemon_data, level=new_base_level)
+                world.generated_static[encounter_key] = new_pokemon
                 logging.debug(
                     f"Setting level {new_base_level} for static {pokemon_data.pokemon} for {world.player_name}")
 

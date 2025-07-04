@@ -2,7 +2,7 @@
 Option definitions for Pokémon FireRed/LeafGreen
 """
 from dataclasses import dataclass
-from schema import Optional, Schema, And, Use
+from schema import Optional, Schema, And
 from Options import (Choice, DeathLink, DefaultOnToggle, NamedRange, OptionDict, OptionSet, PerGameCommonOptions, Range,
                      Toggle)
 from .data import data, ability_name_map, fly_blacklist_map, fly_plando_maps, move_name_map, starting_town_blacklist_map
@@ -42,6 +42,7 @@ class KantoOnly(Toggle):
     """
     Excludes all the Sevii Island locations. Navel Rock and Birth Island are still included.
     HM06 Rock Smash, HM07 Waterfall, and the Sun Stone will still be in the item pool.
+    The Move Reminder will be moved from Two Island to the Move Deleter's House in Fuchsia City.
     """
     display_name = "Kanto Only"
 
@@ -877,6 +878,18 @@ class RandomizeLegendaryPokemon(Choice):
     option_completely_random = 5
 
 
+class LegendaryPokemonBlacklist(OptionSet):
+    """
+    Prevents the listed species from appearing as a legenary Pokemon when legendary Pokemon are randomized.
+
+    May be overridden if enforcing other restrictions in combination with this blacklist is impossible.
+
+    Use "Legendaries" as a shortcut for all legendary Pokemon.
+    """
+    display_name = "Legendary Pokemon Blacklist"
+    valid_keys = ["Legendaries"] + sorted([species.name for species in data.species.values()])
+
+
 class RandomizeMiscPokemon(Choice):
     """
     Randomizes misc Pokemon. This includes non-legendary static encounters, gift Pokemon, and trade Pokemon.
@@ -894,6 +907,18 @@ class RandomizeMiscPokemon(Choice):
     option_match_type = 2
     option_match_base_stats_and_type = 3
     option_completely_random = 4
+
+
+class MiscPokemonBlacklist(OptionSet):
+    """
+    Prevents the listed species from appearing as a miscellaneous Pokemon when miscellaneous Pokemon are randomized.
+
+    May be overridden if enforcing other restrictions in combination with this blacklist is impossible.
+
+    Use "Legendaries" as a shortcut for all legendary Pokemon.
+    """
+    display_name = "Misc Pokemon Blacklist"
+    valid_keys = ["Legendaries"] + sorted([species.name for species in data.species.values()])
 
 
 class RandomizeTypes(Choice):
@@ -980,9 +1005,9 @@ class MoveNormalTypeBias(Range):
 
 class MoveBlacklist(OptionSet):
     """
-    Prevents species from learning these moves via learnsets, TMs, and move tutors.
+    Prevents species from learning these moves via learnsets.
 
-    Has no effect is moves are not randomized.
+    Has no effect if moves are not randomized.
     """
     display_name = "Move Blacklist"
     valid_keys = sorted(move_name_map.keys())
@@ -1066,6 +1091,16 @@ class TmTutorMoves(Toggle):
     Some opponents like gym leaders are allowed to use TMs. This option can affect the moves they know.
     """
     display_name = "Randomize TM/Tutor Moves"
+
+
+class TmTutorMoveBlacklist(OptionSet):
+    """
+    Prevents TMs and move tutors from teaching these moves.
+
+    Has no effect if TM and tutor moves are not randomized.
+    """
+    display_name = "TM/Tutor Moves Blacklist"
+    valid_keys = sorted(move_name_map.keys())
 
 
 class ReusableTmsTutors(Toggle):
@@ -1223,7 +1258,7 @@ class GameOptions(OptionDict):
         "Turbo A": And(str, lambda s: s in ("Off", "On")),
         "Auto Run": And(str, lambda s: s in ("Off", "On")),
         "Button Mode": And(str, lambda s: s in ("Help", "LR", "L=A")),
-        "Frame": And(Use(int), lambda n: 1 <= n <= 10),
+        "Frame": And(int, lambda n: 1 <= n <= 10),
         "Battle Scene": And(str, lambda s: s in ("Off", "On")),
         "Battle Style": And(str, lambda s: s in ("Shift", "Set")),
         "Show Effectiveness": And(str, lambda s: s in ("Off", "On")),
@@ -1240,13 +1275,18 @@ class GameOptions(OptionDict):
     })
 
 
-class ProvideHints(Toggle):
+class ProvideHints(Choice):
     """
     Provides an Archipelago Hint for locations that tell you what item they give once you've gotten the in game hint.
 
-    This includes the Oak's Aides, Bicycle Shop, and Pokemon Request Locations.
+    This includes the Oak's Aides, Bicycle Shop, Shops, and Pokemon Request Locations.
     """
     display_name = "Provide Hints"
+    default = 0
+    option_off = 0
+    option_progression = 1
+    option_progression_and_useful = 2
+    option_all = 3
 
 
 class PokemonFRLGDeathLink(DeathLink):
@@ -1327,7 +1367,9 @@ class PokemonFRLGOptions(PerGameCommonOptions):
     trainers: RandomizeTrainerParties
     trainer_blacklist: TrainerPartyBlacklist
     legendary_pokemon: RandomizeLegendaryPokemon
+    legendary_pokemon_blacklist: LegendaryPokemonBlacklist
     misc_pokemon: RandomizeMiscPokemon
+    misc_pokemon_blacklist: MiscPokemonBlacklist
     types: RandomizeTypes
     abilities: RandomizeAbilities
     ability_blacklist: AbilityBlacklist
@@ -1341,6 +1383,7 @@ class PokemonFRLGOptions(PerGameCommonOptions):
     hm_compatibility: HmCompatibility
     tm_tutor_compatibility: TmTutorCompatibility
     tm_tutor_moves: TmTutorMoves
+    tm_tutor_moves_blacklist: TmTutorMoveBlacklist
 
     reusable_tm_tutors: ReusableTmsTutors
     min_catch_rate: MinCatchRate

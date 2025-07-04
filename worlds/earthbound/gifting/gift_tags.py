@@ -175,11 +175,11 @@ def make_trait(trait: str, name):
         return {"trait": trait}
 
 
-def make_default_traits(traits: List[str], name: str):
+def make_default_traits(traits: List[str], name: str) -> list:
     return [make_trait(trait, name) for trait in traits]
 
 
-def create_gift(name, value, traits):
+def create_gift(name, value, traits) -> EarthBoundGift:
     return EarthBoundGift(name, value, make_default_traits(traits, name))
 
 

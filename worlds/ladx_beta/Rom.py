@@ -42,7 +42,7 @@ class LADXPatchExtensions(worlds.Files.APPatchExtension):
         return rom
 
 class LADXProcedurePatch(worlds.Files.APProcedurePatch):
-    hash = [LADX_HASH]
+    hash = LADX_HASH
     game = Common.LINKS_AWAKENING
     patch_file_ending: str = Common.SUFFIX
     result_file_ending: str = ".gbc"
@@ -109,7 +109,7 @@ def get_base_rom_path(file_name: str = "") -> str:
 
 def apply_overrides(patch_data: dict) -> None:
     host_settings = settings.get_settings()
-    option_overrides = host_settings["ladx_options"].get("option_overrides")
+    option_overrides = host_settings[f"{Common.DIRECTORY}_options"].get("option_overrides")
     if not option_overrides:
         return
     wrapped_overrides = {

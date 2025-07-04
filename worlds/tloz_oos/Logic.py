@@ -1,5 +1,5 @@
 from BaseClasses import MultiWorld, Item
-from worlds.tloz_oos import LOCATIONS_DATA
+from worlds.AutoWorld import LogicMixin
 from worlds.tloz_oos.data.logic.DungeonsLogic import *
 from worlds.tloz_oos.data.logic.OverworldLogic import make_holodrum_logic
 from worlds.tloz_oos.data.logic.SubrosiaLogic import make_subrosia_logic
@@ -153,3 +153,11 @@ def make_self_locking_item_lambda(player: int, item_name: str, required_count: i
     return lambda state, item: (item.player == player
                                 and item.name == item_name
                                 and state.has(item_name, player, required_count))
+
+
+class OracleOfSeasonsState(LogicMixin):
+    tloz_oos_available_cuccos: dict[int, dict[str, tuple[int, int, int]]]
+
+    def init_mixin(self, parent: MultiWorld):
+        self.tloz_oos_available_cuccos = {player: None for player, world in parent.worlds.items()
+                                          if parent.worlds[player].game == "The Legend of Zelda - Oracle of Seasons"}

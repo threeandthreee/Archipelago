@@ -16,7 +16,7 @@ class OoSPatchExtensions(APPatchExtension):
     @staticmethod
     def apply_patches(caller: APProcedurePatch, rom: bytes, patch_file: str) -> bytes:
         rom_data = RomData(rom)
-        patch_data = yaml.load(caller.get_file(patch_file).decode("utf-8"), yaml.Loader)
+        patch_data = yaml.safe_load(caller.get_file(patch_file).decode("utf-8"))
 
         version = patch_data["version"].split(".")
         if int(version[0]) != VERSION[0] or int(version[1]) > VERSION[1]:
@@ -37,7 +37,9 @@ class OoSPatchExtensions(APPatchExtension):
         define_dungeon_items_text_constants(assembler, patch_data)
         define_essence_sparkle_constants(assembler, patch_data)
         define_lost_woods_sequences(assembler, patch_data)
+        define_tree_sprites(assembler, patch_data)
         set_file_select_text(assembler, caller.player_name)
+        set_player_start_inventory(assembler, patch_data)
 
         # Parse assembler files, compile them and write the result in the ROM
         print(f"Compiling ASM files...")

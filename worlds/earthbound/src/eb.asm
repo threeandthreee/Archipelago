@@ -50,13 +50,16 @@ db $00, $0A, $00, $61
 
 ORG $C4FD50
 NewSectorPointers:
-dw $FD80,$FD8E,$FD94,$FD9E,$FDA8,$FDC2,$FDD0,$FE74,$FE80,$FEE0,$FEEA,$FF00
+dw $FD80,$FD8E,$FD94,$FD9E,$FDA8,$FDC2,$FDD0,$FE74,$FE80,$FEE0,$FEEA,$FF00, $FF0A
 
 ORG $D5F880
 SpecialNameTable:
 dw $A810, $A81F, $A82F, $A84C, $A85C, $A873, $A888, $A89A, $A8AB, $A8BC, $A8CD, $A8DD, $A8F4, $A90B, $A924, $A938, $A93E, $A943, $A947, #SpecialTexMagicant
 dw #SpecialTexNess
 dw #SpecialTexPhotoGuy
+dw #DisplayDollars10
+dw #DisplayDollars100
+dw #DisplayDollars1000
 
 
 
@@ -321,6 +324,12 @@ JML HandleUnusableWarpPad
 
 ORG $C0089A
 JML LoadPhotoColor
+
+ORG $00FA22
+JML GetRemoteMoney
+
+ORG $C2A03F
+JML ClearStatusVars
 
 ;new jmls
 
@@ -683,7 +692,7 @@ ORG $CFA949
 db $47,$00,$01
 
 ORG $CFA93A
-db $00
+db $02
 
 ORG $CF8915
 db $20,$A8
@@ -2001,7 +2010,7 @@ db $91, $91, $91, $91, $91, $a2, $a2, $a2, $a2, $97, $98, $51, $51, $03, $18, $0
 db $10, $30, $08, $40, $92, $fe, $00, $0a, $50, $2d, $c8; Dept store spook
 
 ORG $CFC51C
-db $C7
+db $91, $00, $02
 
 ORG $C86DFE
 db $14, $6E, $C8
@@ -3013,6 +3022,21 @@ db $00, $00, $00, $00, $00, $00, $00, $00, $00, $de, $00, $a0, $00, $e3, $04, $F
 db $7d, $91, $97, $99, $93, $91, $9e, $a4, $00, $00, $00, $00, $00, $00, $00, $00
 db $00, $00, $00, $00, $00, $00, $00, $00, $00, $df, $00, $f2, $02, $28, $02, $FF; Magicant Teleport
 
+ORG $F4C000
+ShopItemNamesDeluxe:
+.10:
+db $54, $61, $60, $00
+.100:
+db $54, $61, $60, $60, $00
+.1000:
+db $54, $61, $60, $60, $60, $00
+
+.MoneyNames:
+dw $0000
+dw .10
+dw .100
+dw .1000
+
 
 
 ORG $00F8D0
@@ -3185,7 +3209,7 @@ STZ $B572
 STZ $FF40
 LDA $006D
 AND #$A000
-JML $C0B8F4
+JML GetRemoteMoney
 
 UnlockCharacter:
 PHX
@@ -6093,7 +6117,7 @@ ORG $C6DB04
 db $49
 
 ORG $C7C0CD
-db $D6, $C0; Fix rainy circle playing twice
+dd EndScript; Fix rainy circle playing twice
 
 ORG $C9D95E
 db $01, $01, $01
@@ -6117,7 +6141,7 @@ ORG $00FEF0
 ;Crash handler
 SEP #$20
 STZ $B4A1
-JML $C30100; Jump to anti-piracy screen
+JML RenderCrashScreen; Jump to anti-piracy screen
 
 ORG $EEAAF1
 db $F2, $C5, $EE
@@ -8368,6 +8392,12 @@ PhotoFlags:
 dw $02BA
 dw $02BB
 
+MoneyAmounts:
+dw $0000
+dw $000A
+dw $0064
+dw $03E8
+
 ORG $C3E2A8
 ;contemplate switching to 1
 dw $000C, $0010, $0013, $0004
@@ -9004,6 +9034,84 @@ dl DenyHintsNoMoney
 ORG $CFA96E
 dd fixed_skyrunner_redirect
 
+ORG $C7C4D6
+dd EndScript
+
+ORG $C7C188
+dd EndScript
+
+ORG $C7C324
+dd EndScript
+
+ORG $CFC517
+dw $010D
+
+ORG $CF7E97
+db $B0, $90
+
+ORG $C4FF0A
+db $06, $00, $4f, $05, $40, $60, $50, $05, $60, $78, $53, $05, $68, $28, $51, $05
+db $68, $a0, $52, $05, $78, $60, $81, $03, $32, $74
+
+ORG $CF66D9
+dw $000D
+
+ORG $CFC51A
+dw $0284
+
+ORG $C37698
+db $03
+dd DisableCollAndAnim
+
+ORG $DA82A7
+db $44
+
+ORG $DAB4E7
+db $44
+
+ORG $DAB067
+db $44
+
+ORG $C14936
+JSL LeaveMoneyInMemory
+
+ORG $C17F21
+JML CheckExtraAddCommands
+
+ORG $C005EF
+LDA #$9900
+nop
+
+ORG $C005F5
+LDA #$00F8
+nop
+
+ORG $CFA93B
+dd RideSkycicle
+
+ORG $CFA933
+db $D3
+
+ORG $CF8919
+db $30, $68
+
+ORG $CFA932
+db $02
+
+ORG $C7CB74
+db $C7, $00
+
+ORG $D7A90C
+db $5F
+
+ORG $D68463
+db $FF
+
+ORG $C8A8E3
+dd CheckForRubyPoo
+
+ORG $C80C40
+db $E1, $03
 
 
 ;New data table go here
@@ -10048,6 +10156,15 @@ SetNpcPooPSIFlag:
 db $04, $D1, $03
 db $1f, $71, $04, $02, $02
 
+DisplayDollars10:
+db $54, $61, $60, $00
+
+DisplayDollars100:
+db $54, $61, $60, $60, $00
+
+DisplayDollars1000:
+db $54, $61, $60, $60, $60, $00
+
 
 ;FOR TESTING!!!!
 ;ORG $CF09EE
@@ -10538,7 +10655,7 @@ STA $97D0
 .ResetText:
 STZ $B5E9
 LDA $B622
-AND #$00FB
+AND #$FFFB
 STA $B622
 LDA $97D0
 STA $B5E7
@@ -11111,7 +11228,11 @@ LDA $F40003,X
 AND #$00FF
 STA $3274
 CMP #$0004
-BCS .GrabOffWorldItemName
+BEQ .GrabOffWorldItemName
+CMP #$0005
+BEQ .GrabOffWorldItemName
+CMP #$0006
+BEQ .GrabOffWorldItemName
 LDA $F40004,X
 STA $0734
 LDA $F40000,X
@@ -11189,6 +11310,9 @@ CMP #$0005
 BEQ .GetArchipelagoName
 CMP #$0006
 BEQ .GetPhotoName
+CMP #$0007
+BEQ .GetMoneyName
+
 .NormalItemName:
 PLA
 ADC $06
@@ -11241,6 +11365,18 @@ STA $0E
 LDA #$00F3
 STA $08
 JML $C19E29
+.GetMoneyName:
+PLA
+LDA $0732
+ASL
+TAX
+LDA ShopItemNamesDeluxe_MoneyNames,X
+STA $06
+STA $0E
+LDA #$00F4
+STA $08
+JML $C19E29
+
 
 CheckItemBoughtFlag:
 PHX
@@ -11382,7 +11518,7 @@ STZ $0736
 CMP #$0004
 BCC .DontDisplayPlayerName
 CMP #$0006
-BEQ .DontDisplayPlayerName
+BCS .DontDisplayPlayerName
 LDA #$0001
 STA $B573
 STA $0724
@@ -12091,7 +12227,7 @@ LDA $0780
 BEQ .NormalLoad
 LDA $AAB4
 CMP #$04
-BCC .NormalLoad
+BCS .NormalLoad
 PLA
 JSL $C085B7
 SEP #$20
@@ -12139,9 +12275,9 @@ GetStartingData:
 PHB
 LDA StartingInvetory
 TAY
-LDX #$FC70
+LDX #$5000
 LDA StartingInvAmounts
-MVN $D77E
+MVN $F77E
 PLB
 LDA #$0000
 LDX #$0000
@@ -12239,10 +12375,10 @@ LDA #$0000
 JML $C17F0F
 
 LoadPartyDirections:
-PHX
 PHY
+PHX
 .Ness:
-  LDA #$0001
+JMP LoadPartyMemberDirectionsFixed
   LDX $B43E
   JSL $C46363
 .Paula:
@@ -12266,6 +12402,7 @@ STA $2B30
   ASL
   TAX
   LDA $9897,X
+  BEQ .Temp2
   ASL
   TAX
   LDA $2AF6,x
@@ -12284,6 +12421,7 @@ STA $2B30
   ASL
   TAX
   LDA $9897,X
+  BEQ .Done
   ASL
   TAX
   LDA $2AF6,x
@@ -12297,6 +12435,7 @@ STA $2B30
   AND #$00FF
   PLX
   JSL $C46363 ;not working
+.Done:
 PLY
 PLX
 LDA #$0000
@@ -12460,6 +12599,135 @@ BRA .Check
 PLX
 JML $C0089E
 
+RenderCrashScreen:
+STZ $002B
+.CheckForFrame:
+  LDA $002B
+  BEQ .CheckForFrame
+  STZ $002B
+  STZ $4100
+  JSL $C08726
+  REP #$31
+  LDA #$1EE0
+  TCD
+    LDA #$00F8
+    STA $10
+    LDA #$9000
+    STA $0E
+    LDA #$0000
+    LDX #$01B0
+    LDY #$6100
+  JSL $C08616
+    LDA #$0000
+    LDX #$7C00
+    LDY #$6000
+  JSL $C08E1C
+  LDA #$06FF
+  LDX #$9700
+  LDY #$7DFE
+  MVN $F87E
+
+
+  LDA #$0460
+  LDX #$9200
+  LDY #$7F16
+  MVN $F87E
+JSL $C2038B
+LDA #$0004
+STA $001A
+  LDA #$000F
+  LDX #$0002
+  JSL $C0886C
+.Loop:
+JSL $C08756
+LDA $006A
+AND #$0010
+BNE .Reset
+BRA .Loop
+.Reset:
+JML ReallyReset
+
+LeaveMoneyInMemory:
+LDA $B5EF
+BNE .KeepInMem
+JML $C22214
+.KeepInMem:
+STZ $B5EF
+LDA $06
+STA $97D0
+JML $C22214
+
+
+CheckExtraAddCommands:
+CMP #$0001
+BNE .NotOne
+JML $C18012
+.NotOne:
+CMP #$0025
+BEQ .SaveMoney
+JML $C17F29
+.SaveMoney:
+INC $B5EF
+JML $C1803C
+
+
+GetRemoteMoney:
+LDA $B5F1
+BEQ .Done
+PHA
+LDA #$0074
+JSL $C0ABE0
+PLA
+ASL
+TAX
+LDA MoneyAmounts,X
+STA $0E
+LDA #$0000
+STA $10
+JSL $C22214
+STZ $B5F1
+.Done:
+LDA $006D
+AND #$A000
+JML $C0B8F4
+
+ClearStatusVars:
+LDA #$766E
+STA $0E
+STZ $B587
+STZ $B588
+JML $C2A044
+
+LoadPartyMemberDirectionsFixed:
+    phy
+    phx
+    LDA #$000B
+    LDY #$2B26
+    LDX #$B43E
+    MVN $7E7E
+    ldy #$0000
+    bra .loopcond
+.loop:
+    phy
+    ; Update entity sprite frame (the thing that the "set direction" function at C46363 does after storing to the table of directions)
+    jsl $C0A780
+    ply
+    iny
+    iny
+.loopcond:
+    ; Have we gotten through all 6 possible party members?
+    cpy #$000C
+    bcs .loopend
+    ; If not, have we gotten through all valid party members? (according to the entity index list)
+    lda $9897,y
+    and #$00FF
+    bne .loop
+.loopend:
+    ply
+    plx
+    lda #$0000
+    jml $C17F0F
+
 
 
 ;new code go here
@@ -12519,17 +12787,19 @@ ORG $C5E029
 ORG $C5E1AE
 ;dd ForcePurchaseCheck
 
+;ALWAYS HAVE THESE
 ORG $C50A6A
-;db $0A
-;dl BackupShopEquipText
+db $0A
+dl BackupShopEquipText
 
 ORG $C50B4C
-;db $0A
-;dl BackupShopSellText
+db $0A
+dl BackupShopSellText
 
 ORG $C50C2E
-;db $0A
-;dl BackupShopCantEquip
+db $0A
+dl BackupShopCantEquip
+;
 
 ORG $C5E04C
 ;db $0A
@@ -12547,7 +12817,7 @@ ORG $C5E0F2
 
 
 
-ORG $F4002A
+ORG $F403F0
 ;Item ID, 2-byte price, Item Type, 2-bytelocation ID/flag number
 ;db $05, $00, $00, $02, $00, $00; Non-remote local item. Franklin Badge.
 ;db $5A, $00, $00, $01, $01, $00; Non-remote local Teleport.
@@ -12648,6 +12918,11 @@ dl .CheckSaturnText
 .NonSaturnTetx:
 db $83, $9f, $5c, $10, $02, $50, $a9, $9f, $a5, $50, $a7, $91, $9e, $a4, $50
 .BackSaturnText:
+db $1B, $06
+db $0B, $07
+db $1B, $03
+dd .Money
+
 db $1B, $06
 db $09, $05
 dd .Teleport
@@ -12792,6 +13067,23 @@ db $6F, $02
 
 .Photo:
 db $02
+
+.Money:
+db $1B, $01
+db $1B, $04
+db $09, $03
+dd ..10
+dd ..100
+dd ..1000
+db $02
+
+..10:
+db $54, $61, $60, $6F, $02
+..100:
+db $54, $61, $60, $60, $6F, $02
+..1000:
+db $54, $61, $60, $60, $60, $6F, $02
+
 
 .TeleportActiveSaturn:
 db $97, $9F, $50, $A4, $9F, $50
@@ -13020,12 +13312,14 @@ dl $C5E0DE
 .BoughtSpecialItemGiveToPlayer:
 db $1C, $20, $01
 db $04, $91, $02
-db $09, $05
+db $09, $07
 dd ..Teleport
 dd ..Character
 dd ..Error
 dd ..OffWorld
 dd ..RemoteLocal
+dd ..Error
+dd ..Money
 
 
 
@@ -13054,6 +13348,33 @@ dd TendaTeleTex+$1
 dd UnderworldTeleTex+$1
 dd MagicantTeleTex+$1
 dd PooPsiTex+$1
+db $02
+
+..Money:
+db $10, $10
+db $1B, $01
+db $1B, $04
+db $09, $03
+dd ...10
+dd ...100
+dd ...1000
+db $02
+...10:
+db $1D, $25, $0A, $00
+db $08
+dd DisplayAndGetMoney
+db $02
+
+...100:
+db $1D, $25, $64, $00
+db $08
+dd DisplayAndGetMoney
+db $02
+
+...1000:
+db $1D, $25, $E8, $03
+db $08
+dd DisplayAndGetMoney
 db $02
 
 ..Character:
@@ -14826,6 +15147,7 @@ LDA $1A
 JSL goto_bank_c2
 
 .Return:
+STZ $AA96
 PLD
 RTS
 
@@ -14873,6 +15195,7 @@ LDY #$A579
 LDA $1A
 JSL goto_bank_c2
 .Return:
+STZ $AA96
 PLD
 RTS
 
@@ -16233,6 +16556,7 @@ Gift_menu:
   db $1F, $13, $FF, $03
   db $10, $20
   db $1F, $03
+  db $01, $01, $01
   db $1C, $29, $01
   db $18, $01, $01
   db $1F, $02, $74
@@ -17931,6 +18255,57 @@ db $1C, $02, $00
 db $0A
 dl LavaPantsUseTxt_DoorPantsTex
 
+EndScript:
+db $02
+
+DisableCollAndAnim:
+db $42
+dl $C0A82F
+db $03
+dl $C3A09F
+
+RideSkycicle:
+db $70, $58, $87, $95, $9c, $9c, $5c, $10, $0a, $90, $99, $a4, $57, $a3, $90, $9e
+db $9f, $a4, $90, $a4, $98, $95, $50, $83, $9b, $a9, $50, $82, $a5, $9e, $9e, $95
+db $a2, $5e, $03, $01, $70, $82, $99, $94, $95, $50, $99, $a4, $50, $91, $9e, $a9
+db $a7, $91, $a9, $a3, $6f, $59, $01
+db $19, $02
+db $89, $95, $A3, $02
+db $19, $02
+db $7E, $9F, $02
+db $1C, $07, $02
+db $11
+db $09, $02
+dd .Ride
+dd .DontRide
+db $0A
+dl .DontRide
+.Ride:
+db $12
+db $70, $58
+db $08
+dd $C7E6D7
+db $50
+db $a2, $9f, $94, $95, $50, $a4, $98, $95, $50, $83, $9b, $a9, $93, $99, $93, $9c
+db $95, $5e, $59, $1f, $02, $73, $10, $30
+db $18, $04
+db $1F, $21, $DA
+db $02
+.DontRide:
+db $12
+db $70, $58, $89, $95, $91, $98, $5c, $10, $0a, $50, $79, $50, $a7, $9f, $a5, $9c
+db $94, $9e, $57, $a4, $5C, $50, $95, $99, $a4, $98, $95, $a2, $5e, $59, $13, $02
+
+CheckForRubyPoo:
+db $1D, $05, $FF, $D0 ; Check for tiny ruby
+db $1B, $03
+dd $C8A997
+db $0A
+dl $C8A8E7
+
+
+;ORG $C7617D
+;dd DisplayAndGetMoney
 
 ;ORG $C62B87
 ;db $0a, $28, $ca, $ee ; Test, delete later
@@ -18327,6 +18702,59 @@ dw $0000 ; Flying Man House
 dw $0010 ; Moonside Hotel
 dw $0013 ; Sky
 
+ORG $F89000
+incbin CrashFont.bin
+
+ORG $F89200
+incbin crashscreen.bin
+
+ORG $F3F000
+DisplayAndGetMoney:
+db $01
+db $1F, $02, $74
+db $18, $0A
+db $18, $03, $01
+db $10, $3C
+db $19, $10, $01
+db $1B, $04
+db $70, $58, $1C, $02, $00, $50, $97, $9F, $A4, $50, $54, $1B, $06
+db $1C, $0A, $00, $00, $00, $00
+db $5E, $59
+db $02
+
+DisplayAndGetMoneyPSI:
+db $18, $0A
+db $18, $03, $01
+db $19, $10, $01
+db $1B, $04
+db $70, $58, $1C, $02, $00, $50, $97, $9F, $A4, $50, $54, $1B, $06
+db $1C, $0A, $00, $00, $00, $00
+db $5E, $59
+db $1F, $02, $74
+db $10, $3C
+db $02
+
+DisplayAndGetMoneyPause:
+db $18, $0A
+db $18, $03, $01
+db $19, $10, $01
+db $1B, $04
+db $70, $58, $1C, $02, $00, $50, $97, $9F, $A4, $50, $54, $1B, $06
+db $1C, $0A, $00, $00, $00, $00
+db $5E, $59
+db $1F, $02, $74
+db $10, $3C
+db $03
+db $1D, $19, $01
+db $02
+
+;ORG $EEB0DA
+;dd DisplayAndGetMoneyPause
+
+;ORG $EEAA08
+;dd DisplayAndGetMoneyPSI
+
+
 
 ;todo, PSI rockin?
 
@@ -18361,3 +18789,24 @@ dw $0013 ; Sky
 ;B580 reserved for new names?
 ;;;;;;;;;;;;;;;;;;
 
+
+
+;ORG $C07482
+;JSL FixTentBug
+
+;ORG $FFFBE0
+;FixTentBug:
+;CMP #$0400
+;BCS .Bail
+;CPX #$0500
+;BCS .Bail
+;STY $10
+;STA $0E
+;RTL
+;.Bail:
+;SEP #$20
+;PLA
+;PLX
+;LDA #$FF
+;PLD
+;RTL

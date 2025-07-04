@@ -16,12 +16,17 @@
         {
             "name": "RenaisMessenger",
             "base": 9125324, "count": 1,
-            "logic": {"0": {"no_store":true}}
+            "logic": {"0": {"no_store": true}}
         },
         {"name": "label32", "base": 9125364, "count": 2, "logic": {}},
         {"name": "label30", "base": 9125424, "count": 4, "logic": {}},
         {"name": "label31", "base": 9125524, "count": 6, "logic": {}},
-        {"name": "label33", "base": 9125736, "count": 3, "logic": {}},
+        {
+            "name": "EirikaFranzSeth",
+            "base": 9125736,
+            "count": 3,
+            "logic": {"0": {"must_fight": true}}
+        },
         {
             "name": "ValterGroup",
             "base": 9125816,

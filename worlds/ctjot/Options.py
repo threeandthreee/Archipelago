@@ -1,9 +1,21 @@
-from Options import FreeText, OptionDict, OptionList, Range, Toggle
+from dataclasses import dataclass
+
+from Options import FreeText, OptionDict, OptionList, Range, Toggle, PerGameCommonOptions
 
 
 class Locations(OptionList):
     """List of locations chosen by the randomizer to hold key items"""
     display_name = "locations"
+
+
+class RegionList(OptionDict):
+    """List of regions and their locations"""
+    display_name = "regions"
+
+
+class CharLocations(OptionList):
+    """Character recruitment locations"""
+    display_name = "char locations"
 
 
 class Items(OptionList):
@@ -32,12 +44,12 @@ class ItemDifficulty(FreeText):
 
 
 class TabTreasures(Toggle):
-    """Don't place dungeon-native items on the dungeon's boss."""
+    """All treasures are replaced with tabs."""
     display_name = "All treasures are tabs"
 
 
 class BucketFragments(Toggle):
-    """Don't place dungeon-native items on the dungeon's boss."""
+    """Enable the placement of Bucket Fragments."""
     display_name = "Enable Bucket Fragments"
 
 
@@ -47,3 +59,23 @@ class FragmentCount(Range):
     range_end = 100
     default = 15
     display_name = "Fragment Count"
+
+
+class SeedShareLink(FreeText):
+    """Game share link from the ctjot web generator"""
+    display_name = "Seed Share Link"
+
+
+@dataclass
+class CTJoTOptions(PerGameCommonOptions):
+    seed_share_link: SeedShareLink
+    game_mode: GameMode
+    item_difficulty: ItemDifficulty
+    tab_treasures: TabTreasures
+    bucket_fragments: BucketFragments
+    fragment_count: FragmentCount
+    items: Items
+    region_list: RegionList
+    char_locations: CharLocations
+    rules: Rules
+    victory: Victory

@@ -1,6 +1,7 @@
-from ..game_data.local_data import psi_item_table, character_item_table, special_name_table, item_id_table
+from ..game_data.local_data import psi_item_table, character_item_table, special_name_table, item_id_table, money_item_table
 from ..game_data.text_data import calc_pixel_width, text_encoder
 from ..game_data.static_location_data import location_ids
+from ..Options import ShopRandomizer, MagicantMode, MonkeyCavesMode
 from BaseClasses import ItemClassification
 import struct
 
@@ -318,14 +319,14 @@ def write_shop_checks(world, rom, shop_checks) -> None:
         unsellable_filler_prices["Laser Gun"] = 500
         unsellable_filler_prices["Baddest Beam"] = 3000
 
-    if world.options.shop_randomizer == 2:
+    if world.options.shop_randomizer == ShopRandomizer.option_shopsanity:
         rom.write_bytes(0x04FD77, bytearray([world.options.scout_shop_checks]))
         for location in shop_checks:
 
             flag = location.address - 0xEB1000
             if location.item.player == world.player:
                 if world.options.remote_items:
-                    if location.item.name in special_name_table:
+                    if location.item.name in special_name_table or location.item.name in money_item_table:
                         item_type = 0x04
                         item_id = 0xAD
                     else:
@@ -341,6 +342,9 @@ def write_shop_checks(world, rom, shop_checks) -> None:
                     elif location.item.name in character_item_table:
                         item_type = 0x02
                         item_id = character_item_table[location.item.name][0]
+                    elif location.item.name in money_item_table:
+                        item_type = 0x07
+                        item_id = list(money_item_table).index(location.item.name) + 1
                     else:
                         item_type = 0x00
                         item_id = item_id_table[location.item.name] 
@@ -378,47 +382,41 @@ def write_shop_checks(world, rom, shop_checks) -> None:
             rom.write_bytes(0x351100 + (flag * 127), menu_long_name)
 
         rom.write_bytes(0x019DE5, struct.pack("I", 0xF007805C))  # Build the shop menus
-        rom.write_bytes(0x019E23, struct.pack("I", 0xF0083C5C))  # Display the item name
-        rom.write_bytes(0x019E8F, struct.pack("I", 0xF009285C))  # Display the item price
-        rom.write_bytes(0x011AC6, struct.pack("I", 0xF009725C))  # display the player name
-        rom.write_bytes(0x019EDD, struct.pack("I", 0xF00A7E5C))  # Transfer the used data and player selection into a script for processing
-        rom.write_bytes(0x019ED3, struct.pack("I", 0xF00AB75C))  # Display SOLD OUT
-        rom.write_bytes(0x019B66, struct.pack("I", 0xF00AE55C))  # Prevent items for other players flashing the "you can equip this"
-        rom.write_bytes(0x019DA0, struct.pack("I", 0xF00B015C))  # Preserve the greyed out HP/PP palette
+        rom.write_bytes(0x019E23, struct.pack("I", 0xF008465C))  # Display the item name
+        rom.write_bytes(0x019E8F, struct.pack("I", 0xF0094E5C))  # Display the item price
+        rom.write_bytes(0x011AC6, struct.pack("I", 0xF009985C))  # display the player name
+        rom.write_bytes(0x019EDD, struct.pack("I", 0xF00AA45C))  # Transfer the used data and player selection into a script for processing
+        rom.write_bytes(0x019ED3, struct.pack("I", 0xF00ADD5C))  # Display SOLD OUT
+        rom.write_bytes(0x019B66, struct.pack("I", 0xF00B0B5C))  # Prevent items for other players flashing the "you can equip this"
+        rom.write_bytes(0x019DA0, struct.pack("I", 0xF00B275C))  # Preserve the greyed out HP/PP palette
 
         rom.write_bytes(0x05E0A9, struct.pack("I", 0xF4900008))  # Compare the price of the item with money on hand
         rom.write_bytes(0x05E0B6, struct.pack("I", 0xF4905808))  # Display the item we bought and ask to confirm
         # The player bought the item; set a flag and give it to them
-        rom.write_bytes(0x05E0CE, struct.pack("I", 0xF493940A))
-        rom.write_bytes(0x05E0C8, struct.pack("I", 0xF49394))
-        rom.write_bytes(0x05DF1E, struct.pack("I", 0xF495AA0A))
+        rom.write_bytes(0x05E0CE, struct.pack("I", 0xF493C30A))
+        rom.write_bytes(0x05E0C8, struct.pack("I", 0xF493C3))
+        rom.write_bytes(0x05DF1E, struct.pack("I", 0xF496140A))
         # Prevent the game from checking inventory space if not needed
-        rom.write_bytes(0x05E029, struct.pack("I", 0xF495CA0A))
-        rom.write_bytes(0x05E04C, struct.pack("I", 0xF495EF0A))
-        rom.write_bytes(0x05E1AE, struct.pack("I", 0xF00E92))  # Post-shop cleanup
+        rom.write_bytes(0x05E029, struct.pack("I", 0xF496340A))
+        rom.write_bytes(0x05E04C, struct.pack("I", 0xF496590A))
+        rom.write_bytes(0x05E1AE, struct.pack("I", 0xF00EB8))  # Post-shop cleanup
 
-        rom.write_bytes(0x050A6A, struct.pack("I", 0xF495E30A))
-        rom.write_bytes(0x050B4C, struct.pack("I", 0xF495E70A))
-        rom.write_bytes(0x050C2E, struct.pack("I", 0xF495EB0A))
-
-        rom.write_bytes(0x05E1A5, struct.pack("I", 0xF00E84))
-        rom.write_bytes(0x05E119, struct.pack("I", 0xF00E8B))
-        rom.write_bytes(0x05E0F2, struct.pack("I", 0xF00E9A))
+        rom.write_bytes(0x05E1A5, struct.pack("I", 0xF00EAA))
+        rom.write_bytes(0x05E119, struct.pack("I", 0xF00EB1))
+        rom.write_bytes(0x05E0F2, struct.pack("I", 0xF00EC0))
 
         rom.write_bytes(0x3407E0, bytearray([item_id_table[world.filler_shop[0]], 0x00, 0x00, 0x00, 0x49, 0x01]))
         rom.write_bytes(0x3407E6, bytearray([item_id_table[world.filler_shop[1]], 0x00, 0x00, 0x00, 0x4A, 0x01]))
 
-        rom.write_bytes(0x3408DC, bytearray([0xE0]))
-        rom.write_bytes(0x3408E2, bytearray([0x5D]))
-        rom.write_bytes(0x3408E8, bytearray([0x5A]))
-        rom.write_bytes(0x3408EE, bytearray([0x7F]))
-        rom.write_bytes(0x3408F4, bytearray([0x5F]))
-        rom.write_bytes(0x3408FA, bytearray([0x6C]))
-        rom.write_bytes(0x340900, bytearray([0x8C]))
+        rom.write_bytes(0x3408DC, bytearray([0xE0, 0x00, 0x00, 0x00, 0xFF, 0xFF]))
+        rom.write_bytes(0x3408E2, bytearray([0x5D, 0x00, 0x00, 0x00, 0xFF, 0xFF]))
+        rom.write_bytes(0x3408E8, bytearray([0x5A, 0x00, 0x00, 0x00, 0xFF, 0xFF]))
+        rom.write_bytes(0x3408EE, bytearray([0x7F, 0x00, 0x00, 0x00, 0xFF, 0xFF]))
+        rom.write_bytes(0x3408F4, bytearray([0x5F, 0x00, 0x00, 0x00, 0xFF, 0xFF]))
+        rom.write_bytes(0x3408FA, bytearray([0x6C, 0x00, 0x00, 0x00, 0xFF, 0xFF]))
+        rom.write_bytes(0x340900, bytearray([0x8C, 0x00, 0x00, 0x00, 0xFF, 0xFF]))
 
-
-
-        if world.options.magicant_mode >= 2:
+        if world.options.magicant_mode >= MagicantMode.option_alternate_goal:  # 2
             rom.write_bytes(0x3405E8, bytearray([item_id_table[world.magicant_junk[6]], 0x00, 0x00, 0x00, 0xF5, 0x00]))
             rom.write_bytes(0x3405EE, bytearray([item_id_table[world.magicant_junk[7]], 0x00, 0x00, 0x00, 0xF6, 0x00]))
     else:
@@ -430,7 +428,7 @@ def write_shop_checks(world, rom, shop_checks) -> None:
                 rom.write_bytes(0x1576B9 + slot, bytearray([world.random.choice(filler_shop_items)]))
                 rom.write_bytes(0x1576e3, bytearray([0xEF]))
                 rom.write_bytes(0x15779c, bytearray([0x5A]))
-                if world.options.monkey_caves_mode < 2:
+                if world.options.monkey_caves_mode < MonkeyCavesMode.option_shop:  # 2
                     rom.write_bytes(0x15776b, bytearray([0xE0]))
                     rom.write_bytes(0x157775, bytearray([0x8C]))
                     rom.write_bytes(0x157778, bytearray([0x6C]))

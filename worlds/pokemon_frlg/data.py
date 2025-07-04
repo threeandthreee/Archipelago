@@ -13,8 +13,8 @@ from pkg_resources import resource_listdir, resource_isdir
 from typing import Dict, List, NamedTuple, Set, FrozenSet, Any, Tuple
 from BaseClasses import ItemClassification
 
-APWORLD_VERSION = "0.9.3"
-POPTRACKER_CHECKSUM = 0xF6935E73
+APWORLD_VERSION = "0.9.4"
+POPTRACKER_CHECKSUM = 0xA6E2C575
 NUM_REAL_SPECIES = 386
 
 
@@ -24,9 +24,9 @@ class Warp:
     """
     is_one_way: bool
     source_map: str
-    source_ids: List[str]
+    source_ids: List[int]
     dest_map: str
-    dest_ids: List[str]
+    dest_ids: List[int]
     name: str | None
     parent_region_id: str | None
 
@@ -348,6 +348,7 @@ class PokemonFRLGData:
     warps: Dict[str, Warp]
     warp_map: Dict[str, str | None]
     warp_name_map: Dict[str, str]
+    entrance_name_map: Dict[int, Dict[int, str]]
     species: Dict[int, SpeciesData]
     evolutions: Dict[str, EvolutionData]
     starters: Dict[str, StarterData]
@@ -373,6 +374,7 @@ class PokemonFRLGData:
         self.warps = {}
         self.warp_map = {}
         self.warp_name_map = {}
+        self.entrance_name_map = {}
         self.species = {}
         self.evolutions = {}
         self.starters = {}
@@ -1001,6 +1003,11 @@ def init() -> None:
             data.warps[encoded_warp] = Warp(encoded_warp, name, region_id)
             claimed_warps.add(encoded_warp)
             if name != "":
+                map_id = data.constants[data.warps[encoded_warp].source_map]
+                if map_id not in data.entrance_name_map:
+                    data.entrance_name_map[map_id] = {}
+                for warp_id in data.warps[encoded_warp].source_ids:
+                    data.entrance_name_map[map_id][warp_id] = name
                 data.warp_name_map[name] = encoded_warp
 
         data.regions[region_id] = new_region

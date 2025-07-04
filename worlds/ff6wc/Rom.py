@@ -21,6 +21,9 @@ blitz_byte = 0xF51D28
 menu_address = 0xF50059
 formation_id = 0xF511E0
 animation_byte = 0xF5009A
+dialog_index_address = 0xF500D0
+dialog_index_size = 2
+
 
 espers = [  # This is the internal order of the Espers in the game. Editing this will break things.
     "Ramuh", "Ifrit", "Shiva",
@@ -307,8 +310,8 @@ event_flag_location_names = {
     "Zozo": 0x52,
     "Mobliz": 0x0bf,
     "South Figaro Cave": 0x0b1,
-    "Narshe Weapon Shop 1": 0x0b7,
-    "Narshe Weapon Shop 2": 0x0b6,
+    "Narshe Weapon Shop 1": 0x0b5,
+    "Narshe Weapon Shop 2": 0x0b7,
     "Phoenix Cave": 0x0d7,
     "Red Dragon": 0x120,
     "Doma Castle Siege": 0x040,
@@ -370,6 +373,7 @@ additional_event_flags = {
     "Lone Wolf First Reward Picked": 0x29f,
     "Lone Wolf Both Rewards Picked": 0x241,
     "Narshe Weapon Shop Encountered": 0x605,
+    "Narshe Weapon Shop Collected": 0x0b6,
     "Narshe Weapon Shop First Reward Picked": 0x0b5,
     "Narshe Weapon Shop Both Rewards Picked": 0x0b7
 }
@@ -636,6 +640,17 @@ treasure_chest_data: Dict[str, Tuple[int, int, int]] = {
     "Zozo Relic Shop Thirteenth Floor": (0x1E49, 4, 136),
     "Zozo Esper Room Left": (0x1E48, 6, 139),
     "Zozo Esper Room Right": (0x1E48, 7, 140)
+}
+
+dialog_location_scouts_lookup = {
+    (200, 1111): ["Auction House 10kGP"],
+    (200, 1115): ["Auction House 20kGP"],
+    (23, 1765): ["Lone Wolf 1", "Lone Wolf 2"],
+    (24, 1519): ["Narshe Weapon Shop 1", "Narshe Weapon Shop 2"],
+    (306, 1569): ["Tzen Thief"],
+    (305, 1570): ["Tzen Thief"],  # This isn't an error. He's got two different dialogs depending on WoB vs WoR.
+    (154, 2264): ["Mobliz"],  # The spoiler girl if Esper or Item.
+    (154, 2307): ["Mobliz"],  # The spoiler girl if Character.
 }
 
 

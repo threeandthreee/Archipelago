@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from Options import Toggle, Choice, DefaultOnToggle, Range, PerGameCommonOptions, NamedRange, OptionSet, \
-    StartInventoryPool, OptionDict
+    StartInventoryPool, OptionDict, Visibility, DeathLink, OptionGroup
 from .data import data
 
 
@@ -29,44 +29,136 @@ class JohtoOnly(Choice):
     option_include_silver_cave = 2
 
 
-class EliteFourBadges(Range):
+class EliteFourRequirement(Choice):
     """
-    Number of badges required to enter Victory Road
+    Sets the requirement to enter Victory Road
     """
-    display_name = "Elite Four Badges"
+    display_name = "Elite Four Requirement"
+    default = 0
+    option_badges = 0
+    option_gyms = 1
+
+
+class EliteFourCount(Range):
+    """
+    Sets the number of badges/gyms required to enter Victory Road
+    """
+    display_name = "Elite Four Count"
     default = 8
-    range_start = 1
+    range_start = 0
     range_end = 16
 
 
-class RedBadges(Range):
+class RedRequirement(Choice):
     """
-    Number of badges required to battle Red
+    Sets the requirement to battle Red
     """
-    display_name = "Red Badges"
+    display_name = "Red Requirement"
+    default = 0
+    option_badges = 0
+    option_gyms = 1
+
+
+class RedCount(Range):
+    """
+    Number of badges/gyms required to battle Red
+    """
+    display_name = "Red Count"
     default = 16
-    range_start = 1
+    range_start = 0
     range_end = 16
 
 
-class MtSilverBadges(Range):
+class MtSilverRequirement(Choice):
     """
-    Number of badges required to access Mt. Silver and Silver Cave
+    Sets the requirement to access Mt. Silver and Silver Cave
     """
-    display_name = "Mt. Silver Badges"
+    display_name = "Mt. Silver Requirement"
+    default = 0
+    option_badges = 0
+    option_gyms = 1
+
+
+class MtSilverCount(Range):
+    """
+    Number of badges/gyms required to access Mt. Silver and Silver Cave
+    """
+    display_name = "Mt. Silver Count"
     default = 16
-    range_start = 1
+    range_start = 0
     range_end = 16
 
 
-class RadioTowerBadges(Range):
+class RadioTowerRequirement(Choice):
     """
-    Number of badges at which Team Rocket takes over the Goldenrod Radio Tower
+    Sets the requirement for Team Rocket to take over the Goldenrod Radio Tower
     """
-    display_name = "Radio Tower Badges"
+    display_name = "Radio Tower Requirement"
+    default = 0
+    option_badges = 0
+    option_gyms = 1
+
+
+class RadioTowerCount(Range):
+    """
+    Number of badges/gyms at which Team Rocket takes over the Goldenrod Radio Tower
+    """
+    display_name = "Radio Tower Count"
     default = 7
-    range_start = 1
+    range_start = 0
     range_end = 16
+
+
+class Route44AccessRequirement(Choice):
+    """
+    Sets the requirement to pass between Mahogany Town and Route 44
+    """
+    display_name = "Route 44 Access Requirement"
+    default = 0
+    option_badges = 0
+    option_gyms = 1
+
+
+class Route44AccessCount(Range):
+    """
+    Sets the number of badges/gyms required to pass between Mahogany Town and Route 44
+    """
+    display_name = "Route 44 Access Count"
+    default = 7
+    range_start = 0
+    range_end = 16
+
+
+class RandomizeStartingTown(Toggle):
+    """
+    Randomly chooses a town to start in.
+    Any Pokemon Center except Indigo Plateau, Cinnabar Island and Silver Cave can be chosen.
+    Lake of Rage can also be chosen.
+
+    Other settings may additionally restrict which Pokemon Centers can be chosen.
+
+    WARNING: Some starting towns without level scaling may produce difficult starts.
+    """
+    display_name = "Randomize Starting Town"
+
+
+class StartingTownBlocklist(OptionSet):
+    """
+    Specify places which cannot be chosen as a starting town. If you block every valid option, this list will do
+    nothing.
+    Indigo Plateau, Cinnabar Island and Silver Cave cannot be chosen as starting towns and are not valid options
+    "_Johto" and "_Kanto" are shortcuts for all Johto and Kanto towns respectively
+    """
+    display_name = "Starting Town Blocklist"
+    valid_keys = sorted(town.name for town in data.starting_towns) + ["_Johto", "_Kanto"]
+
+
+class VanillaClair(Toggle):
+    """
+    Clair refuses to give you the Rising Badge until you prove your worth
+    to the Elders in the Dragon's Den Shrine, which requires Whirlpool to access.
+    """
+    display_name = "Vanilla Clair"
 
 
 class RandomizeBadges(Choice):
@@ -107,42 +199,48 @@ class RequireItemfinder(Choice):
 
 class Route32Condition(Choice):
     """
-    Sets the condition required to pass into the south part of Route 32
+    Sets the condition required to pass between the north and south parts of Route 32
     Egg from aide: Collect the Egg from the aide in the Violet City Pokemon Center after beating Falkner
     Any badge: Obtain any badge
+    Any gym: Beat any gym
+    Zephyr Badge: Obtain the Zephyr Badge
     None: No requirement
     """
     display_name = "Route 32 Access Condition"
     default = 0
     option_egg_from_aide = 0
     option_any_badge = 1
-    option_none = 2
+    option_any_gym = 2
+    option_zephyr_badge = 3
+    option_none = 4
 
 
-class KantoAccessCondition(Choice):
+class KantoAccessRequirement(Choice):
     """
-    Sets the condition required to pass between Victory Road gate and Kanto
+    Sets the requirement to pass between Victory Road gate and Kanto
     Wake Snorlax: Wake the Snorlax outside of Diglett's Cave
-    Badge Count: Require the number of badges specified by kanto_access_badges
+    Badges: Requires the number of badges specified by kanto_access_count
+    Gyms: Requires beating the number of gyms specified by kanto_access_count
     Become Champion: Defeat Lance and enter the Hall of Fame
 
     This setting does nothing if Johto Only is enabled
     """
-    display_name = "Kanto Access Condition"
+    display_name = "Kanto Access Requirement"
     default = 0
     option_wake_snorlax = 0
-    option_badge_count = 1
-    option_become_champion = 2
+    option_badges = 1
+    option_gyms = 2
+    option_become_champion = 3
 
 
-class KantoAccessBadges(Range):
+class KantoAccessCount(Range):
     """
-    Sets the number of badges required to pass between Victory Road gate and Kanto
-    Only applies if Kanto Access Condition is set to badge_count
+    Sets the number of badges/gyms required to pass between Victory Road gate and Kanto
+    Only applies if Kanto Access Condition is set to badges or gyms
     """
-    display_name = "Kanto Access Badges"
+    display_name = "Kanto Access Count"
     default = 8
-    range_start = 1
+    range_start = 0
     range_end = 16
 
 
@@ -214,6 +312,18 @@ class Trainersanity(Toggle):
     display_name = "Trainersanity"
 
 
+class Rematchsanity(Toggle):
+    """
+    Adds rematch fights to the level scaling pool
+    Note: This is extremely beta, and the logic and patch aren't fully fleshed out.
+    This means that the game requires you beat the rematches in vanilla order,
+    but the ap logic might have them in a different order, so earlier rematches might
+    be higher level than later ones.
+    """
+    display_name = "Rematchsanity"
+    visibility = Visibility.none
+
+
 class TrainersanityAlerts(Choice):
     """
     Shows a message box or plays a sound for Trainersanity checks
@@ -223,6 +333,129 @@ class TrainersanityAlerts(Choice):
     option_no_alerts = 0
     option_message_box = 1
     option_sound_only = 2
+
+
+class Dexsanity(NamedRange):
+    """
+    Adds checks for catching Pokemon
+    Pokemon that cannot be logically obtained will never be included
+    """
+    display_name = "Dexsanity"
+    default = 0
+    range_start = 0
+    range_end = 251
+    special_range_names = {
+        "none": default,
+        "full": range_end
+    }
+
+
+class Dexcountsanity(NamedRange):
+    """
+    Adds checks for completing Pokedex milestones
+    This setting specifies number of caught Pokemon on which you'll get your last check
+    """
+    display_name = "Dexcountsanity"
+    default = 0
+    range_start = 0
+    range_end = 251
+    special_range_names = {
+        "none": default,
+        "full": range_end
+    }
+
+
+class DexcountsanityStep(Range):
+    """
+    If Dexcountsanity is enabled, specifies the step interval at which your checks are placed.
+    For example, if you have Dexcountsanity 50 and Dexcountsanity Step 10, you will have checks at
+    10, 20, 30, 40 and 50 total Pokemon caught.
+    """
+    display_name = "Dexcountsanity Step"
+    default = 1
+    range_start = 1
+    range_end = 251
+
+
+class DexcountsanityLeniency(Range):
+    """
+    If Dexcountsanity is enabled, specifies the logic leniency for checks.
+    For example, if you set Dexcountsanity Leniency to 5 and have a Dexcountsanity check at 10, you will not be
+    logically required to obtain this check until you can obtain 15 Pokemon
+
+    Checks that would go over the total number of logically available Pokemon will be clamped to that limit
+    """
+    display_name = "Dexcountsanity Leniency"
+    default = 0
+    range_start = 0
+    range_end = 251
+
+
+class DexsanityStarters(Choice):
+    """
+    Controls how Dexsanity treats starter Pokemon
+    Allow: Starter Pokemon will be allowed as Dexsanity checks
+    Block: Starter Pokemon will not be allowed as Dexsanity Checks
+    Available Early: Starter Pokemon will all be obtainable in the wild immediately, unless there is nowhere to obtain
+    wild Pokemon immediately
+    """
+    display_name = "Dexsanity Starters"
+    default = 0
+    option_allow = 0
+    option_block = 1
+    option_available_early = 2
+
+
+class WildEncounterMethodsRequired(OptionSet):
+    """
+    Sets which wild encounter types may be logically required
+
+    Swarms and roamers are NEVER in logic
+    """
+    display_name = "Wild Encounter Methods Required"
+    valid_keys = ["Land", "Surfing", "Fishing", "Headbutt", "Rock Smash"]
+    default = valid_keys
+
+
+class EvolutionMethodsRequired(OptionSet):
+    """
+    Sets which types of evolutions may be logically required
+    """
+    display_name = "Evolution Methods Required"
+    valid_keys = ["Level", "Level Tyrogue", "Use Item", "Happiness"]
+    default = valid_keys
+
+
+class StaticPokemonRequired(DefaultOnToggle):
+    """
+    Sets whether or not static Pokemon may be logically required
+    """
+    display_name = "Static Pokemon Required"
+
+
+class BreedingMethodsRequired(Choice):
+    """
+    Specifies which breeding methods may be logically required.
+    """
+    display_name = "Breeding Method Required"
+    default = 1
+    option_none = 0
+    option_with_ditto = 1
+    option_any = 2
+
+
+class EvolutionGymLevels(Range):
+    """
+    Sets how many levels each beaten gym puts into logic for level (and Tyrogue) evolutions
+
+    For example, if you set this to 4 and have beaten 5 gyms, evolutions up to level 20 would be in logic.
+
+    If Johto only is enabled the minimum for this setting is 8.
+    """
+    display_name = "Evolution Gym Levels"
+    default = 8
+    range_start = 4
+    range_end = 69
 
 
 class RandomizePokegear(Toggle):
@@ -252,6 +485,17 @@ class RandomizeStarters(Choice):
     option_base_stat_mode = 4
 
 
+class StarterBlocklist(OptionSet):
+    """
+    These Pokemon will not be chosen as starter Pokemon
+    Does nothing if starter Pokemon are not randomized
+    You can use "_Legendaries" as a shortcut for all legendary Pokemon
+    Blocklists are best effort, other constraints may cause them to be ignored
+    """
+    display_name = "Starter Blocklist"
+    valid_keys = sorted(pokemon.friendly_name for pokemon in data.pokemon.values()) + ["_Legendaries"]
+
+
 class StarterBST(NamedRange):
     """
     If you chose Base Stat Mode for your starters, what is the average base stat total you want your available starters to be?
@@ -265,14 +509,55 @@ class StarterBST(NamedRange):
     }
 
 
-class RandomizeWilds(Toggle):
+class RandomizeWilds(Choice):
     """
     Randomizes species of wild Pokemon
+
+    Base Forms: Ensures that at least every Pokemon that cannot be obtained through evolution is available in the wild
+    Evolution Lines: Ensures that at least one Pokemon from each evolutionary line can be obtained in the wild
+    Catch 'em All: Ensures that every Pokemon will be obtainable in the wild
     """
     display_name = "Randomize Wilds"
+    default = 0
+    option_vanilla = 0
+    option_completely_random = 1
+    option_base_forms = 2
+    option_evolution_lines = 3
+    option_catch_em_all = 4
 
 
-class ForceFullyEvolved(Range):
+class WildEncounterBlocklist(OptionSet):
+    """
+    These Pokemon will not appear in the wild
+    Does nothing if wild Pokemon are not randomized
+    You can use "_Legendaries" as a shortcut for all legendary Pokemon
+    Blocklists are best effort, other constraints may cause them to be ignored
+    """
+    display_name = "Wild Encounter Blocklist"
+    valid_keys = sorted(pokemon.friendly_name for pokemon in data.pokemon.values()) + ["_Legendaries"]
+
+
+class EncounterGrouping(Choice):
+    """
+    Determines how randomized wild Pokemon are grouped in encounter tables.
+
+    All Split: Each encounter area will have each slot randomized separately. For example, grass areas will have seven
+        randomized encounter slots.
+    One to One: Each encounter area will retain its vanilla slot grouping. For example, if an area has two encounters
+        in vanilla, it will be randomized as two slots.
+    One per Method: Each encounter method on a route will be treated as a single slot. For example, the grass on a route
+     will contain only a single encounter. Each rod is a separate encounter.
+
+    This setting has no effect if wild Pokemon are not randomized.
+    """
+    display_name = "Encounter Grouping"
+    default = 0
+    option_all_split = 0
+    option_one_to_one = 1
+    option_one_per_method = 2
+
+
+class ForceFullyEvolved(NamedRange):
     """
     When an opponent uses a Pokemon of the specified level or higher, restricts the species to only fully evolved Pokemon.
 
@@ -281,21 +566,52 @@ class ForceFullyEvolved(Range):
     display_name = "Force Fully Evolved"
     range_start = 1
     range_end = 100
-    default = 100
+    default = 0
+    special_range_names = {
+        "disabled": 0
+    }
 
 
-class NormalizeEncounterRates(Toggle):
+class EncounterSlotDistribution(Choice):
     """
-    Normalizes the chance of encountering each wild Pokemon in a given area
+    Sets how the Pokemon encounter slots in an area are distributed.
+
+    Remove 1%'s modifies grass/cave encounters to 30%/25%/20%/10%/5%/5%/5% and does not modify any others.
+    Balanced sets the following:
+        Grass/Cave: 20%/20%/15%/15%/10%/10%/10%
+        Headbutt:  20%/20%/20%/15%/15%/10%
+        Rock Smash: 70%/30%
+        Fishing (vanilla):
+            Old Rod: 70%/15%/15%
+            Good Rod: 35%/35%/20%/10%
+            Super Rod: 40%/30%/20%/10%
+    Equal sets all encounter slots to have (almost) equal probability.
     """
-    display_name = "Normalize Encounter Rates"
+    display_name = "Encounter Slot Distribution"
+    default = 1
+    option_vanilla = 0
+    option_remove_one_percents = 1
+    option_balanced = 2
+    option_equal = 3
 
 
 class RandomizeStaticPokemon(Toggle):
     """
     Randomizes species of static Pokemon encounters
+    This includes overworld Pokemon, gift Pokémon and gift egg Pokémon
     """
     display_name = "Randomize Static Pokemon"
+
+
+class StaticBlocklist(OptionSet):
+    """
+    These Pokemon will not appear as static overworld encounters, gift eggs or gift Pokemon
+    Does nothing if static Pokemon are not randomized
+    You can use "_Legendaries" as a shortcut for all legendary Pokemon
+    Blocklists are best effort, other constraints may cause them to be ignored
+    """
+    display_name = "Static Blocklist"
+    valid_keys = sorted(pokemon.friendly_name for pokemon in data.pokemon.values()) + ["_Legendaries"]
 
 
 class RandomizeTrades(Choice):
@@ -319,6 +635,17 @@ class RandomizeTrainerParties(Choice):
     option_vanilla = 0
     option_match_types = 1
     option_completely_random = 2
+
+
+class TrainerPartyBlocklist(OptionSet):
+    """
+    These Pokemon will not appear in enemy trainer parties
+    Does nothing if trainer parties are not randomized
+    You can use "_Legendaries" as a shortcut for all legendary Pokemon
+    Blocklists are best effort, other constraints may cause them to be ignored
+    """
+    display_name = "Trainer Party Blocklist"
+    valid_keys = sorted(pokemon.friendly_name for pokemon in data.pokemon.values()) + ["_Legendaries"]
 
 
 class LevelScaling(Choice):
@@ -376,6 +703,14 @@ class RandomizeLearnsets(Choice):
     option_start_with_four_moves = 2
 
 
+class MetronomeOnly(Toggle):
+    """
+    Only Metronome is usable in battle, PP is infinite
+    You can still teach HMs and useful TMs
+    """
+    display_name = "Metronome Only"
+
+
 class LearnsetTypeBias(NamedRange):
     """
     This option will have an effect only if Randomize Learnset option is enabled.
@@ -431,7 +766,8 @@ class RandomizeTMMoves(Toggle):
 
 class TMCompatibility(NamedRange):
     """
-    Percent chance for Pokemon to be compatible with a TM
+    Percent chance for Pokemon to be compatible with each TM
+    Headbutt and Rock Smash are considered HMs when applying compatibility
     """
     display_name = "TM Compatibility"
     default = 0
@@ -445,7 +781,8 @@ class TMCompatibility(NamedRange):
 
 class HMCompatibility(NamedRange):
     """
-    Percent chance for Pokemon to be compatible with an HM
+    Percent chance for Pokemon to be compatible with each HM
+    Headbutt and Rock Smash are considered HMs when applying compatibility
     """
     display_name = "HM Compatibility"
     default = 0
@@ -516,6 +853,8 @@ class FreeFlyLocation(Choice):
     Free Fly: Unlocks a random Fly destination when Fly is obtained.
     Free Fly and Map Card: Additionally unlocks a random Fly destination after obtaining both the Pokegear and Map Card.
     Map Card: Unlocks a single random Fly destination only after obtaining both the Pokegear and Map card.
+
+    Indigo Plateau cannot be chosen as a free Fly location.
     """
     display_name = "Free Fly Location"
     default = 0
@@ -529,6 +868,8 @@ class EarlyFly(Toggle):
     """
     HM02 Fly will be placed early in the game
     If this option is enabled, you will be able to Fly before being forced to use an item to progress
+    Early Fly is a best effort setting, if Fly and its badge cannot be placed early, then they will be placed
+        randomly
     """
     display_name = "Early Fly"
 
@@ -538,17 +879,23 @@ class HMBadgeRequirements(Choice):
     Vanilla: HMs require their vanilla badges
     No Badges: HMs do not require a badge to use
     Add Kanto: HMs can be used with the Johto or Kanto badge
+    Regional: HMs can be used in Johto with the Johto badge or in Kanto with the Kanto badge
+        This does not apply to Fly which will accept either badge
+        Routes 26, 27, 28 and Tohjo Falls are in Johto for HM purposes
     """
     display_name = "HM Badge Requirements"
     default = 0
     option_vanilla = 0
     option_no_badges = 1
     option_add_kanto = 2
+    option_regional = 3
 
 
 class RemoveBadgeRequirement(OptionSet):
     """
     Specify which HMs do not require a badge to use. This overrides the HM Badge Requirements setting.
+
+    HMs should be provided in the form: "Fly".
     """
     display_name = "Remove Badge Requirement"
     valid_keys = ["Cut", "Fly", "Surf", "Strength", "Flash", "Whirlpool", "Waterfall"]
@@ -597,13 +944,6 @@ class ReusableTMs(Toggle):
     display_name = "Reusable TMs"
 
 
-class GuaranteedCatch(Toggle):
-    """
-    Balls have a 100% success rate
-    """
-    display_name = "Guaranteed Catch"
-
-
 class MinimumCatchRate(Range):
     """
     Sets a minimum catch rate for wild Pokemon
@@ -612,13 +952,6 @@ class MinimumCatchRate(Range):
     default = 0
     range_start = 0
     range_end = 255
-
-
-class BlindTrainers(Toggle):
-    """
-    Trainers have no vision and will not start battles unless interacted with
-    """
-    display_name = "Blind Trainers"
 
 
 class SkipEliteFour(Toggle):
@@ -657,10 +990,31 @@ class ExpModifier(NamedRange):
     }
 
 
+class StartingMoney(NamedRange):
+    """
+    Sets your starting money.
+    """
+    display_name = "Starting Money"
+    default = 3000
+    range_start = 0
+    range_end = 999999
+    special_range_names = {
+        "vanilla": 3000
+    }
+
+
+class AllPokemonSeen(Toggle):
+    """
+    Start will all Pokemon seen in your Pokedex.
+    This allows you to see where the Pokemon can be encountered in the wild.
+    """
+    display_name = "All Pokemon Seen"
+
+
 class PhoneTrapWeight(Range):
     """
     Adds random Pokegear calls that acts as traps
-    Weight is a percentage of filler items to replace
+    Weight is the percentage chance each filler item is replaced with a trap
     """
     display_name = "Phone Trap Weight"
     default = 0
@@ -671,7 +1025,7 @@ class PhoneTrapWeight(Range):
 class SleepTrapWeight(Range):
     """
     Trap that causes Sleep status on your party
-    Weight is a percentage of filler items to replace
+    Weight is the percentage chance each filler item is replaced with a trap
     """
     display_name = "Sleep Trap Weight"
     default = 0
@@ -682,7 +1036,7 @@ class SleepTrapWeight(Range):
 class PoisonTrapWeight(Range):
     """
     Trap that causes Poison status on your party
-    Weight is a percentage of filler items to replace
+    Weight is the percentage chance each filler item is replaced with a trap
     """
     display_name = "Poison Trap Weight"
     default = 0
@@ -693,7 +1047,7 @@ class PoisonTrapWeight(Range):
 class BurnTrapWeight(Range):
     """
     Trap that causes Burn status on your party
-    Weight is a percentage of filler items to replace
+    Weight is the percentage chance each filler item is replaced with a trap
     """
     display_name = "Burn Trap Weight"
     default = 0
@@ -704,7 +1058,7 @@ class BurnTrapWeight(Range):
 class FreezeTrapWeight(Range):
     """
     Trap that causes Freeze status on your party
-    Weight is a percentage of filler items to replace
+    Weight is the percentage chance each filler item is replaced with a trap
     """
     display_name = "Freeze Trap Weight"
     default = 0
@@ -715,20 +1069,12 @@ class FreezeTrapWeight(Range):
 class ParalysisTrapWeight(Range):
     """
     Trap that causes Paralysis status on your party
-    Weight is a percentage of filler items to replace
+    Weight is the percentage chance each filler item is replaced with a trap
     """
     display_name = "Paralysis Trap Weight"
     default = 0
     range_start = 0
     range_end = 8
-
-
-class ItemReceiveSound(DefaultOnToggle):
-    """
-    Play item received sound on receiving a remote item
-    All items will be considered remote when Remote Items is enabled
-    """
-    display_name = "Item Receive Sound"
 
 
 class EnableMischief(Toggle):
@@ -745,18 +1091,19 @@ class MoveBlocklist(OptionSet):
     Does not apply to vanilla learnsets or vanilla TMs
     """
     display_name = "Move Blocklist"
-    valid_keys = sorted({move.replace("_", " ").title() for move in data.moves.keys()})
+    valid_keys = sorted(move.replace("_", " ").title() for move in data.moves.keys())
 
 
 class FlyLocationBlocklist(OptionSet):
     """
-    These locations won't be given to you as fly locations either as your free one or from receiving the map card.
+    These locations won't be given to you as fly locations, either as your free one or from receiving the map card.
     Locations should be provided in the form: "Ecruteak City"
-    New Bark Town, Cherrygrove City and Indigo Plateau cannot be chosen as free fly locations and are not valid options
+    Indigo Plateau cannot be chosen as a free fly location and is not a valid option
     If you blocklist enough locations that there aren't enough locations left for your total number of free fly locations, the blocklist will simply do nothing
+    "_Johto" and "_Kanto" are shortcuts for all Johto and Kanto towns respectively
     """
     display_name = "Fly Location Blocklist"
-    valid_keys = [region.name for region in data.fly_regions]
+    valid_keys = [region.name for region in data.fly_regions] + ["_Johto", "_Kanto"]
 
 
 class RemoteItems(Toggle):
@@ -774,53 +1121,101 @@ class GameOptions(OptionDict):
 
     Allowed options and values, with default first:
 
-    text_speed: mid/slow/fast/instant - Sets the speed at which text advances
-    battle_shift: shift/set - Sets whether you are asked to switch between trainer Pokemon
+    ap_item_sound: on/off - Sets whether a sound is played when a remote item is received
+    auto_run: off/on - Sets whether run activates automatically, if on you can hold B to walk
     battle_animations: all/no_scene/no_bars/speedy - Sets which battle animations are played:
         all: All animations play, including entry and moves
         no_scene: Entry and move animations do not play
         no_bars: Entry, move and HP/EXP bar animations do not play
         speedy: No battle animations play and many delays are removed to make battles faster
-    sound: mono/stereo - Sets the sound mode
-    menu_account: on/off - Sets whether your start menu selection is remembered
-    text_frame: 1-8 - Sets the textbox frame
+    battle_move_stats: off/on - Sets whether or not to display power and accuracy of moves in battle
+    battle_shift: shift/set - Sets whether you are asked to switch between trainer Pokemon
     bike_music: on/off - Sets whether the bike music will play
-    surf_music: on/off - Sets whether the surf music will play
-    skip_nicknames: off/on - Sets whether you are asked to nickname a Pokemon upon receiving it
-    auto_run: off/on - Sets whether run activates automatically, if on you can hold B to walk
-    spinners: normal/rotators - Sets whether trainers with random spin are turned into consistent rotators
-    fast_egg_hatch: off/on - Sets whether eggs take a single cycle to hatch
-    fast_egg_make: off/on - Sets whether eggs are guaranteed after one cycle at the day care
-    rods_always_work: off/on - Sets whether the fishing rods always succeed
+    blind_trainers: off/on - Sets whether trainers will see you without talking to them directly
+    catch_exp: off/on - Sets whether or not you get EXP for catching a Pokemon
+    dex_area_beep: off/on - Sets whether the Pokedex beeps for land and Surf encounters in the current area
     exp_distribution: gen2/gen6/gen8/no_exp - Sets the EXP distribution method:
         gen2: EXP is split evenly among battle participants, EXP Share splits evenly between participants and non-participants
         gen6: Participants earn 100% of EXP, non-participants earn 50% of EXP when EXP Share is enabled
         gen8: Participants earn 100% of EXP, non-participants earn 100% of EXP when EXP Share is enabled
         no_exp: EXP is disabled
-    catch_exp: off/on - Sets whether or not you get EXP for catching a Pokemon
-    poison_flicker: on/off - Sets whether the overworld poison flash effect is played
-    turbo_button: none/a/b/a_or_b - Sets which buttons auto advance text
+    fast_egg_hatch: off/on - Sets whether eggs take a single cycle to hatch
+    fast_egg_make: off/on - Sets whether eggs are guaranteed after one cycle at the day care
+    guaranteed_catch: off/on - Sets whether balls have a 100% success rate
     low_hp_beep: on/off - Sets whether the low HP beep is played in battle
-    time_of_day: auto/morn/day/nite - Sets a time of day override, auto follows the clock
-    battle_move_stats: off/on - Sets whether or not to display power and accuracy for moves in battle
+    menu_account: on/off - Sets whether your start menu selection is remembered
+    poison_flicker: on/off - Sets whether the overworld poison flash effect is played
+    rods_always_work: off/on - Sets whether the fishing rods always succeed
+    short_fanfares: off/on - Sets whether item receive fanfares are shortened
+    skip_dex_registration: off/on - Sets whether the Pokedex registration screen is skipped
+    skip_nicknames: off/on - Sets whether you are asked to nickname a Pokemon upon receiving it
+    sound: mono/stereo - Sets the sound mode
+    spinners: normal/rotators - Sets whether trainers with random spin are turned into consistent rotators
+    surf_music: on/off - Sets whether the surf music will play
+    text_frame: 1-8 - Sets the textbox frame, "random" will pick a random frame
+    text_speed: mid/slow/fast/instant - Sets the speed at which text advances
+    time_of_day: auto/morn/day/nite - Sets a time of day override, auto follows the clock, "random" will pick a random time
+    turbo_button: none/a/b/a_or_b - Sets which buttons auto advance text when held
     """
     display_name = "Game Options"
+    default = {
+        "text_speed": "mid",
+        "battle_shift": "shift",
+        "battle_animations": "all",
+        "sound": "mono",
+        "menu_account": "on",
+        "text_frame": 1,
+        "bike_music": "on",
+        "surf_music": "on",
+        "skip_nicknames": "off",
+        "auto_run": "off",
+        "spinners": "normal",
+        "fast_egg_hatch": "off",
+        "fast_egg_make": "off",
+        "rods_always_work": "off",
+        "exp_distribution": "gen2",
+        "catch_exp": "off",
+        "poison_flicker": "on",
+        "turbo_button": "none",
+        "low_hp_beep": "on",
+        "time_of_day": "auto",
+        "battle_move_stats": "off",
+        "short_fanfares": "off",
+        "dex_area_beep": "off",
+        "skip_dex_registration": "off",
+        "blind_trainers": "off",
+        "guaranteed_catch": "off",
+        "ap_item_sound": "on"
+    }
+
+
+class PokemonCrystalDeathLink(DeathLink):
+    __doc__ = DeathLink.__doc__ + "\n\n    In Pokemon Crystal, whiting out sends a death and receiving a death causes you to white out."
 
 
 @dataclass
 class PokemonCrystalOptions(PerGameCommonOptions):
     goal: Goal
     johto_only: JohtoOnly
-    elite_four_badges: EliteFourBadges
-    red_badges: RedBadges
-    mt_silver_badges: MtSilverBadges
-    radio_tower_badges: RadioTowerBadges
+    elite_four_requirement: EliteFourRequirement
+    elite_four_count: EliteFourCount
+    red_requirement: RedRequirement
+    red_count: RedCount
+    mt_silver_requirement: MtSilverRequirement
+    mt_silver_count: MtSilverCount
+    radio_tower_requirement: RadioTowerRequirement
+    radio_tower_count: RadioTowerCount
+    route_44_access_requirement: Route44AccessRequirement
+    route_44_access_count: Route44AccessCount
+    vanilla_clair: VanillaClair
+    randomize_starting_town: RandomizeStartingTown
+    starting_town_blocklist: StartingTownBlocklist
     randomize_badges: RandomizeBadges
     randomize_hidden_items: RandomizeHiddenItems
     require_itemfinder: RequireItemfinder
     route_32_condition: Route32Condition
-    kanto_access_condition: KantoAccessCondition
-    kanto_access_badges: KantoAccessBadges
+    kanto_access_requirement: KantoAccessRequirement
+    kanto_access_count: KantoAccessCount
     red_gyarados_access: RedGyaradosAccess
     route_2_access: Route2Access
     route_3_access: Route3Access
@@ -828,20 +1223,37 @@ class PokemonCrystalOptions(PerGameCommonOptions):
     national_park_access: NationalParkAccess
     trainersanity: Trainersanity
     trainersanity_alerts: TrainersanityAlerts
+    rematchsanity: Rematchsanity
+    randomize_wilds: RandomizeWilds
+    dexsanity: Dexsanity
+    dexsanity_starters: DexsanityStarters
+    dexcountsanity: Dexcountsanity
+    dexcountsanity_step: DexcountsanityStep
+    dexcountsanity_leniency: DexcountsanityLeniency
+    wild_encounter_methods_required: WildEncounterMethodsRequired
+    static_pokemon_required: StaticPokemonRequired
+    evolution_methods_required: EvolutionMethodsRequired
+    evolution_gym_levels: EvolutionGymLevels
+    breeding_methods_required: BreedingMethodsRequired
     randomize_pokegear: RandomizePokegear
     randomize_berry_trees: RandomizeBerryTrees
     randomize_starters: RandomizeStarters
+    starter_blocklist: StarterBlocklist
     starters_bst_average: StarterBST
-    randomize_wilds: RandomizeWilds
+    wild_encounter_blocklist: WildEncounterBlocklist
+    encounter_grouping: EncounterGrouping
     force_fully_evolved: ForceFullyEvolved
-    normalize_encounter_rates: NormalizeEncounterRates
+    encounter_slot_distribution: EncounterSlotDistribution
     randomize_static_pokemon: RandomizeStaticPokemon
+    static_blocklist: StaticBlocklist
     level_scaling: LevelScaling
     randomize_trades: RandomizeTrades
     randomize_trainer_parties: RandomizeTrainerParties
+    trainer_party_blocklist: TrainerPartyBlocklist
     boost_trainers: BoostTrainerPokemonLevels
     trainer_level_boost: TrainerLevelBoostValue
     randomize_learnsets: RandomizeLearnsets
+    metronome_only: MetronomeOnly
     learnset_type_bias: LearnsetTypeBias
     randomize_move_values: RandomizeMoveValues
     randomize_move_types: RandomizeMoveTypes
@@ -864,12 +1276,12 @@ class PokemonCrystalOptions(PerGameCommonOptions):
     east_west_underground: EastWestUnderground
     undergrounds_require_power: UndergroundsRequirePower
     reusable_tms: ReusableTMs
-    guaranteed_catch: GuaranteedCatch
     minimum_catch_rate: MinimumCatchRate
-    blind_trainers: BlindTrainers
     skip_elite_four: SkipEliteFour
     better_marts: BetterMarts
     experience_modifier: ExpModifier
+    starting_money: StartingMoney
+    all_pokemon_seen: AllPokemonSeen
     phone_trap_weight: PhoneTrapWeight
     sleep_trap_weight: SleepTrapWeight
     poison_trap_weight: PoisonTrapWeight
@@ -877,7 +1289,145 @@ class PokemonCrystalOptions(PerGameCommonOptions):
     freeze_trap_weight: FreezeTrapWeight
     paralysis_trap_weight: ParalysisTrapWeight
     remote_items: RemoteItems
-    item_receive_sound: ItemReceiveSound
     game_options: GameOptions
     enable_mischief: EnableMischief
     start_inventory_from_pool: StartInventoryPool
+    death_link: PokemonCrystalDeathLink
+
+
+OPTION_GROUPS = [
+    OptionGroup(
+        "Map",
+        [RandomizeStartingTown,
+         StartingTownBlocklist,
+         JohtoOnly]
+    ),
+    OptionGroup(
+        "Roadblocks",
+        [EliteFourRequirement, EliteFourCount,
+         RedRequirement, RedCount,
+         MtSilverRequirement, MtSilverCount,
+         RadioTowerRequirement, RadioTowerCount,
+         Route44AccessRequirement, Route44AccessCount,
+         KantoAccessRequirement, KantoAccessCount,
+         Route32Condition,
+         Route2Access,
+         Route3Access,
+         RedGyaradosAccess,
+         BlackthornDarkCaveAccess,
+         NationalParkAccess,
+         SaffronGatehouseTea,
+         RemoveIlexCutTree,
+         UndergroundsRequirePower,
+         EastWestUnderground,
+         VanillaClair]
+    ),
+    OptionGroup(
+        "Items",
+        [RandomizeBadges,
+         RandomizePokegear,
+         RandomizeHiddenItems,
+         RandomizeBerryTrees,
+         RequireItemfinder,
+         RemoteItems]
+    ),
+    OptionGroup(
+        "HMs",
+        [HMCompatibility,
+         HMBadgeRequirements,
+         RemoveBadgeRequirement,
+         FreeFlyLocation,
+         FlyLocationBlocklist,
+         EarlyFly]
+    ),
+    OptionGroup(
+        "Pokemon",
+        [RandomizeWilds,
+         WildEncounterBlocklist,
+         RandomizeStaticPokemon,
+         StaticBlocklist,
+         RandomizeBaseStats,
+         RandomizeTypes,
+         RandomizeTrades,
+         EncounterGrouping,
+         EncounterSlotDistribution]
+    ),
+    OptionGroup(
+        "Starters",
+        [RandomizeStarters,
+         StarterBST,
+         StarterBlocklist]
+    ),
+    OptionGroup(
+        "Moves",
+        [RandomizeLearnsets,
+         LearnsetTypeBias,
+         MetronomeOnly,
+         RandomizeMoveTypes,
+         RandomizeMoveValues,
+         RandomizeTMMoves,
+         TMCompatibility,
+         ReusableTMs,
+         MoveBlocklist]
+    ),
+    OptionGroup(
+        "Trainers",
+        [RandomizeTrainerParties,
+         TrainerPartyBlocklist,
+         BoostTrainerPokemonLevels,
+         TrainerLevelBoostValue,
+         ForceFullyEvolved]
+    ),
+    OptionGroup(
+        "Dexsanities",
+        [Dexsanity,
+         Dexcountsanity,
+         DexcountsanityStep,
+         DexcountsanityLeniency,
+         DexsanityStarters]
+    ),
+    OptionGroup(
+        "Trainersanity",
+        [Trainersanity,
+         TrainersanityAlerts]
+    ),
+    OptionGroup(
+        "Pokemon Logic",
+        [WildEncounterMethodsRequired,
+         StaticPokemonRequired,
+         EvolutionMethodsRequired,
+         EvolutionGymLevels,
+         BreedingMethodsRequired]
+    ),
+    OptionGroup(
+        "Traps",
+        [PhoneTrapWeight,
+         SleepTrapWeight,
+         PoisonTrapWeight,
+         BurnTrapWeight,
+         FreezeTrapWeight,
+         ParalysisTrapWeight]
+    ),
+    OptionGroup(
+        "Quality of Life",
+        [GameOptions,
+         LevelScaling,
+         AllPokemonSeen,
+         StartingMoney,
+         BetterMarts,
+         ExpModifier,
+         SkipEliteFour,
+         MinimumCatchRate,
+         PokemonCrystalDeathLink]
+    ),
+    OptionGroup(
+        "Cosmetic",
+        [RandomizePalettes,
+         RandomizeMusic]
+    ),
+    OptionGroup(
+        ":3",
+        [EnableMischief],
+        False
+    )
+]

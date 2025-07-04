@@ -24,6 +24,10 @@ def write_short_le(data: bytearray, addr: int, val: int):
     write_bytes_le(data, addr, val, 2)
 
 
+def write_word_le(data: bytearray, addr: int, val: int):
+    write_bytes_le(data, addr, val, 4)
+
+
 def read_bytes_le(data: bytearray, offs: int, size: int) -> int:
     result = 0
     for i in range(size):

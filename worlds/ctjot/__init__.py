@@ -1,15 +1,25 @@
-from BaseClasses import Item, Location, MultiWorld, Tutorial, Region, CollectionState
-from worlds.AutoWorld import World, WebWorld
+import logging
+import threading
+import typing
+from typing import Callable
+
+from BaseClasses import Item, Location, MultiWorld, Tutorial, Region, CollectionState, ItemClassification
+from ..AutoWorld import World, WebWorld
 
 from .Client import CTJoTSNIClient
-from . import CTJoTDefaults
 from .Items import CTJoTItemManager
 from .Locations import CTJoTLocationManager
-from .Options import Locations, Items, Rules, Victory, GameMode, \
-    ItemDifficulty, TabTreasures, BucketFragments, FragmentCount
+from .Options import CTJoTOptions
 
-import threading
-from typing import Callable
+ctjot_logger = logging.getLogger("Jets of Time")
+
+
+class InvalidYamlException(Exception):
+    """
+    Custom exception thrown when we detect that the YAML was not
+    generated using the mutlworld CTJoT web generator.
+    """
+    pass
 
 
 class CTJoTWebWorld(WebWorld):
@@ -36,17 +46,8 @@ class CTJoTWorld(World):
     _location_manager = CTJoTLocationManager()
 
     game = "Chrono Trigger Jets of Time"
-    option_definitions = {
-        "game_mode": GameMode,
-        "item_difficulty": ItemDifficulty,
-        "tab_treasures": TabTreasures,
-        "bucket_fragments": BucketFragments,
-        "fragment_count": FragmentCount,
-        "items": Items,
-        "locations": Locations,
-        "rules": Rules,
-        "victory": Victory
-    }
+    options: CTJoTOptions
+    options_dataclass = CTJoTOptions
 
     item_name_to_id = _item_manager.get_item_name_to_id_mapping()
     location_name_to_id = _location_manager.get_location_name_to_id_mapping()
@@ -57,13 +58,22 @@ class CTJoTWorld(World):
         super().__init__(world, player)
         self.rom_name_available_event = threading.Event()
 
+    def generate_early(self) -> None:
+        """
+        Validate the yaml was created from the CTJoT web generator
+        """
+        share_link = self.options.seed_share_link.value
+        if "multiworld.ctjot.com" not in share_link:
+            ctjot_logger.error("CTJoT YAML files must be generated from https://www.multiworld.ctjot.com")
+            raise InvalidYamlException("CTJoT YAML files must be generated from https://www.multiworld.ctjot.com")
+
     def create_item(self, name: str) -> Item:
         """
         Create a CTJoT multiworld item.
 
         Overridden from World
         """
-        return self._item_manager.create_item(name, self.player)
+        return self._item_manager.create_item_by_name(name, self.player)
 
     def create_items(self) -> None:
         """
@@ -72,52 +82,105 @@ class CTJoTWorld(World):
 
         Overridden from World
         """
-        items_from_config = self._get_config_value("items", CTJoTDefaults.DEFAULT_ITEMS)
+        items_from_config = self.options.items.value
+        bucket_fragments = self.options.bucket_fragments.value
+        fragment_count = self.options.fragment_count.value
+        game_mode = self.options.game_mode.value
+        difficulty = self.options.item_difficulty.value
+        tab_treasures = self.options.tab_treasures.value
+        char_locations = self.options.char_locations.value
+
         items = []
 
-        # This handles the key items from the yaml.
+        # Add the key items from the yaml
         for item in items_from_config:
             items.append(self._item_manager.create_item_by_id(item["id"], self.player))
 
-        # Now add filler/useful items to spots that didn't roll key items
-        items.extend(
-            self._item_manager.select_filler_items(
-                self._location_manager.get_filler_location_ids(self.multiworld, self.player),
-                self.multiworld,
-                self.player))
+        # Add fragments if bucket fragments are enabled
+        if bucket_fragments and game_mode != "Lost worlds":
+            for i in range(fragment_count):
+                items.append(self.create_item("Fragment"))
 
+        # If this is a Lost Worlds seed we may need to add some character specific items
+        # Add these items as "useful" so they try to take up progression locations in
+        # non chronosanity games
+        if game_mode == "Lost worlds":
+            for location in char_locations:
+                if location["character"] == "Frog":
+                    grand_leon = self._item_manager.get_item_data_by_name("Grand Leon")
+                    hero_medal = self._item_manager.get_item_data_by_name("Hero Medal")
+
+                    items.append(
+                        self._item_manager.create_custom_item(
+                            grand_leon.name, grand_leon.code, ItemClassification.useful, self.player))
+                    items.append(
+                        self._item_manager.create_custom_item(
+                            hero_medal.name, hero_medal.code, ItemClassification.useful, self.player))
+                elif location["character"] == "Robo":
+                    robo_rbn = self._item_manager.get_item_data_by_name("Robo's Rbn")
+                    items.append(
+                        self._item_manager.create_custom_item(
+                            robo_rbn.name, robo_rbn.code, ItemClassification.useful, self.player))
+
+        all_locations = self._location_manager.get_location_ids(game_mode)
+
+        # We need to pick the remaining items to fill out the item list
+        # Shuffle the list of all locations traverse, placing an item for each one
+        # until we have the same number of items as we do locations.
+        # The shuffle ensures that we don't always skip the same locations at the end
+        self.multiworld.random.shuffle(all_locations)
+
+        num_items_to_place = len(all_locations) - len(items)
+        for i in range(num_items_to_place):
+            item = self._item_manager.get_random_item_for_location(
+                all_locations[i], difficulty, tab_treasures, self.multiworld, self.player)
+            items.append(item)
+
+        # Add the selected items to the multiworld item pool
         self.multiworld.itempool += items
 
     def create_regions(self) -> None:
         """
         Set up the locations and rules for this player.
 
+        Region/location data is defined in the yaml to match the chosen flag set
+        Pull this data from the yaml and set up the associated AP structures
+
         Overridden from World
         """
-        locations_from_config = self._get_config_value("locations", CTJoTDefaults.DEFAULT_LOCATIONS)
-        rules_from_config = self._get_config_value("rules", CTJoTDefaults.DEFAULT_RULES)
-        victory_rules_from_config = self._get_config_value("victory", CTJoTDefaults.DEFAULT_VICTORY)
+        # Get region/location data from the yaml
+        regions_from_config = self.options.region_list.value
+        char_locations_from_config = self.options.char_locations.value
+        victory_rules_from_config = self.options.victory.value
+        rules_from_config = self.options.rules.value
+        game_mode = self.options.game_mode.value
         menu_region = Region("Menu", self.player, self.multiworld)
-        menu_region.multiworld = self.multiworld
 
-        # Create Location objects from yaml location data and add them to the menu region.
-        for location_entry in locations_from_config:
-            if location_entry["classification"] == "event":
-                # Create event locations/items (character pickup locations)
-                location = Location(self.player, location_entry["name"], None, menu_region)
-                location.event = True
-                # Add character here as a locked item.
-                location.place_locked_item(
-                    self._item_manager.create_event_item(location_entry["character"], self.player))
-            else:
-                # Create normal locations
-                location = self._location_manager.get_location(self.player, location_entry, menu_region)
+        # For now just shove all locations into the menu region
+        # TODO: Add separate regions?
+        for region_name, location_list in regions_from_config.items():
+            access_rule = self._get_access_rule(rules_from_config[region_name])
+            for location_name in location_list:
+                location = self._location_manager.get_location(self.player, location_name, menu_region)
+                location.access_rule = access_rule
+                menu_region.locations.append(location)
 
-            location.access_rule = self._get_access_rule(rules_from_config[location_entry["name"]])
+        # Handle event locations for character pickups
+        for char_location in char_locations_from_config:
+            location_name = char_location["name"]
+            character_name = char_location["character"]
+            location = Location(self.player, location_name, None, menu_region)
+            location.event = True
+            # Add character here as a locked item.
+            location.place_locked_item(
+                self._item_manager.create_event_item(character_name, self.player))
+            location.access_rule = self._get_access_rule(rules_from_config[location_name])
             menu_region.locations.append(location)
 
         # Add filler locations for non-progression items
-        self._location_manager.add_filler_locations(self.multiworld, self.player, menu_region)
+        # This will do nothing in chronosanity games, but will fill in all the missing locations
+        # with filler items in non-chronosanity games.
+        self._location_manager.add_filler_locations(regions_from_config, game_mode, self.player, menu_region)
 
         # Add victory condition event
         victory_location = Location(self.player, "Victory", None, menu_region)
@@ -172,17 +235,3 @@ class CTJoTWorld(World):
             return False
 
         return can_access
-
-    def _get_config_value(self, value: str, default):
-        """
-        Get a value from the multiworld config for this player. If the value is
-        empty then return the provided default.
-
-        :param value: Name of the value to get from config data
-        :param default: Default value to return if the config value is empty
-        :return: Config value if it exists or default if it doesn't
-        """
-        config_value = getattr(self.multiworld, value)[self.player].value
-        if len(config_value) == 0:
-            return default
-        return config_value

@@ -1,8 +1,10 @@
-import typing
 import logging
 from logging import Logger
+from typing import TYPE_CHECKING
 
-from NetUtils import ClientStatus
+from typing_extensions import override
+
+from NetUtils import ClientStatus, NetworkItem
 from Utils import async_start
 from worlds.AutoSNIClient import SNIClient
 
@@ -10,25 +12,26 @@ from . import Rom, Locations
 from .id_maps import location_name_to_id
 from .patch import FF6WCPatch
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from SNIClient import SNIClientCommandProcessor, SNIContext
 else:
-    SNIClientCommandProcessor = typing.Any
-    SNIContext = typing.Any
+    SNIClientCommandProcessor = object
+    SNIContext = object
 
 snes_logger: Logger = logging.getLogger("SNES")
 
 
 class FF6WCClient(SNIClient):
     game: str = "Final Fantasy 6 Worlds Collide"
-    location_names: typing.List[str] = list(Rom.event_flag_location_names)
-    location_ids: typing.Dict[str, int]
+    location_names: list[str] = list(Rom.event_flag_location_names)
+    location_ids: dict[str, int]
     patch_suffix = FF6WCPatch.patch_file_ending
 
     def __init__(self):
         super()
         self.location_ids = location_name_to_id
 
+    @override
     async def validate_rom(self, ctx: SNIContext) -> bool:
         from SNIClient import snes_read
 
@@ -69,7 +72,7 @@ class FF6WCClient(SNIClient):
 
         return True
 
-    async def _print_ram(self, ctx: SNIContext, address: int, bit: typing.Union[int, None] = None) -> None:
+    async def _print_ram(self, ctx: SNIContext, address: int, bit: int | None = None) -> None:
         from SNIClient import snes_read
 
         data = await snes_read(ctx, address, 1)
@@ -99,6 +102,7 @@ class FF6WCClient(SNIClient):
             snes_logger.info(f"Picked up: {location_name}")
         await ctx.send_msgs([{"cmd": 'LocationChecks', "locations": [location_id]}])
 
+    @override
     async def game_watcher(self, ctx: SNIContext) -> None:
         from SNIClient import snes_flush_writes
         if await self.connection_check(ctx) is False:
@@ -107,6 +111,7 @@ class FF6WCClient(SNIClient):
         await self.treasure_check(ctx)
         await self.received_items_check(ctx)
         await self.check_victory2(ctx)
+        await self.check_location_scouts(ctx)
         await snes_flush_writes(ctx)
 
     async def connection_check(self, ctx: SNIContext) -> bool:
@@ -158,47 +163,84 @@ class FF6WCClient(SNIClient):
         for location_index in range(len(Rom.event_flag_location_names)):
             location_name = self.location_names[location_index]
             location_id = self.location_ids[location_name]
-            event_index, event_bit = Rom.get_event_flag_value(Rom.event_flag_location_names[location_name])
-            event_data = all_event_data[event_index]
 
-            # Have to special case these, since they work differently.
-            if location_name in ["Lone Wolf 1", "Lone Wolf 2", "Narshe Weapon Shop 1", "Narshe Weapon Shop 3"]:
-                if location_name[0] == "L":
-                    initial_event_done = Rom.additional_event_flags["Lone Wolf Encountered"]
-                    first_reward_chosen = Rom.additional_event_flags["Lone Wolf First Reward Picked"]
-                    both_rewards_obtained = Rom.additional_event_flags["Lone Wolf Both Rewards Picked"]
-                    location_one = "Lone Wolf 1"
-                    location_two = "Lone Wolf 2"
-                else:
-                    initial_event_done = Rom.additional_event_flags["Narshe Weapon Shop Encountered"]
-                    first_reward_chosen = Rom.additional_event_flags["Narshe Weapon Shop First Reward Picked"]
-                    both_rewards_obtained = Rom.additional_event_flags["Narshe Weapon Shop Both Rewards Picked"]
-                    location_one = "Narshe Weapon Shop 1"
-                    location_two = "Narshe Weapon Shop 2"
-                event_index, event_bit = Rom.get_event_flag_value(initial_event_done)
-                first_reward_index, first_reward_bit = Rom.get_event_flag_value(first_reward_chosen)
-                both_rewards_index, both_rewards_bit = Rom.get_event_flag_value(both_rewards_obtained)
-                initial_event_data = all_event_data[event_index]
-                first_reward_data = all_event_data[first_reward_index]
-                both_rewards_data = all_event_data[both_rewards_index]
+            # This block handles Lone Wolf and Narshe Weapon Shop paired locations.
+            if location_name in ["Lone Wolf 1", "Lone Wolf 2", "Narshe Weapon Shop 1", "Narshe Weapon Shop 2"]:
+                is_narshe = (location_name[0] == "N")
+                # Semantic flags from Rom.additional_event_flags
+                if is_narshe:  # Narshe Weapon Shop
+                    initial_choice_distinction_flag_id = Rom.additional_event_flags[
+                        "Narshe Weapon Shop First Reward Picked"]  # 0x0b5 (CHOSE_RAGNAROK_ESPER)
+                    both_rewards_obtained_flag_id = Rom.additional_event_flags[
+                        "Narshe Weapon Shop Both Rewards Picked"]  # 0x0b7
+                    main_interaction_complete_flag_id = Rom.additional_event_flags[
+                        "Narshe Weapon Shop Encountered"]  # 0x605
+                    location_one_string = "Narshe Weapon Shop 1"  # Rom.py ID: 0x0b5
+                    location_two_string = "Narshe Weapon Shop 2"  # Rom.py ID: 0x0b7
+                else:  # Lone Wolf
+                    initial_choice_distinction_flag_id = Rom.additional_event_flags[
+                        "Lone Wolf First Reward Picked"]  # 0x29f (RECRUITED_MOG_WOB)
+                    both_rewards_obtained_flag_id = Rom.additional_event_flags[
+                        "Lone Wolf Both Rewards Picked"]  # 0x241
+                    main_interaction_complete_flag_id = Rom.additional_event_flags[
+                        "Lone Wolf Encountered"]  # 0x68d
+                    location_one_string = "Lone Wolf 1"  # Rom.py ID: 0x29f
+                    location_two_string = "Lone Wolf 2"  # Rom.py ID: 0x241
 
-                initial_event_status = initial_event_data & event_bit
-                both_rewards_status = both_rewards_data & both_rewards_bit
-                if initial_event_status or both_rewards_status:
-                    first_reward_status = first_reward_data & first_reward_bit
-                    locations_cleared: typing.List[str] = []
+                # Read main interaction complete status (e.g. NWS Encountered / LW Encountered)
+                main_inter_idx, main_inter_bit = Rom.get_event_flag_value(main_interaction_complete_flag_id)
+                main_inter_status = all_event_data[main_inter_idx] & main_inter_bit
+
+                # Read first_reward_chosen status (e.g. CHOSE_RAGNAROK_ESPER / RECRUITED_MOG_WOB)
+                first_reward_idx, first_reward_bit = Rom.get_event_flag_value(initial_choice_distinction_flag_id)
+                first_reward_status = all_event_data[first_reward_idx] & first_reward_bit
+
+                # Read both_rewards_obtained status (e.g. GOT_BOTH_REWARDS_WEAPON_SHOP / GOT_BOTH_REWARDS_LONE_WOLF)
+                both_rewards_idx, both_rewards_bit = Rom.get_event_flag_value(both_rewards_obtained_flag_id)
+                both_rewards_status = all_event_data[both_rewards_idx] & both_rewards_bit
+
+                locations_cleared: list[str] = []
+
+                # Narshe Weapon Shop specific logic
+                if is_narshe:
+                    # Mark Narshe Weapon Shop 1 if Option 1 was picked (0x0b5 is TRUE)
                     if first_reward_status:
-                        locations_cleared.append(location_one)
+                        locations_cleared.append(location_one_string)  # will clear "Narshe Weapon Shop 1"
+                    # Mark Narshe Weapon Shop 2 if Option 2 was picked (0x0b5 is FALSE)
+                    # AND Shop Collected (0x0b6 is TRUE)
                     else:
-                        locations_cleared.append(location_two)
-                    if both_rewards_status:
-                        locations_cleared = [location_one, location_two]
-                    for location_name in locations_cleared:
-                        location_id = self.location_ids[location_name]
-                        if location_id not in ctx.locations_checked:
-                            await self._new_location_check(ctx, location_name)
+                        got_ragnarok_idx, got_ragnarok_bit = Rom.get_event_flag_value(
+                            Rom.additional_event_flags["Narshe Weapon Shop Collected"]
+                        )  # GOT_RAGNAROK is 0x0b6
+                        got_ragnarok_status = all_event_data[got_ragnarok_idx] & got_ragnarok_bit
+                        if got_ragnarok_status:  # If GOT_RAGNAROK (0x0b6) is TRUE
+                            locations_cleared.append(location_two_string)  # will clear "Narshe Weapon Shop 2"
+
+                # Lone Wolf specific logic
+                else:
+                    if main_inter_status:  # If Lone Wolf Encountered (0x68d) is TRUE
+                        if first_reward_status:  # If Option 1 was picked (0x29f is TRUE)
+                            locations_cleared.append(location_one_string)  # will clear "Lone Wolf 1"
+                        else:  # Option 2 was picked (0x29f is FALSE)
+                            locations_cleared.append(location_two_string)  # will clear "Lone Wolf 2"
+
+                # Catch the second reward
+                if both_rewards_status:
+                    if location_one_string not in locations_cleared:
+                        locations_cleared.append(location_one_string)
+                    if location_two_string not in locations_cleared:
+                        locations_cleared.append(location_two_string)
+
+                # Send checks for locations determined in this block
+                for location_name in locations_cleared:
+                    location_id = self.location_ids[location_name]
+                    if location_id not in ctx.locations_checked:
+                        await self._new_location_check(ctx, location_name)
+                continue
+
             else:
-                event_done = event_data & event_bit
+                event_index, event_bit = Rom.get_event_flag_value(Rom.event_flag_location_names[location_name])
+                event_done = all_event_data[event_index] & event_bit
                 if event_done and location_id not in ctx.locations_checked:
                     if location_name in Locations.point_of_no_return_checks.keys():
                         for passed_location in Locations.point_of_no_return_checks[location_name]:
@@ -320,28 +362,36 @@ class FF6WCClient(SNIClient):
                 item_quantities_data = await snes_read(ctx, Rom.item_quantities_base_address, 255)
                 if item_types_data is None or item_quantities_data is None:
                     return
-                reserved_slots: typing.List[int] = []
                 # Field items
+                # First, check if we already have the item in question in inventory
+                found_slot = -1
                 for i in range(0, 255):
                     slot = item_types_data[i]
-                    quantity = item_quantities_data[i]
-                    exists = False
                     if slot == Rom.item_name_id[item_name]:
-                        exists = True
-                    if (slot == 255 or quantity == 0 or exists is True):
-                        reserved_slots.append(i)
-                        type_destination = Rom.item_types_base_address + i
-                        amount_destination = Rom.item_quantities_base_address + i
-                        type_id = Rom.item_name_id[item_name]
-                        amount = quantity + 1
-                        snes_buffered_write(ctx, type_destination, bytes([type_id]))
-                        snes_buffered_write(ctx, amount_destination, bytes([amount]))
-                        self.increment_items_received(ctx, items_received_amount)
-                        snes_logger.info('Received %s from %s (%s)' % (
-                            item_name,
-                            ctx.player_names[item.player],
-                            ctx.location_names.lookup_in_slot(item.location, item.player)))
+                        found_slot = i
                         break
+                if found_slot != -1:  # We have this item in inventory, so increment count
+                    quantity = item_quantities_data[found_slot]
+                    amount = max(min(quantity + 1, 99), 1)
+                    self.add_item_to_inventory(ctx,
+                                               found_slot,
+                                               items_received_amount,
+                                               amount,
+                                               item_name,
+                                               item)
+                else:  # Item not in inventory, so we write to a free slot
+                    for slot_index in range(0, 255):
+                        slot = item_types_data[slot_index]
+                        quantity = item_quantities_data[slot_index]
+                        if (slot == 255 or quantity == 0):
+                            amount = 1
+                            self.add_item_to_inventory(ctx,
+                                                       slot_index,
+                                                       items_received_amount,
+                                                       amount,
+                                                       item_name,
+                                                       item)
+                            break
 
     async def check_victory1(self, ctx: SNIContext) -> None:
         from SNIClient import snes_read
@@ -370,7 +420,46 @@ class FF6WCClient(SNIClient):
             await ctx.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
             ctx.finished_game = True
 
+    async def check_location_scouts(self, ctx: SNIContext) -> None:
+        from SNIClient import snes_read
+        dialog_data = await snes_read(ctx, Rom.dialog_index_address, Rom.dialog_index_size)
+        map_data = await snes_read(ctx, Rom.map_index_address, 2)
+        if map_data is None or dialog_data is None:
+            return
+        map_index = int.from_bytes(map_data, "little")
+        dialog_index = int.from_bytes(dialog_data, "little")
+        lookup = map_index, dialog_index
+        location_scout_list = Rom.dialog_location_scouts_lookup.get(lookup, ())
+        for location in location_scout_list:
+            location_id = self.location_ids[location]
+            if location_id not in ctx.locations_scouted:
+                ctx.locations_scouted.add(location_id)
+                await ctx.send_msgs([{
+                    "cmd": "LocationScouts",
+                    "locations": [location_id],
+                    "create_as_hint": 2,
+                }])
+
     def increment_items_received(self, ctx: SNIContext, items_received_amount: int) -> None:
         from SNIClient import snes_buffered_write
         items_received_amount += 1
         snes_buffered_write(ctx, Rom.items_received_address, items_received_amount.to_bytes(2, 'little'))
+
+    def add_item_to_inventory(self,
+                              ctx: SNIContext,
+                              slot_index: int,
+                              items_received_amount: int,
+                              amount: int,
+                              item_name: str,
+                              item: NetworkItem) -> None:
+        from SNIClient import snes_buffered_write
+        type_destination = Rom.item_types_base_address + slot_index
+        amount_destination = Rom.item_quantities_base_address + slot_index
+        type_id = Rom.item_name_id[item_name]
+        snes_buffered_write(ctx, type_destination, bytes([type_id]))
+        snes_buffered_write(ctx, amount_destination, bytes([amount]))
+        self.increment_items_received(ctx, items_received_amount)
+        snes_logger.info('Received %s from %s (%s)' % (
+            item_name,
+            ctx.player_names[item.player],
+            ctx.location_names.lookup_in_slot(item.location, item.player)))

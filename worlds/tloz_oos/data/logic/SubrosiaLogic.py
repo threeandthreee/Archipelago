@@ -38,7 +38,7 @@ def make_subrosia_logic(player: int):
             ]),
             oos_has_magnet_gloves(state, player),
             # As it is a "diagonal" pit, it is considered as a 3.5-wide pit
-            oos_can_jump_3_wide_liquid(state, player)
+            oos_can_jump_3_wide_liquid(state, player)  # Could deserve an upgrade but isn't quite worth a hell classification
         ])],
 
         ["subrosia temple sector", "subrosia bridge sector", True, lambda state: oos_has_feather(state, player)],
@@ -55,6 +55,15 @@ def make_subrosia_logic(player: int):
                 oos_can_jump_2_wide_liquid(state, player),
                 oos_has_magnet_gloves(state, player)
             ])
+        ])],
+        ["subrosia market sector", "subrosia hide and seek sector", False, lambda state: all([
+            # H&S skip, with bracelet : https://youtu.be/lH1yvshG3LE
+            # H&S skip, without bracelet : https://youtube.com/clip/Ugkx6EcYk0akEEgfO1SuhSfAO3Px5KCTtUKD
+            oos_option_hell_logic(state, player),
+            oos_has_feather(state, player),
+            oos_can_use_pegasus_seeds(state, player),
+            oos_has_bombs(state, player),
+            # Old H&S skip doesn't require bracelet
         ])],
         ["subrosia hide and seek sector", "subrosia temple sector", True, lambda state: oos_can_jump_4_wide_liquid(state, player)],
         ["subrosia hide and seek sector", "subrosia pirates sector", True, lambda state: oos_has_feather(state, player)],
@@ -134,6 +143,13 @@ def make_subrosia_logic(player: int):
         ["subrosia east junction", "subrosia village chest", False, lambda state: any([
             oos_has_magnet_gloves(state, player),
             oos_can_jump_4_wide_pit(state, player),
+            all([
+                # early red ore : https://youtu.be/fB10dV2Gunk
+                oos_option_hell_logic(state, player),
+                oos_has_feather(state, player),
+                oos_can_use_pegasus_seeds(state, player),
+                oos_has_bombs(state, player)
+            ])
         ])],
 
         ["subrosia furnace sector", "great furnace", False, lambda state: all([

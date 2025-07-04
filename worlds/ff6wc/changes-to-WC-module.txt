@@ -19,3 +19,9 @@ event/auction_house.py remove code for -nfp and -ame flags as they only make sen
 event/veldt.py add an else clause for an item reward in the case of an AP item since that check can be char/esper/item reward now instead of char/esper like in base game
 72a2792f1034e1b3fd4b76b9e3d94cda43ea6c98 fix portraits/sprites/colors/palettes for linux apworld
 98d78981f7d86b32fd64c0aba30e28e060082869 rework portraits/sprites/colors/palettes again
+ff94786347c1eda76a5308f139028e3153a45236 better avoiding `exit` from `ArgumentParser` and some type annotations
+
+d655902ef0dd14f7f55f4a58400c1c2a94f989fd removing ArchplgoItem from shops in data/shops.py
+4bd5e63c0eb25e8b70cf6c50e09007c050da4efb update Objectives parsing to throw errors earlier for missing conditional arguments in args/objectives.py (NOTE: this should be incorporated into base at some point)
+
+836abe5b2c2b4a30a5aad5bbd8d1f68b5f703af8 add -sen Starting Espers by Name flag to args/espers.py and processing flag to data/espers.py

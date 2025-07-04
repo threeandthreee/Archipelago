@@ -711,9 +711,15 @@ class LinksAwakeningContext(CommonContext):
                 "server_address": self.server_address,
                 "slot_name": self.player_names[self.slot],
                 "password": self.password,
+                "client_version": Common.WORLD_VERSION,
             })
             if self.slot_data.get("death_link"):
                 Utils.async_start(self.update_death_link(True))
+
+            # We can process linked items on already-checked checks now that we have slot_data
+            if self.client.tracker:
+                checked_checks = set(self.client.tracker.all_checks) - set(self.client.tracker.remaining_checks)
+                self.add_linked_items(checked_checks)
 
             # We can process linked items on already-checked checks now that we have slot_data
             if self.client.tracker:

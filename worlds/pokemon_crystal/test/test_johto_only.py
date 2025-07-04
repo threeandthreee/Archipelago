@@ -25,13 +25,14 @@ class JohtoOnlyExtraBadgesTest(PokemonCrystalTestBase):
     options = {
         "johto_only": "on",
         "randomize_badges": "completely_random",
-        "elite_four_badges": "16"
+        "elite_four_requirement": "badges",
+        "elite_four_count": "16"
     }
 
     def test_badges_added_to_pool(self):
-        for badge in ["Zephyr Badge", "Hive Badge", "Plain Badge", "Fog Badge", "Mineral Badge", "Storm Badge",
+        for badge in ("Zephyr Badge", "Hive Badge", "Plain Badge", "Fog Badge", "Mineral Badge", "Storm Badge",
                       "Glacier Badge", "Rising Badge", "Boulder Badge", "Cascade Badge", "Thunder Badge",
-                      "Rainbow Badge", "Soul Badge", "Marsh Badge", "Volcano Badge", "Earth Badge"]:
+                      "Rainbow Badge", "Soul Badge", "Marsh Badge", "Volcano Badge", "Earth Badge"):
             self.assertTrue(self.get_item_by_name(badge))
 
     def test_victory_road_badges(self):
@@ -50,9 +51,9 @@ class JohtoOnlyRedTest(PokemonCrystalTestBase):
     }
 
     def test_badges_added_to_pool(self):
-        for badge in ["Zephyr Badge", "Hive Badge", "Plain Badge", "Fog Badge", "Mineral Badge", "Storm Badge",
+        for badge in ("Zephyr Badge", "Hive Badge", "Plain Badge", "Fog Badge", "Mineral Badge", "Storm Badge",
                       "Glacier Badge", "Rising Badge", "Boulder Badge", "Cascade Badge", "Thunder Badge",
-                      "Rainbow Badge", "Soul Badge", "Marsh Badge", "Volcano Badge", "Earth Badge"]:
+                      "Rainbow Badge", "Soul Badge", "Marsh Badge", "Volcano Badge", "Earth Badge"):
             self.assertTrue(self.get_item_by_name(badge))
 
     def test_silver_cave_badges(self):

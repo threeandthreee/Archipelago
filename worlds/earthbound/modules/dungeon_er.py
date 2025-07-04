@@ -9,7 +9,7 @@ class EBDungeonDoor:
     address: int
     copyaddress: int
     direction: int
-    is_script: Optional[bool] = False
+    is_script: Optional[bool] = False # Script warps invert the x and y coordinate
 
 
 def shuffle_dungeons(world) -> None:
@@ -38,22 +38,6 @@ def shuffle_dungeons(world) -> None:
         "Belch's Factory",
         "Pyramid"
         ]
-
-    dungeon_sources = {
-        "Giant Step": "Onett",
-        "Happy-Happy HQ": "Happy-Happy Village",
-        "Lilliput Steps": "Happy-Happy Village",
-        "Gold Mine": "Dusty Dunes Desert",
-        "Moonside": "Fourside",
-        "Monotoli Building": "Fourside",
-        "Magnet Hill": "Fourside",
-        "Pink Cloud": "Dalaam",
-        "Dungeon Man": "Southern Scaraba",
-        "Stonehenge Base": "Southern Winters",
-        "Lumine Hall": "Tenda Village",
-        "Fire Spring": "Lost Underworld",
-        "Sea of Eden": "Magicant"
-    }
 
     world.dungeon_connections = {
         "Arcade": "Arcade",
@@ -174,17 +158,14 @@ def write_dungeon_entrances(world, rom) -> None:
     paired_doors = {}
 
     for door in all_dungeon_doors:
-        rom.copy_bytes(all_dungeon_doors[door].address, 6, all_dungeon_doors[door].copyaddress) # Copy 6 bytes at the source of the door to the destination of the door
+        rom.copy_bytes(all_dungeon_doors[door].address, 6, all_dungeon_doors[door].copyaddress)  # Copy 6 bytes at the source of the door to the destination of the door
 
     for door in world.dungeon_connections:
-        if world.dungeon_connections[door] == "Sea of Eden":
-            sea_connection = door
         for index, entrance in enumerate(dungeon_entrances[door]):
             if "Exit" in entrance:
                 paired_doors[dungeon_entrances[world.dungeon_connections[door]][index]] = entrance
             else:
                 paired_doors[entrance] = dungeon_entrances[world.dungeon_connections[door]][index]
-
 
     paired_doors["Post-Nightmare Script"] = paired_doors["Sea Exit Script"]
     paired_doors["Carpainter Failure Script"] = paired_doors["Happy-Happy HQ Exit"]
@@ -216,6 +197,7 @@ def write_dungeon_entrances(world, rom) -> None:
     rom.write_bytes(0x0F165B, struct.pack("H", 0x8091))  # Lock Cafe
     rom.write_bytes(0x0FC8C6, struct.pack("I", 0xF3120B))  # Everdred script
     rom.write_bytes(0x10784A, struct.pack("H", 0x0000))  # Mook spawn in stonehenge anteroom
+    rom.write_bytes(0x0FC51E, bytearray([0x00]))  # Moonside sparkle always active
 
     rom.write_bytes(0x0FA4D6, bytearray([0xC7, 0x00, 0x01]))
 

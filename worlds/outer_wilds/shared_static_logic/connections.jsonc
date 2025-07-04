@@ -33,9 +33,9 @@
     // and then get back to whichever warp pad connects to Hanging City Ceiling _in the same loop_.
     // I believe that requires either the Spaceship or a "warp path" from the Northern Glacier pad to
     // the Hanging City Ceiling pad. The warp path connection is conditionally added elsewhere if it exists.
-    { "from": "Hanging City Ceiling", "to": "Forge via Ship & Warps", "requires": [ { "item": "Launch Codes" } ] },
+    { "from": "Hanging City Ceiling", "to": "Forge via Ship & Warps", "requires": [ { "item": "Launch Codes" }, { "item": "Spacesuit" } ] },
     { "from": "Forge via Ship & Warps", "to": "Black Hole Forge", "requires": [] },
-    { "from": "Hanging City Ceiling", "to": "Forge via Warps Only", "requires": [] },
+    { "from": "Hanging City Ceiling", "to": "Forge via Warps Only", "requires": [ { "item": "Spacesuit" } ] },
 
     { "from": "Space", "to": "GD Ocean Depths", "requires": [ { "item": "Tornado Aerodynamic Adjustments" } ] },
     { "from": "GD Ocean Depths", "to": "GD Core", "requires": [ { "item": "Electrical Insulation" }, { "item": "Spacesuit" } ] },

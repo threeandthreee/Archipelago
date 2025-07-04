@@ -8,7 +8,7 @@ from worlds.Files import APProcedurePatch, APTokenMixin, APTokenTypes, APPatchEx
 from .game_data import local_data
 from .game_data.battle_bg_data import battle_bg_bpp
 from .modules.psi_shuffle import write_psi
-from .game_data.text_data import barf_text, eb_text_table, text_encoder
+from .game_data.text_data import barf_text, text_encoder
 from .modules.flavor_data import flavor_data, vanilla_flavor_pointers
 from .modules.hint_data import parse_hint_data
 from .modules.enemy_data import scale_enemies
@@ -16,11 +16,11 @@ from .modules.area_scaling import calculate_scaling
 from .modules.boss_shuffle import write_bosses
 from .modules.equipamizer import randomize_armor, randomize_weapons
 from .modules.music_rando import music_randomizer
-from .modules.palette_shuffle import randomize_psi_palettes
+from .modules.palette_shuffle import randomize_psi_palettes, map_palette_shuffle
 from .modules.shopsanity import write_shop_checks
 from .modules.enemy_shuffler import apply_enemy_shuffle
 from .modules.dungeon_er import write_dungeon_entrances
-from .modules.foodamizer import randomize_food
+# from .modules.foodamizer import randomize_food
 from .modules.enemizer.randomize_enemy_attributes import randomize_enemy_attributes
 from .modules.enemizer.randomize_enemy_stats import randomize_enemy_stats
 from .modules.enemizer.randomize_enemy_attacks import randomize_enemy_attacks
@@ -53,6 +53,7 @@ protection_checks = local_data.protection_checks
 protection_text = local_data.protection_text
 nonlocal_present_types = local_data.nonlocal_present_types
 ap_text_pntrs = local_data.ap_text_pntrs
+money_item_table = local_data.money_item_table
 
 valid_hashes = ["a864b2e5c141d2dec1c4cbed75a42a85",  # Cartridge
                 "6d71ccc8e2afda15d011348291afdf4f"]  # VC
@@ -80,8 +81,8 @@ class LocalRom(object):
         return bytes(self.file)
 
 
-def patch_rom(world, rom, player: int):
-    rom.copy_bytes(0x1578DD, 0x3E, 0x34A060) # Threed/Saturn teleport move
+def patch_rom(world, rom, player: int) -> None:
+    rom.copy_bytes(0x1578DD, 0x3E, 0x34A060)  # Threed/Saturn teleport move
     rom.copy_bytes(0x15791B, 0xF8, 0x157959)
 
     rom.copy_bytes(0x34A000, 0x1F, 0x1578DD)
@@ -89,6 +90,7 @@ def patch_rom(world, rom, player: int):
     rom.copy_bytes(0x34A040, 0x1F, 0x157A51)
     rom.copy_bytes(0x34A060, 0x3E, 0x1578FC)
     rom.copy_bytes(0x15ED4B, 0x06, 0x15F1FB)
+    rom.copy_bytes(0x1A7FA7, 0xBF, 0x389900)
 
     starting_area_coordinates = {
                     0: [0x50, 0x04, 0xB5, 0x1F],  # North Onett
@@ -139,7 +141,7 @@ def patch_rom(world, rom, player: int):
     for item in world.multiworld.precollected_items[world.player]:
         world.start_items.append(item.name)
 
-    if world.options.random_start_location != 0:
+    if world.options.random_start_location:
         rom.write_bytes(0x0F96C2, bytearray([0x69, 0x00]))
         rom.write_bytes(0x0F9618, bytearray([0x69, 0x00]))
         rom.write_bytes(0x0F9629, bytearray([0x69, 0x00]))  # Block Northern Onett
@@ -176,7 +178,7 @@ def patch_rom(world, rom, player: int):
     else:
         rom.write_bytes(0x04FD72, bytearray([0xFF]))
 
-    if world.options.giygas_required == 0:
+    if not world.options.giygas_required:
         rom.write_bytes(0x2E9C29, bytearray([0x10, 0xA5]))
 
     if world.options.magicant_mode == 2:
@@ -216,7 +218,7 @@ def patch_rom(world, rom, player: int):
 
     rom.write_bytes(0x04FD70, bytearray([world.options.sanctuaries_required.value]))
     shop_checks = []
-
+    
     for location in world.multiworld.get_locations(player):
         if location.address:
             receiver_name = world.multiworld.get_player_name(location.item.player)
@@ -226,22 +228,11 @@ def patch_rom(world, rom, player: int):
             else:
                 item = location.item.name
             item_name_loc = (((location.address - 0xEB0000) * 128) + 0x3F0000)
-            item_text = bytearray(0)
-            player_text = bytearray(0)
             # todo; replace with the encoder function
-            for char in location.item.name[:128]:
-                if char in eb_text_table:
-                    item_text.extend(eb_text_table[char])
-                else:
-                    item_text.extend([0x6F])
+            item_text = text_encoder(location.item.name, 128)
             item_text.extend([0x00])
             player_name_loc = (((location.address - 0xEB0000) * 48) + 0x3F8000)
-            for char in receiver_name[:48]:
-                if char in eb_text_table:
-                    player_text.extend(eb_text_table[char])
-                else:
-                    player_text.extend([0x6F])
-            player_text.extend([0x00])
+            player_text = text_encoder(receiver_name, 48)
             # Locations over this address are Shopsanity locations and handled in the shopsanity module
             if location.address < 0xEB1000:
                 rom.write_bytes(item_name_loc, bytearray(item_text))
@@ -260,6 +251,8 @@ def patch_rom(world, rom, player: int):
                         rom.write_bytes(location_dialogue[name][i], bytearray([item_id]))
                     elif item in psi_item_table or item in character_item_table:
                         rom.write_bytes(location_dialogue[name][i] - 1, bytearray([0x16, special_name_table[item][0]]))
+                    elif item in money_item_table:
+                        rom.write_bytes(location_dialogue[name][i] - 1, bytearray([0x16, (0x16 + list(money_item_table).index(item))]))
 
             if name in present_locations:
                 world.handled_locations.append(name)
@@ -273,6 +266,9 @@ def patch_rom(world, rom, player: int):
                     rom.write_bytes(present_locations[name], bytearray([psi_item_table[item], 0x00, 0x02]))
                 elif item in character_item_table:
                     rom.write_bytes(present_locations[name], bytearray([character_item_table[item][0], 0x00, 0x03]))
+                elif item in money_item_table:
+                    rom.write_bytes(present_locations[name], struct.pack("H", money_item_table[item]))
+                    rom.write_bytes(present_locations[name] + 2, bytearray([0x01]))
 
             if name in npc_locations:
                 world.handled_locations.append(name)
@@ -282,12 +278,20 @@ def patch_rom(world, rom, player: int):
                     elif item in psi_item_table or item in character_item_table:
                         rom.write_bytes(npc_locations[name][i] - 3, bytearray([0x0E, 0x00, 0x0E, (special_name_table[item][0] + 1)]))
                         rom.write_bytes(npc_locations[name][i] + 2, bytearray([0xA5, 0xAA, 0xEE]))
+                    elif item in money_item_table:
+                        rom.write_bytes(npc_locations[name][i] - 3, bytearray([0x1D, 0x25]))
+                        rom.write_bytes(npc_locations[name][i] - 1, struct.pack("H", money_item_table[item]))
+                        rom.write_bytes(npc_locations[name][i] + 2, bytearray([0x00, 0xF0, 0xF3]))
 
             if name in psi_locations:
                 world.handled_locations.append(name)
                 if item in special_name_table and location.item.player == location.player and item != "Remote Item":
                     rom.write_bytes(psi_locations[name][0], special_name_table[item][1].to_bytes(3, byteorder="little"))
                     rom.write_bytes(psi_locations[name][0] + 4, bytearray([0x00, 0x00, 0x00, 0x00, 0x00, 0x00]))
+                elif item in money_item_table and location.item.player == location.player:
+                    rom.write_bytes(psi_locations[name][0] - 1, bytearray([0x1D, 0x25]))
+                    rom.write_bytes(psi_locations[name][0] + 1, struct.pack("H", money_item_table[item]))
+                    rom.write_bytes(psi_locations[name][0] + 3, bytearray([0x08, 0x26, 0xF0, 0xF3, 0x00, 0x03, 0x00]))
                 else:
                     rom.write_bytes(psi_locations[name][0], bytearray(psi_locations[name][1:4]))
                     rom.write_bytes(psi_locations[name][4], bytearray([item_id]))
@@ -305,6 +309,12 @@ def patch_rom(world, rom, player: int):
                     rom.write_bytes(character_locations[name][0], (special_name_table[item][1] + 1).to_bytes(3, byteorder="little"))
                     rom.write_bytes(character_locations[name][1], bytearray([0x62]))
                     rom.write_bytes(character_locations[name][2], bytearray([0x70, 0xF9, 0xD5]))
+                elif item in money_item_table and location.item.player == location.player:
+                    rom.write_bytes(character_locations[name][2] - 1, bytearray([0x1D, 0x25]))
+                    rom.write_bytes(character_locations[name][2] + 1, struct.pack("H", money_item_table[item]))
+                    rom.write_bytes(character_locations[name][0] - 2, bytearray([0x01]))
+                    rom.write_bytes(character_locations[name][0], bytearray([0x4B, 0xF0, 0xF3]))
+                    rom.write_bytes(character_locations[name][1], bytearray([0x97]))
                 else:
                     rom.write_bytes(character_locations[name][0], bytearray(character_locations[name][4:7]))
                     if location.item.name in ["Ness", "Paula", "Jeff", "Poo"]:
@@ -336,6 +346,11 @@ def patch_rom(world, rom, player: int):
                     rom.write_bytes(0x2EC618, bytearray([(special_name_table[item][0] + 1)]))
                     rom.write_bytes(0x2EC61A, bytearray([0xA5, 0xAA, 0xEE]))
                     rom.write_bytes(0x2EC613, bytearray([0x03, 0x01]))
+                
+                if item in money_item_table and location.item.player == location.player:
+                    rom.write_bytes(0x15F764, bytearray([0x1D, 0x08]))
+                    rom.write_bytes(0x15F766, struct.pack("H", money_item_table[item]))
+                    rom.write_bytes(0x15F768, bytearray([0x01]))
 
             if location.address >= 0xEB1000:
                 world.handled_locations.append(name)
@@ -459,6 +474,7 @@ def patch_rom(world, rom, player: int):
         rom.write_bytes(0x0912F2, bytearray([0x0A, 0xFE, 0xBF, 0xEE]))
         rom.write_bytes(0x2EBFFE, bytearray([0x00, 0x1B, 0x04, 0x15, 0x38, 0x1F, 0x81, 0xFF, 0xFF, 0x1B, 0x04, 0x0A, 0xF7, 0x12, 0xC9]))  # Hospitals = 0$
         rom.write_bytes(0x04C822, bytearray([0xEA, 0xEA, 0xEA, 0xEA]))
+        rom.write_bytes(0x04C7F7, bytearray([0x00, 0x00])) # Stop "rounding up" the money
 
     if world.options.magicant_mode >= 2:
         rom.write_bytes(0x077629, bytearray([item_id_table[world.magicant_junk[0]]]))
@@ -511,25 +527,25 @@ def patch_rom(world, rom, player: int):
         "Ness": 0x99F3,
         "Paula": 0x9A53,
         "Jeff": 0x9AB4,
-        "Poo": 0x9B10
+        "Poo": 0x9B0F
     }
 
     starting_inv_amounts = {
         "Ness": 0x0B,
         "Paula": 0x0A,
         "Jeff": 0x08,
-        "Poo": 0x0B
+        "Poo": 0x0C
     }
 
-    if world.starting_character == "Poo" and world.multiworld.get_location(
-            "Poo - Starting Item", world.player).item.name not in item_id_table:
-        starting_inventory_pointers["Poo"] = 0x9B0F
-        starting_inv_amounts["Poo"] = 0x0C
+    location = world.multiworld.get_location("Poo - Starting Item", world.player)
+    if world.starting_character == "Poo" and location.item.name in item_id_table and location.item.player == world.player:
+        starting_inventory_pointers["Poo"] = 0x9B10
+        starting_inv_amounts["Poo"] = 0x0B
     rom.write_bytes(0x16FB66, struct.pack("H", starting_inventory_pointers[world.starting_character]))
     rom.write_bytes(0x16FB68, struct.pack("H", starting_inv_amounts[world.starting_character]))
     
     for item in world.multiworld.precollected_items[player]:
-        if item.name == world.starting_character: # Write the starting character
+        if item.name == world.starting_character:  # Write the starting character
             rom.write_bytes(0x00B672, bytearray([world.options.starting_character.value + 1]))
 
         if world.options.remote_items:
@@ -540,6 +556,8 @@ def patch_rom(world, rom, player: int):
 
         if item.name == "Poo" and world.multiworld.get_location("Poo - Starting Item", world.player).item.name in special_name_table and item.player == world.player:
             world.multiworld.push_precollected(world.multiworld.get_location("Poo - Starting Item", world.player).item)
+        elif item.name == "Poo" and world.multiworld.get_location("Poo - Starting Item", world.player).item.name in money_item_table:
+            world.starting_money += money_item_table[world.multiworld.get_location("Poo - Starting Item", world.player).item.name]
 
         # if item.name == "Poo" and world.multiworld.get_location("Poo - Starting Item", world.player).item.name == "Photograph":
             # rom.write_bytes(0x17FEA9, bytearray([0x01]))
@@ -552,7 +570,7 @@ def patch_rom(world, rom, player: int):
                 world.start_prog_counts[old_item_name] += 1
 
         if item.name in item_id_table:
-            rom.write_bytes(0x17FC70 + starting_item_address, bytearray([item_id_table[item.name]]))
+            rom.write_bytes(0x375000 + starting_item_address, bytearray([item_id_table[item.name]]))
             starting_item_address += 1
         elif item.name in psi_item_table:
             if item.name != "Progressive Poo PSI":
@@ -570,6 +588,8 @@ def patch_rom(world, rom, player: int):
                 rom.write_bytes(0x17FC8D + starting_char, bytearray([party_id_nums[item.name]]))
                 starting_character_count.append(item.name)
                 starting_char += 1
+        elif item.name in money_item_table:
+            world.starting_money += money_item_table[item]
 
     if world.options.random_battle_backgrounds:
         bpp2_bgs = [bg_id for bg_id, bpp in battle_bg_bpp.items() if bpp == 2]
@@ -631,6 +651,8 @@ def patch_rom(world, rom, player: int):
         randomize_weapons(world, rom)
     
     music_randomizer(world, rom)
+    if world.options.map_palette_shuffle:
+        map_palette_shuffle(world, rom)
     if world.options.randomize_psi_palettes:
         randomize_psi_palettes(world, rom)
 
@@ -658,6 +680,9 @@ def patch_rom(world, rom, player: int):
     world.badge_name = badge_names[world.franklin_protection]
     world.badge_name = text_encoder(world.badge_name, 23)
     world.badge_name.extend([0x00])
+    world.starting_money = min(world.starting_money, 99999)
+    world.starting_money = struct.pack('<I', world.starting_money)
+
     rom.write_bytes(0x17FCD0, world.starting_money)
     rom.write_bytes(0x17FCE0, world.prayer_player)
     rom.write_bytes(0x17FD00, world.credits_player)
@@ -701,13 +726,13 @@ class EBProcPatch(APProcedurePatch, APTokenMixin):
     def get_source_data(cls) -> bytes:
         return get_base_rom_bytes()
 
-    def write_byte(self, offset, value):
+    def write_byte(self, offset, value) -> None:
         self.write_token(APTokenTypes.WRITE, offset, value.to_bytes(1, "little"))
 
-    def write_bytes(self, offset, value: typing.Iterable[int]):
+    def write_bytes(self, offset, value: typing.Iterable[int]) -> None:
         self.write_token(APTokenTypes.WRITE, offset, bytes(value))
     
-    def copy_bytes(self, source, amount, destination):
+    def copy_bytes(self, source, amount, destination) -> None:
         self.write_token(APTokenTypes.COPY, destination, (amount, source))
 
 

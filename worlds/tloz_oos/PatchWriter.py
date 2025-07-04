@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 import yaml
 
 from typing import TYPE_CHECKING
@@ -49,6 +51,11 @@ def oos_create_ap_procedure_patch(world: "OracleOfSeasonsWorld") -> OoSProcedure
                 "player": world.multiworld.get_player_name(loc.item.player),
                 "progression": (loc.item.classification & ItemClassification.progression) != 0
             }
+
+    start_inventory = defaultdict(int)
+    for item in world.multiworld.precollected_items[world.player]:
+        start_inventory[item.name] += 1
+    patch_data["start_inventory"] = dict(start_inventory)
 
     patch.write_file("patch.dat", yaml.dump(patch_data).encode('utf-8'))
     return patch

@@ -268,7 +268,7 @@ spoiler_badges = {
 }
 
 
-def text_encoder(text, textcap):
+def text_encoder(text, textcap) -> bytearray:
     encoded_text = bytearray()
     for char in text[:textcap]:
         if char in eb_text_table:
@@ -278,7 +278,7 @@ def text_encoder(text, textcap):
     return encoded_text
 
 
-def calc_pixel_width(text):
+def calc_pixel_width(text) -> int:
     width = 0
     for char in text:
         if char in pixel_width_table:

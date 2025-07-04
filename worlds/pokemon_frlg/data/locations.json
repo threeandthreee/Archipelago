@@ -103,7 +103,7 @@
   },
   "NPC_GIFT_GOT_FAME_CHECKER": {
     "name": "Cerulean City - Rival Gift",
-    "tags": ["Overworld Items", "Kanto", "Cerulean City"],
+    "tags": ["NPC Gifts", "Kanto", "Cerulean City"],
     "category": "KEY_ITEM"
   },
   "NPC_GIFT_GOT_GOOD_ROD": {

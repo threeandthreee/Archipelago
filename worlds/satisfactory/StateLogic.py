@@ -1,7 +1,9 @@
-from typing import Tuple, List, Optional, Set, Iterable
+from typing import Optional
+from collections.abc import Iterable
 from BaseClasses import CollectionState
 from .GameLogic import GameLogic, Recipe, PowerInfrastructureLevel
 from .Options import SatisfactoryOptions
+from .CriticalPathCalculator import CriticalPathCalculator
 
 EventId: Optional[int] = None
 
@@ -11,14 +13,16 @@ building_event_prefix = "Can Build: "
 class StateLogic:
     player: int
     options: SatisfactoryOptions
-    initial_unlocked_items: Set[str]
+    critical_path: CriticalPathCalculator
+    initial_unlocked_items: set[str]
 
-    def __init__(self, player: int, options: SatisfactoryOptions):
+    def __init__(self, player: int, options: SatisfactoryOptions, critical_path: CriticalPathCalculator):
         self.player = player
         self.options = options
+        self.critical_path = critical_path
 
     def has_recipe(self, state: CollectionState, recipe: Recipe):
-        return recipe.implicitly_unlocked or state.has(recipe.name, self.player)
+        return state.has(recipe.name, self.player) or recipe.name in self.critical_path.implicitly_unlocked 
     
     def can_build(self, state: CollectionState, building_name: Optional[str]) -> bool:
         return building_name is None or state.has(building_event_prefix + building_name, self.player)
@@ -38,23 +42,19 @@ class StateLogic:
         return power_level is None or state.has(building_event_prefix + power_level.to_name(), self.player)
 
     def can_produce_all(self, state: CollectionState, parts: Optional[Iterable[str]]) -> bool:
-        if parts and "SAM" in parts:
-            debug = "Now"
-
-        return parts is None or \
+       return parts is None or \
             state.has_all(map(self.to_part_event, parts), self.player)
 
     def can_produce_all_allowing_handcrafting(self, state: CollectionState, logic: GameLogic, 
-            parts: Optional[Tuple[str, ...]]) -> bool:
+            parts: Optional[tuple[str, ...]]) -> bool:
         
         def can_handcraft_part(part: str) -> bool:
             if self.can_produce(state, part):
                 return True
-            elif part not in logic.handcraftable_recipes:
+            elif part not in self.critical_path.handcraftable_parts:
                 return False
 
-            recipes: List[Recipe] = logic.handcraftable_recipes[part]
-
+            recipes: list[Recipe] = self.critical_path.handcraftable_parts[part]
             return any(
                 self.has_recipe(state, recipe) 
                     and (not recipe.inputs or self.can_produce_all_allowing_handcrafting(state, logic, recipe.inputs))
@@ -68,10 +68,10 @@ class StateLogic:
                 not self.can_build_any(state, ("Pipeline Pump Mk.1", "Pipeline Pump Mk.2"))):
             return False
         
-        if recipe.is_radio_active and not self.can_produce_all(state, ("Hazmat Suit", "Iodine Infused Filter")): 
+        if recipe.is_radio_active and not self.can_produce_all(state, ("Hazmat Suit", "Iodine-Infused Filter")): 
             return False
         
-        if not self.options.experimental_generation and recipe.minimal_belt_speed and \
+        if recipe.minimal_belt_speed and \
                 not self.can_build_any(state, map(self.to_belt_name, range(recipe.minimal_belt_speed, 6))):
             return False
 
@@ -79,8 +79,13 @@ class StateLogic:
             and self.can_build(state, recipe.building) \
             and self.can_produce_all(state, recipe.inputs)
     
-    def is_game_phase(self, state: CollectionState, phase: int) -> bool:
-        return state.has(f"Elevator Tier {phase}", self.player)
+    def is_elevator_tier(self, state: CollectionState, phase: int) -> bool:
+        limited_phase = min(self.options.final_elevator_package - 1, phase)
+
+        if limited_phase != 0:
+            return state.has(f"Elevator Tier {limited_phase}", self.player)
+        else:
+            return True
     
     @staticmethod
     def to_part_event(part: str) -> str:

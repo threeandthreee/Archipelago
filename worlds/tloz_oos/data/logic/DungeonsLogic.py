@@ -6,8 +6,8 @@ def make_d0_logic(player: int):
         # 0 keys
         ["enter d0", "d0 key chest", False, None],
         ["enter d0", "d0 rupee chest", False, lambda state:
-        # If hole is removed, stairs are added inside dungeon to make the chest reachable
-        oos_option_no_d0_alt_entrance(state, player),
+            # If hole is removed, stairs are added inside dungeon to make the chest reachable
+            oos_option_no_d0_alt_entrance(state, player),
          ],
         ["d0 rupee chest", "enter d0", False, None],
         ["enter d0", "d0 hidden 2d section", False, lambda state: any([
@@ -245,13 +245,24 @@ def make_d4_logic(player: int):
         ])],
 
         ["enter d4", "d4 roller minecart", False, lambda state: all([
-            oos_has_flippers(state, player),
             oos_has_small_keys(state, player, 4, 1),
-            oos_has_feather(state, player)
+            oos_has_feather(state, player),
+            any([
+                oos_has_flippers(state, player),
+                all([
+                    oos_option_hell_logic(state, player),
+                    oos_has_cape(state, player),
+                    oos_can_use_pegasus_seeds(state, player),
+                    oos_has_bombs(state, player)
+                ])
+            ])
         ])],
 
         ["d4 roller minecart", "d4 pool", False, lambda state: all([
-            oos_has_flippers(state, player),
+            any([
+                oos_has_flippers(state, player),
+                oos_option_medium_logic(state, player)
+            ]),
             any([
                 oos_can_kill_normal_enemy(state, player),
                 all([
@@ -400,12 +411,21 @@ def make_d5_logic(player: int):
         ["enter d5", "d5 left chest", False, lambda state: any([
             oos_has_magnet_gloves(state, player),
             oos_has_cape(state, player),
-            oos_can_jump_4_wide_pit(state, player),
+            all([
+                # Tight bomb jump to reach the chest
+                oos_option_hell_logic(state, player),
+                oos_can_jump_3_wide_liquid(state, player),
+            ])
         ])],
 
         ["enter d5", "d5 spiral chest", False, lambda state: any([
             oos_can_kill_armored_enemy(state, player),
-            oos_has_shield(state, player)
+            # Push everyone into holes
+            oos_has_shield(state, player),
+            all([
+                oos_option_medium_logic(state, player),
+                oos_has_shovel(state, player)
+            ])
         ])],
 
         ["enter d5", "d5 terrace chest", False, lambda state: oos_has_magnet_gloves(state, player)],
@@ -413,7 +433,7 @@ def make_d5_logic(player: int):
         ["d5 terrace chest", "armos knights owl", False, lambda state: oos_can_use_mystery_seeds(state, player)],
         ["d5 terrace chest", "d5 armos chest", False, lambda state: oos_can_kill_armored_enemy(state, player)],
 
-        ["enter d5", "d5 cart bay", False, lambda state: all([
+        ["enter d5", "d5 cart bay", False, lambda state: any([
             oos_has_flippers(state, player),
             oos_can_jump_2_wide_liquid(state, player)
         ])],
@@ -434,11 +454,11 @@ def make_d5_logic(player: int):
             oos_can_trigger_lever_from_minecart(state, player),
             any([
                 oos_can_kill_armored_enemy(state, player),
+                # Pushing is also an option but doesn't impact logic in any way
                 all([
                     oos_option_medium_logic(state, player),
                     # Pull the darknut in the water
-                    oos_has_magnet_gloves(state, player),
-                    # Shield is also an option but doesn't impact logic in any way
+                    oos_has_magnet_gloves(state, player)
                 ])
             ])
         ])],
@@ -481,6 +501,7 @@ def make_d5_logic(player: int):
         ["d5 entrance", "d5 basement", False, lambda state: all([
             oos_self_locking_small_key(state, player, "d5 basement", 5),
             state.has("_dropped_d5_magnet_ball", player),
+            oos_has_small_keys(state, player, 5, 3),
             oos_has_magnet_gloves(state, player),
             any([
                 oos_can_kill_magunesu(state, player),
@@ -592,7 +613,20 @@ def make_d6_logic(player: int):
                     # Go through beamos room
                     oos_has_bombs(state, player),
 
-                    state.has("_can_kill_vire", player)
+                    any([
+                        # Kill Vire (the rest doesn't matter because we don't care about not being able to not spend a key somewhere)
+                        oos_has_sword(state, player, False),
+                        oos_has_fools_ore(state, player),
+                        all([
+                            oos_option_medium_logic(state, player),
+                            oos_has_bombs(state, player, 4)
+                        ]),
+                        all([
+                            # Fist Ring doesn't damage Vire
+                            state.has("expert's ring", player),
+                            oos_option_medium_logic(state, player)
+                        ])
+                    ])
                 ]),
                 all([
                     oos_has_small_keys(state, player, 6, 2),
@@ -600,15 +634,26 @@ def make_d6_logic(player: int):
                         # Go through beamos room
                         oos_has_bombs(state, player),
 
-                        state.has("_can_kill_vire", player)
+                        # Kill Vire
+                        oos_has_sword(state, player, False),
+                        oos_has_fools_ore(state, player),
+                        all([
+                            oos_option_medium_logic(state, player),
+                            oos_has_bombs(state, player, 4)
+                        ]),
+                        all([
+                            # Fist Ring doesn't damage Vire
+                            state.has("expert's ring", player),
+                            oos_option_medium_logic(state, player)
+                        ])
                     ])
                 ]),
                 oos_has_small_keys(state, player, 6, 3),
             ])
         ])],
 
-        ["d6 vire chest", "d6 kill vire", False, lambda state: all([
-            oos_has_small_keys(state, player, 6, 1),
+        ["d6 vire chest", "d6 enter vire", False, lambda state: all([
+            oos_has_small_keys(state, player, 6, 3),
             any([
                 # Kill Vire
                 oos_has_sword(state, player, False),
@@ -624,7 +669,7 @@ def make_d6_logic(player: int):
                 ])
             ])
         ])],
-        ["d6 kill vire", "d6 pre-boss room", False, lambda state: all([
+        ["d6 enter vire", "d6 pre-boss room", False, lambda state: all([
             oos_has_small_keys(state, player, 6, 3),
             any([
                 # Kill hardhats
@@ -678,14 +723,24 @@ def make_d7_logic(player: int):
             any([
                 # Kill poe sister
                 oos_can_kill_armored_enemy(state, player),
-                oos_has_rod(state, player),
-                oos_can_use_ember_seeds(state, player, True)
+                all([
+                    oos_option_medium_logic(state, player),
+                    oos_has_rod(state, player),
+                ]),
+                all([
+                    # Mystery isn't reasonable due to having only ~8.8% chance of not getting a gale before killing the sister
+                    oos_has_ember_seeds(state, player),
+                    any([
+                        oos_option_medium_logic(state, player),
+                        oos_has_satchel(state, player, 2)
+                    ])
+                ])
             ]),
             oos_has_bracelet(state, player)
         ])],
         ["enter d7", "d7 pot room", False, lambda state: all([
             # Poe skip
-            oos_option_hard_logic(state, player),
+            oos_option_hell_logic(state, player),
             oos_has_bombs(state, player),
             oos_can_use_pegasus_seeds(state, player),
             oos_has_feather(state, player),
@@ -708,6 +763,16 @@ def make_d7_logic(player: int):
         ["d7 pot room", "d7 quicksand chest", False, lambda state: all([
             oos_has_small_keys(state, player, 7, 2),
             oos_has_feather(state, player)
+        ])],
+        ["d7 pot room", "d7 water stairs", False, lambda state: all([
+            # poe skip 2 : https://youtu.be/MIMm6q_yGyQ
+            oos_option_hell_logic(state, player),
+            oos_has_small_keys(state, player, 7, 2),
+            oos_has_bombs(state, player),
+            oos_has_cape(state, player),
+            oos_can_use_pegasus_seeds(state, player),
+            oos_has_flippers(state, player),
+            state.has("Swimmer's Ring", player)
         ])],
 
         # 3 keys
@@ -778,7 +843,30 @@ def make_d7_logic(player: int):
         # 4 keys
         ["d7 water stairs", "d7 maze chest", False, lambda state: all([
             oos_has_small_keys(state, player, 7, 4),
-            oos_can_kill_armored_enemy(state, player),  # Moldorms are more restrictive than Poe sisters to kill
+            any([
+                oos_can_kill_armored_enemy(state, player),
+                all([
+                    oos_option_medium_logic(state, player),
+                    any([
+                        # For the moldorms
+                        oos_has_shovel(state, player),
+                        oos_has_shield(state, player)
+                    ]),
+                    any([
+                        # Kill poe sisters
+                        oos_has_rod(state, player),
+                        all([
+                            # 18 embers are needed to kill the boss
+                            oos_has_ember_seeds(state, player),
+                            any([
+                                oos_option_hard_logic(state, player),
+                                oos_has_bombs(state, player),  # refill embers in the middle
+                                oos_has_satchel(state, player, 2)
+                            ])
+                        ])
+                    ]),
+                ])
+            ]),
             oos_can_jump_3_wide_liquid(state, player),  # Technically not a liquid but a diagonal pit
         ])],
 
@@ -794,6 +882,7 @@ def make_d7_logic(player: int):
 
         # 5 keys
         ["d7 entrance", "d7 stalfos chest", False, lambda state: all([
+            oos_has_small_keys(state, player, 7, 4),
             oos_self_locking_small_key(state, player, "d7 stalfos chest", 7),
             any([
                 oos_can_jump_5_wide_pit(state, player),
@@ -864,7 +953,7 @@ def make_d8_logic(player: int):
             any([
                 oos_has_hyper_slingshot(state, player),
                 all([
-                    oos_option_hard_logic(state, player),
+                    oos_option_hell_logic(state, player),
                     any([
                         oos_can_use_ember_seeds(state, player, False),
                         oos_can_use_scent_seeds(state, player),
@@ -909,7 +998,7 @@ def make_d8_logic(player: int):
             any([
                 oos_has_hyper_slingshot(state, player),
                 all([
-                    oos_option_hard_logic(state, player),
+                    oos_option_hell_logic(state, player),
                     any([
                         oos_can_use_ember_seeds(state, player, False),
                         oos_can_use_scent_seeds(state, player),

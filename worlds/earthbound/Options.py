@@ -139,6 +139,7 @@ class PresentSprites(DefaultOnToggle):
     """If enabled, Presents, Trash cans, and chests will have their appearance modified to be indicative of the item they contain."""
     display_name = "Match Present Sprites"
 
+
 class NoAPPresents(Toggle):
     """If enabled, present that contain items for other players will appear as EarthBound presents (trashcan, present, and chest) instead of Archipelago boxes.
        Does nothing if Presents Match Contents is disabled."""
@@ -178,6 +179,14 @@ class RareWeight(Range):
     range_start = 0
     range_end = 100
     default = 5
+
+
+class MoneyWeight(Range):
+    """Weight for placing money in the item pool."""
+    display_name = "Money Weight"
+    range_start = 0
+    range_end = 100
+    default = 0
 
 
 class ExperienceModifier(Range):
@@ -378,14 +387,17 @@ class SkipEpilogue(Toggle):
     display_name = "Skip Epilogue"
     visibility = Visibility.template
 
+
 class EnergyLink(Toggle):
     """If enabled, the money in the ATM will be linked across the Archipelago Server.
        This requires a server connection to be used, but won't break offline play."""
     display_name = "Energy Link"
 
+
 class DungeonShuffle(Toggle):
     """Shuffles Dungeon entrances amongst each other."""
     display_name = "Dungeon Shuffle"
+
 
 class PhotoCount(Range):
     """How many Photograph traps are placed in the item pool."""
@@ -394,21 +406,44 @@ class PhotoCount(Range):
     range_end = 32
     default = 20
 
+
 class EasyCombat(Toggle):
     """Automatically halves all scaled enemy levels."""
     display_name = "Easy Combat"
+
 
 class EnemizerStats(Toggle):
     """Randomizes base stats and level of non-boss enemies."""
     display_name = "Randomize Enemy Stats"
 
+
 class EnemizerAttacks(Toggle):
     """Randomizes attacks of non-boss enemies."""
     display_name = "Randomize Enemy Attacks"
 
+
 class EnemizerAttributes(Toggle):
     """Randomizes most attributes of non-boss enemies."""
     display_name = "Randomize Enemy Attributes"
+
+
+class RandomMapColors(Choice):
+    """Randomizes map colors.
+       Normal: Uses normal colors
+       Nice: Uses generally good looking palettes for maps with little artifacting.
+       Ugly: Allows map palettes with artifacting or colors that may not look good.
+       Nonsense: Allows really bad palettes or heavy artifacting."""
+    display_name = "Shuffle Map Palettes"
+    option_normal = 0
+    option_nice = 1
+    option_ugly = 2
+    option_nonsense = 3
+    default = 0
+
+class SafeFinalBoss(DefaultOnToggle):
+    """Prevents specific difficult bosses from being randomized onto Heavily Armed Pokey's boss slot.
+       Only affects Boss Shuffle, and does not affect Phase 2 Giygas if Boss Shuffle Add Giygas is enabled."""
+    display_name = "Safe Final Boss"
 
 
 @dataclass
@@ -429,6 +464,7 @@ class EBOptions(PerGameCommonOptions):
     boss_shuffle: BossShuffle
     decouple_diamond_dog: DecoupleDiamondDog
     boss_shuffle_add_giygas: ShuffleGiygas
+    safe_final_boss: SafeFinalBoss
     randomize_enemy_attributes: EnemizerAttributes
     randomize_enemy_stats: EnemizerStats
     randomize_enemy_attacks: EnemizerAttacks
@@ -457,12 +493,14 @@ class EBOptions(PerGameCommonOptions):
     common_filler_weight: CommonWeight
     uncommon_filler_weight: UncommonWeight
     rare_filler_weight: RareWeight
+    money_weight: MoneyWeight
     plando_lumine_hall_text: PlandoLumineHallText
     no_free_sanctuaries: NoFreeSancs
     randomize_overworld_music: RandomizeOverworldMusic
     randomize_battle_music: RandomizeBattleMusic
     randomize_fanfares: RandomizeFanfares
     randomize_psi_palettes: RandomizePSIPalettes
+    map_palette_shuffle: RandomMapColors
     shop_randomizer: ShopRandomizer
     scout_shop_checks: ScoutShopChecks
     dungeon_shuffle: DungeonShuffle
@@ -489,6 +527,7 @@ eb_option_groups = [
         CommonWeight,
         UncommonWeight,
         RareWeight,
+        MoneyWeight,
         PreFixItems,
         PhotoCount
     ]),
@@ -516,6 +555,7 @@ eb_option_groups = [
     OptionGroup("Enemy Randomization", [
         EnemyShuffle,
         BossShuffle,
+        SafeFinalBoss,
         DecoupleDiamondDog,
         ShuffleGiygas,
         ExperienceModifier,
@@ -552,6 +592,7 @@ eb_option_groups = [
         RandomFlavors,
         RandomSwirlColors,
         RandomBattleBG,
+        RandomMapColors,
         PresentSprites,
         NoAPPresents,
         RandomizePSIPalettes,

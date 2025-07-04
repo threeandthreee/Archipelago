@@ -19,6 +19,9 @@ def parse(parser):
     esper_start.add_argument("-stesp", "--starting-espers", default = [0, 0], type = int,
                                 nargs = 2, metavar = ("MIN", "MAX"), choices = range(MAX_STARTING_ESPERS + 1),
                                 help = "Party starts with %(metavar) random espers")
+    # -sen to specifically name the starting espers
+    esper_start.add_argument("-sen", "--starting-espers-named", type=str,
+                                help="Choose which specific espers will the party start with")
 
     esper_spells = espers.add_mutually_exclusive_group()
 
@@ -99,6 +102,25 @@ def process(args):
     if args.esper_equipable_balanced_random is not None:
         args.esper_equipable_balanced_random_value = args.esper_equipable_balanced_random
         args.esper_equipable_balanced_random = True
+
+    # initialize list of starting espers
+    args.starting_espers_list = []
+    # if specific starting espers
+    if args.starting_espers_named:
+        from ..constants.espers import id_esper
+        # loop over all esper IDs separated by commas
+        for an_esper_id_str in args.starting_espers_named.split(','):
+            an_esper_id = int(an_esper_id_str)
+            # if a valid esper ID
+            if an_esper_id >= 0 and an_esper_id < len(id_esper):
+                # if we haven't already added this into the list
+                if an_esper_id not in args.starting_espers_list:
+                    # add to the list of starting espers to be processed in data/espers.py
+                    args.starting_espers_list.append(an_esper_id)
+            # else not a valid esper ID
+            else:
+                args.parser.print_usage()
+                raise ValueError(f"Error! Starting Esper ID not valid: {an_esper_id}")
 
 def flags(args):
     flags = ""

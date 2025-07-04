@@ -2,10 +2,11 @@ from ..game_data.local_data import item_id_table, character_item_table, party_id
 from ..game_data.text_data import text_encoder
 from ..game_data.static_location_data import location_groups
 from ..modules.shopsanity import shop_locations
+from ..Options import ShopRandomizer, MagicantMode
 import struct
 
 
-def setup_hints(world):
+def setup_hints(world) -> None:
     hint_types = [
         # gives a hint for a specific out of the way location in this player's world, regardless of what item it is
         "item_at_location",
@@ -150,7 +151,7 @@ def setup_hints(world):
 
     hintable_location_groups = location_groups.copy()
 
-    if world.options.shop_randomizer != 2:
+    if world.options.shop_randomizer != ShopRandomizer.option_shopsanity:
         hintable_location_groups["Onett"] = hintable_location_groups["Onett"] - shop_locations
         hintable_location_groups["Twoson"] = hintable_location_groups["Twoson"] - shop_locations
         hintable_location_groups["Happy-Happy Village"] = hintable_location_groups["Happy-Happy Village"] - shop_locations
@@ -205,7 +206,7 @@ def setup_hints(world):
     if world.options.giygas_required:
         world.local_hintable_locations.append("Cave of the Past - Present")
     
-    if world.options.magicant_mode == 0:
+    if world.options.magicant_mode == MagicantMode.option_psi_location:
         world.local_hintable_locations.append("Magicant - Ness's Nightmare")
 
     for i in range(6):
@@ -235,7 +236,7 @@ def setup_hints(world):
             world.hinted_dungeons[index] = dungeon
 
 
-def parse_hint_data(world, location, rom, hint, index):
+def parse_hint_data(world, location, rom, hint, index) -> None:
     if hint == "item_at_location":
         if world.player == location.item.player and location.item.name in character_item_table and location.item.name != "Photograph":
             player_text = "your friend "
@@ -250,7 +251,7 @@ def parse_hint_data(world, location, rom, hint, index):
                 # if the item doesn't have a name (e.g it's PSI)
                 item_text = text_encoder(location.item.name, 128)
         else:
-            player_text = f"{world.multiworld.get_player_name(location.item.player)}'s"
+            player_text = f"{world.multiworld.get_player_name(location.item.player)}'s "
             item_text = text_encoder(location.item.name, 128)
 
         player_text = text_encoder(player_text, 255)
@@ -300,10 +301,10 @@ def parse_hint_data(world, location, rom, hint, index):
                 if location.parent_region.name == "Menu":
                     area = ""
                 else:
-                    area = f"near {location.parent_region.name}"
+                    area = f" near {location.parent_region.name}"
             else:
-                area = f"near {world.random.choice(possible_location_groups)}"
-            location_text = text_encoder(f"@somewhere {area}.", 255)
+                area = f" near {world.random.choice(possible_location_groups)}"
+            location_text = text_encoder(f"@somewhere{area}.", 255)
             # your [item] can be found by [player] somewhere near [location group]
         text = item_text + player_text + location_text
         text.append(0x02)

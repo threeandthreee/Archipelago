@@ -1,12 +1,12 @@
 # Syncs the room flag with the global maku tree flag set in the first room
-09/3df9/: |
+09/7df9/: |
   ld a,($c80b)
   or (hl)
   ld (hl),a
   ld ($c80b),a
   ret
 
-09/3dc0/checkMakuItemObtained: |
+09/7dc0/checkMakuItemObtained: |
   call getThisRoomFlags
   call $7df9
   ld a,($c80b)
@@ -22,7 +22,7 @@
 # - Item obtained, enough essences collected (give Maku Seed)
 # - Maku Seed obtained
 # - Game completed
-09/3d8b/: |
+09/7d8b/: |
   call checkMakuItemObtained
   jr nz,@gnarledObtained
   xor a
@@ -57,7 +57,7 @@
   ret
 
 # Change the sign text to tell how many essences are required to get the Maku seed
-1f/102a/makuSignText: |
+1f/502a/makuSignText: |
   db $05,$b0,$20
   db $30 + option.requiredEssences
   db $20,$02,$35,$01,$05,$79,$05,$0f,$03,$94,$05,$59,$21
@@ -71,5 +71,5 @@
   ; Otherwise, use essence count as room offset
   jp c,getEssenceCount
   ret
-04/05e8/: call determineMakuTreeRoomOffset
+04/45e8/: call determineMakuTreeRoomOffset
 

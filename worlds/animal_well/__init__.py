@@ -11,7 +11,7 @@ from .items import item_name_to_id, item_table, item_name_groups, filler_items, 
 from .locations import location_name_groups, location_name_to_id
 from .region_data import AWData, traversal_requirements
 from .region_scripts import create_regions_and_set_rules
-from .options import AnimalWellOptions, aw_option_presets, Goal, FinalEggLocation, aw_option_groups
+from .options import AnimalWellOptions, aw_option_presets, Goal, FinalEggLocation, aw_option_groups, BunniesAsChecks
 from .names import ItemNames, LocationNames, RegionNames
 # todo: remove animal_well_map.pdn
 
@@ -77,7 +77,7 @@ class AnimalWellWorld(World):
     """
     game = "ANIMAL WELL"
     web = AnimalWellWeb()
-    version_string: str = "v0.5.2"
+    version_string: str = "v0.5.3"
 
     options: AnimalWellOptions
     options_dataclass = AnimalWellOptions
@@ -88,9 +88,6 @@ class AnimalWellWorld(World):
 
     item_name_to_id = item_name_to_id
     location_name_to_id = location_name_to_id
-
-    # todo: remove later
-    topology_present = True
 
     traversal_requirements: Dict[Union[LocationNames, RegionNames], Dict[Union[LocationNames, RegionNames], AWData]]
 
@@ -104,10 +101,8 @@ class AnimalWellWorld(World):
         create_regions_and_set_rules(self)
 
         if self.options.exclude_song_chests:
-            self.multiworld.get_location(LocationNames.wheel_chest.value, self.player).progress_type \
-                = LocationProgressType.EXCLUDED
-            self.multiworld.get_location(LocationNames.key_office.value, self.player).progress_type \
-                = LocationProgressType.EXCLUDED
+            self.get_location(LocationNames.wheel_chest.value).progress_type = LocationProgressType.EXCLUDED
+            self.get_location(LocationNames.key_office.value).progress_type = LocationProgressType.EXCLUDED
 
     def create_item(self, name: str) -> AWItem:
         item_data = item_table[name]
@@ -141,8 +136,8 @@ class AnimalWellWorld(World):
             items_to_create[ItemNames.match.value] = 0
             items_to_create[ItemNames.matchbox.value] = 1
 
-        # UV Lamp isn't needed for anything if bunnies as checks is off
-        if not self.options.bunnies_as_checks:
+        # UV Lamp isn't needed for anything if bunnies as checks is off or tedious
+        if self.options.bunnies_as_checks != BunniesAsChecks.option_all_bunnies:
             items_to_create[ItemNames.uv.value] = 0
             aw_items.append(self.create_item_alt(ItemNames.uv.value, ItemClassification.useful))
 

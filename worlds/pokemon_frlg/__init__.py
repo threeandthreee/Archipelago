@@ -12,7 +12,7 @@ import threading
 from collections import defaultdict
 from typing import Any, ClassVar, Dict, List, Set, TextIO
 
-from BaseClasses import CollectionState, ItemClassification, LocationProgressType, MultiWorld, Tutorial
+from BaseClasses import CollectionState, ItemClassification, LocationProgressType, MultiWorld, Tutorial, Item
 from Fill import fill_restrictive, FillError
 from worlds.AutoWorld import WebWorld, World
 from entrance_rando import ERPlacementState
@@ -40,6 +40,11 @@ from .rom import PokemonFRLGPatchData, PokemonFireRedProcedurePatch, PokemonLeaf
 from .sanity_check import validate_regions
 from .util import int_to_bool_array, HM_TO_COMPATIBILITY_ID
 
+# Try adding the Pokemon Gen 3 Adjuster
+try:
+    from worlds._pokemon_gen3_adjuster import __init__
+except ImportError:
+    pass
 
 class PokemonFRLGWebWorld(WebWorld):
     """
@@ -54,7 +59,16 @@ class PokemonFRLGWebWorld(WebWorld):
         ["Vyneras"]
     )
 
-    tutorials = [setup_en]
+    adjuster_en = Tutorial(
+        "Usage Guide",
+        "A guide to use the Pokemon Gen 3 Adjuster with Pokemon Firered/Leafgreen.",
+        "English",
+        "adjuster_en.md",
+        "adjuster/en",
+        ["RhenaudTheLukark"]
+    )
+
+    tutorials = [setup_en, adjuster_en]
 
 
 class PokemonFRLGSettings(settings.Group):
@@ -119,8 +133,11 @@ class PokemonFRLGWorld(World):
     blacklisted_wild_pokemon: Set[int]
     blacklisted_starters: Set[int]
     blacklisted_trainer_pokemon: Set[int]
+    blacklisted_legendary_pokemon: Set[int]
+    blacklisted_misc_pokemon: Set[int]
     blacklisted_abilities: Set[int]
     blacklisted_moves: Set[int]
+    blacklisted_tm_tutor_moves: Set[int]
     trainer_name_level_dict: Dict[str, int]
     trainer_name_list: List[str]
     trainer_level_list: List[int]
@@ -199,8 +216,23 @@ class PokemonFRLGWorld(World):
         if "Legendaries" in self.options.trainer_blacklist.value:
             self.blacklisted_trainer_pokemon |= LEGENDARY_POKEMON
 
+        self.blacklisted_legendary_pokemon = {
+            species.species_id for species in self.modified_species.values()
+            if species.name in self.options.legendary_pokemon_blacklist.value
+        }
+        if "Legendaries" in self.options.legendary_pokemon_blacklist.value:
+            self.blacklisted_legendary_pokemon |= LEGENDARY_POKEMON
+
+        self.blacklisted_misc_pokemon = {
+            species.species_id for species in self.modified_species.values()
+            if species.name in self.options.misc_pokemon_blacklist.value
+        }
+        if "Legendaries" in self.options.misc_pokemon_blacklist.value:
+            self.blacklisted_misc_pokemon |= LEGENDARY_POKEMON
+
         self.blacklisted_abilities = {ability_name_map[name] for name in self.options.ability_blacklist.value}
         self.blacklisted_moves = {move_name_map[name] for name in self.options.move_blacklist.value}
+        self.blacklisted_tm_tutor_moves = {move_name_map[name] for name in self.options.tm_tutor_moves_blacklist.value}
 
         # Modify options that are incompatible with each other
         if self.options.kanto_only:
@@ -353,11 +385,11 @@ class PokemonFRLGWorld(World):
 
         self.itempool = [self.create_item_by_id(location.default_item_id) for location in item_locations]
 
-        items_to_remove: List[PokemonFRLGItem] = list()
-        items_to_add: List[PokemonFRLGItem] = list()
+        items_to_remove: List[PokemonFRLGItem] = []
+        items_to_add: List[PokemonFRLGItem] = []
 
         if not self.options.shuffle_badges:
-            badge_items = [self.create_item(badge) for badge in item_groups["Badges"]]
+            badge_items = [self.create_item(badge) for badge in sorted(item_groups["Badges"])]
             items_to_remove.extend(badge_items)
             self.pre_fill_items.extend(badge_items)
 
@@ -417,8 +449,8 @@ class PokemonFRLGWorld(World):
 
         # Add key items that are relevant in Kanto Only to the itempool
         if self.options.kanto_only:
-            items_to_add = ["HM06 Rock Smash", "HM07 Waterfall", "Sun Stone"]
-            for item_name in items_to_add:
+            item_names = ["HM06 Rock Smash", "HM07 Waterfall", "Sun Stone"]
+            for item_name in item_names:
                 self.itempool.append(self.create_item(item_name))
                 self.itempool.remove(filler_items.pop())
 
@@ -443,7 +475,7 @@ class PokemonFRLGWorld(World):
         # Delete evolutions that are not in logic in an all state so that the accessibility check doesn't fail
         evolution_region = self.multiworld.get_region("Evolutions", self.player)
         for location in evolution_region.locations.copy():
-            if not state.can_reach(location, self.player):
+            if not location.can_reach(state):
                 evolution_region.locations.remove(location)
 
         # Delete trainersanity locations if there are more than the amount specified in the settings
@@ -471,7 +503,7 @@ class PokemonFRLGWorld(World):
             # Delete dexsanity locations that are not in logic in an all state since they aren't accessible
             pokedex_region = self.multiworld.get_region("Pokedex", self.player)
             for location in pokedex_region.locations.copy():
-                if not state.can_reach(location, self.player):
+                if not location.can_reach(state):
                     pokedex_region.locations.remove(location)
                     self.itempool.remove(filler_items.pop())
 
@@ -492,6 +524,8 @@ class PokemonFRLGWorld(World):
                         break
 
         self.multiworld.itempool += self.itempool
+        # Any unreachable evolutions have been removed, so update the species items oak's aides and dexsanity check for.
+        self.logic.update_species(self)
 
     def connect_entrances(self) -> None:
         set_free_fly(self)
@@ -512,13 +546,9 @@ class PokemonFRLGWorld(World):
             ]
             state = self.get_world_collection_state()
             # Try to place badges with current Pokemon and HM access
-            # If it can't, try with all Pokemon collected and fix the HM access after
+            # If it can't, try with guaranteed HM access and fix it later
             if attempt > 1:
-                for species in data.species.values():
-                    state.collect(PokemonFRLGItem(species.name,
-                                                      ItemClassification.progression_skip_balancing,
-                                                      None,
-                                                      self.player))
+                self.logic.guaranteed_hm_access = True
             state.sweep_for_advancements()
             self.random.shuffle(badge_items)
             self.random.shuffle(badge_locations)
@@ -534,6 +564,7 @@ class PokemonFRLGWorld(World):
                 break
         else:
             raise FillError(f"Failed to place badges for player {self.player}")
+        self.logic.guaranteed_hm_access = False
         verify_hm_accessibility(self)
 
     def generate_basic(self) -> None:
@@ -760,10 +791,11 @@ class PokemonFRLGWorld(World):
             for exit in self.get_region("Sky").exits:
                 slot_data["randomize_fly_destinations"][exit.name] = exit.connected_region.name
         if self.options.dungeon_entrance_shuffle != DungeonEntranceShuffle.option_off:
-            slot_data["dungeon_entrance_shuffle"] = {}
+            slot_data["dungeon_entrance_shuffle"] = []
             for source, dest in self.er_placement_state.pairings:
-                slot_data["dungeon_entrance_shuffle"][source] = dest
+                slot_data["dungeon_entrance_shuffle"].append(source)
         slot_data["wild_encounters"] = {}
+        slot_data["static_encounters"] = {}
         for location in self.get_locations():
             assert isinstance(location, PokemonFRLGLocation)
             if location.category == LocationCategory.EVENT_WILD_POKEMON:
@@ -771,7 +803,13 @@ class PokemonFRLGWorld(World):
                 if national_dex_id not in slot_data["wild_encounters"]:
                     slot_data["wild_encounters"][national_dex_id] = []
                 slot_data["wild_encounters"][national_dex_id].append(location.name)
-        slot_data["apworld_version"] = APWORLD_VERSION
+            elif location.category in (LocationCategory.EVENT_STATIC_POKEMON,
+                                       LocationCategory.EVENT_LEGENDARY_POKEMON):
+                if location.item.name.startswith("Missable"):
+                    continue
+                pokemon_name = location.item.name.replace("Static ", "")
+                national_dex_id = data.species[NAME_TO_SPECIES_ID[pokemon_name]].national_dex_number
+                slot_data["static_encounters"][location.name] = national_dex_id
         slot_data["poptracker_checksum"] = POPTRACKER_CHECKSUM
         return slot_data
 
@@ -798,4 +836,31 @@ class PokemonFRLGWorld(World):
         return state
 
     def get_pre_fill_items(self):
-        return self.pre_fill_items
+        pre_fill_items = self.pre_fill_items.copy()
+        if self.logic.guaranteed_hm_access:
+            for hm in ["Cut", "Fly", "Surf", "Strength", "Flash", "Rock Smash", "Waterfall"]:
+                pre_fill_items.append(PokemonFRLGItem(f"Teach {hm}",
+                                                      ItemClassification.progression,
+                                                      None,
+                                                      self.player))
+        return pre_fill_items
+
+    def collect(self, state: "CollectionState", item: "Item") -> bool:
+        changed = super().collect(state, item)
+        if changed:
+            item_name = item.name
+            if item_name in self.logic.pokemon_hm_use:
+                state.prog_items[self.player].update(self.logic.pokemon_hm_use[item_name])
+            return True
+        else:
+            return False
+
+    def remove(self, state: "CollectionState", item: "Item") -> bool:
+        changed = super().remove(state, item)
+        if changed:
+            item_name = item.name
+            if item_name in self.logic.pokemon_hm_use:
+                state.prog_items[self.player].subtract(self.logic.pokemon_hm_use[item_name])
+            return True
+        else:
+            return False

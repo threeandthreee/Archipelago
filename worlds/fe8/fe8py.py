@@ -4,11 +4,17 @@ from random import Random
 from collections import defaultdict
 from dataclasses import dataclass
 from enum import IntEnum
+import operator
+import itertools
+import functools
 import logging
 
 from typing import Any, Union, Optional, Callable, Iterable, Tuple
 
-from .util import fetch_json, write_short_le, read_short_le, read_word_le
+from .util import fetch_json, write_short_le, read_short_le, read_word_le, write_word_le
+
+# XXX: most python lsps can't handle `from .constants import *`, so we have to
+# specify these manually...
 from .constants import (
     ROM_BASE_ADDRESS,
     CHAPTER_UNIT_SIZE,
@@ -21,10 +27,12 @@ from .constants import (
     CHARACTER_SIZE,
     CHARACTER_WRANK_OFFSET,
     CHARACTER_STATS_OFFSET,
+    CHARACTER_GROWTHS_OFFSET,
     CHAR_ABILITY_4_OFFSET,
     JOB_TABLE_BASE,
     JOB_SIZE,
     JOB_STATS_OFFSET,
+    JOB_CAPS_OFFSET,
     STATS_COUNT,
     EIRIKA,
     EIRIKA_LORD,
@@ -60,8 +68,10 @@ from .constants import (
     INTERNAL_RANDO_WEAPONS_ENTRY_SIZE,
     INTERNAL_RANDO_WEAPONS_MAX_CLASSES,
     INTERNAL_RANDO_WEAPON_TABLE_ROWS,
+    FEMALE_JOBS,
+    SONG_TABLE_BASE,
+    SONG_SIZE,
 )
-
 
 DEBUG = False
 
@@ -70,6 +80,7 @@ DEBUG = False
 
 WEAPON_DATA = "data/weapondata.json"
 JOB_DATA = "data/jobdata.json"
+SONG_DATA = "data/songdata.json"
 CHARACTERS = "data/characters.json"
 CHAPTER_UNIT_BLOCKS = "data/chapter_unit_blocks.json"
 INTERNAL_RANDO_VALID_DISTRIBS = "data/internal_rando_distribs.json"
@@ -105,6 +116,19 @@ class UnitBlock:
         self.logic = defaultdict(
             dict, {int_if_possible(k): v for k, v in logic.items()}
         )
+
+
+class GrowthRandoKind(IntEnum):
+    NONE = 0
+    REDISTRIBUTE = 1
+    DELTA = 2
+    FULL = 3
+
+
+class MusicRandoKind(IntEnum):
+    VANILLA = 0
+    CONTEXT = 1
+    CHAOS = 2
 
 
 class WeaponKind(IntEnum):
@@ -336,7 +360,7 @@ class CharacterStore:
         return name in self.character_jobs
 
 
-# TODO: Eirika and Ephraim should be able to use their respective weapons if
+# CR cam: Eirika and Ephraim should be able to use their respective weapons if
 # they get randomized into the right class.
 def weapon_usable(weapon: WeaponData, job: JobData, logic: dict[str, Any]) -> bool:
     if weapon.kind not in job.usable_weapons:
@@ -355,7 +379,9 @@ def weapon_usable(weapon: WeaponData, job: JobData, logic: dict[str, Any]) -> bo
     return True
 
 
-# TODO: ensure that all the progression weapons are usable
+# CR cam: ensure that all the progression weapons are usable
+# CR-soon cam: This class does way too much. We should refactor this so things
+# like `apply_5x_buffs` can happen external to this class.
 class FE8Randomizer:
     unit_blocks: dict[str, list[UnitBlock]]
     weapons_by_id: dict[int, WeaponData]
@@ -366,6 +392,7 @@ class FE8Randomizer:
     valid_distribs_by_row: dict[int, list[int]]
     promoted_jobs: list[JobData]
     unpromoted_jobs: list[JobData]
+    songs: dict[str, dict[int, str]]
 
     random: Random
     rom: bytearray
@@ -417,23 +444,32 @@ class FE8Randomizer:
         for weap in self.weapons_by_id.values():
             self.weapons_by_rank[weap.rank].append(weap)
 
-        # Dark has no E-ranked weapons, so we add Flux
+        # Dark has no E-ranked weapons by default.
         self.weapons_by_rank[WeaponRank.E].append(self.weapons_by_name["Flux"])
 
-        # Let's do the same thing with dogs
+        # cam: Should we allow Lyon to become a monster?
+
         self.weapons_by_rank[WeaponRank.D].append(self.weapons_by_name["Fiery Fang"])
         self.weapons_by_rank[WeaponRank.C].append(self.weapons_by_name["Fiery Fang"])
         self.weapons_by_rank[WeaponRank.A].append(self.weapons_by_name["Hellfang"])
+        self.weapons_by_rank[WeaponRank.S].append(self.weapons_by_name["Hellfang"])
 
         self.weapons_by_rank[WeaponRank.A].append(self.weapons_by_name["Fetid Claw"])
+        self.weapons_by_rank[WeaponRank.S].append(self.weapons_by_name["Fetid Claw"])
 
         # CR-soon cam:
         # Darr: Dragon zombies experience the same problem. I've disabled them for now;
         # they only have one weapon and E-rank Wretched Air does not sound fun.
+        #
         # Cam: What we need to do is prevent units from randomizing into Dracozombies
         # unless they have an A rank weapon. There are a few easy ways to hack that
         # in, but I'm going to punt on it for now because that's a bunch of design
         # decisions we can make later.
+
+        songdata = fetch_json(SONG_DATA)
+        self.songs = defaultdict(dict)
+        for song in songdata:
+            self.songs[song["category"]][int(song["id"], 16)] = song["name"]
 
     def job_valid(self, job: JobData, char: int, logic: dict[str, Any]) -> bool:
         # get list of tags that make the job invalid (notags)
@@ -486,9 +522,22 @@ class FE8Randomizer:
         if not choices:
             import json
 
-            logging.error("LOGIC ERROR: no viable weapons")
-            logging.error(f"  job: {job.name}")
-            logging.error(f"  logic: {json.dumps(logic, indent=2)}")
+            logging.warning("LOGIC ERROR: no viable weapons, defaulting to E rank")
+            logging.warning(f"  job: {job.name}")
+            logging.warning(f"  rank: {weapon_attrs.rank}")
+            logging.warning(f"  logic: {json.dumps(logic, indent=2)}")
+
+            choices = [
+                weap
+                for weap in self.weapons_by_rank[WeaponRank.E]
+                if weapon_usable(weap, job, dict())
+            ]
+
+            if not choices:
+                logging.warning(
+                    "LOGIC ERROR (2): still no viable weapons, defaulting to iron sword"
+                )
+                choices = [self.weapons_by_name["Iron Sword"]]
 
         return self.random.choice(choices).id
 
@@ -527,7 +576,12 @@ class FE8Randomizer:
         job_valid: Callable[[JobData], bool],
     ) -> JobData:
         new_job_pool = promoted_pool if job.is_promoted else unpromoted_pool
-        return self.random.choice([job for job in new_job_pool if job_valid(job)])
+        choices = [job for job in new_job_pool if job_valid(job)]
+        if not choices:
+            logging.warning("LOGIC ERROR: no valid jobs")
+            logging.warning(f"  original job: {job.name}")
+            return job
+        return self.random.choice(choices)
 
     def randomize_chapter_unit(self, data_offset: int, logic: dict[str, Any]) -> None:
         # We *could* read the full struct, but we only need a few individual
@@ -755,7 +809,9 @@ class FE8Randomizer:
                 pwr = 1 if job.is_promoted else 0
                 idx = weapon_tables[("Fang", pwr)]
                 row1 = (idx, 0, 0, 0, 0)
-                row1weights = ((25, 75) if job.is_promoted else (75, 25)) + (0, 0, 0)
+                row1weights = (
+                    (25, 75, 0, 0, 0) if job.is_promoted else (75, 25, 0, 0, 0)
+                )
                 row1distrib = (13, 0, 0, 0, 0)
             elif "MonsterDark" in job.tags:
                 match job.name:
@@ -836,6 +892,21 @@ class FE8Randomizer:
             for terrain_type in IMPORTANT_TERRAIN_TYPES:
                 if self.rom[entry + terrain_type] == 255:
                     self.rom[entry + terrain_type] = MOVEMENT_COST_SENTINEL
+
+    def normalize_genders(self) -> None:
+        for fjob, mjob in FEMALE_JOBS:
+            fjob_entry = JOB_TABLE_BASE + fjob * JOB_SIZE
+            mjob_entry = JOB_TABLE_BASE + mjob * JOB_SIZE
+
+            fjob_stats_base = fjob_entry + JOB_STATS_OFFSET
+            mjob_stats_base = mjob_entry + JOB_STATS_OFFSET
+
+            fjob_caps_base = fjob_entry + JOB_CAPS_OFFSET
+            mjob_caps_base = mjob_entry + JOB_CAPS_OFFSET
+
+            for i in range(STATS_COUNT + 1):
+                self.rom[fjob_stats_base + i] = self.rom[mjob_stats_base + i]
+                self.rom[fjob_caps_base + i] = self.rom[mjob_caps_base + i]
 
     def tweak_lords(self) -> None:
         for char, job, lock_mask in [
@@ -930,3 +1001,97 @@ class FE8Randomizer:
             weapon_base = ITEM_TABLE_BASE + weapon_id * ITEM_SIZE
             ability_1_base = weapon_base + ITEM_ABILITY_1_INDEX
             self.rom[ability_1_base] |= UNBREAKABLE_FLAG
+
+    def redistribute_growths(self, total: int) -> list[int]:
+        cuts = sorted(self.random.sample(range(1, total), STATS_COUNT))
+        result = []
+        overflow = 0
+        for st, end in zip([0]+cuts, cuts+[total]):
+            growth = end-st
+            if growth > 255:
+                result.append(255)
+                overflow += growth-255
+            else:
+                result.append(growth)
+        while overflow > 0:
+            available_indices = [i for i, g in enumerate(result) if g < 255]
+            if not available_indices:
+                break
+            i = self.random.choice(available_indices)
+            result[i] += overflow
+            if result[i] > 255:
+                overflow = result[i]-255
+                result[i] = 255
+        return result
+
+    def randomize_growths(self, kind: GrowthRandoKind, grmin: int, grmax: int) -> None:
+        if grmin > grmax:
+            grmin, grmax = grmax, grmin
+
+        player_ids: Iterable[int] = itertools.chain.from_iterable(
+            ids
+            for ids in (
+                self.character_store.lookup_ids(char)
+                for char in self.character_store.character_tags
+                if "player" in self.character_store.character_tags[char]
+            )
+            if ids is not None
+        )
+
+        def roll_delta() -> int:
+            delta = self.random.randint(grmin, grmax)
+            direction = self.random.choice([-1, 1])
+            return delta * direction
+
+        for char_id in player_ids:
+            char_base = CHARACTER_TABLE_BASE + CHARACTER_SIZE * char_id
+            growths_base = char_base + CHARACTER_GROWTHS_OFFSET
+            growths = list(self.rom[growths_base : growths_base + STATS_COUNT + 1])
+            new_growths: list[int]
+            match kind:
+                case GrowthRandoKind.NONE:
+                    return
+                case GrowthRandoKind.REDISTRIBUTE:
+                    total = sum(growths) + roll_delta()
+                    new_growths = self.redistribute_growths(total)
+                case GrowthRandoKind.DELTA:
+                    new_growths = [max(growth + roll_delta(), 0) for growth in growths]
+                case GrowthRandoKind.FULL:
+                    new_growths = [self.random.randint(grmin, grmax) for _ in growths]
+
+            for i in range(STATS_COUNT + 1):
+                self.rom[growths_base + i] = new_growths[i]
+
+    def generate_swaps(
+        self, songs: dict[int, str]
+    ) -> list[Tuple[Tuple[int, str], Tuple[int, str]]]:
+        ids = list(songs.items())
+        return list(zip(ids, self.random.sample(ids, k=len(ids))))
+
+    def randomize_music(self, kind: MusicRandoKind) -> None:
+        swaps: list[Tuple[Tuple[int, str], Tuple[int, str]]]
+        match kind:
+            case MusicRandoKind.VANILLA:
+                return
+            case MusicRandoKind.CONTEXT:
+                swaps = list(
+                    itertools.chain.from_iterable(
+                        self.generate_swaps(songs)
+                        for (_ctx, songs) in self.songs.items()
+                    )
+                )
+            case MusicRandoKind.CHAOS:
+                swaps = self.generate_swaps(
+                    functools.reduce(operator.or_, self.songs.values())
+                )
+
+        logging.debug("Music rando song swaps:")
+        ptrs: list[Tuple[int, int]] = []
+        for (baseid, basename), (newid, newname) in swaps:
+            logging.debug(f"  {basename} ({hex(baseid)}) -> {newname} ({hex(newid)})")
+            ptrs.append(
+                (baseid, read_word_le(self.rom, SONG_TABLE_BASE + newid * SONG_SIZE))
+            )
+
+        for id, ptr in ptrs:
+            write_word_le(self.rom, SONG_TABLE_BASE + id * SONG_SIZE, ptr)

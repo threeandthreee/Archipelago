@@ -1,4 +1,5 @@
 from typing import List, Optional, NamedTuple, TYPE_CHECKING
+from .Options import MagicantMode, ShopRandomizer
 
 if TYPE_CHECKING:
     from . import EarthBoundWorld
@@ -283,7 +284,7 @@ def get_locations(world: "EarthBoundWorld") -> List[LocationData]:
             LocationData("Ness's Mind", "+2 Sanctuaries", None)
         ]
 
-    if world.options.magicant_mode > 0 and world.options.magicant_mode < 3:
+    if world.options.magicant_mode in range(1, 3):
         location_table += [
             LocationData("Sea of Eden", "Magicant - Ness's Nightmare", None),
         ]
@@ -293,7 +294,7 @@ def get_locations(world: "EarthBoundWorld") -> List[LocationData]:
             LocationData("Sea of Eden", "Magicant - Ness's Nightmare", 0xEB00ED),
         ]
 
-    if world.options.magicant_mode < 2:
+    if world.options.magicant_mode < MagicantMode.option_alternate_goal:
         location_table += [
             LocationData("Magicant", "Magicant - Ness's Gift", 0xEB00E8),
             LocationData("Magicant", "Magicant - Present Near Ness", 0xEB00E9),
@@ -302,12 +303,12 @@ def get_locations(world: "EarthBoundWorld") -> List[LocationData]:
             LocationData("Magicant", "Magicant - Hills Present", 0xEB00EC),
             LocationData("Magicant", "Magicant - Town Present", 0xEB00FA)
         ]
-    if world.options.magicant_mode == 2:
+    if world.options.magicant_mode == MagicantMode.option_alternate_goal:
         location_table += [
             LocationData("Ness's Mind", "+1 Sanctuary", None)
         ]
 
-    if world.options.shop_randomizer == 2:
+    if world.options.shop_randomizer == ShopRandomizer.option_shopsanity:
         location_table += [
             LocationData("Onett", "Onett Drugstore - Right Counter Slot 1", 0xeb1000),
             LocationData("Onett", "Onett Drugstore - Right Counter Slot 2", 0xeb1001),
@@ -584,7 +585,7 @@ def get_locations(world: "EarthBoundWorld") -> List[LocationData]:
             LocationData("Andonuts Lab Area", "Andonuts Lab - Caveman Shop Slot 5", 0xeb11c4)
         ]
 
-        if world.options.magicant_mode < 2:
+        if world.options.magicant_mode < MagicantMode.option_alternate_goal:
             location_table += [
                 LocationData("Magicant", "Magicant - Shop Slot 1", 0xeb10f5),
                 LocationData("Magicant", "Magicant - Shop Slot 2", 0xeb10f6)

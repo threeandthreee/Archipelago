@@ -20,7 +20,7 @@ class Arguments:
             self.group_modules[group] = importlib.import_module(".args." + group, "worlds.ff6wc.WorldsCollide")
 
         from argparse import ArgumentParser
-        self.parser = ArgumentParser()
+        self.parser = ArgumentParser(exit_on_error=False)
 
         self.parser.add_argument("-i", dest = "input_file", required = True, help = "FFIII US v1.0 rom file")
         self.parser.add_argument("-o", dest = "output_file", required = False, help = "Modified FFIII US v1.0 rom file")
@@ -38,6 +38,7 @@ class Arguments:
             group.parse(self.parser)
 
         # self.parser.parse_args(ap_args, namespace = self)  # This uses `exit()` instead of raising exception
+        self.parser.exit_on_error = False
         _args, unrecognized_args = self.parser.parse_known_args(ap_args, namespace=self)
         if unrecognized_args:
             msg = f"unrecognized arguments: {' '.join(unrecognized_args)}"

@@ -63,6 +63,7 @@ from .patches import bank34
 from .roomEditor import RoomEditor, Object
 from .patches.aesthetics import rgb_to_bin, bin_to_rgb
 
+from .. import Common
 from .. import Options
 
 # Function to generate a final rom, this patches the rom with all required patches
@@ -87,7 +88,7 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
     if options["gfxmod"]:
         user_settings = settings.get_settings()
         try:
-            gfx_mod_file = user_settings["ladx_options"]["gfx_mod_file"]
+            gfx_mod_file = user_settings[f"{Common.DIRECTORY}_options"]["gfx_mod_file"]
             patches.aesthetics.gfxMod(rom, gfx_mod_file)
         except FileNotFoundError:
             pass # if user just doesnt provide gfxmod file, let patching continue
