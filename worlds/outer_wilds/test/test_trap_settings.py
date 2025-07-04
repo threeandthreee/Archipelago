@@ -1,4 +1,4 @@
-from . import OuterWildsTestBase
+from .bases import OuterWildsTestBase
 from ..items import repeatable_filler_weights
 
 trap_names = [

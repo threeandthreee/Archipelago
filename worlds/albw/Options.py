@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Dict
 from Options import PerGameCommonOptions, Choice, Range, Toggle
 import albwrandomizer
 
@@ -149,6 +150,11 @@ class SwordlessMode(Toggle):
     The Bug Net becomes a required item to play Dead Man's Volley against Yuga Ganon."""
     display_name = "Swordless Mode"
 
+class ChestSizeMatchesContents(Toggle):
+    """All chests containing progression items will become large, and others will be made small.
+    Note: Some large chests will have a reduced hitbox to prevent negative gameplay interference."""
+    display_name = "Chest Size Matches Contents"
+
 class TreacherousTowerFloors(Range):
     """Choose how many floors the Treacherous Tower should have (2-66)."""
     display_name = "Treacherous Tower Floors"
@@ -169,7 +175,7 @@ class Keysy(Choice):
     option_all = 3
 
 @dataclass
-class ALBWOptions(PerGameCommonOptions):
+class ALBWSpecificOptions:
     logic_mode: LogicMode
     randomize_dungeon_prizes: RandomizeDungeonPrizes
     lorule_castle_requirement: LoruleCastleRequirement
@@ -190,11 +196,16 @@ class ALBWOptions(PerGameCommonOptions):
     weather_vanes: WeatherVanes
     dark_rooms_lampless: DarkRoomsLampless
     swordless_mode: SwordlessMode
+    chest_size_matches_contents: ChestSizeMatchesContents
     treacherous_tower_floors: TreacherousTowerFloors
     purple_potion_bottles: PurplePotionBottles
     keysy: Keysy
 
-def create_randomizer_settings(options: ALBWOptions) -> albwrandomizer.Settings:
+@dataclass
+class ALBWOptions(PerGameCommonOptions, ALBWSpecificOptions):
+    pass
+
+def create_randomizer_settings(options: ALBWSpecificOptions) -> albwrandomizer.Settings:
     settings = albwrandomizer.Settings()
 
     settings.dev_mode = False
@@ -217,7 +228,7 @@ def create_randomizer_settings(options: ALBWOptions) -> albwrandomizer.Settings:
     settings.sword_in_shop = False
     settings.boots_in_shop = False
     settings.assured_weapon = bool(options.assured_weapon.value)
-    settings.chest_size_matches_contents = False
+    settings.chest_size_matches_contents = bool(options.chest_size_matches_contents.value)
     settings.minigames_excluded = bool(options.minigames_excluded.value)
     settings.skip_big_bomb_flower = bool(options.skip_big_bomb_flower.value)
     settings.treacherous_tower_floors = options.treacherous_tower_floors.value
@@ -263,8 +274,6 @@ def create_randomizer_settings(options: ALBWOptions) -> albwrandomizer.Settings:
         settings.cracksanity = albwrandomizer.Cracksanity.MirroredCrossWorldPairs
     elif options.crack_shuffle == CrackShuffle.option_mirrored_any_world_pairs:
         settings.cracksanity = albwrandomizer.Cracksanity.MirroredAnyWorldPairs
-    #TODO remove once crack shuffle is fixed
-    settings.cracksanity = albwrandomizer.Cracksanity.Off
     
     if options.weather_vanes == WeatherVanes.option_standard:
         settings.weather_vanes = albwrandomizer.WeatherVanes.Standard

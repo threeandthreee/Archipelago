@@ -10,7 +10,7 @@ class TestCustomNexusGates1(AnodyneTestBase):
     def test_requirement(self):
         self.assertFalse(self.can_reach_region("Apartment floor 1"))
         self.assertTrue(self.can_reach_region("Beach"))
-        self.assertFalse(self.can_reach_region("Bedroom"))
+        self.assertFalse(self.can_reach_region("Bedroom entrance"))
         self.assertFalse(self.can_reach_region("Blue"))
         self.assertFalse(self.can_reach_region("Cell"))
         self.assertFalse(self.can_reach_region("Circus"))
@@ -34,7 +34,7 @@ class TestCustomNexusGates2(AnodyneTestBase):
     def test_requirement(self):
         self.assertFalse(self.can_reach_region("Apartment floor 1"))
         self.assertFalse(self.can_reach_region("Beach"))
-        self.assertFalse(self.can_reach_region("Bedroom"))
+        self.assertFalse(self.can_reach_region("Bedroom entrance"))
         self.assertFalse(self.can_reach_region("Blue"))
         self.assertFalse(self.can_reach_region("Cell"))
         self.assertFalse(self.can_reach_region("Circus"))
@@ -56,34 +56,23 @@ class TestCustomNexusGates3(AnodyneTestBase):
 
     def test_requirement(self):
         self.assertFalse(self.can_reach_region("Apartment floor 1"))
-        self.assertFalse(self.can_reach_region("Beach"))
-        self.assertTrue(self.can_reach_region("Bedroom"))  # through the front, because of Street
+        self.assertTrue(self.can_reach_region("Beach"))
+        self.assertTrue(self.can_reach_region("Bedroom entrance"))  # through the front, because of Street
         self.assertFalse(self.can_reach_region("Blue"))
         self.assertTrue(self.can_reach_region("Cell"))
         self.assertTrue(self.can_reach_region("Circus"))
-        self.assertFalse(self.can_reach_region("Fields"))
-        self.assertFalse(self.can_reach_region("Red Cave top"))
+        self.assertTrue(self.can_reach_region("Fields"))
+        self.assertTrue(self.can_reach_region("Red Cave top"))
         self.assertFalse(self.can_reach_region("Red Cave left"))
         self.assertFalse(self.can_reach_region("Red Cave right"))
-        self.assertFalse(self.can_reach_region("Red Cave center"))
-        self.assertFalse(self.can_reach_region("Red Sea"))
+        self.assertTrue(self.can_reach_region("Red Cave center"))
+        self.assertTrue(self.can_reach_region("Red Sea"))
         self.assertTrue(self.can_reach_region("Overworld"))
         self.assertTrue(self.can_reach_region("Overworld post windmill"))
         self.assertTrue(self.can_reach_region("Space"))
-        self.assertFalse(self.can_reach_region("Cliff"))
+        self.assertTrue(self.can_reach_region("Cliff"))
         self.assertTrue(self.can_reach_region("Cliff post windmill"))
         self.assertFalse(self.can_reach_region("Crowd floor 1"))
         self.assertTrue(self.can_reach_region("Hotel roof"))
         self.assertFalse(self.can_reach_region("Hotel floor 1"))
         self.assertTrue(self.can_reach_region("Street"))
-
-
-class TestShuffledNexusGates(AnodyneTestBase):
-    options = {
-        "nexus_gate_shuffle": "all_except_endgame",
-    }
-
-    def test_requirement(self):
-        with self.assertRaises(Exception):
-            self.can_reach_location("GO - Warp Pad")
-        self.assertTrue(self.can_reach_location("Cliffs - Warp Pad"))

@@ -1,6 +1,7 @@
-from typing import TYPE_CHECKING, Dict, FrozenSet, Optional
+from typing import TYPE_CHECKING, Dict
 from BaseClasses import Item, ItemClassification
 from .data import data
+from .groups import item_groups
 
 if TYPE_CHECKING:
     from . import PokemonFRLGWorld
@@ -9,7 +10,7 @@ if TYPE_CHECKING:
 class PokemonFRLGItem(Item):
     game: str = "Pokemon FireRed and LeafGreen"
 
-    def __init__(self, name: str, classification: ItemClassification, code: Optional[int], player: int) -> None:
+    def __init__(self, name: str, classification: ItemClassification, code: int | None, player: int) -> None:
         super().__init__(name, classification, code, player)
 
 
@@ -34,5 +35,6 @@ def get_item_classification(item_id: int) -> ItemClassification:
 def get_random_item(world: "PokemonFRLGWorld", item_classification: ItemClassification = None) -> str:
     if item_classification is None:
         item_classification = ItemClassification.useful if world.random.random() < 0.20 else ItemClassification.filler
-    items = [item for item in data.items.values() if item.classification == item_classification]
+    items = [item for item in data.items.values()
+             if item.classification == item_classification and item.name not in item_groups["Unique Items"]]
     return world.random.choice(items).name

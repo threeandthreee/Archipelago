@@ -1,5 +1,4 @@
 from random import Random
-from typing import List
 
 two_point_coordinates = 6 * 5                  # 30 = 1.5%
 three_point_coordinates = 6 * 5 * 4            # 120 = 6%
@@ -31,7 +30,7 @@ deny_list = {
 }
 
 
-def coordinate_description(coordinate: List[int]) -> str:
+def coordinate_description(coordinate: list[int]) -> str:
     point_descriptions = []
     for point in coordinate:
         if point == 0:
@@ -49,7 +48,7 @@ def coordinate_description(coordinate: List[int]) -> str:
     return str.join(", ", point_descriptions)
 
 
-def generate_random_coordinates(random: Random) -> List[List[int]]:
+def generate_random_coordinates(random: Random) -> list[list[int]]:
     # give each size an equal chance, so coordinates aren't dominated by the more numerous 5- and 6-point shapes
     sizes = [
         random.randint(2, 6),
@@ -76,14 +75,14 @@ def generate_random_coordinates(random: Random) -> List[List[int]]:
     return selected_coordinates
 
 
-def validate_coordinate(coordinate: List[int]) -> None:
+def validate_coordinate(coordinate: list[int]) -> None:
     assert len(coordinate) >= 2
     assert len(coordinate) <= 6
     assert len(set(coordinate)) == len(coordinate)
 
 
 # Here, the number represents an index into the list of all possible coordinates of any length
-def get_coordinate_for_number(coord_index: int) -> List[int]:
+def get_coordinate_for_number(coord_index: int) -> list[int]:
     assert coord_index < total_possible_coordinates
 
     if coord_index < two_point_coordinates:
@@ -106,7 +105,7 @@ def get_coordinate_for_number(coord_index: int) -> List[int]:
 
 
 # Now the number represents an index into the list of all possible coordinates of one specific length
-def get_coordinate_points_for_number(point_count: int, coord_index: int) -> List[int]:
+def get_coordinate_points_for_number(point_count: int, coord_index: int) -> list[int]:
     possible_coords = coordinates_with_n_points[point_count]
     points_not_taken = [0, 1, 2, 3, 4, 5]
     coord_points = []

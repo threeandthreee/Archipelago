@@ -239,7 +239,7 @@ AllowFinalBoss:
 lui     at, 0x800D
 lw      s2, 0x6C80 (at)
 li      t5, 0x01010100
-beq     s2, t5, @@SetFalse
+bne     s2, t5, @@SetFalse
 li      s2, 0x0001
 @@Set:
 sw      s2, 0x6B94 (at)
@@ -310,7 +310,7 @@ nop
 
 BridgeDededeOverride: //; t1 replace with 4f
 lui     t1, 0x800D
-lb      t1, 0x6C80 (t1)
+lb      t1, 0x6C82 (t1)
 bnez    t1, @@SetCorrect
 nop
 
@@ -320,7 +320,7 @@ nop
 @@SetCorrect:
 li      t1, 0x004F
 @@Return:
-sb      t1, 0x000C (v0)
+sb      t1, 0x000C (a0)
 j       0x8021F100
 nop
 
@@ -366,7 +366,7 @@ nop
 j       0x80228EE4
 nop
 @@Continue:
-sb      t9, 0x000C (v0)
+sb      t9, 0x000C (a0)
 j       0x80228EE4
 nop
 
@@ -378,9 +378,9 @@ nop
 j       0x8022857C
 nop
 @@Continue:
-sb      t4, 0x000C (v0)
+sb      t4, 0x000C (a2)
 jal     0x800B1900
-lhu     a0, 0x0002 (a2)
+lhu     a0, 0x0002 (v0)
 j       0x8022857C
 nop
 
@@ -395,6 +395,7 @@ nop
 @@SetCorrect:
 li      t9, 0x0050
 @@Return:
+sb      t9, 0x000C (v0)
 j       0x80222088
 nop
 

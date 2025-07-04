@@ -393,12 +393,6 @@ class ExcludeAlwaysQuests(DefaultOnToggle):
     """
     display_name = "Exclude Always Quests"
 
-class ForceFillerLocal(Toggle):
-    """
-    If selected, forces all filler items to be placed in your own world.
-    """
-    display_name = "Force Filler Local"
-
 class CommonPoolWeight(Range):
     """
     Controls the likelihood of choosing a common filler item when filling the world.
@@ -502,7 +496,6 @@ class CrossCodeOptions(PerGameCommonOptions):
 
     exclude_always_quests: ExcludeAlwaysQuests
 
-    force_filler_local: ForceFillerLocal
     common_pool_weight: CommonPoolWeight
     rare_pool_weight: RarePoolWeight
     epic_pool_weight: EpicPoolWeight
@@ -569,7 +562,6 @@ option_groups: list[OptionGroup] = [
     OptionGroup(
         name="Pools",
         options=[
-            ForceFillerLocal,
             CommonPoolWeight,
             RarePoolWeight,
             EpicPoolWeight,

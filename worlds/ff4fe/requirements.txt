@@ -6,5 +6,6 @@ chardet
 requests
 markdown
 javascripthon
-pyaes
 python-dotenv
+lark
+FreeEnterprise4 @ git+https://github.com/Rosalie-A/FreeEnterprise4@v8

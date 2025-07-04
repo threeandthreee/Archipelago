@@ -23,7 +23,7 @@ def add_level_rules(self, location_name: str, level: LevelLocation):
     location = self.multiworld.get_location(location_name, self.player)
     for need in level.get_logic_items(self.options):
         add_rule(location, lambda state, item=need: state.has(item, self.player))
-    if self.options.lazy_fishing and level.character == Character.Big and (
+    if self.options.lazy_fishing.value == 3 and level.character == Character.Big and (
             level.levelMission == LevelMission.B or level.levelMission == LevelMission.A or level.levelMission == LevelMission.S):
         add_rule(location, lambda state: state.has(ItemName.Big.PowerRod, self.player))
 
@@ -88,7 +88,7 @@ def add_mission_rules(self, location_name: str, mission: MissionLocation):
         add_rule(location, lambda state, requirements=logic_items: any(
             all(state.has(item, self.player) for item in requirement_group) for requirement_group in requirements))
     # If lazy fishing is enabled, we need the Big Power Rod for certain missions
-    if self.options.lazy_fishing and mission.missionNumber in [14, 29, 35, 44]:
+    if self.options.lazy_fishing.value == 3 and mission.missionNumber in [14, 29, 35, 44]:
         add_rule(location, lambda state: state.has(ItemName.Big.PowerRod, self.player))
 
 
@@ -127,7 +127,7 @@ def add_fish_rules(self, location_name: str, fish: FishLocation):
     location = self.multiworld.get_location(location_name, self.player)
     for need in fish.get_logic_items(self.options):
         add_rule(location, lambda state, item=need: state.has(item, self.player))
-    if self.options.lazy_fishing:
+    if self.options.lazy_fishing.value >= 2:
         add_rule(location, lambda state: state.has(ItemName.Big.PowerRod, self.player))
 
 
@@ -198,6 +198,8 @@ def create_sadx_rules(self, needed_emblems: int) -> LocationDistribution:
         mission_location_list = []
         for mission in mission_location_table:
             if str(mission.missionNumber) in self.options.mission_blacklist.value:
+                continue
+            if str(mission.character.name) in self.options.mission_blacklist.value:
                 continue
             if is_character_playable(mission.character, self.options) and self.options.mission_mode_checks:
                 mission_location_list.append(self.multiworld.get_location(mission.get_mission_name(), self.player))

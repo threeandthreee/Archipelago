@@ -6,12 +6,15 @@ and sorting, and Warp methods.
 """
 import orjson
 import pkgutil
-from pkg_resources import resource_listdir, resource_isdir
+from collections import defaultdict
 from dataclasses import dataclass
 from enum import IntEnum
-from typing import Dict, List, NamedTuple, Optional, Set, FrozenSet, Any, Union, Tuple
+from pkg_resources import resource_listdir, resource_isdir
+from typing import Dict, List, NamedTuple, Set, FrozenSet, Any, Tuple
 from BaseClasses import ItemClassification
 
+APWORLD_VERSION = "0.9.3"
+POPTRACKER_CHECKSUM = 0xF6935E73
 NUM_REAL_SPECIES = 386
 
 
@@ -24,12 +27,13 @@ class Warp:
     source_ids: List[str]
     dest_map: str
     dest_ids: List[str]
-    name: Optional[str]
-    parent_region_id: Optional[str]
+    name: str | None
+    parent_region_id: str | None
 
-    def __init__(self, encoded_string: Optional[str] = None,
-                 name: Optional[str] = None,
-                 parent_region_id: Optional[str] = None) -> None:
+    def __init__(self,
+                 encoded_string: str | None = None,
+                 name: str | None = None,
+                 parent_region_id: str | None = None) -> None:
         if encoded_string is not None:
             decoded_warp = Warp.decode(encoded_string)
             self.is_one_way = decoded_warp.is_one_way
@@ -86,24 +90,27 @@ class LocationCategory(IntEnum):
     SPLIT_CARD_KEY = 6
     SPLIT_ISLAND_PASS = 7
     SPLIT_TEA = 8
-    ITEM_BALL = 9
-    HIDDEN_ITEM = 10
-    HIDDEN_ITEM_RECURRING = 11
-    STARTING_ITEM = 12
-    NPC_GIFT = 13
-    POKEMON_REQUEST = 14
-    TRAINERSANITY = 15
-    FAMESANITY = 16
-    FAMESANITY_POKEMON_REQUEST = 17
-    DEXSANITY = 18
-    EVENT = 19
-    EVENT_WILD_POKEMON = 20
-    EVENT_STATIC_POKEMON = 21
-    EVENT_LEGENDARY_POKEMON = 22
-    EVENT_EVOLUTION_POKEMON = 23
-    EVENT_TRAINER_SCALING = 24
-    EVENT_WILD_POKEMON_SCALING = 25
-    EVENT_STATIC_POKEMON_SCALING = 26
+    GYM_KEY = 9
+    ITEM_BALL = 10
+    HIDDEN_ITEM = 11
+    HIDDEN_ITEM_RECURRING = 12
+    STARTING_ITEM = 13
+    NPC_GIFT = 14
+    POKEMON_REQUEST = 15
+    SHOPSANITY = 16
+    TRAINERSANITY = 17
+    FAMESANITY = 18
+    FAMESANITY_POKEMON_REQUEST = 19
+    DEXSANITY = 20
+    EVENT = 21
+    EVENT_SHOP = 22
+    EVENT_WILD_POKEMON = 23
+    EVENT_STATIC_POKEMON = 24
+    EVENT_LEGENDARY_POKEMON = 25
+    EVENT_EVOLUTION_POKEMON = 26
+    EVENT_TRAINER_SCALING = 27
+    EVENT_WILD_POKEMON_SCALING = 28
+    EVENT_STATIC_POKEMON_SCALING = 29
 
 
 class LocationData(NamedTuple):
@@ -111,7 +118,7 @@ class LocationData(NamedTuple):
     name: str
     parent_region_id: str
     default_item: int
-    address: Dict[str, Union[int, List[int]]]
+    address: Dict[str, int | List[int]]
     flag: int
     category: LocationCategory
     tags: FrozenSet[str]
@@ -133,16 +140,17 @@ class EncounterTableData(NamedTuple):
 class MapData:
     name: str
     header_address: Dict[str, int]
-    land_encounters: Optional[EncounterTableData]
-    water_encounters: Optional[EncounterTableData]
-    fishing_encounters: Optional[EncounterTableData]
+    warp_table_address: Dict[str, int]
+    land_encounters: EncounterTableData | None
+    water_encounters: EncounterTableData | None
+    fishing_encounters: EncounterTableData | None
     kanto: bool
 
 
 class EventData(NamedTuple):
     id: str
-    name: Union[str, List[str]]
-    item: Union[str, List[str]]
+    name: str | List[str]
+    item: str | List[str]
     parent_region_id: str
     category: LocationCategory
 
@@ -150,7 +158,7 @@ class EventData(NamedTuple):
 class RegionData:
     id: str
     name: str
-    parent_map: Optional[MapData]
+    parent_map: MapData | None
     encounter_region: str
     has_land: bool
     has_water: bool
@@ -161,7 +169,7 @@ class RegionData:
     locations: List[str]
     events: List[str]
 
-    def __init__(self, region_id: str, name: str, parent_map: Optional[MapData], encounter_region: str,
+    def __init__(self, region_id: str, name: str, parent_map: MapData | None, encounter_region: str,
                  has_land: bool, has_water: bool, has_fishing: bool, kanto: bool):
         self.id = region_id
         self.name = name
@@ -222,7 +230,7 @@ class SpeciesData:
     types: Tuple[int, int]
     abilities: Tuple[int, int]
     evolutions: List[EvolutionData]
-    pre_evolution: Optional[int]
+    pre_evolution: int | None
     catch_rate: int
     friendship: int
     learnset: List[LearnsetMove]
@@ -245,6 +253,14 @@ class MiscPokemonData:
     level_address: Dict[str, int]
 
 
+@dataclass
+class TradePokemonData:
+    species_id: Dict[str, int]
+    species_address: Dict[str, int]
+    requested_species_id: Dict[str, int]
+    requested_species_address: Dict[str, int]
+
+
 class TrainerPokemonDataTypeEnum(IntEnum):
     NO_ITEM_DEFAULT_MOVES = 0
     NO_ITEM_CUSTOM_MOVES = 1
@@ -264,7 +280,7 @@ POKEMON_DATA_TYPE: Dict[str, TrainerPokemonDataTypeEnum] = {
 class TrainerPokemonData:
     species_id: int
     level: int
-    moves: Optional[Tuple[int, int, int, int]]
+    moves: Tuple[int, int, int, int] | None
     locked: bool
 
 
@@ -281,6 +297,43 @@ class TrainerData:
     address: Dict[str, int]
 
 
+@dataclass
+class MoveData:
+    effect: int
+    power: int
+    type: int
+    accuracy: int
+    pp: int
+    secondary_effect_chance: int
+    target: int
+    priority: int
+    flags: int
+    category: int
+    address: Dict[str, int]
+
+
+@dataclass
+class ScalingData:
+    region: str
+    kanto: bool
+    connections: List[str]
+    type: str | None
+    category: LocationCategory
+    locations: Dict[str, List[str]]
+
+
+@dataclass
+class FlyData:
+    name: str
+    display_name: str
+    map_group: int
+    map_num: int
+    x_pos: int
+    y_pos: int
+    region_map_id: int
+    region_map_index: int
+
+
 class PokemonFRLGData:
     rom_names: Dict[str, str]
     rom_checksum: int
@@ -293,16 +346,20 @@ class PokemonFRLGData:
     items: Dict[int, ItemData]
     maps: Dict[str, MapData]
     warps: Dict[str, Warp]
-    warp_map: Dict[str, Optional[str]]
+    warp_map: Dict[str, str | None]
+    warp_name_map: Dict[str, str]
     species: Dict[int, SpeciesData]
     evolutions: Dict[str, EvolutionData]
     starters: Dict[str, StarterData]
     legendary_pokemon: Dict[str, MiscPokemonData]
     misc_pokemon: Dict[str, MiscPokemonData]
+    trade_pokemon: Dict[str, TradePokemonData]
     trainers: Dict[str, TrainerData]
     tmhm_moves: List[int]
-    abilities: Dict[str, int]
-    moves: Dict[str, int]
+    moves: Dict[str, MoveData]
+    scaling: Dict[str, ScalingData]
+    type_damage_categories: List[int]
+    num_moves_per_damage_category: Dict[int, int]
 
     def __init__(self) -> None:
         self.constants = {}
@@ -315,15 +372,19 @@ class PokemonFRLGData:
         self.maps = {}
         self.warps = {}
         self.warp_map = {}
+        self.warp_name_map = {}
         self.species = {}
         self.evolutions = {}
         self.starters = {}
         self.legendary_pokemon = {}
         self.misc_pokemon = {}
+        self.trade_pokemon = {}
         self.trainers = {}
         self.tmhm_moves = []
-        self.abilities = {}
         self.moves = {}
+        self.scaling = {}
+        self.type_damage_categories = []
+        self.num_moves_per_damage_category = defaultdict(lambda: 0)
 
 
 # Excludes extras like copies of Unown and special species values like SPECIES_EGG
@@ -717,7 +778,7 @@ ALL_SPECIES: List[Tuple[str, str, int]] = [
 ]
 
 
-def load_json_data(data_name: str) -> Union[List[Any], Dict[str, Any]]:
+def load_json_data(data_name: str) -> List[Any] | Dict[str, Any]:
     return orjson.loads(pkgutil.get_data(__name__, "data/" + data_name).decode("utf-8-sig"))
 
 
@@ -788,6 +849,7 @@ def init() -> None:
         data.maps[map_name] = MapData(
             map_name,
             map_json["header_address"],
+            map_json["warp_table_address"],
             land_encounters,
             water_encounters,
             fishing_encounters,
@@ -802,16 +864,15 @@ def init() -> None:
 
     regions_json = {}
     for region_subset in region_json_list:
-        for region_name, region_json in region_subset.items():
-            if region_name in regions_json:
-                raise AssertionError("Pokemon FRLG: Region [{region_name}] was defined multiple times")
-            regions_json[region_name] = region_json
+        for region_id, region_json in region_subset.items():
+            if region_id in regions_json:
+                raise AssertionError(f"Pokemon FRLG: Region [{region_id}] was defined multiple times")
+            regions_json[region_id] = region_json
 
     # Create region data
     claimed_locations: Set[str] = set()
     claimed_warps: Set[str] = set()
 
-    data.regions = {}
     for region_id, region_json in regions_json.items():
         parent_map = data.maps[region_json["parent_map"]] if region_json["parent_map"] is not None else None
 
@@ -844,7 +905,7 @@ def init() -> None:
                     f"TRAINER_{trainer}_SQUIRTLE_REWARD"
                 ]]
 
-                location_address: Dict[str, List[int]] = {}
+                location_address: Dict[str, List[int]] = dict()
 
                 for game_version_revision in location_json["address"].keys():
                     location_address[game_version_revision] = [location_json["address"][game_version_revision]]
@@ -853,6 +914,43 @@ def init() -> None:
                     for alternate_rival_json in alternate_rival_jsons:
                         location_address[game_version_revision].append(
                             alternate_rival_json["address"][game_version_revision])
+
+                new_location = LocationData(
+                    location_id,
+                    location_data[location_id]["name"],
+                    region_id,
+                    location_json["default_item"],
+                    location_address,
+                    location_json["flag"],
+                    LocationCategory[location_data[location_id]["category"]],
+                    frozenset(location_data[location_id]["tags"])
+                )
+            elif "SHOP_TWO_ISLAND" in location_id:
+                extra_addresses = {
+                    "SHOP_TWO_ISLAND_EXPANDED3_1": ["SHOP_TWO_ISLAND_INITIAL_1", "SHOP_TWO_ISLAND_EXPANDED1_1",
+                                                    "SHOP_TWO_ISLAND_EXPANDED2_1"],
+                    "SHOP_TWO_ISLAND_EXPANDED3_2": ["SHOP_TWO_ISLAND_EXPANDED1_2", "SHOP_TWO_ISLAND_EXPANDED2_2"],
+                    "SHOP_TWO_ISLAND_EXPANDED3_5": ["SHOP_TWO_ISLAND_EXPANDED2_3"],
+                    "SHOP_TWO_ISLAND_EXPANDED3_6": ["SHOP_TWO_ISLAND_EXPANDED1_3", "SHOP_TWO_ISLAND_EXPANDED2_4"],
+                    "SHOP_TWO_ISLAND_EXPANDED3_7": ["SHOP_TWO_ISLAND_INITIAL_2", "SHOP_TWO_ISLAND_EXPANDED1_4",
+                                                    "SHOP_TWO_ISLAND_EXPANDED2_5"],
+                    "SHOP_TWO_ISLAND_EXPANDED3_8": ["SHOP_TWO_ISLAND_EXPANDED2_6"]
+                }
+
+                alternate_shop_jsons = list()
+                if location_id in extra_addresses:
+                    alternate_shop_jsons = [extracted_data["locations"][alternate]
+                                            for alternate in extra_addresses[location_id]]
+
+                location_address: Dict[str, List[int]] = dict()
+
+                for game_version_revision in location_json["address"].keys():
+                    location_address[game_version_revision] = [location_json["address"][game_version_revision]]
+
+                for game_version_revision in location_address.keys():
+                    for alternate_shop_json in alternate_shop_jsons:
+                        location_address[game_version_revision].append(
+                            alternate_shop_json["address"][game_version_revision])
 
                 new_location = LocationData(
                     location_id,
@@ -902,13 +1000,12 @@ def init() -> None:
             new_region.warps.append(encoded_warp)
             data.warps[encoded_warp] = Warp(encoded_warp, name, region_id)
             claimed_warps.add(encoded_warp)
-
-        new_region.warps.sort()
+            if name != "":
+                data.warp_name_map[name] = encoded_warp
 
         data.regions[region_id] = new_region
 
     # Create item data
-    data.items = {}
     for item_id_name, attributes in item_data.items():
         if attributes["classification"] == "PROGRESSION":
             item_classification = ItemClassification.progression
@@ -1019,20 +1116,29 @@ def init() -> None:
             misc_data["level_address"]
         )
 
+    # Create trade pokemon data
+    for name, trade_pokemon in extracted_data["trade_pokemon"].items():
+        data.trade_pokemon[name] = TradePokemonData(
+            trade_pokemon["species"],
+            trade_pokemon["species_address"],
+            trade_pokemon["requested_species"],
+            trade_pokemon["requested_species_address"]
+        )
+
     # Create trainer data
     for name, trainer_data in extracted_data["trainers"].items():
         party_data = trainer_data["party"]
         data.trainers[name] = TrainerData(
             TrainerPartyData([
-                    TrainerPokemonData(
-                        pokemon["species"],
-                        pokemon["level"],
-                        (pokemon["moves"][0],
-                         pokemon["moves"][1],
-                         pokemon["moves"][2],
-                         pokemon["moves"][3]) if "moves" in pokemon else None,
-                        False
-                    ) for pokemon in party_data],
+                TrainerPokemonData(
+                    pokemon["species"],
+                    pokemon["level"],
+                    (pokemon["moves"][0],
+                     pokemon["moves"][1],
+                     pokemon["moves"][2],
+                     pokemon["moves"][3]) if "moves" in pokemon else None,
+                    False
+                ) for pokemon in party_data],
                 POKEMON_DATA_TYPE[trainer_data["data_type"]],
                 trainer_data["party_address"]
             ),
@@ -1042,443 +1148,51 @@ def init() -> None:
     # TM/HM Moves
     data.tmhm_moves = extracted_data["tmhm_moves"]
 
-    # Abilities
-    data.abilities = {j: data.constants[i] for i, j in [
-        ("ABILITY_STENCH", "Stench"),
-        ("ABILITY_DRIZZLE", "Drizzle"),
-        ("ABILITY_SPEED_BOOST", "Speed Boost"),
-        ("ABILITY_BATTLE_ARMOR", "Battle Armor"),
-        ("ABILITY_STURDY", "Sturdy"),
-        ("ABILITY_DAMP", "Damp"),
-        ("ABILITY_LIMBER", "Limber"),
-        ("ABILITY_SAND_VEIL", "Sand Veil"),
-        ("ABILITY_STATIC", "Static"),
-        ("ABILITY_VOLT_ABSORB", "Volt Absorb"),
-        ("ABILITY_WATER_ABSORB", "Water Absorb"),
-        ("ABILITY_OBLIVIOUS", "Oblivious"),
-        ("ABILITY_CLOUD_NINE", "Cloud Nine"),
-        ("ABILITY_COMPOUND_EYES", "Compoundeyes"),
-        ("ABILITY_INSOMNIA", "Insomnia"),
-        ("ABILITY_COLOR_CHANGE", "Color Change"),
-        ("ABILITY_IMMUNITY", "Immunity"),
-        ("ABILITY_FLASH_FIRE", "Flash Fire"),
-        ("ABILITY_SHIELD_DUST", "Shield Dust"),
-        ("ABILITY_OWN_TEMPO", "Own Tempo"),
-        ("ABILITY_SUCTION_CUPS", "Suction Cups"),
-        ("ABILITY_INTIMIDATE", "Intimidate"),
-        ("ABILITY_SHADOW_TAG", "Shadow Tag"),
-        ("ABILITY_ROUGH_SKIN", "Rough Skin"),
-        ("ABILITY_WONDER_GUARD", "Wonder Guard"),
-        ("ABILITY_LEVITATE", "Levitate"),
-        ("ABILITY_EFFECT_SPORE", "Effect Spore"),
-        ("ABILITY_SYNCHRONIZE", "Synchronize"),
-        ("ABILITY_CLEAR_BODY", "Clear Body"),
-        ("ABILITY_NATURAL_CURE", "Natural Cure"),
-        ("ABILITY_LIGHTNING_ROD", "Lightningrod"),
-        ("ABILITY_SERENE_GRACE", "Serene Grace"),
-        ("ABILITY_SWIFT_SWIM", "Swift Swim"),
-        ("ABILITY_CHLOROPHYLL", "Chlorophyll"),
-        ("ABILITY_ILLUMINATE", "Illuminate"),
-        ("ABILITY_TRACE", "Trace"),
-        ("ABILITY_HUGE_POWER", "Huge Power"),
-        ("ABILITY_POISON_POINT", "Poison Point"),
-        ("ABILITY_INNER_FOCUS", "Inner Focus"),
-        ("ABILITY_MAGMA_ARMOR", "Magma Armor"),
-        ("ABILITY_WATER_VEIL", "Water Veil"),
-        ("ABILITY_MAGNET_PULL", "Magnet Pull"),
-        ("ABILITY_SOUNDPROOF", "Soundproof"),
-        ("ABILITY_RAIN_DISH", "Rain Dish"),
-        ("ABILITY_SAND_STREAM", "Sand Stream"),
-        ("ABILITY_PRESSURE", "Pressure"),
-        ("ABILITY_THICK_FAT", "Thick Fat"),
-        ("ABILITY_EARLY_BIRD", "Early Bird"),
-        ("ABILITY_FLAME_BODY", "Flame Body"),
-        ("ABILITY_RUN_AWAY", "Run Away"),
-        ("ABILITY_KEEN_EYE", "Keen Eye"),
-        ("ABILITY_HYPER_CUTTER", "Hyper Cutter"),
-        ("ABILITY_PICKUP", "Pickup"),
-        ("ABILITY_TRUANT", "Truant"),
-        ("ABILITY_HUSTLE", "Hustle"),
-        ("ABILITY_CUTE_CHARM", "Cute Charm"),
-        ("ABILITY_PLUS", "Plus"),
-        ("ABILITY_MINUS", "Minus"),
-        ("ABILITY_FORECAST", "Forecast"),
-        ("ABILITY_STICKY_HOLD", "Sticky Hold"),
-        ("ABILITY_SHED_SKIN", "Shed Skin"),
-        ("ABILITY_GUTS", "Guts"),
-        ("ABILITY_MARVEL_SCALE", "Marvel Scale"),
-        ("ABILITY_LIQUID_OOZE", "Liquid Ooze"),
-        ("ABILITY_OVERGROW", "Overgrow"),
-        ("ABILITY_BLAZE", "Blaze"),
-        ("ABILITY_TORRENT", "Torrent"),
-        ("ABILITY_SWARM", "Swarm"),
-        ("ABILITY_ROCK_HEAD", "Rock Head"),
-        ("ABILITY_DROUGHT", "Drought"),
-        ("ABILITY_ARENA_TRAP", "Arena Trap"),
-        ("ABILITY_VITAL_SPIRIT", "Vital Spirit"),
-        ("ABILITY_WHITE_SMOKE", "White Smoke"),
-        ("ABILITY_PURE_POWER", "Pure Power"),
-        ("ABILITY_SHELL_ARMOR", "Shell Armor"),
-        ("ABILITY_CACOPHONY", "Cacophony"),
-        ("ABILITY_AIR_LOCK", "Air Lock")
-    ]}
+    # Type damage categories
+    data.type_damage_categories = extracted_data["damage_type_table"]
 
-    # Moves
-    data.moves = {j: data.constants[i] for i, j in [
-        ("MOVE_POUND", "Pound"),
-        ("MOVE_KARATE_CHOP", "Karate Chop"),
-        ("MOVE_DOUBLE_SLAP", "Doubleslap"),
-        ("MOVE_COMET_PUNCH", "Comet Punch"),
-        ("MOVE_MEGA_PUNCH", "Mega Punch"),
-        ("MOVE_PAY_DAY", "Pay Day"),
-        ("MOVE_FIRE_PUNCH", "Fire Punch"),
-        ("MOVE_ICE_PUNCH", "Ice Punch"),
-        ("MOVE_THUNDER_PUNCH", "Thunderpunch"),
-        ("MOVE_SCRATCH", "Scratch"),
-        ("MOVE_VICE_GRIP", "Vicegrip"),
-        ("MOVE_GUILLOTINE", "Guillotine"),
-        ("MOVE_RAZOR_WIND", "Razor Wind"),
-        ("MOVE_SWORDS_DANCE", "Swords Dance"),
-        ("MOVE_CUT", "Cut"),
-        ("MOVE_GUST", "Gust"),
-        ("MOVE_WING_ATTACK", "Wing Attack"),
-        ("MOVE_WHIRLWIND", "Whirlwind"),
-        ("MOVE_FLY", "Fly"),
-        ("MOVE_BIND", "Bind"),
-        ("MOVE_SLAM", "Slam"),
-        ("MOVE_VINE_WHIP", "Vine Whip"),
-        ("MOVE_STOMP", "Stomp"),
-        ("MOVE_DOUBLE_KICK", "Double Kick"),
-        ("MOVE_MEGA_KICK", "Mega Kick"),
-        ("MOVE_JUMP_KICK", "Jump Kick"),
-        ("MOVE_ROLLING_KICK", "Rolling Kick"),
-        ("MOVE_SAND_ATTACK", "Sand-Attack"),
-        ("MOVE_HEADBUTT", "Headbutt"),
-        ("MOVE_HORN_ATTACK", "Horn Attack"),
-        ("MOVE_FURY_ATTACK", "Fury Attack"),
-        ("MOVE_HORN_DRILL", "Horn Drill"),
-        ("MOVE_TACKLE", "Tackle"),
-        ("MOVE_BODY_SLAM", "Body Slam"),
-        ("MOVE_WRAP", "Wrap"),
-        ("MOVE_TAKE_DOWN", "Take Down"),
-        ("MOVE_THRASH", "Thrash"),
-        ("MOVE_DOUBLE_EDGE", "Double-Edge"),
-        ("MOVE_TAIL_WHIP", "Tail Whip"),
-        ("MOVE_POISON_STING", "Poison Sting"),
-        ("MOVE_TWINEEDLE", "Twineedle"),
-        ("MOVE_PIN_MISSILE", "Pin Missile"),
-        ("MOVE_LEER", "Leer"),
-        ("MOVE_BITE", "Bite"),
-        ("MOVE_GROWL", "Growl"),
-        ("MOVE_ROAR", "Roar"),
-        ("MOVE_SING", "Sing"),
-        ("MOVE_SUPERSONIC", "Supersonic"),
-        ("MOVE_SONIC_BOOM", "Sonicboom"),
-        ("MOVE_DISABLE", "Disable"),
-        ("MOVE_ACID", "Acid"),
-        ("MOVE_EMBER", "Ember"),
-        ("MOVE_FLAMETHROWER", "Flamethrower"),
-        ("MOVE_MIST", "Mist"),
-        ("MOVE_WATER_GUN", "Water Gun"),
-        ("MOVE_HYDRO_PUMP", "Hydro Pump"),
-        ("MOVE_SURF", "Surf"),
-        ("MOVE_ICE_BEAM", "Ice Beam"),
-        ("MOVE_BLIZZARD", "Blizzard"),
-        ("MOVE_PSYBEAM", "Psybeam"),
-        ("MOVE_BUBBLE_BEAM", "Bubblebeam"),
-        ("MOVE_AURORA_BEAM", "Aurora Beam"),
-        ("MOVE_HYPER_BEAM", "Hyper Beam"),
-        ("MOVE_PECK", "Peck"),
-        ("MOVE_DRILL_PECK", "Drill Peck"),
-        ("MOVE_SUBMISSION", "Submission"),
-        ("MOVE_LOW_KICK", "Low Kick"),
-        ("MOVE_COUNTER", "Counter"),
-        ("MOVE_SEISMIC_TOSS", "Seismic Toss"),
-        ("MOVE_STRENGTH", "Strength"),
-        ("MOVE_ABSORB", "Absorb"),
-        ("MOVE_MEGA_DRAIN", "Mega Drain"),
-        ("MOVE_LEECH_SEED", "Leech Seed"),
-        ("MOVE_GROWTH", "Growth"),
-        ("MOVE_RAZOR_LEAF", "Razor Leaf"),
-        ("MOVE_SOLAR_BEAM", "Solarbeam"),
-        ("MOVE_POISON_POWDER", "Poisonpowder"),
-        ("MOVE_STUN_SPORE", "Stun Spore"),
-        ("MOVE_SLEEP_POWDER", "Sleep Powder"),
-        ("MOVE_PETAL_DANCE", "Petal Dance"),
-        ("MOVE_STRING_SHOT", "String Shot"),
-        ("MOVE_DRAGON_RAGE", "Dragon Rage"),
-        ("MOVE_FIRE_SPIN", "Fire Spin"),
-        ("MOVE_THUNDER_SHOCK", "Thundershock"),
-        ("MOVE_THUNDERBOLT", "Thunderbolt"),
-        ("MOVE_THUNDER_WAVE", "Thunder Wave"),
-        ("MOVE_THUNDER", "Thunder"),
-        ("MOVE_ROCK_THROW", "Rock Throw"),
-        ("MOVE_EARTHQUAKE", "Earthquake"),
-        ("MOVE_FISSURE", "Fissure"),
-        ("MOVE_DIG", "Dig"),
-        ("MOVE_TOXIC", "Toxic"),
-        ("MOVE_CONFUSION", "Confusion"),
-        ("MOVE_PSYCHIC", "Psychic"),
-        ("MOVE_HYPNOSIS", "Hypnosis"),
-        ("MOVE_MEDITATE", "Meditate"),
-        ("MOVE_AGILITY", "Agility"),
-        ("MOVE_QUICK_ATTACK", "Quick Attack"),
-        ("MOVE_RAGE", "Rage"),
-        ("MOVE_TELEPORT", "Teleport"),
-        ("MOVE_NIGHT_SHADE", "Night Shade"),
-        ("MOVE_MIMIC", "Mimic"),
-        ("MOVE_SCREECH", "Screech"),
-        ("MOVE_DOUBLE_TEAM", "Double Team"),
-        ("MOVE_RECOVER", "Recover"),
-        ("MOVE_HARDEN", "Harden"),
-        ("MOVE_MINIMIZE", "Minimize"),
-        ("MOVE_SMOKESCREEN", "Smokescreen"),
-        ("MOVE_CONFUSE_RAY", "Confuse Ray"),
-        ("MOVE_WITHDRAW", "Withdraw"),
-        ("MOVE_DEFENSE_CURL", "Defense Curl"),
-        ("MOVE_BARRIER", "Barrier"),
-        ("MOVE_LIGHT_SCREEN", "Light Screen"),
-        ("MOVE_HAZE", "Haze"),
-        ("MOVE_REFLECT", "Reflect"),
-        ("MOVE_FOCUS_ENERGY", "Focus Energy"),
-        ("MOVE_BIDE", "Bide"),
-        ("MOVE_METRONOME", "Metronome"),
-        ("MOVE_MIRROR_MOVE", "Mirror Move"),
-        ("MOVE_SELF_DESTRUCT", "Selfdestruct"),
-        ("MOVE_EGG_BOMB", "Egg Bomb"),
-        ("MOVE_LICK", "Lick"),
-        ("MOVE_SMOG", "Smog"),
-        ("MOVE_SLUDGE", "Sludge"),
-        ("MOVE_BONE_CLUB", "Bone Club"),
-        ("MOVE_FIRE_BLAST", "Fire Blast"),
-        ("MOVE_WATERFALL", "Waterfall"),
-        ("MOVE_CLAMP", "Clamp"),
-        ("MOVE_SWIFT", "Swift"),
-        ("MOVE_SKULL_BASH", "Skull Bash"),
-        ("MOVE_SPIKE_CANNON", "Spike Cannon"),
-        ("MOVE_CONSTRICT", "Constrict"),
-        ("MOVE_AMNESIA", "Amnesia"),
-        ("MOVE_KINESIS", "Kinesis"),
-        ("MOVE_SOFT_BOILED", "Softboiled"),
-        ("MOVE_HI_JUMP_KICK", "Hi Jump Kick"),
-        ("MOVE_GLARE", "Glare"),
-        ("MOVE_DREAM_EATER", "Dream Eater"),
-        ("MOVE_POISON_GAS", "Poison Gas"),
-        ("MOVE_BARRAGE", "Barrage"),
-        ("MOVE_LEECH_LIFE", "Leech Life"),
-        ("MOVE_LOVELY_KISS", "Lovely Kiss"),
-        ("MOVE_SKY_ATTACK", "Sky Attack"),
-        ("MOVE_TRANSFORM", "Transform"),
-        ("MOVE_BUBBLE", "Bubble"),
-        ("MOVE_DIZZY_PUNCH", "Dizzy Punch"),
-        ("MOVE_SPORE", "Spore"),
-        ("MOVE_FLASH", "Flash"),
-        ("MOVE_PSYWAVE", "Psywave"),
-        ("MOVE_SPLASH", "Splash"),
-        ("MOVE_ACID_ARMOR", "Acid Armor"),
-        ("MOVE_CRABHAMMER", "Crabhammer"),
-        ("MOVE_EXPLOSION", "Explosion"),
-        ("MOVE_FURY_SWIPES", "Fury Swipes"),
-        ("MOVE_BONEMERANG", "Bonemerang"),
-        ("MOVE_REST", "Rest"),
-        ("MOVE_ROCK_SLIDE", "Rock Slide"),
-        ("MOVE_HYPER_FANG", "Hyper Fang"),
-        ("MOVE_SHARPEN", "Sharpen"),
-        ("MOVE_CONVERSION", "Conversion"),
-        ("MOVE_TRI_ATTACK", "Tri Attack"),
-        ("MOVE_SUPER_FANG", "Super Fang"),
-        ("MOVE_SLASH", "Slash"),
-        ("MOVE_SUBSTITUTE", "Substitute"),
-        ("MOVE_SKETCH", "Sketch"),
-        ("MOVE_TRIPLE_KICK", "Triple Kick"),
-        ("MOVE_THIEF", "Thief"),
-        ("MOVE_SPIDER_WEB", "Spider Web"),
-        ("MOVE_MIND_READER", "Mind Reader"),
-        ("MOVE_NIGHTMARE", "Nightmare"),
-        ("MOVE_FLAME_WHEEL", "Flame Wheel"),
-        ("MOVE_SNORE", "Snore"),
-        ("MOVE_CURSE", "Curse"),
-        ("MOVE_FLAIL", "Flail"),
-        ("MOVE_CONVERSION_2", "Conversion 2"),
-        ("MOVE_AEROBLAST", "Aeroblast"),
-        ("MOVE_COTTON_SPORE", "Cotton Spore"),
-        ("MOVE_REVERSAL", "Reversal"),
-        ("MOVE_SPITE", "Spite"),
-        ("MOVE_POWDER_SNOW", "Powder Snow"),
-        ("MOVE_PROTECT", "Protect"),
-        ("MOVE_MACH_PUNCH", "Mach Punch"),
-        ("MOVE_SCARY_FACE", "Scary Face"),
-        ("MOVE_FAINT_ATTACK", "Faint Attack"),
-        ("MOVE_SWEET_KISS", "Sweet Kiss"),
-        ("MOVE_BELLY_DRUM", "Belly Drum"),
-        ("MOVE_SLUDGE_BOMB", "Sludge Bomb"),
-        ("MOVE_MUD_SLAP", "Mud-Slap"),
-        ("MOVE_OCTAZOOKA", "Octazooka"),
-        ("MOVE_SPIKES", "Spikes"),
-        ("MOVE_ZAP_CANNON", "Zap Cannon"),
-        ("MOVE_FORESIGHT", "Foresight"),
-        ("MOVE_DESTINY_BOND", "Destiny Bond"),
-        ("MOVE_PERISH_SONG", "Perish Song"),
-        ("MOVE_ICY_WIND", "Icy Wind"),
-        ("MOVE_DETECT", "Detect"),
-        ("MOVE_BONE_RUSH", "Bone Rush"),
-        ("MOVE_LOCK_ON", "Lock-On"),
-        ("MOVE_OUTRAGE", "Outrage"),
-        ("MOVE_SANDSTORM", "Sandstorm"),
-        ("MOVE_GIGA_DRAIN", "Giga Drain"),
-        ("MOVE_ENDURE", "Endure"),
-        ("MOVE_CHARM", "Charm"),
-        ("MOVE_ROLLOUT", "Rollout"),
-        ("MOVE_FALSE_SWIPE", "False Swipe"),
-        ("MOVE_SWAGGER", "Swagger"),
-        ("MOVE_MILK_DRINK", "Milk Drink"),
-        ("MOVE_SPARK", "Spark"),
-        ("MOVE_FURY_CUTTER", "Fury Cutter"),
-        ("MOVE_STEEL_WING", "Steel Wing"),
-        ("MOVE_MEAN_LOOK", "Mean Look"),
-        ("MOVE_ATTRACT", "Attract"),
-        ("MOVE_SLEEP_TALK", "Sleep Talk"),
-        ("MOVE_HEAL_BELL", "Heal Bell"),
-        ("MOVE_RETURN", "Return"),
-        ("MOVE_PRESENT", "Present"),
-        ("MOVE_FRUSTRATION", "Frustration"),
-        ("MOVE_SAFEGUARD", "Safeguard"),
-        ("MOVE_PAIN_SPLIT", "Pain Split"),
-        ("MOVE_SACRED_FIRE", "Sacred Fire"),
-        ("MOVE_MAGNITUDE", "Magnitude"),
-        ("MOVE_DYNAMIC_PUNCH", "Dynamicpunch"),
-        ("MOVE_MEGAHORN", "Megahorn"),
-        ("MOVE_DRAGON_BREATH", "Dragonbreath"),
-        ("MOVE_BATON_PASS", "Baton Pass"),
-        ("MOVE_ENCORE", "Encore"),
-        ("MOVE_PURSUIT", "Pursuit"),
-        ("MOVE_RAPID_SPIN", "Rapid Spin"),
-        ("MOVE_SWEET_SCENT", "Sweet Scent"),
-        ("MOVE_IRON_TAIL", "Iron Tail"),
-        ("MOVE_METAL_CLAW", "Metal Claw"),
-        ("MOVE_VITAL_THROW", "Vital Throw"),
-        ("MOVE_MORNING_SUN", "Morning Sun"),
-        ("MOVE_SYNTHESIS", "Synthesis"),
-        ("MOVE_MOONLIGHT", "Moonlight"),
-        ("MOVE_HIDDEN_POWER", "Hidden Power"),
-        ("MOVE_CROSS_CHOP", "Cross Chop"),
-        ("MOVE_TWISTER", "Twister"),
-        ("MOVE_RAIN_DANCE", "Rain Dance"),
-        ("MOVE_SUNNY_DAY", "Sunny Day"),
-        ("MOVE_CRUNCH", "Crunch"),
-        ("MOVE_MIRROR_COAT", "Mirror Coat"),
-        ("MOVE_PSYCH_UP", "Psych Up"),
-        ("MOVE_EXTREME_SPEED", "Extremespeed"),
-        ("MOVE_ANCIENT_POWER", "Ancientpower"),
-        ("MOVE_SHADOW_BALL", "Shadow Ball"),
-        ("MOVE_FUTURE_SIGHT", "Future Sight"),
-        ("MOVE_ROCK_SMASH", "Rock Smash"),
-        ("MOVE_WHIRLPOOL", "Whirlpool"),
-        ("MOVE_BEAT_UP", "Beat Up"),
-        ("MOVE_FAKE_OUT", "Fake Out"),
-        ("MOVE_UPROAR", "Uproar"),
-        ("MOVE_STOCKPILE", "Stockpile"),
-        ("MOVE_SPIT_UP", "Spit Up"),
-        ("MOVE_SWALLOW", "Swallow"),
-        ("MOVE_HEAT_WAVE", "Heat Wave"),
-        ("MOVE_HAIL", "Hail"),
-        ("MOVE_TORMENT", "Torment"),
-        ("MOVE_FLATTER", "Flatter"),
-        ("MOVE_WILL_O_WISP", "Will-O-Wisp"),
-        ("MOVE_MEMENTO", "Memento"),
-        ("MOVE_FACADE", "Facade"),
-        ("MOVE_FOCUS_PUNCH", "Focus Punch"),
-        ("MOVE_SMELLING_SALT", "Smellingsalt"),
-        ("MOVE_FOLLOW_ME", "Follow Me"),
-        ("MOVE_NATURE_POWER", "Nature Power"),
-        ("MOVE_CHARGE", "Charge"),
-        ("MOVE_TAUNT", "Taunt"),
-        ("MOVE_HELPING_HAND", "Helping Hand"),
-        ("MOVE_TRICK", "Trick"),
-        ("MOVE_ROLE_PLAY", "Role Play"),
-        ("MOVE_WISH", "Wish"),
-        ("MOVE_ASSIST", "Assist"),
-        ("MOVE_INGRAIN", "Ingrain"),
-        ("MOVE_SUPERPOWER", "Superpower"),
-        ("MOVE_MAGIC_COAT", "Magic Coat"),
-        ("MOVE_RECYCLE", "Recycle"),
-        ("MOVE_REVENGE", "Revenge"),
-        ("MOVE_BRICK_BREAK", "Brick Break"),
-        ("MOVE_YAWN", "Yawn"),
-        ("MOVE_KNOCK_OFF", "Knock Off"),
-        ("MOVE_ENDEAVOR", "Endeavor"),
-        ("MOVE_ERUPTION", "Eruption"),
-        ("MOVE_SKILL_SWAP", "Skill Swap"),
-        ("MOVE_IMPRISON", "Imprison"),
-        ("MOVE_REFRESH", "Refresh"),
-        ("MOVE_GRUDGE", "Grudge"),
-        ("MOVE_SNATCH", "Snatch"),
-        ("MOVE_SECRET_POWER", "Secret Power"),
-        ("MOVE_DIVE", "Dive"),
-        ("MOVE_ARM_THRUST", "Arm Thrust"),
-        ("MOVE_CAMOUFLAGE", "Camouflage"),
-        ("MOVE_TAIL_GLOW", "Tail Glow"),
-        ("MOVE_LUSTER_PURGE", "Luster Purge"),
-        ("MOVE_MIST_BALL", "Mist Ball"),
-        ("MOVE_FEATHER_DANCE", "Featherdance"),
-        ("MOVE_TEETER_DANCE", "Teeter Dance"),
-        ("MOVE_BLAZE_KICK", "Blaze Kick"),
-        ("MOVE_MUD_SPORT", "Mud Sport"),
-        ("MOVE_ICE_BALL", "Ice Ball"),
-        ("MOVE_NEEDLE_ARM", "Needle Arm"),
-        ("MOVE_SLACK_OFF", "Slack Off"),
-        ("MOVE_HYPER_VOICE", "Hyper Voice"),
-        ("MOVE_POISON_FANG", "Poison Fang"),
-        ("MOVE_CRUSH_CLAW", "Crush Claw"),
-        ("MOVE_BLAST_BURN", "Blast Burn"),
-        ("MOVE_HYDRO_CANNON", "Hydro Cannon"),
-        ("MOVE_METEOR_MASH", "Meteor Mash"),
-        ("MOVE_ASTONISH", "Astonish"),
-        ("MOVE_WEATHER_BALL", "Weather Ball"),
-        ("MOVE_AROMATHERAPY", "Aromatherapy"),
-        ("MOVE_FAKE_TEARS", "Fake Tears"),
-        ("MOVE_AIR_CUTTER", "Air Cutter"),
-        ("MOVE_OVERHEAT", "Overheat"),
-        ("MOVE_ODOR_SLEUTH", "Odor Sleuth"),
-        ("MOVE_ROCK_TOMB", "Rock Tomb"),
-        ("MOVE_SILVER_WIND", "Silver Wind"),
-        ("MOVE_METAL_SOUND", "Metal Sound"),
-        ("MOVE_GRASS_WHISTLE", "Grasswhistle"),
-        ("MOVE_TICKLE", "Tickle"),
-        ("MOVE_COSMIC_POWER", "Cosmic Power"),
-        ("MOVE_WATER_SPOUT", "Water Spout"),
-        ("MOVE_SIGNAL_BEAM", "Signal Beam"),
-        ("MOVE_SHADOW_PUNCH", "Shadow Punch"),
-        ("MOVE_EXTRASENSORY", "Extrasensory"),
-        ("MOVE_SKY_UPPERCUT", "Sky Uppercut"),
-        ("MOVE_SAND_TOMB", "Sand Tomb"),
-        ("MOVE_SHEER_COLD", "Sheer Cold"),
-        ("MOVE_MUDDY_WATER", "Muddy Water"),
-        ("MOVE_BULLET_SEED", "Bullet Seed"),
-        ("MOVE_AERIAL_ACE", "Aerial Ace"),
-        ("MOVE_ICICLE_SPEAR", "Icicle Spear"),
-        ("MOVE_IRON_DEFENSE", "Iron Defense"),
-        ("MOVE_BLOCK", "Block"),
-        ("MOVE_HOWL", "Howl"),
-        ("MOVE_DRAGON_CLAW", "Dragon Claw"),
-        ("MOVE_FRENZY_PLANT", "Frenzy Plant"),
-        ("MOVE_BULK_UP", "Bulk Up"),
-        ("MOVE_BOUNCE", "Bounce"),
-        ("MOVE_MUD_SHOT", "Mud Shot"),
-        ("MOVE_POISON_TAIL", "Poison Tail"),
-        ("MOVE_COVET", "Covet"),
-        ("MOVE_VOLT_TACKLE", "Volt Tackle"),
-        ("MOVE_MAGICAL_LEAF", "Magical Leaf"),
-        ("MOVE_WATER_SPORT", "Water Sport"),
-        ("MOVE_CALM_MIND", "Calm Mind"),
-        ("MOVE_LEAF_BLADE", "Leaf Blade"),
-        ("MOVE_DRAGON_DANCE", "Dragon Dance"),
-        ("MOVE_ROCK_BLAST", "Rock Blast"),
-        ("MOVE_SHOCK_WAVE", "Shock Wave"),
-        ("MOVE_WATER_PULSE", "Water Pulse"),
-        ("MOVE_DOOM_DESIRE", "Doom Desire"),
-        ("MOVE_PSYCHO_BOOST", "Psycho Boost")
-    ]}
+    # Create move data
+    for name, move_data in extracted_data["moves"].items():
+        data.moves[name] = MoveData(
+            move_data["effect"],
+            move_data["power"],
+            move_data["type"],
+            move_data["accuracy"],
+            move_data["pp"],
+            move_data["secondary_effect_chance"],
+            move_data["target"],
+            move_data["priority"],
+            move_data["flags"],
+            move_data["category"],
+            move_data["address"]
+        )
+        if name not in ["MOVE_NONE", "MOVE_STRUGGLE"]:
+            data.num_moves_per_damage_category[move_data["category"]] += 1
+
+    # Load/merge scaling json files
+    scaling_json_list = []
+    for file in resource_listdir(__name__, "data/scalings"):
+        if not resource_isdir(__name__, "data/scalings/" + file):
+            scaling_json_list.append(load_json_data("scalings/" + file))
+
+    scalings_json = {}
+    for scaling_subset in scaling_json_list:
+        for scaling_id, scaling_json in scaling_subset.items():
+            if scaling_id in scalings_json:
+                raise AssertionError(f"Pokemon FRLG: Scaling [{scaling_id}] was defined multiple times")
+            scalings_json[scaling_id] = scaling_json
+
+    for scaling_id, scaling_json in scalings_json.items():
+        scaling_data = ScalingData(
+            scaling_json["region"],
+            scaling_json["kanto"],
+            scaling_json["connections"],
+            scaling_json["type"],
+            LocationCategory[scaling_json["category"]],
+            scaling_json["locations"]
+        )
+
+        data.scaling[scaling_id] = scaling_data
 
 
 data = PokemonFRLGData()
@@ -1543,6 +1257,7 @@ starting_town_blacklist_map = {
     "Cinnabar Island": "SPAWN_CINNABAR_ISLAND",
     "Saffron City": "SPAWN_SAFFRON_CITY",
     "Route 4": "SPAWN_ROUTE4",
+    "Route 10": "SPAWN_ROUTE10",
     "One Island": "SPAWN_ONE_ISLAND",
     "Two Island": "SPAWN_TWO_ISLAND",
     "Three Island": "SPAWN_THREE_ISLAND",
@@ -1552,479 +1267,925 @@ starting_town_blacklist_map = {
     "Six Island": "SPAWN_SIX_ISLAND"
 }
 
-# Data is formatted as (Map Group, Map Num, X-Coord, Y-Coord, Region Map ID, Region Map Index)
-kanto_fly_destinations = {
+ability_name_map = {j: data.constants[i] for i, j in [
+    ("ABILITY_STENCH", "Stench"),
+    ("ABILITY_DRIZZLE", "Drizzle"),
+    ("ABILITY_SPEED_BOOST", "Speed Boost"),
+    ("ABILITY_BATTLE_ARMOR", "Battle Armor"),
+    ("ABILITY_STURDY", "Sturdy"),
+    ("ABILITY_DAMP", "Damp"),
+    ("ABILITY_LIMBER", "Limber"),
+    ("ABILITY_SAND_VEIL", "Sand Veil"),
+    ("ABILITY_STATIC", "Static"),
+    ("ABILITY_VOLT_ABSORB", "Volt Absorb"),
+    ("ABILITY_WATER_ABSORB", "Water Absorb"),
+    ("ABILITY_OBLIVIOUS", "Oblivious"),
+    ("ABILITY_CLOUD_NINE", "Cloud Nine"),
+    ("ABILITY_COMPOUND_EYES", "Compoundeyes"),
+    ("ABILITY_INSOMNIA", "Insomnia"),
+    ("ABILITY_COLOR_CHANGE", "Color Change"),
+    ("ABILITY_IMMUNITY", "Immunity"),
+    ("ABILITY_FLASH_FIRE", "Flash Fire"),
+    ("ABILITY_SHIELD_DUST", "Shield Dust"),
+    ("ABILITY_OWN_TEMPO", "Own Tempo"),
+    ("ABILITY_SUCTION_CUPS", "Suction Cups"),
+    ("ABILITY_INTIMIDATE", "Intimidate"),
+    ("ABILITY_SHADOW_TAG", "Shadow Tag"),
+    ("ABILITY_ROUGH_SKIN", "Rough Skin"),
+    ("ABILITY_WONDER_GUARD", "Wonder Guard"),
+    ("ABILITY_LEVITATE", "Levitate"),
+    ("ABILITY_EFFECT_SPORE", "Effect Spore"),
+    ("ABILITY_SYNCHRONIZE", "Synchronize"),
+    ("ABILITY_CLEAR_BODY", "Clear Body"),
+    ("ABILITY_NATURAL_CURE", "Natural Cure"),
+    ("ABILITY_LIGHTNING_ROD", "Lightningrod"),
+    ("ABILITY_SERENE_GRACE", "Serene Grace"),
+    ("ABILITY_SWIFT_SWIM", "Swift Swim"),
+    ("ABILITY_CHLOROPHYLL", "Chlorophyll"),
+    ("ABILITY_ILLUMINATE", "Illuminate"),
+    ("ABILITY_TRACE", "Trace"),
+    ("ABILITY_HUGE_POWER", "Huge Power"),
+    ("ABILITY_POISON_POINT", "Poison Point"),
+    ("ABILITY_INNER_FOCUS", "Inner Focus"),
+    ("ABILITY_MAGMA_ARMOR", "Magma Armor"),
+    ("ABILITY_WATER_VEIL", "Water Veil"),
+    ("ABILITY_MAGNET_PULL", "Magnet Pull"),
+    ("ABILITY_SOUNDPROOF", "Soundproof"),
+    ("ABILITY_RAIN_DISH", "Rain Dish"),
+    ("ABILITY_SAND_STREAM", "Sand Stream"),
+    ("ABILITY_PRESSURE", "Pressure"),
+    ("ABILITY_THICK_FAT", "Thick Fat"),
+    ("ABILITY_EARLY_BIRD", "Early Bird"),
+    ("ABILITY_FLAME_BODY", "Flame Body"),
+    ("ABILITY_RUN_AWAY", "Run Away"),
+    ("ABILITY_KEEN_EYE", "Keen Eye"),
+    ("ABILITY_HYPER_CUTTER", "Hyper Cutter"),
+    ("ABILITY_PICKUP", "Pickup"),
+    ("ABILITY_TRUANT", "Truant"),
+    ("ABILITY_HUSTLE", "Hustle"),
+    ("ABILITY_CUTE_CHARM", "Cute Charm"),
+    ("ABILITY_PLUS", "Plus"),
+    ("ABILITY_MINUS", "Minus"),
+    ("ABILITY_FORECAST", "Forecast"),
+    ("ABILITY_STICKY_HOLD", "Sticky Hold"),
+    ("ABILITY_SHED_SKIN", "Shed Skin"),
+    ("ABILITY_GUTS", "Guts"),
+    ("ABILITY_MARVEL_SCALE", "Marvel Scale"),
+    ("ABILITY_LIQUID_OOZE", "Liquid Ooze"),
+    ("ABILITY_OVERGROW", "Overgrow"),
+    ("ABILITY_BLAZE", "Blaze"),
+    ("ABILITY_TORRENT", "Torrent"),
+    ("ABILITY_SWARM", "Swarm"),
+    ("ABILITY_ROCK_HEAD", "Rock Head"),
+    ("ABILITY_DROUGHT", "Drought"),
+    ("ABILITY_ARENA_TRAP", "Arena Trap"),
+    ("ABILITY_VITAL_SPIRIT", "Vital Spirit"),
+    ("ABILITY_WHITE_SMOKE", "White Smoke"),
+    ("ABILITY_PURE_POWER", "Pure Power"),
+    ("ABILITY_SHELL_ARMOR", "Shell Armor"),
+    ("ABILITY_CACOPHONY", "Cacophony"),
+    ("ABILITY_AIR_LOCK", "Air Lock")
+]}
+
+move_name_map = {j: data.constants[i] for i, j in [
+    ("MOVE_POUND", "Pound"),
+    ("MOVE_KARATE_CHOP", "Karate Chop"),
+    ("MOVE_DOUBLE_SLAP", "Doubleslap"),
+    ("MOVE_COMET_PUNCH", "Comet Punch"),
+    ("MOVE_MEGA_PUNCH", "Mega Punch"),
+    ("MOVE_PAY_DAY", "Pay Day"),
+    ("MOVE_FIRE_PUNCH", "Fire Punch"),
+    ("MOVE_ICE_PUNCH", "Ice Punch"),
+    ("MOVE_THUNDER_PUNCH", "Thunderpunch"),
+    ("MOVE_SCRATCH", "Scratch"),
+    ("MOVE_VICE_GRIP", "Vicegrip"),
+    ("MOVE_GUILLOTINE", "Guillotine"),
+    ("MOVE_RAZOR_WIND", "Razor Wind"),
+    ("MOVE_SWORDS_DANCE", "Swords Dance"),
+    ("MOVE_CUT", "Cut"),
+    ("MOVE_GUST", "Gust"),
+    ("MOVE_WING_ATTACK", "Wing Attack"),
+    ("MOVE_WHIRLWIND", "Whirlwind"),
+    ("MOVE_FLY", "Fly"),
+    ("MOVE_BIND", "Bind"),
+    ("MOVE_SLAM", "Slam"),
+    ("MOVE_VINE_WHIP", "Vine Whip"),
+    ("MOVE_STOMP", "Stomp"),
+    ("MOVE_DOUBLE_KICK", "Double Kick"),
+    ("MOVE_MEGA_KICK", "Mega Kick"),
+    ("MOVE_JUMP_KICK", "Jump Kick"),
+    ("MOVE_ROLLING_KICK", "Rolling Kick"),
+    ("MOVE_SAND_ATTACK", "Sand-Attack"),
+    ("MOVE_HEADBUTT", "Headbutt"),
+    ("MOVE_HORN_ATTACK", "Horn Attack"),
+    ("MOVE_FURY_ATTACK", "Fury Attack"),
+    ("MOVE_HORN_DRILL", "Horn Drill"),
+    ("MOVE_TACKLE", "Tackle"),
+    ("MOVE_BODY_SLAM", "Body Slam"),
+    ("MOVE_WRAP", "Wrap"),
+    ("MOVE_TAKE_DOWN", "Take Down"),
+    ("MOVE_THRASH", "Thrash"),
+    ("MOVE_DOUBLE_EDGE", "Double-Edge"),
+    ("MOVE_TAIL_WHIP", "Tail Whip"),
+    ("MOVE_POISON_STING", "Poison Sting"),
+    ("MOVE_TWINEEDLE", "Twineedle"),
+    ("MOVE_PIN_MISSILE", "Pin Missile"),
+    ("MOVE_LEER", "Leer"),
+    ("MOVE_BITE", "Bite"),
+    ("MOVE_GROWL", "Growl"),
+    ("MOVE_ROAR", "Roar"),
+    ("MOVE_SING", "Sing"),
+    ("MOVE_SUPERSONIC", "Supersonic"),
+    ("MOVE_SONIC_BOOM", "Sonicboom"),
+    ("MOVE_DISABLE", "Disable"),
+    ("MOVE_ACID", "Acid"),
+    ("MOVE_EMBER", "Ember"),
+    ("MOVE_FLAMETHROWER", "Flamethrower"),
+    ("MOVE_MIST", "Mist"),
+    ("MOVE_WATER_GUN", "Water Gun"),
+    ("MOVE_HYDRO_PUMP", "Hydro Pump"),
+    ("MOVE_SURF", "Surf"),
+    ("MOVE_ICE_BEAM", "Ice Beam"),
+    ("MOVE_BLIZZARD", "Blizzard"),
+    ("MOVE_PSYBEAM", "Psybeam"),
+    ("MOVE_BUBBLE_BEAM", "Bubblebeam"),
+    ("MOVE_AURORA_BEAM", "Aurora Beam"),
+    ("MOVE_HYPER_BEAM", "Hyper Beam"),
+    ("MOVE_PECK", "Peck"),
+    ("MOVE_DRILL_PECK", "Drill Peck"),
+    ("MOVE_SUBMISSION", "Submission"),
+    ("MOVE_LOW_KICK", "Low Kick"),
+    ("MOVE_COUNTER", "Counter"),
+    ("MOVE_SEISMIC_TOSS", "Seismic Toss"),
+    ("MOVE_STRENGTH", "Strength"),
+    ("MOVE_ABSORB", "Absorb"),
+    ("MOVE_MEGA_DRAIN", "Mega Drain"),
+    ("MOVE_LEECH_SEED", "Leech Seed"),
+    ("MOVE_GROWTH", "Growth"),
+    ("MOVE_RAZOR_LEAF", "Razor Leaf"),
+    ("MOVE_SOLAR_BEAM", "Solarbeam"),
+    ("MOVE_POISON_POWDER", "Poisonpowder"),
+    ("MOVE_STUN_SPORE", "Stun Spore"),
+    ("MOVE_SLEEP_POWDER", "Sleep Powder"),
+    ("MOVE_PETAL_DANCE", "Petal Dance"),
+    ("MOVE_STRING_SHOT", "String Shot"),
+    ("MOVE_DRAGON_RAGE", "Dragon Rage"),
+    ("MOVE_FIRE_SPIN", "Fire Spin"),
+    ("MOVE_THUNDER_SHOCK", "Thundershock"),
+    ("MOVE_THUNDERBOLT", "Thunderbolt"),
+    ("MOVE_THUNDER_WAVE", "Thunder Wave"),
+    ("MOVE_THUNDER", "Thunder"),
+    ("MOVE_ROCK_THROW", "Rock Throw"),
+    ("MOVE_EARTHQUAKE", "Earthquake"),
+    ("MOVE_FISSURE", "Fissure"),
+    ("MOVE_DIG", "Dig"),
+    ("MOVE_TOXIC", "Toxic"),
+    ("MOVE_CONFUSION", "Confusion"),
+    ("MOVE_PSYCHIC", "Psychic"),
+    ("MOVE_HYPNOSIS", "Hypnosis"),
+    ("MOVE_MEDITATE", "Meditate"),
+    ("MOVE_AGILITY", "Agility"),
+    ("MOVE_QUICK_ATTACK", "Quick Attack"),
+    ("MOVE_RAGE", "Rage"),
+    ("MOVE_TELEPORT", "Teleport"),
+    ("MOVE_NIGHT_SHADE", "Night Shade"),
+    ("MOVE_MIMIC", "Mimic"),
+    ("MOVE_SCREECH", "Screech"),
+    ("MOVE_DOUBLE_TEAM", "Double Team"),
+    ("MOVE_RECOVER", "Recover"),
+    ("MOVE_HARDEN", "Harden"),
+    ("MOVE_MINIMIZE", "Minimize"),
+    ("MOVE_SMOKESCREEN", "Smokescreen"),
+    ("MOVE_CONFUSE_RAY", "Confuse Ray"),
+    ("MOVE_WITHDRAW", "Withdraw"),
+    ("MOVE_DEFENSE_CURL", "Defense Curl"),
+    ("MOVE_BARRIER", "Barrier"),
+    ("MOVE_LIGHT_SCREEN", "Light Screen"),
+    ("MOVE_HAZE", "Haze"),
+    ("MOVE_REFLECT", "Reflect"),
+    ("MOVE_FOCUS_ENERGY", "Focus Energy"),
+    ("MOVE_BIDE", "Bide"),
+    ("MOVE_METRONOME", "Metronome"),
+    ("MOVE_MIRROR_MOVE", "Mirror Move"),
+    ("MOVE_SELF_DESTRUCT", "Selfdestruct"),
+    ("MOVE_EGG_BOMB", "Egg Bomb"),
+    ("MOVE_LICK", "Lick"),
+    ("MOVE_SMOG", "Smog"),
+    ("MOVE_SLUDGE", "Sludge"),
+    ("MOVE_BONE_CLUB", "Bone Club"),
+    ("MOVE_FIRE_BLAST", "Fire Blast"),
+    ("MOVE_WATERFALL", "Waterfall"),
+    ("MOVE_CLAMP", "Clamp"),
+    ("MOVE_SWIFT", "Swift"),
+    ("MOVE_SKULL_BASH", "Skull Bash"),
+    ("MOVE_SPIKE_CANNON", "Spike Cannon"),
+    ("MOVE_CONSTRICT", "Constrict"),
+    ("MOVE_AMNESIA", "Amnesia"),
+    ("MOVE_KINESIS", "Kinesis"),
+    ("MOVE_SOFT_BOILED", "Softboiled"),
+    ("MOVE_HI_JUMP_KICK", "Hi Jump Kick"),
+    ("MOVE_GLARE", "Glare"),
+    ("MOVE_DREAM_EATER", "Dream Eater"),
+    ("MOVE_POISON_GAS", "Poison Gas"),
+    ("MOVE_BARRAGE", "Barrage"),
+    ("MOVE_LEECH_LIFE", "Leech Life"),
+    ("MOVE_LOVELY_KISS", "Lovely Kiss"),
+    ("MOVE_SKY_ATTACK", "Sky Attack"),
+    ("MOVE_TRANSFORM", "Transform"),
+    ("MOVE_BUBBLE", "Bubble"),
+    ("MOVE_DIZZY_PUNCH", "Dizzy Punch"),
+    ("MOVE_SPORE", "Spore"),
+    ("MOVE_FLASH", "Flash"),
+    ("MOVE_PSYWAVE", "Psywave"),
+    ("MOVE_SPLASH", "Splash"),
+    ("MOVE_ACID_ARMOR", "Acid Armor"),
+    ("MOVE_CRABHAMMER", "Crabhammer"),
+    ("MOVE_EXPLOSION", "Explosion"),
+    ("MOVE_FURY_SWIPES", "Fury Swipes"),
+    ("MOVE_BONEMERANG", "Bonemerang"),
+    ("MOVE_REST", "Rest"),
+    ("MOVE_ROCK_SLIDE", "Rock Slide"),
+    ("MOVE_HYPER_FANG", "Hyper Fang"),
+    ("MOVE_SHARPEN", "Sharpen"),
+    ("MOVE_CONVERSION", "Conversion"),
+    ("MOVE_TRI_ATTACK", "Tri Attack"),
+    ("MOVE_SUPER_FANG", "Super Fang"),
+    ("MOVE_SLASH", "Slash"),
+    ("MOVE_SUBSTITUTE", "Substitute"),
+    ("MOVE_SKETCH", "Sketch"),
+    ("MOVE_TRIPLE_KICK", "Triple Kick"),
+    ("MOVE_THIEF", "Thief"),
+    ("MOVE_SPIDER_WEB", "Spider Web"),
+    ("MOVE_MIND_READER", "Mind Reader"),
+    ("MOVE_NIGHTMARE", "Nightmare"),
+    ("MOVE_FLAME_WHEEL", "Flame Wheel"),
+    ("MOVE_SNORE", "Snore"),
+    ("MOVE_CURSE", "Curse"),
+    ("MOVE_FLAIL", "Flail"),
+    ("MOVE_CONVERSION_2", "Conversion 2"),
+    ("MOVE_AEROBLAST", "Aeroblast"),
+    ("MOVE_COTTON_SPORE", "Cotton Spore"),
+    ("MOVE_REVERSAL", "Reversal"),
+    ("MOVE_SPITE", "Spite"),
+    ("MOVE_POWDER_SNOW", "Powder Snow"),
+    ("MOVE_PROTECT", "Protect"),
+    ("MOVE_MACH_PUNCH", "Mach Punch"),
+    ("MOVE_SCARY_FACE", "Scary Face"),
+    ("MOVE_FAINT_ATTACK", "Faint Attack"),
+    ("MOVE_SWEET_KISS", "Sweet Kiss"),
+    ("MOVE_BELLY_DRUM", "Belly Drum"),
+    ("MOVE_SLUDGE_BOMB", "Sludge Bomb"),
+    ("MOVE_MUD_SLAP", "Mud-Slap"),
+    ("MOVE_OCTAZOOKA", "Octazooka"),
+    ("MOVE_SPIKES", "Spikes"),
+    ("MOVE_ZAP_CANNON", "Zap Cannon"),
+    ("MOVE_FORESIGHT", "Foresight"),
+    ("MOVE_DESTINY_BOND", "Destiny Bond"),
+    ("MOVE_PERISH_SONG", "Perish Song"),
+    ("MOVE_ICY_WIND", "Icy Wind"),
+    ("MOVE_DETECT", "Detect"),
+    ("MOVE_BONE_RUSH", "Bone Rush"),
+    ("MOVE_LOCK_ON", "Lock-On"),
+    ("MOVE_OUTRAGE", "Outrage"),
+    ("MOVE_SANDSTORM", "Sandstorm"),
+    ("MOVE_GIGA_DRAIN", "Giga Drain"),
+    ("MOVE_ENDURE", "Endure"),
+    ("MOVE_CHARM", "Charm"),
+    ("MOVE_ROLLOUT", "Rollout"),
+    ("MOVE_FALSE_SWIPE", "False Swipe"),
+    ("MOVE_SWAGGER", "Swagger"),
+    ("MOVE_MILK_DRINK", "Milk Drink"),
+    ("MOVE_SPARK", "Spark"),
+    ("MOVE_FURY_CUTTER", "Fury Cutter"),
+    ("MOVE_STEEL_WING", "Steel Wing"),
+    ("MOVE_MEAN_LOOK", "Mean Look"),
+    ("MOVE_ATTRACT", "Attract"),
+    ("MOVE_SLEEP_TALK", "Sleep Talk"),
+    ("MOVE_HEAL_BELL", "Heal Bell"),
+    ("MOVE_RETURN", "Return"),
+    ("MOVE_PRESENT", "Present"),
+    ("MOVE_FRUSTRATION", "Frustration"),
+    ("MOVE_SAFEGUARD", "Safeguard"),
+    ("MOVE_PAIN_SPLIT", "Pain Split"),
+    ("MOVE_SACRED_FIRE", "Sacred Fire"),
+    ("MOVE_MAGNITUDE", "Magnitude"),
+    ("MOVE_DYNAMIC_PUNCH", "Dynamicpunch"),
+    ("MOVE_MEGAHORN", "Megahorn"),
+    ("MOVE_DRAGON_BREATH", "Dragonbreath"),
+    ("MOVE_BATON_PASS", "Baton Pass"),
+    ("MOVE_ENCORE", "Encore"),
+    ("MOVE_PURSUIT", "Pursuit"),
+    ("MOVE_RAPID_SPIN", "Rapid Spin"),
+    ("MOVE_SWEET_SCENT", "Sweet Scent"),
+    ("MOVE_IRON_TAIL", "Iron Tail"),
+    ("MOVE_METAL_CLAW", "Metal Claw"),
+    ("MOVE_VITAL_THROW", "Vital Throw"),
+    ("MOVE_MORNING_SUN", "Morning Sun"),
+    ("MOVE_SYNTHESIS", "Synthesis"),
+    ("MOVE_MOONLIGHT", "Moonlight"),
+    ("MOVE_HIDDEN_POWER", "Hidden Power"),
+    ("MOVE_CROSS_CHOP", "Cross Chop"),
+    ("MOVE_TWISTER", "Twister"),
+    ("MOVE_RAIN_DANCE", "Rain Dance"),
+    ("MOVE_SUNNY_DAY", "Sunny Day"),
+    ("MOVE_CRUNCH", "Crunch"),
+    ("MOVE_MIRROR_COAT", "Mirror Coat"),
+    ("MOVE_PSYCH_UP", "Psych Up"),
+    ("MOVE_EXTREME_SPEED", "Extremespeed"),
+    ("MOVE_ANCIENT_POWER", "Ancientpower"),
+    ("MOVE_SHADOW_BALL", "Shadow Ball"),
+    ("MOVE_FUTURE_SIGHT", "Future Sight"),
+    ("MOVE_ROCK_SMASH", "Rock Smash"),
+    ("MOVE_WHIRLPOOL", "Whirlpool"),
+    ("MOVE_BEAT_UP", "Beat Up"),
+    ("MOVE_FAKE_OUT", "Fake Out"),
+    ("MOVE_UPROAR", "Uproar"),
+    ("MOVE_STOCKPILE", "Stockpile"),
+    ("MOVE_SPIT_UP", "Spit Up"),
+    ("MOVE_SWALLOW", "Swallow"),
+    ("MOVE_HEAT_WAVE", "Heat Wave"),
+    ("MOVE_HAIL", "Hail"),
+    ("MOVE_TORMENT", "Torment"),
+    ("MOVE_FLATTER", "Flatter"),
+    ("MOVE_WILL_O_WISP", "Will-O-Wisp"),
+    ("MOVE_MEMENTO", "Memento"),
+    ("MOVE_FACADE", "Facade"),
+    ("MOVE_FOCUS_PUNCH", "Focus Punch"),
+    ("MOVE_SMELLING_SALT", "Smellingsalt"),
+    ("MOVE_FOLLOW_ME", "Follow Me"),
+    ("MOVE_NATURE_POWER", "Nature Power"),
+    ("MOVE_CHARGE", "Charge"),
+    ("MOVE_TAUNT", "Taunt"),
+    ("MOVE_HELPING_HAND", "Helping Hand"),
+    ("MOVE_TRICK", "Trick"),
+    ("MOVE_ROLE_PLAY", "Role Play"),
+    ("MOVE_WISH", "Wish"),
+    ("MOVE_ASSIST", "Assist"),
+    ("MOVE_INGRAIN", "Ingrain"),
+    ("MOVE_SUPERPOWER", "Superpower"),
+    ("MOVE_MAGIC_COAT", "Magic Coat"),
+    ("MOVE_RECYCLE", "Recycle"),
+    ("MOVE_REVENGE", "Revenge"),
+    ("MOVE_BRICK_BREAK", "Brick Break"),
+    ("MOVE_YAWN", "Yawn"),
+    ("MOVE_KNOCK_OFF", "Knock Off"),
+    ("MOVE_ENDEAVOR", "Endeavor"),
+    ("MOVE_ERUPTION", "Eruption"),
+    ("MOVE_SKILL_SWAP", "Skill Swap"),
+    ("MOVE_IMPRISON", "Imprison"),
+    ("MOVE_REFRESH", "Refresh"),
+    ("MOVE_GRUDGE", "Grudge"),
+    ("MOVE_SNATCH", "Snatch"),
+    ("MOVE_SECRET_POWER", "Secret Power"),
+    ("MOVE_DIVE", "Dive"),
+    ("MOVE_ARM_THRUST", "Arm Thrust"),
+    ("MOVE_CAMOUFLAGE", "Camouflage"),
+    ("MOVE_TAIL_GLOW", "Tail Glow"),
+    ("MOVE_LUSTER_PURGE", "Luster Purge"),
+    ("MOVE_MIST_BALL", "Mist Ball"),
+    ("MOVE_FEATHER_DANCE", "Featherdance"),
+    ("MOVE_TEETER_DANCE", "Teeter Dance"),
+    ("MOVE_BLAZE_KICK", "Blaze Kick"),
+    ("MOVE_MUD_SPORT", "Mud Sport"),
+    ("MOVE_ICE_BALL", "Ice Ball"),
+    ("MOVE_NEEDLE_ARM", "Needle Arm"),
+    ("MOVE_SLACK_OFF", "Slack Off"),
+    ("MOVE_HYPER_VOICE", "Hyper Voice"),
+    ("MOVE_POISON_FANG", "Poison Fang"),
+    ("MOVE_CRUSH_CLAW", "Crush Claw"),
+    ("MOVE_BLAST_BURN", "Blast Burn"),
+    ("MOVE_HYDRO_CANNON", "Hydro Cannon"),
+    ("MOVE_METEOR_MASH", "Meteor Mash"),
+    ("MOVE_ASTONISH", "Astonish"),
+    ("MOVE_WEATHER_BALL", "Weather Ball"),
+    ("MOVE_AROMATHERAPY", "Aromatherapy"),
+    ("MOVE_FAKE_TEARS", "Fake Tears"),
+    ("MOVE_AIR_CUTTER", "Air Cutter"),
+    ("MOVE_OVERHEAT", "Overheat"),
+    ("MOVE_ODOR_SLEUTH", "Odor Sleuth"),
+    ("MOVE_ROCK_TOMB", "Rock Tomb"),
+    ("MOVE_SILVER_WIND", "Silver Wind"),
+    ("MOVE_METAL_SOUND", "Metal Sound"),
+    ("MOVE_GRASS_WHISTLE", "Grasswhistle"),
+    ("MOVE_TICKLE", "Tickle"),
+    ("MOVE_COSMIC_POWER", "Cosmic Power"),
+    ("MOVE_WATER_SPOUT", "Water Spout"),
+    ("MOVE_SIGNAL_BEAM", "Signal Beam"),
+    ("MOVE_SHADOW_PUNCH", "Shadow Punch"),
+    ("MOVE_EXTRASENSORY", "Extrasensory"),
+    ("MOVE_SKY_UPPERCUT", "Sky Uppercut"),
+    ("MOVE_SAND_TOMB", "Sand Tomb"),
+    ("MOVE_SHEER_COLD", "Sheer Cold"),
+    ("MOVE_MUDDY_WATER", "Muddy Water"),
+    ("MOVE_BULLET_SEED", "Bullet Seed"),
+    ("MOVE_AERIAL_ACE", "Aerial Ace"),
+    ("MOVE_ICICLE_SPEAR", "Icicle Spear"),
+    ("MOVE_IRON_DEFENSE", "Iron Defense"),
+    ("MOVE_BLOCK", "Block"),
+    ("MOVE_HOWL", "Howl"),
+    ("MOVE_DRAGON_CLAW", "Dragon Claw"),
+    ("MOVE_FRENZY_PLANT", "Frenzy Plant"),
+    ("MOVE_BULK_UP", "Bulk Up"),
+    ("MOVE_BOUNCE", "Bounce"),
+    ("MOVE_MUD_SHOT", "Mud Shot"),
+    ("MOVE_POISON_TAIL", "Poison Tail"),
+    ("MOVE_COVET", "Covet"),
+    ("MOVE_VOLT_TACKLE", "Volt Tackle"),
+    ("MOVE_MAGICAL_LEAF", "Magical Leaf"),
+    ("MOVE_WATER_SPORT", "Water Sport"),
+    ("MOVE_CALM_MIND", "Calm Mind"),
+    ("MOVE_LEAF_BLADE", "Leaf Blade"),
+    ("MOVE_DRAGON_DANCE", "Dragon Dance"),
+    ("MOVE_ROCK_BLAST", "Rock Blast"),
+    ("MOVE_SHOCK_WAVE", "Shock Wave"),
+    ("MOVE_WATER_PULSE", "Water Pulse"),
+    ("MOVE_DOOM_DESIRE", "Doom Desire"),
+    ("MOVE_PSYCHO_BOOST", "Psycho Boost")
+]}
+
+kanto_fly_destinations: Dict[str, Dict[str, List[FlyData]]] = {
     "Pallet Town": {
         "Pallet Town": [
-            (3, 0, 6, 8, 1, 246),
-            (3, 0, 15, 8, 1, 246),
-            (3, 0, 16, 14, 1, 246)
+            FlyData("Player's House", "PALLET TOWN", 3, 0, 6, 8, 1, 246),
+            FlyData("Rival's House", "PALLET TOWN", 3, 0, 15, 8, 1, 246),
+            FlyData("Professor Oak's Lab", "PALLET TOWN", 3, 0, 16, 14, 1, 246)
         ]
     },
     "Viridian City": {
         "Viridian City South": [
-            (3, 1, 25, 12, 1, 180),
-            (3, 1, 25, 19, 1, 180),
-            (3, 1, 36, 20, 1, 180),
-            (3, 1, 26, 27, 1, 180)
+            FlyData("Viridian Pokemon Center", "VIRIDIAN CITY", 3, 1, 26, 27, 1, 180),
+            FlyData("Virdian Nickname House", "VIRIDIAN CITY", 3, 1, 25, 12, 1, 180),
+            FlyData("Viridian School", "VIRIDIAN CITY", 3, 1, 25, 19, 1, 180),
+            FlyData("Viridian Poke Mart", "VIRIDIAN CITY", 3, 1, 36, 20, 1, 180)
         ],
         "Viridian City North": [
-            (3, 1, 36, 11, 1, 180)
+            FlyData("Viridian Gym", "VIRIDIAN CITY", 3, 1, 36, 11, 1, 180)
         ]
     },
     "Pewter City": {
         "Pewter City": [
-            (3, 2, 17, 7, 1, 92),
-            (3, 2, 33, 12, 1, 92),
-            (3, 2, 15, 17, 1, 92),
-            (3, 2, 28, 19, 1, 92),
-            (3, 2, 17, 26, 1, 92),
-            (3, 2, 9, 31, 1, 92)
+            FlyData("Pewter Museum (West)", "PEWTER CITY", 3, 2, 17, 7, 1, 92),
+            FlyData("Pewter Gym", "PEWTER CITY", 3, 2, 15, 17, 1, 92),
+            FlyData("Pewter Poke Mart", "PEWTER CITY", 3, 2, 28, 19, 1, 92),
+            FlyData("Pewter Nidoran House", "PEWTER CITY", 3, 2, 33, 12, 1, 92),
+            FlyData("Pewter Pokemon Center", "PEWTER CITY", 3, 2, 17, 26, 1, 92),
+            FlyData("Pewter Info House", "PEWTER CITY", 3, 2, 9, 31, 1, 92)
         ],
         "Pewter City Near Museum": [
-            (3, 2, 9, 25, 1, 92)
+            FlyData("Pewter Museum (East)", "PEWTER CITY", 3, 2, 25, 5, 1, 92)
         ]
     },
     "Cerulean City": {
         "Cerulean City": [
-            (3, 3, 10, 12, 1, 80),
-            (3, 3, 17, 12, 1, 80),
-            (3, 3, 30, 12, 1, 80),
-            (3, 3, 15, 18, 1, 80),
-            (3, 3, 22, 20, 1, 80),
-            (3, 3, 13, 29, 1, 80),
-            (3, 3, 23, 29, 1, 80),
-            (3, 3, 29, 29, 1, 80)
+            FlyData("Badge Guy's House (Front)", "CERULEAN CITY", 3, 3, 10, 12, 1, 80),
+            FlyData("Robbed House (Front)", "CERULEAN CITY", 3, 3, 30, 12, 1, 80),
+            FlyData("Cerulean Trade House", "CERULEAN CITY", 3, 3, 15, 18, 1, 80),
+            FlyData("Cerulean Pokemon Center", "CERULEAN CITY", 3, 3, 22, 20, 1, 80),
+            FlyData("Cerulean Gym", "CERULEAN CITY", 3, 3, 31, 22, 1, 80),
+            FlyData("Bike Shop", "CERULEAN CITY", 3, 3, 13, 29, 1, 80),
+            FlyData("Cerulean Poke Mart", "CERULEAN CITY", 3, 3, 29, 29, 1, 80),
+            FlyData("Wonder News House", "CERULEAN CITY", 3, 3, 23, 29, 1, 80),
+            FlyData("Berry Powder Man's House", "CERULEAN CITY", 3, 3, 17, 12, 1, 80)
         ],
         "Cerulean City Backyard": [
-            (3, 3, 10, 8, 1, 80)
+            FlyData("Badge Guy's House (Back)", "CERULEAN CITY", 3, 3, 10, 8, 1, 80)
         ],
         "Cerulean City Outskirts": [
-            (3, 3, 31, 8, 1, 80)
+            FlyData("Robbed House (Back)", "CERULEAN CITY", 3, 3, 31, 8, 1, 80)
         ],
         "Cerulean City Near Cave": [
-            (3, 3, 1, 13, 1, 80)
+            FlyData("Cerulean Cave", "CERULEAN CITY", 3, 3, 1, 13, 1, 80)
         ]
     },
     "Vermilion City": {
         "Vermilion City": [
-            (3, 5, 9, 7, 1, 212),
-            (3, 5, 15, 7, 1, 212),
-            (3, 5, 12, 18, 1, 212),
-            (3, 5, 19, 18, 1, 212),
-            (3, 5, 29, 18, 1, 212),
-            (3, 5, 28, 25, 1, 212)
+            FlyData("Vermilion Fishing House", "VERMILION CITY", 3, 5, 9, 7, 1, 212),
+            FlyData("Vermilion Pokemon Center", "VERMILION CITY", 3, 5, 15, 7, 1, 212),
+            FlyData("Pokemon Fan Club", "VERMILION CITY", 3, 5, 12, 18, 1, 212),
+            FlyData("Vermilion Trade House", "VERMILION CITY", 3, 5, 19, 18, 1, 212),
+            FlyData("Vermilion Poke Mart", "VERMILION CITY", 3, 5, 29, 18, 1, 212),
+            FlyData("Vermilion Pidgey House", "VERMILION CITY", 3, 5, 28, 25, 1, 212)
         ],
         "Vermilion City Near Gym": [
-            (3, 5, 14, 26, 1, 212)
+            FlyData("Vermilion Gym", "VERMILION CITY", 3, 5, 14, 26, 1, 212)
         ],
         "Vermilion City Near Harbor": [
-            (3, 5, 23, 34, 1, 212)
+            FlyData("Vermilion Harbor", "VERMILION CITY", 3, 5, 23, 34, 1, 212)
         ]
     },
     "Lavender Town": {
         "Lavender Town": [
-            (3, 4, 6, 6, 1, 150),
-            (3, 4, 18, 7, 1, 150),
-            (3, 4, 10, 12, 1, 150),
-            (3, 4, 20, 16, 1, 150),
-            (3, 4, 5, 17, 1, 150),
-            (3, 4, 10, 17, 1, 150)
+            FlyData("Pokemon Tower", "LAVENDER TOWN", 3, 4, 18, 7, 1, 150),
+            FlyData("Lavender Pokemon Center", "LAVENDER TOWN", 3, 4, 6, 6, 1, 150),
+            FlyData("Volunteer Pokemon House", "LAVENDER TOWN", 3, 4, 10, 12, 1, 150),
+            FlyData("Lavender Cubone House", "LAVENDER TOWN", 3, 4, 5, 17, 1, 150),
+            FlyData("Name Rater's House", "LAVENDER TOWN", 3, 4, 10, 17, 1, 150),
+            FlyData("Lavender Poke Mart", "LAVENDER TOWN", 3, 4, 20, 16, 1, 150)
         ]
     },
     "Celadon City": {
         "Celadon City": [
-            (3, 6, 30, 4, 1, 143),
-            (3, 6, 30, 12, 1, 143),
-            (3, 6, 48, 12, 1, 143),
-            (3, 6, 11, 15, 1, 143),
-            (3, 6, 15, 15, 1, 143),
-            (3, 6, 39, 21, 1, 143),
-            (3, 6, 34, 22, 1, 143),
-            (3, 6, 37, 30, 1, 143),
-            (3, 6, 41, 30, 1, 143),
-            (3, 6, 49, 30, 1, 143)
+            FlyData("Celadon Game Corner", "CELADON CITY", 3, 6, 34, 22, 1, 143),
+            FlyData("Celadon Department Store (West)", "CELADON CITY", 3, 6, 11, 15, 1, 143),
+            FlyData("Celadon Department Store (East)", "CELADON CITY", 3, 6, 15, 15, 1, 143),
+            FlyData("Celadon Condominiums (Front)", "CELADON CITY", 3, 6, 30, 12, 1, 143),
+            FlyData("Celadon Pokemon Center", "CELADON CITY", 3, 6, 48, 12, 1, 143),
+            FlyData("Celadon Game Corner Prize Room", "CELADON CITY", 3, 6, 39, 21, 1, 143),
+            FlyData("Celadon Restaurant", "CELADON CITY", 3, 6, 37, 30, 1, 143),
+            FlyData("Celadon Rocket House", "CELADON CITY", 3, 6, 41, 30, 1, 143),
+            FlyData("Celadon Hotel", "CELADON CITY", 3, 6, 49, 30, 1, 143),
+            FlyData("Celadon Condominiums (Back)", "CELADON CITY", 3, 6, 30, 4, 1, 143)
         ],
         "Celadon City Near Gym": [
-            (3, 6, 11, 31, 1, 143)
+            FlyData("Celadon Gym", "CELADON CITY", 3, 6, 11, 31, 1, 143)
         ]
     },
     "Fuchsia City": {
         "Fuchsia City": [
-            (3, 7, 24, 6, 1, 276),
-            (3, 7, 11, 16, 1, 276),
-            (3, 7, 28, 17, 1, 276),
-            (3, 7, 14, 32, 1, 276),
-            (3, 7, 19, 32, 1, 276),
-            (3, 7, 25, 32, 1, 276),
-            (3, 7, 33, 32, 1, 276),
-            (3, 7, 38, 32, 1, 276),
-            (3, 7, 9, 33, 1, 276)
+            FlyData("Safari Zone Entrance", "FUCHSIA CITY", 3, 7, 24, 6, 1, 276),
+            FlyData("Safari Zone Warden's House", "FUCHSIA CITY", 3, 7, 33, 32, 1, 276),
+            FlyData("Fuchsia Poke Mart", "FUCHSIA CITY", 3, 7, 11, 16, 1, 276),
+            FlyData("Safari Zone Office", "FUCHSIA CITY", 3, 7, 28, 17, 1, 276),
+            FlyData("Fuchsia Gym", "FUCHSIA CITY", 3, 7, 9, 33, 1, 276),
+            FlyData("Bill's Grandpa's House", "FUCHSIA CITY", 3, 7, 14, 32, 1, 276),
+            FlyData("Fuchsia Pokemon Center", "FUCHSIA CITY", 3, 7, 25, 32, 1, 276),
+            FlyData("Fuchsia Fishing House (Front)", "FUCHSIA CITY", 3, 7, 38, 32, 1, 276),
+            FlyData("Move Deleter's House", "FUCHSIA CITY", 3, 7, 19, 32, 1, 276)
         ],
         "Fuchsia City Backyard": [
-            (3, 7, 39, 28, 1, 276)
+            FlyData("Fuchsia Fishing House (Back)", "FUCHSIA CITY", 3, 7, 39, 28, 1, 276)
         ]
     },
     "Saffron City": {
         "Saffron City": [
-            (3, 10, 34, 6, 1, 146),
-            (3, 10, 40, 13, 1, 146),
-            (3, 10, 46, 13, 1, 146),
-            (3, 10, 22, 15, 1, 146),
-            (3, 10, 27, 22, 1, 146),
-            (3, 10, 40, 22, 1, 146),
-            (3, 10, 47, 22, 1, 146),
-            (3, 10, 8, 27, 1, 146),
-            (3, 10, 58, 27, 1, 146),
-            (3, 10, 33, 31, 1, 146),
-            (3, 10, 24, 39, 1, 146),
-            (3, 10, 43, 39, 1, 146),
-            (3, 10, 34, 46, 1, 146)
+            FlyData("Silph Co.", "SAFFRON CITY", 3, 10, 33, 31, 1, 146),
+            FlyData("Copycat's House", "SAFFRON CITY", 3, 10, 22, 15, 1, 146),
+            FlyData("Saffron Dojo", "SAFFRON CITY", 3, 10, 40, 13, 1, 146),
+            FlyData("Saffron Gym", "SAFFRON CITY", 3, 10, 46, 13, 1, 146),
+            FlyData("Saffron Pidgey House", "SAFFRON CITY", 3, 10, 27, 22, 1, 146),
+            FlyData("Saffron Poke Mart", "SAFFRON CITY", 3, 10, 40, 22, 1, 146),
+            FlyData("Saffron Pokemon Center", "SAFFRON CITY", 3, 10, 24, 39, 1, 146),
+            FlyData("Mr. Psychic's House", "SAFFRON CITY", 3, 10, 43, 39, 1, 146),
+            FlyData("Route 7 Gate (East)", "SAFFRON CITY", 3, 10, 8, 27, 1, 146),
+            FlyData("Route 5 Gate (South)", "SAFFRON CITY", 3, 10, 34, 6, 1, 146),
+            FlyData("Route 8 Gate (West)", "SAFFRON CITY", 3, 10, 58, 27, 1, 146),
+            FlyData("Route 6 Gate (North)", "SAFFRON CITY", 3, 10, 34, 46, 1, 146),
+            FlyData("Pokemon Trainer Fan Club", "SAFFRON CITY", 3, 10, 47, 22, 1, 146)
         ]
     },
     "Cinnabar Island": {
         "Cinnabar Island": [
-            (3, 8, 8, 4, 1, 312),
-            (3, 8, 20, 5, 1, 312),
-            (3, 8, 8, 10, 1, 312),
-            (3, 8, 14, 12, 1, 312),
-            (3, 8, 19, 12, 1, 312),
+            FlyData("Pokemon Mansion", "CINNABAR ISLAND", 3, 8, 8, 4, 1, 312),
+            FlyData("Cinnabar Gym", "CINNABAR ISLAND", 3, 8, 20, 5, 1, 312),
+            FlyData("Pokemon Lab", "CINNABAR ISLAND", 3, 8, 8, 10, 1, 312),
+            FlyData("Cinnabar Pokemon Center", "CINNABAR ISLAND", 3, 8, 14, 12, 1, 312),
+            FlyData("Cinnabar Poke Mart", "CINNABAR ISLAND", 3, 8, 19, 12, 1, 312)
         ]
     },
     "Indigo Plateau": {
         "Indigo Plateau": [
-            (3, 9, 11, 7, 1, 68)
+            FlyData("Indigo Plateau Pokemon Center", "INDIGO PLATEAU", 3, 9, 11, 7, 1, 68)
         ]
     },
     "Route 2": {
         "Route 2 Southwest": [
-            (3, 20, 5, 52, 1, 136)
+            FlyData("Viridian Forest South Gate", "ROUTE 2", 3, 20, 5, 52, 1, 136)
         ],
         "Route 2 Northwest": [
-            (3, 20, 5, 13, 1, 114)
+            FlyData("Viridian Forest North Gate", "ROUTE 2", 3, 20, 5, 13, 1, 114)
         ],
         "Route 2 Northeast": [
-            (3, 20, 17, 12, 1, 114),
-            (3, 20, 17, 23, 1, 114)
+            FlyData("Diglett's Cave North Entrance", "ROUTE 2", 3, 20, 17, 12, 1, 114),
+            FlyData("Route 2 Trade House", "ROUTE 2", 3, 20, 17, 23, 1, 114)
         ],
         "Route 2 East": [
-            (3, 20, 18, 41, 1, 136)
+            FlyData("Route 2 Gate (North)", "ROUTE 2", 3, 20, 18, 41, 1, 136)
         ],
         "Route 2 Southeast": [
-            (3, 20, 18, 47, 1, 136)
+            FlyData("Route 2 Gate (South)", "ROUTE 2", 3, 20, 18, 47, 1, 136)
         ]
     },
     "Route 4": {
         "Route 4 West": [
-            (3, 22, 12, 6, 1, 74),
-            (3, 22, 19, 6, 1, 75)
+            FlyData("Mt. Moon (West)", "ROUTE 4", 3, 22, 19, 6, 1, 75),
+            FlyData("Route 4 Pokemon Center", "ROUTE 4", 3, 22, 12, 6, 1, 74)
         ],
         "Route 4 East": [
-            (3, 22, 32, 6, 1, 75)
+            FlyData("Mt. Moon (East)", "ROUTE 4", 3, 22, 32, 6, 1, 75)
         ]
     },
     "Route 5": {
         "Route 5": [
-            (3, 23, 23, 26, 1, 124),
-            (3, 23, 24, 32, 1, 124)
+            FlyData("Route 5 Pokemon Day Care", "ROUTE 5", 3, 23, 23, 26, 1, 124),
+            FlyData("Route 5 Gate (North)", "ROUTE 5", 3, 23, 24, 32, 1, 124)
         ],
         "Route 5 Near Tunnel": [
-            (3, 23, 31, 32, 1, 124)
+            FlyData("Underground Path North Entrance", "ROUTE 5", 3, 23, 31, 32, 1, 124)
         ]
     },
     "Route 6": {
         "Route 6": [
-            (3, 24, 12, 6, 1, 168)
+            FlyData("Route 6 Gate (South)", "ROUTE 6", 3, 24, 12, 6, 1, 168)
         ],
         "Route 6 Near Tunnel": [
-            (3, 24, 19, 14, 1, 168)
+            FlyData("Underground Path South Entrance", "ROUTE 6", 3, 24, 19, 14, 1, 168)
         ]
     },
     "Route 7": {
         "Route 7": [
-            (3, 25, 15, 10, 1, 145)
+            FlyData("Route 7 Gate (West)", "ROUTE 7", 3, 25, 15, 10, 1, 145)
         ],
         "Route 7 Near Tunnel": [
-            (3, 25, 7, 15, 1, 144)
+            FlyData("Underground Path West Entrance", "ROUTE 7", 3, 25, 7, 15, 1, 144)
         ]
     },
     "Route 8": {
         "Route 8": [
-            (3, 26, 7, 10, 1, 147)
+            FlyData("Route 8 Gate (East)", "ROUTE 8", 3, 26, 7, 10, 1, 147)
         ],
         "Route 8 Near Tunnel": [
-            (3, 26, 13, 5, 1, 147)
+            FlyData("Underground Path East Entrance", "ROUTE 8", 3, 26, 13, 5, 1, 147)
         ]
     },
     "Route 10": {
         "Route 10 North": [
-            (3, 28, 8, 20, 1, 84),
-            (3, 28, 13, 21, 1, 84)
+            FlyData("Rock Tunnel (North)", "ROUTE 10", 3, 28, 8, 20, 1, 84),
+            FlyData("Route 10 Pokemon Center", "ROUTE 10", 3, 28, 13, 21, 1, 84)
         ],
         "Route 10 South": [
-            (3, 28, 8, 58, 1, 128)
+            FlyData("Rock Tunnel (South)", "ROUTE 10", 3, 28, 8, 58, 1, 128)
         ],
         "Route 10 Near Power Plant": [
-            (3, 28, 7, 41, 1, 106)
+            FlyData("Power Plant (Front)", "ROUTE 10", 3, 28, 7, 41, 1, 106)
         ],
         "Route 10 Near Power Plant Back": [
-            (3, 28, 2, 37, 1, 106)
+            FlyData("Power Plant (Back)", "ROUTE 10", 3, 28, 2, 37, 1, 106)
         ]
     },
     "Route 11": {
         "Route 11 West": [
-            (3, 29, 6, 8, 1, 213),
-            (3, 29, 58, 10, 1, 215)
+            FlyData("Diglett's Cave South Entrance", "ROUTE 11", 3, 29, 6, 8, 1, 213),
+            FlyData("Route 11 Gate (West)", "ROUTE 11", 3, 29, 58, 10, 1, 215)
         ],
         "Route 11 East": [
-            (3, 29, 65, 10, 1, 215)
+            FlyData("Route 11 Gate (East)", "ROUTE 11", 3, 29, 65, 10, 1, 215)
         ]
     },
     "Route 12": {
         "Route 12 North": [
-            (3, 30, 14, 15, 1, 172)
+            FlyData("Route 12 Gate (North)", "ROUTE 12", 3, 30, 14, 15, 1, 172)
         ],
         "Route 12 Center": [
-            (3, 30, 14, 22, 1, 172)
+            FlyData("Route 12 Gate (South)", "ROUTE 12", 3, 30, 14, 22, 1, 172)
         ],
         "Route 12 South": [
-            (3, 30, 12, 87, 1, 238)
+            FlyData("Route 12 Fishing House", "ROUTE 12", 3, 30, 12, 87, 1, 238)
         ]
     },
     "Route 15": {
         "Route 15 South": [
-            (3, 33, 16, 11, 1, 277)
+            FlyData("Route 15 Gate (East)", "ROUTE 15", 3, 33, 16, 11, 1, 277)
         ],
         "Route 15 Southwest": [
-            (3, 33, 9, 11, 1, 277)
+            FlyData("Route 15 Gate (West)", "ROUTE 15", 3, 33, 9, 11, 1, 277)
         ]
     },
     "Route 16": {
         "Route 16 Northeast": [
-            (3, 34, 27, 6, 1, 141)
+            FlyData("Route 16 Gate (Northeast)", "ROUTE 16", 3, 34, 27, 6, 1, 141)
         ],
         "Route 16 Northwest": [
-            (3, 34, 10, 6, 1, 139),
-            (3, 34, 20, 6, 1, 140)
+            FlyData("Route 16 Fly House", "ROUTE 16", 3, 34, 10, 6, 1, 139),
+            FlyData("Route 16 Gate (Northwest)", "ROUTE 16", 3, 34, 20, 6, 1, 140)
         ],
         "Route 16 Center": [
-            (3, 34, 27, 13, 1, 141)
+            FlyData("Route 16 Gate (Southeast)", "ROUTE 16", 3, 34, 27, 13, 1, 141)
         ]
     },
     "Route 18": {
         "Route 18 East": [
-            (3, 36, 48, 9, 1, 275)
+            FlyData("Route 18 Gate (East)", "ROUTE 18", 3, 36, 48, 9, 1, 275)
         ]
     },
     "Route 20": {
         "Route 20 Near North Cave": [
-            (3, 38, 60, 9, 1, 316)
+            FlyData("Seafoam Islands (North)", "ROUTE 20", 3, 38, 60, 9, 1, 316)
         ],
         "Route 20 Near South Cave": [
-            (3, 38, 72, 15, 1, 317)
+            FlyData("Seafoam Islands (South)", "ROUTE 20", 3, 38, 72, 15, 1, 317)
         ]
     },
     "Route 22": {
         "Route 22": [
-            (3, 41, 8, 6, 1, 178)
+            FlyData("Route 22 Gate (South)", "ROUTE 22", 3, 41, 8, 6, 1, 178)
         ]
     },
     "Route 23": {
         "Route 23 South": [
-            (3, 42, 8, 153, 1, 156)
+            FlyData("Route 22 Gate (North)", "ROUTE 23", 3, 42, 8, 153, 1, 156)
         ],
         "Route 23 Near Cave": [
-            (3, 42, 5, 29, 1, 90)
+            FlyData("Victory Road (West)", "ROUTE 23", 3, 42, 5, 29, 1, 90)
         ],
         "Route 23 North": [
-            (3, 42, 18, 29, 1, 90)
+            FlyData("Victory Road (East)", "ROUTE 23", 3, 42, 18, 29, 1, 90)
         ]
     },
     "Route 25": {
         "Route 25": [
-            (3, 44, 51, 5, 1, 38)
+            FlyData("Sea Cottage", "ROUTE 25", 3, 44, 51, 5, 1, 38)
         ]
     },
-    "Navel Rock": {
+    "Navel Rock Exterior": {
         "Navel Rock Exterior": [
-            (2, 0, 9, 9, 3, 186),
-            (2, 0, 9, 16, 3, 186)
+            FlyData("Navel Rock", "NAVEL ROCK", 2, 0, 9, 9, 3, 186),
+            FlyData("Navel Rock Harbor", "NAVEL ROCK", 2, 0, 9, 16, 3, 186)
         ]
     },
-    "Birth Island": {
+    "Birth Island Exterior": {
         "Birth Island Exterior": [
-            (2, 56, 15, 24, 4, 304)
+            FlyData("Birth Island Harbor", "BIRTH ISLAND", 2, 56, 15, 24, 4, 304)
         ]
     }
 }
 
-sevii_fly_destinations = {
+sevii_fly_destinations: Dict[str, Dict[str, List[FlyData]]] = {
     "One Island": {
         "One Island Town": [
-            (3, 12, 14, 6, 2, 177),
-            (3, 12, 19, 10, 2, 177),
-            (3, 12, 8, 12, 2, 177),
-            (3, 12, 12, 18, 2, 177)
+            FlyData("One Island Pokemon Center", "ONE ISLAND", 3, 12, 14, 6, 2, 177),
+            FlyData("One Island Old Couple's House", "ONE ISLAND", 3, 12, 19, 10, 2, 177),
+            FlyData("One Island Lass' House", "ONE ISLAND", 3, 12, 8, 12, 2, 177),
+            FlyData("One Island Harbor", "ONE ISLAND", 3, 12, 12, 18, 2, 177)
         ]
     },
     "Kindle Road": {
         "Kindle Road Center": [
-            (3, 45, 15, 59, 2, 112)
+            FlyData("Ember Spa", "KINDLE ROAD", 3, 45, 15, 59, 2, 112)
         ],
         "Kindle Road North": [
-            (3, 45, 11, 6, 2, 68)
+            FlyData("Mt. Ember", "KINDLE ROAD", 3, 45, 11, 6, 2, 68)
         ]
     },
     "Two Island": {
         "Two Island Town": [
-            (3, 13, 10, 8, 2, 207),
-            (3, 13, 21, 8, 2, 207),
-            (3, 13, 33, 10, 2, 207),
-            (3, 13, 39, 10, 2, 207)
+            FlyData("Two Island Game Corner", "TWO ISLAND", 3, 13, 39, 10, 2, 207),
+            FlyData("Move Maniac's House", "TWO ISLAND", 3, 13, 33, 10, 2, 207),
+            FlyData("Two Island Pokemon Center", "TWO ISLAND", 3, 13, 21, 8, 2, 207),
+            FlyData("Two Island Harbor", "TWO ISLAND", 3, 13, 10, 8, 2, 207)
         ]
     },
     "Cape Brink": {
         "Cape Brink": [
-            (3, 47, 12, 17, 2, 163)
+            FlyData("Starter Tutor's House", "CAPE BRINK", 3, 47, 12, 17, 2, 163)
         ]
     },
     "Three Isle Port": {
         "Three Isle Port West": [
-            (3, 49, 16, 5, 2, 304),
-            (3, 49, 12, 13, 2, 304)
+            FlyData("Three Isle Path (West)", "THREE ISLE PORT", 3, 49, 16, 5, 2, 304),
+            FlyData("Three Island Harbor", "THREE ISLE PORT", 3, 49, 12, 13, 2, 304)
         ],
         "Three Isle Port East": [
-            (3, 49, 38, 6, 2, 305)
+            FlyData("Three Isle Path (East)", "THREE ISLE PORT", 3, 49, 38, 6, 2, 305)
         ]
     },
     "Three Island": {
         "Three Island Town South": [
-            (3, 14, 14, 28, 2, 282),
-            (3, 14, 3, 32, 2, 282)
+            FlyData("Lostelle's House", "THREE ISLAND", 3, 14, 3, 32, 2, 282),
+            FlyData("Three Island Pokemon Center", "THREE ISLAND", 3, 14, 14, 28, 2, 282)
         ],
         "Three Island Town North": [
-            (3, 14, 4, 7, 2, 282),
-            (3, 14, 12, 7, 2, 282),
-            (3, 14, 12, 13, 2, 282),
-            (3, 14, 18, 13, 2, 282),
-            (3, 14, 13, 20, 2, 282)
+            FlyData("Three Island Poke Mart", "THREE ISLAND", 3, 14, 18, 13, 2, 282),
+            FlyData("Sabrina Fan's House", "THREE ISLAND", 3, 14, 4, 7, 2, 282),
+            FlyData("Three Island Beauty's House", "THREE ISLAND", 3, 14, 12, 7, 2, 282),
+            FlyData("Three Island Worried Father's House", "THREE ISLAND", 3, 14, 12, 13, 2, 282),
+            FlyData("Lostelle's Friend's House", "THREE ISLAND", 3, 14, 13, 20, 2, 282)
         ]
     },
     "Bond Bridge": {
         "Bond Bridge": [
-            (3, 48, 12, 7, 2, 278)
+            FlyData("Berry Forest", "BOND BRIDGE", 3, 48, 12, 7, 2, 278)
         ]
     },
     "Four Island": {
         "Four Island Town": [
-            (3, 15, 12, 14, 3, 91),
-            (3, 15, 25, 15, 3, 91),
-            (3, 15, 18, 21, 3, 91),
-            (3, 15, 33, 24, 3, 91),
-            (3, 15, 22, 27, 3, 91),
-            (3, 15, 25, 27, 3, 91),
-            (3, 15, 10, 28, 3, 91)
+            FlyData("Four Island Pokemon Center", "FOUR ISLAND", 3, 15, 18, 21, 3, 91),
+            FlyData("Four Island Pokemon Day Care", "FOUR ISLAND", 3, 15, 12, 14, 3, 91),
+            FlyData("Four Island Move Tutor's House", "FOUR ISLAND", 3, 15, 25, 15, 3, 91),
+            FlyData("Lorelei's House", "FOUR ISLAND", 3, 15, 33, 24, 3, 91),
+            FlyData("Sticker Man's House", "FOUR ISLAND", 3, 15, 25, 27, 3, 91),
+            FlyData("Four Island Harbor", "FOUR ISLAND", 3, 15, 10, 28, 3, 91),
+            FlyData("Four Island Poke Mart", "FOUR ISLAND", 3, 15, 22, 27, 3, 91)
         ],
         "Four Island Town Near Cave": [
-            (3, 15, 38, 13, 3, 91)
+            FlyData("Icefall Cave", "FOUR ISLAND", 3, 15, 38, 13, 3, 91)
         ]
     },
     "Five Island": {
         "Five Island Town": [
-            (3, 16, 12, 7, 3, 258),
-            (3, 16, 18, 7, 3, 258),
-            (3, 16, 22, 10, 3, 258),
-            (3, 16, 12, 14, 3, 258)
+            FlyData("Five Island Harbor", "FIVE ISLAND", 3, 16, 12, 14, 3, 258),
+            FlyData("Five Island Pokemon Center", "FIVE ISLAND", 3, 16, 18, 7, 3, 258),
+            FlyData("Five Island Couple's House", "FIVE ISLAND", 3, 16, 12, 7, 3, 258),
+            FlyData("Five Island Old Man's House", "FIVE ISLAND", 3, 16, 22, 10, 3, 258)
         ]
     },
     "Five Isle Meadow": {
         "Five Isle Meadow": [
-            (3, 56, 12, 22, 3, 281)
+            FlyData("Rocket Warehouse", "FIVE ISLE MEADOW", 3, 56, 12, 22, 3, 281)
         ]
     },
     "Resort Gorgeous": {
         "Resort Gorgeous Near Resort": [
-            (3, 54, 39, 9, 3, 215)
+            FlyData("Selphy's House", "RESORT GORGEOUS", 3, 54, 39, 9, 3, 215)
         ],
         "Resort Gorgeous Near Cave": [
-            (3, 54, 64, 14, 3, 216)
+            FlyData("Lost Cave", "RESORT GORGEOUS", 3, 54, 64, 14, 3, 216)
         ]
     },
     "Six Island": {
         "Six Island Town": [
-            (3, 18, 11, 12, 4, 127),
-            (3, 18, 20, 12, 4, 127),
-            (3, 18, 16, 18, 4, 127)
+            FlyData("Six Island Harbor", "SIX ISLAND", 3, 18, 11, 23, 4, 127),
+            FlyData("Six Island Pokemon Center", "SIX ISLAND", 3, 18, 11, 12, 4, 127),
+            FlyData("Six Island Old Man's House", "SIX ISLAND", 3, 18, 16, 18, 4, 127),
+            FlyData("Six Island Poke Mart", "SIX ISLAND", 3, 18, 20, 12, 4, 127)
         ]
     },
     "Water Path": {
         "Water Path North": [
-            (3, 60, 5, 14, 4, 84),
-            (3, 60, 11, 20, 4, 84)
+            FlyData("Water Path Heracross Woman's House", "WATER PATH", 3, 60, 5, 14, 4, 84),
+            FlyData("Water Path Man's House", "WATER PATH", 3, 60, 11, 20, 4, 84)
         ]
     },
     "Ruin Valley": {
         "Ruin Valley": [
-            (3, 61, 24, 25, 4, 192)
+            FlyData("Dotted Hole", "RUIN VALLEY", 3, 61, 24, 25, 4, 192)
         ]
     },
     "Green Path": {
         "Green Path East": [
-            (3, 59, 63, 11, 4, 83)
+            FlyData("Pattern Bush (East)", "GREEN PATH", 3, 59, 63, 11, 4, 83)
         ],
         "Green Path West": [
-            (3, 59, 45, 11, 4, 82)
+            FlyData("Pattern Bush (West)", "GREEN PATH", 3, 59, 45, 11, 4, 82)
         ]
     },
     "Outcast Island": {
         "Outcast Island": [
-            (3, 58, 7, 22, 4, 15)
+            FlyData("Altering Cave", "OUTCAST ISLAND", 3, 58, 7, 22, 4, 15)
         ]
     },
     "Seven Island": {
         "Seven Island Town": [
-            (3, 17, 12, 4, 4, 181),
-            (3, 17, 5, 10, 4, 181),
-            (3, 17, 11, 10, 4, 181),
-            (3, 17, 16, 13, 4, 181)
+            FlyData("Seven Island Trainer Battle House", "SEVEN ISLAND", 3, 17, 11, 10, 4, 181),
+            FlyData("Seven Island Poke Mart", "SEVEN ISLAND", 3, 17, 5, 10, 4, 181),
+            FlyData("Seven Island Pokemon Center", "SEVEN ISLAND", 3, 17, 12, 4, 4, 181),
+            FlyData("Seven Island Harbor", "SEVEN ISLAND", 3, 17, 16, 13, 4, 181)
         ]
     },
     "Sevault Canyon": {
         "Sevault Canyon": [
-            (3, 64, 7, 18, 4, 204),
-            (3, 64, 14, 62, 4, 248)
+            FlyData("Tanoby Key", "SEVAULT CANYON", 3, 64, 7, 18, 4, 204),
+            FlyData("Sevault Canyon Chansey House", "SEVAULT CANYON", 3, 64, 14, 62, 4, 248)
         ]
     },
     "Tanoby Ruins": {
         "Tanoby Ruins Viapois Island": [
-            (3, 65, 11, 7, 4, 267)
+            FlyData("Viapois Chamber", "TANOBY RUINS", 3, 65, 11, 7, 4, 267)
         ],
         "Tanoby Ruins Rixy Island": [
-            (3, 65, 12, 16, 4, 267)
+            FlyData("Rixy Chamber", "TANOBY RUINS", 3, 65, 12, 16, 4, 267)
         ],
         "Tanoby Ruins Scufib Island": [
-            (3, 65, 32, 10, 4, 268)
+            FlyData("Scufib Chamber", "TANOBY RUINS", 3, 65, 32, 10, 4, 268)
         ],
         "Tanoby Ruins Dilford Island": [
-            (3, 65, 44, 12, 4, 269)
+            FlyData("Dilford Chamber", "TANOBY RUINS", 3, 65, 44, 12, 4, 269)
         ],
         "Tanoby Ruins Weepth Island": [
-            (3, 65, 88, 9, 4, 271)
+            FlyData("Weepth Chamber", "TANOBY RUINS", 3, 65, 88, 9, 4, 271)
         ],
         "Tanoby Ruins Liptoo Island": [
-            (3, 65, 103, 11, 4, 272)
+            FlyData("Liptoo Chamber", "TANOBY RUINS", 3, 65, 103, 11, 4, 272)
         ],
         "Tanoby Ruins Monean Island": [
-            (3, 65, 120, 11, 4, 273)
+            FlyData("Monean Chamber", "TANOBY RUINS", 3, 65, 120, 11, 4, 273)
         ]
     },
     "Trainer Tower Exterior": {
         "Trainer Tower Exterior North": [
-            (3, 62, 58, 8, 4, 137)
+            FlyData("Trainer Tower", "TRAINER TOWER", 3, 62, 58, 8, 4, 137)
         ]
     }
 }
-fly_plando_maps = list(k for k in kanto_fly_destinations.keys()) + list(k for k in sevii_fly_destinations.keys())
+
+fly_plando_maps: Dict[str, Tuple[str, str, FlyData]] = {}
+for map, regions in kanto_fly_destinations.items():
+    for region, warps in regions.items():
+        for warp in warps:
+            fly_plando_maps[warp.name] = (map, region, warp)
+for map, regions in sevii_fly_destinations.items():
+    for region, warps in regions.items():
+        for warp in warps:
+            fly_plando_maps[warp.name] = (map, region, warp)
 
 NATIONAL_ID_TO_SPECIES_ID = {species.national_dex_number: i for i, species in data.species.items()}
 NAME_TO_SPECIES_ID = {species.name: i for i, species in data.species.items()}

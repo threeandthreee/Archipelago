@@ -132,7 +132,7 @@
         { "item": "Cinder Isles Painting Code" },
         { "location": "EotE: Find an Artifact" }
     ] },
-    { "category": "dlc", "from": "Hidden Gorge", "to": "Endless Canyon", "requires": [
+    { "category": "dlc", "from": "Hidden Gorge", "to": "Endless Canyon Start", "requires": [
         { "item": "Hidden Gorge Painting Code" } // HG has its own artifact, so we don't need to check for that
     ] },
     { "category": "dlc", "from": "Reservoir", "to": "Subterranean Lake", "requires": [
@@ -143,7 +143,10 @@
     // unlock the dock the vanilla way, this connection is no longer relevant
     { "category": "dlc", "from": "Dream Raft Loop", "to": "Shrouded Woodlands", "requires": [ { "item": "Raft Docks Patch" } ] },
     { "category": "dlc", "from": "Dream Raft Loop", "to": "Starlit Cove", "requires": [ { "item": "Raft Docks Patch" } ] },
-    { "category": "dlc", "from": "Dream Raft Loop", "to": "Endless Canyon", "requires": [
+    { "category": "dlc", "from": "Dream Raft Loop", "to": "Endless Canyon Lodge Bottom Floor", "requires": [
+        { "item": "Raft Docks Patch" } // take the elevator up from the dock
+    ] },
+    { "category": "dlc", "from": "Dream Raft Loop", "to": "Endless Canyon Start", "requires": [
         { "item": "Raft Docks Patch" }, // take the elevator up from the dock
         { "item": "Projection Range Patch" } // use the bonus invisible bridge you may have never noticed in vanilla
     ] },
@@ -178,7 +181,7 @@
     { "category": "dlc", "from": "Starlit Cove", "to": "Dream Raft Loop", "requires": [
         { "item": "Dream Totem Patch" } // project dock and raft
     ] },
-    { "category": "dlc", "from": "Endless Canyon", "to": "Dream Raft Loop", "requires": [
+    { "category": "dlc", "from": "Endless Canyon Start", "to": "Dream Raft Loop", "requires": [
         { "item": "Dream Totem Patch" } // project bridge, hand warp to project 2nd bridge, project raft
     ] },
 
@@ -221,7 +224,17 @@
         ] }
     ] },
 
-    { "category": "dlc", "from": "Endless Canyon", "to": "Endless Canyon Archive", "requires": [
+    { "category": "dlc", "from": "Endless Canyon Start", "to": "Endless Canyon Lodge Bottom Floor", "requires": [
+        { "anyOf": [
+            // the intended vanilla route: project bridge into lodge, hand warp inside, project bridge inside lodge
+            { "item": "Dream Totem Patch" },
+            // the "shortcut": use an invisible bridge on the far right to reach lower lodge without projecting the bridge inside
+            { "item": "Projection Range Patch" }
+        ] }
+    ] },
+    // there is no path from Lodge Bottom Floor directly to Archive, because you can only
+    // extinguish the mural from a specific totem in the "Start" region
+    { "category": "dlc", "from": "Endless Canyon Start", "to": "Endless Canyon Archive", "requires": [
         { "item": "Dream Totem Patch" } // extinguish lodge mural, project bridge, hand warp to project 2nd bridge
     ] },
 
@@ -278,7 +291,7 @@
         // also no logic needed for "can get ship into shuttle crusher then fly it over" since this already requires reaching DB
     ] },
 
-    { "category": "to&dlc", "from": "Cliffside Home", "to": "Endless Canyon", "requires": [] },
+    { "category": "to&dlc", "from": "Cliffside Home", "to": "Endless Canyon Start", "requires": [] },
     // since you could use this route to get to the SW archive, we need the (ADB) region too
     { "category": "to&dlc", "from": "Cliffside Home", "to": "Endless Canyon (After Dam Breaks)", "requires": [] },
 
@@ -305,9 +318,8 @@
     { "category": "hn2", "from": "Magistarium", "to": "Magistarium Dormitories", "requires": [ { "item": "Magistarium Dormitory Access Code" } ] },
     { "category": "hn2", "from": "Magistarium", "to": "Magistarium Engine Room", "requires": [ { "item": "Magistarium Engine Access Code" } ] },
     { "category": "hn2", "from": "Magistarium", "to": "Magistarium Outer Planes", "requires": [
-        { "item": "Magistarium Dormitory Access Code" }, // enter the Magister's room
-        { "item": "Memory Cube Interface" }, // close the hatch so you can safely remove your spacesuit
-        { "item": "Magistarium Engine Access Code" } // to get the battery
+        { "item": "Magistarium Dormitory Access Code" }, // enter the Magister's room and get the battery
+        { "item": "Memory Cube Interface" } // close the hatch so you can safely remove your spacesuit
     ] },
 
     { "category": "fq", "from": "Hourglass Twins", "to": "Lost Strings", "requires": [

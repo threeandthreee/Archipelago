@@ -1,6 +1,7 @@
-from typing import TYPE_CHECKING, Dict, List, Optional, Set, Union
-from BaseClasses import CollectionState, Location, Region, ItemClassification
+from typing import TYPE_CHECKING, Dict, List, Set
+from BaseClasses import CollectionState, Location, LocationProgressType, Region, ItemClassification
 from .data import data, LocationCategory, fly_blacklist_map
+from .groups import location_groups
 from .items import PokemonFRLGItem, get_random_item
 from .options import ShuffleFlyUnlocks, ViridianCityRoadblock
 
@@ -31,15 +32,6 @@ fly_item_id_map = {
     "ITEM_FLY_ROUTE10": 20
 }
 
-sevii_required_locations = [
-    "One Cinnabar Pokemon Center 1F - Bill",
-    "Lorelei's Room - Elite Four Lorelei Rematch Reward",
-    "Bruno's Room - Elite Four Bruno Rematch Reward",
-    "Agatha's Room - Elite Four Agatha Rematch Reward",
-    "Lance's Room - Elite Four Lance Rematch Reward",
-    "Champion's Room - Champion Rematch Reward"
-]
-
 fly_item_map = {
     "Pallet Town": "ITEM_FLY_PALLET",
     "Viridian City South": "ITEM_FLY_VIRIDIAN",
@@ -66,23 +58,23 @@ fly_item_map = {
 
 class PokemonFRLGLocation(Location):
     game: str = "Pokemon FireRed and LeafGreen"
-    item_address = Optional[Dict[str, int]]
-    default_item_id: Optional[int]
+    item_address = Dict[str, int | List[int]] | None
+    default_item_id: int | None
     category: LocationCategory
-    data_ids: Optional[List[str]]
+    data_ids: List[str] | None
     spoiler_name: str
 
     def __init__(
             self,
             player: int,
             name: str,
-            address: Optional[int],
+            address: int | None,
             category: LocationCategory,
-            parent: Optional[Region] = None,
-            item_address: Optional[Dict[str, Union[int, List[int]]]] = None,
-            default_item_id: Optional[int] = None,
-            data_ids: Optional[List[str]] = None,
-            spoiler_name: Optional[str] = None) -> None:
+            parent: Region | None = None,
+            item_address: Dict[str, int | List[int]] | None = None,
+            default_item_id: int | None = None,
+            data_ids: List[str] | None = None,
+            spoiler_name: str | None = None) -> None:
         super().__init__(player, name, address, parent)
         self.default_item_id = default_item_id
         self.item_address = item_address
@@ -107,22 +99,33 @@ def create_location_name_to_id_map() -> Dict[str, int]:
 def create_locations_from_categories(world: "PokemonFRLGWorld",
                                      regions: Dict[str, Region],
                                      categories: Set[LocationCategory]) -> None:
+    def exclude_location(location_id: str):
+        sevii_required_locations = [
+            "NPC_GIFT_GOT_ONE_PASS", "TRAINER_ELITE_FOUR_LORELEI_2_REWARD", "TRAINER_ELITE_FOUR_BRUNO_2_REWARD",
+            "TRAINER_ELITE_FOUR_AGATHA_2_REWARD", "TRAINER_ELITE_FOUR_LANCE_2_REWARD",
+            "TRAINER_CHAMPION_REMATCH_BULBASAUR_REWARD"
+        ]
+
+        if world.options.kanto_only and location_id in sevii_required_locations:
+            return True
+        return False
+
     """
     Iterates through region data and adds locations to the multiworld if
     those locations are included in the given categories.
     """
     for region_data in data.regions.values():
-        if world.options.kanto_only and not region_data.kanto:
+        if region_data.name not in regions:
             continue
 
         region = regions[region_data.name]
         included_locations = [loc for loc in region_data.locations if data.locations[loc].category in categories]
 
         for location_id in included_locations:
-            location_data = data.locations[location_id]
-
-            if world.options.kanto_only and location_data.name in sevii_required_locations:
+            if exclude_location(location_id):
                 continue
+
+            location_data = data.locations[location_id]
 
             if location_data.default_item == data.constants["ITEM_NONE"]:
                 default_item = world.item_name_to_id[get_random_item(world, ItemClassification.filler)]
@@ -141,6 +144,33 @@ def create_locations_from_categories(world: "PokemonFRLGWorld",
             region.locations.append(location)
 
 
+def fill_unrandomized_locations(world: "PokemonFRLGWorld") -> None:
+    def create_events_for_unrandomized_items(locations: Set[PokemonFRLGLocation]) -> None:
+        for location in locations:
+            location.place_locked_item(PokemonFRLGItem(world.item_id_to_name[location.default_item_id],
+                                                       ItemClassification.progression,
+                                                       None,
+                                                       world.player))
+            location.progress_type = LocationProgressType.DEFAULT
+            location.address = None
+            location.show_in_spoiler = False
+
+    unrandomized_progression_locations = set()
+
+    if world.options.shuffle_fly_unlocks == ShuffleFlyUnlocks.option_off:
+        fly_locations = [loc for loc in world.get_locations() if loc.name in location_groups["Town Visits"]]
+        unrandomized_progression_locations.update(fly_locations)
+    elif world.options.shuffle_fly_unlocks == ShuffleFlyUnlocks.option_exclude_indigo:
+        unrandomized_progression_locations.add(world.get_location("Indigo Plateau - Unlock Fly Destination"))
+
+    if not world.options.shuffle_berry_pouch:
+        unrandomized_progression_locations.add(world.get_location("Title Screen - Starting Item 1"))
+    if not world.options.shuffle_tm_case:
+        unrandomized_progression_locations.add(world.get_location("Title Screen - Starting Item 2"))
+
+    create_events_for_unrandomized_items(unrandomized_progression_locations)
+
+
 def set_free_fly(world: "PokemonFRLGWorld") -> None:
     # Set our free fly location
     world.free_fly_location_id = fly_item_id_map["ITEM_FLY_NONE"]
@@ -149,9 +179,7 @@ def set_free_fly(world: "PokemonFRLGWorld") -> None:
     if not world.options.free_fly_location and not world.options.town_map_fly_location:
         return
 
-    state = CollectionState(world.multiworld)
-    regions = world.multiworld.get_regions(world.player)
-    events = [loc for loc in world.multiworld.get_locations(world.player) if loc.is_event]
+    state = CollectionState(world.multiworld, True)
     forbidden_fly_list = list()
 
     if world.options.kanto_only:
@@ -161,30 +189,19 @@ def set_free_fly(world: "PokemonFRLGWorld") -> None:
 
     if (not world.options.randomize_fly_destinations and
             world.options.shuffle_fly_unlocks == ShuffleFlyUnlocks.option_off):
-        if (world.options.viridian_city_roadblock == ViridianCityRoadblock.option_early_parcel and
-                not world.options.random_starting_town):
-            item = PokemonFRLGItem("Oak's Parcel", ItemClassification.progression, None, world.player)
+        flys_to_remove = []
+        locations = world.get_locations()
+
+        for item_name in world.multiworld.local_early_items[world.player].keys():
+            item = world.create_item(item_name)
             state.collect(item, True)
 
-        found_event = True
-        collected_events = set()
-        flys_to_remove = list()
-        while found_event:
-            found_event = False
-            for event in events:
-                if state.can_reach(event) and event not in collected_events:
-                    state.collect(event.item, True, event)
-                    collected_events.add(event)
-                    found_event = True
-
-        reachable_regions = set()
-        for region in regions:
-            if region.can_reach(state):
-                reachable_regions.add(region.name)
+        state.sweep_for_advancements(locations)
+        reachable_regions = state.reachable_regions[world.player]
 
         for region in reachable_regions:
-            if region in fly_item_map.keys():
-                flys_to_remove.append(fly_item_map[region])
+            if region.name in fly_item_map.keys():
+                flys_to_remove.append(fly_item_map[region.name])
 
         forbidden_fly_list.extend(flys_to_remove)
 
@@ -208,13 +225,13 @@ def set_free_fly(world: "PokemonFRLGWorld") -> None:
         if free_fly_location_id in town_map_fly_list and len(town_map_fly_list) > 1:
             town_map_fly_list.remove(free_fly_location_id)
 
-        menu_region = world.multiworld.get_region("Menu", world.player)
+        start_region = world.multiworld.get_region("Title Screen", world.player)
         free_fly_location = PokemonFRLGLocation(
             world.player,
             "Free Fly Location",
             None,
             LocationCategory.EVENT,
-            menu_region,
+            start_region,
             None,
             None
         )
@@ -224,19 +241,19 @@ def set_free_fly(world: "PokemonFRLGWorld") -> None:
                                                             None,
                                                             world.player))
         free_fly_location.show_in_spoiler = False
-        menu_region.locations.append(free_fly_location)
+        start_region.locations.append(free_fly_location)
 
     if world.options.town_map_fly_location:
         town_map_fly_location_id = world.random.choice(town_map_fly_list)
         world.town_map_fly_location_id = fly_item_id_map[town_map_fly_location_id]
 
-        menu_region = world.multiworld.get_region("Menu", world.player)
+        start_region = world.multiworld.get_region("Title Screen", world.player)
         town_map_fly_location = PokemonFRLGLocation(
             world.player,
             "Town Map Fly Location",
             None,
             LocationCategory.EVENT,
-            menu_region,
+            start_region,
             None,
             None
         )
@@ -247,4 +264,4 @@ def set_free_fly(world: "PokemonFRLGWorld") -> None:
                                                                  world.player))
         town_map_fly_location.access_rule = lambda state: state.has("Town Map", world.player)
         town_map_fly_location.show_in_spoiler = False
-        menu_region.locations.append(town_map_fly_location)
+        start_region.locations.append(town_map_fly_location)

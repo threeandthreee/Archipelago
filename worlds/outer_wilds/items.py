@@ -1,7 +1,6 @@
 import pkgutil
-import pkgutil
 import typing
-from typing import Dict, List, NamedTuple, Optional, Set
+from typing import NamedTuple
 
 from BaseClasses import Item, ItemClassification
 from Utils import restricted_loads
@@ -17,10 +16,10 @@ class OuterWildsItem(Item):
 
 
 class OuterWildsItemData(NamedTuple):
-    code: Optional[int] = None
+    code: int | None = None
     type: ItemClassification = ItemClassification.filler
-    category: Optional[str] = None
-    split_translator: Optional[bool] = None
+    category: str | None = None
+    split_translator: bool | None = None
 
 
 pickled_data = pkgutil.get_data(__name__, "shared_static_logic/static_logic.pickle")
@@ -33,7 +32,7 @@ item_types_map = {
     "trap": ItemClassification.trap
 }
 
-item_data_table: Dict[str, OuterWildsItemData] = {}
+item_data_table: dict[str, OuterWildsItemData] = {}
 for items_data_entry in items_data:
     item_data_table[items_data_entry["name"]] = OuterWildsItemData(
         code=(items_data_entry["code"] if "code" in items_data_entry else None),
@@ -44,7 +43,7 @@ for items_data_entry in items_data:
 
 all_non_event_items_table = {name: data.code for name, data in item_data_table.items() if data.code is not None}
 
-item_names: Set[str] = set(entry["name"] for entry in items_data)
+item_names: set[str] = set(entry["name"] for entry in items_data)
 
 prog_items = set(entry["name"] for entry in items_data
                  if entry["type"] == "progression" and entry["code"] is not None)
@@ -177,8 +176,8 @@ def create_items(world: "OuterWildsWorld") -> None:
 
     items_to_create = {k: v for k, v in item_data_table.items() if should_generate(v.category, options)}
 
-    prog_and_useful_items: List[OuterWildsItem] = []
-    unique_filler: List[OuterWildsItem] = []
+    prog_and_useful_items: list[OuterWildsItem] = []
+    unique_filler: list[OuterWildsItem] = []
     for name, item in items_to_create.items():
         if item.code is None:
             # here we rely on our event items and event locations having identical names
@@ -188,7 +187,7 @@ def create_items(world: "OuterWildsWorld") -> None:
                 multiworld.push_precollected(create_item(player, "Spacesuit"))
             else:
                 prog_and_useful_items.append(create_item(player, "Spacesuit"))
-        elif name == "Launch Codes" and world.spawn == Spawn.option_vanilla:
+        elif name == "Launch Codes" and options.spawn == Spawn.option_vanilla:
             # in vanilla spawn, Launch Codes is locked to Hornfels to ensure the player starts the time loop
             multiworld.get_location("TH: Talk to Hornfels", player).place_locked_item(create_item(player, name))
         elif item.type == ItemClassification.filler:

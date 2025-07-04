@@ -37,19 +37,34 @@ class BossKeySanity(Toggle):
     internal_name = "boss_key_sanity"
     display_name = "Boss Key Sanity"
 
+class AddTrapItems(Toggle):
+    """
+    Add trap items to the item pool.
+    In Minishoot' Adventures, trap items will force the primordial scarab to be a little chatty and make references to other games.
+    (some of which are playable on Archipelago !)
+    """
+    internal_name = "add_trap_items"
+    display_name = "Add Trap Items"
+
+class TrapItemsAppearance(Choice):
+    """
+    Set the appearance of trap items.
+    When set to "Major Items Only", trap items will be disguised as major items.
+    When set to "Junk Items Only", trap items will be disguised as junk items.
+    When set to "Anything", trap items can be disguised as any other items.
+    """
+    internal_name = "trap_items_appearance"
+    display_name = "Trap Items Appearance"
+    option_major_items_only = 0
+    option_junk_items_only = 1
+    option_anything = 2
+
 class ShowArchipelagoItemCategory(DefaultOnToggle):
     """
     When enabled, Archipelago items sprites will indicate if its an important item (with an arrow pointing up), an helpful one (with the default icon), or not important (with a black and white sprite).
     """
     internal_name = "show_archipelago_item_category"
     display_name = "Show Archipelago item category"
-
-class SimpleTempleExit(DefaultOnToggle):
-    """
-    Change the exits of the 3 temples, so that they don't require the vanilla power to leave without requiring a save and quit.
-    """
-    internal_name = "simple_temple_exit"
-    display_name = "Simple Temple Exit"
 
 class BlockedForest(DefaultOnToggle):
     """
@@ -59,13 +74,14 @@ class BlockedForest(DefaultOnToggle):
     internal_name = "blocked_forest"
     display_name = "Blocked Forest"
 
-class CannonLevelLogicalRequirements(DefaultOnToggle):
+class IgnoreCannonLevelRequirements(Toggle):
     """
-    Ensure that progressive cannon levels are accessible before fights in late game areas.
-    So for example, you will be able to enter Dungeon 3 in logic, but you will need the cannon level 4 to beat the boss, or items behind fights in the dungeon.
+    By default, the game will ensure that progressive cannon levels are accessible before fights in late game areas.
+    So for example, you will be able to enter Dungeon 3 in logic, but you will need the cannon level 4 to beat the boss, or items behind fights in this dungeon.
+    If you enable this option, the cannon level requirements will be ignored, and the logic will expect you to be able to beat all fights with a level 1 cannon.
     """
-    internal_name = "cannon_level_logical_requirements"
-    display_name = "Cannon Level Logical Requirements"
+    internal_name = "ignore_cannon_level_requirements"
+    display_name = "Ignore Cannon Level Requirements"
 
 class BoostlessSpringboards(Toggle):
     """
@@ -94,6 +110,34 @@ class BoostlessTorchRaces(Toggle):
     internal_name = "boostless_torch_races"
     display_name = "Boostless Torch Races"
 
+class EnablePrimordialCrystalLogic(Toggle):
+    """
+    When this setting is on, the Primordial Crystal will be considered in logic to blow up rocks and walls.
+    When this setting is off, the logic will assume that you imperatively need Supershot to do that.
+    """
+    internal_name = "enable_primordial_crystal_logic"
+    display_name = "Enable Primordial Crystal Logic"
+
+class ProgressiveDash(Toggle):
+    """
+    When enabled, the game will fuse the Dash and the Spirit Dash into two cumulative progressive upgrades.
+    The first upgrade will always allow you to dash, and the second one will allow you to dash through bullets.
+    """
+    internal_name = "progressive_dash"
+    display_name = "Progressive Dash"
+
+class DashlessGaps(Choice):
+    """
+    When set on "Needs Dash", you will need the dash to cross gaps, regardless of their size.
+    When set on "Needs Boost", you will be able to logically cross gaps with the boost if the gap is small enough.
+    When set on "Needs neither", you will be able to cross certains, very tight gaps without any upgrade.
+    Note that this last value may require you to farm some XP to level up your speed.
+    """
+    internal_name = "dashless_gaps"
+    display_name = "Dashless Gaps"
+    option_needs_dash = 0
+    option_needs_boost = 1
+    option_needs_neither = 2
 
 class CompletionGoals(Choice):
     """
@@ -115,11 +159,15 @@ class MinishootOptions(PerGameCommonOptions):
     shard_sanity: ShardSanity
     key_sanity: KeySanity
     boss_key_sanity: BossKeySanity
+    add_trap_items: AddTrapItems
+    trap_items_appearance: TrapItemsAppearance
     show_archipelago_item_category: ShowArchipelagoItemCategory
-    simple_temple_exit: SimpleTempleExit
     blocked_forest: BlockedForest
-    cannon_level_logical_requirements: CannonLevelLogicalRequirements
+    ignore_cannon_level_requirements: IgnoreCannonLevelRequirements
     boostless_springboards: BoostlessSpringboards
     boostless_spirit_races: BoostlessSpiritRaces
     boostless_torch_races: BoostlessTorchRaces
+    enable_primordial_crystal_logic: EnablePrimordialCrystalLogic
+    progressive_dash: ProgressiveDash
+    dashless_gaps: DashlessGaps
     completion_goals: CompletionGoals

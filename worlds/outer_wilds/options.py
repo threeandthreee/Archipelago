@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Set
 
 from schema import Schema, And
 
@@ -272,7 +271,7 @@ class OuterWildsGameOptions(PerGameCommonOptions):
     enable_fq_mod: EnableFretsQuestMod
 
 
-def get_creation_settings(options: OuterWildsGameOptions) -> Set[str]:
+def get_creation_settings(options: OuterWildsGameOptions) -> set[str]:
     relevant_settings = set()
     if options.logsanity.value == 1:
         relevant_settings.add("logsanity")

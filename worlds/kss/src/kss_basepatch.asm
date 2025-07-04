@@ -79,12 +79,17 @@ sa1rom
 !ap_sub_games = $408000
 !received_items = $408002
 !received_planets = $408004
+!play_sfx = $408006
+!activate_candy = $408008
 
 
 org $008C29
     JSL WriteBWRAM
     NOP
     NOP
+
+org $00910C
+    JSL MainLoop
 
 org $00BD44
 hook_soft_reset:
@@ -102,15 +107,23 @@ org $00FFC0
     db "KSS__BASEPATCH_ARCHI"
 
 org $00FFD8
-    db $06
+    db $07
 
 org $01922E
     JML block_tgco_access
     tgco_access_return:
     NOP #2
 
+org $01FA1F
+    JSL great_cave_requirement
+    NOP
+
 org $02A34B
     JML hook_copy_ability
+    NOP
+
+org $059810
+    JML hook_maxim_tomato
     NOP
 
 org $07DEB2
@@ -125,6 +138,156 @@ org $07DF95
 
 org $07E01F
     NOP #12 ; Milky Way Wishes initialization
+
+org $C7F98E
+EssenceLookup:
+    dw $000, $300, $600, $900, $C00, $F00, $1200, $1500, $1800, $1B00, $1E00, $2100, $2400, $2700, $2A00, $2D00
+    dw $3000, $3300, $3600, $3900, $3C00, $3F00, $4200, $4500, $4800, $4B00, $4E00, $5100, $5400, $5700, $5A00, $5D00
+    dw $6000, $6300, $6600, $6900, $6C00, $6F00, $7200, $7500, $7800, $7B00, $7E00, $8100, $8400, $8700, $8A00, $8D00
+    dw $9000, $9300, $9600, $9900, $9C00, $9F00, $A200, $A500, $A800, $AB00, $AE00, $B100, $B400, $B700, $BA00, $BD00
+
+SetEntityFlagX:
+    PHA
+    PHY
+    PHX
+    TXA
+    JSR SetEntityFlag
+    PLX
+    PLY
+    PLA
+    RTL
+
+SetEntityFlagY:
+    PHA
+    PHY
+    PHX
+    TYA
+    JSR SetEntityFlag
+    PLX
+    PLY
+    PLA
+    RTL
+
+SetEntityFlag:
+    ; Everything is saved, don't worry about restoring values
+    TAX
+    LDA $738E
+    BEQ .Return
+    LDA #$00FF
+    STZ $14
+    STA $16
+    LDA #$000C
+    CLC
+    ADC $32EC
+    TAY
+    LDA [$14], Y
+    LDY #$00C7
+    STY $16
+    LDY.w #EssenceLookup
+    STY $14
+    CLC
+    ADC $32F0
+    SEC
+    SBC #$0022
+    TAY
+    LDA [$14], Y
+    STA $14
+    LDA $32F4
+    ASL
+    CLC
+    ADC $14
+    PHA
+    ; Now we need to get our offset and mask
+    LDA $7936, X
+    DEC
+    TAX
+    LDY #$0000
+    .Loop:
+    CPX #$0008
+    BMI .Continue
+    INY
+    TXA
+    SEC
+    SBC #$0008
+    TAX
+    BRA .Loop
+    .Continue:
+    LDA #$0001
+    .Mask:
+    CPX #$0000
+    BEQ .Set
+    ASL
+    DEX
+    BRA .Mask
+    .Set:
+    STY $14
+    TAX
+    PLA
+    CLC
+    ADC $14
+    TAY
+    TXA
+    PHB
+    PHA
+    LDA #$4141
+    PHA
+    PLB
+    PLB
+    PLA
+    ORA $0000, Y
+    STA $0000, Y
+    PLB
+    .Return
+    RTS
+
+hook_maxim_tomato:
+    LDA $7573
+    BEQ .Maxim
+    JML $05981E
+    .Maxim:
+    print "Maxims: ", hex(snestopc(realbase()))
+    LDA #$0000
+    BNE .Continue
+    LDA $28
+    CMP $737A, Y
+    BEQ .Full
+    JML $059815
+    .Full:
+    JML $059843
+    .Continue:
+    LDY $39
+    JSL SetEntityFlagY
+    JML $059840
+
+hook_one_up:
+    print "OneUp: ", hex(snestopc(realbase()))
+    LDA #$0000
+    BNE .Continue
+    INC $737A
+    BRA .Return
+    .Continue:
+    JSL SetEntityFlagY
+    .Return
+    ; cursed stack magic
+    PLA
+    PLB
+    PHA
+    LDA #$0000
+    PHA
+    PLB
+    PLB
+    JML $CF79C6
+
+hook_invincibility_candy:
+    print "Candy: ", hex(snestopc(realbase()))
+    LDA #$0000
+    BNE .Continue
+    STX $7575
+    LDA #$FFFF
+    JML $CF6E9A
+    .Continue:
+    JSL SetEntityFlagY
+    JML $CF6EDC
 
 org $CA8532
     JML set_dyna_switch
@@ -157,6 +320,9 @@ org $CAB86E
 
 org $CAB8AA
     LDA #$0005
+
+org $CABCD6
+    JML subgame_requirement_visual
 
 org $CAF830
 remap_table:
@@ -636,6 +802,12 @@ WriteBWRAM:
     LDY #$2001
     LDA #$EFFE
     MVN $40, $40
+    LDA #$0000
+    STA $410000
+    LDX #$0000
+    LDY #$0001
+    LDA #$FFFE
+    MVN $41, $41
     LDX #$FD00 ; seed info 0x3D000
     LDY #$9000 ; target location
     LDA #$0300
@@ -680,6 +852,7 @@ block_ability_essence:
     PHY
     PHX
     PHA
+    JSL SetEntityFlagY
     LDY #$0000
     SEC
     SBC #$0001
@@ -750,14 +923,18 @@ set_starting_stage:
     LDA #$0001
     PHA
     PHA
+    .GoalNumeric:
     print "Goal Numeric Requirement: ", hex(snestopc(realbase()))
     CPY #$0006
     BCC .SkipPull
     LDA !completed_sub_games
+    .GoalSpecific:
     print "Goal Specific Requirements: ", hex(snestopc(realbase()))
     AND #$007F
     CMP #$007F
     BNE .SkipPull
+    LDA #$0041
+    JSL $00D003
     PLA
     ORA #$0080
     BRA .Skip
@@ -789,7 +966,7 @@ soft_reset:
 
 TreasureRequirements:
     print "Treasures: ", hex(snestopc(realbase()))
-    dd $250000, $500000, $750000, $999999
+    dd $2625A0, $4C4B40, $7270E0, $989676
 
 block_tgco_access:
     LDA $32EA
@@ -857,6 +1034,307 @@ set_star_complete:
     .Return:
     JML hook_set_star_return
 
+invincibility_candy:
+    LDX #$0002
+    STX $7575
+    LDA #$FFFF
+    STA $7573
+    LDA #$0078
+    STA $7571
+    LDA #$000A
+    STA $35EF, X
+    LDA #$0438
+    STA $35F3, X
+    LDA #$0200
+    STA $74C5, X
+    TXY
+    LDA #$0000
+    LDX #$88C6
+    JSL $03D6B9
+    LDA #$AE11
+    JSL $05AC5F
+    LDA #$002C
+    JSL $00D12D
+    LDA #$0014
+    JSL $00D003
+    RTL
+
+MainLoop:
+    JSL $009258
+    PHX
+    LDA !play_sfx
+    BEQ .Candy
+    JSL $00D12D
+    LDA #$0000
+    STA !play_sfx
+    .Candy:
+    LDA !activate_candy
+    BEQ .Return
+    JSL invincibility_candy
+    LDA #$0000
+    STA !activate_candy
+    .Return:
+    PLX
+    RTL
+
+credits_goal_check:
+    JSL $00D003 ; start credits music
+    LDA #$0001
+    LDX #$0007
+    LDY #$0000
+    .CompletionLoop:
+    CPX #$0000
+    BEQ .CheckGoal
+    BIT !completed_sub_games
+    BEQ .NotComplete
+    INY
+    .NotComplete:
+    DEX
+    ASL
+    BRA .CompletionLoop
+    .CheckGoal:
+    TYA
+    CMP.l set_starting_stage_GoalNumeric+1
+    BCC .Return
+    LDA !completed_sub_games
+    AND.l set_starting_stage_GoalSpecific+1
+    CMP.l set_starting_stage_GoalSpecific+1
+    BNE .Return
+    LDA !received_sub_games
+    ORA #$0080
+    STA !received_sub_games
+    .Return:
+    RTL
+
+great_cave_requirement:
+    REP #$20
+    INC $00B1
+    LDA $32EA
+    CMP #$0003
+    BNE .NoPull
+    LDY #$FFFE
+    PHB
+    .CheckRequirementHigh:
+    INY #2
+    INY #2
+    CPY #$000F
+    BPL .EarlyReturn ; we have enough to clear
+    LDA #$CA00
+    PHA
+    PLB
+    LDX #$0002
+    LDA !great_cave_gold, X
+    PLB
+    CMP TreasureRequirements, Y
+    BCC .GetDigitsHigh
+    BNE .CheckRequirementHigh ; branch if greater not equal
+    DEX #2
+    DEY #2
+    LDA #$CA00
+    PHA
+    PLB
+    LDA !great_cave_gold, X
+    PLB
+    CMP TreasureRequirements, Y
+    BCC .GetDigits ; if not minus at this point, has to be greater or equal
+    INY #2
+    BRA .CheckRequirementHigh
+    .EarlyReturn:
+    PLB
+    .NoPull:
+    RTL
+    .GetDigits:
+    INY #2
+    .GetDigitsHigh:
+    TYX
+    LDA TreasureRequirements, X
+    TAY
+    DEX #2
+    LDA TreasureRequirements, X
+    TAX
+    LDA #$4040
+    PHA
+    PLB
+    PLB
+    TXA
+    CPY #$0098
+    BCC .Start
+    BNE .SetCap
+    CMP #$967F
+    BCC .Start
+    .SetCap:
+    LDA #$967F
+    LDY #$0098
+    .Start
+    STA $A001
+    LDX #$FFFF
+    .Millions:
+    INX
+    LDA $A001
+    SEC
+    SBC #$4240
+    STA $A001
+    TYA
+    SBC #$000F
+    TAY
+    BPL .Millions
+    SEP #$20
+    TXA
+    STA $A000
+    REP #$20
+    LDA $A001
+    CLC
+    ADC #$4240
+    STA $A001
+    TYA
+    ADC #$000F
+    TAY
+    LDA $A001
+    LDX #$FFFF
+    .HundredThousands:
+    INX
+    SEC
+    SBC #$86A0
+    BCS .HTContinue
+    DEY
+    .HTContinue:
+    DEY
+    BPL .HundredThousands
+    STX $A001
+    CLC
+    ADC #$86A0
+    BCC .AddOne
+    INY
+    .AddOne:
+    INY
+    LDX #$FFFF
+    .TenThousands:
+    INX
+    SEC
+    SBC #$2710
+    BCS .TenThousands
+    DEY
+    BPL .TenThousands
+    STX $A002
+    ADC #$2710
+    LDX #$FFFF
+    SEC
+    .Thousands:
+    INX
+    SBC #$03E8
+    BCS .Thousands
+    STX $A003
+    ADC #$03E8
+    LDX #$FFFF
+    SEC
+    .Hundreds:
+    INX
+    SBC #$0064
+    BCS .Hundreds
+    STX $A004
+    ADC #$0064
+    LDX #$FFFF
+    SEC
+    .Tens:
+    INX
+    SBC #$000A
+    BCS .Tens
+    STX $A005
+    ADC #$000A
+    STA $A006
+    .FindFirstNonZero:
+    LDY #$FFFF
+    .NonZeroLoop:
+    INY
+    CPY #$0006
+    BEQ .Continue
+    SEP #$20
+    LDA $A000, Y
+    REP #$20
+    BEQ .NonZeroLoop
+    .Continue:
+    STY $A007
+    .Apply:
+    LDY #$001F
+    LDX #$0000
+    LDA #$0040
+    PHA
+    PHA
+    PHA
+    PHA
+    PHA
+    PHA
+    PHA
+    SEP #$20
+    .ApplyLoop:
+    PLB
+    LDA $A000, X
+    CPX $A007
+    BPL .Add
+    LDA #$FF
+    BRA .Set
+    .Add:
+    CLC
+    ADC #$B6
+    .Set:
+    PLB
+    STA ($14), Y
+    LDA $171B, Y
+    STA $173B, Y
+    INY
+    INX
+    CPX #$0007
+    BMI .ApplyLoop
+    REP #$20
+    PLB
+    RTL
+
+subgame_requirement_visual:
+    MVN $7E, $7E
+    .SetVisuals:
+    ; insane how the timing for this works out
+    LDA #$7ECA
+    PHA
+    PLB
+    LDX set_starting_stage_GoalSpecific+1
+    PLB
+    LDY #$0000
+    .VisualLoop:
+    TXA
+    BIT #$0001
+    BEQ .VisualSkip
+    LDA #$1E1D
+    STA $7494, Y
+    INY
+    INY
+    BRA .VisualContinue
+    .VisualSkip:
+    INY
+    INY
+    .VisualContinue:
+    TXA
+    LSR
+    BEQ .Return
+    TAX
+    BRA .VisualLoop
+    .Return:
+    LDA #$7ECA
+    PHA
+    PLB
+    LDA set_starting_stage_GoalNumeric+1
+    PLB
+    CLC
+    ADC #$02CF
+    STA $73B8
+    LDA #$1E1D
+    STA $73B6
+    PLB
+    JML $CABCDA
+
+org $CEE9C4
+hook_credits:
+    JSL credits_goal_check
+
 org $CF2933
 remove_dyna_block:
     LDA #$0000
@@ -873,6 +1351,16 @@ hook_set_treasure_value:
 org $CF44BD
 hook_set_treasure:
     JSL set_treasure
+
+org $CF6C7A
+one_up:
+    JSL hook_one_up
+    NOP #2
+
+org $CF6E94
+consumable_candy:
+    JML hook_invincibility_candy
+    NOP #2
 
 org $CF71EB
 check_deluxe_ability:

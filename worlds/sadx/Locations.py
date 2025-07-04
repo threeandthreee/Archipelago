@@ -151,10 +151,14 @@ group_location_table: Dict[str, List[str]] = {
 
 for area in level_areas:
     area_name = pascal_to_space(area.name)
-    group_location_table[area_name] = get_location_name_by_level(area_name)
+    area_locations = get_location_name_by_level(area_name)
+    if area_locations:
+        group_location_table[area_name] = area_locations
     for character in Character:
         character_area_name = f"{area_name} ({character.name})"
-        group_location_table[character_area_name] = get_location_name_by_level(area_name, character)
+        character_locations = get_location_name_by_level(area_name, character)
+        if character_locations:
+            group_location_table[character_area_name] = character_locations
 
 
 def get_location_by_id(location_id: int) -> LocationInfo:

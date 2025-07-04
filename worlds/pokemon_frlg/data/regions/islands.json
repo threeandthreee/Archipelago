@@ -339,6 +339,15 @@
     "kanto": false,
     "locations": [
       "ITEM_TWO_ISLAND_REVIVE",
+      "SHOP_TWO_ISLAND_EXPANDED3_1",
+      "SHOP_TWO_ISLAND_EXPANDED3_2",
+      "SHOP_TWO_ISLAND_EXPANDED3_3",
+      "SHOP_TWO_ISLAND_EXPANDED3_4",
+      "SHOP_TWO_ISLAND_EXPANDED3_5",
+      "SHOP_TWO_ISLAND_EXPANDED3_6",
+      "SHOP_TWO_ISLAND_EXPANDED3_7",
+      "SHOP_TWO_ISLAND_EXPANDED3_8",
+      "SHOP_TWO_ISLAND_EXPANDED3_9",
       "FAME_CHECKER_BRUNO_5"
     ],
     "events": [
@@ -661,7 +670,14 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": false,
-    "locations": [],
+    "locations": [
+      "SHOP_THREE_ISLAND_1",
+      "SHOP_THREE_ISLAND_2",
+      "SHOP_THREE_ISLAND_3",
+      "SHOP_THREE_ISLAND_4",
+      "SHOP_THREE_ISLAND_5",
+      "SHOP_THREE_ISLAND_6"
+    ],
     "events": [],
     "exits": {},
     "warps": {
@@ -972,6 +988,14 @@
     "has_fishing": false,
     "kanto": false,
     "locations": [
+      "SHOP_FOUR_ISLAND_1",
+      "SHOP_FOUR_ISLAND_2",
+      "SHOP_FOUR_ISLAND_3",
+      "SHOP_FOUR_ISLAND_4",
+      "SHOP_FOUR_ISLAND_5",
+      "SHOP_FOUR_ISLAND_6",
+      "SHOP_FOUR_ISLAND_7",
+      "SHOP_FOUR_ISLAND_8",
       "FAME_CHECKER_LORELEI_3"
     ],
     "events": [],
@@ -1240,7 +1264,7 @@
       "REGION_FIVE_ISLAND_RESORT_GORGEOUS/WATER": "Resort Gorgeous Near Resort Surfing Spot"
     },
     "warps": {
-      "MAP_FIVE_ISLAND_RESORT_GORGEOUS:1/MAP_FIVE_ISLAND_RESORT_GORGEOUS_HOUSE:0": "Resort Gorgeous House"
+      "MAP_FIVE_ISLAND_RESORT_GORGEOUS:1/MAP_FIVE_ISLAND_RESORT_GORGEOUS_HOUSE:0": "Selphy's House"
     }
   },
   "REGION_FIVE_ISLAND_RESORT_GORGEOUS/NEAR_CAVE": {
@@ -1262,7 +1286,7 @@
   },
   "REGION_FIVE_ISLAND_RESORT_GORGEOUS_HOUSE/MAIN": {
     "parent_map": "MAP_FIVE_ISLAND_RESORT_GORGEOUS_HOUSE",
-    "name": "Resort Gorgeous House",
+    "name": "Selphy's House",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -1275,7 +1299,7 @@
     "events": [],
     "exits": {},
     "warps": {
-      "MAP_FIVE_ISLAND_RESORT_GORGEOUS_HOUSE:0/MAP_FIVE_ISLAND_RESORT_GORGEOUS:1": "Resort Gorgeous House Exit"
+      "MAP_FIVE_ISLAND_RESORT_GORGEOUS_HOUSE:0/MAP_FIVE_ISLAND_RESORT_GORGEOUS:1": "Selphy's House Exit"
     }
   },
   "REGION_SIX_ISLAND_HARBOR/MAIN": {
@@ -1388,6 +1412,14 @@
     "has_fishing": false,
     "kanto": false,
     "locations": [
+      "SHOP_SIX_ISLAND_1",
+      "SHOP_SIX_ISLAND_2",
+      "SHOP_SIX_ISLAND_3",
+      "SHOP_SIX_ISLAND_4",
+      "SHOP_SIX_ISLAND_5",
+      "SHOP_SIX_ISLAND_6",
+      "SHOP_SIX_ISLAND_7",
+      "SHOP_SIX_ISLAND_8",
       "FAME_CHECKER_AGATHA_6"
     ],
     "events": [],
@@ -1725,7 +1757,17 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": false,
-    "locations": [],
+    "locations": [
+      "SHOP_SEVEN_ISLAND_1",
+      "SHOP_SEVEN_ISLAND_2",
+      "SHOP_SEVEN_ISLAND_3",
+      "SHOP_SEVEN_ISLAND_4",
+      "SHOP_SEVEN_ISLAND_5",
+      "SHOP_SEVEN_ISLAND_6",
+      "SHOP_SEVEN_ISLAND_7",
+      "SHOP_SEVEN_ISLAND_8",
+      "SHOP_SEVEN_ISLAND_9"
+    ],
     "events": [],
     "exits": {},
     "warps": {
@@ -2061,6 +2103,31 @@
     },
     "warps": {
       "MAP_SEVEN_ISLAND_TRAINER_TOWER:0/MAP_TRAINER_TOWER_LOBBY:1": "Trainer Tower"
+    }
+  },
+  "REGION_TRAINER_TOWER_LOBBY/MAIN": {
+    "parent_map": "MAP_TRAINER_TOWER_LOBBY",
+    "name": "Trainer Tower Lobby",
+    "encounter_region": null,
+    "has_land": false,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": false,
+    "locations": [
+      "SHOP_TRAINER_TOWER_1",
+      "SHOP_TRAINER_TOWER_2",
+      "SHOP_TRAINER_TOWER_3",
+      "SHOP_TRAINER_TOWER_4",
+      "SHOP_TRAINER_TOWER_5",
+      "SHOP_TRAINER_TOWER_6",
+      "SHOP_TRAINER_TOWER_7",
+      "SHOP_TRAINER_TOWER_8",
+      "SHOP_TRAINER_TOWER_9"
+    ],
+    "events": [],
+    "exits": {},
+    "warps": {
+      "MAP_TRAINER_TOWER_LOBBY:1/MAP_SEVEN_ISLAND_TRAINER_TOWER:0": "Trainer Tower Lobby Exit"
     }
   },
   "REGION_NAVEL_ROCK_HARBOR/MAIN": {

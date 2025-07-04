@@ -1,12 +1,7 @@
 from typing import TYPE_CHECKING
-from worlds.AutoWorld import LogicMixin
 from .Levels import first_level
 if TYPE_CHECKING:
     from . import Wargroove2World
-
-
-class Wargroove2Logic(LogicMixin):
-    pass
 
 
 def set_rules(world: "Wargroove2World") -> None:

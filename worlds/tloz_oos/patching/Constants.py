@@ -92,6 +92,7 @@ DEFINES = {
     "wObtainedTreasureFlags": "$c692",
     "wNetCountIn": "$c6a0",
     "wLinkMaxHealth": "$c6a3",
+    "wShieldLevel": "$c6a9",
     "wCurrentBombs": "$c6aa",
     "wMaxBombs": "$c6ab",
     "wSeedSatchelLevel": "$c6ae",

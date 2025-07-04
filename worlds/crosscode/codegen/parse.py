@@ -13,7 +13,7 @@ from .util import BASE_ID, RESERVED_ITEM_IDS, get_item_classification
 from ..types.items import ItemData, ProgressiveChainEntry, ProgressiveItemChain, ProgressiveItemChainSingle, ProgressiveItemChainMulti, ProgressiveItemSubchain, SingleItemData
 from ..types.locations import AccessInfo, Condition
 from ..types.regions import RegionConnection, RegionsData
-from ..types.condition import ChestKeyCondition, ItemCondition, LocationCondition, QuestCondition, RegionCondition, AnyElementCondition, \
+from ..types.condition import ChestKeyCondition, ItemCondition, LocationCondition, NeverCondition, QuestCondition, RegionCondition, AnyElementCondition, \
     OrCondition, VariableCondition
 
 class JsonParserError(Exception):
@@ -119,6 +119,9 @@ class JsonParser:
                         "location condition",
                         f"expected 1 argument, not {num_args}"
                     )
+
+            elif cond[0] == "never":
+                result.append(NeverCondition())
 
             else:
                 raise JsonParserError(raw, cond, "condition", f"unknown type {cond[0]}")

@@ -8,10 +8,13 @@ from .locations import (green_greens_locations, float_islands_locations, bubbly_
                         romk_chapter_3_locations, romk_chapter_4_locations, romk_chapter_5_locations,
                         romk_chapter_6_locations, romk_chapter_7_locations, floria_locations, aqualiss_locations,
                         skyhigh_locations, hotbeat_locations, cavios_locations, mecheye_locations, halfmoon_locations,
-                        copy_planet_locations, space_locations, the_arena_locations, KSSLocation)
+                        copy_planet_locations, space_locations, the_arena_locations, KSSLocation, LocationData,
+                        bonus_1_locations, bonus_2_locations)
+from .options import IncludedSubgames
 
 if TYPE_CHECKING:
     from . import KSSWorld
+
 
 class KSSRegion(Region):
     game = "Kirby Super Star"
@@ -21,18 +24,34 @@ def create_region(name, world: "KSSWorld"):
     return KSSRegion(name, world.player, world.multiworld)
 
 
-def create_trivial_regions(world: "KSSWorld", menu: KSSRegion):
-    if "Gourmet Race" in world.options.included_subgames:
+def add_locations(world: "KSSWorld", region: KSSRegion, locations: dict[str, LocationData]):
+    filter_list = [""]
+    if "Maxim Tomato" in world.options.consumables:
+        filter_list.append("maxim")
+    if "1-Up" in world.options.consumables:
+        filter_list.append("one_up")
+    if "Invincibility Candy" in world.options.consumables:
+        filter_list.append("candy")
+    if world.options.essences:
+        filter_list.append("essence")
+
+    filtered = {location: data.code for location, data in locations.items() if data.tag in filter_list}
+
+    region.add_locations(filtered, KSSLocation)
+
+
+def create_trivial_regions(world: "KSSWorld", menu: KSSRegion, included_subgames: set[str]):
+    if "Gourmet Race" in included_subgames:
         gourmet_race = create_region("Gourmet Race", world)
-        gourmet_race.add_locations(gourmet_race_locations, KSSLocation)
+        add_locations(world, gourmet_race, gourmet_race_locations)
         menu.connect(gourmet_race, None, lambda state: state.has(item_names.gourmet_race, world.player))
         world.get_location(location_names.gr_complete).place_locked_item(
             world.create_item(item_names.gourmet_race_complete))
         world.multiworld.regions.append(gourmet_race)
 
-    if "The Arena" in world.options.included_subgames:
+    if "The Arena" in included_subgames:
         arena = create_region("The Arena", world)
-        arena.add_locations(the_arena_locations, KSSLocation)
+        add_locations(world, arena, the_arena_locations)
         menu.connect(arena, None, lambda state: state.has(item_names.the_arena, world.player))
         world.get_location(location_names.arena_complete).place_locked_item(
             world.create_item(item_names.the_arena_complete))
@@ -53,7 +72,7 @@ def create_spring_breeze(world: "KSSWorld", menu: KSSRegion):
                                              ):
         if connection:
             region.connect(connection)
-        region.add_locations(locations, KSSLocation)
+        add_locations(world, region, locations)
 
     menu.connect(spring_breeze, None, lambda state: state.has(item_names.spring_breeze, world.player))
     spring_breeze.connect(green_greens)
@@ -77,13 +96,21 @@ def create_dyna_blade(world: "KSSWorld", menu: KSSRegion):
                                              ):
         if connection:
             region.connect(connection)
-        region.add_locations(locations, KSSLocation)
+        add_locations(world, region, locations)
 
     menu.connect(dyna_blade, None, lambda state: state.has(item_names.dyna_blade, world.player))
     dyna_blade.connect(peanut_plains)
     world.get_location(location_names.db_complete).place_locked_item(world.create_item(item_names.dyna_blade_complete))
     world.multiworld.regions.extend([dyna_blade, peanut_plains, mallow_castle, cocoa_cave,
                                      candy_mountain, dyna_blade_nest])
+
+    if world.options.essences or "Maxim Tomato" in world.options.consumables:
+        extra1 = create_region("Dyna Blade Bonus 1", world)
+        extra2 = create_region("Dyna Blade Bonus 2", world)
+        for locations, region in zip((bonus_1_locations, bonus_2_locations), (extra1, extra2)):
+            add_locations(world, region, locations)
+            dyna_blade.connect(region)
+            world.multiworld.regions.append(region)
 
 
 def create_great_cave_offensive(world: "KSSWorld", menu: KSSRegion):
@@ -100,7 +127,7 @@ def create_great_cave_offensive(world: "KSSWorld", menu: KSSRegion):
                                              ):
         if connection:
             region.connect(connection)
-        region.add_locations(locations, KSSLocation)
+        add_locations(world, region, locations)
 
     menu.connect(tgco, None, lambda state: state.has(item_names.great_cave_offensive, world.player))
     tgco.connect(subtree)
@@ -130,7 +157,7 @@ def create_revenge_meta_knight(world: "KSSWorld", menu: KSSRegion):
                                              ):
         if connection:
             region.connect(connection)
-        region.add_locations(locations, KSSLocation)
+        add_locations(world, region, locations)
 
     menu.connect(revenge_of_meta_knight, None, lambda state: state.has(item_names.revenge_of_meta_knight, world.player))
     revenge_of_meta_knight.connect(chapter_1)
@@ -159,10 +186,10 @@ def create_milky_way_wishes(world: "KSSWorld", menu: KSSRegion):
                                         item_names.cavios, item_names.mecheye, item_names.halfmoon,
                                         item_names.copy_planet)
                                  ):
-        region.add_locations(locations, KSSLocation)
+        add_locations(world, region, locations)
         milky_way_wishes.connect(region, None, lambda state, required=item: state.has(required, world.player))
 
-    milky_way_wishes.add_locations(space_locations, KSSLocation)
+    add_locations(world, milky_way_wishes, space_locations)
     menu.connect(milky_way_wishes, None, lambda state: state.has(item_names.milky_way_wishes, world.player))
 
     world.get_location(location_names.mww_complete).place_locked_item(
@@ -175,14 +202,15 @@ def create_milky_way_wishes(world: "KSSWorld", menu: KSSRegion):
 def create_regions(world: "KSSWorld"):
     menu = create_region("Menu", world)
     world.multiworld.regions.append(menu)
-    create_trivial_regions(world, menu)
-    if "Spring Breeze" in world.options.included_subgames:
+    included_subgames = world.options.included_subgames.value
+    create_trivial_regions(world, menu, included_subgames)
+    if "Spring Breeze" in included_subgames:
         create_spring_breeze(world, menu)
-    if "Dyna Blade" in world.options.included_subgames:
+    if "Dyna Blade" in included_subgames:
         create_dyna_blade(world, menu)
-    if "The Great Cave Offensive" in world.options.included_subgames:
+    if "The Great Cave Offensive" in included_subgames:
         create_great_cave_offensive(world, menu)
-    if "Revenge of Meta Knight" in world.options.included_subgames:
+    if "Revenge of Meta Knight" in included_subgames:
         create_revenge_meta_knight(world, menu)
-    if "Milky Way Wishes" in world.options.included_subgames:
+    if "Milky Way Wishes" in included_subgames:
         create_milky_way_wishes(world, menu)

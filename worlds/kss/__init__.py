@@ -4,15 +4,15 @@ import os
 import base64
 import threading
 import math
-from typing import Dict, List, ClassVar, Any
-from BaseClasses import Tutorial, MultiWorld, CollectionState, Item
+from typing import Dict, List, ClassVar, Any, Mapping
+from BaseClasses import Tutorial, MultiWorld, CollectionState, Item, ItemClassification
 from worlds.AutoWorld import World, WebWorld
 from Options import OptionError
 from .items import (lookup_item_to_id, item_table, item_groups, KSSItem, filler_item_weights, copy_abilities,
                     sub_games, dyna_items, planets, treasures, sub_game_completion)
 from .locations import location_table, KSSLocation
 from .names import item_names
-from .options import KSSOptions, subgame_mapping
+from .options import KSSOptions, subgame_mapping, IncludedSubgames, Consumables
 from .regions import create_regions
 from .rom import KSS_UHASH, KSSProcedurePatch, patch_rom, KSS_VCHASH
 from .rules import set_rules
@@ -51,14 +51,15 @@ class KSSWebWorld(WebWorld):
 class KSSWorld(World):
     game = "Kirby Super Star"
     item_name_to_id = lookup_item_to_id
-    location_name_to_id = {location: location_table[location]
-                           for location in location_table if location_table[location]}
+    location_name_to_id = {location: data.code
+                           for location, data in location_table.items() if data.code}
     item_name_groups = item_groups
     web = KSSWebWorld()
     settings: ClassVar[KSSSettings]
     options_dataclass = KSSOptions
     options: KSSOptions
     treasure_value: List[int]
+    ut_can_gen_without_yaml: bool = True
 
     create_regions = create_regions
 
@@ -70,21 +71,21 @@ class KSSWorld(World):
 
     def generate_early(self) -> None:
         # lots here
-        if self.options.included_subgames.value.union(
-                {"The Great Cave Offensive", "Milky Way Wishes", "The Arena"}) == {}:
+        if not self.options.included_subgames.value.intersection(
+                {"The Great Cave Offensive", "Milky Way Wishes", "The Arena"}):
             raise OptionError(f"Kirby Super Star ({self.player_name}): At least one of The Great Cave Offensive, "
                               f"Milky Way Wishes, or The Arena must be included")
-
-        if self.options.starting_subgame.current_option_name not in self.options.included_subgames:
-            logger.warning(f"Kirby Super Star ({self.player_name}): Starting subgame not included, choosing random.")
-            self.options.starting_subgame.value = self.random.choice([value[0] for value in subgame_mapping.items()
-                                                                      if value[1] in self.options.included_subgames])
 
         for game in sorted(self.options.required_subgames.value):
             if game not in self.options.included_subgames.value:
                 logger.warning(F"Kirby Super Star ({self.player_name}): Required subgame {game} not included, "
                                F"adding to included subgames")
                 self.options.included_subgames.value.add(game)
+
+        if self.options.starting_subgame.current_option_name not in self.options.included_subgames:
+            logger.warning(f"Kirby Super Star ({self.player_name}): Starting subgame not included, choosing random.")
+            self.options.starting_subgame.value = self.random.choice([value[0] for value in subgame_mapping.items()
+                                                                      if value[1] in self.options.included_subgames])
 
         if self.options.required_subgame_completions > len(self.options.included_subgames.value):
             logger.warning(f"Kirby Super Star ({self.player_name}): Required subgame count greater than "
@@ -108,10 +109,17 @@ class KSSWorld(World):
                     self.options.the_great_cave_offensive_gold_thresholds["Old Tower"]
                 self.options.the_great_cave_offensive_gold_thresholds.value["Old Tower"] = temp
 
-    def create_item(self, name):
+        # proper UT support
+        if hasattr(self.multiworld, "generation_is_fake"):
+            self.options.included_subgames = IncludedSubgames.valid_keys
+            self.options.consumables.value = Consumables.valid_keys
+            self.options.essences.value = True
+
+    def create_item(self, name, force_classification: ItemClassification | None = None):
         if name not in item_table:
             raise Exception(f"{name} is not a valid item name for Kirby Super Star.")
         data = item_table[name]
+        classification = force_classification if force_classification else data.classification
         return KSSItem(name, data.classification, data.code, self.player)
 
     def get_filler_item_name(self) -> str:
@@ -129,10 +137,13 @@ class KSSWorld(World):
         treasure_value = 0
 
         if "Dyna Blade" in self.options.included_subgames:
-            itempool.extend([self.create_item(name) for name in dyna_items])
+            force = None
+            if not self.options.essences and "Maxim Tomato" not in self.options.consumables:
+                force = ItemClassification.useful
+            itempool.extend([self.create_item(name, force) for name in dyna_items])
         if "The Great Cave Offensive" in self.options.included_subgames:
             max_gold = (math.floor((9999990 - self.options.the_great_cave_offensive_required_gold.value) *
-                                  (self.options.the_great_cave_offensive_excess_gold.value / 100))
+                                   (self.options.the_great_cave_offensive_excess_gold.value / 100))
                         + self.options.the_great_cave_offensive_required_gold.value)
             for name, treasure in sorted(treasures.items(), key=(lambda treasure: treasure[1].value), reverse=True):
                 itempool.append(self.create_item(name))
@@ -176,6 +187,15 @@ class KSSWorld(World):
         self.multiworld.itempool += itempool
 
     set_rules = set_rules
+
+    def fill_slot_data(self) -> Mapping[str, Any]:
+        return {
+            "treasure_value": self.treasure_value
+        }
+
+    @staticmethod
+    def interpret_slot_data(slot_data: Dict[str, Any]) -> Dict[str, Any]:
+        return slot_data
 
     def generate_output(self, output_directory: str) -> None:
         try:

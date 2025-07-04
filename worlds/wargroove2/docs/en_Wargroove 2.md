@@ -1,4 +1,4 @@
-# Wargroove 2 (Steam, Windows)
+# Wargroove 2 (Steam, Windows, Linux)
 
 ## Where is the options page?
 
@@ -20,7 +20,8 @@ from that faction.
 3. Income, Groove and Commander Defense boosts that provide the player with extra income, extra commander groove 
 or extra commander defense.
 4. Special map events like the Bridges Event or the Walls Event, which perform special actions in certain levels.
-5. 28 levels are shuffled into 4 branching paths. A random final level will appear at the end of each path.
+5. 28 levels are shuffled into 4 branching paths. One of 4 starting levels will be at the beginning of each path.
+One of 4 final levels will be at the ending of each path.
 
 ## Which items can be in another player's world?
 
@@ -57,3 +58,5 @@ The following commands are only available when using the Wargroove2Client to pla
 
 - `/resync` Manually trigger a resync.
 - `/commander` Set the current commander to the given commander.
+- `/deathlink` Toggle deathlink between On and Off.
+- `/sacrifice_summon` Toggle sacrificing and summoning units between On and Off.

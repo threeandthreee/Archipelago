@@ -1,42 +1,41 @@
-from worlds.ff4fe import FF4FEOptions
+from . import FF4FEOptions
+# This file just translates our AP options into FE flagsets.
 
-
-def create_flags_from_options(options: FF4FEOptions):
-    flags = (f"{build_objective_flags(options)} "
-             f"Kmain/summon/moon/unsafe "
+def create_flags_from_options(options: FF4FEOptions, objective_count: int):
+    flags = (f"{build_objective_flags(options, objective_count)} "
+             f"Kmain/summon/moon/unsafe/miab "
              f"{build_pass_flags(options)} "
              f"{build_characters_flags(options)} "
              f"Twild/junk "
              f"{build_shops_flags(options)} "
-             f"Bstandard/alt:gauntlet/whichburn "
-             f"Etoggle/keep:doors,behemoths "
+             f"{build_bosses_flags(options)} "
+             f"{build_encounters_flags(options)} "
              f"Gdupe/mp/warp/life/sylph/backrow "
-             f"-spoon "
+             f"{build_misc_flags(options)}"
              f"{build_starter_kit_flags(options)}")
     return flags
 
-def build_objective_flags(options: FF4FEOptions):
+def build_objective_flags(options: FF4FEOptions, objective_count: int):
     objective_flags = "Omode:"
     primary_objectives = []
-    if options.ForgeTheCrystal.current_key == "true":
+    if options.ForgeTheCrystal:
         primary_objectives.append("classicforge")
-    if options.ConquerTheGiant.current_key == "true":
+    if options.ConquerTheGiant:
         primary_objectives.append("classicgiant")
-    if options.DefeatTheFiends.current_key == "true":
+    if options.DefeatTheFiends:
         primary_objectives.append("fiends")
-    if options.FindTheDarkMatter.current_key == "true":
+    if options.FindTheDarkMatter:
         primary_objectives.append("dkmatter")
     objective_flags += ",".join(primary_objectives)
     if objective_flags == "Omode:":
-        objective_flags += "none/"
-    else:
-        objective_flags += "/"
+        objective_flags += "none"
     if options.AdditionalObjectives.value != 0:
-        objective_flags += f"random:{options.AdditionalObjectives.value}"
-    if options.ObjectiveReward.current_key == "crystal" or options.ForgeTheCrystal.current_key == "true":
-        objective_flags += "/win:crystal/req:all"
+        objective_flags += f"/random:{options.AdditionalObjectives.value}"
+    if options.ObjectiveReward.current_key == "crystal" or options.ForgeTheCrystal:
+        objective_flags += "/win:crystal"
     else:
-        objective_flags += "/win:game/req:all"
+        objective_flags += "/win:game"
+    objective_flags += f"/req:{min(objective_count, options.RequiredObjectiveCount.value)}"
     return objective_flags
 
 def build_key_items_flags(options: FF4FEOptions):
@@ -46,9 +45,9 @@ def build_pass_flags(options: FF4FEOptions):
     pass_flags = ""
     pass_key_flags = ""
     pass_shop_flags = ""
-    if options.PassEnabled.current_key == "true":
+    if options.PassEnabled:
         pass_key_flags = f"key"
-    if options.PassInShops.current_key == "true":
+    if options.PassInShops:
         pass_shop_flags = f"shop"
     if pass_key_flags != "" and pass_shop_flags != "":
         pass_flags = f"P{pass_key_flags}/{pass_shop_flags}"
@@ -64,20 +63,20 @@ def build_characters_flags(options: FF4FEOptions):
     if options.HeroChallenge.current_key != "none":
         hero_challenge_flags = f"hero/start:{options.HeroChallenge.current_key.lower()}/"
     free_character_flags = ""
-    if options.NoFreeCharacters.current_key == "true":
+    if options.NoFreeCharacters:
         free_character_flags += "nofree/"
-    if options.NoEarnedCharacters.current_key == "true":
+    if options.NoEarnedCharacters:
         free_character_flags += "noearned/"
     duplicate_character_flags = ""
-    if options.AllowDuplicateCharacters.current_key == "false":
+    if not options.AllowDuplicateCharacters:
         duplicate_character_flags += "nodupes/"
     permajoin_flags = ""
-    if options.CharactersPermajoin.current_key == "true":
+    if options.CharactersPermajoin:
         permajoin_flags = "permajoin/"
     permadeath_flags = ""
-    if options.CharactersPermajoin.current_key == "yes":
+    if options.CharactersPermadie.current_key == "yes":
         permadeath_flags = "permadeath/"
-    if options.CharactersPermajoin.current_key == "extreme":
+    if options.CharactersPermadie.current_key == "extreme":
         permadeath_flags = "permadeader/"
     flags = (f"{party_size_flags}{hero_challenge_flags}"
              f"{free_character_flags}{duplicate_character_flags}"
@@ -101,21 +100,30 @@ def build_shops_flags(options: FF4FEOptions):
         shops_flags = f"Swild"
     elif options.ShopRandomization.current_key == "cabins":
         shops_flags = f"Scabins"
-    if options.FreeShops.current_key == "true":
+    if options.FreeShops:
         shops_flags += "/free"
     return shops_flags
 
 def build_bosses_flags(options: FF4FEOptions):
-    pass
+    bosses_flags = "Bstandard/alt:gauntlet/whichburn"
+    if options.NoFreeBosses:
+        bosses_flags += "/nofree"
+    return bosses_flags
 
 def build_encounters_flags(options: FF4FEOptions):
-    pass
+    encounters_flags = "Etoggle"
+    if options.KeepDoorsBehemoths:
+        encounters_flags += "/keep:doors,behemoths"
+    return encounters_flags
 
 def build_glitches_flags(options: FF4FEOptions):
     pass
 
-def build_other_flags(options: FF4FEOptions):
-    pass
+def build_misc_flags(options: FF4FEOptions):
+    spoon_flag = "-spoon"
+    adamant_flag = "-noadamants" if options.NoAdamantArmors else ""
+    wacky_flag = process_wacky_name(options.WackyChallenge.current_key)
+    return f"{spoon_flag} {adamant_flag} {wacky_flag}"
 
 def build_starter_kit_flags(options: FF4FEOptions):
     kit1 = process_kit_name(options.StarterKitOne.current_key)
@@ -149,3 +157,62 @@ def process_kit_name(kit: str):
         return "random"
     else:
         return kit
+
+def process_wacky_name(wacky: str):
+    wacky_flag = ""
+    if wacky == "none":
+        return wacky_flag
+    wacky_flag = "-wacky:"
+    if wacky == "battle_scars":
+        wacky_flag += "battlescars"
+    elif wacky == "the_bodyguard":
+        wacky_flag += "bodyguard"
+    elif wacky == "enemy_unknown":
+        wacky_flag += "enemyunknown"
+    elif wacky == "ff4_the_musical":
+        wacky_flag += "musical"
+    elif wacky == "fist_fight":
+        wacky_flag += "fistfight"
+    elif wacky == "the_floor_is_made_of_lava":
+        wacky_flag += "floorislava"
+    elif wacky == "forward_is_the_new_back":
+        wacky_flag += "forwardisback"
+    elif wacky == "friendly_fire":
+        wacky_flag += "friendlyfire"
+    elif wacky == "gotta_go_fast":
+        wacky_flag += "gottagofast"
+    elif wacky == "holy_onomatopoeia_batman":
+        wacky_flag += "batman"
+    elif wacky == "imaginary_numbers":
+        wacky_flag += "imaginarynumbers"
+    elif wacky == "is_this_even_randomized":
+        wacky_flag += "isthisrandomized"
+    elif wacky == "men_are_pigs":
+        wacky_flag += "menarepigs"
+    elif wacky == "a_much_bigger_magnet":
+        wacky_flag += "biggermagnet"
+    elif wacky == "mystery_juice":
+        wacky_flag += "mysteryjuice"
+    elif wacky == "neat_freak":
+        wacky_flag += "neatfreak"
+    elif wacky == "night_mode":
+        wacky_flag += "nightmode"
+    elif wacky == "payable_golbez":
+        wacky_flag += "payablegolbez"
+    elif wacky == "save_us_big_chocobo":
+        wacky_flag += "saveusbigchocobo"
+    elif wacky == "six_legged_race":
+        wacky_flag += "sixleggedrace"
+    elif wacky == "the_sky_warriors":
+        wacky_flag += "skywarriors"
+    elif wacky == "three_point_system":
+        wacky_flag += "3point"
+    elif wacky == "time_is_money":
+        wacky_flag += "timeismoney"
+    elif wacky == "world_championship_of_darts":
+        wacky_flag += "darts"
+    elif wacky == "random_challenge":
+        wacky_flag += "random"
+    else:
+        wacky_flag += wacky
+    return wacky_flag

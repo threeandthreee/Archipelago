@@ -25,7 +25,21 @@ _IGNORABLE_LOCATIONS = frozenset({
     "TRAINER_RIVAL_SILPH_CHARMANDER_REWARD",
     "TRAINER_RIVAL_SILPH_SQUIRTLE_REWARD",
     "TRAINER_RIVAL_SS_ANNE_CHARMANDER_REWARD",
-    "TRAINER_RIVAL_SS_ANNE_SQUIRTLE_REWARD"
+    "TRAINER_RIVAL_SS_ANNE_SQUIRTLE_REWARD",
+    
+    # Duplicate Two Island shop locations
+    "SHOP_TWO_ISLAND_EXPANDED1_1",
+    "SHOP_TWO_ISLAND_EXPANDED1_2",
+    "SHOP_TWO_ISLAND_EXPANDED1_3",
+    "SHOP_TWO_ISLAND_EXPANDED1_4",
+    "SHOP_TWO_ISLAND_EXPANDED2_1",
+    "SHOP_TWO_ISLAND_EXPANDED2_2",
+    "SHOP_TWO_ISLAND_EXPANDED2_3",
+    "SHOP_TWO_ISLAND_EXPANDED2_4",
+    "SHOP_TWO_ISLAND_EXPANDED2_5",
+    "SHOP_TWO_ISLAND_EXPANDED2_6",
+    "SHOP_TWO_ISLAND_INITIAL_1",
+    "SHOP_TWO_ISLAND_INITIAL_2"
 })
 
 _IGNORABLE_WARPS = frozenset({
@@ -139,8 +153,8 @@ def validate_regions() -> bool:
     """
 
     extracted_data = load_json_data("extracted_data.json")
-    error_messages: List[str] = []
-    warn_messages: List[str] = []
+    error_messages: List[str] = list()
+    warn_messages: List[str] = list()
     failed = False
 
     def error(message: str) -> None:

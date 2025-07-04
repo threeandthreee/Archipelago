@@ -1,4 +1,4 @@
-from worlds.ff4fe import events, items
+from . import items
 
 area_rules = {
     "BaronWeaponShop": ["Baron Key"],
@@ -20,7 +20,7 @@ boss_rules = {
     "Dark Elf Slot": ["TwinHarp"],
     "Valvalis Slot": ["Earth Crystal", "Magus Sisters Slot Defeated"],
     "Golbez Slot": ["Calbrena Slot Defeated"],
-    "Dark Imps Slot": ["Tower Key"],
+    "Dark Imp Slot": ["Tower Key"],
     "Rubicant Slot": ["King and Queen Slot Defeated"],
     "Odin Slot": ["Baron Key", "Baigan Slot Defeated"],
     "CPU Slot": ["Elements Slot Defeated"],
@@ -53,6 +53,7 @@ individual_location_rules = {
     "Sealed Cave -- Crystal Room --  item": ["Evilwall Slot Defeated"],
     "Fabul -- West tower 3F (Yang's room) -- Found Yang item": ["Hook", "Magma Key"],
     "Fabul -- West tower 3F (Yang's room) -- Pan Trade item": ["Hook", "Magma Key", "Pan"],
+    "Sylvan Cave -- B3F -- Sylph item": ["Hook", "Magma Key", "Pan"],
     "Mt. Ordeals -- Mirror Room -- item": ["Mirror Cecil Slot Defeated"],
     "Cave Magnes -- Crystal Room -- item": ["Dark Elf Slot Defeated"],
     "Tower of Bab-il (lower) -- 5F -- item (Super Cannon destruction)": ["Dark Imp Slot Defeated"],
@@ -107,9 +108,9 @@ location_tiers = {
 
 logical_gating = {
     0: {"characters": 0, "key_items": 0},
-    1: {"characters": 3, "key_items": 3},
-    2: {"characters": 6, "key_items": 6},
-    3: {"characters": 9, "key_items": 9},
-    4: {"characters": 12, "key_items": 12},
-    5: {"characters": 15, "key_items": 15},
+    1: {"characters": 2, "key_items": 2},
+    2: {"characters": 4, "key_items": 4},
+    3: {"characters": 6, "key_items": 6},
+    4: {"characters": 8, "key_items": 8},
+    5: {"characters": 10, "key_items": 10},
 }

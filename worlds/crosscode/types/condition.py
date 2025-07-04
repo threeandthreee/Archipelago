@@ -145,6 +145,10 @@ class ShopSlotCondition(Condition):
             return state.has(args["shop_unlock_by_shop_and_id"][self.shop_name, self.item_id].name, player)
         return True
 
+class NeverCondition(Condition):
+    def satisfied(self, state: CollectionState, player: int, location: int | None, args: LogicDict) -> bool:
+        return False
+
 __all__ = [
     "Condition",
     "ItemCondition",
@@ -155,5 +159,6 @@ __all__ = [
     "OrCondition",
     "VariableCondition",
     "ChestKeyCondition",
-    "ShopSlotCondition"
+    "ShopSlotCondition",
+    "NeverCondition"
 ]

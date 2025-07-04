@@ -53,7 +53,7 @@ def create_sadx_regions(world: World, starter_setup: StarterSetup, options: Soni
 
     # Connect regions based on area connections rules
     for (character, area_from, area_to), (normal_logic_items, hard_logic_items, expert_dc_logic_items,
-                                          expert_dx_logic_items) in area_connections.items():
+                                          expert_dx_logic_items, expert_plus_dx_logic_items) in area_connections.items():
 
         if options.entrance_randomizer:
             actual_area = starter_setup.level_mapping.get(area_to, area_to)
@@ -63,7 +63,9 @@ def create_sadx_regions(world: World, starter_setup: StarterSetup, options: Soni
         region_from = created_regions.get((character, area_from))
         region_to = created_regions.get((character, actual_area))
 
-        if options.logic_level.value == 3:
+        if options.logic_level.value == 4:
+            key_items = expert_plus_dx_logic_items
+        elif options.logic_level.value == 3:
             key_items = expert_dx_logic_items
         elif options.logic_level.value == 2:
             key_items = expert_dc_logic_items
@@ -177,6 +179,8 @@ def get_location_ids_for_area(area: Area, character: Character, options: SonicAd
     if options.mission_mode_checks:
         for mission in mission_location_table:
             if str(mission.missionNumber) in options.mission_blacklist.value:
+                continue
+            if str(mission.character.name) in options.mission_blacklist.value:
                 continue
             if mission.objectiveArea == area and mission.character == character:
                 if is_character_playable(mission.character, options):

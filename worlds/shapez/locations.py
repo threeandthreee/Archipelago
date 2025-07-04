@@ -339,7 +339,7 @@ def addupgrades(finaltier: int, logictype: str,
             f(LOCATIONS.upgrade(CATEGORY.painting, roman(x)), REGIONS.upgrades_5)
 
     elif logictype == OPTIONS.logic_category_random:
-        for x in range(2, 6):
+        for x in range(2, 7):
             tier = roman(x)
             f(LOCATIONS.upgrade(CATEGORY.belt, tier),
               upgrade_regions[category_random_logic_amounts[CATEGORY.belt_low]])
@@ -349,7 +349,7 @@ def addupgrades(finaltier: int, logictype: str,
               upgrade_regions[category_random_logic_amounts[CATEGORY.processors_low]])
             f(LOCATIONS.upgrade(CATEGORY.painting, tier),
               upgrade_regions[category_random_logic_amounts[CATEGORY.painting_low]])
-        for x in range(6, finaltier+1):
+        for x in range(7, finaltier+1):
             tier = roman(x)
             for cat in categories:
                 f(LOCATIONS.upgrade(cat, tier), REGIONS.upgrades_5)
@@ -435,11 +435,11 @@ def addachievements(excludesoftlock: bool, excludelong: bool, excludeprogressive
         f(LOCATIONS.mam, REGIONS.mam, "Complete any level > 26 without modifications")
     if maxlevel >= 50:
         f(LOCATIONS.cant_stop, presentlocations[LOCATIONS.level(50)][0], "Reach level 50")
-    elif not goal == GOALS.vanilla:
+    elif goal not in [GOALS.vanilla, GOALS.mam]:
         f(LOCATIONS.cant_stop, REGIONS.levels_5, "Reach level 50")
     if maxlevel >= 100:
         f(LOCATIONS.is_this_the_end, presentlocations[LOCATIONS.level(100)][0], "Reach level 100")
-    elif not goal == GOALS.vanilla:
+    elif goal not in [GOALS.vanilla, GOALS.mam]:
         f(LOCATIONS.is_this_the_end, REGIONS.levels_5, "Reach level 100")
 
     # Achievements that depend on player preferences

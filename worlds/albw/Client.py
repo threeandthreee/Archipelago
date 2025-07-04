@@ -1,6 +1,7 @@
 from typing import Dict, List, Optional, Set
 import asyncio
 import traceback
+from BaseClasses import ItemClassification
 from CommonClient import CommonContext, get_base_parser, gui_enabled, logger, server_loop
 from NetUtils import ClientStatus
 from Patch import create_rom_file
@@ -31,6 +32,7 @@ class ALBWClientContext(CommonContext):
     course: int
     stage: int
     ravio_scouted: bool
+    to_hint: List[int]
     invalid: bool
     last_error: str
     show_citra_connect_message: bool
@@ -51,6 +53,7 @@ class ALBWClientContext(CommonContext):
         self.slot_data = None
         self.course_flags = []
         self.ravio_scouted = False
+        self.to_hint = []
         self.citra = CitraInterface()
         self.invalid = False
         self.last_error = ""
@@ -134,6 +137,10 @@ class ALBWClientContext(CommonContext):
         if cmd == "Connected":
             self.slot_data = args["slot_data"]
             self.server_connected = True
+
+        if cmd == "LocationInfo":
+            self.to_hint = [loc.location for loc in args["locations"]
+                if loc.flags & (ItemClassification.progression | ItemClassification.useful)]
         
     def get_pointers(self) -> bool:
         self.event_flags_ptr = self.citra.read_u32(self.EVENTS_LOCATION)
@@ -150,12 +157,14 @@ class ALBWClientContext(CommonContext):
         task_mgr = self.citra.read_u32(framework + 0x1c)
         start_node = task_mgr + 0x44
         node = self.citra.read_u32(start_node + 4)
-        while node != start_node:
+        loop_count = 0
+        while node != start_node and loop_count < 100:
             task = self.citra.read_u32(node + 8)
             task_vtable = self.citra.read_u32(task)
             if task_vtable == self.TASK_MAIN_GAME_VTABLE:
                 return True
             node = self.citra.read_u32(node + 4)
+            loop_count += 1
         return False
 
     def read_flags(self) -> None:
@@ -223,10 +232,18 @@ class ALBWClientContext(CommonContext):
             ravio_locations = [loc.code + albw_base_id for loc in all_locations if loc.loctype == LocationType.Ravio]
             await self.send_msgs([{
                 "cmd": "LocationScouts",
-                "create_as_hint": 2,
+                "create_as_hint": 0,
                 "locations": ravio_locations,
             }])
             self.ravio_scouted = True
+
+        if self.to_hint:
+            await self.send_msgs([{
+                "cmd": "LocationScouts",
+                "create_as_hint": 2,
+                "locations": self.to_hint,
+            }])
+            self.to_hint = []
 
     def get_item(self) -> None:
         received_items_count = self.citra.read_u32(self.AP_HEADER_LOCATION + 0x50)

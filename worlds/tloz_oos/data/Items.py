@@ -989,4 +989,8 @@ ITEMS_DATA = {
         'id': 0x40,
         'subid': 0x07
     },
+    "Maku Seed": {  # Mostly for debug
+        'classification': ItemClassification.progression_skip_balancing,
+        'id': 0x36
+    },
 }

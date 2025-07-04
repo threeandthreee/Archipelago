@@ -19,6 +19,7 @@ EXPECTED_ROM_NAME = "LEGEND OF ZELDA2"
 class Zelda2Client(BizHawkClient):
     game = "Zelda II: The Adventure of Link"
     system = ("NES")
+    patch_suffix = ".apz2"
     location_map = location_table
     npc_locations = special_locations
 
@@ -92,7 +93,8 @@ class Zelda2Client(BizHawkClient):
                                                             (0x0736, 1, "RAM"), # Game state
                                                             (0x1A18, 2, "WRAM"), #NPC checks, stored separately
                                                             (0x076C, 1, "RAM"), # State I read for the goal
-                                                            (0x1A1C, 2, "WRAM")]) # total number of items gotten from the server
+                                                            (0x1A1C, 2, "WRAM"), # total number of items gotten from the server
+                                                            (0x074C, 1, "RAM")]) # dialogue box state
 
         currently_obtained_item = int.from_bytes(read_state[0], "little")
         loc_array = bytearray(read_state[1])
@@ -100,6 +102,7 @@ class Zelda2Client(BizHawkClient):
         npc_check_field = bytearray(read_state[3])
         goal_trigger = int.from_bytes(read_state[4], "little")
         total_received_items = int.from_bytes(read_state[5], "little")
+        textbox_active = int.from_bytes(read_state[6], "little")
 
         # is_dead = int.from_bytes(read_state[4], "little")
 

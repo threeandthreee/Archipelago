@@ -47,8 +47,8 @@ class World:
             Location().add(ShopItem(0)).connect(shop, OR(AND(r.can_farm, COUNT("RUPEES", 500)), SWORD))
             Location().add(ShopItem(1)).connect(shop, OR(AND(r.can_farm, COUNT("RUPEES", 1480)), SWORD))
         else:
-            Location().add(ShopItem(0)).connect(shop, AND(r.can_farm, COUNT("RUPEES", 500)))
-            Location().add(ShopItem(1)).connect(shop, AND(r.can_farm, COUNT("RUPEES", 1480)))
+            Location().add(ShopItem(0)).connect(shop, COUNT("RUPEES", 500))
+            Location().add(ShopItem(1)).connect(shop, COUNT("RUPEES", 1480))
         self._addEntrance("shop", mabe_village, shop, None)
 
         dream_hut = Location("Dream Hut")
@@ -207,7 +207,7 @@ class World:
 
         prairie_cave = Location("Bay Cliff Cave")
         prairie_cave_secret_exit = Location("Bay Cliff to Plateau").connect(prairie_cave, OR(FEATHER, ROOSTER), one_way=True)
-        prairie_cave.connect(prairie_cave_secret_exit, AND(BOMB, OR(FEATHER, ROOSTER)), one_way=True) # bomb walls are one-way        
+        prairie_cave.connect(prairie_cave_secret_exit, AND(BOMB, OR(FEATHER, ROOSTER)), one_way=True) # bomb walls are one-way
         self._addEntrance("prairie_right_cave_top", ukuku_prairie, prairie_cave, None)
         self._addEntrance("prairie_right_cave_bottom", left_bay_area, prairie_cave, None)
         self._addEntrance("prairie_right_cave_high", prairie_plateau, prairie_cave_secret_exit, None)
@@ -225,6 +225,8 @@ class World:
 
         seashell_mansion = Location("Seashell Mansion")
         if options.goal != "seashells":
+            Location().add(SeashellMansionBonus(0)).connect(seashell_mansion, COUNT(SEASHELL, 5))
+            Location().add(SeashellMansionBonus(1)).connect(seashell_mansion, COUNT(SEASHELL, 10))
             Location().add(SeashellMansion(0x2E9)).connect(seashell_mansion, COUNT(SEASHELL, 20))
         else:
             seashell_mansion.add(DroppedKey(0x2E9))
@@ -375,10 +377,10 @@ class World:
         # D4 entrance and related things
         below_right_taltal = Location("Near D4 Keyhole").connect(windfish_egg, POWER_BRACELET)
         angler_tunnel_keyhole = Location('D4 Keyhole').connect(Location().add(KeyLocation("ANGLER_KEYHOLE")), ANGLER_KEY)
-        
+
         d4_entrance_locked = Location("Outside D4 Closed").connect(below_right_taltal, FLIPPERS)
         d4_entrance_unlocked = Location("Outside D4 Open").connect(d4_entrance_locked, "ANGLER_KEYHOLE")
-        
+
         below_right_taltal.connect(angler_tunnel_keyhole, None, one_way=True)
         below_right_taltal.connect(bay_water, FLIPPERS)
         below_right_taltal.connect(next_to_castle, ROOSTER) # fly from staircase to staircase on the north side of the moat
@@ -418,7 +420,7 @@ class World:
         self._addEntrance("raft_house", outside_raft_house, raft_house, None)
         if options.owlstatues == "both" or options.owlstatues == "overworld":
             raft_game.add(OwlStatue(0x5D))
-        
+
         middle_right_taltal = Location("Between Waterfall and Mountain Stairs").connect(lower_right_taltal, OR(FLIPPERS, ROOSTER, "ANGLER_KEYHOLE"))
         outside_rooster_house = Location("Outside Rooster House").connect(middle_right_taltal, OR(FLIPPERS, ROOSTER))
         self._addEntrance("rooster_house", outside_rooster_house, None, None)
@@ -520,7 +522,7 @@ class World:
             swamp.connect(writes_hut_outside, r.hookshot_over_pit, one_way=True) # hookshot the sign in front of writes hut
             graveyard_heartpiece.connect(graveyard_cave_right, FEATHER) # jump to the bottom right tile around the blocks
             graveyard_heartpiece.connect(graveyard_cave_right, AND(r.wall_clip, OR(HOOKSHOT, BOOMERANG))) # push bottom block, wall clip and hookshot/boomerang corner to grab item
-            
+
             self._addEntranceRequirement("mamu", AND(r.wall_clip, FEATHER, POWER_BRACELET)) # can clear the gaps at the start with just feather, can reach bottom left sign with a well timed jump while wall clipped
             left_bay_area.connect(outside_bay_madbatter_entrance, AND(OR(FEATHER, ROOSTER), OR(MAGIC_POWDER, BOMB))) # use bombs or powder to get rid of a bush on the other side by jumping across and placing the bomb/powder before you fall into the pit
             crow_gold_leaf.connect(castle_courtyard, POWER_BRACELET) # bird on tree at left side kanalet, can use both rocks to kill the crow removing the kill requirement
@@ -554,14 +556,14 @@ class World:
             log_cave_heartpiece.connect(forest_cave, r.bomb_trigger) # bomb trigger
             graveyard_cave_left.connect(graveyard_heartpiece, r.bomb_trigger, one_way=True) # bomb trigger the heartpiece from the left side
             graveyard_heartpiece.connect(graveyard_cave_right, r.sideways_block_push) # sideways block push from the right staircase.
-            
+
             prairie_island_seashell.connect(ukuku_prairie, AND(r.jesus_jump, r.bush)) # jesus jump from right side, screen transition on top of the water to reach the island
             self._addEntranceRequirement("castle_jump_cave", r.pit_buffer) # 1 pit buffer to clip bottom wall and jump across.
             left_bay_area.connect(ghost_hut_outside, r.pit_buffer) # 1 pit buffer to get across
             tiny_island.connect(left_bay_area, AND(r.jesus_jump, r.bush)) # jesus jump around
             bay_madbatter_connector_exit.connect(bay_madbatter_connector_entrance, r.jesus_jump, one_way=True) # jesus jump (3 screen) through the underground passage leading to martha's bay mad batter
             left_bay_area.connect(outside_bay_madbatter_entrance, AND(r.pit_buffer, POWER_BRACELET)) # villa buffer into the top side of the bush, then pick it up
-            
+
             ukuku_prairie.connect(richard_maze, AND(r.pit_buffer_itemless, OR(AND(MAGIC_POWDER, MAX_POWDER_UPGRADE), BOMB, BOOMERANG, MAGIC_ROD, SWORD)), one_way=True) # break bushes on north side of the maze, and 1 pit buffer into the maze
             richard_maze.connect(ukuku_prairie, AND(r.pit_buffer_itemless, OR(MAGIC_POWDER, BOMB, BOOMERANG, MAGIC_ROD, SWORD)), one_way=True) # same as above (without powder upgrade) in one of the two northern screens of the maze to escape
             fisher_under_bridge.connect(bay_water, AND(r.bomb_trigger, AND(FEATHER, FLIPPERS))) # up-most left wall is a pit: bomb trigger with it. If photographer is there, clear that first which is why feather is required logically
@@ -584,12 +586,12 @@ class World:
             self._addEntranceRequirementExit("d4", None) # if exiting, you can access d4_entrance_locked. From there apply jesus jumps/roosters/flippers/unlock requirements
             d4_entrance_locked.connect(angler_tunnel_keyhole, r.jesus_jump, one_way=True) # use jesus jumps to face upwards into the keyhole from above
             below_right_taltal.connect(d4_entrance_locked, OR(r.super_jump_boots, HOOKSHOT), one_way=True) # superjump off bottom wall, or hookshot clip the block as it's moving up # TODO d4_connector
-            
+
             below_right_taltal.connect(outside_swim_cave, r.jesus_jump) # jesus jump into the cave entrance after jumping down the ledge, can jesus jump back to the ladder 1 screen below
             outside_mambo.connect(d4_entrance_locked, r.jesus_jump)  # jesus jump from d4 entrance to mambo's cave entrance
             outside_raft_house.connect(below_right_taltal, r.jesus_jump, one_way=True) # jesus jump from the ledge at raft to the staircase 1 screen south
 
-            lower_right_taltal.connect(outside_multichest_left, r.jesus_jump) # jesus jump past staircase leading up the mountain 
+            lower_right_taltal.connect(outside_multichest_left, r.jesus_jump) # jesus jump past staircase leading up the mountain
             outside_rooster_house.connect(lower_right_taltal, r.jesus_jump) # jesus jump (1 or 2 screen depending if angler key is used) to staircase leading up the mountain
             d7_platau.connect(water_cave_hole, None, one_way=True) # use save and quit menu to gain control while falling to dodge the water cave hole
             water_cave_hole.connect(heartpiece_swim_cave, r.jesus_jump, one_way=True) # use jesus jumps to jump out of the cave after falling down the hole
@@ -614,7 +616,7 @@ class World:
             graveyard.connect(forest, OR(r.boots_bonk_pit, r.hookshot_spam_pit)) # boots bonk over pits by witches hut, or hookshot spam across the pit
             graveyard_cave_left.connect(graveyard_cave_right, r.hookshot_spam_pit) # hookshot spam over the pit
             graveyard_cave_right.connect(graveyard_cave_left, OR(r.damage_boost, r.boots_bonk_pit), one_way=True) # boots bonk off the cracked block, or set up a damage boost with the keese
-            
+
             self._addEntranceRequirementEnter("mamu", AND(r.pit_buffer_itemless, r.pit_buffer_boots, POWER_BRACELET)) # can clear the gaps at the start with multiple pit buffers, can reach bottom left sign with bonking along the bottom wall
             self._addEntranceRequirement("castle_jump_cave", r.pit_buffer_boots) # pit buffer to clip bottom wall and boots bonk across
             prairie_cave_secret_exit.connect(prairie_cave, AND(BOMB, OR(r.boots_bonk_pit, r.hookshot_spam_pit))) # hookshot spam or boots bonk across pits can go from left to right by pit buffering on top of the bottom wall then boots bonk across
@@ -639,7 +641,7 @@ class World:
             fisher_under_bridge.connect(bay_water, AND(TRADING_ITEM_FISHING_HOOK, FLIPPERS)) # face the fisherman from the left, get within 4 pixels (a range, not exact) of his left side, hold up, and mash a until you get the textbox.
 
 			#TODO: add jesus rooster to trick list
-            
+
             below_right_taltal.connect(next_to_castle, r.jesus_buffer, one_way=True) # face right, boots bonk and get far enough left to jesus buffer / boots bonk across the bottom wall to the stairs
             crow_gold_leaf.connect(castle_courtyard, BOMB) # bird on tree at left side kanalet, place a bomb against the tree and the crow flies off. With well placed second bomb the crow can be killed
             mermaid_statue.connect(animal_village, AND(TRADING_ITEM_SCALE, r.super_jump_feather)) # early mermaid statue by buffering on top of the right ledge, then superjumping to the left (horizontal pixel perfect)
@@ -673,7 +675,7 @@ class World:
             lower_right_taltal.connect(outside_multichest_left, r.jesus_rooster) # jesus rooster past staircase leading up the mountain
             outside_rooster_house.connect(below_right_taltal, r.jesus_rooster, one_way=True) # jesus rooster down to staircase below damp cave
             outside_rooster_house.connect(middle_right_taltal, r.jesus_buffer, one_way=True) # boots bonk from the staircase to the bottom left next to the waterfall to avoid falling down
-            
+
             if options.entranceshuffle in ("default", "simple"): # connector cave from armos d6 area to raft shop may not be randomized to add a flippers path since flippers stop you from jesus jumping
                 below_right_taltal.connect(raft_game, AND(OR(r.jesus_jump, r.jesus_rooster), r.attack_hookshot_powder), one_way=True) # jesus jump from heartpiece water cave, around the island and clip past the diagonal gap in the rock, then jesus jump all the way down the waterfall to the chests (attack req for hardlock flippers+feather scenario)
             outside_raft_house.connect(below_right_taltal, AND(r.super_jump, PEGASUS_BOOTS)) # superjump from ledge left to right, can buffer to land on ledge instead of water, then superjump right which is pixel perfect. Boots to get out of wall after landing
@@ -684,9 +686,9 @@ class World:
             mountain_bridge_staircase.connect(outside_rooster_house, r.pit_buffer_boots) # cross bridge to staircase with pit buffer to clip bottom wall and jump or boots bonk across
             left_right_connector_cave_entrance.connect(left_right_connector_cave_exit, AND(r.boots_jump, r.pit_buffer), one_way=True) # boots jump to bottom left corner of pits, pit buffer and jump to left
             left_right_connector_cave_exit.connect(left_right_connector_cave_entrance, AND(ROOSTER, OR(r.boots_roosterhop, r.super_jump_rooster)), one_way=True)  # pass through the passage in reverse using a boots rooster hop or rooster superjump in the one way passage area
-            
+
             windfish.connect(nightmare, AND(SWORD, OR(BOOMERANG, BOW, BOMB, COUNT(SWORD, 2), AND(OCARINA, OR(SONG1, SONG3))))) # sword quick kill blob, can kill dethl with bombs or sword beams, and can use ocarina to freeze one of ganon's bats to skip dethl eye phase
-            
+
         self.start = start_house
         self.egg = windfish_egg
         self.nightmare = nightmare
@@ -762,7 +764,7 @@ class EntranceExterior:
         self.requirement = requirement
         self.one_way_enter_requirement = one_way_enter_requirement
         self.one_way_exit_requirement = one_way_exit_requirement
-    
+
     def addRequirement(self, new_requirement):
         self.requirement = OR(self.requirement, new_requirement)
 
@@ -777,9 +779,9 @@ class EntranceExterior:
             self.one_way_enter_requirement = new_requirement
         else:
             self.one_way_enter_requirement = OR(self.one_way_enter_requirement, new_requirement)
-    
+
     def enterIsSet(self):
         return self.one_way_enter_requirement != "UNSET"
-    
+
     def exitIsSet(self):
         return self.one_way_exit_requirement != "UNSET"

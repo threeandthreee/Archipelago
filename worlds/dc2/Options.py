@@ -1,6 +1,6 @@
 import typing
-
-from Options import Toggle, DefaultOnToggle, Option, Range, Choice, ItemDict, DeathLink
+from dataclasses import dataclass
+from Options import Toggle, DefaultOnToggle, Option, Range, Choice, ItemDict, DeathLink, PerGameCommonOptions
 
 
 class FishsanityOption(DefaultOnToggle):
@@ -74,18 +74,24 @@ class GuaranteedItemsOption(ItemDict):
     """Guarantees that the specified items will be in the item pool"""
     display_name = "Guaranteed Items"
 
-dark_cloud_options: typing.Dict[str, Option] = {
-    "fishsanity": FishsanityOption,
-    "sphedasanity": SphedasanityOption,
-    "medalsanity": MedalsanityOption,
-    "georamasanity": GeoramasanityOption,
-    "photosanity": PhotosanityOption,
-    "inventionsanity": InventionsanityOption,
-    "resource_pack_count": IncludeResourcePacksOption,
-    "weapon_upgrade_pack_count": IncludeWeaponUpgradePacksOption,
-    "element_pack_count": IncludeElementPacksOption,
-    "chapter_goal_count": ChapterGoalCountOption,
-    "abs_multiplier": ABSMultiplierOption,
-    "gilda_multiplier": GildaMultiplierOption,
-    "guaranteed_items": GuaranteedItemsOption,
-}
+class EnableEnemyRandomiserOption(DefaultOnToggle):
+    """Randomise all enemies"""
+    display_name = "Enable Enemy Randomiser"
+
+@dataclass
+class DC2Option(PerGameCommonOptions):
+    #fishsanity: FishsanityOption
+    #sphedasanity: SphedasanityOption
+    #medalsanity: MedalsanityOption
+    #georamasanity: GeoramasanityOption
+    #photosanity: PhotosanityOption
+    #inventionsanity: InventionsanityOption
+    #resource_pack_count: IncludeResourcePacksOption
+    #weapon_upgrade_pack_count: IncludeWeaponUpgradePacksOption
+    #element_pack_count: IncludeElementPacksOption
+    #chapter_goal_count: ChapterGoalCountOption
+    abs_multiplier: ABSMultiplierOption
+    gilda_multiplier: GildaMultiplierOption
+    guaranteed_items: GuaranteedItemsOption
+    enable_enemy_randomiser: EnableEnemyRandomiserOption
+

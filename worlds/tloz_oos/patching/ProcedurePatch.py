@@ -18,9 +18,10 @@ class OoSPatchExtensions(APPatchExtension):
         rom_data = RomData(rom)
         patch_data = yaml.load(caller.get_file(patch_file).decode("utf-8"), yaml.Loader)
 
-        if patch_data["version"] != VERSION:
+        version = patch_data["version"].split(".")
+        if int(version[0]) != VERSION[0] or int(version[1]) > VERSION[1]:
             raise Exception(f"Invalid version: this patch was generated on v{patch_data['version']}, "
-                            f"you are currently using v{VERSION}")
+                            f"you are currently using v{VERSION[0]},{VERSION[1]}")
 
         assembler = Z80Assembler(EOB_ADDR, DEFINES, rom)
 

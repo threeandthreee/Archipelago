@@ -14,7 +14,7 @@ from .util import BASE_ID, DYNAMIC_ITEM_AREA_OFFSET, RESERVED_ITEM_IDS
 
 from ..types.items import ItemData, ProgressiveItemChainSingle, SingleItemData, ItemPoolEntry, ProgressiveItemChain
 from ..types.locations import AccessInfo, LocationData
-from ..types.condition import Condition, RegionCondition, OrCondition, ShopSlotCondition
+from ..types.condition import Condition, NeverCondition, RegionCondition, OrCondition, ShopSlotCondition
 from ..types.shops import ShopData
 
 class LocationCategory(StrEnum):
@@ -488,10 +488,19 @@ class ListInfo:
         for name, chain in raw.items():
             self.__add_progressive_chain(name, chain)
 
-    def __add_vars(self, variables: dict[str, dict[str, list[typing.Any]]]):
+    def __add_vars(self, variables: dict[str, str | dict[str, list[typing.Any]]]):
         """
         Add a list of variable conditions to the list..
         """
         for name, values in variables.items():
+            if isinstance(values, str):
+                if values == "boolean":
+                    self.variable_definitions[name] = {
+                        "off": [NeverCondition()],
+                        "on": []
+                    }
+                    continue
+                else:
+                    raise RuntimeError(f"{values} is not a valid variable type shorthand.")
             for value, conds in values.items():
                 self.variable_definitions[name][value] = self.json_parser.parse_condition(conds)

@@ -1,4 +1,20 @@
 {
+  "REGION_TITLE_SCREEN": {
+    "parent_map": null,
+    "name": "Title Screen",
+    "encounter_region": null,
+    "has_land": false,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [
+      "STARTING_ITEM_BERRY_POUCH",
+      "STARTING_ITEM_TM_CASE"
+    ],
+    "events": [],
+    "exits": {},
+    "warps": {}
+  },
   "REGION_PC": {
     "parent_map": null,
     "name": "Player's PC",

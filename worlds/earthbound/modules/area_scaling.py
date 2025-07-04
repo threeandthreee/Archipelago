@@ -444,11 +444,11 @@ def calculate_scaling(world) -> None:
         if item.name == "Franklin Badge":
             badge_scaled = True
 
-    for num, sphere in enumerate(world.multiworld.get_spheres()):
+    for num, sphere in enumerate(world.multiworld.eb_spheres):
         if num + 1 not in inventory:
             inventory[num + 1] = []
 
-        for location in sphere:
+        for location in sorted(sphere):
             if num == 0:
                 if location.parent_region.name not in world.accessible_regions and location.player == world.player:
                     early_regions.append(location.parent_region.name)
@@ -463,6 +463,7 @@ def calculate_scaling(world) -> None:
                     item_regions[location.item.name] = []
                 item_regions[location.item.name].append(location.parent_region.name)
 
+            # TODO; all areas have levels now, so I can skip the combat regions check
             if location.player == world.player and location.parent_region.name in combat_regions and (
                     location.parent_region.name not in regions_that_were_already_scaled):
                 last_region = location.parent_region.name

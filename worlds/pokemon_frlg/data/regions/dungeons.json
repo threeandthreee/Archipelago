@@ -754,7 +754,9 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [],
+    "locations": [
+      "ITEM_DIGLETTS_CAVE_B1F_VERMILION_KEY"
+    ],
     "events": [],
     "exits": {},
     "warps": {
@@ -922,8 +924,8 @@
     "locations": [],
     "events": [],
     "exits": {
-      "REGION_POKEMON_TOWER_1F/NEAR_STAIRS": "Pokemon Tower 1F Unobstructed Path",
-      "REGION_POKEMON_TOWER_GHOST/MAIN": "Pokemon Tower 1F (Ghost Battle)"
+      "REGION_POKEMON_TOWER_GHOST/MAIN": "Pokemon Tower 1F (Ghost Battle)",
+      "REGION_POKEMON_TOWER_1F/NEAR_STAIRS": "Pokemon Tower 1F Unobstructed Path"
     },
     "warps": {
       "MAP_POKEMON_TOWER_1F:0/MAP_LAVENDER_TOWN:0": "Pokemon Tower 1F Exit"
@@ -940,8 +942,7 @@
     "locations": [],
     "events": [],
     "exits": {
-      "REGION_POKEMON_TOWER_1F/MAIN": "Pokemon Tower 1F Near Stairs Unobstructed Path",
-      "REGION_POKEMON_TOWER_GHOST/MAIN": "Pokemon Tower 1F Near Stairs (Ghost Battle)"
+      "REGION_POKEMON_TOWER_1F/MAIN": "Pokemon Tower 1F Near Stairs Unobstructed Path"
     },
     "warps": {
       "MAP_POKEMON_TOWER_1F:1/MAP_POKEMON_TOWER_2F:1": "Pokemon Tower 1F Stairs"
@@ -1050,8 +1051,8 @@
     ],
     "events": [],
     "exits": {
-      "REGION_POKEMON_TOWER_6F/NEAR_STAIRS": "Pokemon Tower 6F Reveal Ghost",
-      "REGION_POKEMON_TOWER_GHOST/MAIN": "Pokemon Tower 6F (Ghost Battle)"
+      "REGION_POKEMON_TOWER_GHOST/MAIN": "Pokemon Tower 6F (Ghost Battle)",
+      "REGION_POKEMON_TOWER_6F/NEAR_STAIRS": "Pokemon Tower 6F Reveal Ghost"
     },
     "warps": {
       "MAP_POKEMON_TOWER_6F:1/MAP_POKEMON_TOWER_5F:1": "Pokemon Tower 6F Stairs (East)"
@@ -1068,12 +1069,26 @@
     "locations": [],
     "events": [],
     "exits": {
-      "REGION_POKEMON_TOWER_6F/MAIN": "Pokemon Tower 6F Near Stairs Pass Ghost",
-      "REGION_POKEMON_TOWER_GHOST/MAIN": "Pokemon Tower 6F Near Stairs (Ghost Battle)"
+      "REGION_POKEMON_TOWER_6F/MAIN": "Pokemon Tower 6F Near Stairs Pass Ghost"
     },
     "warps": {
       "MAP_POKEMON_TOWER_6F:0/MAP_POKEMON_TOWER_7F:0": "Pokemon Tower 6F Stairs (South)"
     }
+  },
+  "REGION_POKEMON_TOWER_GHOST/MAIN": {
+    "parent_map": null,
+    "name": "Pokemon Tower Ghost Encounter",
+    "encounter_region": null,
+    "has_land": false,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [
+      "STATIC_POKEMON_MAROWAK"
+    ],
+    "exits": {},
+    "warps": {}
   },
   "REGION_POKEMON_TOWER_7F/MAIN": {
     "parent_map": "MAP_POKEMON_TOWER_7F",
@@ -1099,21 +1114,6 @@
     "warps": {
       "MAP_POKEMON_TOWER_7F:0/MAP_POKEMON_TOWER_6F:0": "Pokemon Tower 7F Stairs"
     }
-  },
-  "REGION_POKEMON_TOWER_GHOST/MAIN": {
-    "parent_map": null,
-    "name": "Pokemon Tower Ghost Encounter",
-    "encounter_region": null,
-    "has_land": false,
-    "has_water": false,
-    "has_fishing": false,
-    "kanto": true,
-    "locations": [],
-    "events": [
-      "STATIC_POKEMON_MAROWAK"
-    ],
-    "exits": {},
-    "warps": {}
   },
   "REGION_UNDERGROUND_PATH_EAST_ENTRANCE/MAIN": {
     "parent_map": "MAP_UNDERGROUND_PATH_EAST_ENTRANCE",
@@ -1569,7 +1569,9 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [],
+    "locations": [
+      "ITEM_SAFARI_ZONE_EAST_RESTHOUSE_FUCHSIA_KEY"
+    ],
     "events": [],
     "exits": {},
     "warps": {
@@ -3486,7 +3488,7 @@
       "REGION_FOUR_ISLAND_ICEFALL_CAVE_ENTRANCE/SOUTH_WATER": "Icefall Cave Front South Surfing Spot"
     },
     "warps": {
-      "MAP_FOUR_ISLAND_ICEFALL_CAVE_ENTRANCE:0/MAP_FOUR_ISLAND:3": "Icefall Cave Front South"
+      "MAP_FOUR_ISLAND_ICEFALL_CAVE_ENTRANCE:0/MAP_FOUR_ISLAND:3": "Icefall Cave Front Exit"
     }
   },
   "REGION_FOUR_ISLAND_ICEFALL_CAVE_ENTRANCE/SOUTH_WATER": {
@@ -3816,7 +3818,7 @@
     "warps": {
       "MAP_FIVE_ISLAND_LOST_CAVE_ROOM2:0/MAP_FIVE_ISLAND_LOST_CAVE_ROOM3:2!": "Lost Cave B1F Room 2 Exit (North)",
       "MAP_FIVE_ISLAND_LOST_CAVE_ROOM2:1/MAP_FIVE_ISLAND_LOST_CAVE_ROOM1:4!": "Lost Cave B1F Room 2 Exit (East)",
-      "MAP_FIVE_ISLAND_LOST_CAVE_ROOM2:2/MAP_FIVE_ISLAND_LOST_CAVE_ROOM11:0!": "Lost Cave B1F Room 2 Exit (South)",
+      "MAP_FIVE_ISLAND_LOST_CAVE_ROOM2:2/MAP_FIVE_ISLAND_LOST_CAVE_ROOM11:0": "Lost Cave B1F Room 2 Exit (South)",
       "MAP_FIVE_ISLAND_LOST_CAVE_ROOM2:3/MAP_FIVE_ISLAND_LOST_CAVE_ROOM1:2": "Lost Cave B1F Room 2 Exit (West)"
     }
   },
@@ -3852,7 +3854,7 @@
     "events": [],
     "exits": {},
     "warps": {
-      "MAP_FIVE_ISLAND_LOST_CAVE_ROOM4:0/MAP_FIVE_ISLAND_LOST_CAVE_ROOM12:0!": "Lost Cave B1F Room 4 Exit (North)",
+      "MAP_FIVE_ISLAND_LOST_CAVE_ROOM4:0/MAP_FIVE_ISLAND_LOST_CAVE_ROOM12:0": "Lost Cave B1F Room 4 Exit (North)",
       "MAP_FIVE_ISLAND_LOST_CAVE_ROOM4:1/MAP_FIVE_ISLAND_LOST_CAVE_ROOM1:4!": "Lost Cave B1F Room 4 Exit (East)",
       "MAP_FIVE_ISLAND_LOST_CAVE_ROOM4:2/MAP_FIVE_ISLAND_LOST_CAVE_ROOM5:0!": "Lost Cave B1F Room 4 Exit (South)",
       "MAP_FIVE_ISLAND_LOST_CAVE_ROOM4:3/MAP_FIVE_ISLAND_LOST_CAVE_ROOM1:2!": "Lost Cave B1F Room 4 Exit (West)"
@@ -3889,7 +3891,7 @@
     "exits": {},
     "warps": {
       "MAP_FIVE_ISLAND_LOST_CAVE_ROOM6:0/MAP_FIVE_ISLAND_LOST_CAVE_ROOM1:3!": "Lost Cave B1F Room 6 Exit (North)",
-      "MAP_FIVE_ISLAND_LOST_CAVE_ROOM6:1/MAP_FIVE_ISLAND_LOST_CAVE_ROOM13:0!": "Lost Cave B1F Room 6 Exit (East)",
+      "MAP_FIVE_ISLAND_LOST_CAVE_ROOM6:1/MAP_FIVE_ISLAND_LOST_CAVE_ROOM13:0": "Lost Cave B1F Room 6 Exit (East)",
       "MAP_FIVE_ISLAND_LOST_CAVE_ROOM6:2/MAP_FIVE_ISLAND_LOST_CAVE_ROOM1:1!": "Lost Cave B1F Room 6 Exit (South)",
       "MAP_FIVE_ISLAND_LOST_CAVE_ROOM6:3/MAP_FIVE_ISLAND_LOST_CAVE_ROOM7:1!": "Lost Cave B1F Room 6 Exit (West)"
     }
@@ -3927,7 +3929,7 @@
       "MAP_FIVE_ISLAND_LOST_CAVE_ROOM8:0/MAP_FIVE_ISLAND_LOST_CAVE_ROOM1:3!": "Lost Cave B1F Room 8 Exit (North)",
       "MAP_FIVE_ISLAND_LOST_CAVE_ROOM8:1/MAP_FIVE_ISLAND_LOST_CAVE_ROOM9:3!": "Lost Cave B1F Room 8 Exit (East)",
       "MAP_FIVE_ISLAND_LOST_CAVE_ROOM8:2/MAP_FIVE_ISLAND_LOST_CAVE_ROOM1:1!": "Lost Cave B1F Room 8 Exit (South)",
-      "MAP_FIVE_ISLAND_LOST_CAVE_ROOM8:3/MAP_FIVE_ISLAND_LOST_CAVE_ROOM14:0!": "Lost Cave B1F Room 8 Exit (West)"
+      "MAP_FIVE_ISLAND_LOST_CAVE_ROOM8:3/MAP_FIVE_ISLAND_LOST_CAVE_ROOM14:0": "Lost Cave B1F Room 8 Exit (West)"
     }
   },
   "REGION_FIVE_ISLAND_LOST_CAVE_ROOM9/MAIN": {
@@ -3942,7 +3944,7 @@
     "events": [],
     "exits": {},
     "warps": {
-      "MAP_FIVE_ISLAND_LOST_CAVE_ROOM9:0/MAP_FIVE_ISLAND_LOST_CAVE_ROOM10:0!": "Lost Cave B1F Room 9 Exit (North)",
+      "MAP_FIVE_ISLAND_LOST_CAVE_ROOM9:0/MAP_FIVE_ISLAND_LOST_CAVE_ROOM10:0": "Lost Cave B1F Room 9 Exit (North)",
       "MAP_FIVE_ISLAND_LOST_CAVE_ROOM9:1/MAP_FIVE_ISLAND_LOST_CAVE_ROOM1:4!": "Lost Cave B1F Room 9 Exit (East)",
       "MAP_FIVE_ISLAND_LOST_CAVE_ROOM9:2/MAP_FIVE_ISLAND_LOST_CAVE_ROOM1:1!": "Lost Cave B1F Room 9 Exit (South)",
       "MAP_FIVE_ISLAND_LOST_CAVE_ROOM9:3/MAP_FIVE_ISLAND_LOST_CAVE_ROOM1:2!": "Lost Cave B1F Room 9 Exit (West)"
@@ -3967,7 +3969,7 @@
       "REGION_FIVE_ISLAND_RESORT_GORGEOUS/NEAR_RESORT": "Follow Selphy"
     },
     "warps": {
-      "MAP_FIVE_ISLAND_LOST_CAVE_ROOM10:0/MAP_FIVE_ISLAND_LOST_CAVE_ROOM1:1!": "Lost Cave B1F Room 10 Exit"
+      "MAP_FIVE_ISLAND_LOST_CAVE_ROOM10:0/MAP_FIVE_ISLAND_LOST_CAVE_ROOM9:0": "Lost Cave B1F Room 10 Exit"
     }
   },
   "REGION_FIVE_ISLAND_LOST_CAVE_ROOM11/MAIN": {
@@ -3984,7 +3986,7 @@
     "events": [],
     "exits": {},
     "warps": {
-      "MAP_FIVE_ISLAND_LOST_CAVE_ROOM11:0/MAP_FIVE_ISLAND_LOST_CAVE_ROOM1:3!": "Lost Cave B1F Room 11 Exit"
+      "MAP_FIVE_ISLAND_LOST_CAVE_ROOM11:0/MAP_FIVE_ISLAND_LOST_CAVE_ROOM2:2": "Lost Cave B1F Room 11 Exit"
     }
   },
   "REGION_FIVE_ISLAND_LOST_CAVE_ROOM12/MAIN": {
@@ -4001,7 +4003,7 @@
     "events": [],
     "exits": {},
     "warps": {
-      "MAP_FIVE_ISLAND_LOST_CAVE_ROOM12:0/MAP_FIVE_ISLAND_LOST_CAVE_ROOM1:1!": "Lost Cave B1F Room 12 Exit"
+      "MAP_FIVE_ISLAND_LOST_CAVE_ROOM12:0/MAP_FIVE_ISLAND_LOST_CAVE_ROOM4:0": "Lost Cave B1F Room 12 Exit"
     }
   },
   "REGION_FIVE_ISLAND_LOST_CAVE_ROOM13/MAIN": {
@@ -4018,7 +4020,7 @@
     "events": [],
     "exits": {},
     "warps": {
-      "MAP_FIVE_ISLAND_LOST_CAVE_ROOM13:0/MAP_FIVE_ISLAND_LOST_CAVE_ROOM1:2!": "Lost Cave B1F Room 13 Exit"
+      "MAP_FIVE_ISLAND_LOST_CAVE_ROOM13:0/MAP_FIVE_ISLAND_LOST_CAVE_ROOM6:1": "Lost Cave B1F Room 13 Exit"
     }
   },
   "REGION_FIVE_ISLAND_LOST_CAVE_ROOM14/MAIN": {
@@ -4035,7 +4037,7 @@
     "events": [],
     "exits": {},
     "warps": {
-      "MAP_FIVE_ISLAND_LOST_CAVE_ROOM14:0/MAP_FIVE_ISLAND_LOST_CAVE_ROOM1:4!": "Lost Cave B1F Room 14 Exit"
+      "MAP_FIVE_ISLAND_LOST_CAVE_ROOM14:0/MAP_FIVE_ISLAND_LOST_CAVE_ROOM8:3": "Lost Cave B1F Room 14 Exit"
     }
   },
   "REGION_SIX_ISLAND_DOTTED_HOLE_1F/MAIN": {
@@ -4322,7 +4324,7 @@
   "REGION_SEVEN_ISLAND_TANOBY_RUINS_VIAPOIS_CHAMBER/MAIN": {
     "parent_map": "MAP_SEVEN_ISLAND_TANOBY_RUINS_VIAPOIS_CHAMBER",
     "name": "Viapois Chamber",
-    "encounter_region": "Viapos Chamber",
+    "encounter_region": "Viapois Chamber",
     "has_land": true,
     "has_water": false,
     "has_fishing": false,
@@ -4332,21 +4334,6 @@
     "exits": {},
     "warps": {
       "MAP_SEVEN_ISLAND_TANOBY_RUINS_VIAPOIS_CHAMBER:0/MAP_SEVEN_ISLAND_TANOBY_RUINS:6": "Viapois Chamber Exit"
-    }
-  },
-  "REGION_TRAINER_TOWER_LOBBY/MAIN": {
-    "parent_map": "MAP_TRAINER_TOWER_LOBBY",
-    "name": "Trainer Tower Lobby",
-    "encounter_region": null,
-    "has_land": false,
-    "has_water": false,
-    "has_fishing": false,
-    "kanto": false,
-    "locations": [],
-    "events": [],
-    "exits": {},
-    "warps": {
-      "MAP_TRAINER_TOWER_LOBBY:1/MAP_SEVEN_ISLAND_TRAINER_TOWER:0": "Trainer Tower Lobby Exit"
     }
   },
   "REGION_CERULEAN_CAVE_1F/SOUTHEAST": {

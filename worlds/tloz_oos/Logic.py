@@ -63,42 +63,21 @@ def apply_self_locking_rules(multiworld: MultiWorld, player: int):
         ]),
         "Poison Moth's Lair (1F): Chest in Mimics Room": lambda state, item: all([
             is_small_key(item, player, 3),
-            state.can_reach_region("d3 water room", player),
             oos_can_kill_normal_enemy(state, player)
         ]),
         "Dancing Dragon Dungeon (1F): Crumbling Room Chest": lambda state, item: all([
             is_small_key(item, player, 4),
-            state.can_reach_region("d4 final minecart", player)
+            oos_has_small_keys(state, player, 4, 2)
         ]),
         "Dancing Dragon Dungeon (1F): Eye Diving Spot Item": lambda state, item: all([
             is_small_key(item, player, 4),
-            state.can_reach_region("d4 final minecart", player),
+            oos_has_small_keys(state, player, 4, 2),
             oos_can_swim(state, player, False),
-            any([  # hit distant levers
-                oos_has_magic_boomerang(state, player),
-                oos_has_slingshot(state, player)
-            ]),
-            oos_can_jump_2_wide_pit(state, player),
         ]),
-        "Unicorn's Cave: Magnet Gloves Chest": lambda state, item: all([
-            is_small_key(item, player, 5),
-            state.can_reach_region("d5 pot room", player),
-            any([
-                oos_has_flippers(state, player),
-                all([
-                    # Lower route pushing secret blocks requires knowledge, therefore is medium+.
-                    # Going there requires jumping a 3.2 wide liquid gap which corresponds the best to a "4 wide pit"
-                    # in terms of logic requirements.
-                    oos_can_jump_4_wide_pit(state, player),
-                    oos_option_medium_logic(state, player),
-                    # Upper route would require 6 wide liquid that can only be jumped above with a bomb jump,
-                    # which makes the lower route always better when in medium+.
-                ])
-            ]),
-        ]),
+        "Unicorn's Cave: Magnet Gloves Chest": lambda state, item: is_small_key(item, player, 5),
         "Unicorn's Cave: Treadmills Basement Item": lambda state, item: all([
             is_small_key(item, player, 5),
-            state.can_reach_region("d5 post syger", player),
+            oos_has_small_keys(state, player, 5, 3),
             state.has("_dropped_d5_magnet_ball", player),
             oos_has_magnet_gloves(state, player),
             any([
@@ -111,7 +90,7 @@ def apply_self_locking_rules(multiworld: MultiWorld, player: int):
         ]),
         "Explorer's Crypt (B1F): Chest in Jumping Stalfos Room": lambda state, item: all([
             is_small_key(item, player, 7),
-            state.can_reach_region("d7 maze chest", player),
+            oos_has_small_keys(state, player, 7, 4),
             any([
                 oos_can_jump_5_wide_pit(state, player),
                 all([

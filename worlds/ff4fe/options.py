@@ -1,7 +1,8 @@
-# options.py
 from dataclasses import dataclass
+from .items import sellable_item_names
+from Options import (Toggle, Range, Choice, PerGameCommonOptions, DefaultOnToggle, StartInventoryPool, OptionGroup,
+                     OptionSet, Visibility)
 
-from Options import Toggle, Range, Choice, PerGameCommonOptions, ItemSet, DefaultOnToggle
 
 class ForgeTheCrystal(Toggle):
     """Bring the Adamant and Legend Sword to clear this objective.
@@ -24,26 +25,55 @@ class FindTheDarkMatter(Toggle):
     display_name = "Find The Dark Matter"
 
 class AdditionalObjectives(Range):
-    """The number of additional objectives on top of the primary one."""
+    """The number of additional random objectives. Can be quests, boss fights, or character recruitments. Note that
+    no matter what this is set to, no more than thirty-two objectives will be set."""
     display_name = "Additional Objectives"
     range_start = 0
     range_end = 32
     default = 0
 
+class RequiredObjectiveCount(Range):
+    """The number of objectives required for victory. Note that this is ignored when no objectives are set. If this
+    count is greater than the total number of objectives available, then it will be reduced to match the number of
+    available objectives."""
+    display_name = "Max Number of Required Objectives"
+    range_start = 1
+    range_end = 32
+    default = 32
+
 class ObjectiveReward(Choice):
     """The reward for clearing all objectives. Note that this is ignored when no objectives are set,
-    and Forge the Crystal forces this to the Crystal setting"""
+    and Forge the Crystal forces this to the Crystal setting."""
+    display_name = "Objective Reward"
     option_crystal = 0
     option_win = 1
     default = 0
 
+class ItemPlacement(Choice):
+    """Where items can and will be placed.
+    Setting this to Full Shuffle will allow any items to be anywhere.
+    Setting this to Major Minor Split will force all non-major locations to never have progression.
+    In either case, major locations can only have useful or progression items.
+    Major locations are any MIAB or event locations."""
+    display_name = "Item Placement"
+    option_full_shuffle = 0
+    option_major_minor_split = 1
+    default = 0
+
 class NoFreeCharacters(Toggle):
+    """If set, characters will not be available at locations with no requirements or bosses. These locations are
+    Mysidia, Damcyan Watery Pass, and Mt. Ordeals."""
     display_name = "No Free Characters"
 
 class NoEarnedCharacters(Toggle):
+    """If set, characters will not be available at locations with requirements or bosses. These locations are Mist,
+    Kaipo, Mt. Hobs, Baron, the Tower of Zot, Cave Eblana, Lunar Palace, and the Giant of Bab-il."""
     display_name = "No Earned Characters"
 
 class HeroChallenge(Choice):
+    """Enable the Hero Challenge. In Hero Challenge, your starting character is your main character and cannot be
+    dismissed. They will face the top of Mt. Ordeals on their own, and Kokkol will forge a weapon from FFIV Advance
+    for them (unless Forge the Crystal is set)."""
     display_name = "Hero Challenge"
     option_none = 0
     option_cecil = 1
@@ -62,13 +92,8 @@ class HeroChallenge(Choice):
     default = 0
 
 class PassEnabled(Toggle):
+    """Will the Pass be included in the Key Item Pool?"""
     display_name = "Pass In Key Item Pool"
-
-class UsefulPercentage(Range):
-    display_name = "Useful Item Percentage"
-    range_start = 25
-    range_end = 100
-    default = 35
 
 class UnsafeKeyItemPlacement(Toggle):
     """Normally, underground access is guaranteed to be available without taking a trip to the moon.
@@ -79,9 +104,10 @@ class PassInShops(Toggle):
     """Can the pass show up in shops? This is a convenience feature and will never be required by the logic."""
     display_name = "Enable Pass in Shops"
 
-class AllowedCharacters(ItemSet):
+class AllowedCharacters(OptionSet):
     """Pool of characters allowed to show up. Note that if Hero Challenge is enabled, your hero will still appear."""
     display_name = "Allowed Characters"
+    valid_keys = ["Cecil", "Kain", "Rydia", "Tellah", "Edward", "Rosa", "Yang", "Palom", "Porom", "Cid", "Edge", "Fusoya"]
     default = ["Cecil", "Kain", "Rydia", "Tellah", "Edward", "Rosa", "Yang", "Palom", "Porom", "Cid", "Edge", "Fusoya"]
 
 class EnsureAllCharacters(DefaultOnToggle):
@@ -92,9 +118,10 @@ class AllowDuplicateCharacters(DefaultOnToggle):
     """Allows multiple instances of the same character to join your party."""
     display_name = "Allow Duplicate Characters"
 
-class RestrictedCharacters(ItemSet):
+class RestrictedCharacters(OptionSet):
     """List of characters that can't appear in the easiest to access locations if possible."""
     display_name = "Restricted Characters"
+    valid_keys = ["Cecil", "Kain", "Rydia", "Tellah", "Edward", "Rosa", "Yang", "Palom", "Porom", "Cid", "Edge", "Fusoya"]
     default = ["Edge", "Fusoya"]
 
 class PartySize(Range):
@@ -115,6 +142,23 @@ class CharactersPermadie(Choice):
     option_no = 0
     option_yes = 1
     option_extreme = 2
+    default = 0
+
+class ItemRandomization(Choice):
+    """Affects item pool"""
+    display_name = "Item Randomization"
+    option_standard = 0
+    option_wild = 1
+    option_pro = 2
+    option_wildish = 3
+    default = 1
+
+class LocalItemTiering(Choice):
+    """Affects placement of local items"""
+    display_name = "Local Item Tiering"
+    option_wild = 0
+    option_pro = 1
+    option_wildish = 2
     default = 0
 
 class MinTier(Range):
@@ -153,8 +197,59 @@ class FreeShops(Toggle):
     """Everything must go!"""
     display_name = "Free Shops"
 
+class NoAdamantArmors(Toggle):
+    """Remove Adamant Armor from the item and shop pool."""
+    display_name = "No Adamant Armor"
+
+class KeepDoorsBehemoths(Toggle):
+    """Should Trap Door and Behemoth Fights be enabled even when encounters are off?"""
+    display_name = "Keep TrapDoor and Behemoth Fights"
+
+class NoFreeBosses(Toggle):
+    """Removes alternate win conditions for bosses other than good old fashioned violence."""
+    display_name = "No Free Bosses"
+
+class WackyChallenge(Choice):
+    """Wacky challenges are not fair, balanced, stable, or even necessarily interesting.
+    They are, however, quite wacky. See FE documentation for more info, or pick one for a fun surprise!"""
+    display_name = "Wacky Challenge"
+    option_none = 0
+    option_afflicted = 1
+    option_battle_scars = 2
+    option_the_bodyguard = 3
+    option_enemy_unknown = 4
+    option_ff4_the_musical = 5
+    option_fist_fight = 6
+    option_forward_is_the_new_back = 7
+    option_friendly_fire = 8
+    option_the_floor_is_made_of_lava = 9
+    option_gotta_go_fast = 10
+    option_holy_onomatopoeia_batman = 11
+    option_imaginary_numbers = 12
+    option_is_this_even_randomized = 13
+    option_kleptomania = 14
+    option_men_are_pigs = 15
+    option_misspelled = 16
+    option_a_much_bigger_magnet = 17
+    option_mystery_juice = 18
+    option_neat_freak = 19
+    option_night_mode = 20
+    option_omnidextrous = 21
+    option_payable_golbez = 22
+    option_save_us_big_chocobo = 23
+    option_six_legged_race = 24
+    option_the_sky_warriors = 25
+    option_something_worth_fighting_for = 26
+    option_the_tellah_maneuver = 27
+    option_three_point_system = 28
+    option_time_is_money = 29
+    option_unstackable = 30
+    option_world_championship_of_darts = 31
+    option_zombies = 32
+    option_random_challenge = 33
+
 class StarterKitOne(Choice):
-    """FE Starter Kit 1"""
+    """FE Starter Kit 1. See FE Documentation for details. Or just pick one, they can't hurt you."""
     display_name = "Starter Kit One"
     option_none = 0
     option_basic = 1
@@ -186,7 +281,7 @@ class StarterKitOne(Choice):
     default = 0
 
 class StarterKitTwo(Choice):
-    """FE Starter Kit 2"""
+    """FE Starter Kit 2. See FE Documentation for details. Or just pick one, they can't hurt you."""
     display_name = "Starter Kit Two"
     option_none = 0
     option_basic = 1
@@ -218,7 +313,7 @@ class StarterKitTwo(Choice):
     default = 0
 
 class StarterKitThree(Choice):
-    """FE Starter Kit 3"""
+    """FE Starter Kit 3. See FE Documentation for details. Or just pick one, they can't hurt you."""
     display_name = "Starter Kit Three"
     option_none = 0
     option_basic = 1
@@ -249,6 +344,18 @@ class StarterKitThree(Choice):
     option_random_kit = 26
     default = 0
 
+class JunkedItems(OptionSet):
+    """Items that will always be sold for GP regardless of your junk tier settings."""
+    display_name = "Junked Items"
+    valid_keys = sorted(sellable_item_names)
+    visibility = Visibility.complex_ui | Visibility.template | Visibility.spoiler
+
+class KeptItems(OptionSet):
+    """Items that will never be sold for GP regardless of your junk tier settings. Takes priority over Junked Items."""
+    display_name = "Kept Items"
+    valid_keys = sorted(sellable_item_names)
+    visibility = Visibility.complex_ui | Visibility.template | Visibility.spoiler
+
 @dataclass
 class FF4FEOptions(PerGameCommonOptions):
     ForgeTheCrystal: ForgeTheCrystal
@@ -256,12 +363,13 @@ class FF4FEOptions(PerGameCommonOptions):
     DefeatTheFiends: DefeatTheFiends
     FindTheDarkMatter: FindTheDarkMatter
     AdditionalObjectives: AdditionalObjectives
+    RequiredObjectiveCount: RequiredObjectiveCount
     ObjectiveReward: ObjectiveReward
+    ItemPlacement: ItemPlacement
     NoFreeCharacters: NoFreeCharacters
     NoEarnedCharacters: NoEarnedCharacters
     HeroChallenge: HeroChallenge
     PassEnabled: PassEnabled
-    UsefulPercentage: UsefulPercentage
     UnsafeKeyItemPlacement: UnsafeKeyItemPlacement
     PassInShops: PassInShops
     AllowedCharacters: AllowedCharacters
@@ -271,11 +379,101 @@ class FF4FEOptions(PerGameCommonOptions):
     PartySize: PartySize
     CharactersPermajoin: CharactersPermajoin
     CharactersPermadie: CharactersPermadie
+    ItemRandomization: ItemRandomization
+    LocalItemTiering: LocalItemTiering
     MinTier: MinTier
     MaxTier: MaxTier
     JunkTier: JunkTier
     ShopRandomization: ShopRandomization
     FreeShops: FreeShops
+    NoAdamantArmors: NoAdamantArmors
+    KeepDoorsBehemoths: KeepDoorsBehemoths
+    NoFreeBosses: NoFreeBosses
+    WackyChallenge: WackyChallenge
     StarterKitOne: StarterKitOne
     StarterKitTwo: StarterKitTwo
     StarterKitThree: StarterKitThree
+    JunkedItems: JunkedItems
+    KeptItems: KeptItems
+    start_inventory_from_pool: StartInventoryPool
+
+ff4fe_option_groups = [
+    OptionGroup("Objective Options", [
+        ForgeTheCrystal,
+        ConquerTheGiant,
+        DefeatTheFiends,
+        FindTheDarkMatter,
+        AdditionalObjectives,
+        RequiredObjectiveCount,
+        ObjectiveReward
+    ]),
+    OptionGroup("Character Options", [
+        NoFreeCharacters,
+        NoEarnedCharacters,
+        AllowedCharacters,
+        EnsureAllCharacters,
+        AllowDuplicateCharacters,
+        RestrictedCharacters
+    ]),
+    OptionGroup("Item Options", [
+        ItemPlacement,
+        ItemRandomization,
+        PassEnabled,
+        PassInShops,
+        LocalItemTiering,
+        MinTier,
+        MaxTier,
+        JunkTier,
+        JunkedItems,
+        KeptItems
+    ]),
+    OptionGroup("Challenge Flags", [
+        HeroChallenge,
+        PartySize,
+        CharactersPermajoin,
+        CharactersPermadie,
+        UnsafeKeyItemPlacement,
+        NoAdamantArmors,
+        KeepDoorsBehemoths,
+        NoFreeBosses,
+        WackyChallenge
+    ]),
+    OptionGroup("Miscellaneous Flags", [
+        ShopRandomization,
+        FreeShops,
+        StarterKitOne,
+        StarterKitTwo,
+        StarterKitThree
+    ])
+]
+
+ff4fe_options_presets: dict[str, dict[str, any]] = {
+    "Remixed": {
+        "UnsafeKeyItemPlacement": True,
+        "HeroChallenge": "random_character",
+        "AdditionalObjectives": 8,
+        "RequiredObjectiveCount": 5,
+        "ObjectiveReward": "crystal",
+        "NoAdamantArmors": True,
+        "LocalItemTiering": "pro",
+        "ItemRandomization": "pro",
+        "ShopRandomization": "pro",
+        "FreeShops": True,
+        "EnsureAllCharacters": False,
+        "NoFreeCharacters": True,
+        "StarterKitOne": "random_kit"
+    },
+    "Dark Matter Hunt Plus": {
+        "FindTheDarkMatter": True,
+        "AdditionalObjectives": 3,
+        "RequiredObjectiveCount": 4,
+        "ObjectiveReward": "win",
+        "StarterKitOne": "random_kit",
+        "StarterKitTwo": "random_kit"
+    },
+    "Objective Mania": {
+        "AdditionalObjectives": 32,
+        "RequiredObjectiveCount": 32,
+        "ObjectiveReward": "win"
+    }
+}

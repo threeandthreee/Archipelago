@@ -17,22 +17,24 @@
 # No new item can be obtained from this, it can only refill what the player had and used/lost at some point.
 3f//refillInventory: |
     ld b,TREASURE_EMBER_SEEDS
-    ld hl,wNumEmberSeeds
+    ld de,wNumEmberSeeds
     
     @refillSeedsLoop:
     ld a,b
     call checkTreasureObtained_bodyProxy
     jr nc,@nextSeed
-    ld a,(hl)           ; currently owned seeds
-    cp $20
+    ld a,(de)           ; currently owned seeds
+    cp c
     jr nc,@nextSeed
-    ld (hl),$20
+    ld a,c
+    ld (de),a
+    call $460a          ; part of giveTreasure_body@modef that caps the number of seeds based on satchel level
     
     @nextSeed:
     ld a,b
     cp TREASURE_MYSTERY_SEEDS
     jr z,@refillBombs
-    inc hl
+    inc e
     inc b
     jr @refillSeedsLoop
     
@@ -42,15 +44,23 @@
     jr nc,@refillShield
     ld hl,wMaxBombs
     ldd a,(hl)
+    cp c
+    jr c,@changeBombAmount
+    ld a,c
+    @changeBombAmount:
+    cp (hl)
+    jr c,@refillShield
     ld (hl),a
     
     @refillShield:
+    ld a,(wShieldLevel)
+    or a
+    jr z,@refillHealth
     ld a,TREASURE_SHIELD
-    call checkTreasureObtained_bodyProxy
-    jr nc,@refillHealth
-    ld a,TREASURE_SHIELD
+    ld hl,wObtainedTreasureFlags
     ldh ($8b),a         ; put item ID in FF8B
-    call $46bc          ; addTreasureToInventory 
+    call setFlag
+    call $46bc          ; addTreasureToInventory
     
     @refillHealth:
     ld hl,wLinkMaxHealth
@@ -68,6 +78,7 @@
 15//impaRefill: |
     push hl
     push de
+    ld c,$20
     ld e,$3f
     ld hl,refillInventory
     call interBankCall
@@ -90,14 +101,6 @@
 # Change Impa text to explain that she is providing a refill
 1f/0247/: |
     db $04,$b6,$04,$06,$05,$a0,$05,$07,$03,$d2,$03,$bd,$61,$01,$72,$65,$66,$69,$6c,$6c,$2e,$00
-
-# Make Like-Like only remove the shield without unsetting the treasure flag
-0c//loseShieldWithoutLosingFlag: |
-    call loseTreasure
-    ld hl,wObtainedTreasureFlags
-    set 1,(hl)
-    ret
-0c/1dd2/: call loseShieldWithoutLosingFlag
 
 # Make Impa always stand in front of her house
 0a/1d57/: |

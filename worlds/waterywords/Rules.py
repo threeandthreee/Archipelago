@@ -38,9 +38,9 @@ def calculate_score_in_logic(letters, turns, bonuses, factor, max_items):
         return min(letters, 7)
     bonus = 1
     if turns > 3:
-        bonus = 1 + 0.03 * bonuses
+        bonus = 1 + 0.025 * bonuses
     logic_factor = 1 + (factor - 1) * (letters + turns + bonuses) / max_items
-    return logic_factor * min(letters * 2, turns * 20) * bonus
+    return logic_factor * min(letters * 2, turns * 18) * bonus
 
 def set_yacht_completion_rules(world: MultiWorld, player: int):
     """

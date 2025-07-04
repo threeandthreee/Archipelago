@@ -60,7 +60,6 @@ def get_location_name_groups() -> typing.Dict[str, typing.Set[str]]:
 links_awakening_location_name_groups = get_location_name_groups()
 
 
-# Magic to generate unique ids
 links_awakening_location_meta_to_id = {}
 links_awakening_location_name_to_id = {}
 for meta_id, metadata in checkMetadataTable.items():

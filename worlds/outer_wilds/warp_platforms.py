@@ -1,5 +1,4 @@
 from random import Random
-from typing import List, Tuple
 from .options import OuterWildsGameOptions, Spawn
 
 
@@ -33,7 +32,7 @@ platforms_reachable_by_ship = [p for p in warp_platforms if p not in dead_end_pl
 
 # The vanilla warp mapping is:
 # [("SS", "ST"), ("ET", "ETT"), ("ATP", "ATT"), ("TH", "THT"), ("BHNG", "WHS"), ("BHF", "BHT"), ("GD", "GDT")]
-def generate_random_warp_platform_mapping(random: Random, options: OuterWildsGameOptions) -> List[Tuple[str, str]]:
+def generate_random_warp_platform_mapping(random: Random, options: OuterWildsGameOptions) -> list[tuple[str, str]]:
     unmapped_platforms = warp_platforms.copy()
     mappings = []
 

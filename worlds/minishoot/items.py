@@ -20,6 +20,7 @@ item_name_to_id: Dict[str, int] = {}
 filler_items: List[str] = []
 
 classification_map = {
+    'Trap': ItemClassification.trap,
     'Filler': ItemClassification.filler,
     'Helpful': ItemClassification.useful,
     'Progression': ItemClassification.progression,

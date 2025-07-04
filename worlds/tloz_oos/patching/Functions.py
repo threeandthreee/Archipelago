@@ -422,7 +422,7 @@ def set_file_select_text(assembler: Z80Assembler, slot_name: str):
         else:
             return 0xfc  # All other chars are blank spaces
 
-    row_1 = [char_to_tile(c) for c in f"ARCHIPELAGO {VERSION}".ljust(16, " ")]
+    row_1 = [char_to_tile(c) for c in f"ARCHIPELAGO {VERSION[0]},{VERSION[1]}".ljust(16, " ")]
     row_2 = [char_to_tile(c) for c in slot_name.replace("-", " ").upper()]
     row_2_left_padding = int((16 - len(row_2)) / 2)
     row_2_right_padding = int(16 - row_2_left_padding - len(row_2))
@@ -792,8 +792,9 @@ def define_essence_sparkle_constants(assembler: Z80Assembler, patch_data):
 
 def randomize_ai_for_april_fools(rom: RomData, seed: int):
     code_table = 0x2f16
+    # TODO : properly implement that ?
     enemy_table = [
-        # enemy id in (08, 2f)
+        # enemy id in (08, 2f), specially for the blade traps since they can't take the beamos AI, or they'd block d6
         {
             0: [
                 0x08,  # river zora
@@ -806,19 +807,17 @@ def randomize_ai_for_april_fools(rom: RomData, seed: int):
                 0x13,  # spark
                 0x14,  # spiked beetle
                 0x15,  # bubble
-                0x16,  # beamos
                 0x18,  # buzzblob
                 0x19,  # whisp
                 0x1a,  # crab
                 0x20,  # masked moblin
                 0x22,
-                0x23,
+                0x23,  # pol's voice
                 0x25,  # goponga flower
-                0x27,
                 0x29,
                 0x2d,
                 0x2e,
-                0x2f,
+                0x2f
             ],
             1: [
                 0x0a,  # boomerang moblin
@@ -845,6 +844,56 @@ def randomize_ai_for_april_fools(rom: RomData, seed: int):
                 0x2b,
             ],
         },
+        # enemy id in (08, 2f)
+        {
+            0: [
+                0x08,  # river zora
+                0x09,  # octorok
+                0x0c,  # arrow moblin
+                0x0d,  # lynel
+                0x0f,
+                0x11,  # Pokey is too unreliable and laggy
+                0x12,  # gibdo
+                0x13,  # spark
+                0x14,  # spiked beetle
+                0x15,  # bubble
+                0x16,  # beamos
+                0x18,  # buzzblob
+                0x19,  # whisp
+                0x1a,  # crab
+                0x20,  # masked moblin
+                0x22,
+                0x23,  # pol's voice
+                0x25,  # goponga flower
+                0x29,
+                0x2d,
+                0x2e,
+                0x2f
+            ],
+            1: [
+                0x0a,  # boomerang moblin
+                0x1c,  # iron mask
+                0x1e,  # piranha
+                0x25,
+                0x2c,  # cheep cheep, will probably break
+            ],
+            2: [
+                0x0b,  # leever
+                0x17,  # ghini
+                0x21,  # arrow darknut
+            ],
+            3: [
+                0x1b,  # spiny beetle
+                0x24,  # like like, flagged as unkillable as the spawner, and is logically not required
+                0x2a,
+            ],
+            4: [
+                0x10,  # rope
+            ],
+            5: [
+                0x2b,
+            ],
+        },
         # enemy id in (08, 2f), killable
         {
             0: [
@@ -854,7 +903,7 @@ def randomize_ai_for_april_fools(rom: RomData, seed: int):
                 0x18,  # buzzblob
                 0x1a,  # crab
                 0x22,
-                0x23,
+                0x23,  # pol's voice
                 0x0d,  # lynel
                 0x0c,  # arrow moblin
                 0x20,  # masked moblin
@@ -884,7 +933,6 @@ def randomize_ai_for_april_fools(rom: RomData, seed: int):
                 0x36,
                 0x37,
                 0x38,
-                0x3a,  # water tektite
                 0x3b,
                 0x3c,
                 0x3d,
@@ -905,9 +953,10 @@ def randomize_ai_for_april_fools(rom: RomData, seed: int):
                 0x39,
                 0x41,
                 0x4c,
+                0x4f,
             ],
             2: [
-                0x40,
+                # 0x40,
                 0x52,
             ],
             3: [
@@ -924,28 +973,26 @@ def randomize_ai_for_april_fools(rom: RomData, seed: int):
             0: [
                 0x30,
                 0x31,
-                0x3a,  # water tektite
                 0x3c,
                 0x3d,
                 0x3e,
                 0x43,
-                0x46,
                 0x48,
                 0x49,
                 0x4a,
                 0x4b,
                 0x4d,
                 0x4e,
-                0x5e,
             ],
             1: [
                 0x32,
                 0x34,
                 0x39,
-                0x4c
+                0x4c,
+                0x4f,
             ],
             2: [
-                0x40
+                # 0x40
             ],
         }
     ]
@@ -972,12 +1019,14 @@ def randomize_ai_for_april_fools(rom: RomData, seed: int):
                 ai = ais.pop()
                 ai_table[enemy] = ai
 
+    ai_table[0x2f] = 0x2f # Thwomps have to stay vanilla for platforming
     for enemy in ai_table:
         ai = ai_table[enemy]
         rom.write_word(code_table + enemy * 2, rom.read_word(code_table + ai * 2))
 
     blinkers = {
         0x08,
+        0x0b,
         0x10,
         0x24,
         0x34,
@@ -988,19 +1037,25 @@ def randomize_ai_for_april_fools(rom: RomData, seed: int):
     # Make some enemies hittable without having access to their AI
     if ai_table[0x08] not in blinkers:
         rom.write_byte(0xFDD92, 0x8F)  # river zora
+    if ai_table[0x0b] not in blinkers:
+        rom.write_byte(0xFDD9E, 0x90)  # leever
     if ai_table[0x10] not in blinkers:
         rom.write_byte(0xFDDB2, 0x90)  # rope
     if ai_table[0x24] not in blinkers:
         rom.write_byte(0xFDE02, 0xA2)  # like-like
     if ai_table[0x34] not in blinkers:
         rom.write_byte(0xFDE42, 0xAA)  # zol
-    if ai_table[0x40] not in blinkers:
-        rom.write_byte(0xFDE72, 0xAF)  # wizzrobes
+    # if ai_table[0x40] not in blinkers:
+    #     rom.write_byte(0xFDE72, 0xAF)  # wizzrobes
     if ai_table[0x41] not in blinkers:
         rom.write_byte(0xFDE76, 0xB0)  # crow
 
     if ai_table[0x14] != 0x14:
-        rom.write_byte(0xFDDC2, 0xCE)  # make spiked beetles have the flipped collisions
+        rom.write_byte(0xFDDC2, 0xCE)  # Make spiked beetles have the flipped collisions
+    if ai_table[0x1C] != 0x1C:
+        rom.write_byte(0xFDDE2, 0xD0)  # Make iron mask have the unmasked collisions
+    if ai_table[0x3e] != 0x3e:
+        rom.write_byte(0xFDE6A, 0xAE)  # Make peahats have vulnerable collisions
 
     if ai_table[0x24] != 0x24:
         # make like like deal low knockback instead of softlocking by grabbing him then never releasing him due to the lack of AI

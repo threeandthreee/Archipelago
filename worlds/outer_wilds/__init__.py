@@ -1,4 +1,4 @@
-from typing import Any, Dict, TextIO
+from typing import Any, TextIO
 
 from BaseClasses import Tutorial
 from Options import OptionError
@@ -36,11 +36,10 @@ class OuterWildsWorld(World):
     orbit_angles = 'vanilla'
     rotation_axes = 'vanilla'
     warps = 'vanilla'
-    spawn = Spawn.option_vanilla
 
     # this is how we tell the Universal Tracker we want to use re_gen_passthrough
     @staticmethod
-    def interpret_slot_data(slot_data: Dict[str, Any]) -> Dict[str, Any]:
+    def interpret_slot_data(slot_data: dict[str, Any]) -> dict[str, Any]:
         return slot_data
 
     # and this is how we tell Universal Tracker we don't need the yaml
@@ -72,19 +71,13 @@ class OuterWildsWorld(World):
         if self.options.shuffle_spacesuit and self.options.spawn != Spawn.option_vanilla:
             raise OptionError('Incompatible options: shuffle_spacesuit is true and spawn is non-vanilla (%s)', self.options.spawn)
 
-        # When Universal Tracker is not involved, spawn is just a normal option.
-        # But we also run this before the UT check because if we're in UT's 1st pass, we won't have slot_data's spawn
-        # yet, and we still need to set this to avoid a DLC-only slot from thinking it has vanilla spawn and crashing
-        # when items.py tries to lock Launch Codes on a location that doesn't exist.
-        self.spawn = self.options.spawn
-
         # implement .yaml-less Universal Tracker support
         if hasattr(self.multiworld, "generation_is_fake"):
             if hasattr(self.multiworld, "re_gen_passthrough"):
                 if "Outer Wilds" in self.multiworld.re_gen_passthrough:
                     slot_data = self.multiworld.re_gen_passthrough["Outer Wilds"]
                     self.warps = slot_data["warps"]
-                    self.spawn = slot_data["spawn"]
+                    self.options.spawn = slot_data["spawn"]
                     self.options.logsanity.value = slot_data["logsanity"]
                     self.options.enable_eote_dlc.value = slot_data["enable_eote_dlc"]
                     self.options.dlc_only.value = slot_data["dlc_only"]
@@ -175,7 +168,7 @@ class OuterWildsWorld(World):
         slot_data["warps"] = self.warps
         # Archipelago does not yet have apworld versions (data_version is deprecated),
         # so we have to roll our own with slot_data for the time being
-        slot_data["apworld_version"] = "0.3.14"
+        slot_data["apworld_version"] = "0.3.16"
         return slot_data
 
     def write_spoiler(self, spoiler_handle: TextIO) -> None:

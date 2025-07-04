@@ -40,6 +40,21 @@
     db enableinput
     db scriptend
 
+# Make the barrier cutscene not display the essences Link did not get
+15/2B9C/: |
+    call skipEssence
+    jr nz,$15
+
+15//skipEssence: |
+    ld b,(hl)
+    ld a,b
+    xor $07 ; Go from 0->7 to 7->0
+    ld hl,wEssencesObtained
+    call checkFlag
+    jp nz,getFreeInteractionSlot
+    inc a ; unsets the z flag
+    ret
+
 # end northen peak cutscene as soon as the barrier is broken.
 0b/39f1/: |
     db setglobalflag,$1d

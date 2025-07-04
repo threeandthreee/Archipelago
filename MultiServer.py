@@ -1066,13 +1066,17 @@ class Ashipelago:
     def _push_player_list(self, is_new: bool, is_tracked: int):
         if is_new:
             player_list = []
+            game_list = {}
             for player in self.ctx.player_names.values():
                 player_list.append(player)
+            for slot, game in self.ctx.games.items():
+                game_list[slot] = game
             connection = {
                 "event": "create_room",
                 "room": self.room_url,
                 "seed": self.seed_url,
                 "players": player_list,
+                "games": game_list,
                 "is_tracked": is_tracked
             }
         else:

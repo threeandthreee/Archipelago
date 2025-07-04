@@ -1,7 +1,7 @@
 import json
 import pkgutil
 import typing
-from typing import Any, Dict, List, NamedTuple, Optional, Set
+from typing import Any, NamedTuple
 
 from BaseClasses import CollectionState, Location, Region
 from Utils import restricted_loads
@@ -20,13 +20,13 @@ class OuterWildsLocation(Location):
 
 class OuterWildsLocationData(NamedTuple):
     region: str
-    address: Optional[int] = None
-    category: Optional[str] = None
+    address: int | None = None
+    category: str | None = None
     logsanity: bool = False
 
 
 class OuterWildsRegionData(NamedTuple):
-    connecting_regions: List[str] = []
+    connecting_regions: list[str] = []
 
 
 pickled_data = pkgutil.get_data(__name__, "shared_static_logic/static_logic.pickle")
@@ -35,7 +35,7 @@ locations_data = unpickled_data["LOCATIONS"]
 connections_data = unpickled_data["CONNECTIONS"]
 
 
-location_data_table: Dict[str, OuterWildsLocationData] = {}
+location_data_table: dict[str, OuterWildsLocationData] = {}
 for location_datum in locations_data:
     location_data_table[location_datum["name"]] = OuterWildsLocationData(
         address=location_datum["address"],
@@ -47,7 +47,7 @@ for location_datum in locations_data:
 all_non_event_locations_table = {name: data.address for name, data
                                  in location_data_table.items() if data.address is not None}
 
-location_names: Set[str] = set(entry["name"] for entry in locations_data)
+location_names: set[str] = set(entry["name"] for entry in locations_data)
 location_name_groups = {
     # Auto-generated groups
     # We don't need an "Everywhere" group because AP makes that for us
@@ -82,7 +82,7 @@ location_name_groups = {
 }
 
 
-region_data_table: Dict[str, OuterWildsRegionData] = {}
+region_data_table: dict[str, OuterWildsRegionData] = {}
 
 
 def create_regions(world: "OuterWildsWorld") -> None:
@@ -145,17 +145,17 @@ def create_regions(world: "OuterWildsWorld") -> None:
 
     # add dynamic logic, i.e. connections based on player options
     menu = mw.get_region("Menu", p)
-    if world.spawn == Spawn.option_vanilla:
+    if options.spawn == Spawn.option_vanilla:
         menu.add_exits(["Timber Hearth Village"])
-    elif world.spawn == Spawn.option_hourglass_twins:
+    elif options.spawn == Spawn.option_hourglass_twins:
         menu.add_exits(["Hourglass Twins"])
-    elif world.spawn == Spawn.option_timber_hearth:
+    elif options.spawn == Spawn.option_timber_hearth:
         menu.add_exits(["Timber Hearth"])
-    elif world.spawn == Spawn.option_brittle_hollow:
+    elif options.spawn == Spawn.option_brittle_hollow:
         menu.add_exits(["Brittle Hollow"])
-    elif world.spawn == Spawn.option_giants_deep:
+    elif options.spawn == Spawn.option_giants_deep:
         menu.add_exits(["Giant's Deep"])
-    elif world.spawn == Spawn.option_stranger:
+    elif options.spawn == Spawn.option_stranger:
         menu.add_exits(["Stranger Sunside Hangar"])
 
     if world.warps == 'vanilla':
@@ -208,7 +208,6 @@ def create_regions(world: "OuterWildsWorld") -> None:
             required_items.extend(warp_platform_required_items.get(platform_2, []))
 
             def rule(state: CollectionState) -> bool:
-                nonlocal required_items
                 return state.has_all(required_items, p)
             r1 = mw.get_region(region_name_1, p)
             r2 = mw.get_region(region_name_2, p)
@@ -235,7 +234,7 @@ def create_regions(world: "OuterWildsWorld") -> None:
 
 # In particular: this eval_rule() function is the main piece of code which will have to
 # be implemented in both languages, so it's important we keep the implementations in sync
-def eval_rule(state: CollectionState, p: int, rule: List[Any], split_translator: bool) -> bool:
+def eval_rule(state: CollectionState, p: int, rule: list[Any], split_translator: bool) -> bool:
     return all(eval_criterion(state, p, criterion, split_translator) for criterion in rule)
 
 
@@ -269,11 +268,11 @@ def eval_criterion(state: CollectionState, p: int, criterion: Any, split_transla
 # you must also use multiworld.register_indirect_condition."
 # And to call register_indirect_condition, we need to know what regions a rule is referencing.
 # Figuring out the regions referenced by a rule ends up being very similar to evaluating that rule.
-def regions_referenced_by_rule(rule: List[Any]) -> List[str]:
+def regions_referenced_by_rule(rule: list[Any]) -> list[str]:
     return [region for criterion in rule for region in regions_referenced_by_criterion(criterion)]
 
 
-def regions_referenced_by_criterion(criterion: Any) -> List[str]:
+def regions_referenced_by_criterion(criterion: Any) -> list[str]:
     # see eval_criterion comments
     if isinstance(criterion, dict):
         if len(criterion.items()) != 1:
