@@ -6,7 +6,9 @@ import os
 import random
 import string
 import threading
-from typing import Any, ClassVar, Dict, List, Union
+from typing import Any, ClassVar
+
+from typing_extensions import override
 
 from BaseClasses import Item, Location, Region, MultiWorld, ItemClassification, Tutorial
 from .id_maps import item_name_to_id, location_name_to_id
@@ -134,19 +136,22 @@ class FF6WCWorld(World):
         'espers': set(all_espers),
     }
 
-    starting_characters: Union[List[str], None]
-    flagstring: Union[List[str], None]
+    starting_characters: list[str] | None
+    flagstring: list[str] | None
 
     def __init__(self, world: MultiWorld, player: int):
         super().__init__(world, player)
         self.starting_characters = None
+        self.starting_espers = []
         self.flagstring = None
         self.item_rewards = []
         self.item_nonrewards = []
         self.generator_in_use = threading.Event()
         self.wc = None
+        self.rom_name = bytearray()
         self.rom_name_available_event = threading.Event()
 
+    @override
     def create_item(self, name: str):
         return FF6WCItem(name, ItemClassification.progression, self.item_name_to_id[name], self.player)
 
@@ -159,10 +164,11 @@ class FF6WCWorld(World):
     def create_event(self, event: str):
         return FF6WCItem(event, ItemClassification.progression, None, self.player)
 
-    def create_location(self, name: str, id: Union[int, None], parent: Region) -> FF6WCLocation:
+    def create_location(self, name: str, id: int | None, parent: Region) -> FF6WCLocation:
         return_location = FF6WCLocation(self.player, name, id, parent)
         return return_location
 
+    @override
     def generate_early(self):
         # if requested to exclude the Zozo Clock Chest, add to exclude_locations
         if self.options.ZozoClockChestExclude:
@@ -171,7 +177,8 @@ class FF6WCWorld(World):
         if (self.options.Flagstring.value).capitalize() != "False":
 
             self.starting_characters = []
-            character_list: List[str] = []
+            self.starting_espers = []
+            character_list: list[str] = []
             flags = self.options.Flagstring.value
             # Determining Starting Characters
             flags_list = flags.split(" ")
@@ -237,20 +244,27 @@ class FF6WCWorld(World):
             dragon_count = 0
             boss_count = 0
 
-            kt_obj_list: List[str] = []
+            kt_obj_list: list[str] = []
             kt_obj_code_index = len(flags_list)
             alphabet = string.ascii_lowercase
-            for letter in range(len(alphabet)):
-                objective_list = ["-o", alphabet[letter]]
-                objective = "".join(objective_list)
-                if objective in flags_list:
-                    objective_code = flags_list[flags_list.index(objective) + 1]
-                    objective_code_list = objective_code.split(".")
-                    if objective_code_list[0] == "2":
-                        # kt_obj_code = objective_code
-                        kt_obj_list = objective_code_list
-                        kt_obj_code_index = flags_list.index(objective) + 1
-                        break
+            for letter in alphabet:
+                objective = f"-o{letter}"
+                try:
+                    obj_i = flags_list.index(objective) + 1
+                except ValueError:
+                    # TODO: Is it legal to skip letters? -oa ... -ob ... -od
+                    # if not, change continue to break
+                    continue
+                if obj_i >= len(flags_list):
+                    raise ValueError(f"invalid flags {objective}")
+                objective_code = flags_list[obj_i]
+                objective_code_list = objective_code.split(".")
+                if len(objective_code_list) < 3:
+                    raise ValueError(f"invalid objective string for {objective}: {objective_code}")
+                if objective_code_list[0] == "2":
+                    kt_obj_list = objective_code_list
+                    kt_obj_code_index = obj_i
+                    break
             if kt_obj_code_index == len(flags_list):
                 # TODO: use yaml options instead?
                 raise ValueError("kt objective code not found in flags")
@@ -267,36 +281,44 @@ class FF6WCWorld(World):
             # are required for seed completion. For example, if 1 of 2 conditions is required, one being 14 characters
             # and the other being Kill Cid, the logic should still be such that 14 characters can be acquired.
 
-            not_ranged_obj_numbers = ["1", "3", "5", "7", "9", "11", "12"]  # Random or looking for something specific.
-            skip = 2  # jumps over the initial KT requirements inputs which are indices 0, 1, and 2
+            not_ranged_obj_numbers = {"1", "3", "5", "7", "9", "11", "12"}  # Random or looking for something specific.
 
-            for index in range(len(kt_obj_list)):
-                if skip >= index or skip >= len(kt_obj_list):
-                    continue  # skips over the ranges or specific condition inputs based on condition type
+            err_msg = f"invalid kt objective string: {flags_list[kt_obj_code_index]}"
+            cursor_i = 3
+            while cursor_i < len(kt_obj_list):
+                if kt_obj_list[cursor_i] in not_ranged_obj_numbers:  # not a ranged objective type
+                    cursor_i += 1
+                    if cursor_i >= len(kt_obj_list):
+                        raise ValueError(err_msg)
+                    cursor_i += 1
+                    continue
+                # is a ranged objective, note that checks (type "10") are not currently parsed by AP
+                if cursor_i + 2 >= len(kt_obj_list):
+                    raise ValueError(err_msg)
+                try:
+                    count_low = int(kt_obj_list[cursor_i + 1])
+                    count_high = int(kt_obj_list[cursor_i + 2])
+                except ValueError as e:
+                    raise ValueError(err_msg) from e
+                if kt_obj_list[cursor_i] == "2":
+                    character_count = self.random.randint(count_low, count_high)
+                    kt_obj_list[cursor_i + 1] = str(character_count)
+                    kt_obj_list[cursor_i + 2] = str(character_count)
+                elif kt_obj_list[cursor_i] == "4":
+                    esper_count = self.random.randint(count_low, count_high)
+                    kt_obj_list[cursor_i + 1] = str(esper_count)
+                    kt_obj_list[cursor_i + 2] = str(esper_count)
+                elif kt_obj_list[cursor_i] == "6":
+                    dragon_count = self.random.randint(count_low, count_high)
+                    kt_obj_list[cursor_i + 1] = str(dragon_count)
+                    kt_obj_list[cursor_i + 2] = str(dragon_count)
+                elif kt_obj_list[cursor_i] == "8":
+                    boss_count = self.random.randint(count_low, count_high)
+                    kt_obj_list[cursor_i + 1] = str(boss_count)
+                    kt_obj_list[cursor_i + 2] = str(boss_count)
+                # else 10 - not parsed
 
-                if kt_obj_list[index] in not_ranged_obj_numbers:  # not a ranged objective type
-                    skip = index + 1
-
-                else:  # is a ranged objective, note that checks (type "10") are not currently parsed by AP
-                    skip = index + 2
-                    count_low = int(kt_obj_list[index + 1])
-                    count_high = int(kt_obj_list[index + 2])
-                    if kt_obj_list[index] == "2":
-                        character_count = random.randint(count_low, count_high)
-                        kt_obj_list[index + 1] = str(character_count)
-                        kt_obj_list[index + 2] = str(character_count)
-                    elif kt_obj_list[index] == "4":
-                        esper_count = random.randint(count_low, count_high)
-                        kt_obj_list[index + 1] = str(esper_count)
-                        kt_obj_list[index + 2] = str(esper_count)
-                    elif kt_obj_list[index] == "6":
-                        dragon_count = random.randint(count_low, count_high)
-                        kt_obj_list[index + 1] = str(dragon_count)
-                        kt_obj_list[index + 2] = str(dragon_count)
-                    elif kt_obj_list[index] == "8":
-                        boss_count = random.randint(count_low, count_high)
-                        kt_obj_list[index + 1] = str(boss_count)
-                        kt_obj_list[index + 2] = str(boss_count)
+                cursor_i += 3
             kt_obj_list_string = ".".join(kt_obj_list)
             flags_list[kt_obj_code_index] = kt_obj_list_string
 
@@ -306,9 +328,36 @@ class FF6WCWorld(World):
             self.options.DragonCount.value = dragon_count
             self.options.BossCount.value = boss_count
 
+            # starting espers
+            if self.options.Flagstring.has_flag("-stesp"):
+                # initialize -sen flag to indicate specific espers
+                sen_flag = ""
+                stesp_str = self.options.Flagstring.get_flag("-stesp")
+                stesp_err_msg = f"invalid -stesp flag {stesp_str}"
+                stesp_list = stesp_str.split(" ")
+                if len(stesp_list) != 2:
+                    raise ValueError(stesp_err_msg)
+                stesp_min_str, stesp_max_str = stesp_list
+                try:
+                    stesp_min = int(stesp_min_str)
+                    stesp_max = int(stesp_max_str)
+                except ValueError as e:
+                    raise ValueError(stesp_err_msg) from e
+                if stesp_min > 0 or stesp_max > 0:
+                    # pick a random number of starting espers between min & max specified
+                    num_start_espers = self.random.randint(stesp_min, stesp_max)
+                    chosen_esper_indexes = self.random.sample(range(len(Rom.espers)), num_start_espers)
+                    # update the -sen flag to include a list of chosen esper numbers
+                    sen_flag = ",".join([str(id_) for id_ in chosen_esper_indexes])
+                    # populate list of starting espers
+                    self.starting_espers = [Rom.espers[i] for i in chosen_esper_indexes]
+                    # Now, replace -stesp min max flags with -sen x,y,z,etc
+                    self.options.Flagstring.replace_flag("-stesp", "-sen", sen_flag)
+
         else:
             self.starting_characters = resolve_character_options(self.options, self.random)
 
+    @override
     def create_regions(self):
         menu = Region("Menu", self.player, self.multiworld)
         world_map = Region("World Map", self.player, self.multiworld)
@@ -337,11 +386,16 @@ class FF6WCWorld(World):
         self.multiworld.regions.append(world_map)
         self.multiworld.regions.append(final_dungeon)
 
+    @override
     def create_items(self) -> None:
-        item_pool: List[FF6WCItem] = []
+        item_pool: list[FF6WCItem] = []
         assert self.starting_characters
         for item in map(self.create_item, self.item_name_to_id):
             if item.name in self.starting_characters:
+                self.multiworld.push_precollected(item)
+            # if this is a starting esper
+            elif item.name in self.starting_espers:
+                # put into the pre-collected list so it is not assigned again
                 self.multiworld.push_precollected(item)
             elif item.name in Rom.characters or item.name in Rom.espers:
                 item_pool.append(item)
@@ -365,10 +419,10 @@ class FF6WCWorld(World):
         # update the non-reward items to be everything that's not in item_rewards
         self.item_nonrewards = [item for item in Items.items if item not in self.item_rewards]
 
-        filler_pool: List[str] = []
+        filler_pool: list[str] = []
         # Each filler item has a chest item tier weight
-        filler_pool_weights: List[int] = []
-        good_filler_pool: List[str] = []
+        filler_pool_weights: list[int] = []
+        good_filler_pool: list[str] = []
 
         for item in Items.items:
             # Skips adding an item to filler_pool and good_filler_pool if item restrictions are in place
@@ -379,10 +433,10 @@ class FF6WCWorld(World):
             if self.options.no_illuminas() and item == "Illumina":
                 continue
             # if -noshoes No SprintShoes specified, remove from list
-            if self.options.Flagstring.has_flag("-noshoes") and item == "Sprint Shoes":
+            if self.options.no_shoes() and item == "Sprint Shoes":
                 continue
             # if -nmc No MoogleCharms specified, remove from list
-            if self.options.Flagstring.has_flag("-nmc") and item == "Moogle Charm":
+            if self.options.no_moogle_charm() and item == "Moogle Charm":
                 continue
             if item != "ArchplgoItem":
                 filler_pool.append(item)
@@ -397,22 +451,19 @@ class FF6WCWorld(World):
         major_items = len([location for location in Locations.major_checks if "(Boss)" not in location and "Status"
                            not in location])
         progression_items = len(item_pool)
-        if not self.options.Treasuresanity.value:
-            major_items = major_items - progression_items
-            for _ in range(major_items):
-                item_pool.append(self.create_good_filler_item(self.multiworld.random.choice(good_filler_pool)))
-            self.multiworld.itempool += item_pool
-        else:
-            for _ in range(major_items):
-                item_pool.append(self.create_good_filler_item(self.multiworld.random.choice(good_filler_pool)))
-            minor_items = len(Locations.all_minor_checks) - progression_items
+        major_items = major_items - progression_items
+        for _ in range(major_items):
+            item_pool.append(self.create_good_filler_item(self.random.choice(good_filler_pool)))
+        if self.options.Treasuresanity.value:
+            minor_items = len(Locations.all_minor_checks)
             for _ in range(minor_items):
                 # random filler item, but use chest item tier weights
                 item_pool.append(self.create_filler_item(
-                    self.multiworld.random.choices(filler_pool, filler_pool_weights)[0]
+                    self.random.choices(filler_pool, filler_pool_weights)[0]
                 ))
-            self.multiworld.itempool += item_pool
+        self.multiworld.itempool += item_pool
 
+    @override
     def set_rules(self):
         check_list = {
             "Terra": (Locations.major_terra_checks, Locations.minor_terra_checks, Locations.minor_terra_ext_checks),
@@ -515,6 +566,7 @@ class FF6WCWorld(World):
         # TODO: move this generate_flagstring earlier if we can verify that options aren't changed
         self.flagstring = generate_flagstring(self.options, self.starting_characters)
 
+    @override
     def post_fill(self) -> None:
         spheres = list(self.multiworld.get_spheres())
         sphere_count = len(spheres)
@@ -522,7 +574,7 @@ class FF6WCWorld(World):
         for current_sphere_count, sphere in enumerate(spheres):
             for location in sphere:
                 if location.item and location.item.player == self.player:
-                    if self.multiworld.random.randint(0, upgrade_base) < current_sphere_count:
+                    if self.random.randint(0, upgrade_base) < current_sphere_count:
                         self.upgrade_item(location.item)
 
         if self.options.Treasuresanity.value != Treasuresanity.option_off:
@@ -539,7 +591,7 @@ class FF6WCWorld(World):
             nfps = nee = nil = 1
             temp_new_item = ""
             while (nfps or nee or nil) == 1:
-                temp_new_item = self.multiworld.random.choice(self.item_rewards)
+                temp_new_item = self.random.choice(self.item_rewards)
                 if self.options.no_paladin_shields() and (temp_new_item == "Paladin Shld"
                                                           or temp_new_item == "Cursed Shld"):
                     nfps = 1
@@ -564,8 +616,9 @@ class FF6WCWorld(World):
             item.classification = ItemClassification.useful
         return
 
+    @override
     def generate_output(self, output_directory: str):
-        locations: Dict[str, str] = dict()
+        locations: dict[str, str] = dict()
         # get all locations
         for location in self.multiworld.get_locations(self.player):
             assert location.item
@@ -580,13 +633,12 @@ class FF6WCWorld(World):
             if location.item.player == self.player:
                 if location_name in Locations.major_checks or location.item.name in Items.items:
                     locations[location_name] = location.item.name
-        self.rom_name_text = f'6WC{Utils.__version__.replace(".", "")[0:3]}_{self.player}_{self.multiworld.seed:11}'
-        self.rom_name_text = self.rom_name_text[:20]
-        self.romName = bytearray(self.rom_name_text, 'utf-8')
-        self.romName.extend([0] * (20 - len(self.romName)))
-        self.rom_name = self.romName
+        rom_name_text = f'6WC{Utils.__version__.replace(".", "")[0:3]}_{self.player}_{self.multiworld.seed:11}'
+        rom_name_text = rom_name_text[:20]
+        self.rom_name = bytearray(rom_name_text, 'utf-8')
+        self.rom_name.extend([0] * (20 - len(self.rom_name)))
         self.rom_name_available_event.set()
-        locations["RomName"] = self.rom_name_text
+        locations["RomName"] = rom_name_text
 
         assert not (self.flagstring is None), "need flagstring from earlier generation step"
         if self.options.Treasuresanity.value != Treasuresanity.option_off:
@@ -603,7 +655,7 @@ class FF6WCWorld(World):
             if ir_index == -1:
                 self.flagstring.extend(ir_flag)
             else:
-                self.flagstring[ir_index:ir_index+2] = ir_flag
+                self.flagstring[ir_index:ir_index + 2] = ir_flag
         verify_flagstring(self.flagstring)
         gen_data = GenData(locations, self.flagstring)
         out_file_base = self.multiworld.get_out_file_name_base(self.player)
@@ -616,11 +668,12 @@ class FF6WCWorld(World):
 
         logging.debug(f"FF6WC player {self.player} finished generate_output")
 
-    def modify_multidata(self, multidata: Dict[str, Any]) -> None:
+    @override
+    def modify_multidata(self, multidata: dict[str, Any]) -> None:
         import base64
         # wait for self.rom_name to be available.
         self.rom_name_available_event.wait()
-        rom_name = getattr(self, "rom_name", None)
+        rom_name = self.rom_name
         # we skip in case of error, so that the original error in the output thread is the one that gets raised
         if rom_name:
             new_name = base64.b64encode(bytes(self.rom_name)).decode()

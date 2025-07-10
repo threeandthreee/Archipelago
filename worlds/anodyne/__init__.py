@@ -1,3 +1,4 @@
+import dataclasses
 import itertools
 import logging
 import typing
@@ -56,7 +57,7 @@ class AnodyneWorld(World):
 
     ut_can_gen_without_yaml = True
 
-    data_version = 1
+    version = "0.3.0"
 
     item_name_to_id = Constants.item_name_to_id
     location_name_to_id = Constants.location_name_to_id
@@ -84,6 +85,8 @@ class AnodyneWorld(World):
             slot_data = self.multiworld.re_gen_passthrough["Anodyne"]
 
             self.gates_unlocked = slot_data["nexus_gates_unlocked"]
+            self.options.small_key_mode.value = slot_data["small_key_mode"]
+            self.options.small_key_shuffle.value = slot_data["shuffle_small_keys"]
             self.options.big_key_shuffle.value = slot_data["shuffle_big_gates"]
             self.options.split_windmill.value = slot_data["split_windmill"]
             self.options.postgame_mode.value = slot_data["postgame_mode"]
@@ -91,6 +94,7 @@ class AnodyneWorld(World):
             self.options.victory_condition.value = slot_data["victory_condition"]
             self.options.forest_bunny_chest.value = slot_data.get("forest_bunny_chest", False)
             self.options.fields_secret_paths.value = slot_data.get("fields_secret_paths", False)
+            self.options.dustsanity.value = slot_data.get("dustsanity", False)
             if "endgame_card_requirement" in slot_data:
                 EndgameRequirement.cardoption(self.options).value = slot_data["endgame_card_requirement"]
 
@@ -108,7 +112,6 @@ class AnodyneWorld(World):
                     c.bossoption(self.options).value = int(option_name[len("bosses_"):])
                 else:
                     type_option.value = type_option.from_text(option_name).value
-            self.options.dustsanity.value = 0 if str(slot_data.get("dust_sanity_base", "Disabled")) == "Disabled" else 1
         elif len(self.options.custom_nexus_gates_open.value) > 0:
             self.gates_unlocked.extend(self.options.custom_nexus_gates_open.value)
         elif nexus_gate_open == NexusGatesOpen.option_street_and_fields:
@@ -145,6 +148,7 @@ class AnodyneWorld(World):
 
             if self.options.nexus_gate_shuffle == NexusGateShuffle.option_all_except_endgame:
                 self.shuffled_gates -= set(Regions.endgame_nexus_gates)
+
         if self.options.victory_condition == VictoryCondition.option_final_gate and self.options.postgame_mode == PostgameMode.option_disabled:
             logging.warning(
                 f"Player {self.player_name} requested the final gate victory condition but turned off postgame. Changing goal to Briar")
@@ -762,7 +766,7 @@ class AnodyneWorld(World):
             if len(confined_dungeon_items) == 0:
                 continue
 
-            collection_state = self.multiworld.get_all_state(False)
+            collection_state = self.multiworld.get_all_state(False, collect_pre_fill_items=False)
             for other_dungeon, other_dungeon_items in self.dungeon_items.items():
                 if other_dungeon == dungeon:
                     continue
@@ -804,6 +808,9 @@ class AnodyneWorld(World):
                         loc.item = None
             confined_dungeon_items.clear()
 
+    def get_pre_fill_items(self) -> List["Item"]:
+        return [item for dungeon_items in self.dungeon_items.values() for item in dungeon_items]
+
     def fill_slot_data(self):
         return {
             "death_link": bool(self.options.death_link.value),
@@ -828,8 +835,11 @@ class AnodyneWorld(World):
             "seed": self.random.randint(0, 1000000),
             "card_amount": self.options.card_amount + self.options.extra_cards,
             "fields_secret_paths": bool(self.options.fields_secret_paths),
-            #"shop_items": self.get_shop_items(),
-            #"mitra_hints": self.get_mitra_hints(0 if self.options.mitra_hints == MitraHints.option_none else 8 + 1),
+            "shop_items": [dataclasses.asdict(item) for item in self.get_shop_items()],
+            "randomize_color_puzzle": bool(self.options.randomize_color_puzzle),
+            "mitra_hints": [dataclasses.asdict(hint) for hint in self.get_mitra_hints(0 if self.options.mitra_hints == MitraHints.option_none else 8 + 1)],
+            "mitra_hint_type": int(self.options.mitra_hints),
+            "version": self.version,
             **{c.typename(): c.shorthand(self.options) for c in gatereq_classes}
         }
 

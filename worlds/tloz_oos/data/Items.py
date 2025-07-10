@@ -419,11 +419,6 @@ ITEMS_DATA = {
         'subid': 0x01
     },
 
-    #     "Maku Seed": {
-    #           'classification': ItemClassification.progression,
-    #         'id': 0x36
-    #     },
-
     "Cuccodex": {
         'classification': ItemClassification.progression,
         'id': 0x55

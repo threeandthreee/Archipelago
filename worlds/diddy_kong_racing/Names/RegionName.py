@@ -1,0 +1,7 @@
+MENU = "Menu"
+TIMBERS_ISLAND = "Timber's Island"
+DINO_DOMAIN = "Dino Domain"
+SNOWFLAKE_MOUNTAIN = "Snowflake Mountain"
+SHERBET_ISLAND = "Sherbet Island"
+DRAGON_FOREST = "Dragon Forest"
+FUTURE_FUN_LAND = "Future Fun Land"

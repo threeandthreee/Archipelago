@@ -48,4 +48,4 @@ def get_rom_address(ptr: str | int, offset=0):
 
 
 APWORLD_VERSION: str | None = None
-APWORLD_VERSION = '0.3.0'
+APWORLD_VERSION = '0.3.1'

@@ -61,26 +61,30 @@
     or a
     jr nz,@regularText
     
-    ld e,$71            ; var31, containing spawn mode
-    ld a,(de)
-    cp $02
-    jr nz,@regularText  ; jump if not a drop from ceiling
-    
     ld e,$72            ; var32, containing grab mode
     ld a,(de)
     or a
     jr nz,@regularText  ; jump if grab triggers an animation change
     
-    ; It's a drop not triggering an animation change ==> it's a keydrop, so skip its textbox (0xFF)
-    ld a,$ff
-    ret
+    ld e,$71            ; var31, containing spawn mode
+    ld a,(de)
+    cp $02
+    jr z,@skipText  ; jump if not a drop from ceiling
+    cp $04
+    jr z,@skipText  ; or dive
     
-    ; return regular text ID otherwise
+    ; return regular text ID
     @regularText:
     ld e,$75            ; var35, containing text id
     ld a,(de)
     ret
-09/02ef/: call bypassKeydropsTextbox
+    
+    @skipText:
+    ; It's a drop not triggering an animation change ==> it's a keydrop, so skip its textbox (0xFF)
+    ld a,$ff
+    ret
+
+09/42ef/: call bypassKeydropsTextbox
 
 # collect modes starting at 80 index this jump table to determine the actual
 # mode.

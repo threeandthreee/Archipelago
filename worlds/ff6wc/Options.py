@@ -1,9 +1,9 @@
+from collections.abc import Mapping
 from dataclasses import dataclass
-import logging
 import math
 from random import Random
 import random
-from typing import Any, Dict, List, Sequence, Union
+from typing import Any, Dict, List, Sequence
 
 from typing_extensions import override
 
@@ -306,10 +306,9 @@ class RandomizeZozoClock(Removed):
 
     def __init__(self, value: str):
         if value:
-            # TODO: after some deprecation time, change this to raise an exception
-            logging.warning("`RandomizeZozoClock` removed in WC 1.4.2, please update your options file. "
-                            "If you would like to make sure you don't have to do the clock puzzle, "
-                            "you can use `ZozoClockChestExclude`")
+            raise RuntimeError("`RandomizeZozoClock` removed in WC 1.4.2, please update your options file. "
+                               "If you would like to make sure you don't have to do the clock puzzle, "
+                               "you can use `ZozoClockChestExclude`")
         super().__init__("")
 
 
@@ -332,7 +331,7 @@ class Flagstring(FreeText):
     display_name = "Flagstring"
     default = "False"
 
-    _cache: Union[Dict[str, Dict[str, str]], None] = None
+    _cache: dict[str, Mapping[str, str]] | None = None
     """ `{full_flagstring_value: {flag: value}}` """
 
     def _parse(self) -> Dict[str, str]:
@@ -355,7 +354,19 @@ class Flagstring(FreeText):
                 i += 1
         return parsed
 
-    def _get_from_cache(self) -> Dict[str, str]:
+    def _set(self, flags: Mapping[str, str]) -> None:
+        """ inverse of `_parse` """
+        items: list[str] = []
+        for k, v in flags.items():
+            if not k.startswith("-"):
+                raise ValueError(f"{k=} should start with '-'")
+            items.append(k)
+            if len(v):
+                items.append(v)
+        self.value = " ".join(items)
+        assert self._get_from_cache() == flags, flags
+
+    def _get_from_cache(self) -> Mapping[str, str]:
         if self._cache is None:
             self._cache = {}
 
@@ -370,8 +381,26 @@ class Flagstring(FreeText):
         return key in parsed
 
     def get_flag(self, key: str) -> str:
+        """ `key` including "-" prefix """
         parsed = self._get_from_cache()
         return parsed[key]
+
+    def replace_flag(self, old_key: str, new_key: str, new_value: str) -> None:
+        """
+        - keys should include the "-" prefix
+        - `new_value` should should be empty string for keys without values
+        """
+        if not new_key.startswith("-"):
+            raise ValueError(f"{new_key=} should start with '-'")
+        parsed = self._get_from_cache()
+        if old_key not in parsed.keys():
+            raise KeyError(old_key)
+        # to preserve order, new dict instead of pop and insert new key
+        new_flags = {
+            (k if k != old_key else new_key): (v if k != old_key else new_value)
+            for k, v in parsed.items()
+        }
+        self._set(new_flags)
 
 
 @dataclass
@@ -400,7 +429,7 @@ class FF6WCOptions(PerGameCommonOptions):
     SpellcastingItems: SpellcastingItems
     Equipment: Equipment
     AllowStrongestItems: AllowStrongestItems
-    RandomizeZozoClock: RandomizeZozoClock  # TODO: some time after the above TODO raises an exception, remove this
+    RandomizeZozoClock: RandomizeZozoClock  # TODO: some time after this option raises an exception, remove this
     ZozoClockChestExclude: ZozoClockChestExclude
     Treasuresanity: Treasuresanity
     Flagstring: Flagstring
@@ -413,6 +442,16 @@ class FF6WCOptions(PerGameCommonOptions):
 
     def no_illuminas(self) -> bool:
         return (not self.AllowStrongestItems.value) or self.Flagstring.has_flag("-nil")
+
+    def no_shoes(self) -> bool:
+        # We default to noshoes if no flagstring is given
+        # TODO: SSOT with generate_items_string
+        return ("-" not in self.Flagstring.value) or self.Flagstring.has_flag("-noshoes")
+
+    def no_moogle_charm(self) -> bool:
+        # We default to nmc if no flagstring is given
+        # TODO: SSOT with generate_items_string
+        return ("-" not in self.Flagstring.value) or self.Flagstring.has_flag("-nmc")
 
 
 def verify_flagstring(flags: Sequence[str]) -> None:
@@ -457,17 +496,6 @@ def generate_objectives_string(options: FF6WCOptions) -> List[str]:
     character_count = options.CharacterCount
     esper_count = options.EsperCount
     dragon_count = options.DragonCount
-
-    # randomized bosses can make it so not enough bosses are available for kefka requirement
-    # A proper fix for this needs to be in the WorldsCollide code,
-    # but a workaround here can make it really unlikely that this problem occurs
-    # TODO: remove this workaround when it's fixed in WorldsCollide code (and that version of WC is here in AP)
-    # https://discord.com/channels/666661907628949504/1235621693381410906
-    if options.RandomizedBosses.value == RandomizedBosses.option_randomized:
-        # 18 makes it around 1/85000 if bosses randomized and requirement randomized
-        if options.BossCount.value > 18:
-            options.BossCount.value = 18
-
     boss_count = options.BossCount
 
     # fb = final battle unlock
@@ -630,36 +658,40 @@ def generate_magic_string(options: FF6WCOptions) -> List[str]:
             multi_summon_string, *natural_magic_strings]
 
 
-def generate_items_string(options: FF6WCOptions) -> List[str]:
+def generate_items_string(options: FF6WCOptions) -> list[str]:
     starting_gp_string = f"-gp={options.StartingGP}"
     # Three Moogle Charms, a Warp Stone, and five Fenix Downs
     starting_items_strings = ["-smc=3", "-sws=1", "-sfd=5"]
 
     # 75-125% shop prices, five Dried Meat shops, no priceless items
     shops_strings = ["-sprp", "75", "125", "-sdm", "5", "-npi"]
-    if options.RandomizedShops == 1:  # Shuffled shops
-        shops_strings.extend(["-slsr"])
-    elif options.RandomizedShops == 2:  # Randomized Shops
+    if options.RandomizedShops.value == RandomizedShops.option_randomized:
+        # 20 is the default value on the worlds collide website
+        shops_strings.extend(["-sisr", "20"])
+    elif options.RandomizedShops.value == RandomizedShops.option_random_tiered:
         shops_strings.extend(["-sirt"])
 
-    spellcasting_items_string = []
-    if options.SpellcastingItems == 1:  # Limited
+    if options.SpellcastingItems.value == SpellcastingItems.option_limited:
         spellcasting_items_string = ["-sebr", "-sesb", "-snes"]
-    elif options.SpellcastingItems == 2:  # None
+    elif options.SpellcastingItems.value == SpellcastingItems.option_none:
         spellcasting_items_string = ["-snbr", "-snsb", "-snes"]
+    else:  # vanilla
+        spellcasting_items_string = []
 
     # Moogle Charms equipable by all, no Moogle Charms in item pool, no Sprint Shoes in pool
     # Stronger Atma Weapon, 8-32 battles to uncurse Cursed Shield
     equipability_strings = ["-mca", "-nmc", "-noshoes", "-saw", "-csb", "8", "32"]
     if not options.AllowStrongestItems.value:
         equipability_strings.extend(["-nee", "-nil", "-nfps"])
-    if options.Equipment == 1:  # Shuffled
+    if options.Equipment.value == Equipment.option_shuffled:
         equipability_strings.extend(["-iesr=0", "-iersr=0"])
-    elif options.Equipment == 2:  # Random
+    elif options.Equipment.value == Equipment.option_randomized:
         equipability_strings.extend(["-ier", "1", "14", "-ierr", "1", "14"])
-    elif options.Equipment == 3:  # Balanced Random
+    elif options.Equipment.value == Equipment.option_balanced_random:
         equipability_strings.extend(["-iebr=6", "-ierbr=6"])
+
     chest_randomization = ["-ccsr", "20"]  # Default shuffle + 20% random. Only applies if Treasuresanity = off
+
     return [starting_gp_string, *starting_items_strings, *shops_strings,
             *spellcasting_items_string, *equipability_strings, *chest_randomization]
 

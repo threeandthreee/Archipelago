@@ -1,7 +1,5 @@
 from BaseClasses import ItemClassification, Item, MultiWorld
 
-from . import CTJoTDefaults
-
 from enum import IntEnum
 import json
 from typing import NamedTuple
@@ -188,8 +186,8 @@ class CTJoTItemManager:
 
     _normal_treasures = {
         LocationTiers.LOW: [
-            (5, _filler_item_tiers[ItemTiers.LOW_CONSUMABLE]),
-            (6, _filler_item_tiers[ItemTiers.LOW_GEAR])
+            (50, _filler_item_tiers[ItemTiers.LOW_CONSUMABLE]),
+            (60, _filler_item_tiers[ItemTiers.LOW_GEAR])
         ],
         LocationTiers.LOW_MID: [
             (50,
@@ -308,7 +306,7 @@ class CTJoTItemManager:
         """
         return self._item_data_map_by_name[item_name]
 
-    def create_item(self, item_name: str, player: int) -> Item:
+    def create_item_by_name(self, item_name: str, player: int) -> Item:
         """
         Create an AP Item for the given item id and player.
 
@@ -318,6 +316,14 @@ class CTJoTItemManager:
         """
         item = self.get_item_data_by_name(item_name)
         return Item(item.name, item.classification, item.code, player)
+
+    @staticmethod
+    def create_item(player: int, item: ItemData) -> Item:
+        return Item(item.name, item.classification, item.code, player)
+
+    @staticmethod
+    def create_custom_item(item_name: str, item_code: int, classification: ItemClassification, player: int):
+        return Item(item_name, classification, item_code, player)
 
     def create_item_by_id(self, item_id: int, player: int) -> Item:
         """
@@ -359,87 +365,47 @@ class CTJoTItemManager:
         """
         return Item(item_name, ItemClassification.progression, None, player)
 
-    def select_filler_items(self, location_ids: list[int], multiworld: MultiWorld, player: int) -> list[Item]:
+    def get_random_item_for_location(self, location_id: int, difficulty: str, tab_treasures: int,
+                                     multiworld: MultiWorld, player: int) -> Item:
         """
-        Generate a list of filler items based on the list of filler location ids.
+        Get a random item suitable for the tier of the given location ID.
 
-        Determine what tiers of items to create based on the treasure tier of the locations.
-
-        :param location_ids: List of location IDs to generate items based on
+        :param location_id: Location ID to generate a random item for
+        :param difficulty: Item difficulty chosen by the player
+        :param tab_treasures: Whether to use the tab treasures item distribution
         :param player: ID of the player to create items for
         :param multiworld: Multiworld instance for this game
-        :return: List of filler items
+        :return: Random Item object for the given loation
         """
-        filler_items: list[Item] = []
-        difficulty = getattr(multiworld, "item_difficulty")[player].value
-        tab_treasures = getattr(multiworld, "tab_treasures")[player].value
-        bucket_fragments = getattr(multiworld, "bucket_fragments")[player].value
-        fragment_count = getattr(multiworld, "fragment_count")[player].value
-        game_mode = getattr(multiworld, "game_mode")[player].value
-        chosen_locations = getattr(multiworld, "locations")[player].value
-        if len(chosen_locations) == 0:
-            chosen_locations = CTJoTDefaults.DEFAULT_LOCATIONS
 
-        # Default to normal item difficulty if no value was provided
-        # Mostly to satisfy general unit tests that may not give valid default values.
         if difficulty not in self._valid_item_difficulties:
             difficulty = "Normal"
 
-        for loc_id in location_ids:
-            # Figure out which tier the location is part of
-            loc_tier = LocationTiers.NONE
-            for tier_locations in self._location_tier_mapping.items():
-                if loc_id in tier_locations[1]:
-                    loc_tier = tier_locations[0]
-                    break
-            if loc_tier == LocationTiers.NONE:
-                # This shouldn't be possible, but if it ever happens then raise an exception
-                raise ValueError("ERROR: CTJOT Invalid location id during item creation: " + str(loc_id))
+        # Figure out which treasure tier this location belongs to
+        loc_tier = LocationTiers.NONE
+        for tier_locations in self._location_tier_mapping.items():
+            if location_id in tier_locations[1]:
+                loc_tier = tier_locations[0]
+                break
+        if loc_tier == LocationTiers.NONE:
+            # This shouldn't be possible, but if it ever happens then raise an exception
+            raise ValueError("ERROR: CTJOT Invalid location id during item creation: " + str(location_id))
 
-            # Get a random item ID for this location and difficulty
-            if tab_treasures:
-                # All treasures are tabs if tabsanity is turned on
-                distribution = self._tab_treasures
-            elif loc_tier == LocationTiers.SEALED:
-                distribution = self._sealed_treasures
-            else:
-                distribution = self._treasure_distributions[difficulty][loc_tier]
+        # Select the treasure distribution to use based on game mode and flags
+        if tab_treasures:
+            # All treasures are tabs if tabsanity is turned on
+            distribution = self._tab_treasures
+        elif loc_tier == LocationTiers.SEALED:
+            distribution = self._sealed_treasures
+        else:
+            distribution = self._treasure_distributions[difficulty][loc_tier]
 
-            item_id = self._weighted_random(distribution, multiworld)
+        # Select a treasure and create an Archipelago item from the ID
+        item_id = self._weighted_random(distribution, multiworld)
+        item_data = self._item_data_map_by_id[item_id]
+        item = self.create_item_by_name(item_data.name, player)
 
-            # Create an Archipelago item from the ID
-            item_data = self._item_data_map_by_id[item_id]
-            item = self.create_item(item_data.name, player)
-
-            filler_items.append(item)
-
-        # If the user enabled bucket fragments then overwrite items in the filler list
-        # until we have the specified number of fragments.
-        # Lost Worlds does not support bucket fragments since you can't get to EoT.
-        if bucket_fragments and game_mode != "Lost worlds":
-            # Shuffle the list and overwrite from the beginning.
-            multiworld.random.shuffle(filler_items)
-            for i in range(fragment_count):
-                filler_items[i] = self.create_item("Fragment", player)
-
-        # If this is a Lost Worlds seed we may need to add some character specific items
-        if game_mode == "Lost worlds":
-            items_to_add = []
-            # Determine which items we need to add based on what characters are available.
-            # Remove items from the filler list to make space for our new items.
-            for location in chosen_locations:
-                if "character" in location and location["character"] == "Frog":
-                    items_to_add.append(self.create_item("Grand Leon", player))
-                    items_to_add.append(self.create_item("Hero Medal", player))
-                    filler_items.pop(multiworld.random.randrange(len(filler_items)))
-                    filler_items.pop(multiworld.random.randrange(len(filler_items)))
-                elif "character" in location and location["character"] == "Robo":
-                    items_to_add.append(self.create_item("Robo's Rbn", player))
-                    filler_items.pop(multiworld.random.randrange(len(filler_items)))
-
-            filler_items.extend(items_to_add)
-
-        return filler_items
+        return item
 
     @staticmethod
     def _weighted_random(distribution: list[tuple[int, list[int]]], multiworld: MultiWorld) -> int:

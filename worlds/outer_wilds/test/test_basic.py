@@ -178,3 +178,23 @@ class TestRandomRotationsOff(OuterWildsTestBase):
     options = {
         "randomize_rotations": "false",
     }
+
+
+class TestUpgradeCounts(OuterWildsTestBase):
+    options = {
+        "upgrade_counts": {
+            "Oxygen Capacity Upgrade": 10,
+            "Fuel Capacity Upgrade": 1,
+            "Boost Duration Upgrade": 5,
+        }
+    }
+
+
+class TestZeroUpgradeCounts(OuterWildsTestBase):
+    options = {
+        "upgrade_counts": {
+            "Oxygen Capacity Upgrade": 0,
+            "Fuel Capacity Upgrade": 0,
+            "Boost Duration Upgrade": 0,
+        }
+    }

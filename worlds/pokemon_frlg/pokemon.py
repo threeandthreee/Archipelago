@@ -1,5 +1,6 @@
 import copy
 import math
+from collections import defaultdict
 from typing import TYPE_CHECKING, Dict, List, Set, Tuple
 
 from .data import (data, LEGENDARY_POKEMON, NUM_REAL_SPECIES, NAME_TO_SPECIES_ID, EncounterSpeciesData, EventData,
@@ -114,7 +115,7 @@ _DUNGEON_GROUPS: Dict[str, str] = {
 }
 
 # The tuple represnts (trainer name, starter index in party, starter evolution stage)
-_RIVAL_STARTER_POKEMON: List[Tuple[str, int, int]] = [
+_RIVAL_STARTER_POKEMON: List[List[Tuple[str, int, int]]] = [
     [
         ("TRAINER_RIVAL_OAKS_LAB_BULBASAUR", 0, 0),
         ("TRAINER_RIVAL_ROUTE22_EARLY_BULBASAUR", 1, 0),
@@ -221,7 +222,7 @@ def _get_trainer_pokemon_moves(world: "PokemonFRLGWorld",
         world.per_species_tmhm_moves[species.species_id] = sorted({
             world.modified_tmhm_moves[i]
             for i, is_compatible in enumerate(int_to_bool_array(species.tm_hm_compatibility))
-            if is_compatible and world.modified_tmhm_moves[i] not in world.blacklisted_moves
+            if is_compatible and world.modified_tmhm_moves[i] not in world.blacklisted_tm_tutor_moves
         })
 
     # TMs and HMs compatible with the species
@@ -470,8 +471,6 @@ def randomize_wild_encounters(world: "PokemonFRLGWorld") -> None:
                 slot.species_id = data.constants["SPECIES_TOGEPI"]
         return
 
-    from collections import defaultdict
-
     aide_pokemon_needed = math.ceil(max(world.options.oaks_aide_route_2.value,
                                         world.options.oaks_aide_route_10.value,
                                         world.options.oaks_aide_route_11.value,
@@ -520,7 +519,7 @@ def randomize_wild_encounters(world: "PokemonFRLGWorld") -> None:
         if not map_data.kanto and world.options.kanto_only:
             continue
 
-        new_encounter_slots: List[List[int]] = [None, None, None]
+        new_encounter_slots: List[List[EncounterSpeciesData] | None] = [None, None, None]
         old_encounters = [map_data.land_encounters, map_data.water_encounters, map_data.fishing_encounters]
 
         # Check if the current map is a Route 21 map and the other one has already been randomized.
@@ -565,8 +564,7 @@ def randomize_wild_encounters(world: "PokemonFRLGWorld") -> None:
                         else:
                             # Construct progressive tiers of blacklists that can be peeled back if they
                             # collectively cover too much of the Pokédex. A lower index in `blacklists`
-                            # indicates a more important set of species to avoid. Entries at `0` will
-                            # always be blacklisted.
+                            # indicates a more important set of species to avoid.
                             blacklists: Dict[int, List[Set[int]]] = defaultdict(list)
 
                             # Blacklist Pokémon already on this table
@@ -698,22 +696,39 @@ def randomize_starters(world: "PokemonFRLGWorld") -> None:
     for name, starter in world.modified_starters.items():
         original_starter = data.species[starter.species_id]
 
-        type_blacklist = {
-            species.species_id
-            for species in world.modified_species.values()
-            if not bool(set(species.types) & set(original_starter.types))
-        } if should_match_type else set()
+        # Construct progressive tiers of blacklists that can be peeled back if they
+        # collectively cover too much of the Pokédex. A lower index in `blacklists`
+        # indicates a more important set of species to avoid.
+        blacklists: Dict[int, List[Set[int]]] = defaultdict(list)
 
-        merged_blacklist = set(s.species_id for s in new_starters) | world.blacklisted_starters | type_blacklist
-        if len(merged_blacklist) == NUM_REAL_SPECIES:
-            merged_blacklist = set(s.species_id for s in new_starters) | world.blacklisted_starters
-        if len(merged_blacklist) == NUM_REAL_SPECIES:
-            merged_blacklist = set(s.species_id for s in new_starters)
+        # Blacklist Pokémon that have already been chosen as starters
+        blacklists[0].append(set(s.species_id for s in new_starters))
+
+        # Blacklist from player's options
+        blacklists[1].append(world.blacklisted_starters)
+
+        # Type matching blacklist
+        if should_match_type:
+            blacklists[2].append({
+                species.species_id
+                for species in world.modified_species.values()
+                if not bool(set(species.types) & set(original_starter.types))
+            })
+
+        merged_blacklist: Set[int] = set()
+        for max_priority in reversed(sorted(blacklists.keys())):
+            merged_blacklist = set()
+            for priority in blacklists.keys():
+                if priority <= max_priority:
+                    for blacklist in blacklists[priority]:
+                        merged_blacklist |= blacklist
+
+            if len(merged_blacklist) < NUM_REAL_SPECIES:
+                break
 
         candidates = [
-            species
-            for species in world.modified_species.values()
-            if species.species_id not in merged_blacklist
+            species for species in world.modified_species.values() if
+            species.species_id not in merged_blacklist
         ]
 
         if should_match_bst:
@@ -767,17 +782,46 @@ def randomize_legendaries(world: "PokemonFRLGWorld") -> None:
         for name, legendary in data.legendary_pokemon.items():
             original_species = world.modified_species[legendary.species_id[game_version]]
 
+            # Construct progressive tiers of blacklists that can be peeled back if they
+            # collectively cover too much of the Pokédex. A lower index in `blacklists`
+            # indicates a more important set of species to avoid.
+            blacklists: Dict[int, List[Set[int]]] = defaultdict(list)
+
+            # Blacklist Pokémon that have already been placed as legendary Pokémon
+            blacklists[0].append(placed_species)
+
+            # Blacklist all Pokémon except legendaries if necessary
             if world.options.legendary_pokemon == RandomizeLegendaryPokemon.option_legendaries:
-                candidates = [species for species in world.modified_species.values() if
-                              species.species_id in LEGENDARY_POKEMON and species.species_id not in placed_species]
-            else:
-                candidates = list(world.modified_species.values())
+                blacklists[0].append(set(species.species_id for species in world.modified_species.values()
+                                         if species.species_id not in LEGENDARY_POKEMON))
+
+            # Blacklist from player's options
+            blacklists[1].append(world.blacklisted_legendary_pokemon)
+
+            # Type matching blacklist
             if should_match_type:
-                candidates = [
-                    species
-                    for species in candidates
-                    if bool(set(species.types) & set(original_species.types))
-                ]
+                blacklists[2].append({
+                    species.species_id
+                    for species in world.modified_species.values()
+                    if not bool(set(species.types) & set(original_species.types))
+                })
+
+            merged_blacklist: Set[int] = set()
+            for max_priority in reversed(sorted(blacklists.keys())):
+                merged_blacklist = set()
+                for priority in blacklists.keys():
+                    if priority <= max_priority:
+                        for blacklist in blacklists[priority]:
+                            merged_blacklist |= blacklist
+
+                if len(merged_blacklist) < NUM_REAL_SPECIES:
+                    break
+
+            candidates = [
+                species for species in world.modified_species.values() if
+                species.species_id not in merged_blacklist
+            ]
+
             if should_match_bst:
                 candidates = _filter_species_by_nearby_bst(candidates, sum(original_species.base_stats))
 
@@ -825,21 +869,51 @@ def randomize_misc_pokemon(world: "PokemonFRLGWorld") -> None:
         }
 
         prize_pokemon = set()
+        placed_species = set()
 
         for name, misc_pokemon in data.misc_pokemon.items():
             original_species = world.modified_species[misc_pokemon.species_id[game_version]]
 
-            candidates = list(world.modified_species.values())
+            # Construct progressive tiers of blacklists that can be peeled back if they
+            # collectively cover too much of the Pokédex. A lower index in `blacklists`
+            # indicates a more important set of species to avoid.
+            blacklists: Dict[int, List[Set[int]]] = defaultdict(list)
+
+            # Blacklist Pokémon that have already been placed as a prize Pokémon if necessary
+            if "CELADON_PRIZE_POKEMON" in name:
+                blacklists[0].append(prize_pokemon)
+            else:
+                blacklists[0].append(set())
+
+            # Blacklist from player's options
+            blacklists[1].append(world.blacklisted_misc_pokemon)
+
+            # Type matching blacklist
             if should_match_type:
-                candidates = [
-                    species
-                    for species in candidates
-                    if bool(set(species.types) & set(original_species.types))
-                ]
+                blacklists[2].append({
+                    species.species_id
+                    for species in world.modified_species.values()
+                    if not bool(set(species.types) & set(original_species.types))
+                })
+
+            merged_blacklist: Set[int] = set()
+            for max_priority in reversed(sorted(blacklists.keys())):
+                merged_blacklist = set()
+                for priority in blacklists.keys():
+                    if priority <= max_priority:
+                        for blacklist in blacklists[priority]:
+                            merged_blacklist |= blacklist
+
+                if len(merged_blacklist) < NUM_REAL_SPECIES:
+                    break
+
+            candidates = [
+                species for species in world.modified_species.values() if
+                species.species_id not in merged_blacklist
+            ]
+
             if should_match_bst:
                 candidates = _filter_species_by_nearby_bst(candidates, sum(original_species.base_stats))
-            if "CELADON_PRIZE_POKEMON" in name:
-                candidates = [species for species in candidates if species.species_id not in prize_pokemon]
 
             new_species_id = world.random.choice(candidates).species_id
 
@@ -851,19 +925,47 @@ def randomize_misc_pokemon(world: "PokemonFRLGWorld") -> None:
         for name, trade_pokemon in data.trade_pokemon.items():
             original_species = world.modified_species[trade_pokemon.species_id[game_version]]
 
-            candidates = list(world.modified_species.values())
+            # Construct progressive tiers of blacklists that can be peeled back if they
+            # collectively cover too much of the Pokédex. A lower index in `blacklists`
+            # indicates a more important set of species to avoid.
+            blacklists: Dict[int, List[Set[int]]] = defaultdict(list)
+
+            # Blacklist Pokémon that have already been placed as trade Pokémon
+            blacklists[0].append(placed_species)
+
+            # Blacklist from player's options
+            blacklists[1].append(world.blacklisted_misc_pokemon)
+
+            # Type matching blacklist
             if should_match_type:
-                candidates = [
-                    species
-                    for species in candidates
-                    if bool(set(species.types) & set(original_species.types))
-                ]
+                blacklists[2].append({
+                    species.species_id
+                    for species in world.modified_species.values()
+                    if not bool(set(species.types) & set(original_species.types))
+                })
+
+            merged_blacklist: Set[int] = set()
+            for max_priority in reversed(sorted(blacklists.keys())):
+                merged_blacklist = set()
+                for priority in blacklists.keys():
+                    if priority <= max_priority:
+                        for blacklist in blacklists[priority]:
+                            merged_blacklist |= blacklist
+
+                if len(merged_blacklist) < NUM_REAL_SPECIES:
+                    break
+
+            candidates = [
+                species for species in world.modified_species.values() if
+                species.species_id not in merged_blacklist
+            ]
+
             if should_match_bst:
                 candidates = _filter_species_by_nearby_bst(candidates, sum(original_species.base_stats))
 
             new_species_id = world.random.choice(candidates).species_id
-
             world.modified_trade_pokemon[name].species_id[game_version] = new_species_id
+            placed_species.add(new_species_id)
 
     # Update the events that correspond to the misc Pokémon
     for name, misc_pokemon in world.modified_misc_pokemon.items():
@@ -942,17 +1044,35 @@ def randomize_trainer_parties(world: "PokemonFRLGWorld") -> None:
             if not pokemon.locked:
                 original_species = data.species[pokemon.species_id]
 
-                type_blacklist = {
-                    species.species_id
-                    for species in world.modified_species.values()
-                    if not bool(set(species.types) & set(original_species.types))
-                } if should_match_type else set()
+                # Construct progressive tiers of blacklists that can be peeled back if they
+                # collectively cover too much of the Pokédex. A lower index in `blacklists`
+                # indicates a more important set of species to avoid.
+                blacklists: Dict[int, List[Set[int]]] = defaultdict(list)
 
-                merged_blacklist = world.blacklisted_trainer_pokemon | type_blacklist
-                if len(merged_blacklist) == NUM_REAL_SPECIES:
-                    merged_blacklist = world.blacklisted_trainer_pokemon
-                if len(merged_blacklist) == NUM_REAL_SPECIES:
+                # Start with an empty blacklist
+                blacklists[0].append(set())
+
+                # Blacklist from player's options
+                blacklists[1].append(world.blacklisted_trainer_pokemon)
+
+                # Type matching blacklist
+                if should_match_type:
+                    blacklists[2].append({
+                        species.species_id
+                        for species in world.modified_species.values()
+                        if not bool(set(species.types) & set(original_species.types))
+                    })
+
+                merged_blacklist: Set[int] = set()
+                for max_priority in reversed(sorted(blacklists.keys())):
                     merged_blacklist = set()
+                    for priority in blacklists.keys():
+                        if priority <= max_priority:
+                            for blacklist in blacklists[priority]:
+                                merged_blacklist |= blacklist
+
+                    if len(merged_blacklist) < NUM_REAL_SPECIES:
+                        break
 
                 candidates = [
                     species
@@ -964,7 +1084,6 @@ def randomize_trainer_parties(world: "PokemonFRLGWorld") -> None:
                     candidates = _filter_species_by_nearby_bst(candidates, sum(original_species.base_stats))
 
                 new_species = world.random.choice(candidates)
-
                 new_moves = _get_trainer_pokemon_moves(world, new_species, pokemon)
                 trainer.party.pokemon[i] = TrainerPokemonData(new_species.species_id,
                                                               pokemon.level,
@@ -1002,7 +1121,7 @@ def randomize_tm_moves(world: "PokemonFRLGWorld") -> None:
     new_moves: Set[int] = set()
 
     for i in range(50):
-        new_move = _get_random_move(world, [new_moves, world.blacklisted_moves])
+        new_move = _get_random_move(world, [new_moves, world.blacklisted_tm_tutor_moves])
         new_moves.add(new_move)
         world.modified_tmhm_moves[i] = new_move
 
@@ -1011,7 +1130,7 @@ def randomize_tutor_moves(world: "PokemonFRLGWorld") -> List[int]:
     new_moves = []
 
     for i in range(15):
-        new_move = _get_random_move(world, [set(new_moves), world.blacklisted_moves])
+        new_move = _get_random_move(world, [set(new_moves), world.blacklisted_tm_tutor_moves])
         new_moves.append(new_move)
 
     return new_moves

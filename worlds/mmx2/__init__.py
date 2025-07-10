@@ -135,9 +135,6 @@ class MMX2World(World):
         itempool += [self.create_item(ItemName.crystal_hunter)]
         itempool += [self.create_item(ItemName.sonic_slicer)]
         itempool += [self.create_item(ItemName.strike_chain)]
-        
-        if self.options.shoryuken_in_pool:
-            itempool += [self.create_item(ItemName.shoryuken, ItemClassification.useful)]
 
         # Add armor upgrades into the pool
         base_open = self.options.base_open.value
@@ -146,10 +143,7 @@ class MMX2World(World):
             itempool += [self.create_item(ItemName.helmet)]
         else:
             itempool += [self.create_item(ItemName.body, ItemClassification.useful)]
-            if self.options.logic_helmet_checkpoints.value:
-                itempool += [self.create_item(ItemName.helmet)]
-            else:
-                itempool += [self.create_item(ItemName.helmet, ItemClassification.useful)]
+            itempool += [self.create_item(ItemName.helmet)]
         itempool += [self.create_item(ItemName.arms)]
         if self.options.jammed_buster.value:
             itempool += [self.create_item(ItemName.arms)]
@@ -160,7 +154,6 @@ class MMX2World(World):
             i = self.options.base_heart_tank_count.value
             itempool += [self.create_item(ItemName.heart_tank) for _ in range(i)]
             if i != 8:
-                i = 8 - i
                 itempool += [self.create_item(ItemName.heart_tank, ItemClassification.useful) for _ in range(8 - i)]
         else:
             itempool += [self.create_item(ItemName.heart_tank, ItemClassification.useful) for _ in range(8)]
@@ -173,6 +166,16 @@ class MMX2World(World):
                 itempool += [self.create_item(ItemName.sub_tank, ItemClassification.useful) for _ in range(4 - i)]
         else:
             itempool += [self.create_item(ItemName.sub_tank, ItemClassification.useful) for _ in range(4)]
+
+        # Add optional upgrades into the pool
+        if self.options.shoryuken_in_pool:
+            itempool += [self.create_item(ItemName.shoryuken)]
+        if self.options.quick_charge_in_pool:
+            itempool += [self.create_item(ItemName.chip_quick_charge)]
+        if self.options.speedster_in_pool:
+            itempool += [self.create_item(ItemName.chip_speedster)]
+        if self.options.super_recover_in_pool:
+            itempool += [self.create_item(ItemName.chip_super_recover)]
 
         # Setup junk items
         junk_count = total_required_locations - len(itempool)
@@ -212,17 +215,13 @@ class MMX2World(World):
         # Finish
         self.multiworld.itempool += itempool
 
-    def create_item(self, name: str, force_classification=False) -> Item:
+    def create_item(self, name: str, force_classification=False) -> MMX2Item:
         data = item_table[name]
 
         if force_classification:
             classification = force_classification
-        elif data.progression:
-            classification = ItemClassification.progression
-        elif data.trap:
-            classification = ItemClassification.trap
         else:
-            classification = ItemClassification.filler
+            classification = data.classsification
         
         created_item = MMX2Item(name, classification, data.code, self.player)
 
@@ -240,7 +239,6 @@ class MMX2World(World):
                     self.pickupsanity = slot_data["pickupsanity"]
                     self.jammed_buster = slot_data["jammed_buster"]
                     self.logic_boss_weakness = slot_data["logic_boss_weakness"]
-                    self.logic_helmet_checkpoints = slot_data["logic_helmet_checkpoints"]
                     self.base_open = slot_data["base_open"]
                     self.base_medal_count = slot_data["base_medal_count"]
                     self.base_weapon_count = slot_data["base_weapon_count"]
@@ -263,7 +261,6 @@ class MMX2World(World):
             "pickupsanity": slot_data["pickupsanity"],
             "jammed_buster": slot_data["jammed_buster"],
             "logic_boss_weakness": slot_data["logic_boss_weakness"],
-            "logic_helmet_checkpoints": slot_data["logic_helmet_checkpoints"],
             "base_open": slot_data["base_open_text"],
             "base_medal_count": slot_data["base_medal_count"],
             "base_weapon_count": slot_data["base_weapon_count"],
@@ -289,7 +286,6 @@ class MMX2World(World):
         slot_data["shoryuken_in_pool"] = self.options.shoryuken_in_pool.value
         slot_data["energy_link"] = self.options.energy_link.value
         slot_data["logic_boss_weakness"] = self.options.logic_boss_weakness.value
-        slot_data["logic_helmet_checkpoints"] = self.options.logic_helmet_checkpoints.value
         
         value = 0
         if "Medals" in self.base_open:
@@ -331,7 +327,6 @@ class MMX2World(World):
         self.pickupsanity = self.options.pickupsanity.value
         self.jammed_buster = self.options.jammed_buster.value
         self.logic_boss_weakness = self.options.logic_boss_weakness.value
-        self.logic_helmet_checkpoints = self.options.logic_helmet_checkpoints.value
         self.base_open = self.options.base_open.value.copy()
         self.base_medal_count = self.options.base_medal_count.value
         self.base_weapon_count = self.options.base_weapon_count.value

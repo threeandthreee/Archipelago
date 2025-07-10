@@ -1,6 +1,7 @@
 from BaseClasses import CollectionState
 from Options import Accessibility
 from ..Constants import *
+from ... import OracleOfSeasonsLogicDifficulty
 
 
 # Items predicates ############################################################
@@ -154,11 +155,15 @@ def oos_has_boss_key(state: CollectionState, player: int, dungeon_id: int):
 # Options and generation predicates ###########################################
 
 def oos_option_medium_logic(state: CollectionState, player: int):
-    return state.multiworld.worlds[player].options.logic_difficulty in ["medium", "hard"]
+    return state.multiworld.worlds[player].options.logic_difficulty >= OracleOfSeasonsLogicDifficulty.option_medium
 
 
 def oos_option_hard_logic(state: CollectionState, player: int):
-    return state.multiworld.worlds[player].options.logic_difficulty == "hard"
+    return state.multiworld.worlds[player].options.logic_difficulty >= OracleOfSeasonsLogicDifficulty.option_hard
+
+
+def oos_option_hell_logic(state: CollectionState, player: int):
+    return state.multiworld.worlds[player].options.logic_difficulty >= OracleOfSeasonsLogicDifficulty.option_hell
 
 
 def oos_option_shuffled_dungeons(state: CollectionState, player: int):
@@ -326,9 +331,9 @@ def oos_has_rupees_for_shop(state: CollectionState, player: int, shop_name: str)
 
 
 def oos_can_farm_rupees(state: CollectionState, player: int):
-    # Having a sword or a shovel is enough to guarantee that we can reach a significant amount of rupees
+    # Having a weapon to get  or a shovel is enough to guarantee that we can reach a significant amount of rupees
     return any([
-        oos_has_sword(state, player),
+        oos_can_kill_normal_enemy(state, player, False, False),
         oos_has_shovel(state, player)
     ])
 
@@ -750,7 +755,11 @@ def oos_can_harvest_gasha(state: CollectionState, player: int, count: int):
 def oos_can_push_enemy(state: CollectionState, player: int):
     return any([
         oos_has_rod(state, player),
-        oos_has_shield(state, player)
+        oos_has_shield(state, player),
+        all([
+            oos_option_medium_logic(state, player),
+            oos_has_shovel(state, player)
+        ])
     ])
 
 
@@ -818,9 +827,11 @@ def oos_can_kill_normal_using_slingshot(state: CollectionState, player: int, all
             all([
                 oos_option_medium_logic(state, player),
                 any([
-                    allow_gale_seeds,
+                    all([
+                        allow_gale_seeds,
+                        oos_has_gale_seeds(state, player),
+                    ]),
                     oos_has_mystery_seeds(state, player),
-                    oos_has_gale_seeds(state, player),
                 ])
             ])
         ])
@@ -1015,11 +1026,11 @@ def oos_can_meet_maple(state: CollectionState, player: int):
 
 def oos_season_in_spool_swamp(state: CollectionState, player: int, season: int):
     return any([
-       oos_get_default_season(state, player, "SPOOL_SWAMP") == season,
-       all([
-           oos_has_season(state, player, season),
-           state.has("_reached_spool_stump", player)
-       ]) 
+        oos_get_default_season(state, player, "SPOOL_SWAMP") == season,
+        all([
+            oos_has_season(state, player, season),
+            state.has("_reached_spool_stump", player)
+        ])
     ])
 
 
@@ -1070,10 +1081,24 @@ def oos_season_in_eastern_suburbs(state: CollectionState, player: int, season: i
     ])
 
 
+def oos_not_season_in_eastern_suburbs(state: CollectionState, player: int, season: int):
+    return any([
+        oos_get_default_season(state, player, "EASTERN_SUBURBS") != season,
+        oos_can_remove_season(state, player, season)
+    ])
+
+
 def oos_season_in_sunken_city(state: CollectionState, player: int, season: int):
     return any([
         oos_get_default_season(state, player, "SUNKEN_CITY") == season,
-        oos_has_season(state, player, season)
+        all([
+            oos_has_season(state, player, season),
+            any([
+                oos_get_default_season(state, player, "SUNKEN_CITY") == SEASON_WINTER,
+                oos_can_swim(state, player, True),
+                state.has("_saved_dimitri_in_sunken_city", player)
+            ])
+        ])
     ])
 
 
@@ -1141,3 +1166,118 @@ def oos_self_locking_item(state: CollectionState, player: int, region_name: str,
 def oos_self_locking_small_key(state: CollectionState, player: int, region_name: str, dungeon: int):
     item_name = f"Small Key ({DUNGEON_NAMES[dungeon]})"
     return oos_self_locking_item(state, player, region_name, item_name)
+
+
+# Rooster adventure logic  ######################################################
+def oos_roosters(state: CollectionState, player: int):
+    if state.tloz_oos_available_cuccos[player] is None:
+        # This computes cuccos for the whole game then caches it
+        available_cuccos = {
+            "cucco mountain": (-1, -1, -1),
+            "horon": (-1, -1, -1),
+            "suburbs": (-1, -1, -1),
+            "moblin road": (-1, -1, -1),
+            "sunken": (-1, -1, -1),
+            "swamp": (-1, -1, -1)
+        }
+
+        def register_cucco(region: str, new_cuccos: tuple[int, int, int]):
+            old_cuccos = available_cuccos[region]
+            available_cuccos[region] = tuple([max(old_cuccos[i], new_cuccos[i]) for i in range(3)])
+
+        def use_any_cucco(cuccos: tuple[int, int, int]) -> tuple[int, int, int]:
+            return cuccos[0] - 1, cuccos[1], cuccos[2]
+
+        def use_top_cucco(cuccos: tuple[int, int, int]) -> tuple[int, int, int]:
+            return cuccos[0] - 1, cuccos[1] - 1, cuccos[2]
+
+        def use_bottom_cucco(cuccos: tuple[int, int, int]) -> tuple[int, int, int]:
+            return cuccos[0] - 1, cuccos[1], cuccos[2] - 1
+
+        # These tops count the 2 tops that have to be sacrificed to exit mt cucco
+        if state.has("Shovel", player):
+            if state.has("Progressive Boomerang", player):
+                top = 3
+            else:
+                top = 2
+        elif state.has("Progressive Boomerang", player) and oos_can_use_pegasus_seeds(state, player):
+            top = 2
+        else:
+            top = 1  # Sign + season indicator
+
+        if oos_season_in_mt_cucco(state, player, SEASON_SPRING) \
+                and (oos_can_break_flowers(state, player) or state.has("Spring Banana", player)):
+            bottom = 2  # Sign
+            # No more than 2 bottoms can be used in logic currently
+        else:
+            bottom = 0
+
+        available_cuccos["cucco mountain"] = (top + bottom, top, bottom)
+
+        if oos_can_jump_3_wide_pit(state, player) or oos_can_swim(state, player, True):
+            # Either go to holdrum plains through natzu's water or through temple remains
+            available_cuccos["horon"] = available_cuccos["cucco mountain"]
+
+        if oos_has_flute(state, player):
+            # go from holodrum to sunken
+            available_cuccos["sunken"] = available_cuccos["horon"]
+        elif oos_is_companion_moosh(state, player):
+            if oos_can_jump_4_wide_liquid(state, player) or oos_has_flute(state, player):
+                # go from holodrum to sunken
+                available_cuccos["sunken"] = available_cuccos["horon"]
+            elif oos_can_jump_3_wide_pit(state, player):
+                # go from holodrum to sunken, through moblin fortress
+                available_cuccos["sunken"] = use_top_cucco(available_cuccos["horon"])
+        elif oos_is_companion_ricky(state, player):
+            # go from natzu north to sunken
+            if oos_can_break_flowers(state, player) and oos_can_swim(state, player, False):  # distance bush break
+                available_cuccos["sunken"] = use_any_cucco(available_cuccos["cucco mountain"])
+        elif oos_can_swim(state, player, False):
+            # go from natzu north to sunken
+            available_cuccos["sunken"] = available_cuccos["cucco mountain"]
+        # Jump from sunken to suburbs
+        available_cuccos["suburbs"] = available_cuccos["sunken"]
+
+        if oos_can_use_ember_seeds(state, player, False):
+            # Go through horon village
+            available_cuccos["suburbs"] = available_cuccos["horon"]
+        elif oos_season_in_eyeglass_lake(state, player, SEASON_WINTER) \
+                or ((oos_get_default_season(state, player, "EYEGLASS_LAKE") != SEASON_SUMMER or
+                     oos_can_remove_season(state, player, SEASON_SUMMER)) and oos_can_swim(state, player, True)):
+            # Go through the suburbs portal screen
+            available_cuccos["suburbs"] = use_any_cucco(available_cuccos["horon"])
+
+        if oos_season_in_eastern_suburbs(state, player, SEASON_SPRING):
+            # Use the flower to go from suburbs to sunken
+            register_cucco("sunken", available_cuccos["suburbs"])
+
+        if oos_season_in_eastern_suburbs(state, player, SEASON_WINTER):
+            # Walk
+            available_cuccos["moblin road"] = available_cuccos["suburbs"]
+        else:
+            # Use a top cucco from the top of the spring flower to go past the tree
+            available_cuccos["moblin road"] = use_top_cucco(available_cuccos["sunken"])
+
+        if any([
+            oos_season_in_holodrum_plain(state, player, SEASON_SUMMER),
+            oos_can_jump_4_wide_pit(state, player),
+            oos_can_summon_ricky(state, player),
+            oos_can_summon_moosh(state, player)
+        ]):
+            # Move up the swamp vines regularly
+            available_cuccos["swamp"] = available_cuccos["horon"]
+        else:
+            # Or use a bottom cucco
+            available_cuccos["swamp"] = use_bottom_cucco(available_cuccos["horon"])
+
+        for region in available_cuccos:
+            if any([available_cuccos[region][i] < 0 for i in range(3)]):
+                available_cuccos[region] = (-1, -1, -1)
+        state.tloz_oos_available_cuccos[player] = available_cuccos
+
+    return state.tloz_oos_available_cuccos[player]
+
+
+def oos_can_reach_rooster_adventure(state: CollectionState, player: int):
+    # This is only safe if an indirect condition is set
+    return oos_option_hell_logic(state, player) and state.can_reach_region("rooster adventure", player)

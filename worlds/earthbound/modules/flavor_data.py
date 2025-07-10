@@ -301,7 +301,7 @@ vanilla_flavor_pointers = {
 }
 
 
-def create_flavors(world):
+def create_flavors(world) -> None:
     world.flavor_text = []
     world.flavor_pointer = [0x01F72B, 0x01F746, 0x01F761, 0x01F77C]
     flavor_num = 0

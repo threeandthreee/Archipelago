@@ -1,9 +1,12 @@
 from dataclasses import dataclass
+from typing import List
 
 from schema import Schema, Optional, And
 
-from Options import TextChoice, Range, Toggle, PerGameCommonOptions, Visibility, OptionDict, Choice, OptionSet, FreeText
+from Options import TextChoice, Range, Toggle, PerGameCommonOptions, Visibility, OptionDict, Choice, OptionSet, \
+    FreeText, OptionGroup
 
+NUM_CUSTOM = 5
 
 class Character(OptionSet):
     """Enter the list of characters to play as.  Valid characters are:
@@ -18,7 +21,8 @@ class Character(OptionSet):
         'Champ'
         'Gremlins'
         'Automaton'
-        'Snecko'"""
+        'Snecko'
+        'Collector'"""
     display_name = "Character"
     valid_keys = [
         "Ironclad",
@@ -33,12 +37,19 @@ class Character(OptionSet):
         "Gremlins",
         "Automaton",
         "Snecko",
+        "Collector",
     ]
     default = ["Ironclad"]
     valid_keys_casefold = False
     # TODO: Spire Takes the wheel doesn't work with the current setup
     # option_spire_take_the_wheel = 12
 
+class GoalNumChar(Range):
+    """How many characters you need to complete a run with before you goal. 0 means all characters"""
+    display_name = "Number of Characters to Goal"
+    range_start = 0
+    range_end = 13 + NUM_CUSTOM
+    default = 0
 
 class Ascension(Range):
     """What Ascension do you wish to play with."""
@@ -47,6 +58,13 @@ class Ascension(Range):
     range_end = 20
     default = 0
 
+class PickNumberCharacters(Range):
+    """Randomly select from the configured characters this many characters to generate for.
+    0 disables."""
+    display_name = "Pick Number of Characters"
+    range_start = 0
+    range_end = 13 + NUM_CUSTOM - 1
+    default = 0
 
 class FinalAct(Toggle):
     """Whether you will need to collect the 3 keys and beat the final act to complete the game."""
@@ -136,6 +154,16 @@ class ShopSanityCosts(Choice):
     option_Tiered = 3
     default = 2
 
+class GoldSanity(Toggle):
+    """Whether to enable shuffling gold rewards into the multiworld. Adds 27 locations per character"""
+    display_name = "Gold Sanity"
+    default = 0
+
+class PotionSanity(Toggle):
+    """Whether to enable shuffling potion drops into the multiworld; adds 9 locations per character."""
+    display_name = "Potion Sanity"
+    default = 0
+
 class SeededRun(Toggle):
     """Whether each character should have a fixed seed to climb the spire with or not."""
     display_name = "Seeded Run"
@@ -210,6 +238,7 @@ class CharacterOptions(OptionDict):
 @dataclass
 class SpireOptions(PerGameCommonOptions):
     character: Character
+    num_chars_goal: GoalNumChar
     ascension: Ascension
     final_act: FinalAct
     downfall: Downfall
@@ -219,7 +248,10 @@ class SpireOptions(PerGameCommonOptions):
     lock_characters: LockCharacters
     unlocked_character: UnlockedCharacter
     advanced_characters: CharacterOptions
+    pick_num_characters: PickNumberCharacters
     campfire_sanity: CampfireSanity
+    gold_sanity: GoldSanity
+    potion_sanity: PotionSanity
     seeded: SeededRun
     chatty_mc: ChattyMC
     shop_sanity: ShopSanity
@@ -229,3 +261,22 @@ class SpireOptions(PerGameCommonOptions):
     shop_potion_slots: ShopPotionSlots
     shop_remove_slots: ShopRemoveSlots
     shop_sanity_costs: ShopSanityCosts
+
+option_groups: List[OptionGroup] = [
+    OptionGroup("Sanities", [
+        IncludeFloorChecks,
+        CampfireSanity,
+        GoldSanity,
+        PotionSanity,
+        ShopSanity,
+        ShopCardSlots,
+        ShopNeutralSlots,
+        ShopRelicSlots,
+        ShopPotionSlots,
+        ShopRemoveSlots,
+        ShopSanityCosts,
+    ]),
+    OptionGroup("Misc", [
+        ChattyMC,
+    ])
+]

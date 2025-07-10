@@ -4,7 +4,7 @@ from Options import Toggle
 import worlds._bizhawk as bizhawk
 from worlds._bizhawk.client import BizHawkClient
 from .data import data, APWORLD_VERSION
-from .options import Goal
+from .options import Goal, ProvideHints
 
 if TYPE_CHECKING:
     from worlds._bizhawk.context import BizHawkClientContext
@@ -74,17 +74,112 @@ TRACKER_FLY_UNLOCK_FLAGS = [
 ]
 FLY_UNLOCK_FLAG_MAP = {data.constants[flag_name]: flag_name for flag_name in TRACKER_FLY_UNLOCK_FLAGS}
 
+TRACKER_STATIC_POKEMON_FLAGS = [
+    "FLAG_TALKED_TO_MAGIKARP_SALESMAN",
+    "FLAG_VIEWED_ZYNX_TRADE", # Jynx Trade
+    "FLAG_VIEWED_MS_NIDO_TRADE", # Nidoran M/F Trade
+    "FLAG_VIEWED_CH_DING_TRADE", # Farfetch'd Trade
+    "FLAG_VIEWED_MIMIEN_TRADE", # Mr. Mime Trade
+    "FLAG_VIEWED_NINA_TRADE", # Nidorino/Nidorina Trade,
+    "FLAG_FOUGHT_POWER_PLANT_ELECTRODE_1",
+    "FLAG_FOUGHT_POWER_PLANT_ELECTRODE_2",
+    "FLAG_FOUGHT_ZAPDOS",
+    "FLAG_VIEWED_PRIZE_POKEMON",
+    "FLAG_GOT_EEVEE",
+    "FLAG_FOUGHT_ROUTE_12_SNORLAX",
+    "FLAG_FOUGHT_ROUTE_16_SNORLAX",
+    "FLAG_VIEWED_MARC_TRADE", # Lickitung Trade
+    "FLAG_VIEWED_HITMONLEE_FROM_DOJO",
+    "FLAG_VIEWED_HITMONCHAN_FROM_DOJO",
+    "FLAG_GOT_LAPRAS_FROM_SILPH",
+    "FLAG_FOUGHT_ARTICUNO",
+    "FLAG_VIEWED_ESPHERE_TRADE", # Electrode Trade
+    "FLAG_VIEWED_TANGENY_TRADE", # Tangela Trade
+    "FLAG_VIEWED_SEELOR_TRADE", # Seel Trade
+    "FLAG_REVIVED_DOME",
+    "FLAG_REVIVED_HELIX",
+    "FLAG_REVIVED_AMBER",
+    "FLAG_FOUGHT_MOLTRES",
+    "FLAG_FOUGHT_BERRY_FOREST_HYPNO",
+    "FLAG_GOT_TOGEPI_EGG",
+    "FLAG_FOUGHT_MEWTWO",
+    "FLAG_FOUGHT_HO_OH",
+    "FLAG_FOUGHT_LUGIA",
+    "FLAG_FOUGHT_DEOXYS"
+]
+STATIC_POKEMON_FLAG_MAP = {data.constants[flag_name]: flag_name for flag_name in TRACKER_STATIC_POKEMON_FLAGS}
+
 HINT_FLAGS = {
-    "FLAG_HINT_ROUTE_2_OAKS_AIDE": "NPC_GIFT_GOT_HM05",
-    "FLAG_HINT_ROUTE_10_OAKS_AIDE": "NPC_GIFT_GOT_EVERSTONE_FROM_OAKS_AIDE",
-    "FLAG_HINT_ROUTE_11_OAKS_AIDE": "NPC_GIFT_GOT_ITEMFINDER",
-    "FLAG_HINT_ROUTE_16_OAKS_AIDE": "NPC_GIFT_GOT_AMULET_COIN_FROM_OAKS_AIDE",
-    "FLAG_HINT_ROUTE_15_OAKS_AIDE": "NPC_GIFT_GOT_EXP_SHARE_FROM_OAKS_AIDE",
-    "FLAG_HINT_BICYCLE_SHOP": "NPC_GIFT_GOT_BICYCLE",
-    "FLAG_HINT_SHOW_MAGIKARP": "NPC_GIFT_GOT_NET_BALL_FROM_ROUTE12_FISHING_HOUSE",
-    "FLAG_HINT_SHOW_HERACROSS": "NPC_GIFT_GOT_NEST_BALL_FROM_WATER_PATH_HOUSE_1",
-    "FLAG_HINT_SHOW_RESORT_GORGEOUS_MON": "NPC_GIFT_GOT_LUXURY_BALL_FROM_RESORT_GORGEOUS_HOUSE",
-    "FLAG_HINT_SHOW_TOGEPI": "FAME_CHECKER_DAISY_3"
+    "FLAG_HINT_VIRIDIAN_SHOP": ["SHOP_VIRIDIAN_CITY_1", "SHOP_VIRIDIAN_CITY_2", "SHOP_VIRIDIAN_CITY_3",
+                                "SHOP_VIRIDIAN_CITY_4"],
+    "FLAG_HINT_PEWTER_SHOP": ["SHOP_PEWTER_CITY_1", "SHOP_PEWTER_CITY_2", "SHOP_PEWTER_CITY_3", "SHOP_PEWTER_CITY_4",
+                              "SHOP_PEWTER_CITY_5", "SHOP_PEWTER_CITY_6", "SHOP_PEWTER_CITY_7", "SHOP_PEWTER_CITY_8"],
+    "FLAG_HINT_CERULEAN_SHOP": ["SHOP_CERULEAN_CITY_1", "SHOP_CERULEAN_CITY_2", "SHOP_CERULEAN_CITY_3",
+                                "SHOP_CERULEAN_CITY_4", "SHOP_CERULEAN_CITY_5", "SHOP_CERULEAN_CITY_6",
+                                "SHOP_CERULEAN_CITY_7", "SHOP_CERULEAN_CITY_8", "SHOP_CERULEAN_CITY_9"],
+    "FLAG_HINT_VERMILION_SHOP": ["SHOP_VERMILION_CITY_1", "SHOP_VERMILION_CITY_2", "SHOP_VERMILION_CITY_3",
+                                 "SHOP_VERMILION_CITY_4", "SHOP_VERMILION_CITY_5", "SHOP_VERMILION_CITY_6",
+                                 "SHOP_VERMILION_CITY_7"],
+    "FLAG_HINT_LAVENDER_SHOP": ["SHOP_LAVENDER_TOWN_1", "SHOP_LAVENDER_TOWN_2", "SHOP_LAVENDER_TOWN_3",
+                                "SHOP_LAVENDER_TOWN_4", "SHOP_LAVENDER_TOWN_5", "SHOP_LAVENDER_TOWN_6",
+                                "SHOP_LAVENDER_TOWN_7", "SHOP_LAVENDER_TOWN_8", "SHOP_LAVENDER_TOWN_9"],
+    "FLAG_HINT_CELADON_ITEM_SHOP": ["SHOP_CELADON_CITY_DEPT_ITEM_1", "SHOP_CELADON_CITY_DEPT_ITEM_2",
+                                    "SHOP_CELADON_CITY_DEPT_ITEM_3", "SHOP_CELADON_CITY_DEPT_ITEM_4",
+                                    "SHOP_CELADON_CITY_DEPT_ITEM_5", "SHOP_CELADON_CITY_DEPT_ITEM_6",
+                                    "SHOP_CELADON_CITY_DEPT_ITEM_7", "SHOP_CELADON_CITY_DEPT_ITEM_8",
+                                    "SHOP_CELADON_CITY_DEPT_ITEM_9"],
+    "FLAG_HINT_CELADON_TM_SHOP": ["SHOP_CELADON_CITY_DEPT_TM_1", "SHOP_CELADON_CITY_DEPT_TM_2",
+                                  "SHOP_CELADON_CITY_DEPT_TM_3", "SHOP_CELADON_CITY_DEPT_TM_4",
+                                  "SHOP_CELADON_CITY_DEPT_TM_5", "SHOP_CELADON_CITY_DEPT_TM_6"],
+    "FLAG_HINT_CELADON_EVO_SHOP": ["SHOP_CELADON_CITY_DEPT_EVO_1", "SHOP_CELADON_CITY_DEPT_EVO_2",
+                                   "SHOP_CELADON_CITY_DEPT_EVO_3", "SHOP_CELADON_CITY_DEPT_EVO_4",
+                                   "SHOP_CELADON_CITY_DEPT_EVO_5", "SHOP_CELADON_CITY_DEPT_EVO_6"],
+    "FLAG_HINT_CELADON_BATTLE_SHOP": ["SHOP_CELADON_CITY_DEPT_BATTLE_1", "SHOP_CELADON_CITY_DEPT_BATTLE_2",
+                                      "SHOP_CELADON_CITY_DEPT_BATTLE_3", "SHOP_CELADON_CITY_DEPT_BATTLE_4",
+                                      "SHOP_CELADON_CITY_DEPT_BATTLE_5", "SHOP_CELADON_CITY_DEPT_BATTLE_6",
+                                      "SHOP_CELADON_CITY_DEPT_BATTLE_7"],
+    "FLAG_HINT_CELADON_VITAMIN_SHOP": ["SHOP_CELADON_CITY_DEPT_VITAMIN_1", "SHOP_CELADON_CITY_DEPT_VITAMIN_2",
+                                       "SHOP_CELADON_CITY_DEPT_VITAMIN_3", "SHOP_CELADON_CITY_DEPT_VITAMIN_4",
+                                       "SHOP_CELADON_CITY_DEPT_VITAMIN_5", "SHOP_CELADON_CITY_DEPT_VITAMIN_6"],
+    "FLAG_HINT_FUCHSIA_SHOP": ["SHOP_FUCHSIA_CITY_1", "SHOP_FUCHSIA_CITY_2", "SHOP_FUCHSIA_CITY_3",
+                               "SHOP_FUCHSIA_CITY_4", "SHOP_FUCHSIA_CITY_5", "SHOP_FUCHSIA_CITY_6"],
+    "FLAG_HINT_SAFFRON_SHOP": ["SHOP_SAFFRON_CITY_1", "SHOP_SAFFRON_CITY_2", "SHOP_SAFFRON_CITY_3",
+                               "SHOP_SAFFRON_CITY_4", "SHOP_SAFFRON_CITY_5", "SHOP_SAFFRON_CITY_6"],
+    "FLAG_HINT_CINNABAR_SHOP": ["SHOP_CINNABAR_ISLAND_1", "SHOP_CINNABAR_ISLAND_2", "SHOP_CINNABAR_ISLAND_3",
+                                "SHOP_CINNABAR_ISLAND_4", "SHOP_CINNABAR_ISLAND_5", "SHOP_CINNABAR_ISLAND_6",
+                                "SHOP_CINNABAR_ISLAND_7"],
+    "FLAG_HINT_INDIGO_SHOP": ["SHOP_INDIGO_PLATEAU_1", "SHOP_INDIGO_PLATEAU_2", "SHOP_INDIGO_PLATEAU_3",
+                              "SHOP_INDIGO_PLATEAU_4", "SHOP_INDIGO_PLATEAU_5", "SHOP_INDIGO_PLATEAU_6",
+                              "SHOP_INDIGO_PLATEAU_7"],
+    "FLAG_HINT_TWO_ISLAND_INITIAL_SHOP": ["SHOP_TWO_ISLAND_EXPANDED3_1", "SHOP_TWO_ISLAND_EXPANDED3_7"],
+    "FLAG_HINT_TWO_ISLAND_EXPANDED_1_SHOP": ["SHOP_TWO_ISLAND_EXPANDED3_2", "SHOP_TWO_ISLAND_EXPANDED3_6"],
+    "FLAG_HINT_TWO_ISLAND_EXPANDED_2_SHOP": ["SHOP_TWO_ISLAND_EXPANDED3_5", "SHOP_TWO_ISLAND_EXPANDED3_8"],
+    "FLAG_HINT_TWO_ISLAND_EXPANDED_3_SHOP": ["SHOP_TWO_ISLAND_EXPANDED3_3", "SHOP_TWO_ISLAND_EXPANDED3_4",
+                                             "SHOP_TWO_ISLAND_EXPANDED3_9"],
+    "FLAG_HINT_THREE_ISLAND_SHOP": ["SHOP_THREE_ISLAND_1", "SHOP_THREE_ISLAND_2", "SHOP_THREE_ISLAND_3",
+                                    "SHOP_THREE_ISLAND_4", "SHOP_THREE_ISLAND_5", "SHOP_THREE_ISLAND_6"],
+    "FLAG_HINT_FOUR_ISLAND_SHOP": ["SHOP_FOUR_ISLAND_1", "SHOP_FOUR_ISLAND_2", "SHOP_FOUR_ISLAND_3",
+                                   "SHOP_FOUR_ISLAND_4", "SHOP_FOUR_ISLAND_5", "SHOP_FOUR_ISLAND_6",
+                                   "SHOP_FOUR_ISLAND_7", "SHOP_FOUR_ISLAND_8"],
+    "FLAG_HINT_SIX_ISLAND_SHOP": ["SHOP_SIX_ISLAND_1", "SHOP_SIX_ISLAND_2", "SHOP_SIX_ISLAND_3",
+                                  "SHOP_SIX_ISLAND_4", "SHOP_SIX_ISLAND_5", "SHOP_SIX_ISLAND_6",
+                                  "SHOP_SIX_ISLAND_7", "SHOP_SIX_ISLAND_8"],
+    "FLAG_HINT_SEVEN_ISLAND_SHOP": ["SHOP_SEVEN_ISLAND_1", "SHOP_SEVEN_ISLAND_2", "SHOP_SEVEN_ISLAND_3",
+                                    "SHOP_SEVEN_ISLAND_4", "SHOP_SEVEN_ISLAND_5", "SHOP_SEVEN_ISLAND_6",
+                                    "SHOP_SEVEN_ISLAND_7", "SHOP_SEVEN_ISLAND_8", "SHOP_SEVEN_ISLAND_9"],
+    "FLAG_HINT_TRAINER_TOWER_SHOP": ["SHOP_TRAINER_TOWER_1", "SHOP_TRAINER_TOWER_2", "SHOP_TRAINER_TOWER_3",
+                                     "SHOP_TRAINER_TOWER_4", "SHOP_TRAINER_TOWER_5", "SHOP_TRAINER_TOWER_6",
+                                     "SHOP_TRAINER_TOWER_7", "SHOP_TRAINER_TOWER_8", "SHOP_TRAINER_TOWER_9"],
+    "FLAG_HINT_ROUTE_2_OAKS_AIDE": ["NPC_GIFT_GOT_HM05"],
+    "FLAG_HINT_ROUTE_10_OAKS_AIDE": ["NPC_GIFT_GOT_EVERSTONE_FROM_OAKS_AIDE"],
+    "FLAG_HINT_ROUTE_11_OAKS_AIDE": ["NPC_GIFT_GOT_ITEMFINDER"],
+    "FLAG_HINT_ROUTE_16_OAKS_AIDE": ["NPC_GIFT_GOT_AMULET_COIN_FROM_OAKS_AIDE"],
+    "FLAG_HINT_ROUTE_15_OAKS_AIDE": ["NPC_GIFT_GOT_EXP_SHARE_FROM_OAKS_AIDE"],
+    "FLAG_HINT_BICYCLE_SHOP": ["NPC_GIFT_GOT_BICYCLE"],
+    "FLAG_HINT_SHOW_MAGIKARP": ["NPC_GIFT_GOT_NET_BALL_FROM_ROUTE12_FISHING_HOUSE"],
+    "FLAG_HINT_SHOW_HERACROSS": ["NPC_GIFT_GOT_NEST_BALL_FROM_WATER_PATH_HOUSE_1"],
+    "FLAG_HINT_SHOW_RESORT_GORGEOUS_MON": ["NPC_GIFT_GOT_LUXURY_BALL_FROM_RESORT_GORGEOUS_HOUSE"],
+    "FLAG_HINT_SHOW_TOGEPI": ["FAME_CHECKER_DAISY_3"]
 }
 HINT_FLAG_MAP = {data.constants[flag_name]: flag_name for flag_name in HINT_FLAGS.keys()}
 
@@ -129,15 +224,16 @@ class PokemonFRLGClient(BizHawkClient):
     game = "Pokemon FireRed and LeafGreen"
     system = "GBA"
     patch_suffix = (".apfirered", ".apleafgreen")
-    game_version: str
+    game_version: str | None
     goal_flag: int | None
     local_checked_locations: Set[int]
     local_events: Dict[str, bool]
     local_fly_unlocks: Dict[str, bool]
+    local_static_pokemon: Dict[str, bool]
     local_hints: List[str]
     local_pokemon: Dict[str, List[int]]
     local_pokemon_count: int
-    death_counter: int | None
+    local_entrances: Dict[str, str]
     previous_death_link: float
     ignore_next_death_link: bool
     current_map: Tuple[int, int]
@@ -147,12 +243,14 @@ class PokemonFRLGClient(BizHawkClient):
         self.game_version = None
         self.goal_flag = None
         self.local_checked_locations = set()
-        self.local_events = dict()
-        self.local_fly_unlocks = dict()
-        self.local_hints = list()
-        self.local_pokemon = {"seen": list(), "caught": list()}
+        self.local_events = {}
+        self.local_fly_unlocks = {}
+        self.local_static_pokemon = {}
+        self.local_hints = []
+        self.local_pokemon = {"seen": [], "caught": []}
         self.local_pokemon_count = 0
-        self.death_counter = None
+        self.local_entrances = {}
+        self.read_entrances = False
         self.previous_death_link = 0
         self.ignore_next_death_link = False
         self.current_map = (0, 0)
@@ -239,13 +337,26 @@ class PokemonFRLGClient(BizHawkClient):
         if ctx.server is None or ctx.server.socket.closed or ctx.slot_data is None:
             return
 
-        if ctx.slot_data["goal"] == Goal.option_champion:
-            self.goal_flag = data.constants["FLAG_DEFEATED_CHAMP"]
-        if ctx.slot_data["goal"] == Goal.option_champion_rematch:
-            self.goal_flag = data.constants["FLAG_DEFEATED_CHAMP_REMATCH"]
+        if self.goal_flag is None:
+            if ctx.slot_data["goal"] == Goal.option_champion:
+                self.goal_flag = data.constants["FLAG_DEFEATED_CHAMP"]
+            if ctx.slot_data["goal"] == Goal.option_champion_rematch:
+                self.goal_flag = data.constants["FLAG_DEFEATED_CHAMP_REMATCH"]
 
         try:
             guards: Dict[str, Tuple[int, bytes, str]] = {}
+
+            # Scout the locations that can be hinted if provide hints is turned on
+            if ctx.slot_data["provide_hints"] != ProvideHints.option_off and ctx.locations_info == {}:
+                hint_ids = []
+                for locations in HINT_FLAGS.values():
+                    hint_ids.extend([data.locations[loc].flag for loc in locations
+                                     if data.locations[loc].flag in ctx.missing_locations])
+                await ctx.send_msgs([{
+                    "cmd": "LocationScouts",
+                    "locations": hint_ids,
+                    "create_as_hint": 0
+                }])
 
             # Checks that the player is in the overworld
             guards["IN OVERWORLD"] = (
@@ -273,6 +384,7 @@ class PokemonFRLGClient(BizHawkClient):
             sb2_address = int.from_bytes(guards["SAVE BLOCK 2"][1], "little")
 
             await self.handle_map_update(ctx, guards)
+            await self.handle_entrance_updates(ctx, guards)
             await self.handle_death_link(ctx, guards)
             await self.handle_received_items(ctx, guards)
 
@@ -353,9 +465,10 @@ class PokemonFRLGClient(BizHawkClient):
             game_clear = False
             local_events = {flag_name: False for flag_name in TRACKER_EVENT_FLAGS}
             local_fly_unlocks = {flag_name: False for flag_name in TRACKER_FLY_UNLOCK_FLAGS}
+            local_static_pokemon = {flag_name: False for flag_name in TRACKER_STATIC_POKEMON_FLAGS}
             local_hints = {flag_name: False for flag_name in HINT_FLAGS.keys()}
             local_checked_locations: Set[int] = set()
-            local_pokemon: Dict[str, List[int]] = {"caught": list(), "seen": list()}
+            local_pokemon: Dict[str, List[int]] = {"caught": [], "seen": []}
             local_pokemon_count = 0
 
             # Check set flags
@@ -375,6 +488,9 @@ class PokemonFRLGClient(BizHawkClient):
 
                         if location_id in FLY_UNLOCK_FLAG_MAP:
                             local_fly_unlocks[FLY_UNLOCK_FLAG_MAP[location_id]] = True
+
+                        if location_id in STATIC_POKEMON_FLAG_MAP:
+                            local_static_pokemon[STATIC_POKEMON_FLAG_MAP[location_id]] = True
 
                         if location_id in HINT_FLAG_MAP:
                             local_hints[HINT_FLAG_MAP[location_id]] = True
@@ -447,7 +563,7 @@ class PokemonFRLGClient(BizHawkClient):
                     "key": f"pokemon_frlg_events_{ctx.team}_{ctx.slot}",
                     "default": 0,
                     "want_reply": False,
-                    "operations": [{"operation": "or", "value": event_bitfield}],
+                    "operations": [{"operation": "or", "value": event_bitfield}]
                 }])
                 self.local_events = local_events
 
@@ -463,19 +579,35 @@ class PokemonFRLGClient(BizHawkClient):
                     "key": f"pokemon_frlg_fly_unlocks_{ctx.team}_{ctx.slot}",
                     "default": 0,
                     "want_reply": False,
-                    "operations": [{"operation": "or", "value": event_bitfield}],
+                    "operations": [{"operation": "or", "value": event_bitfield}]
                 }])
                 self.local_fly_unlocks = local_fly_unlocks
 
+            # Send tracker static Pokémon flags
+            if local_static_pokemon != self.local_static_pokemon and ctx.slot is not None:
+                event_bitfield = 0
+                for i, flag_name in enumerate(TRACKER_STATIC_POKEMON_FLAGS):
+                    if local_static_pokemon[flag_name]:
+                        event_bitfield |= 1 << i
+
+                await ctx.send_msgs([{
+                    "cmd": "Set",
+                    "key": f"pokemon_frlg_statics_{ctx.team}_{ctx.slot}",
+                    "default": 0,
+                    "want_reply": False,
+                    "operations": [{"operation": "or", "value": event_bitfield}]
+                }])
+                self.local_static_pokemon = local_static_pokemon
+
             # Send Pokémon
-            if pokemon_caught_read_status:
+            if pokemon_caught_read_status and pokemon_seen_read_status:
                 if local_pokemon != self.local_pokemon and ctx.slot is not None:
                     await ctx.send_msgs([{
                         "cmd": "Set",
                         "key": f"pokemon_frlg_pokemon_{ctx.team}_{ctx.slot}",
                         "default": {},
                         "want_reply": False,
-                        "operations": [{"operation": "replace", "value": local_pokemon}, ]
+                        "operations": [{"operation": "replace", "value": local_pokemon}]
                     }])
                     self.local_pokemon = local_pokemon
 
@@ -487,25 +619,37 @@ class PokemonFRLGClient(BizHawkClient):
                         "key": f"pokemon_frlg_pokedex_{ctx.team}_{ctx.slot}",
                         "default": 0,
                         "want_reply": False,
-                        "operations": [{"operation": "replace", "value": local_pokemon_count},]
+                        "operations": [{"operation": "replace", "value": local_pokemon_count}]
                     }])
                     self.local_pokemon_count = local_pokemon_count
 
             # Send AP Hints
-            if ctx.slot_data["provide_hints"]:
+            if ctx.slot_data["provide_hints"] != ProvideHints.option_off:
                 hints_locations = []
-                for flag_name, loc_name in HINT_FLAGS.items():
-                    if local_hints[flag_name] and flag_name not in self.local_hints:
-                        hints_locations.append(loc_name)
-                        self.local_hints.append(flag_name)
-                hint_ids = [data.locations[loc].flag for loc in hints_locations
-                            if data.locations[loc].flag in ctx.missing_locations]
-                if hint_ids:
-                    await ctx.send_msgs([{
-                        "cmd": "LocationScouts",
-                        "locations": hint_ids,
-                        "create_as_hint": 2
-                    }])
+                for flag, locations in HINT_FLAGS.items():
+                    if local_hints[flag] and flag not in self.local_hints:
+                        hints_locations.extend(locations)
+                        self.local_hints.append(flag)
+                if hints_locations:
+                    hint_ids = []
+                    for location in hints_locations:
+                        location_id = data.locations[location].flag
+                        if location_id not in ctx.missing_locations or location_id in self.local_checked_locations:
+                            continue
+                        if (ctx.slot_data["provide_hints"] == ProvideHints.option_progression and
+                                ctx.locations_info[location_id].flags & 0b001):
+                            hint_ids.append(location_id)
+                        elif (ctx.slot_data["provide_hints"] == ProvideHints.option_progression_and_useful and
+                              ctx.locations_info[location_id].flags & 0b011):
+                            hint_ids.append(location_id)
+                        elif ctx.slot_data["provide_hints"] == ProvideHints.option_all:
+                            hint_ids.append(location_id)
+                    if hint_ids:
+                        await ctx.send_msgs([{
+                            "cmd": "LocationScouts",
+                            "locations": hint_ids,
+                            "create_as_hint": 2
+                        }])
 
         except bizhawk.RequestFailedError:
             # Exit handler and return to main loop to reconnect
@@ -538,7 +682,7 @@ class PokemonFRLGClient(BizHawkClient):
 
         if num_received_items < len(ctx.items_received) and received_item_is_empty:
             next_item = ctx.items_received[num_received_items]
-            should_display = 1 if next_item.flags & 1 or next_item.player == ctx.slot else 0
+            should_display = 1 if next_item.flags & 0b001 or next_item.player == ctx.slot else 0
             await bizhawk.write(ctx.bizhawk_ctx, [
                 (received_item_address, next_item.item.to_bytes(2, "little"), "System Bus"),
                 (received_item_address + 2, (num_received_items + 1).to_bytes(2, "little"), "System Bus"),
@@ -580,7 +724,7 @@ class PokemonFRLGClient(BizHawkClient):
         else:
             section_id = 0
         if self.current_map[0] != map_id or self.current_map[1] != section_id:
-            self.current_map = [map_id, section_id]
+            self.current_map = (map_id, section_id)
             await ctx.send_msgs([{
                 "cmd": "Bounce",
                 "slots": [ctx.slot],
@@ -590,6 +734,56 @@ class PokemonFRLGClient(BizHawkClient):
                     "sectionId": section_id
                 }
             }])
+
+    async def handle_entrance_updates(self,
+                                      ctx: "BizHawkClientContext",
+                                      guards: Dict[str, Tuple[int, bytes, str]]) -> None:
+        """
+        Reads the last warp that the player took, adds it to the list of entrances found, and sends the updated list to
+        the tracker.
+        """
+        if "dungeon_entrance_shuffle" not in ctx.slot_data:
+            return
+
+        sb1_address = int.from_bytes(guards["SAVE BLOCK 1"][1], "little")
+
+        read_result = await bizhawk.guarded_read(
+            ctx.bizhawk_ctx,
+            [
+                (sb1_address + 0x87C, 2, "System Bus"),
+                (sb1_address + 0x87E, 1, "System Bus"),
+                (sb1_address + 0x3DA4, 2, "System Bus"),
+                (sb1_address + 0x3DA6, 1, "System Bus")
+            ],
+            [guards["SAVE BLOCK 1"]]
+        )
+
+        if read_result is None:  # Save block moved
+            return
+
+        entrance_map_id = int.from_bytes(read_result[0], "big")
+        entrance_warp_id = int.from_bytes(read_result[1], "little")
+        exit_map_id = int.from_bytes(read_result[2], "big")
+        exit_warp_id = int.from_bytes(read_result[3], "little")
+        if entrance_map_id in data.entrance_name_map and exit_map_id in data.entrance_name_map and ctx.slot is not None:
+            if entrance_warp_id not in data.entrance_name_map[entrance_map_id]:
+                return
+            if exit_warp_id not in data.entrance_name_map[exit_map_id]:
+                return
+            entrance_name = data.entrance_name_map[entrance_map_id][entrance_warp_id]
+            exit_name = data.entrance_name_map[exit_map_id][exit_warp_id]
+            if (entrance_name not in self.local_entrances and
+                    (entrance_name in ctx.slot_data["dungeon_entrance_shuffle"] or
+                     exit_name in ctx.slot_data["dungeon_entrance_shuffle"])):
+                self.local_entrances[entrance_name] = exit_name
+                self.local_entrances[exit_name] = entrance_name
+                await ctx.send_msgs([{
+                    "cmd": "Set",
+                    "key": f"pokemon_frlg_entrances_{ctx.team}_{ctx.slot}",
+                    "default": {},
+                    "want_reply": False,
+                    "operations": [{"operation": "update", "value": self.local_entrances}]
+                }])
 
     async def handle_death_link(self, ctx: "BizHawkClientContext", guards: Dict[str, Tuple[int, bytes, str]]) -> None:
         """
@@ -606,8 +800,8 @@ class PokemonFRLGClient(BizHawkClient):
 
             read_result = await bizhawk.guarded_read(
                 ctx.bizhawk_ctx, [
-                    (sb1_address + 0x1450 + (52 * 4), 4, "System Bus"),  # White out stat
-                    (sb1_address + 0x1450 + (22 * 4), 4, "System Bus"),  # Unused stat
+                    (data.ram_addresses["gArchipelagoDeathLinkSent"][self.game_version], 1, "System Bus"),
+                    (sb1_address + 0x1450 + (22 * 4), 4, "System Bus"),  # Unused game stat
                     (sb2_address + 0xF20, 4, "System Bus"),  # Encryption key
                 ],
                 [guards["SAVE BLOCK 1"], guards["SAVE BLOCK 2"]]
@@ -616,13 +810,12 @@ class PokemonFRLGClient(BizHawkClient):
             if read_result is None:  # Save block moved
                 return
 
+            death_link_sent = bool.from_bytes(read_result[0], "little")
             encryption_key = int.from_bytes(read_result[2], "little")
-            times_whited_out = int.from_bytes(read_result[0], "little") ^ encryption_key
             unused = int.from_bytes(read_result[1], "little") ^ encryption_key
 
-            # Skip all deathlink code if save is not yet loaded (encryption key is zero) or white out stat not yet
-            # initialized (starts at 100 as a safety for subtracting values from an unsigned int).
-            if unused == 0 and encryption_key != 0 and times_whited_out >= 100:
+            # Skip all deathlink code if save is not yet loaded (encryption key is zero)
+            if unused == 0 and encryption_key != 0:
                 if self.previous_death_link != ctx.last_death_link:
                     self.previous_death_link = ctx.last_death_link
                     if self.ignore_next_death_link:
@@ -630,13 +823,14 @@ class PokemonFRLGClient(BizHawkClient):
                     else:
                         await bizhawk.write(
                             ctx.bizhawk_ctx,
-                            [(data.ram_addresses["gArchipelagoDeathLinkQueued"][self.game_version], [1], "System Bus")]
+                            [(data.ram_addresses["gArchipelagoDeathLinkReceived"][self.game_version], [1], "System Bus")]
                         )
 
-                if self.death_counter is None:
-                    self.death_counter = times_whited_out
-                elif times_whited_out > self.death_counter:
+                if death_link_sent:
                     await ctx.send_death(f"{ctx.player_names[ctx.slot]} is out of usable POKéMON! "
                                          f"{ctx.player_names[ctx.slot]} whited out!")
                     self.ignore_next_death_link = True
-                    self.death_counter = times_whited_out
+                    await bizhawk.write(
+                        ctx.bizhawk_ctx,
+                        [(data.ram_addresses["gArchipelagoDeathLinkSent"][self.game_version], [0], "System Bus")]
+                    )

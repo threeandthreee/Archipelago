@@ -991,7 +991,7 @@ HandleSeashellMansionItem:
 .giveItem:
     ldh  [$F1], a
     push bc
-    call ItemMessage
+    call ItemMessageMultiworld
     call GiveItemFromChestMultiworld
     ; For player convenience, check if another reward is available
     pop  af

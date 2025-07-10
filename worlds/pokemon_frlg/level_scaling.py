@@ -89,12 +89,7 @@ def level_scaling(multiworld: MultiWorld):
                         distance += 1
 
                 for location in locations:
-                    def can_reach():
-                        if location.can_reach(state):
-                            return True
-                        return False
-
-                    if can_reach():
+                    if location.can_reach(state):
                         sphere.add(location)
 
                         if location.game == "Pokemon FireRed and LeafGreen":

@@ -2,7 +2,7 @@ from BaseClasses import Tutorial, Region, Item, ItemClassification
 from worlds.AutoWorld import WebWorld, World
 from typing import List, ClassVar, Type
 from math import floor
-from Options import PerGameCommonOptions
+from Options import PerGameCommonOptions, OptionError
 
 from .options import RotNOptions
 from .RiftCollections import RotNCollections
@@ -48,10 +48,32 @@ class RotNWorld(World):
         max_diff = max(self.options.min_intensity.value, self.options.max_intensity.value)
 
         starter_song_count = self.options.starting_song_count.value
+        goal_song_pool = self.options.goal_song_pool.value
 
         while True:
-            available_song_keys = self.rift_collection.getSongsWithSettings(self.options.dlc_songs ,min_diff, max_diff)
+            if self.options.min_difficulty.value > self.options.max_difficulty.value:
+                raise OptionError("Max song difficulty is higher then min song difficulty.")
+
+            available_song_keys = self.rift_collection.getSongsWithSettings(self.options, min_diff, max_diff)
             available_song_keys = self.handle_plando(available_song_keys)
+
+            # Find the proposed goal songs and add them to a new list
+            victory_song_keys = []
+            for goal_song_canidate in goal_song_pool:
+                for index, available_song in enumerate(available_song_keys):
+                    if goal_song_canidate == available_song:
+                        # Include the canidates correlating index to the full list for later use
+                        victory_song_keys.append([index, available_song])
+
+            if victory_song_keys:
+                chosen_song_index = self.random.randrange(0, len(victory_song_keys))
+                self.victory_song_name = victory_song_keys[chosen_song_index][1]
+                # Replace the chosen goal song's index with the index from the full list we saved earlier.
+                chosen_song_index = victory_song_keys[chosen_song_index][0]
+            else:
+                chosen_song_index = self.random.randrange(0, len(available_song_keys))
+                self.victory_song_name = available_song_keys[chosen_song_index]
+            del available_song_keys[chosen_song_index]
 
             count_needed_for_start = max(0, starter_song_count - len(self.starting_songs))
             if len(available_song_keys) + len(self.included_songs) >= count_needed_for_start + 11:
@@ -60,8 +82,8 @@ class RotNWorld(World):
 
             # If the above fails, we want to adjust the difficulty thresholds.
             # Easier first, then harder
-            if min_diff <= 1 and max_diff >= 11:
-                raise Exception("Failed to find enough songs, even with maximum difficulty thresholds.")
+            if min_diff <= 1 and max_diff >= 40:
+                raise OptionError("Failed to find enough songs, even with maximum difficulty thresholds.  (Did you exclude too many songs?)")
             elif min_diff <= 1:
                 max_diff += 1
             else:
@@ -94,22 +116,12 @@ class RotNWorld(World):
         # First, we must double check if the player has included too many guaranteed songs
         included_song_count = len(self.included_songs)
         if included_song_count > additional_song_count:
-            # If so, we want to thin the list, thus let's get the goal song and starter songs while we are at it.
+            # If so, we want to thin the list, thus let's get the starter songs while we are at it.
             self.random.shuffle(self.included_songs)
-            self.victory_song_name = self.included_songs.pop()
             while len(self.included_songs) > additional_song_count:
                 next_song = self.included_songs.pop()
                 if len(self.starting_songs) < starting_song_count:
                     self.starting_songs.append(next_song)
-        else:
-            # If not, choose a random victory song from the available songs
-            chosen_song = self.random.randrange(0, len(available_song_keys) + included_song_count)
-            if chosen_song < included_song_count:
-                self.victory_song_name = self.included_songs[chosen_song]
-                del self.included_songs[chosen_song]
-            else:
-                self.victory_song_name = available_song_keys[chosen_song - included_song_count]
-                del available_song_keys[chosen_song - included_song_count]
 
         # Next, make sure the starting songs are fulfilled
         if len(self.starting_songs) < starting_song_count:
@@ -238,4 +250,7 @@ class RotNWorld(World):
             "deathLink": self.options.death_link.value,
             "diamondWinCount": self.get_diamond_win_count(),
             "gradeNeeded": self.options.grade_needed.value,
+            "remixes": self.options.include_remix.value,
+            "minigameMode": self.options.include_minigames.value,
+            "bossMode": self.options.include_boss_battle.value,
         }

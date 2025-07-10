@@ -67,6 +67,7 @@ predetermined priority
 * Your Rival in Silph Co. will give you the new Link Cable item
 * The Seafoam Islands entrances on Route 20 have been swapped so that you can travel from Cinnabar to Fuchsia
 * Seafoam Islands B3F has been changed so that there is a path you can take to cross from the Fuchsia side to the Cinnabar side using surf and waterfall
+* The fossil Pokémon can be obtained immediately after giving them to the scientist in the Pokémon Lab without needing to reload the map
 * Only the last guard on Route 23 will check for badges or gyms
 * Professor Oak will give you the Mystic and Aurora Ticket in the Hall of Fame
 * Much of the Sevii Islands has been reworked:

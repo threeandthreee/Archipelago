@@ -40,12 +40,27 @@ class TestBossShuffleFull(EarthBoundTestBase):
         "DecoupleDiamondDog": 1
     }
 
+
 class TestShopChecks(EarthBoundTestBase):
     options = {
         "ShopRandomizer": 2,
     }
 
+
 class TestDungeons(EarthBoundTestBase):
     options = {
         "DungeonShuffle": True,
+    }
+
+
+class TestEnemizer(EarthBoundTestBase):
+    options = {
+        "EnemizerStats": True,
+        "EnemizerAttacks": True,
+        "EnemizerAttributes": True,
+    }
+
+class TestMapPalettes(EarthBoundTestBase):
+    options = {
+        "RandomMapColors": 3,
     }

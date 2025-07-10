@@ -1,12 +1,12 @@
 from dataclasses import dataclass
-import dataclasses
 import copy
 from ..game_data.text_data import text_encoder, calc_pixel_width
+from ..Options import Armorizer, Weaponizer
 from operator import attrgetter
 import struct
 
 
-def roll_resistances(world, element, armor):
+def roll_resistances(world, element, armor) -> None:
     chance = world.random.randint(0, 100)
     if chance < world.options.armorizer_resistance_chance.value:
         setattr(armor, element, world.random.randint(1, 3))
@@ -14,7 +14,7 @@ def roll_resistances(world, element, armor):
         setattr(armor, element, 0)
 
 
-def price_weapons(world, weapons, rom):
+def price_weapons(world, weapons, rom) -> None:
     for index, weapon in enumerate(weapons):
         if weapon.can_equip == "Poo":
             price = 10 * weapon.poo_off
@@ -30,10 +30,11 @@ def price_weapons(world, weapons, rom):
         price = max(5, price)
         rom.write_bytes((weapon.address + 26), struct.pack("H", price))
         if weapon.double_price_item in summers_addresses:
+            price = min(0xFFFF, price * 2)
             rom.write_bytes((summers_addresses[weapon.double_price_item] + 26), struct.pack("H", price))
 
 
-def price_armors(world, armor_pricing_list, rom):
+def price_armors(world, armor_pricing_list, rom) -> None:
     for index, armor in enumerate(armor_pricing_list):
         if armor.can_equip == "Poo":
             price = 10 * armor.poo_def
@@ -51,17 +52,18 @@ def price_armors(world, armor_pricing_list, rom):
         price = max(5, price)
         rom.write_bytes((armor.address + 26), struct.pack("H", price))
         if armor.double_price_item in summers_addresses:
+            price = min(0xFFFF, price * 2)
             rom.write_bytes((summers_addresses[armor.double_price_item] + 26), struct.pack("H", price))
 
 
-def apply_progressive_weapons(world, weapons, progressives, rom):
+def apply_progressive_weapons(world, weapons, progressives, rom) -> None:
     for index, item in enumerate(weapons):
         weapon = world.weapon_list[item]
         weapon.offense = progressives[index].offense
         rom.write_bytes(weapon.address + 31, bytearray([weapon.offense]))
 
 
-def apply_progressive_armor(world, armors, progressives, rom):
+def apply_progressive_armor(world, armors, progressives, rom) -> None:
     for index, item in enumerate(armors):
         armor = world.armor_list[item]
         armor.defense = progressives[index].defense
@@ -286,7 +288,7 @@ royal_names = [
 ]
 
 
-def randomize_armor(world, rom):
+def randomize_armor(world, rom) -> None:
     if world.options.equipamizer_cap_stats:
         armor_caps = {
             "body": 30,
@@ -496,7 +498,7 @@ def randomize_armor(world, rom):
 
     for item in all_armor:
         armor = world.armor_list[item]
-        if world.options.armorizer == 2:
+        if world.options.armorizer == Armorizer.option_chaos:
             armor.equip_type = world.random.choice(["arm", "body", "other"])
 
         if armor.equip_type == "arm":
@@ -566,7 +568,6 @@ def randomize_armor(world, rom):
             front_name = world.random.choice(armor_dict[armor.equip_type])
             armor_dict[armor.equip_type].remove(front_name)
             armor.name = front_name + " " + back_name
-        taken_names.append(armor.name)
 
         pixel_length = calc_pixel_width(armor.name)
         first_armor = False
@@ -574,7 +575,8 @@ def randomize_armor(world, rom):
             names_to_try = royal_names.copy()
         else:
             names_to_try = armor_names[armor.equip_type].copy()
-        while pixel_length > 70:
+
+        while pixel_length > 70 or armor.name in taken_names:
             # First we replace any spaces with half-width spaces, a common tech used in vanilla to fix long names
             if first_armor is False:
                 armor.name = armor.name.replace(" ", " ")
@@ -595,6 +597,7 @@ def randomize_armor(world, rom):
 
             pixel_length = calc_pixel_width(armor.name)
             
+        taken_names.append(armor.name)
         armor.total_resistance = (1 * armor.fire_res) + (4 * armor.freeze_res) + (16 * armor.flash_res) + (64 * armor.par_res)
         rom.write_bytes(armor.address + 28, bytearray([usage_bytes[armor.can_equip]]))
         rom.write_bytes(armor.address + 25, bytearray([type_bytes[armor.equip_type]]))
@@ -688,7 +691,7 @@ def randomize_armor(world, rom):
         world.description_pointer += len(description)
 
 
-def randomize_weapons(world, rom):
+def randomize_weapons(world, rom) -> None:
     if world.options.equipamizer_cap_stats:
         weapon_cap = 120
     else:
@@ -698,9 +701,11 @@ def randomize_weapons(world, rom):
         "Ness": ["bat", "stick", "club", "board", "racket", "cue", "pole", "paddle"],
         "Paula": ["fry pan", "frypan", "skillet", "whisk", "saucepan", "pin"],
         "Jeff": ["gun", "beam", "air gun", "beam gun", "cannon", "blaster", "pistol", "revolver", "shotgun"],
-        "Poo": ["Sword", "Katana", "Knife", "Scisscors", "Cutter", "Blade", "Chisel", "Saw", "Axe"],
+        "Poo": ["Sword", "Katana", "Knife", "Scissor", "Cutter", "Blade", "Chisel", "Saw", "Axe"],
         "All": ["yo-yo", "slingshot", "boomerang"]
     }
+
+    taken_names = []
 
     miss_rates = {
         "Ness": 1,
@@ -824,7 +829,7 @@ def randomize_weapons(world, rom):
     for item in all_weapons:
         weapon = world.weapon_list[item]
 
-        if world.options.weaponizer == 2:
+        if world.options.weaponizer == Weaponizer.option_chaos:
             chance = world.random.randint(1, 100)
             if chance < 8:
                 weapon.can_equip = "All"
@@ -844,10 +849,13 @@ def randomize_weapons(world, rom):
         elif weapon.can_equip == "Jeff":
             progressive_guns.append(item)
 
-        if item == starting_weapon:  # Todo; remove not progressive weapons
+        if item == starting_weapon and not world.options.progressive_weapons:  # Todo; remove not progressive weapons
             weapon.offense = 10
         else:
-            weapon.offense = world.random.randint(1, weapon_cap)
+            if world.options.progressive_weapons:
+                weapon.offense = world.random.randint(10, weapon_cap)
+            else:
+                weapon.offense = world.random.randint(1, weapon_cap)
 
         if weapon.can_equip == "Poo":
             front_name = world.random.choice(weapon_names[weapon.can_equip])
@@ -882,7 +890,8 @@ def randomize_weapons(world, rom):
             names_to_try = royal_names.copy()
         else:
             names_to_try = weapon_names[weapon.can_equip].copy()
-        while pixel_length > 70:
+
+        while pixel_length > 70 or weapon.name in taken_names:
             # First we replace any spaces with half-width spaces, a common tech used in vanilla to fix long names
             if half_space is False:
                 weapon.name = weapon.name.replace(" ", " ")
@@ -901,9 +910,9 @@ def randomize_weapons(world, rom):
                 half_space = False
                 weapon.name = front_name + " " + back_name
             pixel_length = calc_pixel_width(weapon.name)
-
         rom.write_bytes(weapon.address + 28, bytearray([usage_bytes[weapon.can_equip]]))
         rom.write_bytes(weapon.address + 25, bytearray([type_bytes[weapon.equip_type]]))
+        taken_names.append(weapon.name)
 
     sortable_weapons = copy.deepcopy(world.weapon_list)
     sorted_weapons = sorted(sortable_weapons.values(), key=attrgetter("offense"))

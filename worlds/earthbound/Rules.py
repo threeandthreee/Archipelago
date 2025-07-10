@@ -1,5 +1,6 @@
 from worlds.generic.Rules import set_rule, forbid_items_for_player, add_rule
 from typing import TYPE_CHECKING
+from .Options import ShopRandomizer, MonkeyCavesMode
 if TYPE_CHECKING:
     from . import EarthBoundWorld
 
@@ -59,7 +60,7 @@ def set_location_rules(world: "EarthBoundWorld") -> None:
     if world.options.giygas_required:
         set_rule(world.multiworld.get_location("Giygas", player), lambda state: state.has("Paula", player))
 
-    if world.options.monkey_caves_mode < 2:
+    if world.options.monkey_caves_mode < MonkeyCavesMode.option_shop:  # 2
         set_rule(world.multiworld.get_location("Monkey Caves - West 2F Left Chest", player), lambda state: (twoson_paula_room_present.can_reach(state) or can_buy_pizza.can_reach(state)))
         set_rule(world.multiworld.get_location("Monkey Caves - East 2F Left Chest", player), lambda state: (twoson_paula_room_present.can_reach(state) or can_buy_pizza.can_reach(state)))
         set_rule(world.multiworld.get_location("Monkey Caves - East End Chest", player), lambda state: (twoson_paula_room_present.can_reach(state) or can_buy_pizza.can_reach(state)))
@@ -78,7 +79,7 @@ def set_location_rules(world: "EarthBoundWorld") -> None:
         add_rule(fire_spring, lambda state: state.has("Tenda Lavapants", player))
         add_rule(lilliput_steps, lambda state: state.has("Tiny Key", player))
 
-    if world.options.shop_randomizer == 2:
+    if world.options.shop_randomizer == ShopRandomizer.option_shopsanity:  # 2
         set_rule(world.multiworld.get_location("Lost Underworld - Tenda Camp Shop Slot 1", player), lambda state: state.has("Tendakraut", player))
         set_rule(world.multiworld.get_location("Lost Underworld - Tenda Camp Shop Slot 2", player), lambda state: state.has("Tendakraut", player))
         set_rule(world.multiworld.get_location("Lost Underworld - Tenda Camp Shop Slot 3", player), lambda state: state.has("Tendakraut", player))

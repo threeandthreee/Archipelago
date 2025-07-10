@@ -39,6 +39,32 @@ FILLER_ITEMS = [
     "MasterSeal",
 ]
 
+FEMALE_JOBS = [
+    (0x06, 0x05),  # Cavalier
+    (0x08, 0x07),  # Paladin
+    (0x0A, 0x09),  # Armour Knight
+    (0x0C, 0x0B),  # General
+    (0x10, 0x0F),  # Mercenary
+    (0x12, 0x11),  # Hero
+    (0x14, 0x13),  # Myrmidon
+    (0x16, 0x15),  # Swordmaster
+    (0x18, 0x17),  # Assassin
+    (0x1A, 0x19),  # Archer
+    (0x1C, 0x1B),  # Sniper
+    (0x1E, 0x1D),  # Ranger
+    (0x20, 0x1F),  # Wyvern Rider
+    (0x22, 0x21),  # Wyvern Lord
+    (0x24, 0x23),  # Wyvern Knight
+    (0x26, 0x25),  # Mage
+    (0x28, 0x27),  # Sage
+    (0x2A, 0x29),  # Mage Knight
+    (0x2C, 0x2B),  # Bishop
+    (0x2E, 0x2D),  # Shaman
+    (0x30, 0x2F),  # Druid
+    (0x32, 0x31),  # Summoner
+    (0x36, 0x35),  # Great Knight
+]
+
 ROM_BASE_ADDRESS = 0x08000000
 ROM_NAME_ADDR = 0x080000A0
 
@@ -65,12 +91,17 @@ CHARACTER_TABLE_BASE = 0x803D30
 CHARACTER_SIZE = 52
 CHARACTER_WRANK_OFFSET = 20
 CHARACTER_STATS_OFFSET = 12
+CHARACTER_GROWTHS_OFFSET = 28
 CHAR_ABILITY_4_OFFSET = 43
 
 JOB_TABLE_BASE = 0x807110
 JOB_SIZE = 84
 JOB_STATS_OFFSET = 11
+JOB_CAPS_OFFSET = 19
 JOB_ABILITY_1_INDEX = 40
+
+SONG_TABLE_BASE = 0x224470
+SONG_SIZE = 8
 
 STATS_COUNT = 6  # HP, Str, Skl, Spd, Def, Res (don't need Lck)
 

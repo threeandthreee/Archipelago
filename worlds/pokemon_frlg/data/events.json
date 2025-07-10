@@ -186,11 +186,6 @@
     "category": "EVENT"
   },
 
-  "TRADE_POKEMON_MR_MIME": {
-    "name": "Route 2 Trade House - Trade Pokemon",
-    "item": "Static Pokemon",
-    "category": "EVENT_STATIC_POKEMON"
-  },
   "GIFT_POKEMON_MAGIKARP": {
     "name": "Route 4 Pokemon Center 1F - Purchase Pokemon",
     "item": "Static Pokemon",
@@ -208,6 +203,11 @@
   },
   "TRADE_POKEMON_FARFETCHD": {
     "name": "Vermilion Trade House - Trade Pokemon",
+    "item": "Static Pokemon",
+    "category": "EVENT_STATIC_POKEMON"
+  },
+  "TRADE_POKEMON_MR_MIME": {
+    "name": "Route 2 Trade House - Trade Pokemon",
     "item": "Static Pokemon",
     "category": "EVENT_STATIC_POKEMON"
   },
@@ -281,13 +281,13 @@
     "item": "Static Pokemon",
     "category": "EVENT_STATIC_POKEMON"
   },
-  "GIFT_POKEMON_HITMONCHAN": {
-    "name": "Saffron Dojo - Item (Right)",
+  "GIFT_POKEMON_HITMONLEE": {
+    "name": "Saffron Dojo - Item (Left)",
     "item": "Static Pokemon",
     "category": "EVENT_STATIC_POKEMON"
   },
-  "GIFT_POKEMON_HITMONLEE": {
-    "name": "Saffron Dojo - Item (Left)",
+  "GIFT_POKEMON_HITMONCHAN": {
+    "name": "Saffron Dojo - Item (Right)",
     "item": "Static Pokemon",
     "category": "EVENT_STATIC_POKEMON"
   },
@@ -311,8 +311,8 @@
     "item": "Static Pokemon",
     "category": "EVENT_STATIC_POKEMON"
   },
-  "GIFT_POKEMON_OMANYTE": {
-    "name": "Pokemon Lab Experiment Room - Revive Helix Fossil",
+  "TRADE_POKEMON_SEEL": {
+    "name": "Pokemon Lab Experiment Room - Trade Pokemon",
     "item": "Static Pokemon",
     "category": "EVENT_STATIC_POKEMON"
   },
@@ -321,13 +321,13 @@
     "item": "Static Pokemon",
     "category": "EVENT_STATIC_POKEMON"
   },
-  "GIFT_POKEMON_AERODACTYL": {
-    "name": "Pokemon Lab Experiment Room - Revive Old Amber",
+  "GIFT_POKEMON_OMANYTE": {
+    "name": "Pokemon Lab Experiment Room - Revive Helix Fossil",
     "item": "Static Pokemon",
     "category": "EVENT_STATIC_POKEMON"
   },
-  "TRADE_POKEMON_SEEL": {
-    "name": "Pokemon Lab Experiment Room - Trade Pokemon",
+  "GIFT_POKEMON_AERODACTYL": {
+    "name": "Pokemon Lab Experiment Room - Revive Old Amber",
     "item": "Static Pokemon",
     "category": "EVENT_STATIC_POKEMON"
   },

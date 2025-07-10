@@ -1,13 +1,6 @@
-from BaseClasses import CollectionState
-from typing import (
-    Dict,
-    Callable,
-    TYPE_CHECKING,
-    List,
-    )
-from worlds.generic.Rules import set_rule  # , add_rule
+from typing import TYPE_CHECKING
+from worlds.generic.Rules import set_rule, CollectionRule
 from . import RuleUtils
-# from .Options import MinitGameOptions
 
 if TYPE_CHECKING:
     from . import MinitWorld
@@ -19,11 +12,11 @@ class ER_MinitRules:
     world: MinitWorld
     player: int
     darkrooms: int
-    region_rules: Dict[str, Callable[[CollectionState], bool]]
+    region_rules: dict[str, CollectionRule]
 
-    location_rules: Dict[str, Callable[[CollectionState], bool]]
+    location_rules: dict[str, CollectionRule]
 
-    helpers: Dict[str, Callable[[CollectionState], bool]]
+    helpers: dict[str, CollectionRule]
 
     def __init__(self, world: MinitWorld) -> None:
         self.world = world
@@ -126,11 +119,9 @@ class ER_MinitRules:
             # unrandomized doors
             "lighthouse inside <-> lighthouse": lambda state: 
                 state.has("ItemKey", self.player),
-            "lighthouse lookout -> lighthouse": lambda state: False,
-            "lighthouse -> lighthouse lookout": lambda state: False,
+            "lighthouse <-> lighthouse lookout": lambda state: False,
                 # obscure: you can swim and grab it from beneath
-            # "lighthouse inside -> lighthouse lookout": lambda state: True,
-            "lighthouse lookout -> lighthouse inside": lambda state: False,
+            # "lighthouse inside <-> lighthouse lookout": lambda state: True,
             "coffee shop pot stairs <-> sewer main":  self.helpers["darkroom2"],  # maybe 3
             # "dog house inside <-> dog house west": lambda state: True,
             # "glove outside <-> glove inside": lambda state: True,
@@ -489,7 +480,7 @@ class ER_MinitRules:
 
         obscure = {
             # Flashlight from Below
-            "lighthouse -> lighthouse lookout": self.helpers["swim"],
+            "lighthouse <-> lighthouse lookout": self.helpers["swim"],
 
             # Shoes to skip breaking the pot
             "coffee shop outside -> coffee shop pot stairs": lambda state: 

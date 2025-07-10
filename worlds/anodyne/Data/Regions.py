@@ -42,6 +42,8 @@ all_regions = [
     "Fields Lake",
     "Fields Past Gate",
     "Fields North Secret Area",
+    "Fields Goldman's Cave",
+    "Fields East",
     "Forest",
     "Go bottom",
     "Go top",

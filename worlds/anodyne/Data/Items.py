@@ -187,7 +187,8 @@ all_items = [
     *non_secret_filler_items,
     *nexus_gate_items.keys(),
     *trap_items,
-    *key_rings
+    *key_rings,
+    "Miao"
 ]
 
 progression_items = [
@@ -205,7 +206,8 @@ progression_items = [
     *statue_items,
     "Progressive Swap",
     *nexus_gate_items.keys(),
-    *key_rings
+    *key_rings,
+    "Miao"
 ]
 
 useful_items = [

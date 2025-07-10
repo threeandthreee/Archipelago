@@ -35,8 +35,11 @@ strength_regions = [
 ]
 
 flash_regions = [
-    "REGION_DARK_CAVE_VIOLET_ENTRANCE",
-    "REGION_DARK_CAVE_BLACKTHORN_ENTRANCE",
+    "REGION_DARK_CAVE_VIOLET_ENTRANCE:WEST",
+    "REGION_DARK_CAVE_VIOLET_ENTRANCE:EAST",
+    "REGION_DARK_CAVE_BLACKTHORN_ENTRANCE:NORTH_EAST",
+    "REGION_DARK_CAVE_BLACKTHORN_ENTRANCE:SOUTH_EAST",
+    "REGION_DARK_CAVE_BLACKTHORN_ENTRANCE:NORTH_WEST",
     "REGION_RUINS_OF_ALPH_AERODACTYL_ITEM_ROOM",
     "REGION_WHIRL_ISLAND_NW",
     "REGION_WHIRL_ISLAND_NE",
@@ -118,7 +121,9 @@ class VanillaHMBadgesTest(PokemonCrystalTestBase):
 
 class NoHMBadgesTest(PokemonCrystalTestBase):
     options = {
-        "hm_badge_requirements": "no_badges"
+        "hm_badge_requirements": "no_badges",
+        "mt_silver_requirement": "badges",
+        "mt_silver_count": "0"
     }
 
     def test_cut_access(self):
@@ -148,7 +153,9 @@ class NoHMBadgesTest(PokemonCrystalTestBase):
 
 class KantoHMBadgesTest(PokemonCrystalTestBase):
     options = {
-        "hm_badge_requirements": "add_kanto"
+        "hm_badge_requirements": "add_kanto",
+        "mt_silver_requirement": "badges",
+        "mt_silver_count": "0"
     }
 
     def test_cut_access(self):

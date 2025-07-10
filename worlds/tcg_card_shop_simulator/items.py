@@ -1,3 +1,4 @@
+import copy
 import re
 from collections import Counter
 from dataclasses import dataclass
@@ -42,62 +43,80 @@ def generate_ghost_card_items(world, ghost_goal_amount, locs_available):
     return result
 
 
-def create_items(world, starting_names, ignored_items, ignored_locs):
+def create_items(world):
 
     total_location_count = len(world.multiworld.get_unfilled_locations(world.player))
     # print(f"total locs at start {total_location_count}")
     # print(f"total Itempool at start {len(world.itempool)}")
-    # print(f"info {world.player} : {world.options.goal.value}")
-    #
-    # print(f"total items at before forloop {len(world.itempool)}")
+
+    #grab starting items for precollection
     starting_items: List[Item] = []
-    num  = 0
+
+    for item_id in world.starting_item_ids:
+        starting_items.append(Item(world.item_id_to_name[item_id], ItemClassification.progression, item_id, world.player))
+
+    if world.options.start_with_worker.value > 0:
+        starting_items.append(
+            Item(world.item_id_to_name[218 + world.options.start_with_worker.value], ItemClassification.progression, (218 + world.options.start_with_worker.value), world.player))
+    starting_items.append(Item("FormatStandard", ItemClassification.useful, not_sellable_dict["FormatStandard"].code ,world.player))
+    starting_items.append(Item("Small Cabinet", ItemClassification.useful, not_sellable_dict["Small Cabinet"].code ,world.player))
+    #create all items except ghosts and junk
+    num = 0
     for item_name, item_data in item_dict.items():
-        #starting item should not be shuffled
-        if item_name in starting_names:
-            # print(f"starting is {item_name}")
-            starting_items.append(Item(item_name, item_data.classification, world.item_name_to_id[item_name], world.player))
-            continue
-        if re.sub(r' \(\d+\)$', '', item_name) in ignored_items:
-            print(item_name)
-            continue
-        num = num +1
-        create_item(world, item_name, item_data.classification, item_data.amount)
-    # print(f"total items at before progressive {len(world.itempool)}")
+        if (item_data.code in world.pg1_licenses or
+        item_data.code in world.pg2_licenses or
+        item_data.code in world.pg3_licenses or
+        item_data.code in world.tt_licenses) and item_data.code not in world.starting_item_ids:
+            create_item(world, item_name, item_data.classification, item_data.amount)
+
+    if total_location_count > 125:
+        for item_name, item_data in not_sellable_dict.items():
+            amount = item_data.amount
+            if item_name in (item.name for item in starting_items):
+                amount -= 1
+            create_item(world, item_name, item_data.classification, item_data.amount)
+    else:
+        remaining_items = copy.deepcopy(not_sellable_dict)
+
+        for item in starting_items:
+            if item.name in remaining_items:
+                remaining_items[item.name].amount -= 1
+        # Add one of each progression item
+        for item_name, item_data in remaining_items.items():
+            if item_data.classification == ItemClassification.progression and item_data.amount > 0:
+                if item_name not in (item.name for item in starting_items):
+                    create_item(world, item_name, item_data.classification, 1)
+                    item_data.amount -= 1
+
+        worker_items = [name for name, data in remaining_items.items()
+                        if name.startswith("Worker - ") and data.amount > 0]
+        if worker_items:
+            worker_name = world.random.choice(worker_items)
+            worker_data = remaining_items[worker_name]
+            create_item(world, worker_name, worker_data.classification, 1)
+            worker_data.amount -= 1
+
+        while len(world.itempool) < total_location_count * 0.9:
+            eligible_items = [name for name, data in remaining_items.items() if data.amount > 0]
+            if not eligible_items:
+                break  # Nothing left to add
+            item_name = world.random.choice(eligible_items)
+            item_data = remaining_items[item_name]
+            if item_data.amount > 0:
+                create_item(world, item_name, item_data.classification, 1)
+                item_data.amount -= 1
+                if item_data.amount == 0:
+                    del remaining_items[item_name]
 
 
-
-    for item_name, item_data in progressive_dict.items():
-        override = 0
-
-        if item_name == "Progressive Shop Expansion A":
-            if world.options.goal.value == 0:
-                override = world.options.shop_expansion_goal.value + world.options.shop_expansion_goal.value % 2
-            else:
-                override = item_data.amount - sum(1 for item in ignored_locs if re.search(r'^Shop A Expansion', item))
-            # print(f"{override} Progressive A")
-
-        if item_name == "Progressive Shop Expansion B":
-            override = item_data.amount + 1 - sum(1 for item in ignored_locs if re.search(r'^Shop B Expansion', item))
-            # print(sum(1 for item in ignored_item_names if re.search(r'^Shop B Expansion', item)))
-            # print(f"{override} Progressive B")
-
-        # if item_name == "Progressive Ghost Card" and world.options.goal.value == 2:
-        #     override = 80 if world.options.ghost_goal_amount.value > 75 else world.options.ghost_goal_amount.value + 5
-        #     # print(f"in ghost goal? {world.options.goal.value == 2} count: {override}")
-
-        # print(f"item : {item_name} with {item_data.amount} override: {override}")
-        create_item(world, item_name, item_data.classification, item_data.amount if override == 0 else override)
-
-    print(f"total locs at remaining {total_location_count}")
-    print(f"total items at remaining {len(world.itempool)}")
+    #create Ghost if in goal
     remaining_locations: int = total_location_count - len(world.itempool)
     ghost_counts = 0
     if world.options.goal.value == 2:
         ghost_items = generate_ghost_card_items(world, world.options.ghost_goal_amount.value, remaining_locations)
 
         ghost_counts = Counter(ghost_items)
-        print(f"ghost counts: {ghost_counts} from {ghost_items}")
+        # print(f"ghost counts: {ghost_counts} from {ghost_items}")
         for bagsize, amount in ghost_counts.items():
             plural = "s" if bagsize > 1 else ""
             item_name = f"{bagsize} Ghost Card{plural}"
@@ -105,14 +124,15 @@ def create_items(world, starting_names, ignored_items, ignored_locs):
 
         remaining_locations = remaining_locations - len(ghost_items)
 
-    print(f"Remaining locations here: {remaining_locations}")
+    # print(f"Remaining locations here: {remaining_locations}")
 
+    #traps and junk
     trap_count = round(remaining_locations * world.options.trap_fill.value / 100)
 
     # -1 on LevelGoal because I place a victory item at the goal level
-    junk_count = remaining_locations - trap_count - (1 if world.options.goal == 1 else 0)
+    junk_count = remaining_locations - trap_count - (1 if world.options.goal == 0 else 0)
 
-    print(f"junk count {junk_count + trap_count}")
+    # print(f"junk count {junk_count + trap_count}")
 
     trap_weights = {
         "Stink Trap": world.options.stink_trap,
@@ -123,9 +143,9 @@ def create_items(world, starting_names, ignored_items, ignored_locs):
         "Currency Trap":world.options.currency_trap
     }
 
-    junk_weights["Small Xp"] =  world.options.xp_boosts * 0.5 if world.options.goal.value != 1 else 0
-    junk_weights["Medium Xp"] = world.options.xp_boosts * 0.3 if world.options.goal.value != 1 else 0
-    junk_weights["Large Xp"] = world.options.xp_boosts * 0.2 if world.options.goal.value != 1 else 0
+    junk_weights["Small Xp"] =  world.options.xp_boosts * 0.5
+    junk_weights["Medium Xp"] = world.options.xp_boosts * 0.3
+    junk_weights["Large Xp"] = world.options.xp_boosts * 0.2
     junk_weights["Small Money"] = world.options.money_bags * 0.5
     junk_weights["Medium Money"] = world.options.money_bags * 0.3
     junk_weights["Large Money"] = world.options.money_bags * 0.2
@@ -162,183 +182,163 @@ def get_trap_item_names(rand, k: int, trap_weights) -> str:
 
 
 item_dict: Dict[str, ItemData] = {
-    "Fire Battle Deck (18)": ItemData(0x1F280005, ItemClassification.progression),
-    "Earth Battle Deck (18)": ItemData(0x1F280006, ItemClassification.progression),
-    "Water Battle Deck (18)": ItemData(0x1F280007, ItemClassification.progression),
-    "Wind Battle Deck (18)": ItemData(0x1F280008, ItemClassification.progression),
-    "Fire Destiny Deck (18)": ItemData(0x1F28000D, ItemClassification.progression),
-    "Earth Destiny Deck (18)": ItemData(0x1F28000E, ItemClassification.progression),
-    "Water Destiny Deck (18)": ItemData(0x1F28000F, ItemClassification.progression),
-    "Wind Destiny Deck (18)": ItemData(0x1F280010, ItemClassification.progression),
-    "Card Sleeves (Clear)": ItemData(0x1F280012, ItemClassification.progression),
-    "Card Sleeves (Tetramon)": ItemData(0x1F280013, ItemClassification.progression),
-    "D20 Dice Red (16)": ItemData(0x1F280014, ItemClassification.progression),
-    "D20 Dice Blue (16)": ItemData(0x1F280015, ItemClassification.progression),
-    "D20 Dice Black (16)": ItemData(0x1F280016, ItemClassification.progression),
-    "D20 Dice White (16)": ItemData(0x1F280017, ItemClassification.progression),
-    "Card Sleeves (Fire)": ItemData(0x1F280018, ItemClassification.progression),
-    "Card Sleeves (Earth)": ItemData(0x1F280019, ItemClassification.progression),
-    "Card Sleeves (Water)": ItemData(0x1F28001A, ItemClassification.progression),
-    "Card Sleeves (Wind)": ItemData(0x1F28001B, ItemClassification.progression),
-    "Collection Book (4)": ItemData(0x1F280020, ItemClassification.progression),
-    "Premium Collection Book (4)": ItemData(0x1F280021, ItemClassification.progression),
-    "Playmat (Drilceros)": ItemData(0x1F280022, ItemClassification.progression),
-    "Playmat (Clamigo)": ItemData(0x1F280023, ItemClassification.progression),
-    "Playmat (Wispo)": ItemData(0x1F280024, ItemClassification.progression),
-    "Playmat (Lunight)": ItemData(0x1F280025, ItemClassification.progression),
-    "Playmat (Kyrone)": ItemData(0x1F280026, ItemClassification.progression),
-    "Playmat (Duel)": ItemData(0x1F280027, ItemClassification.progression),
-    "Playmat (Dracunix1)": ItemData(0x1F280028, ItemClassification.progression),
-    "Playmat (The Four Dragons)": ItemData(0x1F280029, ItemClassification.progression),
-    "Playmat (Drakon)": ItemData(0x1F28002A, ItemClassification.progression),
-    "Playmat (GigatronX Evo)": ItemData(0x1F28002B, ItemClassification.progression),
-    "Playmat (Fire)": ItemData(0x1F28002C, ItemClassification.progression),
-    "Playmat (Earth)": ItemData(0x1F28002D, ItemClassification.progression),
-    "Playmat (Water)": ItemData(0x1F28002E, ItemClassification.progression),
-    "Playmat (Wind)": ItemData(0x1F28002F, ItemClassification.progression),
-    "Playmat (Tetramon)": ItemData(0x1F280030, ItemClassification.progression),
-    "Pigni Plushie (12)": ItemData(0x1F280031, ItemClassification.progression),
-    "Nanomite Plushie (16)": ItemData(0x1F280032, ItemClassification.progression),
-    "Minstar Plushie (24)": ItemData(0x1F280033, ItemClassification.progression),
-    "Nocti Plushie (6)": ItemData(0x1F280034, ItemClassification.progression),
-    "Burpig Figurine (12)": ItemData(0x1F280035, ItemClassification.progression),
-    "Decimite Figurine (8)": ItemData(0x1F280036, ItemClassification.progression),
-    "Trickstar Figurine (12)": ItemData(0x1F280037, ItemClassification.progression),
-    "Lunight Figurine (8)": ItemData(0x1F280038, ItemClassification.progression),
-    "Inferhog Figurine (2)": ItemData(0x1F280039, ItemClassification.progression),
-    "Meganite Figurine (2)": ItemData(0x1F28003A, ItemClassification.progression),
-    "Princestar Figurine (2)": ItemData(0x1F28003B, ItemClassification.progression),
-    "Vampicant Figurine (2)": ItemData(0x1F28003C, ItemClassification.progression),
-    "Blazoar Plushie (2)": ItemData(0x1F28003D, ItemClassification.progression),
-    "Giganite Statue (2)": ItemData(0x1F28003E, ItemClassification.progression),
-    "Kingstar Plushie (2)": ItemData(0x1F28003F, ItemClassification.progression),
-    "Dracunix Figurine (1)": ItemData(0x1F280040, ItemClassification.progression),
-    "Bonfiox Plushie (8)": ItemData(0x1F280041, ItemClassification.progression),
-    "Drilceros Action Figure (4)": ItemData(0x1F280042, ItemClassification.progression),
-    "ToonZ Plushie (6)": ItemData(0x1F280043, ItemClassification.progression),
-    "Small Cabinet": ItemData(0x1F280044, ItemClassification.progression),
-    "Small Metal Rack": ItemData(0x1F280045, ItemClassification.useful),
-    "Single Sided Shelf": ItemData(0x1F280046, ItemClassification.progression),
-    "Double Sided Shelf": ItemData(0x1F280047, ItemClassification.useful),
-    "Wide Shelf": ItemData(0x1F280048, ItemClassification.useful),
-    "Play Table": ItemData(0x1F28004E, ItemClassification.progression),
-    "Workbench": ItemData(0x1F28004F, ItemClassification.useful),
-    "Trash Bin": ItemData(0x1F280050, ItemClassification.progression),
-    "Checkout Counter": ItemData(0x1F280051, ItemClassification.progression),
-    "System Gate #1": ItemData(0x1F280052, ItemClassification.progression),
-    "System Gate #2": ItemData(0x1F280053, ItemClassification.progression),
-    "Mafia Works": ItemData(0x1F280054, ItemClassification.progression),
-    "Necromonsters": ItemData(0x1F280055, ItemClassification.progression),
-    "Claim!": ItemData(0x1F280056, ItemClassification.progression),
-    "Penny Sleeves": ItemData(0x1F280057, ItemClassification.progression),
-    "Tower Deckbox": ItemData(0x1F280058, ItemClassification.progression),
-    "Magnetic Holder": ItemData(0x1F280059, ItemClassification.progression),
-    "Toploader": ItemData(0x1F28005A, ItemClassification.progression),
-    "Card Preserver": ItemData(0x1F28005B, ItemClassification.progression),
-    "Playmat Gray": ItemData(0x1F28005C, ItemClassification.progression),
-    "Playmat Green": ItemData(0x1F28005D, ItemClassification.progression),
-    "Playmat Purple": ItemData(0x1F28005E, ItemClassification.progression),
-    "Playmat Yellow": ItemData(0x1F28005F, ItemClassification.progression),
-    "Pocket Pages": ItemData(0x1F280060, ItemClassification.progression),
-    "Card Holder": ItemData(0x1F280061, ItemClassification.progression),
-    "Collectors Album": ItemData(0x1F2800B5, ItemClassification.progression),
-    "Worker - Zachery": ItemData(0x1F2800B6, ItemClassification.progression),
-    "Worker - Terence": ItemData(0x1F2800B7, ItemClassification.progression),
-    "Worker - Dennis": ItemData(0x1F2800B8, ItemClassification.progression),
-    "Worker - Clark": ItemData(0x1F2800B9, ItemClassification.progression),
-    "Worker - Angus": ItemData(0x1F2800BA, ItemClassification.progression),
-    "Worker - Benji": ItemData(0x1F2800BB, ItemClassification.progression),
-    "Worker - Lauren": ItemData(0x1F2800BC, ItemClassification.progression),
-    "Worker - Axel": ItemData(0x1F2800BD, ItemClassification.progression),
-    "Playmat (Dracunix2)": ItemData(0x1F2800BE, ItemClassification.progression),
-    "Playmat (GigatronX)": ItemData(0x1F2800BF, ItemClassification.progression),
-    "Playmat (Katengu Black)": ItemData(0x1F2800C2, ItemClassification.progression),
-    "Playmat (Katengu White)": ItemData(0x1F2800C3, ItemClassification.progression),
-    "Manga 1": ItemData(0x1F2800C4, ItemClassification.progression),
-    "Manga 2": ItemData(0x1F2800C5, ItemClassification.progression),
-    "Manga 3": ItemData(0x1F2800C6, ItemClassification.progression),
-    "Manga 4": ItemData(0x1F2800C7, ItemClassification.progression),
-    "Manga 5": ItemData(0x1F2800C8, ItemClassification.progression),
-    "Manga 6": ItemData(0x1F2800C9, ItemClassification.progression),
-    "Manga 7": ItemData(0x1F2800CA, ItemClassification.progression),
-    "Manga 8": ItemData(0x1F2800CB, ItemClassification.progression),
-    "Manga 9": ItemData(0x1F2800CC, ItemClassification.progression),
-    "Manga 10": ItemData(0x1F2800CD, ItemClassification.progression),
-    "Manga 11": ItemData(0x1F2800CE, ItemClassification.progression),
-    "Manga 12": ItemData(0x1F2800CF, ItemClassification.progression),
-    "Warehouse Key": ItemData(0x1F2800F5, ItemClassification.progression),
-    "Basic Card Pack (32)": ItemData(0x1F280001, ItemClassification.progression),
-    "Basic Card Pack (64)": ItemData(0x1F2800D8, ItemClassification.progression),
-    "Basic Card Box (4)": ItemData(0x1F2800D9, ItemClassification.progression),
-    "Basic Card Box (8)": ItemData(0x1F2800DA, ItemClassification.progression),
-    "Rare Card Pack (32)": ItemData(0x1F280002, ItemClassification.progression),
-    "Rare Card Pack (64)": ItemData(0x1F2800DB, ItemClassification.progression),
-    "Rare Card Box (4)": ItemData(0x1F2800DC, ItemClassification.progression),
-    "Rare Card Box (8)": ItemData(0x1F2800DD, ItemClassification.progression),
-    "Epic Card Pack (32)": ItemData(0x1F280003, ItemClassification.progression),
-    "Epic Card Pack (64)": ItemData(0x1F2800DE, ItemClassification.progression),
-    "Epic Card Box (4)": ItemData(0x1F2800DF, ItemClassification.progression),
-    "Epic Card Box (8)": ItemData(0x1F2800E0, ItemClassification.progression),
-    "Legendary Card Pack (32)": ItemData(0x1F280004, ItemClassification.progression),
-    "Legendary Card Pack (64)": ItemData(0x1F2800E1, ItemClassification.progression),
-    "Legendary Card Box (4)": ItemData(0x1F2800E2, ItemClassification.progression),
-    "Legendary Card Box (8)": ItemData(0x1F2800E3, ItemClassification.progression),
-    "Basic Destiny Pack (32)": ItemData(0x1F280009, ItemClassification.progression),
-    "Basic Destiny Pack (64)": ItemData(0x1F2800E4, ItemClassification.progression),
-    "Basic Destiny Box (4)": ItemData(0x1F2800E5, ItemClassification.progression),
-    "Basic Destiny Box (8)": ItemData(0x1F2800E6, ItemClassification.progression),
-    "Rare Destiny Pack (32)": ItemData(0x1F28000A, ItemClassification.progression),
-    "Rare Destiny Pack (64)": ItemData(0x1F2800E7, ItemClassification.progression),
-    "Rare Destiny Box (4)": ItemData(0x1F2800E8, ItemClassification.progression),
-    "Rare Destiny Box (8)": ItemData(0x1F2800E9, ItemClassification.progression),
-    "Epic Destiny Pack (32)": ItemData(0x1F28000B, ItemClassification.progression),
-    "Epic Destiny Pack (64)": ItemData(0x1F2800EA, ItemClassification.progression),
-    "Epic Destiny Box (4)": ItemData(0x1F2800EB, ItemClassification.progression),
-    "Epic Destiny Box (8)": ItemData(0x1F2800EC, ItemClassification.progression),
-    "Legendary Destiny Pack (32)": ItemData(0x1F28000C, ItemClassification.progression),
-    "Legendary Destiny Pack (64)": ItemData(0x1F2800ED, ItemClassification.progression),
-    "Legendary Destiny Box (4)": ItemData(0x1F2800EE, ItemClassification.progression),
-    "Legendary Destiny Box (8)": ItemData(0x1F2800EF, ItemClassification.progression),
-    "Cleanser (8)": ItemData(0x1F280011, ItemClassification.progression),
-    "Cleanser (16)": ItemData(0x1F2800F0, ItemClassification.progression),
-    "Deck Box Red (8)": ItemData(0x1F28001C, ItemClassification.progression),
-    "Deck Box Red (16)": ItemData(0x1F2800F1, ItemClassification.progression),
-    "Deck Box Green (8)": ItemData(0x1F28001D, ItemClassification.progression),
-    "Deck Box Green (16)": ItemData(0x1F2800F2, ItemClassification.progression),
-    "Deck Box Blue (8)": ItemData(0x1F28001E, ItemClassification.progression),
-    "Deck Box Blue (16)": ItemData(0x1F2800F3, ItemClassification.progression),
-    "Deck Box Yellow (8)": ItemData(0x1F28001F, ItemClassification.progression),
-    "Deck Box Yellow (16)": ItemData(0x1F2800F4, ItemClassification.progression),
-    "FormatStandard": ItemData(0x1F2800FC, ItemClassification.useful),
-    "FormatPauper": ItemData(0x1F2800FD, ItemClassification.useful),
-    "FormatFireCup": ItemData(0x1F2800FE, ItemClassification.useful),
-    "FormatEarthCup": ItemData(0x1F2800FF, ItemClassification.useful),
-    "FormatWaterCup": ItemData(0x1F280100, ItemClassification.useful),
-    "FormatWindCup": ItemData(0x1F280101, ItemClassification.useful),
-    "FormatFirstEditionVintage": ItemData(0x1F280102, ItemClassification.useful),
-    "FormatSilverBorder": ItemData(0x1F280103, ItemClassification.useful),
-    "FormatGoldBorder": ItemData(0x1F280104, ItemClassification.useful),
-    "FormatExBorder": ItemData(0x1F280105, ItemClassification.useful),
-    "FormatFullArtBorder": ItemData(0x1F280106, ItemClassification.useful),
-    "FormatFoil": ItemData(0x1F280107, ItemClassification.useful)
+    "Fire Battle Deck": ItemData(55, ItemClassification.progression),
+    "Earth Battle Deck": ItemData(56, ItemClassification.progression),
+    "Water Battle Deck": ItemData(57, ItemClassification.progression),
+    "Wind Battle Deck": ItemData(58, ItemClassification.progression),
+    "Fire Destiny Deck": ItemData(59, ItemClassification.progression),
+    "Earth Destiny Deck": ItemData(60, ItemClassification.progression),
+    "Water Destiny Deck": ItemData(61, ItemClassification.progression),
+    "Wind Destiny Deck": ItemData(62, ItemClassification.progression),
+    "Card Sleeves (Clear)": ItemData(63, ItemClassification.progression),
+    "Card Sleeves (Tetramon)": ItemData(64, ItemClassification.progression),
+    "D20 Dice Red": ItemData(29, ItemClassification.progression),
+    "D20 Dice Blue": ItemData(30, ItemClassification.progression),
+    "D20 Dice Black": ItemData(31, ItemClassification.progression),
+    "D20 Dice White": ItemData(32, ItemClassification.progression),
+    "Card Sleeves (Fire)": ItemData(65, ItemClassification.progression),
+    "Card Sleeves (Earth)": ItemData(66, ItemClassification.progression),
+    "Card Sleeves (Water)": ItemData(67, ItemClassification.progression),
+    "Card Sleeves (Wind)": ItemData(68, ItemClassification.progression),
+    "Progressive Deck Box Red": ItemData(24, ItemClassification.progression,2),
+    "Progressive Deck Box Green": ItemData(25, ItemClassification.progression,2),
+    "Progressive Deck Box Blue": ItemData(26, ItemClassification.progression,2),
+    "Progressive Deck Box Yellow": ItemData(27, ItemClassification.progression,2),
+    "Collection Book": ItemData(28, ItemClassification.progression),
+    "Premium Collection Book": ItemData(54, ItemClassification.progression),
+    "Playmat (Drilceros)": ItemData(71, ItemClassification.progression),
+    "Playmat (Clamigo)": ItemData(69, ItemClassification.progression),
+    "Playmat (Wispo)": ItemData(75, ItemClassification.progression),
+    "Playmat (Lunight)": ItemData(83, ItemClassification.progression),
+    "Playmat (Kyrone)": ItemData(78, ItemClassification.progression),
+    "Playmat (Duel)": ItemData(70, ItemClassification.progression),
+    "Playmat (Dracunix1)": ItemData(74, ItemClassification.progression),
+    "Playmat (The Four Dragons)": ItemData(73, ItemClassification.progression),
+    "Playmat (Drakon)": ItemData(72, ItemClassification.progression),
+    "Playmat (GigatronX Evo)": ItemData(76, ItemClassification.progression),
+    "Playmat (Fire)": ItemData(79, ItemClassification.progression),
+    "Playmat (Earth)": ItemData(80, ItemClassification.progression),
+    "Playmat (Water)": ItemData(82, ItemClassification.progression),
+    "Playmat (Wind)": ItemData(81, ItemClassification.progression),
+    "Playmat (Tetramon)": ItemData(77, ItemClassification.progression),
+    "Playmat (Dracunix2)": ItemData(109, ItemClassification.progression),
+    "Playmat (GigatronX)": ItemData(110, ItemClassification.progression),
+    "Playmat (Katengu Black)": ItemData(111, ItemClassification.progression),
+    "Playmat (Katengu White)": ItemData(112, ItemClassification.progression),
+    "Manga 1": ItemData(95, ItemClassification.progression),
+    "Manga 2": ItemData(96, ItemClassification.progression),
+    "Manga 3": ItemData(97, ItemClassification.progression),
+    "Manga 4": ItemData(98, ItemClassification.progression),
+    "Manga 5": ItemData(99, ItemClassification.progression),
+    "Manga 6": ItemData(100, ItemClassification.progression),
+    "Manga 7": ItemData(101, ItemClassification.progression),
+    "Manga 8": ItemData(102, ItemClassification.progression),
+    "Manga 9": ItemData(103, ItemClassification.progression),
+    "Manga 10": ItemData(104, ItemClassification.progression),
+    "Manga 11": ItemData(105, ItemClassification.progression),
+    "Manga 12": ItemData(106, ItemClassification.progression),
+    "Pigni Plushie": ItemData(33, ItemClassification.progression),
+    "Nanomite Plushie": ItemData(34, ItemClassification.progression),
+    "Minstar Plushie": ItemData(35, ItemClassification.progression),
+    "Nocti Plushie": ItemData(36, ItemClassification.progression),
+    "Burpig Figurine": ItemData(39, ItemClassification.progression),
+    "Decimite Figurine": ItemData(42, ItemClassification.progression),
+    "Trickstar Figurine": ItemData(45, ItemClassification.progression),
+    "Lunight Figurine": ItemData(48, ItemClassification.progression),
+    "Inferhog Figurine": ItemData(40, ItemClassification.progression),
+    "Meganite Figurine": ItemData(43, ItemClassification.progression),
+    "Princestar Figurine": ItemData(46, ItemClassification.progression),
+    "Vampicant Figurine": ItemData(49, ItemClassification.progression),
+    "Blazoar Plushie": ItemData(41, ItemClassification.progression),
+    "Giganite Statue": ItemData(44, ItemClassification.progression),
+    "Kingstar Plushie": ItemData(47, ItemClassification.progression),
+    "Dracunix Figurine": ItemData(50, ItemClassification.progression),
+    "Bonfiox Plushie": ItemData(52, ItemClassification.progression),
+    "Drilceros Action Figure": ItemData(51, ItemClassification.progression),
+    "ToonZ Plushie": ItemData(53, ItemClassification.progression),
+    "Penny Sleeves": ItemData(118, ItemClassification.progression),
+    "Tower Deckbox": ItemData(124, ItemClassification.progression),
+    "Magnetic Holder": ItemData(113, ItemClassification.progression),
+    "Toploader": ItemData(117, ItemClassification.progression),
+    "Card Preserver": ItemData(114, ItemClassification.progression),
+    "Playmat Gray": ItemData(119, ItemClassification.progression),
+    "Playmat Green": ItemData(120, ItemClassification.progression),
+    "Playmat Purple": ItemData(121, ItemClassification.progression),
+    "Playmat Yellow": ItemData(122, ItemClassification.progression),
+    "Pocket Pages": ItemData(115, ItemClassification.progression),
+    "Card Holder": ItemData(116, ItemClassification.progression),
+    "Collectors Album": ItemData(123, ItemClassification.progression),
+    "System Gate #1": ItemData(87, ItemClassification.progression),
+    "System Gate #2": ItemData(88, ItemClassification.progression),
+    "Mafia Works": ItemData(86, ItemClassification.progression),
+    "Necromonsters": ItemData(84, ItemClassification.progression),
+    "Claim!": ItemData(85, ItemClassification.progression),
+    "Progressive Basic Card Pack": ItemData(190, ItemClassification.progression,2), #game id 0
+    "Progressive Basic Card Box": ItemData(1, ItemClassification.progression,2),
+    "Progressive Rare Card Pack": ItemData(2, ItemClassification.progression,2),
+    "Progressive Rare Card Box": ItemData(3, ItemClassification.progression,2),
+    "Progressive Epic Card Pack": ItemData(4, ItemClassification.progression,2),
+    "Progressive Epic Card Box": ItemData(5, ItemClassification.progression,2),
+    "Progressive Legendary Card Pack": ItemData(6, ItemClassification.progression,2),
+    "Progressive Legendary Card Box": ItemData(7, ItemClassification.progression,2),
+    "Progressive Basic Destiny Pack": ItemData(8, ItemClassification.progression,2),
+    "Progressive Basic Destiny Box": ItemData(9, ItemClassification.progression,2),
+    "Progressive Rare Destiny Pack": ItemData(10, ItemClassification.progression,2),
+    "Progressive Rare Destiny Box": ItemData(11, ItemClassification.progression,2),
+    "Progressive Epic Destiny Pack": ItemData(12, ItemClassification.progression,2),
+    "Progressive Epic Destiny Box": ItemData(13, ItemClassification.progression,2),
+    "Progressive Legendary Destiny Pack": ItemData(14, ItemClassification.progression,2),
+    "Progressive Legendary Destiny Box": ItemData(15, ItemClassification.progression,2),
+    "Progressive Cleanser": ItemData(23, ItemClassification.progression,2),
 }
 
-progressive_dict: Dict[str, ItemData] = {
-    "Progressive Card Table": ItemData(0x1F280049, ItemClassification.progression, 2),
-    "Progressive Card Display": ItemData(0x1F28004A, ItemClassification.useful, 3),
-    "Progressive Personal Shelf": ItemData(0x1F28004B, ItemClassification.useful, 3),
-    "Progressive Auto Scent": ItemData(0x1F28004C, ItemClassification.useful, 3),
-    "Progressive Warehouse Shelf": ItemData(0x1F28004D, ItemClassification.progression, 2),
-    "Progressive Shop Expansion A": ItemData(0x1F2800C0, ItemClassification.progression, 30),
-    "Progressive Shop Expansion B": ItemData(0x1F2800C1, ItemClassification.progression, 14),
+not_sellable_dict: Dict[str, ItemData] = {
+    "FormatStandard": ItemData(207, ItemClassification.useful),
+    "FormatPauper": ItemData(208, ItemClassification.useful),
+    "FormatFireCup": ItemData(209, ItemClassification.useful),
+    "FormatEarthCup": ItemData(210, ItemClassification.useful),
+    "FormatWaterCup": ItemData(211, ItemClassification.useful),
+    "FormatWindCup": ItemData(212, ItemClassification.useful),
+    "FormatFirstEditionVintage": ItemData(213, ItemClassification.useful),
+    "FormatSilverBorder": ItemData(214, ItemClassification.useful),
+    "FormatGoldBorder": ItemData(215, ItemClassification.useful),
+    "FormatExBorder": ItemData(216, ItemClassification.useful),
+    "FormatFullArtBorder": ItemData(217, ItemClassification.useful),
+    "FormatFoil": ItemData(218, ItemClassification.useful),
+
+    "Progressive Card Table": ItemData(200, ItemClassification.progression, 2),
+    "Progressive Card Display": ItemData(201, ItemClassification.useful, 3),
+    "Progressive Personal Shelf": ItemData(202, ItemClassification.useful, 3),
+    "Progressive Auto Scent": ItemData(203, ItemClassification.progression, 3),
+    "Progressive Warehouse Shelf": ItemData(204, ItemClassification.progression, 2),
+    "Shop Expansion": ItemData(205, ItemClassification.progression, 30),
+    "Warehouse Expansion": ItemData(206, ItemClassification.progression, 15),
+    "Worker - Zachery": ItemData(219, ItemClassification.progression),
+    "Worker - Terence": ItemData(220, ItemClassification.useful),
+    "Worker - Dennis": ItemData(221, ItemClassification.useful),
+    "Worker - Clark": ItemData(222, ItemClassification.useful),
+    "Worker - Angus": ItemData(223, ItemClassification.useful),
+    "Worker - Benji": ItemData(224, ItemClassification.useful),
+    "Worker - Lauren": ItemData(225, ItemClassification.useful),
+    "Worker - Axel": ItemData(226, ItemClassification.useful),
+    "Small Cabinet": ItemData(227, ItemClassification.progression),
+    "Small Metal Rack": ItemData(228, ItemClassification.useful),
+    "Single Sided Shelf": ItemData(229, ItemClassification.progression),
+    "Double Sided Shelf": ItemData(230, ItemClassification.useful),
+    "Wide Shelf": ItemData(231, ItemClassification.useful),
+    "Play Table": ItemData(232, ItemClassification.progression),
+    "Workbench": ItemData(233, ItemClassification.progression),
+    "Trash Bin": ItemData(234, ItemClassification.useful),
+    "Checkout Counter": ItemData(235, ItemClassification.progression),
 }
+
 # unused 0x1F2800D7
 random_ghost_dict: Dict[str, ItemData] = {
-    "1 Ghost Card": ItemData(0x1F280108, ItemClassification.progression, 0),
-    "2 Ghost Cards": ItemData(0x1F280109, ItemClassification.progression, 0),
-    "3 Ghost Cards": ItemData(0x1F28010A, ItemClassification.progression, 0),
-    "4 Ghost Cards": ItemData(0x1F28010B, ItemClassification.progression, 0),
-    "5 Ghost Cards": ItemData(0x1F28010C, ItemClassification.progression, 0),
+    "1 Ghost Card": ItemData(326, ItemClassification.progression, 0),
+    "2 Ghost Cards": ItemData(327, ItemClassification.progression, 0),
+    "3 Ghost Cards": ItemData(328, ItemClassification.progression, 0),
+    "4 Ghost Cards": ItemData(329, ItemClassification.progression, 0),
+    "5 Ghost Cards": ItemData(330, ItemClassification.progression, 0),
 }
 ghost_dict: Dict[str, ItemData] = {
     "Ghost Blazoar (white)": ItemData(0x1F280062, ItemClassification.progression_skip_balancing),
@@ -424,25 +424,25 @@ ghost_dict: Dict[str, ItemData] = {
 }
 
 junk_dict: Dict[str, ItemData] = {
-    "Small Xp": ItemData(0x1F2800B2, ItemClassification.filler),
-    "Small Money": ItemData(0x1F2800B3, ItemClassification.filler),
-    "Medium Xp": ItemData(0x1F2800D0, ItemClassification.filler),
-    "Medium Money": ItemData(0x1F2800D1, ItemClassification.filler),
-    "Large Xp": ItemData(0x1F2800D2, ItemClassification.filler),
-    "Large Money": ItemData(0x1F2800D3, ItemClassification.filler),
-    "Random Card": ItemData(0x1F2800D4, ItemClassification.filler),
-    "Random New Card": ItemData(0x1F2800D5, ItemClassification.filler),
-    "Progressive Customer Money": ItemData(0x1F2800F6, ItemClassification.filler),
-    "Increase Card Luck": ItemData(0x1F2800F7, ItemClassification.filler),
+    "Small Xp": ItemData(300, ItemClassification.filler),
+    "Small Money": ItemData(301, ItemClassification.filler),
+    "Medium Xp": ItemData(302, ItemClassification.filler),
+    "Medium Money": ItemData(303, ItemClassification.filler),
+    "Large Xp": ItemData(304, ItemClassification.filler),
+    "Large Money": ItemData(305, ItemClassification.filler),
+    "Random Card": ItemData(306, ItemClassification.filler),
+    "Random New Card": ItemData(307, ItemClassification.filler),
+    "Progressive Customer Money": ItemData(308, ItemClassification.filler),
+    "Increase Card Luck": ItemData(309, ItemClassification.filler),
 }
 
 trap_dict: Dict[str, ItemData] = {
-    "Stink Trap": ItemData(0x1F2800B4, ItemClassification.trap),
-    "Poltergeist Trap": ItemData(0x1F2800D6, ItemClassification.trap),
-    "Credit Card Failure Trap": ItemData(0x1F2800F8, ItemClassification.trap),
-    "Decrease Card Luck": ItemData(0x1F2800FB, ItemClassification.trap),
-    "Market Change Trap": ItemData(0x1F2800F9, ItemClassification.trap),
-    "Currency Trap": ItemData(0x1F2800FA, ItemClassification.trap),
+    "Stink Trap": ItemData(320, ItemClassification.trap),
+    "Poltergeist Trap": ItemData(321, ItemClassification.trap),
+    "Credit Card Failure Trap": ItemData(322, ItemClassification.trap),
+    "Decrease Card Luck": ItemData(323, ItemClassification.trap),
+    "Market Change Trap": ItemData(324, ItemClassification.trap),
+    "Currency Trap": ItemData(325, ItemClassification.trap),
 }
 
 junk_weights = {
@@ -458,4 +458,6 @@ junk_weights = {
     "Increase Card Luck": 0
 }
 
-full_item_dict: Dict[str, ItemData] = {**item_dict, **progressive_dict, **junk_dict, **trap_dict, **ghost_dict, **random_ghost_dict}
+full_item_dict: Dict[str, ItemData] = {**item_dict, **not_sellable_dict, **random_ghost_dict, **ghost_dict, **junk_dict, **trap_dict}
+
+

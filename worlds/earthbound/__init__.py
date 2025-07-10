@@ -109,6 +109,146 @@ class EarthBoundWorld(World):
         self.rare_gear = []
         self.get_all_spheres = threading.Event()
 
+        self.common_items = [
+            "Cookie",
+            "Bag of Fries",
+            "Teddy Bear",
+            "Hamburger",
+            "Boiled Egg",
+            "Fresh Egg",
+            "Picnic Lunch",
+            "Croissant",
+            "Bread Roll",
+            "Can of Fruit Juice",
+            "Royal Iced Tea",
+            "Protein Drink",
+            "Bottle of Water",
+            "Cold Remedy",
+            "Vial of Serum",
+            "Ketchup Packet",
+            "Sugar Packet",
+            "Tin of Cocoa",
+            "Carton of Cream",
+            "Sprig of Parsley",
+            "Jar of Hot Sauce",
+            "Salt Packet",
+            "Wet Towel",
+            "Refreshing Herb",
+            "Ruler",
+            "Protractor",
+            "Insecticide Spray",
+            "Rust Promoter",
+            "Stag Beetle",
+            "Toothbrush",
+            "Handbag Strap",
+            "Chick",
+            "Chicken",
+            "Trout Yogurt",
+            "Banana",
+            "Calorie Stick",
+            "Gelato de Resort",
+            "Snake",
+            "Cup of Noodles",
+            "Cup of Coffee",
+            "Double Burger",
+            "Bean Croquette",
+            "Molokheiya Soup",
+            "Plain Roll",
+            "Magic Tart",
+            "Popsicle",
+            "Bottle Rocket"
+        ]
+
+        self.common_gear = [
+            "Yo-yo",
+            "Slingshot",
+            "Travel Charm",
+            "Great Charm",
+            "Ribbon",
+            "Red Ribbon"
+        ]
+
+        self.uncommon_items = [
+            "Pasta di Summers",
+            "Pizza",
+            "Chef's Special",
+            "Super Plush Bear",
+            "PSI Caramel",
+            "Jar of Delisauce",
+            "Secret Herb",
+            "Xterminator Spray",
+            "Snake Bag",
+            "Bomb",
+            "Rust Promoter DX",
+            "Pair of Dirty Socks",
+            "Mummy Wrap",
+            "Pharaoh's Curse",
+            "Sudden Guts Pill",
+            "Picture Postcard",
+            "Viper",
+            "Repel Sandwich",
+            "Lucky Sandwich",
+            "Peanut Cheese Bar",
+            "Bowl of Rice Gruel",
+            "Kabob",
+            "Plain Yogurt",
+            "Beef Jerky",
+            "Mammoth Burger",
+            "Bottle of DXwater",
+            "Magic Pudding",
+            "Big Bottle Rocket",
+            "Bazooka"
+
+        ]
+
+        self.uncommon_gear = [
+            "Trick Yo-yo",
+            "Bionic Slingshot",
+            "Crystal Charm",
+            "Defense Ribbon",
+            "Earth Pendant",
+            "Flame Pendant",
+            "Rain Pendant",
+            "Night Pendant"
+        ]
+
+        self.rare_items = [
+            "Large Pizza",
+            "Magic Truffle",
+            "Brain Food Lunch",
+            "Rock Candy",
+            "Kraken Soup",
+            "IQ Capsule",
+            "Guts Capsule",
+            "Speed Capsule",
+            "Vital Capsule",
+            "Luck Capsule",
+            "Horn of Life",
+            "Multi Bottle Rocket",
+            "Super Bomb",
+            "Bag of Dragonite",
+            "Meteotite",
+            "Repel Superwich",
+            "Piggy Jelly",
+            "Spicy Jerky",
+            "Luxury Jerky",
+            "Cup of Lifenoodles"
+        ]
+
+        self.rare_gear = [
+            "Combat Yo-yo",
+            "Sword of Kings",
+            "Sea Pendant",
+            "Star Pendant",
+            "Goddess Ribbon"
+        ]
+
+        self.money = [
+            "$10",
+            "$100",
+            "$1000"
+        ]
+
     def generate_early(self) -> None:  # Todo: place locked items in generate_early
         self.starting_character = self.options.starting_character.current_key.capitalize()
         self.locals = []
@@ -138,7 +278,7 @@ class EarthBoundWorld(World):
         create_flavors(self)
         initialize_enemies(self)
 
-        if self.options.character_shuffle == 0:
+        if not self.options.character_shuffle:
             self.options.local_items.value.update(["Paula", "Jeff", "Poo", "Flying Man"])
             self.event_count += 6
 
@@ -163,7 +303,7 @@ class EarthBoundWorld(World):
         prefill_locations = []
         prefill_items = []
 
-        if self.options.character_shuffle == 0:
+        if not self.options.character_shuffle:
             main_characters = ["Ness", "Paula", "Jeff", "Poo"]
             for character in main_characters:
                 if character != self.starting_character:
@@ -194,17 +334,24 @@ class EarthBoundWorld(World):
         fill_restrictive(self.multiworld, self.multiworld.get_all_state(False), prefill_locations, prefill_items, True, True)
         setup_hints(self)
 
+    def get_pre_fill_items(self) -> list:
+        characters = ["Ness", "Paula", "Jeff", "Poo"]
+        prefill_items = []
+        for character in characters:
+            if character != self.starting_character:
+                prefill_items.append(self.create_item(f"{character}"))     
+        return prefill_items
+
     @classmethod
-    def stage_generate_output(cls, multiworld, output_directory):
+    def stage_generate_output(cls, multiworld, output_directory) -> None:
         multiworld.eb_spheres = list(multiworld.get_spheres())
         for world in multiworld.get_game_worlds("EarthBound"):
             world.get_all_spheres.set()
 
-
     def generate_output(self, output_directory: str) -> None:
         try:
             patch = EBProcPatch(player=self.player, player_name=self.multiworld.player_name[self.player])
-            patch.write_file("earthbound_basepatch.bsdiff4", pkgutil.get_data(__name__, "earthbound_basepatch.bsdiff4"))
+            patch.write_file("earthbound_basepatch.bsdiff4", pkgutil.get_data(__name__, "src/earthbound_basepatch.bsdiff4"))
             patch_rom(self, patch, self.player)
 
             self.rom_name = patch.name
@@ -216,7 +363,7 @@ class EarthBoundWorld(World):
         finally:
             self.rom_name_available_event.set()  # make sure threading continues and errors are collected
 
-    def extend_hint_information(self, hint_data: Dict[int, Dict[int, str]]):
+    def extend_hint_information(self, hint_data: Dict[int, Dict[int, str]]) -> None:
         if self.options.dungeon_shuffle:
             dungeon_entrances = {}
             dungeon_mapping = {}
@@ -315,6 +462,12 @@ class EarthBoundWorld(World):
                 spoiler_handle.write(
                     f" {dungeon} => {self.dungeon_connections[dungeon]}\n"
                 )
+        
+        spoiler_handle.write("\nArea Levels:\n")
+        spoiler_excluded_areas = ["Ness's Mind", "Global ATM Access", "Common Condiment Shop"]
+        for area in self.area_levels:
+            if area not in spoiler_excluded_areas:
+                spoiler_handle.write(f" {area}: Level {self.area_levels[area]}\n")
 
     def create_item(self, name: str) -> Item:
         data = item_table[name]
@@ -323,16 +476,17 @@ class EarthBoundWorld(World):
     def get_filler_item_name(self) -> str:  # Todo: make this suck less
         weights = {"rare": self.options.rare_filler_weight.value, "uncommon": self.options.uncommon_filler_weight.value, "common": self.options.common_filler_weight.value,
                    "rare_gear": int(self.options.rare_filler_weight.value * 0.5), "uncommon_gear": int(self.options.uncommon_filler_weight.value * 0.5),
-                   "common_gear": int(self.options.common_filler_weight.value * 0.5)}
-        choices = self.random.choices(list(weights), weights=list(weights.values()), k=len(self.multiworld.get_unfilled_locations(self.player)))
-        filler_type = self.random.choice(choices)
+                   "common_gear": int(self.options.common_filler_weight.value * 0.5), "money": self.options.money_weight.value}
+        
+        filler_type = self.random.choices(list(weights), weights=list(weights.values()), k=1)[0]
         weight_table = {
             "common": self.common_items,
             "common_gear": self.common_gear,
             "uncommon": self.uncommon_items,
             "uncommon_gear": self.uncommon_gear,
             "rare": self.rare_items,
-            "rare_gear": self.rare_gear
+            "rare_gear": self.rare_gear,
+            "money": self.money
         }
         return self.random.choice(weight_table[filler_type])
 
@@ -351,7 +505,7 @@ class EarthBoundWorld(World):
         if self.options.magicant_mode not in [0, 3]:
             excluded_items.add("Magicant Teleport")
 
-        if self.options.character_shuffle == 0:
+        if not self.options.character_shuffle:
             excluded_items.add("Ness")
             excluded_items.add("Paula")
             excluded_items.add("Jeff")

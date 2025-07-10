@@ -26,15 +26,19 @@ VICTORY_ADDRESS = 0x7F0020
 LOCATION_ADDRESS = 0xF50100  # already in SNI addressing
 
 # These are already in SNI addressing
-VALIDATION_ADDR = ROM_START + 0x5E0000
+# NOTE: SNI with RetroArch can't read past 4MB in the ROM
+#       Validation data must be before 4MB or the client can't validate/connect to the game
+VALIDATION_ADDR = ROM_START + 0x3F8C03
 VALIDATION_SIZE = 32
 
 # Item and location ID offsets
 LOCATION_ID_START = 5100000
 ITEM_ID_START = 5100000
+MAX_IN_GAME_ITEM_ID = 255
 
 # Don't track on the Load Screen(0x00) or Title Screen(0x1B1)
 INVALID_TRACKING_LOCATIONS = [0x00, 0x1B1]
+MAX_MAP_ID = 0x1FF
 
 
 # These are the event flag locations for the baseline (non chronosanity) checks
@@ -501,10 +505,17 @@ class CTJoTSNIClient(SNIClient):
             # zero out the RECEIVE_ITEM_ADDR memory once the item has been awarded.
             data = await snes_read(ctx, cls._convert_to_sni_addressing(RECEIVE_ITEM_ADDR), 1)
             if data is not None and data[0] == 0:
-                snes_buffered_write(
-                    ctx,
-                    cls._convert_to_sni_addressing(RECEIVE_ITEM_ADDR),
-                    bytes([item.item - ITEM_ID_START]))
+
+                # Certain event related AP items are not real in game items.  We want to skip those but still
+                # update the received counter.  This is currently just a concern for the items representing
+                # character pickups.
+                in_game_id = item.item - ITEM_ID_START
+                if in_game_id <= MAX_IN_GAME_ITEM_ID:
+                    snes_buffered_write(
+                        ctx,
+                        cls._convert_to_sni_addressing(RECEIVE_ITEM_ADDR),
+                        bytes([in_game_id]))
+
                 # TODO: Writing this value back manually for now.  Event scripts can only write to a
                 #       very limited range of memory, and this value is outside of that range.
                 #       Maybe use a custom arbitrary ASM function? Find a different event command?
@@ -543,7 +554,16 @@ class CTJoTSNIClient(SNIClient):
         # Check the player's current location and don't track if they are
         # on either the title screen or the load screen.
         # Current location is stored in two bytes starting at 0x7F0100
-        if int.from_bytes(location_data, "little") in INVALID_TRACKING_LOCATIONS:
+        map_id = int.from_bytes(location_data, "little")
+        if map_id in INVALID_TRACKING_LOCATIONS:
+            return False
+
+        # Sanity check to make sure the map actually exists before tracking
+        # This can catch an issue where the hardware/emulator fills RAM with invalid values before the game loads
+        #
+        # This check is a bit naive, since some maps under this value are also invalid, but it should
+        # work to stop the but where the game auto-completes on connect
+        if map_id >  MAX_MAP_ID:
             return False
 
         # Normal locations (standard randomizer checks)
@@ -598,7 +618,7 @@ class CTJoTSNIClient(SNIClient):
         if data is None or data[0:2] != b"AP":
             return False
 
-        name_end = min(data[5:21].find(b'\00'), 16) + 5
+        name_end = min(data[5:22].find(b'\00'), 16) + 5
         name = data[5:name_end]
         ctx.game = self.game
         # We receive items from other worlds as well as our own world.

@@ -35,6 +35,8 @@ boss_sprite_pointers = {
 }
 
 banned_transformations = ["Master Belch", "Master Barf", "Kraken", "Heavily Armed Pokey"]
+hard_final_bosses = ["Carbon Dog", "Kraken", "Clumsy Robot", "Starman Junior", "Starman Deluxe", "Giygas (4)", "Thunder and Storm", "Electro Specter",
+                     "Evil Mani-Mani", "Ness's Nightmare", "Shrooom!", "Master Belch"]
 
 
 class SlotInfo(NamedTuple):
@@ -195,6 +197,16 @@ def write_bosses(world, rom) -> None:
         transformation_replacement = world.random.randint(0, 24)
         world.boss_list[27] = world.boss_list[transformation_replacement]
         world.boss_list[transformation_replacement] = original_boss
+
+    if world.options.safe_final_boss:
+        while world.boss_list[25] in hard_final_bosses:
+            i = world.random.randrange(len(world.boss_list))
+            if (world.boss_list[i] == "Diamond Dog" and not world.options.decouple_diamond_dog) or (
+                world.boss_list[i] == "Giygas (4)" and not world.options.boss_shuffle_add_giygas
+            ):
+                continue
+            world.boss_list[25], world.boss_list[i] = world.boss_list[i], world.boss_list[25]
+
 
     rom.write_bytes(0x15E527, bytearray([0x00, 0x00]))  # Blank out Pokey's end battle action
     rom.write_bytes(0x15B8B9, bytearray([0x00, 0x00]))

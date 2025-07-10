@@ -1,4 +1,5 @@
 import struct
+from ..Options import PSIShuffle
 
 
 def shuffle_psi(world) -> None:
@@ -64,7 +65,7 @@ def shuffle_psi(world) -> None:
     if world.options.psi_shuffle:
         world.random.shuffle(world.offensive_psi_slots)
 
-        if world.options.psi_shuffle != 2:
+        if world.options.psi_shuffle != PSIShuffle.option_extended:
             adjust_psi_list(world.offensive_psi_slots, "Blast", 7)
             adjust_psi_list(world.offensive_psi_slots, "Missile", 7)
 
@@ -74,7 +75,7 @@ def shuffle_psi(world) -> None:
 
         world.random.shuffle(world.assist_psi_slots)
 
-        if world.options.psi_shuffle != 2:
+        if world.options.psi_shuffle != PSIShuffle.option_extended:
             adjust_psi_list(world.assist_psi_slots, "Defense up", 10)
             adjust_psi_list(world.assist_psi_slots, "Drain", 10)
             adjust_psi_list(world.assist_psi_slots, "Disable", 10)

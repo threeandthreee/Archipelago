@@ -1,3 +1,4 @@
+from dataclasses import replace
 from math import floor
 from typing import TYPE_CHECKING
 
@@ -7,7 +8,9 @@ if TYPE_CHECKING:
     from . import PokemonCrystalWorld
 
 
-def misc_activities(world: "PokemonCrystalWorld"):
+def randomize_mischief(world: "PokemonCrystalWorld"):
+    if not world.options.enable_mischief: return
+
     # Decide which mischief is active
     all_mischief = world.generated_misc.selected
 
@@ -15,44 +18,55 @@ def misc_activities(world: "PokemonCrystalWorld"):
     upper_count = floor(len(all_mischief) * 0.75)
     mischief_count = world.random.randint(lower_count, upper_count)
 
-    world.generated_misc = world.generated_misc._replace(selected=world.random.sample(all_mischief, mischief_count))
+    world.generated_misc = replace(world.generated_misc, selected=world.random.sample(all_mischief, mischief_count))
 
     if MiscOption.RadioTowerQuestions.value in world.generated_misc.selected:
         # Randomize Yes/No answers for Radio Card quiz
-        for i in range(5):
-            world.generated_misc.radio_tower_questions[i] = world.random.choice(["Y", "N"])
+        world.generated_misc = replace(
+            world.generated_misc,
+            radio_tower_questions=[world.random.choice(("Y", "N")) for _ in
+                                   world.generated_misc.radio_tower_questions]
+        )
 
     if MiscOption.FuchsiaGym.value in world.generated_misc.selected:
         # shuffle positions of trainers in fuchsia gym
-        world.random.shuffle(world.generated_misc.fuchsia_gym_trainers)
+        fuchsia_gym_trainers = list(world.generated_misc.fuchsia_gym_trainers)
+        world.random.shuffle(fuchsia_gym_trainers)
+        world.generated_misc = replace(world.generated_misc, fuchsia_gym_trainers=fuchsia_gym_trainers)
 
     if MiscOption.SaffronGym.value in world.generated_misc.selected:
         shuffled_saffron_warps = {}
-        for direction in ["NW", "N", "NE", "W", "E", "SW", "SE"]:
+        for direction in ("NW", "N", "NE", "W", "E", "SW", "SE"):
             numbers = [1, 2, 3, 4]
             world.random.shuffle(numbers)
             shuffled_saffron_warps[direction] = numbers
 
+        new_pairs = []
         for pair in world.generated_misc.saffron_gym_warps.pairs:
+            new_pair = []
             for i in range(0, 2):
-                if pair[i] in ["START", "END"]:
+                if pair[i] in ("START", "END"):
+                    new_pair.append(pair[i])
                     continue
                 direction = pair[i].split("_")[0]
                 number = int(pair[i].split("_")[1])
                 new_number = shuffled_saffron_warps[direction][number - 1]
-                pair[i] = f"{direction}_{new_number}"
+                new_pair.append(f"{direction}_{new_number}")
+            new_pairs.append(new_pair)
+        world.generated_misc = replace(world.generated_misc,
+                                       saffron_gym_warps=replace(world.generated_misc.saffron_gym_warps,
+                                                                 pairs=new_pairs))
 
     if MiscOption.RadioChannels.value in world.generated_misc.selected:
-        world.random.shuffle(world.generated_misc.radio_channel_addresses)
+        new_addresses = list(world.generated_misc.radio_channel_addresses)
+        world.random.shuffle(new_addresses)
+        world.generated_misc = replace(world.generated_misc, radio_channel_addresses=new_addresses)
 
     if MiscOption.MomItems.value in world.generated_misc.selected:
         good_items = ["MASTER_BALL", "NUGGET", "PP_UP", "RARE_CANDY", "SACRED_ASH", "LUCKY_EGG"]
-
-        new_mom_items = []
-        for item in world.generated_misc.mom_items:
-            new_mom_items.append(item._replace(item=world.random.choice(good_items)))
-
-        world.generated_misc = world.generated_misc._replace(mom_items=new_mom_items)
+        world.generated_misc = replace(world.generated_misc,
+                                       mom_items=[replace(item, item=world.random.choice(good_items)) for item in
+                                                  world.generated_misc.mom_items])
 
 
 def get_misc_spoiler_log(world: "PokemonCrystalWorld", write):
@@ -67,12 +81,12 @@ def get_misc_spoiler_log(world: "PokemonCrystalWorld", write):
         saffron_map = []
         # draw the walls in saffron gym
         for y in range(0, 17):
-            saffron_map.append(["█" if x in [7, 15] or y in [5, 11] else " " for x in range(0, 23)])
+            saffron_map.append(["█" if x in (7, 15) or y in (5, 11) else " " for x in range(0, 23)])
 
         character = ord("A")  # we will increment this while drawing the warps
         for pair in world.generated_misc.saffron_gym_warps.pairs:
             for warp in pair:
-                [x, y] = world.generated_misc.saffron_gym_warps.warps[warp].coords
+                x, y = world.generated_misc.saffron_gym_warps.warps[warp].coords
                 # cosmetic fudging
                 x = x + 2 if x > 10 else x
                 y = y - 2 if warp != "END" else y

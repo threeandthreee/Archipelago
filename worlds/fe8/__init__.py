@@ -4,11 +4,18 @@ Archipelago World definition for Fire Emblem: Sacred Stones
 
 from typing import ClassVar, Optional, Callable, Set, Tuple, Any
 import os
+import pkgutil
 
 # import logging
 
+from Options import OptionError
 from worlds.AutoWorld import World, WebWorld
-from BaseClasses import Region, ItemClassification, CollectionState, Tutorial, MultiWorld
+from BaseClasses import (
+    Region,
+    ItemClassification,
+    CollectionState,
+    Tutorial,
+)
 import settings
 
 from .client import FE8Client
@@ -26,7 +33,7 @@ from .locations import FE8Location
 from .items import FE8Item
 from .connector_config import locations, items
 
-from .rom import FE8DeltaPatch, generate_output
+from .rom import FE8ProcedurePatch, write_tokens
 
 # We need to import FE8Client to register it properly, so we use it to disable
 # the unused import warning
@@ -57,7 +64,7 @@ class FE8Settings(settings.Group):
 
         description = "FE8 ROM file"
         copy_to = "Fire Emblem The Sacred Stones (U).gba"
-        md5s = [FE8DeltaPatch.hash]
+        md5s = [FE8ProcedurePatch.hash]
 
     rom_file: FE8RomFile = FE8RomFile(FE8RomFile.copy_to)
 
@@ -88,11 +95,6 @@ class FE8World(World):
     item_name_to_id = {name: id + FE8_ID_PREFIX for name, id in items}
     location_name_to_id = {name: id + FE8_ID_PREFIX for name, id in locations}
     item_name_groups = {"holy weapons": set(HOLY_WEAPONS.keys())}
-
-    @classmethod
-    def stage_assert_generate(cls, multiworld: MultiWorld) -> None:
-        if not os.path.exists(cls.settings.rom_file):
-            raise FileNotFoundError(cls.settings.rom_file)
 
     def total_locations(self) -> int:
         tower_checks_enabled = self.options.tower_checks_enabled()
@@ -153,9 +155,11 @@ class FE8World(World):
         for i in range(NUM_LEVELCAPS):
             register(
                 "Progressive Level Cap",
-                ItemClassification.progression
-                if i < needed_level_uncaps
-                else ItemClassification.useful,
+                (
+                    ItemClassification.progression
+                    if i < needed_level_uncaps
+                    else ItemClassification.useful
+                ),
             )
 
         holy_weapon_pool = set(HOLY_WEAPONS.keys())
@@ -163,10 +167,13 @@ class FE8World(World):
         if exclude_latona:
             holy_weapon_pool.remove("Latona")
 
+        if int(required_holy_weapons) > len(holy_weapon_pool):
+            raise OptionError("too many required holy weapons ({int(required_holy_weapons)})")
+
         progression_holy_weapons = self.random.sample(
             list(holy_weapon_pool), k=int(required_holy_weapons)
         )
-        progression_weapon_types = {HOLY_WEAPONS[w] for w in progression_holy_weapons}
+        progression_weapon_types = set(HOLY_WEAPONS[w] for w in progression_holy_weapons)
 
         self.progression_holy_weapons = set(progression_holy_weapons)
 
@@ -174,23 +181,34 @@ class FE8World(World):
             for _ in range(NUM_WEAPON_LEVELS):
                 register(
                     "Progressive Weapon Level ({})".format(wtype),
-                    ItemClassification.progression
-                    if wtype in progression_weapon_types
-                    else ItemClassification.useful,
+                    (
+                        ItemClassification.progression
+                        if wtype in progression_weapon_types
+                        else ItemClassification.useful
+                    ),
                 )
 
-        for hw in HOLY_WEAPONS:
+        # We shuffle here to ensure that level caps and weapon levels come before
+        # holy weapons in `other_weapons`.
+        self.random.shuffle(other_items)
+
+        holy_weapons = [name for name in HOLY_WEAPONS.keys()]
+        self.random.shuffle(holy_weapons)
+
+        for hw in holy_weapons:
             register(
                 hw,
-                ItemClassification.progression
-                if hw in progression_holy_weapons
-                else ItemClassification.useful,
+                (
+                    ItemClassification.progression
+                    if hw in progression_holy_weapons
+                    else ItemClassification.useful
+                ),
             )
 
         total_locations = self.total_locations()
 
         if len(progression_items) > total_locations:
-            raise ValueError(
+            raise OptionError(
                 "Could not place all requested weapon levels and level uncaps. "
                 "Reduce the number of required Holy Weapons or disable smooth level caps."
             )
@@ -198,7 +216,6 @@ class FE8World(World):
         for item in progression_items:
             self.multiworld.itempool.append(item)
 
-        self.random.shuffle(other_items)
         for _ in range(len(progression_items), total_locations):
             if other_items:
                 self.multiworld.itempool.append(other_items.pop())
@@ -230,6 +247,7 @@ class FE8World(World):
 
         def level_cap_at_least(n: int) -> Callable[[CollectionState], bool]:
             player = self.player
+
             def wrapped(state: CollectionState) -> bool:
                 return 10 + state.count("Progressive Level Cap", player) * 5 >= n
 
@@ -331,7 +349,6 @@ class FE8World(World):
 
             self.multiworld.regions.append(campaign)
 
-        # TODO (cam): These regions don't make much sense.
         if self.options.tower_checks_enabled():
             tower = Region("Tower of Valni", self.player, self.multiworld)
             self.multiworld.regions.append(tower)
@@ -388,6 +405,16 @@ class FE8World(World):
         return slot_data
 
     def generate_output(self, output_directory: str) -> None:
-        generate_output(
-            self.multiworld, self.options, self.player, output_directory, self.random
+        patch = FE8ProcedurePatch(
+            player=self.player, player_name=self.multiworld.player_name[self.player]
         )
+        basepatch = pkgutil.get_data(__name__, "data/base_patch.bsdiff4")
+        assert basepatch is not None
+        patch.write_file("base_patch.bsdiff4", basepatch)
+        write_tokens(self, patch)
+        rom_path = os.path.join(
+            output_directory,
+            f"{self.multiworld.get_out_file_name_base(self.player)}"
+            f"{patch.patch_file_ending}",
+        )
+        patch.write(rom_path)

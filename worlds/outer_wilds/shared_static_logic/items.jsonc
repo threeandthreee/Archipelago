@@ -65,6 +65,11 @@
     { "code": 1734473726, "name": "Ship Damage Trap", "type": "trap" },
     { "code": 1734473727, "name": "Audio Trap", "type": "trap" },
     { "code": 1734473728, "name": "Nap Trap", "type": "trap" },
+    { "code": 1734473761, "name": "Suit Puncture Trap", "type": "trap"},
+    { "code": 1734473762, "name": "Map Disable Trap", "type": "trap"},
+    { "code": 1734473763, "name": "HUD Corruption Trap", "type": "trap"},
+    { "code": 1734473764, "name": "Ice Physics Trap", "type": "trap"},
+    { "code": 1734473765, "name": "Supernova Trap", "type": "trap"},
 
     { "category": "dlc|hn1|hn2|fq", "code": 1734473733, "name": "Stranger Light Modulator", "type": "progression" },
     { "category": "dlc", "code": 1734473734, "name": "Breach Override Codes", "type": "progression" },

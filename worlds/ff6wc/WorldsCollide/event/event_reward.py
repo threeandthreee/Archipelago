@@ -47,7 +47,8 @@ class Reward:
 
         return result + " (" + ', '.join(possible_strings) + ")"
 
-def choose_reward(possible_types, characters, espers, items, ap_reward = None):
+
+def choose_reward(possible_types: RewardType, characters: Characters, espers, items, ap_reward: Reward = None):
     import random
 
     all_types = [flag for flag in RewardType]

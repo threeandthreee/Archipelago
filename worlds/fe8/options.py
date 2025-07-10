@@ -144,7 +144,95 @@ class ShuffleSkirmishTables(Toggle):
     default = 1
 
 
-# CR-someday cam: think about how this interacts with chapter select mode
+class LockpickUsability(Choice):
+    """
+    Allow units other than thieves to use lockpicks and the Rogue's Pick
+    command.
+
+    - Vanilla: Only Thieves, Assassins and Rogues can use lockpicks.
+    - Global Lockpicks: All characters can use lockpicks.
+    - Global Rogue pick: In addition to global lockpicks, all characters can use
+      the Rogue class's "Pick" command.
+    """
+
+    display_name = "Lockpick usability"
+    option_Vanilla = 0
+    option_GlobalLockpicks = 1
+    option_GlobalRoguePick = 2
+
+
+class NormalizeGenders(Toggle):
+    """
+    Adjust female classes to have identical base stats and caps to their male
+    counterparts, if one exists.
+
+    In most cases, this is a buff to those classes. However, some low-turn
+    strategies may rely on the fact that female mounted units have more Aid.
+    """
+
+    display_name = "Normalize gendered class stats"
+    default = 0
+
+
+class DeathLink(Choice):
+    """
+    When you die, everyone dies. Of course the reverse is true, too.
+    """
+
+    display_name = "DeathLink"
+    option_off = 0
+    alias_no = 0
+    option_OnGameOver = 1
+    alias_gameover = 1
+    option_OnEveryDeath = 2
+    alias_death = 2
+
+
+class GrowthRando(Choice):
+    """
+    Randomizes growth rates.
+
+    - Redistribute: Preserves growth total, possibly adjusted (positive or negative)
+      between GrowthRandoMin and GrowthRandoMax.
+    - Delta: Adjusts vanilla growths by amounts between GrowthRandoMin and GrowthRandoMax
+    - Full Random: Growths are assigned randomly between GrowthRandoMin and GrowthRandoMax
+
+    GrowthRandoMin and GrowthRandoMax control the min/max of the adjustment.
+    """
+
+    display_name = "Growth Randomizing"
+
+    option_Vanilla = 0
+    alias_no = 0
+    alias_off = 0
+    option_Redistribute = 1
+    option_Delta = 2
+    option_Full = 3
+
+
+class GrowthRandoMin(Range):
+    """
+    See Growth Rando.
+    """
+
+    display_name = "Growth Rando Min"
+    range_start = 0
+    range_end = 255
+    default = 10
+
+
+class GrowthRandoMax(Range):
+    """
+    See Growth Rando.
+    """
+
+    display_name = "Growth Rando Max"
+    range_start = 0
+    range_end = 255
+    default = 70
+
+
+# CR-someday cam: think about how this interacts with creature campaign mode
 class Goal(Choice):
     """
     Set the goal of the game.
@@ -156,10 +244,7 @@ class Goal(Choice):
     - Clear Lagdou: Clear the 10th floor of the Lagdou Ruins. Implies Enable Ruins.
 
     Note that this option only change which check is considered the goal and
-    does not affect progressing logic at all.
-
-    Supported values: traditional, inactive
-    Default value: traditional
+    does not affect progression logic at all.
     """
 
     display_name = "Goal"
@@ -167,6 +252,24 @@ class Goal(Choice):
     option_ClearValni = 1
     option_DefeatTirado = 2
     option_ClearLagdou = 3
+
+
+class MusicRando(Choice):
+    """
+    Randomizes music tracks.
+
+    - Context: Music tracks will be shuffled within the same group (battle themes
+      will be randomized to other battle themes, etc)
+    - Chaos: Music tracks will be shuffled randomly
+    """
+
+    option_Vanilla = 0
+    alias_no = 0
+    alias_off = 0
+    option_Context = 1
+    option_Chaos = 2
+    alias_full = 2
+    alias_all = 2
 
 
 # CR-someday cam: Eventually, it would be nice to be able to generate this.
@@ -184,6 +287,13 @@ class FE8Options(PerGameCommonOptions):
     tower_enabled: EnableTower
     ruins_enabled: EnableRuins
     shuffle_skirmish_tables: ShuffleSkirmishTables
+    lockpick_usability: LockpickUsability
+    normalize_genders: NormalizeGenders
+    death_link: DeathLink
+    growth_rando: GrowthRando
+    growth_rando_min: GrowthRandoMin
+    growth_rando_max: GrowthRandoMax
+    music_rando: MusicRando
     goal: Goal
 
     # Convenience methods for options that imply each other

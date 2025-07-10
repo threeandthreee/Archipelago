@@ -6,7 +6,7 @@
     jp $30d3 ; unsetGlobalFlag
 
 # Override rosa_startDate to immediately open all 3 locks
-15/197c/: | 
+15/597c/: | 
     ld hl,$c812 ; room 112 flags
     set 6,(hl)
     ld l,$35 ; room 135 flags
@@ -21,5 +21,5 @@
 # nice, I unlocked
 # all the doors
 # here for you.
-1f/09E7/: |
+1f/49E7/: |
     db $20,$49,$20,$75,$6E,$6C,$04,$BE,$01,$05,$81,$02,$AC,$05,$A7,$73,$01,$02,$F4,$05,$DE,$03,$19,$00

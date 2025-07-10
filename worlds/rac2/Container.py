@@ -150,6 +150,9 @@ def generate_patch(world: "Rac2World", patch: Rac2ProcedurePatch, instruction=No
     patch.write_token(APTokenTypes.WRITE, addresses.TITLE_SCREEN_MAIN_FUNC + 0x8F0, bytes([0xF5, 0x8B, 0x80, 0xA3]))
     patch.write_token(APTokenTypes.WRITE, addresses.QUIT_TITLE_MAIN_FUNC + 0x830, bytes([0xF5, 0x8B, 0x80, 0xA3]))
 
+    # Allow intro cinematic to be skipped by not setting this variable that blocks the ability to skip it.
+    patch.write_token(APTokenTypes.WRITE, addresses.TITLE_SCREEN_MAIN_FUNC + 0x524, MIPS.nop())
+
     # Disable game failsafe that unlocks any planet we land on if we don't have it unlocked already.
     for address in addresses.SETUP_PLANET_FUNCS:
         patch.write_token(APTokenTypes.WRITE, address + 0x144, bytes([0x07, 0x00, 0x00, 0x10]))
@@ -208,26 +211,6 @@ def generate_patch(world: "Rac2World", patch: Rac2ProcedurePatch, instruction=No
             # Put the base scaling from vanilla game for XP & Bolts even for revisits
             patch.write_token(APTokenTypes.WRITE, address, bytes([100, 50, 40, 30, 25, 20, 15, 10] * 4))
 
-    """ Normally, when the game gives you equipment (Gadgets/Items/Weapons), it will set a Primary and Secondary byte. 
-    The Primary byte is what the game uses to determine if you have the equipment. The Secondary byte doesn't seem to 
-    be used for anything. For the randomizer, the Primary byte will continue to be used to indicate whether the 
-    equipment is collected but the Secondary byte will be repurposed to keep track of whether the location has been
-    visited. Here, the give equipment function for each planet is modified to only set the Secondary byte to mark that 
-    the locations has been visited and prevent giving normal equipment. """
-    for address in addresses.GIVE_EQUIPMENT_FUNCS:
-        patch.write_token(APTokenTypes.WRITE, address + 0x14, bytes([0x01, 0x00, 0x03, 0x24]))  # addiu v1,zero,0x1
-        patch.write_token(APTokenTypes.WRITE, address + 0x18, bytes([0x21, 0x38, 0x82, 0x00]))  # addu a3,a0,v0
-        patch.write_token(APTokenTypes.WRITE, address + 0x1C, bytes([0x38, 0x00, 0xE3, 0xA0]))  # sb v1,0x38(a3)
-        patch.write_token(APTokenTypes.WRITE, address + 0x20, NOP * 43)
-
-    for address in addresses.VENDOR_CONFIRM_MENU_FUNCS:
-        # Prevent auto-equipping anything purchased at the vendor.
-        patch.write_token(APTokenTypes.WRITE, address + 0x740, NOP)
-
-        # Prevent vendor from overwriting slots after purchases.
-        patch.write_token(APTokenTypes.WRITE, address + 0x60C, NOP)
-        patch.write_token(APTokenTypes.WRITE, address + 0x790, NOP)
-
     """ Prevent any inference of an upgraded weapon type, always take the base Lv1 weapon so that we know which
     weapon to edit temporarily into a fake buyable item. """
     for address in addresses.VENDOR_LOOP_FUNCS:
@@ -248,9 +231,13 @@ def generate_patch(world: "Rac2World", patch: Rac2ProcedurePatch, instruction=No
     current platinum bolt count. This changes it to read a single byte that we control to get that count instead. This 
     is done to decouple the platinum bolt count from platinum bolt locations checked. This same concept is also applied 
     to nanotech boosts below. """
+    upper_half, lower_half = MIPS.get_address_halves(ram.platinum_bolt_count)
     for address in addresses.PLAT_BOLT_COUNT_FUNCS:
-        patch.write_token(APTokenTypes.WRITE, address + 0x4, bytes([0x13, 0x00, 0x00, 0x10]))
-        patch.write_token(APTokenTypes.WRITE, address + 0x8, bytes([0xE4, 0xB2, 0x46, 0x90]))
+        patch.write_token(APTokenTypes.WRITE, address, bytes([
+            *upper_half, 0x02, 0x3C,  # lui v0,<HI>
+            0x13, 0x00, 0x00, 0x10,  # b (+0x13)
+            *lower_half, 0x46, 0x90  # _lbu a2,<LO>(v0)
+        ]))
 
     # For some reason, the "Weapons" menu sets the secondary inventory flag for any weapon you hover with your cursor.
     # This is a problem for us since secondary inventory is tied to locations, so we just disable that behavior.
@@ -258,6 +245,7 @@ def generate_patch(world: "Rac2World", patch: Rac2ProcedurePatch, instruction=No
         patch.write_token(APTokenTypes.WRITE, address + 0x408, MIPS.nop())
 
     # Same for nanotech boosts
+    upper_half, lower_half = MIPS.get_address_halves(ram.nanotech_boost_count)
     for address, spaceish_wars_address in zip(addresses.NANOTECH_COUNT_FUNCS, addresses.SPACEISH_WARS_FUNCS):
         # Inject a custom procedure run on each tick of the main loop of each planet.
         # It will be called through the NANOTECH_COUNT_FUNC since we are removing a few instructions there,
@@ -265,13 +253,16 @@ def generate_patch(world: "Rac2World", patch: Rac2ProcedurePatch, instruction=No
         planet = ram.planet[IsoAddresses.get_planet_id_from_iso_address(address)]
         patch.write_token(APTokenTypes.WRITE, spaceish_wars_address, custom_main_loop(ram, planet))
 
-        patch.write_token(APTokenTypes.WRITE, address + 0x70, bytes([0xE5, 0xB2, 0xA5, 0x90]))  # lbu a1,-0x4D1B(a1)
-        patch.write_token(APTokenTypes.WRITE, address + 0x74, bytes([0x00, 0x00, 0xA4, 0x8F]))  # lw a0,0x0(sp)
-        patch.write_token(APTokenTypes.WRITE, address + 0x78, bytes([0x21, 0x10, 0x85, 0x00]))  # addu v0,a0,a1
-        patch.write_token(APTokenTypes.WRITE, address + 0x7C, MIPS.jal(planet.spaceish_wars_func))
-        patch.write_token(APTokenTypes.WRITE, address + 0x80, bytes([0x00, 0x00, 0xA2, 0xAF]))  # sw v0,0x0(sp)
-        patch.write_token(APTokenTypes.WRITE, address + 0x84, bytes([0x07, 0x00, 0x00, 0x10]))  # beq zero,zero,0x7
-        patch.write_token(APTokenTypes.WRITE, address + 0x88, MIPS.nop())
+        patch.write_token(APTokenTypes.WRITE, address + 0x6C, bytes([
+            *upper_half, 0x05, 0x3C,  # lui a1,<HI>
+            *lower_half, 0xA5, 0x90,  # lbu a1,<LO>(a1)
+            0x00, 0x00, 0xA4, 0x8F,  # lw a0,0x0(sp)
+            0x21, 0x10, 0x85, 0x00,  # addu v0,a0,a1
+            *MIPS.jal(planet.spaceish_wars_func),
+            0x00, 0x00, 0xA2, 0xAF,  # _sw v0,0x0(sp)
+            0x07, 0x00, 0x00, 0x10,  # beq zero,zero,0x7
+            *MIPS.nop()
+        ]))
 
     # Prevent Platinum Bolt received message popup at the end of ship races.
     for address in addresses.RACE_CONTROLLER_FUNCS:
@@ -292,10 +283,9 @@ def generate_patch(world: "Rac2World", patch: Rac2ProcedurePatch, instruction=No
         # Set arg0 to 0x18 for ship shack
         patch.write_token(APTokenTypes.WRITE, address + 0x24, bytes([0x18, 0x00, 0x04, 0x24]))
 
-    # Allow first-person mode outside of NG+ if requested in options
-    if world.options.allow_first_person_mode:
-        for address in addresses.SPECIAL_MENU_FUNCS:
-            patch.write_token(APTokenTypes.WRITE, address + 0x1B0, NOP * 2)
+    # Allow first-person mode outside of NG+
+    for address in addresses.SPECIAL_MENU_FUNCS:
+        patch.write_token(APTokenTypes.WRITE, address + 0x1B0, NOP * 2)
             
     # Enable bolt multiplier outside of NG+ if requested in options
     if world.options.enable_bolt_multiplier:
@@ -322,6 +312,26 @@ def generate_patch(world: "Rac2World", patch: Rac2ProcedurePatch, instruction=No
         for address in addresses.AVAILABLE_ITEM_FUNCS:
             patch.write_token(APTokenTypes.WRITE, address + 0x4, NOP * 3)
             patch.write_token(APTokenTypes.WRITE, address + 0x14, NOP * 21)
+
+    """ Normally, when the game gives you equipment (Gadgets/Items/Weapons), it will set a Primary and Secondary byte. 
+    The Primary byte is what the game uses to determine if you have the equipment. The Secondary byte doesn't seem to 
+    be used for anything. For the randomizer, the Primary byte will continue to be used to indicate whether the 
+    equipment is collected but the Secondary byte will be repurposed to keep track of whether the location has been
+    visited. Here, the give equipment function for each planet is modified to only set the Secondary byte to mark that 
+    the locations has been visited and prevent giving normal equipment. """
+    for address in addresses.GIVE_EQUIPMENT_FUNCS:
+        patch.write_token(APTokenTypes.WRITE, address + 0x14, bytes([0x01, 0x00, 0x03, 0x24]))  # addiu v1,zero,0x1
+        patch.write_token(APTokenTypes.WRITE, address + 0x18, bytes([0x21, 0x38, 0x82, 0x00]))  # addu a3,a0,v0
+        patch.write_token(APTokenTypes.WRITE, address + 0x1C, bytes([0x38, 0x00, 0xE3, 0xA0]))  # sb v1,0x38(a3)
+        patch.write_token(APTokenTypes.WRITE, address + 0x20, NOP * 43)
+
+    for address in addresses.VENDOR_CONFIRM_MENU_FUNCS:
+        # Prevent auto-equipping anything purchased at the vendor.
+        patch.write_token(APTokenTypes.WRITE, address + 0x740, NOP)
+
+        # Prevent vendor from overwriting slots after purchases.
+        patch.write_token(APTokenTypes.WRITE, address + 0x60C, NOP)
+        patch.write_token(APTokenTypes.WRITE, address + 0x790, NOP)
 
     """--------- 
     Oozla 
@@ -636,22 +646,23 @@ def generate_patch(world: "Rac2World", patch: Rac2ProcedurePatch, instruction=No
     patch.write_token(APTokenTypes.WRITE, address + 0x440, bytes([0x67, 0x7B, 0x63, 0x90]))
     # Make Hypnotist check AP controlled Hypnomatic Part Count
     # instead of normal address to determine total parts collected.
-    patch.write_token(APTokenTypes.WRITE, address + 0x19C, bytes([0x1A, 0x00, 0x03, 0x3C]))
-    patch.write_token(APTokenTypes.WRITE, address + 0x1A0, bytes([0xE6, 0xB2, 0x62, 0x90]))
-    patch.write_token(APTokenTypes.WRITE, address + 0x1A4, bytes([0x03, 0x00, 0x42, 0x28]))
-    patch.write_token(APTokenTypes.WRITE, address + 0x1A8, bytes([0x14, 0x00, 0x40, 0x14]))
-    patch.write_token(APTokenTypes.WRITE, address + 0x1AC, NOP)
-    patch.write_token(APTokenTypes.WRITE, address + 0x1B0, NOP)
-    patch.write_token(APTokenTypes.WRITE, address + 0x1B4, NOP)
-    patch.write_token(APTokenTypes.WRITE, address + 0x1B8, NOP)
-    patch.write_token(APTokenTypes.WRITE, address + 0x1BC, NOP)
-    patch.write_token(APTokenTypes.WRITE, address + 0x218, bytes([0x1A, 0x00, 0x03, 0x3C]))
-    patch.write_token(APTokenTypes.WRITE, address + 0x21C, bytes([0xE6, 0xB2, 0x62, 0x90]))
-    patch.write_token(APTokenTypes.WRITE, address + 0x220, bytes([0xD9, 0x27, 0x04, 0x24]))
-    patch.write_token(APTokenTypes.WRITE, address + 0x224, bytes([0xFF, 0xFF, 0x06, 0x24]))
-    patch.write_token(APTokenTypes.WRITE, address + 0x228, bytes([0x03, 0x00, 0x03, 0x24]))
-    patch.write_token(APTokenTypes.WRITE, address + 0x22C, bytes([0x22, 0x28, 0x62, 0x00]))
-    patch.write_token(APTokenTypes.WRITE, address + 0x230, bytes([0x24, 0x00, 0x00, 0x10]))
+    upper_half, lower_half = MIPS.get_address_halves(ram.hypnomatic_part_count)
+    patch.write_token(APTokenTypes.WRITE, address + 0x19C, bytes([
+        *upper_half, 0x03, 0x3C,
+        *lower_half, 0x62, 0x90,
+        0x03, 0x00, 0x42, 0x28,
+        0x14, 0x00, 0x40, 0x14,
+        *(MIPS.nop() * 5)
+    ]))
+    patch.write_token(APTokenTypes.WRITE, address + 0x218, bytes([
+        *upper_half, 0x03, 0x3C,
+        *lower_half, 0x62, 0x90,
+        0xD9, 0x27, 0x04, 0x24,
+        0xFF, 0xFF, 0x06, 0x24,
+        0x03, 0x00, 0x03, 0x24,
+        0x22, 0x28, 0x62, 0x00,
+        0x24, 0x00, 0x00, 0x10
+    ]))
     # Replace code that gives Hypnomatic with code that just sets Secondary Inventory flag.
     patch.write_token(APTokenTypes.WRITE, address + 0x4A0, bytes([0x01, 0x00, 0x04, 0x24]))
     patch.write_token(APTokenTypes.WRITE, address + 0x4A4, bytes([0x77, 0x8B, 0x84, 0xA3]))

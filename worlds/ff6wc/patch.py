@@ -6,8 +6,10 @@ import os
 from pathlib import Path
 import threading
 import traceback
-from typing import Any, Union
+from typing import Any
 import zipfile
+
+from typing_extensions import override
 
 from worlds.Files import APAutoPatchInterface
 import Utils
@@ -34,16 +36,19 @@ class FF6WCPatch(APAutoPatchInterface):
     def get_source_data(cls) -> bytes:
         return get_base_rom_bytes()
 
+    @override
     def write_contents(self, opened_zipfile: zipfile.ZipFile) -> None:
         super().write_contents(opened_zipfile)
         opened_zipfile.writestr("gen_data.json",
                                 self.gen_data_str,
                                 compress_type=zipfile.ZIP_DEFLATED)
 
+    @override
     def read_contents(self, opened_zipfile: zipfile.ZipFile) -> None:
         super().read_contents(opened_zipfile)
         self.gen_data_str = opened_zipfile.read("gen_data.json").decode()
 
+    @override
     def patch(self, target: str) -> None:
         self.read()
         write_rom_from_gen_data(self.gen_data_str, target)
@@ -78,7 +83,7 @@ def get_base_rom_path(file_name: str = "") -> str:
 _wc_lock = threading.Lock()
 
 
-def write_rom_from_gen_data(gen_data_str: str, output_rom_file_name: Union[str, Path]) -> None:
+def write_rom_from_gen_data(gen_data_str: str, output_rom_file_name: str | Path) -> None:
     """ take the output of `GenData.to_json`, and create rom from it """
     gen_data = GenData.from_json(gen_data_str)
 

@@ -1,4 +1,4 @@
-world_version = "4.0.1"
+world_version = "4.2"
 
 check_table = {
     0xEB0000: [0x11, 3],
@@ -538,7 +538,7 @@ location_dialogue = {  # Locations which just need to print the name of the item
     "Onett - Treehouse Guy": [0x073F34],
     "Onett - Mayor Pirkle": [0x0661D6, 0x072D4B, 0x072BE9],
     "Onett - Traveling Entertainer": [0x07476C],
-    "Twoson - Bike Shop Rental": [0x080046],
+    "Twoson - Bike Shop Rental": [0x080046, 0x08008F],
     "Twoson - Orange Kid Donation": [0x08134A, 0x0813B9, 0x3303E3],
     "Twoson - Apple Kid Invention": [0x081F89],
     "Twoson - Apple Kid's Mouse": [0x2EBA86],
@@ -614,7 +614,7 @@ npc_locations = {  # Locations given to you by an NPC
     "Onett - Treehouse Guy": [0x073F78],
     "Onett - Mayor Pirkle": [0x072D61],
     "Onett - Traveling Entertainer": [0x07477C],
-    "Twoson - Bike Shop Rental": [0x0801A5, 0x08008F],
+    "Twoson - Bike Shop Rental": [0x0801A5],
     "Twoson - Orange Kid Donation": [0x081362],
     "Twoson - Apple Kid's Mouse": [0x0819DF],
     "Twoson - Apple Kid Invention": [0x082015, 0x081FF3],
@@ -1228,7 +1228,7 @@ starting_psi_table = {
     "Progressive Poo PSI": 0x10
 }
 
-    #Todo; convert the list shit to a Struct.pack!
+# Todo; convert the list shit to a Struct.pack!
 item_space_checks = {
     "Onett - Tracy Gift": [0x076174, 0x78, 0x61, 0xC7],
     "Onett - Meteor Item": [0x0862FD, 0x01, 0x63, 0xC8],
@@ -1249,7 +1249,6 @@ item_space_checks = {
     "Happy-Happy Village - Defeat Carpainter": [0x098268, 0x6C, 0x82, 0xC9],
     "Threed - Hospital Drawer": [0x08687C, 0x80, 0x68, 0xC8],
     "Threed - Boogey Tent Trashcan": [0x2EF640, 0x44, 0xF6, 0xEE],
-    "Threed - Zombie Prisoner": [0x2EAF85, 0x89, 0xAF, 0xEE],
     "Saturn Valley - Post Belch Gift #1": [0x2EC049, 0x4D, 0xC0, 0xEE],
     "Saturn Valley - Post Belch Gift #2": [0x2EC063, 0x67, 0xC0, 0xEE],
     "Saturn Valley - Post Belch Gift #3": [0x2EC056, 0x5A, 0xC0, 0xEE],
@@ -1293,10 +1292,7 @@ item_space_checks = {
     "Cave of the Present - Star Master": [0x2EB8E7, 0xEB, 0xB8, 0xEE],
     "Happy-Happy Village - Prisoner": [0x2EBAC2, 0xC6, 0xBA, 0xEE],
     "Threed - Zombie Prisoner": [0x2EAF85, 0x89, 0xAF, 0xEE],
-    "Snow Wood - Bedroom": [0x2EB115, 0x19, 0xB1, 0xEE],
-    "Monotoli Building - Monotoli Character": [0x2EB2CB, 0xCF, 0xB2, 0xEE],
     "Dalaam - Throne Character": [0x2EB4EA, 0xEE, 0xB4, 0xEE],
-    "Deep Darkness - Barf Character": [0x2EB66C, 0x70, 0xB6, 0xEE],
     "Snow Wood - Upper Right Locker": [0x2EFB23, 0x27, 0xFB, 0xEE],
     "Snow Wood - Upper Left Locker": [0x2EFB62, 0x66, 0xFB, 0xEE],
     "Snow Wood - Bottom Right Locker": [0x2EFBA1, 0xA5, 0xFB, 0xEE],
@@ -1389,6 +1385,18 @@ hint_bits = [
     0x40,
     0x80
 ]
+
+money_item_table = {
+    "$10": 10,
+    "$100": 100,
+    "$1000": 1000
+}
+
+money_id_table = {
+    0x114: 10,
+    0x115: 100,
+    0x116: 1000
+}
 
 # 0: Action pointer, call the actual item being given
 # 1: Sprite ID

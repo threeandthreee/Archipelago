@@ -1,6 +1,50 @@
 from ..game_data.local_data import item_id_table
 import random
 
+gift_exclusions = [
+    "Franklin Badge",
+    "Pak of Bubble Gum",
+    "Jar of Fly Honey",
+    "Tiny Key",
+    "Yogurt Dispenser",
+    "UFO Engine",
+    "Piggy Nose",
+    "Shyness Book",
+    "King Banana",
+    "Letter For Tony",
+    "Key to the Shack",
+    "Key to the Cabin",
+    "Bad Key Machine",
+    "Zombie Paper",
+    "Hawk Eye",
+    "ATM Card",
+    "Show Ticket",
+    "Tenda Lavapants",
+    "Wad of Bills",
+    "Receiver Phone",
+    "Diamond",
+    "Signed Banana",
+    "Pencil Eraser",
+    "Hieroglyph Copy",
+    "Contact Lens",
+    "Key to the Tower",
+    "Meteorite Piece",
+    "Sound Stone",
+    "Police Badge",
+    "Mining Permit",
+    "Key to the Locker",
+    "Insignificant Item",
+    "Tiny Ruby",
+    "Eraser Eraser",
+    "Tendakraut",
+    "Progressive Bat",
+    "Progressive Fry Pan",
+    "Progressive Gun",
+    "Progressive Bracelet",
+    "Progressive Other",
+    "Carrot Key"
+]
+
 wanted_traits = [
     "Armor",
     "Weapon",
@@ -130,7 +174,7 @@ secondary_trait_list = {
     "Electronics": ["Slime Generator", "Shield Killer", "Neutralizer", "Defense Shower", "Counter-PSI Unit",
                     "HP-Sucker", "Hungry HP-Sucker"],
     "Candy": ["PSI Caramel", "Magic Truffle", "Rock Candy", "Magic Pudding", "Peanut Cheese Bar"],
-    "Medicine": ["Vial of Serum", "Cold Remedy", "IQ Capsule", "Guts Capsule", "Speed Capsule", ""],
+    "Medicine": ["Vial of Serum", "Cold Remedy", "IQ Capsule", "Guts Capsule", "Speed Capsule", "Vital Capsule", "Luck Capsule"],
     "Coffee": ["Cup of Coffee"],
     "Artifact": ["Metotite", "Meteornium"],
     "Fireworks": ["Bottle Rocket", "Big Bottle Rocket", "Multi Bottle Rocket"],
@@ -354,7 +398,7 @@ gift_by_quality = {
 }
 
 
-def trait_interpreter(gift):
+def trait_interpreter(gift) -> int:
     item = None
     trait_list = []
     got_trait = False

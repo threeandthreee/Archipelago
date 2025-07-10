@@ -72,7 +72,6 @@ def create_regions_and_connections(world: MZMWorld):
     create_region(multiworld, player, "Chozodia Mothership Cockpit", "in the Pirates' mother ship")
     create_region(multiworld, player, "Chozodia Original Power Bomb Room", "in the Pirates' mother ship")
     create_region(multiworld, player, "Chozodia Mecha Ridley Hallway", "in the Pirates' mother ship")
-    create_region(multiworld, player, "Mission Accomplished!")
 
     connect(multiworld, player, "Game Start", "Menu", "Brinstar Start")
     connect(multiworld, player, "Brinstar Start -> Main Shaft", "Brinstar Start", "Brinstar Main", MorphBall.create_rule(world))

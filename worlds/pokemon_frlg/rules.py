@@ -3,7 +3,7 @@ Logic rule definitions for Pokémon FireRed and LeafGreen
 """
 import re
 from collections import defaultdict
-from typing import TYPE_CHECKING, Dict, List, Set
+from typing import TYPE_CHECKING, Dict, List, Set, Tuple, cast, Iterable
 from BaseClasses import CollectionState
 from worlds.generic.Rules import CollectionRule, add_rule
 from .data import data, NAME_TO_SPECIES_ID, EvolutionMethodEnum, LocationCategory
@@ -45,6 +45,8 @@ EVO_METHODS_WURMPLE_LEVEL = {
     EvolutionMethodEnum.LEVEL_CASCOON
 }
 
+EVO_METHODS_LEVEL_ANY = {*EVO_METHODS_LEVEL, *EVO_METHODS_TYROGUE_LEVEL, *EVO_METHODS_WURMPLE_LEVEL}
+
 EVO_METHODS_ITEM = {
     EvolutionMethodEnum.ITEM
 }
@@ -56,6 +58,15 @@ EVO_METHODS_HELD_ITEM = {
 EVO_METHODS_FRIENDSHIP = {
     EvolutionMethodEnum.FRIENDSHIP
 }
+
+
+ISLAND_PASSES = ("Tri Pass", "Rainbow Pass")
+SPLIT_ISLAND_PASSES = ("One Pass", "Two Pass", "Three Pass", "Four Pass", "Five Pass", "Six Pass", "Seven Pass")
+CARD_KEYS_PER_FLOOR = {floor: ("Card Key", f"Card Key {floor}F") for floor in range(1, 12)}
+BADGES = ("Boulder Badge", "Cascade Badge", "Thunder Badge", "Rainbow Badge", "Soul Badge", "Marsh Badge",
+          "Volcano Badge", "Earth Badge")
+GYMS = ("Defeat Brock", "Defeat Misty", "Defeat Lt. Surge", "Defeat Erika", "Defeat Koga", "Defeat Sabrina",
+        "Defeat Blaine", "Defeat Giovanni")
 
 
 class PokemonFRLGLogic:
@@ -71,6 +82,11 @@ class PokemonFRLGLogic:
     hms_require_evos: bool
     oaks_aides_require_evos: bool
     randomizing_entrances: bool
+    guaranteed_hm_access: bool
+    dexsanity_state_item_names_lookup: Dict[str, Tuple[str, ...]]
+    oaks_aides_species_item_names: List[Tuple[str, ...]]
+    pokemon_hm_use: Dict[str, List[str]]
+    evolution_state_item_names_lookup: Dict[str, List[str]]
 
     def __init__(self, player: int, item_id_to_name: Dict[int, str]) -> None:
         self.player = player
@@ -85,110 +101,102 @@ class PokemonFRLGLogic:
         self.hms_require_evos = False
         self.oaks_aides_require_evos = False
         self.randomizing_entrances = False
+        self.guaranteed_hm_access = False
+        self.dexsanity_state_item_names_lookup = {}
+        self.oaks_aides_species_item_names = []
+        self.evolution_state_item_names_lookup = {}
+
+    def update_hm_compatible_pokemon(self):
+        pokemon_hm_use = defaultdict(list)
+        for hm, species_list in self.compatible_hm_pokemon.items():
+            hm_logic_name = f"Teach {hm}"
+            for species in species_list:
+                pokemon_hm_use[species].append(hm_logic_name)
+                if self.hms_require_evos:
+                    pokemon_hm_use[f"Evolved {species}"].append(hm_logic_name)
+        self.pokemon_hm_use = pokemon_hm_use
+
+    def add_hm_compatible_pokemon(self, hm: str, species: str):
+        self.compatible_hm_pokemon[hm].append(species)
+        hm_logic_name = f"Teach {hm}"
+        self.pokemon_hm_use.setdefault(species, []).append(hm_logic_name)
+        if self.hms_require_evos:
+            self.pokemon_hm_use.setdefault(f"Evolved {species}", []).append(hm_logic_name)
 
     def has_badge_requirement(self, state: CollectionState, hm: str) -> bool:
         return not self.badge_required[hm] or state.has(BADGE_REQUIREMENTS[hm], self.player)
 
-    def can_teach_hm(self, state: CollectionState, hm: str) -> bool:
-        for species in self.compatible_hm_pokemon[hm]:
-            if (state.has(species, self.player) or
-                    (state.has(f"Evolved {species}", self.player) and self.hms_require_evos)):
-                return True
-        return False
-
     def can_cut(self, state: CollectionState) -> bool:
-        return (state.has_all({"HM01 Cut", "TM Case"}, self.player) and
-                self.has_badge_requirement(state, "Cut") and
-                self.can_teach_hm(state, "Cut"))
+        return (state.has_all(("HM01 Cut", "TM Case", "Teach Cut"), self.player) and
+                self.has_badge_requirement(state, "Cut"))
 
     def can_fly(self, state: CollectionState) -> bool:
-        return (state.has_all({"HM02 Fly", "TM Case"}, self.player) and
-                self.has_badge_requirement(state, "Fly") and
-                self.can_teach_hm(state, "Fly"))
+        return (state.has_all(("HM02 Fly", "TM Case", "Teach Fly"), self.player) and
+                self.has_badge_requirement(state, "Fly"))
 
     def can_surf(self, state: CollectionState) -> bool:
-        return (state.has_all({"HM03 Surf", "TM Case"}, self.player) and
-                self.has_badge_requirement(state, "Surf") and
-                self.can_teach_hm(state, "Surf"))
+        return (state.has_all(("HM03 Surf", "TM Case", "Teach Surf"), self.player) and
+                self.has_badge_requirement(state, "Surf"))
 
     def can_strength(self, state: CollectionState) -> bool:
-        return (state.has_all({"HM04 Strength", "TM Case"}, self.player) and
-                self.has_badge_requirement(state, "Strength") and
-                self.can_teach_hm(state, "Strength"))
+        return (state.has_all(("HM04 Strength", "TM Case", "Teach Strength"), self.player) and
+                self.has_badge_requirement(state, "Strength"))
 
     def can_flash(self, state: CollectionState) -> bool:
-        return (state.has_all({"HM05 Flash", "TM Case"}, self.player) and
-                self.has_badge_requirement(state, "Flash") and
-                self.can_teach_hm(state, "Flash"))
+        return (state.has_all(("HM05 Flash", "TM Case", "Teach Flash"), self.player) and
+                self.has_badge_requirement(state, "Flash"))
 
     def can_rock_smash(self, state: CollectionState) -> bool:
-        return (state.has_all({"HM06 Rock Smash", "TM Case"}, self.player) and
-                self.has_badge_requirement(state, "Rock Smash") and
-                self.can_teach_hm(state, "Rock Smash"))
+        return (state.has_all(("HM06 Rock Smash", "TM Case", "Teach Rock Smash"), self.player) and
+                self.has_badge_requirement(state, "Rock Smash"))
 
     def can_waterfall(self, state: CollectionState) -> bool:
-        return (state.has_all({"HM07 Waterfall", "TM Case"}, self.player) and
-                self.has_badge_requirement(state, "Waterfall") and
-                self.can_teach_hm(state, "Waterfall"))
+        return (state.has_all(("HM07 Waterfall", "TM Case", "Teach Waterfall"), self.player) and
+                self.has_badge_requirement(state, "Waterfall"))
 
     def has_n_badges(self, state: CollectionState, n: int) -> bool:
-        badges = ["Boulder Badge", "Cascade Badge", "Thunder Badge", "Rainbow Badge",
-                  "Soul Badge", "Marsh Badge", "Volcano Badge", "Earth Badge"]
-        return sum([state.has(badge, self.player) for badge in badges]) >= n
+        return state.has_from_list_unique(BADGES, self.player, n)
 
     def has_n_gyms(self, state: CollectionState, n: int) -> bool:
-        gyms = ["Defeat Brock", "Defeat Misty", "Defeat Lt. Surge", "Defeat Erika",
-                "Defeat Koga", "Defeat Sabrina", "Defeat Blaine", "Defeat Giovanni"]
-        return sum([state.has(gym, self.player) for gym in gyms]) >= n
+        return state.has_from_list_unique(GYMS, self.player, n)
 
     def has_pokemon(self, state: CollectionState, pokemon: str) -> bool:
-        if self.dexsanity_requires_evos:
-            return state.has_any({pokemon, f"Static {pokemon}", f"Evolved {pokemon}"}, self.player)
-        return state.has_any({pokemon, f"Static {pokemon}"}, self.player)
+        return state.has_any(self.dexsanity_state_item_names_lookup[pokemon], self.player)
+
+    def has_pokemon_for_evolution(self, state: CollectionState, pokemon: str) -> bool:
+        return state.has_any(self.evolution_state_item_names_lookup[pokemon], self.player)
 
     def has_n_pokemon(self, state: CollectionState, n: int) -> bool:
-        count = 0
-        for species in data.species.values():
-            if state.has_any({species.name, f"Static {species.name}"}, self.player):
-                count += 1
-            elif self.oaks_aides_require_evos and state.has(f"Evolved {species.name}", self.player):
-                count += 1
-            if count >= n:
-                return True
-        return False
-
-    def can_evolve(self, state: CollectionState, pokemon: str) -> bool:
-        evo_data = data.evolutions[pokemon]
-        pokemon = re.sub(r'\d+', '', pokemon)
-        if state.has_any({pokemon, f"Evolved {pokemon}"}, self.player) and evo_data.method in self.evo_methods_required:
-            if evo_data.method in EVO_METHODS_ITEM:
-                return state.has(self.world_item_id_map[evo_data.param], self.player)
-            elif evo_data.method in EVO_METHODS_HELD_ITEM:
-                return state.has_all({self.world_item_id_map[evo_data.param],
-                                      self.world_item_id_map[evo_data.param2]},
-                                     self.player)
-            elif evo_data.method in EVO_METHODS_LEVEL | EVO_METHODS_TYROGUE_LEVEL | EVO_METHODS_WURMPLE_LEVEL:
-                return self.has_n_gyms(state, evo_data.param / 7)
-            elif evo_data.method in EVO_METHODS_FRIENDSHIP:
-                return True
+        if n <= 0:
+            return True
+        player = self.player
+        for species_item_names in self.oaks_aides_species_item_names:
+            # There are multiple item names for a species that can provide Pokédex progress for that species.
+            if state.has_any(species_item_names, player):
+                # Subtraction is used to make use of a common programming performance 'trick' where, comparing two
+                # variables, e.g. `if count == n`, can be replaced with comparing a variable and a constant, e.g.
+                # `if n == 0`.
+                n -= 1
+                # Further minor optimisation of `if n == 0` -> `if not n`
+                if not n:
+                    return True
         return False
 
     def has_trade_pokemon(self, state: CollectionState, location_name: str) -> bool:
         return state.has(self.required_trade_pokemon[location_name], self.player)
 
     def can_show_selphy_pokemon(self, state: CollectionState) -> bool:
-        return state.has_all({"Rescue Selphy", data.species[self.resort_gorgeous_pokemon].name}, self.player)
+        return state.has_all(("Rescue Selphy", data.species[self.resort_gorgeous_pokemon].name), self.player)
 
     def has_island_pass(self, state: CollectionState, group: int) -> bool:
-        passes = ["Tri Pass", "Rainbow Pass"]
-        return state.has(passes[group - 1], self.player) or state.has("Progressive Pass", self.player, group)
+        return state.has(ISLAND_PASSES[group - 1], self.player) or state.has("Progressive Pass", self.player, group)
 
     def has_split_island_pass(self, state: CollectionState, island: int) -> bool:
-        passes = ["One Pass", "Two Pass", "Three Pass", "Four Pass", "Five Pass", "Six Pass", "Seven Pass"]
-        return state.has(passes[island - 1], self.player) or state.has("Progressive Pass", self.player, island)
+        return (state.has(SPLIT_ISLAND_PASSES[island - 1], self.player)
+                or state.has("Progressive Pass", self.player, island))
 
     def has_card_key(self, state: CollectionState, floor: int) -> bool:
-        return (state.has_any({"Card Key", f"Card Key {floor}F"}, self.player) or
+        return (state.has_any(CARD_KEYS_PER_FLOOR[floor], self.player) or
                 state.has("Progressive Card Key", self.player, floor - 1))
 
     def can_stop_seafoam_b3f_current(self, state) -> bool:
@@ -198,25 +206,92 @@ class PokemonFRLGLogic:
         return self.can_strength(state) and state.can_reach_region("Seafoam Islands B3F Southwest", self.player)
 
     def can_turn_in_meteorite(self, state: CollectionState) -> bool:
-        return state.has_all({"Rescue Lostelle", "Meteorite"}, self.player)
+        return state.has_all(("Rescue Lostelle", "Meteorite"), self.player)
 
     def can_turn_in_ruby(self, state: CollectionState) -> bool:
-        return state.has_all({"Deliver Meteorite", "Ruby"}, self.player)
+        return state.has_all(("Deliver Meteorite", "Ruby"), self.player)
 
     def can_turn_in_sapphire(self, state: CollectionState) -> bool:
-        return state.has_all({"Deliver Meteorite", "Ruby", "Free Captured Pokemon", "Sapphire"}, self.player)
+        return state.has_all(("Deliver Meteorite", "Ruby", "Free Captured Pokemon", "Sapphire"), self.player)
 
     def has_lorelei_returned(self, state: CollectionState) -> bool:
-        return state.has_all({"Defeat Champion", "Restore Pokemon Network Machine"}, self.player)
+        return state.has_all(("Defeat Champion", "Restore Pokemon Network Machine"), self.player)
 
-    def two_island_stall_expansion(self, state: CollectionState, expansion_level: int) -> bool:
-        if expansion_level == 1:
-            return state.has("Rescue Lostelle", self.player)
-        elif expansion_level == 2:
-            return state.has_all({"Rescue Lostelle", "Defeat Champion"}, self.player)
-        elif expansion_level == 3:
-            return state.has_all({"Rescue Lostelle", "Defeat Champion", "Restore Pokemon Network Machine"}, self.player)
-        return False
+    def two_island_expansion_1(self, state: CollectionState) -> bool:
+        return state.has("Rescue Lostelle", self.player)
+
+    def two_island_expansion_2(self, state: CollectionState) -> bool:
+        return state.has_all(("Rescue Lostelle", "Defeat Champion"), self.player)
+
+    def two_island_expansion_3(self, state: CollectionState) -> bool:
+        return state.has_all(("Rescue Lostelle", "Defeat Champion", "Restore Pokemon Network Machine"), self.player)
+
+    def update_species(self, world: "PokemonFRLGWorld"):
+        """
+        Update available species items used in logic for oak's aide, dexsanity and pokemon request locations, for the
+        wild/static/legendary/evolution pokemon events that exist in the world.
+        """
+        pokemon_event_categories = {
+            LocationCategory.EVENT_WILD_POKEMON,
+            LocationCategory.EVENT_STATIC_POKEMON,
+            LocationCategory.EVENT_LEGENDARY_POKEMON,
+            LocationCategory.EVENT_EVOLUTION_POKEMON,
+        }
+
+        pokemon_events_that_exist = [location for location
+                                     in cast(Iterable[PokemonFRLGLocation], world.get_locations())
+                                     if location.category in pokemon_event_categories and location.advancement]
+        assert pokemon_events_that_exist
+
+        if not self.oaks_aides_require_evos:
+            # Filter out evolutions.
+            evolution_category = LocationCategory.EVENT_EVOLUTION_POKEMON
+            oaks_aide_relevant_pokemon_event_names = {location.item.name for location in pokemon_events_that_exist
+                                                      if location.category is not evolution_category}
+        else:
+            oaks_aide_relevant_pokemon_event_names = {location.item.name for location in pokemon_events_that_exist}
+
+        if not self.dexsanity_requires_evos:
+            # Filter out evolutions.
+            evolution_category = LocationCategory.EVENT_EVOLUTION_POKEMON
+            dexsanity_relevant_pokemon_event_names = {location.item.name for location in pokemon_events_that_exist
+                                                      if location.category is not evolution_category}
+        else:
+            dexsanity_relevant_pokemon_event_names = {location.item.name for location in pokemon_events_that_exist}
+
+        evolution_relevant_pokemon_event_names = {location.item.name for location in pokemon_events_that_exist}
+
+        oaks_aides_species_item_names = []
+        dexsanity_state_item_names = {}
+        evolution_state_item_names = {}
+        for species in data.species.values():
+            species_name = species.name
+            static_species_name = f"Static {species_name}"
+            evolved_species_name = f"Evolved {species_name}"
+
+            oaks_aide_item_names = []
+            dexsanity_item_names = []
+            for name in (species_name, static_species_name, evolved_species_name):
+                if name in oaks_aide_relevant_pokemon_event_names:
+                    oaks_aide_item_names.append(name)
+                if name in dexsanity_relevant_pokemon_event_names:
+                    dexsanity_item_names.append(name)
+
+            if oaks_aide_item_names:
+                oaks_aides_species_item_names.append(tuple(oaks_aide_item_names))
+
+            dexsanity_state_item_names[species_name] = tuple(dexsanity_item_names)
+
+            evolution_item_names = []
+            for name in (species_name, evolved_species_name):
+                if name in evolution_relevant_pokemon_event_names:
+                    evolution_item_names.append(name)
+
+            evolution_state_item_names[species_name] = tuple(evolution_item_names)
+
+        self.oaks_aides_species_item_names[:] = oaks_aides_species_item_names
+        self.dexsanity_state_item_names_lookup.update(dexsanity_state_item_names)
+        self.evolution_state_item_names_lookup.update(evolution_state_item_names)
 
 
 def set_logic_options(world: "PokemonFRLGWorld") -> None:
@@ -228,6 +303,32 @@ def set_logic_options(world: "PokemonFRLGWorld") -> None:
     logic.dexsanity_requires_evos = "Dexsanity" in world.options.evolutions_required.value
     logic.hms_require_evos = "HM Requirement" in world.options.evolutions_required.value
     logic.oaks_aides_require_evos = "Oak's Aides" in world.options.evolutions_required.value
+
+    # Until locations have been created, assume all pokemon species are present in the world.
+    dexsanity_state_item_names = {}
+    oaks_aides_species_item_names = []
+    evolution_state_item_names = {}
+    for species in data.species.values():
+        species_name = species.name
+
+        if logic.dexsanity_requires_evos and species.pre_evolution is not None:
+            state_item_names = (species_name, f"Static {species_name}", f"Evolved {species_name}")
+        else:
+            state_item_names = (species_name, f"Static {species_name}")
+        dexsanity_state_item_names[species_name] = state_item_names
+
+        if logic.oaks_aides_require_evos and species.pre_evolution is not None:
+            oaks_aide_item_names = (species_name, f"Static {species_name}", f"Evolved {species_name}")
+        else:
+            oaks_aide_item_names = (species_name, f"Static {species_name}")
+        oaks_aides_species_item_names.append(oaks_aide_item_names)
+
+        evolution_item_names = (species_name, f"Evolved {species_name}")
+        evolution_state_item_names[species_name] = evolution_item_names
+
+    logic.dexsanity_state_item_names_lookup.update(dexsanity_state_item_names)
+    logic.oaks_aides_species_item_names[:] = oaks_aides_species_item_names
+    logic.evolution_state_item_names_lookup.update(evolution_state_item_names)
 
     if "Level" in world.options.evolution_methods_required.value:
         logic.evo_methods_required.update(EVO_METHODS_LEVEL)
@@ -457,9 +558,9 @@ def set_entrance_rules(world: "PokemonFRLGWorld") -> None:
 
     # Route 5
     add_rule_safe("Route 5 Gate North Guard Checkpoint",
-                  lambda state: state.has_any({"Tea", "Blue Tea"}, player))
+                  lambda state: state.has_any(("Tea", "Blue Tea"), player))
     add_rule_safe("Route 5 Gate South Guard Checkpoint",
-                  lambda state: state.has_any({"Tea", "Blue Tea"}, player))
+                  lambda state: state.has_any(("Tea", "Blue Tea"), player))
     if "Block Tunnels" in options.modify_world_state.value:
         add_rule_safe("Route 5 Smashable Rocks",
                       lambda state: logic.can_rock_smash(state))
@@ -470,9 +571,9 @@ def set_entrance_rules(world: "PokemonFRLGWorld") -> None:
     add_rule_safe("Route 6 Surfing Spot",
                   lambda state: logic.can_surf(state))
     add_rule_safe("Route 6 Gate South Guard Checkpoint",
-                  lambda state: state.has_any({"Tea", "Red Tea"}, player))
+                  lambda state: state.has_any(("Tea", "Red Tea"), player))
     add_rule_safe("Route 6 Gate North Guard Checkpoint",
-                  lambda state: state.has_any({"Tea", "Red Tea"}, player))
+                  lambda state: state.has_any(("Tea", "Red Tea"), player))
     if "Block Tunnels" in options.modify_world_state.value:
         add_rule_safe("Route 6 Smashable Rocks",
                       lambda state: logic.can_rock_smash(state))
@@ -545,9 +646,9 @@ def set_entrance_rules(world: "PokemonFRLGWorld") -> None:
     add_rule_safe("Route 8 Cuttable Trees",
                   lambda state: logic.can_cut(state))
     add_rule_safe("Route 8 Gate East Guard Checkpoint",
-                  lambda state: state.has_any({"Tea", "Purple Tea"}, player))
+                  lambda state: state.has_any(("Tea", "Purple Tea"), player))
     add_rule_safe("Route 8 Gate West Guard Checkpoint",
-                  lambda state: state.has_any({"Tea", "Purple Tea"}, player))
+                  lambda state: state.has_any(("Tea", "Purple Tea"), player))
     if "Block Tunnels" in options.modify_world_state.value:
         add_rule_safe("Route 8 Smashable Rocks",
                       lambda state: logic.can_rock_smash(state))
@@ -556,9 +657,9 @@ def set_entrance_rules(world: "PokemonFRLGWorld") -> None:
 
     # Route 7
     add_rule_safe("Route 7 Gate West Guard Checkpoint",
-                  lambda state: state.has_any({"Tea", "Green Tea"}, player))
+                  lambda state: state.has_any(("Tea", "Green Tea"), player))
     add_rule_safe("Route 7 Gate East Guard Checkpoint",
-                  lambda state: state.has_any({"Tea", "Green Tea"}, player))
+                  lambda state: state.has_any(("Tea", "Green Tea"), player))
     if "Block Tunnels" in options.modify_world_state.value:
         add_rule_safe("Route 7 Smashable Rocks",
                       lambda state: logic.can_rock_smash(state))
@@ -706,7 +807,7 @@ def set_entrance_rules(world: "PokemonFRLGWorld") -> None:
     if "Remove Saffron Rockets" not in options.modify_world_state.value:
         if "Open Silph" not in options.modify_world_state.value:
             add_rule_safe("Silph Co.",
-                          lambda state: state.has_any({"Rescue Mr. Fuji", "Liberate Silph Co."}, player))
+                          lambda state: state.has_any(("Rescue Mr. Fuji", "Liberate Silph Co."), player))
         add_rule_safe("Copycat's House",
                       lambda state: state.has("Liberate Silph Co.", player))
         add_rule_safe("Saffron Gym",
@@ -971,7 +1072,7 @@ def set_entrance_rules(world: "PokemonFRLGWorld") -> None:
     add_rule_safe("Five Isle Meadow Surfing Spot",
                   lambda state: logic.can_surf(state))
     add_rule_safe("Rocket Warehouse",
-                  lambda state: state.has_all({"Learn Goldeen Need Log", "Learn Yes Nah Chansey"}, player))
+                  lambda state: state.has_all(("Learn Goldeen Need Log", "Learn Yes Nah Chansey"), player))
 
     # Resort Gorgeous
     add_rule_safe("Resort Gorgeous Near Resort Surfing Spot",
@@ -1131,9 +1232,9 @@ def set_location_rules(world: "PokemonFRLGWorld") -> None:
     add_rule_safe("Route 22 Early Rival Scaling",
                   lambda state: state.has("Deliver Oak's Parcel", player))
     add_rule_safe("Route 22 - Late Rival Reward",
-                  lambda state: state.has_all({"Defeat Route 22 Rival", "Defeat Giovanni"}, player))
+                  lambda state: state.has_all(("Defeat Route 22 Rival", "Defeat Giovanni"), player))
     add_rule_safe("Route 22 Late Rival Scaling",
-                  lambda state: state.has_all({"Defeat Route 22 Rival", "Defeat Giovanni"}, player))
+                  lambda state: state.has_all(("Defeat Route 22 Rival", "Defeat Giovanni"), player))
 
     # Route 2
     add_rule_safe("Route 2 Gate - Oak's Aide Gift (Pokedex Progress)",
@@ -1484,21 +1585,21 @@ def set_location_rules(world: "PokemonFRLGWorld") -> None:
     add_rule_safe("Two Island Town - Item Behind Cuttable Tree",
                   lambda state: logic.can_cut(state))
     add_rule_safe("Two Island Town - Market Stall Item 2",
-                  lambda state: logic.two_island_stall_expansion(state, 1))
+                  lambda state: logic.two_island_expansion_1(state))
     add_rule_safe("Two Island Town - Market Stall Item 3",
-                  lambda state: logic.two_island_stall_expansion(state, 3))
+                  lambda state: logic.two_island_expansion_3(state))
     add_rule_safe("Two Island Town - Market Stall Item 4",
-                  lambda state: logic.two_island_stall_expansion(state, 3))
+                  lambda state: logic.two_island_expansion_3(state))
     add_rule_safe("Two Island Town - Market Stall Item 5",
-                  lambda state: logic.two_island_stall_expansion(state, 2))
+                  lambda state: logic.two_island_expansion_2(state))
     add_rule_safe("Two Island Town - Market Stall Item 6",
-                  lambda state: logic.two_island_stall_expansion(state, 1))
+                  lambda state: logic.two_island_expansion_1(state))
     add_rule_safe("Two Island Town - Market Stall Item 8",
-                  lambda state: logic.two_island_stall_expansion(state, 2))
+                  lambda state: logic.two_island_expansion_2(state))
     add_rule_safe("Two Island Town - Market Stall Item 9",
-                  lambda state: logic.two_island_stall_expansion(state, 3))
+                  lambda state: logic.two_island_expansion_3(state))
     add_rule_safe("Two Island Town - Beauty Info",
-                  lambda state: logic.two_island_stall_expansion(state, 2))
+                  lambda state: logic.two_island_expansion_2(state))
     add_rule_safe("Two Island Game Corner - Lostelle's Dad Gift (Deliver Meteorite)",
                   lambda state: logic.can_turn_in_meteorite(state))
     add_rule_safe("Two Island Game Corner - Lostelle's Dad's Delivery",
@@ -1549,7 +1650,7 @@ def set_location_rules(world: "PokemonFRLGWorld") -> None:
 
     # Water Labyrinth
     add_rule_safe("Water Labyrinth - Gentleman Info",
-                  lambda state: state.has_all({"Togepi", "Togetic"}, player))
+                  lambda state: state.has_any(("Togepi", "Togetic"), player))
 
     # Resort Gorgeous
     add_rule_safe("Selphy's House - Selphy Gift (Show Pokemon)",
@@ -1617,6 +1718,31 @@ def set_location_rules(world: "PokemonFRLGWorld") -> None:
                   lambda state: state.has("Itemfinder", player))
 
 
+def _add_evolution_rule(world: "PokemonFRLGWorld", location: PokemonFRLGLocation):
+    pokemon = location.name.split(" - ")[1].strip()
+    pokemon_species_name = re.sub(r' \d+', '', pokemon)
+    evo_data = data.evolutions[pokemon]
+    evo_method = evo_data.method
+    player = world.player
+    logic = world.logic
+    if evo_method in EVO_METHODS_ITEM:
+        use_item = logic.world_item_id_map[evo_data.param]
+        add_rule(location, lambda state: (logic.has_pokemon_for_evolution(state, pokemon_species_name)
+                                          and state.has(use_item, player)))
+    elif evo_method in EVO_METHODS_HELD_ITEM:
+        items = (logic.world_item_id_map[evo_data.param], logic.world_item_id_map[evo_data.param2])
+        add_rule(location, lambda state: (logic.has_pokemon_for_evolution(state, pokemon_species_name)
+                                          and state.has_all(items, player)))
+    elif evo_method in EVO_METHODS_LEVEL_ANY:
+        gyms_requirement = evo_data.param // 7
+        add_rule(location, lambda state: (logic.has_pokemon_for_evolution(state, pokemon_species_name)
+                                          and logic.has_n_gyms(state, gyms_requirement)))
+    elif evo_method in EVO_METHODS_FRIENDSHIP:
+        add_rule(location, lambda state: logic.has_pokemon_for_evolution(state, pokemon_species_name))
+    else:
+        raise RuntimeError(f"Unexpected evo method: {evo_method}")
+
+
 def set_rules(world: "PokemonFRLGWorld") -> None:
     logic = world.logic
     player = world.player
@@ -1646,8 +1772,7 @@ def set_rules(world: "PokemonFRLGWorld") -> None:
             name = location.name.split(" - ")[1].strip()
             add_rule(location, lambda state, pokemon=name: logic.has_pokemon(state, pokemon))
         if location.category == LocationCategory.EVENT_EVOLUTION_POKEMON:
-            name = location.name.split(" - ")[1].strip()
-            add_rule(location, lambda state, pokemon=name: logic.can_evolve(state, pokemon))
+            _add_evolution_rule(world, location)
 
     # Add dark cave logic
     if options.flash_required != FlashRequired.option_off:
@@ -1687,6 +1812,7 @@ def set_hm_compatible_pokemon(world: "PokemonFRLGWorld") -> None:
             combatibility_array = int_to_bool_array(species.tm_hm_compatibility)
             if combatibility_array[HM_TO_COMPATIBILITY_ID[hm]] == 1:
                 logic.compatible_hm_pokemon[hm].append(species.name)
+    logic.update_hm_compatible_pokemon()
 
 
 def verify_hm_accessibility(world: "PokemonFRLGWorld") -> None:
@@ -1723,6 +1849,7 @@ def verify_hm_accessibility(world: "PokemonFRLGWorld") -> None:
                              and mon not in logic.compatible_hm_pokemon[hm_to_verify]]
             pokemon = world.random.choice(valid_pokemon)
             add_hm_compatability(world, pokemon, hm_to_verify)
-            logic.compatible_hm_pokemon[hm_to_verify].append(pokemon)
+            logic.add_hm_compatible_pokemon(hm_to_verify, pokemon)
         else:
             hms.pop(0)
+    logic.update_hm_compatible_pokemon()
