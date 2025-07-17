@@ -4,7 +4,6 @@
 
 - A legally purchased copy of *Jak And Daxter: The Precursor Legacy.*
 - [The OpenGOAL Launcher](https://opengoal.dev/)
-- [The Jak and Daxter .APWORLD package](https://github.com/ArchipelaGOAL/Archipelago/releases)
 
 At this time, this method of setup works on Windows only, but Linux support is a strong likelihood in the near future as OpenGOAL itself supports Linux.
 
@@ -75,7 +74,7 @@ If you are in the middle of an async game, and you do not want to update the mod
 ### New Game
 
 - Run the Archipelago Launcher.
-- From the right-most list, find and click `Jak and Daxter Client`.
+- From the client list, find and click `Jak and Daxter Client`.
 - 3 new windows should appear:
     - The OpenGOAL compiler will launch and compile the game. They should take about 30 seconds to compile.
         - You should hear a musical cue to indicate the compilation was a success. If you do not, see the Troubleshooting section.
@@ -164,7 +163,12 @@ If at any point the text client says this, you will need to restart the **all** 
 
 ### The Client Cannot Open A REPL Connection
 
-If the client cannot open a REPL connection to the game, you may need to ensure you are not hosting anything on ports `8181` and `8112`.
+If the client cannot open a REPL connection to the game, you may need to check the following steps:
+
+- Ensure you are not hosting anything on ports `8181` and `8112`. Those are for the REPL (goalc) and the game (gk) respectively.
+- Ensure that Windows Defender and Windows Firewall are not blocking those programs from hosting or listening on those ports.
+- You can use Windows Resource Monitor to verify those ports are open when the programs are running.
+- Ensure that you only opened those ports for your local network, not the wider internet.
 
 ## Known Issues
 
