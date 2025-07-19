@@ -90,10 +90,11 @@ def create_locations(world: "PokemonCrystalWorld", regions: dict[str, Region]) -
         for _ in range(min(world.options.dexsanity.value, len(pokemon_items))):
             if priority_pokemon:
                 pokemon = priority_pokemon.pop()
-                world.generated_dexsanity.add(pokemon)
-                pokemon_items.remove(pokemon)
-            else:
-                world.generated_dexsanity.add(pokemon_items.pop())
+                if pokemon in pokemon_items:
+                    world.generated_dexsanity.add(pokemon)
+                    pokemon_items.remove(pokemon)
+                    continue
+            world.generated_dexsanity.add(pokemon_items.pop())
 
         pokedex_region = regions["Pokedex"]
 

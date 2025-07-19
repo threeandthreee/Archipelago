@@ -1060,7 +1060,7 @@ class FE8Randomizer:
                     new_growths = [self.random.randint(grmin, grmax) for _ in growths]
 
             for i in range(STATS_COUNT + 1):
-                self.rom[growths_base + i] = new_growths[i]
+                self.rom[growths_base + i] = max(min(255, new_growths[i]), 0)
 
     def generate_swaps(
         self, songs: dict[int, str]

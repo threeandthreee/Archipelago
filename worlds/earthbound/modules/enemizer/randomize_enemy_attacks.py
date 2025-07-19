@@ -168,6 +168,7 @@ needs_argument = {
     "Magnet Alpha": [0x2D],
     "Magnet Omega": [0x2E],
     "Yogurt Dispenser": [0x8B],
+    "Fake PSI": [0x55, 0x04, 0x14, 0x16, 0x30, 0x32, 0x4D, 0x57]
 }
 
 psi_actions = {
@@ -197,6 +198,9 @@ psi_actions = {
 
 
 def randomize_enemy_attacks(world, rom) -> None:
+    """Generates random attacks for enemies.
+       Certain attacks need to have an argument variable attached.
+       PSI moves have a 19% chance of being rolled only if the enemy has a non-zero max PP stat."""
     for enemy in world.enemies:
         if enemy not in excluded_enemies:
             enemy_ai = world.random.randint(0, 3)

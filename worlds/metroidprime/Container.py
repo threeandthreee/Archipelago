@@ -2,7 +2,7 @@ import os
 import struct
 from typing import TYPE_CHECKING, List, Optional
 import zipfile
-from worlds.Files import APContainer
+from worlds.Files import APPlayerContainer
 import py_randomprime  # type: ignore
 
 
@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from ppc_asm.assembler.ppc import GeneralRegister  # type: ignore
 
 
-class MetroidPrimeContainer(APContainer):
+class MetroidPrimeContainer(APPlayerContainer):
     game: str = "Metroid Prime"  # type: ignore
 
     def __init__(

@@ -46,16 +46,6 @@ BANJO_TOOIE_REGIONS: Dict[str, List[str]] = {
         locationName.YMEGGH,
         locationName.PMEGGH,
         locationName.BMEGGH,
-
-        locationName.W1,
-        locationName.W2,
-        locationName.W3,
-        locationName.W4,
-        locationName.W5,
-        locationName.W6,
-        locationName.W7,
-        locationName.W8,
-        locationName.W9
     ],
     regionName.MT:       [
         locationName.JINJOMT2,
@@ -1537,6 +1527,17 @@ def create_regions(self):
         region_map[regionName.IOHPL].append(locationName.HONEYBR4)
         region_map[regionName.IOHPL].append(locationName.HONEYBR5)
 
+    if self.options.skip_puzzles:
+        region_map[regionName.IOHWH].append(locationName.W1),
+        region_map[regionName.IOHWH].append(locationName.W2),
+        region_map[regionName.IOHWH].append(locationName.W3),
+        region_map[regionName.IOHWH].append(locationName.W4),
+        region_map[regionName.IOHWH].append(locationName.W5),
+        region_map[regionName.IOHWH].append(locationName.W6),
+        region_map[regionName.IOHWH].append(locationName.W7),
+        region_map[regionName.IOHWH].append(locationName.W8),
+        region_map[regionName.IOHWH].append(locationName.W9),
+
     if self.options.nestsanity:
         nest_map = copy.deepcopy(NEST_REGIONS)
         for region, locations in nest_map.items():
@@ -2108,6 +2109,12 @@ def connect_regions(self):
         IndirectTransitionCondition(regionName.GI1, regionName.CHUFFY, [regionName.GM, regionName.GMBOSS]),
         IndirectTransitionCondition(regionName.HP, regionName.CHUFFY, [regionName.GM, regionName.GMBOSS]),
         IndirectTransitionCondition(regionName.IOHCT, regionName.CHUFFY, [regionName.GM, regionName.GMBOSS]),
+        IndirectTransitionCondition(regionName.CHUFFY, regionName.GM, [regionName.GMBOSS]),
+        IndirectTransitionCondition(regionName.CHUFFY, regionName.WW, [regionName.GMBOSS]),
+        IndirectTransitionCondition(regionName.CHUFFY, regionName.TL, [regionName.GMBOSS]),
+        IndirectTransitionCondition(regionName.CHUFFY, regionName.GI1, [regionName.GMBOSS]),
+        IndirectTransitionCondition(regionName.CHUFFY, regionName.HP, [regionName.GMBOSS]),
+        IndirectTransitionCondition(regionName.CHUFFY, regionName.IOHCT, [regionName.GMBOSS]),
         IndirectTransitionCondition(regionName.TLIMTOP, regionName.TLBOSS, [regionName.TL, regionName.TLSP]),
         IndirectTransitionCondition(regionName.TL, regionName.TLTOP, [regionName.TLBOSS]),
         IndirectTransitionCondition(regionName.WW, regionName.TL, [regionName.WWI])

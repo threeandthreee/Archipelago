@@ -71,7 +71,10 @@ class MMX3World(World):
     options_dataclass = MMX3Options
     options: MMX3Options
 
-    required_client_version = (0, 5, 0)
+    required_client_version = (0, 6, 2)
+
+    using_ut: bool
+    ut_can_gen_without_yaml = True
 
     item_name_to_id = {name: data.code for name, data in item_table.items()}
     location_name_to_id = all_locations
@@ -144,8 +147,25 @@ class MMX3World(World):
         itempool += [self.create_item(ItemName.ride_hawk)]
         itempool += [self.create_item(ItemName.ride_frog)]
         
+        # Add optional upgrades into the pool
         if self.options.zsaber_in_pool:
-            itempool += [self.create_item(ItemName.z_saber, ItemClassification.useful)]
+            itempool += [self.create_item(ItemName.z_saber)]
+        if self.options.quick_charge_in_pool:
+            itempool += [self.create_item(ItemName.chip_quick_charge)]
+        if self.options.speedster_in_pool:
+            itempool += [self.create_item(ItemName.chip_speedster)]
+        if self.options.super_recover_in_pool:
+            itempool += [self.create_item(ItemName.chip_super_recover)]
+        if self.options.rapid_five_in_pool:
+            itempool += [self.create_item(ItemName.chip_rapid_five)]
+        if self.options.speed_shot_in_pool:
+            itempool += [self.create_item(ItemName.chip_speed_shot)]
+        if self.options.buster_plus_in_pool:
+            itempool += [self.create_item(ItemName.chip_buster_plus)]
+        if self.options.weapon_plus_in_pool:
+            itempool += [self.create_item(ItemName.chip_weapon_plus)]
+        if self.options.item_plus_in_pool:
+            itempool += [self.create_item(ItemName.chip_item_plus)]
 
         # Add armor upgrades into the pool
         doppler_open = self.options.doppler_open.value
@@ -156,10 +176,7 @@ class MMX3World(World):
             itempool += [self.create_item(ItemName.third_armor_body) for _ in range(2)]
             itempool += [self.create_item(ItemName.third_armor_arms) for _ in range(2 + self.options.jammed_buster.value)]
         else:
-            if self.options.logic_helmet_checkpoints.value:
-                itempool += [self.create_item(ItemName.third_armor_helmet) for _ in range(2)]
-            else:
-                itempool += [self.create_item(ItemName.third_armor_helmet, ItemClassification.useful) for _ in range(2)]
+            itempool += [self.create_item(ItemName.third_armor_helmet) for _ in range(2)]
             itempool += [self.create_item(ItemName.third_armor_body, ItemClassification.useful) for _ in range(2)]
             itempool += [self.create_item(ItemName.third_armor_arms, ItemClassification.useful)]
             itempool += [self.create_item(ItemName.third_armor_arms) for _ in range(1 + self.options.jammed_buster.value)]
@@ -230,89 +247,77 @@ class MMX3World(World):
         # Finish
         self.multiworld.itempool += itempool
 
-    def create_item(self, name: str, force_classification=False) -> Item:
+    def create_item(self, name: str, force_classification=False) -> MMX3Item:
         data = item_table[name]
-
         if force_classification:
             classification = force_classification
-        elif data.progression:
-            classification = ItemClassification.progression
-        elif data.trap:
-            classification = ItemClassification.trap
         else:
-            classification = ItemClassification.filler
+            classification = data.classsification
         
         created_item = MMX3Item(name, classification, data.code, self.player)
 
         return created_item
 
-
     def set_rules(self):
         from .Rules import set_rules
-        
-        if hasattr(self.multiworld, "generation_is_fake"):
-            if hasattr(self.multiworld, "re_gen_passthrough"):
-                if "Mega Man X3" in self.multiworld.re_gen_passthrough:
-                    slot_data = self.multiworld.re_gen_passthrough["Mega Man X3"]
-                    self.boss_weaknesses = slot_data["weakness_rules"]
         set_rules(self)
 
 
     def fill_slot_data(self):
-        slot_data = {}
-
         # Write options to slot_data
-        slot_data["energy_link"] = self.options.energy_link.value
-        slot_data["boss_weakness_rando"] = self.options.boss_weakness_rando.value
-        slot_data["boss_weakness_strictness"] = self.options.boss_weakness_strictness.value
-        slot_data["pickupsanity"] = self.options.pickupsanity.value
-        slot_data["jammed_buster"] = self.options.jammed_buster.value
-        slot_data["zsaber_in_pool"] = self.options.zsaber_in_pool.value
-        
+        slot_data = self.options.as_dict(
+            "energy_link",
+            "boss_weakness_rando",
+            "boss_weakness_strictness",
+            "pickupsanity",
+            "jammed_buster",
+            "zsaber_in_pool",
+            "logic_boss_weakness",
+            "logic_vile_required",
+            "doppler_medal_count",
+            "doppler_weapon_count",
+            "doppler_upgrade_count",
+            "doppler_heart_tank_count",
+            "doppler_sub_tank_count",
+            "doppler_lab_2_boss",
+            "doppler_lab_3_boss_rematch_count",
+            "doppler_all_labs",
+            "vile_medal_count",
+            "vile_weapon_count",
+            "vile_upgrade_count",
+            "vile_heart_tank_count",
+            "vile_sub_tank_count",
+            "logic_vile_required",
+            "bit_medal_count",
+            "byte_medal_count",
+        )
         value = 0
-        doppler_open = self.options.doppler_open.value
-        if "Medals" in doppler_open:
+        if "Medals" in self.options.doppler_open:
             value |= 0x01
-        if "Weapons" in doppler_open:
+        if "Weapons" in self.options.doppler_open:
             value |= 0x02
-        if "Armor Upgrades" in doppler_open:
+        if "Armor Upgrades" in self.options.doppler_open:
             value |= 0x04
-        if "Heart Tanks" in doppler_open:
+        if "Heart Tanks" in self.options.doppler_open:
             value |= 0x08
-        if "Sub Tanks" in doppler_open:
+        if "Sub Tanks" in self.options.doppler_open:
             value |= 0x10
         slot_data["doppler_open"] = value
-        slot_data["doppler_medal_count"] = self.options.doppler_medal_count.value
-        slot_data["doppler_weapon_count"] = self.options.doppler_weapon_count.value
-        slot_data["doppler_upgrade_count"] = self.options.doppler_upgrade_count.value
-        slot_data["doppler_heart_tank_count"] = self.options.doppler_heart_tank_count.value
-        slot_data["doppler_sub_tank_count"] = self.options.doppler_sub_tank_count.value
-        slot_data["doppler_lab_2_boss"] = self.options.doppler_lab_2_boss.value
-        slot_data["doppler_lab_3_boss_rematch_count"] = self.options.doppler_lab_3_boss_rematch_count.value
-        slot_data["doppler_all_labs"] = self.options.doppler_all_labs.value
-        
+        slot_data["doppler_open_set"] = self.options.doppler_open.value
+
         value = 0
-        vile_open = self.options.vile_open.value
-        if "Medals" in vile_open:
+        if "Medals" in self.options.vile_open:
             value |= 0x01
-        if "Weapons" in vile_open:
+        if "Weapons" in self.options.vile_open:
             value |= 0x02
-        if "Armor Upgrades" in vile_open:
+        if "Armor Upgrades" in self.options.vile_open:
             value |= 0x04
-        if "Heart Tanks" in vile_open:
+        if "Heart Tanks" in self.options.vile_open:
             value |= 0x08
-        if "Sub Tanks" in vile_open:
+        if "Sub Tanks" in self.options.vile_open:
             value |= 0x10
         slot_data["vile_open"] = value
-        slot_data["vile_medal_count"] = self.options.vile_medal_count.value
-        slot_data["vile_weapon_count"] = self.options.vile_weapon_count.value
-        slot_data["vile_upgrade_count"] = self.options.vile_upgrade_count.value
-        slot_data["vile_heart_tank_count"] = self.options.vile_heart_tank_count.value
-        slot_data["vile_sub_tank_count"] = self.options.vile_sub_tank_count.value
-        slot_data["bit_medal_count"] = self.options.bit_medal_count.value
-        slot_data["byte_medal_count"] = self.options.byte_medal_count.value
-        slot_data["logic_boss_weakness"] = self.options.logic_boss_weakness.value
-        slot_data["logic_vile_required"] = self.options.logic_vile_required.value
+        slot_data["vile_open_set"] = self.options.vile_open.value
 
         # Write boss weaknesses to slot_data (and for UT)
         slot_data["boss_weaknesses"] = {}
@@ -328,15 +333,15 @@ class MMX3World(World):
 
     def generate_early(self):
         # Enforce Vile stage options to have lower count than the Lab
-        if self.options.doppler_medal_count.value >= self.options.vile_medal_count.value:
+        if self.options.doppler_medal_count.value <= self.options.vile_medal_count.value:
             self.options.vile_medal_count.value = max(self.options.doppler_medal_count.value - 1, 0)
-        if self.options.doppler_weapon_count.value >= self.options.vile_weapon_count.value:
+        if self.options.doppler_weapon_count.value <= self.options.vile_weapon_count.value:
             self.options.vile_weapon_count.value = max(self.options.doppler_weapon_count.value - 1, 0)
-        if self.options.doppler_upgrade_count.value >= self.options.vile_upgrade_count.value:
+        if self.options.doppler_upgrade_count.value <= self.options.vile_upgrade_count.value:
             self.options.vile_upgrade_count.value = max(self.options.doppler_upgrade_count.value - 1, 0)
-        if self.options.doppler_heart_tank_count.value >= self.options.vile_heart_tank_count.value:
+        if self.options.doppler_heart_tank_count.value <= self.options.vile_heart_tank_count.value:
             self.options.vile_heart_tank_count.value = max(self.options.doppler_heart_tank_count.value - 1, 0)
-        if self.options.doppler_sub_tank_count.value >= self.options.vile_sub_tank_count.value:
+        if self.options.doppler_sub_tank_count.value <= self.options.vile_sub_tank_count.value:
             self.options.vile_sub_tank_count.value = max(self.options.doppler_sub_tank_count.value - 1, 0)
 
         # Adjust bit and byte medal counts
@@ -352,12 +357,37 @@ class MMX3World(World):
         self.boss_weaknesses = {}
         handle_weaknesses(self)
 
+        # Handle Universal Tracker support, doesn't do anything during regular generation
+        if hasattr(self.multiworld, "re_gen_passthrough"):
+            if "Mega Man X3" in self.multiworld.re_gen_passthrough:
+                passthrough = self.multiworld.re_gen_passthrough["Mega Man X3"]
+                self.boss_weaknesses = passthrough["weakness_rules"]
+                self.options.boss_weakness_strictness.value = passthrough["boss_weakness_strictness"]
+                self.options.pickupsanity.value = passthrough["pickupsanity"]
+                self.options.jammed_buster.value = passthrough["jammed_buster"]
+                self.options.logic_boss_weakness.value = passthrough["logic_boss_weakness"]
+                self.options.logic_vile_required.value = passthrough["logic_vile_required"]
+                self.options.doppler_open.value = passthrough["doppler_open_set"]
+                self.options.doppler_medal_count.value = passthrough["doppler_medal_count"]
+                self.options.doppler_weapon_count.value = passthrough["doppler_weapon_count"]
+                self.options.doppler_upgrade_count.value = passthrough["doppler_upgrade_count"]
+                self.options.doppler_heart_tank_count.value = passthrough["doppler_heart_tank_count"]
+                self.options.doppler_sub_tank_count.value = passthrough["doppler_sub_tank_count"]
+                self.options.doppler_all_labs.value = passthrough["doppler_all_labs"]
+                self.options.doppler_lab_2_boss.value = passthrough["doppler_lab_2_boss"]
+                self.options.doppler_lab_3_boss_rematch_count.value = passthrough["doppler_lab_3_boss_rematch_count"]
+                self.options.vile_open.value = passthrough["vile_open_set"]
+                self.options.vile_medal_count.value = passthrough["vile_medal_count"]
+                self.options.vile_weapon_count.value = passthrough["vile_weapon_count"]
+                self.options.vile_upgrade_count.value = passthrough["vile_upgrade_count"]
+                self.options.vile_heart_tank_count.value = passthrough["vile_heart_tank_count"]
+                self.options.vile_sub_tank_count.value = passthrough["vile_sub_tank_count"]
+                self.options.bit_medal_count.value = passthrough["bit_medal_count"]
+                self.options.byte_medal_count.value = passthrough["byte_medal_count"]
 
-    def interpret_slot_data(self, slot_data):
-        local_weaknesses = dict()
-        for boss, entries in slot_data["weakness_rules"].items():
-            local_weaknesses[boss] = entries.copy()
-        return {"weakness_rules": local_weaknesses}
+
+    def interpret_slot_data(self, slot_data: Dict[str, Any]) -> Dict[str, Any]:
+        return slot_data
     
 
     def write_spoiler(self, spoiler_handle: typing.TextIO) -> None:

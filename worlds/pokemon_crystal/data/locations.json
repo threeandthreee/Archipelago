@@ -4500,7 +4500,7 @@
     "script": "AP_Trainer_POKEMANIAC_DONALD"
   },
   "ITEM_FROM_ROCKET_GRUNTM_11": {
-    "label": "Goldenrod UG B2F - Grunt 1",
+    "label": "Goldenrod UG B2F - Grunt 2",
     "flag": "EVENT_ITEM_FROM_ROCKET_GRUNTM_11",
     "type": "trainer",
     "tags": [
@@ -4510,7 +4510,7 @@
     "script": "AP_Trainer_GRUNTM_GRUNTM_11"
   },
   "ITEM_FROM_ROCKET_GRUNTM_25": {
-    "label": "Goldenrod UG B2F - Grunt 2",
+    "label": "Goldenrod UG B2F - Grunt 3",
     "flag": "EVENT_ITEM_FROM_ROCKET_GRUNTM_25",
     "type": "trainer",
     "tags": [
@@ -4540,7 +4540,7 @@
     "script": "AP_Trainer_BURGLAR_EDDIE"
   },
   "ITEM_FROM_ROCKET_GRUNTM_13": {
-    "label": "Goldenrod UG B2F - Grunt 3",
+    "label": "Goldenrod UG B2F - Grunt 1",
     "flag": "EVENT_ITEM_FROM_ROCKET_GRUNTM_13",
     "type": "trainer",
     "tags": [

@@ -2,7 +2,7 @@ from math import ceil
 from Options import OptionError
 import typing
 from typing import Dict, Any, Optional, List
-import warnings
+import warnings, settings
 from dataclasses import asdict
 
 from .Hints import HintData, generate_hints
@@ -29,6 +29,32 @@ def run_client():
     launch_subprocess(main)
 
 components.append(Component("Banjo-Tooie Client", func=run_client, component_type=Type.CLIENT))
+
+class BanjoTooieSettings(settings.Group):
+
+  class RomPath(settings.OptionalUserFilePath):
+    """File path of the Banjo-Tooie (USA) ROM."""
+
+  class PatchPath(settings.OptionalUserFolderPath):
+    """Folder path of where to save the patched ROM."""
+
+  class ProgramPath(settings.OptionalUserFilePath):
+    """
+      File path of the program to automatically run.
+      Leave blank to disable.
+    """
+
+  class ProgramArgs(str):
+    """
+      Arguments to pass to the automatically run program.
+      Leave blank to disable.
+      Set to "--lua=" to automatically use the correct path for the lua connector.
+    """
+
+  rom_path: RomPath | str = ""
+  patch_path: PatchPath | str = ""
+  program_path: ProgramPath | str = ""
+  program_args: ProgramArgs | str = "--lua="
 
 #NOTE! For Backward Compatability, don't use type str|None. multi types not allowed on older Pythons
 class BanjoTooieWeb(WebWorld):
@@ -57,7 +83,10 @@ class BanjoTooieWorld(World):
     """
 
     game: str = "Banjo-Tooie"
-    version = "V4.6.1"
+    version = "V4.8"
+    options: BanjoTooieOptions
+    settings: BanjoTooieSettings
+    settings_key = "banjo_tooie_options"
     web = BanjoTooieWeb()
     topology_present = True
     # item_name_to_id = {name: data.btid for name, data in all_item_table.items()}
@@ -68,6 +97,7 @@ class BanjoTooieWorld(World):
             continue
         item_name_to_id[name] = data.btid
 
+    glitches_item_name = itemName.UT_GLITCHED
     location_name_to_id = {name: data.btid for name, data in all_location_table.items()}
     location_name_to_group = {name: data.group for name, data in all_location_table.items()}
 
@@ -228,19 +258,20 @@ class BanjoTooieWorld(World):
         return created_item
 
     def get_classification(self, banjoItem: ItemData) -> ItemClassification:
-        itemname = self.item_id_to_name[banjoItem.btid]
+        if not banjoItem.btid is None:
+            itemname = self.item_id_to_name[banjoItem.btid]
 
-        if itemname == itemName.PAGES:
-            if self.options.cheato_rewards:
-                return ItemClassification.progression_skip_balancing
-            else:
-                return ItemClassification.filler
+            if itemname == itemName.PAGES:
+                if self.options.cheato_rewards:
+                    return ItemClassification.progression_skip_balancing
+                else:
+                    return ItemClassification.filler
 
-        if itemname == itemName.HONEY:
-            if self.options.honeyb_rewards:
-                return ItemClassification.progression_skip_balancing
-            else:
-                return ItemClassification.useful
+            if itemname == itemName.HONEY:
+                if self.options.honeyb_rewards:
+                    return ItemClassification.progression_skip_balancing
+                else:
+                    return ItemClassification.useful
 
         if banjoItem.type == "progress":
             return ItemClassification.progression
@@ -662,9 +693,7 @@ class BanjoTooieWorld(World):
         if not self.options.cheato_rewards:
             self.banjo_pre_fills("Cheats", None, True)
 
-        if not self.worlds_randomized and self.options.skip_puzzles:
-            self.banjo_pre_fills("Access", None, True)
-        elif self.worlds_randomized:
+        if self.options.skip_puzzles:
             world_num = 1
             for world, amt in self.world_requirements.items():
                 if world == regionName.GIO:
@@ -673,12 +702,6 @@ class BanjoTooieWorld(World):
                     item = self.create_item(itemName.JRA)
                 else:
                     item = self.create_item(world)
-                self.get_location("World "+ str(world_num) +" Unlocked").place_locked_item(item)
-                world_num += 1
-        else:
-            world_num = 1
-            for world, amt in self.world_requirements.items():
-                item = self.create_item(itemName.NONE)
                 self.get_location("World "+ str(world_num) +" Unlocked").place_locked_item(item)
                 world_num += 1
 

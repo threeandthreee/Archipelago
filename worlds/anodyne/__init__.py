@@ -57,7 +57,7 @@ class AnodyneWorld(World):
 
     ut_can_gen_without_yaml = True
 
-    version = "0.3.0"
+    version = "0.3.1"
 
     item_name_to_id = Constants.item_name_to_id
     location_name_to_id = Constants.location_name_to_id
@@ -766,13 +766,13 @@ class AnodyneWorld(World):
             if len(confined_dungeon_items) == 0:
                 continue
 
-            collection_state = self.multiworld.get_all_state(False, collect_pre_fill_items=False)
-            for other_dungeon, other_dungeon_items in self.dungeon_items.items():
-                if other_dungeon == dungeon:
-                    continue
+            current_items = confined_dungeon_items.copy()
+            confined_dungeon_items.clear() #Prevent the current items from being picked up by all state
 
-                for other_dungeon_item in other_dungeon_items:
-                    collection_state.collect(other_dungeon_item)
+            collection_state = self.multiworld.get_all_state(False,True) #This will pick up all unplaced dungeon items as well
+
+            confined_dungeon_items.extend(current_items)
+            del current_items
 
             dungeon_location_names = [location.name
                                       for region_name in Regions.dungeon_areas[dungeon]
@@ -785,8 +785,8 @@ class AnodyneWorld(World):
                 # chest because if it does, there are no reachable locations at the start of the game.
                 dungeon_location_names.remove("Street - Broom Chest")
 
-            dungeon_locations = [location for location in self.multiworld.get_locations(self.player)
-                                 if location.name in dungeon_location_names and location.item is None]
+            dungeon_locations = [location for location in self.multiworld.get_unfilled_locations(self.player)
+                                 if location.name in dungeon_location_names]
 
             for attempts_remaining in range(6, -1, -1):
                 self.random.shuffle(dungeon_locations)

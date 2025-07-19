@@ -2,16 +2,29 @@ import logging
 
 import yaml
 import os
+import io
+from typing import TYPE_CHECKING, Dict, List, Optional, cast
 import Utils
 import zipfile
 
 from .Locations import KHBBSLocation, location_table
 from .Items import KHBBSItem, item_table
-from worlds.Files import APContainer
+from worlds.Files import APPlayerContainer, AutoPatchRegister
 
 
-class KHBBSContainer(APContainer):
+class KHBBSContainer(APPlayerContainer, metaclass=AutoPatchRegister):
     game: str = 'Kingdom Hearts Birth by Sleep'
+    patch_file_ending = ".zip"
+
+    def __init__(self, patch_data: Dict[str, str] | io.BytesIO, base_path: str = "", output_directory: str = "",
+        player: Optional[int] = None, player_name: str = "", server: str = ""):
+        if isinstance(patch_data, io.BytesIO):
+            super().__init__(patch_data, player, player_name, server)
+        else:
+            self.patch_data = patch_data
+            self.file_path = base_path
+            container_path = os.path.join(output_directory, base_path + ".zip")
+            super().__init__(container_path, player, player_name, server)
 
     def __init__(self, patch_data: dict, base_path: str, output_directory: str,
         player=None, player_name: str = "", server: str = ""):
@@ -29,9 +42,20 @@ class KHBBSContainer(APContainer):
 def patch_khbbs(self, output_directory, character):
     mod_name = f"AP-{self.multiworld.seed_name}-P{self.player}-{self.multiworld.get_file_safe_player_name(self.player)}"
     mod_dir = os.path.join(output_directory, mod_name + "_" + Utils.__version__)
+    character_name = ""
     
     seed_lua = build_seed_lua(self, character)
-    
+
+    match character:
+        case 0:
+            character_name = "Ventus"
+        case 1:
+            character_name = "Aqua"
+        case 2:
+            character_name = "Terra"
+        case _:  # Used if somehow the character is not in range 0-2
+            character_name = "Invalid character"
+
     self.mod_yml = {
         "assets": [
             {
@@ -44,7 +68,7 @@ def patch_khbbs(self, output_directory, character):
                 ]
             }
         ],
-        'title':  'BBSFMAP Randomizer Seed'
+        'title':  f'BBSFMAP Randomizer Seed for {character_name}'
     }
     
     openkhmod = {

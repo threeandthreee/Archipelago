@@ -465,7 +465,10 @@ def make_d5_logic(player: int):
         ])],
         ["d5 switch A", "d5 two-statue puzzle", False, lambda state: all([
             ooa_can_break_pot(state, player),
-            ooa_has_cane(state, player),
+            any([
+                ooa_has_cane(state, player),
+                ooa_option_medium_logic(state, player),
+            ]),
             ooa_has_feather(state, player),
             any([
                 ooa_has_seedshooter(state, player),
@@ -524,7 +527,7 @@ def make_d5_logic(player: int):
             ooa_has_small_keys(state, player, 5, 5),
         ])],
         ["d5 red peg chest", "d5 owl puzzle", False, lambda state: any([
-            ooa_option_hard_logic(state, player),
+            ooa_option_medium_logic(state, player),
             ooa_has_cane(state, player)
         ])],
     ]

@@ -223,6 +223,7 @@ item_table: Dict[str, KHBBSItemData] = {
    #"Shotlock":               KHBBSItemData("Shotlock Command",   code = 227_0010192, classification = ItemClassification.useful,      characters = "TVA", max_quantity = 1, khbbsid = "011B"),
     "Meteor Shower":          KHBBSItemData("Shotlock Command",   code = 227_0010193, classification = ItemClassification.useful,      characters = "TVA", max_quantity = 1, khbbsid = "011C"),
     "Flame Salvo":            KHBBSItemData("Shotlock Command",   code = 227_0010194, classification = ItemClassification.useful,      characters = "T A", max_quantity = 1, khbbsid = "011D"),
+    "Chaos Snake":            KHBBSItemData("Shotlock Command",   code = 227_0010195, classification = ItemClassification.useful,      characters = "TVA", max_quantity = 1, khbbsid = "011E"),
    #"Bubble Blaster":         KHBBSItemData("Shotlock Command",   code = 227_0010196, classification = ItemClassification.useful,      characters = "  A", max_quantity = 1, khbbsid = "011F"),
     "Dark Volley":            KHBBSItemData("Shotlock Command",   code = 227_0010197, classification = ItemClassification.useful,      characters = "T  ", max_quantity = 1, khbbsid = "0120"),
     "Ragnarok":               KHBBSItemData("Shotlock Command",   code = 227_0010198, classification = ItemClassification.useful,      characters = "TVA", max_quantity = 1, khbbsid = "0121"),
