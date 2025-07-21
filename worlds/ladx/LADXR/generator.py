@@ -54,6 +54,7 @@ from .patches import save as _
 from .patches import bingo as _
 from .patches import multiworld as _
 from .patches import tradeSequence as _
+from .patches import saveVictory as _
 from . import hints
 
 from .patches import bank34
@@ -256,6 +257,7 @@ def generateRom(args, world: "LinksAwakeningWorld"):
         patches.core.quickswap(rom, 0)
 
     patches.core.addBootsControls(rom, world.options.boots_controls)
+    patches.saveVictory.saveVictory(rom)
 
 
     world_setup = world.ladxr_logic.world_setup
