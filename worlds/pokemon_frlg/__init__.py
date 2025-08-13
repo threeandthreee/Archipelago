@@ -672,7 +672,7 @@ class PokemonFRLGWorld(World):
         # Add dungeon entrances to the spoiler log if they are shuffled
         if self.options.dungeon_entrance_shuffle != DungeonEntranceShuffle.option_off:
             spoiler_handle.write(f"\n\nDungeon Entrances ({self.multiworld.player_name[self.player]}):\n\n")
-            for entrance, exit in self.er_placement_state.pairings:
+            for entrance, exit in sorted(self.er_placement_state.pairings):
                 if entrance in self.er_spoiler_names:
                     spoiler_handle.write(f"{entrance} <=> {exit}\n")
 

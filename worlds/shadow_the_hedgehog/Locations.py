@@ -1,19 +1,23 @@
 #from __future__ import annotations
-
+import copy
 from dataclasses import dataclass
 from math import floor
 from typing import Dict, Optional
 
-import Options
-from BaseClasses import Location, Region
-from . import Regions, Levels, Utils, Weapons
+from BaseClasses import Location, Region, ItemClassification, Item, LocationProgressType
+from . import Regions, Levels, Weapons, Objects, Options, Names
 from .Levels import *
 from . import Utils as ShadowUtils
+from .ObjectTypes import ObjectType
+
+from .Objects import GetEnemyDistributionInStageByBaseType
+from .Weapons import WeaponAttributes
+
 
 class ShadowTheHedgehogLocation(Location):
     game: str = "Shadow The Hedgehog"
 
-    def __init__(self, player, location_name, location_id, region):
+    def __init__(self, player, location_name, location_id, region=None):
         super().__init__(player, location_name, location_id, region)
 
 LOCATION_TYPE_MISSION_CLEAR = 1
@@ -27,6 +31,7 @@ LOCATION_TYPE_CHARACTER = 8
 LOCATION_TYPE_BOSS = 9
 LOCATION_TYPE_WARP = 10
 LOCATION_TYPE_WEAPON_HOLD = 11
+LOCATION_TYPE_OBJECT = 12
 
 @dataclass
 class LocationInfo:
@@ -34,10 +39,28 @@ class LocationInfo:
     locationId: int
     name: str
     stageId: Optional[int]
+    regionId: Optional[int]
     alignmentId: Optional[int]
     count: Optional[int]
     total: Optional[int]
     other: Optional[str]
+
+    def __init__(self, location_type: int, locationId: int,
+                 name: str, stageId: Optional[int] = None,
+                 regionId: Optional[int] = None, alignmentId: Optional[int] = None,
+                 count: Optional[int] = None, total: Optional[int] = None,
+                 other: Optional[str] = None, flag: Optional[bool] = None):
+        self.location_type = location_type
+        self.locationId = locationId
+        self.name = name
+        self.stageId = stageId
+        self.regionId = regionId
+        self.alignmentId = alignmentId
+        self.count = count
+        self.total = total
+        self.other = other
+        self.flag = flag
+
 
 
 @dataclass
@@ -61,8 +84,22 @@ class MissionClearLocation:
         self.logicType = Options.LogicLevel.option_normal
         self.craft_requirements = None
         self.craftLogicType = None
+        self.setEnemyDistribution()
+
+
+    def setEnemyDistribution(self):
+        pass
+        if self.mission_object_name == "Soldier":
+            self.distribution = GetEnemyDistributionInStageByBaseType(self.stageId, ENEMY_CLASS_GUN)
+        elif self.mission_object_name == "Alien":
+            self.distribution = GetEnemyDistributionInStageByBaseType(self.stageId, ENEMY_CLASS_ALIEN)
+        elif self.mission_object_name == "Artificial Chaos":
+            self.distribution = GetEnemyDistributionInStageByBaseType(self.stageId, ENEMY_CLASS_ALIEN)
 
     def setDistribution(self, dist):
+        #if len(dist.keys()) == 0:
+        #    raise Exception("Invalid Distribution")
+
         self.distribution = dist
         return self
 
@@ -127,15 +164,16 @@ class EnemySanityLocation:
         self.total_count = total_count
         self.mission_object_name = mission_objective_name
 
-    def setDistribution(self, dist):
-        self.distribution = dist
+    def setEnemyDistribution(self, distribution):
+        self.distribution = distribution
         return self
 
     def getDistribution(self):
+
         if self.distribution is not None:
             return self.distribution
         else:
-            return {0: self.total_count}
+            return {0: self.requirement_count}
 
 
 @dataclass
@@ -172,12 +210,9 @@ class KeyLocation:
 
 
     def setDistribution(self, dist):
-        total = 0
-        for region,count in dist.items():
-            for c in range(0, count):
-                self.region[total] = region
-                total += 1
-
+        for region, available in dist.items():
+            for l in available:
+                self.region[l - 1] = region
         return self
 
     def getRegion(self, index):
@@ -198,52 +233,70 @@ MissionClearLocations = [
     MissionClearLocation(STAGE_WESTOPOLIS, MISSION_ALIGNMENT_NEUTRAL, None, None),
     MissionClearLocation(STAGE_WESTOPOLIS, MISSION_ALIGNMENT_HERO, 45, "Alien"),
 
+    MissionClearLocation(STAGE_DIGITAL_CIRCUIT, MISSION_ALIGNMENT_DARK, None, None)
+    .setDistribution(
+        {
+            REGION_INDICIES.DIGITAL_CIRCUIT_DARK_WARP_HOLE: 1
+        }
+    ),
     MissionClearLocation(STAGE_DIGITAL_CIRCUIT, MISSION_ALIGNMENT_HERO, None, None),
     #MissionClearLocation(STAGE_DIGITAL_CIRCUIT, MISSION_ALIGNMENT_DARK, 1, "Core"),
-    MissionClearLocation(STAGE_DIGITAL_CIRCUIT, MISSION_ALIGNMENT_DARK, None, None),
 
-    MissionClearLocation(STAGE_GLYPHIC_CANYON, MISSION_ALIGNMENT_NEUTRAL, None, None),
+    MissionClearLocation(STAGE_GLYPHIC_CANYON, MISSION_ALIGNMENT_DARK, 5, "Temple").setDistribution(
+        {
+            0: 1,
+            REGION_INDICIES.GLYPHIC_CANYON_PULLEY: 4
+        }
+    ),
+    MissionClearLocation(STAGE_GLYPHIC_CANYON, MISSION_ALIGNMENT_NEUTRAL, None, None).setDistribution(
+        {
+            REGION_INDICIES.GLYPHIC_CANYON_PULLEY: 1
+        }
+        ),
     MissionClearLocation(STAGE_GLYPHIC_CANYON, MISSION_ALIGNMENT_HERO, 60, "Alien"),
-    MissionClearLocation(STAGE_GLYPHIC_CANYON, MISSION_ALIGNMENT_DARK, 5, "Temple"),
 
-    MissionClearLocation(STAGE_LETHAL_HIGHWAY, MISSION_ALIGNMENT_DARK, None, None),
-    MissionClearLocation(STAGE_LETHAL_HIGHWAY, MISSION_ALIGNMENT_HERO, 1, "Tank")
+
+    MissionClearLocation(STAGE_LETHAL_HIGHWAY, MISSION_ALIGNMENT_DARK, None, None).setDistribution(
+        {
+            REGION_INDICIES.LETHAL_HIGHWAY_ROCKET: 1
+        }
+        ),
+    MissionClearLocation(STAGE_LETHAL_HIGHWAY, MISSION_ALIGNMENT_HERO, 1, "Tank").setDistribution(
+        {
+            REGION_INDICIES.LETHAL_HIGHWAY_ROCKET: 1
+        }
+        )
         .setRequirement(REGION_RESTRICTION_TYPES.Gun)
         .setCraftRequirement(REGION_RESTRICTION_TYPES.ShadowRifle, Options.LogicLevel.option_easy),
 
     MissionClearLocation(STAGE_CRYPTIC_CASTLE, MISSION_ALIGNMENT_DARK, 5, "Lantern")
         .setDistribution(
         {
-            1: 2,
-            2: 3
+            REGION_INDICIES.CRYPTIC_CASTLE_TORCH: 2,
+            REGION_INDICIES.CRYPTIC_CASTLE_HAWK: 1,
+            REGION_INDICIES.CRYPTIC_CASTLE_BOMB_EASY_2: 2
         }
         )
         .setRequirement(REGION_RESTRICTION_TYPES.Torch),
     MissionClearLocation(STAGE_CRYPTIC_CASTLE, MISSION_ALIGNMENT_NEUTRAL, None, None)
         .setDistribution(
         {
-            2: 1
+            REGION_INDICIES.CRYPTIC_CASTLE_BOMB_EASY_2: 1,
         }
     ),
     MissionClearLocation(STAGE_CRYPTIC_CASTLE, MISSION_ALIGNMENT_HERO, 2, "Cream")
         .setDistribution(
         {
-            1: 1,
-            2: 1
+            REGION_INDICIES.CRYPTIC_CASTLE_BOMB_EASY_1: 1,
+            REGION_INDICIES.CRYPTIC_CASTLE_BOMB_EASY_2: 1
         }
     ),
 
-    MissionClearLocation(STAGE_PRISON_ISLAND, MISSION_ALIGNMENT_DARK, 40, "Soldier")
-        .setDistribution(
-        {
-            0: 5,
-            1: 35
-        }
-    ),
+    MissionClearLocation(STAGE_PRISON_ISLAND, MISSION_ALIGNMENT_DARK, 40, "Soldier"),
     MissionClearLocation(STAGE_PRISON_ISLAND, MISSION_ALIGNMENT_NEUTRAL, None, None)
         .setDistribution(
         {
-            1: 1
+            REGION_INDICIES.PRISON_ISLAND_AIR_SAUCER: 1
         }
     ),
 
@@ -251,106 +304,157 @@ MissionClearLocations = [
         .setDistribution(
         {
             0: 1,
-            1: 4
+            REGION_INDICIES.PRISON_ISLAND_PULLEY_EASY: 1,
+            REGION_INDICIES.PRISON_ISLAND_AIR_SAUCER: 3
         }
     ),
 
     MissionClearLocation(STAGE_CIRCUS_PARK, MISSION_ALIGNMENT_DARK, 20, "Soldier"),
-    MissionClearLocation(STAGE_CIRCUS_PARK, MISSION_ALIGNMENT_NEUTRAL, None, None),
-    MissionClearLocation(STAGE_CIRCUS_PARK, MISSION_ALIGNMENT_HERO, None, None),
+    MissionClearLocation(STAGE_CIRCUS_PARK, MISSION_ALIGNMENT_NEUTRAL, None, None)
+        .setDistribution(
+        {
+            REGION_INDICIES.CIRCUS_PARK_PULLEY: 1
+        }
+    ),
+    MissionClearLocation(STAGE_CIRCUS_PARK, MISSION_ALIGNMENT_HERO, None, None)
+        .setDistribution(
+        {
+            REGION_INDICIES.CIRCUS_PARK_HERO_GOAL: 1
+        }
+    ),
 
     MissionClearLocation(STAGE_CENTRAL_CITY, MISSION_ALIGNMENT_DARK, 5, "Big Bomb")
         .setDistribution(
         {
-            0: 3,
-            1: 2
+            0: 1,
+            REGION_INDICIES.CENTRAL_CITY_BOMB_OR_BAZOOKA: 2,
+            REGION_INDICIES.CENTRAL_CITY_TRAVERSE_EASY: 1,
+            REGION_INDICIES.CENTRAL_CITY_ROCKET_2: 1
         }
     ),
     MissionClearLocation(STAGE_CENTRAL_CITY, MISSION_ALIGNMENT_HERO, 20, "Little Bomb")
         .setDistribution(
-        {
-            0: 11,
-            1: 9
-        }
+            Objects.GetCentralCityBombDistribution()
         )
     .setRequirement(REGION_RESTRICTION_TYPES.Vacuum),
 
     MissionClearLocation(STAGE_THE_DOOM, MISSION_ALIGNMENT_DARK, 60, "Soldier"),
-    MissionClearLocation(STAGE_THE_DOOM, MISSION_ALIGNMENT_NEUTRAL, None, None),
+    MissionClearLocation(STAGE_THE_DOOM, MISSION_ALIGNMENT_NEUTRAL, None, None)
+        .setDistribution(
+        {
+            REGION_INDICIES.THE_DOOM_DOOR_1_SWITCH: 1
+        }
+        ),
     MissionClearLocation(STAGE_THE_DOOM, MISSION_ALIGNMENT_HERO, 10, "Researcher")
-        .setLogicLevel(Options.LogicLevel.option_easy)
+        .setDistribution(
+        {
+            0: 3,
+            REGION_INDICIES.THE_DOOM_BOMBS: 5,
+            REGION_INDICIES.THE_DOOM_DOOR_1_SWITCH: 2,
+        }
+        )
         .setRequirement(REGION_RESTRICTION_TYPES.Heal),
 
     MissionClearLocation(STAGE_SKY_TROOPS, MISSION_ALIGNMENT_DARK, 5, "Egg Ship")
         .setDistribution(
         {
             0: 1,
-            1: 3,
-            5: 1
+            REGION_INDICIES.SKY_TROOPS_ROCKET_NORMAL: 1,
+            REGION_INDICIES.SKY_TROOPS_ROCKET: 2,
+            REGION_INDICIES.SKY_TROOPS_HAWK_OR_VOLT: 1
         }
         )
     .setRequirement(REGION_RESTRICTION_TYPES.BlackArmsTurret),
     MissionClearLocation(STAGE_SKY_TROOPS, MISSION_ALIGNMENT_NEUTRAL, None, None)
         .setDistribution(
         {
-            5: 1
+            REGION_INDICIES.SKY_TROOPS_HAWK_OR_VOLT: 1
         }
     ),
     MissionClearLocation(STAGE_SKY_TROOPS, MISSION_ALIGNMENT_HERO, 5, "Temple")
         .setDistribution(
         {
             0: 1,
-            1: 3,
-            5: 1
+            REGION_INDICIES.SKY_TROOPS_ROCKET_NORMAL: 1,
+            REGION_INDICIES.SKY_TROOPS_ROCKET: 2,
+            REGION_INDICIES.SKY_TROOPS_HAWK_OR_VOLT: 1
         }
     ),
 
     MissionClearLocation(STAGE_MAD_MATRIX, MISSION_ALIGNMENT_DARK, 30, "Bomb")
         .setDistribution(
         {
-            1: 30
+            REGION_INDICIES.MAD_MATRIX_GUN: 30
         }
     ),
     MissionClearLocation(STAGE_MAD_MATRIX, MISSION_ALIGNMENT_NEUTRAL, None, None)
         .setDistribution(
         {
-            1: 1
+            REGION_INDICIES.MAD_MATRIX_RED_ENTRY: 1
         }
     ),
 
     MissionClearLocation(STAGE_MAD_MATRIX, MISSION_ALIGNMENT_HERO, 4, "Terminal")
         .setDistribution(
         {
-            1: 4
+            REGION_INDICIES.MAD_MATRIX_GUN: 1,
+            REGION_INDICIES.MAD_MATRIX_YELLOW_ENTRY: 1,
+            REGION_INDICIES.MAD_MATRIX_GREEN_PROGRESSION: 1,
+            REGION_INDICIES.MAD_MATRIX_RED_ENTRY: 1
         }
     ),
 
-    MissionClearLocation(STAGE_DEATH_RUINS, MISSION_ALIGNMENT_DARK, None, None),
+    MissionClearLocation(STAGE_DEATH_RUINS, MISSION_ALIGNMENT_DARK, None, None)
+        .setDistribution(
+        {
+            REGION_INDICIES.DEATH_RUINS_WALLS: 1
+        }
+        ),
     MissionClearLocation(STAGE_DEATH_RUINS, MISSION_ALIGNMENT_HERO, 50, "Alien"),
 
     MissionClearLocation(STAGE_THE_ARK, MISSION_ALIGNMENT_DARK, 4, "Defense Unit")
         .setDistribution(
         {
-            1: 4
+            REGION_INDICIES.THE_ARK_BLACK_VOLT: 4
         }
         )
     .setRequirement(REGION_RESTRICTION_TYPES.Gun),
     MissionClearLocation(STAGE_THE_ARK, MISSION_ALIGNMENT_NEUTRAL, None, None)
         .setDistribution(
         {
-            1: 1
+            REGION_INDICIES.THE_ARK_BLACK_VOLT: 1
         }
     ),
 
     MissionClearLocation(STAGE_AIR_FLEET, MISSION_ALIGNMENT_DARK, 1, "President Aircraft")
+        .setDistribution(
+        {
+            REGION_INDICIES.AIR_FLEET_PULLEY: 1
+        }
+        )
     .setRequirement(REGION_RESTRICTION_TYPES.Gun)
     .setCraftRequirement(REGION_RESTRICTION_TYPES.ShadowRifle, Options.LogicLevel.option_easy),
-    MissionClearLocation(STAGE_AIR_FLEET, MISSION_ALIGNMENT_NEUTRAL, None, None),
+    MissionClearLocation(STAGE_AIR_FLEET, MISSION_ALIGNMENT_NEUTRAL, None, None)
+        .setDistribution(
+        {
+            REGION_INDICIES.AIR_FLEET_PULLEY: 1
+        }
+        ),
     MissionClearLocation(STAGE_AIR_FLEET, MISSION_ALIGNMENT_HERO, 35, "Alien"),
 
     MissionClearLocation(STAGE_IRON_JUNGLE, MISSION_ALIGNMENT_DARK, 28, "Soldier"),
-    MissionClearLocation(STAGE_IRON_JUNGLE, MISSION_ALIGNMENT_NEUTRAL, None, None),
+    MissionClearLocation(STAGE_IRON_JUNGLE, MISSION_ALIGNMENT_NEUTRAL, None, None)
+        .setDistribution(
+        {
+            REGION_INDICIES.IRON_JUNGLE_LIGHT_DASH: 1
+        }
+        ),
     MissionClearLocation(STAGE_IRON_JUNGLE, MISSION_ALIGNMENT_HERO, 1, "Egg Balloon")
+        .setDistribution(
+        {
+            REGION_INDICIES.IRON_JUNGLE_LIGHT_DASH: 1
+        }
+        )
         .setRequirement(REGION_RESTRICTION_TYPES.Gun)
         .setCraftRequirement(REGION_RESTRICTION_TYPES.ShadowRifle, Options.LogicLevel.option_easy),
 
@@ -358,68 +462,75 @@ MissionClearLocations = [
     .setDistribution(
         {
             0: 2,
-            1: 4
+            REGION_INDICIES.SPACE_GADGET_AIR_SAUCER: 4
         })
         .setRequirement(REGION_RESTRICTION_TYPES.Gun),
     MissionClearLocation(STAGE_SPACE_GADGET, MISSION_ALIGNMENT_NEUTRAL, None, None)
         .setDistribution(
         {
-            1: 1
+            REGION_INDICIES.SPACE_GADGET_AIR_SAUCER: 1
         }),
     MissionClearLocation(STAGE_SPACE_GADGET, MISSION_ALIGNMENT_HERO, None, None)
         .setDistribution(
         {
-            1: 1
+            REGION_INDICIES.SPACE_GADGET_AIR_SAUCER: 1
         }),
     MissionClearLocation(STAGE_LOST_IMPACT, MISSION_ALIGNMENT_NEUTRAL, None, None)
         .setDistribution(
         {
-            1: 1
+            REGION_INDICIES.LOST_IMPACT_GUN_LIFT: 1
         }
     ),
-    MissionClearLocation(STAGE_LOST_IMPACT, MISSION_ALIGNMENT_HERO, 35, "Artificial Chaos")
-        .setDistribution(
-        {
-            0: 1,
-            1: 34
-        }
-    ),
+    MissionClearLocation(STAGE_LOST_IMPACT, MISSION_ALIGNMENT_HERO, 35, "Artificial Chaos"),
 
     MissionClearLocation(STAGE_GUN_FORTRESS, MISSION_ALIGNMENT_DARK, 3, "Computer")
     .setRequirement(REGION_RESTRICTION_TYPES.ShootOrTurret)
     .setDistribution(
         {
-            1: 3
+            REGION_INDICIES.GUN_FORTRESS_PULLEY: 1,
+            REGION_INDICIES.GUN_FORTRESS_ROCKET_NORMAL: 1,
+            REGION_INDICIES.GUN_FORTRESS_KEY_OR_ZIPLINE: 1,
         }
     ),
     MissionClearLocation(STAGE_GUN_FORTRESS, MISSION_ALIGNMENT_HERO, None, None)
     .setDistribution(
         {
-            1: 1
+            REGION_INDICIES.GUN_FORTRESS_KEY_OR_ZIPLINE: 1
         }
     ),
 
-    MissionClearLocation(STAGE_BLACK_COMET, MISSION_ALIGNMENT_DARK, 50, "Soldier")
-        .setDistribution(
-        {
-            1: 50
-        }
-    ),
+    MissionClearLocation(STAGE_BLACK_COMET, MISSION_ALIGNMENT_DARK, 50, "Soldier"),
     MissionClearLocation(STAGE_BLACK_COMET, MISSION_ALIGNMENT_HERO, None, None)
         .setDistribution(
         {
-            1: 1
+            REGION_INDICIES.BLACK_COMET_FLOATING_ENEMY_WALL: 1
         }
     ),
 
-    MissionClearLocation(STAGE_LAVA_SHELTER, MISSION_ALIGNMENT_DARK, 5, "Defense"),
-    MissionClearLocation(STAGE_LAVA_SHELTER, MISSION_ALIGNMENT_HERO, None, None),
-
-    MissionClearLocation(STAGE_COSMIC_FALL, MISSION_ALIGNMENT_DARK, None, None),
+    MissionClearLocation(STAGE_LAVA_SHELTER, MISSION_ALIGNMENT_DARK, 5, "Defense")
+        .setDistribution(
+        {
+            0: 1,
+            REGION_INDICIES.LAVA_SHELTER_PULLEY_OR_LAVA: 3,
+            REGION_INDICIES.LAVA_SHELTER_PULLEY_DARK: 1
+        }
+    ),
+    MissionClearLocation(STAGE_LAVA_SHELTER, MISSION_ALIGNMENT_HERO, None, None)
+        .setDistribution(
+        {
+            REGION_INDICIES.LAVA_SHELTER_PULLEY_OR_LAVA: 1
+        }
+    ),
+    MissionClearLocation(STAGE_COSMIC_FALL, MISSION_ALIGNMENT_DARK, None, None)
+        .setDistribution(
+        {
+            REGION_INDICIES.COSMIC_FALL_PULLEY_NORMAL: 1
+        }
+    ),
     MissionClearLocation(STAGE_COSMIC_FALL, MISSION_ALIGNMENT_HERO, None, None)
         .setDistribution(
         {
-            3: 1
+            REGION_INDICIES.COSMIC_FALL_COMPUTER_ROOM: 1
         }
     ),
     #MissionClearLocation(STAGE_COSMIC_FALL, MISSION_ALIGNMENT_HERO, 1, "Computer Room"),
@@ -427,21 +538,22 @@ MissionClearLocations = [
     MissionClearLocation(STAGE_FINAL_HAUNT, MISSION_ALIGNMENT_DARK, 4, "Shield")
         .setDistribution(
         {
-            1: 1,
-            2: 3
+            REGION_INDICIES.FINAL_HAUNT_VACUUM: 1,
+            REGION_INDICIES.FINAL_HAUNT_SHIELD_COUNT_2: 1,
+            REGION_INDICIES.FINAL_HAUNT_SHIELD_COUNT_3: 2
         }
     ),
     MissionClearLocation(STAGE_FINAL_HAUNT, MISSION_ALIGNMENT_HERO, None, None)
         .setDistribution(
         {
-            1: 1
+            REGION_INDICIES.FINAL_HAUNT_LIGHT_DASH: 1
         }
     ),
 
     MissionClearLocation(STAGE_THE_LAST_WAY, MISSION_ALIGNMENT_NEUTRAL, None, None)
         .setDistribution(
         {
-            1: 1
+            REGION_INDICIES.THE_LAST_WAY_VOLT_OR_WARP: 1
         }
     )
 
@@ -499,171 +611,288 @@ BossClearLocations = \
     BossClearLocation(BOSS_DEVIL_DOOM)
 ]
 
+def GetEnemySanityLocations():
+    EnemySanityLocations = []
+    for stage in [ s for s in Levels.ALL_STAGES if s not in Levels.BOSS_STAGES ]:
+        dark_mission_enemies = GetEnemyDistributionInStageByBaseType(stage, ENEMY_CLASS_GUN)
+        hero_mission_enemies = GetEnemyDistributionInStageByBaseType(stage, ENEMY_CLASS_ALIEN)
+        egg_enemies = GetEnemyDistributionInStageByBaseType(stage, ENEMY_CLASS_EGG)
 
-EnemySanityLocations = \
-[
-    EnemySanityLocation(STAGE_WESTOPOLIS, ENEMY_CLASS_ALIEN, 45, "Black Arm"),
-    EnemySanityLocation(STAGE_WESTOPOLIS, ENEMY_CLASS_GUN, 36, "GUN Soldier"),
+        if len(dark_mission_enemies.keys()) > 0:
+            count = 0
+            for items in dark_mission_enemies.values():
+                count += items
 
-    EnemySanityLocation(STAGE_DIGITAL_CIRCUIT, ENEMY_CLASS_GUN, 46, "GUN Soldier"),
-    EnemySanityLocation(STAGE_DIGITAL_CIRCUIT, ENEMY_CLASS_ALIEN, 17, "Black Arm"),
+            EnemySanityLocations.append(
+                EnemySanityLocation(stage, ENEMY_CLASS_GUN, count, "GUN Solider")
+                    .setEnemyDistribution(dark_mission_enemies),
+            )
 
-    EnemySanityLocation(STAGE_GLYPHIC_CANYON, ENEMY_CLASS_GUN, 8, "GUN Soldier"),
-    EnemySanityLocation(STAGE_GLYPHIC_CANYON, ENEMY_CLASS_ALIEN, 60, "Black Arm"),
-    
-    EnemySanityLocation(STAGE_LETHAL_HIGHWAY, ENEMY_CLASS_GUN, 30, "GUN Soldier"),
-    EnemySanityLocation(STAGE_LETHAL_HIGHWAY, ENEMY_CLASS_ALIEN, 137, "Black Arm"),
+        if len(hero_mission_enemies.keys()) > 0:
+            count = 0
+            for items in hero_mission_enemies.values():
+                count += items
+            EnemySanityLocations.append(
+                EnemySanityLocation(stage, ENEMY_CLASS_ALIEN, count, "Black Alien")
+                    .setEnemyDistribution(hero_mission_enemies),
+            )
 
-    EnemySanityLocation(STAGE_CRYPTIC_CASTLE, ENEMY_CLASS_EGG, 17, "Egg Pawn"),
-    EnemySanityLocation(STAGE_CRYPTIC_CASTLE, ENEMY_CLASS_ALIEN, 52, "Black Arm"),
+        if len(egg_enemies.keys()) > 0:
+            count = 0
+            for items in egg_enemies.values():
+                count += items
+            EnemySanityLocations.append(
+                EnemySanityLocation(stage, ENEMY_CLASS_EGG, count, "Egg Robot")
+                    .setEnemyDistribution(egg_enemies),
+            )
 
-    EnemySanityLocation(STAGE_PRISON_ISLAND, ENEMY_CLASS_GUN, 41, "GUN Soldier"),
-    EnemySanityLocation(STAGE_PRISON_ISLAND, ENEMY_CLASS_ALIEN, 88, "Black Arm"),
+    return EnemySanityLocations
 
-    EnemySanityLocation(STAGE_CIRCUS_PARK, ENEMY_CLASS_GUN, 21, "GUN Soldier"),
-    EnemySanityLocation(STAGE_CIRCUS_PARK, ENEMY_CLASS_EGG, 29, "Egg Pawn"),
 
-    #EnemySanityLocation(STAGE_CENTRAL_CITY, ENEMY_CLASS_GUN, 100, "GUN Soldier"),
-    #EnemySanityLocation(STAGE_CENTRAL_CITY, ENEMY_CLASS_ALIEN, 100, "Black Arm"),
-    # 39 BA, 28G, time limit..
 
-    EnemySanityLocation(STAGE_THE_DOOM, ENEMY_CLASS_GUN, 60, "GUN Soldier"),
-
-    EnemySanityLocation(STAGE_SKY_TROOPS, ENEMY_CLASS_ALIEN, 73, "Black Arm"),
-    EnemySanityLocation(STAGE_SKY_TROOPS, ENEMY_CLASS_EGG, 11, "Egg Pawn"),
-
-    EnemySanityLocation(STAGE_MAD_MATRIX, ENEMY_CLASS_EGG, 31, "Egg Pawn"),
-    EnemySanityLocation(STAGE_MAD_MATRIX, ENEMY_CLASS_ALIEN, 8, "Black Arm"),
-
-    EnemySanityLocation(STAGE_DEATH_RUINS, ENEMY_CLASS_GUN, 21, "GUN Soldier"),
-    EnemySanityLocation(STAGE_DEATH_RUINS, ENEMY_CLASS_ALIEN, 50, "Black Arm"),
-
-    EnemySanityLocation(STAGE_THE_ARK, ENEMY_CLASS_GUN, 74, "GUN Soldier"),
-    EnemySanityLocation(STAGE_THE_ARK, ENEMY_CLASS_ALIEN, 21, "Black Arm"),
-
-    EnemySanityLocation(STAGE_AIR_FLEET, ENEMY_CLASS_GUN, 48, "GUN Soldier"),
-    EnemySanityLocation(STAGE_AIR_FLEET, ENEMY_CLASS_ALIEN, 35, "Black Arm"),
-
-    EnemySanityLocation(STAGE_IRON_JUNGLE, ENEMY_CLASS_GUN, 28, "GUN Soldier"),
-    EnemySanityLocation(STAGE_IRON_JUNGLE, ENEMY_CLASS_EGG, 37, "Egg Pawn"),
-
-    EnemySanityLocation(STAGE_SPACE_GADGET, ENEMY_CLASS_GUN, 25, "GUN Soldier"),
-    EnemySanityLocation(STAGE_SPACE_GADGET, ENEMY_CLASS_ALIEN, 33, "Black Arm"),
-
-    EnemySanityLocation(STAGE_LOST_IMPACT, ENEMY_CLASS_GUN, 37, "GUN Soldier"),
-    EnemySanityLocation(STAGE_LOST_IMPACT, ENEMY_CLASS_ALIEN, 35, "Artificial Chaos"),
-
-    EnemySanityLocation(STAGE_GUN_FORTRESS, ENEMY_CLASS_GUN, 94, "GUN Soldier"),
-    EnemySanityLocation(STAGE_GUN_FORTRESS, ENEMY_CLASS_ALIEN, 18, "Black Arm"),
-
-    EnemySanityLocation(STAGE_BLACK_COMET, ENEMY_CLASS_GUN, 53, "GUN Soldier"),
-    EnemySanityLocation(STAGE_BLACK_COMET, ENEMY_CLASS_ALIEN, 83, "Black Arm"),
-    # To Handle random respawns from the ships -- might want to make BA lower
-
-    EnemySanityLocation(STAGE_LAVA_SHELTER, ENEMY_CLASS_EGG, 74, "Egg Robot"),
-
-    EnemySanityLocation(STAGE_COSMIC_FALL, ENEMY_CLASS_GUN, 7, "GUN Soldier"),
-    EnemySanityLocation(STAGE_COSMIC_FALL, ENEMY_CLASS_ALIEN, 24, "Black Arm"),
-
-    EnemySanityLocation(STAGE_FINAL_HAUNT, ENEMY_CLASS_ALIEN, 122, "Black Arm"),
-]
+#EnemySanityLocations = \
+#[
+#    EnemySanityLocation(STAGE_WESTOPOLIS, ENEMY_CLASS_ALIEN, 45, "Black Arm"),
+#    EnemySanityLocation(STAGE_WESTOPOLIS, ENEMY_CLASS_GUN, 36, "GUN Soldier"),
+#
+#    EnemySanityLocation(STAGE_DIGITAL_CIRCUIT, ENEMY_CLASS_GUN, 46, "GUN Soldier"),
+#    EnemySanityLocation(STAGE_DIGITAL_CIRCUIT, ENEMY_CLASS_ALIEN, 17, "Black Arm"),
+#
+#    EnemySanityLocation(STAGE_GLYPHIC_CANYON, ENEMY_CLASS_GUN, 8, "GUN Soldier"),
+#    EnemySanityLocation(STAGE_GLYPHIC_CANYON, ENEMY_CLASS_ALIEN, 60, "Black Arm"),
+#
+#    EnemySanityLocation(STAGE_LETHAL_HIGHWAY, ENEMY_CLASS_GUN, 30, "GUN Soldier"),
+#    EnemySanityLocation(STAGE_LETHAL_HIGHWAY, ENEMY_CLASS_ALIEN, 137, "Black Arm"),
+#
+#    EnemySanityLocation(STAGE_CRYPTIC_CASTLE, ENEMY_CLASS_EGG, 17, "Egg Pawn"),
+#    EnemySanityLocation(STAGE_CRYPTIC_CASTLE, ENEMY_CLASS_ALIEN, 52, "Black Arm"),
+#
+#    EnemySanityLocation(STAGE_PRISON_ISLAND, ENEMY_CLASS_GUN, 41, "GUN Soldier"),
+#    EnemySanityLocation(STAGE_PRISON_ISLAND, ENEMY_CLASS_ALIEN, 88, "Black Arm"),
+#
+#    EnemySanityLocation(STAGE_CIRCUS_PARK, ENEMY_CLASS_GUN, 21, "GUN Soldier"),
+#    EnemySanityLocation(STAGE_CIRCUS_PARK, ENEMY_CLASS_EGG, 29, "Egg Pawn"),
+#
+#    #EnemySanityLocation(STAGE_CENTRAL_CITY, ENEMY_CLASS_GUN, 100, "GUN Soldier"),
+#    #EnemySanityLocation(STAGE_CENTRAL_CITY, ENEMY_CLASS_ALIEN, 100, "Black Arm"),
+#    # 39 BA, 28G, time limit..
+#
+#    EnemySanityLocation(STAGE_THE_DOOM, ENEMY_CLASS_GUN, 60, "GUN Soldier"),
+#
+#    EnemySanityLocation(STAGE_SKY_TROOPS, ENEMY_CLASS_ALIEN, 73, "Black Arm"),
+#    EnemySanityLocation(STAGE_SKY_TROOPS, ENEMY_CLASS_EGG, 11, "Egg Pawn"),
+#
+#    EnemySanityLocation(STAGE_MAD_MATRIX, ENEMY_CLASS_EGG, 31, "Egg Pawn"),
+#    EnemySanityLocation(STAGE_MAD_MATRIX, ENEMY_CLASS_ALIEN, 8, "Black Arm"),
+#
+#    EnemySanityLocation(STAGE_DEATH_RUINS, ENEMY_CLASS_GUN, 21, "GUN Soldier"),
+#    EnemySanityLocation(STAGE_DEATH_RUINS, ENEMY_CLASS_ALIEN, 50, "Black Arm"),
+#
+#    EnemySanityLocation(STAGE_THE_ARK, ENEMY_CLASS_GUN, 74, "GUN Soldier"),
+#    EnemySanityLocation(STAGE_THE_ARK, ENEMY_CLASS_ALIEN, 21, "Black Arm"),
+#
+#    EnemySanityLocation(STAGE_AIR_FLEET, ENEMY_CLASS_GUN, 48, "GUN Soldier"),
+#    EnemySanityLocation(STAGE_AIR_FLEET, ENEMY_CLASS_ALIEN, 35, "Black Arm"),
+##
+#    EnemySanityLocation(STAGE_IRON_JUNGLE, ENEMY_CLASS_GUN, 28, "GUN Soldier"),
+#    EnemySanityLocation(STAGE_IRON_JUNGLE, ENEMY_CLASS_EGG, 37, "Egg Pawn"),
+#
+#    EnemySanityLocation(STAGE_SPACE_GADGET, ENEMY_CLASS_GUN, 25, "GUN Soldier"),
+#    EnemySanityLocation(STAGE_SPACE_GADGET, ENEMY_CLASS_ALIEN, 33, "Black Arm"),
+#
+#    EnemySanityLocation(STAGE_LOST_IMPACT, ENEMY_CLASS_GUN, 37, "GUN Soldier"),
+#    EnemySanityLocation(STAGE_LOST_IMPACT, ENEMY_CLASS_ALIEN, 35, "Artificial Chaos"),
+#
+#    EnemySanityLocation(STAGE_GUN_FORTRESS, ENEMY_CLASS_GUN, 94, "GUN Soldier"),
+#    EnemySanityLocation(STAGE_GUN_FORTRESS, ENEMY_CLASS_ALIEN, 18, "Black Arm"),
+#
+#    EnemySanityLocation(STAGE_BLACK_COMET, ENEMY_CLASS_GUN, 53, "GUN Soldier"),
+#    EnemySanityLocation(STAGE_BLACK_COMET, ENEMY_CLASS_ALIEN, 83, "Black Arm"),
+#    # To Handle random respawns from the ships -- might want to make BA lower
+#
+#    EnemySanityLocation(STAGE_LAVA_SHELTER, ENEMY_CLASS_EGG, 74, "Egg Robot"),
+#
+#    EnemySanityLocation(STAGE_COSMIC_FALL, ENEMY_CLASS_GUN, 7, "GUN Soldier"),
+#    EnemySanityLocation(STAGE_COSMIC_FALL, ENEMY_CLASS_ALIEN, 24, "Black Arm"),
+#
+#    EnemySanityLocation(STAGE_FINAL_HAUNT, ENEMY_CLASS_ALIEN, 122, "Black Arm"),
+#]
 
 CheckpointLocations = \
 [
     CheckpointLocation(STAGE_WESTOPOLIS, 6),
-    CheckpointLocation(STAGE_DIGITAL_CIRCUIT, 7),
-    CheckpointLocation(STAGE_GLYPHIC_CANYON, 8),
-    CheckpointLocation(STAGE_LETHAL_HIGHWAY, 5),
+    CheckpointLocation(STAGE_DIGITAL_CIRCUIT, 7)
+        .setDistribution(
+        {
+            0: [1,2,3,4,5,6],
+            REGION_INDICIES.DIGITAL_CIRCUIT_DARK_WARP_HOLE: [7]
+        }
+    ),
+    CheckpointLocation(STAGE_GLYPHIC_CANYON, 8)
+        .setDistribution(
+        {
+            0: [1,2,3],
+            REGION_INDICIES.GLYPHIC_CANYON_PULLEY: [4,5,6,7,8]
+        }
+    ),
+    CheckpointLocation(STAGE_LETHAL_HIGHWAY, 5)
+        .setDistribution(
+        {
+            0: [1,2],
+            REGION_INDICIES.LETHAL_HIGHWAY_ROCKET: [3,4,5]
+        }
+    ),
+
     CheckpointLocation(STAGE_CRYPTIC_CASTLE, 8)
         .setDistribution(
         {
             0: [1],
-            1: [2],
-            2: [3,4,5,6,7,8]
+            REGION_INDICIES.CRYPTIC_CASTLE_TORCH: [2],
+            REGION_INDICIES.CRYPTIC_CASTLE_HAWK: [3,4,5],
+            REGION_INDICIES.CRYPTIC_CASTLE_BOMB_EASY_2: [6,7,8]
         }
     ),
     CheckpointLocation(STAGE_PRISON_ISLAND, 7)
         .setDistribution(
         {
             0: [1,2],
-            1: [3,4,5,6,7]
+            REGION_INDICIES.PRISON_ISLAND_AIR_SAUCER: [3,4,5,6,7]
         }
     ),
-    CheckpointLocation(STAGE_CIRCUS_PARK, 7),
+    CheckpointLocation(STAGE_CIRCUS_PARK, 7)
+        .setDistribution(
+        {
+            0: [1],
+            REGION_INDICIES.CIRCUS_PARK_ZIP_WIRE: [2],
+            REGION_INDICIES.CIRCUS_PARK_ROCKET_EASY: [3,4,5],
+            REGION_INDICIES.CIRCUS_PARK_ROCKET: [6],
+            REGION_INDICIES.CIRCUS_PARK_PULLEY: [7]
+        }
+    ),
     CheckpointLocation(STAGE_CENTRAL_CITY, 6)
         .setDistribution(
         {
-            0: [1,2,3],
-            1: [4,5,6]
+            0: [2, 3],
+            REGION_INDICIES.CENTRAL_CITY_BOMB_OR_BAZOOKA: [1],
+            REGION_INDICIES.CENTRAL_CITY_BOMB_OR_BAZOOKA_2: [4],
+            REGION_INDICIES.CENTRAL_CITY_ROCKET_2: [5,6]
         }
     ),
-    CheckpointLocation(STAGE_THE_DOOM, 6),
+    CheckpointLocation(STAGE_THE_DOOM, 6)
+        .setDistribution(
+        {
+            0: [1],
+            REGION_INDICIES.THE_DOOM_BOMBS: [2,3],
+            REGION_INDICIES.THE_DOOM_DOOR_1_SWITCH: [4,5,6]
+        }
+    ),
+
     CheckpointLocation(STAGE_SKY_TROOPS, 8)
         .setDistribution(
         {
             0: [1,2],
-            1: [3,4,5,6],
-            5: [7,8]
+            REGION_INDICIES.SKY_TROOPS_ROCKET_NORMAL: [3],
+            REGION_INDICIES.SKY_TROOPS_ROCKET: [4,5,6],
+            REGION_INDICIES.SKY_TROOPS_HAWK_OR_VOLT: [7,8]
         }
     ),
+
     CheckpointLocation(STAGE_MAD_MATRIX, 6)
         .setDistribution(
         {
             0: [1],
-            1: [2,3,4,5,6]
+            REGION_INDICIES.MAD_MATRIX_GUN: [2,4,6],
+            REGION_INDICIES.MAD_MATRIX_YELLOW_ENTRY: [3],
+            REGION_INDICIES.MAD_MATRIX_GREEN_ENTRY: [5]
         }
     ),
-    CheckpointLocation(STAGE_DEATH_RUINS, 7),
+    CheckpointLocation(STAGE_DEATH_RUINS, 7)
+        .setDistribution(
+        {
+            0: [1],
+            REGION_INDICIES.DEATH_RUINS_PULLEY: [2,3,4,5],
+            REGION_INDICIES.DEATH_RUINS_WALLS: [6,7]
+        }
+    ),
     CheckpointLocation(STAGE_THE_ARK, 8)
         .setDistribution(
         {
             0: [1],
-            1: [2,3,4,5,6,7,8]
+            REGION_INDICIES.THE_ARK_BLACK_VOLT: [2,3,4,5,6,7,8]
         }
     ),
-    CheckpointLocation(STAGE_AIR_FLEET, 8),
-    CheckpointLocation(STAGE_IRON_JUNGLE, 8),
+    CheckpointLocation(STAGE_AIR_FLEET, 8)
+        .setDistribution(
+        {
+            REGION_INDICIES.AIR_FLEET_PULLEY: [1,2,3,4,5,6,7,8]
+        }
+    ),
+    CheckpointLocation(STAGE_IRON_JUNGLE, 8)
+        .setDistribution(
+        {
+            0: [1,2],
+            REGION_INDICIES.IRON_JUNGLE_ROCKET: [3],
+            REGION_INDICIES.IRON_JUNGLE_LIGHT_DASH: [4,5,6,8],
+            REGION_INDICIES.IRON_JUNGLE_LIGHT_DASH_DARK: [7]
+        }
+    ),
     CheckpointLocation(STAGE_SPACE_GADGET, 8).
         setDistribution(
         {
-            0: [1,2,3,6],
-            1: [4,5,7,8]
+            0: [1,2,3],
+            REGION_INDICIES.SPACE_GADGET_ZIPWIRE: [6],
+            REGION_INDICIES.SPACE_GADGET_AIR_SAUCER: [4,5,7,8]
         }
     ),
     CheckpointLocation(STAGE_LOST_IMPACT, 8)
         .setDistribution(
         {
             0: [1],
-            1: [2,3,4,5,6,7,8],
+            REGION_INDICIES.LOST_IMPACT_GUN_LIFT: [2,3,4,5,6,7,8]
         }
     ),
     CheckpointLocation(STAGE_GUN_FORTRESS, 7)
         .setDistribution(
         {
             0: [1],
-            1: [2,3,4,5,6,7]
+            REGION_INDICIES.GUN_FORTRESS_PULLEY: [2],
+            REGION_INDICIES.GUN_FORTRESS_ZIPWIRE: [3],
+            REGION_INDICIES.GUN_FORTRESS_ROCKET_NORMAL: [4,5,6,7]
         }
     ),
     CheckpointLocation(STAGE_BLACK_COMET, 8)
         .setDistribution(
         {
             0: [1],
-            1: [2,3,4,5,6,7,8]
+            REGION_INDICIES.BLACK_COMET_AIR_SAUCER: [2],
+            REGION_INDICIES.BLACK_COMET_WARP_HOLE: [3,4,5,6],
+            REGION_INDICIES.BLACK_COMET_FLOATING_ENEMY_WALL: [7,8]
         }
     ),
-    CheckpointLocation(STAGE_LAVA_SHELTER, 8),
+    CheckpointLocation(STAGE_LAVA_SHELTER, 8)
+        .setDistribution(
+        {
+            0: [1,2],
+            REGION_INDICIES.LAVA_SHELTER_PULLEY_OR_LAVA: [3, 4, 5, 7, 8],
+            REGION_INDICIES.LAVA_SHELTER_PULLEY_DARK: [6]
+        }
+    ),
     CheckpointLocation(STAGE_COSMIC_FALL, 7)
         .setDistribution(
         {
-            0: [1,2,3,4,5,6],
-            3: [7]
+            REGION_INDICIES.COSMIC_FALL_ZIPWIRE: [1],
+            REGION_INDICIES.COSMIC_FALL_PULLEY_NORMAL: [2,3,4,5,6],
+            REGION_INDICIES.COSMIC_FALL_COMPUTER_ROOM: [7]
         }
     ),
+
     CheckpointLocation(STAGE_FINAL_HAUNT, 8)
         .setDistribution(
         {
             0: [1,2],
-            1: [3,4,5,6,7,8]
+            REGION_INDICIES.FINAL_HAUNT_HARD_VACUUM_OR_BLACK_VOLT: [3],
+            REGION_INDICIES.FINAL_HAUNT_ROCKET_NORMAL: [4, 5],
+            REGION_INDICIES.FINAL_HAUNT_LIGHT_DASH: [6,7,8],
         }
     ),
 
@@ -671,113 +900,199 @@ CheckpointLocations = \
         .setDistribution(
         {
             0: [1],
-            1: [2,3,4,5,6,7]
+            REGION_INDICIES.THE_LAST_WAY_BLACK_VOLT: [2,3],
+            REGION_INDICIES.THE_LAST_WAY_VOLT_OR_WARP: [4,5],
+            REGION_INDICIES.THE_LAST_WAY_LIGHT_DASH_EASY: [6,7]
         }
-    ),
-
+    )
 ]
 
 KeyLocations = \
 [
-    KeyLocation(STAGE_WESTOPOLIS),
-    KeyLocation(STAGE_DIGITAL_CIRCUIT),
-    KeyLocation(STAGE_GLYPHIC_CANYON),
-    KeyLocation(STAGE_LETHAL_HIGHWAY),
+    KeyLocation(STAGE_WESTOPOLIS)
+        .setDistribution(
+        {
+            0: [1,3,4,5],
+            REGION_INDICIES.WESTOPOLIS_PULLEY: [2]
+        }
+    ),
+    KeyLocation(STAGE_DIGITAL_CIRCUIT)
+        .setDistribution(
+        {
+            0: [1,2,3,4],
+            REGION_INDICIES.DIGITAL_CIRCUIT_DARK_WARP_HOLE: [5]
+        }
+    ),
+    KeyLocation(STAGE_GLYPHIC_CANYON)
+        .setDistribution(
+        {
+            0: [1,2,3],
+            REGION_INDICIES.GLYPHIC_CANYON_PULLEY: [4,5]
+        }
+    ),
+    KeyLocation(STAGE_LETHAL_HIGHWAY)
+        .setDistribution(
+        {
+            0: [1,2,3],
+            REGION_INDICIES.LETHAL_HIGHWAY_ROCKET: [4],
+            REGION_INDICIES.LETHAL_HIGHWAY_PULLEY: [5],
+        }
+    ),
     KeyLocation(STAGE_CRYPTIC_CASTLE)
         .setDistribution(
         {
-            0: 1,
-            2: 4
+            REGION_INDICIES.CRYPTIC_CASTLE_BALLOON: [1],
+            REGION_INDICIES.CRYPTIC_CASTLE_HAWK: [2],
+            REGION_INDICIES.CRYPTIC_CASTLE_BOMB_EASY_2: [3,4,5]
         }
     ),
     KeyLocation(STAGE_PRISON_ISLAND)
         .setDistribution(
         {
-            0: 1,
-            1: 4
+            0: [1],
+            REGION_INDICIES.PRISON_ISLAND_AIR_SAUCER: [2,3,4,5],
         }
     ),
-    KeyLocation(STAGE_CIRCUS_PARK),
+    KeyLocation(STAGE_CIRCUS_PARK)
+        .setDistribution(
+        {
+            REGION_INDICIES.CIRCUS_PARK_ZIP_WIRE: [1],
+            REGION_INDICIES.CIRCUS_PARK_ROCKET_EASY: [2,3],
+            REGION_INDICIES.CIRCUS_PARK_ROCKET: [4],
+            REGION_INDICIES.CIRCUS_PARK_PULLEY: [5]
+        }
+    ),
     KeyLocation(STAGE_CENTRAL_CITY)
         .setDistribution(
         {
-            0: 2,
-            1: 3
+            0: [2],
+            REGION_INDICIES.CENTRAL_CITY_BOMB_OR_BAZOOKA: [1],
+            REGION_INDICIES.CENTRAL_CITY_BOMB_OR_BAZOOKA_2: [3],
+            REGION_INDICIES.CENTRAL_CITY_ROCKET_2: [4],
+            REGION_INDICIES.CENTRAL_CITY_BOMB_OR_BAZOOKA_3: [5],
         }
     ),
-    KeyLocation(STAGE_THE_DOOM),
+    KeyLocation(STAGE_THE_DOOM)
+        .setDistribution(
+        {
+            0: [1,2],
+            REGION_INDICIES.THE_DOOM_BOMBS: [3,5],
+            REGION_INDICIES.THE_DOOM_PULLEY_2: [4],
+        }
+    ),
     KeyLocation(STAGE_SKY_TROOPS)
         .setDistribution(
         {
-            1: 4,
-            5: 1
+            REGION_INDICIES.SKY_TROOPS_GUN_JUMPER_EASY: [1],
+            REGION_INDICIES.SKY_TROOPS_ROCKET_NORMAL: [2],
+            REGION_INDICIES.SKY_TROOPS_ROCKET: [3,4],
+            REGION_INDICIES.SKY_TROOPS_HAWK_OR_VOLT: [5]
         }
     ),
     KeyLocation(STAGE_MAD_MATRIX)
         .setDistribution(
         {
-            1: 5
+            REGION_INDICIES.MAD_MATRIX_GUN: [1],
+            REGION_INDICIES.MAD_MATRIX_YELLOW_ENTRY: [2],
+            REGION_INDICIES.MAD_MATRIX_GREEN_PROGRESSION: [3],
+            REGION_INDICIES.MAD_MATRIX_RED_ENTRY: [4,5],
         }
     ),
-    KeyLocation(STAGE_DEATH_RUINS),
+    KeyLocation(STAGE_DEATH_RUINS)
+        .setDistribution(
+        {
+            REGION_INDICIES.DEATH_RUINS_PULLEY: [1,2],
+            REGION_INDICIES.DEATH_RUINS_WALLS: [3,4,5]
+        }
+    ),
     KeyLocation(STAGE_THE_ARK)
         .setDistribution(
         {
-            0: 1,
-            1: 4
+            0: [1],
+            REGION_INDICIES.THE_ARK_BLACK_VOLT: [2,3,4,5]
         }
     ),
-    KeyLocation(STAGE_AIR_FLEET),
-    KeyLocation(STAGE_IRON_JUNGLE),
+    KeyLocation(STAGE_AIR_FLEET)
+        .setDistribution(
+        {
+            REGION_INDICIES.AIR_FLEET_PULLEY: [1,2,3,4,5]
+        }
+    ),
+    KeyLocation(STAGE_IRON_JUNGLE)
+        .setDistribution(
+        {
+            REGION_INDICIES.IRON_JUNGLE_ROCKET: [1],
+            REGION_INDICIES.IRON_JUNGLE_LIGHT_DASH: [2,3,5],
+            REGION_INDICIES.IRON_JUNGLE_LIGHT_DASH_DARK: [4]
+        }
+    ),
     KeyLocation(STAGE_SPACE_GADGET)
         .setDistribution(
         {
-            0: 2,
-            1: 3
+            0: [1,2],
+            REGION_INDICIES.SPACE_GADGET_AIR_SAUCER: [3,4,5]
         }
     ),
     KeyLocation(STAGE_LOST_IMPACT)
         .setDistribution(
         {
-            0: 1,
-            1: 4
+            0: [1],
+            REGION_INDICIES.LOST_IMPACT_GUN_LIFT: [2,4],
+            REGION_INDICIES.LOST_IMPACT_ROCKET: [3],
+            REGION_INDICIES.LOST_IMPACT_BOMB_WALL: [5]
         }
     ),
     KeyLocation(STAGE_GUN_FORTRESS)
         .setDistribution(
         {
-            0: 1,
-            1: 4
+            0: [1],
+            REGION_INDICIES.GUN_FORTRESS_ZIPWIRE_NORMAL: [2],
+            REGION_INDICIES.GUN_FORTRESS_ZIPWIRE: [3],
+            REGION_INDICIES.GUN_FORTRESS_ROCKET_NORMAL: [4, 5]
         }
     ),
     KeyLocation(STAGE_BLACK_COMET)
         .setDistribution(
         {
-            1: 5
+            REGION_INDICIES.BLACK_COMET_AIR_SAUCER: [1,2],
+            REGION_INDICIES.BLACK_COMET_WARP_HOLE: [3],
+            REGION_INDICIES.BLACK_COMET_FLOATING_ENEMY_WALL: [4,5]
         }
     ),
-    KeyLocation(STAGE_LAVA_SHELTER),
+    KeyLocation(STAGE_LAVA_SHELTER)
+        .setDistribution(
+        {
+            0: [1],
+            REGION_INDICIES.LAVA_SHELTER_PULLEY: [2],
+            REGION_INDICIES.LAVA_SHELTER_PULLEY_OR_LAVA: [3,5],
+            REGION_INDICIES.LAVA_SHELTER_PULLEY_DARK: [4]
+        }
+    ),
     KeyLocation(STAGE_COSMIC_FALL)
         .setDistribution(
         {
-            0: 3,
-            2: 2
+            REGION_INDICIES.COSMIC_FALL_PULLEY_NORMAL: [1,2,3],
+            REGION_INDICIES.COSMIC_FALL_GUN_JUMPER_PULLEY_HARD: [4],
+            REGION_INDICIES.COSMIC_FALL_LD_OR_JUMPER: [5]
         }
     ),
     KeyLocation(STAGE_FINAL_HAUNT)
         .setDistribution(
         {
-            0: 1,
-            1: 4
+            0: [1],
+            REGION_INDICIES.FINAL_HAUNT_VACUUM: [2],
+            REGION_INDICIES.FINAL_HAUNT_ROCKET_NORMAL: [3],
+            REGION_INDICIES.FINAL_HAUNT_BLACK_VOLT_2: [4],
+            REGION_INDICIES.FINAL_HAUNT_LIGHT_DASH: [5]
         }
-    )
-    .setIndividual(4, 2),
+    ),
 
     KeyLocation(STAGE_THE_LAST_WAY)
         .setDistribution(
         {
-            0: 1,
-            1: 4
+            0: [1],
+            REGION_INDICIES.THE_LAST_WAY_BLACK_VOLT: [2,3,4],
+            REGION_INDICIES.THE_LAST_WAY_VOLT_OR_WARP: [5]
         }
     ),
 
@@ -790,10 +1105,15 @@ def GetStageInformation(stageId):
     return missions
 
 def GetStageEnemysanityInformation(stageId):
-    return [ e for e in EnemySanityLocations if e.stageId == stageId]
+    return [ e for e in GetEnemySanityLocations() if e.stageId == stageId]
 
 def GetAlignmentsForStage(stageId):
     missions = [ m.alignmentId for m in MissionClearLocations if m.stageId == stageId]
+
+    missions_copy = copy.deepcopy(missions)
+    missions.sort()
+    assert missions == missions_copy
+
     return missions
 
 def GetLocationDict():
@@ -855,6 +1175,9 @@ def GetBossLocationName(bossName, bossStageId):
     return id_name, view_name
 
 
+def GetClearLocation():
+    return [LocationInfo(LOCATION_TYPE_OTHER, LOCATION_ID_PLUS + 1000, Levels.DevilDoom_Name,
+                  stageId=None, alignmentId=None, total=None, count=None, other=None)]
 
 def GetAllLocationInfo():
     mission_clear_locations = []
@@ -866,8 +1189,8 @@ def GetAllLocationInfo():
     keysanity_locations = []
     weaponsanity_locations = []
     boss_locations = []
-
     warp_locations = []
+    object_locations = []
 
     for level in Levels.ALL_STAGES:
         location_id, entry_location_name = GetLevelWarpName(level)
@@ -876,8 +1199,15 @@ def GetAllLocationInfo():
                             other=None)
         warp_locations.append(info)
 
+    for object in Objects.GetObjectChecks():
+        location_id, entry_location_name = Names.GetObjectLocationName(object)
+        info = LocationInfo(LOCATION_TYPE_OBJECT, location_id, entry_location_name,
+                            stageId=object.stage, alignmentId=None, count=None, total=None,
+                            other=object.object_type, regionId=object.region, flag=object.is_hard)
+        object_locations.append(info)
+
     for location in MissionClearLocations:
-        location_id, completion_location_name = GetLevelCompletionNames(location.stageId, location.alignmentId)
+        location_id, completion_location_name = Levels.GetLevelCompletionNames(location.stageId, location.alignmentId)
         info = LocationInfo(LOCATION_TYPE_MISSION_CLEAR, location_id, completion_location_name,
                             stageId=location.stageId, alignmentId=location.alignmentId, count=None, total=None,
                             other=None)
@@ -922,7 +1252,7 @@ def GetAllLocationInfo():
                                     count=j, total=location.requirement_count, other=None)
                 mission_locations.append(info)
 
-    for enemy in EnemySanityLocations:
+    for enemy in GetEnemySanityLocations():
         i = 0
         for j in range(1, enemy.total_count+1):
             i += 1
@@ -933,9 +1263,7 @@ def GetAllLocationInfo():
                                 count=j, total=enemy.total_count, other=None)
             enemysanity_locations.append(info)
 
-
-    progression_locations = [LocationInfo(LOCATION_TYPE_OTHER, LOCATION_ID_PLUS+1000, Levels.DevilDoom_Name,
-                                          stageId=None, alignmentId=None,total=None, count=None, other=None)]
+    progression_locations = GetClearLocation()
 
     progression_locations.append(
         LocationInfo(LOCATION_TYPE_OTHER, LOCATION_ID_SHADOW_RIFLE_COMPLETE, "Shadow Rifle Complete", stageId=None, \
@@ -1002,7 +1330,7 @@ def GetAllLocationInfo():
     return (mission_clear_locations, mission_locations, progression_locations,
             enemysanity_locations, checkpointsanity_locations, charactersanity_locations,
             token_locations, keysanity_locations, weaponsanity_locations, boss_locations,
-            warp_locations)
+            warp_locations, object_locations)
 
 
 def is_token_required_by_goal(options, token : LocationInfo, available_levels):
@@ -1017,6 +1345,11 @@ def is_token_required_by_goal(options, token : LocationInfo, available_levels):
     goal_dictates_final_boss_tokens = options.goal_final_bosses > 0
 
     if token.stageId not in available_levels:
+        return False
+
+    if token.stageId == Levels.STAGE_THE_LAST_WAY and goal_dictates_neutral_missions and token.other == ITEM_TOKEN_TYPE_STANDARD and \
+            (options.level_progression == Options.LevelProgression.option_select or \
+            not options.include_last_way_shuffle):
         return False
 
     if goal_dictates_missions and token.other == ITEM_TOKEN_TYPE_STANDARD:
@@ -1046,6 +1379,7 @@ def is_token_required_by_goal(options, token : LocationInfo, available_levels):
     if goal_dictates_final_boss_tokens and token.other == ITEM_TOKEN_TYPE_FINAL_BOSS:
         return True
 
+
     return False
 
 
@@ -1053,12 +1387,20 @@ def create_locations(world, regions: Dict[str, Region]):
     (clear_locations, mission_locations, end_location,
      enemysanity_locations, checkpointsanity_locations, charactersanity_locations,
      token_locations, keysanity_locations, weaponsanity_locations, boss_locations,
-     warp_locations) = GetAllLocationInfo()
+     warp_locations, object_locations) = GetAllLocationInfo()
+
+    menu_region = regions["Menu"]
+
+    object_location_checks = []
 
     for location in clear_locations:
         if location.stageId not in world.available_levels:
-            #print("skip:", location.name, location.stageId)
             continue
+
+        if world.options.exclude_go_mode_items and location.stageId == STAGE_THE_LAST_WAY and \
+            not world.options.include_last_way_shuffle:
+            world.options.exclude_locations.value.add(location.name)
+
         within_region = regions[Regions.stage_id_to_region(location.stageId)]
         completion_location = ShadowTheHedgehogLocation(world.player, location.name, location.locationId, within_region)
 
@@ -1075,15 +1417,36 @@ def create_locations(world, regions: Dict[str, Region]):
             if location.stageId not in world.available_levels:
                 continue
 
+            location_details = ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_OBJECTIVE,
+                                                      location.name, world.options,
+                                                      location.stageId, location.alignmentId,
+                                                      world.options.percent_overrides)
+
+            result_sanity = ShadowUtils.GetObjectiveSanityFlag(world.options, location_details)
+            if not result_sanity:
+                continue
+
+            if world.options.objective_sanity_system == Options.ObjectiveSanitySystem.option_individual:
+                if (location.stageId, location.alignmentId) in Objects.STAGE_OBJECT_ITEMS:
+                    lookup_info = Objects.STAGE_OBJECT_ITEMS[(location.stageId, location.alignmentId)]
+                    is_objectable = lookup_info[1]
+                    if is_objectable == Objects.WORKS_WITH_INDIVIDUAL:
+                        continue
+
+                    # Allow overriding stages to use count system here
+
             max_required = ShadowUtils.getMaxRequired(
                 ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_OBJECTIVE,
-                                                          location.name, world.options),
+                                                          location.name, world.options,
+                                                          location.stageId, location.alignmentId,world.options.percent_overrides),
                 location.total, location.stageId, location.alignmentId,
                 override_settings)
 
             frequency_required = ShadowUtils.getMaxRequired(
                 ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_OBJECTIVE_FREQUENCY,
-                                                          location.name, world.options),
+                                                          location.name, world.options,
+                                                          location.stageId, location.alignmentId,
+                                                          world.options.percent_overrides),
                 100, location.stageId, location.alignmentId,
                 override_settings)
 
@@ -1092,27 +1455,35 @@ def create_locations(world, regions: Dict[str, Region]):
                     within_region = regions[Regions.stage_id_to_region(location.stageId)]
                     completion_location = ShadowTheHedgehogLocation(world.player, location.name, location.locationId, within_region)
                     within_region.locations.append(completion_location)
+                    #print("Add location", within_region.name, completion_location.name)
 
-    if world.options.enemy_sanity:
+    if world.options.enemy_sanity and world.options.objective_sanity_system != Options.ObjectiveSanitySystem.option_individual:
         for enemy in enemysanity_locations:
             if enemy.stageId not in world.available_levels:
                 continue
 
+            if world.options.exclude_go_mode_items and enemy.stageId == STAGE_THE_LAST_WAY and \
+                    not world.options.include_last_way_shuffle:
+                continue
+
             max_required = ShadowUtils.getMaxRequired(
                 ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_ENEMY,
-                                                          enemy.name, world.options),
+                                                          enemy.name, world.options,
+                                                          enemy.stageId, enemy.alignmentId,world.options.percent_overrides),
                 enemy.total, enemy.stageId, enemy.alignmentId,
                 override_settings)
 
             frequency_required = ShadowUtils.getMaxRequired(
                 ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_ENEMY_FREQUENCY,
-                                                          enemy.name, world.options),
+                                                          enemy.name, world.options,
+                                                          enemy.stageId, enemy.alignmentId,world.options.percent_overrides),
                 100, enemy.stageId, enemy.alignmentId,
                 override_settings)
 
             if enemy.count <= max_required:
                 if enemy.count % frequency_required == 0 or max_required == enemy.count:
-                    within_region = regions[Regions.get_max_stage_region_id(enemy.stageId)]
+                    within_region = regions[Regions.stage_id_to_region(enemy.stageId)]
+                    #within_region = regions[Regions.get_max_stage_region_id(enemy.stageId)]
                     completion_location = ShadowTheHedgehogLocation(world.player, enemy.name, enemy.locationId, within_region)
                     within_region.locations.append(completion_location)
 
@@ -1120,6 +1491,11 @@ def create_locations(world, regions: Dict[str, Region]):
         for checkpoint in checkpointsanity_locations:
             if checkpoint.stageId not in world.available_levels:
                 continue
+
+            if world.options.exclude_go_mode_items and checkpoint.stageId == STAGE_THE_LAST_WAY and \
+                    not world.options.include_last_way_shuffle:
+                continue
+
             found_check_level_info = [ c for c in CheckpointLocations if c.stageId == checkpoint.stageId ][0]
             region_index = found_check_level_info.getRegion(checkpoint.count)
             within_region = regions[Regions.stage_id_to_region(checkpoint.stageId, region_index)]
@@ -1130,6 +1506,11 @@ def create_locations(world, regions: Dict[str, Region]):
         for key in keysanity_locations:
             if key.stageId not in world.available_levels:
                 continue
+
+            if world.options.exclude_go_mode_items and key.stageId == STAGE_THE_LAST_WAY and \
+                    not world.options.include_last_way_shuffle:
+                continue
+
             found_key_level_info = [c for c in KeyLocations if c.stageId == key.stageId][0]
             region_index = found_key_level_info.getRegion(key.count)
             within_region = regions[Regions.stage_id_to_region(key.stageId, region_index)]
@@ -1162,9 +1543,13 @@ def create_locations(world, regions: Dict[str, Region]):
 
     if world.options.weapon_sanity_hold > 0 :
         for weapon in weaponsanity_locations:
-            region_name = Regions.weapon_name_to_region(weapon.other)
-            if region_name not in regions:
+            if weapon.other not in world.available_weapons:
                 continue
+
+            if weapon.other in world.go_mode_weapons_only:
+                continue
+
+            region_name = Regions.weapon_name_to_region(weapon.other)
             within_region = regions[region_name]
             completion_location = ShadowTheHedgehogLocation(world.player, weapon.name, weapon.locationId,
                                                             within_region)
@@ -1192,7 +1577,7 @@ def create_locations(world, regions: Dict[str, Region]):
         if warp.stageId in Levels.BOSS_STAGES and world.options.level_progression == Options.LevelProgression.option_select:
             continue
 
-        if warp.stageId not in world.available_levels:
+        if warp.stageId not in world.available_story_levels:
             continue
 
         within_region = regions[Regions.stage_id_to_region(warp.stageId)]
@@ -1201,25 +1586,179 @@ def create_locations(world, regions: Dict[str, Region]):
         within_region.locations.append(warp_location)
 
     if world.options.rifle_components:
-        menu_region = regions["Menu"]
         rifle_location = ShadowTheHedgehogLocation(world.player, "Complete Shadow Rifle", LOCATION_ID_SHADOW_RIFLE_COMPLETE, menu_region)
         menu_region.locations.append(rifle_location)
 
+    if world.options.shadow_boxes:
+        for box_location in [ x for x in object_locations if x.other == ObjectType.SHADOW_BOX and
+                              x.stageId in world.available_levels]:
+            if world.options.exclude_go_mode_items and box_location.stageId == STAGE_THE_LAST_WAY and \
+                    not world.options.include_last_way_shuffle:
+                continue
+            stage_region_name = Regions.stage_id_to_region(box_location.stageId, box_location.regionId)
+            stage_region = regions[stage_region_name]
+            box_location = ShadowTheHedgehogLocation(world.player, box_location.name,
+                                                       box_location.locationId, stage_region)
+            stage_region.locations.append(box_location)
 
-    end_region = regions["DevilDoom"]
+    if world.options.energy_cores:
+
+        for core_location in [ x for x in object_locations if (x.other == ObjectType.ENERGY_CORE or
+                                 x.other == ObjectType.ENERGY_CORE_IN_WOOD_BOX) and
+                                                              x.stageId in world.available_levels]:
+            if core_location.regionId is not None:
+                stage_region_name = Regions.stage_id_to_region(core_location.stageId, core_location.regionId)
+                stage_region = regions[stage_region_name]
+                core_location = ShadowTheHedgehogLocation(world.player, core_location.name,
+                                                           core_location.locationId, stage_region)
+                stage_region.locations.append(core_location)
+            else:
+                print("Error with core:", core_location)
+
+    if world.options.door_sanity:
+
+        for door_location in [ x for x in object_locations if x.other == ObjectType.KEY_DOOR and
+                               x.stageId in world.available_levels]:
+
+            if world.options.exclude_go_mode_items and door_location.stageId == STAGE_THE_LAST_WAY and \
+                    not world.options.include_last_way_shuffle:
+                continue
+
+            stage_region_name = Regions.stage_id_to_region(door_location.stageId, door_location.regionId)
+            stage_region = regions[stage_region_name]
+            door_location = ShadowTheHedgehogLocation(world.player, door_location.name,
+                                                       door_location.locationId, stage_region)
+            stage_region.locations.append(door_location)
+
+    if world.options.gold_beetle_sanity:
+
+        for beetle_location in [ x for x in object_locations if x.other == ObjectType.GOLD_BEETLE and
+                                 x.stageId in world.available_levels]:
+            stage_region_name = Regions.stage_id_to_region(beetle_location.stageId, beetle_location.regionId)
+            stage_region = regions[stage_region_name]
+            beetle_location = ShadowTheHedgehogLocation(world.player, beetle_location.name,
+                                                       beetle_location.locationId, stage_region)
+            stage_region.locations.append(beetle_location)
+
+
+    if world.options.objective_sanity and world.options.objective_sanity_system != Options.ObjectiveSanitySystem.option_count_up:
+        for i in Objects.STAGE_OBJECT_ITEMS.items():
+            item_key = i[0]
+            item_stage = item_key[0]
+            item_alignment = item_key[1]
+
+            item_type = i[1]
+            item_type_data = item_type[0]
+
+            if item_stage not in world.available_levels:
+                continue
+
+            if world.options.exclude_go_mode_items and item_stage == STAGE_THE_LAST_WAY and \
+                    not world.options.include_last_way_shuffle:
+                continue
+
+            if item_type_data is None:
+                print("Check enemy sanity values instead if possible")
+            if type(item_type_data) is not list:
+                item_types = [item_type_data]
+            else:
+                item_types = item_type_data
+
+            if not world.options.enemy_objective_sanity:
+                item_types = [ s for s in item_types if s not in Objects.GetStandardEnemyTypes() ]
+
+            if len(item_types) == 0:
+                continue
+
+            item_allowed = item_type[1]
+
+            if item_allowed == Objects.DOES_NOT_WORK_WITH_INDIVIDUAL:
+                # Need to ensure these are included in the above system
+                continue
+
+            for search_type in item_types:
+                for objective_location in [x for x in object_locations if x.other == search_type and
+                                                                       x.stageId == item_stage]:
+
+                    if (objective_location.stageId, objective_location.regionId) in NON_OBJECTIVESANITY_REGIONS:
+                        continue
+
+                    stage_region_name = Regions.stage_id_to_region(objective_location.stageId, objective_location.regionId)
+                    stage_region = regions[stage_region_name]
+                    new_objective_location = ShadowTheHedgehogLocation(world.player, objective_location.name,
+                                                                objective_location.locationId, stage_region)
+                    stage_region.locations.append(new_objective_location)
+                    object_location_checks.append(objective_location)
+
+                    #print("Add:", objective_location.name, i)
+
+
+    if world.options.enemy_sanity and world.options.objective_sanity_system != Options.ObjectiveSanitySystem.option_count_up:
+        enemy_types = Objects.GetStandardEnemyTypes()
+        for objective_location in [x for x in object_locations if x.other in enemy_types and x not in object_location_checks and
+                                   x.stageId in world.available_levels and x.stageId not in Levels.BOSS_STAGES
+                                                                  and (world.options.difficult_enemy_sanity or not x.flag) ]:
+
+            if world.options.exclude_go_mode_items and objective_location.stageId == STAGE_THE_LAST_WAY and \
+                    not world.options.include_last_way_shuffle:
+                continue
+
+            stage_region_name = Regions.stage_id_to_region(objective_location.stageId, objective_location.regionId)
+            stage_region = regions[stage_region_name]
+            new_objective_location = ShadowTheHedgehogLocation(world.player, objective_location.name,
+                                                           objective_location.locationId, stage_region)
+            stage_region.locations.append(new_objective_location)
+
+
+    if world.options.level_progression != Options.LevelProgression.option_select:
+        SetStoryClearEvents(world, world.player, menu_region)
+
+    SetRegionEvents(world, world.player, menu_region)
+
+    end_region = regions[Regions.stage_id_to_region(Levels.BOSS_DEVIL_DOOM)]
     devil_doom_location = ShadowTheHedgehogLocation(world.player, end_location[0].name, end_location[0].locationId, end_region)
     end_region.locations.append(devil_doom_location)
 
-def increment_location_count(count, plus):
-    #print(f"Count={count} + {plus} = {count+plus}")
+def increment_location_count(count, plus, t):
     return count + plus
+
+def count_last_way_locations(world):
+    backup_levels = world.available_levels
+    backup_weapons = world.available_weapons
+    restore_characters = world.options.character_sanity
+
+    world.available_levels = [Levels.STAGE_THE_LAST_WAY]
+
+    lw_weapons = []
+
+    for weapon in Weapons.WEAPON_INFO:
+        if WeaponAttributes.SPECIAL in weapon.attributes:
+            continue
+        levels_in = weapon.available_stages
+        levels_in = [ (l[0] if type(l) is tuple else l) for l in levels_in  ]
+        levels_left = [ l for l in levels_in if l in world.available_levels and l not in
+                        [ b for b in backup_levels if b not in world.available_levels] ]
+        if len(levels_left) == 0:
+            continue
+        lw_weapons.append(weapon.name)
+
+    world.available_weapons = lw_weapons
+    world.options.character_sanity = False
+
+    result = count_locations(world)
+    world.available_levels = backup_levels
+    world.available_weapons = backup_weapons
+    world.options.character_sanity = restore_characters
+
+    return result
 
 def count_locations(world):
     count = 0
     (mission_clear_locations, mission_locations, progression_locations,
      enemysanity_locations, checkpointsanity_locations,
      charactersanity_locations, token_locations, keysanity_locations,
-     weaponsanity_locations, boss_locations, warp_locations) = GetAllLocationInfo()
+     weaponsanity_locations, boss_locations, warp_locations,
+     object_locations) = GetAllLocationInfo()
 
     mission_clear_locations = [ mc for mc in mission_clear_locations if mc.stageId
                                 in world.available_levels]
@@ -1228,80 +1767,172 @@ def count_locations(world):
                                 in world.available_levels]
 
     enemysanity_locations = [ml for ml in enemysanity_locations if ml.stageId
-                         in world.available_levels]
+                         in world.available_levels and (not world.options.exclude_go_mode_items or ml.stageId != STAGE_THE_LAST_WAY or \
+                                world.options.include_last_way_shuffle)]
 
     checkpointsanity_locations = [ml for ml in checkpointsanity_locations if ml.stageId
-                             in world.available_levels]
+                             in world.available_levels and (not world.options.exclude_go_mode_items or ml.stageId != STAGE_THE_LAST_WAY or \
+                                world.options.include_last_way_shuffle)]
 
     charactersanity_locations = [ ml for ml in charactersanity_locations if ml.other in world.available_characters ]
 
     keysanity_locations = [ks for ks in keysanity_locations if ks.stageId
-                             in world.available_levels]
+                             in world.available_levels and (not world.options.exclude_go_mode_items or ks.stageId != STAGE_THE_LAST_WAY or \
+                                world.options.include_last_way_shuffle)]
 
     boss_locations = [ b for b in boss_locations if b.stageId in world.available_levels ]
 
-    weaponsanity_locations = [ml for ml in weaponsanity_locations if ml.other in world.available_weapons]
+    weaponsanity_locations = [ml for ml in weaponsanity_locations if ml.other in world.available_weapons and
+                              ml.other not in world.go_mode_weapons_only]
 
     override_settings = world.options.percent_overrides
 
-    count = increment_location_count(count, len(mission_clear_locations))
+    count = increment_location_count(count, len(mission_clear_locations), "mc")
 
     if world.options.objective_sanity:
         for location in mission_locations:
 
+            if world.options.objective_sanity_system == Options.ObjectiveSanitySystem.option_individual:
+                if (location.stageId, location.alignmentId) in Objects.STAGE_OBJECT_ITEMS:
+                    lookup_info = Objects.STAGE_OBJECT_ITEMS[(location.stageId, location.alignmentId)]
+                    is_objectable = lookup_info[1]
+                    if is_objectable == Objects.WORKS_WITH_INDIVIDUAL:
+                        continue
+
+            location_details = ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_OBJECTIVE,
+                                                                         location.name, world.options,
+                                                                         location.stageId, location.alignmentId,
+                                                                         world.options.percent_overrides)
+
+            result_sanity = ShadowUtils.GetObjectiveSanityFlag(world.options, location_details)
+            if not result_sanity:
+                continue
+
             max_required = ShadowUtils.getMaxRequired(
-                ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_OBJECTIVE,
-                                                          location.name, world.options),
+                location_details,
                 location.total, location.stageId, location.alignmentId,
                 override_settings)
 
             frequency_required = ShadowUtils.getMaxRequired(
                 ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_OBJECTIVE_FREQUENCY,
-                                                          location.name, world.options),
+                                                          location.name, world.options,
+                                                          location.stageId, location.alignmentId,world.options.percent_overrides),
                 100, location.stageId, location.alignmentId,
                 override_settings)
 
             if location.count <= max_required:
                 if location.count % frequency_required == 0 or max_required == location.count:
-                    count = increment_location_count(count, 1)
+                    count = increment_location_count(count, 1, "o")
 
-    if world.options.enemy_sanity:
+    if world.options.enemy_sanity and world.options.objective_sanity_system != Options.ObjectiveSanitySystem.option_individual:
         for enemy in enemysanity_locations:
 
             frequency_required = ShadowUtils.getMaxRequired(
                 ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_ENEMY_FREQUENCY,
-                                                          enemy.name, world.options),
+                                                          enemy.name, world.options,
+                                                          enemy.stageId, enemy.alignmentId,world.options.percent_overrides),
                 100, enemy.stageId, enemy.alignmentId,
                 override_settings)
 
             max_required = ShadowUtils.getMaxRequired(
                 ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_ENEMY,
-                                                          enemy.name, world.options),
+                                                          enemy.name, world.options,
+                                                          enemy.stageId, enemy.alignmentId,world.options.percent_overrides),
                 enemy.total, enemy.stageId, enemy.alignmentId,
                 override_settings)
 
             if enemy.count <= max_required:
                 if enemy.count % frequency_required == 0 or max_required == enemy.count:
-                    count = increment_location_count(count, 1)
+                    count = increment_location_count(count, 1, "e")
 
     if world.options.checkpoint_sanity:
-        count = increment_location_count(count, len(checkpointsanity_locations))
+        count = increment_location_count(count, len(checkpointsanity_locations), "c")
 
     if world.options.character_sanity:
-        count = increment_location_count(count, len(charactersanity_locations))
+        count = increment_location_count(count, len(charactersanity_locations), "ch")
 
     if world.options.key_sanity:
-        count = increment_location_count(count, len(keysanity_locations))
+        count = increment_location_count(count, len(keysanity_locations), "k")
 
-    count = increment_location_count(count, len(boss_locations))
+    count = increment_location_count(count, len(boss_locations), "b")
     #if world.options.include_last_way_shuffle and world.options.story_shuffle == Options.StoryShuffle.option_test3:
     #    count -= 1 # Devil Doom Boss
 
     if world.options.weapon_sanity_hold > 0:
-        count = increment_location_count(count, len(weaponsanity_locations))
+        count = increment_location_count(count, len(weaponsanity_locations), "w")
 
-    # Progression locations are hardcoded and not pool-related
-    #count += len(end_location)
+    if world.options.shadow_boxes:
+        count = increment_location_count(count, len([x for x in object_locations if x.other == ObjectType.SHADOW_BOX
+                                                     if x.stageId in world.available_levels and (not world.options.exclude_go_mode_items or x.stageId != STAGE_THE_LAST_WAY or \
+                                world.options.include_last_way_shuffle)]), "b")
+
+    if world.options.gold_beetle_sanity:
+        count = increment_location_count(count, len([x for x in object_locations if x.other == ObjectType.GOLD_BEETLE
+                                                     if x.stageId in world.available_levels]), "g")
+
+    if world.options.energy_cores:
+        count = increment_location_count(count, len([x for x in object_locations if x.other == ObjectType.ENERGY_CORE
+                                                     or x.other == ObjectType.ENERGY_CORE_IN_WOOD_BOX
+                                                     if x.stageId in world.available_levels]), "c")
+
+    if world.options.door_sanity:
+        count = increment_location_count(count, len([x for x in object_locations if x.other == ObjectType.KEY_DOOR
+                                                     if x.stageId in world.available_levels and (not world.options.exclude_go_mode_items or x.stageId != STAGE_THE_LAST_WAY or \
+                                world.options.include_last_way_shuffle)]), "kd")
+
+    object_location_checks = []
+    if world.options.objective_sanity and world.options.objective_sanity_system != Options.ObjectiveSanitySystem.option_count_up:
+        for i in Objects.STAGE_OBJECT_ITEMS.items():
+            item_key = i[0]
+            item_stage = item_key[0]
+            item_alignment = item_key[1]
+
+            item_type = i[1]
+            item_type_data = item_type[0]
+
+            if item_stage not in world.available_levels:
+                continue
+
+            if world.options.exclude_go_mode_items and item_stage == STAGE_THE_LAST_WAY and \
+                    not world.options.include_last_way_shuffle:
+                continue
+
+            if item_type_data is None:
+                print("Check enemy sanity values instead if possible")
+            if type(item_type_data) is not list:
+                item_types = [item_type_data]
+            else:
+                item_types = item_type_data
+
+            if not world.options.enemy_objective_sanity:
+                item_types = [ s for s in item_types if s not in Objects.GetStandardEnemyTypes() ]
+
+            if len(item_types) == 0:
+                continue
+
+            item_allowed = item_type[1]
+
+            if item_allowed == Objects.DOES_NOT_WORK_WITH_INDIVIDUAL:
+                # Need to ensure these are included in the above system
+                continue
+
+            for search_type in item_types:
+                search_items = [x for x in object_locations if x.other == search_type and
+                                                                       x.stageId == item_stage and
+                                                             (x.stageId,x.regionId)  not in NON_OBJECTIVESANITY_REGIONS]
+                object_location_checks.extend(search_items)
+
+                count = increment_location_count(count, len(search_items), "oo")
+
+    if world.options.enemy_sanity and world.options.objective_sanity_system != Options.ObjectiveSanitySystem.option_count_up:
+        enemy_types = Objects.GetStandardEnemyTypes()
+        enemy_sanity_object_checks = [x for x in object_locations if
+         x.other in enemy_types and x not in object_location_checks and x.stageId in world.available_levels and
+                                      x.stageId not in Levels.BOSS_STAGES  and (world.options.difficult_enemy_sanity or not x.flag) and
+                                      (not world.options.exclude_go_mode_items or x.stageId != STAGE_THE_LAST_WAY or
+                                       world.options.include_last_way_shuffle)]
+
+        count = increment_location_count(count, len(enemy_sanity_object_checks), "oe")
 
     return count
 
@@ -1309,6 +1940,9 @@ def count_locations(world):
 def IsRegionAutoPassable(combined_regions, distribution):
 
     if len(combined_regions.keys()) == 0:
+        return False
+
+    if len(distribution.keys()) == 0:
         return False
 
     known = [0]
@@ -1344,11 +1978,11 @@ def GetStagesWithNoRequirements(world):
             for fromRegion in i.fromRegions:
                 combined_regions[i.stageId][fromRegion] = i.regionIndex
 
-        if not world.options.weapon_sanity_unlock and IsWeaponsanityRestriction(i.restrictionType):
+        if not world.options.weapon_sanity_unlock and IsWeaponsanityRestriction(i.restrictionTypes):
             for fromRegion in i.fromRegions:
                 combined_regions[i.stageId][fromRegion] = i.regionIndex
 
-        if not world.options.vehicle_logic and IsVeichleSanityRestriction(i.restrictionType):
+        if not world.options.vehicle_logic and IsVeichleSanityRestriction(i.restrictionTypes):
             for fromRegion in i.fromRegions:
                 combined_regions[i.stageId][fromRegion] = i.regionIndex
 
@@ -1371,7 +2005,7 @@ def getLocationGroups():
     (clear_locations, mission_locations, end_location,
      enemysanity_locations, checkpointsanity_locations, charactersanity_locations,
      token_locations, keysanity_locations, weaponsanity_locations, boss_locations,
-     warp_locations) = GetAllLocationInfo()
+     warp_locations, object_locations) = GetAllLocationInfo()
 
     groups = {
         "Mission Clears": [c.name for c in clear_locations],
@@ -1379,11 +2013,11 @@ def getLocationGroups():
         "Dark Mission Clears": [c.name for c in clear_locations if c.alignmentId == Levels.MISSION_ALIGNMENT_DARK],
         "Neutral Mission Clears": [c.name for c in clear_locations if
                                    c.alignmentId == Levels.MISSION_ALIGNMENT_NEUTRAL],
-        "Objective Mission Clears": [c.name for c in clear_locations if c.count is not None],
-        "Objective Hero Mission Clears": [c.name for c in clear_locations if
-                                          c.count is not None and c.alignmentId == Levels.MISSION_ALIGNMENT_HERO],
-        "Objective Dark Mission Clears": [c.name for c in clear_locations if
-                                          c.count is not None and c.alignmentId == Levels.MISSION_ALIGNMENT_DARK],
+        #"Objective Mission Clears": [c.name for c in clear_locations if c.count is not None],
+        #"Objective Hero Mission Clears": [c.name for c in clear_locations if
+        #                                  c.count is not None and c.alignmentId == Levels.MISSION_ALIGNMENT_HERO],
+        #"Objective Dark Mission Clears": [c.name for c in clear_locations if
+        #                                  c.count is not None and c.alignmentId == Levels.MISSION_ALIGNMENT_DARK],
         "Mission Objectives": [c.name for c in mission_locations],
         "Enemies": [c.name for c in enemysanity_locations],
         "GUN Enemies": [c.name for c in enemysanity_locations if c.alignmentId == ENEMY_CLASS_GUN],
@@ -1394,26 +2028,113 @@ def getLocationGroups():
         "Keys": [c.name for c in keysanity_locations],
         "Weapons": [c.name for c in weaponsanity_locations],
         "Bosses": [c.name for c in boss_locations],
-        "Final Bosses": [c.name for c in boss_locations if c.stageId in Levels.FINAL_BOSSES]
+        "Final Bosses": [c.name for c in boss_locations if c.stageId in Levels.FINAL_BOSSES],
+        "Objects": [c.name for c in object_locations]
+        #"Shadow Boxes": [c.name for c in object_locations if c.other == ObjectType.SHADOW_BOX],
+        #"Gold Beetles": [c.name for c in object_locations if c.other == ObjectType.GOLD_BEETLE],
+        #"Cores": [c.name for c in object_locations if c.other == ObjectType.ENERGY_CORE or
+        #          c.other == ObjectType.ENERGY_CORE_IN_WOOD_BOX],
+        #"Key Doors": [c.name for c in object_locations if c.other == ObjectType.KEY_DOOR]
     }
 
-    l_info = GetLocationInfoDict()
+    for type in Objects.GetPlayableObjectTypes():
+        type_name = Names.ObjectTypeToName(type)
+        key = type_name + "s"
+        groups[key] = [c.name for c in object_locations if c.other == type]
 
+    l_info = GetLocationInfoDict()
+    remove_from_groups = []
+    for i in l_info.items():
+        if i[1].location_type == LOCATION_TYPE_WARP:
+            remove_from_groups.append(i[0])
+
+    for i in remove_from_groups:
+        del l_info[i]
+
+    new_groups = {}
     for level in Levels.LEVEL_ID_TO_LEVEL.keys():
         if level in Levels.BOSS_STAGES:
             continue
         group_name = Levels.LEVEL_ID_TO_LEVEL[level]
-        groups[group_name] = [ x.name for x in l_info.values() if x.stageId == level]
+        results = [ x.name for x in l_info.values() if x.stageId == level]
+        new_groups[group_name] = results
 
+        for key, values in groups.items():
+            new_key = group_name + " " + key
+            values = [ v for v in values if v in results ]
+            if len(values) > 1:
+                new_groups[new_key] = values
+
+    for key,value in new_groups.items():
+        groups[key] = value
 
     return groups
 
 
 
+def SetStoryClearEvents(world, player, menu_region):
+    story_clear_events = []
+    for story in world.shuffled_story_mode:
+        if story.start_stage_id not in world.available_story_levels:
+            continue
 
+        if story.start_stage_id == Levels.STAGE_THE_LAST_WAY and not world.options.include_last_way_shuffle:
+            continue
 
+        if story.end_stage_id is not None and story.end_stage_id not in world.available_story_levels\
+                and (story.boss is None or story.boss not in world.available_story_levels):
+            continue
 
+        if story.boss is not None and story.boss not in world.available_levels:
+            continue
 
+        view_name = Names.GetMissionClearEventName(story.start_stage_id, story.alignment_id)
+        story_clear_event = ShadowTheHedgehogLocation(player, view_name, None, menu_region)
+        story_clear_event.show_in_spoiler = True
+        story_clear_events.append(story_clear_event)
+
+    for w in [l for l in world.shuffled_story_mode if l.boss is not None
+                                                      and l.boss in world.available_story_levels
+              and l.start_stage_id in world.available_levels
+              and (l.end_stage_id is not None and l.end_stage_id in world.available_levels)]:
+        view_name = Names.GetBossClearEventName(w.boss, w.start_stage_id, w.alignment_id)
+        story_clear_event = ShadowTheHedgehogLocation(player, view_name, None, menu_region)
+        story_clear_event.show_in_spoiler = True
+        story_clear_events.append(story_clear_event)
+
+    menu_region.locations.extend(story_clear_events)
+    return story_clear_events
+
+def SetRegionEvents(world, player, menu_region):
+    region_events = []
+    for level in Levels.ALL_STAGES:
+        if level in BOSS_STAGES:
+            continue
+
+        if level not in world.available_levels:
+            continue
+
+        view_name = Names.GetDistributionRegionEventName(level, 0)
+        region_event = ShadowTheHedgehogLocation(player, view_name, None, menu_region)
+        region_event.show_in_spoiler = False
+        region_event.progress_type = LocationProgressType.PRIORITY
+        region_events.append(region_event)
+
+    for region in Levels.INDIVIDUAL_LEVEL_REGIONS:
+        if region.stageId not in world.available_levels:
+            continue
+
+        if world.options.logic_level != Options.LogicLevel.option_hard \
+            and region.hardLogicOnly:
+            continue
+
+        view_name = Names.GetDistributionRegionEventName(region.stageId, region.regionIndex)
+        region_event = ShadowTheHedgehogLocation(player, view_name, None, menu_region)
+        region_event.show_in_spoiler = False
+        region_event.progress_type = LocationProgressType.PRIORITY
+        region_events.append(region_event)
+
+    menu_region.locations.extend(region_events)
 
 
 

@@ -1,4 +1,6 @@
 from dataclasses import dataclass
+from . import Items, Names
+
 
 @dataclass
 class VehicleInfo:
@@ -8,7 +10,7 @@ class VehicleInfo:
 
     def __init__(self, id, name, stages):
         self.game_id = id
-        self.name = "Vehicle: " +name
+        self.name = Names.GetNameForVehicle(name)
         self.available_stages = stages
 
 VEHICLE_INFO = \
@@ -24,8 +26,6 @@ VEHICLE_INFO = \
     VehicleInfo(0x9, "Black Volt", []),
     VehicleInfo(0xA, "Gun Turret", []),
     VehicleInfo(0xB, "Black Turret", []),
-
-    # Other IDs are correct, this one is not yet, if even used the same
     VehicleInfo(0xC, "Gun Lift", [])
 
 ]
@@ -43,7 +43,7 @@ def GetRuleByVehicleRequirement(player, req):
     #    else:
     #        regions = p_regions
 
-    matches = [ v for v in VEHICLE_INFO if req == v.name or "Vehicle: "+req == v.name ]
+    matches = [ v for v in VEHICLE_INFO if Names.GetNameForVehicle(req) == v.name ]
 
     if len(matches) == 0:
         print("Something wrong here with", req, [ v.name for v in VEHICLE_INFO])

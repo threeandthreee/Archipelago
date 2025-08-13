@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from Options import Choice, PerGameCommonOptions, Range, Toggle, OptionGroup, Removed
+from Options import Choice, PerGameCommonOptions, Range, Toggle, OptionGroup, Removed, Visibility
 
 class NumberOfPieces(Range):
     """
@@ -82,7 +82,7 @@ class WhichImage(Range):
     
     display_name = "Which image"
     range_start = 1
-    range_end = 51
+    range_end = 54
     default = "random"
     
 class PercentageOfExtraPieces(Range):
@@ -295,6 +295,24 @@ class DeathLink(Range):
     range_start = 0
     range_end = 10
     default = 0
+    
+class GridType(Choice):
+    """
+    The type of grid used for the jigsaw puzzle. Square is the default and most common type.
+    But hexagonal grids are also possible, which can make the puzzle more interesting.
+    
+    Also, these are meme options: all pieces are just in one row or one column.
+    This means pieces are really long. Be careful with too many pieces, 
+    and consider using the "straight" shape you can select in the game before pressing start.
+    """
+
+    display_name = "Grid type"
+    option_square = 4
+    option_hexagonal = 6
+    
+    option_meme_one_row = 90
+    option_meme_one_column = 91
+    default = 4
 
 
 @dataclass
@@ -333,11 +351,13 @@ class JigsawOptions(PerGameCommonOptions):
     fake_pieces: Removed
     rotate_traps: Removed
     swap_traps: Removed
+    grid_type: GridType
     
 jigsaw_option_groups = [
     OptionGroup("Important options: gameplay",
         [
             NumberOfPieces,
+            GridType,
             Rotations,
         ],
     ),

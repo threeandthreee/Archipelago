@@ -43,3 +43,4 @@ class ExportInfo(TypedDict):
     quests: dict[str, typing.Any]
     shops: ExportShopInfo
     descriptions: dict[int, dict[str, str]]
+    markers: dict[int, list[dict[str, typing.Any]]]

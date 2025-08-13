@@ -634,7 +634,9 @@ class PokemonFRLGClient(BizHawkClient):
                     hint_ids = []
                     for location in hints_locations:
                         location_id = data.locations[location].flag
-                        if location_id not in ctx.missing_locations or location_id in self.local_checked_locations:
+                        if (location_id not in ctx.missing_locations or
+                                location_id in self.local_checked_locations or
+                                location_id not in ctx.locations_info):
                             continue
                         if (ctx.slot_data["provide_hints"] == ProvideHints.option_progression and
                                 ctx.locations_info[location_id].flags & 0b001):
@@ -823,7 +825,9 @@ class PokemonFRLGClient(BizHawkClient):
                     else:
                         await bizhawk.write(
                             ctx.bizhawk_ctx,
-                            [(data.ram_addresses["gArchipelagoDeathLinkReceived"][self.game_version], [1], "System Bus")]
+                            [(data.ram_addresses["gArchipelagoDeathLinkReceived"][self.game_version],
+                              [1],
+                              "System Bus")]
                         )
 
                 if death_link_sent:
@@ -832,5 +836,7 @@ class PokemonFRLGClient(BizHawkClient):
                     self.ignore_next_death_link = True
                     await bizhawk.write(
                         ctx.bizhawk_ctx,
-                        [(data.ram_addresses["gArchipelagoDeathLinkSent"][self.game_version], [0], "System Bus")]
+                        [(data.ram_addresses["gArchipelagoDeathLinkSent"][self.game_version],
+                          [0],
+                          "System Bus")]
                     )

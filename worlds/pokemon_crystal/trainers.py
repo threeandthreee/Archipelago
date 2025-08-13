@@ -1,11 +1,11 @@
 from dataclasses import replace
 from typing import TYPE_CHECKING
 
-from .data import data as crystal_data
+from .data import data as crystal_data, TrainerPokemon
+from .items import get_random_filler_item
 from .moves import get_random_move_from_learnset
 from .options import RandomizeTrainerParties, RandomizeLearnsets, BoostTrainerPokemonLevels
 from .pokemon import get_random_pokemon, get_random_nezumi, pokemon_convert_friendly_to_ids
-from .utils import get_random_filler_item
 
 if TYPE_CHECKING:
     from . import PokemonCrystalWorld
@@ -18,16 +18,16 @@ def is_rival_starter_pokemon(trainer_name, trainer_data, index):
     return index == len(trainer_data.pokemon) - 1
 
 
-def get_last_evolution(pokemon, random):
+def get_last_evolution(world: "PokemonCrystalWorld", pokemon):
     """
     Returns the latest possible evolution for a pokemon.
     If there's more than one way down through the evolution line, one is picked at random
     """
-    pkmn_data = crystal_data.pokemon[pokemon]
+    pkmn_data = world.generated_pokemon[pokemon]
     if not pkmn_data.evolutions:
         return pokemon
 
-    return get_last_evolution(random.choice(pkmn_data.evolutions).pokemon, random)
+    return get_last_evolution(world, world.random.choice(pkmn_data.evolutions).pokemon)
 
 
 def randomize_trainers(world: "PokemonCrystalWorld"):
@@ -51,7 +51,7 @@ def randomize_trainers(world: "PokemonCrystalWorld"):
             # If the current pokemon is rival's starter, don't change its evolution line
             if is_rival_starter_pokemon(trainer_name, trainer_data, i):
                 if world.options.force_fully_evolved.value and pkmn_data.level >= world.options.force_fully_evolved:
-                    new_pokemon = get_last_evolution(new_pokemon, world.random)
+                    new_pokemon = get_last_evolution(world, new_pokemon)
             else:
                 match_types = None
                 if world.options.randomize_trainer_parties == RandomizeTrainerParties.option_match_types:
@@ -91,7 +91,7 @@ def vanilla_trainer_movesets(world: "PokemonCrystalWorld"):
         world.generated_trainers[trainer_name] = replace(world.generated_trainers[trainer_name], pokemon=new_party)
 
 
-def randomize_trainer_pokemon_moves(world, pkmn_data, new_pokemon):
+def randomize_trainer_pokemon_moves(world: "PokemonCrystalWorld", pkmn_data: TrainerPokemon, new_pokemon: str):
     new_moves = []
     for move in pkmn_data.moves:
         # fill out all four moves if start_with_four_moves, else append NO_MOVE

@@ -305,11 +305,53 @@ class NationalParkAccess(Choice):
     option_bicycle = 1
 
 
-class Trainersanity(Toggle):
+class MountMortarAccess(Choice):
     """
-    Adds checks for defeating trainers
+    Sets the requirement to pass through Mount Mortar east <> west
+    Vanilla: No requirement
+    Rock Smash: Rock Smash is required
     """
-    display_name = "Trainersanity"
+    default = 0
+    option_vanilla = 0
+    option_rock_smash = 1
+
+
+class JohtoTrainersanity(NamedRange):
+    """
+    Adds checks for defeating Johto trainers.
+
+    You can turn trainers that have checks grayscale by setting the "trainersanity_indication" in-game option.
+
+    Trainers are no longer missable. Each trainer will add a random filler item into the pool.
+    """
+    display_name = "Johto Trainersanity"
+    default = 0
+    range_start = 0
+    range_end = len([loc_id for loc_id, loc_data in data.locations.items() if
+                     "Trainersanity" in loc_data.tags and "Johto" in loc_data.tags])
+    special_range_names = {
+        "none": 0,
+        "full": range_end
+    }
+
+
+class KantoTrainersanity(NamedRange):
+    """
+    Adds checks for defeating Kanto trainers.
+
+    You can turn trainers that have checks grayscale by setting the "trainersanity_indication" in-game option.
+
+    Trainers are no longer missable. Each trainer will add a random filler item into the pool.
+    """
+    display_name = "Kanto Trainersanity"
+    default = 0
+    range_start = 0
+    range_end = len([loc_id for loc_id, loc_data in data.locations.items() if
+                     "Trainersanity" in loc_data.tags and "Johto" not in loc_data.tags])
+    special_range_names = {
+        "none": 0,
+        "full": range_end
+    }
 
 
 class Rematchsanity(Toggle):
@@ -327,6 +369,7 @@ class Rematchsanity(Toggle):
 class TrainersanityAlerts(Choice):
     """
     Shows a message box or plays a sound for Trainersanity checks
+    Does not apply to some trainers with special handling
     """
     display_name = "Trainersanity Alerts"
     default = 1
@@ -417,6 +460,16 @@ class WildEncounterMethodsRequired(OptionSet):
     default = valid_keys
 
 
+class EnforceWildEncounterMethodsLogic(Toggle):
+    """
+    Sets whether the game will prevent capture of Pokemon found through disabled wild encounter methods
+    Statics and roamers can always be caught
+
+    You can always re-catch Pokemon you have already caught
+    """
+    display_name = "Enforce Wild Encounter Methods Logic"
+
+
 class EvolutionMethodsRequired(OptionSet):
     """
     Sets which types of evolutions may be logically required
@@ -428,7 +481,7 @@ class EvolutionMethodsRequired(OptionSet):
 
 class StaticPokemonRequired(DefaultOnToggle):
     """
-    Sets whether or not static Pokemon may be logically required
+    Sets whether static Pokemon may be logically required
     """
     display_name = "Static Pokemon Required"
 
@@ -458,6 +511,89 @@ class EvolutionGymLevels(Range):
     range_end = 69
 
 
+class Shopsanity(OptionSet):
+    """
+    Adds shop purchases as locations, items in shops are added to the item pool
+    - Johto Marts: Adds Johto Poke Marts, including the Goldenrod Dept. Store.
+    - Kanto Marts: Adds Kanto Poke Marts, including the Celadon Dept. Store.
+    - Blue Card: Adds the Blue Card prize shop, accessing this shop requires the Blue Card and buying items requires
+    points. Five Blue Card Points are added to the item pool. Points are not spent when purchasing.
+    - Game Corners: The Game Corner TM shops are added.
+    - Apricorns: Kurt's Apricorn Ball shop is added, each slot requires a different Apricorn. Apricorns are progression.
+
+    IMPORTANT NOTE: There is a non-randomized shop on Pokecenter 2F, you can always buy Poke Balls, Potions, Escape
+    Ropes and Repels there.
+    """
+    display_name = "Shopsanity"
+    default = []
+
+    johto_marts = "Johto Marts"
+    kanto_marts = "Kanto Marts"
+    blue_card = "Blue Card"
+    apricorns = "Apricorns"
+    game_corners = "Game Corners"
+
+    valid_keys = [johto_marts, kanto_marts, blue_card, apricorns, game_corners]
+
+
+class ShopsanityPrices(Choice):
+    """
+    Sets how shop item prices are determined when Shopsanity is enabled
+    - Vanilla: Shop prices are unchanged
+    - Item Price: Shop prices are determined by the value of the item being sold
+    - Spheres: Shop prices are determined by sphere access
+    - Classification: Shop prices are determined by item classifications (Progression, Useful, Filler/Trap)
+    - Spheres and Classifications: Shop prices are determined by both sphere access and item classifications
+    - Completely Random: Shop prices will be completely random
+    """
+    display_name = "Shopsanity Prices"
+    default = 0
+    option_vanilla = 0
+    option_item_price = 1
+    option_spheres = 2
+    option_classification = 3
+    option_spheres_and_classification = 4
+    option_completely_random = 5
+
+
+class MinimumShopsanityPrice(Range):
+    """
+    Sets the minimum cost of shop items when Shopsanity is enabled
+    """
+    display_name = "Minimum Shopsanity Price"
+    default = 100
+    range_start = 0
+    range_end = 10000
+
+
+class MaximumShopsanityPrice(Range):
+    """
+    Sets the maximum cost of shop items when Shopsanity is enabled
+    """
+    display_name = "Maximum Shopsanity Price"
+    default = 3000
+    range_start = 0
+    range_end = 10000
+
+
+class ProvideShopHints(Choice):
+    """
+    Sends out hints when a randomized shop is accessed
+    """
+    display_name = "Provide Shop Hints"
+    default = 0
+    option_off = 0
+    option_progression = 1
+    option_progression_and_useful = 2
+    option_all = 3
+
+
+class ShopsanityRestrictRareCandies(Toggle):
+    """
+    Makes Rare Candies in shops only purchasable once
+    """
+
+
 class RandomizePokegear(Toggle):
     """
     Shuffles the Pokegear and cards into the pool
@@ -470,6 +606,32 @@ class RandomizeBerryTrees(Toggle):
     Shuffles berry tree locations into the pool
     """
     display_name = "Randomize Berry Trees"
+
+
+class RandomizePokemonRequests(Choice):
+    """
+    Shuffles the items given by Bill's Grandpa after showing him specific Pokemon into the pool
+    Optionally also randomizes the requested Pokemon
+    """
+    display_name = "Randomize Pokemon Requests"
+    default = 0
+    option_off = 0
+    option_items = 1
+    option_pokemon = 2
+    option_items_and_pokemon = 3
+
+
+class RandomizeFlyUnlocks(Choice):
+    """
+    Shuffles Fly destination unlocks into the pool
+
+    Indigo Plateau is not included.
+    """
+    display_name = "Shuffle Fly Unlocks"
+    default = 0
+    option_off = 0
+    option_on = 1
+    option_exclude_silver_cave = 2
 
 
 class RandomizeStarters(Choice):
@@ -541,12 +703,12 @@ class EncounterGrouping(Choice):
     """
     Determines how randomized wild Pokemon are grouped in encounter tables.
 
-    All Split: Each encounter area will have each slot randomized separately. For example, grass areas will have seven
-        randomized encounter slots.
-    One to One: Each encounter area will retain its vanilla slot grouping. For example, if an area has two encounters
-        in vanilla, it will be randomized as two slots.
-    One per Method: Each encounter method on a route will be treated as a single slot. For example, the grass on a route
-     will contain only a single encounter. Each rod is a separate encounter.
+    - All Split: Each encounter area will have each slot randomized separately. For example, grass areas will have seven
+    randomized encounter slots.
+    - One to One: Each encounter area will retain its vanilla slot grouping. For example, if an area has two encounters
+    in vanilla, it will be randomized as two slots.
+    - One per Method: Each encounter method on a route will be treated as a single slot. For example, the grass on a route
+    will contain only a single encounter. Each rod is a separate encounter.
 
     This setting has no effect if wild Pokemon are not randomized.
     """
@@ -598,7 +760,7 @@ class EncounterSlotDistribution(Choice):
 class RandomizeStaticPokemon(Toggle):
     """
     Randomizes species of static Pokemon encounters
-    This includes overworld Pokemon, gift Pokémon and gift egg Pokémon
+    This includes overworld Pokemon, gift Pokemon and gift egg Pokemon
     """
     display_name = "Randomize Static Pokemon"
 
@@ -650,7 +812,7 @@ class TrainerPartyBlocklist(OptionSet):
 
 class LevelScaling(Choice):
     """
-    Sets whether Trainer levels are scaled based on sphere access.
+    Sets whether Trainer, Wild Pokemon and Static Pokemon levels are scaled based on sphere access.
 
     - Off: Vanilla levels are used.
     - Spheres: Levels are scaled based on sphere access only.
@@ -771,11 +933,12 @@ class TMCompatibility(NamedRange):
     Headbutt and Rock Smash are considered HMs when applying compatibility
     """
     display_name = "TM Compatibility"
-    default = 0
-    range_start = 1
+    default = -1
+    range_start = 0
     range_end = 100
     special_range_names = {
-        "vanilla": 0,
+        "vanilla": -1,
+        "none": 0,
         "fully_compatible": 100
     }
 
@@ -784,14 +947,31 @@ class HMCompatibility(NamedRange):
     """
     Percent chance for Pokemon to be compatible with each HM
     Headbutt and Rock Smash are considered HMs when applying compatibility
+
+    Minimal compatibility will ensure only the minimum required number of Pokemon can learn each HM, usually one
     """
     display_name = "HM Compatibility"
-    default = 0
-    range_start = 50
+    default = -1
+    range_start = 0
     range_end = 100
     special_range_names = {
-        "vanilla": 0,
+        "vanilla": -1,
+        "minimal": 0,
         "fully_compatible": 100
+    }
+
+
+class HMPowerCap(NamedRange):
+    """
+    Lowers the power of damaging HM moves that exceed the set power down to match it.
+    Headbutt and Rock Smash are considered HMs for this setting.
+    """
+    display_name = "HM Power Cap"
+    default = 255
+    range_start = 20
+    range_end = 255
+    special_range_names = {
+        "none": range_end
     }
 
 
@@ -821,6 +1001,37 @@ class RandomizeTypes(Choice):
     option_completely_random = 2
 
 
+class RandomizeEvolution(Choice):
+    """
+    - Vanilla: Pokemon evolve into the same Pokemon they do in vanilla
+    - Match a Type: Pokemon evolve into a random Pokemon with a higher base stat total, that shares at least one type with it.
+    - Increase BST: Pokemon evolve into a random Pokemon with a higher base stat total.
+
+    Note: This also affects breeding, when generating an egg the game will follow the evolution path backwards to
+    the base form. If the evolution path splits then the Pokemon with the lower ID will be selected.
+
+    Note: If random BST, random types, or the evolution blocklist cause a Pokemon to have no valid evolution within
+    your chosen setting here, it will evolve into the closest available thing to a valid evolution.
+
+    Note: All Pokemon will be standardized to the medium-fast EXP curve when any evolution randomization is enabled.
+    """
+    display_name = "Randomize Evolution"
+    default = 0
+    option_vanilla = 0
+    option_match_a_type = 1
+    option_increase_bst = 2
+
+
+class EvolutionBlocklist(OptionSet):
+    """
+    No Pokemon will evolve into these Pokemon. Does nothing if evolution is not randomized.
+    You can use "_Legendaries" as a shortcut for all legendary Pokemon.
+    Beware that this blocklist will not be ignored even if it would cause odd evolutions.
+    """
+    display_name = "Evolution Blocklist"
+    valid_keys = sorted(pokemon.friendly_name for pokemon in data.pokemon.values()) + ["_Legendaries"]
+
+
 class RandomizePalettes(Choice):
     """
     Vanilla: Vanilla Pokemon color palettes
@@ -834,11 +1045,17 @@ class RandomizePalettes(Choice):
     option_completely_random = 2
 
 
-class RandomizeMusic(Toggle):
+class RandomizeMusic(Choice):
     """
     Randomize all music
+    - Shuffle will map each music track to a new track
+    - Completely Random will map each music area to a new track
     """
     display_name = "Randomize Music"
+    default = 0
+    option_off = 0
+    option_shuffle = 1
+    option_completely_random = 2
 
 
 # class RandomizeSFX(Toggle):
@@ -873,6 +1090,21 @@ class EarlyFly(Toggle):
         randomly
     """
     display_name = "Early Fly"
+
+
+class FlyCheese(Choice):
+    """
+    Determines whether the Vermilion and Mahogany Fly unlocks can be accessed from behind Snorlax and the
+    Ragecandybar salesman respectively
+    - Out of logic allows access but does not consider them in logic
+    - Disallow prevents access to Fly unlocks beyond the roadblocks
+    - In logic allows access and considers them in logic
+    """
+    display_name = "Fly Cheese"
+    default = 0
+    option_out_of_logic = 0
+    option_disallow = 1
+    option_in_logic = 2
 
 
 class HMBadgeRequirements(Choice):
@@ -913,10 +1145,11 @@ class SaffronGatehouseTea(OptionSet):
     """
     Sets which Saffron City gatehouses require Tea to pass. Obtaining the Tea will unlock them all.
     If any gatehouses are enabled, adds a new location in Celadon Mansion 1F and adds Tea to the item pool.
-    Valid options are: North, East, South and West in any combination.
+    Valid options are: North, East, South, West, and _Random in any combination.
+    _Random gives each gate that is not already included a 50% chance to be included.
     """
     display_name = "Saffron Gatehouse Tea"
-    valid_keys = ["North", "East", "South", "West"]
+    valid_keys = ["North", "East", "South", "West", "_Random"]
 
 
 class EastWestUnderground(Toggle):
@@ -1006,7 +1239,7 @@ class StartingMoney(NamedRange):
 
 class AllPokemonSeen(Toggle):
     """
-    Start will all Pokemon seen in your Pokedex.
+    Start with all Pokemon seen in your Pokedex.
     This allows you to see where the Pokemon can be encountered in the wild.
     """
     display_name = "All Pokemon Seen"
@@ -1087,12 +1320,22 @@ class EnableMischief(Toggle):
 
 class MoveBlocklist(OptionSet):
     """
-    Pokemon won't learn these moves via learnsets and no TM will contain them.
+    Pokemon won't learn these moves via learnsets.
     Moves should be provided in the form: "Ice Beam"
-    Does not apply to vanilla learnsets or vanilla TMs
+    Does not apply to vanilla learnsets
     """
     display_name = "Move Blocklist"
-    valid_keys = sorted(move.replace("_", " ").title() for move in data.moves.keys())
+    valid_keys = sorted(move.name.title() for id, move in data.moves.items() if id not in ("NO_MOVE", "STRUGGLE"))
+
+
+class TMBlocklist(OptionSet):
+    """
+    No TM will contain these moves.
+    Moves should be provided in the form: "Ice Beam"
+    Does not apply to vanilla TMs
+    """
+    display_name = "TM Blocklist"
+    valid_keys = sorted(move.name.title() for id, move in data.moves.items() if id not in ("NO_MOVE", "STRUGGLE"))
 
 
 class FlyLocationBlocklist(OptionSet):
@@ -1104,7 +1347,7 @@ class FlyLocationBlocklist(OptionSet):
     "_Johto" and "_Kanto" are shortcuts for all Johto and Kanto towns respectively
     """
     display_name = "Fly Location Blocklist"
-    valid_keys = [region.name for region in data.fly_regions] + ["_Johto", "_Kanto"]
+    valid_keys = sorted(region.name for region in data.fly_regions) + ["_Johto", "_Kanto"]
 
 
 class RemoteItems(Toggle):
@@ -1156,6 +1399,7 @@ class GameOptions(OptionDict):
     text_frame: 1-8 - Sets the textbox frame, "random" will pick a random frame
     text_speed: mid/slow/fast/instant - Sets the speed at which text advances
     time_of_day: auto/morn/day/nite - Sets a time of day override, auto follows the clock, "random" will pick a random time
+    trainersanity_indication - Sets whether Trainersanity trainers have grayscale sprites until they are beaten
     turbo_button: none/a/b/a_or_b - Sets which buttons auto advance text when held
     """
     display_name = "Game Options"
@@ -1186,7 +1430,8 @@ class GameOptions(OptionDict):
         "skip_dex_registration": "off",
         "blind_trainers": "off",
         "guaranteed_catch": "off",
-        "ap_item_sound": "on"
+        "ap_item_sound": "on",
+        "trainersanity_indication": "off",
     }
 
 
@@ -1222,7 +1467,9 @@ class PokemonCrystalOptions(PerGameCommonOptions):
     route_3_access: Route3Access
     blackthorn_dark_cave_access: BlackthornDarkCaveAccess
     national_park_access: NationalParkAccess
-    trainersanity: Trainersanity
+    mount_mortar_access: MountMortarAccess
+    johto_trainersanity: JohtoTrainersanity
+    kanto_trainersanity: KantoTrainersanity
     trainersanity_alerts: TrainersanityAlerts
     rematchsanity: Rematchsanity
     randomize_wilds: RandomizeWilds
@@ -1232,12 +1479,21 @@ class PokemonCrystalOptions(PerGameCommonOptions):
     dexcountsanity_step: DexcountsanityStep
     dexcountsanity_leniency: DexcountsanityLeniency
     wild_encounter_methods_required: WildEncounterMethodsRequired
+    enforce_wild_encounter_methods_logic: EnforceWildEncounterMethodsLogic
     static_pokemon_required: StaticPokemonRequired
     evolution_methods_required: EvolutionMethodsRequired
     evolution_gym_levels: EvolutionGymLevels
     breeding_methods_required: BreedingMethodsRequired
+    shopsanity: Shopsanity
+    shopsanity_prices: ShopsanityPrices
+    shopsanity_minimum_price: MinimumShopsanityPrice
+    shopsanity_maximum_price: MaximumShopsanityPrice
+    provide_shop_hints: ProvideShopHints
+    shopsanity_restrict_rare_candies: ShopsanityRestrictRareCandies
     randomize_pokegear: RandomizePokegear
     randomize_berry_trees: RandomizeBerryTrees
+    randomize_pokemon_requests: RandomizePokemonRequests
+    randomize_fly_unlocks: RandomizeFlyUnlocks
     randomize_starters: RandomizeStarters
     starter_blocklist: StarterBlocklist
     starters_bst_average: StarterBST
@@ -1261,15 +1517,20 @@ class PokemonCrystalOptions(PerGameCommonOptions):
     randomize_tm_moves: RandomizeTMMoves
     tm_compatibility: TMCompatibility
     hm_compatibility: HMCompatibility
+    hm_power_cap: HMPowerCap
     randomize_base_stats: RandomizeBaseStats
     randomize_types: RandomizeTypes
+    randomize_evolution: RandomizeEvolution
+    evolution_blocklist: EvolutionBlocklist
     randomize_palettes: RandomizePalettes
     randomize_music: RandomizeMusic
     # randomize_sfx: RandomizeSFX
     move_blocklist: MoveBlocklist
+    tm_blocklist: TMBlocklist
     free_fly_location: FreeFlyLocation
     free_fly_blocklist: FlyLocationBlocklist
     early_fly: EarlyFly
+    fly_cheese: FlyCheese
     hm_badge_requirements: HMBadgeRequirements
     remove_badge_requirement: RemoveBadgeRequirement
     remove_ilex_cut_tree: RemoveIlexCutTree
@@ -1314,6 +1575,7 @@ OPTION_GROUPS = [
          Route32Condition,
          Route2Access,
          Route3Access,
+         MountMortarAccess,
          RedGyaradosAccess,
          BlackthornDarkCaveAccess,
          NationalParkAccess,
@@ -1329,8 +1591,19 @@ OPTION_GROUPS = [
          RandomizePokegear,
          RandomizeHiddenItems,
          RandomizeBerryTrees,
+         RandomizePokemonRequests,
+         RandomizeFlyUnlocks,
          RequireItemfinder,
          RemoteItems]
+    ),
+    OptionGroup(
+        "Shopsanity",
+        [Shopsanity,
+         ShopsanityPrices,
+         MinimumShopsanityPrice,
+         MaximumShopsanityPrice,
+         ProvideShopHints,
+         ShopsanityRestrictRareCandies]
     ),
     OptionGroup(
         "HMs",
@@ -1339,7 +1612,8 @@ OPTION_GROUPS = [
          RemoveBadgeRequirement,
          FreeFlyLocation,
          FlyLocationBlocklist,
-         EarlyFly]
+         EarlyFly,
+         FlyCheese]
     ),
     OptionGroup(
         "Pokemon",
@@ -1349,6 +1623,8 @@ OPTION_GROUPS = [
          StaticBlocklist,
          RandomizeBaseStats,
          RandomizeTypes,
+         RandomizeEvolution,
+         EvolutionBlocklist,
          RandomizeTrades,
          EncounterGrouping,
          EncounterSlotDistribution]
@@ -1366,10 +1642,12 @@ OPTION_GROUPS = [
          MetronomeOnly,
          RandomizeMoveTypes,
          RandomizeMoveValues,
+         HMPowerCap,
          RandomizeTMMoves,
          TMCompatibility,
          ReusableTMs,
-         MoveBlocklist]
+         MoveBlocklist,
+         TMBlocklist]
     ),
     OptionGroup(
         "Trainers",
@@ -1389,12 +1667,14 @@ OPTION_GROUPS = [
     ),
     OptionGroup(
         "Trainersanity",
-        [Trainersanity,
+        [JohtoTrainersanity,
+         KantoTrainersanity,
          TrainersanityAlerts]
     ),
     OptionGroup(
         "Pokemon Logic",
         [WildEncounterMethodsRequired,
+         EnforceWildEncounterMethodsLogic,
          StaticPokemonRequired,
          EvolutionMethodsRequired,
          EvolutionGymLevels,

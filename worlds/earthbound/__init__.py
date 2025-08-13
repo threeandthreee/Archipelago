@@ -2,12 +2,12 @@ import os
 import typing
 import threading
 import pkgutil
-from typing import List, Set, Dict, TextIO
+from typing import List, Set, Dict, TextIO, Tuple
 
 from BaseClasses import Item, MultiWorld, Location, Tutorial, ItemClassification
 from Fill import fill_restrictive
 from worlds.AutoWorld import World, WebWorld
-import collections
+import itertools
 import settings
 from .Items import get_item_names_per_category, item_table
 from .Locations import get_locations
@@ -65,7 +65,7 @@ class EarthBoundWorld(World):
     game = "EarthBound"
     option_definitions = EBOptions
     data_version = 1
-    required_client_version = (0, 5, 0)
+    required_client_version = (0, 5, 0) 
 
     item_name_to_id = {item: item_table[item].code for item in item_table if item_table[item].code}
     location_name_to_id = location_ids
@@ -111,6 +111,8 @@ class EarthBoundWorld(World):
         self.boss_list: List[str] = []
         self.starting_region = int
         self.dungeon_connections = {}
+        self.has_generated_output: bool = False
+        self.hint_man_hints: List[Tuple] = []
 
         self.common_items = [
             "Cookie",
@@ -158,6 +160,7 @@ class EarthBoundWorld(World):
             "Molokheiya Soup",
             "Plain Roll",
             "Magic Tart",
+            "PSI Caramel",
             "Popsicle",
             "Bottle Rocket"
         ]
@@ -176,7 +179,6 @@ class EarthBoundWorld(World):
             "Pizza",
             "Chef's Special",
             "Super Plush Bear",
-            "PSI Caramel",
             "Jar of Delisauce",
             "Secret Herb",
             "Xterminator Spray",
@@ -200,7 +202,8 @@ class EarthBoundWorld(World):
             "Bottle of DXwater",
             "Magic Pudding",
             "Big Bottle Rocket",
-            "Bazooka"
+            "Bazooka",
+            "Meteornium"
 
         ]
 
@@ -264,9 +267,7 @@ class EarthBoundWorld(World):
         }
 
         max_count = max_counts[self.starting_character]
-        total_start_inventory = collections.Counter()
-        total_start_inventory = self.options.start_inventory.value + self.options.start_inventory_from_pool.value
-        for item_name, amount in total_start_inventory.items():
+        for item_name, amount in itertools.chain(self.options.start_inventory.items(), self.options.start_inventory_from_pool.items()):
             if item_name in item_id_table:
                 local_space_count += amount
                 if local_space_count > max_count and not self.options.remote_items:
@@ -349,6 +350,7 @@ class EarthBoundWorld(World):
             world.get_all_spheres.set()
 
     def generate_output(self, output_directory: str) -> None:
+        self.has_generated_output = True  # Make sure data defined in generate output doesn't get added to spoiler only mode
         try:
             patch = EBProcPatch(player=self.player, player_name=self.multiworld.player_name[self.player])
             patch.write_file("earthbound_basepatch.bsdiff4", pkgutil.get_data(__name__, "src/earthbound_basepatch.bsdiff4"))
@@ -383,6 +385,7 @@ class EarthBoundWorld(World):
             "pizza_logic": self.options.monkey_caves_mode.value,
             "free_sancs": self.options.no_free_sanctuaries.value,
             "shopsanity": self.options.shop_randomizer.value,
+            "hint_man_hints": self.hint_man_hints
         }
 
     def modify_multidata(self, multidata: dict) -> None:
@@ -463,11 +466,12 @@ class EarthBoundWorld(World):
                     f" {dungeon} => {self.dungeon_connections[dungeon]}\n"
                 )
         
-        spoiler_handle.write("\nArea Levels:\n")
-        spoiler_excluded_areas = ["Ness's Mind", "Global ATM Access", "Common Condiment Shop"]
-        for area in self.area_levels:
-            if area not in spoiler_excluded_areas:
-                spoiler_handle.write(f" {area}: Level {self.area_levels[area]}\n")
+        if self.has_generated_output:
+            spoiler_handle.write("\nArea Levels:\n")
+            spoiler_excluded_areas = ["Ness's Mind", "Global ATM Access", "Common Condiment Shop"]
+            for area in self.area_levels:
+                if area not in spoiler_excluded_areas:
+                    spoiler_handle.write(f" {area}: Level {self.area_levels[area]}\n")
 
     def create_item(self, name: str) -> Item:
         data = item_table[name]

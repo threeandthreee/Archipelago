@@ -2,10 +2,12 @@ import logging
 from typing import TYPE_CHECKING
 
 from BaseClasses import Region, ItemClassification, Entrance
-from .data import data, RegionData, EncounterMon, StaticPokemon, LogicalAccess, EncounterKey, FishingRodType, TreeRarity
+from .data import data, RegionData, EncounterMon, StaticPokemon, LogicalAccess, EncounterKey, FishingRodType, \
+    TreeRarity, EncounterType
 from .items import PokemonCrystalItem
 from .locations import PokemonCrystalLocation
-from .options import FreeFlyLocation, JohtoOnly, LevelScaling, BlackthornDarkCaveAccess, Goal
+from .options import FreeFlyLocation, JohtoOnly, BlackthornDarkCaveAccess, Goal, FlyCheese
+from .utils import get_fly_regions
 
 if TYPE_CHECKING:
     from . import PokemonCrystalWorld
@@ -76,12 +78,21 @@ def create_regions(world: "PokemonCrystalWorld") -> dict[str, Region]:
     regions: dict[str, Region] = {}
     connections: list[tuple[str, str, str]] = []
     johto_only = world.options.johto_only.value
+    skip_e4 = world.options.skip_elite_four.value
+
+    wild_name_level_list: list[tuple[str, list[int]]] = []
+    trainer_name_level_list: list[tuple[str, int]] = []
+    static_name_level_list: list[tuple[str, int]] = []
+
+    wild_scaling_locations = set()
 
     def should_include_region(region):
-        # check if region should be included per selected Johto Only option
+        # check if region should be included
         return (region.johto
                 or johto_only == JohtoOnly.option_off
-                or (region.silver_cave and johto_only == JohtoOnly.option_include_silver_cave))
+                or (region.silver_cave and johto_only == JohtoOnly.option_include_silver_cave)) and (
+                not skip_e4 or not region.elite_4
+        )
 
     def exclude_scaling(trainer: str):
         if not world.options.rematchsanity and trainer in REMATCHES:
@@ -92,6 +103,25 @@ def create_regions(world: "PokemonCrystalWorld") -> dict[str, Region]:
             return True
         else:
             return False
+
+    def create_scaling_location(parent_region: Region, wild_key: EncounterKey):
+        if wild_key.region_name() in wild_scaling_locations: return
+        if world.options.level_scaling and wild_key.encounter_type in [EncounterType.Grass,
+                                                                       EncounterType.Water]:
+            wild_name_level_list.append((
+                wild_key.region_name(),
+                [slot.level for slot in world.generated_wild[wild_key]]
+            ))
+
+            scaling_event = PokemonCrystalLocation(
+                world.player, wild_key.region_name(), parent_region, None, None, None,
+                frozenset({"wilds scaling"}))
+            scaling_event.show_in_spoiler = False
+            scaling_event.place_locked_item(PokemonCrystalItem(
+                "Wild Pokemon", ItemClassification.filler, None, world.player))
+            scaling_event.encounter_key = wild_key
+            parent_region.locations.append(scaling_event)
+            wild_scaling_locations.add(scaling_event.name)
 
     def create_wild_region(parent_region: Region, wild_key: EncounterKey, wilds: list[EncounterMon | StaticPokemon],
                            tags: set[str] | None = None):
@@ -120,59 +150,70 @@ def create_regions(world: "PokemonCrystalWorld") -> dict[str, Region]:
         if wild_region_data.wild_encounters:
             if wild_region_data.wild_encounters.grass:
                 encounter_key = EncounterKey.grass(wild_region_data.wild_encounters.grass)
+                create_scaling_location(parent_region, encounter_key)
                 if "Land" in world.options.wild_encounter_methods_required:
-                    world.generated_wild_region_logic[encounter_key] = LogicalAccess.InLogic
+                    world.logic.wild_regions[encounter_key] = LogicalAccess.InLogic
                     create_wild_region(parent_region, encounter_key, world.generated_wild[encounter_key])
                 else:
-                    world.generated_wild_region_logic[encounter_key] = LogicalAccess.OutOfLogic
+                    world.logic.wild_regions[encounter_key] = LogicalAccess.OutOfLogic
 
             if wild_region_data.wild_encounters.surfing:
                 encounter_key = EncounterKey.water(wild_region_data.wild_encounters.surfing)
+                create_scaling_location(parent_region, encounter_key)
                 if "Surfing" in world.options.wild_encounter_methods_required:
-                    world.generated_wild_region_logic[encounter_key] = LogicalAccess.InLogic
+                    world.logic.wild_regions[encounter_key] = LogicalAccess.InLogic
                     create_wild_region(parent_region, encounter_key, world.generated_wild[encounter_key])
                 else:
-                    world.generated_wild_region_logic[encounter_key] = LogicalAccess.OutOfLogic
+                    world.logic.wild_regions[encounter_key] = LogicalAccess.OutOfLogic
 
             if wild_region_data.wild_encounters.fishing:
                 if "Fishing" in world.options.wild_encounter_methods_required:
                     for fishing_rod in (FishingRodType.Old, FishingRodType.Good, FishingRodType.Super):
                         encounter_key = EncounterKey.fish(wild_region_data.wild_encounters.fishing, fishing_rod)
-                        world.generated_wild_region_logic[encounter_key] = LogicalAccess.InLogic
+                        world.logic.wild_regions[encounter_key] = LogicalAccess.InLogic
                         create_wild_region(parent_region, encounter_key, world.generated_wild[encounter_key])
                 else:
                     for fishing_rod in (FishingRodType.Old, FishingRodType.Good, FishingRodType.Super):
                         encounter_key = EncounterKey.fish(wild_region_data.wild_encounters.fishing, fishing_rod)
-                        world.generated_wild_region_logic[encounter_key] = LogicalAccess.OutOfLogic
+                        world.logic.wild_regions[encounter_key] = LogicalAccess.OutOfLogic
 
             if wild_region_data.wild_encounters.headbutt:
                 if "Headbutt" in world.options.wild_encounter_methods_required:
                     for rarity in (TreeRarity.Common, TreeRarity.Rare):
                         encounter_key = EncounterKey.tree(wild_region_data.wild_encounters.headbutt, rarity)
-                        world.generated_wild_region_logic[encounter_key] = LogicalAccess.InLogic
+                        world.logic.wild_regions[encounter_key] = LogicalAccess.InLogic
                         create_wild_region(parent_region, encounter_key, world.generated_wild[encounter_key])
                 else:
                     for rarity in (TreeRarity.Common, TreeRarity.Rare):
                         encounter_key = EncounterKey.tree(wild_region_data.wild_encounters.headbutt, rarity)
-                        world.generated_wild_region_logic[encounter_key] = LogicalAccess.OutOfLogic
+                        world.logic.wild_regions[encounter_key] = LogicalAccess.OutOfLogic
 
             if wild_region_data.wild_encounters.rock_smash:
                 encounter_key = EncounterKey.rock_smash()
                 if "Rock Smash" in world.options.wild_encounter_methods_required:
-                    world.generated_wild_region_logic[encounter_key] = LogicalAccess.InLogic
+                    world.logic.wild_regions[encounter_key] = LogicalAccess.InLogic
                     create_wild_region(parent_region, encounter_key, world.generated_wild[encounter_key])
                 else:
-                    world.generated_wild_region_logic[encounter_key] = LogicalAccess.OutOfLogic
+                    world.logic.wild_regions[encounter_key] = LogicalAccess.OutOfLogic
 
         for static_id in wild_region_data.statics:
             static_encounter = world.generated_static[static_id]
             encounter_key = EncounterKey.static(static_encounter.name)
             if (world.options.static_pokemon_required
                     and static_encounter.name not in LOGIC_EXCLUDE_STATICS):
-                world.generated_wild_region_logic[encounter_key] = LogicalAccess.InLogic
+                world.logic.wild_regions[encounter_key] = LogicalAccess.InLogic
                 create_wild_region(parent_region, encounter_key, [static_encounter])
             else:
-                world.generated_wild_region_logic[encounter_key] = LogicalAccess.OutOfLogic
+                world.logic.wild_regions[encounter_key] = LogicalAccess.OutOfLogic
+
+    def setup_mart_regions(parent_region: Region, region_data: RegionData):
+        for mart in region_data.marts:
+            mart_data = data.marts[mart]
+            if mart_data.category in world.options.shopsanity.value:
+                region_name = f"REGION_{mart}"
+                new_region = Region(region_name, world.player, world.multiworld)
+                regions[region_name] = new_region
+                parent_region.connect(new_region)
 
     for region_name, region_data in data.regions.items():
         if should_include_region(region_data):
@@ -187,17 +228,16 @@ def create_regions(world: "PokemonCrystalWorld") -> dict[str, Region]:
                 new_region.locations.append(event_location)
 
             setup_wild_regions(new_region, region_data)
+            if world.options.shopsanity:
+                setup_mart_regions(new_region, region_data)
 
             # Level Scaling
-            if world.options.level_scaling.value != LevelScaling.option_off:
-                trainer_name_level_list: list[tuple[str, int]] = []
-                encounter_name_level_list: list[tuple[str, int]] = []
-
+            if world.options.level_scaling:
                 # Create plando locations for the trainers in their regions.
                 for trainer in region_data.trainers:
                     if exclude_scaling(trainer.name):
                         logging.debug(
-                            f"Excluding {trainer.name} from level scaling for {world.player_name}")
+                            f"Excluding %s from level scaling for %s", trainer.name, world.player_name)
                         continue
                     scaling_event = PokemonCrystalLocation(
                         world.player, trainer.name, new_region, None, None, None, frozenset({"trainer scaling"}))
@@ -216,9 +256,6 @@ def create_regions(world: "PokemonCrystalWorld") -> dict[str, Region]:
                         "Static Pokemon", ItemClassification.filler, None, world.player))
                     new_region.locations.append(scaling_event)
 
-                # Create plando locations for the wilds in their regions.
-                # TODO once wilds logic gets implemented.
-
                 min_level = 100
                 # Create a new list of all the Trainer Pokemon and their levels
                 for trainer in region_data.trainers:
@@ -235,19 +272,7 @@ def create_regions(world: "PokemonCrystalWorld") -> dict[str, Region]:
                 for static_id in region_data.statics:
                     static = world.generated_static[static_id]
                     min_level = min(min_level, static.level)
-                    encounter_name_level_list.append((static.name, min_level))
-
-                # And finally the wilds.
-                # TODO add wilds scaling.
-
-                # Make the lists for level_scaling.py to use
-                trainer_name_level_list.sort(key=lambda i: i[1])
-                world.trainer_name_list.extend(i[0] for i in trainer_name_level_list)
-                world.trainer_level_list.extend(i[1] for i in trainer_name_level_list)
-                encounter_name_level_list.sort(key=lambda i: i[1])
-                world.encounter_name_list.extend(i[0] for i in encounter_name_level_list)
-                world.encounter_level_list.extend(i[1] for i in encounter_name_level_list)
-                # End level scaling in regions.py
+                    static_name_level_list.append((static.name, min_level))
 
             for region_exit in region_data.exits:
                 connections.append((f"{region_name} -> {region_exit}", region_name, region_exit))
@@ -255,6 +280,9 @@ def create_regions(world: "PokemonCrystalWorld") -> dict[str, Region]:
     for name, source, dest in connections:
         if should_include_region(data.regions[source]) and should_include_region(data.regions[dest]):
             regions[source].connect(regions[dest], name)
+
+    if world.options.skip_elite_four:
+        regions["REGION_INDIGO_PLATEAU_POKECENTER_1F"].connect(regions["REGION_LANCES_ROOM"])
 
     regions["Menu"] = Region("Menu", world.player, world.multiworld)
     if world.options.randomize_starting_town:
@@ -264,11 +292,23 @@ def create_regions(world: "PokemonCrystalWorld") -> dict[str, Region]:
 
     regions["Menu"].connect(regions["REGION_FLY"], "Fly")
 
-    if world.options.johto_only.value == JohtoOnly.option_off and world.options.east_west_underground:
+    if world.options.randomize_fly_unlocks:
+        fly_region = regions["REGION_FLY"]
+        for region in get_fly_regions(world):
+            fly_region.connect(regions[region.exit_region])
+
+    if world.options.fly_cheese == FlyCheese.option_in_logic:
+        regions["REGION_ROUTE_44"].connect(regions["REGION_MAHOGANY_TOWN:FLY"])
+
+        if not world.options.johto_only:
+            regions["REGION_DIGLETTS_CAVE"].connect(regions["REGION_VERMILION_CITY:FLY"])
+            regions["REGION_ROUTE_11"].connect(regions["REGION_VERMILION_CITY:FLY"])
+
+    if world.options.johto_only == JohtoOnly.option_off and world.options.east_west_underground:
         regions["REGION_ROUTE_7"].connect(regions["REGION_ROUTE_8"])
         regions["REGION_ROUTE_8"].connect(regions["REGION_ROUTE_7"])
 
-    if world.options.blackthorn_dark_cave_access.value == BlackthornDarkCaveAccess.option_waterfall:
+    if world.options.blackthorn_dark_cave_access == BlackthornDarkCaveAccess.option_waterfall:
         regions["REGION_DARK_CAVE_BLACKTHORN_ENTRANCE:SOUTH_WEST"].connect(
             regions["REGION_DARK_CAVE_BLACKTHORN_ENTRANCE:NORTH_WEST"])
 
@@ -285,9 +325,17 @@ def create_regions(world: "PokemonCrystalWorld") -> dict[str, Region]:
         regions["Breeding"] = breeding_region
         regions["Menu"].connect(regions["Breeding"])
 
-    world.trainer_level_list.sort()
-    world.encounter_level_list.sort()
-
+    if world.options.level_scaling:
+        trainer_name_level_list.sort(key=lambda i: i[1])
+        world.trainer_name_list = [i[0] for i in trainer_name_level_list]
+        world.trainer_level_list = [i[1] for i in trainer_name_level_list]
+        static_name_level_list.sort(key=lambda i: i[1])
+        world.static_name_list = [i[0] for i in static_name_level_list]
+        world.static_level_list = [i[1] for i in static_name_level_list]
+        wild_name_level_list.sort(key=lambda i: max(i[1]))
+        world.encounter_region_name_list = [i[0] for i in wild_name_level_list]
+        world.encounter_region_levels_list = [j for i in wild_name_level_list for j in i[1]]
+        world.encounter_region_levels_list.sort()
     return regions
 
 
@@ -296,10 +344,10 @@ def setup_free_fly_regions(world: "PokemonCrystalWorld"):
     if world.options.free_fly_location.value in (FreeFlyLocation.option_free_fly,
                                                  FreeFlyLocation.option_free_fly_and_map_card):
         free_fly_location = world.free_fly_location
-        fly_region = world.get_region(free_fly_location.region_id)
+        fly_region = world.get_region(free_fly_location.exit_region)
         connection = Entrance(
             world.player,
-            f"REGION_FLY -> {free_fly_location.region_id}",
+            f"Free Fly {free_fly_location.exit_region}",
             fly
         )
         fly.exits.append(connection)
@@ -308,10 +356,10 @@ def setup_free_fly_regions(world: "PokemonCrystalWorld"):
     if world.options.free_fly_location.value in (FreeFlyLocation.option_free_fly_and_map_card,
                                                  FreeFlyLocation.option_map_card):
         map_card_fly_location = world.map_card_fly_location
-        map_card_region = world.get_region(map_card_fly_location.region_id)
+        map_card_region = world.get_region(map_card_fly_location.exit_region)
         connection = Entrance(
             world.player,
-            f"REGION_FLY -> {map_card_fly_location.region_id}",
+            f"Free Fly {map_card_fly_location.exit_region}",
             fly
         )
         fly.exits.append(connection)
