@@ -50,7 +50,8 @@ from WebHostLib.models import Room
 from Webhook import Webhook
 from base64 import urlsafe_b64encode
 
-min_client_version = Version(0, 1, 6)
+
+min_client_version = Version(0, 5, 0)
 colorama.just_fix_windows_console()
 
 
@@ -467,8 +468,12 @@ class Context:
         self.generator_version = Version(*decoded_obj["version"])
         clients_ver = decoded_obj["minimum_versions"].get("clients", {})
         self.minimum_client_versions = {}
+        if self.generator_version < Version(0, 6, 2):
+            min_version = Version(0, 1, 6)
+        else:
+            min_version = min_client_version
         for player, version in clients_ver.items():
-            self.minimum_client_versions[player] = max(Version(*version), min_client_version)
+            self.minimum_client_versions[player] = max(Version(*version), min_version)
 
         self.slot_info = decoded_obj["slot_info"]
         self.games = {slot: slot_info.game for slot, slot_info in self.slot_info.items()}
@@ -769,6 +774,7 @@ class Context:
         else:
             return self.player_names[team, slot]
 
+    # Ashipelago customization
     def notify_hints(self, team: int, hints: typing.List[Hint], only_new: bool = False,
                      recipients: typing.Sequence[int] = None, is_scout: bool = False):
         """Send and remember hints."""
@@ -816,12 +822,12 @@ class Context:
             if hint.location == seeked_location and hint.finding_player == finding_player:
                 return hint
         return None
-
+    
     def replace_hint(self, team: int, slot: int, old_hint: Hint, new_hint: Hint) -> None:
         if old_hint in self.hints[team, slot]:
             self.hints[team, slot].remove(old_hint)
             self.hints[team, slot].add(new_hint)
-
+    
     # "events"
 
     def on_goal_achieved(self, client: Client):
@@ -1498,6 +1504,7 @@ def register_location_checks(ctx: Context, team: int, slot: int, locations: typi
         info_texts: list[dict[str, typing.Any]] = []
         for target_player, item_id, location, flags in sorted(sortable):
             new_item = NetworkItem(item_id, location, slot, flags)
+            # Ashipelago customization
             send_items_to(ctx, team, target_player, push_webhook, released, new_item)
 
             ctx.logger.info('(Team #%d) %s sent %s to %s (%s)' % (
@@ -1597,7 +1604,7 @@ def format_hint(ctx: Context, team: int, hint: Hint) -> str:
 
     if hint.entrance:
         text += f" at {hint.entrance}"
-
+    
     return text + ". " + status_names.get(hint.status, "(unknown)")
 
 
@@ -2252,7 +2259,7 @@ async def process_client_cmd(ctx: Context, client: Client, args: dict):
             ctx.clients[team][slot].append(client)
             client.version = args['version']
             client.tags = args['tags']
-            client.no_locations = "TextOnly" in client.tags or "Tracker" in client.tags
+            client.no_locations = bool(client.tags & _non_game_messages.keys())
             # set NoText for old PopTracker clients that predate the tag to save traffic
             client.no_text = "NoText" in client.tags or ("PopTracker" in client.tags and client.version < (0, 5, 1))
             connected_packet = {
@@ -2326,7 +2333,7 @@ async def process_client_cmd(ctx: Context, client: Client, args: dict):
                 old_tags = client.tags
                 client.tags = args["tags"]
                 if set(old_tags) != set(client.tags):
-                    client.no_locations = 'TextOnly' in client.tags or 'Tracker' in client.tags
+                    client.no_locations = bool(client.tags & _non_game_messages.keys())
                     client.no_text = "NoText" in client.tags or (
                         "PopTracker" in client.tags and client.version < (0, 5, 1)
                     )
@@ -2410,14 +2417,21 @@ async def process_client_cmd(ctx: Context, client: Client, args: dict):
             new_hint = new_hint.re_prioritize(ctx, status)
             if hint == new_hint:
                 return
-            ctx.replace_hint(client.team, hint.finding_player, hint, new_hint)
-            ctx.replace_hint(client.team, hint.receiving_player, hint, new_hint)
+
+            concerning_slots = ctx.slot_set(hint.receiving_player) | {hint.finding_player}
+            for slot in concerning_slots:
+                ctx.replace_hint(client.team, slot, hint, new_hint)
             ctx.save()
-            ctx.on_changed_hints(client.team, hint.finding_player)
-            ctx.on_changed_hints(client.team, hint.receiving_player)
+            for slot in concerning_slots:
+                ctx.on_changed_hints(client.team, slot)
 
         elif cmd == 'StatusUpdate':
-            update_client_status(ctx, client, args["status"])
+            if client.no_locations and args["status"] == ClientStatus.CLIENT_GOAL:
+                await ctx.send_msgs(client, [{'cmd': 'InvalidPacket', "type": "cmd",
+                                              "text": "Trackers can't register Goal Complete",
+                                              "original_cmd": cmd}])
+            else:
+                update_client_status(ctx, client, args["status"])
 
         elif cmd == 'Say':
             if "text" not in args or type(args["text"]) is not str or not args["text"].isprintable():
@@ -2653,6 +2667,7 @@ class ServerCommandProcessor(CommonCommandProcessor):
                 if amount > 100:
                     raise ValueError(f"{amount} is invalid. Maximum is 100.")
                 new_items = [NetworkItem(names[item_name], -1, 0) for _ in range(int(amount))]
+                # Ashipelago customization
                 send_items_to(self.ctx, team, slot, True, True, *new_items)
 
                 send_new_items(self.ctx)
@@ -2846,8 +2861,10 @@ async def console(ctx: Context):
 
 
 def parse_args() -> argparse.Namespace:
+    from settings import get_settings
+
     parser = argparse.ArgumentParser()
-    defaults = Utils.get_settings()["server_options"].as_dict()
+    defaults = get_settings().server_options.as_dict()
     parser.add_argument('multidata', nargs="?", default=defaults["multidata"])
     parser.add_argument('--host', default=defaults["host"])
     parser.add_argument('--port', default=defaults["port"], type=int)

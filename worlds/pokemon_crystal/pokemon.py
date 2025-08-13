@@ -258,12 +258,15 @@ def generate_breeding_data(world: "PokemonCrystalWorld"):
 def generate_evolution_data(world: "PokemonCrystalWorld"):
     evolution_pokemon = set()
 
-    for pokemon in world.logically_available_pokemon:
-        for evo in world.generated_pokemon[pokemon].evolutions:
+    def recursive_evolution_add(evolving_pokemon):
+        for evo in world.generated_pokemon[evolving_pokemon].evolutions:
             if evolution_in_logic(world, evo):
                 evolution_pokemon.add(evo.pokemon)
-                for second_evo in world.generated_pokemon[evo.pokemon].evolutions:
-                    evolution_pokemon.add(second_evo.pokemon)
+                recursive_evolution_add(evo.pokemon)
+        return
+
+    for pokemon in world.logically_available_pokemon:
+        recursive_evolution_add(pokemon)
 
     world.logically_available_pokemon.update(evolution_pokemon)
 
@@ -354,7 +357,7 @@ def pokemon_convert_friendly_to_ids(world: "PokemonCrystalWorld", pokemon: Itera
     if "_Legendaries" in pokemon:
         pokemon.discard("_Legendaries")
         pokemon.update({"Articuno", "Zapdos", "Moltres", "Mewtwo", "Mew", "Entei", "Raikou", "Suicune", "Celebi",
-                        "Lugia", "Ho-oh"})
+                        "Lugia", "Ho-Oh"})
 
     pokemon_ids = {pokemon_id for pokemon_id, pokemon_data in world.generated_pokemon.items() if
                    pokemon_data.friendly_name in pokemon}

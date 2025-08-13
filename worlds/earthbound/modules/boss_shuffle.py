@@ -88,7 +88,7 @@ def initialize_bosses(world) -> None:
         "Giygas (4)"
     ]
 
-    world.boss_slots: Dict[str, SlotInfo] = {
+    world.boss_slots = {
         "Frank": SlotInfo([0x0F9338],
                           [0x066111, 0x066198, 0x0661AC],
                           [0x065F11, 0x065F20, 0x066482, 0x0660C5, 0x0746E2, 0x074BC1, 0x074E1D],
@@ -108,7 +108,7 @@ def initialize_bosses(world) -> None:
         "Mini Barf": SlotInfo([0x0FB0B4], [], [], [0x2F9515]),
         "Master Belch": SlotInfo([0x0FB7CF],
                                  [0x09E64D, 0x09E690, 0x2EEED7, 0x08EF21, 0x08EF38],
-                                 [0x2F6296, 0x2F62B3, 0x2F6910, 0x2F6973],
+                                 [0x2F6297, 0x2F62B3, 0x2F6910, 0x2F6973],
                                  [0x068558]),
         "Trillionage Sprout": SlotInfo([], [], [], [0x068422]),
         "Guardian Digger": SlotInfo([0x0FC11B, 0x0FC0B5, 0x0FC12C, 0x0FC0D7, 0x0FC0C6],
@@ -137,7 +137,7 @@ def initialize_bosses(world) -> None:
         "Giygas (4)": SlotInfo([0x09C2BF, 0x09C2E5], [0x2EF0A9], [0x2EF09F], [])
     }
 
-    world.boss_info: Dict[str, BossData] = {
+    world.boss_info = {
         "Frank": BossData(0x0099, 0xEEEEBC, 0xEEEEBC, 0x01C0, 0x83, 0x64),
         "Frankystein Mark II": BossData(0x0191, 0xEEEF0A, 0xEEEEF6, 0x01C1, 0x82, 0x66),
         "Titanic Ant": BossData(0x0139, 0xEEEF1E, 0xEEEF16, 0x01C2, 0x25, 0x67),

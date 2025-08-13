@@ -409,6 +409,7 @@ ASM_FILES = [
     "asm/layouts.yaml",
     "asm/collect.yaml",
     "asm/location.yaml",
+    "asm/map_menu.yaml",
     "asm/progressives.yaml",
     "asm/animals.yaml",
     "asm/static_items.yaml",

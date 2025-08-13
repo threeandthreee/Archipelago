@@ -23,7 +23,7 @@ class OoAPatchExtensions(APPatchExtension):
     @staticmethod
     def apply_patches(caller: APProcedurePatch, rom: bytes, patch_file: str) -> bytes:
         rom_data = RomData(rom)
-        patch_data = yaml.load(caller.get_file(patch_file).decode("utf-8"), yaml.Loader)
+        patch_data = yaml.safe_load(caller.get_file(patch_file).decode("utf-8"))
 
         if not (patch_data["version"] in RETRO_COMPAT_VERSION):
             raise Exception(f"Invalid version: this seed was generated on v{patch_data['version']}, "

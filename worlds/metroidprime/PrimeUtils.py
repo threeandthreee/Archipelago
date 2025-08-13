@@ -69,7 +69,6 @@ def _validate_temp_dir(target_dir_path) -> bool:
         required_files = [
             os.path.join("metroidprime", "lib", "py_randomprime", "version.py"),
             os.path.join("metroidprime", "lib", "ppc_asm", "version.py"),
-            os.path.join("metroidprime", "lib", "dolphin_memory_engine", "version.py"),
         ]
         for file in required_files:
             file_path = os.path.join(target_dir_path, file)

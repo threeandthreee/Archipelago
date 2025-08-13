@@ -84,7 +84,7 @@ class ExtraLostWorldRocks(Range):
     How many additional Lost World Rocks can be found in the multiworld
     """
     display_name = "Extra Lost World Rocks"
-    range_start = 1
+    range_start = 0
     range_end = 5
     default = 3
 
@@ -466,21 +466,15 @@ class EnergyLink(Toggle):
 
     You can exchange energy for Instant DK Barrels. Great for players that find the base game hard.
     There's an additional item in the item pool that allows for better energy extraction from bananas.
-
-    Exchanging energy for DK Barrels requires AP 0.6.0 to work correctly.
     """
     display_name = "Energy Link"
-    visibility = Visibility.spoiler | Visibility.complex_ui | Visibility.template
 
 
 class TrapLink(Toggle):
     """
     Whether your received traps are linked to other players
-
-    This feature requires AP 0.6.0 to work correctly.
     """
     display_name = "Trap Link"
-    visibility = Visibility.spoiler | Visibility.complex_ui | Visibility.template
 
 
 dkc2_option_groups = [

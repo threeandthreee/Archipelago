@@ -211,7 +211,7 @@ def set_rules(khbbsworld):
             ))
         add_rule(khbbsworld.get_location("(A) Dwarf Woodlands Vault Bubble Sticker"),
             lambda state: (
-                state.has_any({
+                state.has_all({
                 "High Jump",
                 "Doubleflight"}, player)
             ))

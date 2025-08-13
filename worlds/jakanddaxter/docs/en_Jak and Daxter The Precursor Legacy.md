@@ -10,7 +10,7 @@
 - [What happens when I pick up or receive a Power Cell?](#what-happens-when-i-pick-up-or-receive-a-power-cell)
 - [What happens when I pick up or receive a Scout Fly?](#what-happens-when-i-pick-up-or-receive-a-scout-fly)
 - [How do I check the 'Free 7 Scout Flies' Power Cell?](#how-do-i-check-the-free-7-scout-flies-power-cell)
-- [What does Deathlink do?](#what-does-deathlink-do)
+- [What does Death Link do?](#what-does-death-link-do)
 - [What does Move Randomizer do?](#what-does-move-randomizer-do)
 - [What are the movement options in Move Randomizer?](#what-are-the-movement-options-in-move-randomizer)
 - [How do I know which moves I have?](#how-do-i-know-which-moves-i-have)
@@ -18,7 +18,7 @@
 - [What do Traps do?](#what-do-traps-do)
 - [What kind of Traps are there?](#what-kind-of-traps-are-there)
 - [I got soft-locked and cannot leave, how do I get out of here?](#i-got-soft-locked-and-cannot-leave-how-do-i-get-out-of-here)
-- [Why did I get an Option Error when generating a seed, and how do I fix it?](#why-did-i-get-an-option-error-when-generating-a-seed-and-how-do-i-fix-it)
+- [How do I generate seeds with 1 Orb Orbsanity and other extreme options?](#how-do-i-generate-seeds-with-1-orb-orbsanity-and-other-extreme-options)
 - [How do I check my player options in-game?](#how-do-i-check-my-player-options-in-game)
 - [How does the HUD work?](#how-does-the-hud-work)
 - [I think I found a bug, where should I report it?](#i-think-i-found-a-bug-where-should-i-report-it)
@@ -60,7 +60,7 @@ Additionally, several special checks and corresponding items have been added tha
 | Freed The Green Sage   | Free the Green Sage in Gol and Maia's Citadel                                | 
 
 ## What are the special items and what do they unlock
-| Item Name                                                                | What It Unlocks                                                                               |
+| Item Name                                                                | What it Unlocks                                                                               |
 |--------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------|
 | Fisherman's Boat                                                         | Misty Island                                                                                  |
 | Jungle Elevator                                                          | The blue vent switch inside the temple in Forbidden Jungle                                    |
@@ -115,12 +115,12 @@ scout fly. So in short:
     - First, you will receive that scout fly, as normal.
     - Second, you will immediately complete the "Free 7 Scout Flies" check, which will send out another item.
 
-## What does Deathlink do
-If you enable Deathlink, all the other players in your Multiworld who also have it enabled will be linked on death. 
-That means when Jak dies in your game, the players in your Deathlink group also die. Likewise, if any of the other 
-players die, Jak will also die in a random, possibly spectacular fashion.
+## What does Death Link do
+If you enable Death Link, all the other players in your Multiworld who also have it enabled will be linked by death. 
+That means when Jak dies in your game, the players in with Death Link also die. Likewise, if any of the other 
+players with Death Link die, Jak will also die in a random, possibly spectacular fashion.
 
-You can turn off Deathlink at any time in the game by opening the game's menu and navigating to `Options`, 
+You can turn off Death Link at any time in the game by opening the game's menu and navigating to `Options`, 
 then `Archipelago Options`, then `Deathlink`.
 
 ## What does Move Randomizer do
@@ -201,16 +201,19 @@ Open the game's menu, navigate to `Options`, then `Archipelago Options`, then `W
 Selecting this option will ask if you want to be teleported to Geyser Rock. From there, you can teleport back 
 to the nearest sage's hut to continue your journey.
 
-## Why did I get an Option Error when generating a seed and how do I fix it
+## How do I generate seeds with 1 orb orbsanity and other extreme options?
 Depending on your player YAML, Jak and Daxter can have a lot of items, which can sometimes be overwhelming or 
 disruptive to multiworld games. There are also options that are mutually incompatible with each other, even in a solo
 game. To prevent the game from disrupting multiworlds, or generating an impossible solo seed, some options have
-Singleplayer and Multiplayer Minimums and Maximums, collectively called "friendly limits."
+"friendly limits" that prevent you from choosing more extreme values.
 
-If you're generating a solo game, or your multiworld host agrees to your request, you can override those limits by
-editing the `host.yaml`. In the Archipelago Launcher, click `Open host.yaml`, then search for `jakanddaxter_options`,
-then search for `enforce_friendly_options`, then change this value from `true` to `false`. Disabling this allows for 
-more disruptive and challenging options, but it may cause seed generation to fail. **Use at your own risk!**
+You can override **some**, not all, of those limits by editing the `host.yaml`. In the Archipelago Launcher, click 
+`Open host.yaml`, then search for `jakanddaxter_options`, then search for `enforce_friendly_options`, then change this 
+value from `true` to `false`. You can then generate a seed locally, and upload that to the Archipelago website to host
+for you (or host it yourself). 
+
+**Remember:** disabling this setting allows for more disruptive and challenging options, but it may cause seed 
+generation to fail. **Use at your own risk!**
 
 ## How do I check my player options in-game
 When you connect your text client to the Archipelago Server, the server will tell the game what options were chosen
@@ -224,11 +227,11 @@ progression items and prevent you (and others) from completing the run.
 The game's normal HUD shows you how many power cells, precursor orbs, and scout flies you currently have. But if you 
 hold `L2 or R2` and press a direction on the D-Pad, the HUD will show you alternate modes. Here is how the HUD works:
 
-| HUD Mode      | Button Combo                 | What You're Seeing                | Text Message                          |
+| HUD Mode      | Button Combo                 | What the HUD Shows                | Text Messages                         |
 |---------------|------------------------------|-----------------------------------|---------------------------------------|
-| Normal        | `L2 or R2` + `Left or Right` | Items Received                    | `GOT {Your Item} FROM {Other Player}` |
 | Per-Level     | `L2 or R2` + `Down`          | Locations Checked (in this level) | `SENT {Other Item} TO {Other Player}` |
-| Global        | `L2 or R2` + `Up`            | Locations Checked (in the game)   | `SENT {Other Item} TO {Other Player}` |
+| Global        | `L2 or R2` + `Up`            | Locations Checked (in the game)   | `GOT {Your Item} FROM {Other Player}` |
+| Normal        | `L2 or R2` + `Left or Right` | Items Received                    | Both Sent and Got Messages            |
 |               |                              |                                   |                                       |
 | (In Any Mode) |                              | (If you sent an Item to Yourself) | `FOUND {Your Item}`                   |
 

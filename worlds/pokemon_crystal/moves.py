@@ -19,7 +19,8 @@ MOVE_POWER_RATIO = {
     "PIN_MISSILE": 3,
     "TWINEEDLE": 2,
     "SPIKE_CANNON": 3,
-    "BONE_RUSH": 3
+    "BONE_RUSH": 3,
+    "ROLLOUT": 2
 }
 
 BAD_DAMAGING_MOVES = ["EXPLOSION", "SELFDESTRUCT", "STRUGGLE", "SNORE", "DREAM_EATER"]
@@ -172,7 +173,6 @@ def randomize_move_values(world: "PokemonCrystalWorld"):
             if world.options.randomize_move_values.value == RandomizeMoveValues.option_restricted:
                 new_power = int(new_power * (world.random.random() + 0.5))
                 if new_power > 255: new_power = 255
-                new_power //= MOVE_POWER_RATIO.get(move_name, 1)
                 new_pp = new_pp + world.random.choice([-10, -5, 0, 5, 10])
                 if new_pp < 5: new_pp = 5
                 if new_pp > 40: new_pp = 40
