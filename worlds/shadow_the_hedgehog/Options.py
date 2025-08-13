@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from Options import PerGameCommonOptions, Choice, DefaultOnToggle, Toggle, Range, OptionSet, OptionDict, OptionGroup
-from worlds.shadow_the_hedgehog import Names
+from . import Names
 
 
 class GoalChaosEmeralds(DefaultOnToggle):
@@ -60,7 +60,7 @@ class GoalFinalBosses(Range):
     """
         Determines what percentage of final boss missions are required for completion, rounded up.
     """
-    display_name = "Goal: Bosses"
+    display_name = "Goal: Final Bosses"
     range_start = 0
     range_end = 100
     default = 0
@@ -82,9 +82,43 @@ class ObjectiveSanity(DefaultOnToggle):
     """
     display_name = "Objective Sanity"
 
+class ObjectiveSanitySystem(Choice):
+    """
+
+    Option to determine what triggers objective sanity checks.
+    Count Up, the original system, requires getting/maintaining a particular count.
+    Individual, the new system, where each individual activation is a separate check, not requiring the count
+        Due to technical limitations:
+         - Currently disabled for Final Haunt Shields
+         - GUN Soldiers work on despawn rather than defeat
+    Both, checks for both in the system, if available
+
+    """
+
+    option_count_up = 0
+    option_individual = 1
+    option_both = 2
+    default = option_individual
+
+class ObjectiveSanityBehaviour(Choice):
+    """
+        When objective-sanity is enabled, how to operate clearing of stages
+        Default: You require desired item count to finish stage, press Z to finish, then complete a goal
+        Manual Clear: You require desired item count to finish stage, pressing Z when completable, sets count to 0, must be beaten normally
+            (Must handle early accessible / update to current value detected in the stage)
+        Base Clear: You do not need to collect items to progress stages, but as objectivesanity is on,
+            required to still press Z to avoid inability to get checks.
+
+    """
+
+    option_default = 0
+    option_manual_clear = 1
+    option_base_clear = 2
+    default = option_default
+
 class ObjectivePercentage(Range):
     """Sets the objective percentage for each objective.
-    When playing objectsanity, this removes the locations for anything after the percentage objective.
+    When playing objective sanity count up, this removes the locations for anything after the percentage objective.
     Only affects locations, use available/completion for goal-related effects."""
     display_name = "Objective Percentage"
     range_start = 1
@@ -120,22 +154,21 @@ class ObjectiveCompletionEnemyPercentage(Range):
 
 class ObjectiveItemPercentageAvailable(Range):
     """
-        When playing Objective Sanity, determine the percentage of items required to finish stages left in the pool.
-        This number MUST be higher than the required amount to clear.
-        This number can exceed 100% if you want more items than there are to add,
-        so long as you have location space.
+        When playing Objective Sanity, determine the percentage of items required to finish stages added alongside
+        your provided completion percentage.
     """
     display_name = "Objective Item Percentage"
-    range_start = 1
-    range_end = 1000
-    default = 100
+    range_start = 0
+    range_end = 900
+    default = 0
 
 class ObjectiveItemEnemyPercentageAvailable(Range):
-    """When playing Objective Sanity, determine the percentage of items for enemy objectives required to finish stages left in the pool."""
+    """When playing Objective Enemy Sanity, determine the percentage of items required to finish stages added alongside
+        your provided completion percentage."""
     display_name = "Objective Item Enemy Percentage"
-    range_start = 1
-    range_end = 1000
-    default = 100
+    range_start = 0
+    range_end = 900
+    default = 0
 
 class EnemyObjectiveSanity(DefaultOnToggle):
     """Determines if enemy-based objective checks are enabled."""
@@ -144,9 +177,15 @@ class EnemyObjectiveSanity(DefaultOnToggle):
 class Enemysanity(Toggle):
     """
         Determines whether standard enemy sanity is enabled.
-        This can be used in tandem with enemy objectve sanity.
+        This can be used in tandem with enemy objective sanity.
     """
     display_name = "Enemy Sanity"
+
+class DifficultEnemysanity(Toggle):
+    """
+        Determines whether enemies marked as difficult are included as part of enemy sanity.
+    """
+    display_name = "Difficult Enemy Sanity"
 
 class Keysanity(Toggle):
     """
@@ -155,9 +194,7 @@ class Keysanity(Toggle):
     """
     display_name = "Key Sanity"
 
-class Doorsanity(Toggle):
-    """Determines whether key door sanity is enabled."""
-    display_name = "Door Sanity"
+
 
 class Checkpointsanity(DefaultOnToggle):
     """
@@ -182,6 +219,18 @@ class WeaponsanityUnlock(Toggle):
     """
     display_name = "Weapon Sanity Unlock"
 
+class WeaponSanityMinAvailable(Range):
+    display_name = "Weapon Sanity Min Available"
+    range_start = 1
+    range_end = 5
+    default = 1
+
+class WeaponSanityMaxAvailable(Range):
+    display_name = "Weapon Sanity Max Available"
+    range_start = 1
+    range_end = 5
+    default = 1
+
 class WeaponsanityHold(Choice):
     """Determines whether game contains checks for legally holding each weapon.
     If unlocked is chosen, you must unlock the weapon with unlock first.
@@ -194,7 +243,7 @@ class WeaponsanityHold(Choice):
     default = 0
 
 class VehicleLogic(Toggle):
-    """Determines if vehicle logic is active. Does not currently affect gameplay."""
+    """Determines if vehicle logic is active. Vehicles will not be avialable for use until found."""
     display_name = "Vehicle Logic"
 
 class GaugeFiller(DefaultOnToggle):
@@ -250,19 +299,30 @@ class ExcludedStages(OptionSet):
     valid_keys = [i for i in Names.getLevelNames() ]
 
 class ExceedingItemsFiller(Choice):
-    """Determines whether game marks non-required items as progression or not."""
+    """
+        Determines whether game marks non-required items as progression or not.
+        Off is only recommended for testing a yaml.
+    """
     display_name = "Exceeding Items Filler"
-    option_off = 0  # Never convert exceeding items into filler
-    option_minimise = 1  # Minimise exceeding items into filler
-    option_always = 2  # Always mark exceeding items as filler
+    option_off = 0  # Never remove or convert exceeding items into filler. Only use to test yaml.
+    option_minimise = 1  # Remove excess items to prevent failures.
+    option_always = 2  # Always mark exceeding items as filler.
+    option_chance = 3 # Sometimes mark exceeding items as filler.
     default = option_minimise
+
+class ExceedingItemsFillerRandom(Range):
+    """Determines chance of marking exceeding filler items as useful rather than progression"""
+    display_name = "Exceeding Items Filler Random Chance"
+    range_start = 0
+    range_end = 100
+    default = 25
 
 class RingLink(Choice):
     """
     Whether your in-level ring gain/loss is linked to other players.
-    Off disabled the feature.
-    On enables the feature excluding special cases.
-    Unsafe disables ring link during Circus Park missions and during the final boss.
+    Off disables the feature.
+    On enables the feature excluding the special cases listed below.
+    Unsafe enables ring link during Circus Park missions and during Devil Doom.
 
     """
     option_off = 0
@@ -342,6 +402,20 @@ class LogicLevel(Choice):
     option_hard = 2  # Requires skips to traverse regions.
     default = option_normal
 
+class ChaosControlLogicLevel(Choice):
+    """
+        Determines the chaos control logic level for play-through.
+        Off: Chaos Control is never required to make progress.
+        Easy: Stages where the player will naturally have chaos control are included.
+        Hard: Requires the player to work out building up and handling gauge.
+    """
+    display_name = "Chaos Control Logic Level"
+    option_off = 0  # Disables requirements for chaos control logic
+    option_easy = 1  # Enables chaos control as logic passes apart from those requiring intensive gauge management
+    option_intermediate = 2 # Enabled some management of chaos control gauge
+    option_hard = 3  # Requires intensive management of chaos control gauge to mark these areas
+    default = option_off
+
 class BossLogicLevel(Choice):
     """
         Determines the boss logic level for playthrough.
@@ -349,20 +423,20 @@ class BossLogicLevel(Choice):
     """
     display_name = "Boss Logic Level"
     option_easy = 0  # Logic adds in easier elements for completion
-    option_normal = 1  # Standard logic
+    #option_normal = 1  # Standard logic
     option_hard = 2  # Requires skips to traverse regions.
-    default = option_normal
+    default = option_easy
 
 class CraftLogicLevel(Choice):
     """
         Determines the craft logic level for playthrough - distinguishing a difference
         in logic for crafts in Iron Jungle, Lethal Highway and Air Fleet
     """
-    display_name = "Logic Level"
+    display_name = "Craft Logic Level"
     option_easy = 0  # Logic adds in easier elements for completion
-    option_normal = 1  # Standard logic
+    #option_normal = 1  # Standard logic
     option_hard = 2  # Requires skips to traverse regions.
-    default = option_normal
+    default = option_easy
 
 class AllowDangerousPercentage(Toggle):
     """
@@ -420,28 +494,34 @@ class StoryBossCount(Range):
     range_end = 3
     default = 1
 
-class GuaranteedLevelClear(DefaultOnToggle):
+class StartingLevelMethod(Choice):
     """
-        Ensures the first available stage in shuffled story mode is a completable mission out the gate.
-        This option is ignored should you disable all stages meeting this criteria.
+        Ensures clearable neutral stages are picked first for starting stages.
+        None: Starting behaviour has no factors.
+        Clear Stage: First stage non-objectivesanity mission can be cleared.
+        Stage + Item: First stage, plus an item that progresses through that stage. Only picks one item.
     """
-    display_name = "Guaranteed Level Clear"
+    display_name = "Starting Level Method"
+    option_none = 0
+    option_clear_stage = 1
+    option_stage_and_item = 2
+    default = option_none
 
 class SingleEggDealer(Toggle):
     """
-        When shuffling story mode, only include a single Egg Dealer of the available 3.
+        Only include a single Egg Dealer of the available 3.
     """
     display_name = "Single Egg Dealer"
 
 class SingleBlackDoom(Toggle):
     """
-        When shuffling story mode, only include a single Black Doom of the available 3.
+        Only include a single Black Doom of the available 3.
     """
     display_name = "Single Black Doom"
 
 class SingleDiablon(Toggle):
     """
-        When shuffling story mode, only include a single Sonic & Diablon of the available 3.
+        Only include a single Sonic & Diablon of the available 3.
     """
     display_name = "Single Diablon"
 
@@ -458,8 +538,8 @@ class ObjectiveFrequency(Range):
     """
     display_name = "Objective Frequency"
     range_start = 1
-    range_end = 100
-    default = 100
+    range_end = 10
+    default = 1
 
 class EnemyObjectiveFrequency(Range):
     """
@@ -467,8 +547,8 @@ class EnemyObjectiveFrequency(Range):
     """
     display_name = "Enemy Objective Frequency"
     range_start = 1
-    range_end = 100
-    default = 100
+    range_end = 10
+    default = 1
 
 class EnemyFrequency(Range):
     """
@@ -476,8 +556,8 @@ class EnemyFrequency(Range):
     """
     display_name = "Enemy Frequency"
     range_start = 1
-    range_end = 100
-    default = 100
+    range_end = 10
+    default = 1
 
 class MinimumRank(Choice):
     """Minimum rank required to get the location clear check."""
@@ -492,11 +572,27 @@ class MinimumRank(Choice):
 class StoryProgressionBalancing(Range):
     """
         Story progression balancing to determine sphering for story stages.
+        Higher numbers choose routes leading to more stages available in one go.
+        Lower numbers choose smaller story progression, but will stay lower progression for longer.
         Refer to the documentation for more information.
     """
-    range_start = 0
+    display_name = "Story Progression Balancing"
+    range_start = 1
     range_end = 100
-    default = 0
+    default = 25 # Decide this value
+
+class StoryProgressionBalancingPasses(Range):
+    """
+        Story progression balancing passes to make, using balancing value.
+        Use 0 to disable story progression balancing.
+        Each pass selects a route, reducing the counts required to progress through story missions.
+        The lowest value from all passes will be used.
+    """
+    display_name = "Story Progression Balancing Passes"
+    option_off = 0
+    range_start = 0
+    range_end = 5
+    default = 1
 
 class ShadowMod(Choice):
     """
@@ -507,10 +603,116 @@ class ShadowMod(Choice):
         Minor mods will not affect memory and are likely to be fine.
     """
     display_name = "Shadow Mod"
-    option_vanilla = "Vanilla"
-    option_reloaded = "Reloaded"
-    option_sx = "SX"
+    option_vanilla = 0
+    option_reloaded = 1
+    option_sx = 2
     default = option_vanilla
+
+
+class ObjectUnlocks(Toggle):
+    """
+    Overarching setting to enable/disable very object options.
+    """
+    display_name = "Object Unlocks"
+
+class ObjectPulleys(DefaultOnToggle):
+    """
+        Whether pulleys need to be unlocked before they can be used.
+    """
+    display_name = "Objects: Pulleys"
+
+class ObjectZiplines(DefaultOnToggle):
+    """
+        Whether ziplines need to be unlocked before they can be used.
+    """
+    display_name = "Objects: Ziplines"
+
+class ObjectUnits(DefaultOnToggle):
+    """
+        Whether heal units and bombs, as associated servers need to be unlocked before they can be used.
+    """
+    display_name = "Objects: Units"
+
+class ObjectRockets(DefaultOnToggle):
+    """
+        Whether rockets need to be unlocked before they can be used.
+    """
+    display_name = "Objects: Rockets"
+
+class ObjectLightDashes(DefaultOnToggle):
+    """
+        Whether light dash trails of rings need to be unlocked before they can be used.
+    """
+    display_name = "Objects: Light Dashes"
+
+class ObjectWarpHoles(DefaultOnToggle):
+    """
+        Whether warp holes need to be unlocked before they can be used.
+    """
+    display_name = "Objects: Warp Holes"
+
+class ShadowBoxes(Toggle):
+    """
+        Whether or not Special Weapon Boxes (Shadow crates) reward a check.
+    """
+    display_name = "Shadow Boxes"
+
+class GoldBeetleSanity(Toggle):
+    """
+        Whether or not Golden Beetles reward checks.
+    """
+    display_name = "Gold Beetle Sanity"
+
+class DoorSanity(Toggle):
+    """Determines whether key door sanity is enabled, i.e. opening the key door provides a check."""
+    display_name = "Door Sanity"
+
+class EnergyCores(Toggle):
+    """
+        Whether or not energy cores (Hero/Dark cores) reward a check.
+    """
+    display_name = "Energy Cores"
+
+class PlandoStartingStages(OptionSet):
+    """
+        Force this selection of stages to be chosen first.
+    """
+    display_name = "Plando Starting Stages"
+    valid_keys = [i for i in Names.getLevelNames()
+                  if i not in Names.getBossNames() and i not in Names.getLastStoryNames()]
+
+
+class StoryAndSelectStartTogether(DefaultOnToggle):
+    """
+        Force story mode's start point to be one of the starting select stages (for both mode)
+    """
+
+    display_name = "Story And Select Start Together"
+
+class StartInventoryExcessItems(DefaultOnToggle):
+    """
+        Add items to start inventory if not enough locations found.
+        Not recommended to disable as can lead to generate failures.
+    """
+    display_name = "Start Inventory Excess Items"
+
+class SelectPercentage(Range):
+    """
+        Percent of stage unlock items to include in the item pool when playing
+        on 'Both' story and select mode.
+    """
+
+    display_name = "Select Percentage"
+    range_start = 0
+    range_end = 100
+    default_value = range_end
+
+class ExcludeGoModeItems(DefaultOnToggle):
+    """
+        Excludes go-mode items from being checks, which is currently limited to
+        - Checks within The Last Way on Select/Story Shuffle-less modes
+    """
+    display_name = "Exclude Go Mode Items"
 
 @dataclass
 class ShadowTheHedgehogOptions(PerGameCommonOptions):
@@ -525,6 +727,8 @@ class ShadowTheHedgehogOptions(PerGameCommonOptions):
     goal_bosses: GoalBosses
     goal_final_bosses: GoalFinalBosses
     objective_sanity: ObjectiveSanity
+    objective_sanity_system: ObjectiveSanitySystem
+    objective_sanity_behaviour: ObjectiveSanityBehaviour
     objective_percentage: ObjectivePercentage
     objective_enemy_percentage: EnemyObjectivePercentage
     objective_completion_percentage: ObjectiveCompletionPercentage
@@ -534,19 +738,20 @@ class ShadowTheHedgehogOptions(PerGameCommonOptions):
     enemy_objective_sanity: EnemyObjectiveSanity
     character_sanity: CharacterSanity
     enemy_sanity: Enemysanity
-    key_sanity: Keysanity
-    #door_sanity: Doorsanity
-    checkpoint_sanity: Checkpointsanity
     enemy_sanity_percentage: EnemySanityPercentage
+    difficult_enemy_sanity: DifficultEnemysanity
+    key_sanity: Keysanity
+    checkpoint_sanity: Checkpointsanity
     starting_stages: StartingStages
     force_objective_sanity_chance: ForceObjectiveSanityChance
     force_objective_sanity_max: ForceObjectiveSanityMax
     force_objective_sanity_max_counter: ForceObjectiveSanityMaxCounter
     excluded_stages: ExcludedStages
     weapon_sanity_unlock: WeaponsanityUnlock
+    weapon_sanity_min_available: WeaponSanityMinAvailable
+    weapon_sanity_max_available: WeaponSanityMaxAvailable
     weapon_sanity_hold: WeaponsanityHold
     vehicle_logic: VehicleLogic
-    exceeding_items_filler: ExceedingItemsFiller
     enable_gauge_items: GaugeFiller
     enable_ring_items: RingFiller
     ring_link: RingLink
@@ -556,12 +761,13 @@ class ShadowTheHedgehogOptions(PerGameCommonOptions):
     logic_level: LogicLevel
     boss_logic_level: BossLogicLevel
     craft_logic_level: CraftLogicLevel
+    chaos_control_logic_level: ChaosControlLogicLevel
     allow_dangerous_settings: AllowDangerousPercentage
     story_shuffle: StoryShuffle
     include_last_way_shuffle: IncludeLastStoryShuffle
     secret_story_progression: SecretStoryProgression
     story_boss_count: StoryBossCount
-    guaranteed_level_clear: GuaranteedLevelClear
+    starting_level_method: StartingLevelMethod
     single_egg_dealer: SingleEggDealer
     single_black_doom: SingleBlackDoom
     single_diablon: SingleDiablon
@@ -573,7 +779,28 @@ class ShadowTheHedgehogOptions(PerGameCommonOptions):
     minimum_rank: MinimumRank
     weapon_groups: WeaponGroups
     story_progression_balancing: StoryProgressionBalancing
+    story_progression_balancing_passes: StoryProgressionBalancingPasses
     shadow_mod: ShadowMod
+    object_unlocks: ObjectUnlocks
+    object_pulleys: ObjectPulleys
+    object_ziplines: ObjectZiplines
+    object_units: ObjectUnits
+    object_rockets: ObjectRockets
+    object_light_dashes: ObjectLightDashes
+    object_warp_holes: ObjectWarpHoles
+    shadow_boxes: ShadowBoxes
+    energy_cores: EnergyCores
+    door_sanity: DoorSanity
+    gold_beetle_sanity: GoldBeetleSanity
+    plando_starting_stages: PlandoStartingStages
+    story_and_select_start_together: StoryAndSelectStartTogether
+    select_percentage: SelectPercentage
+
+    exceeding_items_filler: ExceedingItemsFiller
+    exceeding_items_filler_random: ExceedingItemsFillerRandom
+    start_inventory_excess_items: StartInventoryExcessItems
+    exclude_go_mode_items: ExcludeGoModeItems
+
 
 shadow_option_groups = [
     OptionGroup("Goal",
@@ -592,7 +819,7 @@ shadow_option_groups = [
                                   MinimumRank, EnemyFrequency, EnemyObjectiveFrequency,
                                   ObjectiveFrequency, BossLogicLevel, CraftLogicLevel], True),
     OptionGroup("Story", [LevelProgression, IncludeLastStoryShuffle, SecretStoryProgression,
-                          StoryBossCount, GuaranteedLevelClear,
+                          StoryBossCount, StartingLevelMethod,
                           SingleDiablon, SingleBlackDoom, SingleEggDealer,
                           StoryProgressionBalancing ]),
     OptionGroup("Junk", [ExceedingItemsFiller, GaugeFiller], True),

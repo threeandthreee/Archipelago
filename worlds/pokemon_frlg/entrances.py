@@ -64,6 +64,7 @@ multi_dungeon_pairs = {
     "Pattern Bush Exit (West)": "Pattern Bush Exit (East)"
 }
 multi_dungeon_pairs_reverse = {k: v for v, k in multi_dungeon_pairs.items()}
+dungeon_pairs = multi_dungeon_pairs | multi_dungeon_pairs_reverse
 
 
 class EntranceGroups(IntEnum):
@@ -146,8 +147,11 @@ def shuffle_entrances(world: "PokemonFRLGWorld"):
     world.logic.randomizing_entrances = True
     for i in range(MAX_GER_ATTEMPTS):
         try:
-            world.er_placement_state = randomize_entrances(world, True, dungeon_group_lookup,
-                                                           on_connect=connect_simple_entrances)
+            if world.options.dungeon_entrance_shuffle != DungeonEntranceShuffle.option_simple:
+                world.er_placement_state = randomize_entrances(world, True, dungeon_group_lookup)
+            else:
+                world.er_placement_state = randomize_entrances(world, True, dungeon_group_lookup,
+                                                               on_connect=connect_simple_entrances)
             world.er_spoiler_names.extend(single_dungeon_entrances + multi_dungeon_entrances)
             world.logic.randomizing_entrances = False
             world.logic.guaranteed_hm_access = False
@@ -179,17 +183,13 @@ def shuffle_entrances(world: "PokemonFRLGWorld"):
                         disconnect_entrance_for_randomization(exit, exit.randomization_group)
 
 
-def connect_simple_entrances(er_state: ERPlacementState, placed_entrances: List[Entrance]):
-    world: "PokemonFRLGWorld" = er_state.world
-    if world.options.dungeon_entrance_shuffle != DungeonEntranceShuffle.option_simple:
-        return
+def connect_simple_entrances(er_state: ERPlacementState,
+                             placed_exits: List[Entrance],
+                             paired_entrances: List[Entrance]):
+    if placed_exits[0].name not in dungeon_pairs or paired_entrances[0].name not in dungeon_pairs:
+        return False
 
-    dungeon_pairs = multi_dungeon_pairs | multi_dungeon_pairs_reverse
-
-    if placed_entrances[0].name not in dungeon_pairs or placed_entrances[1].name not in dungeon_pairs:
-        return
-
-    entrance = world.get_entrance(dungeon_pairs[placed_entrances[0].name])
-    exit = world.get_entrance(dungeon_pairs[placed_entrances[1].name])
-    entrance.connected_entrance_name = exit.name
-    exit.connected_entrance_name = entrance.name
+    entrance = er_state.world.get_entrance(dungeon_pairs[placed_exits[0].name])
+    exit = er_state.entrance_lookup.find_target(dungeon_pairs[paired_entrances[0].name])
+    er_state.connect(entrance, exit)
+    return True

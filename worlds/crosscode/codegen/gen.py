@@ -253,7 +253,8 @@ class FileGenerator:
                     "byShopAndId": defaultdict(dict)
                 },
             },
-            "descriptions": self.lists.descriptions
+            "descriptions": self.lists.descriptions,
+            "markers": self.lists.markers
         }
 
         def get_codes(name: str) -> list[int]:

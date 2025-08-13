@@ -3,7 +3,7 @@ from dataclasses import replace
 from typing import TYPE_CHECKING
 
 from .data import EncounterMon, LogicalAccess, EncounterType, EncounterKey
-from .options import RandomizeWilds, EncounterGrouping, BreedingMethodsRequired
+from .options import RandomizeWilds, EncounterGrouping, BreedingMethodsRequired, RandomizePokemonRequests
 from .pokemon import get_random_pokemon, pokemon_convert_friendly_to_ids, get_priority_dexsanity
 
 if TYPE_CHECKING:
@@ -20,7 +20,7 @@ def randomize_wild_pokemon(world: "PokemonCrystalWorld"):
         required_inaccessible_pokemon = 0
 
         for region_key, wilds in world.generated_wild.items():
-            logical_access = world.generated_wild_region_logic[region_key]
+            logical_access = world.logic.wild_regions[region_key]
 
             if world.options.encounter_grouping == EncounterGrouping.option_all_split:
                 count = len(wilds)
@@ -58,6 +58,9 @@ def randomize_wild_pokemon(world: "PokemonCrystalWorld"):
         elif world.options.randomize_wilds.option_catch_em_all:
             logical_pokemon_pool.extend(world.generated_pokemon.keys())
 
+        if world.options.randomize_pokemon_requests == RandomizePokemonRequests.option_items:
+            logical_pokemon_pool.extend(world.generated_request_pokemon)
+
         logical_pokemon_pool.extend(get_priority_dexsanity(world))
 
         global_blocklist = pokemon_convert_friendly_to_ids(world, world.options.wild_encounter_blocklist)
@@ -65,6 +68,9 @@ def randomize_wild_pokemon(world: "PokemonCrystalWorld"):
         if global_blocklist:
             logical_pokemon_pool = [pokemon_id for pokemon_id in logical_pokemon_pool if
                                     pokemon_id not in global_blocklist]
+
+        if world.options.randomize_pokemon_requests == RandomizePokemonRequests.option_items:
+            logical_pokemon_pool.extend(world.generated_request_pokemon)
 
         if len(logical_pokemon_pool) > required_logical_pokemon:
             world.random.shuffle(logical_pokemon_pool)
@@ -113,7 +119,7 @@ def randomize_wild_pokemon(world: "PokemonCrystalWorld"):
         def randomize_encounter_list(region_key: EncounterKey, encounter_list: list[EncounterMon],
                                      exclude_unown=False) -> list[EncounterMon]:
 
-            region_type = world.generated_wild_region_logic[region_key]
+            region_type = world.logic.wild_regions[region_key]
             if region_type is LogicalAccess.InLogic:
                 pokemon_pool = logical_pokemon_pool
             elif region_type is LogicalAccess.OutOfLogic:
@@ -128,7 +134,7 @@ def randomize_wild_pokemon(world: "PokemonCrystalWorld"):
                     new_encounters.append(replace(encounter, pokemon=pokemon))
 
             elif world.options.encounter_grouping.value == EncounterGrouping.option_one_to_one:
-                distribution = defaultdict[str, list[int]](lambda: [])
+                distribution = defaultdict[str, list[int]](list)
                 new_encounters = [encounter for encounter in encounter_list]
                 encounter_blocklist = set()
                 for i, encounter in enumerate(encounter_list):
@@ -146,7 +152,7 @@ def randomize_wild_pokemon(world: "PokemonCrystalWorld"):
                     new_encounters.append(replace(encounter, pokemon=pokemon))
 
             if region_type is LogicalAccess.InLogic:
-                world.logically_available_pokemon.update(encounter.pokemon for encounter in new_encounters)
+                world.logic.available_pokemon.update(encounter.pokemon for encounter in new_encounters)
             return new_encounters
 
         region_keys = list(world.generated_wild)
@@ -166,30 +172,33 @@ def randomize_wild_pokemon(world: "PokemonCrystalWorld"):
     else:
         wild_pokemon = set()
         for region_key, wilds in world.generated_wild.items():
-            if world.generated_wild_region_logic[region_key] is LogicalAccess.InLogic:
+            if world.logic.wild_regions[region_key] is LogicalAccess.InLogic:
                 wild_pokemon.update(wild.pokemon for wild in wilds)
 
-        world.logically_available_pokemon.update()
+        world.logic.available_pokemon.update(wild_pokemon)
 
 
 def randomize_static_pokemon(world: "PokemonCrystalWorld"):
     if world.options.randomize_static_pokemon:
+        priority_pokemon = get_priority_dexsanity(world) - world.logic.available_pokemon
         blocklist = pokemon_convert_friendly_to_ids(world, world.options.static_blocklist)
         for static_name, pkmn_data in world.generated_static.items():
-            priority_pokemon = {poke for poke, data in world.generated_pokemon.items() if
-                                data.is_base} if pkmn_data.level_type == "giveegg" else None
+            pokemon = get_random_pokemon(world,
+                                         exclude_unown=True,
+                                         base_only=pkmn_data.level_type == "giveegg",
+                                         priority_pokemon=priority_pokemon,
+                                         blocklist=blocklist)
             world.generated_static[static_name] = replace(
                 world.generated_static[static_name],
-                pokemon=get_random_pokemon(world,
-                                           exclude_unown=True,
-                                           priority_pokemon=priority_pokemon,
-                                           blocklist=blocklist),
+                pokemon=pokemon,
             )
+            priority_pokemon.discard(pokemon)
+
     else:  # Still randomize the Odd Egg
         pokemon = world.random.choice(["PICHU", "CLEFFA", "IGGLYBUFF", "SMOOCHUM", "MAGBY", "ELEKID", "TYROGUE"])
         encounter_key = EncounterKey.static("OddEgg")
         world.generated_static[encounter_key] = replace(world.generated_static[encounter_key], pokemon=pokemon)
 
-    world.logically_available_pokemon.update(
-        static.pokemon for region_key, static in world.generated_static.items() if world.generated_wild_region_logic[
+    world.logic.available_pokemon.update(
+        static.pokemon for region_key, static in world.generated_static.items() if world.logic.wild_regions[
             region_key] is LogicalAccess.InLogic)

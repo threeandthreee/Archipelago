@@ -7,7 +7,7 @@ import typing
 import logging
 import itertools
 
-from BaseClasses import ItemClassification, Location, LocationProgressType, Region, Item
+from BaseClasses import ItemClassification, Location, LocationProgressType, Region, Item, MultiWorld
 from Fill import fill_restrictive
 
 from worlds.AutoWorld import WebWorld, World
@@ -154,7 +154,6 @@ class CrossCodeWorld(World):
         'legs'
     }
 
-
     def get_include_options(self) -> IncludeOptions:
         """
         The metadata dict is a dict that will be matched against the `metadata` fields in the ItemPoolEntry and Location
@@ -232,7 +231,11 @@ class CrossCodeWorld(World):
                 self.region_dict[location.region].locations.append(location)
                 location.place_locked_item(Item(location.name, ItemClassification.progression, None, self.player))
 
-    def generate_early(self):
+    def fill_pools(self):
+        # do nothing if the pools are already set
+        if hasattr(self, "pools"):
+            return
+
         self.include_options = self.get_include_options()
 
         include_options_tuple = tuple(self.include_options.items())
@@ -260,10 +263,14 @@ class CrossCodeWorld(World):
             legendary * (cons + drop),
         ]))
 
+    def generate_early(self):
+        self.fill_pools()
+
         self.variables = defaultdict(list)
 
         start_inventory = self.options.start_inventory.value
-        self.logic_mode = self.options.logic_mode.current_key
+        # self.logic_mode = self.options.logic_mode.current_key
+        self.logic_mode = "open"
         self.region_pack = self.world_data.region_packs[self.logic_mode]
 
         self.enabled_chain_names = set()
@@ -372,6 +379,25 @@ class CrossCodeWorld(World):
             slot_data: SlotData = self.multiworld.re_gen_passthrough["CrossCode"]
             # Reinterpret the JSON chest clearance levels dict (a string -> string mapping) as an int -> int mapping instead.
             self.logic_dict["chest_clearance_levels"] = {int(combo_id): clearance for combo_id, clearance in slot_data["options"]["chestClearanceLevels"].items()}
+
+    @classmethod
+    def create_group(cls, multiworld: "MultiWorld", new_player_id: int, players: set[int]) -> World:
+        for player in players:
+            multiworld.worlds[player].fill_pools()
+
+        group = super().create_group(multiworld, new_player_id, players)
+        arbitrary_player = list(players)[0]
+        arbitrary_world = multiworld.worlds[arbitrary_player]
+        group.pools = arbitrary_world.pools
+        weights: list[int] = []
+        for i in range(len(arbitrary_world._filler_pool_weights)):
+            sum = 0
+            for player in players:
+                sum += multiworld.worlds[player]._filler_pool_weights[i]
+            weights.append(sum)
+
+        group._filler_pool_weights = weights
+        return group
 
     def add_location(self, data: LocationData, region: Region):
         location = CrossCodeLocation(self.player, data, self.logic_mode, self.region_dict)

@@ -11,6 +11,7 @@ from BaseClasses import ItemClassification
 from .parse import JsonParser
 from .context import Context
 from .util import BASE_ID, DYNAMIC_ITEM_AREA_OFFSET, RESERVED_ITEM_IDS
+from .markers import Marker, MarkerGenerator
 
 from ..types.items import ItemData, ProgressiveItemChainSingle, SingleItemData, ItemPoolEntry, ProgressiveItemChain
 from ..types.locations import AccessInfo, LocationData
@@ -34,6 +35,8 @@ class ListInfo:
     """
     ctx: Context
     json_parser: JsonParser
+    marker_generator: MarkerGenerator
+
     current_location_code: int
     current_item_code: int
 
@@ -66,6 +69,8 @@ class ListInfo:
     progressive_items: dict[str, ItemData]
 
     descriptions: dict[int, dict[str, str]]
+
+    markers: dict[str, list[Marker]]
 
     def __init__(self, ctx: Context):
         self.ctx = ctx
@@ -110,6 +115,9 @@ class ListInfo:
         self.progressive_items = {}
 
         self.descriptions = {}
+
+        self.marker_generator = MarkerGenerator(self.ctx)
+        self.markers = defaultdict(list)
 
         self.variable_definitions = defaultdict(dict)
 
@@ -251,6 +259,11 @@ class ListInfo:
 
             if locked:
                 self.locked_locations.append(locid)
+
+            marker = self.marker_generator.generate_marker(raw_loc, locid)
+
+            if marker is not None:
+                self.markers[area].append(marker)
 
         if not found and (num_rewards > 1 or create_event):
             event_name = f"{name} (Event)"

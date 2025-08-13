@@ -1,7 +1,7 @@
 import pkgutil
 from collections.abc import Sequence, Mapping
 from dataclasses import dataclass, field, replace
-from enum import Enum, StrEnum
+from enum import Enum, StrEnum, IntEnum
 from typing import Any
 
 import orjson
@@ -9,9 +9,172 @@ import yaml
 
 from BaseClasses import ItemClassification
 
-APWORLD_VERSION = "4.0.10"
+APWORLD_VERSION = "5.0.1"
 POKEDEX_OFFSET = 10000
 POKEDEX_COUNT_OFFSET = 20000
+FLY_UNLOCK_OFFSET = 512
+
+FRIENDLY_MART_NAMES = {
+    "MART_CHERRYGROVE": "Cherrygrove City Poke Mart",
+    "MART_VIOLET": "Violet City Poke Mart",
+    "MART_AZALEA": "Azalea Town Poke Mart",
+    "MART_CIANWOOD": "Cianwood City Pharmacy",
+    "MART_GOLDENROD_2F_1": "Goldenrod Dept. Store 2F - Top Salesman",
+    "MART_GOLDENROD_2F_2": "Goldenrod Dept. Store 2F - Bottom Salesman",
+    "MART_GOLDENROD_3F": "Goldenrod Dept. Store 3F - X Items Shop",
+    "MART_GOLDENROD_4F": "Goldenrod Dept. Store 4F - Vitamin Shop",
+    "MART_GOLDENROD_5F": "Goldenrod Dept. Store 5F - TM Shop",
+    "MART_OLIVINE": "Olivine City Poke Mart",
+    "MART_ECRUTEAK": "Ecruteak City Poke Mart",
+    "MART_MAHOGANY_1": "Mahogany Town Rocket Shop",
+    "MART_MAHOGANY_2": "Mahogany Town Poke Mart",
+    "MART_BLACKTHORN": "Blackthorn City Poke Mart",
+    "MART_VIRIDIAN": "Viridian City Poke Mart",
+    "MART_PEWTER": "Pewter City Poke Mart",
+    "MART_CERULEAN": "Cerulean City Poke Mart",
+    "MART_LAVENDER": "Lavender Town Poke Mart",
+    "MART_VERMILION": "Vermilion City Poke Mart",
+    "MART_CELADON_2F_1": "Celadon Dept. Store 2F - Left Salesman",
+    "MART_CELADON_2F_2": "Celadon Dept. Store 2F - Right Salesman",
+    "MART_CELADON_3F": "Celadon Dept. Store 3F - TM Shop",
+    "MART_CELADON_4F": "Celadon Dept. Store 4F - Mail Shop",
+    "MART_CELADON_5F_1": "Celadon Dept. Store 5F - Vitamin Shop",
+    "MART_CELADON_5F_2": "Celadon Dept. Store 5F - X Items Shop",
+    "MART_FUCHSIA": "Fuchsia City Poke Mart",
+    "MART_SAFFRON": "Saffron City Poke Mart",
+    "MART_MT_MOON": "Mt Moon Square Gift Shop",
+    "MART_INDIGO_PLATEAU": "Indigo Plateau Poke Mart",
+    "MART_UNDERGROUND": "Goldenrod UG - Herb Shop",
+    "MART_GOLDENROD_1F_S": "Evolution Stone Shop",
+    "MART_ROOFTOP_SALE": "Goldenrod Dept. Store - Rooftop Sale",
+    "MART_BARGAIN_SHOP": "Goldenrod UG - Bargain Shop",
+    "MART_BLUE_CARD": "Radio Tower 2F - Blue Card Shop",
+    "MART_GOLDENROD_GAME_CORNER": "Goldenrod Game Corner - Prize Shop",
+    "MART_CELADON_GAME_CORNER_PRIZE_ROOM": "Celadon Game Corner - Prize Shop",
+    "MART_KURTS_BALLS": "Azalea Town - Kurt's Ball Shop",
+}
+
+CUSTOM_MART_SLOT_NAMES = {
+    "MART_KURTS_BALLS": [
+        "Red Apricorn",
+        "Grn Apricorn",
+        "Blu Apricorn",
+        "Ylw Apricorn",
+        "Blk Apricorn",
+        "Wht Apricorn",
+        "Pnk Apricorn"
+    ],
+    "MART_BLUE_CARD": [
+        "Two Point Item 1",
+        "Two Point Item 2",
+        "Three Point Item 1",
+        "Three Point Item 2",
+        "Five Point Item 1",
+        "Five Point Item 2",
+        "Five Point Item 3",
+        "Five Point Item 4",
+        "Five Point Item 5"
+    ],
+}
+
+MART_CATEGORIES = {
+    "Johto Marts": {
+        "MART_CHERRYGROVE",
+        "MART_VIOLET",
+        "MART_AZALEA",
+        "MART_CIANWOOD",
+        "MART_GOLDENROD_2F_1",
+        "MART_GOLDENROD_2F_2",
+        "MART_GOLDENROD_3F",
+        "MART_GOLDENROD_4F",
+        "MART_GOLDENROD_5F",
+        "MART_OLIVINE",
+        "MART_ECRUTEAK",
+        "MART_MAHOGANY_1",
+        "MART_MAHOGANY_2",
+        "MART_BLACKTHORN",
+        "MART_UNDERGROUND",
+        "MART_ROOFTOP_SALE",
+        "MART_BARGAIN_SHOP",
+        "MART_INDIGO_PLATEAU",
+    },
+    "Kanto Marts": {
+        "MART_VIRIDIAN",
+        "MART_PEWTER",
+        "MART_CERULEAN",
+        "MART_LAVENDER",
+        "MART_VERMILION",
+        "MART_CELADON_2F_1",
+        "MART_CELADON_2F_2",
+        "MART_CELADON_3F",
+        "MART_CELADON_4F",
+        "MART_CELADON_5F_1",
+        "MART_CELADON_5F_2",
+        "MART_FUCHSIA",
+        "MART_SAFFRON",
+        "MART_MT_MOON",
+    },
+    "Blue Card": {
+        "MART_BLUE_CARD",
+    },
+    "Apricorns": {
+        "MART_KURTS_BALLS"
+    },
+    "Game Corners": {
+        "MART_GOLDENROD_GAME_CORNER",
+        "MART_CELADON_GAME_CORNER_PRIZE_ROOM"
+    },
+    "invalid": {
+        "MART_GOLDENROD_1F_S"
+    },
+}
+
+BETTER_MART_MARTS = {
+    "MART_CHERRYGROVE",
+    "MART_VIOLET",
+    "MART_AZALEA",
+    "MART_CIANWOOD",
+    "MART_GOLDENROD_2F_1",
+    "MART_OLIVINE",
+    "MART_ECRUTEAK",
+    "MART_MAHOGANY_1",
+    "MART_MAHOGANY_2",
+    "MART_BLACKTHORN",
+    "MART_VIRIDIAN",
+    "MART_PEWTER",
+    "MART_CERULEAN",
+    "MART_LAVENDER",
+    "MART_VERMILION",
+    "MART_CELADON_2F_1",
+    "MART_FUCHSIA",
+    "MART_SAFFRON",
+    "MART_INDIGO_PLATEAU",
+}
+
+REQUEST_POKEMON = [
+    "LICKITUNG",
+    "ODDISH",
+    "STARYU",
+    "GROWLITHE",
+    "PICHU",
+]
+
+ADHOC_TRAINERSANITY_TRAINERS = [
+    "OFFICER_DIRK",
+    "OFFICER_KEITH",
+    "POKEFANF_JAIME",
+    "LASS_ALICE",
+    "LASS_LINDA",
+    "PICNICKER_CINDY",
+    "CAMPER_BARRY",
+    "COOLTRAINERM_KEVIN",
+    "ROCKET_GRUNTM_31",
+    "ELITE_4_WILL",
+    "ELITE_4_KOGA",
+    "ELITE_4_BRUNO",
+    "ELITE_4_KAREN",
+    "CHAMPION_LANCE",
+]
 
 
 @dataclass(frozen=True)
@@ -19,6 +182,7 @@ class ItemData:
     label: str
     item_id: int
     item_const: str
+    price: int
     classification: ItemClassification
     tags: frozenset[str]
 
@@ -63,7 +227,7 @@ class LearnsetData:
     move: str
 
 
-class EvolutionType(Enum):
+class EvolutionType(IntEnum):
     Level = 0
     Item = 1
     Happiness = 2
@@ -79,6 +243,21 @@ class EvolutionType(Enum):
         if evo_type_string == "EVOLVE_TRADE": return EvolutionType.Trade
         raise ValueError(f"Invalid evolution type: {evo_type_string}")
 
+    def __str__(self):
+        if self is EvolutionType.Level: return "EVOLVE_LEVEL"
+        if self is EvolutionType.Item: return "EVOLVE_ITEM"
+        if self is EvolutionType.Happiness: return "EVOLVE_HAPPINESS"
+        if self is EvolutionType.Stats: return "EVOLVE_STAT"
+        if self is EvolutionType.Trade: return "EVOLVE_TRADE"
+        raise ValueError(f"Invalid evolution type")
+
+    def friendly_name(self):
+        if self is EvolutionType.Level: return "Level "
+        if self is EvolutionType.Item: return "Use "
+        if self is EvolutionType.Happiness: return "Happiness"
+        if self is EvolutionType.Stats: return "Stats - "
+        if self is EvolutionType.Trade: return "Trade"
+
 
 @dataclass(frozen=True)
 class EvolutionData:
@@ -87,6 +266,25 @@ class EvolutionData:
     condition: str | None
     pokemon: str
     length: int
+
+
+class GrowthRate(IntEnum):
+    MediumFast = 0
+    SlightlyFast = 1
+    SlightlySlow = 2
+    MediumSlow = 3
+    Fast = 4
+    Slow = 5
+
+    @staticmethod
+    def from_string(growth_rate_string):
+        if growth_rate_string == "GROWTH_MEDIUM_FAST": return GrowthRate.MediumFast
+        if growth_rate_string == "GROWTH_SLIGHTLY_FAST": return GrowthRate.SlightlyFast
+        if growth_rate_string == "GROWTH_SLIGHTLY_SLOW": return GrowthRate.SlightlySlow
+        if growth_rate_string == "GROWTH_MEDIUM_SLOW": return GrowthRate.MediumSlow
+        if growth_rate_string == "GROWTH_FAST": return GrowthRate.Fast
+        if growth_rate_string == "GROWTH_SLOW": return GrowthRate.Slow
+        raise ValueError(f"Invalid growth rate: {growth_rate_string}")
 
 
 @dataclass(frozen=True)
@@ -102,6 +300,7 @@ class PokemonData:
     bst: int
     egg_groups: Sequence[str]
     gender_ratio: str
+    growth_rate: GrowthRate
 
 
 @dataclass(frozen=True)
@@ -125,7 +324,23 @@ class TMHMData:
     move_id: int
 
 
-class MiscOption(Enum):
+@dataclass(frozen=True)
+class MartItemData:
+    item: str
+    price: int
+    flag: int | None
+    address: int
+
+
+@dataclass(frozen=True)
+class MartData:
+    index: int
+    friendly_name: str
+    category: str
+    items: Sequence[MartItemData]
+
+
+class MiscOption(IntEnum):
     FuchsiaGym = 0
     SaffronGym = 1
     RadioTowerQuestions = 2
@@ -138,6 +353,7 @@ class MiscOption(Enum):
     RadioChannels = 9
     MomItems = 10
     IcePath = 11
+    TooManyDogs = 12
 
     @staticmethod
     def all():
@@ -210,7 +426,7 @@ class EncounterType(StrEnum):
     Static = "Static"
 
 
-class GrassTimeOfDay(Enum):
+class GrassTimeOfDay(IntEnum):
     Morn = 0
     Day = 1
     Nite = 2
@@ -312,6 +528,7 @@ class RegionWildEncounterData:
 class RegionData:
     name: str
     johto: bool
+    elite_4: bool
     silver_cave: bool
     exits: list[str]
     trainers: list[TrainerData]
@@ -319,6 +536,7 @@ class RegionData:
     locations: list[str]
     events: list[EventData]
     wild_encounters: RegionWildEncounterData | None
+    marts: list[str]
 
 
 @dataclass(frozen=True)
@@ -334,7 +552,9 @@ class StartingTown:
 class FlyRegion:
     id: int
     name: str
-    region_id: str
+    base_identifier: str
+    unlock_region: str
+    exit_region: str
     johto: bool
     exclude_vanilla_start: bool = False
 
@@ -387,6 +607,7 @@ class PokemonCrystalData:
     rom_addresses: Mapping[str, int]
     ram_addresses: Mapping[str, int]
     event_flags: Mapping[str, int]
+    mart_flag_offset: int
     regions: Mapping[str, RegionData]
     locations: Mapping[str, LocationData]
     items: Mapping[int, ItemData]
@@ -397,6 +618,7 @@ class PokemonCrystalData:
     types: Sequence[str]
     type_ids: Mapping[str, int]
     tmhm: Mapping[str, TMHMData]
+    marts: Mapping[str, MartData]
     misc: MiscData
     music: MusicData
     static: Mapping[EncounterKey, StaticPokemon]
@@ -406,6 +628,8 @@ class PokemonCrystalData:
     game_settings: Mapping[str, PokemonCrystalGameSetting]
     phone_scripts: Sequence[PhoneScriptData]
     map_sizes: Mapping[str, tuple[int, int]]
+    request_pokemon: Sequence[str]
+    adhoc_trainersanity: Mapping[int, int]
 
 
 def load_json_data(data_name: str) -> list[Any] | Mapping[str, Any]:
@@ -441,6 +665,7 @@ def _init() -> None:
     radio_addr_data = data_json["misc"]["radio_channel_addresses"]
     mom_items_data = data_json["misc"]["mom_items"]
     tmhm_data = data_json["tmhm"]
+    mart_data = data_json["marts"]
     map_size_data = data_json["map_sizes"]
 
     claimed_locations: set[str] = set()
@@ -471,7 +696,7 @@ def _init() -> None:
     for static_name, static_data in data_json["static"].items():
         static_key = EncounterKey(EncounterType.Static, static_name)
         level_type = static_data["type"]
-        if level_type == "loadwildmon" or level_type == "givepoke":
+        if level_type in ("loadwildmon", "givepoke", "gamecorner"):
             level_address = static_data["addresses"][0]
         elif level_type == "custom":
             level_address = static_data["level_address"]
@@ -486,8 +711,9 @@ def _init() -> None:
             level_address
         )
 
-    regions = {}
-    locations = {}
+    regions = dict[str, RegionData]()
+    locations = dict[str, LocationData]()
+    locations_to_regions = dict[str, str]()
 
     for region_name, region_json in regions_json.items():
 
@@ -504,18 +730,20 @@ def _init() -> None:
                 item_codes[location_json["default_item"]],
                 rom_address_data[location_json["script"]],
                 event_flag_data[location_json["flag"]],
-                frozenset(location_json["tags"]),
+                frozenset(location_json["tags"] + (["Johto"] if region_json["johto"] else [])),
                 location_json["script"]
             )
             region_locations.append(location_name)
             locations[location_name] = new_location
             claimed_locations.add(location_name)
+            locations_to_regions[location_name] = region_name
 
         region_locations.sort()
 
         new_region = RegionData(
             name=region_name,
             johto=region_json["johto"],
+            elite_4=region_json["elite_4"] if "elite_4" in region_json else False,
             silver_cave=region_json["silver_cave"] if "silver_cave" in region_json else False,
             exits=[region_exit for region_exit in region_json["exits"]],
             statics=[EncounterKey(EncounterType.Static, static) for static in region_json.get("statics", [])],
@@ -528,12 +756,42 @@ def _init() -> None:
                 region_json["wild_encounters"].get("fishing"),
                 region_json["wild_encounters"].get("headbutt"),
                 region_json["wild_encounters"].get("rock_smash")
-            ) if "wild_encounters" in region_json else None
+            ) if "wild_encounters" in region_json else None,
+            marts=region_json["marts"] if "marts" in region_json else [],
         )
 
         regions[region_name] = new_region
 
     # items
+
+    fly_regions = [
+        FlyRegion(2, "Pallet Town", "PALLET", "REGION_PALLET_TOWN", "REGION_PALLET_TOWN", False),
+        FlyRegion(3, "Viridian City", "VIRIDIAN", "REGION_VIRIDIAN_CITY", "REGION_VIRIDIAN_CITY", False),
+        FlyRegion(4, "Pewter City", "PEWTER", "REGION_PEWTER_CITY", "REGION_PEWTER_CITY", False),
+        FlyRegion(5, "Cerulean City", "CERULEAN", "REGION_CERULEAN_CITY", "REGION_CERULEAN_CITY", False),
+        FlyRegion(7, "Vermilion City", "VERMILION", "REGION_VERMILION_CITY", "REGION_VERMILION_CITY:FLY", False),
+        FlyRegion(8, "Lavender Town", "LAVENDER", "REGION_LAVENDER_TOWN", "REGION_LAVENDER_TOWN", False),
+        FlyRegion(9, "Saffron City", "SAFFRON", "REGION_SAFFRON_CITY", "REGION_SAFFRON_CITY", False),
+        FlyRegion(10, "Celadon City", "CELADON", "REGION_CELADON_CITY", "REGION_CELADON_CITY", False),
+        FlyRegion(11, "Fuchsia City", "FUCHSIA", "REGION_FUCHSIA_CITY", "REGION_FUCHSIA_CITY", False),
+        FlyRegion(12, "Cinnabar Island", "CINNABAR", "REGION_CINNABAR_ISLAND", "REGION_CINNABAR_ISLAND", False),
+
+        FlyRegion(14, "New Bark Town", "NEW_BARK", "REGION_NEW_BARK_TOWN", "REGION_NEW_BARK_TOWN", True,
+                  exclude_vanilla_start=True),
+        FlyRegion(15, "Cherrygrove City", "CHERRYGROVE", "REGION_CHERRYGROVE_CITY", "REGION_CHERRYGROVE_CITY", True,
+                  exclude_vanilla_start=True),
+        FlyRegion(16, "Violet City", "VIOLET", "REGION_VIOLET_CITY", "REGION_VIOLET_CITY", True,
+                  exclude_vanilla_start=True),
+        FlyRegion(18, "Azalea Town", "AZALEA", "REGION_AZALEA_TOWN", "REGION_AZALEA_TOWN", True),
+        FlyRegion(19, "Cianwood City", "CIANWOOD", "REGION_CIANWOOD_CITY", "REGION_CIANWOOD_CITY", True),
+        FlyRegion(20, "Goldenrod City", "GOLDENROD", "REGION_GOLDENROD_CITY", "REGION_GOLDENROD_CITY", True),
+        FlyRegion(21, "Olivine City", "OLIVINE", "REGION_OLIVINE_CITY", "REGION_OLIVINE_CITY", True),
+        FlyRegion(22, "Ecruteak City", "ECRUTEAK", "REGION_ECRUTEAK_CITY", "REGION_ECRUTEAK_CITY", True),
+        FlyRegion(23, "Mahogany Town", "MAHOGANY", "REGION_MAHOGANY_TOWN", "REGION_MAHOGANY_TOWN:FLY", True),
+        FlyRegion(24, "Lake of Rage", "LAKE_OF_RAGE", "REGION_LAKE_OF_RAGE", "REGION_LAKE_OF_RAGE", True),
+        FlyRegion(25, "Blackthorn City", "BLACKTHORN", "REGION_BLACKTHORN_CITY", "REGION_BLACKTHORN_CITY", True),
+        FlyRegion(26, "Silver Cave", "MT_SILVER", "REGION_SILVER_CAVE_OUTSIDE", "REGION_SILVER_CAVE_OUTSIDE", True)
+    ]
 
     items = {}
     for item_constant_name, attributes in items_json.items():
@@ -550,12 +808,20 @@ def _init() -> None:
             item_classification = ItemClassification.filler
             # raise ValueError(f"Unknown classification {attributes['classification']} for item {item_constant_name}")
 
-        items[item_codes[item_constant_name]] = ItemData(
-            attributes["name"],
-            item_codes[item_constant_name],
-            item_constant_name,
-            item_classification,
-            frozenset(attributes["tags"])
+        if "Fly" in attributes["tags"]:
+            fly_id = attributes["fly_id"]
+            item_id = next(
+                region for region in fly_regions if region.base_identifier == fly_id).id + FLY_UNLOCK_OFFSET
+        else:
+            item_id = item_codes[item_constant_name]
+
+        items[item_id] = ItemData(
+            label=attributes["name"],
+            item_id=item_id,
+            item_const=item_constant_name,
+            price=attributes["price"],
+            classification=item_classification,
+            tags=frozenset(attributes["tags"])
         )
 
     pokemon = {}
@@ -580,7 +846,8 @@ def _init() -> None:
             pokemon_data["is_base"],
             pokemon_data["bst"],
             pokemon_data["egg_groups"],
-            pokemon_data["gender_ratio"]
+            pokemon_data["gender_ratio"],
+            GrowthRate.from_string(pokemon_data["growth_rate"]),
         )
 
     moves = {
@@ -638,10 +905,21 @@ def _init() -> None:
         move_data[tm_name]["id"]
     ) for tm_name, tm_data in tmhm_data.items()}
 
+    mart_categories = {mart: category for category, marts in MART_CATEGORIES.items() for mart in marts}
+
+    marts = {mart_name: MartData(
+        mart_data["index"],
+        FRIENDLY_MART_NAMES[mart_name],
+        mart_categories[mart_name],
+        [MartItemData(entry["item"], entry["price"], event_flag_data[entry["flag"]] if "flag" in entry else None,
+                      rom_address_data[mart_data["address"]] + (i * 5) + 1)
+         for i, entry in enumerate(mart_data["items"])]
+    ) for mart_name, mart_data in mart_data.items()}
+
     music_consts = {music_name: MusicConst(music_data["id"], music_data["loop"]) for music_name, music_data in
                     data_json["music"]["consts"].items()}
 
-    music_maps = {map_name: "" for map_name in data_json["music"]["maps"]}
+    music_maps = {map_name: music_name for map_name, music_name in data_json["music"]["maps"].items()}
 
     music = MusicData(music_consts,
                       music_maps,
@@ -683,32 +961,6 @@ def _init() -> None:
         StartingTown(25, "Blackthorn City", "REGION_BLACKTHORN_CITY", True)
     ]
 
-    fly_regions = [
-        FlyRegion(2, "Pallet Town", "REGION_PALLET_TOWN", False),
-        FlyRegion(3, "Viridian City", "REGION_VIRIDIAN_CITY", False),
-        FlyRegion(4, "Pewter City", "REGION_PEWTER_CITY", False),
-        FlyRegion(5, "Cerulean City", "REGION_CERULEAN_CITY", False),
-        FlyRegion(7, "Vermilion City", "REGION_VERMILION_CITY", False),
-        FlyRegion(8, "Lavender Town", "REGION_LAVENDER_TOWN", False),
-        FlyRegion(9, "Saffron City", "REGION_SAFFRON_CITY", False),
-        FlyRegion(10, "Celadon City", "REGION_CELADON_CITY", False),
-        FlyRegion(11, "Fuchsia City", "REGION_FUCHSIA_CITY", False),
-        FlyRegion(12, "Cinnabar Island", "REGION_CINNABAR_ISLAND", False),
-
-        FlyRegion(14, "New Bark Town", "REGION_NEW_BARK_TOWN", True, exclude_vanilla_start=True),
-        FlyRegion(15, "Cherrygrove City", "REGION_CHERRYGROVE_CITY", True, exclude_vanilla_start=True),
-        FlyRegion(16, "Violet City", "REGION_VIOLET_CITY", True, exclude_vanilla_start=True),
-        FlyRegion(18, "Azalea Town", "REGION_AZALEA_TOWN", True),
-        FlyRegion(19, "Cianwood City", "REGION_CIANWOOD_CITY", True),
-        FlyRegion(20, "Goldenrod City", "REGION_GOLDENROD_CITY", True),
-        FlyRegion(21, "Olivine City", "REGION_OLIVINE_CITY", True),
-        FlyRegion(22, "Ecruteak City", "REGION_ECRUTEAK_CITY", True),
-        FlyRegion(23, "Mahogany Town", "REGION_MAHOGANY_TOWN", True),
-        FlyRegion(24, "Lake of Rage", "REGION_LAKE_OF_RAGE", True),
-        FlyRegion(25, "Blackthorn City", "REGION_BLACKTHORN_CITY", True),
-        FlyRegion(26, "Silver Cave", "REGION_SILVER_CAVE_OUTSIDE", True)
-    ]
-
     game_settings = {
         "text_speed": PokemonCrystalGameSetting(0, 0, 2, {"instant": 0, "fast": 1, "mid": 2, "slow": 3}, 2),
         "battle_shift": PokemonCrystalGameSetting(0, 3, 1, {"shift": 1, "set": 0}, 1),
@@ -742,7 +994,8 @@ def _init() -> None:
         "blind_trainers": PokemonCrystalGameSetting(4, 1, 1, ON_OFF, 0),
         "guaranteed_catch": PokemonCrystalGameSetting(4, 2, 1, ON_OFF, 0),
         "ap_item_sound": PokemonCrystalGameSetting(4, 3, 1, ON_OFF, 1),
-        "_death_link": PokemonCrystalGameSetting(4, 4, 1, ON_OFF, 0)
+        "_death_link": PokemonCrystalGameSetting(4, 4, 1, ON_OFF, 0),
+        "trainersanity_indication": PokemonCrystalGameSetting(4, 5, 1, ON_OFF, 0),
     }
 
     map_sizes = {map_name: (map_size[0], map_size[1]) for map_name, map_size in
@@ -757,6 +1010,14 @@ def _init() -> None:
         except Exception as ex:
             raise ValueError(f"Error processing phone script '{script_name}': {ex}") from ex
 
+    adhoc_trainersanity = {}
+
+    adhoc_trainers = [f"ITEM_FROM_{trainer}" for trainer in ADHOC_TRAINERSANITY_TRAINERS]
+
+    for loc_id, loc_data in locations.items():
+        if loc_id in adhoc_trainers:
+            adhoc_trainersanity[loc_data.rom_address] = rom_address_data[f"AP_AdhocTrainersanity_{loc_id}"]
+
     global data
     data = PokemonCrystalData(
         rom_version=data_json["rom_version"],
@@ -764,6 +1025,7 @@ def _init() -> None:
         ram_addresses=ram_address_data,
         rom_addresses=rom_address_data,
         event_flags=event_flag_data,
+        mart_flag_offset=data_json["mart_flag_offset"],
         regions=regions,
         locations=locations,
         items=items,
@@ -774,6 +1036,7 @@ def _init() -> None:
         types=types,
         type_ids=type_ids,
         tmhm=tmhm,
+        marts=marts,
         misc=misc,
         music=music,
         static=statics,
@@ -782,7 +1045,9 @@ def _init() -> None:
         starting_towns=starting_towns,
         game_settings=game_settings,
         phone_scripts=phone_scripts,
-        map_sizes=map_sizes
+        map_sizes=map_sizes,
+        request_pokemon=REQUEST_POKEMON,
+        adhoc_trainersanity=adhoc_trainersanity,
     )
 
 

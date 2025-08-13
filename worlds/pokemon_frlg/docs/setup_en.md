@@ -33,7 +33,7 @@ It is recommended you follow the setup guide for Bizhawk in the [Pokémon Emeral
 8. On your first time opening a patch with BizHawk Client, you will also be asked to locate `EmuHawk.exe` in your
 BizHawk install.
 
-If you're playing a single-player seed and you don't care about autotracking or hints, you can stop here, close the
+If you're playing a single-player seed, and you don't care about autotracking or hints, you can stop here, close the
 client, and load the patched ROM in any emulator. However, for multiworlds and other Archipelago features, continue
 below using BizHawk as your emulator.
 

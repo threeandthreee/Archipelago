@@ -180,7 +180,7 @@ class FFVCDSNIClient(SNIClient):
         
         
         for new_check_id in new_checks:
-            location = ctx.location_names[new_check_id]
+            location = ctx.location_names.lookup_in_game(new_check_id)
             if location in tracker_event_locations:
                 # Send tracker event flags
                 if not self.local_set_events[location] and ctx.slot is not None:
@@ -234,9 +234,9 @@ class FFVCDSNIClient(SNIClient):
                 item = ctx.items_received[recv_index]
                 recv_index += 1
                 logging.info('Received %s from %s (%s) (%d/%d in list)' % (
-                    color(ctx.item_names[item.item], 'red', 'bold'),
+                    color(ctx.item_names.lookup_in_game(item.item), 'red', 'bold'),
                     color(ctx.player_names[item.player], 'yellow'),
-                    ctx.location_names[item.location], recv_index, len(ctx.items_received)))
+                    ctx.location_names.lookup_in_slot(item.location, item.player), recv_index, len(ctx.items_received)))
     
                 recv_index_list = [recv_index % 256, recv_index // 256]            
                 snes_buffered_write(ctx, FFVCD_RECV_PROGRESS_ADDR, bytes(recv_index_list))            

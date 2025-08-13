@@ -1,14 +1,19 @@
+import math
 import time
 from typing import TYPE_CHECKING
 
 import worlds._bizhawk as bizhawk
+from BaseClasses import ItemClassification
 from NetUtils import ClientStatus
 from worlds._bizhawk.client import BizHawkClient
-from .data import data, APWORLD_VERSION, POKEDEX_OFFSET, POKEDEX_COUNT_OFFSET
-from .options import Goal
+from .data import data, APWORLD_VERSION, POKEDEX_OFFSET, POKEDEX_COUNT_OFFSET, FLY_UNLOCK_OFFSET
+from .items import item_const_name_to_id
+from .options import Goal, ProvideShopHints
 
 if TYPE_CHECKING:
     from worlds._bizhawk.context import BizHawkClientContext
+
+EVENT_BYTES = math.ceil(max(data.event_flags.values()) / 8)
 
 TRACKER_EVENT_FLAGS = [
     "EVENT_GOT_KENYA",
@@ -41,8 +46,8 @@ TRACKER_EVENT_FLAGS = [
     "EVENT_BEAT_BLAINE",
     "EVENT_BEAT_BLUE",
     "EVENT_FAST_SHIP_FOUND_GIRL",
-    "EVENT_FOUGHT_SNORLAX",
-    "EVENT_MET_BILL"
+    "EVENT_GOT_MYSTERY_EGG_FROM_MR_POKEMON",
+    "EVENT_MET_BILL",
 ]
 
 EVENT_FLAG_MAP = {data.event_flags[event]: event for event in TRACKER_EVENT_FLAGS}
@@ -64,7 +69,14 @@ TRACKER_STATIC_EVENT_FLAGS = [
     "EVENT_GOT_TYROGUE_FROM_KIYO",
     "EVENT_UNION_CAVE_B2F_LAPRAS",
     "EVENT_FOUGHT_CELEBI",
-    "EVENT_GOT_ODD_EGG"
+    "EVENT_GOT_ODD_EGG",
+    "EVENT_STATIC_GOLDENROD_GAME_CORNER_1",
+    "EVENT_STATIC_GOLDENROD_GAME_CORNER_2",
+    "EVENT_STATIC_GOLDENROD_GAME_CORNER_3",
+    "EVENT_STATIC_CELADON_GAME_CORNER_PRIZE_ROOM_1",
+    "EVENT_STATIC_CELADON_GAME_CORNER_PRIZE_ROOM_2",
+    "EVENT_STATIC_CELADON_GAME_CORNER_PRIZE_ROOM_3",
+    "EVENT_FOUGHT_SNORLAX",
 ]
 
 STATIC_EVENT_FLAG_MAP = {data.event_flags[event]: event for event in TRACKER_STATIC_EVENT_FLAGS}
@@ -91,7 +103,7 @@ TRACKER_ROCKET_TRAP_EVENTS = [
     "EVENT_EXPLODING_TRAP_19",
     "EVENT_EXPLODING_TRAP_20",
     "EVENT_EXPLODING_TRAP_21",
-    "EVENT_EXPLODING_TRAP_22"
+    "EVENT_EXPLODING_TRAP_22",
 ]
 
 ROCKET_TRAP_EVENT_FLAG_MAP = {data.event_flags[event]: event for event in TRACKER_ROCKET_TRAP_EVENTS}
@@ -121,7 +133,9 @@ TRACKER_KEY_ITEM_FLAGS = [
     "EVENT_GOT_POKEGEAR",
     "EVENT_GOT_POKEDEX",
     "EVENT_MART_ESCAPE_ROPE",
-    "EVENT_MART_WATER_STONE"
+    "EVENT_MART_WATER_STONE",
+
+    "EVENT_RISING_BADGE_FROM_CLAIR_GYM",
 ]
 KEY_ITEM_FLAG_MAP = {data.event_flags[event]: event for event in TRACKER_KEY_ITEM_FLAGS}
 
@@ -134,6 +148,11 @@ INVERTED_EVENTS = {
 }
 
 INVERTED_EVENT_IDS = {data.event_flags[event] for event in INVERTED_EVENTS}
+
+HINT_FLAGS = {f"EVENT_SEEN_{mart_name}": [item.flag for item in mart_data.items if item.flag] for mart_name, mart_data
+              in data.marts.items()}
+
+HINT_FLAG_MAP = {data.event_flags[flag_name]: flag_name for flag_name in HINT_FLAGS.keys()}
 
 
 class PokemonCrystalClient(BizHawkClient):
@@ -148,6 +167,7 @@ class PokemonCrystalClient(BizHawkClient):
     local_set_rocket_trap_events: dict[str, bool]
     local_found_key_items: dict[str, bool]
     local_pokemon: dict[str, list[int]]
+    local_hints: list[str]
     phone_trap_locations: list[int]
     current_map: list[int]
     last_death_link: float
@@ -160,6 +180,7 @@ class PokemonCrystalClient(BizHawkClient):
         self.local_set_rocket_trap_events = dict()
         self.local_found_key_items = dict()
         self.local_pokemon = {"seen": list(), "caught": list()}
+        self.local_hints = []
         self.phone_trap_locations = list()
         self.current_map = [0, 0]
         self.last_death_link = 0
@@ -198,7 +219,7 @@ class PokemonCrystalClient(BizHawkClient):
                     generator_apworld_version = bytes([byte for byte in rom_info[4] if byte != 0]).decode("ascii")
                 except UnicodeDecodeError:
                     generator_apworld_version = None
-                    
+
                 if not generator_apworld_version:
                     generator_apworld_version = "too old to know"
                 generator_version = "{0:x}".format(rom_version)
@@ -241,6 +262,18 @@ class PokemonCrystalClient(BizHawkClient):
             self.goal_flag = data.event_flags["EVENT_BEAT_RED"]
 
         try:
+
+            # Scout the locations that can be hinted if provide hints is turned on
+            if ctx.slot_data["provide_shop_hints"] != ProvideShopHints.option_off and ctx.locations_info == {}:
+                hint_ids = []
+                for locations in HINT_FLAGS.values():
+                    hint_ids.extend(loc for loc in locations if loc in ctx.missing_locations)
+                await ctx.send_msgs([{
+                    "cmd": "LocationScouts",
+                    "locations": hint_ids,
+                    "create_as_hint": 0
+                }])
+
             overworld_guard = (data.ram_addresses["wArchipelagoSafeWrite"], [1], "WRAM")
 
             read_result = await bizhawk.guarded_read(
@@ -255,6 +288,13 @@ class PokemonCrystalClient(BizHawkClient):
 
             if num_received_items < len(ctx.items_received) and received_item_is_empty:
                 next_item = ctx.items_received[num_received_items].item
+                if next_item >= FLY_UNLOCK_OFFSET:
+                    fly_unlock = next_item - FLY_UNLOCK_OFFSET
+                    next_item = item_const_name_to_id("FLY_UNLOCK")
+                    await bizhawk.write(ctx.bizhawk_ctx, [
+                        (data.ram_addresses["wArchipelagoFlyUnlockReceived"],
+                         fly_unlock.to_bytes(1, "little"), "WRAM")
+                    ])
                 await bizhawk.write(ctx.bizhawk_ctx, [
                     (data.ram_addresses["wArchipelagoItemReceived"],
                      next_item.to_bytes(1, "little"), "WRAM")
@@ -262,7 +302,7 @@ class PokemonCrystalClient(BizHawkClient):
 
             read_result = await bizhawk.guarded_read(
                 ctx.bizhawk_ctx,
-                [(data.ram_addresses["wEventFlags"], 0x104, "WRAM"),  # Flags
+                [(data.ram_addresses["wEventFlags"], EVENT_BYTES, "WRAM"),  # Flags
                  (data.ram_addresses["wArchipelagoPokedexCaught"], 0x20, "WRAM"),
                  (data.ram_addresses["wArchipelagoPokedexSeen"], 0x20, "WRAM")],
                 [overworld_guard]
@@ -281,6 +321,7 @@ class PokemonCrystalClient(BizHawkClient):
             local_set_rocket_trap_events = {flag_name: False for flag_name in TRACKER_ROCKET_TRAP_EVENTS}
             local_found_key_items = {flag_name: False for flag_name in TRACKER_KEY_ITEM_FLAGS}
             local_pokemon: dict[str, list[int]] = {"caught": list(), "seen": list()}
+            local_hints = {flag_name: False for flag_name in HINT_FLAGS.keys()}
 
             flag_bytes = read_result[0]
             for byte_i, byte in enumerate(flag_bytes):
@@ -306,6 +347,9 @@ class PokemonCrystalClient(BizHawkClient):
 
                         if location_id in KEY_ITEM_FLAG_MAP:
                             local_found_key_items[KEY_ITEM_FLAG_MAP[location_id]] = True
+
+                        if location_id in HINT_FLAG_MAP:
+                            local_hints[HINT_FLAG_MAP[location_id]] = True
 
             for byte_i, byte in enumerate(pokedex_caught_bytes):
                 for i in range(8):
@@ -380,6 +424,7 @@ class PokemonCrystalClient(BizHawkClient):
                                   and location not in local_checked_locations
                                   and location not in ctx.checked_locations]
                 if hint_locations:
+                    ctx.locations_scouted.update(hint_locations)
                     await ctx.send_msgs([{
                         "cmd": "LocationScouts",
                         "locations": hint_locations,
@@ -445,6 +490,39 @@ class PokemonCrystalClient(BizHawkClient):
                     "operations": [{"operation": "or", "value": key_bitfield}],
                 }])
                 self.local_found_key_items = local_found_key_items
+
+            provide_shop_hints = ctx.slot_data["provide_shop_hints"]
+            if provide_shop_hints != ProvideShopHints.option_off:
+                hints_locations = []
+                for flag, locations in HINT_FLAGS.items():
+                    if local_hints[flag] and flag not in self.local_hints:
+                        hints_locations.extend(locations)
+                        self.local_hints.append(flag)
+
+                if hints_locations:
+
+                    if provide_shop_hints == ProvideShopHints.option_progression:
+                        item_flag_mask = ItemClassification.progression
+                    elif provide_shop_hints == ProvideShopHints.option_progression_and_useful:
+                        item_flag_mask = ItemClassification.progression | ItemClassification.useful
+                    else:
+                        item_flag_mask = 0
+
+                    hint_ids = []
+                    for location_id in hints_locations:
+                        if (location_id not in ctx.missing_locations
+                                or location_id in self.local_checked_locations
+                                or location_id not in ctx.locations_info):
+                            continue
+                        if not item_flag_mask or (ctx.locations_info[location_id].flags & item_flag_mask):
+                            hint_ids.append(location_id)
+
+                    if hint_ids:
+                        await ctx.send_msgs([{
+                            "cmd": "LocationScouts",
+                            "locations": hint_ids,
+                            "create_as_hint": 2
+                        }])
 
             await self.handle_death_link(ctx, overworld_guard)
 

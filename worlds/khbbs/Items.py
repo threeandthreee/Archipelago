@@ -363,13 +363,13 @@ item_table: Dict[str, KHBBSItemData] = {
     "Aqua D-Link":            KHBBSItemData("D-Link",             code = 227_0070010, classification = ItemClassification.useful,      characters = "TV ", max_quantity = 1),
     "Ventus D-Link":          KHBBSItemData("D-Link",             code = 227_0070011, classification = ItemClassification.useful,      characters = "T A", max_quantity = 1),
     "Terra D-Link":           KHBBSItemData("D-Link",             code = 227_0070012, classification = ItemClassification.useful,      characters = " VA", max_quantity = 1),
-    "Keyblade Board":         KHBBSItemData("Command Board",      code = 227_0080000, classification = ItemClassification.useful,      characters = "TVA", max_quantity = 1),
-    "Royal Board":            KHBBSItemData("Command Board",      code = 227_0080001, classification = ItemClassification.useful,      characters = "TVA", max_quantity = 1),
-    "Spaceship Board":        KHBBSItemData("Command Board",      code = 227_0080002, classification = ItemClassification.useful,      characters = "TVA", max_quantity = 1),
-    "Toon Board":             KHBBSItemData("Command Board",      code = 227_0080003, classification = ItemClassification.useful,      characters = "TVA", max_quantity = 1),
-    "Hunny Pot Board":        KHBBSItemData("Command Board",      code = 227_0080004, classification = ItemClassification.useful,      characters = "TVA", max_quantity = 1),
-    "Secret Board":           KHBBSItemData("Command Board",      code = 227_0080005, classification = ItemClassification.useful,      characters = "TVA", max_quantity = 1),
-    "Skull Board":            KHBBSItemData("Command Board",      code = 227_0080006, classification = ItemClassification.useful,      characters = "TVA", max_quantity = 1),
+    "Keyblade Board":         KHBBSItemData("Command Board",      code = 227_0080000, classification = ItemClassification.progression, characters = "TVA", max_quantity = 1),
+    "Royal Board":            KHBBSItemData("Command Board",      code = 227_0080001, classification = ItemClassification.progression, characters = "TVA", max_quantity = 1),
+    "Spaceship Board":        KHBBSItemData("Command Board",      code = 227_0080002, classification = ItemClassification.progression, characters = "TVA", max_quantity = 1),
+    "Toon Board":             KHBBSItemData("Command Board",      code = 227_0080003, classification = ItemClassification.progression, characters = "TVA", max_quantity = 1),
+    "Hunny Pot Board":        KHBBSItemData("Command Board",      code = 227_0080004, classification = ItemClassification.progression, characters = "TVA", max_quantity = 1),
+    "Secret Board":           KHBBSItemData("Command Board",      code = 227_0080005, classification = ItemClassification.progression, characters = "TVA", max_quantity = 1),
+    "Skull Board":            KHBBSItemData("Command Board",      code = 227_0080006, classification = ItemClassification.progression, characters = "TVA", max_quantity = 1),
 }
 
 event_item_table: Dict[str, KHBBSItemData] = {}

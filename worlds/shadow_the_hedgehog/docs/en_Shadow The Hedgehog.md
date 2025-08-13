@@ -111,7 +111,12 @@ To compensate for the technical issues with bosses not being able to be set in s
 If you enable story shuffle, the story path will be randomised to make it more interesting.
 The first step is ensuring that all stages can be accessed. Once all base stages have been ensured reachable, stages will lead to provided final bosses, then bosses, and then fill in the rest of the details.
 
-After that, the story progression field will determine a likely path, reducing the amount of completion requirements in order to complete the earlier missions and potentially increase for the later missions, making the player less likely to be burger kinged for as long.
+After that, the story progression field will determine a likely path, reducing the amount of completion requirements in order to complete the earlier missions and potentially increase for the later missions, making the player less likely to be BK'd for as long.
+
+Higher story progression values will be more likely to choose paths which unlock more stages accessible without objectivesanity requirements. 
+The changed requirements will affect the % of items required to finish objective sanity mission objectives to progress.
+The larger the groups available the higher the requirement percentage will be, so higher values will be less gradual but more unlocked when unleashed.
+The amount of passes for this functionality is defined by story_progression_balancing_passes.
 
 
 ## What does the game look like?

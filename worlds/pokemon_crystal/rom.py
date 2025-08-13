@@ -1,5 +1,6 @@
-import copy
+import logging
 import os
+from collections import defaultdict
 from typing import TYPE_CHECKING
 
 import bsdiff4
@@ -8,11 +9,12 @@ from settings import get_settings
 from worlds.Files import APProcedurePatch, APTokenMixin, APPatchExtension
 from .data import data, MiscOption, POKEDEX_COUNT_OFFSET, APWORLD_VERSION, POKEDEX_OFFSET, EncounterType, \
     FishingRodType, \
-    TreeRarity
+    TreeRarity, FLY_UNLOCK_OFFSET, BETTER_MART_MARTS
 from .items import item_const_name_to_id
+from .moves import LOGIC_MOVES
 from .options import UndergroundsRequirePower, RequireItemfinder, Goal, Route2Access, \
     BlackthornDarkCaveAccess, NationalParkAccess, Route3Access, EncounterSlotDistribution, KantoAccessRequirement, \
-    FreeFlyLocation, HMBadgeRequirements
+    FreeFlyLocation, HMBadgeRequirements, ShopsanityPrices, WildEncounterMethodsRequired, FlyCheese, Shopsanity
 from .utils import convert_to_ingame_text, write_bytes, replace_map_tiles
 
 if TYPE_CHECKING:
@@ -68,6 +70,11 @@ def generate_output(world: "PokemonCrystalWorld", output_directory: str, patch: 
 
     write_bytes(patch, option_bytes, data.rom_addresses["AP_Setting_DefaultOptions"])
 
+    def write_item(item: int, address: int) -> None:
+        write_bytes(patch, [item], address)
+        if address in data.adhoc_trainersanity:
+            write_bytes(patch, [1], data.adhoc_trainersanity[address])
+
     item_texts = []
     for location in world.multiworld.get_locations(world.player):
         if location.address is None:
@@ -82,21 +89,37 @@ def generate_output(world: "PokemonCrystalWorld", output_directory: str, patch: 
 
         if not world.options.remote_items and location.item and location.item.player == world.player:
             item_id = location.item.code
-            write_bytes(patch, [item_id], location_address)
+            if item_id >= FLY_UNLOCK_OFFSET:
+                write_item(item_const_name_to_id("FLY_UNLOCK"), location_address)
+
+                if location.address > POKEDEX_COUNT_OFFSET:
+                    event_id = 0xFE00 + (location.address - POKEDEX_COUNT_OFFSET) - 1
+                elif location.address > POKEDEX_OFFSET:
+                    event_id = 0xFF00 + (location.address - POKEDEX_OFFSET) - 1
+                else:
+                    event_id = location.address
+
+                fly_id = item_id - FLY_UNLOCK_OFFSET
+                write_bytes(patch, event_id.to_bytes(2, "little"),
+                            data.rom_addresses["AP_Setting_FlyUnlockTable"] + (fly_id * 3))
+            else:
+                write_item(item_id, location_address)
         else:
             # for in game text
             if location.address < POKEDEX_OFFSET:
                 item_flag = location.address
                 player_name = world.multiworld.player_name[location.item.player].upper()
                 item_name = location.item.name.upper()
-                item_texts.append([player_name, item_name, item_flag])
+                item_texts.append((player_name, item_name, item_flag, "shopsanity" in location.tags))
 
-            write_bytes(patch, [item_const_name_to_id("AP_ITEM")], location_address)
+            write_item(item_const_name_to_id("AP_ITEM"), location_address)
 
     # table has format: location id (2 bytes), string address (2 bytes), string bank (1 byte),
     # and is terminated by 0xFF
-    item_name_table_length = len(item_texts) * 5 + 1
+    item_name_table_length = len([entry for entry in item_texts if not entry[3]]) * 5 + 1
     item_name_table_adr = data.rom_addresses["AP_ItemText_Table"]
+    shopsanity_name_table_length = len([entry for entry in item_texts if entry[3]]) * 5 + 1
+    shopsanity_name_table_adr = data.rom_addresses["AP_MartItemTable"]
 
     # strings are 16 chars each, plus a terminator byte,
     # this gives every pair of item + player names a size of 34 bytes
@@ -108,48 +131,176 @@ def generate_output(world: "PokemonCrystalWorld", output_directory: str, patch: 
     item_name_bank2_length = data.rom_addresses["AP_ItemText_Bank2_End"] - item_name_bank2
     item_name_bank2_capacity = int(item_name_bank2_length / 34)
 
+    item_name_bank3 = data.rom_addresses["AP_ItemText_Bank3"]
+    item_name_bank3_length = data.rom_addresses["AP_ItemText_Bank3_End"] - item_name_bank3
+    item_name_bank3_capacity = int(item_name_bank3_length / 34)
+
+    table_offset_adr = item_name_table_adr
+    shopsanity_table_offset_adr = shopsanity_name_table_adr
+
     for i, text in enumerate(item_texts):
+        shopsanity_entry = text[3]
         # truncate if too long
         player_text = convert_to_ingame_text(text[0])[:16]
         # pad with terminator byte to keep alignment
         player_text.extend([0x50] * (17 - len(player_text)))
-        item_text = convert_to_ingame_text(text[1])[:16]
+        item_text = convert_to_ingame_text(text[1])[:14 if shopsanity_entry else 16]
         item_text.append(0x50)
         # bank 1
         bank = 0x75
-        table_offset_adr = item_name_table_adr + i * 5
 
-        if i >= item_name_bank1_capacity + item_name_bank2_capacity:
-            # if we somehow run out of capacity in both banks, just finish the table and break,
+        if i >= item_name_bank1_capacity + item_name_bank2_capacity + item_name_bank3_capacity:
+            # if we somehow run out of capacity in all banks, just finish the table and break,
             # there is a fallback string in the ROM, so it should handle this gracefully.
             write_bytes(patch, [0xFF], item_name_table_adr + table_offset_adr)
+            write_bytes(patch, [0xFF], shopsanity_name_table_adr + shopsanity_table_offset_adr)
             print("oopsie")
             break
         if i + 1 < item_name_bank1_capacity:
             text_offset = i * 34
             text_adr = item_name_bank1 + text_offset
-        else:
+        elif i + 1 < (item_name_bank1_capacity + item_name_bank2_capacity):
             # bank 2
             bank = 0x76
             text_offset = (i + 1 - item_name_bank1_capacity) * 34
             text_adr = item_name_bank2 + text_offset
+        else:
+            # bank 3
+            bank = 0x7a
+            text_offset = (i + 1 - (item_name_bank1_capacity + item_name_bank2_capacity)) * 34
+            text_adr = item_name_bank3 + text_offset
         write_bytes(patch, player_text + item_text, text_adr)
         # get the address within the rom bank (0x4000 - 0x7FFF)
         text_bank_adr = (text_adr % 0x4000) + 0x4000
-        write_bytes(patch, text[2].to_bytes(2, "big"), table_offset_adr)
-        write_bytes(patch, text_bank_adr.to_bytes(2, "little"), table_offset_adr + 2)
-        write_bytes(patch, [bank], table_offset_adr + 4)
+        offset_adr = shopsanity_table_offset_adr if shopsanity_entry else table_offset_adr
+        write_bytes(patch, ((text[2] - data.mart_flag_offset) if shopsanity_entry else text[2]).to_bytes(2, "big"),
+                    offset_adr)
+        write_bytes(patch, text_bank_adr.to_bytes(2, "little"), offset_adr + 2)
+        write_bytes(patch, [bank], offset_adr + 4)
+
+        if shopsanity_entry:
+            shopsanity_table_offset_adr += 5
+        else:
+            table_offset_adr += 5
+
     write_bytes(patch, [0xFF], item_name_table_adr + item_name_table_length - 1)
+    write_bytes(patch, [0xFF], shopsanity_name_table_adr + shopsanity_name_table_length - 1)
+
+    if Shopsanity.johto_marts in world.options.shopsanity.value:
+        write_bytes(patch, [1], data.rom_addresses["AP_Setting_JohtoShopsanityEnabled"] + 2)
+        # the dw at +11 is the event flag.
+        write_bytes(patch, [0xFF, 0xFF], data.rom_addresses["AP_Setting_Shopsanity_MahoganyMart_1"] + 11)
+        write_bytes(patch, [0xFF, 0xFF], data.rom_addresses["AP_Setting_Shopsanity_MahoganyMart_2"] + 11)
+
+    if Shopsanity.kanto_marts in world.options.shopsanity.value:
+        write_bytes(patch, [1], data.rom_addresses["AP_Setting_KantoShopsanityEnabled"] + 2)
+
+    if Shopsanity.blue_card in world.options.shopsanity.value:
+        write_bytes(patch, [1], data.rom_addresses["AP_Setting_BlueCardShopsanityEnabled"] + 2)
+
+    if Shopsanity.game_corners in world.options.shopsanity.value:
+        write_bytes(patch, [1], data.rom_addresses["AP_Setting_GameCornerShopsanityEnabled"] + 2)
+
+    if Shopsanity.apricorns in world.options.shopsanity.value:
+        write_bytes(patch, [1], data.rom_addresses["AP_Setting_ApricornShopsanityEnabled"] + 2)
+
+    if world.options.shopsanity:
+
+        min_shop_price = world.options.shopsanity_minimum_price.value
+        max_shop_price = world.options.shopsanity_maximum_price.value
+        total_shop_spheres = len(world.shop_locations_by_spheres)
+
+        remote_items = world.options.remote_items.value
+
+        by_item_price = world.options.shopsanity_prices == ShopsanityPrices.option_item_price
+
+        by_spheres = world.options.shopsanity_prices in (
+            ShopsanityPrices.option_spheres,
+            ShopsanityPrices.option_spheres_and_classification
+        )
+        by_classification = world.options.shopsanity_prices in (
+            ShopsanityPrices.option_classification,
+            ShopsanityPrices.option_spheres_and_classification
+        )
+        by_location = world.options.shopsanity_prices == ShopsanityPrices.option_vanilla
+
+        if world.options.shopsanity_minimum_price > world.options.shopsanity_maximum_price:
+            logging.info("Pokemon Crystal: Minimum Shopsanity Price for player %s (%s)"
+                         " is greater than Maximum Shopsanity Price.",
+                         world.player, world.player_name)
+            min_shop_price = world.options.shopsanity_maximum_price.value
+            max_shop_price = world.options.shopsanity_minimum_price.value
+
+        for i, locations in enumerate(world.shop_locations_by_spheres):
+            sphere_min_shop_price = min_shop_price
+            sphere_max_shop_price = max_shop_price
+            if by_spheres:
+                base_price = sphere_min_shop_price
+                price_difference = max_shop_price - min_shop_price
+                sphere_min_shop_price = int(round(base_price + ((price_difference / total_shop_spheres) * i)))
+                sphere_max_shop_price = int(round(base_price + ((price_difference / total_shop_spheres) * (i + 1))))
+
+            for location in locations:
+                item_min_shop_price = sphere_min_shop_price
+                item_max_shop_price = sphere_max_shop_price
+
+                item_price = location.item.price if location.item.player == world.player else 0
+                location_price = location.price
+
+                if by_item_price:
+                    if item_price < item_min_shop_price:
+                        item_price = item_min_shop_price
+                    elif item_price > item_max_shop_price:
+                        item_price = item_max_shop_price
+                    item_min_shop_price = item_price
+                    item_max_shop_price = item_price
+                elif by_classification:
+                    base_price = item_min_shop_price
+                    price_difference = item_max_shop_price - item_min_shop_price
+                    if location.item.advancement:
+                        item_min_shop_price = base_price + int(round(price_difference * 0.6))
+                    elif location.item.useful:
+                        item_min_shop_price = base_price + int(round(price_difference * 0.2))
+                        item_max_shop_price = base_price + int(round(price_difference * 0.6))
+                    else:
+                        item_max_shop_price = base_price + int(round(price_difference * 0.2))
+                elif by_location:
+                    item_min_shop_price = location_price
+                    item_max_shop_price = location_price
+
+                if not remote_items and item_min_shop_price < item_price // 2:
+                    item_min_shop_price = item_price // 2
+
+                address = location.rom_address + 1
+                shop_price = world.random.randint(item_min_shop_price, item_max_shop_price) \
+                    if item_max_shop_price > item_min_shop_price else item_min_shop_price
+                logging.debug(f"Setting ¥{shop_price} for {location.name}")
+                shop_price_bytes = shop_price.to_bytes(2, "little")
+                write_bytes(patch, shop_price_bytes, address)
 
     world.finished_level_scaling.wait()
 
     for _, pkmn_data in world.generated_static.items():
         pokemon_id = data.pokemon[pkmn_data.pokemon].id
-        for address in pkmn_data.addresses:
+        if pkmn_data.level_type == "gamecorner":
+            addresses = pkmn_data.addresses[:-1]
+        else:
+            addresses = pkmn_data.addresses
+
+        for address in addresses:
             cur_address = data.rom_addresses[address] + 1
             write_bytes(patch, [pokemon_id], cur_address)
+
+        if pkmn_data.level_type == "gamecorner":
+            static_name = world.generated_pokemon[pkmn_data.pokemon].friendly_name.upper()
+            static_name = "NIDORAN♀" if static_name == "NIDORAN F" else static_name
+            static_name = "NIDORAN♂" if static_name == "NIDORAN M" else static_name
+            static_text = convert_to_ingame_text(static_name)
+
+            write_bytes(patch, static_text, data.rom_addresses[pkmn_data.addresses[-1]])
+
         if pkmn_data.level_address is not None:
-            if pkmn_data.level_type in ("givepoke", "loadwildmon"):
+            if pkmn_data.level_type in ("givepoke", "loadwildmon", "gamecorner"):
                 write_bytes(patch, [pkmn_data.level], data.rom_addresses[pkmn_data.level_address] + 2)
             elif pkmn_data.level_type == "custom":
                 write_bytes(patch, [pkmn_data.level], data.rom_addresses[pkmn_data.level_address] + 1)
@@ -173,8 +324,8 @@ def generate_output(world: "PokemonCrystalWorld", output_directory: str, patch: 
         for j, pokemon in enumerate(["CYNDAQUIL_", "TOTODILE_", "CHIKORITA_"]):
             pokemon_id = data.pokemon[world.generated_starters[j][0]].id
             starter_name = world.generated_pokemon[world.generated_starters[j][0]].friendly_name.upper()
-            starter_name = "NIDORAN ♀" if starter_name == "NIDORAN F" else starter_name
-            starter_name = "NIDORAN ♂" if starter_name == "NIDORAN M" else starter_name
+            starter_name = "NIDORAN♀" if starter_name == "NIDORAN F" else starter_name
+            starter_name = "NIDORAN♂" if starter_name == "NIDORAN M" else starter_name
             starter_text = convert_to_ingame_text(starter_name)
             for i in range(1, 9):
                 cur_address = data.rom_addresses["AP_Starter_" + pokemon + str(i)] + 1
@@ -302,16 +453,45 @@ def generate_output(world: "PokemonCrystalWorld", output_directory: str, patch: 
                     acc = int(move.accuracy * 255 / 100)
                     write_bytes(patch, [acc], address)  # accuracy 30-100
 
+    elif world.options.hm_power_cap.value != world.options.hm_power_cap.range_end:
+        for move_name in LOGIC_MOVES:
+            address = data.rom_addresses["AP_MoveData_Power_" + move_name]
+            write_bytes(patch, [world.generated_moves[move_name].power], address)
+
     for pkmn_name, pkmn_data in world.generated_pokemon.items():
+        address = data.rom_addresses["AP_Stats_Types_" + pkmn_name]
         if world.options.randomize_types.value:
-            address = data.rom_addresses["AP_Stats_Types_" + pkmn_name]
             pkmn_types = [pkmn_data.types[0], pkmn_data.types[-1]]
             type_ids = [data.type_ids[pkmn_types[0]], data.type_ids[pkmn_types[1]]]
             write_bytes(patch, type_ids, address)
 
+        address += 15  # growth rate lives 15 bytes after type1
+        write_bytes(patch, [pkmn_data.growth_rate], address)
+
         if world.options.randomize_base_stats.value:
             address = data.rom_addresses["AP_Stats_Base_" + pkmn_name]
             write_bytes(patch, pkmn_data.base_stats, address)
+
+        if world.options.randomize_evolution:
+            address = data.rom_addresses["AP_Evos_" + pkmn_name]
+            for evo in pkmn_data.evolutions:
+                evo_pkmn_id = data.pokemon[evo.pokemon].id
+                if evo_pkmn_id == pkmn_name:
+                    if evo.length < 4:
+                        # Edge case: no valid evolution found, is not Tyrogue
+                        write_bytes(patch, [evo.evo_type.value, evo.condition, evo_pkmn_id], address)
+                        address += evo.length
+                    else:
+                        # Edge case: no valid evolution found, is Tyrogue
+                        write_bytes(patch, [evo.evo_type.value, evo.level], address)
+                        write_bytes(patch, [evo_pkmn_id], address + 3)
+                        address += evo.length
+                else:
+                    # Normal case
+                    address += evo.length - 1
+                    # Enums over evolution conditions would be needed to write the whole evolution data for all cases
+                    write_bytes(patch, [evo_pkmn_id], address)
+                    address += 1
 
         if world.options.randomize_learnsets.value:
             address = data.rom_addresses["AP_Attacks_" + pkmn_name]
@@ -350,6 +530,18 @@ def generate_output(world: "PokemonCrystalWorld", output_directory: str, patch: 
         tm_moves = [tm_data.move_id for _name, tm_data in world.generated_tms.items()]
         address = data.rom_addresses["AP_Setting_TMMoves"]
         write_bytes(patch, tm_moves, address)
+
+        address = data.rom_addresses["AP_Setting_GoldenrodMoveTutorMoveNames"]
+        for tm in ("FLAMETHROWER", "THUNDERBOLT", "ICE_BEAM"):
+            move_data = world.generated_moves[world.generated_tms[tm].id]
+            move_name = convert_to_ingame_text(move_data.name + " " * (12 - len(move_data.name))) + [0x50]
+            write_bytes(patch, move_name, address)
+            address += 13
+
+        for tm in ("FLAMETHROWER", "THUNDERBOLT", "ICE_BEAM"):
+            move_id = world.generated_tms[tm].move_id
+            address = data.rom_addresses["AP_Setting_MoveTutor_" + tm] + 1
+            write_bytes(patch, [move_id], address)
 
     if world.options.enable_mischief:
         if MiscOption.FuchsiaGym.value in world.generated_misc.selected:
@@ -434,6 +626,9 @@ def generate_output(world: "PokemonCrystalWorld", output_directory: str, patch: 
             write_bytes(patch, [13, 3], data.rom_addresses["AP_Misc_IcePathWarp_1"])
             write_bytes(patch, [13, 13], data.rom_addresses["AP_Misc_IcePathWarp_2"])
 
+        if MiscOption.TooManyDogs.value in world.generated_misc.selected:
+            write_bytes(patch, [1], data.rom_addresses["AP_Misc_TooManyDogs"] + 1)
+
     if world.options.reusable_tms:
         address = data.rom_addresses["AP_Setting_ReusableTMs"] + 1
         write_bytes(patch, [1], address)
@@ -455,14 +650,14 @@ def generate_output(world: "PokemonCrystalWorld", output_directory: str, patch: 
             # script music is 2 bytes LE
             write_bytes(patch, world.generated_music.consts[script_music].id.to_bytes(2, "little"), music_address)
 
-    if world.options.better_marts:
+    if world.options.better_marts and not world.options.shopsanity:
         mart_address = data.rom_addresses["Marts"]
         marts_end_address = data.rom_addresses["MartsEnd"]
         better_mart_address = data.rom_addresses["MartBetterMart"] - 0x10000
         better_mart_bytes = better_mart_address.to_bytes(2, "little")
+        better_mart_indexes = [data.marts[mart].index for mart in BETTER_MART_MARTS]
         for i in range((marts_end_address - mart_address) // 2):
-            # skip goldenrod and celadon
-            if i not in (6, 7, 8, 9, 21, 22, 23, 24, 25, 31):
+            if i in better_mart_indexes:
                 write_bytes(patch, better_mart_bytes, mart_address)
             mart_address += 2
 
@@ -494,11 +689,10 @@ def generate_output(world: "PokemonCrystalWorld", output_directory: str, patch: 
                 data.rom_addresses["AP_Setting_RocketsRequirement"] + 1)
     write_bytes(patch, [world.options.radio_tower_count.value], data.rom_addresses["AP_Setting_RocketsCount"] + 1)
 
-    write_bytes(patch, [world.options.route_44_access_requirement.value],
-                data.rom_addresses["AP_Setting_Route44Requirement_1"] + 1)
-    write_bytes(patch, [world.options.route_44_access_requirement.value],
-                data.rom_addresses["AP_Setting_Route44Requirement_2"] + 1)
     for i in range(4):
+        write_bytes(patch, [world.options.route_44_access_requirement.value],
+                    data.rom_addresses[f"AP_Setting_Route44Requirement_{i + 1}"] + 1)
+    for i in range(8):
         write_bytes(patch, [world.options.route_44_access_count.value],
                     data.rom_addresses[f"AP_Setting_Route44Count_{i + 1}"] + 1)
 
@@ -539,13 +733,13 @@ def generate_output(world: "PokemonCrystalWorld", output_directory: str, patch: 
         write_bytes(patch, [world.options.kanto_access_count.value],
                     data.rom_addresses["AP_Setting_KantoAccess_Count_2"] + 1)
 
-    if world.options.trainersanity:
+    if world.options.johto_trainersanity or world.options.kanto_trainersanity:
         # prevents disabling gym trainers, among a few others
         write_bytes(patch, [1], data.rom_addresses["AP_Setting_Trainersanity"] + 2)
         # removes events from certain trainers, to prevent disabling them.
-        missable_trainers = ["GruntM29", "GruntM2", "GruntF1", "GruntM16", "ScientistJed", "GruntM17", "GruntM18",
+        missable_trainers = ("GruntM29", "GruntM2", "GruntF1", "GruntM16", "ScientistJed", "GruntM17", "GruntM18",
                              "GruntM19", "RocketMurkrow", "SlowpokeGrunt", "RaticateGrunt", "ScientistRoss",
-                             "ScientistMitch", "RocketBaseB3FRocket"]
+                             "ScientistMitch", "RocketBaseB3FRocket")
 
         for trainer in missable_trainers:
             # the dw at +11 is the event flag.
@@ -570,18 +764,22 @@ def generate_output(world: "PokemonCrystalWorld", output_directory: str, patch: 
     write_bytes(patch, phone_location_bytes, phone_location_address)
 
     start_inventory_address = data.rom_addresses["AP_Start_Inventory"]
-    start_inventory = copy.copy(world.options.start_inventory.value)
-    for item, quantity in world.options.start_inventory_from_pool.value.items():
-        if item in start_inventory:
-            start_inventory[item] += quantity
-        else:
-            start_inventory[item] = quantity
+    start_inventory = defaultdict[str, int](int)
+    for item in world.multiworld.precollected_items[world.player]:
+        start_inventory[item.name] += 1
+
+    free_fly_write = [0, 0, 0, 0]
+
     for item, quantity in start_inventory.items():
         if quantity == 0:
             quantity = 1
         while quantity:
             item_code = world.item_name_to_id[item]
+            if item_code >= FLY_UNLOCK_OFFSET:
+                fly_id = item_code - FLY_UNLOCK_OFFSET
+                free_fly_write[int(fly_id / 8)] = 1 << (fly_id % 8)
             if item_code > 255:
+                quantity = 0
                 continue
             if quantity > 99:
                 write_bytes(patch, [item_code, 99], start_inventory_address)
@@ -593,9 +791,9 @@ def generate_output(world: "PokemonCrystalWorld", output_directory: str, patch: 
 
     if world.options.free_fly_location.value in (FreeFlyLocation.option_free_fly,
                                                  FreeFlyLocation.option_free_fly_and_map_card):
-        free_fly_write = [0, 0, 0, 0]
         free_fly_write[int(world.free_fly_location.id / 8)] = 1 << (world.free_fly_location.id % 8)
-        write_bytes(patch, free_fly_write, data.rom_addresses["AP_Setting_FreeFly"])
+
+    write_bytes(patch, free_fly_write, data.rom_addresses["AP_Setting_FreeFly"])
 
     if world.options.free_fly_location.value in (FreeFlyLocation.option_free_fly_and_map_card,
                                                  FreeFlyLocation.option_map_card):
@@ -653,6 +851,9 @@ def generate_output(world: "PokemonCrystalWorld", output_directory: str, patch: 
     if world.options.vanilla_clair:
         write_bytes(patch, [1], data.rom_addresses["AP_Setting_VanillaClair"] + 2)
 
+    if world.options.shopsanity_restrict_rare_candies:
+        write_bytes(patch, [1], data.rom_addresses["AP_Setting_ShopsanityRestrictRareCandies"] + 1)
+
     if world.options.route_2_access.value == Route2Access.option_open:
         tiles = [0x01]  # ground
     elif world.options.route_2_access.value == Route2Access.option_ledge:
@@ -693,6 +894,10 @@ def generate_output(world: "PokemonCrystalWorld", output_directory: str, patch: 
         # Don't set the scene to the noop scene
         write_bytes(patch, [0], data.rom_addresses["AP_Setting_PewterCityBadgeRequired_2"] + 2)
 
+    if world.options.mount_mortar_access:
+        # This is a sprite event, so 0 shows the sprite
+        write_bytes(patch, [0], data.rom_addresses["AP_Setting_MountMortarRocks"] + 2)
+
     headbutt_seed = (world.multiworld.seed & 0xFFFF).to_bytes(2, "little")
     write_bytes(patch, headbutt_seed[:0], data.rom_addresses["AP_Setting_TreeMonSeed_1"] + 1)
     write_bytes(patch, headbutt_seed[-1:], data.rom_addresses["AP_Setting_TreeMonSeed_2"] + 1)
@@ -719,6 +924,30 @@ def generate_output(world: "PokemonCrystalWorld", output_directory: str, patch: 
     if world.options.metronome_only:
         for i in range(4):
             write_bytes(patch, [1], data.rom_addresses[f"AP_Setting_MetronomeOnly_{i + 1}"] + 1)
+
+    if world.options.randomize_fly_unlocks:
+        write_bytes(patch, [1], data.rom_addresses["AP_Setting_FlyUnlocksShuffled"] + 2)
+
+    if world.options.better_marts:
+        write_bytes(patch, [1], data.rom_addresses["AP_Setting_BetterMarts"] + 1)
+
+    if world.options.enforce_wild_encounter_methods_logic:
+        methods = [method in world.options.wild_encounter_methods_required.value for method in
+                   WildEncounterMethodsRequired.valid_keys]
+
+        write_bytes(patch, methods, data.rom_addresses["AP_Setting_AllowedCatchTypes"])
+
+    if world.options.fly_cheese == FlyCheese.option_disallow:
+        write_bytes(patch, [1], data.rom_addresses["AP_Setting_FlyCheeseDisabled"] + 2)
+        write_bytes(patch, [1], data.rom_addresses["AP_Setting_FlyCheeseDisabled_2"] + 2)
+        write_bytes(patch, [0], data.rom_addresses["AP_Setting_FlyCheeseDisabled_3"] + 2)  # sprite flag
+
+    if world.options.randomize_pokemon_requests:
+        for pokemon_index, pokemon in enumerate(world.generated_request_pokemon):
+            pokemon_id = world.generated_pokemon[pokemon].id
+            for i in range(3):
+                write_bytes(patch, [pokemon_id],
+                            data.rom_addresses[f"AP_Setting_BillsGrandpaRequested{pokemon_index + 1}_{i + 1}"] + 1)
 
     # Set slot auth
     ap_version_text = convert_to_ingame_text(APWORLD_VERSION)[:19]

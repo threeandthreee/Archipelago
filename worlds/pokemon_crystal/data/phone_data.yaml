@@ -874,6 +874,7 @@ weast_call:
     - |
       then you need t--
 
+
 headbutt_call:
   caller: withheld
   script:
@@ -906,3 +907,154 @@ headbutt_call:
       helps!
     - |
       Peace out.
+
+
+kurt_balls:
+  caller: withheld
+  script:
+    - |
+      Help Police!
+      Someone is try-
+      ing to take my
+    - |
+      balls! Saying
+      that they are
+      not GREAT BALLs.
+    - |
+      That they take
+      up too much
+      space.
+    - |
+      I do not want
+      to lose my balls:
+      My LOVE BALLs
+    - |
+      My FRIEND BALLs
+      My FAST BALLs
+      My HEAVY BALLS
+    - |
+      Oh no, I see
+      them coming
+      He--------
+
+
+black_friday_call:
+  caller: out_of_area
+  script:
+    - |
+      Hurry up! Black
+      Friday ends in 2 
+      hours! Don't miss
+    - |
+      out on 30 percent
+      off all items,
+      while stocks last.
+    - |
+      Use code <POKE>30 at
+      checkout in any
+      <POKE>MART store.
+    - |
+      For purchases 
+      above ¥1000 you
+      will receive a
+    - |
+      free SLOWPOKETAIL!
+      Thank you for
+      shopping with us.
+
+
+kurt_unwell:
+  caller: withheld
+  script:
+    - |
+      Hello? <player>?
+      My Grandpa Kurt
+      fell down the
+    - |
+      well again! He
+      left his <POKE>GEAR
+      and <POKE>ALERT
+    - |
+      behind. You
+      were the last
+      person he called.
+    - |
+      Please can you
+      go look for him?
+      Nurse Joy said
+    - |
+      she won't get
+      him up the ladder
+      again.
+
+mayor_ppg:
+  caller: out_of_area
+  script:
+    - |
+      POWERPUFF GIRLS!
+      POWERPUFF GIRLS!
+      I need your help!
+    - |
+      There is a
+      monster attacking
+      TOWNSVILLE!
+    - |
+      He took my jar
+      of pickles away
+      from me too!
+    - |
+      It's Horrible!
+      Please get here
+      QUICK!!!!!
+
+not_slot_data:
+  caller: out_of_area
+  script:
+    - |
+      Hey <player>,
+      it's <player>.
+      Yes, I am you
+    - |
+      from another
+      timeline. Some
+      eggheads in
+    - |
+      CELADON CITY
+      said something
+      about SAVERAM
+    - |
+      and SLOTDATA.
+      I don't know
+      what kind of
+    - |
+      <POKE>MON that
+      is but they said
+      they can get
+    - |
+      me home soon.
+      Bye me!
+
+# Vincent'sSin
+correct_tracker:
+  caller: out_of_area
+  script:
+    - |
+      Hello <player>.
+      I am returning
+      your call.
+    - |
+      You're concerned
+      about the tracker
+      being incorrect?
+    - |
+      I have spoken
+      to palex00 and he
+      assures me that
+    - |
+      the tracker is
+      right. It's never
+      wrong!
+    - |
+      He says good
+      luck figuring
+      your way out.

@@ -1,10 +1,11 @@
 from typing import TYPE_CHECKING
 
 from BaseClasses import Location, Region, LocationProgressType
-from .data import data, POKEDEX_OFFSET, POKEDEX_COUNT_OFFSET
+from . import item_const_name_to_id
+from .data import data, POKEDEX_OFFSET, POKEDEX_COUNT_OFFSET, FLY_UNLOCK_OFFSET
 from .options import Goal, DexsanityStarters
 from .pokemon import get_priority_dexsanity, get_excluded_dexsanity
-from .utils import evolution_in_logic, evolution_location_name
+from .utils import evolution_in_logic, evolution_location_name, get_fly_regions, get_mart_slot_location_name
 
 if TYPE_CHECKING:
     from . import PokemonCrystalWorld
@@ -41,8 +42,6 @@ def create_locations(world: "PokemonCrystalWorld", regions: dict[str, Region]) -
         exclude.add("Hidden")
     if not world.options.randomize_pokegear:
         exclude.add("Pokegear")
-    if not world.options.trainersanity:
-        exclude.add("Trainersanity")
     if not world.options.randomize_badges:
         exclude.add("Badge")
     if not world.options.randomize_berry_trees:
@@ -53,6 +52,10 @@ def create_locations(world: "PokemonCrystalWorld", regions: dict[str, Region]) -
         exclude.add("VanillaClairOff")
     else:
         exclude.add("VanillaClairOn")
+    if not world.options.randomize_pokemon_requests:
+        exclude.add("BillsGrandpa")
+    if not world.options.johto_trainersanity and not world.options.kanto_trainersanity:
+        exclude.add("Trainersanity")
 
     always_include = {"KeyItem"}
 
@@ -79,7 +82,7 @@ def create_locations(world: "PokemonCrystalWorld", regions: dict[str, Region]) -
                 region.locations.append(location)
 
     if world.options.dexsanity:
-        pokemon_items = list(world.logically_available_pokemon)
+        pokemon_items = list(world.logic.available_pokemon)
         priority_pokemon = get_priority_dexsanity(world)
         excluded_pokemon = get_excluded_dexsanity(world)
 
@@ -111,7 +114,7 @@ def create_locations(world: "PokemonCrystalWorld", regions: dict[str, Region]) -
             pokedex_region.locations.append(new_location)
 
     if world.options.dexcountsanity:
-        total_pokemon = len(world.logically_available_pokemon)
+        total_pokemon = len(world.logic.available_pokemon)
         dexcountsanity_total = min(world.options.dexcountsanity.value, total_pokemon)
         dexcountsanity_step = world.options.dexcountsanity_step.value
 
@@ -134,11 +137,13 @@ def create_locations(world: "PokemonCrystalWorld", regions: dict[str, Region]) -
             )
             pokedex_region.locations.append(new_location)
 
+        assert world.generated_dexcountsanity[-1]
+
         new_location = PokemonCrystalLocation(
             world.player,
             "Pokedex - Final Catch",
             pokedex_region,
-            rom_address=len(world.generated_dexcountsanity),
+            rom_address=world.generated_dexcountsanity[-1],
             flag=POKEDEX_COUNT_OFFSET + len(data.pokemon),
             tags=frozenset({"dexcountsanity"})
         )
@@ -147,7 +152,7 @@ def create_locations(world: "PokemonCrystalWorld", regions: dict[str, Region]) -
     if world.options.evolution_methods_required:
         evolution_region = regions["Evolutions"]
         created_locations = set()
-        for pokemon_id in world.logically_available_pokemon:
+        for pokemon_id in world.logic.available_pokemon:
             for evolution in world.generated_pokemon[pokemon_id].evolutions:
                 location_name = evolution_location_name(world, pokemon_id, evolution.pokemon)
                 if not evolution_in_logic(world, evolution) or location_name in created_locations: continue
@@ -179,6 +184,42 @@ def create_locations(world: "PokemonCrystalWorld", regions: dict[str, Region]) -
             )
             breeding_region.locations.append(new_location)
 
+    if world.options.shopsanity:
+        for mart, mart_data in data.marts.items():
+            region_name = f"REGION_{mart}"
+            if region_name in regions:
+                region = regions[region_name]
+
+                for i, item in enumerate(mart_data.items):
+                    new_location = PokemonCrystalLocation(
+                        world.player,
+                        f"{mart_data.friendly_name} - {get_mart_slot_location_name(mart, i)}",
+                        region,
+                        tags=frozenset({"shopsanity"}),
+                        flag=item.flag,
+                        rom_address=item.address,
+                        default_item_value=item_const_name_to_id(item.item)
+                    )
+                    new_location.price = item.price
+                    region.locations.append(new_location)
+
+    if world.options.randomize_fly_unlocks:
+
+        for fly_region in get_fly_regions(world):
+            parent_region = regions[data.regions[fly_region.unlock_region].name]
+
+            location = PokemonCrystalLocation(
+                world.player,
+                f"Visit {fly_region.name}",
+                parent_region,
+                tags=frozenset({"fly"}),
+                flag=data.event_flags[f"EVENT_VISITED_{fly_region.base_identifier}"],
+                rom_address=data.rom_addresses[f"AP_FlyUnlock_{fly_region.base_identifier}"],
+                default_item_value=FLY_UNLOCK_OFFSET + fly_region.id
+            )
+
+            parent_region.locations.append(location)
+
 
 def create_location_label_to_id_map() -> dict[str, int]:
     """
@@ -190,6 +231,11 @@ def create_location_label_to_id_map() -> dict[str, int]:
             location_data = data.locations[location_name]
             label_to_id_map[location_data.label] = location_data.flag
 
+    for mart, mart_data in data.marts.items():
+        for i, item in enumerate(mart_data.items):
+            if item.flag:
+                label_to_id_map[f"{mart_data.friendly_name} - {get_mart_slot_location_name(mart, i)}"] = item.flag
+
     for pokemon in data.pokemon.values():
         label_to_id_map[f"Pokedex - {pokemon.friendly_name}"] = pokemon.id + POKEDEX_OFFSET
 
@@ -197,6 +243,9 @@ def create_location_label_to_id_map() -> dict[str, int]:
         label_to_id_map[f"Pokedex - Catch {i} Pokemon"] = i + POKEDEX_COUNT_OFFSET
 
     label_to_id_map["Pokedex - Final Catch"] = len(data.pokemon) + POKEDEX_COUNT_OFFSET
+
+    for fly_region in data.fly_regions:
+        label_to_id_map[f"Visit {fly_region.name}"] = data.event_flags[f"EVENT_VISITED_{fly_region.base_identifier}"]
 
     return label_to_id_map
 
@@ -211,9 +260,55 @@ LOCATION_GROUPS = {
     "Dexcountsanity": DEXCOUNTSANITY_LOCATIONS,
     "Dex": DEXSANITY_LOCATIONS | DEXCOUNTSANITY_LOCATIONS,
     "Hidden Items": {loc.label for loc in data.locations.values() if "Hidden" in loc.tags},
-    "Item Balls": {loc.label for loc in data.locations.values() if "Overworld" in loc.tags},
+    "Item Balls": {loc.label for loc in data.locations.values() if "StandingItems" in loc.tags},
     "Trainersanity": {loc.label for loc in data.locations.values() if "Trainersanity" in loc.tags},
     "Berry Trees": {loc.label for loc in data.locations.values() if "BerryTree" in loc.tags},
     "Key Items": {loc.label for loc in data.locations.values() if "KeyItem" in loc.tags},
-    "Ruins of Alph": {loc.label for loc in data.locations.values() if "AlphItemChambers" in loc.tags}
+    "Ruins of Alph": {loc.label for loc in data.locations.values() if "AlphItemChambers" in loc.tags},
+    "Shopsanity": {f"{mart_data.friendly_name} - {get_mart_slot_location_name(mart, i)}" for mart, mart_data in
+                   data.marts.items() for i, item in
+                   enumerate(mart_data.items) if item.flag},
+    "Fly Unlocks": {f"Visit {region.name}" for region in data.fly_regions},
+    "NPC Gifts": {loc.label for loc in data.locations.values() if "NPCGift" in loc.tags},
+    "Azalea Town": {loc.label for loc in data.locations.values() if "Azalea" in loc.tags},
+    "Burned Tower": {loc.label for loc in data.locations.values() if "Burned" in loc.tags},
+    "Celadon City": {loc.label for loc in data.locations.values() if "Celadon" in loc.tags},
+    "Cerulean City": {loc.label for loc in data.locations.values() if "Cerulean" in loc.tags},
+    "Cianwood City": {loc.label for loc in data.locations.values() if "Cianwood" in loc.tags},
+    "Cinnabar Island": {loc.label for loc in data.locations.values() if "Cinnabar" in loc.tags},
+    "Dark Cave": {loc.label for loc in data.locations.values() if "Dark" in loc.tags},
+    "Dragon's Den": {loc.label for loc in data.locations.values() if "Dragon" in loc.tags},
+    "Ecruteak City": {loc.label for loc in data.locations.values() if "Ecruteak" in loc.tags},
+    "Saffron City": {loc.label for loc in data.locations.values() if "Saffron" in loc.tags},
+    "Goldenrod City": {loc.label for loc in data.locations.values() if "Goldenrod" in loc.tags},
+    "Ice Path": {loc.label for loc in data.locations.values() if "Ice" in loc.tags},
+    "Ilex Forest": {loc.label for loc in data.locations.values() if "Ilex" in loc.tags},
+    "Lake of Rage": {loc.label for loc in data.locations.values() if "Rage" in loc.tags},
+    "Mount Mortar": {loc.label for loc in data.locations.values() if "Mortar" in loc.tags},
+    "National Park": {loc.label for loc in data.locations.values() if "Park" in loc.tags},
+    "Olivine Lighthouse": {loc.label for loc in data.locations.values() if "Lighthouse" in loc.tags},
+    "Olivine City": {loc.label for loc in data.locations.values() if "Olivine" in loc.tags},
+    "Radio Tower": {loc.label for loc in data.locations.values() if "Radio" in loc.tags},
+    "Rock Tunnel": {loc.label for loc in data.locations.values() if "Rock" in loc.tags},
+    "Silver Cave": {loc.label for loc in data.locations.values() if "Silver" in loc.tags},
+    "Slowpoke Well": {loc.label for loc in data.locations.values() if "Slow" in loc.tags},
+    "Sprout Tower": {loc.label for loc in data.locations.values() if "Sprout" in loc.tags},
+    "Team Rocket HQ": {loc.label for loc in data.locations.values() if "Rocket" in loc.tags},
+    "Tin Tower": {loc.label for loc in data.locations.values() if "Tin" in loc.tags},
+    "Union Cave": {loc.label for loc in data.locations.values() if "Union" in loc.tags},
+    "Vermilion City": {loc.label for loc in data.locations.values() if "Vermilion" in loc.tags},
+    "Victory Road": {loc.label for loc in data.locations.values() if "Victory" in loc.tags},
+    "Violet City": {loc.label for loc in data.locations.values() if "Violet" in loc.tags},
+    "Whirl Islands": {loc.label for loc in data.locations.values() if "Whirl" in loc.tags},
+    "Cherrygrove City": {loc.label for loc in data.locations.values() if "Cherrygrove" in loc.tags},
+    # locations with only one check
+    "One offs": {loc.label for loc in data.locations.values() if "One off" in loc.tags},
+    "New Bark Town": {loc.label for loc in data.locations.values() if "NewBark" in loc.tags},
+    "Blackthorn City": {loc.label for loc in data.locations.values() if "Blackthorn" in loc.tags},
+    "S.S. Aqua": {loc.label for loc in data.locations.values() if "Aqua" in loc.tags},
+    "Fuchsia City": {loc.label for loc in data.locations.values() if "Fuchsia" in loc.tags},
+    "Mahogany Town": {loc.label for loc in data.locations.values() if "Mahogany" in loc.tags},
+    "Pewter City": {loc.label for loc in data.locations.values() if "Pewter" in loc.tags},
+    "Viridian City": {loc.label for loc in data.locations.values() if "Viridian" in loc.tags},
+    "Elite 4": {loc.label for loc in data.locations.values() if "Elite" in loc.tags},
 }

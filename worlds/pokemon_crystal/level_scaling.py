@@ -56,7 +56,7 @@ def perform_level_scaling(multiworld: MultiWorld):
         "EVENT_BEAT_RIVAL_IN_MT_MOON",
         # "EVENT_RIVAL_INDIGO_PLATEAU_POKECENTER", # this is the league rematch, wed and fri only; requires mt. moon rival
         "EVENT_KOJI_ALLOWS_YOU_PASSAGE_TO_TIN_TOWER",  # 3rd of Wise Trio.
-        "EVENT_BEAT_RED"  # Either Red is the final boss, or he's not lol.  Either way, might as well have a roof.
+        "EVENT_BEAT_RED",  # Either Red is the final boss, or he's not lol.  Either way, might as well have a roof.
     ]
 
     level_scaling_required = False
@@ -65,10 +65,11 @@ def perform_level_scaling(multiworld: MultiWorld):
     crystal_locations: set[PokemonCrystalLocation] = {loc for loc in multiworld.get_filled_locations() if
                                                       loc.game == "Pokemon Crystal"}
     scaling_locations = {loc for loc in crystal_locations if
-                         ("trainer scaling" in loc.tags) or ("static scaling" in loc.tags)}
+                         ("trainer scaling" in loc.tags) or ("static scaling" in loc.tags) or (
+                                 "wilds scaling" in loc.tags)}
     locations = progression_locations | scaling_locations
     collected_locations = set()
-    spheres = []
+    spheres = list[set[PokemonCrystalLocation]]()
 
     for world in multiworld.get_game_worlds("Pokemon Crystal"):
         if world.options.level_scaling != LevelScaling.option_off:
@@ -89,7 +90,7 @@ def perform_level_scaling(multiworld: MultiWorld):
         while battle_events_found:
             battle_events_found = False
             events_found = True
-            sphere = set()
+            sphere = set[PokemonCrystalLocation]()
             old_sphere = set()
             distances = {}
 
@@ -104,17 +105,18 @@ def perform_level_scaling(multiworld: MultiWorld):
                     checked_regions = set()
                     distance = 0
                     while regions:
-                        # update_regions = True
-                        # while update_regions:
-                        # update_regions = False
-                        # same_distance_regions = set()
-                        # for region in regions:
-                        # encounter_regions = {e.connected_region for e in region.exits if e.access_rule(state)}
-                        # same_distance_regions.update(encounter_regions)
-                        # regions_len = len(regions)
-                        # regions.update(same_distance_regions)
-                        # if len(regions) > regions_len:
-                        # update_regions = True
+                        update_regions = True
+                        while update_regions:
+                            update_regions = False
+                            same_distance_regions = set()
+                            for region in regions:
+                                encounter_regions = {e.connected_region for e in region.exits if e.access_rule(state)}
+                                same_distance_regions.update(encounter_regions)
+                            regions_len = len(regions)
+                            regions.update(same_distance_regions)
+                            if len(regions) > regions_len:
+                                update_regions = True
+
                         next_regions = set()
                         for region in regions:
                             if not hasattr(region, "distance") or distance < region.distance:
@@ -126,12 +128,7 @@ def perform_level_scaling(multiworld: MultiWorld):
                         distance += 1
 
                 for location in locations:
-                    def can_reach():
-                        if location.can_reach(state):
-                            return True
-                        return False
-
-                    if can_reach():
+                    if location.can_reach(state):
                         sphere.add(location)
 
                         if location.game == "Pokemon Crystal":
@@ -192,11 +189,19 @@ def perform_level_scaling(multiworld: MultiWorld):
         # e4_base_level = 40
 
         for sphere in spheres:
+            wild_locations = [loc for loc in sphere if loc.player == world.player and "wilds scaling" in loc.tags]
             trainer_locations = [loc for loc in sphere if loc.player == world.player and "trainer scaling" in loc.tags]
-            encounter_locations = [loc for loc in sphere if loc.player == world.player and "static scaling" in loc.tags]
+            static_locations = [loc for loc in sphere if loc.player == world.player and "static scaling" in loc.tags]
 
+            wild_locations.sort(key=lambda loc: world.encounter_region_name_list.index(loc.name))
             trainer_locations.sort(key=lambda loc: world.trainer_name_list.index(loc.name))
-            encounter_locations.sort(key=lambda loc: world.encounter_name_list.index(loc.name))
+            static_locations.sort(key=lambda loc: world.static_name_list.index(loc.name))
+
+            for wild_location in wild_locations:
+                encounter_key = wild_location.encounter_key
+                world.generated_wild[encounter_key] = [
+                    replace(encounter, level=world.encounter_region_levels_list.pop(0)) for encounter in
+                    world.generated_wild[encounter_key]]
 
             for trainer_location in trainer_locations:
                 new_base_level = world.trainer_level_list.pop(0)
@@ -218,10 +223,10 @@ def perform_level_scaling(multiworld: MultiWorld):
                         f"Setting level {new_level} {pokemon.pokemon} for {trainer_location.name} for {world.player_name}")
                 world.generated_trainers[trainer_location.name] = replace(trainer_data, pokemon=new_pokemon)
 
-            for encounter_location in encounter_locations:
-                new_base_level = world.encounter_level_list.pop(0)
+            for static_location in static_locations:
+                new_base_level = world.static_level_list.pop(0)
 
-                encounter_key = EncounterKey.static(encounter_location.name)
+                encounter_key = EncounterKey.static(static_location.name)
                 pokemon_data = world.generated_static[encounter_key]
                 new_pokemon = replace(pokemon_data, level=new_base_level)
                 world.generated_static[encounter_key] = new_pokemon

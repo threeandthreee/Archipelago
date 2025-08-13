@@ -48,12 +48,6 @@ class SatisfactoryWorld(World):
         if self.critical_path_seed == None:
             self.critical_path_seed = self.random.random()
 
-        self.critical_path = CriticalPathCalculator(self.game_logic, self.critical_path_seed, self.options)
-        self.critical_path.calculate()
-
-        self.state_logic = StateLogic(self.player, self.options, self.critical_path)
-        self.items = Items(self.player, self.game_logic, self.random, self.options, self.critical_path)
-
         if self.options.mam_logic_placement.value == Placement.starting_inventory:
             self.push_precollected("Building: MAM")
         if self.options.awesome_logic_placement.value == Placement.starting_inventory:
@@ -67,6 +61,12 @@ class SatisfactoryWorld(World):
 
         if not self.options.trap_selection_override.value:
             self.options.trap_selection_override.value = self.options.trap_selection_preset.get_selected_list()
+
+        self.critical_path = CriticalPathCalculator(self.game_logic, self.critical_path_seed, self.options)
+        self.critical_path.calculate()
+
+        self.state_logic = StateLogic(self.player, self.options, self.critical_path)
+        self.items = Items(self.player, self.game_logic, self.random, self.options, self.critical_path)
 
         starting_inventory: list[str] = self.options.starting_inventory_preset.get_selected_list()
         for item_name in starting_inventory:
@@ -239,7 +239,7 @@ class SatisfactoryWorld(World):
 
 
     def modify_multidata(self, multidata: dict[str, Any]) -> None: 
-        locations_visiable_from_start: list[int] = [] #list(range(1338000, 1338099)) # ids of Hub 1-1,1 to 2-5,10
+        locations_visiable_from_start: list[int] = list(range(1338000, 1338099)) # ids of Hub 1-1,1 to 2-5,10
 
         if "Building: AWESOME Shop" in self.options.start_inventory \
                 or "Building: AWESOME Shop" in self.options.start_inventory_from_pool \

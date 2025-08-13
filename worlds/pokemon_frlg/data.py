@@ -13,7 +13,7 @@ from pkg_resources import resource_listdir, resource_isdir
 from typing import Dict, List, NamedTuple, Set, FrozenSet, Any, Tuple
 from BaseClasses import ItemClassification
 
-APWORLD_VERSION = "0.9.4"
+APWORLD_VERSION = "0.9.5"
 POPTRACKER_CHECKSUM = 0xA6E2C575
 NUM_REAL_SPECIES = 386
 

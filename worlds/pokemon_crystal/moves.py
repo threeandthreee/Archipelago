@@ -1,3 +1,4 @@
+from collections.abc import Iterable
 from dataclasses import replace
 from typing import TYPE_CHECKING
 
@@ -24,11 +25,14 @@ MOVE_POWER_RATIO = {
 }
 
 BAD_DAMAGING_MOVES = ["EXPLOSION", "SELFDESTRUCT", "STRUGGLE", "SNORE", "DREAM_EATER"]
+DAMAGING_STATUS_MOVES = ["ZAP_CANNON", "DYNAMICPUNCH"]
 
+HM_MOVES = ["CUT", "FLY", "SURF", "STRENGTH", "FLASH", "WHIRLPOOL", "WATERFALL"]
 HM_COMPAT_TMS = ["HEADBUTT", "ROCK_SMASH"]
+LOGIC_MOVES = HM_MOVES + HM_COMPAT_TMS
 
 
-def randomize_learnset(world: "PokemonCrystalWorld", pkmn_name):
+def randomize_learnset(world: "PokemonCrystalWorld", pkmn_name: str, move_blocklist: Iterable[str]):
     pkmn_data = world.generated_pokemon[pkmn_name]
     learn_levels = []
     new_learnset = []
@@ -53,7 +57,8 @@ def randomize_learnset(world: "PokemonCrystalWorld", pkmn_name):
                     rem_types = [type for type in crystal_data.types if type not in pkmn_types]
                     move_type = world.random.choice(rem_types)
             new_learnset.append(
-                LearnsetData(level, get_random_move(world, move_type=move_type, cur_learnset=new_learnset)))
+                LearnsetData(level,
+                             get_random_move(world, move_blocklist, move_type=move_type, cur_learnset=new_learnset)))
 
     if not world.options.metronome_only:
         # All moves available at Lv.1 that do damage (and don't faint the user)
@@ -64,13 +69,14 @@ def randomize_learnset(world: "PokemonCrystalWorld", pkmn_name):
 
         if not start_attacking:  # if there are no attacking moves at Lv.1, add one
             new_learnset[0] = LearnsetData(1, get_random_move(world,
+                                                              move_blocklist,
                                                               attacking=True))  # overwrites whatever the 1st move is
 
     return new_learnset
 
 
-def get_random_move(world: "PokemonCrystalWorld", move_type=None, attacking=None, cur_learnset=None,
-                    enforce_blocklist=True):
+def get_random_move(world: "PokemonCrystalWorld", blocklist: Iterable[str], move_type=None, attacking=None,
+                    cur_learnset=None):
     if not cur_learnset:
         cur_learnset = []
 
@@ -89,16 +95,16 @@ def get_random_move(world: "PokemonCrystalWorld", move_type=None, attacking=None
                      and move_name not in existing_moves]
 
     # remove every move from move_pool that is in the blocklist
-    if enforce_blocklist and world.blocklisted_moves:
+    if blocklist:
         move_pool = [move_name for move_name in move_pool if
-                     move_name not in world.blocklisted_moves]
+                     move_name not in blocklist]
 
     if move_pool:
         return world.random.choice(move_pool)
     elif move_type:
-        return get_random_move(world)
+        return get_random_move(world, blocklist=blocklist)
     else:
-        return get_random_move(world, enforce_blocklist=False)
+        return get_random_move(world, blocklist=[])
 
 
 def get_tmhm_compatibility(world: "PokemonCrystalWorld", pkmn_name):
@@ -108,8 +114,8 @@ def get_tmhm_compatibility(world: "PokemonCrystalWorld", pkmn_name):
     tmhms = []
     for tm_name, tm_data in world.generated_tms.items():
         use_value = hm_value if tm_data.is_hm or tm_name in HM_COMPAT_TMS else tm_value
-        # if the value is 0, use vanilla compatibility
-        if use_value == 0:
+        # if the value is -1, use vanilla compatibility
+        if use_value == -1:
             if tm_name in pkmn_data.tm_hm:
                 tmhms.append(tm_name)
                 continue
@@ -125,13 +131,14 @@ def randomize_tms(world: "PokemonCrystalWorld"):
     if not world.options.randomize_tm_moves and not world.options.metronome_only: return
 
     ignored_moves = ["ROCK_SMASH", "NO_MOVE", "STRUGGLE", "HEADBUTT"]
-    if world.options.dexsanity:
+    if world.options.dexsanity or world.options.dexcountsanity:
         ignored_moves.append("SWEET_SCENT")
     global_move_pool = [move_data for move_name, move_data in world.generated_moves.items() if
                         not move_data.is_hm
                         and move_name not in ignored_moves]
 
-    filtered_move_pool = [move for move in global_move_pool if move.id not in world.blocklisted_moves]
+    blocked_tm_moves = moves_convert_friendly_to_ids(world, world.options.tm_blocklist)
+    filtered_move_pool = [move for move in global_move_pool if move.id not in blocked_tm_moves]
 
     world.random.shuffle(global_move_pool)
     world.random.shuffle(filtered_move_pool)
@@ -149,7 +156,7 @@ def randomize_tms(world: "PokemonCrystalWorld"):
         world.generated_tms[tm_name] = TMHMData(new_move.id, tm_data.tm_num, new_move.type, False, new_move.rom_id)
 
 
-def get_random_move_from_learnset(world: "PokemonCrystalWorld", pokemon, level):
+def get_random_move_from_learnset(world: "PokemonCrystalWorld", pokemon: str, level: int):
     move_pool = [learn_move.move for learn_move in world.generated_pokemon[pokemon].learnset if
                  learn_move.level <= level and learn_move.move != "NO_MOVE"]
     # double learnset pool to dilute HMs slightly
@@ -173,7 +180,7 @@ def randomize_move_values(world: "PokemonCrystalWorld"):
             if world.options.randomize_move_values.value == RandomizeMoveValues.option_restricted:
                 new_power = int(new_power * (world.random.random() + 0.5))
                 if new_power > 255: new_power = 255
-                new_pp = new_pp + world.random.choice([-10, -5, 0, 5, 10])
+                new_pp = new_pp + world.random.choice((-10, -5, 0, 5, 10))
                 if new_pp < 5: new_pp = 5
                 if new_pp > 40: new_pp = 40
             else:
@@ -188,12 +195,27 @@ def randomize_move_values(world: "PokemonCrystalWorld"):
                     # 30 is 76,5 so actual lowest accuracy is a bit lower than 30
                     new_acc = world.random.randint(30, 100)
 
+            if move_name in DAMAGING_STATUS_MOVES and new_acc > 75:
+                new_acc = 75
+
         world.generated_moves[move_name] = replace(
             world.generated_moves[move_name],
             power=new_power,
             accuracy=new_acc,
             pp=new_pp
         )
+
+
+def cap_hm_move_power(world: "PokemonCrystalWorld"):
+    if world.options.hm_power_cap.value == world.options.hm_power_cap.range_end: return
+
+    cap = world.options.hm_power_cap.value
+    for move_name in LOGIC_MOVES:
+        if world.generated_moves.get(move_name).power > cap:
+            world.generated_moves[move_name] = replace(
+                world.generated_moves[move_name],
+                power=cap
+            )
 
 
 def randomize_move_types(world: "PokemonCrystalWorld"):
@@ -207,3 +229,7 @@ def randomize_move_types(world: "PokemonCrystalWorld"):
             world.generated_moves[move_name],
             type=new_type
         )
+
+
+def moves_convert_friendly_to_ids(world: "PokemonCrystalWorld", moves: Iterable[str]) -> set[str]:
+    return {move_id for move_id, move_data in world.generated_moves.items() if move_data.name.title() in moves}

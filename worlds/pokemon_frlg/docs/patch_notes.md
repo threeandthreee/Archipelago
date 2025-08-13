@@ -1,3 +1,7 @@
+# 0.9.5
+## Bug Fixes
++ Fixed an error that could occur when connecting to the client if the `provide_hints` setting was set to either `progression` or `progression_and_useful`
+
 # 0.9.4
 ## Updates
 + Improvements made to reduce generation time (credit to [Mysteryem](https://github.com/Mysteryem))

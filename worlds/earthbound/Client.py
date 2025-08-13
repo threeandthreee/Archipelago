@@ -120,6 +120,12 @@ class EarthBoundClient(SNIClient):
         ctx.death_state = DeathState.dead
         ctx.last_death_link = time.time()
 
+    def on_package(self, ctx, cmd: str, args: dict):
+        super().on_package(ctx, cmd, args)
+
+        if cmd == "Connected":
+            self.slot_data = args.get("slot_data", None)
+
     async def validate_rom(self, ctx) -> bool:
         from SNIClient import snes_read
 
@@ -331,12 +337,16 @@ class EarthBoundClient(SNIClient):
         
         for i in range(6):
             if scouted_hint_flags[0] & hint_bits[i]:
-                scoutable_hint = await snes_read(ctx, HINT_SCOUNT_IDS + (i * 2), 2)
-                scoutable_hint = (int.from_bytes(scoutable_hint, byteorder="little") + 0xEB0000)
-
                 if i not in self.hint_list:
-                    self.hint_list.append(i)
-                    await ctx.send_msgs([{"cmd": "LocationScouts", "locations": [scoutable_hint], "create_as_hint": 2}])
+                    scoutable_hint = await snes_read(ctx, HINT_SCOUNT_IDS + (i * 3), 3)
+                    if not scoutable_hint[2]:
+                        scoutable_hint = (int.from_bytes(scoutable_hint[:2], byteorder="little") + 0xEB0000)
+                        self.hint_list.append(i)
+                        await ctx.send_msgs([{"cmd": "CreateHints", "locations": [scoutable_hint], "player": ctx.player}])
+                    else:
+                        hint = self.slot_data['hint_man_hints'][i]
+                        await ctx.send_msgs([{"cmd": "CreateHints", "locations": [hint[0]], "player": hint[1]}])
+                        self.hint_list.append(i)
         
         if shop_scout[0] and shop_scouts_enabled[0]:
             shop_slots = []
@@ -347,7 +357,7 @@ class EarthBoundClient(SNIClient):
             
             if shop_slots:
                 if shop_scouts_enabled[0] == 2:
-                    await ctx.send_msgs([{"cmd": "LocationScouts", "locations": shop_slots, "create_as_hint": 2}])
+                    await ctx.send_msgs([{"cmd": "CreateHints", "locations": shop_slots, "player": ctx.slot}])
                     await snes_write(ctx, [(WRAM_START + 0x0770, bytes([0x00]))])
                 else:
                     prog_shops = []
@@ -357,7 +367,8 @@ class EarthBoundClient(SNIClient):
                             self.hinted_shop_locations.append(location)
                             if ctx.locations_info[location].flags & 0x01:
                                 prog_shops.append(location)
-                    await ctx.send_msgs([{"cmd": "LocationScouts", "locations": prog_shops, "create_as_hint": 2}])
+                    if prog_shops:
+                        await ctx.send_msgs([{"cmd": "CreateHints", "locations": prog_shops, "player": ctx.slot}])
 
         await ctx.send_msgs([{
                     "cmd": "Set",
