@@ -1,4 +1,4 @@
-VERSION = (10, 2)
+VERSION = (12, 3)
 ROM_HASH = "f2dc6c4e093e4f8c6cbea80e8dbd62cb"
 
 DIRECTION_UP = 0
@@ -57,24 +57,6 @@ DUNGEON_NAMES = [
     "Ancient Ruins",
     "Explorer's Crypt",
     "Sword & Shield Dungeon"
-]
-
-ESSENCES = [
-    "Fertile Soil",
-    "Gift of Time",
-    "Bright Sun",
-    "Soothing Rain",
-    "Nurturing Warmth",
-    "Blowing Wind",
-    "Seed of Life",
-    "Changing Seasons",
-]
-
-JEWELS = [
-    "Square Jewel",
-    "Pyramid Jewel",
-    "Round Jewel",
-    "X-Shaped Jewel"
 ]
 
 VALID_RUPEE_PRICE_VALUES = [
@@ -263,7 +245,7 @@ ITEM_GROUPS = {
         "Dungeon Map (Unicorn's Cave)",
         "Dungeon Map (Ancient Ruins)",
         "Dungeon Map (Explorer's Crypt)",
-        "Dungeon Map (Sword & Shield Dungeon)"
+        "Dungeon Map (Sword & Shield Dungeon)",
     ],
     "Master Keys": [
         "Master Key (Hero's Cave)",
@@ -275,30 +257,46 @@ ITEM_GROUPS = {
         "Master Key (Ancient Ruins)",
         "Master Key (Explorer's Crypt)",
         "Master Key (Sword & Shield Dungeon)",
+    ],
+    "Essences": [
+        "Fertile Soil",
+        "Gift of Time",
+        "Bright Sun",
+        "Soothing Rain",
+        "Nurturing Warmth",
+        "Blowing Wind",
+        "Seed of Life",
+        "Changing Seasons",
+    ],
+    "Jewels": [
+        "Square Jewel",
+        "Pyramid Jewel",
+        "Round Jewel",
+        "X-Shaped Jewel"
     ]
 }
 
 LOCATION_GROUPS = {
-    'D0': [
+    "D0": [
         "Hero's Cave: Topmost Chest",
         "Hero's Cave: Final Chest",
         "Hero's Cave: Item in Basement Under Keese Room",
-        "Hero's Cave: Alternative Entrance Chest"
+        "Hero's Cave: Alternative Entrance Chest",
     ],
-    'D1': [
-        'Gnarled Root Dungeon: Drop in Right Stalfos Room',
-        'Gnarled Root Dungeon: Item in Basement',
-        'Gnarled Root Dungeon: Chest in Block-pushing Room',
-        'Gnarled Root Dungeon: Chest Near Railway',
-        'Gnarled Root Dungeon: Chest in Floormaster Room',
-        'Gnarled Root Dungeon: Chest Near Railway Lever',
-        'Gnarled Root Dungeon: Chest in Left Stalfos Room',
-        'Gnarled Root Dungeon: Hidden Chest Revealed by Button',
-        'Gnarled Root Dungeon: Chest in Goriya Room',
-        'Gnarled Root Dungeon: Boss Reward',
-        'Gnarled Root Dungeon: Essence',
+    "D1": [
+        "Gnarled Root Dungeon: Drop in Right Stalfos Room",
+        "Gnarled Root Dungeon: Item in Basement",
+        "Gnarled Root Dungeon: Chest in Block-pushing Room",
+        "Gnarled Root Dungeon: Chest Near Railway",
+        "Gnarled Root Dungeon: Chest in Floormaster Room",
+        "Gnarled Root Dungeon: Chest Near Railway Lever",
+        "Gnarled Root Dungeon: Chest in Left Stalfos Room",
+        "Gnarled Root Dungeon: Hidden Chest Revealed by Button",
+        "Gnarled Root Dungeon: Chest in Goriya Room",
+        "Gnarled Root Dungeon: Boss Reward",
+        "Gnarled Root Dungeon: Essence",
     ],
-    'D2': [
+    "D2": [
         "Snake's Remains: Drop in Left Rope Room",
         "Snake's Remains: Chest in Distant Moblins Room",
         "Snake's Remains: Chest in Rollers Section",
@@ -312,7 +310,7 @@ LOCATION_GROUPS = {
         "Snake's Remains: Boss Reward",
         "Snake's Remains: Essence",
     ],
-    'D3': [
+    "D3": [
         "Poison Moth's Lair (B1F): Chest in Roller Room",
         "Poison Moth's Lair (1F): Chest in Mimics Room",
         "Poison Moth's Lair (1F): Chest Above East Trampoline",
@@ -325,22 +323,22 @@ LOCATION_GROUPS = {
         "Poison Moth's Lair (1F): Boss Reward",
         "Poison Moth's Lair: Essence",
     ],
-    'D4': [
-        'Dancing Dragon Dungeon (2F): Pots on Buttons Puzzle Drop',
-        'Dancing Dragon Dungeon (2F): Chest North of Entrance',
-        'Dancing Dragon Dungeon (1F): Chest in Southwest Quadrant of Beamos Room',
-        'Dancing Dragon Dungeon (1F): Dark Room Chest',
-        'Dancing Dragon Dungeon (2F): Chest in Water Donut Room',
-        'Dancing Dragon Dungeon (2F): Pool Drop',
-        'Dancing Dragon Dungeon (1F): Chest on Small Terrace',
-        'Dancing Dragon Dungeon (1F): Chest Revealed by Minecart Torches',
-        'Dancing Dragon Dungeon (1F): Crumbling Room Chest',
-        'Dancing Dragon Dungeon (1F): Eye Diving Spot Item',
-        'Dancing Dragon Dungeon (B1F): Boss Reward',
-        'Dancing Dragon Dungeon (1F): Business Scrub',
-        'Dancing Dragon Dungeon: Essence',
+    "D4": [
+        "Dancing Dragon Dungeon (2F): Pots on Buttons Puzzle Drop",
+        "Dancing Dragon Dungeon (2F): Chest North of Entrance",
+        "Dancing Dragon Dungeon (1F): Chest in Southwest Quadrant of Beamos Room",
+        "Dancing Dragon Dungeon (1F): Dark Room Chest",
+        "Dancing Dragon Dungeon (2F): Chest in Water Donut Room",
+        "Dancing Dragon Dungeon (2F): Pool Drop",
+        "Dancing Dragon Dungeon (1F): Chest on Small Terrace",
+        "Dancing Dragon Dungeon (1F): Chest Revealed by Minecart Torches",
+        "Dancing Dragon Dungeon (1F): Crumbling Room Chest",
+        "Dancing Dragon Dungeon (1F): Eye Diving Spot Item",
+        "Dancing Dragon Dungeon (B1F): Boss Reward",
+        "Dancing Dragon Dungeon (1F): Business Scrub",
+        "Dancing Dragon Dungeon: Essence",
     ],
-    'D5': [
+    "D5": [
         "Unicorn's Cave: Right Cart Chest",
         "Unicorn's Cave: Chest Left from Entrance",
         "Unicorn's Cave: Magnet Gloves Chest",
@@ -354,22 +352,22 @@ LOCATION_GROUPS = {
         "Unicorn's Cave: Boss Reward",
         "Unicorn's Cave: Essence",
     ],
-    'D6': [
-        'Ancient Ruins (1F): Magnet Ball Puzzle Drop',
-        'Ancient Ruins (2F): Chest North of Main Spinner',
-        'Ancient Ruins (3F): Armos Hall Chest',
-        'Ancient Ruins (1F): Crystal Maze Room Chest',
-        'Ancient Ruins (1F): Crumbling Ground Room Chest',
-        'Ancient Ruins (2F): Chest in Gibdo Room',
-        'Ancient Ruins (2F): Chest Between 4 Armos',
-        'Ancient Ruins (1F): Chest in Beamos Room',
-        'Ancient Ruins (1F): Chest on Terrace Left of Entrance',
-        'Ancient Ruins (2F): Chest After Time Trial',
-        'Ancient Ruins (2F): Chest on Red Terrace Before Vire',
-        'Ancient Ruins (5F): Boss Reward',
-        'Ancient Ruins: Essence',
+    "D6": [
+        "Ancient Ruins (1F): Magnet Ball Puzzle Drop",
+        "Ancient Ruins (2F): Chest North of Main Spinner",
+        "Ancient Ruins (3F): Armos Hall Chest",
+        "Ancient Ruins (1F): Crystal Maze Room Chest",
+        "Ancient Ruins (1F): Crumbling Ground Room Chest",
+        "Ancient Ruins (2F): Chest in Gibdo Room",
+        "Ancient Ruins (2F): Chest Between 4 Armos",
+        "Ancient Ruins (1F): Chest in Beamos Room",
+        "Ancient Ruins (1F): Chest on Terrace Left of Entrance",
+        "Ancient Ruins (2F): Chest After Time Trial",
+        "Ancient Ruins (2F): Chest on Red Terrace Before Vire",
+        "Ancient Ruins (5F): Boss Reward",
+        "Ancient Ruins: Essence",
     ],
-    'D7': [
+    "D7": [
         "Explorer's Crypt (1F): Chest in Wizzrobe Room",
         "Explorer's Crypt (B1F): Chest in Fast Moving Platform Room",
         "Explorer's Crypt (B2F): Stair Maze Chest",
@@ -384,40 +382,40 @@ LOCATION_GROUPS = {
         "Explorer's Crypt (B1F): Boss Reward",
         "Explorer's Crypt: Essence",
     ],
-    'D8': [
-        'Sword & Shield Dungeon (1F): Eye Drop Near Entrance',
-        'Sword & Shield Dungeon (1F): Three Eyes Chest',
-        'Sword & Shield Dungeon (1F): Drop in Hardhat & Magnet Ball Room',
-        'Sword & Shield Dungeon (1F): U-Shaped Spiky Freezer Chest',
-        'Sword & Shield Dungeon (B1F): Chest Right of Spinner',
-        'Sword & Shield Dungeon (1F): Top Chest in Lava Bridge Room',
-        'Sword & Shield Dungeon (1F): Bottom Chest in Lava Bridge Room',
-        'Sword & Shield Dungeon (1F): Chest in Bombable Blocks Room',
-        'Sword & Shield Dungeon (1F): Chest on Terrace After Pols Voice Room',
-        'Sword & Shield Dungeon (1F): Ghost Armos Puzzle Drop',
-        'Sword & Shield Dungeon (B1F): Southeast Lava Chest',
-        'Sword & Shield Dungeon (B1F): Southwest Lava Chest',
-        'Sword & Shield Dungeon (1F): Chest in Sparks & Pots Room',
-        'Sword & Shield Dungeon (B1F): Boss Reward',
-        'Sword & Shield Dungeon: Essence',
+    "D8": [
+        "Sword & Shield Dungeon (1F): Eye Drop Near Entrance",
+        "Sword & Shield Dungeon (1F): Three Eyes Chest",
+        "Sword & Shield Dungeon (1F): Drop in Hardhat & Magnet Ball Room",
+        "Sword & Shield Dungeon (1F): U-Shaped Spiky Freezer Chest",
+        "Sword & Shield Dungeon (B1F): Chest Right of Spinner",
+        "Sword & Shield Dungeon (1F): Top Chest in Lava Bridge Room",
+        "Sword & Shield Dungeon (1F): Bottom Chest in Lava Bridge Room",
+        "Sword & Shield Dungeon (1F): Chest in Bombable Blocks Room",
+        "Sword & Shield Dungeon (1F): Chest on Terrace After Pols Voice Room",
+        "Sword & Shield Dungeon (1F): Ghost Armos Puzzle Drop",
+        "Sword & Shield Dungeon (B1F): Southeast Lava Chest",
+        "Sword & Shield Dungeon (B1F): Southwest Lava Chest",
+        "Sword & Shield Dungeon (1F): Chest in Sparks & Pots Room",
+        "Sword & Shield Dungeon (B1F): Boss Reward",
+        "Sword & Shield Dungeon: Essence",
     ],
-    'Trade Sequence': [
-        'Horon Village: Dr. Left Reward',
-        'North Horon: Malon Trade',
-        'Maple Trade',
-        'Holodrum Plain: Mrs. Ruul Trade',
-        'Subrosia: Subrosian Chef Trade',
-        'Goron Mountain: Biggoron Trade',
-        'Sunken City: Ingo Trade',
-        'North Horon: Yelling Old Man Trade',
-        'Mt. Cucco: Talon Trade',
-        'Sunken City: Syrup Trade',
-        'Horon Village: Tick Tock Trade',
-        'Eastern Suburbs: Guru-Guru Trade',
-        'Mt. Cucco: Chest Behind Talon',
-        'Sunken City: Syrup Shop #1',
-        'Sunken City: Syrup Shop #2',
-        'Sunken City: Syrup Shop #3'
+    "Trade Sequence": [
+        "Horon Village: Dr. Left Reward",
+        "North Horon: Malon Trade",
+        "Maple Trade",
+        "Holodrum Plain: Mrs. Ruul Trade",
+        "Subrosia: Subrosian Chef Trade",
+        "Goron Mountain: Biggoron Trade",
+        "Sunken City: Ingo Trade",
+        "North Horon: Yelling Old Man Trade",
+        "Mt. Cucco: Talon Trade",
+        "Sunken City: Syrup Trade",
+        "Horon Village: Tick Tock Trade",
+        "Eastern Suburbs: Guru-Guru Trade",
+        "Mt. Cucco: Chest Behind Talon",
+        "Sunken City: Syrup Shop #1",
+        "Sunken City: Syrup Shop #2",
+        "Sunken City: Syrup Shop #3",
     ]
 }
 

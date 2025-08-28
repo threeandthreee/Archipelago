@@ -19,6 +19,9 @@
     cp BTN_B | BTN_A
     jp nz,$5029 ; @openMenu, we're done
     
+    call checkLinkCollisionsEnabled ; we want to check if Link is not in the middle of an action
+    jp nc,$5029 ; @openMenu, we're done
+    
     ld a,option.startingGroup
     set 7,a
     ld (wWarpDestGroup),a

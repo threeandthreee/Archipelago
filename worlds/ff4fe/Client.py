@@ -42,6 +42,14 @@ class FF4FEClient(SNIClient):
         ctx.game = self.game
         if self.logged_version is False:
             from . import FF4FEWorld
+            generation_data = await snes_read(ctx, Rom.generation_version_byte, 1)
+            patching_data = await snes_read(ctx, Rom.patch_version_byte, 1)
+            if generation_data is None or patching_data is None:
+                return False
+            generation_version = int.from_bytes(generation_data)
+            patching_version = int.from_bytes(patching_data)
+            snes_logger.info(f"FF4FE APWorld version v{generation_version} used for generation.")
+            snes_logger.info(f"FF4FE APWorld version v{patching_version} used for patching.")
             snes_logger.info(f"FF4FE APWorld version v{FF4FEWorld.version} used for playing.")
             self.logged_version = True
 

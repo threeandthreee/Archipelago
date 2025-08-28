@@ -1,5 +1,7 @@
+from dataclasses import dataclass
+
 import typing
-from Options import Option, DefaultOnToggle, Choice, Range, Toggle
+from Options import Option, DefaultOnToggle, Choice, Range, Toggle, PerGameCommonOptions
 
 
 class StarPieceGoal(Choice):
@@ -166,26 +168,26 @@ class FreeShops(Toggle):
     """
     display_name = "Free Shops"
 
+@dataclass
+class SMRPGOptions(PerGameCommonOptions):
+    StarPieceGoal: StarPieceGoal
+    StarPiecesInBowsersKeep: StarPiecesInBowsersKeep
+    BowsersKeepDoors: BowsersKeepDoors
+    ShuffleBowsersKeepDoors: ShuffleBowsersKeepDoors
+    IncludeCulex: IncludeCulex
+    ExperienceMultiplier: ExperienceMultiplier
+    RandomizeEnemies: RandomizeEnemies
+    RandomizeBosses: RandomizeBosses
+    RandomizeCharacterStats: RandomizeCharacterStats
+    RandomizeCharacterSpells: RandomizeCharacterSpells
+    StartingCharacterCount: StartingCharacterCount
+    StartingCharacter: StartingCharacter
+    RandomizeCharacterPalettes: RandomizeCharacterPalettes
+    RandomizeEquipment: RandomizeEquipment
+    ItemPool: ItemPool
+    SuperJumpsInLogic: SuperJumpsInLogic
+    FreeShops: FreeShops
 
-smrpg_options: typing.Dict[str, type(Option)] = {
-    "StarPieceGoal": StarPieceGoal,
-    "StarPiecesInBowsersKeep": StarPiecesInBowsersKeep,
-    "BowsersKeepDoors": BowsersKeepDoors,
-    "ShuffleBowsersKeepDoors": ShuffleBowsersKeepDoors,
-    "IncludeCulex": IncludeCulex,
-    "ExperienceMultiplier": ExperienceMultiplier,
-    "RandomizeEnemies": RandomizeEnemies,
-    "RandomizeBosses": RandomizeBosses,
-    "RandomizeCharacterStats": RandomizeCharacterStats,
-    "RandomizeCharacterSpells": RandomizeCharacterSpells,
-    "StartingCharacterCount": StartingCharacterCount,
-    "StartingCharacter": StartingCharacter,
-    "RandomizeCharacterPalettes": RandomizeCharacterPalettes,
-    "RandomizeEquipment": RandomizeEquipment,
-    "ItemPool": ItemPool,
-    "SuperJumpsInLogic": SuperJumpsInLogic,
-    "FreeShops": FreeShops
-}
 
 
 def build_flag_string(options: typing.Dict[str, typing.Any]):

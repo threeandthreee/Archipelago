@@ -1,22 +1,21 @@
 import os
-import logging
-from typing import List, Union, ClassVar, Any, Optional, Tuple
+from typing import List, Union, ClassVar, Any, Optional, Tuple, Type
+
 import settings
 from BaseClasses import Tutorial, Region, Location, LocationProgressType, Item, ItemClassification, MultiWorld, CollectionState
-from Fill import fill_restrictive, FillError
-from Options import Accessibility, OptionError
+from Fill import fill_restrictive
+from Options import Accessibility, OptionError, Option
 from worlds.AutoWorld import WebWorld, World
-
-from .Util import *
-from .Options import *
+from .Client import OracleOfSeasonsClient  # Unused, but required to register with BizHawkClient
+from .Hints import create_region_hints, create_item_hints
 from .Logic import create_connections, apply_self_locking_rules
+from .Options import *
 from .PatchWriter import oos_create_ap_procedure_patch
+from .Util import *
 from .data import LOCATIONS_DATA
 from .data.Constants import *
 from .data.Items import ITEMS_DATA
 from .data.Regions import REGIONS, NATZU_REGIONS, GASHA_REGIONS
-
-from .Client import OracleOfSeasonsClient  # Unused, but required to register with BizHawkClient
 
 
 class OracleOfSeasonsSettings(settings.Group):
@@ -88,6 +87,7 @@ class OracleOfSeasonsWeb(WebWorld):
         ["Deoxis"]
     )
     tutorials = [setup_en, setup_fr]
+    option_groups = option_groups
 
 
 class OracleOfSeasonsWorld(World):
@@ -97,9 +97,10 @@ class OracleOfSeasonsWorld(World):
     Gather the Essences of Nature, confront Onox and rescue Din to give nature some rest in Holodrum.
     """
     game = "The Legend of Zelda - Oracle of Seasons"
+    author = ["Dinopony", "Ishigh"]  # Not used by AP but a good way to keep who made that apworld when redistributed
     options_dataclass = OracleOfSeasonsOptions
     options: OracleOfSeasonsOptions
-    required_client_version = (0, 5, 1)
+    # required_client_version = (0, 5, 1)
     web = OracleOfSeasonsWeb()
     topology_present = True
 
@@ -126,9 +127,12 @@ class OracleOfSeasonsWorld(World):
         self.shop_prices: Dict[str, int] = VANILLA_SHOP_PRICES.copy()
         self.shop_order: List[List[str]] = []
         self.shop_rupee_requirements: Dict[str, int] = {}
-        self.essences_in_game: List[str] = ESSENCES.copy()
+        self.essences_in_game: List[str] = ITEM_GROUPS["Essences"].copy()
         self.random_rings_pool: List[str] = []
         self.remaining_progressive_gasha_seeds = 0
+
+        self.region_hints: list[tuple[str, str | int]] = []
+        self.item_hints: list[tuple[str, str, int | None]] = []
 
     def generate_early(self):
         if self.interpret_slot_data(None):
@@ -199,7 +203,7 @@ class OracleOfSeasonsWorld(World):
                 if "essence" in loc_data and loc_data["essence"] is True:
                     self.essences_in_game.remove(loc_data["vanilla_item"])
             if len(self.essences_in_game) < self.options.required_essences:
-                raise ValueError(f"Too many essence pedestal locations were excluded, seed will be unbeatable")
+                raise ValueError("Too many essence pedestal locations were excluded, seed will be unbeatable")
 
         # If we need to remove more essences, pick them randomly
         self.random.shuffle(self.essences_in_game)
@@ -415,8 +419,6 @@ class OracleOfSeasonsWorld(World):
             return not self.options.enforce_potion_in_shop
         if location_name.startswith("Gasha Nut #"):
             return int(location_name[11:]) <= self.options.deterministic_gasha_locations
-        if location_name in SECRETS:
-            return self.options.secret_locations
         if location_name == "Horon Village: Item Inside Maku Tree (3+ Essences)":
             return len(self.essences_in_game) >= 3
         if location_name == "Horon Village: Item Inside Maku Tree (5+ Essences)":
@@ -459,7 +461,7 @@ class OracleOfSeasonsWorld(World):
                 continue
 
             is_local = "local" in location_data and location_data["local"] is True
-            self.create_location(location_data['region_id'], location_name, is_local)
+            self.create_location(location_data["region_id"], location_name, is_local)
 
         self.create_events()
         self.exclude_locations_automatically()
@@ -534,8 +536,8 @@ class OracleOfSeasonsWorld(World):
 
         # If dungeons without essence need to be excluded, do it if conditions are met
         if self.options.exclude_dungeons_without_essence and not self.options.shuffle_essences:
-            for i, essence_name in enumerate(ESSENCES):
-                if ESSENCES[i] not in self.essences_in_game:
+            for i, essence_name in enumerate(ITEM_GROUPS["Essences"]):
+                if essence_name not in self.essences_in_game:
                     locations_to_exclude.update(self.location_name_groups[f"D{i + 1}"])
 
         if not self.options.shuffle_business_scrubs:
@@ -552,18 +554,25 @@ class OracleOfSeasonsWorld(World):
         apply_self_locking_rules(self.multiworld, self.player)
         self.multiworld.completion_condition[self.player] = lambda state: state.has("_beaten_game", self.player)
 
+        self.multiworld.register_indirect_condition(self.get_region("lost woods top statue"), self.get_entrance("lost woods -> lost woods deku"))
+        self.multiworld.register_indirect_condition(self.get_region("lost woods phonograph"), self.get_entrance("lost woods stump -> lost woods"))
+        self.multiworld.register_indirect_condition(self.get_region("lost woods phonograph"), self.get_entrance("d6 sector -> lost woods"))
+        self.multiworld.register_indirect_condition(self.get_region("lost woods deku"), self.get_entrance("lost woods -> d6 sector"))
+        self.multiworld.register_indirect_condition(self.get_region("lost woods deku"), self.get_entrance("lost woods stump -> d6 sector"))
+
         if self.options.logic_difficulty == OracleOfSeasonsLogicDifficulty.option_hell:
             cucco_region = self.get_region("rooster adventure")
             # This saves using an event which is slightly more efficient
             self.multiworld.register_indirect_condition(cucco_region, self.get_entrance("d6 sector -> old man near d6"))
             self.multiworld.register_indirect_condition(cucco_region, self.get_entrance("d6 sector -> d6 entrance"))
+            self.multiworld.register_indirect_condition(self.get_region("lost woods top statue"), self.get_entrance("rooster adventure -> lost woods deku"))
 
     def create_item(self, name: str) -> Item:
         # If item name has a "!PROG" suffix, force it to be progression. This is typically used to create the right
         # amount of progression rupees while keeping them a filler item as default
         if name.endswith("!PROG"):
             name = name.removesuffix("!PROG")
-            classification = ItemClassification.progression_skip_balancing
+            classification = ItemClassification.progression_deprioritized_skip_balancing
         elif name.endswith("!USEFUL"):
             # Same for above but with useful. This is typically used for Required Rings,
             # as we don't want those locked in a barren dungeon
@@ -571,6 +580,9 @@ class OracleOfSeasonsWorld(World):
             classification = ITEMS_DATA[name]["classification"]
             if classification == ItemClassification.filler:
                 classification = ItemClassification.useful
+        elif name.endswith("!FILLER"):
+            name = name.removesuffix("!FILLER")
+            classification = ItemClassification.filler
         else:
             classification = ITEMS_DATA[name]["classification"]
         ap_code = self.item_name_to_id[name]
@@ -582,11 +594,10 @@ class OracleOfSeasonsWorld(World):
         # As many Gasha Seeds become progression as the number of deterministic Gasha Nuts
         if self.remaining_progressive_gasha_seeds > 0 and name == "Gasha Seed":
             self.remaining_progressive_gasha_seeds -= 1
-            classification = ItemClassification.progression
+            classification = ItemClassification.progression_deprioritized
 
         # Players in Medium+ are expected to know the default paths through Lost Woods, Phonograph becomes filler
-        difficulties = ["medium", "hard"]
-        if self.options.logic_difficulty in difficulties and not self.options.randomize_lost_woods_item_sequence and name == "Phonograph":
+        if self.options.logic_difficulty >= OracleOfSeasonsLogicDifficulty.option_medium and not self.options.randomize_lost_woods_item_sequence and name == "Phonograph":
             classification = ItemClassification.filler
 
         # UT doesn't let us know if the item is progression or not, so it is always progression
@@ -596,6 +607,13 @@ class OracleOfSeasonsWorld(World):
         return Item(name, classification, ap_code, self.player)
 
     def build_item_pool_dict(self):
+        excluded_mapass = set()
+        if self.options.exclude_dungeons_without_essence and not self.options.shuffle_essences:
+            for i, essence_name in enumerate(ITEM_GROUPS["Essences"]):
+                if essence_name not in self.essences_in_game:
+                    excluded_mapass.add(f"Dungeon Map ({DUNGEON_NAMES[i]})")
+                    excluded_mapass.add(f"Compass ({DUNGEON_NAMES[i]})")
+
         removed_item_quantities = self.options.remove_items_from_pool.value.copy()
         item_pool_dict = {}
         filler_item_count = 0
@@ -607,7 +625,7 @@ class OracleOfSeasonsWorld(World):
             if "vanilla_item" not in loc_data:
                 continue
 
-            item_name = loc_data['vanilla_item']
+            item_name = loc_data["vanilla_item"]
             if "Ring" in item_name:
                 item_name = "Random Ring"
             if item_name in removed_item_quantities and removed_item_quantities[item_name] > 0:
@@ -666,6 +684,8 @@ class OracleOfSeasonsWorld(World):
 
             if item_name == "Flute":
                 item_name = self.options.animal_companion.current_key.title() + "'s Flute"
+            elif item_name in excluded_mapass:
+                item_name += "!FILLER"
 
             item_pool_dict[item_name] = item_pool_dict.get(item_name, 0) + 1
 
@@ -716,7 +736,8 @@ class OracleOfSeasonsWorld(World):
         return item_pool_dict
 
     def build_rupee_item_dict(self, rupee_item_count: int, filler_item_count: int) -> Tuple[int, int]:
-        total_cost = max(self.shop_rupee_requirements.values())
+        sorted_shop_values = sorted(self.shop_rupee_requirements.values())
+        total_cost = sorted_shop_values[-1]
 
         # Count the old man's contribution, it's especially important as it may be negative
         # (We ignore dungeons here because we don't want to worry about whether they'll be available)
@@ -726,7 +747,7 @@ class OracleOfSeasonsWorld(World):
             old_man_rupee += self.old_man_rupee_values[name]
 
         target = total_cost / 2 - old_man_rupee
-        total_cost -= old_man_rupee
+        total_cost = max(total_cost - old_man_rupee, sorted_shop_values[-3])  # Ensure it doesn't drop too low due to the old men
         return self.build_currency_item_dict(rupee_item_count, filler_item_count, target, total_cost, "Rupees", VALID_RUPEE_ITEM_VALUES)
 
     def build_ore_item_dict(self, ore_item_count: int, filler_item_count: int) -> Tuple[int, int]:
@@ -737,14 +758,14 @@ class OracleOfSeasonsWorld(World):
 
     def build_currency_item_dict(self, currency_item_count: int, filler_item_count: int, initial_target: int,
                                  total_cost: int, currency_name: str, valid_currency_item_values: list[int]):
-        average_ore_value = total_cost / currency_item_count
-        deviation = average_ore_value / 2.5
+        average_value = total_cost / currency_item_count
+        deviation = average_value / 2.5
         currency_item_dict = {}
         target = initial_target
         for i in range(0, currency_item_count):
-            value = self.random.gauss(average_ore_value, deviation)
+            value = self.random.gauss(average_value, deviation)
             value = min(valid_currency_item_values, key=lambda x: abs(x - value))
-            if value > average_ore_value / 3:
+            if value > average_value / 3:
                 # Put a "!PROG" suffix to force them to be created as progression items (see `create_item`)
                 item_name = f"{currency_name} ({value})!PROG"
                 target -= value
@@ -766,21 +787,20 @@ class OracleOfSeasonsWorld(World):
                 items.append(self.create_item(item_name))
         self.filter_confined_dungeon_items_from_pool(items)
         self.multiworld.itempool.extend(items)
-        self.pre_fill_items.extend([Item(seed_name, ItemClassification.progression, None, self.player) for seed_name in SEED_ITEMS])
+        self.pre_fill_seeds()
 
     def get_pre_fill_items(self):
         return self.pre_fill_items
 
     def pre_fill(self) -> None:
-        self.pre_fill_seeds()
         self.pre_fill_dungeon_items()
 
     def filter_confined_dungeon_items_from_pool(self, items: List[Item]):
         confined_dungeon_items = []
         excluded_dungeons = []
         if self.options.exclude_dungeons_without_essence and not self.options.shuffle_essences:
-            for i, essence_name in enumerate(ESSENCES):
-                if ESSENCES[i] not in self.essences_in_game:
+            for i, essence_name in enumerate(ITEM_GROUPS["Essences"]):
+                if essence_name not in self.essences_in_game:
                     excluded_dungeons.append(i + 1)
 
         # Put Small Keys / Master Keys unless keysanity is enabled for those
@@ -805,11 +825,6 @@ class OracleOfSeasonsWorld(World):
         if not self.options.keysanity_maps_compasses:
             confined_dungeon_items.extend([item for item in items if item.name.startswith("Dungeon Map")
                                            or item.name.startswith("Compass")])
-        else:
-            for i in excluded_dungeons:
-                confined_dungeon_items.extend([item for item in items
-                                               if item.name == f"Dungeon Map ({DUNGEON_NAMES[i]})"
-                                               or item.name == f"Compass ({DUNGEON_NAMES[i]})"])
 
         for item in confined_dungeon_items:
             items.remove(item)
@@ -989,6 +1004,13 @@ class OracleOfSeasonsWorld(World):
             else:
                 break
 
+    def post_fill(self) -> None:
+        if self.options.bird_hint.know_it_all():
+            self.region_hints = create_region_hints(self)
+
+        if self.options.bird_hint.owl():
+            self.item_hints = create_item_hints(self)
+
     def generate_output(self, output_directory: str):
         patch = oos_create_ap_procedure_patch(self)
         rom_path = os.path.join(output_directory, f"{self.multiworld.get_out_file_name_base(self.player)}"
@@ -996,41 +1018,31 @@ class OracleOfSeasonsWorld(World):
         patch.write(rom_path)
 
     def fill_slot_data(self) -> dict:
-        # Put options that are useful to the tracker inside slot data
-        options = ["goal", "death_link", "move_link",
-                   # Logic-impacting options
-                   "logic_difficulty", "normalize_horon_village_season",
-                   "shuffle_dungeons", "shuffle_portals",
-                   "randomize_lost_woods_item_sequence", "randomize_lost_woods_main_sequence",
-                   "duplicate_seed_tree", "default_seed", "master_keys",
-                   "remove_d0_alt_entrance", "remove_d2_alt_entrance",
-                   # Locations
-                   "shuffle_golden_ore_spots", "shuffle_old_men", "advance_shop", "shuffle_essences",
-                   "shuffle_business_scrubs", "secret_locations",
-                   # Requirements
-                   "required_essences", "tarm_gate_required_jewels", "treehouse_old_man_requirement",
-                   "sign_guy_requirement", "golden_beasts_requirement",
-                   # Tracker QoL
-                   "enforce_potion_in_shop", "keysanity_small_keys", "keysanity_boss_keys", "starting_maps_compasses",
-                   "deterministic_gasha_locations", "shop_prices"
-                   ]
+        slot_data = {
+            "version": f"{VERSION[0]}.{VERSION[1]}",
+            "options": self.options.as_dict(
+                *[option_name for option_name in OracleOfSeasonsOptions.type_hints
+                  if hasattr(OracleOfSeasonsOptions.type_hints[option_name], "include_in_slot_data")]),
+            # "samasa_gate_sequence": ' '.join([str(x) for x in self.samasa_gate_code]),
+            "lost_woods_item_sequence": self.lost_woods_item_sequence,
+            "lost_woods_main_sequence": self.lost_woods_main_sequence,
+            "default_seasons": self.default_seasons,
+            "old_man_rupee_values": self.old_man_rupee_values,
+            "dungeon_entrances": {a.replace(" entrance", ""): b.replace("enter ", "")
+                                  for a, b in self.dungeon_entrances.items()},
+            "subrosia_portals": self.portal_connections,
+            "shop_rupee_requirements": self.shop_rupee_requirements,
+            "shop_costs": self.shop_prices,
+        }
 
-        slot_data = self.options.as_dict(*options)
-        slot_data["animal_companion"] = self.options.animal_companion.current_key.title()
-        slot_data["default_seed"] = SEED_ITEMS[self.options.default_seed.value]
-
-        slot_data["default_seasons_option"] = self.options.default_seasons.current_key
-        slot_data["default_seasons"] = {}
-        for region_name, season in self.default_seasons.items():
-            slot_data["default_seasons"][region_name] = season
-
-        slot_data["dungeon_entrances"] = self.dungeon_entrances
-        slot_data["portal_connections"] = self.portal_connections
-        slot_data["shop_order"] = self.shop_order
-        slot_data["shop_rupee_requirements"] = self.shop_rupee_requirements
-        slot_data["shop_costs"] = self.shop_prices
-
-        slot_data["version"] = f"{VERSION[0]}.{VERSION[1]}"
+        # The structure is made to make it easy to call CreateHints
+        slot_data_item_hints = []
+        for item_hint in self.item_hints:
+            player = item_hint[2]
+            if player is None:
+                player = self.player
+            slot_data_item_hints.append((self.multiworld.get_location(item_hint[1], player).address, player))
+        slot_data["item_hints"] = slot_data_item_hints
 
         return slot_data
 
@@ -1090,28 +1102,18 @@ class OracleOfSeasonsWorld(World):
 
         slot_data = self.multiworld.re_gen_passthrough[self.game]
 
-        self.options.default_seed = OracleOfSeasonsDefaultSeedType.from_any(SEED_ITEMS.index(slot_data["default_seed"]))
-        self.options.master_keys = OracleOfSeasonsMasterKeys.from_any(slot_data["master_keys"])
-        self.options.logic_difficulty = OracleOfSeasonsLogicDifficulty.from_any(slot_data["logic_difficulty"])
-        self.options.remove_d0_alt_entrance = OracleOfSeasonsD0AltEntrance.from_any(slot_data["remove_d0_alt_entrance"])
-        self.options.remove_d2_alt_entrance = OracleOfSeasonsD2AltEntrance.from_any(slot_data["remove_d2_alt_entrance"])
-        self.options.animal_companion = OracleOfSeasonsAnimalCompanion.from_any(slot_data["animal_companion"])
-        self.options.treehouse_old_man_requirement = OraclesOfSeasonsTreehouseOldManRequirement.from_any(slot_data["treehouse_old_man_requirement"])
-        self.options.tarm_gate_required_jewels = OraclesOfSeasonsTarmGateRequirement.from_any(slot_data["tarm_gate_required_jewels"])
-        self.options.randomize_lost_woods_item_sequence = OracleOfSeasonsLostWoodsItemSequence.from_any(slot_data["randomize_lost_woods_item_sequence"])
-        self.options.randomize_lost_woods_main_sequence = OracleOfSeasonsLostWoodsItemSequence.from_any(slot_data["randomize_lost_woods_main_sequence"])
-        self.options.golden_beasts_requirement = OraclesOfSeasonsGoldenBeastsRequirement.from_any(slot_data["golden_beasts_requirement"])
-        self.options.shuffle_golden_ore_spots = OracleOfSeasonsGoldenOreSpotsShuffle.from_any(slot_data["shuffle_golden_ore_spots"])
-        self.options.normalize_horon_village_season = OracleOfSeasonsHoronSeason.from_any(slot_data["normalize_horon_village_season"])
-        self.options.deterministic_gasha_locations = OracleOfSeasonsGashaLocations.from_any(slot_data["deterministic_gasha_locations"])
+        for option in [option_name for option_name in OracleOfSeasonsOptions.type_hints
+                       if hasattr(OracleOfSeasonsOptions.type_hints[option_name], "include_in_slot_data")]:
+            option_class: Type[Option] = OracleOfSeasonsOptions.type_hints[option]
+            self.options.__setattr__(option, option_class.from_any(slot_data["options"][option]))
 
+        self.lost_woods_item_sequence = slot_data["lost_woods_item_sequence"]
+        self.lost_woods_main_sequence = slot_data["lost_woods_main_sequence"]
         self.default_seasons = slot_data["default_seasons"]
-        self.lost_woods_item_sequence = []  # Unknown
-        self.lost_woods_main_sequence = []  # Unknown
-
-        self.dungeon_entrances = slot_data["dungeon_entrances"]
-        self.portal_connections = slot_data["portal_connections"]
-        self.shop_order = slot_data["shop_order"]
+        self.old_man_rupee_values = slot_data["old_man_rupee_values"]
+        self.dungeon_entrances = {f"{a} entrance": f"enter {b}"
+                                  for a, b in slot_data["dungeon_entrances"].items()}
+        self.portal_connections = slot_data["subrosia_portals"]
         self.shop_rupee_requirements = slot_data["shop_rupee_requirements"]
         self.shop_prices = slot_data["shop_costs"]
 

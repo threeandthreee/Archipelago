@@ -10,7 +10,7 @@ def strip_line(line):
     Strips indent and comment from line, if present.
     """
     line = line.strip()
-    return re.sub(r' *[;#].*\n?', '', line)
+    return re.sub(r" *[;#].*\n?", "", line)
 
 
 def parse_hex_string_to_value(string: str):

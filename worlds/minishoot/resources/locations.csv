@@ -92,6 +92,7 @@ Dungeon 3 - South corridor,Boss Key (Dungeon 3),Dungeon Big Key,Dungeon 3 - East
 Dungeon 3 - South of torches,Small Key (Dungeon 3),Dungeon Small Key,Dungeon 3 - West,can_surf
 Dungeon 3 - South west of torches,XP Crystals x15,XP Crystals,Dungeon 3 - West,can_surf
 Dungeon 4 - Dungeon reward,Dungeon 4 Reward,Dungeon Reward,Dungeon 4,can_cross_gaps and can_destroy_rocks or can_surf and can_destroy_rocks
+Dungeon 5 - Beat the boss,,Goal,Dungeon 5 - Boss,true
 Dungeon 5 - Central Item,Dark Key,Default,Dungeon 5 - West wing,can_clear_both_d5_arenas
 Family House Cave - Before shortcut,XP Crystals x20,XP Crystals,Family House Cave - Main,true
 Family House Cave - Hidden Tunnel,HP Crystal Shard,Default,Family House Cave - Main,true
@@ -158,6 +159,7 @@ Sewers - Drop,HP Crystal Shard,Default,Sewers - West drop (right),can_surf
 Sewers - Near Family House Cave,HP Crystal Shard,Default,Sewers - East,can_surf
 Sewers - North pot room,Scarab,Scarab,Sewers - West,can_surf and can_fight_lvl4 and can_destroy_pots
 Sewers - South pot room,Scarab,Scarab,Sewers - West,can_surf and can_destroy_pots or can_cross_gaps and can_destroy_pots
+Snow - Beat the Unchosen,,Goal,Snow,true
 Spirit Tower - Item,Spirit Dash,Default,Spirit Tower,true
 Starting Grotto - Entrance,XP Crystals x60,XP Crystals,Starting Grotto - Entrance,true
 Starting Grotto - North Corridor,XP Crystals x15,XP Crystals,Starting Grotto - Corridor,true
@@ -201,12 +203,12 @@ Town - Merchant Item 1,Ancient Astrolabe,Default,Green - Town,can_free_mercant a
 Town - Merchant Item 2,Compass,Default,Green - Town,can_free_mercant and can_obtain_super_crystals(2)
 Town - Merchant Item 3,Village Star,Default,Green - Town,can_free_mercant and can_obtain_super_crystals(18)
 Town - Plaza,Blacksmith,NPC,Green - Town,true
-Town - Scarab Collector Item 1,Idol of protection,Default,Green - Town,can_free_scarab_collector and can_obtain_scarabs(3)
-Town - Scarab Collector Item 2,HP Crystal Shard,Default,Green - Town,can_free_scarab_collector and can_obtain_scarabs(6)
-Town - Scarab Collector Item 3,Idol of time,Default,Green - Town,can_free_scarab_collector and can_obtain_scarabs(9)
-Town - Scarab Collector Item 4,HP Crystal Shard,Default,Green - Town,can_free_scarab_collector and can_obtain_scarabs(12)
-Town - Scarab Collector Item 5,Idol of spirits,Default,Green - Town,can_free_scarab_collector and can_obtain_scarabs(15)
-Town - Scarab Collector Item 6,Enchanted Powers,Default,Green - Town,can_free_scarab_collector and can_obtain_scarabs(18)
+Town - Scarab Collector Item 1,Idol of protection,Default,Green - Town,can_free_scarab_collector and can_buy_from_scarab_collector_1
+Town - Scarab Collector Item 2,HP Crystal Shard,Default,Green - Town,can_free_scarab_collector and can_buy_from_scarab_collector_2
+Town - Scarab Collector Item 3,Idol of time,Default,Green - Town,can_free_scarab_collector and can_buy_from_scarab_collector_3
+Town - Scarab Collector Item 4,HP Crystal Shard,Default,Green - Town,can_free_scarab_collector and can_buy_from_scarab_collector_4
+Town - Scarab Collector Item 5,Idol of spirits,Default,Green - Town,can_free_scarab_collector and can_buy_from_scarab_collector_5
+Town - Scarab Collector Item 6,Enchanted Powers,Default,Green - Town,can_free_scarab_collector and can_buy_from_scarab_collector_6
 Town Pillars - Hidden below bridge,XP Crystals x20,XP Crystals,Green - Town Pillars,can_surf
 Town Pillars - Hidden Pond,Energy Crystal Shard,Default,Green - Town Pillars,can_cross_gaps or can_surf
 Town Pillars Grotto - Reward,HP Crystal Shard,Default,Town Pillars Grotto,can_fight

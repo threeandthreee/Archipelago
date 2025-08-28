@@ -2953,7 +2953,7 @@
     },
     { // REPORTED_TO_FRET
         "category": "fq", "logsanity": true, "address": 1085046053, "name": "FQ Ship Log: Fret's Quest 4 - Reported",
-        "region": "Timber Hearth Village", "requires": [ { "location": "FQ: Tuner's Song" } ]
+        "region": "Timber Hearth Village", "requires": [ { "location": "FQ: The Ritual (Text Wheel)" } ]
     },
     { // TUNER_GRAVE_FOUND
         "category": "fq", "logsanity": true, "address": 1085046054, "name": "FQ Ship Log: Grave",

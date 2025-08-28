@@ -1,6 +1,17 @@
 from BaseClasses import ItemClassification
 from worlds.tloz_ph.data.Constants import *
 
+
+"""backwards-compatible fallback for AP v0.6.2 and prior
+Code idea from @eternalcode0s minish cap implementation
+"""
+try:
+    DEPRIORITIZED_SKIP_BALANCING_FALLBACK = ItemClassification.progression_deprioritized_skip_balancing
+    DEPRIORITIZED_FALLBACK = ItemClassification.progression_deprioritized
+except AttributeError as e:
+    DEPRIORITIZED_SKIP_BALANCING_FALLBACK = ItemClassification.progression_skip_balancing
+    DEPRIORITIZED_FALLBACK = ItemClassification.progression
+
 ITEMS_DATA = {
     #   "Item Name": {
     #   'classification': ItemClassification,   # classification category
@@ -32,13 +43,15 @@ ITEMS_DATA = {
     "Sword (Progressive)": {
         "classification": ItemClassification.progression,
         "progressive": [(0x1ba644, 0x1), (0x1ba648, 0x20)],
-        "set_bit": [(0x1ba644, 0x1)],
+        "set_bit": [(0x1ba644, 0x1), (0x1ba6b8, 1)],
         "id": 1,
     },
     "Oshus' Sword": {
         "classification": ItemClassification.progression,
         "address": 0x1ba644,
         "value": 0x1,
+        "ammo_address": 0x1ba6b8,  # used to remove sword model
+        "set_bit": [(0x1ba6b8, 1)],
         "id": 2,
     },
     "Phantom Sword": {
@@ -141,7 +154,7 @@ ITEMS_DATA = {
 
     # Upgrades
     "Heart Container": {
-        "classification": ItemClassification.progression,
+        "classification": DEPRIORITIZED_FALLBACK,
         "address": 0x1ba388,
         "value": 0x4,
         "incremental": True,
@@ -157,7 +170,7 @@ ITEMS_DATA = {
         "id": 17,
     },
     "Sand of Hours (Boss)": {
-        "classification": ItemClassification.progression,
+        "classification": DEPRIORITIZED_SKIP_BALANCING_FALLBACK,
         "backup_filler": True,
         "address": 0x1ba528,
         "value": 0x1c20,
@@ -166,7 +179,7 @@ ITEMS_DATA = {
         "id": 18,
     },
     "Sand of Hours (Small)": {
-        "classification": ItemClassification.progression,
+        "classification": DEPRIORITIZED_SKIP_BALANCING_FALLBACK,
         "backup_filler": True,
         "address": 0x1ba528,
         "value": 0xe10,
@@ -175,7 +188,7 @@ ITEMS_DATA = {
         "id": 19,
     },
     "Sand of Hours": {
-        "classification": ItemClassification.progression,
+        "classification": DEPRIORITIZED_FALLBACK,
         "address": 0x1ba528,
         "value": "Sand",
         "incremental": True,
@@ -256,42 +269,42 @@ ITEMS_DATA = {
 
     # Spirit gems
     "Power Gem": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_SKIP_BALANCING_FALLBACK,
         "address": 0x1ba541,
         "value": 0x1,
         "incremental": True,
         "id": 32,
     },
     "Wisdom Gem": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_SKIP_BALANCING_FALLBACK,
         "address": 0x1ba542,
         "value": 0x1,
         "incremental": True,
         "id": 33,
     },
     "Courage Gem": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_SKIP_BALANCING_FALLBACK,
         "address": 0x1ba540,
         "value": 0x1,
         "incremental": True,
         "id": 34,
     },
     "Power Gem Pack": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_FALLBACK,
         "address": 0x1ba541,
         "value": "pack_size",
         "incremental": True,
         "id": 35,
     },
     "Wisdom Gem Pack": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_FALLBACK,
         "address": 0x1ba542,
         "value": "pack_size",
         "incremental": True,
         "id": 36,
     },
     "Courage Gem Pack": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_FALLBACK,
         "address": 0x1ba540,
         "value": "pack_size",
         "incremental": True,
@@ -324,7 +337,7 @@ ITEMS_DATA = {
         "id": 40,
     },
     "Big Green Rupee (100)": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_SKIP_BALANCING_FALLBACK,
         "backup_filler": True,
         "address": 0x1ba53e,
         "value": 0x64,
@@ -333,7 +346,7 @@ ITEMS_DATA = {
         "id": 41,
     },
     "Big Red Rupee (200)": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_SKIP_BALANCING_FALLBACK,
         "backup_filler": True,
         "address": 0x1ba53e,
         "value": 0xc8,
@@ -342,7 +355,7 @@ ITEMS_DATA = {
         "id": 42,
     },
     "Gold Rupee (300)": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_SKIP_BALANCING_FALLBACK,
         "backup_filler": True,
         "address": 0x1ba53e,
         "value": 0x12c,
@@ -435,6 +448,7 @@ ITEMS_DATA = {
         "address": 0x1ba661,
         "value": 0x1,
         "id": 57,
+        "max": 0x7
     },
     "Refill: Health": {
         "classification": ItemClassification.filler,
@@ -444,7 +458,7 @@ ITEMS_DATA = {
 
     # Treasure
     "Treasure: Pink Coral": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_SKIP_BALANCING_FALLBACK,
         "backup_filler": True,
         "treasure": True,
         "address": 0x1ba5ac,
@@ -452,7 +466,7 @@ ITEMS_DATA = {
         "id": 58,
     },
     "Treasure: White Pearl Loop": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_SKIP_BALANCING_FALLBACK,
         "backup_filler": True,
         "treasure": True,
         "address": 0x1ba5ad,
@@ -460,7 +474,7 @@ ITEMS_DATA = {
         "id": 59,
     },
     "Treasure: Dark Pearl Loop": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_SKIP_BALANCING_FALLBACK,
         "backup_filler": True,
         "treasure": True,
         "address": 0x1ba5ae,
@@ -468,7 +482,7 @@ ITEMS_DATA = {
         "id": 60,
     },
     "Treasure: Zora Scale": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_SKIP_BALANCING_FALLBACK,
         "backup_filler": True,
         "treasure": True,
         "address": 0x1ba5af,
@@ -476,7 +490,7 @@ ITEMS_DATA = {
         "id": 61,
     },
     "Treasure: Goron Amber": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_SKIP_BALANCING_FALLBACK,
         "backup_filler": True,
         "treasure": True,
         "address": 0x1ba5b0,
@@ -484,7 +498,7 @@ ITEMS_DATA = {
         "id": 62,
     },
     "Treasure: Ruto Crown": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_SKIP_BALANCING_FALLBACK,
         "backup_filler": True,
         "treasure": True,
         "address": 0x1ba5b1,
@@ -492,7 +506,7 @@ ITEMS_DATA = {
         "id": 63,
     },
     "Treasure: Helmaroc Plume": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_SKIP_BALANCING_FALLBACK,
         "backup_filler": True,
         "treasure": True,
         "address": 0x1ba5b2,
@@ -500,7 +514,7 @@ ITEMS_DATA = {
         "id": 64,
     },
     "Treasure: Regal Ring": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_SKIP_BALANCING_FALLBACK,
         "backup_filler": True,
         "treasure": True,
         "address": 0x1ba5b3,
@@ -517,217 +531,217 @@ ITEMS_DATA = {
         "id": 66,
     },
     "Treasure Map #1 (Molida SW)": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_FALLBACK,
         "address": 0x1ba650,
         "value": 0x80,
         "id": 67,
         "hint_on_receive": ["Ocean SW Salvage #1 Molida SW"],
     },
     "Treasure Map #2 (Mercay NE)": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_FALLBACK,
         "address": 0x1ba650,
         "value": 0x10,
         "id": 68,
         "hint_on_receive": ["Ocean SW Salvage #2 Mercay NE"],
     },
     "Treasure Map #3 (Gusts SW)": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_FALLBACK,
         "address": 0x1ba651,
         "value": 0x20,
         "id": 69,
         "hint_on_receive": ["Ocean NW Salvage #3 Gusts SW"],
     },
     "Treasure Map #4 (Bannan SE)": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_FALLBACK,
         "address": 0x1ba651,
         "value": 0x80,
         "id": 70,
         "hint_on_receive": ["Ocean NW Salvage #4 Bannan SE"],
     },
     "Treasure Map #5 (Molida N)": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_FALLBACK,
         "address": 0x1ba650,
         "value": 0x40,
         "id": 71,
         "hint_on_receive": ["Ocean SW Salvage #5 Molida N"],
     },
     "Treasure Map #6 (Bannan W)": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_FALLBACK,
         "address": 0x1ba651,
         "value": 0x1,
         "id": 72,
         "hint_on_receive": ["Ocean NW Salvage #6 Bannan W"],
     },
     "Treasure Map #7 (Gusts E)": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_FALLBACK,
         "address": 0x1ba651,
         "value": 0x8,
         "id": 73,
         "hint_on_receive": ["Ocean NW Salvage #7 Gusts E"],
     },
     "Treasure Map #8 (Mercay SE)": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_FALLBACK,
         "address": 0x1ba650,
         "value": 0x8,
         "id": 74,
         "hint_on_receive": ["Ocean SW Salvage #8 Mercay SE"],
     },
     "Treasure Map #9 (Cannon W)": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_FALLBACK,
         "address": 0x1ba650,
         "value": 0x2,
         "id": 75,
         "hint_on_receive": ["Ocean SW Salvage #9 Cannon W"],
     },
     "Treasure Map #10 (Gusts SE)": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_FALLBACK,
         "address": 0x1ba651,
         "value": 0x10,
         "id": 76,
         "hint_on_receive": ["Ocean NW Salvage #10 Gusts SE"],
     },
     "Treasure Map #11 (Gusts N)": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_FALLBACK,
         "address": 0x1ba651,
         "value": 0x2,
         "id": 77,
         "hint_on_receive": ["Ocean NW Salvage #11 Gusts N"],
     },
     "Treasure Map #12 (Dee Ess N)": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_FALLBACK,
         "address": 0x1ba652,
         "value": 0x20,
         "id": 78,
         "hint_on_receive": ["Ocean SE Salvage #12 Dee Ess N"],
     },
     "Treasure Map #13 (Harrow E)": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_FALLBACK,
         "address": 0x1ba652,
         "value": 0x4,
         "id": 79,
         "hint_on_receive": ["Ocean SE Salvage #13 Harrow E"],
     },
     "Treasure Map #14 (Goron NW)": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_FALLBACK,
         "address": 0x1ba652,
         "value": 0x1,
         "id": 80,
         "hint_on_receive": ["Ocean SE Salvage #14 Goron NW"],
     },
     "Treasure Map #15 (Goron W)": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_FALLBACK,
         "address": 0x1ba652,
         "value": 0x2,
         "id": 81,
         "hint_on_receive": ["Ocean SE Salvage #15 Goron W"],
     },
     "Treasure Map #16 (Goron NE)": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_FALLBACK,
         "address": 0x1ba652,
         "value": 0x10,
         "id": 82,
         "hint_on_receive": ["Ocean SE Salvage #16 Goron NE"],
     },
     "Treasure Map #17 (Frost S)": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_FALLBACK,
         "address": 0x1ba652,
         "value": 0x40,
         "id": 83,
         "hint_on_receive": ["Ocean SE Salvage #17 Frost S"],
     },
     "Treasure Map #18 (Cannon S)": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_FALLBACK,
         "address": 0x1ba650,
         "value": 0x4,
         "id": 84,
         "hint_on_receive": ["Ocean SW Salvage #18 Cannon S"],
     },
     "Treasure Map #19 (Gusts NE)": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_FALLBACK,
         "address": 0x1ba651,
         "value": 0x4,
         "id": 85,
         "hint_on_receive": ["Ocean NW Salvage #19 Gusts NE"],
     },
     "Treasure Map #20 (Bannan E)": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_FALLBACK,
         "address": 0x1ba651,
         "value": 0x40,
         "id": 86,
         "hint_on_receive": ["Ocean NW Salvage #20 Bannan E"],
     },
     "Treasure Map #21 (Molida NW)": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_FALLBACK,
         "address": 0x1ba650,
         "value": 0x20,
         "id": 87,
         "hint_on_receive": ["Ocean SW Salvage #21 Molida NW"],
     },
     "Treasure Map #22 (Harrow S)": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_FALLBACK,
         "address": 0x1ba652,
         "value": 0x8,
         "id": 88,
         "hint_on_receive": ["Ocean SE Salvage #22 Harrow S"],
     },
     "Treasure Map #23 (Frost NW)": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_FALLBACK,
         "address": 0x1ba652,
         "value": 0x80,
         "id": 89,
         "hint_on_receive": ["Ocean SE Salvage #23 Frost NW"],
     },
     "Treasure Map #24 (Ruins W)": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_FALLBACK,
         "address": 0x1ba653,
         "value": 0x20,
         "id": 90,
         "hint_on_receive": ["Ocean NE Salvage #24 Ruins W"],
     },
     "Treasure Map #25 (Dead E)": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_FALLBACK,
         "address": 0x1ba653,
         "value": 0x4,
         "id": 91,
         "hint_on_receive": ["Ocean NE Salvage #25 Dead E"],
     },
     "Treasure Map #26 (Ruins SW)": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_FALLBACK,
         "address": 0x1ba653,
         "value": 0x2,
         "id": 92,
         "hint_on_receive": ["Ocean NE Salvage #26 Ruins SW"],
     },
     "Treasure Map #27 (Maze E)": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_FALLBACK,
         "address": 0x1ba653,
         "value": 0x8,
         "id": 93,
         "hint_on_receive": ["Ocean NE Salvage #27 Maze E"],
     },
     "Treasure Map #28 (Ruins NW)": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_FALLBACK,
         "address": 0x1ba653,
         "value": 0x1,
         "id": 94,
         "hint_on_receive": ["Ocean NE Salvage #28 Ruins NW"],
     },
     "Treasure Map #29 (Maze W)": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_FALLBACK,
         "address": 0x1ba653,
         "value": 0x10,
         "id": 95,
         "hint_on_receive": ["Ocean NE Salvage #29 Maze W"],
     },
     "Treasure Map #30 (Ruins S)": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_FALLBACK,
         "address": 0x1ba653,
         "value": 0x40,
         "id": 96,
         "hint_on_receive": ["Ocean NE Salvage #30 Ruins S"],
     },
     "Treasure Map #31 (Dead S)": {
-        "classification": ItemClassification.progression_skip_balancing,
+        "classification": DEPRIORITIZED_FALLBACK,
         "address": 0x1ba653,
         "value": 0x80,
         "id": 97,

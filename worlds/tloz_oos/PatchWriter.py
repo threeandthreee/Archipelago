@@ -3,7 +3,6 @@ from collections import defaultdict
 import yaml
 
 from typing import TYPE_CHECKING
-from BaseClasses import ItemClassification
 from worlds.tloz_oos.patching.ProcedurePatch import OoSProcedurePatch
 from .data.Constants import *
 from . import OracleOfSeasonsOptions
@@ -24,7 +23,7 @@ def oos_create_ap_procedure_patch(world: "OracleOfSeasonsWorld") -> OoSProcedure
         "options": world.options.as_dict(
             *[option_name for option_name in OracleOfSeasonsOptions.type_hints
               if hasattr(OracleOfSeasonsOptions.type_hints[option_name], "include_in_patch")]),
-        "samasa_gate_sequence": ' '.join([str(x) for x in world.samasa_gate_code]),
+        "samasa_gate_sequence": " ".join([str(x) for x in world.samasa_gate_code]),
         "lost_woods_item_sequence": world.lost_woods_item_sequence,
         "lost_woods_main_sequence": world.lost_woods_main_sequence,
         "default_seasons": world.default_seasons,
@@ -34,7 +33,9 @@ def oos_create_ap_procedure_patch(world: "OracleOfSeasonsWorld") -> OoSProcedure
         "locations": {},
         "subrosia_portals": world.portal_connections,
         "shop_prices": world.shop_prices,
-        "subrosia_seaside_location": world.random.randint(0, 3)
+        "subrosia_seaside_location": world.random.randint(0, 3),
+        "region_hints": world.region_hints,
+        "item_hints": world.item_hints,
     }
 
     for loc in world.multiworld.get_locations(world.player):
@@ -49,7 +50,7 @@ def oos_create_ap_procedure_patch(world: "OracleOfSeasonsWorld") -> OoSProcedure
             patch_data["locations"][loc.name] = {
                 "item": loc.item.name,
                 "player": world.multiworld.get_player_name(loc.item.player),
-                "progression": (loc.item.classification & ItemClassification.progression) != 0
+                "progression": loc.item.advancement
             }
 
     start_inventory = defaultdict(int)
@@ -57,5 +58,5 @@ def oos_create_ap_procedure_patch(world: "OracleOfSeasonsWorld") -> OoSProcedure
         start_inventory[item.name] += 1
     patch_data["start_inventory"] = dict(start_inventory)
 
-    patch.write_file("patch.dat", yaml.dump(patch_data).encode('utf-8'))
+    patch.write_file("patch.dat", yaml.dump(patch_data).encode("utf-8"))
     return patch

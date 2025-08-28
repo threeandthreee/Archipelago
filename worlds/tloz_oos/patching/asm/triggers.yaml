@@ -6,8 +6,7 @@
 
 # initiate all these events without requiring essences:
 08/5886/: ld a,$02  # master diver
-0a/4be9/: ld a,$02  # ^
-0a/4bf4/: cp $00    # ^
+0a/4be7/: db $18    # ^
 
 08/6c31/: cp $00  # piratian captain
 

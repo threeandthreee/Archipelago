@@ -1,11 +1,13 @@
 import time
+from collections import defaultdict
 from typing import TYPE_CHECKING, Set, Dict, Any
 
 from NetUtils import ClientStatus
 import worlds._bizhawk as bizhawk
-from Utils import async_start
 from worlds._bizhawk.client import BizHawkClient
-from worlds.tloz_oos import LOCATIONS_DATA, ITEMS_DATA, OracleOfSeasonsGoal
+from Utils import async_start
+from .data.Locations import LOCATIONS_DATA
+from .Options import OracleOfSeasonsGoal
 from .Util import build_item_id_to_name_dict, build_location_name_to_id_dict
 
 if TYPE_CHECKING:
@@ -56,7 +58,7 @@ class OracleOfSeasonsClient(BizHawkClient):
     system = "GBC"
     patch_suffix = ".apoos"
     local_checked_locations: Set[int]
-    local_scouted_locations: Set[int]
+    local_scouted_locations: Dict[int, set[int]]
     local_tracker: Dict[str, Any]
     item_id_to_name: Dict[int, str]
     location_name_to_id: Dict[str, int]
@@ -65,8 +67,7 @@ class OracleOfSeasonsClient(BizHawkClient):
         super().__init__()
         self.item_id_to_name = build_item_id_to_name_dict()
         self.location_name_to_id = build_location_name_to_id_dict()
-        self.local_checked_locations = set()
-        self.local_scouted_locations = set()
+        self.local_scouted_locations = defaultdict(lambda: set())
         self.local_tracker = {}
 
         self.set_deathlink = False
@@ -99,16 +100,16 @@ class OracleOfSeasonsClient(BizHawkClient):
         pass
 
     def on_package(self, ctx, cmd, args):
-        if cmd == 'Connected':
-            if 'death_link' in args['slot_data'] and args['slot_data']['death_link']:
+        if cmd == "Connected":
+            if args["slot_data"]["options"]["death_link"]:
                 self.set_deathlink = True
                 self.last_deathlink = time.time()
-            if 'move_link' in args['slot_data'] and args['slot_data']['move_link']:
+            if args["slot_data"]["options"]["move_link"]:
                 ctx.tags.add("MoveLink")
                 self.move_link = []
                 async_start(ctx.send_msgs([{"cmd": "ConnectUpdate", "tags": ctx.tags}]))
         if cmd == "Bounced":
-            if ctx.slot_data["move_link"] and "tags" in args and args["tags"][0] == "MoveLink":
+            if ctx.slot_data["options"]["move_link"] and "tags" in args and args["tags"][0] == "MoveLink":
                 data = args["data"]
                 if data["slot"] != ctx.slot:
                     data["last_process"] = time.time()
@@ -117,7 +118,7 @@ class OracleOfSeasonsClient(BizHawkClient):
         super().on_package(ctx, cmd, args)
 
     async def game_watcher(self, ctx: "BizHawkClientContext") -> None:
-        if not ctx.server or not ctx.server.socket.open or ctx.server.socket.closed:
+        if not ctx.server or not ctx.server.socket.open or ctx.server.socket.closed or ctx.slot_data is None:
             return
 
         # Enable "DeathLink" tag if option was enabled
@@ -127,12 +128,12 @@ class OracleOfSeasonsClient(BizHawkClient):
 
         try:
             read_result = await bizhawk.read(ctx.bizhawk_ctx, [
-                RAM_ADDRS["game_state"],            # Current state of game (is the player actually in-game?)
-                RAM_ADDRS["received_item_index"],   # Number of received items
-                RAM_ADDRS["received_item"],         # Received item still pending?
-                RAM_ADDRS["location_flags"],        # Location flags
-                RAM_ADDRS["current_map_group"],     # Current map group & id where the player is currently located
-                RAM_ADDRS["current_map_id"],        # ^^^
+                RAM_ADDRS["game_state"],  # Current state of game (is the player actually in-game?)
+                RAM_ADDRS["received_item_index"],  # Number of received items
+                RAM_ADDRS["received_item"],  # Received item still pending?
+                RAM_ADDRS["location_flags"],  # Location flags
+                RAM_ADDRS["current_map_group"],  # Current map group & id where the player is currently located
+                RAM_ADDRS["current_map_id"],  # ^^^
                 RAM_ADDRS["is_dead"]
             ])
 
@@ -169,7 +170,7 @@ class OracleOfSeasonsClient(BizHawkClient):
             pass
 
     async def process_checked_locations(self, ctx: "BizHawkClientContext", flag_bytes):
-        local_checked_locations = set(ctx.locations_checked)
+        checked_locations = set()
         for name, location in LOCATIONS_DATA.items():
             if "flag_byte" not in location:
                 continue
@@ -179,7 +180,7 @@ class OracleOfSeasonsClient(BizHawkClient):
             bit_mask = location["bit_mask"] if "bit_mask" in location else 0x20
             if flag_bytes[byte_offset] & bit_mask == bit_mask:
                 location_id = self.location_name_to_id[name]
-                local_checked_locations.add(location_id)
+                checked_locations.add(location_id)
 
         # Check how many deterministic Gasha Nuts have been opened, and mark their matching locations as checked
         byte_offset = 0xC649 - RAM_ADDRS["location_flags"][0]
@@ -187,29 +188,25 @@ class OracleOfSeasonsClient(BizHawkClient):
         for i in range(gasha_counter):
             name = f"Gasha Nut #{i + 1}"
             location_id = self.location_name_to_id[name]
-            local_checked_locations.add(location_id)
+            checked_locations.add(location_id)
 
         # Send locations
-        if self.local_checked_locations != local_checked_locations:
-            self.local_checked_locations = local_checked_locations
-            await ctx.send_msgs([{
-                "cmd": "LocationChecks",
-                "locations": list(self.local_checked_locations)
-            }])
+        await ctx.check_locations(checked_locations)
 
     async def process_scouted_locations(self, ctx: "BizHawkClientContext", flag_bytes):
-        local_scouted_locations = set(ctx.locations_scouted)
+        self.local_scouted_locations[ctx.slot].update(ctx.locations_info)
+        new_scouted_locations = defaultdict(lambda: [])
         for name, location in LOCATIONS_DATA.items():
             if "scouting_byte" not in location:
                 continue
             # Do not hint forced shop slot if it is enabled, since it would cause an error on MultiServer's side
             if name == "Horon Village: Shop #3":
-                if ctx.slot_data is None or ctx.slot_data["enforce_potion_in_shop"]:
+                if ctx.slot_data["options"]["enforce_potion_in_shop"]:
                     continue
 
             # Do not hint buisiness scrubs if disabled, since it would cause an error on MultiServer's side
             if name.endswith("Business Scrub"):
-                if ctx.slot_data is None or not ctx.slot_data["shuffle_business_scrubs"]:
+                if not ctx.slot_data["options"]["shuffle_business_scrubs"]:
                     continue
 
             # Check "scouting_byte" to see if map has been visited for scoutable locations
@@ -217,17 +214,23 @@ class OracleOfSeasonsClient(BizHawkClient):
             byte_offset = byte_to_test - RAM_ADDRS["location_flags"][0]
             bit_mask = location["scouting_mask"] if "scouting_mask" in location else 0x10
             if flag_bytes[byte_offset] & bit_mask == bit_mask:
-                # Map has been visited, scout the location if it hasn't been already
-                location_id = self.location_name_to_id[name]
-                local_scouted_locations.add(location_id)
+                if "owl_id" in location:
+                    location_id, player = ctx.slot_data["item_hints"][location["owl_id"]]
+                else:
+                    # Map has been visited, scout the location if it hasn't been already
+                    player = ctx.slot
+                    location_id = self.location_name_to_id[name]
+                if location_id not in self.local_scouted_locations[player]:
+                    new_scouted_locations[player].append(location_id)
+                    self.local_scouted_locations[player].add(location_id)
 
-        if self.local_scouted_locations != local_scouted_locations:
-            self.local_scouted_locations = local_scouted_locations
+        for player in new_scouted_locations:
             await ctx.send_msgs([{
-                "cmd": "LocationScouts",
-                "locations": list(self.local_scouted_locations),
-                "create_as_hint": int(2)
+                "cmd": "CreateHints",
+                "locations": new_scouted_locations[player],
+                "player": player
             }])
+            # We could use _read_hints_{self.ctx.team}_{player} to check if the hint was created
 
     async def process_received_items(self, ctx: "BizHawkClientContext", num_received_items: int):
         # If the game hasn't received all items yet and the received item struct doesn't contain an item, then
@@ -242,15 +245,14 @@ class OracleOfSeasonsClient(BizHawkClient):
 
     async def process_game_completion(self, ctx: "BizHawkClientContext", flag_bytes, current_room: int):
         game_clear = False
-        if ctx.slot_data is not None:
-            if ctx.slot_data["goal"] == OracleOfSeasonsGoal.option_beat_onox:
-                # Room with Din's descending crystal was reached, it's a win
-                game_clear = (current_room == ROOM_AFTER_DRAGONOX)
-            elif ctx.slot_data["goal"] == OracleOfSeasonsGoal.option_beat_ganon:
-                # Room with Zelda lying down was reached, and Ganon was beaten
-                ganon_flag_offset = 0xCA9A - RAM_ADDRS["location_flags"][0]
-                ganon_was_beaten = (flag_bytes[ganon_flag_offset] & 0x80 == 0x80)
-                game_clear = (current_room == ROOM_ZELDA_ENDING) and ganon_was_beaten
+        if ctx.slot_data["options"]["goal"] == OracleOfSeasonsGoal.option_beat_onox:
+            # Room with Din's descending crystal was reached, it's a win
+            game_clear = (current_room == ROOM_AFTER_DRAGONOX)
+        elif ctx.slot_data["options"]["goal"] == OracleOfSeasonsGoal.option_beat_ganon:
+            # Room with Zelda lying down was reached, and Ganon was beaten
+            ganon_flag_offset = 0xCA9A - RAM_ADDRS["location_flags"][0]
+            ganon_was_beaten = (flag_bytes[ganon_flag_offset] & 0x80 == 0x80)
+            game_clear = (current_room == ROOM_ZELDA_ENDING) and ganon_was_beaten
 
         if game_clear:
             await ctx.send_msgs([{
@@ -332,6 +334,15 @@ class OracleOfSeasonsClient(BizHawkClient):
             mask = 0x01 << item_id % 8
             if flag_bytes[byte_offset] & mask:
                 local_tracker[f"Obtained {item_name}"] = True
+
+        # Lost woods deku
+        byte_offset = 0xc8b7 - RAM_ADDRS["location_flags"][0]
+        if flag_bytes[byte_offset] & 0x20:
+            local_tracker["Learned Lost Woods Sequence"] = True
+        # Pedestal deku
+        byte_offset = 0xc9f8 - RAM_ADDRS["location_flags"][0]
+        if flag_bytes[byte_offset] & 0x20:
+            local_tracker["Learned Pedestal Sequence"] = True
 
         # Blown up remains
         base_offset = 0xc6ca - RAM_ADDRS["location_flags"][0]

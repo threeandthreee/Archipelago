@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import Counter
 import logging
 import copy
 import os
@@ -26,7 +27,7 @@ from .ips import IPS_Patch
 from .Client import SMMRSNIClient
 from importlib.metadata import version, PackageNotFoundError
 
-required_pysmmaprando_version = "0.111.2"
+required_pysmmaprando_version = "0.118.2"
 
 class WrongVersionError(Exception):
     pass
@@ -34,23 +35,22 @@ class WrongVersionError(Exception):
 try:
     if version("pysmmaprando") != required_pysmmaprando_version:
         raise WrongVersionError
-    from pysmmaprando import create_gamedata, APRandomizer, APCollectionState, patch_rom, Item as Pysmmr_items, Options as Pysmmr_options
-    from pysmmaprando import ControllerButton, ControllerConfig, CustomizeSettings, MusicSettings, PaletteTheme, ShakingSetting, TileTheme
+    from pysmmaprando import build_app_data, validate_settings_ap, randomize_ap, customize_seed_ap, CustomizeRequest, Item as MapRandoItem
 
 # required for APWorld distribution outside official AP releases as stated at https://docs.python.org/3/library/zipimport.html:
 # ZIP import of dynamic modules (.pyd, .so) is disallowed.
 except (ImportError, WrongVersionError, PackageNotFoundError) as e:
     python_version = f"cp{sys.version_info.major}{sys.version_info.minor}"
     if sys.platform.startswith('win'):
-        abi_version = "none-win_amd64"
+        abi_version = f"cp{sys.version_info.major}{sys.version_info.minor}-win_amd64"
     elif sys.platform.startswith('linux'):
-        abi_version = f"{python_version}-manylinux_2_17_{platform.machine()}.manylinux2014_{platform.machine()}"
+        if platform.machine() == 'x86_64':
+            abi_version = f"{python_version}-manylinux_2_17_{platform.machine()}.manylinux2014_{platform.machine()}"
+        else:
+            abi_version = f"{python_version}-manylinux_2_28_{platform.machine()}"
     elif sys.platform.startswith('darwin'):
         mac_ver = platform.mac_ver()[0].split('.')
-        if (int(mac_ver[0]) * 10 + int(mac_ver[1]) <= 107):
-            abi_version = f"{python_version}-macosx_10_7_{platform.machine()}"
-        else:
-            abi_version = f"{python_version}-macosx_10_9_x86_64.macosx_11_0_arm64.macosx_10_9_universal2"
+        abi_version = f"{python_version}-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2"
     map_rando_lib_file = f'https://github.com/lordlou/MapRandomizer/releases/download/v{required_pysmmaprando_version}/pysmmaprando-{required_pysmmaprando_version}-{python_version}-{abi_version}.whl'
     import Utils
     if not Utils.is_frozen():
@@ -70,8 +70,7 @@ except (ImportError, WrongVersionError, PackageNotFoundError) as e:
             z = zipfile.ZipFile(io.BytesIO(r.content))
             z.extractall(f"{os.path.dirname(sys.executable)}/lib")
             
-    from pysmmaprando import create_gamedata, APRandomizer, APCollectionState, patch_rom, Item as Pysmmr_items, Options as Pysmmr_options
-    from pysmmaprando import ControllerButton, ControllerConfig, CustomizeSettings, MusicSettings, PaletteTheme, ShakingSetting, TileTheme
+    from pysmmaprando import build_app_data, validate_settings_ap, randomize_ap, customize_seed_ap, CustomizeRequest, Item as MapRandoItem
 
 def GetAPWorldPath():
     filename = sys.modules[__name__].__file__
@@ -82,7 +81,7 @@ def GetAPWorldPath():
     else:
         return None
 
-map_rando_game_data = create_gamedata(GetAPWorldPath())
+map_rando_app_data = build_app_data(GetAPWorldPath())
 
 from .Options import SMMROptions
 
@@ -90,24 +89,6 @@ class ByteEdit(TypedDict):
     sym: Dict[str, Any]
     offset: int
     values: Iterable[int]
-
-class SMMRCollectionState(metaclass=AutoLogicRegister):
-    def init_mixin(self, parent: MultiWorld):
-        
-        # for unit tests where MultiWorld is instantiated before worlds
-        if hasattr(parent, "state"):
-            self.smmrcs = {player: parent.state.smmrcs[player].copy() for player in parent.get_game_players(SMMapRandoWorld.game)}
-            for player, group in parent.groups.items():
-                if (group["game"] == SMMapRandoWorld.game):
-                    self.smmrcs[player] = APCollectionState(None)
-                    if player not in parent.state.smmrcs:
-                        parent.state.smmrcs[player] = APCollectionState(None)
-        else:
-            self.smmrcs = {}
-
-    def copy_mixin(self, ret) -> CollectionState:
-        ret.smmrcs = {player: self.smmrcs[player].copy() for player in self.smmrcs}
-        return ret
 
 class SMMapRandoWeb(WebWorld):
     tutorials = [Tutorial(
@@ -124,7 +105,6 @@ locations_start_id = 86000
 items_start_id = 87000
 
 locations_count = 100
-locations_flag_start = 256
 
 location_address_to_id = {}
 with openFile("/".join((os.path.dirname(__file__), "data", "loc_address_to_id.json")), "r") as stream:
@@ -138,31 +118,19 @@ class SMMapRandoWorld(World):
     """
 
     game: str = "Super Metroid Map Rando"
-    topology_present = True
     data_version = 0
     options_dataclass = SMMROptions
     options: SMMROptions
 
-    gamedata = map_rando_game_data
+    smmr_location_names = map_rando_app_data.game_data.get_location_names()
 
-    item_name_to_id = {item_name: items_start_id + idx for idx, item_name in enumerate(itertools.chain(gamedata.item_isv, gamedata.flag_isv))}
-    location_name_to_id = {loc_name: locations_start_id + 
-                           (location_address_to_id[str(addr)] if idx < locations_count else locations_flag_start + idx - locations_count) 
-                           for idx, (loc_name, addr) in 
-                                enumerate(itertools.chain(
-                                    zip(gamedata.get_location_names(), gamedata.get_location_addresses()), 
-                                    zip(gamedata.flag_isv, [None] * len(gamedata.flag_isv))))}
+    item_name_to_id = {item_name: items_start_id + idx for idx, item_name in 
+                                enumerate(itertools.chain(map_rando_app_data.game_data.item_isv.keys,
+                                                          ["ArchipelagoItem", "ArchipelagoProgItem"]))}
+    location_name_to_id = {loc_name: locations_start_id + location_address_to_id[str(addr)] for idx, (loc_name, addr) in 
+                                enumerate(itertools.chain(zip(  smmr_location_names, 
+                                                                map_rando_app_data.game_data.get_location_addresses())))}
     
-    flag_location_names = {name: i for i, name in enumerate(gamedata.get_flag_location_names())}
-
-    locations_idx_range_to_area = {
-        12 : "Crateria",
-        48 : "Brinstar",
-        80 : "Norfair",
-        135 : "Wrecked Ship",
-        154 : "Maridia"
-    }
-
     nothing_item_id = 22
 
     web = SMMapRandoWeb()
@@ -173,279 +141,186 @@ class SMMapRandoWorld(World):
         super().__init__(world, player)
         self.rom_name_available_event = threading.Event()
         self.locations = {}
+        self.region_area_name = {}
 
     @classmethod
     def stage_assert_generate(cls, multiworld: MultiWorld):
         rom_file = get_base_rom_path()
         if not os.path.exists(rom_file):
             raise FileNotFoundError(rom_file)
-
-    """  
+        
     @classmethod
-    def stage_fill_hook(cls, world, progitempool, usefulitempool, filleritempool, fill_locations):
-        if world.get_game_players(cls.game):
-            progitempool.sort(
-                key=lambda item: 1 if (item.name == 'Morph' or item.name == 'Varia' or item.name == 'Gravity') else 0)
-    """
+    def validate_settings(cls, settings_string: str) -> bool:
+        return validate_settings_ap(settings_string, map_rando_app_data) is not None
 
     def generate_early(self):
-        item_pool = self.options.custom_item_pool.default
-        if self.options.item_pool.value == self.options.item_pool.option_Reduced:
-            item_pool = self.options.custom_item_pool.reduced
-        elif self.options.item_pool.value == self.options.item_pool.option_Custom:
-            item_pool = self.options.custom_item_pool.value
+        self.map_rando_settings = validate_settings_ap(json.dumps(self.options.map_rando_options.value), map_rando_app_data)
+        self.randomizer_ap = randomize_ap(self.map_rando_settings, 
+                                            self.random.randrange(9999999999),
+                                            (self.multiworld.seed & 0xFFFFFFFF) if self.options.common_map.value else None,
+                                            (self.multiworld.seed & 0xFFFFFFFF) if self.options.common_map.value and self.options.common_door_colors.value else None,
+                                            map_rando_app_data)
+        if self.randomizer_ap is None:
+            raise Exception(f"Map Rando failed to randomize for player {self.player_name}")
 
-        item_mapping = {
-            "ETank": Pysmmr_items.ETank,
-            "Missile": Pysmmr_items.Missile,
-            "Super": Pysmmr_items.Super,
-            "PowerBomb": Pysmmr_items.PowerBomb,
-            "ReserveTank": Pysmmr_items.ReserveTank
-                        }
-        pysmmr_item_pool = [(item_mapping[key], value) for key, value in item_pool.items()]
-
-        options = Pysmmr_options(self.options.preset.value,
-                          list(self.options.techs.value),
-                          list(self.options.strats.value),
-                          pysmmr_item_pool,
-                          self.options.shinespark_tiles.value,
-                          self.options.heated_shinespark_tiles.value,
-                          self.options.shinecharge_leniency_frames.value,
-                          self.options.resource_multiplier.value / 100,
-                          self.options.gate_glitch_leniency.value,
-                          self.options.door_stuck_leniency.value,
-                          self.options.phantoon_proficiency.value / 100,
-                          self.options.draygon_proficiency.value / 100,
-                          self.options.ridley_proficiency.value / 100,
-                          self.options.botwoon_proficiency.value / 100,
-                          self.options.mother_brain_proficiency.value / 100,
-                          self.options.escape_timer_multiplier.value / 100,
-                          self.options.start_location_mode.value,
-                          self.options.save_animals.value,
-                          self.options.early_save.value == 1,
-                          self.options.objectives.value,
-                          self.options.doors_mode.value,
-                          self.options.area_assignment.value == 1,
-                          "", #filler_items
-                          self.options.supers_double.value == 1,
-                          self.options.mother_brain.value,
-                          self.options.escape_enemies_cleared.value == 1,
-                          self.options.escape_refill.value == 1,
-                          self.options.escape_movement_items.value == 1,
-                          self.options.mark_map_stations.value == 1,
-                          self.options.room_outline_revealed.value == 1,
-                          self.options.transition_letters.value == 1,
-                          self.options.item_markers.value,
-                          self.options.item_dots_disappear.value == 1,
-                          self.options.all_items_spawn.value == 1,
-                          self.options.buffed_drops.value == 1,
-                          self.options.acid_chozo.value == 1,
-                          self.options.fast_elevators.value == 1,
-                          self.options.fast_doors.value == 1,
-                          self.options.fast_pause_menu.value == 1,
-                          self.options.respin.value == 1,
-                          self.options.infinite_space_jump.value == 1,
-                          self.options.momentum_conservation.value == 1,
-                          self.options.wall_jump.value,
-                          self.options.etank_refill.value,
-                          self.options.maps_revealed.value,
-                          self.options.map_layout.value,
-                          self.options.energy_free_shinesparks.value == 1,
-                          self.options.ultra_low_qol.value == 1,
-                          "", #skill_assumptions_preset
-                          "", #item_progression_preset
-                          self.options.quality_of_life.value,
-                          )
-        for tries in range(5):
-            try:
-                self.map_rando = APRandomizer(SMMapRandoWorld.gamedata, options, self.multiworld.random.randint(1, sys.maxsize)) # self.multiworld.seed // 10)
-                break
-            except:
-                continue
-
-        self.update_reachability = 0
-        self.debug = False
-
-        self.multiworld.state.smmrcs[self.player] = APCollectionState(self.multiworld.worlds[self.player].map_rando)
-        #self.multiworld.local_early_items[self.player]['Morph'] = 1
-        #self.multiworld.local_early_items[self.player]['Varia'] = 1
-        #self.multiworld.local_early_items[self.player]['Gravity'] = 1
-
-    def create_region(self, world: MultiWorld, player: int, name: str, index: int, locations=None, exits=None):
-        ret = SMMRRegion(name, player, world, index)
-        if locations:
+    def create_region(self, world: MultiWorld, player: int, name: str, locations, exit, items_required = None):
+        logger.debug(f"create_region: {name} {locations} {items_required}")
+        ret = Region(name, player, world)
+        if locations is not None:
             for loc in locations:
                 location = self.locations[loc]
                 location.parent_region = ret
                 ret.locations.append(location)
-        if exits:
-            for exit in exits:
-                ret.exits.append(Entrance(player, exit, ret))
+        if exit is not None:
+            entrance = Entrance(player, exit, ret)
+            ret.exits.append(entrance)
+            if items_required is not None:
+                counter = Counter(items_required)
+                if counter.get("Missile", 0) > 3:
+                    counter["Missile"] = 3
+                if counter.get("Super", 0) > 2:
+                    counter["Super"] = 2
+                if counter.get("PowerBomb", 0) > 3:
+                    counter["PowerBomb"] = 3
+
+                set_rule(entrance, lambda state : state.has_all_counts(counter, player))
         return ret
 
     def create_regions(self):
-        def add_entrance_rule(srcDestEntrance, player, link_from):
-            add_rule(srcDestEntrance, lambda state: state.smmrcs[player].can_traverse(link_from, srcDestEntrance.strats_links))
-
+        remaining_locations = []
         # create locations
         for loc_name, id in SMMapRandoWorld.location_name_to_id.items():
-            is_not_flag = id < locations_start_id + locations_flag_start
-            if is_not_flag or loc_name in SMMapRandoWorld.flag_location_names.keys():
-                self.locations[loc_name] = SMMRLocation(self.player, loc_name, id if is_not_flag else None)
-
-
-        # self.locations["Missile (green Maridia shinespark)"].progress_type = LocationProgressType.EXCLUDED
+            self.locations[loc_name] = SMMRLocation(self.player, loc_name, len(self.randomizer_ap.spoiler_log.summary) - 1, id)
+            remaining_locations.append(loc_name)
 
         # create regions
-        regions = []
-        #self.region_dict = []
-        for i, (vertex_name, location_name) in enumerate(self.map_rando.randomizer.game_data.get_vertex_names()):
-            regions.append(self.create_region(  self.multiworld, 
-                                                self.player, 
-                                                vertex_name,
-                                                i,
-                                                [location_name] if location_name != None else None))
+        self.region_dict = []
+        for spoilerSummary in self.randomizer_ap.spoiler_log.summary:
+            for spoilerItemSummary in spoilerSummary.items:
+                logger.debug(f"Map rando Item placement: {spoilerItemSummary.item} {spoilerItemSummary.location.room} {spoilerItemSummary.location.node}")
 
-        self.vertex_cnt = len(regions)    
-        for i, flag_name in enumerate(SMMapRandoWorld.flag_location_names.keys()):
-            regions.append(self.create_region(  self.multiworld, 
-                                                self.player, 
-                                                flag_name,
-                                                self.vertex_cnt + i,
-                                                [flag_name]))
+        cumulative_required_items = []
 
-        #for region in regions:
-        #    self.region_dict[region.index] = region
-        self.region_dict = regions
+        for spoilerSummary in self.randomizer_ap.spoiler_log.summary:
+            cumulative_required_items.extend([spoilerItemSummary.item for spoilerItemSummary in spoilerSummary.items])
+            self.region_dict.append(self.create_region(  self.multiworld, 
+                                                        self.player, 
+                                                        f"step {spoilerSummary.step}",
+                                                        [f"{spoilerItemSummary.location.room} {spoilerItemSummary.location.node}" for spoilerItemSummary in spoilerSummary.items],
+                                                        f"to step {spoilerSummary.step + 1}" if spoilerSummary.step < len(self.randomizer_ap.spoiler_log.summary) else None,
+                                                        cumulative_required_items[:]))
+            for spoilerItemSummary in spoilerSummary.items:
+                loc_name = f"{spoilerItemSummary.location.room} {spoilerItemSummary.location.node}"
+                self.locations[loc_name].step = spoilerSummary.step
+                remaining_locations.remove(loc_name)
 
-        self.multiworld.regions += regions
+        # if start location isnt Escape
+        if (len(self.randomizer_ap.spoiler_log.summary) > 0):
+            self.multiworld.regions += self.region_dict
 
-        self.events_connections = self.map_rando.randomizer.game_data.get_event_vertex_ids()
-        (self.region_map, self.region_map_reverse) = self.map_rando.randomizer.game_data.get_regions_map()
-        self.flag_id_to_region_dict = [SMMapRandoWorld.flag_location_names.get(flag, None) for flag in self.map_rando.randomizer.game_data.flag_isv]
+            for loc_name in remaining_locations:
+                region = self.multiworld.get_region(f"step {len(self.randomizer_ap.spoiler_log.summary) - 1}", self.player)
+                self.locations[loc_name].parent_region = region
+                region.locations.append(self.locations[loc_name])
 
-        #create entrances
-        """
-        links_infos = self.map_rando.get_links_infos()
-        for (link_from, link_to), link_map in links_infos.items():
-            src_region = regions[link_from]
-            dest_region = regions[link_to]
-            link_map_debug = {}
-            for name, links in link_map.items():
-                link_map_debug[name] = [self.map_rando.get_link_requirement(link) for link in links]
-            srcDestEntrance = SMMREntrance(self.player, src_region.name + "->" + dest_region.name, src_region, link_map, link_map_debug)
-            src_region.exits.append(srcDestEntrance)
-            srcDestEntrance.connect(dest_region)
-            # add_entrance_rule(srcDestEntrance, self.player, link_from)
+            for spoilerSummary in self.randomizer_ap.spoiler_log.summary[:-1]:
+                entrance = self.multiworld.get_entrance(f"to step {spoilerSummary.step + 1}", self.player)
+                entrance.connect(self.multiworld.get_region(f"step {spoilerSummary.step + 1}", self.player));
 
-        for vertex_id, flag_ids in self.events_connections.items():
-            for flag_id in flag_ids:
-                src_region = regions[self.region_map[vertex_id]]
-                dest_region = regions[self.vertex_cnt + SMMapRandoWorld.flag_location_names[self.map_rando.randomizer.game_data.flag_isv[flag_id]]]
-                srcDestEntrance = SMMREntrance(self.player, src_region.name + "->" + dest_region.name, src_region)
-                src_region.exits.append(srcDestEntrance)
-                srcDestEntrance.connect(dest_region)  
-        """
-        self.multiworld.regions += [self.create_region(self.multiworld, self.player, 'Menu', -1, None, ['StartAP'])]
-
-        #victory_entrance = self.multiworld.get_entrance("Ship->Escape Zebes", self.player)
-        #add_rule(victory_entrance, lambda state: state.has('f_ZebesSetAblaze', self.player))
+            self.multiworld.regions += [
+                self.create_region(self.multiworld, self.player, 'Menu', None, 'StartAP')
+            ]
+        else:
+            self.multiworld.regions += [
+                self.create_region(self.multiworld, self.player, 'Menu', None, 'StartAP'),
+                self.create_region(self.multiworld, self.player, 'step 1', SMMapRandoWorld.location_name_to_id.keys(), None)
+            ]
 
         startAP = self.multiworld.get_entrance('StartAP', self.player)
-        startAP.connect(self.multiworld.get_region("Landing Site Ship", self.player))   
+        startAP.connect(self.multiworld.get_region("step 1", self.player))
 
     def create_items(self):
-        self.startItems = [variaItem for item in self.multiworld.precollected_items[self.player] for variaItem in self.item_name_to_id.keys() if variaItem == item.name]
         pool = []
-        for idx, type_count in enumerate(self.map_rando.randomizer.initial_items_remaining):
-            for item_count in range(type_count):
-                minor_count = [
-                    14,# etanks       // 0
-                    2, # missiles     // 1
-                    2, # supers       // 2
-                    1, # powerbomb    // 3
-                    1, # Bombs        // 4
-                    1, # Charge       // 5
-                    1, # Ice          // 6
-                    1, # HiJump       // 7
-                    1, # SpeedBooster // 8
-                    1, # Wave         // 9
-                    1, # Spazer       // 10
-                    1, # SpringBall   // 11
-                    1, # Varia        // 12
-                    1, # Gravity      // 13
-                    1, # XRayScope    // 14
-                    1, # Plasma       // 15
-                    1, # Grapple      // 16
-                    1, # SpaceJump    // 17
-                    1, # ScrewAttack  // 18
-                    1, # Morph        // 19
-                    4, # ReserveTank  // 20
-                    1, # WallJump     // 21
-                    0  # Nothing      // 22
-                ]
-                is_progression = item_count < minor_count[idx]
-                mr_item = SMMRItem(SMMapRandoWorld.item_id_to_name[items_start_id + idx], 
-                            ItemClassification.progression if is_progression else ItemClassification.filler, 
-                            items_start_id + idx, 
-                            player=self.player)
-                pool.append(mr_item)
-        self.multiworld.itempool += pool
+        item_placement = [item.to_int() for item in self.randomizer_ap.randomization.item_placement]
+        seen_item_type = set() 
+        weaponCount = [0, 0, 0]         
 
-        gamedata = self.map_rando.randomizer.game_data
-        for flag_name, i in SMMapRandoWorld.flag_location_names.items():
-            item = SMMRItem(flag_name, 
-                            ItemClassification.progression, 
-                            None,
-                            player=self.player)
-            self.multiworld.get_location(flag_name, self.player).place_locked_item(item)
-            self.multiworld.get_location(flag_name, self.player).address = None 
+        for spoilerSummary in self.randomizer_ap.spoiler_log.summary:
+            for spoilerItemSummary in spoilerSummary.items:
+                isAdvancement = True
+                if spoilerItemSummary.item == 'Missile':
+                    if weaponCount[0] < 3:
+                        weaponCount[0] += 1
+                    else:
+                        isAdvancement = False
+                elif spoilerItemSummary.item == 'Super':
+                    if weaponCount[1] < 2:
+                        weaponCount[1] += 1
+                    else:
+                        isAdvancement = False
+                elif spoilerItemSummary.item == 'PowerBomb':
+                    if weaponCount[2] < 3:
+                        weaponCount[2] += 1
+                    else:
+                        isAdvancement = False
+                elif spoilerItemSummary.item == 'Nothing':
+                    isAdvancement = False
+                new_item_id = SMMapRandoWorld.item_name_to_id[spoilerItemSummary.item]
+                item_placement[SMMapRandoWorld.smmr_location_names.index(f"{spoilerItemSummary.location.room} {spoilerItemSummary.location.node}")] = -1
+                seen_item_type.add(new_item_id)
+                mr_item = SMMRItem(spoilerItemSummary.item, 
+                            ItemClassification.progression if isAdvancement else ItemClassification.filler, 
+                            new_item_id, 
+                            player=self.player,
+                            step=spoilerSummary.step)
+                pool.append(mr_item)
+
+        for i, item_id in enumerate(item_placement):
+            if item_id != -1:
+                mr_item = SMMRItem(SMMapRandoWorld.item_id_to_name[item_id + items_start_id], 
+                                ItemClassification.filler, 
+                                item_id + items_start_id, 
+                                player=self.player,
+                                step=len(self.randomizer_ap.spoiler_log.summary) - 1)
+                pool.append(mr_item)
+            
+        self.multiworld.itempool += pool
         
     def set_rules(self):
-        chozo_regions = [   
-                            self.multiworld.get_region("Bowling Alley Bowling Chozo Statue (unlocked)", self.player), 
-                            self.multiworld.get_region("Bomb Torizo Room Bomb Torizo (unlocked)", self.player)
-                        ]
-        pirates_regions = [ 
-                            self.multiworld.get_region("Pit Room Left Door (unlocked)", self.player),
-                            self.multiworld.get_region("Baby Kraid Room Left Door (unlocked)", self.player),
-                            self.multiworld.get_region("Plasma Room Top Left Door (unlocked)", self.player),
-                            self.multiworld.get_region("Metal Pirates Room Left Door (unlocked)", self.player)
-                          ]
-        goals = [
-                    lambda state: state.can_reach(self.multiworld.get_region("Mother Brain Room Right Door", self.player)),
-                    lambda state: state.has_all(["f_DefeatedKraid", "f_DefeatedPhantoon", "f_DefeatedDraygon", "f_DefeatedRidley"], self.player),
-                    lambda state: state.has_all(["f_DefeatedBotwoon", "f_DefeatedCrocomire", "f_DefeatedSporeSpawn", "f_DefeatedGoldenTorizo"], self.player),
-                    lambda state: state.has_all(["f_KilledMetroidRoom1", "f_KilledMetroidRoom2", "f_KilledMetroidRoom3", "f_KilledMetroidRoom4"], self.player),
-                    lambda state: state.has_all(["f_UsedAcidChozoStatue", "f_DefeatedGoldenTorizo", "Morph", "f_DefeatedPhantoon"], self.player) \
-                        and all(state.can_reach(region) for region in chozo_regions),
-                    lambda state: state.has_all(["Morph", "Missile"], self.player) and all(state.can_reach(region) for region in pirates_regions)
-                ]
+        if (len(self.randomizer_ap.spoiler_log.summary) > 0):     
+            self.multiworld.completion_condition[self.player] = lambda state: state.can_reach(self.multiworld.get_entrance(f"to step {len(self.randomizer_ap.spoiler_log.summary)}", self.player))
+        else:
+            self.multiworld.completion_condition[self.player] = lambda state: True
+
+    def fill_hook(self,
+                  progitempool: List["Item"],
+                  usefulitempool: List["Item"],
+                  filleritempool: List["Item"],
+                  fill_locations: List["Location"]) -> None:
         
-        self.multiworld.completion_condition[self.player] = goals[self.options.objectives.value]
+        def sort_list_by_step(list_to_sort: List, reverse=False):
+            player_list = []
+            indexes_list = []
+            for i, progitem in enumerate(list_to_sort):
+                if (progitem.player == self.player):
+                    player_list.append(progitem)
+                    indexes_list.append(i)
+            player_list.sort(key=lambda item: item.step, reverse=reverse)
+            for item in zip(player_list, indexes_list):
+                list_to_sort[item[1]] = item[0]
+
+        sort_list_by_step(progitempool, True)
+        sort_list_by_step(fill_locations)
 
     def post_fill(self):
+        self.startItems = [variaItem for item in self.multiworld.precollected_items[self.player] for variaItem in self.item_name_to_id.keys() if variaItem == item.name]
         spheres: List[Location] = getattr(self.multiworld, "_smmr_spheres", None)
         if spheres is None:
             spheres = list(self.multiworld.get_spheres())
             setattr(self.multiworld, "_smmr_spheres", spheres)
-
-    def collect(self, state: CollectionState, item: Item) -> bool:
-        if (item.code != None): # - items_start_id < len(self.gamedata.item_isv)):
-            state.smmrcs[self.player].add_item(item.code - items_start_id, self.gamedata)
-        else:
-            state.smmrcs[self.player].add_flag(SMMapRandoWorld.item_name_to_id[item.name] - items_start_id - len(self.gamedata.item_isv))
-        return super(SMMapRandoWorld, self).collect(state, item)
-
-    def remove(self, state: CollectionState, item: Item) -> bool:
-        if (item.code - items_start_id < len(self.gamedata.item_isv)):
-            state.smmrcs[self.player].remove_item(item.code - items_start_id, self.gamedata)
-        else:
-            state.smmrcs[self.player].remove_flag(item.code - items_start_id - len(self.gamedata.item_isv))
-        return super(SMMapRandoWorld, self).remove(state, item)
     
     def create_item(self, name: str) -> Item:
-        return SMMRItem(name, ItemClassification.progression, self.item_name_to_id[name], player=self.player)
+        return SMMRItem(name, ItemClassification.progression, self.item_name_to_id[name], player=self.player, step=0)
 
     def get_filler_item_name(self) -> str:
         return "Missile"
@@ -514,96 +389,98 @@ class SMMapRandoWorld(World):
         return data
         
     def generate_output(self, output_directory: str):
-        def get_area_name(loc_idx: int):
-            for idx, area_name in SMMapRandoWorld.locations_idx_range_to_area.items():
-                if loc_idx <= idx:
-                    return area_name
-            return ""
+        with open(get_base_rom_path(), 'rb') as stream:
+            self.rom = bytearray(stream.read())
 
+        customize_request = CustomizeRequest(
+            self.rom,
+            "",
+            f"{self.options.etank_color_red.value:02X}{self.options.etank_color_green.value:02X}{self.options.etank_color_blue.value:02X}",
+            bool(self.options.reserve_hud_style.value),
+            self.options.room_palettes.current_key,
+            self.options.tile_theme.current_key_pascal(),
+            self.options.door_colors.current_key,
+            self.options.music.current_key,
+            bool(self.options.disable_beeping.value),
+            self.options.screen_shaking.current_key.title(),
+            self.options.screen_flashing.current_key.title(),
+            bool(self.options.screw_attack_animation.value),
+            self.options.shot.current_key.title(),
+            self.options.jump.current_key.title(),
+            self.options.dash.current_key.title(),
+            self.options.item_select.current_key.title(),
+            self.options.item_cancel.current_key.title(),
+            self.options.angle_up.current_key.title(),
+            self.options.angle_down.current_key.title(),
+            "on" if "Left" in self.options.spin_lock_buttons else "off",
+            "on" if "Right" in self.options.spin_lock_buttons else "off",
+            "on" if "Up" in self.options.spin_lock_buttons else "off",
+            "on" if "Down" in self.options.spin_lock_buttons else "off",
+            "on" if "X" in self.options.spin_lock_buttons else "off",
+            "on" if "Y" in self.options.spin_lock_buttons else "off",
+            "on" if "A" in self.options.spin_lock_buttons else "off",
+            "on" if "B" in self.options.spin_lock_buttons else "off",
+            "on" if "L" in self.options.spin_lock_buttons else "off",
+            "on" if "R" in self.options.spin_lock_buttons else "off",
+            "on" if "Select" in self.options.spin_lock_buttons else "off",
+            "on" if "Start" in self.options.spin_lock_buttons else "off",
+            "on" if "Left" in self.options.quick_reload_buttons else "off",
+            "on" if "Right" in self.options.quick_reload_buttons else "off",
+            "on" if "Up" in self.options.quick_reload_buttons else "off",
+            "on" if "Down" in self.options.quick_reload_buttons else "off",
+            "on" if "X" in self.options.quick_reload_buttons else "off",
+            "on" if "Y" in self.options.quick_reload_buttons else "off",
+            "on" if "A" in self.options.quick_reload_buttons else "off",
+            "on" if "B" in self.options.quick_reload_buttons else "off",
+            "on" if "L" in self.options.quick_reload_buttons else "off",
+            "on" if "R" in self.options.quick_reload_buttons else "off",
+            "on" if "Select" in self.options.quick_reload_buttons else "off",
+            "on" if "Start" in self.options.quick_reload_buttons else "off",
+            bool(self.options.moonwalk.value)
+        )
         sorted_item_locs = list(self.locations.values())
-        items = [(itemLoc.item.code if isinstance(itemLoc.item, SMMRItem) else (self.item_name_to_id['ArchipelagoProgItem'] if itemLoc.item.classification == ItemClassification.progression else self.item_name_to_id['ArchipelagoItem'])) - items_start_id for itemLoc in sorted_item_locs if itemLoc.address is not None]
-        spheres: List[Location] = getattr(self.multiworld, "_smmr_spheres", None)
-        summary =   [   (
-                            sphere_idx, 
-                            loc.item.name, 
-                            get_area_name(SMMapRandoWorld.location_name_to_id[loc.name] - locations_start_id) if loc.player == self.player else 
-                            self.multiworld.get_player_name(loc.player) + " world" #+ itemloc.loc.name
-                        ) 
-                    for sphere_idx, sphere in enumerate(spheres) for loc in sphere if loc.item.player == self.player and not loc.item.name.startswith("f_") and loc.item.name != "Nothing"
-                    ]
+        items = [MapRandoItem(
+                (itemLoc.item.code 
+                    if isinstance(itemLoc.item, SMMRItem) else 
+                (self.item_name_to_id['ArchipelagoProgItem'] 
+                    if itemLoc.item.classification == ItemClassification.progression else
+                self.item_name_to_id['ArchipelagoItem']))
+                - items_start_id)
+                    for itemLoc in sorted_item_locs if itemLoc.address is not None]
         
-        controller_mapping_string = {
-                                        "X": ControllerButton.X, 
-                                        "Y": ControllerButton.Y,  
-                                        "A": ControllerButton.A,  
-                                        "B": ControllerButton.B, 
-                                        "L": ControllerButton.L,  
-                                        "R": ControllerButton.R, 
-                                        "Select": ControllerButton.Select, 
-                                        "Start": ControllerButton.Start, 
-                                        "Up": ControllerButton.Up, 
-                                        "Down": ControllerButton.Down, 
-                                        "Left": ControllerButton.Left, 
-                                        "Right": ControllerButton.Right,
-                                     }
-        controller_mapping_int = {
-                                    int(ControllerButton.X): ControllerButton.X, 
-                                    int(ControllerButton.Y): ControllerButton.Y,  
-                                    int(ControllerButton.A): ControllerButton.A,  
-                                    int(ControllerButton.B): ControllerButton.B, 
-                                    int(ControllerButton.L): ControllerButton.L,  
-                                    int(ControllerButton.R): ControllerButton.R, 
-                                    int(ControllerButton.Select): ControllerButton.Select, 
-                                    int(ControllerButton.Start): ControllerButton.Start, 
-                                    int(ControllerButton.Up): ControllerButton.Up, 
-                                    int(ControllerButton.Down): ControllerButton.Down, 
-                                    int(ControllerButton.Left): ControllerButton.Left, 
-                                    int(ControllerButton.Right): ControllerButton.Right, 
-                                }
-        music_settings_mapping = {
-                                    0: MusicSettings.Vanilla,
-                                    1: MusicSettings.AreaThemed,
-                                    2: MusicSettings.Disabled
-                                  }
-        tile_theme_mapping = { 
-                                0: TileTheme.Vanilla,
-                                1: TileTheme.Scrambled,
-                                2: TileTheme.OuterCrateria,
-                                3: TileTheme.InnerCrateria,
-                                4: TileTheme.GreenBrinstar,
-                                5: TileTheme.UpperNorfair,
-                                6: TileTheme.WreckedShip,
-                                7: TileTheme.WestMaridia,
-                            }
-        shaking_settings_mapping = {
-                                    0: ShakingSetting.Vanilla,
-                                    1: ShakingSetting.Reduced,
-                                    2: ShakingSetting.Disabled
-                                  }
+        # if start location isnt Escape
+        if (len(self.randomizer_ap.spoiler_log.summary) > 0):
+            spheres: List[Location] = getattr(self.multiworld, "_smmr_spheres", None)
+            summary =  [   (
+                            sphere_idx, 
+                            loc.item.code - items_start_id, 
+                            self.multiworld.get_player_name(loc.player) + " world" if loc.player != self.player else None
+                        ) 
+                    for sphere_idx, sphere in enumerate(spheres) for loc in sphere if loc.item.player == self.player and loc.item.name != "Nothing"
+                    ]
+            
+            item_spoiler_infos = []
+            for item_spoiler_info in self.randomizer_ap.randomization.essential_spoiler_data.item_spoiler_info:
+                for (step, item_id, location) in summary:
+                    if (item_spoiler_info.item.to_int() == item_id):
+                        if (location is not None):
+                            item_spoiler_info.step = step
+                            item_spoiler_info.area = location
+                        break
+                item_spoiler_infos.append(item_spoiler_info)
+        else:
+            item_spoiler_infos = None
 
-        controller_config = ControllerConfig(
-                controller_mapping_int[self.options.shot.value],
-                controller_mapping_int[self.options.jump.value],
-                controller_mapping_int[self.options.dash.value],
-                controller_mapping_int[self.options.item_select.value],
-                controller_mapping_int[self.options.item_cancel.value],
-                controller_mapping_int[self.options.angle_up.value],
-                controller_mapping_int[self.options.angle_down.value],
-                [controller_mapping_string[button] for button in self.options.spin_lock_buttons.value],
-                [controller_mapping_string[button] for button in self.options.quick_reload_buttons.value],
-                self.options.moonwalk.value == 1)
-        customize_settings = CustomizeSettings(
-                None,
-                (self.options.etank_color_red.value // 8, self.options.etank_color_green.value // 8, self.options.etank_color_blue.value // 8),
-                self.options.reserve_hud_style.value == 1,
-                self.options.vanilla_screw_attack_animation.value == 1,
-                PaletteTheme.Vanilla if self.options.palette_theme.value == 0 else PaletteTheme.AreaThemed,
-                tile_theme_mapping[self.options.tile_theme.value],
-                music_settings_mapping[self.options.music.value],
-                self.options.disable_beeping.value == 1,
-                shaking_settings_mapping[self.options.shaking.value],
-                controller_config)
-        patched_rom_bytes = patch_rom(get_base_rom_path(), self.map_rando, items, self.multiworld.state.smmrcs[self.player].randomization_state, summary, customize_settings)
+        patched_rom_bytes = customize_seed_ap(
+            customize_request, 
+            map_rando_app_data, 
+            self.map_rando_settings,
+            self.randomizer_ap.randomization,
+            self.randomizer_ap.randomization.map,
+            False,
+            items,
+            item_spoiler_infos
+            )
         #patched_rom_bytes = None
         #with open(get_base_rom_path(), "rb") as stream:
         #    patched_rom_bytes = stream.read()
@@ -663,7 +540,7 @@ class SMMapRandoWorld(World):
         vanillaItemTypesCount = 23
         locations_nothing = bytearray(20)
         for itemLoc in self.multiworld.get_locations():
-            if itemLoc.player == self.player and not itemLoc.name.startswith("f_"):
+            if itemLoc.player == self.player:
                 # item to place in this SMMR world: write full item data to tables
                 if isinstance(itemLoc.item, SMMRItem) and itemLoc.item.code < items_start_id + vanillaItemTypesCount:
                     if itemLoc.item.code == items_start_id + self.nothing_item_id:
@@ -917,70 +794,24 @@ class SMMapRandoWorld(World):
                 
         return slot_data
     
+    # def extend_hint_information(self, hint_data: Dict[int, Dict[int, str]]):
+    #    player_hint_data = {}
+    #    for (loc_name, location) in self.locations.items():
+    #        if not loc_name.startswith("f_"):
+    #            player_hint_data[location.address] = self.region_area_name[location.parent_region.index]
+    #    hint_data[self.player] = player_hint_data
+    
     
 class SMMRLocation(Location):
     game: str = SMMapRandoWorld.game
 
-    def __init__(self, player: int, name: str, address=None, parent=None):
+    def __init__(self, player: int, name: str, step: int, address=None, parent=None):
         super(SMMRLocation, self).__init__(player, name, address, parent)
+        self.step = step
 
 class SMMRItem(Item):
     game: str = SMMapRandoWorld.game
 
-    def __init__(self, name, classification, code, player: int):
+    def __init__(self, name, classification, code, player: int, step: int):
         super(SMMRItem, self).__init__(name, classification, code, player)
-
-class SMMREntrance(Entrance):
-    game: str = SMMapRandoWorld.game
-
-    def __init__(self, player: int, name: str = '', parent: Region = None, strats_links: Dict[str, List[int]] = None, strats_links_debug: Dict[str, List[str]] = None):
-        super(SMMREntrance, self).__init__(player, name, parent)
-        self.strats_links = strats_links
-        self.strats_links_debug = strats_links_debug
-
-class SMMRRegion(Region):
-    game: str = SMMapRandoWorld.game
-
-    def __init__(self, name: str, player: int, multiworld: MultiWorld, index:int, hint: Optional[str] = None):
-        super(SMMRRegion, self).__init__(name, player, multiworld, hint)
-        self.index = index
-
-    def can_reach(self, state: CollectionState) -> bool:
-        f_regions = set()
-        r_regions = set()
-        if state.stale[self.player]:
-            local_world = self.multiworld.worlds[self.player]
-            defeated_mother_brain_flag_id = local_world.item_name_to_id["f_DefeatedMotherBrain"] - items_start_id - len(local_world.gamedata.item_isv)
-            rrp = state.reachable_regions[self.player]
-            state.stale[self.player] = False
-            (bi_reachability, f_reachability, r_reachability, f_traverse, r_traverse) = local_world.map_rando.update_reachability(state.smmrcs[self.player].randomization_state, local_world.debug)
-            local_world.update_reachability += 1
-            for i, region in enumerate(bi_reachability):
-                #if f_reachability[i] and local_world.events_connections.get(local_world.region_map_reverse[i], None) != None:
-                #    state.reachable_regions[self.player].add(local_world.region_dict[i])
-                #    event_src = local_world.events_connections.get(local_world.region_map_reverse[i], None)
-                #    if (event_src != None):
-                #        for event in event_src:
-                #            state.reachable_regions[self.player].add(local_world.region_dict[local_world.vertex_cnt + SMMapRandoWorld.flag_location_names[local_world.map_rando.randomizer.game_data.flag_isv[event]]])
-                if region:
-                    rrp.add(local_world.region_dict[i])
-                    # check for added events regions that MapRando doesnt know about
-                    event_src = local_world.events_connections.get(local_world.region_map_reverse[i], None)
-                    if (event_src != None):
-                        for event in event_src:
-                            rrp.add(local_world.region_dict[local_world.flag_id_to_region_dict[event] + local_world.vertex_cnt])
-                if (f_reachability[i]):
-                    f_regions.add(local_world.region_dict[i])
-                    # special case for f_DefeatedMotherBrain as it cant be reverse reachable
-                    event_src = local_world.events_connections.get(local_world.region_map_reverse[i], None)
-                    if (event_src != None):
-                        for event in event_src:
-                            if event == defeated_mother_brain_flag_id:
-                                rrp.add(local_world.region_dict[local_world.flag_id_to_region_dict[defeated_mother_brain_flag_id] + local_world.vertex_cnt])
-
-                if (r_reachability[i]):
-                    r_regions.add(local_world.region_dict[i])
-            #state.update_reachable_regions(self.player)
-            if local_world.debug:
-                local_world.debug = False
-        return self in state.reachable_regions[self.player]
+        self.step = step

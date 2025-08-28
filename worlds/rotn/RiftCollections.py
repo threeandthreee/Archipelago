@@ -45,7 +45,7 @@ class RotNCollections:
         "Got Danged": SongData(83, "TrackName_DLC_Apricot02", "MeatBoy", 5, 12, 20, 30, False),
         "Bootus Bleez": SongData(84, "TrackName_DLC_Apricot03", "MeatBoy", 6, 10, 19, 29, False),
         #Celeste
-        "Resurrections (dannyBstyle Remix)": SongData(85, "TrackName_DLC_Banana01", "CelesteFree", 6, 10, 17, 27, False),
+        "Resurrections (dannyBstyle Remix)": SongData(85, "TrackName_DLC_Banana01", "FreeDLC", 6, 10, 17, 27, False),
         "Scattered and Lost": SongData(86, "Scattered and Lost", "Celeste", 4, 8, 16, 25, False),
         "Reach for the Summit": SongData(87, "Reach for the Summit", "Celeste", 7, 11, 18, 30, False),
         "Confronting Myself": SongData(88, "Confronting Myself", "Celeste", 6, 9, 17, 26, False),
@@ -72,6 +72,12 @@ class RotNCollections:
         "Play Dice!": SongData(105, "Play Dice!", "Hololive", 8, 13, 19, 25, False),
         "Ahoy!! 我ら宝鐘海賊団☆": SongData(106, "Ahoy!! 我ら宝鐘海賊団☆", "Hololive", 7, 14, 20, 30, False),
         "Carbonated Love": SongData(107, "Carbonated Love", "Hololive", 5, 10, 15, 23, False),
+        #Everhood
+        "Powers Of Destruction": SongData(108, "Powers of Destruction", "FreeDLC", 7, 11, 14, 20, False),
+        "The Final Battle": SongData(109, "The Final Battle", "Everhood", 6, 10, 16, 22, False),
+        "Feisty Flowers": SongData(110, "Feisty Flowers", "Everhood", 5, 10, 19, 29, False),
+        "Revenge": SongData(111, "Revenge", "Everhood", 5, 12, 20, 29, False),
+        "Why Oh You Are LOVE": SongData(112, "Why Oh You Are LOVE", "Everhood", 5, 15, 21, 30, False),
     }
 
     EXTRA_DATA: Dict[str, ExtraSongData] = {
@@ -92,7 +98,6 @@ class RotNCollections:
     FREE_PACKS: List[str] = [
         "Base",
         "MeatBoy",
-        "CelesteFree",
         "Anniversary",
         "FreeDLC",
         "Minigame",
@@ -125,6 +130,12 @@ class RotNCollections:
         "Play Dice!",
         "Ahoy!! 我ら宝鐘海賊団☆",
         "Carbonated Love",
+
+        "Everhood",
+        "The Final Battle",
+        "Feisty Flowers",
+        "Revenge",
+        "Why Oh You Are LOVE",
     ]
 
     song_locations: Dict[str, int] = {}

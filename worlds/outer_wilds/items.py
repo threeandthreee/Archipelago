@@ -4,7 +4,7 @@ from typing import NamedTuple
 
 from BaseClasses import Item, ItemClassification
 from Utils import restricted_loads
-from .options import EarlyKeyItem, Spawn
+from .options import Spawn
 from .should_generate import should_generate
 
 if typing.TYPE_CHECKING:
@@ -240,33 +240,3 @@ def create_items(world: "OuterWildsWorld") -> None:
 
     itempool = prog_and_useful_items + unique_filler_with_traps + repeatable_filler_with_traps
     multiworld.itempool += itempool
-
-    if options.early_key_item:
-        relevant_translator = "Translator"
-        if options.split_translator:
-            if options.spawn == Spawn.option_hourglass_twins:
-                relevant_translator = "Translator (Hourglass Twins)"
-            if options.spawn == Spawn.option_timber_hearth:
-                relevant_translator = "Translator (Timber Hearth)"
-            if options.spawn == Spawn.option_brittle_hollow:
-                relevant_translator = "Translator (Brittle Hollow)"
-            if options.spawn == Spawn.option_giants_deep:
-                relevant_translator = "Translator (Giant's Deep)"
-            # ignore stranger spawn since it won't offer a Translator at all
-
-        key_item = None
-        if options.early_key_item == EarlyKeyItem.option_any:
-            if options.spawn == Spawn.option_stranger:
-                key_item = random.choice(["Launch Codes", "Stranger Light Modulator"])
-            else:
-                key_item = random.choice([relevant_translator, "Nomai Warp Codes", "Launch Codes"])
-        elif options.early_key_item == EarlyKeyItem.option_translator:
-            key_item = relevant_translator
-        elif options.early_key_item == EarlyKeyItem.option_nomai_warp_codes:
-            key_item = "Nomai Warp Codes"
-        elif options.early_key_item == EarlyKeyItem.option_launch_codes:
-            key_item = "Launch Codes"
-        elif options.early_key_item == EarlyKeyItem.option_stranger_light_modulator:
-            key_item = "Stranger Light Modulator"
-        assert key_item is not None
-        multiworld.local_early_items[player][key_item] = 1

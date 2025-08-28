@@ -41,10 +41,10 @@
 # Adapt @offerItemTextIndices to match new subids
 0f/758e/scrubTextIndices: |
     db $45,$09
-    db $56,$30
-    db $45,$02
+    db $45,$0b
+    db $45,$0d
     db $45,$0c
-    db $56,$31   ; generic refill scrub text
+    db $45,$0a   ; generic refill scrub text
 
 # Adapt @rupeeValues to match new subids
 0f/759c/rupeeEnumCosts: |
@@ -56,10 +56,10 @@
 
 # Adapt @itemPrices to match new subids
 0f/75bd/scrubPricesAsText: |
-    dw text.spoolSwampScrubPrice
-    dw text.samasaCaveScrubPrice
-    dw text.d2ScrubPrice
-    dw text.d4ScrubPrice
+    ; dw text.spoolSwampScrubPrice
+    ; dw text.samasaCaveScrubPrice
+    ; dw text.d2ScrubPrice
+    ; dw text.d4ScrubPrice
     dw $0030
 
 
@@ -133,7 +133,6 @@
     call getScrubItemFlag
     and c
     call updateScrubSubidAndGetText
-#   jp showTextNonExitable
 
 # Replace all special cases from vanilla scrubs by a generic "spawnTreasureOnLink", and set a permanent item flag
 # when buying the item to avoid doing it several times

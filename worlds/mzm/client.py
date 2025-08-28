@@ -6,19 +6,21 @@ from __future__ import annotations
 
 import itertools
 import struct
-from typing import TYPE_CHECKING, Counter, Dict, Iterable, Iterator, List, NamedTuple, Optional, Set, Tuple
+from typing import TYPE_CHECKING, Dict, Iterable, Iterator, NamedTuple, Optional, Set, Tuple
 
 from NetUtils import ClientStatus, NetworkItem
 import Utils
 import worlds._bizhawk as bizhawk
 from worlds._bizhawk.client import BizHawkClient
 
-from .data import get_symbol
-from .items import ItemID, ItemType, item_data_table
+from .items import ItemData, item_data_table, major_item_data_table
 from .locations import (brinstar_location_table, kraid_location_table, norfair_location_table,
                         ridley_location_table, tourian_location_table, crateria_location_table,
                         chozodia_location_table)
-from .text import LINE_WIDTH, TERMINATOR_CHAR, Message
+from .patcher.constants import Event, ItemType
+from .patcher.items import ItemData as ZMItemData
+from .patcher.symbols import get_symbol
+from .patcher.text import Message, make_item_message
 
 if TYPE_CHECKING:
     from worlds._bizhawk.context import BizHawkClientContext
@@ -55,6 +57,7 @@ def write32(address: int, value: int):
 guard = write
 guard8 = write8
 guard16 = write16
+guard32 = write32
 
 
 def get_int(b: bytes) -> int:
@@ -77,22 +80,19 @@ def batched(iterable, n):
 
 # DEOREM_KILLED and RUINS_TEST_PASSED are out of order to maintain tracker compatibility. DEOREM_KILLED was before any
 # of the vanilla events, and RUINS_TEST_PASSED replaces the vanilla FULLY_POWERED_SUIT_OBTAINED.
-EVENT_FLAGS = {
-    "EVENT_DEOREM_KILLED": 0x4F,
-    "EVENT_ACID_WORM_KILLED": 0x1C,
-    "EVENT_KRAID_KILLED": 0x1E,
-    "EVENT_IMAGO_COCOON_KILLED": 0x22,
-    "EVENT_IMAGO_KILLED": 0x23,
-    "EVENT_RIDLEY_KILLED": 0x25,
-    "EVENT_MOTHER_BRAIN_KILLED": 0x27,
-    "EVENT_ESCAPED_ZEBES": 0x41,
-    "EVENT_RUINS_TEST_PASSED": 0x50,
-    "EVENT_MECHA_RIDLEY_KILLED": 0x4A,
-    "EVENT_ESCAPED_CHOZODIA": 0x4B,
-}
-
-
-TRACKER_EVENT_FLAGS = list(EVENT_FLAGS.keys())
+EVENT_FLAGS = [
+    Event.DEOREM_KILLED,
+    Event.ACID_WORM_KILLED,
+    Event.KRAID_KILLED,
+    Event.IMAGO_COCOON_KILLED,
+    Event.IMAGO_KILLED,
+    Event.RIDLEY_KILLED,
+    Event.MOTHER_BRAIN_KILLED,
+    Event.ESCAPED_ZEBES,
+    Event.RUINS_TEST_PASSED,
+    Event.MECHA_RIDLEY_KILLED,
+    Event.ESCAPED_CHOZODIA,
+]
 
 
 def cmd_deathlink(self):
@@ -148,9 +148,6 @@ class ZMConstants:
     SUIT_SUITLESS = 2
     SPOSE_SAVING_LOADING_GAME = 44
 
-    # Structs
-    Equipment = "<HHBBHHBBBBBBBBBB"
-
     # Statics
     sStartingHealthAmmo = TankList(99, 0, 0, 0)
     sTankIncreaseAmount = [
@@ -166,24 +163,11 @@ class ZMConstants:
     gDifficulty = get_symbol("gDifficulty")
     gSamusData = get_symbol("gSamusData")
     gEquipment = get_symbol("gEquipment")
+    gRandoEquipment = get_symbol("gRandoEquipment")
     gEventsTriggered = get_symbol("gEventsTriggered")
     gCurrentArea = get_symbol("gCurrentArea")
     gRandoLocationBitfields = get_symbol("gRandoLocationBitfields")
-    gIncomingItemId = get_symbol("gIncomingItemId")
-    gIncomingItemCount = get_symbol("gIncomingItemCount")
-    gMultiworldItemCount = get_symbol("gMultiworldItemCount")
-    gMultiworldItemSenderName = get_symbol("gMultiworldItemSenderName")
-
-
-class QueuedItem(NamedTuple):
-    network_items: List[NetworkItem]  # All should be the same item
-    index: int  # Position of first instance
-
-
-class ItemCollection(NamedTuple):
-    starting: List[NetworkItem]
-    local: List[NetworkItem]
-    remote: List[NetworkItem]
+    gIncomingMessage = get_symbol("gIncomingMessage")
 
 
 class MZMClient(BizHawkClient):
@@ -192,12 +176,10 @@ class MZMClient(BizHawkClient):
     patch_suffix = ".apmzm"
 
     local_checked_locations: Set[int]
-    local_set_events: Dict[str, bool]
+    local_set_events: Dict[Event, bool]
     local_area: int
 
-    remote_items_acquired: Optional[List[NetworkItem]]
-    received_items: ItemCollection
-    queued_item: Optional[QueuedItem]
+    ignore_locals_written: bool
 
     rom_slot_name: Optional[str]
 
@@ -207,12 +189,10 @@ class MZMClient(BizHawkClient):
 
     def __init__(self) -> None:
         super().__init__()
-        self.remote_items_acquired = None
-        self.received_items = ItemCollection([], [], [])
         self.local_checked_locations = set()
-        self.local_set_events = {flag: False for flag in TRACKER_EVENT_FLAGS}
+        self.local_set_events = {flag: False for flag in EVENT_FLAGS}
         self.local_area = 0
-        self.queued_item = None
+        self.ignore_locals_written = False
         self.rom_slot_name = None
 
     async def validate_rom(self, client_ctx: BizHawkClientContext) -> bool:
@@ -222,8 +202,8 @@ class MZMClient(BizHawkClient):
         try:
             read_result = iter(await bizhawk.read(bizhawk_ctx, [
                 read(0x80000A0, 12),
-                read(get_symbol("sRandoSeed", 2), 64),
-                read(get_symbol("sRandoSeed", 66), 64),
+                read(get_symbol("sRandoSeed", 0), 64),
+                read(get_symbol("sRandoSeed", 64), 64),
             ]))
         except bizhawk.RequestFailedError:
             return False  # Should verify on the next pass
@@ -257,7 +237,6 @@ class MZMClient(BizHawkClient):
         self.death_link = DeathLinkCtx()
 
         self.dc_pending = False
-
         return True
 
     async def set_auth(self, client_ctx: BizHawkClientContext) -> None:
@@ -297,7 +276,7 @@ class MZMClient(BizHawkClient):
         gRandoLocationBitfields = struct.unpack(f"<{ZMConstants.AREA_MAX}I", next(read_result))
 
         checked_locations = set()
-        set_events = {flag: False for flag in TRACKER_EVENT_FLAGS}
+        set_events = {flag: False for flag in EVENT_FLAGS}
 
         if gMainGameMode == ZMConstants.GM_INGAME:
             for location_flags, location_table in zip(
@@ -311,21 +290,19 @@ class MZMClient(BizHawkClient):
                         checked_locations.add(location.code)
                     location_flags >>= 1
 
-        for name, number in EVENT_FLAGS.items():
-            block = gEventsTriggered[number // 32]
-            flag = 1 << (number & 31)
-            if block & flag:
-                set_events[name] = True
+        for event in EVENT_FLAGS:
+            block = gEventsTriggered[event.block_number()]
+            if block & event.bit_mask():
+                set_events[event] = True
 
         if self.local_checked_locations != checked_locations:
             self.local_checked_locations = checked_locations
-            self.received_items = self.create_collection(client_ctx)
             await client_ctx.send_msgs([{
                 "cmd": "LocationChecks",
                 "locations": list(checked_locations)
             }])
 
-        if ((set_events["EVENT_ESCAPED_CHOZODIA"] or gMainGameMode in (ZMConstants.GM_CHOZODIA_ESCAPE, ZMConstants.GM_CREDITS))
+        if ((set_events[Event.ESCAPED_CHOZODIA] or gMainGameMode in (ZMConstants.GM_CHOZODIA_ESCAPE, ZMConstants.GM_CREDITS))
             and not client_ctx.finished_game):
             await client_ctx.send_msgs([{
                 "cmd": "StatusUpdate",
@@ -335,7 +312,7 @@ class MZMClient(BizHawkClient):
         if self.local_set_events != set_events and client_ctx.slot is not None:
             self.local_set_events = set_events
             event_bitfield = 0
-            for i, flag in enumerate(TRACKER_EVENT_FLAGS):
+            for i, flag in enumerate(EVENT_FLAGS):
                 if set_events[flag]:
                     event_bitfield |= 1 << i
             await client_ctx.send_msgs([{
@@ -356,177 +333,175 @@ class MZMClient(BizHawkClient):
                 "operations": [{"operation": "replace", "value": gCurrentArea}]
             }])
 
-    async def handle_received_items(self, client_ctx: BizHawkClientContext, received_items: ItemCollection):
-        bizhawk_ctx = client_ctx.bizhawk_ctx
+    def received_items(self, client_ctx: BizHawkClientContext) -> Iterable[NetworkItem]:
+        """Iterate over the player's received items, skipping local ones if items aren't remote."""
 
+        for item in client_ctx.items_received:
+            if (item.player == client_ctx.slot and item.location > 0 and
+                item.location not in self.local_checked_locations and not client_ctx.slot_data.get("remote_items")):
+                continue
+            yield item
+
+    def count_received_item(self, client_ctx: BizHawkClientContext, item_data: ItemData) -> tuple[int, NetworkItem | None]:
+        """Get the number of times an item has been received as well as the most recent copy received."""
+
+        count: int = 0
+        last: NetworkItem | None = None
+        for item in self.received_items(client_ctx):
+            if item.item == item_data.code:
+                count += 1
+                last = item
+        return count, last
+
+    @staticmethod
+    def make_received_message(client_ctx: BizHawkClientContext, item_name: str, item: NetworkItem) -> Message:
+        player_name = client_ctx.player_names[item.player]
+        return make_item_message(item_name, f"received from {player_name}")
+
+    async def send_message_and_item(self, client_ctx: BizHawkClientContext,
+                                item_data: ZMItemData, message: Message | None, single_line: bool):
         try:
-            read_result = iter(await bizhawk.read(bizhawk_ctx, [read8(ZMConstants.gMultiworldItemCount)]))
+            write_list = [write(
+                get_symbol("gIncomingItem"),
+                struct.pack("<BBH", item_data.type, message is not None, item_data.bits)
+            )]
+            if message is not None:
+                write_list.append(write(get_symbol("gDynamicMessageBuffer"), message.to_bytes()))
+                write_list.append(write(
+                    get_symbol("gIncomingMessage"),
+                    struct.pack("<IHBB", get_symbol("gDynamicMessageBuffer"), item_data.sound, item_data.acquisition,
+                                single_line)
+                ))
+            await bizhawk.guarded_write(client_ctx.bizhawk_ctx, write_list, [
+                guard16(ZMConstants.gMainGameMode, ZMConstants.GM_INGAME),
+                guard16(ZMConstants.gGameModeSub1, ZMConstants.SUB_GAME_MODE_PLAYING),
+                guard32(get_symbol("gIncomingMessage"), 0),  # Null text data pointer
+            ])
         except bizhawk.RequestFailedError:
             return
 
-        gMultiworldItemCount = next_int(read_result)
-
-        if (self.remote_items_acquired is None):
-            self.remote_items_acquired = list(itertools.islice(received_items.remote, gMultiworldItemCount))
-
-        if self.queued_item is not None and gMultiworldItemCount > self.queued_item.index:
-            self.remote_items_acquired.extend(self.queued_item.network_items)
-            self.queued_item = None
-
-        if self.queued_item is None and len(self.remote_items_acquired) < len(received_items.remote):
-            new_items = Counter(item.item for item in received_items.remote) - Counter(item.item for item in self.remote_items_acquired)
-            next_item, next_item_count = next(iter(new_items.items()))
-            copies = list(itertools.islice(filter(lambda item: item.item == next_item, reversed(received_items.remote)), next_item_count))
-            copies.reverse()
-            self.queued_item = QueuedItem(copies, len(self.remote_items_acquired))
-
-        if gMultiworldItemCount > len(received_items.remote):
-            self.remote_items_acquired = received_items.remote
-
-    async def update_equipment(self, client_ctx: BizHawkClientContext, gameplay_state: Tuple[int, int], items: Iterable[NetworkItem]):
+    async def handle_received_items(self, client_ctx: BizHawkClientContext, gameplay_state: Tuple[int, int]):
         bizhawk_ctx = client_ctx.bizhawk_ctx
+
+        if gameplay_state != (ZMConstants.GM_INGAME, ZMConstants.SUB_GAME_MODE_PLAYING):
+            return
 
         try:
             read_result = iter(await bizhawk.read(bizhawk_ctx, [
-                read8(ZMConstants.gMultiworldItemCount),
+                read32(ZMConstants.gIncomingMessage),
                 read8(ZMConstants.gDifficulty),
+                read(ZMConstants.gEquipment, struct.calcsize("<HHBB6xBxB")),
+                read(ZMConstants.gRandoEquipment, struct.calcsize("<B")),
             ]))
         except bizhawk.RequestFailedError:
             return
 
-        gMainGameMode, gGameModeSub1 = gameplay_state
-        gMultiworldItemCount = next_int(read_result)
+        gIncomingMessage_data = next_int(read_result)
+        if gIncomingMessage_data != 0:
+            return
+
         gDifficulty = next_int(read_result)
+        energy, missiles, supers, powerbombs, beams, majors = struct.unpack("<HHBB6xBxB", next(read_result))
+        customs, = struct.unpack("<B", next(read_result))
 
-        guard_list = [
-            # Ensure game state hasn't changed
-            guard16(ZMConstants.gMainGameMode, gMainGameMode),
-            guard16(ZMConstants.gGameModeSub1, gGameModeSub1),
-        ]
-        acquired_items = Counter(item_data_table[client_ctx.item_names.lookup_in_game(item.item)] for item in items)
-        try:
-            read_result = await bizhawk.guarded_read(
-                bizhawk_ctx,
-                [read(ZMConstants.gEquipment + 12, 4),
-                 read8(ZMConstants.gEquipment + 18)],
-                guard_list)
-        except bizhawk.RequestFailedError:
-            return
-        if not read_result:
-            return
-        current_majors = read_result[0]
-        beams, beam_activation, majors, major_activation = current_majors
-        beam_deactivation = beams ^ beam_activation
-        major_deactivation = majors ^ major_activation
-        beams = majors = 0
-        current_suit = new_suit = read_result[1][0]
-        if current_suit == ZMConstants.SUIT_SUITLESS:
-            return
-        for item, count in acquired_items.items():
-            if item.type == ItemType.tank:
-                max_offset, current_offset = ((0, 6), (2, 8), (4, 10), (5, 11))[item.id]
-                new_capacity = ZMConstants.sStartingHealthAmmo[item.id] + count * ZMConstants.sTankIncreaseAmount[gDifficulty][item.id]
-                def read_amounts(size):
-                    return bizhawk.guarded_read(
-                        bizhawk_ctx,
-                        [read(ZMConstants.gEquipment + max_offset, size // 8),
-                         read(ZMConstants.gEquipment + current_offset, size // 8)],
-                        guard_list
-                    )
-                def write_amounts(size, max, current, expect_current=None):
-                    return bizhawk.guarded_write(
-                        bizhawk_ctx,
-                        [write(ZMConstants.gEquipment + max_offset, max.to_bytes(size // 8, 'little')),
-                         write(ZMConstants.gEquipment + current_offset, current.to_bytes(size // 8, 'little'))],
-                        (guard_list + [guard(ZMConstants.gEquipment + current_offset, expect_current.to_bytes(size // 8, 'little'))])
-                            if expect_current is not None else guard_list
-                    )
-                try:
-                    if item.id == ItemID.EnergyTank:
-                        read_result = await read_amounts(16)
-                        if read_result is None:
-                            continue
-                        capacity, current = map(get_int, read_result)
-                        if new_capacity > capacity:
-                            await write_amounts(16, new_capacity, new_capacity)
-                    else:
-                        size = 16 if item.id == ItemID.MissileTank else 8
-                        read_result = await read_amounts(size)
-                        if read_result is None:
-                            continue
-                        capacity, current = map(get_int, read_result)
-                        consumed = capacity - current
-                        await write_amounts(size, new_capacity, max(new_capacity - consumed, 0), current)
-                except bizhawk.RequestFailedError:
-                    return
-            unknown_items = client_ctx.slot_data["unknown_items_always_usable"] or self.local_set_events["EVENT_RUINS_TEST_PASSED"]
-            if item.type == ItemType.beam:
-                beams |= item.bits
-                if item.id != ItemID.PlasmaBeam or unknown_items:
-                    beam_activation |= item.bits
-            if item.type == ItemType.major:
-                majors |= item.bits
-                if item.id not in (ItemID.SpaceJump, ItemID.GravitySuit) or unknown_items:
-                    major_activation |= item.bits
-                if item.id in (ItemID.VariaSuit, ItemID.GravitySuit) and unknown_items:
-                    new_suit = ZMConstants.SUIT_FULLY_POWERED
-        major_activation &= ~major_deactivation & 0xFF
-        beam_activation &= ~beam_deactivation & 0xFF
-        try:
-            await bizhawk.guarded_write(
-                bizhawk_ctx,
-                [write(ZMConstants.gEquipment + 12, bytes((beams, beam_activation, majors, major_activation))),
-                 write8(ZMConstants.gEquipment + 18, new_suit)],
-                guard_list + [
-                    guard(ZMConstants.gEquipment + 12, current_majors),
-                    guard8(ZMConstants.gEquipment + 18, current_suit)])
-            await bizhawk.guarded_write(
-                bizhawk_ctx,
-                [write16(ZMConstants.gMultiworldItemCount, len(self.remote_items_acquired))],
-                guard_list + [guard16(ZMConstants.gMultiworldItemCount, gMultiworldItemCount)])
-        except bizhawk.RequestFailedError:
+        # Energy tanks
+        item = item_data_table["Energy Tank"]
+        current_tanks = (energy - ZMConstants.sStartingHealthAmmo.energy) // ZMConstants.sTankIncreaseAmount[gDifficulty].energy
+        network_tanks, most_recent = self.count_received_item(client_ctx, item)
+        to_receive = network_tanks - current_tanks
+        if to_receive > 0:
+            if to_receive == 1:
+                message = (self.make_received_message(client_ctx, "Energy Tank", most_recent)
+                           if most_recent.player != client_ctx.slot or most_recent.location <= 0
+                           else None)
+            else:
+                message = make_item_message(
+                    "Energy Tanks received.",
+                    f"Energy capacity increased by {ZMConstants.sTankIncreaseAmount[gDifficulty].energy * to_receive}."
+                )
+            await self.send_message_and_item(client_ctx, item.game_data._replace(bits=to_receive), message,
+                                             to_receive == 1 and most_recent.player == client_ctx.slot)
             return
 
-    async def write_received_item(self, client_ctx: BizHawkClientContext, gameplay_state: Tuple[int, int]):
-        bizhawk_ctx = client_ctx.bizhawk_ctx
-
-        try:
-            read_result = iter(await bizhawk.read(bizhawk_ctx, [read8(ZMConstants.gMultiworldItemCount)]))
-        except bizhawk.RequestFailedError:
+        # Missiles
+        item = item_data_table["Missile Tank"]
+        current_tanks = (missiles - ZMConstants.sStartingHealthAmmo.missile) // ZMConstants.sTankIncreaseAmount[gDifficulty].missile
+        network_tanks, most_recent = self.count_received_item(client_ctx, item)
+        to_receive = network_tanks - current_tanks
+        if to_receive > 0:
+            if to_receive == 1:
+                message = (self.make_received_message(client_ctx, "Missile Tank", most_recent)
+                           if most_recent.player != client_ctx.slot or most_recent.location <= 0
+                           else None)
+            else:
+                message = make_item_message(
+                    "Missile Tanks received.",
+                    f"Missile capacity increased by {ZMConstants.sTankIncreaseAmount[gDifficulty].missile * to_receive}."
+                )
+            await self.send_message_and_item(client_ctx, item.game_data._replace(bits=to_receive), message,
+                                             to_receive == 1 and most_recent.player == client_ctx.slot)
             return
 
-        gMainGameMode, gGameModeSub1 = gameplay_state
-        gMultiworldItemCount = next_int(read_result)
-
-        guard_list = [
-            guard16(ZMConstants.gMainGameMode, gMainGameMode),
-            guard16(ZMConstants.gGameModeSub1, gGameModeSub1),
-            guard8(ZMConstants.gIncomingItemId, ZMConstants.ITEM_NONE),
-            guard16(ZMConstants.gMultiworldItemCount, gMultiworldItemCount),
-        ]
-
-        if gMultiworldItemCount > self.queued_item.index:
+        # Supers
+        item = item_data_table["Super Missile Tank"]
+        current_tanks = (supers - ZMConstants.sStartingHealthAmmo.super_missile) // ZMConstants.sTankIncreaseAmount[gDifficulty].super_missile
+        network_tanks, most_recent = self.count_received_item(client_ctx, item)
+        to_receive = network_tanks - current_tanks
+        if to_receive > 0:
+            if to_receive == 1:
+                message = (self.make_received_message(client_ctx, "Super Missile Tank", most_recent)
+                           if most_recent.player != client_ctx.slot or most_recent.location <= 0
+                           else None)
+            else:
+                message = make_item_message(
+                    "Super Missile Tanks received.",
+                    f"Super Missile capacity increased by {ZMConstants.sTankIncreaseAmount[gDifficulty].super_missile * to_receive}."
+                )
+            await self.send_message_and_item(client_ctx, item.game_data._replace(bits=to_receive), message,
+                                             to_receive == 1 and most_recent.player == client_ctx.slot)
             return
 
-        next_item = self.queued_item.network_items[0]
-        item_data = item_data_table[client_ctx.item_names.lookup_in_game(next_item.item)]
-        copies = len(self.queued_item.network_items)
-        if next_item.player == client_ctx.slot:
-            sender = Message([TERMINATOR_CHAR])
-        else:
-            sender = (Message(client_ctx.player_names[next_item.player])
-                        .trim_to_max_width(LINE_WIDTH - 79)
-                        .append(TERMINATOR_CHAR))
-
-        try:
-            await bizhawk.guarded_write(
-                bizhawk_ctx,
-                [write8(ZMConstants.gIncomingItemId, item_data.id),
-                 write8(ZMConstants.gIncomingItemCount, copies),
-                 write(ZMConstants.gMultiworldItemSenderName, sender.to_bytes())],
-                guard_list)
-        except bizhawk.RequestFailedError:
+        # PBs
+        item = item_data_table["Power Bomb Tank"]
+        current_tanks = (powerbombs - ZMConstants.sStartingHealthAmmo.power_bomb) // ZMConstants.sTankIncreaseAmount[gDifficulty].power_bomb
+        network_tanks, most_recent = self.count_received_item(client_ctx, item)
+        to_receive = network_tanks - current_tanks
+        if to_receive > 0:
+            if to_receive == 1:
+                message = (self.make_received_message(client_ctx, "Power Bomb Tank", most_recent)
+                           if most_recent.player != client_ctx.slot or most_recent.location <= 0
+                           else None)
+            else:
+                message = make_item_message(
+                    "Power Bomb Tanks received.",
+                    f"Power Bomb capacity increased by {ZMConstants.sTankIncreaseAmount[gDifficulty].power_bomb * to_receive}."
+                )
+            await self.send_message_and_item(client_ctx, item.game_data._replace(bits=to_receive), message,
+                                             to_receive == 1 and most_recent.player == client_ctx.slot)
             return
+
+        # Majors
+        acquired_majors: dict[int, bool] = {}
+        for item in major_item_data_table.values():
+            game_data = item.game_data
+            if game_data.type == ItemType.BEAM:
+                has_item = beams & game_data.bits
+            elif game_data.type == ItemType.MAJOR:
+                has_item = majors & game_data.bits
+            elif game_data.type == ItemType.CUSTOM:
+                has_item = customs & game_data.bits
+            acquired_majors[item.code] = bool(has_item)
+        for item in self.received_items(client_ctx):
+            acquired = acquired_majors.get(item.item)
+            if acquired is None or acquired:
+                continue
+            name = client_ctx.item_names.lookup_in_game(item.item)
+            game_data = item_data_table[name].game_data
+            message = (self.make_received_message(client_ctx, name, item)
+                       if item.player != client_ctx.slot or item.location <= 0
+                       else None)
+            await self.send_message_and_item(client_ctx, game_data, message, item.player == client_ctx.slot)
+            break
 
     async def game_watcher(self, client_ctx: BizHawkClientContext) -> None:
         if self.dc_pending:
@@ -541,6 +516,10 @@ class MZMClient(BizHawkClient):
             self.death_link.update_pending = False
 
         bizhawk_ctx = client_ctx.bizhawk_ctx
+
+        if not self.ignore_locals_written and client_ctx.slot_data.get("remote_items"):
+            await bizhawk.write(bizhawk_ctx, [write8(get_symbol("gIgnoreLocalItems"), True)])
+            self.ignore_locals_written = True
 
         try:
             read_result = iter(await bizhawk.read(bizhawk_ctx, [
@@ -597,28 +576,7 @@ class MZMClient(BizHawkClient):
             except bizhawk.RequestFailedError:
                 return
 
-        received_items = self.received_items
-        if not client_ctx.slot_data["remote_items"]:
-            remote_items = [item for item in received_items.remote if item.player != client_ctx.slot or item.location <= 0]
-            received_items = self.received_items._replace(remote=remote_items)
-
-        await self.handle_received_items(client_ctx, received_items)
-
-        acquired_items = itertools.chain(received_items.starting, received_items.local, self.remote_items_acquired)
-        await self.update_equipment(client_ctx, gameplay_state, acquired_items)
-
-        if self.queued_item is not None:
-            await self.write_received_item(client_ctx, gameplay_state)
-
-    def create_collection(self, ctx: BizHawkClientContext):
-        def is_local(item: NetworkItem):
-            return item.player == ctx.slot and item.location in self.local_checked_locations
-
-        starting = itertools.takewhile(lambda item: item.location == -2, ctx.items_received)
-        t1, t2 = itertools.tee(itertools.dropwhile(lambda item: item.location == -2, ctx.items_received))
-        remote = itertools.filterfalse(is_local, t1)
-        local = filter(is_local, t2)
-        return ItemCollection(list(starting), list(local), list(remote))
+        await self.handle_received_items(client_ctx, gameplay_state)
 
     def on_package(self, ctx: BizHawkClientContext, cmd: str, args: dict) -> None:
         if cmd == "Connected":
@@ -629,8 +587,6 @@ class MZMClient(BizHawkClient):
             if ctx.seed_name and ctx.seed_name != args["seed_name"]:
                 # CommonClient's on_package displays an error to the user in this case, but connection is not cancelled.
                 self.dc_pending = True
-        if cmd == "ReceivedItems":
-            self.received_items = self.create_collection(ctx)
         if cmd == "Bounced":
             tags = args.get("tags", [])
             if "DeathLink" in tags:

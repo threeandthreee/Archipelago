@@ -14,7 +14,7 @@ from BaseClasses import Item, Location, Region, Entrance, MultiWorld, ItemClassi
 from .Items import item_table
 from .Locations import location_table, SMRPGRegions
 from .Client import SMRPGClient
-from .Options import smrpg_options, build_flag_string
+from .Options import SMRPGOptions, build_flag_string
 from worlds.AutoWorld import World, WebWorld
 from worlds.generic.Rules import add_rule, add_item_rule
 from .Rom import SMRPGDeltaPatch
@@ -25,7 +25,7 @@ class SMRPGSettings(settings.Group):
     class RomFile(settings.SNESRomPath):
         """File name of the SMRPG US rom"""
         description = "Super Mario RPG (USA) ROM File"
-        copy_to = "Super Mario RPG - Legend of the Seven Stars (USA).sfc"
+        copy_to = "Super Mario RPG - Legend of the Seven Stars (USA).sfc "
         md5s = [SMRPGDeltaPatch.hash]
 
     rom_file: RomFile = RomFile(RomFile.copy_to)
@@ -48,9 +48,9 @@ class SMRPGWorld(World):
     """
     Croakacola
     """
-    option_definitions = smrpg_options
+    options_dataclass = SMRPGOptions
+    options: SMRPGOptions
     game = "Super Mario RPG Legend of the Seven Stars"
-    is_experimental = True
     topology_present = False
     settings: typing.ClassVar[SMRPGSettings]
     data_version = 1
@@ -115,15 +115,21 @@ class SMRPGWorld(World):
             if location.region == SMRPGRegions.moleville_mines_back:
                 add_rule(self.multiworld.get_location(key, self.player),
                          lambda state: state.has("Bambino Bomb", self.player))
+                add_item_rule(self.multiworld.get_location(key, self.player),
+                              lambda item: item.name != "Bambino Bomb")
 
             if location.region == SMRPGRegions.nimbus_castle_middle:
                 add_rule(self.multiworld.get_location(key, self.player),
                          lambda state: state.has("Castle Key 1", self.player))
+                add_item_rule(self.multiworld.get_location(key, self.player),
+                              lambda item: item.name != "Castle Key 1")
 
             if location.region == SMRPGRegions.nimbus_castle_back:
                 add_rule(self.multiworld.get_location(key, self.player),
                          lambda state: state.has("Castle Key 1", self.player)
                                        and state.has("Castle Key 2", self.player))
+                add_item_rule(self.multiworld.get_location(key, self.player),
+                              lambda item: item.name not in {"Castle Key 1", "Castle Key 2"})
 
             if location.region in Locations.world_two_regions:
                 add_rule(self.multiworld.get_location(key, self.player),
@@ -148,13 +154,13 @@ class SMRPGWorld(World):
                 add_rule(self.multiworld.get_location(key, self.player),
                          lambda state: state.has("Bambino Bomb", self.player))
             star_pieces = 6
-            if self.multiworld.StarPieceGoal[self.player] == Options.StarPieceGoal.option_seven:
+            if self.options.StarPieceGoal == Options.StarPieceGoal.option_seven:
                 star_pieces = 7
             if location.region == SMRPGRegions.factory:
                 add_rule(self.multiworld.get_location(key, self.player),
                          lambda state: state.has("Star Piece", self.player, star_pieces))
             if location.region == SMRPGRegions.bowsers_keep:
-                if self.multiworld.StarPiecesInBowsersKeep[self.player] == Options.StarPiecesInBowsersKeep.option_false:
+                if self.options.StarPiecesInBowsersKeep == Options.StarPiecesInBowsersKeep.option_false:
                     add_rule(self.multiworld.get_location(key, self.player),
                              lambda state: state.has("Star Piece", self.player, star_pieces))
 
@@ -176,12 +182,12 @@ class SMRPGWorld(World):
                               lambda item: item.classification != ItemClassification.progression)
 
             if key in Locations.culex_locations \
-                    and self.multiworld.IncludeCulex[self.player] == Options.IncludeCulex.option_false:
+                    and self.options.IncludeCulex == Options.IncludeCulex.option_false:
                 add_item_rule(self.multiworld.get_location(key, self.player),
                               lambda item: item.classification != ItemClassification.progression)
 
             if key in Locations.super_jump_locations \
-                    and self.multiworld.SuperJumpsInLogic[self.player] == Options.SuperJumpsInLogic.option_false:
+                    and self.options.SuperJumpsInLogic == Options.SuperJumpsInLogic.option_false:
                 add_item_rule(self.multiworld.get_location(key, self.player),
                               lambda item: item.classification != ItemClassification.progression)
 
@@ -192,7 +198,7 @@ class SMRPGWorld(World):
                 add_rule(self.multiworld.get_location(location, self.player),
                          lambda state: state.has(key, self.player))
         for index, location2 in enumerate(Locations.bowsers_keep_doors):
-            if index < self.multiworld.BowsersKeepDoors[self.player]:
+            if index < self.options.BowsersKeepDoors:
                 add_item_rule(self.multiworld.get_location(location2, self.player),
                               lambda item: item.classification != ItemClassification.progression)
 
@@ -203,10 +209,10 @@ class SMRPGWorld(World):
         bad_boss_locations = [x[0] for x in bad_boss_locations]
         exclude_keep = False
         exclude_factory = True
-        if self.multiworld.StarPiecesInBowsersKeep[self.player] == Options.StarPiecesInBowsersKeep.option_false:
+        if self.options.StarPiecesInBowsersKeep == Options.StarPiecesInBowsersKeep.option_false:
             exclude_keep = True
         star_pieces = 6
-        if self.multiworld.StarPieceGoal[self.player] == Options.StarPieceGoal.option_seven:
+        if self.options.StarPieceGoal == Options.StarPieceGoal.option_seven:
             star_pieces = 7
         if exclude_factory:
             boss_locations = [x for x in boss_locations if x not in Locations.factory_bosses]
@@ -245,19 +251,19 @@ class SMRPGWorld(World):
         self.multiworld.random.choice(unfilled_boxes).place_locked_item(self.create_item("You Missed!"))
 
     def create_items(self):
-        if self.multiworld.ItemPool[self.player] == Options.ItemPool.option_vanilla:
+        if self.options.ItemPool == Options.ItemPool.option_vanilla:
             for item, amount in Items.original_item_list.items():
                 for i in range(amount):
                     self.multiworld.itempool.append(self.create_item(item))
-        if self.multiworld.ItemPool[self.player] == Options.ItemPool.option_shuffled_types:
+        if self.options.ItemPool == Options.ItemPool.option_shuffled_types:
             for item, amount in Items.original_item_list.items():
                 for i in range(amount):
                     self.multiworld.itempool.append(self.create_item(self.randomize_item_in_type(item)))
-        if self.multiworld.ItemPool[self.player] == Options.ItemPool.option_shuffled_inventories:
+        if self.options.ItemPool == Options.ItemPool.option_shuffled_inventories:
             for item, amount in Items.original_item_list.items():
                 for i in range(amount):
                     self.multiworld.itempool.append(self.create_item(self.randomize_item_in_inventory(item)))
-        if self.multiworld.ItemPool[self.player] == Options.ItemPool.option_chaotic:
+        if self.options.ItemPool == Options.ItemPool.option_chaotic:
             for item, amount in Items.original_item_list.items():
                 if item not in Items.singleton_items:
                     for i in range(amount):
@@ -326,7 +332,7 @@ class SMRPGWorld(World):
             output[location.rando_name] = rando_name
         make_seed.Command().handle(
             mode="open",
-            flags=build_flag_string(self.options.as_dict(*smrpg_options.keys())),
+            flags = build_flag_string(self.options.as_dict(*list(SMRPGOptions.__annotations__.keys()))),
             seed=((self.multiworld.seed % 2 ** 32) + self.player),
             rom=SMRPGWorld.settings.rom_file,
             output_file=output_file,

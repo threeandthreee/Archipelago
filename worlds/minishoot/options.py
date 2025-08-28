@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from Options import DefaultOnToggle, Toggle, Choice, PerGameCommonOptions
+from Options import DefaultOnToggle, Range, Toggle, Choice, PerGameCommonOptions
 
 class NpcSanity(Toggle):
     """
@@ -15,6 +15,13 @@ class ScarabSanity(Toggle):
     """
     internal_name = "scarab_sanity"
     display_name = "Scarab Sanity"
+
+class SpiritSanity(Toggle):
+    """
+    Randomizes the spirit in the world.
+    """
+    internal_name = "spirit_sanity"
+    display_name = "Spirit Sanity"
 
 class ShardSanity(Toggle):
     """
@@ -58,6 +65,43 @@ class TrapItemsAppearance(Choice):
     option_major_items_only = 0
     option_junk_items_only = 1
     option_anything = 2
+
+class ShopCostModifier(Range):
+    """
+    Set the super crystal cost modifier for items in shops.
+    The value can be between 10 and 200.
+    The value is a percentage, so 100 means that the cost will be the same as in vanilla.
+    """
+    internal_name = "shop_cost_modifier"
+    display_name = "Shop Cost Modifier"
+    range_start = 10
+    range_end = 200
+    default = 100
+
+class ScarabItemsCost(Range):
+    """
+    Set the scarab cost for items in shops.
+    The value can be between 1 and 3.
+    The value is the number each item will cost in scarabs.
+    Note that extra scarabs will remain in the item pool.
+    """
+    internal_name = "scarab_items_cost"
+    display_name = "Scarab Items Cost"
+    range_start = 1
+    range_end = 3
+    default = 3
+
+class SpiritTowerRequirement(Range):
+    """
+    Set the number of spirits required to enter the Spirit Tower.
+    The value can be between 0 and 8.
+    This setting does not affect the total number of spirit items in the world, only the number required to access the tower.
+    """
+    internal_name = "spirit_tower_requirement"
+    display_name = "Spirit Tower Requirement"
+    range_start = 0
+    range_end = 8
+    default = 8
 
 class ShowArchipelagoItemCategory(DefaultOnToggle):
     """
@@ -144,23 +188,29 @@ class CompletionGoals(Choice):
     Set the goals required to finish the game.
     * Dungeon 5 : Beat the boss of Dungeon 5 and get to the normal ending.
     * Snow : Beat the Unchosen inside the tree and get to the true ending.
-    * Both : Beat both the normal and true ending.
+    * Dungeon 5 and Snow : Beat both the normal and true ending.
+    * Spirit Tower : Collect all spirits and get to the Spirit Tower ending. The number of spirits required to enter the tower can be set with the "Spirit Tower Requirement" option.
     """
     internal_name = "completion_goals"
     display_name = "Completion Goals"
     option_dungeon_5 = 0
     option_snow = 1
-    option_both = 2
+    option_dungeon_5_and_snow = 2
+    option_spirit_tower = 3
 
 @dataclass
 class MinishootOptions(PerGameCommonOptions):
     npc_sanity: NpcSanity
     scarab_sanity: ScarabSanity
+    spirit_sanity: SpiritSanity
     shard_sanity: ShardSanity
     key_sanity: KeySanity
     boss_key_sanity: BossKeySanity
     add_trap_items: AddTrapItems
     trap_items_appearance: TrapItemsAppearance
+    shop_cost_modifier: ShopCostModifier
+    scarab_items_cost: ScarabItemsCost
+    spirit_tower_requirement: SpiritTowerRequirement
     show_archipelago_item_category: ShowArchipelagoItemCategory
     blocked_forest: BlockedForest
     ignore_cannon_level_requirements: IgnoreCannonLevelRequirements

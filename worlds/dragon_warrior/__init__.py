@@ -176,13 +176,13 @@ class DragonWarriorWorld(World):
             flag_list.append(ord(flag))
 
         # If false, 0 * flag value, otherwise 1 * flag value
-        flag_list[1] += int(self.options.random_spell_learning) * 1   # B 
-        flag_list[1] += int(self.options.random_growth) * 16          # Q
-        flag_list[2] += int(self.options.random_weapon_prices) * 2    # C
-        flag_list[2] += int(self.options.random_weapon_shops) * 8     # I
-        flag_list[3] += int(self.options.heal_hurt_before_more) * 4   # E
+        flag_list[1] += int(self.options.random_spell_learning) * 1     # B 
+        flag_list[1] += int(self.options.random_growth) * 16            # Q
+        flag_list[2] += int(self.options.random_weapon_prices) * 2      # C
+        flag_list[8] += int(self.options.random_monster_abilities) * 8  # I
+        flag_list[3] += int(self.options.heal_hurt_before_more) * 4     # E
         flag_list[3] += int(self.options.random_xp_requirements) * 16
-        flag_list[8] += int(self.options.random_monster_abilities) * 8
+        flag_list[2] += int(self.options.random_weapon_shops) * 8 * int(not self.options.shopsanity)  # Disable random shops when shopsanity is on
         flag_list[8] += int(self.options.random_monster_zones) * 2
         flag_list[9] += int(self.options.random_monster_stats) * 16
         flag_list[9] += int(self.options.random_monster_xp) * 4

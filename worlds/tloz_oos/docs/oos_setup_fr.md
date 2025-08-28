@@ -3,7 +3,7 @@
 ## Logiciels requis
 
 - [Oracle of Seasons .apworld](https://github.com/Dinopony/ArchipelagoOoS/releases/latest)
-- Bizhawk 2.9.1 (x64)](https://tasvideos.org/BizHawk/ReleaseHistory)
+- [Bizhawk 2.10 (x64)](https://tasvideos.org/BizHawk/ReleaseHistory)
 - Votre ROM Oracle of Seasons US obtenue légalement
 
 ## Instructions d'installation

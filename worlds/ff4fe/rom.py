@@ -53,6 +53,9 @@ sell_value_byte = 0x00C951
 json_doc_length_location = 0x1FF000
 json_doc_location = 0x1FF004
 
+generation_version_byte = 0x001FFC10
+patch_version_byte = 0x001FFC11
+
 special_flag_key_items = {
     "Hook": (0xF51286, 0b01000000),
     "Darkness Crystal": (0xF5128C, 0b00000001),
@@ -78,6 +81,7 @@ class FF4FEPatchExtension(APPatchExtension):
         from . import FF4FEWorld
         logging.info(f"FF4FE APWorld version v{FF4FEWorld.version} used for patching.")
         placements = json.loads(caller.get_file(placement_file))
+        logging.info(f"Patching using data generated on version v{placements["version"]}.")
         seed = placements["seed"]
         output_file = placements["output_file"]
         rom_name = placements["rom_name"]
@@ -129,6 +133,8 @@ class FF4FEPatchExtension(APPatchExtension):
             for i, item_name in enumerate(kept_items):
                 item_id = [item for item in all_items if item.name == item_name].pop().fe_id
                 rom_data[kept_items_array_start + i] = item_id
+            rom_data[generation_version_byte] = placements["version"]
+            rom_data[patch_version_byte] = FF4FEWorld.version
         return rom_data
 
 

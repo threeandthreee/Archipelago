@@ -7,8 +7,10 @@ def build_location_name_to_id_dict() -> Dict[str, int]:
     for loc_name, location in LOCATIONS_DATA.items():
         if "id" in location:
             index = location["id"]
-        else:
+        elif "flag_byte" in location:
             index = location["flag_byte"] * 0x100 + (location["bit_mask"] if "bit_mask" in location else 0x20)
+        else:
+            continue
         location_name_to_id[loc_name] = index
     return location_name_to_id
 

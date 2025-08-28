@@ -97,45 +97,39 @@
 # for the new dungeon-specific compass chime sound channels. The first byte describes
 # the audio channel and priority, and the word is a pointer to the actuel sound
 # data (inside the bank that was explicited in "soundPointers.s").
-# Bank 39 being extremely packed, we are forced to overwrite unused sound & music
-# data to describe those new sounds.
 
-# Injected in place of "sndd6"-"snddd", unused sound descriptors
-39/515d/sndCompassD1Ptr: |
+39//sndCompassD1Ptr: |
     db $b2
     dw sndCompassD1
     db $ff
-39/5161/sndCompassD2Ptr: |
+39//sndCompassD2Ptr: |
     db $b2
     dw sndCompassD2
     db $ff
-39/5165/sndCompassD3Ptr: |
+39//sndCompassD3Ptr: |
     db $b2
     dw sndCompassD3
     db $ff
-# Injected in place of "mus41", unused music descriptor
-39/545c/sndCompassD4Ptr: |
+39//sndCompassD4Ptr: |
     db $b2
     dw sndCompassD4
     db $ff
-39/5460/sndCompassD5Ptr: |
+39//sndCompassD5Ptr: |
     db $b2
     dw sndCompassD5
     db $ff
-39/5464/sndCompassD6Ptr: |
+39//sndCompassD6Ptr: |
     db $b2
     dw sndCompassD6
     db $ff
-# Injected in place of unused data at the end of "soundPointers.s"
-39/5a79/sndCompassD7Ptr: |
+39//sndCompassD7Ptr: |
     db $b2
     dw sndCompassD7
     db $ff
-39/5a7d/sndCompassD8Ptr: |
+39//sndCompassD8Ptr: |
     db $b2
     dw sndCompassD8
     db $ff
-# There a 5 more unused bytes there, letting some space for another sound injection
 
 # The following blocks replace the pointers from "soundPointers.s" to make them
 # point on our new sounds data instead of dummy values.
@@ -212,15 +206,5 @@
 # Up to 49e5-4A1B (included)
 
 # Address the issue with @skipWeirdCall described in the disasm
-39/4bfe/: | 
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
+39/4bfe/: jr skipWeirdCall
+39/4c09/skipWeirdCall: ;

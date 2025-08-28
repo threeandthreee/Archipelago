@@ -69,7 +69,7 @@ class FF4FEWorld(World):
     item_name_groups = items.item_name_groups
 
     location_name_groups = locations.area_groups
-    version = 5
+    version = 6
 
 
     def __init__(self, multiworld: MultiWorld, player: int):
@@ -108,9 +108,10 @@ class FF4FEWorld(World):
         logging.info(f"FF4FE APWorld version v{cls.version} used for generation.")
 
     def generate_early(self) -> None:
-        self.options.priority_locations.value = (self.options.priority_locations.value |
-                                                 (set(locations.major_location_names) -
-                                                  self.options.exclude_locations.value))
+        if self.options.EnableDefaultPriorityLocations:
+            self.options.priority_locations.value = (self.options.priority_locations.value |
+                                                     (set(locations.major_location_names) -
+                                                      self.options.exclude_locations.value))
         if self.options.ForgeTheCrystal:
             self.options.priority_locations.value -= {"Kokkol's House 2F -- Kokkol -- forge item"}
 
@@ -417,12 +418,11 @@ class FF4FEWorld(World):
             self.multiworld.completion_condition[self.player] = lambda state: state.has("All Objectives Cleared", self.player)
 
     def pre_fill(self) -> None:
-        major_locations = set(locations.major_location_names) & self.options.priority_locations.value
-        location_set = set(self.multiworld.get_unfilled_locations()) - {self.get_location(location) for location in major_locations}
-        location_set = sorted(location_set)
-        self.random.shuffle(location_set)
+        location_list = set(self.multiworld.get_unfilled_locations())
+        location_list = sorted(location_list)
+        self.random.shuffle(location_list)
         item_pool = self.dark_matters
-        remaining_fill(self.multiworld, location_set, item_pool, check_location_can_fill=True)
+        remaining_fill(self.multiworld, location_list, item_pool, check_location_can_fill=True)
 
     def get_pre_fill_items(self) -> list["Item"]:
         return self.dark_matters
@@ -444,6 +444,7 @@ class FF4FEWorld(World):
         placement_dict["junk_tier"] = self.options.JunkTier.value
         placement_dict["junked_items"] = list(self.options.JunkedItems.value)
         placement_dict["kept_items"] = list(self.options.KeptItems.value)
+        placement_dict["version"] = self.version
 
         # Our actual patch is just a set of instructions and data for FE to use.
         patch = FF4FEProcedurePatch(player=self.player, player_name=self.player_name)

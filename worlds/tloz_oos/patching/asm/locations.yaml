@@ -133,21 +133,12 @@
 15/6acf/goldenBeastsRequirement: db option.goldenBeastsRequirement
 # Change the "jr z" into a "jr nc" to allow having more beasts killed than needed
 15/6ad2/: db $30
-# Change not yet completed text value
-1e/7247/goldenBeastsText: db $30+option.goldenBeastsRequirement,$20,$05,$8e,$20
-# Change completion text value
-1e/7295/goldenBeastsRewardText: db $30+option.goldenBeastsRequirement,$20,$05,$8e,$20
 
 
 ##### TREEHOUSE OLD MAN ############################################
 
 # Change the essence requirement for treehouse old man
 0a/4f8b/: db option.treehouseOldManRequirement
-# Change the number of essences mentioned in text
-1f/737b/treehouseOldManText: |
-    db $68,$61,$73,$20
-    db $30 + option.treehouseOldManRequirement
-    db $20,$02,$35,$2e,$00
 
 
 ##### GREAT FURNACE ###############################################
@@ -393,35 +384,6 @@
 15/595d/: |
     ld bc,locations.subrosianSignLovingGuy
     jp spawnTreasureOnLink
-
-# Edit text to show the requirement
-####################
-# You have broken  #
-# XXX signs!\n     #
-# You'd better not #
-# break more than  #
-# XXX, or else...  #
-####################
-20/5160/: |
-    db 03,e8                 ; "You "
-    db 02,f5                 ; "have "
-    db 03,82,01              ; "broken\n"
-    db 02,7e                 ; "XXX signs!\n"
-
-    db 05,9d,27,64,20        ; "You'd "
-    db 03,5b                 ; "better"
-    db 20,05,0c              ; " not\n"
-
-    db 03,f0                 ; "break"
-    db 03,2b                 ; " more"
-    db 20,74,68,61,6e,01     ; " than\n"
-    
-    db 09,01                 ; red color
-    /include text.signGuyRequirementDigits
-    db 09,00                 ; default color
-    db 2c,20,6f,72,20        ; ", or"
-    db 65,6c,73,65,2e,2e,2e  ; "else..."
-    db 00
 
 
 ##### MAPLE TRADE ######################################################
