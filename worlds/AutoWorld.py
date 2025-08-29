@@ -76,8 +76,10 @@ class AutoWorldRegister(type):
         # TODO - remove this once all worlds use options dataclasses
         if "options_dataclass" not in dct and "option_definitions" in dct:
             # TODO - switch to deprecate after a version
-            deprecate(f"{name} Assigned options through option_definitions which is now deprecated. "
-                      "Please use options_dataclass instead.")
+            # Ashipelago customization (Allows for older worlds to continue generating)
+            if __debug__:
+                logging.warning(f"{name} Assigned options through option_definitions which is now deprecated. "
+                                "Please use options_dataclass instead.")
             dct["options_dataclass"] = make_dataclass(f"{name}Options", dct["option_definitions"].items(),
                                                       bases=(PerGameCommonOptions,))
 
