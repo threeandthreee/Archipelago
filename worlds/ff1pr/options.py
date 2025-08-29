@@ -65,12 +65,36 @@ class EarlyProgression(Choice):
     option_marsh_cave_path = 1
     default = 0
 
+class NorthernDocks(Toggle):
+    """
+    Add docks to the Onrac Continent and the Mirage Desert Continent to make them accessible by Ship.
+    """
+    internal_name = "northern_docks"
+    display_name = "Northern Docks"
+    default = False
+
 class NerfChaos(DefaultOnToggle):
     """
     Halve Chaos' HP and reduce his Intelligence and Attack Power by 25%.
     """
     internal_name = "nerf_chaos"
     display_name = "Nerf Chaos"
+
+class BossMinions(Choice):
+    """
+    Add Minions to Bosses and Extend some Minibosses party.
+    None: Original Parties are maintained.
+    Weak Minions: Add relatively weak minions to Bosses and extend Minibosses by 1-2 members.
+    Strong Minions: Add relatively strong minions to Bosses and extend Minibosses by 2-3 members.
+    Weak-Strong Minions: Minions can be weak or strong.
+    """
+    internal_name = "boss_minions"
+    display_name = "Boss Minions"
+    option_none = 0
+    option_weak_minions = 1
+    option_strong_minions = 2
+    option_weak_strong_minions = 3
+    default = 0
 
 class MonsterParties(Choice):
     """
@@ -175,12 +199,14 @@ class FF1pixelOptions(PerGameCommonOptions):
     shuffle_spells: ShuffleSpells
     job_promotion: JobPromotion
     nerf_chaos: NerfChaos
+    boss_minions: BossMinions
     monster_parties: MonsterParties
     monsters_cap: MonstersCap
     dungeon_encounter_rate: DungeonEncounterRate
     overworld_encounter_rate: OverworldEncounterRate
     shuffle_trials_maze: ShuffleTrialsMaze
     early_progression: EarlyProgression
+    northern_docks: NorthernDocks
     xp_boost: ExperienceBoost
     gil_boost: GilBoost
     boost_menu: BoostMenu
@@ -194,10 +220,12 @@ grouped_options = [
     ]),
     OptionGroup("Map Options", [
         ShuffleTrialsMaze,
-        EarlyProgression
+        EarlyProgression,
+        NorthernDocks
     ]),
     OptionGroup("Monsters Options", [
         NerfChaos,
+        BossMinions,
         MonsterParties,
         MonstersCap
     ]),
@@ -217,7 +245,9 @@ presets = {
         "job_promotion": 0,
         "shuffle_trials_maze": True,
         "early_progression": 0,
+        "northern_docks": False,
         "nerf_chaos": True,
+        "boss_minions": 0,
         "monster_parties": 1,
         "monsters_cap": 0,
         "dungeon_encounter_rate": 2,

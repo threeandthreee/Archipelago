@@ -126,6 +126,12 @@ def set_region_rules(world: "FF1pixelWorld") -> None:
     world.get_entrance("Mirage Tower -> Flying Fortress").access_rule = \
         lambda state: state.has(warp_cube, player)
 
+    if world.options.northern_docks.value:
+        world.get_entrance("Overworld -> Onrac Region").access_rule = \
+            lambda state: state.has(airship, player) or state.has_all({ship, canal}, player)
+        world.get_entrance("Overworld -> Mirage Desert").access_rule = \
+            lambda state: state.has(airship, player) or state.has_all({ship, canal}, player)
+
 def set_location_rules(world: "FF1pixelWorld") -> None:
     player = world.player
 
