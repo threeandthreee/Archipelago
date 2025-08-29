@@ -168,7 +168,7 @@ class GameOptions(OptionDict):
         "default_gender": "vanilla",
     }
 
-   # def __getattr__(self, name: str) -> Any:
+    # def __getattr__(self, name: str) -> Any:
     #    return self.get(name, GameOptions.default[name])
 
 @dataclass
