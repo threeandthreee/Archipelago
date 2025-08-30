@@ -657,6 +657,7 @@ def compute_cranky_hints(world: "DKC2World", patch: DKC2ProcedurePatch):
         # Let's ignore tags that we don't care about
         classification = location.item.classification
         classification &= ItemClassification.skip_balancing^0xFFFF
+        classification &= ItemClassification.deprioritized^0xFFFF
 
         data = CrankyHint(
             location_type,

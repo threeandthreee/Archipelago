@@ -5,16 +5,17 @@ from Options import Accessibility
 from .Constants import *
 
 
+
 # =========== Item States =============
 
-def ph_has_sword(state: CollectionState, player: int):
+def ph_has_sword(state: CollectionState, player: int, *args):
     return any([
         state.has("Sword (Progressive)", player),
         state.has("Oshus' Sword", player)
     ])
 
 
-def ph_has_phantom_sword(state: CollectionState, player: int):
+def ph_has_phantom_sword(state: CollectionState, player: int, *args):
     return any([
         state.has("Sword (Progressive)", player, 2),
         all([
@@ -24,24 +25,24 @@ def ph_has_phantom_sword(state: CollectionState, player: int):
     ])
 
 
-def ph_has_shield(state: CollectionState, player: int):
+def ph_has_shield(state: CollectionState, player: int, *args):
     # Shield can be bought from shop
     return True
 
 
-def ph_has_shovel(state: CollectionState, player: int):
+def ph_has_shovel(state: CollectionState, player: int, *args):
     return state.has("Shovel", player)
 
 
-def ph_has_bow(state: CollectionState, player: int):
+def ph_has_bow(state: CollectionState, player: int, *args):
     return state.has("Bow (Progressive)", player)
 
 
-def ph_has_bombs(state: CollectionState, player: int):
+def ph_has_bombs(state: CollectionState, player: int, *args):
     return state.has("Bombs (Progressive)", player)
 
 
-def ph_has_chus(state: CollectionState, player: int):
+def ph_has_chus(state: CollectionState, player: int, *args):
     return state.has("Bombchus (Progressive)", player)
 
 
@@ -249,7 +250,7 @@ def ph_has_treasure_map(state, player, number):
 
 # =========== Combined item states ================
 
-def ph_has_explosives(state: CollectionState, player: int):
+def ph_has_explosives(state: CollectionState, player: int, *args):
     return state.has_any(["Bombs (Progressive)", "Bombchus (Progressive)"], player)
 
 
@@ -385,6 +386,11 @@ def ph_has_beam_sword(state: CollectionState, player: int):
         ph_has_spirit(state, player, "Courage", 2)
     ])
 
+def ph_can_make_phantom_sword(state, player):
+    return all([
+        ph_has_phantom_blade(state, player),
+        ph_has_phantom_hourglass(state, player)
+    ])
 
 def ph_can_hit_spin_switches(state: CollectionState, player: int):
     return any([
@@ -543,6 +549,8 @@ def ph_has_beedle_points(state: CollectionState, player, points):
         return ph_has_beedle_points_buyable(state, player, points)
     return False
 
+def ph_can_get_beedle_bronze(state, player):
+    return any([ph_has_rupees(state, player, 80), ph_has_beedle_points(state, player, 1)])
 
 def ph_can_buy_gem(state: CollectionState, player: int):
     return all([ph_has_bow(state, player), ph_island_shop(state, player, 500)])
@@ -559,6 +567,8 @@ def ph_can_buy_chu_bag(state: CollectionState, player: int):
 def ph_can_buy_heart(state: CollectionState, player: int):
     return all([ph_has_chus(state, player), ph_has_bow(state, player), ph_island_shop(state, player, 4500)])
 
+def ph_can_buy_bomb_bag(state: CollectionState, player: int):
+    return all([ph_beedle_shop(state, player, 500), ph_has_bombs(state, player)])
 
 # ============ Option states =============
 
@@ -825,7 +835,6 @@ def ph_has_force_gems(state, player, floor=3, count=3):
 def ph_has_shape_crystal(state: CollectionState, player: int, dung_name: str, shape: str):
     return state.has(f"{shape} Crystal ({dung_name})", player)
 
-
 def ph_ut_small_key_vanilla_location(state, player):
     return all([
         ph_is_ut(state, player),
@@ -913,6 +922,9 @@ def ph_can_sword_scroll_clip(state, player):
         ph_option_glitched_logic(state, player)
     ])
 
+def ph_ember_grapple_chest(state, player):
+    return any([ph_has_grapple(state, player), ph_can_sword_glitch(state, player)])
+
 
 # ====== Specific locations =============
 
@@ -982,6 +994,12 @@ def ph_boat_access(state, player):
         ph_has_sea_chart(state, player, "SW")
     ])
 
+def ph_can_enter_mp(state, player):
+    return any([
+        ph_can_cut_small_trees(state, player),
+        ph_has_small_keys(state, player, "Mountain Passage", 3),
+        ph_option_glitched_logic(state, player)  # Savewarp in back entrance / reverse cuccoo jump
+         ])
 
 # Handles keylocking due to lack of locations
 def ph_can_reach_MP2(state: CollectionState, player: int):
@@ -1003,6 +1021,8 @@ def ph_can_reach_MP2(state: CollectionState, player: int):
         ])
     ])
 
+def ph_nyave_fight(state, player):
+    return any([ph_has_cave_damage(state, player), ph_clever_pots(state, player)])
 
 def ph_mercay_passage_rat(state, player):
     return any([
@@ -1033,8 +1053,31 @@ def ph_can_enter_ocean_sw_west(state, player):
         ph_has_frog_phi(state, player),  # Includes return data, and NW way back
     ])
 
+def ph_enter_se_ocean(state, player):
+    return all([
+            ph_has_sea_chart(state, player, "SE"),
+            ph_has_sea_chart(state, player, "SW")])
+
+def ph_enter_ruins(state, player):
+    return all([ph_has_regal_necklace(state, player), ph_has_cave_damage(state, player)])
+
+def ph_salvage_behind_bannan(state, player):
+    return all([
+            ph_has_salvage(state, player),
+            ph_has_sea_chart(state, player, "NW")])
+
+def ph_oshus_gem(state, player):
+    return any([
+        state.has("_beat_tow", player),
+        ph_can_make_phantom_sword(state, player)
+    ])
 
 # Tof
+
+def ph_tof_maze(state, player):
+    return any([
+            ph_has_small_keys(state, player, "Temple of Fire", 1),
+            ph_tof_1f_key_ut(state, player)])
 
 def ph_tof_1f_key_ut(state, player):
     return all([
@@ -1055,8 +1098,31 @@ def ph_tof_3f(state, player):
         ])
     ])
 
+def ph_tof_3f_bk(state, player):
+    return any([ph_has_small_keys(state, player, "Temple of Fire", 3),
+         ph_ut_small_key_own_dungeon(state, player)])
+
+def ph_tof_enter_blaaz(state, player):
+    return all([
+        ph_has_sword(state, player),
+        ph_has_boss_key_simple(state, player, "Temple of Fire")])
 
 # Wind
+
+def ph_tow_b1(state, player):
+    return any([
+            ph_can_hammer_clip(state, player),
+            ph_can_kill_bat(state, player)])
+
+def ph_tow_key_door(state, player):
+    return any([
+        ph_has_small_keys(state, player, "Temple of Wind"),
+        ph_wind_temple_key_ut(state, player)])
+
+def ph_tow_enter_cyclok(state, player):
+    return all([
+            ph_has_bombs(state, player),
+            ph_has_boss_key_simple(state, player, "Temple of Wind")])
 
 def ph_wind_temple_key_ut(state, player):
     return all([
@@ -1081,9 +1147,31 @@ def ph_can_enter_toc(state, player):
         ])
     ])
 
+def ph_toc_grapple_chest(state, player):
+    return any([ph_has_grapple(state, player), ph_can_boomerang_return(state, player)])  # Hardhatt dboost
+
+# Can reach toc 1f west needing explosives and range
+def ph_toc_switch_1(state, player):
+    return all([
+        ph_has_explosives(state, player),
+        ph_has_mid_range(state, player)
+    ])
+
+def ph_toc_beamos_ut(state, player):
+    return all([ph_is_ut(state, player), ph_has_bow(state, player)])
+
+def ph_toc_crystal_south(state, player):
+    return all([
+        ph_has_bow(state, player),
+        ph_has_shape_crystal(state, player, "Temple of Courage", "Square")])
+
+def ph_toc_spike_corridor(state, player):
+    return all([ph_has_explosives(state, player), ph_has_bow(state, player)])
 
 def ph_toc_key_door_1(state, player):
-    return any([
+    return all([
+        ph_has_damage(state, player),
+        any([
         ph_toc_key_doors(state, player, 3, 1),
         # UT Keys
         all([
@@ -1095,6 +1183,7 @@ def ph_toc_key_door_1(state, player):
             ])
         ]),
     ])
+        ])
 
 
 def ph_toc_key_door_2(state, player):
@@ -1185,6 +1274,9 @@ def ph_has_ghost_ship_access(state, player):
         ph_option_fog_open(state, player)
     ])
 
+def ph_has_gs_triangle_crystal(state, player):
+    return any([ph_has_shape_crystal(state, player, "Ghost Ship", "Triangle"),
+             ph_is_ut(state, player)])
 
 def ph_ghost_ship_barrel(state, player):
     return any([
@@ -1201,6 +1293,15 @@ def ph_beat_ghost_ship(state: CollectionState, player):
 
 # Goron
 
+def ph_goron_entrance(state, player):
+    return all([
+        ph_has_shovel(state, player),
+        any([
+            ph_has_explosives(state, player),
+            ph_has_hammer(state, player)
+        ])
+    ])
+
 def ph_goron_chus(state, player):
     return all([
         ph_has_shovel(state, player),
@@ -1211,8 +1312,52 @@ def ph_goron_chus(state, player):
         ])
     ])
 
+def ph_gt_b1(state, player):
+    return all([
+        ph_has_explosives(state, player),
+        ph_can_kill_eye_brute(state, player),
+        ph_has_sword(state, player)])
+
+def ph_gt_b2_back(state, player):
+    return any([
+            ph_has_explosives(state, player),
+            ph_has_boomerang(state, player)])
+
+def ph_gt_enter_dongo(state, player):
+    return all([
+            ph_has_chus(state, player),
+            ph_has_boss_key_simple(state, player, "Goron Temple")])
+
 
 # Toi
+
+def ph_toi_2f(state, player):
+    return any([
+            ph_has_explosives(state, player),
+            ph_has_boomerang(state, player)])
+
+def ph_toi_3f(state, player):
+    return any([
+            ph_has_range(state, player),
+            ph_has_bombs(state, player)])
+
+def ph_toi_3f_switch(state, player):
+    return any([ph_has_bombs(state, player),
+              all([
+                  ph_option_hard_logic(state, player),
+                  ph_has_chus(state, player)
+              ])])
+
+def ph_toi_shortcut(state, player):
+    return all([
+            ph_can_hammer_clip(state, player),
+            ph_has_grapple(state, player)])
+
+def ph_toi_b1(state, player):
+    return any([
+            ph_has_explosives(state, player),
+            ph_has_hammer(state, player)
+        ])
 
 def ph_toi_3f_boomerang(state, player):
     return all([
@@ -1242,6 +1387,9 @@ def ph_toi_b2(state, player):
         ])
     ])
 
+def ph_toi_miniboss(state, player):
+    return all([ph_toi_key_door_1_ut(state, player),
+                ph_has_damage(state, player)])
 
 def ph_toi_key_door_1_ut(state, player):
     return any([
@@ -1306,6 +1454,24 @@ def ph_toi_key_door_3(state, player):
 
 # Mutoh's
 
+def ph_mutoh_entrance(state, player):
+    return any([
+        ph_can_hammer_clip(state, player),
+        ph_has_explosives(state, player),
+        all([
+            ph_has_hammer(state, player),
+            ph_option_hard_logic(state, player)
+        ]),
+        all([
+            ph_has_boomerang(state, player),
+            any([
+                ph_has_bow(state, player),
+                ph_has_sword(state, player)
+            ])
+        ])
+
+    ])
+
 def ph_mutoh_water(state, player):
     return any([
         all([
@@ -1340,6 +1506,11 @@ def ph_mutoh_key_doors(state, player, glitched: int, not_glitched: int):
         ])
     ])
 
+
+def ph_mutoh_bk_chest(state, player):
+    return any([
+            ph_has_small_keys(state, player, "Mutoh's Temple", 2),
+            ph_ut_small_key_own_dungeon(state, player)])
 
 # Goal Stuff
 
@@ -2051,7 +2222,7 @@ def ph_totok_b10_hammer(state, player):
         if ph_has_chus(state, player):
             return ph_totok_has_floor_time(state, player, 10, 20)
         return ph_totok_has_floor_time(state, player, 10, 35)
-
+    return False
 
 def ph_totok_b11(state, player):
     return all([
@@ -2139,3 +2310,308 @@ def ph_totok_b13(state, player):
 
 def ph_totok_b13_chest(state, player):
     return ph_totok_has_floor_time(state, player, 13, 5)
+
+# State rules
+
+def ph_has(state, player, item):
+    return state.has(item, player)
+
+RULE_DICT = {
+    "sword": ph_has_sword,
+    "phantom_sword": ph_has_sword,
+    "shield": ph_has_shield,
+    "shovel": ph_has_shovel,
+    "spade": ph_has_shovel,
+    "bow": ph_has_bow,
+    "bombs": ph_has_bombs,
+    "chus": ph_has_chus,
+    "bombchus": ph_has_chus,
+    "grapple": ph_has_grapple,
+    "grappling_hook": ph_has_grapple,
+    "hammer": ph_has_hammer,
+    "boomerang": ph_has_boomerang,
+    "spirit": ph_has_spirit,
+    "spirit_gems": ph_has_spirit_gems,
+    "gems": ph_has_spirit_gems,
+    "hourglass": ph_has_phantom_hourglass,
+    "phantom_hourglass": ph_has_phantom_hourglass,
+    "ph": ph_has_phantom_hourglass,
+    "sun_key": ph_has_sun_key,
+    "ghost_key": ph_has_ghost_key,
+    "kings_key": ph_has_kings_key,
+    "king's_key": ph_has_kings_key,
+    "regal_necklace": ph_has_regal_necklace,
+    "phantom_blade": ph_has_phantom_blade,
+    "heroes_new_clothes": ph_has_heros_new_clothes,
+    "guard_notebook": ph_has_guard_notebook,
+    "kaleidoscope": ph_has_kaleidoscope,
+    "wood_heart": ph_has_wood_heart,
+    "triforce_crest": ph_has_triforce_crest,
+    # Sea Items
+    "sea_chart": ph_has_sea_chart,
+    "courage_crest": ph_has_courage_crest,
+    "cannon": ph_has_cannon,
+    "salvage": ph_has_salvage,
+    "salvage_arm": ph_has_salvage,
+    "fishing_rod": ph_has_fishing_rod,
+    "rod": ph_has_fishing_rod,
+    "fishing": ph_has_fishing_rod,
+    "lure": ph_has_big_catch_lure,
+    "big_catch_lure": ph_has_big_catch_lure,
+    "swordfish_shadows": ph_has_swordfish_shadows,
+    "fish_shadows": ph_has_swordfish_shadows,
+    "can_catch_rsf": ph_can_catch_rsf,
+    "ut_can_stowfish": ph_ut_can_stowfish,
+    "loovar": ph_has_loovar,
+    "rsf": ph_has_rsf,
+    "rusty_swrodfish": ph_has_rsf,
+    "neptoona": ph_has_neptoona,
+    "legendary_neptoona": ph_has_neptoona,
+    "stowfish": ph_has_stowfish,
+    "jolene_letter": ph_has_jolene_letter,
+    # Frogs
+    "cyclone_slate": ph_has_cyclone_slate,
+    "frog": ph_has_frog,
+    "frog_x": ph_has_frog_x,
+    "frog_phi": ph_has_frog_phi,
+    "frog_n": ph_has_frog_n,
+    "frog_omega": ph_has_frog_omega,
+    "frog_w": ph_has_frog_w,
+    "frog_square": ph_has_frog_square,
+    "treasure_map": ph_has_treasure_map,
+    # Combind States
+    "explosives": ph_has_explosives,
+    "boom": ph_has_explosives,
+    "damage": ph_has_damage,
+    "cave_damage": ph_has_cave_damage,
+    "can_kill_bat": ph_can_kill_bat,
+    "can_kill_blue_chu": ph_can_kill_blue_chu,
+    "can_kill_phantom_eye": ph_can_kill_phantom_eyes,
+    "can_kill_eye_brute": ph_can_kill_eye_brute,
+    "can_kill_bubble": ph_can_kill_bubble,
+    "can_steal_from_phantom": ph_totok_phantom_steal_object,
+    "range": ph_has_range,
+    "long_range": ph_has_range,
+    "short_range": ph_has_short_range,
+    "mid_range": ph_has_mid_range,
+    "mid_range_pots": ph_has_mid_range_pots,
+    "fire_sword": ph_has_fire_sword,
+    "super_shield": ph_has_super_shield,
+    "beam_sword": ph_has_beam_sword,
+    "sword_beams": ph_has_beam_sword,
+    "can_make_phantom_sword": ph_can_make_phantom_sword,
+    "can_hit_spin_switches": ph_can_hit_spin_switches,
+    "can_hit_spiral_wall_switches": ph_spiral_wall_switches,
+    "quick_switches": ph_quick_switches,
+    "can_cut_trees": ph_can_cut_small_trees,
+    "can_cut_bamboo": ph_can_cut_small_trees,
+    # Rupee Logic
+    "rupees": ph_has_rupees,
+    "can_farm_rupees": ph_can_farm_rupees,
+    "island_shop": ph_island_shop,
+    "freebie_card": ph_has_freebie_card,
+    "beedle_shop": ph_beedle_shop,
+    "has_beedle_points": ph_has_beedle_points,
+    "can_get_beedle_bronze": ph_can_get_beedle_bronze,
+    "can_buy_gem": ph_can_buy_gem,
+    "can_buy_quiver": ph_can_buy_quiver,
+    "can_buy_chu_bag": ph_can_buy_chu_bag,
+    "can_buy_heart": ph_can_buy_heart,
+    "can_buy_bomb_bag": ph_can_buy_bomb_bag,
+    # Options
+    "glitched_logic": ph_option_glitched_logic,
+    "glitched": ph_option_glitched_logic,
+    "normal_logic": ph_option_normal_logic,
+    "hard_logic": ph_option_hard_logic,
+    "not_glitched_logic": ph_option_not_glitched_logic,
+    "keysanity": ph_option_keysanity,
+    "vanilla_keys": ph_option_keys_vanilla,
+    "keys_in_own_dungeon": ph_option_keys_in_own_dungeon,
+    "phantoms_hard": ph_option_phantoms_hard,
+    "phantoms_med": ph_option_phantoms_med,
+    "phantoms_easy": ph_option_phantoms_easy,
+    "phantoms_sword_only": ph_option_phantoms_sword_only,
+    "clever_pots": ph_clever_pots,
+    "can_hit_switches": ph_can_hit_switches,
+    "clever_bombs": ph_clever_bombs,
+    "randomize_minigames": ph_option_randomize_minigames,
+    "randomize_frogs": ph_option_randomize_frogs,
+    "start_with_frogs": ph_option_start_with_frogs,
+    "randomize_triforce_crest": ph_option_triforce_crest,
+    "has_required_metals": ph_has_required_metals,
+    "has_zauz_required_metals": ph_zauz_required_metals,
+    "randomize_masked_beedle": ph_option_randomize_masked_beedle,
+    "bellum_access_phantom_door": ph_goal_option_phantom_door,
+    "bellum_access_staircase": ph_goal_option_staircase,
+    "bellum_access_warp": ph_goal_option_warp,
+    "bellum_access_bellumbeck": ph_goal_option_spawn_bellumbeck,
+    "instant_goal": ph_goal_option_instant_goal,
+    "boat_needs_sea_chart": ph_option_boat_requires_sea_chart,
+    "vanilla_fog": ph_option_fog_vanilla,
+    "open_ghost_ship": ph_option_fog_open,
+    "randomize_harrow": ph_option_randomize_harrow,
+    "goal_dungeons": ph_option_goal_dungeons,
+    "goal_metal_hunt": ph_option_goal_metal_hunt,
+    "goal_midway": ph_option_goal_midway,
+    "can_pass_sea_monsters": ph_can_pass_sea_monsters,
+    "no_time_logic": ph_option_time_no_logic,
+    "require_ph": ph_option_ph_required,
+    "has_time": ph_has_time,
+    "is_ut": ph_is_ut,
+    "ut_glitched": ph_UT_glitched_logic,
+    # Key Logic
+    "small_keys": ph_has_small_keys,
+    "boss_key": ph_has_boss_key,
+    "simple_boss_key": ph_has_boss_key_simple,
+    "force_gems": ph_has_force_gems,
+    "shape_crystal": ph_has_shape_crystal,
+    # Harder Logic
+    "can_kill_phantoms": ph_can_kill_phantoms,
+    "can_kill_phantoms_traps": ph_can_kill_phantoms_traps,
+    "tricky_switches": ph_can_hit_tricky_switches,
+    "hammer_clip": ph_can_hammer_clip,
+    "bombchu_switches": ph_can_hit_bombchu_switches,
+    "boomerang_return": ph_can_boomerang_return,
+    "arrow_despawn": ph_can_arrow_despawn,
+    "bombchu_camera_lock": ph_can_bcl,
+    "bcl": ph_can_bcl,
+    "sword_glitch": ph_can_sword_glitch,
+    "scroll_clip": ph_can_sword_scroll_clip,
+    "sword_scroll_clip": ph_can_sword_scroll_clip,
+    # Specific Location
+    # Overworld
+    "boat_access": ph_boat_access,
+    "can_enter_mp": ph_can_enter_mp,
+    "can_reach_mp2": ph_can_reach_MP2,
+    "mp_rat": ph_mercay_passage_rat,
+    "mercay_passage_rat": ph_mercay_passage_rat,
+    "ember_grapple": ph_ember_grapple_chest,
+    "bannan_scroll": ph_bannan_scroll,
+    "salvage_courage_crest": ph_salvage_courage_crest,
+    "ocean_sw_west": ph_can_enter_ocean_sw_west,
+    "nyave_fight": ph_nyave_fight,
+    "se_ocean": ph_enter_se_ocean,
+    "enter_ruins": ph_enter_ruins,
+    "salvage_behind_bannan": ph_salvage_behind_bannan,
+    "oshus_gem": ph_oshus_gem,
+    # ToF
+    "tof_3f": ph_tof_3f,
+    "tof_maze": ph_tof_maze,
+    "tof_3f_bk": ph_tof_3f_bk,
+    "tof_blaaz": ph_tof_enter_blaaz,
+    # ToW
+    "tow_b1": ph_tow_b1,
+    "tow_key": ph_tow_key_door,
+    "tow_cyclok": ph_tow_enter_cyclok,
+    # ToC
+    "enter_toc": ph_can_enter_toc,
+    "toc_door_1": ph_toc_key_door_1,
+    "toc_door_2": ph_toc_key_door_2,
+    "toc_door_3": ph_toc_key_door_3,
+    "toc_1f_west": ph_toc_switch_1,
+    "toc_grapple": ph_toc_grapple_chest,
+    "toc_beamos_ut": ph_toc_beamos_ut,
+    "toc_crystal_south": ph_toc_crystal_south,
+    "toc_spike_corridor": ph_toc_spike_corridor,
+    "toc_switch_state": ph_toc_final_switch_state,
+    # gs
+    "ghost_ship": ph_has_ghost_ship_access,
+    "enter_gs": ph_has_ghost_ship_access,
+    "gs_triangle": ph_has_gs_triangle_crystal,
+    "gs_barrel": ph_ghost_ship_barrel,
+    "beat_gs": ph_beat_ghost_ship,
+    # GT
+    "goron_entrance": ph_goron_entrance,
+    "goron_chus": ph_goron_chus,
+    "gt_b1": ph_gt_b1,
+    "gt_b2_back": ph_gt_b2_back,
+    "gt_dongo": ph_gt_enter_dongo,
+    # ToI
+    "toi_3f_boomerang": ph_toi_3f_boomerang,
+    "toi_b2": ph_toi_b2,
+    "toi_key_doors": ph_toi_key_doors,
+    "toi_key_door_2": ph_toi_key_door_2,
+    "toi_key_door_3": ph_toi_key_door_3,
+    "toi_2f": ph_toi_2f,
+    "toi_3f": ph_toi_3f,
+    "toi_3f_switch": ph_toi_3f_switch,
+    "toi_miniboss": ph_toi_miniboss,
+    "toi_shortcut": ph_toi_shortcut,
+    "toi_b1": ph_toi_b1,
+    "toi_key_1_ut": ph_toi_key_door_1_ut,
+    # MT
+    "mutoh_entrance": ph_mutoh_entrance,
+    "mutoh_water": ph_mutoh_water,
+    "mutoh_key_doors": ph_mutoh_key_doors,
+    "mutoh_bk_chest": ph_mutoh_bk_chest,
+    # Goal
+    "bellum_warp": ph_totok_blue_warp,
+    "bellum_staircase": ph_totok_bellum_staircase,
+    "can_beat_bellum": ph_can_beat_bellum,
+    "can_beat_ghost_ship_fight": ph_can_beat_ghost_ship_fight,
+    "can_beat_bellumbeck": ph_can_beat_bellumbeck,
+    "bellumbeck_quick_finish": ph_bellumbeck_quick_finish,
+    "win_on_metals": ph_win_on_metals,
+    # Time Logic
+    "totok_1f": ph_totok_1f,
+    "totok_1f_chest": ph_totok_1f_chest,
+    "totok_1f_chart": ph_totok_1f_chart,
+    "totok_b1": ph_totok_b1,
+    "totok_b1_key": ph_totok_b1_key,
+    "totok_b1_phantom": ph_totok_b1_phantom,
+    "totok_b1_bow": ph_totok_b1_bow,
+    "totok_b2": ph_totok_b2,
+    "totok_b2_key": ph_totok_b2_key,
+    "totok_b2_phantom": ph_totok_b2_phantom,
+    "totok_b2_chu": ph_totok_b2_chu,
+    "totok_b3": ph_totok_b3,
+    "totok_b3_nw": ph_totok_b3_nw,
+    "totok_b3_se": ph_totok_b3_se,
+    "totok_b3_sw": ph_totok_b3_sw,
+    "totok_b3_bow": ph_totok_b3_bow,
+    "totok_b3_key": ph_totok_b3_key,
+    "totok_b3_phantom": ph_totok_b3_phantom,
+    "totok_b35": ph_totok_b35,
+    "totok_b4": ph_totok_b4,
+    "totok_b4_key": ph_totok_b4_key,
+    "totok_b4_eyes": ph_totok_b4_eyes,
+    "totok_b4_phantom": ph_totok_b4_phantom,
+    "totok_b5": ph_totok_b5,
+    "totok_b5_alt": ph_totok_b5_alt,
+    "totok_b5_chest": ph_totok_b5_chest,
+    "totok_b5_alt_chest": ph_totok_b5_alt_chest,
+    "totok_b6": ph_totok_b6,
+    "totok_b6_bow": ph_totok_b6_bow,
+    "totok_b6_phantom": ph_totok_b6_phantom,
+    "totok_b6_crest": ph_totok_b6_crest,
+    "totok_b7": ph_totok_b7,
+    "totok_b7_crystal": ph_totok_b7_crystal,
+    "totok_b7_switch_chest": ph_totok_b7_switch_chest,
+    "totok_b8": ph_totok_b8,
+    "totok_b8_phantom": ph_totok_b8_phantom,
+    "totok_b9": ph_totok_b9,
+    "totok_b7_phantom": ph_totok_b7_phantom,
+    "totok_b9_phantom": ph_totok_b9_phantom,
+    "totok_b9_ghosts": ph_totok_b9_ghosts,
+    "totok_b9_corner_chest": ph_totok_b9_corner_chest,
+    "totok_b8_2_crystal_chest": ph_totok_b8_2_crystal_chest,
+    "totok_b10": ph_totok_b10,
+    "totok_b10_key": ph_totok_b10_key,
+    "totok_b10_phantom": ph_totok_b10_phantom,
+    "totok_b10_eye": ph_totok_b10_eye,
+    "totok_b10_hammer": ph_totok_b10_hammer,
+    "totok_b11": ph_totok_b11,
+    "totok_b11_phantom": ph_totok_b11_phantom,
+    "totok_b11_eyes": ph_totok_b11_eyes,
+    "totok_b12": ph_totok_b12,
+    "totok_b12_nw": ph_totok_b12_nw,
+    "totok_b12_ne": ph_totok_b12_ne,
+    "totok_b12_phantom": ph_totok_b12_phantom,
+    "totok_b12_ghost": ph_totok_b12_ghost,
+    "totok_b12_hammer": ph_totok_b12_hammer,
+    "totok_b13": ph_totok_b13,
+    "totok_b13_chest": ph_totok_b13_chest,
+    "b13_door": ph_totok_b13_door,
+    # State Rules
+    "has": ph_has
+}

@@ -31,7 +31,7 @@ STARTING_FLAGS = [
     [0x1B5594, 0x47],
     [0x1B5595, 0x00],
     [0x1B5596, 0xF8],
-    [0x1B5597, 0xFF],
+    [0x1B5597, 0xDF],
     [0x1B5598, 0x35],
     [0x1B5599, 0xE0],
     [0x1B559A, 0x10],
@@ -178,6 +178,34 @@ STAGES = {
     0x36: "Credits",
 
 }
+
+ISLANDS = [
+    "Mercay Island",
+    "Cannon Island",
+    "Isle of Ember",
+    "Molida Island",
+    "Spirit Island",
+    "Isle of Gust",
+    "Bannan Island",
+    "Zauz's Island",
+    "Uncharted Island",
+    "Goron Island",
+    "Harrow Island",
+    "Dee Ess Island",
+    "Isle of Frost",
+    "Isle of the Dead",
+    "Maze Island",
+    "Isle of Ruins"
+]
+
+SEA_REGIONS = [
+    "Ocean SW",
+    "Ocean NW",
+    "Ocean NE",
+    "Ocean SE",
+    "Ocean Unspecific"
+]
+
 
 ITEM_GROUPS = {
     "Small Keys": [
@@ -518,7 +546,7 @@ STAGE_LOCATION_GROUPS = {
         "Mercay Freedle Tunnel Chest",
         "Mercay Freedle Island Chest",
         "Mercay Freedle Gift Item",
-        "Mercay Chartreuse Guy Item",
+        "Mercay Ojibe (Docks Guy) Item",
         "Mercay Shipyard Chest",
         "Mercay Oshus Spirit Gem",
         "Mercay Oshus Phantom Sword",
@@ -543,6 +571,11 @@ STAGE_LOCATION_GROUPS = {
         "Beedle Shop Wisdom Gem",
         "Masked Beedle Heart Container",
         "Masked Beedle Courage Gem",
+        "Beedle Membership Bronze",
+        "Beedle Membership Silver",
+        "Beedle Membership Gold",
+        "Beedle Membership Platinum",
+        "Beedle Membership VIP",
     ],
     "Temple of the Ocean King": [
         "TotOK 1F SW Sea Chart Chest",
@@ -575,7 +608,7 @@ STAGE_LOCATION_GROUPS = {
         "TotOK B8 2 Crystals Chest",
         "TotOK B8 Phantom Chest",
         "TotOK B9 NW Chest",
-        "TotOK B9 Ghost Chest",
+        "TotOK B9 Wizzrobe Chest",
         "TotOK B9 Phantom Chest",
         "TotOK B9.5 SE Sea Chart Chest",
         "TotOK B10 Hammer Switch Chest",
@@ -587,7 +620,7 @@ STAGE_LOCATION_GROUPS = {
         "TotOK B12 NW Chest",
         "TotOK B12 NE Chest",
         "TotOK B12 Hammer Chest",
-        "TotOK B12 Ghost Chest",
+        "TotOK B12 Kill Everything Chest",
         "TotOK B12 Phantom Chest",
         "TotOK B13 NE Sea Chart Chest",
         "GOAL: Triforce Door",
@@ -607,9 +640,15 @@ STAGE_LOCATION_GROUPS = {
         "Ocean SE Hoiger Howgendoogen Trade Quest Item",
         "Ocean NE Man Of Smiles Item 1",
         "Ocean NE Man Of Smiles Item 2",
+        "Ocean NE Man of Smiles Prize Postcard",
         "Ocean Pirate Ambush Item",
         "Beedle Shop Bomb Bag",
         "Beedle Shop Wisdom Gem",
+        "Beedle Membership Bronze",
+        "Beedle Membership Silver",
+        "Beedle Membership Gold",
+        "Beedle Membership Platinum",
+        "Beedle Membership VIP",
         "Masked Beedle Heart Container",
         "Masked Beedle Courage Gem",
         "Fishing Catch Skippyjack",
@@ -640,21 +679,53 @@ STAGE_LOCATION_GROUPS = {
         "Ocean SW Golden Frog Phi",
         "Ocean SW Nyave Treasure",
         "Ocean SW Nyave Trade Quest Item",
+        "Ocean SW Salvage #1 Molida SW",
+        "Ocean SW Salvage #2 Mercay NE",
+		"Ocean SW Salvage #5 Molida N",
+		"Ocean SW Salvage #8 Mercay SE",
+        "Ocean SW Salvage #9 Cannon W",
+		"Ocean SW Salvage #18 Cannon S",
+		"Ocean SW Salvage #21 Molida NW",
     ],
     "Ocean NW": [
         "Ocean NW Golden Frog N",
         "Ocean NW Prince of Red Lion Combat Reward",
         "Ocean NW Prince of Red Lions Trade Quest Item",
+		"Ocean NW Salvage #3 Gusts SW",
+        "Ocean NW Salvage #4 Bannan SE",
+		"Ocean NW Salvage #6 Bannan W",
+        "Ocean NW Salvage #7 Gusts E",
+		"Ocean NW Salvage #10 Gusts SE",
+        "Ocean NW Salvage #11 Gusts N",
+		"Ocean NW Salvage #19 Gusts NE",
+        "Ocean NW Salvage #20 Bannan E",
     ],
     "Ocean SE": [
         "Ocean SE Golden Frog Omega",
         "Ocean SE Golden Frog W",
         "Ocean SE Hoiger Howgendoogen Trade Quest Item",
+		"Ocean SE Salvage #12 Dee Ess N",
+        "Ocean SE Salvage #13 Harrow E",
+        "Ocean SE Salvage #14 Goron NW",
+        "Ocean SE Salvage #15 Goron W",
+        "Ocean SE Salvage #16 Goron NE",
+        "Ocean SE Salvage #17 Frost S",
+		"Ocean SE Salvage #22 Harrow S",
+        "Ocean SE Salvage #23 Frost NW",
     ],
     "Ocean NE": [
         "Ocean NE Golden Frog Square",
         "Ocean NE Man Of Smiles Item 1",
         "Ocean NE Man Of Smiles Item 2",
+        "Ocean NE Man of Smiles Prize Postcard",
+		"Ocean NE Salvage #24 Ruins W",
+        "Ocean NE Salvage #25 Dead E",
+        "Ocean NE Salvage #26 Ruins SW",
+        "Ocean NE Salvage #27 Maze E",
+        "Ocean NE Salvage #28 Ruins NW",
+        "Ocean NE Salvage #29 Maze W",
+        "Ocean NE Salvage #30 Ruins S",
+        "Ocean NE Salvage #31 Dead S",
     ],
     "Ocean Unspecific": [
         "Ocean Pirate Ambush Item",
@@ -668,6 +739,11 @@ STAGE_LOCATION_GROUPS = {
         "Fishing Catch Rusty Swordfish",
         "Fishing Catch Legendary Neptoona",
         "Fishing Catch Stowfish",
+        "Beedle Membership Bronze",
+        "Beedle Membership Silver",
+        "Beedle Membership Gold",
+        "Beedle Membership Platinum",
+        "Beedle Membership VIP",
     ],
     "Traveller Ships": [
         "Ocean SW Nyave Treasure",
@@ -677,6 +753,7 @@ STAGE_LOCATION_GROUPS = {
         "Ocean SE Hoiger Howgendoogen Trade Quest Item",
         "Ocean NE Man Of Smiles Item 1",
         "Ocean NE Man Of Smiles Item 2",
+        "Ocean NE Man of Smiles Prize Postcard",
     ],
     "Ships": [
         "Ocean SW Nyave Treasure",
@@ -686,11 +763,17 @@ STAGE_LOCATION_GROUPS = {
         "Ocean SE Hoiger Howgendoogen Trade Quest Item",
         "Ocean NE Man Of Smiles Item 1",
         "Ocean NE Man Of Smiles Item 2",
+        "Ocean NE Man of Smiles Prize Postcard",
         "Ocean Pirate Ambush Item",
         "Beedle Shop Bomb Bag",
         "Beedle Shop Wisdom Gem",
         "Masked Beedle Heart Container",
         "Masked Beedle Courage Gem",
+        "Beedle Membership Bronze",
+        "Beedle Membership Silver",
+        "Beedle Membership Gold",
+        "Beedle Membership Platinum",
+        "Beedle Membership VIP",
     ],
     "Nyave's Ship": [
         "Ocean SW Nyave Treasure",
@@ -808,6 +891,7 @@ STAGE_LOCATION_GROUPS = {
         "Bannan Island Wayfarer Give Rusty Swordfish",
         "Bannan Island Wayfarer Give Legendary Neptoona",
         "Bannan Island Wayfarer Give Stowfish",
+        "Bannan Island Give Letter to Joanne"
     ],
     "Uncharted Island": [
         "Uncharted Island Eye Dig",
@@ -912,8 +996,8 @@ STAGE_LOCATION_GROUPS = {
         "Isle of Ruins Maze Chest",
         "Isle of Ruins Dodge Boulders Chest",
         "Isle of Ruins Push Boulder Chest",
-        "Isle of Ruins Doyland's Item",
-        "Isle of Ruins Outside Doyland's Temple Chest",
+        "Isle of Ruins Doylan's Item",
+        "Isle of Ruins Outside Doylan's Temple Chest",
         "Isle of Ruins Like-Like Dig",
         "Isle of Ruins Bonk Tree",
         "Isle of Ruins Outside Mutoh's Temple Chest",
@@ -941,11 +1025,12 @@ STAGE_LOCATION_GROUPS = {
         "Maze Island NW Dig",
     ],
     "Credits": [
-        "GOAL: Beat Bellumbeck",
+        "GOAL: Triforce Door",
     ],
     "Man of Smiles' Ship": [
         "Ocean NE Man Of Smiles Item 1",
         "Ocean NE Man Of Smiles Item 2",
+        "Ocean NE Man of Smiles Prize Postcard"
     ],
     "Wayaway's Ship": [
         "Ocean SE Hoiger Howgendoogen Trade Quest Item",
@@ -964,7 +1049,7 @@ CATEGORY_LOCATION_GROUPS = {
         "Island Shop Heart Container",
         "Cannon Island Cannon",
         "Cannon Island Salvage Arm",
-        "Mercay Chartreuse Guy Item",
+        "Mercay Ojibe (Docks Guy) Item",
     ],
     "Island Shops": [
         "Island Shop Power Gem",
@@ -975,6 +1060,11 @@ CATEGORY_LOCATION_GROUPS = {
     "Beedle": [
         "Beedle Shop Bomb Bag",
         "Beedle Shop Wisdom Gem",
+        "Beedle Membership Bronze",
+        "Beedle Membership Silver",
+        "Beedle Membership Gold",
+        "Beedle Membership Platinum",
+        "Beedle Membership VIP",
     ],
     "Masked Beedle": [
         "Masked Beedle Heart Container",
@@ -1152,17 +1242,6 @@ DUNGEON_KEY_DATA = {
         "filter": 0x0C,
         "value": 4,
         "size": 2,
-        'entrances': {
-            0xB01: {
-                "max_z": 0x12800,
-                # "max_z": 0xFFFF7000
-            },
-            0xB03: {
-                "max_z": 0xB200,
-                "min_z": 0x5000
-            }
-
-        }
     },
     37: {
         "name": "Temple of the Ocean King",
@@ -1170,12 +1249,6 @@ DUNGEON_KEY_DATA = {
         "filter": 0xE0,
         "value": 0x20,
         "size": 3,
-        'entrances': {
-            0x2600: {
-                "max_z": 0x11800,
-                "min_z": 0x0
-            }
-        }
     },
     372: {
         "name": "Temple of the Ocean King",
@@ -1183,11 +1256,6 @@ DUNGEON_KEY_DATA = {
         "filter": 0xC0,
         "value": 0x40,
         "size": 2,
-        'entrances': {
-            0x2600: {
-                "max_z": 0x11800,
-                "min_z": 0x0}
-        }
     },
     0x1C: {
         "name": "Temple of Fire",
@@ -1195,14 +1263,6 @@ DUNGEON_KEY_DATA = {
         "value": 1,
         "size": 2,
         "filter": 0x03,
-        "entrances": {
-            0xD01: {
-                "max_z": 0x10800,
-                "min_z": 0x8000},
-            0x2B00: {
-                "min_z": 0x800,
-                "max_z": 0xF000}
-        }
     },
     0x1E: {
         "name": "Temple of Courage",
@@ -1257,3 +1317,7 @@ EQUIPPED_SHIP_PARTS_ADDR = [
 ]
 
 TREASURE_READ_LIST = {i: (0x1BA5AC + i * 4, 4, "Main RAM") for i in range(8)}
+
+if __name__ == "__main__":
+    for group in LOCATION_GROUPS:
+        print("-", group)

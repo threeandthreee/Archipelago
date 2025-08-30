@@ -10,7 +10,7 @@ from ..Util import hex_str
 class GameboyAddress:
     def __init__(self, bank: int, offset: int):
         self.bank = bank
-        self.offset = offset
+        self.offset = offset - 0x4000 if 0x8000 > offset > 0x4000 else offset
 
     def address_in_rom(self):
         return (self.bank * 0x4000) + self.offset
@@ -19,7 +19,7 @@ class GameboyAddress:
         mapped_offset = self.offset
         if self.bank > 0:
             mapped_offset += 0x4000
-        return f"${hex_str(mapped_offset,2)}"
+        return f"${hex_str(mapped_offset, 2)}"
 
 
 class Z80Block:
@@ -65,12 +65,12 @@ class Z80Block:
 
 
 class Z80Assembler:
-    def __init__(self, end_of_banks: List[int], defines: Dict[str, str], seasons_rom: bytes):
+    def __init__(self, bank_caves: List[int], defines: Dict[str, str], seasons_rom: bytes):
         self.defines = {}
         for key, value in defines.items():
             self.define(key, value)
 
-        self.end_of_banks = copy(end_of_banks)
+        self.bank_caves = copy(bank_caves)
 
         self.floating_chunks = {}
         self.global_labels = {}
@@ -115,21 +115,39 @@ class Z80Assembler:
         self._precompile_block(block)
 
         if block.requires_injection():
-            injection_offset = self.end_of_banks[block.addr.bank]
-            # If block is meant to be loaded in the graphics memory, it needs to be aligned particularly
-            if block.label.startswith("dma_") and injection_offset % 0x10 != 0:
-                injection_offset += 0x10 - (injection_offset % 0x10)
+            bank_cave = self.bank_caves[block.addr.bank]
+            if isinstance(bank_cave, list):
+                if block.label.startswith("dma_"):
+                    raise Exception(f"Graphics are not implemented yet for block {block.label}")
+                for i in range(len(bank_cave) - 1):
+                    cave_range = bank_cave[i]
+                    if cave_range[0] + block.precompiled_size > cave_range[1]:
+                        continue
+                    injection_offset = cave_range[0]
+                    cave_range[0] += block.precompiled_size
+                    break
+                else:
+                    injection_offset = bank_cave[-1]
+                    bank_cave[-1] += block.precompiled_size
+            else:
+                injection_offset = bank_cave
+                # If block is meant to be loaded in the graphics memory, it needs to be aligned particularly
+                if block.label.startswith("dma_") and injection_offset % 0x10 != 0:
+                    injection_offset += 0x10 - (injection_offset % 0x10)
+
+                self.bank_caves[block.addr.bank] = injection_offset + block.precompiled_size
 
             if injection_offset + block.precompiled_size > 0x4000:
                 raise Exception(f"Not enough space for block {block.label} in bank {hex_str(block.addr.bank)} "
-                                f"({hex(injection_offset + block.precompiled_size)})")
+                                f"({hex(injection_offset + block.precompiled_size)})."
+                                f"Block size: {hex(block.precompiled_size)}; "
+                                f"Space left: {hex((sum([cave_range[1] - cave_range[0] + 1 for cave_range in self.bank_caves[block.addr.bank]]) if isinstance(self.bank_caves[block.addr.bank], list) else 0) + 0x4001 - injection_offset)}")
             block.set_base_offset(injection_offset)
-            self.end_of_banks[block.addr.bank] = injection_offset + block.precompiled_size
 
         if block.label:
             self.add_global_label(block.label, block.addr)
         for label in block.local_labels:
-            if not label.startswith('@'):
+            if not label.startswith("@"):
                 self.add_global_label(label, block.local_labels[label])
 
         self.blocks.append(block)
@@ -263,7 +281,7 @@ class Z80Assembler:
 
         args = [""]
         if len(split) > 1:
-            args = ' '.join(split[1:]).split(",")
+            args = " ".join(split[1:]).split(",")
 
         # Perform includes before resolving names
         if opcode == "/include":

@@ -1,39 +1,42 @@
 import os
 import random
 from collections import defaultdict
-from typing import List
+from pathlib import Path
+
 import Utils
 from settings import get_settings
 from . import RomData
 from .Util import *
-from .z80asm.Assembler import Z80Assembler
-from .Constants import *
+from .asm import asm_files
+from .text import simple_hex, normalize_text
+from .z80asm.Assembler import Z80Assembler, GameboyAddress
 from .z80asm.Util import parse_hex_string_to_value
-from ..data.Constants import *
-from .. import LOCATIONS_DATA, OracleOfSeasonsOldMenShuffle, OracleOfSeasonsGoal, OracleOfSeasonsAnimalCompanion, \
+from ..Hints import make_hint_texts
+from ..Options import OracleOfSeasonsOldMenShuffle, OracleOfSeasonsGoal, OracleOfSeasonsAnimalCompanion, \
     OracleOfSeasonsMasterKeys, OracleOfSeasonsFoolsOre, OracleOfSeasonsShowDungeonsWithEssence
-from pathlib import Path
+from ..data.Locations import LOCATIONS_DATA
+from ..data.Constants import *
 
 
 def get_asm_files(patch_data):
-    asm_files = ASM_FILES.copy()
+    files = list(asm_files["base"])
     if patch_data["options"]["quick_flute"]:
-        asm_files.append("asm/conditional/quick_flute.yaml")
+        files += asm_files["quick_flute"]
     if patch_data["options"]["shuffle_old_men"] == OracleOfSeasonsOldMenShuffle.option_turn_into_locations:
-        asm_files.append("asm/conditional/old_men_as_locations.yaml")
+        files += asm_files["old_men_as_locations"]
     if patch_data["options"]["remove_d0_alt_entrance"]:
-        asm_files.append("asm/conditional/remove_d0_alt_entrance.yaml")
+        files += asm_files["remove_d0_alt_entrance"]
     if patch_data["options"]["remove_d2_alt_entrance"]:
-        asm_files.append("asm/conditional/remove_d2_alt_entrance.yaml")
+        files += asm_files["remove_d2_alt_entrance"]
     if patch_data["options"]["goal"] == OracleOfSeasonsGoal.option_beat_ganon:
-        asm_files.append("asm/conditional/ganon_goal.yaml")
+        files += asm_files["ganon_goal"]
     if patch_data["options"]["rosa_quick_unlock"]:
-        asm_files.append("asm/conditional/instant_rosa.yaml")
+        files += asm_files["instant_rosa"]
     if get_settings()["tloz_oos_options"]["remove_music"]:
-        asm_files.append("asm/conditional/mute_music.yaml")
+        files += asm_files["mute_music"]
     if patch_data["options"]["secret_locations"]:
-        asm_files.append("asm/conditional/secret_locations.yaml")
-    return asm_files
+        files += asm_files["secret_locations"]
+    return files
 
 
 def write_chest_contents(rom: RomData, patch_data):
@@ -42,9 +45,9 @@ def write_chest_contents(rom: RomData, patch_data):
     This puts the item described in the patch data inside each chest in the game.
     """
     for location_name, location_data in LOCATIONS_DATA.items():
-        if location_data.get('collect', COLLECT_TOUCH) != COLLECT_CHEST and not location_data.get('is_chest', False):
+        if location_data.get("collect", COLLECT_TOUCH) != COLLECT_CHEST and not location_data.get("is_chest", False):
             continue
-        chest_addr = rom.get_chest_addr(location_data['room'])
+        chest_addr = rom.get_chest_addr(location_data["room"])
         item = patch_data["locations"][location_name]
         item_id, item_subid = get_item_id_and_subid(item)
         rom.write_byte(chest_addr, item_id)
@@ -169,7 +172,7 @@ def define_additional_tile_replacements(assembler: Z80Assembler, patch_data):
             0x01, 0x3a, 0x00, 0x46, 0x2f,  # Temple of Seasons digging spot
             0x01, 0x07, 0x00, 0x13, 0x2f,  # Northern volcanoes digging spot
             0x01, 0x20, 0x00, 0x68, 0x2f,  # D8 portal digging spot
-            0x01, 0x42, 0x00, 0x14, 0x2f   # Western volcanoes digging spot
+            0x01, 0x42, 0x00, 0x14, 0x2f  # Western volcanoes digging spot
         ])
     # If D0 alternate entrance is removed, put stairs inside D0 to make chest reachable without the alternate entrance
     if patch_data["options"]["remove_d0_alt_entrance"] > 0:
@@ -231,7 +234,7 @@ def define_location_constants(assembler: Z80Assembler, patch_data):
     # Process deterministic Gasha Nut locations to define a table
     deterministic_gasha_table = []
     for i in range(int(patch_data["options"]["deterministic_gasha_locations"])):
-        item = patch_data["locations"][f"Gasha Nut #{i+1}"]
+        item = patch_data["locations"][f"Gasha Nut #{i + 1}"]
         item_id, item_subid = get_item_id_and_subid(item)
         deterministic_gasha_table.extend([item_id, item_subid])
     assembler.add_floating_chunk("deterministicGashaLootTable", deterministic_gasha_table)
@@ -283,16 +286,19 @@ def define_season_constants(assembler: Z80Assembler, patch_data):
         assembler.define_byte(f"defaultSeason.{region_name}", season_byte)
 
 
-def define_lost_woods_sequences(assembler: Z80Assembler, patch_data):
+def define_lost_woods_sequences(assembler: Z80Assembler, texts: dict[str, str], patch_data):
     pedestal_sequence = patch_data["lost_woods_item_sequence"]
     pedestal_bytes, pedestal_text = process_lost_woods_sequence(pedestal_sequence)
     assembler.add_floating_chunk("lostWoodsPedestalSequence", pedestal_bytes)
-    assembler.add_floating_chunk("text.lostWoodsPedestalSequence", pedestal_text)
+    travel_index = texts["TX_0b50"].index("If temperatures")
+    texts["TX_0b50"] = texts["TX_0b50"][:travel_index] + pedestal_text
 
     main_sequence = patch_data["lost_woods_main_sequence"]
     main_bytes, main_text = process_lost_woods_sequence(main_sequence)
     assembler.add_floating_chunk("lostWoodsMainSequence", main_bytes)
-    assembler.add_floating_chunk("text.lostWoodsMainSequence", main_text)
+    texts["TX_3604"] = ""  # Unused
+    travel_index = texts["TX_4500"].index("\ntravel west")
+    texts["TX_4500"] = texts["TX_4500"][:travel_index] + "\\stop\n" + main_text
 
 
 def process_lost_woods_sequence(sequence):
@@ -302,17 +308,18 @@ def process_lost_woods_sequence(sequence):
     - one to use as text hint
     """
     sequence_bytes = []
-    text_bytes = []
+    text = ""
     for i in range(4):
         direction = sequence[i][0]
         season = sequence[i][1]
         sequence_bytes.extend(sequence[i])
-        text_bytes.extend(DIRECTION_STRINGS[direction])
-        text_bytes.extend(SEASON_STRINGS[season])
+        text += DIRECTION_STRINGS[direction]
+        text += SEASON_STRINGS[season]
+        if i == 1:
+            text += "\\stop"
         if i != 3:
-            text_bytes.extend([0x05, 0x56])  # wait for input + newline
-    text_bytes.append(0x00)
-    return sequence_bytes, text_bytes
+            text += "\n"
+    return sequence_bytes, text
 
 
 def define_tree_sprites(assembler: Z80Assembler, patch_data):
@@ -368,6 +375,7 @@ def set_treasure_data(rom: RomData,
 
 
 def set_player_start_inventory(assembler: Z80Assembler, patch_data):
+    obtained_treasures_address = parse_hex_string_to_value(DEFINES["wObtainedTreasureFlags"])
     start_inventory_changes = defaultdict(int)
 
     # ###### Base changes ##############################################
@@ -428,7 +436,6 @@ def set_player_start_inventory(assembler: Z80Assembler, patch_data):
         start_inventory_data[SEED_ITEMS[patch_data["options"]["default_seed"]]] = 1  # Add seeds to the start inventory
 
     # Inventory obtained flags
-    obtained_treasures_address = parse_hex_string_to_value(DEFINES["wObtainedTreasureFlags"])
     current_inventory_index = parse_hex_string_to_value(DEFINES["wInventoryB"])
     for item in start_inventory_data:
         item_id = ITEMS_DATA[item]["id"]
@@ -491,6 +498,8 @@ def set_player_start_inventory(assembler: Z80Assembler, patch_data):
         hex_ore_count = parse_hex_string_to_value(f"${start_inventory_changes[0xc6a7]}")
         start_inventory_changes[0xc6a7] = hex_ore_count % 0x100
         start_inventory_changes[0xc6a8] = hex_ore_count // 0x100
+    if obtained_treasures_address in start_inventory_changes:
+        start_inventory_changes[obtained_treasures_address] |= 1 << 2 # Add treasure punch flag
 
     heart_pieces = (start_inventory_data.get("Piece of Heart", 0) + start_inventory_data.get("Rare Peach Stone", 0))
     additional_hearts = (start_inventory_data.get("Heart Container", 0) + heart_pieces // 4)
@@ -570,6 +579,10 @@ def apply_miscellaneous_options(rom: RomData, patch_data):
     if patch_data["options"]["master_keys"] == OracleOfSeasonsMasterKeys.option_all_dungeon_keys:
         # Remove boss key consumption on boss keydoor opened
         rom.write_word(0x1834f, 0x0000)
+    rom.write_byte(GameboyAddress(0x0a, 0x46ed).address_in_rom(),
+                   patch_data["options"]["gasha_nut_kill_requirement"])
+    rom.write_byte(GameboyAddress(0x04, 0x6a31).address_in_rom(),
+                   patch_data["options"]["gasha_nut_kill_requirement"] // 2)
 
 
 def set_fixed_subrosia_seaside_location(rom: RomData, patch_data):
@@ -585,15 +598,15 @@ def set_fixed_subrosia_seaside_location(rom: RomData, patch_data):
 
 def set_file_select_text(assembler: Z80Assembler, slot_name: str):
     def char_to_tile(c: str) -> int:
-        if '0' <= c <= '9':
+        if "0" <= c <= "9":
             return ord(c) - 0x20
-        if 'A' <= c <= 'Z':
+        if "A" <= c <= "Z":
             return ord(c) + 0xa1
-        if c == '+':
+        if c == "+":
             return 0xfd
-        if c == '-':
+        if c == "-":
             return 0xfe
-        if c == '.':
+        if c == ".":
             return 0xff
         else:
             return 0xfc  # All other chars are blank spaces
@@ -617,81 +630,78 @@ def set_file_select_text(assembler: Z80Assembler, slot_name: str):
     assembler.add_floating_chunk("dma_FileSelectStringTiles", text_tiles)
 
 
-def process_item_name_for_shop_text(item: Dict) -> List[int]:
+def process_item_name_for_shop_text(item: Dict) -> str:
     if "player" in item:
-        player_name = item['player']
+        player_name = item["player"]
         if len(player_name) > 14:
-            player_name = player_name[0:13] + "."
-        item_name = f"{player_name}'s {item['item']}"
+            player_name = player_name[:13] + "."
+        item_name = f"🟦{player_name}⬜'s 🟥"
     else:
-        item_name = item["item"]
-
-    words = item_name.split(" ")
-    current_line = 0
-    lines = [""]
-    while len(words) > 0:
-        line_with_word = lines[current_line]
-        if len(line_with_word) > 0:
-            line_with_word += " "
-        line_with_word += words[0]
-        if len(line_with_word) <= 16:
-            lines[current_line] = line_with_word
-        else:
-            current_line += 1
-            lines.append(words[0])
-        words = words[1:]
-
-    # If name is more than 2 lines long, discard excess lines and put an ellipsis to suggest content was truncated
-    if len(lines) > 2:
-        lines = lines[0:2]
-        lines[1] = lines[1][0:15] + "."
-
-    result = []
-    for line in lines:
-        if len(line) > 16:
-            line = line[0:15] + "."
-        if len(result) > 0:
-            result.append(0x01)  # Newline
-        result.extend(line.encode())
-    return result
+        item_name = "🟥"
+    item_name += item["item"]
+    item_name = normalize_text(item_name)
+    item_name += "⬜\\stop\n"
+    return item_name
 
 
-def define_text_constants(assembler: Z80Assembler, patch_data):
-    # Holodrum shop slots
+def make_text_data(text: dict[str, str], patch_data):
+    # Process shops
     OVERWORLD_SHOPS = [
         "Horon Village: Shop",
         "Horon Village: Member's Shop",
         "Sunken City: Syrup Shop",
         "Horon Village: Advance Shop"
     ]
+    tx_indices = {
+        "horonShop1": "TX_0e04",
+        "horonShop2": "TX_0e03",
+        "horonShop3": "TX_0e02",
+        "memberShop1": "TX_0e1c",
+        "memberShop2": "TX_0e1d",
+        "memberShop3": "TX_0e1e",
+        "syrupShop1": "TX_0d0a",
+        "syrupShop2": "TX_0d01",
+        "syrupShop3": "TX_0d05",
+        "advanceShop1": "TX_0e22",
+        "advanceShop2": "TX_0e23",
+        "advanceShop3": "TX_0e25",
+        "subrosianMarket1": "TX_2b00",
+        "subrosianMarket2": "TX_2b01",
+        "subrosianMarket3": "TX_2b05",
+        "subrosianMarket4": "TX_2b06",
+        "subrosianMarket5": "TX_2b10",
+        "spoolSwampScrub": "TX_4509",
+        "samasaCaveScrub": "TX_450b",
+        "d4Scrub": "TX_450c",
+        "d2Scrub": "TX_450d",
+    }
 
     for shop_name in OVERWORLD_SHOPS:
         for i in range(1, 4):
             location_name = f"{shop_name} #{i}"
             symbolic_name = LOCATIONS_DATA[location_name]["symbolic_name"]
-            item_name_bytes = []
-            if location_name in patch_data["locations"]:
-                item_name_bytes = process_item_name_for_shop_text(patch_data["locations"][location_name])
+            if location_name not in patch_data["locations"]:
+                continue
+            item_text = process_item_name_for_shop_text(patch_data["locations"][location_name])
+            item_text += (" \\num1 Rupees\n"
+                          "  \\optOK \\optNo thanks\\cmd(0f)")
+            text[tx_indices[symbolic_name]] = item_text
 
-            text_bytes = [0x09, 0x01] + item_name_bytes + [0x03, 0xe2]  # Item name
-            text_bytes.extend([0x20, 0x0c, 0x08, 0x02, 0x8f, 0x01])  # Price
-            text_bytes.extend([0x02, 0x00, 0x00])  # OK / No thanks
-            assembler.add_floating_chunk(f"text.{symbolic_name}", text_bytes)
-
-    # Subrosian market slots
     for market_slot in range(1, 6):
         location_name = f"Subrosia: Market #{market_slot}"
         symbolic_name = LOCATIONS_DATA[location_name]["symbolic_name"]
         if location_name not in patch_data["locations"]:
             continue
-        item_name_bytes = process_item_name_for_shop_text(patch_data["locations"][location_name])
-        text_bytes = [0x09, 0x01] + item_name_bytes + [0x03, 0xe2]  # (Item name)
-        text_bytes.extend([0x02, 0x08])  # "I'll trade for"
+        item_text = process_item_name_for_shop_text(patch_data["locations"][location_name])
         if market_slot == 1:
-            text_bytes.extend([0x02, 0x8e, 0x2e, 0x01])  # "Star-Shaped Ore."
+            item_text += ("I'll trade for\n"
+                          "🟥Star-Shaped Ore⬜.\n"
+                          "\\jump(0b)")
         else:
-            text_bytes.extend([0x09, 0x01, 0x0c, 0x08, 0x20, 0x02, 0x09, 0x2e, 0x01])  # "(number) Ore Chunks."
-        assembler.add_floating_chunk(f"text.{symbolic_name}", text_bytes)
+            item_text += ("I'll trade for\n"
+                          "🟥\\num1 Ore Chunks⬜.\n"
+                          "\\jump(0b)")
+        text[tx_indices[symbolic_name]] = item_text
 
     BUSINESS_SCRUBS = [
         "Spool Swamp: Business Scrub",
@@ -702,25 +712,194 @@ def define_text_constants(assembler: Z80Assembler, patch_data):
     for location_name in BUSINESS_SCRUBS:
         symbolic_name = LOCATIONS_DATA[location_name]["symbolic_name"]
         if location_name not in patch_data["locations"]:
-            assembler.add_floating_chunk(f"text.{symbolic_name}", [])
-            assembler.define(f"text.{symbolic_name}Price", "$0000")
             continue
         # Scrub string asking the player if they want to buy the item
-        item_name_bytes = process_item_name_for_shop_text(patch_data["locations"][location_name])
-        text_bytes = [0x0e, 0xc6, 0x03, 0x79]  # \sfx(0xc6)Greetings!\n
-        text_bytes.extend([0x09, 0x01] + item_name_bytes + [0x03, 0xe2])  # (Item name)
-        text_bytes.extend([0x04, 0x91, 0x09, 0x04, 0x0c, 0x08])  # "for \green\num"
-        text_bytes.extend([0x02, 0x8f, 0x09, 0x00, 0x21, 0x01])  # " Rupees\white!\n"
-        text_bytes.extend([0x02, 0x00, 0x00])  # Yes / No
-        assembler.add_floating_chunk(f"text.{symbolic_name}", text_bytes)
-        # Price as BCD
-        price_as_string = str(patch_data["shop_prices"][symbolic_name])
-        assembler.define(f"text.{symbolic_name}Price", f"${price_as_string.zfill(4)}")
+        item_text = ("\\sfx(c6)Greetings!\n"
+                     + process_item_name_for_shop_text(patch_data["locations"][location_name])
+                     + f"for 🟩{patch_data['shop_prices'][symbolic_name]} Rupees⬜\n"
+                       "  \\optOK \\optNo thanks")
+        text[tx_indices[symbolic_name]] = item_text
 
-    assembler.add_floating_chunk("text.signGuyRequirementDigits",
-                                 convert_value_to_digits(patch_data["options"]["sign_guy_requirement"]))
-    assembler.add_floating_chunk("text.deterministicGashaCountDigits",
-                                 convert_value_to_digits(patch_data["options"]["deterministic_gasha_locations"]))
+    # New items
+    # Replace ring box 1
+    text["TX_0034"] = ("You got 🟥Ember\n"
+                       "Seeds⬜! Open\n"
+                       "your 🟥Seed\n"
+                       "Satchel⬜ to use\n"
+                       "them.")
+    # Replace ring box 1 unused text
+    text["TX_0057"] = ("You found an\n"
+                       "item for another\n"
+                       "world!")
+    # Replace ring box 2 unused text
+    text["TX_0058"] = ("You got 🟥25\n"
+                       "Ore Chunks⬜!")
+
+    # Trade items
+    # Cuccodex is fine
+    text["TX_005b"] = ("You got a\n"
+                       "\\col(84)🥚🟥 Lon Lon Egg⬜!\n"
+                       "It's a\n"
+                       "beauty aid?!?")
+    text["TX_005c"] = ("You got a\n"
+                       "\\col(84)🎎🟥 Ghastly Doll⬜!\n"
+                       "Looking at it\n"
+                       "gives you\n"
+                       "chills!")
+    text["TX_005d"] = ("You got an\n"
+                       "\\col(84)⚗🟥 Iron Pot⬜.\n"
+                       "It looks...\n"
+                       "well-seasoned.")
+    # Soup is fine
+    text["TX_005f"] = ("You got the\n"
+                       "\\col(84)🏺🟥 Goron Vase⬜!\n"
+                       "It's a very\n"
+                       "nice vase...")
+    text["TX_0060"] = ("You got a\n"
+                       "\\col(84)🐟🟥 Fish⬜! It's\n"
+                       "market fresh!")
+    text["TX_0061"] = ("You got a\n"
+                       "\\col(84)📢🟥 Megaphone⬜!\n"
+                       "Give a shout!")
+    text["TX_0062"] = ("You got a\n"
+                       "\\col(84)🍄🟥 Mushroom⬜!\n"
+                       "It smells weird.")
+    text["TX_0063"] = ("You got a\n"
+                       "\\col(84)🐦🟥 Wooden Bird⬜!\n"
+                       "It looks real!")
+    text["TX_0064"] = ("You got\n"
+                       "\\col(84)🛢🟥 Engine Grease⬜.")
+    text["TX_0065"] = ("You got a\n"
+                       "\\col(84)📻🟥 Phonograph⬜!\n"
+                       "What a tune!")
+
+    # Appraisal text
+    text["TX_301c"] = ("You got the\n"
+                       "\\call(fd)!")
+
+    # Map stuff, replaces the group 05 since it's all linked game dialogues
+    text["TX_0500"] = "Unknown Portal"
+    text["TX_0501"] = normalize_text("Portal to Eastern Suburbs")
+    text["TX_0502"] = normalize_text("Portal to Spool Swamp")
+    text["TX_0503"] = normalize_text("Portal to Mt. Cucco")
+    text["TX_0504"] = normalize_text("Portal to Eyeglass Lake")
+    text["TX_0505"] = normalize_text("Portal to Horon Village")
+    text["TX_0506"] = normalize_text("Portal to Temple Remains")
+    text["TX_0507"] = normalize_text("Portal to Temple Summit")
+    text["TX_0508"] = normalize_text("Portal to Subrosian Village")
+    text["TX_0509"] = normalize_text("Portal to Subrosian Market")
+    text["TX_050a"] = normalize_text("Portal to Subrosian Wilds")
+    text["TX_050b"] = normalize_text("Portal to Great Furnace")
+    text["TX_050c"] = normalize_text("Portal to House of Pirates")
+    text["TX_050d"] = normalize_text("Portal to Subrosian Volcanoes")
+    text["TX_050e"] = normalize_text("Portal to Subrosian Dungeon")
+
+    # Default satchel seed
+    seed_name = SEED_ITEMS[patch_data["options"]["default_seed"]].replace(" ", "\n")
+    text["TX_002d"].replace("Ember\nSeeds", seed_name)
+
+    # Misc
+    if patch_data["options"]["rosa_quick_unlock"]:
+        text["TX_2904"] = ("Since you're so\n"
+                           "nice, I unlocked\n"
+                           "all the doors\n"
+                           "here for you.")
+
+    # Reword the natzu deku to omit the secret and the full satchel
+    text["TX_4c43"] = ("\\sfx(c6)Come back\n"
+                       "with all five\n"
+                       "kinds of 🟥seeds⬜!")
+
+    # Remove the mention of 777 ore chunks
+    unlucky_text: str = text["TX_3a2f"]
+    index_777 = unlucky_text.index(" Get")
+    text["TX_3a2f"] = unlucky_text[:index_777]
+
+    text["TX_3e1b"] = ("You've broken\n🟩\\num1 signs⬜!\n"
+                       "You'd better not\n"
+                       "break more than\n"
+                       f"🟩{patch_data['options']['sign_guy_requirement']}⬜"
+                       ", or else...")
+
+    # Inform the player of how many gashas are good
+    wife_text_index = text["TX_3101"].index("The place")
+    num_seeds = patch_data["options"]["deterministic_gasha_locations"]
+    if num_seeds == 0:
+        seed_text = ("nuts will not\n"
+                     "contain anything\n"
+                     "useful.")
+    elif num_seeds == 16:
+        seed_text = ("every nut can\n"
+                     "hold something\n"
+                     "useful.")
+    else:
+        seed_text = ("only your first\n"
+                     f"🟩{num_seeds}⬜ nuts can\n"
+                     "contain anything\n"
+                     "useful.")
+    text["TX_3101"] = (text["TX_3101"][:wife_text_index]
+                       + "\\stop\n"
+                         "You should know\n"
+                       + seed_text)
+
+    # Replace the shield selling part of dekus which will never be used
+    text["TX_450a"] = ("\\sfx(c6)Greetings!\n"
+                       "I can refill\n"
+                       "your bag for\n"
+                       "🟩30 Rupees⬜ only.\n"
+                       "  \\optOK \\optNo thanks")
+
+    # Golden beasts
+    golden_beasts_requirement = patch_data["options"]["golden_beasts_requirement"]
+    if golden_beasts_requirement == 0:
+        # Just a funny text for killing no golden beasts
+        golden_beast_reward_text = text["TX_1f05"]
+        post_congratulation_index = golden_beast_reward_text.index("Sir")
+        text["TX_1f04"] = ""
+        text["TX_1f05"] = ("You did nothing!\n"
+                           "Truly, " + golden_beast_reward_text[post_congratulation_index:])
+    elif golden_beasts_requirement < 4:
+        number = ["one", "two", "three"][golden_beasts_requirement - 1]
+        text["TX_1f04"] = text["TX_1f04"].replace("the four", number)
+        text["TX_1f05"] = text["TX_1f05"].replace("all four", number)
+        if golden_beasts_requirement == 1:
+            text["TX_1f04"] = text["TX_1f04"].replace("beasts", "beast")
+            text["TX_1f05"] = text["TX_1f05"].replace("beasts", "beast")
+
+    # Impa refills
+    text["TX_2503"] = ("Come see me if\n"
+                       "you need a\n"
+                       "refill!")
+
+    # Maku tree sign
+    essence_count = patch_data["options"]["required_essences"]
+    text["TX_2e00"] = (f"Find 🟥{essence_count} essence{'s' if essence_count != 0 else ''}⬜\n"
+                       "to get the seed!")
+
+    # Tarm ruins sign
+    jewel_count = patch_data["options"]["tarm_gate_required_jewels"]
+    text["TX_2e12"] = (f"Bring 🟩{jewel_count}⬜ jewel{'s' if jewel_count != 0 else ''}\n"
+                       "for the door\n"
+                       "to open.")
+
+    # Tree house old man
+    essence_count = patch_data["options"]["required_essences"]
+    text["TX_3601"] = text["TX_3601"].replace("knows many\n🟥essences⬜...", f"has 🟥{essence_count} essence{'s' if essence_count != 0 else ''}⬜!")
+
+    # Change D8 introduction text to “Sword & Shield Dungeon” from “Sword & Shield Maze”,
+    # since every other mention of it was using “Dungeon” naming
+    text["TX_0208"] = text["TX_0208"].replace("Maze", "Dungeon")
+
+    # Now unused text from Maku talking
+    text["TX_1700"] = text["TX_1701"] = ""
+
+    text["TX_0602"] = "Unknown Dungeon"
+
+    # With quick rosa, the escort code is disabled
+    if patch_data["options"]["rosa_quick_unlock"]:
+        text["TX_2906"] = normalize_text("Not me. Maybe ask someone else?")
+
+    make_hint_texts(text, patch_data)
 
 
 def set_heart_beep_interval_from_settings(rom: RomData):
@@ -735,7 +914,7 @@ def set_heart_beep_interval_from_settings(rom: RomData):
 
 def set_character_sprite_from_settings(rom: RomData):
     sprite = get_settings()["tloz_oos_options"]["character_sprite"]
-    sprite_dir = Path(Utils.local_path(os.path.join('data', 'sprites', 'oos_ooa')))
+    sprite_dir = Path(Utils.local_path(os.path.join("data", "sprites", "oos_ooa")))
     if sprite == "random":
         sprite_weights = {f: 1 for f in os.listdir(sprite_dir) if sprite_dir.joinpath(f).is_file() and f.endswith(".bin")}
     elif isinstance(sprite, str):
@@ -883,28 +1062,29 @@ def set_portal_warps(rom: RomData, patch_data):
         rom.write_byte(portal_text_addr, 0x80 | (portal_1["text_index"] << 3))
 
 
-def define_dungeon_items_text_constants(assembler: Z80Assembler, patch_data):
+def define_dungeon_items_text_constants(texts: dict[str, str], patch_data):
+    base_id = 0x73
     for i in range(9):
         if i == 0:
             # " for\nHero's Cave"
-            dungeon_precision = [0x02, 0xe2, 0x03, 0x78]
+            dungeon_precision = " for\nHero's Cave"
         else:
             # " for\nDungeon X"
-            dungeon_precision = [0x02, 0xe2, 0x44, 0x05, 0x8a, 0x20, (0x30 + i)]
+            dungeon_precision = f" for\nDungeon {i}"
 
         # ###### Small keys ##############################################
         # "You found a\n\color(RED)"
-        small_key_text = [0x05, 0x9d, 0x02, 0x78, 0x61, 0x01, 0x09, 0x01]
+        small_key_text = "You found a\n🟥"
         if patch_data["options"]["master_keys"]:
             # "Master Key"
-            small_key_text.extend([0x02, 0xe5, 0x20, 0x4b, 0x65, 0x79])
+            small_key_text += "Master Key"
         else:
             # "Small Key"
-            small_key_text.extend([0x53, 0x6d, 0x04, 0x07, 0x4b, 0x65, 0x79])
+            small_key_text += "Small Key"
         if patch_data["options"]["keysanity_small_keys"]:
-            small_key_text.extend(dungeon_precision)
-        small_key_text.extend([0x05, 0xd8, 0x00])  # "\color(WHITE)!(end)"
-        assembler.add_floating_chunk(f"text.smallKeyD{i}", small_key_text)
+            small_key_text += dungeon_precision
+        small_key_text += "⬜!"
+        texts[f"TX_00{simple_hex(base_id + i)}"] = small_key_text
 
         # Hero's Cave only has Small Keys, so skip other texts
         if i == 0:
@@ -912,36 +1092,30 @@ def define_dungeon_items_text_constants(assembler: Z80Assembler, patch_data):
 
         # ###### Boss keys ##############################################
         # "You found the\n\color(RED)Boss Key"
-        boss_key_text = [
-            0x05, 0x9d, 0x02, 0x78, 0x04, 0xa7,
-            0x09, 0x01, 0x42, 0x6f, 0x73, 0x73, 0x20, 0x4b, 0x65, 0x79
-        ]
+        boss_key_text = "You found the\n🟥Boss Key"
         if patch_data["options"]["keysanity_boss_keys"]:
-            boss_key_text.extend(dungeon_precision)
-        boss_key_text.extend([0x05, 0xd8, 0x00])  # "\color(WHITE)!(end)"
-        assembler.add_floating_chunk(f"text.bossKeyD{i}", boss_key_text)
+            boss_key_text += dungeon_precision
+        boss_key_text += "⬜!"
+        texts[f"TX_00{simple_hex(base_id + i + 8)}"] = boss_key_text
 
         # ###### Dungeon maps ##############################################
         # "You found the\n\color(RED)"
-        dungeon_map_text = [0x05, 0x9d, 0x02, 0x78, 0x04, 0xa7, 0x09, 0x01]
+        dungeon_map_text = "You found the\n🟥"
         if patch_data["options"]["keysanity_maps_compasses"]:
-            dungeon_map_text.extend([0x4d, 0x61, 0x70])  # "Map"
-            dungeon_map_text.extend(dungeon_precision)
+            dungeon_map_text += "Map"
+            dungeon_map_text += dungeon_precision
         else:
-            dungeon_map_text.extend([0x44, 0x05, 0x8a, 0x20, 0x4d, 0x61, 0x70])  # "Dungeon Map"
-        dungeon_map_text.extend([0x05, 0xd8, 0x00])  # "\color(WHITE)!(end)"
-        assembler.add_floating_chunk(f"text.dungeonMapD{i}", dungeon_map_text)
+            dungeon_map_text += "Dungeon Map"
+        dungeon_map_text += "⬜!"
+        texts[f"TX_00{simple_hex(base_id + i + 16)}"] = dungeon_map_text
 
         # ###### Compasses ##############################################
         # "You found the\n\color(RED)Compass"
-        compasses_text = [
-            0x05, 0x9d, 0x02, 0x78, 0x04, 0xa7,
-            0x09, 0x01, 0x43, 0x6f, 0x6d, 0x05, 0x11
-        ]
+        compasses_text = "You found the\n🟥Compass"
         if patch_data["options"]["keysanity_maps_compasses"]:
-            compasses_text.extend(dungeon_precision)
-        compasses_text.extend([0x05, 0xd8, 0x00])  # "\color(WHITE)!(end)"
-        assembler.add_floating_chunk(f"text.compassD{i}", compasses_text)
+            compasses_text += dungeon_precision
+        compasses_text += "⬜!"
+        texts[f"TX_00{simple_hex(base_id + i + 24)}"] = compasses_text
 
 
 def define_essence_sparkle_constants(assembler: Z80Assembler, patch_data):
@@ -951,12 +1125,12 @@ def define_essence_sparkle_constants(assembler: Z80Assembler, patch_data):
     essence_pedestals = [k for k, v in LOCATIONS_DATA.items() if v.get("essence", False)]
     if show_dungeons_with_essence and not patch_data["options"]["shuffle_essences"]:
         for i, pedestal in enumerate(essence_pedestals):
-            if patch_data["locations"][pedestal]["item"] not in ESSENCES:
+            if patch_data["locations"][pedestal]["item"] not in ITEM_GROUPS["Essences"]:
                 byte_array.extend([0xF0, 0x00])  # Nonexistent room, for padding
                 continue
 
             # Find where dungeon entrance is located, and place the sparkle hint there
-            dungeon = f"d{i+1}"
+            dungeon = f"d{i + 1}"
             dungeon_entrance = [k for k, v in patch_data["dungeon_entrances"].items() if v == dungeon][0]
             entrance_data = DUNGEON_ENTRANCES[dungeon_entrance]
             byte_array.extend([entrance_data["group"], entrance_data["room"]])
@@ -1195,7 +1369,7 @@ def randomize_ai_for_april_fools(rom: RomData, seed: int):
                 ai = ais.pop()
                 ai_table[enemy] = ai
 
-    ai_table[0x2f] = 0x2f # Thwomps have to stay vanilla for platforming
+    ai_table[0x2f] = 0x2f  # Thwomps have to stay vanilla for platforming
     for enemy in ai_table:
         ai = ai_table[enemy]
         rom.write_word(code_table + enemy * 2, rom.read_word(code_table + ai * 2))

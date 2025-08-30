@@ -9,16 +9,17 @@ from BaseClasses import CollectionState, Item, ItemClassification, MultiWorld, T
 from Fill import fill_restrictive
 from worlds.AutoWorld import WebWorld, World
 
-from . import rom_data
 from .client import MZMClient
-from .data import data_path
 from .items import item_data_table, major_item_data_table, mzm_item_name_groups, MZMItem
-from .locations import full_location_table, mzm_location_name_groups
-from .options import LayoutPatches, MZMOptions, MorphBallPlacement, mzm_option_groups, CombatLogicDifficulty, \
-    GameDifficulty
+from .locations import full_location_table, location_count, mzm_location_name_groups
+from .options import FullyPoweredSuit, LayoutPatches, MZMOptions, MorphBallPlacement, SpringBall, mzm_option_groups, \
+    CombatLogicDifficulty, GameDifficulty, WallJumps, LogicDifficulty, HazardRuns
+from .patch import MZMProcedurePatch, write_json_data
+from .patcher import MD5_US, MD5_US_VC
+from .patcher.layout_patches import LAYOUT_PATCH_MAPPING
 from .regions import create_regions_and_connections
-from .rom import MD5_MZMUS, MD5_MZMUS_VC, MZMProcedurePatch, write_tokens
-from .rules import set_rules
+from .rules import set_location_rules
+from .tricks import tricks_normal, tricks_advanced, tricky_shinesparks, hazard_runs_normal, hazard_runs_minimal
 
 
 class MZMSettings(settings.Group):
@@ -26,7 +27,7 @@ class MZMSettings(settings.Group):
         """File name of the Metroid: Zero Mission ROM."""
         description = "Metroid: Zero Mission (U) ROM file"
         copy_to = "Metroid - Zero Mission (USA).gba"
-        md5s = [MD5_MZMUS, MD5_MZMUS_VC]
+        md5s = [MD5_US, MD5_US_VC]
 
     class RomStart(str):
         """
@@ -66,7 +67,7 @@ class MZMWorld(World):
 
     web = MZMWeb()
 
-    required_client_version = (0, 5, 0)
+    required_client_version = (0, 6, 3)
 
     item_name_to_id = {name: data.code for name, data in item_data_table.items()}
     location_name_to_id = {name: data.code for name, data in full_location_table.items()}
@@ -74,33 +75,82 @@ class MZMWorld(World):
     item_name_groups = mzm_item_name_groups
     location_name_groups = mzm_location_name_groups
 
+    starting_items: list[MZMItem]
+    locked_items: list[MZMItem]
     pre_fill_items: list[MZMItem]
+    removed_items: list[MZMItem]
 
     enabled_layout_patches: list[str]
+    trick_allow_list: list[str]
 
     junk_fill_items: list[str]
     junk_fill_cdf: list[int]
 
     def generate_early(self):
+        self.starting_items = []
+        self.locked_items = []
         self.pre_fill_items = []
+        self.removed_items = []
         self.junk_fill_items = list(self.options.junk_fill_weights.value.keys())
         self.junk_fill_cdf = list(itertools.accumulate(self.options.junk_fill_weights.value.values()))
 
         if self.options.layout_patches.value == LayoutPatches.option_true:
-            self.enabled_layout_patches = rom_data.layout_patches
+            self.enabled_layout_patches = list(LAYOUT_PATCH_MAPPING.keys())
         elif self.options.layout_patches.value == LayoutPatches.option_choice:
             self.enabled_layout_patches = list(self.options.selected_patches.value)
         else:
             self.enabled_layout_patches = []
 
+        if self.options.logic_difficulty.value == LogicDifficulty.option_normal:
+            self.trick_allow_list = list(tricks_normal.keys())
+        elif self.options.logic_difficulty.value == LogicDifficulty.option_advanced:
+            self.trick_allow_list = list(tricks_normal.keys())
+            self.trick_allow_list.extend(tricks_advanced.keys())
+            #TODO just testing for now, determine if this is wanted
+            self.trick_allow_list.extend(tricky_shinesparks.keys())
+        else:
+            self.trick_allow_list = []
+
+        if self.options.hazard_runs == HazardRuns.option_normal:
+            self.trick_allow_list.extend(hazard_runs_normal.keys())
+        elif self.options.hazard_runs == HazardRuns.option_minimal:
+            self.trick_allow_list.extend(hazard_runs_minimal.keys())
+
+        for allowed_trick in self.options.tricks_allowed.value:
+            self.trick_allow_list.append(allowed_trick)
+        for denied_trick in self.options.tricks_denied.value:
+            # If a player has put the same trick in both allow and deny, the trick will not be used
+            if denied_trick in self.trick_allow_list:
+                self.trick_allow_list.remove(denied_trick)
+
         if "Morph Ball" in self.options.start_inventory_from_pool:
             self.options.morph_ball = MorphBallPlacement(MorphBallPlacement.option_normal)
-
         if self.options.morph_ball == MorphBallPlacement.option_early:
             self.pre_fill_items.append(self.create_item("Morph Ball"))
 
-        # Only this player should have effectively empty locations if they so choose.
-        self.options.local_items.value.add("Nothing")
+        if self.options.fully_powered_suit == FullyPoweredSuit.option_ruins_test:
+            self.locked_items.append(self.create_item("Fully Powered Suit"))
+        elif self.options.fully_powered_suit == FullyPoweredSuit.option_start_with:
+            self.starting_items.append(self.create_item("Fully Powered Suit"))
+        elif self.options.fully_powered_suit == FullyPoweredSuit.option_legacy_always_usable:
+            self.starting_items.append(self.create_item("Fully Powered Suit"))
+            self.locked_items.append(self.create_item("Nothing"))
+
+        if (self.options.walljumps == WallJumps.option_enabled
+                or self.options.walljumps == WallJumps.option_enabled_not_logical):
+            self.starting_items.append(self.create_item("Wall Jump"))
+        if self.options.walljumps == WallJumps.option_disabled:
+            self.removed_items.append(self.create_item("Wall Jump"))
+
+        if "Spring Ball" in self.options.start_inventory_from_pool:
+            self.options.spring_ball = SpringBall(True)
+        if not self.options.spring_ball.value:
+            self.removed_items.append(self.create_item("Spring Ball"))
+            if "Spring Ball" in self.options.start_inventory:
+                self.options.spring_ball = SpringBall(True)
+
+        for item in self.starting_items:
+            self.push_precollected(item)
 
     def create_regions(self) -> None:
         create_regions_and_connections(self)
@@ -113,15 +163,23 @@ class MZMWorld(World):
         self.place_event("Mecha Ridley Defeated", "Mecha Ridley")
         self.place_event("Mission Accomplished!", "Chozodia Space Pirate's Ship")
 
+        ruins_test_reward = self.get_location("Chozodia Ruins Test Reward")
+        if self.options.fully_powered_suit == FullyPoweredSuit.option_ruins_test:
+            ruins_test_reward.address = None
+            ruins_test_reward.place_locked_item(self.create_item("Fully Powered Suit"))
+        elif self.options.fully_powered_suit == FullyPoweredSuit.option_legacy_always_usable:
+            ruins_test_reward.address = None
+            ruins_test_reward.place_locked_item(self.create_item("Nothing"))
 
     def create_items(self) -> None:
         item_pool: List[MZMItem] = []
 
-        item_pool_size = 100 - len(self.pre_fill_items)
+        item_pool_size = location_count - len(self.locked_items) - len(self.pre_fill_items)
 
-        pre_fill_majors = set(item.name for item in self.pre_fill_items if item.name in major_item_data_table)
+        removed_majors = set(item.name for item in
+                                self.starting_items + self.locked_items + self.pre_fill_items + self.removed_items)
         for name in major_item_data_table:
-            if name not in pre_fill_majors:
+            if name not in removed_majors:
                 item_pool.append(self.create_item(name))
 
         # TODO: factor in hazard runs when determining etank progression count
@@ -134,22 +192,24 @@ class MZMWorld(World):
             item_pool.extend(self.create_tanks("Power Bomb Tank", 9, 4, 5))  # 4 progression + 5 useful power bombs out of 9
 
         if self.options.combat_logic_difficulty == CombatLogicDifficulty.option_relaxed:
-            item_pool.extend(self.create_tanks("Missile Tank", 50, 10))  # 50 progression missiles out of 250
             item_pool.extend(self.create_tanks("Super Missile Tank", 15, 4, 5))  # 8 progression + 10 useful supers out of 30
+            item_pool.extend(self.create_missile_tanks(50, 10, 3))  # 50 progression missiles out of 250
         elif self.options.combat_logic_difficulty == CombatLogicDifficulty.option_normal:
-            item_pool.extend(self.create_tanks("Missile Tank", 50, 8))  # 40 progression missiles out of 250
             item_pool.extend(self.create_tanks("Super Missile Tank", 15, 3, 5))  # 6 progression + 10 useful supers out of 30
+            item_pool.extend(self.create_missile_tanks(50, 8))  # 40 progression missiles out of 250
         elif self.options.combat_logic_difficulty == CombatLogicDifficulty.option_minimal:
-            item_pool.extend(self.create_tanks("Missile Tank", 50, 3))  # 15 progression missiles out of 250
             item_pool.extend(self.create_tanks("Super Missile Tank", 15, 1, 3))  # 1 progression + 6 useful supers out of 30
+            item_pool.extend(self.create_missile_tanks(50, 3))  # 15 progression missiles out of 250
 
+        if len(item_pool) > item_pool_size:
+            item_pool = item_pool[:item_pool_size]  # Last items should always be filler missiles
         while len(item_pool) < item_pool_size:
             item_pool.append(self.create_filler())
 
         self.multiworld.itempool += item_pool
 
     def set_rules(self) -> None:
-        set_rules(self, full_location_table)
+        set_location_rules(self, full_location_table)
         self.multiworld.completion_condition[self.player] = lambda state: (
             state.has("Mission Accomplished!", self.player))
 
@@ -184,12 +244,7 @@ class MZMWorld(World):
         output_path = Path(output_directory)
 
         patch = MZMProcedurePatch(player=self.player, player_name=self.player_name)
-        patch.write_file("basepatch.bsdiff", data_path("basepatch.bsdiff"))
-        write_tokens(self, patch)
-        if not self.options.unknown_items_always_usable:
-            patch.add_vanilla_unknown_item_sprites()
-        if self.options.layout_patches.value:
-            patch.add_layout_patches(self.enabled_layout_patches)
+        write_json_data(self, patch)
 
         output_filename = self.multiworld.get_out_file_name_base(self.player)
         patch.write(output_path / f"{output_filename}{patch.patch_file_ending}")
@@ -198,14 +253,17 @@ class MZMWorld(World):
         return {
             "goal": self.options.goal.value,
             "game_difficulty": self.options.game_difficulty.value,
-            "unknown_items_always_usable": self.options.unknown_items_always_usable.value,
+            "unknown_items_usable": self.options.fully_powered_suit.to_slot_data(),
+            "walljumps": self.options.walljumps.value,
+            "spring_ball": self.options.spring_ball.value,
             "layout_patches": self.options.layout_patches.value,
             "selected_patches": self.enabled_layout_patches,
             "logic_difficulty": self.options.logic_difficulty.value,
             "combat_logic_difficulty": self.options.combat_logic_difficulty.value,
             "ibj_in_logic": self.options.ibj_in_logic.value,
             "hazard_runs": self.options.hazard_runs.value,
-            "walljumps_in_logic": self.options.walljumps_in_logic.value,
+            "tricks_allowed": self.options.tricks_allowed.value,
+            "tricks_denied": self.options.tricks_denied.value,
             "tricky_shinesparks": self.options.tricky_shinesparks.value,
             "death_link": self.options.death_link.value,
             "remote_items": self.options.remote_items.value,
@@ -215,28 +273,46 @@ class MZMWorld(World):
     def get_filler_item_name(self) -> str:
         return self.multiworld.random.choices(self.junk_fill_items, cum_weights=self.junk_fill_cdf)[0]
 
-    def create_item(self, name: str, force_classification: Optional[ItemClassification] = None):
+    def create_item(self, name: str, force_classification: Optional[ItemClassification] = None) -> MZMItem:
         return MZMItem(name,
                        force_classification if force_classification is not None else item_data_table[name].progression,
                        self.item_name_to_id[name],
                        self.player)
 
     # Overridden so the extra minor items can be forced filler
-    def create_filler(self) -> Item:
+    def create_filler(self) -> MZMItem:
         return self.create_item(self.get_filler_item_name(), ItemClassification.filler)
 
     def create_tanks(self, item_name: str, count: int,
-                     progression_count: Optional[int] = None, useful_count: Optional[int] = None):
+                     progression_count: int | None = None, useful_count: int = 0,
+                     progression_balancing_count: int | None = None, non_priority: bool = False):
         if progression_count is None:
             progression_count = count
+        if progression_balancing_count is None:
+            skip_balancing_count = 0
+        else:
+            skip_balancing_count = progression_count - progression_balancing_count
+            progression_count = progression_balancing_count
         if useful_count is None:
             useful_count = 0
-        for _ in range(progression_count):
-            yield self.create_item(item_name)
+
+        if non_priority:
+            for _ in range(progression_count):
+                yield self.create_item(item_name, ItemClassification.progression_deprioritized)
+            for _ in range(skip_balancing_count):
+                yield self.create_item(item_name, ItemClassification.progression_deprioritized_skip_balancing)
+        else:
+            for _ in range(progression_count):
+                yield self.create_item(item_name)
+            for _ in range(skip_balancing_count):
+                yield self.create_item(item_name, ItemClassification.progression_skip_balancing)
         for _ in range(useful_count):
             yield self.create_item(item_name, ItemClassification.useful)
         for _ in range(count - progression_count - useful_count):
             yield self.create_item(item_name, ItemClassification.filler)
+
+    def create_missile_tanks(self, count: int, progression_count: int, balance_count: int = 3):
+        return self.create_tanks("Missile Tank", count, progression_count, 0, balance_count, True)
 
     def place_event(self, name: str, location_name: Optional[str] = None):
         if location_name is None:

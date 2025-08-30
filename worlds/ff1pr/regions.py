@@ -2,9 +2,10 @@ from typing import List, Dict
 
 ff1pr_regions: dict[str, List[str]] = {
     "Menu": ["Overworld"],
-    "Overworld": ["Pravoka Region", "Innersea Region", "Ice Region", "Crescent Region", "Gulg Region",
+    "Overworld": ["Cornelia Region", "Pravoka Region", "Innersea Region", "Ice Region", "Crescent Region", "Gulg Region",
                   "Ryukhan Desert", "Melmond Region", "Sage Region", "Dragon Region", "Onrac Region", "Trials Region",
                   "Gaia", "Mirage Desert", "Lufenia Region", "Beyond the Black Orb"],
+    "Cornelia Region": [],
     "Pravoka Region": [],
     "Innersea Region": [],
     "Ice Region": [],

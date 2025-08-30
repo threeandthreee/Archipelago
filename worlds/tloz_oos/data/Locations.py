@@ -2374,5 +2374,119 @@ LOCATIONS_DATA = {
         "collect": COLLECT_TOUCH,
         "map_tile": 0xc8,
         "symbolic_name": "mayorSecret",
-    }
+    },
+
+    # Placeholder locations for the owls
+    "Dodongo Owl": {
+        "region_id": None,
+        "conditional": True,
+        "owl_id": 0,
+        "scouting_byte": 0xc928,
+        "scouting_mask": 0x40,
+        "room": 0x0428
+    },
+    "Gohma Owl": {
+        "region_id": None,
+        "conditional": True,
+        "owl_id": 1,
+        "scouting_byte": 0xc961,
+        "scouting_mask": 0x40,
+        "room": 0x0461
+    },
+    "Armos Owl": {
+        "region_id": None,
+        "conditional": True,
+        "owl_id": 2,
+        "scouting_byte": 0xc992,
+        "scouting_mask": 0x40,
+        "room": 0x0492
+    },
+    "Silent Watch Owl": {
+        "region_id": None,
+        "conditional": True,
+        "owl_id": 3,
+        "scouting_byte": 0xca73,
+        "scouting_mask": 0x40,
+        "room": 0x0573
+    },
+    "Magical Ice Owl": {
+        "region_id": None,
+        "conditional": True,
+        "owl_id": 4,
+        "scouting_byte": 0xca71,
+        "scouting_mask": 0x40,
+        "room": 0x0571
+    },
+    "Mystery Owl": {
+        "region_id": None,
+        "conditional": True,
+        "owl_id": 5,
+        "scouting_byte": 0xc79e,
+        "scouting_mask": 0x40,
+        "room": 0x009e
+    },
+    "Omuai Owl": {
+        "region_id": None,
+        "conditional": True,
+        "owl_id": 6,
+        "scouting_byte": 0xc949,
+        "scouting_mask": 0x40,
+        "room": 0x0449
+    },
+    "Poe Curse Owl": {
+        "region_id": None,
+        "conditional": True,
+        "owl_id": 7,
+        "scouting_byte": 0xca59,
+        "scouting_mask": 0x40,
+        "room": 0x0559
+    },
+    "Spiked Beetles Owl": {
+        "region_id": None,
+        "conditional": True,
+        "owl_id": 8,
+        "scouting_byte": 0xc946,
+        "scouting_mask": 0x40,
+        "room": 0x0446
+    },
+    "Trampoline Owl": {
+        "region_id": None,
+        "conditional": True,
+        "owl_id": 9,
+        "scouting_byte": 0xc93e,
+        "scouting_mask": 0x40,
+        "room": 0x043e
+    },
+    "Greater Distance Owl": {
+        "region_id": None,
+        "conditional": True,
+        "owl_id": 10,
+        "scouting_byte": 0xc978,
+        "scouting_mask": 0x40,
+        "room": 0x0478
+    },
+    "Frypolar Owl": {
+        "region_id": None,
+        "conditional": True,
+        "owl_id": 11,
+        "scouting_byte": 0xca71,
+        "scouting_mask": 0x40,
+        "room": 0x0571
+    },
+    "Shining Blue Owl": {
+        "region_id": None,
+        "conditional": True,
+        "owl_id": 12,
+        "scouting_byte": 0xca57,
+        "scouting_mask": 0x40,
+        "room": 0x0557
+    },
+    "Floodgate Owl": {
+        "region_id": None,
+        "conditional": True,
+        "owl_id": 13,
+        "scouting_byte": 0xc9e7,
+        "scouting_mask": 0x40,
+        "room": 0x04e7
+    },
 }

@@ -259,7 +259,7 @@
     jr z,@unknownPortal
 
     ; if "Portal visited" flag is set, show the full portal label
-    ld b,$56 ; textgroup
+    ld b,$05 ; textgroup
     ld a,$01 ; base_textid
     add a,c
     ld c,a
@@ -267,7 +267,7 @@
 
     @unknownPortal:
     ; otherwise, show a generic "Unknown Portal" text
-    ld bc,$5600
+    ld bc,$0500
     ret
 # Overwrite @specialCode0 to call above function
 02/60dd/: |

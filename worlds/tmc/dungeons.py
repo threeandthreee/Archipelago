@@ -3,7 +3,8 @@ from typing import TYPE_CHECKING
 from BaseClasses import CollectionState
 from Fill import fill_restrictive, FillError
 from .constants import TMCItem, TMCLocation
-from .Locations import location_groups
+from .locations import location_groups
+from .options import DHCAccess
 
 if TYPE_CHECKING:
     from . import MinishCapWorld
@@ -43,6 +44,7 @@ MAPS_COMPASSES = frozenset({TMCItem.DUNGEON_MAP_DWS, TMCItem.DUNGEON_COMPASS_DWS
                             TMCItem.DUNGEON_MAP_POW, TMCItem.DUNGEON_COMPASS_POW,
                             TMCItem.DUNGEON_MAP_DHC, TMCItem.DUNGEON_COMPASS_DHC})
 
+
 def fill_dungeons(world: "MinishCapWorld"):
     multiworld = world.multiworld
 
@@ -56,13 +58,13 @@ def fill_dungeons(world: "MinishCapWorld"):
         # Randomize dungeon order but keep DHC last to ensure access conditions are met
         dungeon_fill_order = ["DWS", "CoF", "ToD", "FoW", "PoW", "RC"]
         world.random.shuffle(dungeon_fill_order)
-        if world.options.goal_vaati.value:
+        if world.options.dhc_access.value != DHCAccess.option_closed:
             dungeon_fill_order.append("DHC")
         for dungeon in dungeon_fill_order:
             fill_dungeon(world, dungeon, stage, base_state)
 
 
-def fill_dungeon(world: "MinishCapWorld", dungeon: str, stage_items: set[str], base_state: CollectionState):
+def fill_dungeon(world: "MinishCapWorld", dungeon: str, stage_items: frozenset[str], base_state: CollectionState):
     multiworld = world.multiworld
     world_locations = multiworld.get_unfilled_locations(world.player)
     pre_fill_items = world.get_pre_fill_items()
@@ -73,7 +75,7 @@ def fill_dungeon(world: "MinishCapWorld", dungeon: str, stage_items: set[str], b
         return
 
     # Get list of locations that we can place items, filtered for current dungeon group
-    fill_locations = [loc for loc in world_locations \
+    fill_locations = [loc for loc in world_locations
                       if loc.name in location_groups[dungeon] and loc.name not in BANNED_KEY_LOCATIONS]
 
     if len(fill_locations) < len(fill_stage_items):

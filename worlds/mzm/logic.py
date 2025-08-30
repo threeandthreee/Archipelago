@@ -47,6 +47,15 @@ class Requirement(NamedTuple):
     def setting_contains(cls, setting: str, value: Any):
         return cls(lambda world, _: value in getattr(world.options, setting))
 
+    @classmethod
+    def trick_enabled(cls, trick: str):
+        return cls(lambda world, _: trick in world.trick_allow_list)
+
+    @classmethod
+    def trick_rule(cls, trick: str):
+        from .tricks import all_tricks
+        return all_tricks[trick]
+
 
 def all(*args: Requirement):
     return Requirement(lambda world, state: builtins.all(req.rule(world, state) for req in args))
@@ -69,10 +78,7 @@ UnknownItem1 = Requirement.location("Crateria Unknown Item Statue")
 UnknownItem2 = Requirement.location("Kraid Unknown Item Statue")
 UnknownItem3 = Requirement.location("Ridley Unknown Item Statue")
 
-CanUseUnknownItems = any(
-    Requirement.setting_enabled("unknown_items_always_usable"),
-    ChozoGhostBoss,
-)
+CanUseUnknownItems = Requirement.item("Fully Powered Suit")
 LayoutPatches = lambda n: any(
     Requirement.setting_is("layout_patches", 1),
     all(
@@ -80,9 +86,15 @@ LayoutPatches = lambda n: any(
         Requirement.setting_contains("selected_patches", n)
     )
 )
+Trick = lambda n: all(
+    Requirement.trick_enabled(n),
+    Requirement.trick_rule(n)
+)
 
-NormalMode = Requirement.setting_is("game_difficulty", 1)
-HardMode = Requirement.setting_is("game_difficulty", 2)
+NormalMode = Requirement.setting_is("game_difficulty", "normal")
+HardMode = Requirement.setting_is("game_difficulty", "hard")
+
+CombinedHiJumpAndSpringBall = Requirement.setting_is("spring_ball", False)
 
 
 EnergyTanks = lambda n: Requirement.item("Energy Tank", n)
@@ -112,6 +124,7 @@ SpaceJump = all(
     CanUseUnknownItems
 )
 PowerGrip = Requirement.item("Power Grip")
+SpringBall = Requirement.item("Spring Ball")
 
 Missiles = any(
     MissileTanks(1),
@@ -120,24 +133,24 @@ Missiles = any(
 MissileCount = lambda n: Requirement(
     lambda world, state:
         5 * state.count("Missile Tank", world.player) +
-        2 * state.count("Super Missile Tank", world.player) >= n if world.options.game_difficulty == 1
+        2 * state.count("Super Missile Tank", world.player) >= n if world.options.game_difficulty == "normal"
         else 2 * state.count("Missile Tank", world.player) + state.count("Super Missile Tank", world.player) >= n
 )
 SuperMissiles = SuperMissileTanks(1)
 SuperMissileCount = lambda n: Requirement(
     lambda world, state:
-        2 * state.count("Super Missile Tank", world.player) >= n if world.options.game_difficulty == 1
+        2 * state.count("Super Missile Tank", world.player) >= n if world.options.game_difficulty == "normal"
         else state.count("Super Missile Tank", world.player) >= n
 )
 PowerBombs = PowerBombTanks(1)
 PowerBombCount = lambda n: Requirement(
     lambda world, state:
-        2 * state.count("Power Bomb Tank", world.player) >= n if world.options.game_difficulty == 1
+        2 * state.count("Power Bomb Tank", world.player) >= n if world.options.game_difficulty == "normal"
         else state.count("Power Bomb Tank", world.player) >= n
 )
 Energy = lambda n: Requirement(
     lambda world, state:
-        100 * state.count("Energy Tank", world.player) + 99 >= n if world.options.game_difficulty == 1
+        100 * state.count("Energy Tank", world.player) + 99 >= n if world.options.game_difficulty == "normal"
         else 50 * state.count("Energy Tank", world.player) + 99 >= n
 )
 
@@ -160,16 +173,33 @@ CanSingleBombBlock = any(
     ScrewAttack
 )
 CanBallCannon = CanRegularBomb
-CanBallspark = all(
+CanSpringBall = all(
     MorphBall,
-    SpeedBooster,
+    any(
+        all(
+            HiJump,
+            CombinedHiJumpAndSpringBall,
+        ),
+        SpringBall,
+    )
+)
+CanHiSpringBall = all(
+    MorphBall,
     HiJump,
+    any(
+        SpringBall,
+        CombinedHiJumpAndSpringBall,
+    )
+)
+CanBallspark = all(
+    SpeedBooster,
+    CanSpringBall,
 )
 CanBallJump = all(
     MorphBall,
     any(
         Bomb,
-        HiJump
+        CanSpringBall
     )
 )
 CanLongBeam = lambda n: any(
@@ -191,15 +221,18 @@ CanHorizontalIBJ = all(
     CanIBJ,
     Requirement.setting_atleast("ibj_in_logic", 2)
 )
-CanWallJump = Requirement.setting_atleast("walljumps_in_logic", 1)
+CanWallJump = all(
+    Requirement.item("Wall Jump"),
+    any(
+        Requirement.setting_is("walljumps", 1),  # Shuffled
+        Requirement.setting_is("walljumps", 3)   # Enabled
+    )
+)
 CanTrickySparks = all(
     Requirement.setting_enabled("tricky_shinesparks"),
     SpeedBooster,
 )
-Hellrun = lambda n: all(
-    Requirement.setting_enabled("hazard_runs"),
-    Energy(n),
-)
+HazardRuns = Requirement.setting_atleast("hazard_runs", 1)
 
 # Miscellaneous rules
 CanFly = any(  # infinite vertical
@@ -227,25 +260,22 @@ CanHiWallJump = all(
     HiJump,
     CanWallJump
 )
-CanEnterHighMorphTunnel = any(
+CanEnterHighMorphTunnel = any(  # morph tunnel 5 tiles above ground
     CanIBJ,
     all(
         MorphBall,
         PowerGrip
     )
 )
-CanEnterMediumMorphTunnel = any(
+CanEnterMediumMorphTunnel = any(  # morph tunnel 3 or 4 tiles above ground
     CanEnterHighMorphTunnel,
-    all(
-        MorphBall,
-        HiJump
-    )
+    CanHiSpringBall
 )
 RuinsTestEscape = all(
     any(
         all(
             NormalLogic,
-            CanHiGrip,
+            HiJump,
             CanWallJump
         ),
         CanIBJ,
@@ -379,10 +409,10 @@ MechaRidleyCombat = any(
 # Goal
 ReachedGoal = any(
     all(
-        Requirement.setting_is("goal", 0)
+        Requirement.setting_is("goal", "mecha_ridley")
     ),
     all(
-        Requirement.setting_is("goal", 1),
+        Requirement.setting_is("goal", "bosses"),
         MotherBrainBoss,
         ChozoGhostBoss
     ),

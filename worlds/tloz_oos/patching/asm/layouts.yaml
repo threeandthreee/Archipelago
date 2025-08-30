@@ -131,14 +131,15 @@
 21/7ab6/: db $d4,$d4,$d4
 21/7abe/: db $d1
 
+## The following portion affecting the eyeglass portal island has been disabled :
 # replace the stairs outside the portal in eyeglass lake summer with a
 # railing, since if the player jumps off they fall into lost woods.
-22/791b/: db $40,$40,$40
+# 22/791b/: db $40,$40,$40
 # instead add a ledge to the left side of the platform, so that entering the
 # portal without feather and resetting the season to summer isn't a softlock.
-22/78fd/: db $37
-22/7905/: db $25
-22/7910/: db $47
+# 22/78fd/: db $37
+# 22/7905/: db $25
+# 22/7910/: db $47
 
 # remove snow pile outside d6 to prevent softlock in default winter if statue
 # is pushed to the left.

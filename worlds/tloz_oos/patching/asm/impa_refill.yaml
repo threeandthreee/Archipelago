@@ -98,10 +98,6 @@
     db enableinput
     db $74,$ef  ; jump back to the beginning of the script
 
-# Change Impa text to explain that she is providing a refill
-1f/4247/: |
-    db $04,$b6,$04,$06,$05,$a0,$05,$07,$03,$d2,$03,$bd,$61,$01,$72,$65,$66,$69,$6c,$6c,$2e,$00
-
 # Make Impa always stand in front of her house
 0a/5d57/: |
     db $00,$00,$00,$00,$00,$00,$00,$00,$00

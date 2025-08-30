@@ -28,6 +28,7 @@ class TestGenerationEx(WorldTestBase):
         "ph_starting_time": 0,
         "ph_time_increment": 6,
         "randomize_beedle_membership": "no_beedle_points",
+
                }
 
 class TestGeneration(WorldTestBase):
@@ -55,4 +56,5 @@ class TestGeneration(WorldTestBase):
         "ph_starting_time": 120,
         "ph_time_increment": 60,
         "randomize_beedle_membership": "no_beedle_points",
+        "shuffle_dungeon_entrances": True
                }

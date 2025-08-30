@@ -1,9 +1,10 @@
-from . import MinishCapTestBase
+from worlds.tmc.test import MinishCapTestBase
+from worlds.tmc.options import Goal
 
 
 class TestVaati(MinishCapTestBase):
     options = {
-        "goal_vaati": True,
+        "goal": Goal.option_vaati,
         "shuffle_elements": True,
         "dungeon_small_keys": True,
         "dungeon_big_keys": True,
@@ -19,9 +20,10 @@ class TestVaati(MinishCapTestBase):
         self.collect_by_name(["Gust Jar", "Progressive Bow", "Cane of Pacci", "Lantern", "Bomb Bag", "Spin Attack"])
         self.assertBeatable(True)
 
+
 class TestPedestalElements(MinishCapTestBase):
     options = {
-        "goal_vaati": False,
+        "goal": Goal.option_pedestal,
         "shuffle_elements": True,
         "ped_swords": 0
     }

@@ -1,5 +1,4 @@
-from typing import Dict, NamedTuple, Optional
-import typing
+from typing import Dict, NamedTuple, Optional, Set
 
 
 from BaseClasses import Location
@@ -11,7 +10,7 @@ class KHRECOMLocation(Location):
 
 class KHRECOMLocationData(NamedTuple):
     category: str
-    code: Optional[int] = None
+    code: int
 
 
 def get_locations_by_category(category: str) -> Dict[str, KHRECOMLocationData]:
@@ -38,12 +37,12 @@ location_table: Dict[str, KHRECOMLocationData] = {
     "Hollow Bastion Field (Attack Cards Divine Rose)":                   KHRECOMLocationData("Hollow Bastion"   , 269_0012),
     "Destiny Islands Room of Guidance (Attack Cards Oathkeeper)":        KHRECOMLocationData("Destiny Islands"  , 269_0013),
     "12F Exit Hall Larxene II (Attack Cards Oblivion)":                  KHRECOMLocationData("Exit Halls"       , 269_0014),
-    "Castle Oblivion Room of Rewards (Attack Cards Star Seeker)":        KHRECOMLocationData("Castle Oblivion"  , 269_0018), #Days Location
-    "Olympus Coliseum Room of Rewards (Attack Cards Total Eclipse)":     KHRECOMLocationData("Olympus Coliseum" , 269_0019), #Days Location
-    "Neverland Room of Rewards (Attack Cards Midnight Roar)":            KHRECOMLocationData("Neverland"        , 269_0020), #Days Location
-    "Traverse Town Bounty (Attack Cards Maverick Flare)":                KHRECOMLocationData("Traverse Town"    , 269_0021), #Days Location
-    "Destiny Islands Room of Rewards (Attack Cards Two Become One)":     KHRECOMLocationData("Destiny Islands"  , 269_0022), #Days Location
-    "Halloween Town Room of Rewards (Attack Cards Bond of Flame)":       KHRECOMLocationData("Halloween Town"   , 269_0023), #Days Location
+    "Castle Oblivion Room of Rewards (Attack Cards Star Seeker)":        KHRECOMLocationData("Castle Oblivion"  , 269_0018), # Days Location
+    "Olympus Coliseum Room of Rewards (Attack Cards Total Eclipse)":     KHRECOMLocationData("Olympus Coliseum" , 269_0019), # Days Location
+    "Neverland Room of Rewards (Attack Cards Midnight Roar)":            KHRECOMLocationData("Neverland"        , 269_0020), # Days Location
+    "Traverse Town Bounty (Attack Cards Maverick Flare)":                KHRECOMLocationData("Traverse Town"    , 269_0021), # Days Location
+    "Destiny Islands Room of Rewards (Attack Cards Two Become One)":     KHRECOMLocationData("Destiny Islands"  , 269_0022), # Days Location
+    "Halloween Town Room of Rewards (Attack Cards Bond of Flame)":       KHRECOMLocationData("Halloween Town"   , 269_0023), # Days Location
     "01F Exit Hall Axel I (Magic Cards Fire)":                           KHRECOMLocationData("Exit Halls"       , 269_0024),
     "Starting Checks (Magic Cards Blizzard)":                            KHRECOMLocationData("Starting"         , 269_0025),
     "06F Exit Hall Larxene I (Magic Cards Thunder)":                     KHRECOMLocationData("Exit Halls"       , 269_0026),
@@ -77,20 +76,20 @@ location_table: Dict[str, KHRECOMLocationData] = {
     "Destiny Islands Room of Guidance (Enemy Cards Darkside)":           KHRECOMLocationData("Destiny Islands"  , 269_0092),
     "12F Exit Hall Riku IV (Enemy Cards Riku)":                          KHRECOMLocationData("Exit Halls"       , 269_0093),
     "Wonderland Room of Beginnings (Enemy Cards Card Soldier)":          KHRECOMLocationData("Wonderland"       , 269_0094),
-   #"Twilight Town Bounty (Enemy Cards Ansem)":                          KHRECOMLocationData("Twilight Town"    , 269_0095), #RR
-    "Wonderland Room of Rewards (Enemy Cards Xemnas)":                   KHRECOMLocationData("Wonderland"       , 269_0096), #Days Location
-    "Hollow Bastion Room of Rewards (Enemy Cards Xigbar)":               KHRECOMLocationData("Hollow Bastion"   , 269_0097), #Days Location
-    "Monstro Room of Rewards (Enemy Cards Xaldin)":                      KHRECOMLocationData("Monstro"          , 269_0098), #Days Location
+   #"Twilight Town Bounty (Enemy Cards Ansem)":                          KHRECOMLocationData("Twilight Town"    , 269_0095), # RR
+    "Wonderland Room of Rewards (Enemy Cards Xemnas)":                   KHRECOMLocationData("Wonderland"       , 269_0096), # Days Location
+    "Hollow Bastion Room of Rewards (Enemy Cards Xigbar)":               KHRECOMLocationData("Hollow Bastion"   , 269_0097), # Days Location
+    "Monstro Room of Rewards (Enemy Cards Xaldin)":                      KHRECOMLocationData("Monstro"          , 269_0098), # Days Location
     "Twilight Town Room of Beginnings (Enemy Cards Vexen)":              KHRECOMLocationData("Twilight Town"    , 269_0099),
-   #"Castle Oblivion Bounty (Enemy Cards Lexaeus)":                      KHRECOMLocationData("Castle Oblivion"  , 269_0100), #RR
-   #"Destiny Islands Bounty (Enemy Cards Zexion)":                       KHRECOMLocationData("Destiny Islands"  , 269_0101), #RR
-    "Traverse Town Room of Rewards (Enemy Cards Saix)":                  KHRECOMLocationData("Traverse Town"    , 269_0102), #Days Location
+   #"Castle Oblivion Bounty (Enemy Cards Lexaeus)":                      KHRECOMLocationData("Castle Oblivion"  , 269_0100), # RR
+   #"Destiny Islands Bounty (Enemy Cards Zexion)":                       KHRECOMLocationData("Destiny Islands"  , 269_0101), # RR
+    "Traverse Town Room of Rewards (Enemy Cards Saix)":                  KHRECOMLocationData("Traverse Town"    , 269_0102), # Days Location
     "Castle Oblivion Room of Beginnings (Enemy Cards Axel)":             KHRECOMLocationData("Castle Oblivion"  , 269_0103),
-    "Atlantica Room of Rewards (Enemy Cards Demyx)":                     KHRECOMLocationData("Atlantica"        , 269_0104), #Days Location
-    "Agrabah Room of Rewards (Enemy Cards Luxord)":                      KHRECOMLocationData("Agrabah"          , 269_0105), #Days Location
+    "Atlantica Room of Rewards (Enemy Cards Demyx)":                     KHRECOMLocationData("Atlantica"        , 269_0104), # Days Location
+    "Agrabah Room of Rewards (Enemy Cards Luxord)":                      KHRECOMLocationData("Agrabah"          , 269_0105), # Days Location
     "Castle Oblivion Field Marluxia":                                    KHRECOMLocationData("Castle Oblivion"  , 269_0106),
     "12F Exit Hall Larxene II (Enemy Cards Larxene)":                    KHRECOMLocationData("Exit Halls"       , 269_0107),
-    "Twilight Town Room of Rewards (Enemy Cards Roxas)":                 KHRECOMLocationData("Twilight Town"    , 269_0108), #Days Location
+    "Twilight Town Room of Rewards (Enemy Cards Roxas)":                 KHRECOMLocationData("Twilight Town"    , 269_0108), # Days Location
     
     "Traverse Town Room of Beginnings":                                  KHRECOMLocationData("Traverse Town"    , 269_1011),
     "Traverse Town Room of Guidance":                                    KHRECOMLocationData("Traverse Town"    , 269_1012),
@@ -220,94 +219,99 @@ location_table: Dict[str, KHRECOMLocationData] = {
     "Defeat 3 Heartless Tornado Step":                                   KHRECOMLocationData("Heartless3"       , 269_1430),
     "Defeat 3 Heartless Crescendo":                                      KHRECOMLocationData("Heartless3"       , 269_1431),
     
-    "Level 02 (Sleight Sliding Dash)":                                   KHRECOMLocationData("Levels"           ,  269_2001),
-    "Level 17 (Sleight Blitz)":                                          KHRECOMLocationData("Levels"           ,  269_2002),
-    "Level 07 (Sleight Stun Impact)":                                    KHRECOMLocationData("Levels"           ,  269_2003),
-    "Level 22 (Sleight Zantetsuken)":                                    KHRECOMLocationData("Levels"           ,  269_2004),
-    "Level 12 (Sleight Strike Raid)":                                    KHRECOMLocationData("Levels"           ,  269_2005),
-    "Level 27 (Sleight Sonic Blade)":                                    KHRECOMLocationData("Levels"           ,  269_2006),
-    "Level 42 (Sleight Ars Arcanum)":                                    KHRECOMLocationData("Levels"           ,  269_2007),
-    "Level 52 (Sleight Ragnarok)":                                       KHRECOMLocationData("Levels"           ,  269_2008),
-    "Castle Oblivion Entrance (Sleight Trinity Limit)":                  KHRECOMLocationData("Castle Oblivion"  ,  269_2009),
-    "01F Exit Hall Axel I (Sleight Fira)":                               KHRECOMLocationData("Exit Halls"       ,  269_2010),
-    "Starting Checks (Sleight Blizzara)":                                KHRECOMLocationData("Starting"         ,  269_2011),
-    "06F Exit Hall Larxene I (Sleight Thundara)":                        KHRECOMLocationData("Exit Halls"       ,  269_2012),
-    "Starting Checks (Sleight Cura)":                                    KHRECOMLocationData("Starting"         ,  269_2013),
-    "Agrabah Bounty (Sleight Gravira)":                                  KHRECOMLocationData("Agrabah"          ,  269_2014),
-    "Wonderland Bounty (Sleight Stopra)":                                KHRECOMLocationData("Wonderland"       ,  269_2015),
-    "07F Exit Hall Riku I (Sleight Aerora)":                             KHRECOMLocationData("Exit Halls"       ,  269_2016),
-    "01F Exit Hall Axel I (Sleight Firaga)":                             KHRECOMLocationData("Exit Halls"       ,  269_2017),
-    "Starting Checks (Sleight Blizzaga)":                                KHRECOMLocationData("Starting"         ,  269_2018),
-    "06F Exit Hall Larxene I (Sleight Thundaga)":                        KHRECOMLocationData("Exit Halls"       ,  269_2019),
-    "Starting Checks (Sleight Curaga)":                                  KHRECOMLocationData("Starting"         ,  269_2020),
-    "Agrabah Bounty (Sleight Graviga)":                                  KHRECOMLocationData("Agrabah"          ,  269_2021),
-    "Wonderland Bounty (Sleight Stopga)":                                KHRECOMLocationData("Wonderland"       ,  269_2022),
-    "07F Exit Hall Riku I (Sleight Aeroga)":                             KHRECOMLocationData("Exit Halls"       ,  269_2023),
-    "Monstro Bounty (Sleight Fire Raid)":                                KHRECOMLocationData("Monstro"          ,  269_2024),
-    "Olympus Coliseum Bounty (Sleight Blizzard Raid)":                   KHRECOMLocationData("Olympus Coliseum" ,  269_2025),
-    "Neverland Room of Rewards (Sleight Thunder Raid)":                  KHRECOMLocationData("Neverland"        ,  269_2026),
-    "Hollow Bastion Bounty (Sleight Reflect Raid)":                      KHRECOMLocationData("Hollow Bastion"   ,  269_2027),
-    "Destiny Islands Bounty (Sleight Judgment)":                         KHRECOMLocationData("Destiny Islands"  ,  269_2028),
-    "100 Acre Wood Balloon Glider (Sleight Firaga Burst)":               KHRECOMLocationData("100 Acre Wood "   ,  269_2029),
-    "Castle Oblivion Bounty (Sleight Raging Storm)":                     KHRECOMLocationData("Castle Oblivion"  ,  269_2030),
-    "Level 57 (Sleight Mega Flare)":                                     KHRECOMLocationData("Levels"           ,  269_2031),
-    "10F Exit Hall Vexen I (Sleight Freeze)":                            KHRECOMLocationData("Exit Halls"       ,  269_2032),
-    "Atlantica Bounty (Sleight Homing Blizzara)":                        KHRECOMLocationData("Atlantica"        ,  269_2033),
-    "Monstro Room of Rewards (Sleight Aqua Splash)":                     KHRECOMLocationData("Monstro"          ,  269_2034),
-    "08F Exit Hall Riku II (Sleight Magnet Spiral)":                     KHRECOMLocationData("Exit Halls"       ,  269_2035),
-    "Level 32 (Sleight Lethal Frame)":                                   KHRECOMLocationData("Levels"           ,  269_2036),
-    "Atlantica Bounty (Sleight Shock Impact)":                           KHRECOMLocationData("Atlantica"        ,  269_2037),
-    "Level 37 (Sleight Tornado)":                                        KHRECOMLocationData("Levels"           ,  269_2038),
-    "Atlantica Room of Rewards (Sleight Quake)":                         KHRECOMLocationData("Atlantica"        ,  269_2039),
-    "Twilight Town Bounty (Sleight Warpinator)":                         KHRECOMLocationData("Twilight Town"    ,  269_2040),
-    "Agrabah Room of Rewards (Sleight Warp)":                            KHRECOMLocationData("Agrabah"          ,  269_2041),
-    "Halloween Town Room of Rewards (Sleight Bind)":                     KHRECOMLocationData("Halloween Town"   ,  269_2042),
-    "100 Acre Wood Piglet (Sleight Confuse)":                            KHRECOMLocationData("100 Acre Wood"    ,  269_2043),
-    "Halloween Town Ally (Sleight Terror)":                              KHRECOMLocationData("Halloween Town"   ,  269_2044),
-    "Wonderland Room of Rewards (Sleight Synchro)":                      KHRECOMLocationData("Wonderland"       ,  269_2045),
-    "Halloween Town Bounty (Sleight Gifted Miracle)":                    KHRECOMLocationData("Halloween Town"   ,  269_2046),
-    "Neverland Bounty (Sleight Teleport)":                               KHRECOMLocationData("Neverland"        ,  269_2047),
-    "Level 47 (Sleight Holy)":                                           KHRECOMLocationData("Levels"           ,  269_2048),
-    "Traverse Town Room of Beginnings (Sleight Proud Roar LV2)":         KHRECOMLocationData("Traverse Town"    ,  269_2049),
-    "Traverse Town Room of Beginnings (Sleight Proud Roar LV3)":         KHRECOMLocationData("Traverse Town"    ,  269_2050),
-    "Monstro Room of Truth (Sleight Splash LV2)":                        KHRECOMLocationData("Monstro"          ,  269_2051),
-    "Monstro Room of Truth (Sleight Splash LV3)":                        KHRECOMLocationData("Monstro"          ,  269_2052),
-    "100 Acre Wood Clear (Sleight Paradise LV2)":                        KHRECOMLocationData("100 Acre Wood"    ,  269_2053),
-    "100 Acre Wood Clear (Sleight Paradise LV3)":                        KHRECOMLocationData("100 Acre Wood"    ,  269_2054),
-    "100 Acre Wood Jump-a-Thon (Sleight Idyll Romp)":                    KHRECOMLocationData("100 Acre Wood"    ,  269_2055),
-    "Hollow Bastion Room of Rewards (Sleight Flare Breath LV2)":         KHRECOMLocationData("Hollow Bastion"   ,  269_2056),
-    "Hollow Bastion Room of Rewards (Sleight Flare Breath LV3)":         KHRECOMLocationData("Hollow Bastion"   ,  269_2057),
-    "Agrabah Room of Truth (Sleight Showtime LV2)":                      KHRECOMLocationData("Agrabah"          ,  269_2058),
-    "Agrabah Room of Truth (Sleight Showtime LV3)":                      KHRECOMLocationData("Agrabah"          ,  269_2059),
-    "Neverland Room of Truth (Sleight Twinkle LV2)":                     KHRECOMLocationData("Neverland"        ,  269_2060),
-    "Neverland Room of Truth (Sleight Twinkle LV3)":                     KHRECOMLocationData("Neverland"        ,  269_2061),
-    "Olympus Coliseum Room of Truth (Sleight Cross-slash)":              KHRECOMLocationData("Olympus Coliseum" ,  269_2062),
-    "Olympus Coliseum Room of Truth (Sleight Omnislash)":                KHRECOMLocationData("Olympus Coliseum" ,  269_2063),
-    "100 Acre Wood Veggie Panic (Sleight Cross-slash+)":                 KHRECOMLocationData("100 Acre Wood"    ,  269_2064),
-    "Pick Up Donald In Battle (Sleight Magic LV2)":                      KHRECOMLocationData("Traverse Town"    ,  269_2065),
-    "Pick Up Donald In Battle (Sleight Magic LV3)":                      KHRECOMLocationData("Traverse Town"    ,  269_2066),
-    "Twilight Town Room of Rewards (Sleight Stardust Blitz)":            KHRECOMLocationData("Twilight Town"    ,  269_2067),
-    "Pick Up Goofy In Battle (Sleight Goofy Tornado LV2)":               KHRECOMLocationData("Traverse Town"    ,  269_2068),
-    "Pick Up Goofy In Battle (Sleight Goofy Tornado LV3)":               KHRECOMLocationData("Traverse Town"    ,  269_2069),
-    "Pick Up Goofy In Battle (Sleight Goofy Smash)":                     KHRECOMLocationData("Traverse Town"    ,  269_2070),
-    "Pick Up Goofy In Battle (Sleight Wild Crush)":                      KHRECOMLocationData("Traverse Town"    ,  269_2071),
-    "Agrabah Ally (Sleight Sandstorm LV2)":                              KHRECOMLocationData("Agrabah"          ,  269_2072),
-    "Agrabah Ally (Sleight Sandstorm LV3)":                              KHRECOMLocationData("Agrabah"          ,  269_2073),
-    "Halloween Town Ally (Sleight Surprise! LV2)":                       KHRECOMLocationData("Halloween Town"   ,  269_2074),
-    "Halloween Town Ally (Sleight Surprise! LV3)":                       KHRECOMLocationData("Halloween Town"   ,  269_2075),
-    "Atlantica Ally (Sleight Spiral Wave LV2)":                          KHRECOMLocationData("Atlantica"        ,  269_2076),
-    "Atlantica Ally (Sleight Spiral Wave LV3)":                          KHRECOMLocationData("Atlantica"        ,  269_2077),
-    "Neverland Ally (Sleight Hummingbird LV2)":                          KHRECOMLocationData("Atlantica"        ,  269_2078),
-    "Neverland Ally (Sleight Hummingbird LV3)":                          KHRECOMLocationData("Atlantica"        ,  269_2079),
-    "Hollow Bastion Ally (Sleight Furious Volley LV2)":                  KHRECOMLocationData("Hollow Bastion"   ,  269_2080),
-    "Hollow Bastion Ally (Sleight Furious Volley LV3)":                  KHRECOMLocationData("Hollow Bastion"   ,  269_2081),
-    "Pick Up Pluto In Battle (Sleight Lucky Bounty LV2)":                KHRECOMLocationData("Traverse Town"    ,  269_2082),
-    "Pick Up Pluto In Battle (Sleight Lucky Bounty LV3)":                KHRECOMLocationData("Traverse Town"    ,  269_2083),
+    "Level 02 (Sleight Sliding Dash)":                                   KHRECOMLocationData("Levels"           , 269_2001),
+    "Level 17 (Sleight Blitz)":                                          KHRECOMLocationData("Levels"           , 269_2002),
+    "Level 07 (Sleight Stun Impact)":                                    KHRECOMLocationData("Levels"           , 269_2003),
+    "Level 22 (Sleight Zantetsuken)":                                    KHRECOMLocationData("Levels"           , 269_2004),
+    "Level 12 (Sleight Strike Raid)":                                    KHRECOMLocationData("Levels"           , 269_2005),
+    "Level 27 (Sleight Sonic Blade)":                                    KHRECOMLocationData("Levels"           , 269_2006),
+    "Level 42 (Sleight Ars Arcanum)":                                    KHRECOMLocationData("Levels"           , 269_2007),
+    "Level 52 (Sleight Ragnarok)":                                       KHRECOMLocationData("Levels"           , 269_2008),
+    "Castle Oblivion Entrance (Sleight Trinity Limit)":                  KHRECOMLocationData("Castle Oblivion"  , 269_2009),
+    "01F Exit Hall Axel I (Sleight Fira)":                               KHRECOMLocationData("Exit Halls"       , 269_2010),
+    "Starting Checks (Sleight Blizzara)":                                KHRECOMLocationData("Starting"         , 269_2011),
+    "06F Exit Hall Larxene I (Sleight Thundara)":                        KHRECOMLocationData("Exit Halls"       , 269_2012),
+    "Starting Checks (Sleight Cura)":                                    KHRECOMLocationData("Starting"         , 269_2013),
+    "Agrabah Bounty (Sleight Gravira)":                                  KHRECOMLocationData("Agrabah"          , 269_2014),
+    "Wonderland Bounty (Sleight Stopra)":                                KHRECOMLocationData("Wonderland"       , 269_2015),
+    "07F Exit Hall Riku I (Sleight Aerora)":                             KHRECOMLocationData("Exit Halls"       , 269_2016),
+    "01F Exit Hall Axel I (Sleight Firaga)":                             KHRECOMLocationData("Exit Halls"       , 269_2017),
+    "Starting Checks (Sleight Blizzaga)":                                KHRECOMLocationData("Starting"         , 269_2018),
+    "06F Exit Hall Larxene I (Sleight Thundaga)":                        KHRECOMLocationData("Exit Halls"       , 269_2019),
+    "Starting Checks (Sleight Curaga)":                                  KHRECOMLocationData("Starting"         , 269_2020),
+    "Agrabah Bounty (Sleight Graviga)":                                  KHRECOMLocationData("Agrabah"          , 269_2021),
+    "Wonderland Bounty (Sleight Stopga)":                                KHRECOMLocationData("Wonderland"       , 269_2022),
+    "07F Exit Hall Riku I (Sleight Aeroga)":                             KHRECOMLocationData("Exit Halls"       , 269_2023),
+    "Monstro Bounty (Sleight Fire Raid)":                                KHRECOMLocationData("Monstro"          , 269_2024),
+    "Olympus Coliseum Bounty (Sleight Blizzard Raid)":                   KHRECOMLocationData("Olympus Coliseum" , 269_2025),
+    "Neverland Room of Rewards (Sleight Thunder Raid)":                  KHRECOMLocationData("Neverland"        , 269_2026),
+    "Hollow Bastion Bounty (Sleight Reflect Raid)":                      KHRECOMLocationData("Hollow Bastion"   , 269_2027),
+    "Destiny Islands Bounty (Sleight Judgment)":                         KHRECOMLocationData("Destiny Islands"  , 269_2028),
+    "100 Acre Wood Balloon Glider (Sleight Firaga Burst)":               KHRECOMLocationData("100 Acre Wood "   , 269_2029),
+    "Castle Oblivion Bounty (Sleight Raging Storm)":                     KHRECOMLocationData("Castle Oblivion"  , 269_2030),
+    "Level 57 (Sleight Mega Flare)":                                     KHRECOMLocationData("Levels"           , 269_2031),
+    "10F Exit Hall Vexen I (Sleight Freeze)":                            KHRECOMLocationData("Exit Halls"       , 269_2032),
+    "Atlantica Bounty (Sleight Homing Blizzara)":                        KHRECOMLocationData("Atlantica"        , 269_2033),
+    "Monstro Room of Rewards (Sleight Aqua Splash)":                     KHRECOMLocationData("Monstro"          , 269_2034),
+    "08F Exit Hall Riku II (Sleight Magnet Spiral)":                     KHRECOMLocationData("Exit Halls"       , 269_2035),
+    "Level 32 (Sleight Lethal Frame)":                                   KHRECOMLocationData("Levels"           , 269_2036),
+    "Atlantica Bounty (Sleight Shock Impact)":                           KHRECOMLocationData("Atlantica"        , 269_2037),
+    "Level 37 (Sleight Tornado)":                                        KHRECOMLocationData("Levels"           , 269_2038),
+    "Atlantica Room of Rewards (Sleight Quake)":                         KHRECOMLocationData("Atlantica"        , 269_2039),
+    "Twilight Town Bounty (Sleight Warpinator)":                         KHRECOMLocationData("Twilight Town"    , 269_2040),
+    "Agrabah Room of Rewards (Sleight Warp)":                            KHRECOMLocationData("Agrabah"          , 269_2041),
+    "Halloween Town Room of Rewards (Sleight Bind)":                     KHRECOMLocationData("Halloween Town"   , 269_2042),
+    "100 Acre Wood Piglet (Sleight Confuse)":                            KHRECOMLocationData("100 Acre Wood"    , 269_2043),
+    "Halloween Town Ally (Sleight Terror)":                              KHRECOMLocationData("Halloween Town"   , 269_2044),
+    "Wonderland Room of Rewards (Sleight Synchro)":                      KHRECOMLocationData("Wonderland"       , 269_2045),
+    "Halloween Town Bounty (Sleight Gifted Miracle)":                    KHRECOMLocationData("Halloween Town"   , 269_2046),
+    "Neverland Bounty (Sleight Teleport)":                               KHRECOMLocationData("Neverland"        , 269_2047),
+    "Level 47 (Sleight Holy)":                                           KHRECOMLocationData("Levels"           , 269_2048),
+    "Traverse Town Room of Beginnings (Sleight Proud Roar LV2)":         KHRECOMLocationData("Traverse Town"    , 269_2049),
+    "Traverse Town Room of Beginnings (Sleight Proud Roar LV3)":         KHRECOMLocationData("Traverse Town"    , 269_2050),
+    "Monstro Room of Truth (Sleight Splash LV2)":                        KHRECOMLocationData("Monstro"          , 269_2051),
+    "Monstro Room of Truth (Sleight Splash LV3)":                        KHRECOMLocationData("Monstro"          , 269_2052),
+    "100 Acre Wood Clear (Sleight Paradise LV2)":                        KHRECOMLocationData("100 Acre Wood"    , 269_2053),
+    "100 Acre Wood Clear (Sleight Paradise LV3)":                        KHRECOMLocationData("100 Acre Wood"    , 269_2054),
+    "100 Acre Wood Jump-a-Thon (Sleight Idyll Romp)":                    KHRECOMLocationData("100 Acre Wood"    , 269_2055),
+    "Hollow Bastion Room of Rewards (Sleight Flare Breath LV2)":         KHRECOMLocationData("Hollow Bastion"   , 269_2056),
+    "Hollow Bastion Room of Rewards (Sleight Flare Breath LV3)":         KHRECOMLocationData("Hollow Bastion"   , 269_2057),
+    "Agrabah Room of Truth (Sleight Showtime LV2)":                      KHRECOMLocationData("Agrabah"          , 269_2058),
+    "Agrabah Room of Truth (Sleight Showtime LV3)":                      KHRECOMLocationData("Agrabah"          , 269_2059),
+    "Neverland Room of Truth (Sleight Twinkle LV2)":                     KHRECOMLocationData("Neverland"        , 269_2060),
+    "Neverland Room of Truth (Sleight Twinkle LV3)":                     KHRECOMLocationData("Neverland"        , 269_2061),
+    "Olympus Coliseum Room of Truth (Sleight Cross-slash)":              KHRECOMLocationData("Olympus Coliseum" , 269_2062),
+    "Olympus Coliseum Room of Truth (Sleight Omnislash)":                KHRECOMLocationData("Olympus Coliseum" , 269_2063),
+    "100 Acre Wood Veggie Panic (Sleight Cross-slash+)":                 KHRECOMLocationData("100 Acre Wood"    , 269_2064),
+    "Pick Up Donald In Battle (Sleight Magic LV2)":                      KHRECOMLocationData("Traverse Town"    , 269_2065),
+    "Pick Up Donald In Battle (Sleight Magic LV3)":                      KHRECOMLocationData("Traverse Town"    , 269_2066),
+    "Twilight Town Room of Rewards (Sleight Stardust Blitz)":            KHRECOMLocationData("Twilight Town"    , 269_2067),
+    "Pick Up Goofy In Battle (Sleight Goofy Tornado LV2)":               KHRECOMLocationData("Traverse Town"    , 269_2068),
+    "Pick Up Goofy In Battle (Sleight Goofy Tornado LV3)":               KHRECOMLocationData("Traverse Town"    , 269_2069),
+    "Pick Up Goofy In Battle (Sleight Goofy Smash)":                     KHRECOMLocationData("Traverse Town"    , 269_2070),
+    "Pick Up Goofy In Battle (Sleight Wild Crush)":                      KHRECOMLocationData("Traverse Town"    , 269_2071),
+    "Agrabah Ally (Sleight Sandstorm LV2)":                              KHRECOMLocationData("Agrabah"          , 269_2072),
+    "Agrabah Ally (Sleight Sandstorm LV3)":                              KHRECOMLocationData("Agrabah"          , 269_2073),
+    "Halloween Town Ally (Sleight Surprise! LV2)":                       KHRECOMLocationData("Halloween Town"   , 269_2074),
+    "Halloween Town Ally (Sleight Surprise! LV3)":                       KHRECOMLocationData("Halloween Town"   , 269_2075),
+    "Atlantica Ally (Sleight Spiral Wave LV2)":                          KHRECOMLocationData("Atlantica"        , 269_2076),
+    "Atlantica Ally (Sleight Spiral Wave LV3)":                          KHRECOMLocationData("Atlantica"        , 269_2077),
+    "Neverland Ally (Sleight Hummingbird LV2)":                          KHRECOMLocationData("Atlantica"        , 269_2078),
+    "Neverland Ally (Sleight Hummingbird LV3)":                          KHRECOMLocationData("Atlantica"        , 269_2079),
+    "Hollow Bastion Ally (Sleight Furious Volley LV2)":                  KHRECOMLocationData("Hollow Bastion"   , 269_2080),
+    "Hollow Bastion Ally (Sleight Furious Volley LV3)":                  KHRECOMLocationData("Hollow Bastion"   , 269_2081),
+    "Pick Up Pluto In Battle (Sleight Lucky Bounty LV2)":                KHRECOMLocationData("Traverse Town"    , 269_2082),
+    "Pick Up Pluto In Battle (Sleight Lucky Bounty LV3)":                KHRECOMLocationData("Traverse Town"    , 269_2083),
 
-    "Final Marluxia":                                                    KHRECOMLocationData("Final",  269_9999),
+    "Final Marluxia":                                                    KHRECOMLocationData("Final"            , 269_9999),
 }
 
-event_location_table: Dict[str, KHRECOMLocationData] = {
-}
+lookup_id_to_name: Dict[int, str] = {data.code: item_name for item_name, data in location_table.items() if data.code}
 
-lookup_id_to_name: typing.Dict[int, str] = {data.code: item_name for item_name, data in location_table.items() if data.code}
+# Make location categories
+location_name_groups: Dict[str, Set[str]] = {}
+for location in location_table.keys():
+    category = location_table[location].category
+    if category not in location_name_groups.keys():
+        location_name_groups[category] = set()
+    location_name_groups[category].add(location)

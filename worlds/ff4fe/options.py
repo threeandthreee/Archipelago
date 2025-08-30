@@ -61,6 +61,11 @@ class ItemPlacement(Choice):
     option_major_minor_split = 1
     default = 0
 
+class EnableDefaultPriorityLocations(DefaultOnToggle):
+    """If set, major event locations and Monster-In-A-Box locations will be guaranteed to have
+    useful or progression items."""
+    display_name = "Enable Default Priority Locations"
+
 class NoFreeCharacters(Toggle):
     """If set, characters will not be available at locations with no requirements or bosses. These locations are
     Mysidia, Damcyan Watery Pass, and Mt. Ordeals."""
@@ -359,6 +364,7 @@ class FF4FEOptions(PerGameCommonOptions):
     RequiredObjectiveCount: RequiredObjectiveCount
     ObjectiveReward: ObjectiveReward
     ItemPlacement: ItemPlacement
+    EnableDefaultPriorityLocations: EnableDefaultPriorityLocations
     NoFreeCharacters: NoFreeCharacters
     NoEarnedCharacters: NoEarnedCharacters
     HeroChallenge: HeroChallenge
@@ -410,6 +416,7 @@ ff4fe_option_groups = [
     OptionGroup("Item Options", [
         ItemPlacement,
         ItemRandomization,
+        EnableDefaultPriorityLocations,
         PassEnabled,
         PassInShops,
         MinTier,

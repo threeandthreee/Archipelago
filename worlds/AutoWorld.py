@@ -16,7 +16,7 @@ from Utils import deprecate
 
 if TYPE_CHECKING:
     from BaseClasses import MultiWorld, Item, Location, Tutorial, Region, Entrance
-    from . import GamesPackage
+    from NetUtils import GamesPackage, MultiData
     from settings import Group
 
 perf_logger = logging.getLogger("performance")
@@ -76,6 +76,7 @@ class AutoWorldRegister(type):
         # TODO - remove this once all worlds use options dataclasses
         if "options_dataclass" not in dct and "option_definitions" in dct:
             # TODO - switch to deprecate after a version
+            # Ashipelago customization (Allows for older worlds to continue generating)
             if __debug__:
                 logging.warning(f"{name} Assigned options through option_definitions which is now deprecated. "
                                 "Please use options_dataclass instead.")
@@ -451,7 +452,7 @@ class World(metaclass=AutoWorldRegister):
         """
         pass
 
-    def modify_multidata(self, multidata: Dict[str, Any]) -> None:  # TODO: TypedDict for multidata?
+    def modify_multidata(self, multidata: "MultiData") -> None:
         """For deeper modification of server multidata."""
         pass
 
@@ -494,9 +495,6 @@ class World(metaclass=AutoWorldRegister):
         Creates a group, which is an instance of World that is responsible for multiple others.
         An example case is ItemLinks creating these.
         """
-        # TODO remove loop when worlds use options dataclass
-        for option_key, option in cls.options_dataclass.type_hints.items():
-            getattr(multiworld, option_key)[new_player_id] = option.from_any(option.default)
         group = cls(multiworld, new_player_id)
         group.options = cls.options_dataclass(**{option_key: option.from_any(option.default)
                                                  for option_key, option in cls.options_dataclass.type_hints.items()})

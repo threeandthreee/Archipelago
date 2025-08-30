@@ -183,7 +183,8 @@
     ld a,e
     cp $ff
     ret z
-    call checkCustomTreasureTextId
+    ld c,a
+    ld b,$00
     call showText
     xor a
     ret

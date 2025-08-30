@@ -3,10 +3,13 @@ import logging
 import random
 from math import ceil
 from typing import List, Union, ClassVar, Any, Optional, Tuple
+
+import entrance_rando
 import settings
 from BaseClasses import Tutorial, Region, Location, LocationProgressType, Item, ItemClassification
 from Fill import fill_restrictive, FillError
 from Options import Accessibility, OptionError
+from entrance_rando import randomize_entrances
 from worlds.AutoWorld import WebWorld, World
 
 from .Util import *
@@ -17,6 +20,7 @@ from .data.Constants import *
 from .data.Items import ITEMS_DATA
 from .data.Regions import REGIONS
 from .data.LogicPredicates import *
+from .data.Entrances import EntranceGroups, OPPOSITE_ENTRANCE_GROUPS, ENTRANCES
 
 from .Client import PhantomHourglassClient  # Unused, but required to register with BizHawkClient
 
@@ -24,7 +28,6 @@ logger = logging.getLogger("Client")
 
 
 class PhantomHourglassWeb(WebWorld):
-    theme = "grass"
     setup_en = Tutorial(
         "Phantom Hourglass Setup Guide",
         "A guide to setting up Phantom Hourglass Archipelago Randomizer on your computer.",
@@ -51,6 +54,9 @@ class PhantomHourglassWeb(WebWorld):
     )
 
     tutorials = [setup_en, faq, tricks]
+    game = "The Legend of Zelda - Phantom Hourglass"
+    theme = "ocean"
+    option_groups = ph_option_groups
 
 
 # Adds a consistent count of items to pool, independent of how many are from locations
@@ -103,7 +109,7 @@ class PhantomHourglassWorld(World):
     game = "The Legend of Zelda - Phantom Hourglass"
     options_dataclass = PhantomHourglassOptions
     options: PhantomHourglassOptions
-    required_client_version = (0, 6, 1)
+    required_client_version = (0, 6, 3)
     web = PhantomHourglassWeb()
     topology_present = True
 
@@ -117,6 +123,8 @@ class PhantomHourglassWorld(World):
     glitches_item_name = "_UT_Glitched_logic"
     ut_can_gen_without_yaml = True
     location_id_to_alias: Dict[int, str]
+    tracker_world = {"map_page_folder": "tracker", "map_page_maps": "maps/maps.json",
+                     "map_page_locations": "locations/locations.json"}
 
     def __init__(self, multiworld, player):
         super().__init__(multiworld, player)
@@ -130,6 +138,10 @@ class PhantomHourglassWorld(World):
         self.ut_locations_to_exclude = set()
         self.extra_filler_items = []
         self.excluded_dungeons = []
+        self.ut_pairings = {}
+
+        self.entrances = {}
+        self.er_placement_state = None
 
     def generate_early(self):
         re_gen_passthrough = getattr(self.multiworld, "re_gen_passthrough", {})
@@ -147,9 +159,12 @@ class PhantomHourglassWorld(World):
             # Set randomized data that effects exclusions etc
             self.required_dungeons = slot_data["required_dungeons"]
             self.boss_reward_items_pool = slot_data["boss_reward_items_pool"]
+            self.ut_pairings = slot_data.get("er_pairings", {})
 
         else:
             self.pick_required_dungeons()
+            if self.options.shuffle_dungeon_entrances:
+                self.options.dungeon_shortcuts.value = 0
         self.restrict_non_local_items()
 
     def restrict_non_local_items(self):
@@ -346,6 +361,38 @@ class PhantomHourglassWorld(World):
         self.locations_to_exclude = locations_to_exclude
         for name in locations_to_exclude:
             self.multiworld.get_location(name, self.player).progress_type = LocationProgressType.EXCLUDED
+
+    def connect_entrances(self) -> None:
+        do_er = True  # Sneaky beta setting
+        coupled = True
+        if do_er:
+            # Filter entrances to disconnect by yaml settings
+            # Currently only dungeon entrance rando is supported
+            randomized_entrances = []
+            if self.options.shuffle_dungeon_entrances:
+                randomized_entrances += [e for e in self.entrances.values() if e.randomization_group & EntranceGroups.AREA_MASK == EntranceGroups.DUNGEON_ENTRANCE]
+                # print([e.name for e in randomized_entrances])
+            # Disconnect entrances to shuffle
+            for entrance in randomized_entrances:
+                entrance_rando.disconnect_entrance_for_randomization(entrance)
+                # print(f"disconnected {entrance.name}, parent {entrance.parent_region}, child {entrance.connected_region}, group {entrance.randomization_group}")
+
+            def get_target_groups(group: int) -> list[int]:
+                direction = group & EntranceGroups.DIRECTION_MASK
+                area = group & EntranceGroups.AREA_MASK
+                return list({OPPOSITE_ENTRANCE_GROUPS[direction] | area, area, OPPOSITE_ENTRANCE_GROUPS[direction]})
+
+            groups = {direction | area << 3: get_target_groups(direction | area << 3) for direction in range(0, 5) for area in range(0, 11)}
+            # Manually connect entrances if UT
+            if getattr(self.multiworld, "generation_is_fake", False):
+                entrance_id_to_region = {data["id"]: data["entrance_region"] for data in ENTRANCES.values()}
+                for plando_entrance, plando_exit in self.ut_pairings.items():
+                    reg1 = self.get_region(entrance_id_to_region[int(plando_entrance)])
+                    reg2 = self.get_region(entrance_id_to_region[plando_exit])
+                    reg1.connect(reg2)
+            # Do ER!
+            else:
+                self.er_placement_state = entrance_rando.randomize_entrances(self, coupled, groups)
 
     def set_rules(self):
         create_connections(self.multiworld, self.player, self.origin_region_name, self.options)
@@ -566,7 +613,6 @@ class PhantomHourglassWorld(World):
         # before anything else.
         for dung_name in DUNGEON_NAMES:
             # Build a list of locations in this dungeon
-            print(f"Pre-filling {dung_name}")
             dungeon_location_names = [name for name, loc in LOCATIONS_DATA.items()
                                       if "dungeon" in loc and loc["dungeon"] == dung_name]
             dungeon_locations = [loc for loc in self.multiworld.get_locations(self.player)
@@ -623,7 +669,7 @@ class PhantomHourglassWorld(World):
             # Beedle randomization
             "randomize_masked_beedle", "randomize_beedle_membership",
             # World Settings
-            "fog_settings", "skip_ocean_fights",
+            "fog_settings", "skip_ocean_fights", "dungeon_shortcuts",
             # Spirit Packs
             "spirit_gem_packs", "additional_spirit_gems",
             # Hint settings
@@ -632,6 +678,8 @@ class PhantomHourglassWorld(World):
             "ph_time_logic", "ph_starting_time", "ph_time_increment", "ph_heart_time", "ph_required",
             # Cosmetic
             "additional_metal_names",
+            # ER
+            "shuffle_dungeon_entrances",
             # Deathlink
             "death_link"
         ]
@@ -645,12 +693,30 @@ class PhantomHourglassWorld(World):
         # Used for dungeon hints in client
         slot_data["required_dungeon_locations"] = self.boss_reward_location_names  # for dungeon hints
         slot_data["boss_reward_items_pool"] = self.boss_reward_items_pool
+
+        # Create ER Pairings, as ids to save space
+        pairings = {}
+        if self.er_placement_state:
+            for e1, e2 in self.er_placement_state.pairings:
+                pairings[ENTRANCES[e1]["id"]] = ENTRANCES[e2]["id"]
+        slot_data["er_pairings"] = pairings
+
         return slot_data
 
     def write_spoiler(self, spoiler_handle):
         spoiler_handle.write(f"\n\nRequired Dungeons ({self.multiworld.player_name[self.player]}):\n")
         for dung in self.required_dungeons:
             spoiler_handle.write(f"\t- {dung}\n")
+
+        if self.er_placement_state:
+            spoiler_handle.write(f"\n\n Entrance Rando\n")
+            prev = None
+            for i in self.er_placement_state.pairings:
+                if not (i[1], i[0]) == prev:
+                    text = i[0] + " <=> " + i[1]
+                    spoiler_handle.write(f"\t{text}\n")
+                prev = i
+
 
     # UT stuff
     @staticmethod

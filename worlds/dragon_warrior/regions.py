@@ -180,8 +180,11 @@ def connect_regions(world: World) -> None:
             lambda state: (state.has(names.silver_harp, world.player)))
     connect(world, world.player, region_names, names.overworld, names.erdricks_token_tile,
             equipment_helper(world, 4, 4, 2))
-    connect(world, world.player, region_names, names.overworld, names.charlock_castle,
+    connect(world, world.player, region_names, names.overworld, names.charlock_castle,  # Temporary fix for now
             lambda state: (state.has(names.magic_key, world.player) and
+                           state.has(names.staff_of_rain, world.player) and
+                           state.has(names.stones_of_sunlight, world.player) and
+                           (not searchsanity or state.has(names.erdricks_token, world.player)) and
                            state.has(names.rainbow_drop, world.player) and not world.options.shopsanity or (
                                 state.has(names.progressive_weapon, world.player, 5) and
                                 state.has(names.progressive_armor, world.player, 5) and

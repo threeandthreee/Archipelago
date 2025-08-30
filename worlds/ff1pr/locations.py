@@ -5,25 +5,25 @@ from ..oot.ntype import int32
 class FF1PRLocationData(NamedTuple):
     region: str
     type: str
-    flag: int32
+    flag: int
     # er_region: str  # entrance rando region
 
 location_base_id = 398735498
 
 location_table: Dict[str, FF1PRLocationData] = {
-    "Chaos Shrine - Unlocked Single": FF1PRLocationData("Pravoka Region", "Treasure", 5),
-    "Chaos Shrine - Unlocked Duo 1": FF1PRLocationData("Pravoka Region", "Treasure", 6),
-    "Chaos Shrine - Unlocked Duo 2": FF1PRLocationData("Pravoka Region", "Treasure", 7),
-    "Chaos Shrine - Locked Single": FF1PRLocationData("Pravoka Region", "Treasure", 10),
-    "Chaos Shrine - Locked Duo 1": FF1PRLocationData("Pravoka Region", "Treasure", 8),
-    "Chaos Shrine - Locked Duo 2": FF1PRLocationData("Pravoka Region", "Treasure", 9),
-    "Castle Cornelia - Princess": FF1PRLocationData("Pravoka Region", "GameObject", 400),
-    "Castle Cornelia - Treasury 1": FF1PRLocationData("Pravoka Region", "Treasure", 0),
-    "Castle Cornelia - Treasury 2": FF1PRLocationData("Pravoka Region", "Treasure", 1),
-    "Castle Cornelia - Treasury 3": FF1PRLocationData("Pravoka Region", "Treasure", 2),
-    "Castle Cornelia - Treasury 4": FF1PRLocationData("Pravoka Region", "Treasure", 3),
-    "Castle Cornelia - Treasury 5": FF1PRLocationData("Pravoka Region", "Treasure", 4),
-    "Castle Cornelia - Treasury Major": FF1PRLocationData("Pravoka Region", "Treasure", 505),
+    "Chaos Shrine - Unlocked Single": FF1PRLocationData("Cornelia Region", "Treasure", 5),
+    "Chaos Shrine - Unlocked Duo 1": FF1PRLocationData("Cornelia Region", "Treasure", 6),
+    "Chaos Shrine - Unlocked Duo 2": FF1PRLocationData("Cornelia Region", "Treasure", 7),
+    "Chaos Shrine - Locked Single": FF1PRLocationData("Cornelia Region", "Treasure", 10),
+    "Chaos Shrine - Locked Duo 1": FF1PRLocationData("Cornelia Region", "Treasure", 8),
+    "Chaos Shrine - Locked Duo 2": FF1PRLocationData("Cornelia Region", "Treasure", 9),
+    "Castle Cornelia - Princess": FF1PRLocationData("Cornelia Region", "GameObject", 400),
+    "Castle Cornelia - Treasury 1": FF1PRLocationData("Cornelia Region", "Treasure", 0),
+    "Castle Cornelia - Treasury 2": FF1PRLocationData("Cornelia Region", "Treasure", 1),
+    "Castle Cornelia - Treasury 3": FF1PRLocationData("Cornelia Region", "Treasure", 2),
+    "Castle Cornelia - Treasury 4": FF1PRLocationData("Cornelia Region", "Treasure", 3),
+    "Castle Cornelia - Treasury 5": FF1PRLocationData("Cornelia Region", "Treasure", 4),
+    "Castle Cornelia - Treasury Major": FF1PRLocationData("Cornelia Region", "Treasure", 505),
     "Matoya's Cave - Chest 1": FF1PRLocationData("Pravoka Region", "Treasure", 11),
     "Matoya's Cave - Chest 2": FF1PRLocationData("Pravoka Region", "Treasure", 12),
     "Matoya's Cave - Chest 3": FF1PRLocationData("Pravoka Region", "Treasure", 13),
@@ -91,10 +91,10 @@ location_table: Dict[str, FF1PRLocationData] = {
     "Cavern of Earth B4 - Lich's Closet 1": FF1PRLocationData("Cavern of Earth Deep", "Treasure", 63),
     "Cavern of Earth B4 - Lich's Closet 2": FF1PRLocationData("Cavern of Earth Deep", "Treasure", 64),
     "Cavern of Earth B4 - Lich's Closet 3": FF1PRLocationData("Cavern of Earth Deep", "Treasure", 65),
-    "Giant's Cave - Chest 1": FF1PRLocationData("Melmond Region", "Treasure", 241),
-    "Giant's Cave - Chest 2": FF1PRLocationData("Melmond Region", "Treasure", 242),
-    "Giant's Cave - Chest 3": FF1PRLocationData("Melmond Region", "Treasure", 243),
-    "Giant's Cave - Chest 4": FF1PRLocationData("Melmond Region", "Treasure", 244),
+    "Giant's Cave - Chest 1": FF1PRLocationData("Sage Region", "Treasure", 241),
+    "Giant's Cave - Chest 2": FF1PRLocationData("Sage Region", "Treasure", 242),
+    "Giant's Cave - Chest 3": FF1PRLocationData("Sage Region", "Treasure", 243),
+    "Giant's Cave - Chest 4": FF1PRLocationData("Sage Region", "Treasure", 244),
     "Sage's Cave - Sarda": FF1PRLocationData("Sage Region", "GameObject", 253),
     "Crescent Lake - Canoe Sage": FF1PRLocationData("Crescent Region", "GameObject", 402),
     "Mount Gulg B2 - Guarded": FF1PRLocationData("Gulg Region", "Treasure", 66),
@@ -173,7 +173,8 @@ location_table: Dict[str, FF1PRLocationData] = {
     "Dragon Caves (Plains) - Entrance": FF1PRLocationData("Dragon Region", "Treasure", 218),
     "Dragon Caves (Plains) - Duo 1": FF1PRLocationData("Dragon Region", "Treasure", 219),
     "Dragon Caves (Plains) - Duooo 2": FF1PRLocationData("Dragon Region", "Treasure", 220),
-    "Caravan": FF1PRLocationData("Onrac Region", "GameObject", 406),
+    "Dragon Caves - Bahamut": FF1PRLocationData("Dragon Region", "GameObject", 407),
+    "Onrac Desert - Caravan": FF1PRLocationData("Onrac Region", "GameObject", 406),
     "Waterfall Caverns - Chest 1": FF1PRLocationData("Waterfall", "Treasure", 114),
     "Waterfall Caverns - Chest 2": FF1PRLocationData("Waterfall", "Treasure", 115),
     "Waterfall Caverns - Chest 3": FF1PRLocationData("Waterfall", "Treasure", 116),
@@ -277,7 +278,7 @@ location_table: Dict[str, FF1PRLocationData] = {
 }
 
 event_table: Dict[str, FF1PRLocationData] = {
-    "Chaos Shrine - Garland": FF1PRLocationData("Pravoka Region", "Event", 0),
+    "Chaos Shrine - Garland": FF1PRLocationData("Cornelia Region", "Event", 0),
     "Mount Duergar - Nerrick": FF1PRLocationData("Innersea Region", "Event", 0),
     "Cavern of Earth - Vampire": FF1PRLocationData("Melmond Region", "Event", 0),
     "Giant's Cave - Titan": FF1PRLocationData("Melmond Region", "Event", 0),
@@ -289,7 +290,7 @@ event_table: Dict[str, FF1PRLocationData] = {
     "Sunken Shrine - Kraken": FF1PRLocationData("Sunken Shrine", "Event", 0),
     "Melmond - Dr Unne": FF1PRLocationData("Melmond Region", "Event", 0),
     "Flying Fortress - Tiamat": FF1PRLocationData("Flying Fortress", "Event", 0),
-    "Chaos Shrine - Black Orb": FF1PRLocationData("Pravoka Region", "Event", 0),
+    "Chaos Shrine - Black Orb": FF1PRLocationData("Cornelia Region", "Event", 0),
     "Chaos Shrine - Chaos": FF1PRLocationData("Beyond the Black Orb", "Event", 0),
 }
 

@@ -7,6 +7,8 @@ from worlds.Files import APProcedurePatch, APTokenMixin, APPatchExtension
 from .Functions import *
 from .Constants import *
 from .RomData import RomData
+from .text.decoding import parse_all_texts, parse_dict_seasons
+from .text.encoding import write_text_data
 from .z80asm.Assembler import Z80Assembler, Z80Block
 
 
@@ -23,26 +25,29 @@ class OoSPatchExtensions(APPatchExtension):
             raise Exception(f"Invalid version: this patch was generated on v{patch_data['version']}, "
                             f"you are currently using v{VERSION[0]},{VERSION[1]}")
 
-        assembler = Z80Assembler(EOB_ADDR, DEFINES, rom)
+        assembler = Z80Assembler(CAVE_DATA, DEFINES, rom)
+        dictionary = parse_dict_seasons(rom_data)
+        texts = parse_all_texts(rom_data, dictionary)
 
         # Define assembly constants & floating chunks
         define_location_constants(assembler, patch_data)
         define_option_constants(assembler, patch_data)
         define_season_constants(assembler, patch_data)
-        define_text_constants(assembler, patch_data)
+        make_text_data(texts, patch_data)
         define_compass_rooms_table(assembler, patch_data)
         define_collect_properties_table(assembler, patch_data)
         define_additional_tile_replacements(assembler, patch_data)
         define_samasa_combination(assembler, patch_data)
-        define_dungeon_items_text_constants(assembler, patch_data)
+        define_dungeon_items_text_constants(texts, patch_data)
         define_essence_sparkle_constants(assembler, patch_data)
-        define_lost_woods_sequences(assembler, patch_data)
+        define_lost_woods_sequences(assembler, texts, patch_data)
         define_tree_sprites(assembler, patch_data)
         set_file_select_text(assembler, caller.player_name)
         set_player_start_inventory(assembler, patch_data)
 
         # Parse assembler files, compile them and write the result in the ROM
-        print(f"Compiling ASM files...")
+        print("Compiling ASM files...")
+        write_text_data(rom_data, dictionary, texts)
         for file_path in get_asm_files(patch_data):
             data_loaded = yaml.safe_load(pkgutil.get_data(__name__, file_path))
             for metalabel, contents in data_loaded.items():

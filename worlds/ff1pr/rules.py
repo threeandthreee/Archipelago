@@ -21,6 +21,7 @@ chime = "Chime"
 oxyale = "Oxyale"
 rosetta_stone = "Rosetta Stone"
 adamantite = "Adamantite"
+rattail = "Rat's Tail"
 
 ship = "Ship"
 canoe = "Canoe"
@@ -71,22 +72,35 @@ mystic_key_locked_Locations = [
 
 def set_region_rules(world: "FF1pixelWorld") -> None:
     player = world.player
-    #options = world.options
+    options = world.options
 
-    world.get_entrance("Overworld -> Innersea Region").access_rule = \
-        lambda state: state.has(ship, player) or state.has(airship, player)
-    world.get_entrance("Overworld -> Ice Region").access_rule = \
-        lambda state: state.has(canoe, player) or state.has(airship, player)
-    world.get_entrance("Overworld -> Crescent Region").access_rule = \
-        lambda state: state.has_all({ship, canal}, player) or state.has_all({ship, canoe}, player) or state.has(airship, player)
-    world.get_entrance("Overworld -> Gulg Region").access_rule = \
-        lambda state: state.has_all({ship, canoe}, player) or state.has(airship, player)
-    world.get_entrance("Overworld -> Ryukhan Desert").access_rule = \
-        lambda state: state.has_all({ship, canoe}, player) or state.has(airship, player)
+    if world.options.early_progression.value == 0: # bikke ship
+        world.get_entrance("Overworld -> Innersea Region").access_rule = \
+            lambda state: state.has(ship, player) or state.has(airship, player)
+        world.get_entrance("Overworld -> Ice Region").access_rule = \
+            lambda state: state.has(canoe, player) or state.has(airship, player)
+        world.get_entrance("Overworld -> Crescent Region").access_rule = \
+            lambda state: state.has_all({ship, canal}, player) or state.has_all({ship, canoe}, player) or state.has(airship, player)
+        world.get_entrance("Overworld -> Gulg Region").access_rule = \
+            lambda state: state.has_all({ship, canoe}, player) or state.has(airship, player)
+        world.get_entrance("Overworld -> Ryukhan Desert").access_rule = \
+            lambda state: state.has_all({ship, canoe, canal}, player) or state.has(airship, player)
+    else:
+        world.get_entrance("Overworld -> Pravoka Region").access_rule = \
+            lambda state: state.has(ship, player) or state.has(airship, player)
+        world.get_entrance("Overworld -> Ice Region").access_rule = \
+            lambda state: state.has_all({ship, canoe}, player) or state.has(airship, player)
+        world.get_entrance("Overworld -> Crescent Region").access_rule = \
+            lambda state: state.has_all({ship, canal}, player) or state.has(canoe, player) or state.has(airship, player)
+        world.get_entrance("Overworld -> Gulg Region").access_rule = \
+            lambda state: state.has(canoe, player) or state.has(airship, player)
+        world.get_entrance("Overworld -> Ryukhan Desert").access_rule = \
+            lambda state: state.has_all({canoe, ship, canal}, player) or state.has(airship, player)
+
     world.get_entrance("Overworld -> Melmond Region").access_rule = \
         lambda state: state.has_all({ship, canal}, player) or state.has(airship, player)
     world.get_entrance("Overworld -> Sage Region").access_rule = \
-        lambda state: state.has_all({ship, canal, titan_fed}, player) or state.has(airship, player)
+        lambda state: state.has_all({ship, canal, titan_fed}, player) or state.has_all({airship, titan_fed}, player)
     world.get_entrance("Overworld -> Dragon Region").access_rule = \
         lambda state: state.has(airship, player)
     world.get_entrance("Overworld -> Onrac Region").access_rule = \
@@ -111,6 +125,12 @@ def set_region_rules(world: "FF1pixelWorld") -> None:
         lambda state: state.has(chime, player)
     world.get_entrance("Mirage Tower -> Flying Fortress").access_rule = \
         lambda state: state.has(warp_cube, player)
+
+    if world.options.northern_docks.value:
+        world.get_entrance("Overworld -> Onrac Region").access_rule = \
+            lambda state: state.has(airship, player) or state.has_all({ship, canal}, player)
+        world.get_entrance("Overworld -> Mirage Desert").access_rule = \
+            lambda state: state.has(airship, player) or state.has_all({ship, canal}, player)
 
 def set_location_rules(world: "FF1pixelWorld") -> None:
     player = world.player
@@ -170,13 +190,18 @@ def set_location_rules(world: "FF1pixelWorld") -> None:
     set_rule(world.get_location("Chaos Shrine - Chaos"),
              lambda state: state.has_all({black_orb_destroyed, lute}, player))
 
-    # Force ship
-    world.get_location("Pravoka - Bikke").place_locked_item(world.create_item(ship))
+    # Ship Logic
+    if world.options.early_progression.value == 0:
+        world.get_location("Pravoka - Bikke").place_locked_item(world.create_item(ship))
+
+    if world.options.job_promotion.value != 0:
+        set_rule(world.get_location("Dragon Caves - Bahamut"),
+                 lambda state: state.has(rattail, player))
 
     # Prevent Gil landing in the Caravan
     for item_name, item_value in item_table.items():
         if item_value.item_id_offset == 1:
-            forbid_item(world.get_location("Caravan"), item_name, player)
+            forbid_item(world.get_location("Onrac Desert - Caravan"), item_name, player)
 
     # Victory Condition
     world.multiworld.completion_condition[world.player] = lambda state: state.has(chaos_defeated, world.player)

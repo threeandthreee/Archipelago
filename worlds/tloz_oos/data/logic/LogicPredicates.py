@@ -1,7 +1,7 @@
 from BaseClasses import CollectionState
 from Options import Accessibility
 from ..Constants import *
-from ... import OracleOfSeasonsLogicDifficulty
+from ...Options import OracleOfSeasonsLogicDifficulty
 
 
 # Items predicates ############################################################
@@ -10,7 +10,7 @@ def oos_has_sword(state: CollectionState, player: int, accept_biggoron: bool = T
     return any([
         state.has("Progressive Sword", player),
         all([
-            (accept_biggoron),
+            accept_biggoron,
             state.has("Biggoron's Sword", player)
         ])
     ])
@@ -190,8 +190,8 @@ def oos_is_companion_dimitri(state: CollectionState, player: int):
     return state.multiworld.worlds[player].options.animal_companion == "dimitri"
 
 
-def oos_get_default_season(state: CollectionState, player: int, area_name: str):
-    return state.multiworld.worlds[player].default_seasons[area_name]
+def oos_is_default_season(state: CollectionState, player: int, area_name: str, season):
+    return state.multiworld.worlds[player].default_seasons[area_name] == season
 
 
 def oos_can_remove_season(state: CollectionState, player: int, season: int):
@@ -202,7 +202,7 @@ def oos_can_remove_season(state: CollectionState, player: int, season: int):
 
 
 def oos_has_essences(state: CollectionState, player: int, target_count: int):
-    essence_count = [state.has(essence, player) for essence in ESSENCES].count(True)
+    essence_count = [state.has(essence, player) for essence in ITEM_GROUPS["Essences"]].count(True)
     return essence_count >= target_count
 
 
@@ -216,21 +216,19 @@ def oos_has_essences_for_treehouse(state: CollectionState, player: int):
 
 def oos_has_required_jewels(state: CollectionState, player: int):
     target_count = state.multiworld.worlds[player].options.tarm_gate_required_jewels.value
-    count = [state.has(jewel, player) for jewel in JEWELS].count(True)
+    count = [state.has(jewel, player) for jewel in ITEM_GROUPS["Jewels"]].count(True)
     return count >= target_count
 
 
-def oos_can_reach_lost_woods_pedestal(state: CollectionState, player: int, allow_default: bool = False):
+def oos_can_reach_lost_woods_pedestal(state: CollectionState, player: int, allow_default: bool = False, force_deku=False):
     world = state.multiworld.worlds[player]
     seasons_in_pedestal_sequence = [season for [_, season] in world.lost_woods_item_sequence]
 
     return all([
         oos_can_complete_season_sequence(state, player, seasons_in_pedestal_sequence, allow_default),
         any([
-            all([
-                oos_can_use_ember_seeds(state, player, False),
-                state.has("Phonograph", player)
-            ]),
+            force_deku,
+            state.can_reach_region("lost woods phonograph", player),
             all([
                 # if sequence is vanilla, medium+ players are expected to know it
                 oos_option_medium_logic(state, player),
@@ -240,17 +238,15 @@ def oos_can_reach_lost_woods_pedestal(state: CollectionState, player: int, allow
     ])
 
 
-def oos_can_complete_lost_woods_main_sequence(state: CollectionState, player: int, allow_default: bool = False):
+def oos_can_complete_lost_woods_main_sequence(state: CollectionState, player: int, allow_default: bool = False, force_deku=False):
     world = state.multiworld.worlds[player]
     seasons_in_main_sequence = [season for [_, season] in world.lost_woods_main_sequence]
 
     return all([
         oos_can_complete_season_sequence(state, player, seasons_in_main_sequence, allow_default),
         any([
-            all([
-                oos_can_break_mushroom(state, player, False),
-                oos_has_shield(state, player)
-            ]),
+            force_deku,
+            state.can_reach_region("lost woods deku", player),
             all([
                 # if sequence is vanilla, medium+ players are expected to know it
                 oos_option_medium_logic(state, player),
@@ -264,9 +260,10 @@ def oos_can_complete_season_sequence(state: CollectionState, player: int, season
     # In medium logic and above, it is assumed the player can exploit the default season from Lost Woods to cheese
     # the first few seasons of the sequence even if they don't own the matching rod.
     if allow_default and oos_option_medium_logic(state, player):
-        default_season = oos_get_default_season(state, player, "LOST_WOODS")
-        while len(season_sequence) > 0 and season_sequence[0] == default_season:
-            del season_sequence[0]
+        first_season = season_sequence[0]
+        if oos_is_default_season(state, player, "LOST_WOODS", first_season):
+            while len(season_sequence) > 0 and season_sequence[0] == first_season:
+                del season_sequence[0]
 
     return all([
         any([SEASON_WINTER not in season_sequence, oos_has_winter(state, player)]),
@@ -613,8 +610,12 @@ def oos_can_use_pegasus_seeds(state: CollectionState, player: int):
 
 def oos_can_use_gale_seeds_offensively(state: CollectionState, player: int):
     return all([
-        oos_has_gale_seeds(state, player),
+        oos_has_satchel(state, player, 2),
         oos_option_medium_logic(state, player),
+        any([
+            oos_has_gale_seeds(state, player),
+            oos_has_mystery_seeds(state, player)
+        ]),
         any([
             oos_has_slingshot(state, player),
             all([
@@ -911,6 +912,7 @@ def oos_can_kill_d2_hardhat(state: CollectionState, player: int):
         oos_can_push_enemy(state, player),
         all([
             oos_option_medium_logic(state, player),
+            oos_has_satchel(state, player, 2),
             any([
                 oos_has_slingshot(state, player),
                 all([
@@ -921,6 +923,7 @@ def oos_can_kill_d2_hardhat(state: CollectionState, player: int):
             any([
                 oos_has_scent_seeds(state, player),
                 oos_has_gale_seeds(state, player),
+                oos_has_mystery_seeds(state, player)
             ])
         ]),
         all([
@@ -1022,11 +1025,21 @@ def oos_can_meet_maple(state: CollectionState, player: int):
     return oos_can_kill_normal_enemy(state, player, False, False)
 
 
+def oos_can_dimitri_clip(state: CollectionState, player: int):
+    return all([
+        oos_option_hell_logic(state, player),
+        oos_can_summon_dimitri(state, player),
+        oos_has_bracelet(state, player),
+        oos_has_gale_seeds(state, player),
+        oos_has_satchel(state, player)
+    ])
+
+
 # Season in region predicates ##########################################
 
 def oos_season_in_spool_swamp(state: CollectionState, player: int, season: int):
     return any([
-        oos_get_default_season(state, player, "SPOOL_SWAMP") == season,
+        oos_is_default_season(state, player, "SPOOL_SWAMP", season),
         all([
             oos_has_season(state, player, season),
             state.has("_reached_spool_stump", player)
@@ -1036,7 +1049,7 @@ def oos_season_in_spool_swamp(state: CollectionState, player: int, season: int):
 
 def oos_season_in_eyeglass_lake(state: CollectionState, player: int, season: int):
     return any([
-        oos_get_default_season(state, player, "EYEGLASS_LAKE") == season,
+        oos_is_default_season(state, player, "EYEGLASS_LAKE", season),
         all([
             oos_has_season(state, player, season),
             state.has("_reached_eyeglass_stump", player)
@@ -1046,7 +1059,7 @@ def oos_season_in_eyeglass_lake(state: CollectionState, player: int, season: int
 
 def oos_season_in_temple_remains(state: CollectionState, player: int, season: int):
     return any([
-        oos_get_default_season(state, player, "TEMPLE_REMAINS") == season,
+        oos_is_default_season(state, player, "TEMPLE_REMAINS", season),
         all([
             oos_has_season(state, player, season),
             state.has("_reached_remains_stump", player)
@@ -1056,7 +1069,7 @@ def oos_season_in_temple_remains(state: CollectionState, player: int, season: in
 
 def oos_season_in_holodrum_plain(state: CollectionState, player: int, season: int):
     return any([
-        oos_get_default_season(state, player, "HOLODRUM_PLAIN") == season,
+        oos_is_default_season(state, player, "HOLODRUM_PLAIN", season),
         all([
             oos_has_season(state, player, season),
             state.has("_reached_ghastly_stump", player)
@@ -1066,7 +1079,7 @@ def oos_season_in_holodrum_plain(state: CollectionState, player: int, season: in
 
 def oos_season_in_western_coast(state: CollectionState, player: int, season: int):
     return any([
-        oos_get_default_season(state, player, "WESTERN_COAST") == season,
+        oos_is_default_season(state, player, "WESTERN_COAST", season),
         all([
             oos_has_season(state, player, season),
             state.has("_reached_coast_stump", player)
@@ -1076,25 +1089,25 @@ def oos_season_in_western_coast(state: CollectionState, player: int, season: int
 
 def oos_season_in_eastern_suburbs(state: CollectionState, player: int, season: int):
     return any([
-        oos_get_default_season(state, player, "EASTERN_SUBURBS") == season,
+        oos_is_default_season(state, player, "EASTERN_SUBURBS", season),
         oos_has_season(state, player, season)
     ])
 
 
 def oos_not_season_in_eastern_suburbs(state: CollectionState, player: int, season: int):
     return any([
-        oos_get_default_season(state, player, "EASTERN_SUBURBS") != season,
+        not oos_is_default_season(state, player, "EASTERN_SUBURBS", season),
         oos_can_remove_season(state, player, season)
     ])
 
 
 def oos_season_in_sunken_city(state: CollectionState, player: int, season: int):
     return any([
-        oos_get_default_season(state, player, "SUNKEN_CITY") == season,
+        oos_is_default_season(state, player, "SUNKEN_CITY", season),
         all([
             oos_has_season(state, player, season),
             any([
-                oos_get_default_season(state, player, "SUNKEN_CITY") == SEASON_WINTER,
+                oos_is_default_season(state, player, "SUNKEN_CITY", SEASON_WINTER),
                 oos_can_swim(state, player, True),
                 state.has("_saved_dimitri_in_sunken_city", player)
             ])
@@ -1104,14 +1117,14 @@ def oos_season_in_sunken_city(state: CollectionState, player: int, season: int):
 
 def oos_season_in_woods_of_winter(state: CollectionState, player: int, season: int):
     return any([
-        oos_get_default_season(state, player, "WOODS_OF_WINTER") == season,
+        oos_is_default_season(state, player, "WOODS_OF_WINTER", season),
         oos_has_season(state, player, season)
     ])
 
 
 def oos_season_in_central_woods_of_winter(state: CollectionState, player: int, season: int):
     return any([
-        oos_get_default_season(state, player, "WOODS_OF_WINTER") == season,
+        oos_is_default_season(state, player, "WOODS_OF_WINTER", season),
         all([
             oos_has_season(state, player, season),
             state.has("_reached_d2_stump", player)
@@ -1121,21 +1134,21 @@ def oos_season_in_central_woods_of_winter(state: CollectionState, player: int, s
 
 def oos_season_in_mt_cucco(state: CollectionState, player: int, season: int):
     return any([
-        oos_get_default_season(state, player, "SUNKEN_CITY") == season,
+        oos_is_default_season(state, player, "SUNKEN_CITY", season),
         oos_has_season(state, player, season)
     ])
 
 
 def oos_season_in_lost_woods(state: CollectionState, player: int, season: int):
     return any([
-        oos_get_default_season(state, player, "LOST_WOODS") == season,
+        oos_is_default_season(state, player, "LOST_WOODS", season),
         oos_has_season(state, player, season)
     ])
 
 
 def oos_season_in_tarm_ruins(state: CollectionState, player: int, season: int):
     return any([
-        oos_get_default_season(state, player, "TARM_RUINS") == season,
+        oos_is_default_season(state, player, "TARM_RUINS", season),
         oos_has_season(state, player, season)
     ])
 
@@ -1144,7 +1157,7 @@ def oos_season_in_horon_village(state: CollectionState, player: int, season: int
     # With vanilla behavior, you can randomly have any season inside Horon, making any season virtually accessible
     return any([
         not state.multiworld.worlds[player].options.normalize_horon_village_season,
-        oos_get_default_season(state, player, "HORON_VILLAGE") == season,
+        oos_is_default_season(state, player, "HORON_VILLAGE", season),
         oos_has_season(state, player, season)
     ])
 
@@ -1171,14 +1184,15 @@ def oos_self_locking_small_key(state: CollectionState, player: int, region_name:
 # Rooster adventure logic  ######################################################
 def oos_roosters(state: CollectionState, player: int):
     if state.tloz_oos_available_cuccos[player] is None:
-        # This computes cuccos for the whole game then caches it
+        # This computes cuccos for the whole game then caches it (total, top, bottom)
         available_cuccos = {
             "cucco mountain": (-1, -1, -1),
             "horon": (-1, -1, -1),
             "suburbs": (-1, -1, -1),
             "moblin road": (-1, -1, -1),
             "sunken": (-1, -1, -1),
-            "swamp": (-1, -1, -1)
+            "swamp": (-1, -1, -1),
+            "d6": (-1, -1, -1),
         }
 
         def register_cucco(region: str, new_cuccos: tuple[int, int, int]):
@@ -1242,7 +1256,7 @@ def oos_roosters(state: CollectionState, player: int):
             # Go through horon village
             available_cuccos["suburbs"] = available_cuccos["horon"]
         elif oos_season_in_eyeglass_lake(state, player, SEASON_WINTER) \
-                or ((oos_get_default_season(state, player, "EYEGLASS_LAKE") != SEASON_SUMMER or
+                or ((not oos_is_default_season(state, player, "EYEGLASS_LAKE", SEASON_SUMMER) or
                      oos_can_remove_season(state, player, SEASON_SUMMER)) and oos_can_swim(state, player, True)):
             # Go through the suburbs portal screen
             available_cuccos["suburbs"] = use_any_cucco(available_cuccos["horon"])
@@ -1269,6 +1283,47 @@ def oos_roosters(state: CollectionState, player: int):
         else:
             # Or use a bottom cucco
             available_cuccos["swamp"] = use_bottom_cucco(available_cuccos["horon"])
+
+        if all([  # Reach tarm ruins, could probably be optimized
+            oos_has_required_jewels(state, player),
+            any([
+                oos_season_in_lost_woods(state, player, SEASON_SUMMER),
+                all([
+                    oos_season_in_lost_woods(state, player, SEASON_AUTUMN),
+                    oos_option_medium_logic(state, player),
+                    oos_has_magic_boomerang(state, player),
+                    any([
+                        oos_can_jump_1_wide_pit(state, player, False),
+                        oos_option_hard_logic(state, player)
+                    ])
+                ])
+            ]),
+            oos_season_in_lost_woods(state, player, SEASON_WINTER),
+            oos_can_remove_season(state, player, SEASON_WINTER)
+        ]):
+            can_reach_deku = all([
+                oos_has_shield(state, player),
+                any([
+                    available_cuccos["swamp"][1],
+                    oos_can_jump_2_wide_liquid(state, player),
+                    oos_can_swim(state, player, False)
+                ])
+            ])
+            if all([
+                oos_has_autumn(state, player),
+                oos_can_break_mushroom(state, player, False),
+                any([
+                    oos_can_complete_lost_woods_main_sequence(state, player, False, can_reach_deku),
+                    all([
+                        oos_can_complete_lost_woods_main_sequence(state, player, True, can_reach_deku),
+                        oos_can_reach_lost_woods_pedestal(state, player, False, all([
+                            oos_can_use_ember_seeds(state, player, False),
+                            state.has("Phonograph", player)
+                        ])),
+                    ])
+                ])
+            ]):
+                available_cuccos["d6"] = available_cuccos["swamp"]
 
         for region in available_cuccos:
             if any([available_cuccos[region][i] < 0 for i in range(3)]):

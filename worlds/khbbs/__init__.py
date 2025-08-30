@@ -4,7 +4,7 @@ from BaseClasses import Tutorial
 from worlds.AutoWorld import WebWorld, World
 from .Items import KHBBSItem, KHBBSItemData, event_item_table, get_items_by_category, item_table, item_name_groups
 from .Locations import KHBBSLocation, location_table, get_locations_by_category, location_name_groups
-from .Options import KHBBSOptions
+from .Options import KHBBSOptions, khbbs_option_groups
 from .Regions import create_regions
 from .Rules import set_rules
 from .OpenKH import patch_khbbs
@@ -30,6 +30,7 @@ class KHBBSWeb(WebWorld):
             "kh1/en",
             ["Gicu"]
     )]
+    option_groups = khbbs_option_groups
 
 
 class KHBBSWorld(World):
@@ -60,6 +61,10 @@ class KHBBSWorld(World):
                 "Castle of Dreams", "Enchanted Dominion", "The Mysterious Tower", 
                 "Radiant Garden", "Olympus Coliseum", "Deep Space",
                 "Never Land", "Disney Town"]
+            if self.options.mirage_arena:
+                possible_starting_worlds.append("Mirage Arena")
+            if self.options.character == 1 and self.options.realm_of_darkness:
+                possible_starting_worlds.append("Realm of Darkness")
             starting_worlds = self.random.sample(possible_starting_worlds, min(self.options.starting_worlds, len(possible_starting_worlds)))
             for starting_world in starting_worlds:
                 self.multiworld.push_precollected(self.create_item(starting_world))
@@ -77,11 +82,18 @@ class KHBBSWorld(World):
                 continue
             if name == "Mirage Arena" and not self.options.mirage_arena:
                 continue
+            if name == "Realm of Darkness" and not self.options.realm_of_darkness:
+                continue
             if name == "HP Increase":
                 item_pool += [self.create_item(name) for _ in range(0, self.options.max_hp_increases.value)]
             elif character_letters[self.options.character] in data.characters:
                 item_pool += [self.create_item(name) for _ in range(0, quantity)]
         
+        # These are magic commands (normally filler) but a few locations require them so guaranteeing some in the pool
+        item_pool += [self.create_item("Fire")]
+        if self.options.character != 1: #Aqua starts with Thunder
+            item_pool += [self.create_item("Thunder")]
+
         # Fill any empty locations with filler items.
         while len(item_pool) < total_locations:
             item_pool.append(self.create_item(self.get_filler_item_name()))
@@ -109,7 +121,17 @@ class KHBBSWorld(World):
 
     def fill_slot_data(self) -> dict:
         slot_data = {"xpmult":                  int(self.options.exp_multiplier)/16,
-                     "non_remote_location_ids": self.get_non_remote_location_ids()}
+                     "non_remote_location_ids": self.get_non_remote_location_ids(),
+                     "character":               int(self.options.character),
+                     "mirage_arena":            bool(self.options.mirage_arena),
+                     "command_board":           bool(self.options.command_board),
+                     "minigames":               bool(self.options.minigames),
+                     "arena_medals":            bool(self.options.arena_medals),
+                     "superbosses":             bool(self.options.super_bosses),
+                     "arena_global":            bool(self.options.arena_global_locations),
+                     "advanced_logic":          bool(self.options.advanced_logic),
+                     "realm":                   bool(self.options.realm_of_darkness),
+                     "final_terranort":         bool(self.options.final_terra_xehanort_ii)}
         if self.options.randomize_keyblade_stats:
             min_str_bonus = min(self.options.keyblade_min_str.value, self.options.keyblade_max_str.value)
             max_str_bonus = max(self.options.keyblade_min_str.value, self.options.keyblade_max_str.value)

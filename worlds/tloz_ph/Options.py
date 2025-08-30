@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from Options import Choice, DeathLink, DefaultOnToggle, PerGameCommonOptions, Range, Toggle, StartInventoryPool, \
-    ItemDict, ItemsAccessibility, ItemSet, Visibility
+    ItemDict, ItemsAccessibility, ItemSet, Visibility, OptionGroup
 from worlds.tloz_ph.data.Items import ITEMS_DATA
 
 
@@ -463,6 +463,26 @@ class PhantomHourglassRandomizeBeedlePoints(Choice):
     option_randomize_with_grinding = 3
     default = 1
 
+class PhantomHourglassDungeonShortcuts(Toggle):
+    """
+    EXPERIMENTAL!!! Use at your own risk!
+    Adds shortcuts from the beginning of islands to their dungeons, often by entering the house nearest their port.
+    Requires getting the first check in the respective dungeon to activate.
+    Disabled automatically with house ER or internal island ER (and dungeon ER until i add support for it)
+    """
+    display_name = "dungeon_shortcuts"
+    default = 0
+
+class PhantomHourglassShuffleDungeonEntrances(Toggle):
+    """
+    EXPERIMENTAL!!! Use at your own risk!
+    Shuffle what dungeon entrance leads to which dungeon interior.
+    Does not include ghost ship.
+    Full entrance rando coming soon!
+    """
+    display_name = "shuffle_dungeon_entrances"
+    default = 0
+
 @dataclass
 class PhantomHourglassOptions(PerGameCommonOptions):
     # Accessibility
@@ -508,6 +528,7 @@ class PhantomHourglassOptions(PerGameCommonOptions):
     fog_settings: PhantomHourglassFogSettings
     skip_ocean_fights: PhantomHourglassSkipOceanFights
     zauz_required_metals: PhantomHourglassZauzRequiredMetals
+    dungeon_shortcuts: PhantomHourglassDungeonShortcuts
 
     # Spirit Gem options
     spirit_gem_packs: PhantomHourglassSpiritGemPacks
@@ -520,6 +541,9 @@ class PhantomHourglassOptions(PerGameCommonOptions):
     ph_heart_time: PhantomHourglassHeartLogic
     ph_time_increment: PhantomHourglassTimeIncrement
 
+    # ER
+    shuffle_dungeon_entrances: PhantomHourglassShuffleDungeonEntrances
+
     # Cosmetic
     additional_metal_names: PhantomHourglassAdditionalMetalNames
 
@@ -527,3 +551,68 @@ class PhantomHourglassOptions(PerGameCommonOptions):
     start_inventory_from_pool: StartInventoryPool
     remove_items_from_pool: PhantomHourglassRemoveItemsFromPool
     death_link: DeathLink
+
+
+ph_option_groups = [
+    OptionGroup("Goal Options", [
+        PhantomHourglassGoal,
+        PhantomHourglassBellumAccess
+    ]),
+    OptionGroup("Dungeon Options", [
+        PhantomHourglassDungeonsRequired,
+        PhantomHourglassExcludeNonRequriedDungeons,
+        PhantomHourglassGhostShipInDungeonPool,
+        PhantomHourglassTotokInDungeonPool
+    ]),
+    OptionGroup("Metal Hunt Options", [
+        PhantomHourglassMetalHuntRequiredMetals,
+        PhantomHourglassMetalHuntTotalMetals
+    ]),
+    OptionGroup("Logic Options", [
+        PhantomHourglassLogic,
+        PhantomHourglassPhantomCombatDifficulty,
+        PhantomHourglassBoatRequiresSeaChart
+    ]),
+    OptionGroup("Item Randomization Options", [
+        PhantomHourglassKeyRandomization,
+        PhantomHourglassRandomizeMinigames,
+        PhantomHourglassFrogRandomization,
+        PhantomHourglassRandomizeFishing,
+        PhantomHourglassRandomizeSalvage,
+        PhantomHourglassRandomizeHarrow,
+        PhantomHourglassRandomizeDigSpots,
+        PhantomHourglassTriforceCrestRandomization,
+        PhantomHourglassRandomizeBeedlePoints,
+        PhantomHourglassRandomizeMaskedBeedle
+    ]),
+    OptionGroup("Hint Options", [
+        PhantomHourglassDungeonHints,
+        PhantomHourglassShopHints,
+        PhantomHourglassHintSpiritIsland
+    ]),
+    OptionGroup("World Options", [
+        PhantomHourglassFogSettings,
+        PhantomHourglassSkipOceanFights,
+        PhantomHourglassZauzRequiredMetals,
+        PhantomHourglassDungeonShortcuts
+    ]),
+    OptionGroup("Spirit Gem Options", [
+        PhantomHourglassSpiritGemPacks,
+        PhantomHourglassAdditionalSpiritGems
+    ]),
+    OptionGroup("TotOK Time Options", [
+        PhantomHourglassTimeLogic,
+        PhantomHourglassTimeRequiresHourglass,
+        PhantomHourglassStartingTime,
+        PhantomHourglassHeartLogic,
+        PhantomHourglassTimeIncrement
+    ]),
+    OptionGroup("Entrance Randomizer Options", [
+        PhantomHourglassShuffleDungeonEntrances
+    ]),
+    OptionGroup("Cosmetic Options", [
+        PhantomHourglassAdditionalMetalNames
+    ]),
+]
+
+

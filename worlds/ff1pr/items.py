@@ -153,6 +153,13 @@ item_table: Dict[str, FF1pixelItemData] = {
     "Sasuke's Blade": FF1pixelItemData(IC.useful, 2, 100, 1),
     "Masamune": FF1pixelItemData(IC.useful, 1, 103, 1),
     "Bottled Faerie": FF1pixelItemData(IC.progression, 1, 59, 1),
+    "All Promotion Jobs": FF1pixelItemData(IC.useful, 0, 500, 1),
+    "Knight Job": FF1pixelItemData(IC.useful, 0, 501, 1),
+    "Ninja Job": FF1pixelItemData(IC.useful, 0, 502, 1),
+    "Master Job": FF1pixelItemData(IC.useful, 0, 503, 1),
+    "Red Wizard Job": FF1pixelItemData(IC.useful, 0, 504, 1),
+    "White Wizard Job": FF1pixelItemData(IC.useful, 0, 505, 1),
+    "Black Wizard Job": FF1pixelItemData(IC.useful, 0, 506, 1),
 }
 
 #{name: location_base_id + index for index, name in enumerate(location_table)}
@@ -166,5 +173,6 @@ item_name_groups: Dict[str, Set[str]] = {
     "Key Items": {key for key, value in item_table.items() if ((value.item_id_offset > 43) and (value.item_id_offset < 62))},
     "Weapons": {key for key, value in item_table.items() if ((value.item_id_offset > 62) and (value.item_id_offset < 130))},
     "Armors": {key for key, value in item_table.items() if ((value.item_id_offset > 133) and (value.item_id_offset < 203))},
+    "Jobs": {key for key, value in item_table.items() if ((value.item_id_offset >= 501) and (value.item_id_offset < 507))},
     "Fillers": {key for key, value in item_table.items() if value.classification == IC.filler},
 }
