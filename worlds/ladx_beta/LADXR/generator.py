@@ -216,7 +216,7 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
         patches.hardMode.oracleMode(rom)
     elif options["hard_mode"] == Options.HardMode.option_hero:
         patches.hardMode.heroMode(rom)
-    elif options["hard_mode"] == Options.HardMode.option_one_hit_ko:
+    elif options["hard_mode"] == Options.HardMode.option_ohko:
         patches.hardMode.oneHitKO(rom)
     #if ladxr_settings["superweapons"]:
     #    patches.weapons.patchSuperWeapons(rom)
