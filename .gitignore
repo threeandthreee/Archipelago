@@ -195,3 +195,5 @@ _speedups.html
 .LSOverride
 Thumbs.db
 [Dd]esktop.ini
+
+fuzz_output/
