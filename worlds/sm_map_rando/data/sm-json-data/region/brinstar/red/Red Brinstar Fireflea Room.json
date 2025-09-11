@@ -100,7 +100,8 @@
       "from": 1,
       "to": [
         {"id": 1},
-        {"id": 2}
+        {"id": 2},
+        {"id": 3}
       ]
     },
     {
@@ -108,7 +109,8 @@
       "to": [
         {"id": 1},
         {"id": 2},
-        {"id": 3}
+        {"id": 3},
+        {"id": 4}
       ]
     },
     {
@@ -165,30 +167,15 @@
       }
     },
     {
-      "id": 3,
+      "id": 67,
       "link": [1, 1],
-      "name": "Leave with Spark (X-Mode)",
+      "name": "Waver Farm",
       "requires": [
-        "canXMode",
-        "h_XModeSpikeHit",
-        "h_XModeSpikeHit",
-        "canUseIFrames",
-        {"or": [
-          "SpaceJump",
-          "h_XModeSpikeHit"
-        ]},
-        "h_shinechargeMaxRunway",
-        {"shinespark": {"frames": 50}}
+        {"resetRoom": {"nodes": [1]}},
+        {"cycleFrames": 1150}
       ],
-      "exitCondition": {
-        "leaveWithSpark": {}
-      },
-      "flashSuitChecked": true,
-      "note": [
-        "Use the Spikes in the center of the room to build a Shinespark with X-Mode.",
-        "There are sections of the room where using more complex movement can be used to save a Spike hit when X-Moding."
-      ],
-      "devNote": "Two spike hits are expected per attempt (with any additional leniency hits being multiplied by this amount)."
+      "resetsObstacles": ["A"],
+      "farmCycleDrops": [{"enemy": "Waver", "count": 1}]
     },
     {
       "id": 4,
@@ -306,9 +293,9 @@
     {
       "id": 12,
       "link": [1, 2],
-      "name": "X-Ray Exit Damage Boost",
+      "name": "Damage Boost (Left to Right)",
       "requires": [
-        {"notable": "X-Ray Exit Damage Boost"},
+        {"notable": "Damage Boost (Left to Right)"},
         "canHorizontalDamageBoost",
         {"enemyDamage": {"enemy": "Waver", "type": "contact", "hits": 2}},
         {"or": [
@@ -328,7 +315,7 @@
     {
       "id": 13,
       "link": [1, 2],
-      "name": "X-Ray Exit Spike Floor",
+      "name": "Spike Floor Traversal",
       "requires": [
         {"spikeHits": 4},
         {"or": [
@@ -393,6 +380,17 @@
       },
       "unlocksDoors": [{"types": ["ammo"], "requires": []}],
       "note": "Use Space Jump to carry blue speed all the way across the room."
+    },
+    {
+      "id": 63,
+      "link": [1, 3],
+      "name": "Base",
+      "requires": [
+        {"or": [
+          "Grapple",
+          "SpaceJump"
+        ]}
+      ]
     },
     {
       "id": 17,
@@ -467,60 +465,27 @@
     {
       "id": 22,
       "link": [2, 1],
-      "name": "Shinespark (X-Mode)",
+      "name": "X-Mode Shinespark",
       "requires": [
         "canMidairShinespark",
         "canXMode",
         {"spikeHits": 2},
         "h_shinechargeMaxRunway",
-        {"shinespark": {"frames": 146, "excessFrames": 6}}
+        "canShinechargeMovementTricky",
+        {"shinespark": {"frames": 105, "excessFrames": 6}}
       ],
       "flashSuitChecked": true,
       "note": [
-        "Jump from the runway near the right door to bounce onto spikes for X-Mode.",
-        "Store a spark in X-Mode and use that to shinepark across the room.",
+        "Use X-mode to gain a shinecharge on the right side of the room,",
+        "and use it to spark across to the left side of the room.",
         "Bumping a solid tile before activating X-Mode will remove dash state, preventing shinecharging."
       ],
       "devNote": "Omitting leniency spikeHits, since the firefleas provide an opportunity to farm after a failed attempt."
     },
     {
-      "id": 23,
-      "link": [2, 1],
-      "name": "Leave With Spark (X-Mode)",
-      "requires": [
-        {"obstaclesCleared": ["A"]},
-        "canMidairShinespark",
-        "canXMode",
-        {"spikeHits": 2},
-        "h_shinechargeMaxRunway",
-        {"or": [
-          {"shinespark": {"frames": 146}},
-          {"and": [
-            "SpaceJump",
-            {"shinespark": {"frames": 50}}
-          ]}
-        ]}
-      ],
-      "exitCondition": {
-        "leaveWithSpark": {}
-      },
-      "unlocksDoors": [{"types": ["ammo"], "requires": [], "useImplicitRequires": false}],
-      "flashSuitChecked": true,
-      "note": [
-        "Jump from the runway near the right door to bounce onto spikes for X-Mode.",
-        "Store a spark in X-Mode and use that to shinepark across the room.",
-        "Bumping a solid tile before activating X-Mode will remove dash state, preventing shinecharging.",
-        "The left door must have been opened previously, in order to shinespark through it."
-      ],
-      "devNote": [
-        "Omitting leniency spikeHits, since the firefleas provide an opportunity to farm after a failed attempt.",
-        "Unlocking the door is free since obstacle A being cleared implies it was already unlocked earlier if needed."
-      ]
-    },
-    {
       "id": 24,
       "link": [2, 1],
-      "name": "X-Ray Access Ice Bridge",
+      "name": "Ice Bridge",
       "requires": [
         "canTrickyUseFrozenEnemies",
         "canTrickyDodgeEnemies",
@@ -539,16 +504,77 @@
     {
       "id": 25,
       "link": [2, 1],
-      "name": "X-Ray Access Damage Boost",
+      "name": "Full Room Damage Boosts (Right to Left)",
       "requires": [
-        {"notable": "X-Ray Access Damage Boost"},
+        {"notable": "Full Room Damage Boosts (Right to Left)"},
         "canHorizontalDamageBoost",
         "canTrickyJump",
+        "canUseIFrames",
+        {"or": [
+          {"enemyDamage": {"enemy": "Fireflea", "type": "contact", "hits": 2}},
+          {"and": [
+            "canTrickyDodgeEnemies",
+            {"enemyDamage": {"enemy": "Fireflea", "type": "contact", "hits": 1}}
+          ]},
+          "canInsaneJump"
+        ]},
         {"enemyDamage": {"enemy": "Waver", "type": "contact", "hits": 6}}
       ],
       "note": [
-        "A precise strat that involves crossing both gaps by dboosting off Wavers.",
-        "The Wavers are also used for iframes to avoid taking damage from any spikes."
+        "A precise strat that involves crossing both gaps by damage boosting off Wavers.",
+        "The Wavers are also used for i-frames to avoid taking damage from any spikes.",
+        "It generally best to use a Fireflea (or two) to quickly boost to the left,",
+        "in order to boost off the Waver during its first cycle.",
+        "Waiting for the Waver to return is possible and does not take long,",
+        "but it gives a different pattern at the left side of the room,",
+        "making the final damage boost significantly more difficult."
+      ]
+    },
+    {
+      "id": 68,
+      "link": [2, 1],
+      "name": "Damage Boost Speedy Jump",
+      "requires": [
+        "canHorizontalDamageBoost",
+        "canTrickyJump",
+        "canUseIFrames",
+        "SpeedBooster",
+        {"or": [
+          "canInsaneJump",
+          {"and": [
+            "canTrickyDodgeEnemies",
+            {"enemyDamage": {"enemy": "Fireflea", "type": "contact", "hits": 1}}
+          ]},
+          {"enemyDamage": {"enemy": "Fireflea", "type": "contact", "hits": 2}}
+        ]},
+        {"or": [
+          {"and": [
+            "canInsaneJump",
+            {"enemyDamage": {"enemy": "Waver", "type": "contact", "hits": 2}}
+          ]},
+          {"enemyDamage": {"enemy": "Waver", "type": "contact", "hits": 3}}
+        ]},
+        {"or": [
+          "canWalljump",
+          "canTrickyDodgeEnemies"
+        ]}
+      ],
+      "note": [
+        "Use a Fireflea (or two) to quickly boost to the left,",
+        "to be able to catch the Waver and boost off it on its first cycle, to cross the first gap.",
+        "Take one or two more hits from the Wavers for i-frames;",
+        "take the last hit close to the ground while holding forward.",
+        "Then gain speed using Speed Booster to jump across the second gap.",
+        "If the jump is slightly short, a wall jump can be used to get up."
+      ],
+      "detailNote": [
+        "Using the second Waver cycle leads to a bad pattern at the end,",
+        "where the path of the speedy jump will be blocked by a Waver,",
+        "which can still be avoided but only with great difficulty."
+      ],
+      "devNote": [
+        "FIXME: Patiently waiting for a different Waver cycle could be another way to avoid Fireflea damage.",
+        "FIXME: gaining a shinecharge on the spikes (and hero shot sparking out the left door) is possible though extremely precise."
       ]
     },
     {
@@ -681,21 +707,20 @@
     {
       "id": 34,
       "link": [2, 2],
-      "name": "Fireflea Farm",
+      "name": "Firefleas and Waver Farm",
       "requires": [
-        {"resetRoom": {
-          "nodes": [2]
-        }},
-        {"refill": ["PowerBomb"]},
+        {"resetRoom": {"nodes": [2]}},
+        {"cycleFrames": 630},
         {"or": [
-          {"and": [
-            "canDodgeWhileShooting",
-            {"refill": ["Energy"]}
-          ]},
-          {"partialRefill": {"type": "Energy", "limit": 260}}
+          "canDodgeWhileShooting",
+          {"cycleFrames": 600}
         ]}
       ],
-      "resetsObstacles": ["A"]
+      "resetsObstacles": ["A"],
+      "farmCycleDrops": [
+        {"enemy": "Fireflea", "count": 4},
+        {"enemy": "Waver", "count": 1}
+      ]
     },
     {
       "id": 35,
@@ -727,20 +752,19 @@
     {
       "id": 37,
       "link": [2, 2],
-      "name": "Leave Shinecharged (X-Mode)",
+      "name": "X-Mode Leave Shinecharged",
       "requires": [
         "canXMode",
         "h_XModeSpikeHit",
         "h_XModeSpikeHit",
         "h_shinechargeMaxRunway",
         "canShinechargeMovement",
-        {"shineChargeFrames": 140}
+        {"shineChargeFrames": 95}
       ],
       "exitCondition": {
         "leaveShinecharged": {}
       },
-      "flashSuitChecked": true,
-      "note": ["Store a spark in X-Mode and use that to leave with a shinecharge."]
+      "flashSuitChecked": true
     },
     {
       "id": 38,
@@ -860,6 +884,17 @@
       "note": "Wait 40 seconds for a Waver to come and hit Samus."
     },
     {
+      "id": 64,
+      "link": [2, 3],
+      "name": "Base",
+      "requires": [
+        {"or": [
+          "Grapple",
+          "SpaceJump"
+        ]}
+      ]
+    },
+    {
       "id": 45,
       "link": [2, 3],
       "name": "IBJ",
@@ -950,9 +985,110 @@
       ],
       "note": [
         "Damage boost off of the Fireflea or a Waver in order to get onto the upper spikes.",
-        "It is possible to quickly get into position to use the Waver or to wait for it to return.",
-        "It is also possible (but not required in this strat) to perform a second damage boost off of the Wavers to avoid some spike damage."
+        "It is possible to quickly get into position to use the Waver or to wait for it to return."
       ]
+    },
+    {
+      "id": 69,
+      "link": [2, 4],
+      "name": "Damage Boost and Use I-Frames",
+      "requires": [
+        "canHorizontalDamageBoost",
+        "canTrickyJump",
+        "canUseIFrames",
+        {"or": [
+          {"enemyDamage": {"enemy": "Waver", "type": "contact", "hits": 5}},
+          {"and": [
+            "canTrickyDodgeEnemies",
+            {"enemyDamage": {"enemy": "Waver", "type": "contact", "hits": 3}}
+          ]},
+          {"and": [
+            "canInsaneJump",
+            {"enemyDamage": {"enemy": "Waver", "type": "contact", "hits": 2}}
+          ]}
+        ]}
+      ],
+      "note": [
+        "Damage boost off a Waver to get onto the upper spikes,",
+        "then continue taking hits from the Waver to gain i-frames and avoid any spike hits.",
+        "It is possible to quickly get into position to use the Waver or to wait for it to return.",
+        "There are several possible ways to ensure Samus lands on the safe platform:",
+        "1) align with the right-most vine of the group of 3 vines in the background;",
+        "2) position so that one tile of the doorway ledge is visible on camera; or",
+        "3) take an extra Waver hit, to have i-frames while descending the spike stairs."
+      ],
+      "devNote": [
+        "FIXME: account for the possibility of farming the Waver (or all 3) at the end,",
+        "compensating for some of the damage."
+      ]
+    },
+    {
+      "id": 65,
+      "link": [3, 1],
+      "name": "X-Mode Traversal",
+      "requires": [
+        "canXMode",
+        "h_XModeSpikeHit"
+      ],
+      "note": [
+        "Enter X-mode facing left and release forward to allow Samus to walk to the left.",
+        "Samus' progress can be tracked using the mini-map.",
+        "When Samus begins to scroll across the screen, this indicates the camera has locked on the left side of the room.",
+        "At this point (or slightly before), hold forward again to stop Samus' movement.",
+        "Spin jump and release X-Ray to exit X-mode and jump onto the platform."
+      ]
+    },
+    {
+      "id": 3,
+      "link": [3, 1],
+      "name": "X-Mode Leave with Spark",
+      "requires": [
+        {"obstaclesCleared": ["A"]},
+        "canXMode",
+        "h_XModeSpikeHit",
+        "h_XModeSpikeHit",
+        "canUseIFrames",
+        "h_shinechargeMaxRunway",
+        {"shinespark": {"frames": 20}}
+      ],
+      "exitCondition": {
+        "leaveWithSpark": {}
+      },
+      "unlocksDoors": [{"types": ["ammo"], "requires": [], "useImplicitRequires": false}],
+      "flashSuitChecked": true,
+      "note": [
+        "Use the spikes in the center of the room to gain a shinecharge with X-Mode.",
+        "Then arm pump until Samus reaches the middle Yapping Maw.",
+        "Exit X-mode, gain run speed, and jump toward the door and shinespark out."
+      ],
+      "devNote": "Unlocking the door is free since obstacle A being cleared implies it was already unlocked earlier if needed."
+    },
+    {
+      "id": 66,
+      "link": [3, 1],
+      "name": "X-Mode Leave Shinecharged (Space Jump)",
+      "requires": [
+        {"obstaclesCleared": ["A"]},
+        "SpaceJump",
+        "canXMode",
+        "h_XModeSpikeHit",
+        "h_XModeSpikeHit",
+        "canUseIFrames",
+        "h_shinechargeMaxRunway",
+        "canShinechargeMovementTricky",
+        {"shineChargeFrames": 160}
+      ],
+      "exitCondition": {
+        "leaveShinecharged": {}
+      },
+      "unlocksDoors": [{"types": ["ammo"], "requires": [], "useImplicitRequires": false}],
+      "flashSuitChecked": true,
+      "note": [
+        "Use the spikes in the center of the room to gain a shinecharge with X-Mode.",
+        "Then arm pump until Samus reaches the middle Yapping Maw.",
+        "Exit X-mode, gain run speed, and use Space Jump to reach the door."
+      ],
+      "devNote": "Unlocking the door is free since obstacle A being cleared implies it was already unlocked earlier if needed."
     },
     {
       "id": 52,
@@ -1015,7 +1151,7 @@
     {
       "id": 57,
       "link": [4, 1],
-      "name": "X-Ray Access Springwall",
+      "name": "Springwall",
       "requires": [
         "h_SpringwallOverSpikes",
         {"or": [
@@ -1027,9 +1163,9 @@
     {
       "id": 58,
       "link": [4, 1],
-      "name": "X-Ray Access Tricky SpringBall Jump",
+      "name": "Tricky Spring Ball Jump",
       "requires": [
-        {"notable": "X-Ray Access Tricky SpringBall Jump"},
+        {"notable": "Tricky Spring Ball Jump"},
         "canTrickyJump",
         "canTrickySpringBallJump",
         {"or": [
@@ -1094,11 +1230,24 @@
       ]
     },
     {
+      "id": 70,
+      "link": [4, 1],
+      "name": "IBJ Into HBJ",
+      "requires": [
+        {"or": [
+          "canLongIBJ",
+          "canJumpIntoIBJ"
+        ]},
+        "canDiagonalBombJump"
+      ],
+      "note": "Perform an HBJ at the top of an IBJ. This is basically a very short diagonal bomb jump."
+    },
+    {
       "id": 61,
       "link": [4, 1],
-      "name": "X-Ray Access SpikeJumps with HiJump",
+      "name": "Spike Jumps with HiJump",
       "requires": [
-        {"notable": "X-Ray Access SpikeJumps with HiJump"},
+        {"notable": "Spike Jumps with HiJump"},
         "HiJump",
         "canTrickyJump",
         {"or": [
@@ -1116,7 +1265,7 @@
         ]}
       ],
       "note": [
-        "Jump to the door leading to X-Ray either by jumping from spikes or with a very precise jump.",
+        "Jump up to the left door either by jumping from spikes or with a very precise jump.",
         "Cross the room by Jumping atop the spikes.",
         "Taking enemy damage can be used to reduce some spike damage.",
         "The final jump can either be made by jumping from the bottommost spike stair or from the safe stair.",
@@ -1133,7 +1282,7 @@
     },
     {
       "id": 2,
-      "name": "X-Ray Exit Damage Boost",
+      "name": "Damage Boost (Left to Right)",
       "note": [
         "If you wait long enough, a Waver will arrive. After it turns around to go back to the right, damage boost off of it, then follow it.",
         "Continue to hit it to get i-frames to avoid taking damage from any spikes.",
@@ -1142,15 +1291,15 @@
     },
     {
       "id": 4,
-      "name": "X-Ray Access Damage Boost",
+      "name": "Full Room Damage Boosts (Right to Left)",
       "note": [
-        "A precise strat that involves crossing both gaps by dboosting off Wavers.",
+        "A precise strat that involves crossing both gaps by damage boosting off Wavers.",
         "The Wavers are also used for iframes to avoid taking damage from any spikes."
       ]
     },
     {
       "id": 5,
-      "name": "X-Ray Access Tricky SpringBall Jump",
+      "name": "Tricky Spring Ball Jump",
       "note": [
         "Spring Ball jump from the safe spot on the spikey stairs. Moving over far enough left before the peak of the jump is the trickiest part of the jump.",
         "There are multiple things which can help get further left:",
@@ -1161,9 +1310,9 @@
     },
     {
       "id": 6,
-      "name": "X-Ray Access SpikeJumps with HiJump",
+      "name": "Spike Jumps with HiJump",
       "note": [
-        "Jump to the door leading to X-Ray either by jumping from spikes or with a very precise jump.",
+        "Jump up to the left door either by jumping from spikes or with a very precise jump.",
         "Cross the room by Jumping atop the spikes.",
         "Taking enemy damage can be used to reduce some spike damage.",
         "The final jump can either be made by jumping from the bottommost spike stair or from the safe stair.",
@@ -1172,6 +1321,6 @@
       ]
     }
   ],
-  "nextStratId": 63,
+  "nextStratId": 71,
   "nextNotableId": 7
 }

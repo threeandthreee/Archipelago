@@ -98,6 +98,8 @@ def create_regions(world: World, level_locations, high_level_locations) -> None:
 
     mountain_cave_region = create_region(world, names.mountain_cave, locations.mountain_cave_locations)
 
+    swamp_cave_region = create_region(world, names.swamp_cave, locations.swamp_cave_locations)
+
     garins_grave_region = create_region(world, names.garins_grave, locations.garins_grave_locations)
 
     charlock_region = create_region(world, names.charlock_castle, locations.charlock_locations)
@@ -126,6 +128,7 @@ def create_regions(world: World, level_locations, high_level_locations) -> None:
         rimuldar_key_region,
         cantlin_region,
         mountain_cave_region,
+        swamp_cave_region,
         garins_grave_region,
         charlock_region,
         hauksness_region,
@@ -138,59 +141,57 @@ def create_regions(world: World, level_locations, high_level_locations) -> None:
 
 def connect_regions(world: World) -> None:
     searchsanity = world.options.searchsanity
+    shopsanity = world.options.shopsanity
     region_names: Dict[str, int] = {}
 
     connect(world, world.player, region_names, 'Menu', names.tantegel_throne_room)
     connect(world, world.player, region_names, 'Menu', names.overworld)
     connect(world, world.player, region_names, names.overworld, names.strong_overworld,
-            lambda state: (state.has(names.magic_key, world.player) and not world.options.shopsanity or
-                           (state.has(names.progressive_weapon, world.player, 3) and
-                           state.has(names.progressive_armor, world.player, 3) and
-                           state.has(names.progressive_shield, world.player, 2))))
+        lambda state: (state.has(names.magic_key, world.player) and (not shopsanity or
+                        (state.has(names.progressive_weapon, world.player, 3) and
+                        state.has(names.progressive_armor, world.player, 3) and
+                        state.has(names.progressive_shield, world.player, 2)))))
     connect(world, world.player, region_names, names.overworld, names.breconnary)
     connect(world, world.player, region_names, names.overworld, names.garinham, 
-            equipment_helper(world, 2, 2, 1))
+        equipment_helper(world, 2, 2, 1))
     connect(world, world.player, region_names, names.overworld, names.kol,
-            equipment_helper(world, 1, 1, 1))
+        equipment_helper(world, 1, 1, 1))
     connect(world, world.player, region_names, names.overworld, names.rimuldar,
-            equipment_helper(world, 3, 3, 1))
+        equipment_helper(world, 3, 3, 1))
     connect(world, world.player, region_names, names.overworld, names.hauksness,
-            equipment_helper(world, 5, 5, 3))
+        equipment_helper(world, 5, 5, 3))
     connect(world, world.player, region_names, names.overworld, names.cantlin,
-            equipment_helper(world, 4, 4, 2))
+        equipment_helper(world, 4, 4, 2))
     connect(world, world.player, region_names, names.overworld, names.erdricks_cave)
     connect(world, world.player, region_names, names.overworld, names.mountain_cave,
-            equipment_helper(world, 3, 3, 2))
+        equipment_helper(world, 3, 3, 2))
+    connect(world, world.player, region_names, names.overworld, names.swamp_cave,
+        lambda state: (state.has(names.magic_key, world.player) and (not shopsanity or
+                (state.has(names.progressive_weapon, world.player, 4) and
+                state.has(names.progressive_armor, world.player, 4) and
+                state.has(names.progressive_shield, world.player, 2)))))
+
 
     connect(world, world.player, region_names, names.overworld, names.rainbow_drop_shrine,
-            lambda state: (state.has(names.staff_of_rain, world.player) and 
-                           state.has(names.stones_of_sunlight, world.player) and
-                           state.has(names.magic_key, world.player) and
-                           (not searchsanity or state.has(names.erdricks_token, world.player))))
+        lambda state: (state.has(names.staff_of_rain, world.player) and 
+                        state.has(names.stones_of_sunlight, world.player) and
+                        state.has(names.magic_key, world.player) and
+                        (not searchsanity or state.has(names.erdricks_token, world.player))))
 
     connect(world, world.player, region_names, names.overworld, names.tantegel_castle, 
-            lambda state: (state.has(names.magic_key, world.player)))
+        lambda state: (state.has(names.magic_key, world.player)))
     connect(world, world.player, region_names, names.overworld, names.garinham_keys, 
-            lambda state: (state.has(names.magic_key, world.player)))
+        lambda state: (state.has(names.magic_key, world.player)))
     connect(world, world.player, region_names, names.rimuldar, names.rimuldar_keys,
-            lambda state: (state.has(names.magic_key, world.player)))
+        lambda state: (state.has(names.magic_key, world.player)))
     connect(world, world.player, region_names, names.garinham_keys, names.garins_grave,
-            equipment_helper(world, 4, 3, 2))
+        equipment_helper(world, 4, 3, 2))
     connect(world, world.player, region_names, names.overworld, names.staff_of_rain_shrine, 
-            lambda state: (state.has(names.silver_harp, world.player)))
+        lambda state: (state.has(names.silver_harp, world.player)))
     connect(world, world.player, region_names, names.overworld, names.erdricks_token_tile,
-            equipment_helper(world, 4, 4, 2))
-    connect(world, world.player, region_names, names.overworld, names.charlock_castle,  # Temporary fix for now
-            lambda state: (state.has(names.magic_key, world.player) and
-                           state.has(names.staff_of_rain, world.player) and
-                           state.has(names.stones_of_sunlight, world.player) and
-                           (not searchsanity or state.has(names.erdricks_token, world.player)) and
-                           state.has(names.rainbow_drop, world.player) and not world.options.shopsanity or (
-                                state.has(names.progressive_weapon, world.player, 5) and
-                                state.has(names.progressive_armor, world.player, 5) and
-                                state.has(names.progressive_shield, world.player, 3)
-                           )))
-    
+        equipment_helper(world, 4, 4, 2))
+    connect(world, world.player, region_names, names.rainbow_drop_shrine, names.charlock_castle,
+        equipment_helper(world, 5, 5, 2))
 
 def create_region(world: World, name: str, location_checks=None):
     ret = DWRegion(name, world.player, world.multiworld)

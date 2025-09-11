@@ -95,6 +95,20 @@
         [1, 2, 1, 1, 1]
       ],
       "note": "Represents being in the Morph tunnel with Artificial Morph, likely moving off camera towards the opposite side of the room."
+    },
+    {
+      "id": 6,
+      "name": "Bottom Shinecharged",
+      "nodeType": "junction",
+      "nodeSubType": "junction",
+      "mapTileMask": [
+        [1, 0, 0, 0, 0],
+        [1, 0, 0, 0, 0],
+        [2, 1, 1, 1, 1]
+      ],
+      "devNote": [
+        "This represents being shinecharged at the end of the runway opposite the bottom-left door."
+      ]
     }
   ],
   "enemies": [
@@ -134,7 +148,8 @@
           "id": 4,
           "devNote": "This link is only for the shinespark, mochtroid climbing or cross room jump. Other strats should go 2 -> 1 -> 4."
         },
-        {"id": 5}
+        {"id": 5},
+        {"id": 6}
       ]
     },
     {
@@ -169,6 +184,14 @@
         {"id": 1},
         {"id": 2},
         {"id": 3},
+        {"id": 4}
+      ]
+    },
+    {
+      "from": 6,
+      "to": [
+        {"id": 1},
+        {"id": 2},
         {"id": 4}
       ]
     }
@@ -217,6 +240,42 @@
         "Alternatively, freeze the Mochtroid with an angle-down shot while falling below then quickly climb back up."
       ],
       "devNote": "There are many other ways to get into position, but they would require manipulating the Mochtroid as much as canMochtroidIceClimb expects."
+    },
+    {
+      "id": 205,
+      "link": [1, 1],
+      "name": "Mochtroid Farm (1 Mochtroid)",
+      "requires": [
+        {"resetRoom": {"nodes": [1]}},
+        {"or": [
+          {"and": [
+            "Grapple",
+            {"cycleFrames": 75}
+          ]},
+          {"and": [
+            "Plasma",
+            {"cycleFrames": 75}
+          ]},
+          {"and": [
+            "Gravity",
+            "ScrewAttack",
+            {"cycleFrames": 75}
+          ]},
+          {"and": [
+            "Wave",
+            {"cycleFrames": 85}
+          ]},
+          {"and": [
+            "Spazer",
+            {"cycleFrames": 90}
+          ]},
+          {"and": [
+            "canDodgeWhileShooting",
+            {"cycleFrames": 135}
+          ]}
+        ]}
+      ],
+      "farmCycleDrops": [{"enemy": "Mochtroid", "count": 1}]
     },
     {
       "id": 3,
@@ -1013,8 +1072,8 @@
               "minHeight": 2,
               "maxHeight": 2,
               "minTiles": 45,
-              "obstructions": [[2, 0]],
               "speedBooster": true,
+              "obstructions": [[2, 0]],
               "requires": [
                 "canInsaneJump"
               ],
@@ -1334,13 +1393,23 @@
       "requires": [
         {"or": [
           "Gravity",
-          "h_artificialMorphBombs",
+          {"and": [
+            "h_artificialMorphBombs",
+            "canInsaneJump"
+          ]},
           "h_artificialMorphPowerBomb",
+          {"and": [
+            "h_artificialMorphSpringFling",
+            "canTrickyGMode"
+          ]},
           {"enemyDamage": {"enemy": "Mochtroid", "type": "contact", "hits": 1}}
         ]}
       ],
       "flashSuitChecked": true,
-      "note": "Enter morphed and kill the Mochtroid with Bombs or a Power Bomb, or roll off the edge with Gravity to drop fast enough not to lure the Mochtroid."
+      "note": [
+        "Enter morphed and kill the Mochtroid with Bombs or a Power Bomb, or roll off the edge with Gravity to drop fast enough not to lure the Mochtroid.",
+        "It is also possible to Spring Fling by jumping from the ground immediately before the pause fully triggers to move right fast enough to avoid a hit."
+      ]
     },
     {
       "id": 37,
@@ -1376,7 +1445,7 @@
     {
       "id": 39,
       "link": [2, 1],
-      "name": "Shinespark",
+      "name": "Come in Shinecharged, Shinespark",
       "entranceCondition": {
         "comeInShinecharged": {}
       },
@@ -1446,108 +1515,6 @@
       "devNote": "This can be done with a shorter runway (closed end) and canMomentumConservingTurnaround, but that type of connection doesn't exist."
     },
     {
-      "id": 44,
-      "link": [2, 1],
-      "name": "Suitless Water Shinecharge",
-      "entranceCondition": {
-        "comeInShinecharging": {
-          "length": 3,
-          "openEnd": 0
-        }
-      },
-      "requires": [
-        "canWaterShineCharge",
-        {"shinespark": {"frames": 20, "excessFrames": 3}}
-      ],
-      "devNote": "This runway length is just an estimate of the worst case scenario for difficulties that can't use canStutterWaterShineCharge."
-    },
-    {
-      "id": 45,
-      "link": [2, 1],
-      "name": "Suitless Water Shinecharge, Leave With Temporary Blue",
-      "entranceCondition": {
-        "comeInShinecharging": {
-          "length": 3,
-          "openEnd": 0
-        }
-      },
-      "requires": [
-        "canWaterShineCharge",
-        "canXRayTurnaround",
-        "canChainTemporaryBlue",
-        "canGravityJump"
-      ],
-      "exitCondition": {
-        "leaveWithTemporaryBlue": {}
-      },
-      "unlocksDoors": [{"types": ["ammo"], "requires": []}]
-    },
-    {
-      "id": 46,
-      "link": [2, 1],
-      "name": "Stutter Water Shinecharge",
-      "entranceCondition": {
-        "comeInRunning": {
-          "speedBooster": true,
-          "minTiles": 2.4375
-        }
-      },
-      "requires": [
-        "canStutterWaterShineCharge",
-        "h_shinechargeMaxRunway",
-        {"or": [
-          {"enemyDamage": {"enemy": "Mochtroid", "type": "contact", "hits": 2}},
-          {"and": [
-            "canDodgeWhileShooting",
-            {"or": [
-              "Wave",
-              "Spazer",
-              "Plasma",
-              {"ammo": {"type": "Missile", "count": 1}},
-              {"ammo": {"type": "Super", "count": 1}}
-            ]}
-          ]}
-        ]},
-        {"shinespark": {"frames": 20, "excessFrames": 3}}
-      ],
-      "note": "Enter the room with a careful amount of momentum where Samus must spend extra time slowing down during the stutter, but must not have much run speed."
-    },
-    {
-      "id": 47,
-      "link": [2, 1],
-      "name": "Stutter Water Shinecharge, Leave With Temporary Blue",
-      "entranceCondition": {
-        "comeInRunning": {
-          "speedBooster": true,
-          "minTiles": 2.4375
-        }
-      },
-      "requires": [
-        "canStutterWaterShineCharge",
-        "h_shinechargeMaxRunway",
-        {"or": [
-          {"enemyDamage": {"enemy": "Mochtroid", "type": "contact", "hits": 2}},
-          {"and": [
-            "canDodgeWhileShooting",
-            {"or": [
-              "Wave",
-              "Spazer",
-              "Plasma",
-              {"ammo": {"type": "Missile", "count": 1}},
-              {"ammo": {"type": "Super", "count": 1}}
-            ]}
-          ]}
-        ]},
-        "canXRayTurnaround",
-        "canChainTemporaryBlue",
-        "canGravityJump"
-      ],
-      "exitCondition": {
-        "leaveWithTemporaryBlue": {}
-      },
-      "unlocksDoors": [{"types": ["ammo"], "requires": []}]
-    },
-    {
       "id": 135,
       "link": [2, 1],
       "name": "Use Flash Suit",
@@ -1583,6 +1550,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         {"notable": "Very Deep Stuck X-Ray Climb"},
         "canXRayClimb"
       ],
@@ -1818,75 +1786,106 @@
       }
     },
     {
-      "id": 52,
+      "id": 206,
       "link": [2, 2],
-      "name": "Stutter Water Shinecharge, Leave with Spark",
-      "entranceCondition": {
-        "comeInRunning": {
-          "speedBooster": true,
-          "minTiles": 2.4375
-        }
-      },
+      "name": "Mochtroid Farm (1 Mochtroid)",
       "requires": [
-        "canStutterWaterShineCharge",
-        "canShinechargeMovementComplex",
-        "h_shinechargeMaxRunway",
+        {"resetRoom": {"nodes": [2]}},
         {"or": [
-          {"enemyDamage": {"enemy": "Mochtroid", "type": "contact", "hits": 2}},
+          {"and": [
+            "Grapple",
+            {"cycleFrames": 80}
+          ]},
+          {"and": [
+            "Plasma",
+            {"cycleFrames": 80}
+          ]},
+          {"and": [
+            "Gravity",
+            "ScrewAttack",
+            {"cycleFrames": 80}
+          ]},
+          {"and": [
+            "Wave",
+            {"cycleFrames": 85}
+          ]},
+          {"and": [
+            "Spazer",
+            {"cycleFrames": 90}
+          ]},
           {"and": [
             "canDodgeWhileShooting",
-            {"or": [
-              "Wave",
-              "Spazer",
-              "Plasma",
-              {"ammo": {"type": "Missile", "count": 1}},
-              {"ammo": {"type": "Super", "count": 1}}
-            ]}
-          ]}
-        ]},
-        {"or": [
-          {"shinespark": {"frames": 12}},
-          {"and": [
-            "canShinechargeMovementTricky",
-            {"shinespark": {"frames": 3}}
+            {"cycleFrames": 135}
           ]}
         ]}
       ],
-      "exitCondition": {
-        "leaveWithSpark": {}
-      },
-      "unlocksDoors": [
-        {"types": ["missiles", "super"], "requires": []},
-        {"types": ["powerbomb"], "requires": ["never"]}
-      ],
-      "note": "Enter the room with a careful amount of momentum where Samus must spend extra time slowing down during the stutter, but must not have much run speed."
+      "farmCycleDrops": [{"enemy": "Mochtroid", "count": 1}]
     },
     {
       "id": 53,
       "link": [2, 2],
-      "name": "Mochtroid Farm",
+      "name": "Mochtroid Farm (3 Mochtroids)",
       "requires": [
         "Gravity",
+        {"cycleFrames": 330},
         {"or": [
-          "SpaceJump",
-          "Grapple",
-          "canConsecutiveWalljump"
+          {"resetRoom": {"nodes": [2]}},
+          {"and": [
+            {"resetRoom": {"nodes": [4]}},
+            {"cycleFrames": 70}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [1]}},
+            {"cycleFrames": 90}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [3]}},
+            "Morph",
+            {"cycleFrames": 1210}
+          ]}
         ]},
         {"or": [
-          "canDodgeWhileShooting",
+          "canConsecutiveWalljump",
+          {"and": [
+            "SpaceJump",
+            {"cycleFrames": 40}
+          ]},
+          {"and": [
+            "Grapple",
+            {"cycleFrames": 150}
+          ]},
+          {"and": [
+            "canGravityJump",
+            {"cycleFrames": 120},
+            "h_doubleEquipmentScreenCycleFrames"
+          ]}
+        ]},
+        {"or": [
           "ScrewAttack",
-          "Wave",
-          "Spazer",
-          "Plasma",
-          "Grapple"
-        ]},
-        {"resetRoom": {
-          "nodes": [1, 2, 4]
-        }},
-        {"partialRefill": {"type": "Super", "limit": 4}},
-        {"partialRefill": {"type": "Energy", "limit": 200}},
-        {"partialRefill": {"type": "Missile", "limit": 10}}
-      ]
+          {"and": [
+            "Grapple",
+            {"cycleFrames": 40}
+          ]},
+          {"and": [
+            "Plasma",
+            {"cycleFrames": 20}
+          ]},
+          {"and": [
+            "Wave",
+            {"cycleFrames": 160}
+          ]},
+          {"and": [
+            "Spazer",
+            {"cycleFrames": 180}
+          ]},
+          {"and": [
+            "canDodgeWhileShooting",
+            {"cycleFrames": 315}
+          ]}
+        ]}
+      ],
+      "farmCycleDrops": [{"enemy": "Mochtroid", "count": 3}],
+      "devNote": ["FIXME: other options for this are possible (e.g. suitless)"]
     },
     {
       "id": 54,
@@ -1896,6 +1895,164 @@
         "h_CrystalFlash"
       ],
       "flashSuitChecked": true
+    },
+    {
+      "id": 193,
+      "link": [2, 2],
+      "name": "Precise Stutter Shinecharge, Leave Shinecharged (5-tile runway)",
+      "entranceCondition": {
+        "comeInStutterShinecharging": {
+          "minTiles": 5
+        }
+      },
+      "requires": [
+        "canPreciseStutterWaterShineCharge",
+        "canShinechargeMovementTricky",
+        "canInsaneJump",
+        "canTrickyDodgeEnemies",
+        {"shineChargeFrames": 130},
+        {"or": [
+          "canBeVeryPatient",
+          {"shineChargeFrames": 15}
+        ]}
+      ],
+      "exitCondition": {
+        "leaveShinecharged": {}
+      },
+      "unlocksDoors": [
+        {"types": ["super"], "requires": []},
+        {"types": ["missiles", "powerbomb"], "requires": ["never"]}
+      ],
+      "note": [
+        "With a runway of 5 tiles (open end) in the other room,",
+        "the ideal timing for the stutter is to release forward for 5 frames, and repress forward on the last possible frame before the transition.",
+        "Other timings can work, but will gain the shinecharge further from the door, leaving fewer shinecharge frames remaining.",
+        "After gaining the shinecharge, continue holding forward in order to make Samus stand.",
+        "Then turnaround spin jump back toward the door, and continue spin jumping to reach the transition with a shinecharge."
+      ]
+    },
+    {
+      "id": 194,
+      "link": [2, 2],
+      "name": "Precise Stutter Shinecharge, Leave Shinecharged (4-tile runway)",
+      "entranceCondition": {
+        "comeInStutterShinecharging": {
+          "minTiles": 4
+        }
+      },
+      "requires": [
+        "canPreciseStutterWaterShineCharge",
+        "canShinechargeMovementTricky",
+        "canInsaneJump",
+        "canTrickyDodgeEnemies",
+        {"shineChargeFrames": 140},
+        {"or": [
+          "canBeVeryPatient",
+          {"shineChargeFrames": 10}
+        ]}
+      ],
+      "exitCondition": {
+        "leaveShinecharged": {}
+      },
+      "unlocksDoors": [
+        {"types": ["super"], "requires": []},
+        {"types": ["missiles", "powerbomb"], "requires": ["never"]}
+      ],
+      "note": [
+        "With only a runway of 4 tiles (open end) in the other room,",
+        "the ideal timing for the stutter is to release forward for 4 frames, and repress forward on the last possible frame before the transition.",
+        "It also works well to release forward for 3 frames and repress on the last possible frame.",
+        "Other timings can also work, but may gain the shinecharge further from the door, leaving fewer shinecharge frames remaining.",
+        "After gaining the shinecharge, continue holding forward in order to make Samus stand.",
+        "Then turnaround spin jump back toward the door, and continue spin jumping to reach the transition with a shinecharge."
+      ]
+    },
+    {
+      "id": 195,
+      "link": [2, 2],
+      "name": "Precise Stutter Shinecharge, Leave Shinecharged (3-tile runway)",
+      "entranceCondition": {
+        "comeInStutterShinecharging": {
+          "minTiles": 3
+        }
+      },
+      "requires": [
+        "canPreciseStutterWaterShineCharge",
+        "canShinechargeMovementTricky",
+        "canInsaneJump",
+        "canTrickyDodgeEnemies",
+        {"shineChargeFrames": 145},
+        {"or": [
+          "canBeVeryPatient",
+          {"shineChargeFrames": 10}
+        ]}
+      ],
+      "exitCondition": {
+        "leaveShinecharged": {}
+      },
+      "unlocksDoors": [
+        {"types": ["super"], "requires": []},
+        {"types": ["missiles", "powerbomb"], "requires": ["never"]}
+      ],
+      "note": [
+        "With only a runway of 3 tiles (open end) in the other room,",
+        "the ideal timing for the stutter is to release forward for 3 or 4 frames, and repress forward on the last possible frame before the transition.",
+        "Other timings can work, but will gain the shinecharge further from the door, leaving fewer shinecharge frames remaining.",
+        "After gaining the shinecharge, continue holding forward in order to make Samus stand.",
+        "Then turnaround spin jump back toward the door, and continue spin jumping to reach the transition with a shinecharge.",
+        "Alternatively, with greater difficulty but saving some shinecharge frames,",
+        "after performing the turnaround spin jump, briefly moonwalk back, then retain momentum by boomeranging forward",
+        "(switching from pressing backward to pressing forward on the next frame),",
+        "and arm pump to reach the door quickly."
+      ],
+      "devNote": [
+        "The same shinecharge frames could be achieved with a closed end runway (effective length of 2.4375),",
+        "with a 3-frame stutter, but there doesn't appear to be any application."
+      ]
+    },
+    {
+      "id": 196,
+      "link": [2, 2],
+      "name": "Precise Stutter Shinecharge, Leave Shinecharged (2-tile runway)",
+      "entranceCondition": {
+        "comeInStutterShinecharging": {
+          "minTiles": 2
+        }
+      },
+      "requires": [
+        "canPreciseStutterWaterShineCharge",
+        "canShinechargeMovementTricky",
+        "canInsaneJump",
+        "canTrickyDodgeEnemies",
+        {"shineChargeFrames": 150},
+        {"or": [
+          "canBeVeryPatient",
+          {"shineChargeFrames": 15}
+        ]}
+      ],
+      "exitCondition": {
+        "leaveShinecharged": {}
+      },
+      "unlocksDoors": [
+        {"types": ["super"], "requires": []},
+        {"types": ["missiles", "powerbomb"], "requires": ["never"]}
+      ],
+      "note": [
+        "With only a runway of 2 tiles (open end) in the other room,",
+        "the ideal timing for the stutter is to release forward for 3 frames, and repress forward on the last possible frame before the transition.",
+        "Other timings can work, but will gain the shinecharge further from the door, leaving fewer shinecharge frames remaining.",
+        "After gaining the shinecharge, continue holding forward in order to make Samus stand.",
+        "Then turnaround spin jump back toward the door, and continue spin jumping to reach the transition with a shinecharge.",
+        "Alternatively, with greater difficulty but saving some shinecharge frames,",
+        "after performing the turnaround spin jump, briefly moonwalk back, then retain momentum by boomeranging forward",
+        "(switching from pressing backward to pressing forward on the next frame),",
+        "and arm pump to reach the door quickly."
+      ],
+      "devNote": [
+        "FIXME: The canBeVeryPatient requirement is for difficulty placement of the boomerang method;",
+        "but the boomerang (or maybe specifically the moonwalk boomerang) should possibly be its own tech,",
+        "and the same with rapid arm pumping."
+      ]
     },
     {
       "id": 55,
@@ -2039,7 +2196,7 @@
     {
       "id": 62,
       "link": [2, 4],
-      "name": "Shinespark",
+      "name": "Come in Shinecharged, Shinespark",
       "entranceCondition": {
         "comeInShinecharged": {}
       },
@@ -2470,8 +2627,8 @@
               "minHeight": 2,
               "maxHeight": 2,
               "minTiles": 45,
-              "obstructions": [[2, 0]],
               "speedBooster": true,
+              "obstructions": [[2, 0]],
               "requires": [
                 "canInsaneJump",
                 "canMomentumConservingMorph"
@@ -2547,110 +2704,6 @@
         "canSpringBallJumpMidAir",
         "canCrossRoomJumpIntoWater"
       ]
-    },
-    {
-      "id": 80,
-      "link": [2, 4],
-      "name": "Suitless Water Shinecharge",
-      "entranceCondition": {
-        "comeInShinecharging": {
-          "length": 3,
-          "openEnd": 0
-        }
-      },
-      "requires": [
-        "canWaterShineCharge",
-        {"shinespark": {"frames": 39, "excessFrames": 4}}
-      ],
-      "devNote": "This runway length is just an estimate of the worst case scenario for difficulties that can't use canStutterWaterShineCharge."
-    },
-    {
-      "id": 81,
-      "link": [2, 4],
-      "name": "Suitless Water Shinecharge, Leave With Temporary Blue",
-      "entranceCondition": {
-        "comeInShinecharging": {
-          "length": 2,
-          "openEnd": 0
-        }
-      },
-      "requires": [
-        "canWaterShineCharge",
-        "HiJump",
-        "canGravityJump",
-        "canTrickySpringBallJump",
-        "canChainTemporaryBlue"
-      ],
-      "exitCondition": {
-        "leaveWithTemporaryBlue": {}
-      },
-      "unlocksDoors": [{"types": ["ammo"], "requires": []}]
-    },
-    {
-      "id": 82,
-      "link": [2, 4],
-      "name": "Stutter Water Shinecharge",
-      "entranceCondition": {
-        "comeInRunning": {
-          "speedBooster": true,
-          "minTiles": 2.4375
-        }
-      },
-      "requires": [
-        "canStutterWaterShineCharge",
-        "h_shinechargeMaxRunway",
-        {"or": [
-          {"enemyDamage": {"enemy": "Mochtroid", "type": "contact", "hits": 2}},
-          {"and": [
-            "canDodgeWhileShooting",
-            {"or": [
-              "Wave",
-              "Spazer",
-              "Plasma",
-              {"ammo": {"type": "Missile", "count": 1}},
-              {"ammo": {"type": "Super", "count": 1}}
-            ]}
-          ]}
-        ]},
-        {"shinespark": {"frames": 39, "excessFrames": 4}}
-      ],
-      "note": "Enter the room with a careful amount of momentum where Samus must spend extra time slowing down during the stutter, but must not have much run speed."
-    },
-    {
-      "id": 83,
-      "link": [2, 4],
-      "name": "Stutter Water Shinecharge, Leave With Temporary Blue",
-      "entranceCondition": {
-        "comeInRunning": {
-          "speedBooster": true,
-          "minTiles": 2.4375
-        }
-      },
-      "requires": [
-        "canStutterWaterShineCharge",
-        {"or": [
-          {"enemyDamage": {"enemy": "Mochtroid", "type": "contact", "hits": 2}},
-          {"and": [
-            "canDodgeWhileShooting",
-            {"or": [
-              "Wave",
-              "Spazer",
-              "Plasma",
-              {"ammo": {"type": "Missile", "count": 1}},
-              {"ammo": {"type": "Super", "count": 1}}
-            ]}
-          ]}
-        ]},
-        "canXRayTurnaround",
-        "HiJump",
-        "canGravityJump",
-        "canTrickySpringBallJump",
-        "canChainTemporaryBlue"
-      ],
-      "exitCondition": {
-        "leaveWithTemporaryBlue": {}
-      },
-      "unlocksDoors": [{"types": ["ammo"], "requires": []}]
     },
     {
       "id": 136,
@@ -2741,6 +2794,38 @@
       ]
     },
     {
+      "id": 203,
+      "link": [2, 4],
+      "name": "Come in Shinecharging, Leave With Temporary Blue",
+      "entranceCondition": {
+        "comeInShinecharging": {
+          "length": 3,
+          "openEnd": 1
+        }
+      },
+      "requires": [
+        "HiJump",
+        {"or": [
+          {"and": [
+            "canGravityJump",
+            "canTrickySpringBallJump",
+            "canChainTemporaryBlue"
+          ]},
+          {"and": [
+            "canTrickyUseFrozenEnemies",
+            "canLongChainTemporaryBlue"
+          ]}
+        ]}
+      ],
+      "exitCondition": {
+        "leaveWithTemporaryBlue": {}
+      },
+      "unlocksDoors": [{"types": ["ammo"], "requires": []}],
+      "devNote": [
+        "FIXME: Probably more of the runway could be used, but with increasing difficulty."
+      ]
+    },
+    {
       "id": 85,
       "link": [2, 4],
       "name": "Grapple Teleport Door Lock Skip",
@@ -2798,6 +2883,119 @@
       },
       "requires": [],
       "flashSuitChecked": true
+    },
+    {
+      "id": 197,
+      "link": [2, 6],
+      "name": "Come In Shinecharging (Gravity)",
+      "entranceCondition": {
+        "comeInShinecharging": {
+          "length": 12,
+          "openEnd": 0
+        }
+      },
+      "requires": [
+        "Gravity",
+        {"shineChargeFrames": 0}
+      ],
+      "endsWithShineCharge": true
+    },
+    {
+      "id": 44,
+      "link": [2, 6],
+      "name": "Suitless Water Shinecharge",
+      "entranceCondition": {
+        "comeInShinecharging": {
+          "length": 4,
+          "openEnd": 0
+        }
+      },
+      "requires": [
+        "canWaterShineCharge",
+        {"shineChargeFrames": 0}
+      ],
+      "endsWithShineCharge": true
+    },
+    {
+      "id": 46,
+      "link": [2, 6],
+      "name": "Precise Stutter Water Shinecharge",
+      "entranceCondition": {
+        "comeInStutterShinecharging": {
+          "minTiles": 2.4375
+        }
+      },
+      "requires": [
+        "canPreciseStutterWaterShineCharge",
+        {"or": [
+          {"enemyDamage": {"enemy": "Mochtroid", "type": "contact", "hits": 2}},
+          {"and": [
+            "canDodgeWhileShooting",
+            {"or": [
+              "Wave",
+              "Spazer",
+              "Plasma",
+              {"ammo": {"type": "Missile", "count": 1}},
+              {"ammo": {"type": "Super", "count": 1}},
+              "canTrickyDodgeEnemies"
+            ]}
+          ]}
+        ]},
+        {"shineChargeFrames": 0}
+      ],
+      "endsWithShineCharge": true,
+      "note": [
+        "With only a runway length of 3 tiles (closed end) in the other room, this requires a precise setup:",
+        "release forward for 3 or 4 frames, then repress forward on the last possible frame before the transition;",
+        "alternatively, release forward for 2 frames and repress forward on the second-to-last possible frame before the transition.",
+        "It is possible to clear the Mochtroid with Power Beam without taking damage,",
+        "by first firing angle up shots and then switching to angle down shots once the Mochtroid is on top of Samus."
+      ],
+      "detailNote": [
+        "If a longer runway is available (4 tiles), the timing windows are a bit more lenient:",
+        "1. Release forward for 3, 4, or 5 frames, repress forward on the last possible frame;",
+        "2. Release forward for 2 or 3 frames, repress forward on the 2nd-to-last possible frame;",
+        "3. Release forward for 1 or 2 frames, repress forward on the 3rd-to-last possible frame."
+      ]
+    },
+    {
+      "id": 198,
+      "link": [2, 6],
+      "name": "Very Precise Stutter Water Shinecharge",
+      "entranceCondition": {
+        "comeInStutterShinecharging": {
+          "minTiles": 2
+        }
+      },
+      "requires": [
+        "canPreciseStutterWaterShineCharge",
+        "canInsaneJump",
+        {"or": [
+          {"enemyDamage": {"enemy": "Mochtroid", "type": "contact", "hits": 2}},
+          {"and": [
+            "canDodgeWhileShooting",
+            {"or": [
+              "Wave",
+              "Spazer",
+              "Plasma",
+              {"ammo": {"type": "Missile", "count": 1}},
+              {"ammo": {"type": "Super", "count": 1}},
+              "canTrickyDodgeEnemies"
+            ]}
+          ]}
+        ]},
+        {"shineChargeFrames": 0}
+      ],
+      "endsWithShineCharge": true,
+      "note": [
+        "With only a runway of 2 tiles (open end) in the other room, this requires a double-frame-perfect setup:",
+        "release forward for exactly 3 frames, and repress forward on the last possible frame before the transition.",
+        "It is possible to clear the Mochtroid with Power Beam without taking damage,",
+        "by first firing angle up shots and then switching to angle down shots once the Mochtroid is on top of Samus."
+      ],
+      "devNote": [
+        "FIXME: canInsaneJump is for difficulty placement; replace with a more appropriate tech since no jump is involved."
+      ]
     },
     {
       "id": 88,
@@ -3508,6 +3706,26 @@
       "unlocksDoors": [{"types": ["ammo"], "requires": []}]
     },
     {
+      "id": 204,
+      "link": [4, 1],
+      "name": "Come in Blue Spinning, Leave With Temporary Blue (Low Speed)",
+      "entranceCondition": {
+        "comeInBlueSpinning": {
+          "maxExtraRunSpeed": "$1.8",
+          "unusableTiles": 1
+        }
+      },
+      "requires": [
+        "canSuitlessMaridia",
+        "canInsaneJump",
+        "canChainTemporaryBlue"
+      ],
+      "exitCondition": {
+        "leaveWithTemporaryBlue": {}
+      },
+      "unlocksDoors": [{"types": ["ammo"], "requires": []}]
+    },
+    {
       "id": 116,
       "link": [4, 1],
       "name": "Grapple Teleport Door Lock Skip",
@@ -3807,6 +4025,41 @@
       "devNote": "There are many other ways to get into position, but they would require manipulating the Mochtroid as much as canMochtroidIceClimb expects."
     },
     {
+      "id": 207,
+      "link": [4, 4],
+      "name": "Mochtroid Farm (1 Mochtroid)",
+      "requires": [
+        {"resetRoom": {"nodes": [4]}},
+        {"or": [
+          {"and": [
+            "Grapple",
+            {"cycleFrames": 80}
+          ]},
+          {"and": [
+            "Plasma",
+            {"cycleFrames": 80}
+          ]},
+          {"and": [
+            "ScrewAttack",
+            {"cycleFrames": 80}
+          ]},
+          {"and": [
+            "Wave",
+            {"cycleFrames": 85}
+          ]},
+          {"and": [
+            "Spazer",
+            {"cycleFrames": 90}
+          ]},
+          {"and": [
+            "canDodgeWhileShooting",
+            {"cycleFrames": 120}
+          ]}
+        ]}
+      ],
+      "farmCycleDrops": [{"enemy": "Mochtroid", "count": 1}]
+    },
+    {
       "id": 127,
       "link": [4, 4],
       "name": "Crystal Flash",
@@ -4050,8 +4303,6 @@
         {"or": [
           "canTrickyDodgeEnemies",
           "Gravity",
-          "h_artificialMorphBombs",
-          "h_artificialMorphPowerBomb",
           {"enemyDamage": {"enemy": "Mochtroid", "type": "contact", "hits": 1}}
         ]}
       ],
@@ -4067,7 +4318,7 @@
       "link": [5, 3],
       "name": "G-Mode Morph, Jump Assist",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         "canOffScreenMovement",
         {"or": [
           "Gravity",
@@ -4086,7 +4337,7 @@
       "link": [5, 3],
       "name": "G-Mode, Blind Foosball",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         "canOffScreenMovement",
         "canInsaneJump",
         "h_artificialMorphSpringBall"
@@ -4103,6 +4354,7 @@
       "link": [5, 4],
       "name": "G-Mode Morph, Long Blind IBJ",
       "requires": [
+        "canGMode",
         "Gravity",
         "h_artificialMorphLongIBJ",
         "canOffScreenMovement"
@@ -4114,17 +4366,150 @@
       "link": [5, 4],
       "name": "G-Mode Morph, Gravity Jump, Spring Ball Jump",
       "requires": [
+        "canComplexGMode",
         "canGravityJump",
         "HiJump",
         {"tech": "canSpringBallJumpMidAir"},
-        "h_artificialMorphSpringBall",
-        "canTrickyJump"
+        "h_artificialMorphSpringBall"
       ],
       "flashSuitChecked": true,
       "note": [
-        "Climb the room with a Gravity jump + Spring Ball jump. Turn off Spring Ball and Gravity at the same time, then repause and turn Spring back on.",
+        "Climb the room with a Gravity jump + Spring Ball jump. Turn off Spring Ball and Gravity at the same time, then repause after a short delay and turn Spring back on.",
         "If coming from the right, Samus will be off camera."
       ]
+    },
+    {
+      "id": 199,
+      "link": [6, 1],
+      "name": "Shinespark",
+      "startsWithShineCharge": true,
+      "requires": [
+        {"shineChargeFrames": 70},
+        {"or": [
+          {"shinespark": {"frames": 20, "excessFrames": 3}},
+          {"and": [
+            "canMidairShinespark",
+            {"shinespark": {"frames": 17, "excessFrames": 3}}
+          ]},
+          {"and": [
+            "HiJump",
+            "canMidairShinespark",
+            {"shinespark": {"frames": 13, "excessFrames": 3}}
+          ]}
+        ]}
+      ]
+    },
+    {
+      "id": 200,
+      "link": [6, 1],
+      "name": "Leave With Temporary Blue",
+      "startsWithShineCharge": true,
+      "requires": [
+        "h_shinechargeMaxRunway",
+        {"shineChargeFrames": 0},
+        "canXRayTurnaround",
+        "canChainTemporaryBlue",
+        {"or": [
+          "canGravityJump",
+          {"and": [
+            "HiJump",
+            "canTrickyUseFrozenEnemies",
+            "canLongChainTemporaryBlue"
+          ]}
+        ]}
+      ],
+      "exitCondition": {
+        "leaveWithTemporaryBlue": {}
+      },
+      "unlocksDoors": [{"types": ["ammo"], "requires": []}]
+    },
+    {
+      "id": 201,
+      "link": [6, 2],
+      "name": "Leave With Spark",
+      "startsWithShineCharge": true,
+      "requires": [
+        {"shineChargeFrames": 50},
+        "canShinechargeMovementComplex",
+        {"or": [
+          {"shinespark": {"frames": 12}},
+          {"and": [
+            "canShinechargeMovementTricky",
+            {"shinespark": {"frames": 3}}
+          ]}
+        ]}
+      ],
+      "exitCondition": {
+        "leaveWithSpark": {}
+      },
+      "unlocksDoors": [
+        {"types": ["super"], "requires": []},
+        {"types": ["missiles", "powerbomb"], "requires": ["never"]}
+      ]
+    },
+    {
+      "id": 202,
+      "link": [6, 2],
+      "name": "Leave With Temporary Blue",
+      "startsWithShineCharge": true,
+      "requires": [
+        "h_shinechargeMaxRunway",
+        {"shineChargeFrames": 0},
+        "canXRayTurnaround",
+        "canChainTemporaryBlue"
+      ],
+      "exitCondition": {
+        "leaveWithTemporaryBlue": {}
+      },
+      "unlocksDoors": [{"types": ["ammo"], "requires": []}]
+    },
+    {
+      "id": 80,
+      "link": [6, 4],
+      "name": "Shinespark",
+      "startsWithShineCharge": true,
+      "requires": [
+        {"shineChargeFrames": 60},
+        {"or": [
+          {"shinespark": {"frames": 38, "excessFrames": 3}},
+          {"and": [
+            "canMidairShinespark",
+            {"shinespark": {"frames": 35, "excessFrames": 3}}
+          ]},
+          {"and": [
+            "HiJump",
+            "canMidairShinespark",
+            {"shinespark": {"frames": 31, "excessFrames": 3}}
+          ]}
+        ]}
+      ]
+    },
+    {
+      "id": 81,
+      "link": [6, 4],
+      "name": "Leave With Temporary Blue",
+      "startsWithShineCharge": true,
+      "requires": [
+        "h_shinechargeMaxRunway",
+        {"shineChargeFrames": 0},
+        "canXRayTurnaround",
+        "HiJump",
+        {"or": [
+          {"and": [
+            "canGravityJump",
+            "canTrickySpringBallJump",
+            "canChainTemporaryBlue"
+          ]},
+          {"and": [
+            "canTrickyUseFrozenEnemies",
+            "canLongChainTemporaryBlue"
+          ]}
+        ]}
+      ],
+      "exitCondition": {
+        "leaveWithTemporaryBlue": {}
+      },
+      "unlocksDoors": [{"types": ["ammo"], "requires": []}]
     }
   ],
   "notables": [
@@ -4174,6 +4559,6 @@
       ]
     }
   ],
-  "nextStratId": 193,
+  "nextStratId": 208,
   "nextNotableId": 6
 }

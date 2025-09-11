@@ -3,7 +3,7 @@ from typing import Tuple
 
 from . import Levels, Locations
 
-VERSION: Tuple[int, int, int] = (0, 2, 6)
+VERSION: Tuple[int, int, int] = (0, 2, 7)
 
 TYPE_ID_ENEMY = 0
 TYPE_ID_OBJECTIVE = 1
@@ -366,6 +366,9 @@ TYPE_ID_OBJECTIVE_ENEMY_FREQUENCY = 8
 TYPE_ID_ENEMY_FREQUENCY = 9
 
 def GetObjectiveSanityFlag(details, level_info):
+    if level_info is None:
+        return False
+
     if level_info[0] == TYPE_ID_OBJECTIVE_ENEMY:
         return details.enemy_objective_sanity
 

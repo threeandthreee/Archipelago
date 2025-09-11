@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from ...data import EvolutionMethodData, ExtendedRule, SpeciesData
 
 
-def create(world: "PokemonBWWorld", regions: dict[str, "Region"], catchable_species_data: dict[str, "SpeciesData"]) -> None:
+def create(world: "PokemonBWWorld", catchable_species_data: dict[str, "SpeciesData"]) -> None:
     from ...data.pokemon import species, evolution_methods
     from ...locations import PokemonBWLocation
     from ...items import PokemonBWItem
@@ -25,7 +25,7 @@ def create(world: "PokemonBWWorld", regions: dict[str, "Region"], catchable_spec
     # "base" (prefix) is the to-be-evolved species
     # "evo" (prefix) is the result of evolving the base species
 
-    region: "Region" = regions["Evolutions"]
+    region: "Region" = world.regions["Evolutions"]
 
     def get_rule(f_evodata: tuple[str, int, str], f_base_species: str) -> Callable[[CollectionState], bool]:
         # helper function to prevent lambdas in for loops

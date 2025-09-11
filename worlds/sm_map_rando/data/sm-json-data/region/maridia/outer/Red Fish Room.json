@@ -122,8 +122,34 @@
       "link": [1, 1],
       "name": "Zebbo Farm",
       "requires": [
-        {"refill": ["Energy", "Missile", "Super"]}
-      ]
+        {"or": [
+          {"and": [
+            "ScrewAttack",
+            {"simpleCycleFrames": 80},
+            {"cycleFrames": 50}
+          ]},
+          {"and": [
+            "Plasma",
+            {"simpleCycleFrames": 115},
+            {"cycleFrames": 30}
+          ]},
+          {"and": [
+            "Grapple",
+            {"simpleCycleFrames": 120},
+            {"cycleFrames": 30}
+          ]},
+          {"and": [
+            {"or": [
+              "Wave",
+              "Spazer"
+            ]},
+            {"simpleCycleFrames": 125},
+            {"cycleFrames": 30}
+          ]},
+          {"cycleFrames": 195}
+        ]}
+      ],
+      "farmCycleDrops": [{"enemy": "Zebbo", "count": 3}]
     },
     {
       "id": 4,
@@ -316,6 +342,60 @@
       ],
       "note": "Enter on the left side of the doorway to reduce the amount of energy used.",
       "devNote": "This strat is not useful in-room, but can satisfy a strat in the room before with an exit shinespark."
+    },
+    {
+      "id": 41,
+      "link": [2, 2],
+      "name": "Skultera Farm",
+      "requires": [
+        {"resetRoom": {"nodes": [2]}},
+        {"or": [
+          {"and": [
+            "Gravity",
+            {"or": [
+              {"and": [
+                "ScrewAttack",
+                {"cycleFrames": 100}
+              ]},
+              {"and": [
+                "Plasma",
+                {"cycleFrames": 100}
+              ]},
+              {"and": [
+                "Wave",
+                {"cycleFrames": 160}
+              ]},
+              {"and": [
+                "Spazer",
+                {"cycleFrames": 210}
+              ]},
+              {"and": [
+                "Ice",
+                {"cycleFrames": 260}
+              ]},
+              {"cycleFrames": 300}
+            ]}
+          ]},
+          {"and": [
+            "Plasma",
+            {"cycleFrames": 130}
+          ]},
+          {"and": [
+            "Wave",
+            {"cycleFrames": 220}
+          ]},
+          {"and": [
+            "Spazer",
+            {"cycleFrames": 250}
+          ]},
+          {"and": [
+            "Ice",
+            {"cycleFrames": 290}
+          ]},
+          {"cycleFrames": 330}
+        ]}
+      ],
+      "farmCycleDrops": [{"enemy": "Skultera", "count": 1}]
     },
     {
       "id": 13,
@@ -575,8 +655,8 @@
         "Using SpeedBooster in the room below, run left-to-right and jump, pressing against the right side of the door frame through the transition."
       ],
       "devNote": [
-        "This strat is applicable in Crocomire's Room and the Post Crocomire Jump Room.",
-        "Sufficient vertical speed could be obtained with fewer tiles, but it would require jumping further to the right (i.e., increasing minRightPosition) which would not work in PCJR unless the PB blocks are broken;",
+        "This strat is applicable in Crocomire's Room and the Indiana Jones Room.",
+        "Sufficient vertical speed could be obtained with fewer tiles, but it would require jumping further to the right (i.e., increasing minRightPosition) which would not work in Indiana Jones Room unless the PB blocks are broken;",
         "since there doesn't yet appear to be any application, we don't add a separate case for that.",
         "Speed jumps from the right side would also be possible, but again there don't yet appear to be any applications."
       ]
@@ -602,7 +682,7 @@
         "Run left-to-right in the room below using SpeedBooster over a specific distance, and jump up through the door."
       ],
       "devNote": [
-        "This strat is applicable to Acid Snakes Tunnel, and to Lower Norfair Escape Power Bomb Room with the left pillar broken."
+        "This strat is applicable to Lava Farm Tunnel, and to The Jail with the left pillar broken."
       ]
     },
     {
@@ -625,9 +705,7 @@
       "note": [
         "Run right-to-left in the room below using SpeedBooster over a very precise distance, jump, immediately turn back right, and break spin before reaching the transition."
       ],
-      "devNote": [
-        "This strat is applicable to Acid Snakes Tunnel and Spore Spawn Kihunter Room."
-      ]
+      "devNote": ["This strat is applicable to Lava Farm Tunnel and Spore Spawn Kihunter Room."]
     },
     {
       "id": 31,
@@ -762,6 +840,6 @@
       ]
     }
   ],
-  "nextStratId": 41,
+  "nextStratId": 42,
   "nextNotableId": 3
 }

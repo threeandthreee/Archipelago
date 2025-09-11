@@ -216,7 +216,7 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
         patches.hardMode.oracleMode(rom)
     elif options["hard_mode"] == Options.HardMode.option_hero:
         patches.hardMode.heroMode(rom)
-    elif options["hard_mode"] == Options.HardMode.option_one_hit_ko:
+    elif options["hard_mode"] == Options.HardMode.option_ohko:
         patches.hardMode.oneHitKO(rom)
     #if ladxr_settings["superweapons"]:
     #    patches.weapons.patchSuperWeapons(rom)
@@ -281,9 +281,9 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
         mw = None
         if spot.item_owner != spot.location_owner:
             mw = spot.item_owner
-            if mw > 100:
+            if mw > 101:
                 # There are only 101 player name slots (99 + "The Server" + "another world"), so don't use more than that
-                mw = 100
+                mw = 101
         spot.patch(rom, spot.item, multiworld=mw)
     patches.enemies.changeBosses(rom, world_setup["boss_mapping"])
     patches.enemies.changeMiniBosses(rom, world_setup["miniboss_mapping"])

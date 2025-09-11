@@ -306,18 +306,34 @@ def set_location_rules(world: MZMWorld, locations):
         }
 
     norfair_upper_right = {
-            "Norfair Ice Beam": any(
-                CanFly,
-                PowerGrip,
-                all(
-                    HazardRuns,
-                    CanWallJump
+            "Norfair Ice Beam": all(
+                any(
+                    CanFly,
+                    PowerGrip,
+                    all(
+                        HazardRuns,
+                        CanWallJump
+                    ),
+                    all(
+                        IceBeam,
+                        HardMode
+                    ),
+                    Trick("Norfair Ice Beam Hi-Jump Only")
                 ),
-                all(
-                    IceBeam,
-                    HardMode
-                ),
-                Trick("Norfair Ice Beam Hi-Jump Only")
+                any(  # Escape
+                    SuperMissiles,
+                    all(
+                        any(
+                            CanLongBeam(2),
+                            WaveBeam
+                        ),
+                        any(
+                            IceBeam,
+                            CanFlyWall,
+                            CanHiGrip
+                        )
+                    )
+                )
             ),
             "Norfair Heated Room Above Ice Beam": any(
                 VariaSuit,
@@ -759,29 +775,22 @@ def set_location_rules(world: MZMWorld, locations):
                 CanBallspark,
                 PowerBombs,
                 any(
-                    all(
-                        GravitySuit,
-                        ChozoGhostBoss
-                    ),
+                    GravitySuit,
                     CanReachEntrance("Brinstar -> Crateria Ballcannon")  # Room load weirdness
                 )
             ),
-            "Crateria Moat": None
+            "Crateria Moat": None,
+            "Crateria Statue Water": UnknownItem1,
+            "Crateria Unknown Item Statue": all(
+                any(
+                    CanVertical,
+                    CanBombTunnelBlock
+                ),
+                CanBallJump
+            ),
         }
 
-    crateria_upper = {
-            "Crateria Power Grip": all(
-                CanBallJump,
-                any(
-                    all(
-                        CanVertical,
-                        LayoutPatches("crateria_left_of_grip")
-                    ),
-                    CanEnterHighMorphTunnel
-                )
-            ),
-            "Crateria Statue Water": UnknownItem1,
-            "Crateria Unknown Item Statue": CanBallJump,
+    crateria_upper_right = {
             "Crateria East Ballspark": all(
                 CanBallspark,
                 any(
@@ -798,6 +807,10 @@ def set_location_rules(world: MZMWorld, locations):
                 )
             )
         }
+
+    crateria_powergrip = {
+        "Crateria Power Grip": None
+    }
 
     chozodia_ruins_crateria_entrance = {
             "Chozodia Upper Crateria Door":
@@ -1080,7 +1093,8 @@ def set_location_rules(world: MZMWorld, locations):
             **ridley_room,
             **tourian,
             **crateria_main,
-            **crateria_upper,
+            **crateria_upper_right,
+            **crateria_powergrip,
             **chozodia_ruins_crateria_entrance,
             **chozodia_ruins_test,
             **chozodia_under_tube,
@@ -1283,7 +1297,7 @@ def norfair_behind_ice_beam():
     return all(
         CanReachLocation("Norfair Ice Beam"),
         any(
-            CanLongBeam(1),
+            CanLongBeam(2),
             WaveBeam
         ),
         MorphBall,
@@ -1359,14 +1373,33 @@ def norfair_lower_right_shaft():
 
 # This region only contains the Lower Right Shaft By Hi-Jump item, and serves a pathfinding purpose
 def norfair_lower_right_shaft_to_lrs_by_hijump():
-    return any(
-        CanIBJ,
-        CanHiGrip,
-        all(
-            SpaceJump,
-            PowerGrip
+    return all(
+        any(
+            CanIBJ,
+            CanHiGrip,
+            all(
+                SpaceJump,
+                PowerGrip
+            ),
+            Trick("Norfair Right Shaft Get-Around Walljump")
         ),
-        Trick("Norfair Right Shaft Get-Around Walljump")
+        any(  # escape
+            CanIBJ,
+            all(
+                PowerGrip,
+                any(
+                    SpaceJump,
+                    CanWallJump
+                )
+            ),
+            all(
+                CanBallCannon,
+                any(
+                    Missiles,
+                    CanVertical
+                )
+            )
+        )
     )
 
 
@@ -1744,10 +1777,32 @@ def tourian_to_chozodia():
     )
 
 
-# Getting above the Unknown Item block
-def crateria_main_to_crateria_upper():
+# From elevator to above the Unknown Item block by the Chozo statue
+def crateria_lower_to_crateria_upper_right():
     return any(
-        CanBallJump,
+        all(
+            any(
+                CanVerticalWall,
+                CanBombTunnelBlock
+            ),
+            CanBallJump,
+        ),
+        all(
+            NormalLogic,
+            ScrewAttack,
+            any(
+                SpaceJump,
+                CanHiWallJump,
+                Trick("Crateria Upper Access Tricky Spark")
+            ),
+            CanFlyWall  # Getting up the pillars after the screw blocks
+        )
+    )
+
+
+# From elevator to the left door of the Power Grip tower room
+def crateria_lower_to_crateria_upper_left():
+    return any(
         all(
             CanFly,
             any(
@@ -1774,25 +1829,38 @@ def crateria_main_to_crateria_upper():
             SpeedBooster,
             GravitySuit,
             any(
-                LayoutPatches("crateria_left_of_grip"),
-                CanEnterHighMorphTunnel
-            ),
-            any(  # Getting across the Power Grip climb; going down softlocks because of room state nonsense
-                CanFly,
                 all(
-                    NormalLogic,  # Tight jump
-                    CanHiGrip
-                )
+                    LayoutPatches("crateria_left_of_grip"),
+                    CanVertical
+                ),
+                CanEnterHighMorphTunnel
             )
-        ),
+        )
+    )
+
+
+# This rule is mostly escape logic, so it's the same for both upper left and upper right
+def crateria_upper_to_powergrip():
+    return all(
+        CanBallJump,
+        any(
+            all(
+                CanVertical,
+                LayoutPatches("crateria_left_of_grip")
+            ),
+            CanEnterHighMorphTunnel,
+            CanFly
+        )
+    )
+
+
+# Getting across the Power Grip tower room
+def crateria_upper_leftright_connection():
+    return any(
+        CanFly,
         all(
-            NormalLogic,
-            ScrewAttack,
-            any(
-                SpaceJump,
-                CanHiWallJump,
-                Trick("Crateria Upper Access Tricky Spark")
-            )
+            NormalLogic,  # Tight jump
+            CanHiGrip
         )
     )
 

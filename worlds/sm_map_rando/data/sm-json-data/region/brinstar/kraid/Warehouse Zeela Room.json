@@ -118,13 +118,24 @@
       "link": [1, 1],
       "name": "Zeela Farm",
       "requires": [
-        {"resetRoom": {
-          "nodes": [1, 2]
-        }},
-        {"refill": ["Energy", "Missile", "Super"]}
+        {"or": [
+          {"and": [
+            {"resetRoom": {"nodes": [1]}},
+            {"cycleFrames": 200}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [2]}},
+            {"cycleFrames": 380}
+          ]},
+          {"and": [
+            "h_useMorphBombs",
+            {"resetRoom": {"nodes": [3]}},
+            {"cycleFrames": 900}
+          ]}
+        ]}
       ],
       "resetsObstacles": ["A"],
-      "devNote": ["FIXME: Node 3 could be used to reset the room, with additional requirements."]
+      "farmCycleDrops": [{"enemy": "Zeela", "count": 3}]
     },
     {
       "id": 2,
@@ -266,6 +277,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         "canXRayClimb"
       ],
       "bypassesDoorShell": true,
@@ -453,6 +465,38 @@
         "canLateralMidAirMorph"
       ],
       "clearsObstacles": ["A"]
+    },
+    {
+      "id": 35,
+      "link": [2, 3],
+      "name": "Come in Shinecharging, Leave With Temporary Blue",
+      "entranceCondition": {
+        "comeInShinecharging": {
+          "length": 3,
+          "openEnd": 0
+        }
+      },
+      "requires": [
+        "canChainTemporaryBlue",
+        "canSpringBallBounce",
+        {"or": [
+          "canInsaneJump",
+          "canPauseRemorphTemporaryBlue"
+        ]}
+      ],
+      "exitCondition": {
+        "leaveWithTemporaryBlue": {
+          "direction": "right"
+        }
+      },
+      "unlocksDoors": [{"types": ["ammo"], "requires": []}],
+      "flashSuitChecked": true,
+      "note": [
+        "Unmorph immediately after exiting the tunnel while still descending, to continue chaining temporary blue.",
+        "The frame window for the unmorph depends on the alignment of Samus' bounces.",
+        "Even if Samus bounces upward out of the tunnel, it is possible to unmorph and use a pause buffer to remorph while retaining blue."
+      ],
+      "devNote": "The runway has 1 unusable tile, to allow space to perform the blue bounce."
     },
     {
       "id": 21,
@@ -705,6 +749,6 @@
       ]
     }
   ],
-  "nextStratId": 35,
+  "nextStratId": 36,
   "nextNotableId": 2
 }

@@ -1,9 +1,7 @@
-from BaseClasses import ItemClassification, Item
-from typing import TYPE_CHECKING
-from .patching.text import normalize_text, simple_hex
+import random
 
-if TYPE_CHECKING:
-    from . import OracleOfSeasonsWorld
+from BaseClasses import ItemClassification, Item
+from .patching.text import normalize_text, simple_hex
 
 know_it_all_birds = [
     "TX_3200",  # "Know-It-All Bird #1",
@@ -173,6 +171,7 @@ location_by_region = {
         "Subrosia: Tower of Summer",
         "Subrosia: Tower of Autumn",
         "Subrosia: Temple of Seasons",
+        "Subrosia: Temple Secret",
         "Subrosia: Temple of Seasons Digging Spot",
     ],
     "Subrosian Market": [
@@ -217,6 +216,36 @@ def get_region_hint_text(region_name: str, region_category: str) -> str:
     return normalize_text(hint_text)
 
 
+def get_random_joke_text(owl_id: int) -> tuple[str, str]:
+    match random.randrange(5):
+        case 0:
+            location = [
+                "Snake's Remains",
+                "Dancing Dragon Dungeon",
+                "Unicorn's Cave",
+                "Sword & Shield Dungeon",
+                "Sword & Shield Dungeon",
+                "Woods of Winter",
+                "Poison Moth's Lair",
+                "Explorer's Crypt",
+                "Poison Moth's Lair",
+                "Poison Moth's Lair",
+                "Dancing Dragon Dungeon",
+                "Sword & Shield Dungeon",
+                "Explorer's Crypt",
+                "Spool Swamp"
+            ][owl_id]
+            return "\\link_name", location
+        case 1:
+            return "Onox", "Onox's Castle"
+        case 2:
+            return "Princess Zelda", "Another Castle"
+        case 3:
+            return "Maku Tree", "Horon Village"
+        case 4:
+            return "Maple", "the airs"
+
+
 def make_hint_texts(texts: dict[str, str], patch_data) -> None:
     region_hints = patch_data["region_hints"]
     if len(region_hints):
@@ -235,13 +264,17 @@ def make_hint_texts(texts: dict[str, str], patch_data) -> None:
             texts[f"TX_39{simple_hex(i)}"] = ""
 
         i = 0
-        for item, location, player in item_hints:
-            text = f"They say that 🟥{item}⬜ can be found in 🟦"
-            if player:
-                text += f"{player}'s "
-            text += location
+        for hint in item_hints:
+            if hint is None:
+                item, location = get_random_joke_text(i)
+            else:
+                item, location, player = hint
+                if player:
+                    location = f"{player}'s {location}"
+            text = f"They say that 🟥{item}⬜ can be found in 🟦{location}"
+            text = normalize_text(text)
 
-            texts[owl_statues[i]] = normalize_text(text)
+            texts[owl_statues[i]] = text
             i += 1
 
 
@@ -270,15 +303,20 @@ def create_region_hints(world: "OracleOfSeasonsWorld") -> list[tuple[str, str | 
     return hint_data
 
 
-def create_item_hints(world: "OracleOfSeasonsWorld") -> list[tuple[str, str, int | None]]:
+def create_item_hints(world: "OracleOfSeasonsWorld") -> list[tuple[str, str, int | None] | None]:
     hint_data: list[tuple[str, str, int | None]] = []
-    hinted_items: list[Item] = world.random.choices([item for item in world.multiworld.get_items()
-                                                     if item.player == world.player
-                                                     and item.advancement
-                                                     and not item.classification & ItemClassification.deprioritized
-                                                     and not item.is_event],
-                                                    k=len(owl_statues))
+    hintable_items: list[Item | None] = [location.item for location in world.multiworld.get_filled_locations()
+                                         if location.item.player == world.player
+                                         and location.item.advancement
+                                         and not location.item.classification & ItemClassification.deprioritized
+                                         and not location.is_event]
+    hintable_items.append(None)
+
+    hinted_items: list[Item | None] = world.random.choices(hintable_items, k=len(owl_statues))
     for hinted_item in hinted_items:
+        if hinted_item is None:
+            hint_data.append(None)
+            continue
         player = hinted_item.location.player
         if player == world.player:
             player = None

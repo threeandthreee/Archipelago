@@ -543,7 +543,7 @@ def connect_by_story_mode(multiworld: MultiWorld, world, player: int, order: typ
         item_name = (f"Story Access {Names.LEVEL_ID_TO_LEVEL[path.start_stage_id]} "
                                               f"{Names.ALIGNMENT_TO_STRING[path.alignment_id]} > "
                                               f"{Names.LEVEL_ID_TO_LEVEL[path.end_stage_id]}"
-                                              f"{ "" if path.boss is None else " via " + Names.LEVEL_ID_TO_LEVEL[path.boss]}")
+                                              "" if path.boss is None else " via " + Names.LEVEL_ID_TO_LEVEL[path.boss])
 
         event_location.place_locked_item(Item(item_name,
                                               ItemClassification.progression_skip_balancing, None, player))

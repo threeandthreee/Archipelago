@@ -20,7 +20,7 @@
   - Dusk, dawn, and shiny stone on route 10
   - King's rock, protector, dragon scale, reaper cloth, and oval stone in Shopping Mall Nine
   - Electirizer, magmarizer, upgrade, dubious disc, prism scale, deep sea tooth, and deep sea scale 
-    in The Riches' villa Undella Town
+    in The Riches' villa in Undella Town
   - Razor fang and razor claw in Giant Chasm (as recurring hidden item on a suspicious rock)
 - Removed trade and time requirements from evolutions
   - Kadabra, Machocke, Graveler, Haunter, Boldore, and Gurrdurr per levelup

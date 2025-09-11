@@ -100,6 +100,7 @@ tantegel_throne_room_gold_chest = "Throne Room - Gold Chest"
 tantegel_throne_room_torch_chest = "Throne Room - Torch Chest"
 tantegel_throne_room_key_chest = "Throne Room - Key Chest"
 
+
 # Tantegel Castle
 tantegel_castle_gold_chest_1 = "Tantegel Castle - Gold Chest 1"
 tantegel_castle_gold_chest_2 = "Tantegel Castle - Gold Chest 2"
@@ -110,35 +111,35 @@ tantegel_castle_gold_chest_4 = "Tantegel Castle - Gold Chest 4"
 tantegel_castle_basement = "Stones of Sunlight"
 
 # Breconnary
-bamboo_pole = "Purchased: Bamboo Pole"
-club = "Purchased: Club"
-copper_sword = "Purchased: Copper Sword"
+bamboo_pole = "Purchase Bamboo Pole"
+club = "Purchase Club"
+copper_sword = "Purchase Copper Sword"
 
-clothes = "Purchased: Clothes"
-leather_armor = "Purchased: Leather Armor"
+clothes = "Purchase Clothes"
+leather_armor = "Purchase Leather Armor"
 
-small_shield = "Purchased: Small Shield"
+small_shield = "Purchase Small Shield"
 
 # Garinham
-chain_mail = "Purchased: Chain Mail"
-large_shield = "Purchased: Large Shield"
+chain_mail = "Purchase Chain Mail"
+large_shield = "Purchase Large Shield"
 
 garinham_chest_1 = "Garinham - Chest 1"
 garinham_chest_2 = "Garinham - Chest 2"
 garinham_chest_3 = "Garinham - Chest 3"
 
 # Kol
-hand_axe = "Purchased: Hand Axe"
+hand_axe = "Purchase Hand Axe"
 
-half_plate = "Purchased: Half Plate"
-full_plate = "Purchased: Full Plate"
+half_plate = "Purchase Half Plate"
+full_plate = "Purchase Full Plate"
 
 fairy_flute_location = "Fairy Flute"
 
 # Rimuldar
-broad_sword = "Purchased: Broad Sword"
+broad_sword = "Purchase Broad Sword"
 
-magic_armor = "Purchased: Magic Armor"
+magic_armor = "Purchase Magic Armor"
 
 rimuldar_inn_chest = "Rimuldar - Inn Chest"
 
@@ -146,9 +147,9 @@ rimuldar_inn_chest = "Rimuldar - Inn Chest"
 erdricks_armor_location = "Erdrick's Armor"
 
 # Cantlin
-flame_sword = "Purchased: Flame Sword"
+flame_sword = "Purchase Flame Sword"
 
-silver_shield = "Purchased: Silver Shield"
+silver_shield = "Purchase Silver Shield"
 
 # Erdrick's Cave
 erdrick_tablet = "Erdrick's Tablet"
@@ -161,7 +162,8 @@ mountain_cave_2_chest_3 = "Mountain Cave - Level 2 - Chest 3"
 mountain_cave_2_chest_4 = "Mountain Cave - Level 2 - Chest 4"
 
 # Swamp Cave
-# Maybe the Princess could be a check?
+gwaelins_love_location = "Return Gwaelin to Castle"
+gwaelin_rescue = "Rescue Princess Gwaelin"
 
 # Garin's Grave
 garins_grave_1_chest_1 = "Garin's Grave - Level 1 - Chest 1"

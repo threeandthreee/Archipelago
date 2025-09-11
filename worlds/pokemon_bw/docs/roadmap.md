@@ -3,8 +3,8 @@
 The "barely working" version will still be playable to goal, so it will start with 0.1.0.
 
 Every feature will increase the version by +0.1.
-
-However, do not confuse that with the semantic version naming: `major.minor.build`
+However, do not confuse that with semantic version naming: `major.minor.build`
+Versions before 1.0.0 though can have small feature additions in +0.0.1 updates.
 
 Version 1.0.0 will happen when certain important features are implemented.
 
@@ -31,32 +31,30 @@ Version 1.0.0 will happen when certain important features are implemented.
   - Gym leaders setting a custom flag instead of checking for the badge
   - Rage Candy Bar and fossils as key items
 - QoL
-  - Auto updating roms
+  - Rom updates
   - Optional re-patch skipping
   - UT map tracker
 
 ### 0.2.0: Important backwards-compatibility-breaking changes
 
-- see TODO
+- See title
 
 ### 0.3.0: Actual randomization
 
 - Options
   - Wild pokémon randomization
     - Also enables full dexsanity
-  - Master Ball seller (OptionSet), random cost if multiple
+  - Trainer pokémon randomization
+  - Encounter Plando
+  - Master Ball seller (OptionSet), random cost in range if multiple
     - N's Castle
-    - Undella Mansion seller
     - Cheren's mom
     - PC
+    - Undella Mansion seller, always offering with a random price
     - Cost: Free
     - Cost: 1000
     - Cost: 3000
     - Cost: 10000
-  - Legendary hunt modifiers:
-    - Catching required
-    - Amount of to-be-hunted legendaries
-    - Whitelist
   - Adjust levels
 
 ### Another update #1: Pokédex stuff
@@ -66,16 +64,14 @@ Version 1.0.0 will happen when certain important features are implemented.
   - Seensanity
     - Only consider wild pokémon
   - All pokémon seen
-  - Encounter Plando
 
 ### Another update #2: Trainer stuff
 
 - Options
-  - Trainer randomization
   - Trainersanity
   - Seensanity
     - Also consider trainer pokémon
-  - Trainer eyesight reduction
+  - Decrease trainer eyesight
 
 ### Another update #3: Text stuff
 
@@ -90,11 +86,16 @@ Version 1.0.0 will happen when certain important features are implemented.
 - Options
   - Additional roadblocks
   - Starter/Static/Gift/Trade/Legendary pokémon randomization
+  - Legendary hunt modifiers:
+    - Catching required
+    - Amount of to-be-hunted legendaries
+    - Whitelist
   - Seen count checks modifier
 - Xtransceiver being required to see certain story sequences (with some of them giving items)
   - Also, dynamic Xtransceiver item that automatically adds the correctly gendered version to the game
 - Running shoes as an item, making mom cutscene on route 2 a check
 - Relic castle room filling with sand unlockable via an item
+- Dowsing Machine as a hard requirement for hidden items
 
 ## Big update #1 (Stats update, name WIP, required for core)
 
@@ -138,3 +139,4 @@ Version 1.0.0 will happen when certain important features are implemented.
 - Wonder trade
 - Traps
 - Multiworld gift Pokémon
+- Collected field items removal setting

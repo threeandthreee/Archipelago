@@ -185,6 +185,13 @@
       "quantity": 5,
       "homeNodes": [2, 4],
       "note": "They're really between 2 and 4, but they are the actual obstacle between the two, so access to either + ability to kill them is enough to get their drops."
+    },
+    {
+      "id": "e2",
+      "groupName": "Green Pirates Beetoms",
+      "enemyName": "Beetom",
+      "quantity": 2,
+      "homeNodes": [9]
     }
   ],
   "links": [
@@ -382,39 +389,104 @@
     {
       "id": 9,
       "link": [2, 2],
-      "name": "Green Pirate Farm",
+      "name": "Pirate Farm",
       "requires": [
-        {"resetRoom": {
-          "nodes": [2, 3, 4]
-        }},
+        {"resetRoom": {"nodes": [2, 3, 4]}},
+        {"cycleFrames": 850},
         {"or": [
-          "Ice",
+          "ScrewAttack",
           "Wave",
           "Spazer",
-          "Plasma"
-        ]},
-        {"partialRefill": {"type": "Energy", "limit": 400}},
-        {"partialRefill": {"type": "Missile", "limit": 20}}
+          "Plasma",
+          {"and": [
+            "canPseudoScrew",
+            {"cycleFrames": 230}
+          ]},
+          {"and": [
+            "Ice",
+            {"cycleFrames": 240}
+          ]},
+          {"and": [
+            "Charge",
+            "canDodgeWhileShooting",
+            {"cycleFrames": 500}
+          ]}
+        ]}
       ],
-      "resetsObstacles": ["A"]
+      "resetsObstacles": ["A"],
+      "farmCycleDrops": [{"enemy": "Green Space Pirate (standing)", "count": 5}],
+      "devNote": [
+        "A two-way farm strat could be added for if the room can be reset at both the top and bottom."
+      ]
     },
     {
       "id": 77,
       "link": [2, 2],
       "name": "Beetom Farm",
       "requires": [
-        {"resetRoom": {
-          "nodes": [2]
-        }},
+        {"cycleFrames": 650},
+        {"resetRoom": {"nodes": [2]}},
         "h_usePowerBomb",
         {"or": [
           "canMidAirMorph",
           "h_useSpringBall"
-        ]},
-        {"partialRefill": {"type": "PowerBomb", "limit": 6}}
+        ]}
       ],
       "clearsObstacles": ["A"],
-      "devNote": "Killing the beetoms will also clear the top pirate for small health gain."
+      "farmCycleDrops": [
+        {"enemy": "Beetom", "count": 2},
+        {"enemy": "Green Space Pirate (standing)", "count": 2}
+      ],
+      "note": [
+        "Jump to lay a Power Bomb above ground height, to both break the Power Bomb blocks and kill the Beetoms.",
+        "The top two Space Pirates will also be killed."
+      ]
+    },
+    {
+      "id": 80,
+      "link": [2, 2],
+      "name": "Pirates and Beetom Farm",
+      "requires": [
+        {"or": [
+          {"and": [
+            {"resetRoom": {"nodes": [2]}},
+            {"cycleFrames": 1150}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [3, 4]}},
+            {"cycleFrames": 1400}
+          ]}
+        ]},
+        {"or": [
+          "ScrewAttack",
+          "Wave",
+          "Spazer",
+          "Plasma",
+          {"and": [
+            "Charge",
+            "canDodgeWhileShooting",
+            {"cycleFrames": 500}
+          ]},
+          {"and": [
+            "Ice",
+            {"cycleFrames": 240}
+          ]}
+        ]},
+        "h_usePowerBomb",
+        {"or": [
+          "canMidAirMorph",
+          "h_useSpringBall"
+        ]}
+      ],
+      "resetsObstacles": ["A"],
+      "farmCycleDrops": [
+        {"enemy": "Green Space Pirate (standing)", "count": 5},
+        {"enemy": "Beetom", "count": 2}
+      ],
+      "devNote": [
+        "This strat mainly exists as a way to farm Beetoms in case the room cannot be reset at node 2;",
+        "in this case, the Pirate along the way comes almost for free, and it also works at node 2."
+      ]
     },
     {
       "id": 10,
@@ -430,9 +502,7 @@
       "link": [2, 2],
       "name": "10 Power Bomb Crystal Flash",
       "requires": [
-        {"resetRoom": {
-          "nodes": [2]
-        }},
+        {"resetRoom": {"nodes": [2]}},
         {"enemyDamage": {"enemy": "Beetom", "type": "contact", "hits": 2}},
         "h_10PowerBombCrystalFlash"
       ],
@@ -538,7 +608,7 @@
     {
       "id": 17,
       "link": [2, 9],
-      "name": "Xray Climb",
+      "name": "X-Ray Climb",
       "entranceCondition": {
         "comeInWithDoorStuckSetup": {}
       },
@@ -547,7 +617,8 @@
       ],
       "flashSuitChecked": true,
       "note": [
-        "Climb until the camera fully shows Samus on the bottom of the screen.  Shoot up to clear the shot blocks and resume climbing until you can walk out to the left.",
+        "Climb until the camera fully shows Samus on the bottom of the screen.",
+        "Shoot up to clear the shot blocks and resume climbing until you can walk out to the left.",
         "Fix the camera by shooting the floor shot block and jumping down."
       ]
     },
@@ -562,6 +633,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         "h_artificialMorphCrystalFlash",
         {"autoReserveTrigger": {}},
         {"or": [
@@ -581,7 +653,8 @@
         "Crystal Flash then damage down on the Pirates to Reserve trigger to exit G-Mode.",
         "To prevent freeing the Beetoms, the Power Bomb needs to be placed on the left platform just below the door.",
         "To prevent extra hits after the trigger, kill the Pirate when Samus is low on Energy, then finish damaging down using its invisible lasers."
-      ]
+      ],
+      "devNote": "FIXME: Using a Power Bomb could also be used to exit G-mode. All G-mode CF strats need to be thoroughly checked and maybe make a tech for understanding it."
     },
     {
       "id": 19,
@@ -803,7 +876,7 @@
         "comeInWithDoorStuckSetup": {}
       },
       "requires": [
-        "canXRayClimb",
+        "canLongXRayClimb",
         {"or": [
           {"enemyDamage": {
             "enemy": "Green Space Pirate (standing)",
@@ -965,7 +1038,8 @@
         }
       },
       "requires": [
-        "canXRayClimb",
+        "canComplexGMode",
+        "canLongXRayClimb",
         {"enemyKill": {
           "enemies": [["Green Space Pirate (standing)"]],
           "explicitWeapons": ["Charge", "Ice", "Wave", "Spazer", "Plasma", "Missile", "Super"]
@@ -990,7 +1064,8 @@
         }
       },
       "requires": [
-        "canXRayClimb",
+        "canComplexGMode",
+        "canLongXRayClimb",
         {"or": [
           "h_artificialMorphPowerBomb",
           "h_artificialMorphIBJ"
@@ -1201,7 +1276,7 @@
         "comeInWithDoorStuckSetup": {}
       },
       "requires": [
-        "canXRayClimb",
+        "canLongXRayClimb",
         {"or": [
           {"enemyDamage": {
             "enemy": "Green Space Pirate (standing)",
@@ -1302,14 +1377,12 @@
       "name": "Beetom X-Ray Climb",
       "requires": [
         {"notable": "Beetom X-Ray Climb"},
-        "canXRayClimb",
+        "canLongXRayClimb",
         "Morph",
         "canWallIceClip",
         "canBeVeryPatient",
         {"enemyDamage": {"enemy": "Beetom", "type": "contact", "hits": 9}},
-        {"resetRoom": {
-          "nodes": [2, 3, 4]
-        }}
+        {"resetRoom": {"nodes": [2, 3, 4]}}
       ],
       "resetsObstacles": ["A"],
       "flashSuitChecked": true,
@@ -1685,9 +1758,9 @@
     {
       "id": 73,
       "link": [10, 2],
-      "name": "Base",
+      "name": "Exit G-Mode",
       "requires": [
-        "canEnterGMode"
+        "canGMode"
       ],
       "flashSuitChecked": true
     },
@@ -1696,7 +1769,7 @@
       "link": [10, 4],
       "name": "G-Mode Morph Pirate Kill",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         "h_artificialMorphBombThings",
         "h_additionalBomb"
       ],
@@ -1707,7 +1780,7 @@
       "link": [10, 9],
       "name": "G-Mode Morph - Power Bomb to the Beetoms",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         "h_artificialMorphPowerBomb"
       ],
       "clearsObstacles": ["A"],
@@ -1719,7 +1792,7 @@
       "link": [10, 9],
       "name": "G-Mode Morph - Overload PLMs to the Beetoms",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         "h_artificialMorphBombs",
         {"or": [
           {"and": [
@@ -1775,7 +1848,7 @@
       ]
     }
   ],
-  "nextStratId": 80,
+  "nextStratId": 81,
   "nextNotableId": 4,
   "devNote": [
     "FIXME: There are possible strats to reach the items with X-ray climbs and grapple teleports without a way out.",

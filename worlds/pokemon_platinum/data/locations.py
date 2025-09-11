@@ -4,15 +4,18 @@
 # Copyright (C) 2025 James Petersen <m@jamespetersen.ca>
 # Licensed under MIT. See LICENSE
 
-from collections.abc import Callable, Mapping, Set
+from collections.abc import Callable, Mapping, Sequence, Set
 from dataclasses import dataclass
 from enum import IntEnum
 import operator
+
+from worlds.pokemon_platinum.options import PokemonPlatinumOptions
 
 class LocationTable(IntEnum):
     BASE = 0x0
     OVERWORLD = 0x1
     HIDDEN = 0x2
+    ONCE = 0x3
 
 class LocationCheck:
     pass
@@ -29,11 +32,16 @@ class FlagCheck(LocationCheck):
     invert: bool = False
 
 @dataclass(frozen=True)
+class OnceCheck(LocationCheck):
+    id: int
+    invert: bool = False
+
+@dataclass(frozen=True)
 class LocationData:
     label: str
     table: LocationTable
     id: int
-    original_item: str
+    original_item: str | Sequence[str]
     type: str
     check: LocationCheck
     parent_region: str | None = None
@@ -104,19 +112,19 @@ locations: Mapping[str, LocationData] = {
     "victory_road_b1f_max_elixir": LocationData(label="Victory Road - Hidden (Max Elixir)", table=LocationTable.HIDDEN, id=0x77, original_item="max_elixir", type="hidden", parent_region="victory_road_b1f", check=FlagCheck(id=0x351)),
     "great_marsh_2_blue_shard": LocationData(label="Great Marsh - Overworld (Blue Shard)", table=LocationTable.OVERWORLD, id=0x44, original_item="blue_shard", type="overworld", parent_region="great_marsh_2", check=FlagCheck(id=0x43A)),
     "great_marsh_2_toxic_plate": LocationData(label="Great Marsh - Hidden (Toxic Plate)", table=LocationTable.HIDDEN, id=0xD3, original_item="toxic_plate", type="hidden", parent_region="great_marsh_2", check=FlagCheck(id=0x3AD)),
-    "route_226_tm53": LocationData(label="Route 226 - Overworld (TM53)", table=LocationTable.OVERWORLD, id=0xCD, original_item="tm53", type="overworld", parent_region="route_226", check=FlagCheck(id=0x4C3)),
-    "route_226_carbos": LocationData(label="Route 226 - Overworld (Carbos)", table=LocationTable.OVERWORLD, id=0xCF, original_item="carbos", type="overworld", parent_region="route_226", check=FlagCheck(id=0x4C5)),
-    "route_226_lagging_tail": LocationData(label="Route 226 - Overworld (Lagging Tail)", table=LocationTable.OVERWORLD, id=0xCE, original_item="lagging_tail", type="overworld", parent_region="route_226", check=FlagCheck(id=0x4C4)),
-    "route_226_heart_scale": LocationData(label="Route 226 - Hidden (Heart Scale)", table=LocationTable.HIDDEN, id=0x87, original_item="heart_scale", type="hidden", parent_region="route_226", check=FlagCheck(id=0x361)),
-    "route_226_tinymushroom": LocationData(label="Route 226 - Hidden (TinyMushroom)", table=LocationTable.HIDDEN, id=0x84, original_item="tinymushroom", type="hidden", parent_region="route_226", check=FlagCheck(id=0x35E)),
-    "route_226_big_mushroom": LocationData(label="Route 226 - Hidden (Big Mushroom)", table=LocationTable.HIDDEN, id=0x86, original_item="big_mushroom", type="hidden", parent_region="route_226", check=FlagCheck(id=0x360)),
-    "route_226_pp_max": LocationData(label="Route 226 - Hidden (PP Max)", table=LocationTable.HIDDEN, id=0x85, original_item="pp_max", type="hidden", parent_region="route_226", check=FlagCheck(id=0x35F)),
+    "route_226_tm53": LocationData(label="Route 226 - Overworld (TM53)", table=LocationTable.OVERWORLD, id=0xCD, original_item="tm53", type="overworld", parent_region="route_226_mid", check=FlagCheck(id=0x4C3)),
+    "route_226_carbos": LocationData(label="Route 226 - Overworld (Carbos)", table=LocationTable.OVERWORLD, id=0xCF, original_item="carbos", type="overworld", parent_region="route_226_mid", check=FlagCheck(id=0x4C5)),
+    "route_226_lagging_tail": LocationData(label="Route 226 - Overworld (Lagging Tail)", table=LocationTable.OVERWORLD, id=0xCE, original_item="lagging_tail", type="overworld", parent_region="route_226_mid", check=FlagCheck(id=0x4C4)),
+    "route_226_heart_scale": LocationData(label="Route 226 - Hidden (Heart Scale)", table=LocationTable.HIDDEN, id=0x87, original_item="heart_scale", type="hidden", parent_region="route_226_east", check=FlagCheck(id=0x361)),
+    "route_226_tinymushroom": LocationData(label="Route 226 - Hidden (TinyMushroom)", table=LocationTable.HIDDEN, id=0x84, original_item="tinymushroom", type="hidden", parent_region="route_226_mid", check=FlagCheck(id=0x35E)),
+    "route_226_big_mushroom": LocationData(label="Route 226 - Hidden (Big Mushroom)", table=LocationTable.HIDDEN, id=0x86, original_item="big_mushroom", type="hidden", parent_region="route_226_mid", check=FlagCheck(id=0x360)),
+    "route_226_pp_max": LocationData(label="Route 226 - Hidden (PP Max)", table=LocationTable.HIDDEN, id=0x85, original_item="pp_max", type="hidden", parent_region="route_226_mid", check=FlagCheck(id=0x35F)),
     "route_227_charcoal": LocationData(label="Route 227 - Overworld (Charcoal)", table=LocationTable.OVERWORLD, id=0xD0, original_item="charcoal", type="overworld", parent_region="route_227", check=FlagCheck(id=0x4C6)),
     "route_227_zinc": LocationData(label="Route 227 - Overworld (Zinc)", table=LocationTable.OVERWORLD, id=0xD1, original_item="zinc", type="overworld", parent_region="route_227", check=FlagCheck(id=0x4C7)),
     "route_227_yellow_shard": LocationData(label="Route 227 - Overworld (Yellow Shard)", table=LocationTable.OVERWORLD, id=0x133, original_item="yellow_shard", type="overworld", parent_region="route_227", check=FlagCheck(id=0x52A)),
     "route_227_star_piece": LocationData(label="Route 227 - Hidden (Star Piece)", table=LocationTable.HIDDEN, id=0x88, original_item="star_piece", type="hidden", parent_region="route_227", check=FlagCheck(id=0x362)),
     "route_227_max_repel": LocationData(label="Route 227 - Hidden (Max Repel)", table=LocationTable.HIDDEN, id=0x89, original_item="max_repel", type="hidden", parent_region="route_227", check=FlagCheck(id=0x363)),
-    "route_227_rare_candy": LocationData(label="Route 227 - Hidden (Rare Candy)", table=LocationTable.HIDDEN, id=0x9F, original_item="rare_candy", type="hidden", parent_region="route_227", check=FlagCheck(id=0x379)),
+    "route_227_rare_candy": LocationData(label="Route 227 - Hidden (Rare Candy)", table=LocationTable.HIDDEN, id=0x9F, original_item="rare_candy", type="hidden", parent_region="route_226_east", check=FlagCheck(id=0x379)),
     "route_228_protector": LocationData(label="Route 228 - Overworld (Protector)", table=LocationTable.OVERWORLD, id=0xE0, original_item="protector", type="overworld", parent_region="route_228", check=FlagCheck(id=0x4D6)),
     "route_228_iron": LocationData(label="Route 228 - Overworld (Iron)", table=LocationTable.OVERWORLD, id=0xE1, original_item="iron", type="overworld", parent_region="route_228", check=FlagCheck(id=0x4D7)),
     "route_228_shiny_stone": LocationData(label="Route 228 - Overworld (Shiny Stone)", table=LocationTable.OVERWORLD, id=0xE2, original_item="shiny_stone", type="overworld", parent_region="route_228", check=FlagCheck(id=0x4D8)),
@@ -164,15 +172,15 @@ locations: Mapping[str, LocationData] = {
     "iron_island_b2f_left_room_red_shard": LocationData(label="Iron Island - Overworld (Red Shard)", table=LocationTable.OVERWORLD, id=0x11E, original_item="red_shard", type="overworld", parent_region="iron_island_b2f_left_room", check=FlagCheck(id=0x515)),
     "iron_island_b2f_left_room_magnet": LocationData(label="Iron Island - Overworld (Magnet)", table=LocationTable.OVERWORLD, id=0x120, original_item="magnet", type="overworld", parent_region="iron_island_b2f_left_room", check=FlagCheck(id=0x517)),
     "iron_island_b2f_left_room_iron_plate": LocationData(label="Iron Island - Hidden (Iron Plate)", table=LocationTable.HIDDEN, id=0x38, original_item="iron_plate", type="hidden", parent_region="iron_island_b2f_left_room", check=FlagCheck(id=0x312)),
-    "iron_island_b2f_left_room_star_piece": LocationData(label="Iron Island - Hidden (Star Piece) 1", table=LocationTable.HIDDEN, id=0x36, original_item="star_piece", type="hidden", check=FlagCheck(id=0x310)),
-    "iron_island_b2f_left_room_star_piece_0": LocationData(label="Iron Island - Hidden (Star Piece) 2", table=LocationTable.HIDDEN, id=0x37, original_item="star_piece", type="hidden", check=FlagCheck(id=0x311)),
+    "iron_island_b2f_left_room_star_piece": LocationData(label="Iron Island - Hidden (Star Piece) 1", table=LocationTable.ONCE, id=0x4, original_item="star_piece", type="hidden", parent_region="iron_island", check=OnceCheck(id=0x4)),
+    "iron_island_b2f_left_room_star_piece_0": LocationData(label="Iron Island - Hidden (Star Piece) 2", table=LocationTable.ONCE, id=0x5, original_item="star_piece", type="hidden", parent_region="iron_island", check=OnceCheck(id=0x5)),
     "iron_island_b1f_right_room_max_repel": LocationData(label="Iron Island - Overworld (Max Repel)", table=LocationTable.OVERWORLD, id=0x89, original_item="max_repel", type="overworld", parent_region="iron_island_b1f_right_room", check=FlagCheck(id=0x47F)),
     "iron_island_b1f_right_room_escape_rope": LocationData(label="Iron Island - Overworld (Escape Rope)", table=LocationTable.OVERWORLD, id=0x88, original_item="escape_rope", type="overworld", parent_region="iron_island_b1f_right_room", check=FlagCheck(id=0x47E)),
     "iron_island_b1f_right_room_revive": LocationData(label="Iron Island - Overworld (Revive)", table=LocationTable.OVERWORLD, id=0x121, original_item="revive", type="overworld", parent_region="iron_island_b1f_right_room", check=FlagCheck(id=0x518)),
-    "iron_island_b1f_right_room_star_piece": LocationData(label="Iron Island - Hidden (Star Piece) 3", table=LocationTable.HIDDEN, id=0x34, original_item="star_piece", type="hidden", check=FlagCheck(id=0x30E)),
+    "iron_island_b1f_right_room_star_piece": LocationData(label="Iron Island - Hidden (Star Piece) 3", table=LocationTable.ONCE, id=0x6, original_item="star_piece", type="hidden", parent_region="iron_island", check=OnceCheck(id=0x6)),
     "iron_island_b2f_right_room_elixir": LocationData(label="Iron Island - Overworld (Elixir)", table=LocationTable.OVERWORLD, id=0x8A, original_item="elixir", type="overworld", parent_region="iron_island_b2f_right_room", check=FlagCheck(id=0x480)),
     "iron_island_b2f_right_room_tm23": LocationData(label="Iron Island - Overworld (TM23)", table=LocationTable.OVERWORLD, id=0x8B, original_item="tm23", type="overworld", parent_region="iron_island_b2f_right_room", check=FlagCheck(id=0x481)),
-    "iron_island_b2f_right_room_star_piece": LocationData(label="Iron Island - Hidden (Star Piece) 4", table=LocationTable.HIDDEN, id=0x35, original_item="star_piece", type="hidden", check=FlagCheck(id=0x30F)),
+    "iron_island_b2f_right_room_star_piece": LocationData(label="Iron Island - Hidden (Star Piece) 4", table=LocationTable.ONCE, id=0x7, original_item="star_piece", type="hidden", parent_region="iron_island", check=OnceCheck(id=0x7)),
     "route_213_tm40": LocationData(label="Route 213 - Overworld (TM40)", table=LocationTable.OVERWORLD, id=0x4C, original_item="tm40", type="overworld", parent_region="route_213", check=FlagCheck(id=0x442)),
     "route_213_yellow_shard": LocationData(label="Route 213 - Overworld (Yellow Shard)", table=LocationTable.OVERWORLD, id=0x4D, original_item="yellow_shard", type="overworld", parent_region="route_213", check=FlagCheck(id=0x443)),
     "route_213_max_revive": LocationData(label="Route 213 - Overworld (Max Revive)", table=LocationTable.OVERWORLD, id=0x4E, original_item="max_revive", type="overworld", parent_region="route_213", check=FlagCheck(id=0x444)),
@@ -405,17 +413,17 @@ locations: Mapping[str, LocationData] = {
     "floaroma_meadow_leaf_stone": LocationData(label="Floaroma Meadow - Overworld (Leaf Stone)", table=LocationTable.OVERWORLD, id=0xEA, original_item="leaf_stone", type="overworld", parent_region="floaroma_meadow", check=FlagCheck(id=0x4E0)),
     "floaroma_meadow_ultra_ball": LocationData(label="Floaroma Meadow - Overworld (Ultra Ball)", table=LocationTable.OVERWORLD, id=0x11C, original_item="ultra_ball", type="overworld", parent_region="floaroma_meadow", check=FlagCheck(id=0x513)),
     "floaroma_meadow_rare_candy": LocationData(label="Floaroma Meadow - Overworld (Rare Candy)", table=LocationTable.OVERWORLD, id=0x11D, original_item="rare_candy", type="overworld", parent_region="floaroma_meadow", check=FlagCheck(id=0x514)),
-    "floaroma_meadow_honey": LocationData(label="Floaroma Meadow - Hidden (Honey)", table=LocationTable.HIDDEN, id=0x3A, original_item="honey", type="hidden", parent_region="floaroma_meadow", check=FlagCheck(id=0x314)),
-    "floaroma_meadow_honey_0": LocationData(label="Floaroma Meadow - Hidden (Honey) 1", table=LocationTable.HIDDEN, id=0x3B, original_item="honey", type="hidden", parent_region="floaroma_meadow", check=FlagCheck(id=0x315)),
-    "floaroma_meadow_honey_1": LocationData(label="Floaroma Meadow - Hidden (Honey) 2", table=LocationTable.HIDDEN, id=0xDC, original_item="honey", type="hidden", parent_region="floaroma_meadow", check=FlagCheck(id=0x3B6)),
+    "floaroma_meadow_honey": LocationData(label="Floaroma Meadow - Hidden (Honey)", table=LocationTable.ONCE, id=0x8, original_item="honey", type="hidden", parent_region="floaroma_meadow", check=OnceCheck(id=0x8)),
+    "floaroma_meadow_honey_0": LocationData(label="Floaroma Meadow - Hidden (Honey) 1", table=LocationTable.ONCE, id=0x9, original_item="honey", type="hidden", parent_region="floaroma_meadow", check=OnceCheck(id=0x9)),
+    "floaroma_meadow_honey_1": LocationData(label="Floaroma Meadow - Hidden (Honey) 2", table=LocationTable.ONCE, id=0xA, original_item="honey", type="hidden", parent_region="floaroma_meadow", check=OnceCheck(id=0xA)),
     "floaroma_meadow_max_revive": LocationData(label="Floaroma Meadow - Hidden (Max Revive)", table=LocationTable.HIDDEN, id=0xE3, original_item="max_revive", type="hidden", parent_region="floaroma_meadow", check=FlagCheck(id=0x3BD)),
     "floaroma_meadow_pp_up": LocationData(label="Floaroma Meadow - Hidden (PP Up)", table=LocationTable.HIDDEN, id=0xE2, original_item="pp_up", type="hidden", parent_region="floaroma_meadow", check=FlagCheck(id=0x3BC)),
-    "floaroma_meadow_honey_2": LocationData(label="Floaroma Meadow - Hidden (Honey) 3", table=LocationTable.HIDDEN, id=0xDB, original_item="honey", type="hidden", parent_region="floaroma_meadow", check=FlagCheck(id=0x3B5)),
-    "floaroma_meadow_honey_3": LocationData(label="Floaroma Meadow - Hidden (Honey) 4", table=LocationTable.HIDDEN, id=0xDE, original_item="honey", type="hidden", parent_region="floaroma_meadow", check=FlagCheck(id=0x3B8)),
+    "floaroma_meadow_honey_2": LocationData(label="Floaroma Meadow - Hidden (Honey) 3", table=LocationTable.ONCE, id=0xB, original_item="honey", type="hidden", parent_region="floaroma_meadow", check=OnceCheck(id=0xB)),
+    "floaroma_meadow_honey_3": LocationData(label="Floaroma Meadow - Hidden (Honey) 4", table=LocationTable.ONCE, id=0xC, original_item="honey", type="hidden", parent_region="floaroma_meadow", check=OnceCheck(id=0xC)),
     "floaroma_meadow_hyper_potion": LocationData(label="Floaroma Meadow - Hidden (Hyper Potion)", table=LocationTable.HIDDEN, id=0xDF, original_item="hyper_potion", type="hidden", parent_region="floaroma_meadow", check=FlagCheck(id=0x3B9)),
     "floaroma_meadow_revive": LocationData(label="Floaroma Meadow - Hidden (Revive)", table=LocationTable.HIDDEN, id=0xE0, original_item="revive", type="hidden", parent_region="floaroma_meadow", check=FlagCheck(id=0x3BA)),
     "floaroma_meadow_full_heal": LocationData(label="Floaroma Meadow - Hidden (Full Heal)", table=LocationTable.HIDDEN, id=0xE1, original_item="full_heal", type="hidden", parent_region="floaroma_meadow", check=FlagCheck(id=0x3BB)),
-    "floaroma_meadow_honey_4": LocationData(label="Floaroma Meadow - Hidden (Honey) 5", table=LocationTable.HIDDEN, id=0xDD, original_item="honey", type="hidden", parent_region="floaroma_meadow", check=FlagCheck(id=0x3B7)),
+    "floaroma_meadow_honey_4": LocationData(label="Floaroma Meadow - Hidden (Honey) 5", table=LocationTable.ONCE, id=0xD, original_item="honey", type="hidden", parent_region="floaroma_meadow", check=OnceCheck(id=0xD)),
     "amity_square_tm45": LocationData(label="Amity Square - Overworld (TM45)", table=LocationTable.OVERWORLD, id=0x33, original_item="tm45", type="overworld", parent_region="amity_square", check=FlagCheck(id=0x429)),
     "amity_square_tm43": LocationData(label="Amity Square - Overworld (TM43)", table=LocationTable.OVERWORLD, id=0x34, original_item="tm43", type="overworld", parent_region="amity_square", check=FlagCheck(id=0x42A)),
     "amity_square_spooky_plate": LocationData(label="Amity Square - Overworld (Spooky Plate)", table=LocationTable.OVERWORLD, id=0x35, original_item="spooky_plate", type="overworld", parent_region="amity_square", check=FlagCheck(id=0x42B)),
@@ -563,7 +571,7 @@ locations: Mapping[str, LocationData] = {
     "team_galactic_eterna_building_4f_revive": LocationData(label="T.G. Eterna Bldg - Overworld (Revive)", table=LocationTable.OVERWORLD, id=0x115, original_item="revive", type="overworld", parent_region="team_galactic_eterna_building_4f", check=FlagCheck(id=0x50C)),
     "team_galactic_eterna_building_4f_blue_shard": LocationData(label="T.G. Eterna Bldg - Overworld (Blue Shard)", table=LocationTable.OVERWORLD, id=0x108, original_item="blue_shard", type="overworld", parent_region="team_galactic_eterna_building_4f", check=FlagCheck(id=0x4FF)),
     "team_galactic_eterna_building_4f_upgrade": LocationData(label="T.G. Eterna Bldg - Overworld (Up-Grade)", table=LocationTable.OVERWORLD, id=0x109, original_item="upgrade", type="overworld", parent_region="team_galactic_eterna_building_4f", check=FlagCheck(id=0x500)),
-    "wayward_cave_1f_tm26": LocationData(label="Wayward Cave - Overworld (TM26)", table=LocationTable.OVERWORLD, id=0x26, original_item="tm26", type="overworld", parent_region="wayward_cave_1f", check=FlagCheck(id=0x41C)),
+    "wayward_cave_1f_tm26": LocationData(label="Wayward Cave - Overworld (TM26)", table=LocationTable.OVERWORLD, id=0x26, original_item="tm26", type="overworld", parent_region="wayward_cave_b1f", check=FlagCheck(id=0x41C)),
     "wayward_cave_1f_tm32": LocationData(label="Wayward Cave - Overworld (TM32)", table=LocationTable.OVERWORLD, id=0x22, original_item="tm32", type="overworld", parent_region="wayward_cave_1f", check=FlagCheck(id=0x418)),
     "wayward_cave_1f_revive": LocationData(label="Wayward Cave - Overworld (Revive)", table=LocationTable.OVERWORLD, id=0x23, original_item="revive", type="overworld", parent_region="wayward_cave_1f", check=FlagCheck(id=0x419)),
     "wayward_cave_1f_escape_rope": LocationData(label="Wayward Cave - Overworld (Escape Rope)", table=LocationTable.OVERWORLD, id=0x24, original_item="escape_rope", type="overworld", parent_region="wayward_cave_1f", check=FlagCheck(id=0x41A)),
@@ -612,7 +620,7 @@ locations: Mapping[str, LocationData] = {
     "solaceon_ruins_room_7_nugget": LocationData(label="Solaceon Ruins - Overworld (Nugget)", table=LocationTable.OVERWORLD, id=0x61, original_item="nugget", type="overworld", parent_region="solaceon_ruins_room_7", check=FlagCheck(id=0x457)),
     "solaceon_ruins_room_7_hm05": LocationData(label="Solaceon Ruins - Overworld (HM05)", table=LocationTable.OVERWORLD, id=0x62, original_item="hm05", type="hm", parent_region="solaceon_ruins_room_7", check=FlagCheck(id=0x458)),
     "oreburgh_city_gym_coal_badge": LocationData(label="Oreburgh City Gym - Badge (From Roark)", table=LocationTable.BASE, id=0x67, original_item="coal_badge", type="badge", parent_region="oreburgh_city_gym", check=FlagCheck(id=0x75)),
-    "oreburgh_city_gym_tm76": LocationData(label="Oreburgh City Gym - TM75 (From Roark)", table=LocationTable.BASE, id=0x1, original_item="tm76", type="npc_gift", parent_region="oreburgh_city_gym", check=FlagCheck(id=0x75)),
+    "oreburgh_city_gym_tm76": LocationData(label="Oreburgh City Gym - TM76 (From Roark)", table=LocationTable.BASE, id=0x1, original_item="tm76", type="npc_gift", parent_region="oreburgh_city_gym", check=FlagCheck(id=0x75)),
     "eterna_city_gym_forest_badge": LocationData(label="Oreburgh City Gym - Badge (From Gardenia)", table=LocationTable.BASE, id=0x2, original_item="forest_badge", type="badge", parent_region="eterna_city_gym", check=FlagCheck(id=0x74)),
     "eterna_city_gym_tm86": LocationData(label="Eterna City Gym - TM86 (From Gardenia)", table=LocationTable.BASE, id=0x3, original_item="tm86", type="npc_gift", parent_region="eterna_city_gym", check=FlagCheck(id=0x74)),
     "veilstone_city_gym_cobble_badge": LocationData(label="Veilstone City Gym - Badge (From Maylene)", table=LocationTable.BASE, id=0x4, original_item="cobble_badge", type="badge", parent_region="veilstone_city_gym", check=FlagCheck(id=0x9D)),
@@ -643,7 +651,7 @@ locations: Mapping[str, LocationData] = {
     "sandgem_town_pokemon_research_lab_pokedex": LocationData(label="Pokemon Research Lab - Pokédex (From Rowan)", table=LocationTable.BASE, id=0x1D, original_item="pokedex", type="pokedex", parent_region="sandgem_town_pokemon_research_lab", check=FlagCheck(id=0x90)),
     "sandgem_town_pokemon_research_lab_pokedex_2": LocationData(label="Pokemon Research Lab - National Pokédex (From Oak)", table=LocationTable.BASE, id=0x1E, original_item="pokedex", type="pokedex", parent_region="sandgem_town_pokemon_research_lab", check=FlagCheck(id=0xB62)),
     "sandgem_town_pokemon_research_lab_poke_radar": LocationData(label="Pokemon Research Lab - Poké Radar (From Rowan)", table=LocationTable.BASE, id=0x1F, original_item="poke_radar", type="key_item", parent_region="sandgem_town_pokemon_research_lab", check=FlagCheck(id=0xB62)),
-    "sandgem_town_tm27": LocationData(label="Sandgem Town - TM27 (From Rowan)", table=LocationTable.BASE, id=0x20, original_item="tm27", type="npc_gift", parent_region="sandgem_town", check=FlagCheck(id=0x2C4, invert=True)),
+    "sandgem_town_tm27": LocationData(label="Sandgem Town - TM27 (From Rowan)", table=LocationTable.BASE, id=0x20, original_item="tm27", type="npc_gift", parent_region="sandgem_town", check=VarCheck(id=0x4071, value=0x2, op=operator.ge)),
     "pal_park_lobby_kitchentimer": LocationData(label="Pal Park Lobby - Kitchen Timer App", table=LocationTable.BASE, id=0x21, original_item="kitchentimer", type="poketchapp", check=FlagCheck(id=0xB63)),
     "pal_park_lobby_colorchanger": LocationData(label="Pal Park Lobby - Color Changer App", table=LocationTable.BASE, id=0x22, original_item="colorchanger", type="poketchapp", check=FlagCheck(id=0xB64)),
     "pal_park_lobby_counter": LocationData(label="Pal Park Lobby - Trainer Counter App", table=LocationTable.BASE, id=0x23, original_item="radarchaincounter", type="poketchapp", parent_region="pal_park_lobby", check=VarCheck(id=0x40C6, value=0x1)),
@@ -654,10 +662,10 @@ locations: Mapping[str, LocationData] = {
     "jubilife_city_coupon_1": LocationData(label="Jubilife City - Coupon 1 (From Poketch Campaign Clown)", table=LocationTable.BASE, id=0x28, original_item="coupon_1", type="all_key_item", parent_region="jubilife_city", check=FlagCheck(id=0xED)),
     "jubilife_city_coupon_2": LocationData(label="Jubilife City - Coupon 2 (From Poketch Campaign Clown)", table=LocationTable.BASE, id=0x29, original_item="coupon_2", type="all_key_item", parent_region="jubilife_city", check=FlagCheck(id=0xEE)),
     "jubilife_city_coupon_3": LocationData(label="Jubilife City - Coupon 3 (From Poketch Campaign Clown)", table=LocationTable.BASE, id=0x2A, original_item="coupon_3", type="all_key_item", parent_region="jubilife_city", check=FlagCheck(id=0xEF)),
-    "jubilife_city_poketch": LocationData(label="Jubilife City - Poketch", table=LocationTable.BASE, id=0x2B, original_item="poketch", type="poketchapp", parent_region="jubilife_city", check=VarCheck(id=0x4077, value=0x2, op=operator.ge)),
-    "jubilife_city_calculator": LocationData(label="Jubilife City - Calculator App", table=LocationTable.BASE, id=0x2C, original_item="calculator", type="poketchapp", parent_region="jubilife_city", check=VarCheck(id=0x4077, value=0x2, op=operator.ge)),
-    "jubilife_city_pedometer": LocationData(label="Jubilife City - Pedometer App", table=LocationTable.BASE, id=0x2D, original_item="pedometer", type="poketchapp", parent_region="jubilife_city", check=VarCheck(id=0x4077, value=0x2, op=operator.ge)),
-    "jubilife_city_partystatus": LocationData(label="Jubilife City - Party Status App", table=LocationTable.BASE, id=0x2E, original_item="partystatus", type="poketchapp", parent_region="jubilife_city", check=VarCheck(id=0x4077, value=0x2, op=operator.ge)),
+    "jubilife_city_poketch": LocationData(label="Jubilife City - Poketch", table=LocationTable.BASE, id=0x2B, original_item="poketch", type="poketchapp", parent_region="jubilife_city", check=FlagCheck(id=0xB7C)),
+    "jubilife_city_calculator": LocationData(label="Jubilife City - Calculator App", table=LocationTable.BASE, id=0x2C, original_item="calculator", type="poketchapp", parent_region="jubilife_city", check=FlagCheck(id=0xB7C)),
+    "jubilife_city_pedometer": LocationData(label="Jubilife City - Pedometer App", table=LocationTable.BASE, id=0x2D, original_item="pedometer", type="poketchapp", parent_region="jubilife_city", check=FlagCheck(id=0xB7C)),
+    "jubilife_city_partystatus": LocationData(label="Jubilife City - Party Status App", table=LocationTable.BASE, id=0x2E, original_item="partystatus", type="poketchapp", parent_region="jubilife_city", check=FlagCheck(id=0xB7C)),
     "cycle_shop_bicycle": LocationData(label="Cycle Shop - Bicycle", table=LocationTable.BASE, id=0x2F, original_item="bicycle", type="bicycle", parent_region="cycle_shop", check=FlagCheck(id=0x82)),
     "oreburgh_city_northwest_house_2f_dusk_ball": LocationData(label="Oreburgh City - Dusk Ball (Gift in Northwest House)", table=LocationTable.BASE, id=0x30, original_item="dusk_ball", type="npc_gift", parent_region="oreburgh_city_northwest_house_2f", check=FlagCheck(id=0xC0)),
     "oreburgh_city_north_house_2f_heal_ball": LocationData(label="Oreburgh City - Heal Ball (Gift in North House)", table=LocationTable.BASE, id=0x31, original_item="heal_ball", type="npc_gift", parent_region="oreburgh_city_north_house_2f", check=FlagCheck(id=0xC1)),
@@ -718,41 +726,154 @@ locations: Mapping[str, LocationData] = {
     "poketch_co_1f_movetester": LocationData(label="Pokétch Company - Move Tester App", table=LocationTable.BASE, id=0x66, original_item="movetester", type="poketchapp", parent_region="poketch_co_1f", check=FlagCheck(id=0xB77)),
     "eterna_city_condominiums_2f_tm67": LocationData(label="Eterna City Condominiums - TM67", table=LocationTable.BASE, id=0x68, original_item="tm67", type="npc_gift", parent_region="eterna_city_condominiums_2f", check=FlagCheck(id=0xC2)),
     "route_218_gate_to_canalave_city_pokedex_forms": LocationData(label="Route 218 Gate to Canalave - Pokédex Forms", table=LocationTable.BASE, id=0x69, original_item="pokedex", type="pokedex", parent_region="route_218_gate_to_canalave_city", check=FlagCheck(id=0x21C)),
+    "veilstone_store_2f_counter": LocationData(label="Veilstone Department Store - Counter App", table=LocationTable.BASE, id=0x6A, original_item="counter", type="poketchapp", parent_region="veilstone_store_2f", check=FlagCheck(id=0xB7D)),
+    "veilstone_store_5f_sticky_barb": LocationData(label="Veilstone Department Store - Sticky Barb", table=LocationTable.BASE, id=0x6B, original_item="sticky_barb", type="npc_gift", parent_region="veilstone_store_5f", check=FlagCheck(id=0x105)),
+    "pokecenter_b1f_pal_pad": LocationData(label="Pokémon Center Basement - Pal Pad", table=LocationTable.BASE, id=0x6C, original_item="pal_pad", type="key_item", parent_region="virt_pal_pad", check=VarCheck(id=0x40D4, value=0x1)),
+    "uunown_a": LocationData(label="Solaceon Ruins - Unown File A", table=LocationTable.HIDDEN, id=0x11C, original_item="uunown", type="uunown", parent_region="solaceon_ruins_room_1", check=FlagCheck(id=0xB7F)),
+    "uunown_b": LocationData(label="Solaceon Ruins - Unown File B", table=LocationTable.HIDDEN, id=0x11D, original_item="uunown", type="uunown", parent_region="solaceon_ruins_room_1", check=FlagCheck(id=0xB80)),
+    "uunown_c": LocationData(label="Solaceon Ruins - Unown File C", table=LocationTable.HIDDEN, id=0x11E, original_item="uunown", type="uunown", parent_region="solaceon_ruins_room_1", check=FlagCheck(id=0xB81)),
+    "uunown_d": LocationData(label="Solaceon Ruins - Unown File D", table=LocationTable.HIDDEN, id=0x11F, original_item="uunown", type="uunown", parent_region="solaceon_ruins_room_1", check=FlagCheck(id=0xB82)),
+    "uunown_e": LocationData(label="Solaceon Ruins - Unown File E", table=LocationTable.HIDDEN, id=0x120, original_item="uunown", type="uunown", parent_region="solaceon_ruins_room_1", check=FlagCheck(id=0xB83)),
+    "uunown_f": LocationData(label="Solaceon Ruins - Unown File F", table=LocationTable.HIDDEN, id=0x121, original_item="uunown", type="uunown", parent_region="solaceon_ruins_room_1", check=FlagCheck(id=0xB84)),
+    "uunown_g": LocationData(label="Solaceon Ruins - Unown File G", table=LocationTable.HIDDEN, id=0x122, original_item="uunown", type="uunown", parent_region="solaceon_ruins_room_1", check=FlagCheck(id=0xB85)),
+    "uunown_h": LocationData(label="Solaceon Ruins - Unown File H", table=LocationTable.HIDDEN, id=0x123, original_item="uunown", type="uunown", parent_region="solaceon_ruins_room_1", check=FlagCheck(id=0xB86)),
+    "uunown_i": LocationData(label="Solaceon Ruins - Unown File I", table=LocationTable.HIDDEN, id=0x124, original_item="uunown", type="uunown", parent_region="solaceon_ruins_room_1", check=FlagCheck(id=0xB87)),
+    "uunown_j": LocationData(label="Solaceon Ruins - Unown File J", table=LocationTable.HIDDEN, id=0x125, original_item="uunown", type="uunown", parent_region="solaceon_ruins_room_1", check=FlagCheck(id=0xB88)),
+    "uunown_k": LocationData(label="Solaceon Ruins - Unown File K", table=LocationTable.HIDDEN, id=0x126, original_item="uunown", type="uunown", parent_region="solaceon_ruins_room_1", check=FlagCheck(id=0xB89)),
+    "uunown_l": LocationData(label="Solaceon Ruins - Unown File L", table=LocationTable.HIDDEN, id=0x127, original_item="uunown", type="uunown", parent_region="solaceon_ruins_room_1", check=FlagCheck(id=0xB8A)),
+    "uunown_m": LocationData(label="Solaceon Ruins - Unown File M", table=LocationTable.HIDDEN, id=0x128, original_item="uunown", type="uunown", parent_region="solaceon_ruins_room_1", check=FlagCheck(id=0xB8B)),
+    "uunown_n": LocationData(label="Solaceon Ruins - Unown File N", table=LocationTable.HIDDEN, id=0x129, original_item="uunown", type="uunown", parent_region="solaceon_ruins_room_1", check=FlagCheck(id=0xB8C)),
+    "uunown_o": LocationData(label="Solaceon Ruins - Unown File O", table=LocationTable.HIDDEN, id=0x12A, original_item="uunown", type="uunown", parent_region="solaceon_ruins_room_1", check=FlagCheck(id=0xB8D)),
+    "uunown_p": LocationData(label="Solaceon Ruins - Unown File P", table=LocationTable.HIDDEN, id=0x12B, original_item="uunown", type="uunown", parent_region="solaceon_ruins_room_1", check=FlagCheck(id=0xB8E)),
+    "uunown_q": LocationData(label="Solaceon Ruins - Unown File Q", table=LocationTable.HIDDEN, id=0x12C, original_item="uunown", type="uunown", parent_region="solaceon_ruins_room_1", check=FlagCheck(id=0xB8F)),
+    "uunown_r": LocationData(label="Solaceon Ruins - Unown File R", table=LocationTable.HIDDEN, id=0x12D, original_item="uunown", type="uunown", parent_region="solaceon_ruins_room_1", check=FlagCheck(id=0xB90)),
+    "uunown_s": LocationData(label="Solaceon Ruins - Unown File S", table=LocationTable.HIDDEN, id=0x12E, original_item="uunown", type="uunown", parent_region="solaceon_ruins_room_1", check=FlagCheck(id=0xB91)),
+    "uunown_t": LocationData(label="Solaceon Ruins - Unown File T", table=LocationTable.HIDDEN, id=0x12F, original_item="uunown", type="uunown", parent_region="solaceon_ruins_room_1", check=FlagCheck(id=0xB92)),
+    "uunown_u": LocationData(label="Solaceon Ruins - Unown File U", table=LocationTable.HIDDEN, id=0x130, original_item="uunown", type="uunown", parent_region="solaceon_ruins_room_1", check=FlagCheck(id=0xB93)),
+    "uunown_v": LocationData(label="Solaceon Ruins - Unown File V", table=LocationTable.HIDDEN, id=0x131, original_item="uunown", type="uunown", parent_region="solaceon_ruins_room_1", check=FlagCheck(id=0xB94)),
+    "uunown_w": LocationData(label="Solaceon Ruins - Unown File W", table=LocationTable.HIDDEN, id=0x132, original_item="uunown", type="uunown", parent_region="solaceon_ruins_room_1", check=FlagCheck(id=0xB95)),
+    "uunown_x": LocationData(label="Solaceon Ruins - Unown File X", table=LocationTable.HIDDEN, id=0x133, original_item="uunown", type="uunown", parent_region="solaceon_ruins_room_1", check=FlagCheck(id=0xB96)),
+    "uunown_y": LocationData(label="Solaceon Ruins - Unown File Y", table=LocationTable.HIDDEN, id=0x134, original_item="uunown", type="uunown", parent_region="solaceon_ruins_room_1", check=FlagCheck(id=0xB97)),
+    "uunown_z": LocationData(label="Solaceon Ruins - Unown File Z", table=LocationTable.HIDDEN, id=0x135, original_item="uunown", type="uunown", parent_region="solaceon_ruins_room_1", check=FlagCheck(id=0xB98)),
+    "uunown_ex": LocationData(label="Solaceon Ruins - Unown File !", table=LocationTable.HIDDEN, id=0x136, original_item="uunown", type="uunown", parent_region="solaceon_ruins_maniac_tunnel_room", check=FlagCheck(id=0xB99)),
+    "uunown_qu": LocationData(label="Solaceon Ruins - Unown File ?", table=LocationTable.HIDDEN, id=0x137, original_item="uunown", type="uunown", parent_region="solaceon_ruins_maniac_tunnel_room", check=FlagCheck(id=0xB9A)),
+    "fight_area_mart_scope_lens": LocationData(label="Fight Area - Scope Lens (From old lady in mart)", table=LocationTable.BASE, id=0x6D, original_item="scope_lens", type="npc_gift", parent_region="fight_area_mart", check=FlagCheck(id=0xD5)),
+    "route_229_nugget": LocationData(label="Fight Area - Nugget (From man in middle of route)", table=LocationTable.BASE, id=0x6E, original_item="nugget", type="npc_gift", parent_region="route_229", check=FlagCheck(id=0xDA)),
+    "route_229_nugget_0": LocationData(label="Fight Area - Nugget 1 (From man in middle of route)", table=LocationTable.BASE, id=0x6F, original_item="nugget", type="npc_gift", parent_region="route_229", check=FlagCheck(id=0xDA)),
+    "survival_area_south_house_tm42": LocationData(label="Survival Area - TM42 (From man in South house)", table=LocationTable.BASE, id=0x70, original_item="tm42", type="npc_gift", parent_region="survival_area_south_house", check=FlagCheck(id=0xCB)),
+    "route_225_house_fresh_water": LocationData(label="Route 225 - Fresh Water (From man in house)", table=LocationTable.BASE, id=0x71, original_item="fresh_water", type="npc_gift", parent_region="route_225_house", check=FlagCheck(id=0xD9)),
+    "route_206_cycling_road_south_gate_flag": LocationData(label="Cycling Road South Gate - Flag", table=LocationTable.BASE, id=0x72, original_item="flag", type="accessory", parent_region="route_206_cycling_road_south_gate", check=FlagCheck(id=0x12B)),
+    "jubilife_tv_2f_chimchar_mask": LocationData(label="Jubilife TV - Chimchar Mask", table=LocationTable.BASE, id=0x73, original_item="chimchar_mask", type="accessory", parent_region="jubilife_tv_2f", check=FlagCheck(id=0x13D)),
+    "pastoria_city_piplup_mask": LocationData(label="Pastoria City - Piplup Mask", table=LocationTable.BASE, id=0x74, original_item="piplup_mask", type="accessory", parent_region="pastoria_city", check=FlagCheck(id=0x128)),
+    "veilstone_store_1f_turtwig_mask": LocationData(label="Veilstone Department Store - Turtwig Mask", table=LocationTable.BASE, id=0x75, original_item="turtwig_mask", type="accessory", parent_region="veilstone_store_1f", check=FlagCheck(id=0x129)),
+    "veilstone_city_southwest_house_accessory": LocationData(label="Veilstone City - Random Accessory", table=LocationTable.ONCE, id=0x0, original_item=["pretty_dewdrop", "snow_crystal", "sparks", "shimmering_fire", "mystic_fire", "determination", "peculiar_spoon", "puffy_smoke", "poison_extract", "wealthy_coin", "eerie_thing", "spring", "seashell", "humming_note", "shiny_powder", "glitter_powder"], type="accessory", parent_region="veilstone_city_southwest_house", check=OnceCheck(id=0x0)),
+    "contest_hall_lobby_glitter_powder": LocationData(label="Hearthome City Contest Hall - Glitter Powder", table=LocationTable.BASE, id=0x76, original_item="glitter_powder", type="accessory", parent_region="contest_hall_lobby", check=VarCheck(id=0x40F7, value=0x1)),
+    "amity_square_gift": LocationData(label="Amity Square - Random Berry or Accessory", table=LocationTable.ONCE, id=0x1, original_item=["magost_berry", "cornn_berry", "rabuta_berry", "nomel_berry", "spelon_berry", "pamtre_berry", "watmel_berry", "durin_berry", "belue_berry", "mini_pebble", "glitter_boulder", "black_pebble", "big_scale", "big_leaf", "thick_mushroom", "stump"], type="npc_gift", parent_region="amity_square", check=OnceCheck(id=0x1)),
+    "eterna_forest_outside_big_tree": LocationData(label="Eterna Forest Outside - Big Tree", table=LocationTable.BASE, id=0x77, original_item="big_tree", type="accessory", parent_region="eterna_forest_outside", check=FlagCheck(id=0x12A)),
+    "flower_shop_berry": LocationData(label="Floaroma Town Flower Shop - Random Berry", table=LocationTable.ONCE, id=0x2, original_item=["cheri_berry", "chesto_berry", "pecha_berry", "rawst_berry", "aspear_berry"], type="npc_gift", parent_region="flower_shop", check=OnceCheck(id=0x2)),
+    "route_208_house_berry": LocationData(label="Route 208 - Random Berry", table=LocationTable.ONCE, id=0x3, original_item=["cheri_berry", "chesto_berry", "pecha_berry", "rawst_berry", "aspear_berry", "leppa_berry", "oran_berry", "persim_berry", "lum_berry", "sitrus_berry", "figy_berry", "wiki_berry", "mago_berry", "aguav_berry", "iapapa_berry", "razz_berry", "bluk_berry", "nanab_berry", "wepear_berry", "pinap_berry", "pomeg_berry", "kelpsy_berry", "qualot_berry", "hondew_berry", "grepa_berry", "tamato_berry", "cornn_berry", "magost_berry", "rabuta_berry", "nomel_berry"], type="npc_gift", parent_region="route_208_house", check=OnceCheck(id=0x3)),
+    "celestic_town_pokecenter_1f_great_ball": LocationData(label="Celestic Town - Great Ball (From Man in Pokémon Center)", table=LocationTable.ONCE, id=0xE, original_item="great_ball", type="npc_gift", parent_region="celestic_town_pokecenter_1f", check=OnceCheck(id=0xE)),
 }
 
-required_locations: Set[str] = frozenset({
-    "route_213_suite_key",
-    "galactic_hq_b2f_galactic_key",
-    "route_217_hm08",
-    "oreburgh_gate_b1f_tm70",
-    "veilstone_city_galactic_warehouse_hm02",
-    "solaceon_ruins_room_7_hm05",
-    "oreburgh_city_gym_coal_badge",
-    "eterna_city_gym_forest_badge",
-    "veilstone_city_gym_cobble_badge",
-    "pastoria_city_gym_fen_badge",
-    "hearthome_city_gym_leader_room_relic_badge",
-    "canalave_city_gym_mine_badge",
-    "snowpoint_city_gym_icicle_badge",
-    "sunyshore_city_gym_room_3_beacon_badge",
-    "eterna_city_hm01",
-    "oreburgh_gate_1f_hm06",
-    "celestic_town_cave_hm03",
-    "iron_island_hm04",
-    "sunyshore_city_hm07",
-    "route_207_dowsingmachine",
-    "route_218_gate_to_jubilife_city_old_rod",
-    "route_209_good_rod",
-    "twinleaf_town_player_house_1f_parcel",
-    "sandgem_town_pokemon_research_lab_pokedex",
-    "sandgem_town_pokemon_research_lab_pokedex_2",
-    "jubilife_city_coupon_1",
-    "jubilife_city_coupon_2",
-    "jubilife_city_coupon_3",
-    "jubilife_city_poketch",
-    "cycle_shop_bicycle",
-    "floaroma_meadow_works_key",
-    "valor_lakefront_secretpotion",
-    "route_210_south_old_charm",
-    "route_218_gate_to_canalave_city_pokedex_forms",
-})
+class RequiredLocations:
+    opts: PokemonPlatinumOptions
+    loc_rules: Set[str]
+
+    def __init__(self, opts: PokemonPlatinumOptions):
+        self.opts = opts
+        self.loc_rules = set()
+        self.loc_rules.add("route_213_suite_key")
+        self.loc_rules.add("galactic_hq_b2f_galactic_key")
+        self.loc_rules.add("route_217_hm08")
+        self.loc_rules.add("oreburgh_gate_b1f_tm70")
+        self.loc_rules.add("veilstone_city_galactic_warehouse_hm02")
+        self.loc_rules.add("solaceon_ruins_room_7_hm05")
+        self.loc_rules.add("oreburgh_city_gym_coal_badge")
+        self.loc_rules.add("eterna_city_gym_forest_badge")
+        self.loc_rules.add("veilstone_city_gym_cobble_badge")
+        self.loc_rules.add("pastoria_city_gym_fen_badge")
+        self.loc_rules.add("hearthome_city_gym_leader_room_relic_badge")
+        self.loc_rules.add("canalave_city_gym_mine_badge")
+        self.loc_rules.add("snowpoint_city_gym_icicle_badge")
+        self.loc_rules.add("sunyshore_city_gym_room_3_beacon_badge")
+        self.loc_rules.add("eterna_city_hm01")
+        self.loc_rules.add("oreburgh_gate_1f_hm06")
+        self.loc_rules.add("celestic_town_cave_hm03")
+        self.loc_rules.add("iron_island_hm04")
+        self.loc_rules.add("sunyshore_city_hm07")
+        self.loc_rules.add("route_207_dowsingmachine")
+        self.loc_rules.add("route_218_gate_to_jubilife_city_old_rod")
+        self.loc_rules.add("route_209_good_rod")
+        self.loc_rules.add("fight_area_super_rod")
+        self.loc_rules.add("twinleaf_town_player_house_1f_parcel")
+        self.loc_rules.add("sandgem_town_pokemon_research_lab_pokedex")
+        self.loc_rules.add("sandgem_town_pokemon_research_lab_pokedex_2")
+        self.loc_rules.add("jubilife_city_coupon_1")
+        self.loc_rules.add("jubilife_city_coupon_2")
+        self.loc_rules.add("jubilife_city_coupon_3")
+        self.loc_rules.add("jubilife_city_poketch")
+        self.loc_rules.add("cycle_shop_bicycle")
+        self.loc_rules.add("floaroma_meadow_works_key")
+        self.loc_rules.add("valor_lakefront_secretpotion")
+        self.loc_rules.add("route_210_south_old_charm")
+        self.loc_rules.add("route_218_gate_to_canalave_city_pokedex_forms")
+        if not self.opts.unown_option.value == self.opts.unown_option.option_vanilla and self.opts.unown_option.value == self.opts.unown_option.option_item:
+            self.loc_rules.add("uunown_a")
+        if not self.opts.unown_option.value == self.opts.unown_option.option_vanilla and self.opts.unown_option.value == self.opts.unown_option.option_item:
+            self.loc_rules.add("uunown_b")
+        if not self.opts.unown_option.value == self.opts.unown_option.option_vanilla and self.opts.unown_option.value == self.opts.unown_option.option_item:
+            self.loc_rules.add("uunown_c")
+        if not self.opts.unown_option.value == self.opts.unown_option.option_vanilla and self.opts.unown_option.value == self.opts.unown_option.option_item:
+            self.loc_rules.add("uunown_d")
+        if not self.opts.unown_option.value == self.opts.unown_option.option_vanilla and self.opts.unown_option.value == self.opts.unown_option.option_item:
+            self.loc_rules.add("uunown_e")
+        if not self.opts.unown_option.value == self.opts.unown_option.option_vanilla and self.opts.unown_option.value == self.opts.unown_option.option_item:
+            self.loc_rules.add("uunown_f")
+        if not self.opts.unown_option.value == self.opts.unown_option.option_vanilla and self.opts.unown_option.value == self.opts.unown_option.option_item:
+            self.loc_rules.add("uunown_g")
+        if not self.opts.unown_option.value == self.opts.unown_option.option_vanilla and self.opts.unown_option.value == self.opts.unown_option.option_item:
+            self.loc_rules.add("uunown_h")
+        if not self.opts.unown_option.value == self.opts.unown_option.option_vanilla and self.opts.unown_option.value == self.opts.unown_option.option_item:
+            self.loc_rules.add("uunown_i")
+        if not self.opts.unown_option.value == self.opts.unown_option.option_vanilla and self.opts.unown_option.value == self.opts.unown_option.option_item:
+            self.loc_rules.add("uunown_j")
+        if not self.opts.unown_option.value == self.opts.unown_option.option_vanilla and self.opts.unown_option.value == self.opts.unown_option.option_item:
+            self.loc_rules.add("uunown_k")
+        if not self.opts.unown_option.value == self.opts.unown_option.option_vanilla and self.opts.unown_option.value == self.opts.unown_option.option_item:
+            self.loc_rules.add("uunown_l")
+        if not self.opts.unown_option.value == self.opts.unown_option.option_vanilla and self.opts.unown_option.value == self.opts.unown_option.option_item:
+            self.loc_rules.add("uunown_m")
+        if not self.opts.unown_option.value == self.opts.unown_option.option_vanilla and self.opts.unown_option.value == self.opts.unown_option.option_item:
+            self.loc_rules.add("uunown_n")
+        if not self.opts.unown_option.value == self.opts.unown_option.option_vanilla and self.opts.unown_option.value == self.opts.unown_option.option_item:
+            self.loc_rules.add("uunown_o")
+        if not self.opts.unown_option.value == self.opts.unown_option.option_vanilla and self.opts.unown_option.value == self.opts.unown_option.option_item:
+            self.loc_rules.add("uunown_p")
+        if not self.opts.unown_option.value == self.opts.unown_option.option_vanilla and self.opts.unown_option.value == self.opts.unown_option.option_item:
+            self.loc_rules.add("uunown_q")
+        if not self.opts.unown_option.value == self.opts.unown_option.option_vanilla and self.opts.unown_option.value == self.opts.unown_option.option_item:
+            self.loc_rules.add("uunown_r")
+        if not self.opts.unown_option.value == self.opts.unown_option.option_vanilla and self.opts.unown_option.value == self.opts.unown_option.option_item:
+            self.loc_rules.add("uunown_s")
+        if not self.opts.unown_option.value == self.opts.unown_option.option_vanilla and self.opts.unown_option.value == self.opts.unown_option.option_item:
+            self.loc_rules.add("uunown_t")
+        if not self.opts.unown_option.value == self.opts.unown_option.option_vanilla and self.opts.unown_option.value == self.opts.unown_option.option_item:
+            self.loc_rules.add("uunown_u")
+        if not self.opts.unown_option.value == self.opts.unown_option.option_vanilla and self.opts.unown_option.value == self.opts.unown_option.option_item:
+            self.loc_rules.add("uunown_v")
+        if not self.opts.unown_option.value == self.opts.unown_option.option_vanilla and self.opts.unown_option.value == self.opts.unown_option.option_item:
+            self.loc_rules.add("uunown_w")
+        if not self.opts.unown_option.value == self.opts.unown_option.option_vanilla and self.opts.unown_option.value == self.opts.unown_option.option_item:
+            self.loc_rules.add("uunown_x")
+        if not self.opts.unown_option.value == self.opts.unown_option.option_vanilla and self.opts.unown_option.value == self.opts.unown_option.option_item:
+            self.loc_rules.add("uunown_y")
+        if not self.opts.unown_option.value == self.opts.unown_option.option_vanilla and self.opts.unown_option.value == self.opts.unown_option.option_item:
+            self.loc_rules.add("uunown_z")
+        if not self.opts.unown_option.value == self.opts.unown_option.option_vanilla and self.opts.unown_option.value == self.opts.unown_option.option_item:
+            self.loc_rules.add("uunown_ex")
+        if not self.opts.unown_option.value == self.opts.unown_option.option_vanilla and self.opts.unown_option.value == self.opts.unown_option.option_item:
+            self.loc_rules.add("uunown_qu")
+
+    def __contains__(self, loc: str) -> bool:
+        return loc in self.loc_rules
+

@@ -5,7 +5,7 @@ from pathlib import Path
 
 import Utils
 from settings import get_settings
-from . import RomData
+from .RomData import RomData
 from .Util import *
 from .asm import asm_files
 from .text import simple_hex, normalize_text
@@ -499,7 +499,7 @@ def set_player_start_inventory(assembler: Z80Assembler, patch_data):
         start_inventory_changes[0xc6a7] = hex_ore_count % 0x100
         start_inventory_changes[0xc6a8] = hex_ore_count // 0x100
     if obtained_treasures_address in start_inventory_changes:
-        start_inventory_changes[obtained_treasures_address] |= 1 << 2 # Add treasure punch flag
+        start_inventory_changes[obtained_treasures_address] |= 1 << 2  # Add treasure punch flag
 
     heart_pieces = (start_inventory_data.get("Piece of Heart", 0) + start_inventory_data.get("Rare Peach Stone", 0))
     additional_hearts = (start_inventory_data.get("Heart Container", 0) + heart_pieces // 4)
@@ -796,7 +796,7 @@ def make_text_data(text: dict[str, str], patch_data):
 
     # Default satchel seed
     seed_name = SEED_ITEMS[patch_data["options"]["default_seed"]].replace(" ", "\n")
-    text["TX_002d"].replace("Ember\nSeeds", seed_name)
+    text["TX_002d"] = text["TX_002d"].replace("Ember\nSeeds", seed_name)
 
     # Misc
     if patch_data["options"]["rosa_quick_unlock"]:

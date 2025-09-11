@@ -85,14 +85,7 @@
       ]
     }
   ],
-  "obstacles": [
-    {
-      "id": "A",
-      "name": "Camera Broken",
-      "obstacleType": "abstract",
-      "note": "Represents being off-camera in the top part of the room."
-    }
-  ],
+  "obstacles": [],
   "enemies": [
     {
       "id": "e1",
@@ -114,6 +107,7 @@
       "from": 1,
       "to": [
         {"id": 1},
+        {"id": 2},
         {"id": 3},
         {"id": 4},
         {"id": 5}
@@ -122,6 +116,7 @@
     {
       "from": 2,
       "to": [
+        {"id": 1},
         {"id": 2},
         {"id": 3},
         {"id": 5}
@@ -179,6 +174,59 @@
       "flashSuitChecked": true
     },
     {
+      "id": 52,
+      "link": [1, 2],
+      "name": "Super Sink",
+      "entranceCondition": {
+        "comeInWithSuperSink": {}
+      },
+      "requires": [
+        "canOffScreenMovement",
+        {"heatFrames": 360},
+        {"acidFrames": 345},
+        {"enemyDamage": {"enemy": "Magdollite", "type": "contact", "hits": 1}}
+      ],
+      "exitCondition": {
+        "leaveNormally": {}
+      },
+      "unlocksDoors": [
+        {
+          "types": ["missiles"],
+          "requires": [
+            {"acidFrames": 75},
+            {"heatFrames": 75}
+          ]
+        },
+        {
+          "types": ["super"],
+          "requires": [
+            {"acidFrames": 25},
+            {"heatFrames": 25}
+          ]
+        },
+        {
+          "types": ["powerbomb"],
+          "requires": [
+            {"acidFrames": 90},
+            {"heatFrames": 90}
+          ]
+        }
+      ],
+      "note": [
+        "Enter the room with a super sink, in order to clip down to the bottom part of the room.",
+        "Blindly traverse to the right door.",
+        "It is recommended to open the door using Grapple if possible,",
+        "since it can reach the door from a distance even while off-camera whereas beams cannot."
+      ],
+      "devNote": [
+        "FIXME: With better off-camera movement, this can be done with significantly less damage",
+        "(and with Gravity the Magdollite hit can also be avoided);",
+        "but after the supersink setup it's not clear if it's reasonable to assume any more than this.",
+        "FIXME: If the acid is already drained, then the requirements here could be reduced",
+        "(though in that case there's not as much reason to do this strat)."
+      ]
+    },
+    {
       "id": 3,
       "link": [1, 3],
       "name": "Base",
@@ -202,9 +250,24 @@
       ]
     },
     {
+      "id": 46,
+      "link": [1, 3],
+      "name": "Speedy Jump Morph",
+      "entranceCondition": {
+        "comeInJumping": {
+          "speedBooster": true,
+          "minTiles": 19
+        }
+      },
+      "requires": [
+        "canMomentumConservingMorph",
+        {"heatFrames": 70}
+      ]
+    },
+    {
       "id": 6,
       "link": [1, 3],
-      "name": "SpringFling over the acid",
+      "name": "Spring Fling over the acid",
       "requires": [
         "canSpringFling",
         "canDisableEquipment",
@@ -214,8 +277,28 @@
         {"heatFrames": 210}
       ],
       "note": [
-        "Begin with SpeedBooster unequipped, and run&jump over the acid into an airball.",
-        "Once Samus begins falling, equip SpringBall and SpeedBooster to safely land on the other side near the statue."
+        "Beginning with Speed Booster unequipped, run and jump over the acid into an airball.",
+        "Once Samus begins falling, equip Spring Ball and Speed Booster to safely land on the other side near the statue."
+      ]
+    },
+    {
+      "id": 47,
+      "link": [1, 3],
+      "name": "Cross Room Spring Ball Bounce",
+      "entranceCondition": {
+        "comeInSpinning": {
+          "speedBooster": "any",
+          "unusableTiles": 0,
+          "minExtraRunSpeed": "$1.7"
+        }
+      },
+      "requires": [
+        "canSpringBallBounce",
+        {"heatFrames": 135}
+      ],
+      "note": [
+        "Enter the room with a spin jump, with enough speed to bounce across the acid pit.",
+        "If needed, a Spring fling near the end of Samus' descent can help."
       ]
     },
     {
@@ -318,13 +401,11 @@
         {"heatFrames": 20},
         "canOffScreenMovement"
       ],
-      "clearsObstacles": ["A"],
       "flashSuitChecked": true,
       "note": [
         "Grapple teleporting here will spawn Samus inside the wall behind the Acid Chozo statue.",
         "To escape, perform a Crystal Flash to stand up, then morph and roll out to the right.",
-        "Samus will be visible but off-camera, making the movement tricky.",
-        "While off camera, the Chozo hand will not function (i.e., will not trigger the acid lowering cutscene)."
+        "Samus will be visible but off-camera, making the movement tricky."
       ]
     },
     {
@@ -341,15 +422,13 @@
         {"heatFrames": 220},
         "canOffScreenMovement"
       ],
-      "clearsObstacles": ["A"],
       "note": [
         "After teleporting, press down to retract Grapple.",
         "Samus will be inside the Power Bomb blocks behind the Acid Chozo statue hand.",
         "Use a Power Bomb, wait to begin falling, then hold right to roll out under the hand.",
         "Samus will be visible but off-camera, making the movement tricky.",
         "Holding right too early after laying the Power Bomb will cause Samus to get stuck inside the Chozo hand;",
-        "in this case, Samus can get out by unmorphing, remorphing, and rolling to the right on top of the hand.",
-        "While off camera, the Chozo hand will not function (i.e., will not trigger the acid lowering cutscene)."
+        "in this case, Samus can get out by unmorphing, remorphing, and rolling to the right on top of the hand."
       ]
     },
     {
@@ -389,6 +468,62 @@
         "The Holtz still damage Samus, and the middle one is low enough to make it difficult to bomb boost across.",
         "Other strats in the room are ignored because Samus needs real Morph and Varia or a lot of Energy to use the statue,",
         "and there is no way to overload PLMs to go through the bomb blocks from the bottom of the room."
+      ]
+    },
+    {
+      "id": 48,
+      "link": [2, 1],
+      "name": "Shinespark Slope Clip X-Ray Climb (Come in Shinecharged)",
+      "entranceCondition": {
+        "comeInShinecharged": {}
+      },
+      "requires": [
+        {"shineChargeFrames": 35},
+        {"shinespark": {"frames": 33, "excessFrames": 0}},
+        "canShinesparkSlopeClip",
+        "canXRayClimb",
+        "canOffScreenMovement",
+        {"heatFrames": 1020}
+      ],
+      "note": [
+        "Gain a shinecharge and spark into the wall at the left side of the room to clip into it.",
+        "From there, X-Ray climb to the top portion of the room (about 0.75 screens).",
+        "Samus will be visible but off-camera, making the movement tricky."
+      ],
+      "detailNote": [
+        "Only certain horizontal positions for the spark will work.",
+        "There are periodic windows of approximately 4 good pixels followed by 8 bad pixels.",
+        "Moonwalking back against the ledge below the door will put Samus into a good position.",
+        "Being centered over this two-tile ledge is another position that works."
+      ]
+    },
+    {
+      "id": 49,
+      "link": [2, 1],
+      "name": "Shinespark Slope Clip X-Ray Climb (Come in Shinecharging)",
+      "entranceCondition": {
+        "comeInShinecharging": {
+          "length": 3,
+          "openEnd": 1
+        }
+      },
+      "requires": [
+        {"shinespark": {"frames": 33, "excessFrames": 0}},
+        "canShinesparkSlopeClip",
+        "canXRayClimb",
+        "canOffScreenMovement",
+        {"heatFrames": 1020}
+      ],
+      "note": [
+        "Gain a shinecharge and spark into the wall at the left side of the room to clip into it.",
+        "From there, X-Ray climb to the top portion of the room (about 0.75 screens).",
+        "Samus will be visible but off-camera, making the movement tricky."
+      ],
+      "detailNote": [
+        "Only certain horizontal positions for the spark will work.",
+        "There are periodic windows of approximately 4 good pixels followed by 8 bad pixels.",
+        "Moonwalking back against the ledge below the door will put Samus into a good position.",
+        "Being centered over this two-tile ledge is another position that works."
       ]
     },
     {
@@ -443,13 +578,11 @@
         {"heatFrames": 20},
         "canOffScreenMovement"
       ],
-      "clearsObstacles": ["A"],
       "flashSuitChecked": true,
       "note": [
         "Grapple teleporting here will spawn Samus inside the wall behind the Acid Chozo statue.",
         "To escape, perform a Crystal Flash to stand up, then morph and roll out to the right.",
-        "Samus will be visible but off-camera, making the movement tricky.",
-        "While off camera, the Chozo hand will not function (i.e., will not trigger the acid lowering cutscene)."
+        "Samus will be visible but off-camera, making the movement tricky."
       ]
     },
     {
@@ -466,15 +599,81 @@
         {"heatFrames": 220},
         "canOffScreenMovement"
       ],
-      "clearsObstacles": ["A"],
       "note": [
         "After teleporting, press down to retract Grapple.",
         "Samus will be inside the Power Bomb blocks behind the Acid Chozo statue hand.",
         "Use a Power Bomb, wait to begin falling, then hold right to roll out under the hand.",
         "Samus will be visible but off-camera, making the movement tricky.",
         "Holding right too early after laying the Power Bomb will cause Samus to get stuck inside the Chozo hand;",
-        "in this case, Samus can get out by unmorphing, remorphing, and rolling to the right on top of the hand.",
-        "While off camera, the Chozo hand will not function (i.e., will not trigger the acid lowering cutscene)."
+        "in this case, Samus can get out by unmorphing, remorphing, and rolling to the right on top of the hand."
+      ]
+    },
+    {
+      "id": 50,
+      "link": [2, 3],
+      "name": "Shinespark Slope Clip X-Ray Climb (Come in Shinecharged)",
+      "entranceCondition": {
+        "comeInShinecharged": {}
+      },
+      "requires": [
+        {"shineChargeFrames": 35},
+        {"shinespark": {"frames": 33, "excessFrames": 0}},
+        "canShinesparkSlopeClip",
+        "canXRayClimb",
+        "canOffScreenMovement",
+        {"or": [
+          "canPreciseWalljump",
+          "SpaceJump",
+          "HiJump",
+          "canTrickySpringBallJump"
+        ]},
+        {"heatFrames": 970}
+      ],
+      "note": [
+        "Gain a shinecharge and spark into the wall at the left side of the room to clip into it.",
+        "From there, X-Ray climb to the top portion of the room (about 0.75 screens).",
+        "Samus will be visible but off-camera, making the movement tricky."
+      ],
+      "detailNote": [
+        "Only certain horizontal positions for the spark will work.",
+        "There are periodic windows of approximately 4 good pixels followed by 8 bad pixels.",
+        "Moonwalking back against the ledge below the door will put Samus into a good position.",
+        "Being centered over this two-tile ledge is another position that works."
+      ]
+    },
+    {
+      "id": 51,
+      "link": [2, 3],
+      "name": "Shinespark Slope Clip X-Ray Climb (Come in Shinecharging)",
+      "entranceCondition": {
+        "comeInShinecharging": {
+          "length": 3,
+          "openEnd": 1
+        }
+      },
+      "requires": [
+        {"shinespark": {"frames": 33, "excessFrames": 0}},
+        "canShinesparkSlopeClip",
+        "canXRayClimb",
+        "canOffScreenMovement",
+        {"or": [
+          "canPreciseWalljump",
+          "SpaceJump",
+          "HiJump",
+          "canTrickySpringBallJump"
+        ]},
+        {"heatFrames": 970}
+      ],
+      "note": [
+        "Gain a shinecharge and spark into the wall at the left side of the room to clip into it.",
+        "From there, X-Ray climb to the top portion of the room (about 0.75 screens).",
+        "Samus will be visible but off-camera, making the movement tricky."
+      ],
+      "detailNote": [
+        "Only certain horizontal positions for the spark will work.",
+        "There are periodic windows of approximately 4 good pixels followed by 8 bad pixels.",
+        "Moonwalking back against the ledge below the door will put Samus into a good position.",
+        "Being centered over this two-tile ledge is another position that works."
       ]
     },
     {
@@ -568,7 +767,6 @@
       "name": "Use Acid Statue",
       "requires": [
         "h_activateAcidChozo",
-        {"obstaclesNotCleared": ["A"]},
         "h_usePowerBomb",
         {"heatFrames": 1020}
       ],
@@ -590,7 +788,6 @@
       "requires": [
         "h_heatedCrystalFlash",
         "h_activateAcidChozo",
-        {"obstaclesNotCleared": ["A"]},
         {"heatFrames": 920}
       ],
       "setsFlags": ["f_UsedAcidChozoStatue"],
@@ -603,7 +800,6 @@
       "name": "Acid Statue with Reserve Trigger",
       "requires": [
         "h_activateAcidChozo",
-        {"obstaclesNotCleared": ["A"]},
         "h_usePowerBomb",
         {"heatFrames": 180},
         "canManageReserves",
@@ -823,6 +1019,40 @@
       "devNote": "The extra Power Bomb or bombs is to get through the bomb blocks."
     },
     {
+      "id": 53,
+      "link": [5, 5],
+      "name": "Magdollite Farm",
+      "requires": [
+        "h_heatProof",
+        {"cycleFrames": 330},
+        {"or": [
+          {"and": [
+            "canTrickyJump",
+            "canCameraManip"
+          ]},
+          "Plasma",
+          "ScrewAttack",
+          {"and": [
+            "Wave",
+            {"or": [
+              "Spazer",
+              "Ice"
+            ]}
+          ]}
+        ]},
+        {"or": [
+          "canTrickyJump",
+          {"cycleFrames": 200}
+        ]}
+      ],
+      "farmCycleDrops": [{"enemy": "Magdollite", "count": 3}],
+      "flashSuitChecked": true,
+      "note": [
+        "The Magdollite can be farmed from the left without activating the Holtzes.",
+        "Or from the right by trapping the Holtz by quickly jumping past them."
+      ]
+    },
+    {
       "id": 39,
       "link": [5, 5],
       "name": "Crystal Flash",
@@ -833,6 +1063,6 @@
     }
   ],
   "notables": [],
-  "nextStratId": 46,
+  "nextStratId": 54,
   "nextNotableId": 1
 }

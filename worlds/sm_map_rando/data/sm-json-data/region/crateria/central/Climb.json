@@ -84,7 +84,7 @@
       "doorEnvironments": [{"physics": "air"}],
       "locks": [
         {
-          "name": "Climb Top Right Gray Lock (to Crateria Supers Top)",
+          "name": "Climb Top Right Gray Lock (to Climb Supers Top)",
           "lockType": "permanent",
           "unlockStrats": [
             {
@@ -118,7 +118,7 @@
       "doorEnvironments": [{"physics": "air"}],
       "locks": [
         {
-          "name": "Climb Middle Right Escape Lock (to Crateria supers Bottom)",
+          "name": "Climb Middle Right Escape Lock (to Climb supers Bottom)",
           "lockType": "escapeFunnel",
           "lock": ["f_ZebesSetAblaze"],
           "unlockStrats": [
@@ -1140,6 +1140,18 @@
       "devNote": "PBs cannot be used, as they will solidify the bomb blocks."
     },
     {
+      "id": 108,
+      "link": [3, 4],
+      "name": "Super Sink",
+      "entranceCondition": {
+        "comeInWithSuperSink": {}
+      },
+      "requires": [],
+      "note": [
+        "Enter the room with a super sink, in order to clip down through several screens and reach the door below."
+      ]
+    },
+    {
       "id": 46,
       "link": [3, 6],
       "name": "Base",
@@ -1284,7 +1296,7 @@
         "comeInWithDoorStuckSetup": {}
       },
       "requires": [
-        "canXRayClimb",
+        "canLongXRayClimb",
         "canBeVeryPatient"
       ],
       "flashSuitChecked": true,
@@ -1301,7 +1313,8 @@
         }
       },
       "requires": [
-        "canXRayClimb",
+        "canComplexGMode",
+        "canLongXRayClimb",
         "canBeVeryPatient"
       ],
       "bypassesDoorShell": true,
@@ -1323,26 +1336,18 @@
       },
       "requires": [
         {"or": [
+          "h_artificialMorphSpringBall",
+          "h_artificialMorphBombs",
+          "h_fourTileJumpMorph"
+        ]},
+        {"or": [
+          "Morph",
+          "h_ZebesNotAwake",
           {"and": [
             "h_artificialMorphSpringBall",
             {"or": [
               "HiJump",
               "canTrickyDodgeEnemies"
-            ]}
-          ]},
-          {"and": [
-            "Morph",
-            {"or": [
-              "h_artificialMorphSpringBall",
-              "h_artificialMorphBombs",
-              "h_fourTileJumpMorph"
-            ]}
-          ]},
-          {"and": [
-            "h_ZebesNotAwake",
-            {"or": [
-              "h_artificialMorphSpringBall",
-              "h_artificialMorphBombs"
             ]}
           ]}
         ]}
@@ -1395,7 +1400,7 @@
       "flashSuitChecked": true,
       "note": [
         "Overload PLMs using the scroll block at the top of the stairs next to the bomb blocks.",
-        "Place PBs as high as possible to occasionally kill multiple pirates at a time."
+        "Place Power Bombs as high as possible to occasionally kill multiple pirates at a time."
       ]
     },
     {
@@ -1531,14 +1536,11 @@
         {"or": [
           "h_artificialMorphSpringBall",
           "h_artificialMorphBombs",
-          {"and": [
-            "Morph",
-            "h_fourTileJumpMorph"
-          ]}
+          "h_fourTileJumpMorph"
         ]}
       ],
       "flashSuitChecked": true,
-      "devNote": "PBs cannot be used, as they will solidify the bomb blocks."
+      "devNote": "A Power Bomb cannot be used, as it will solidify the bomb block."
     },
     {
       "id": 66,
@@ -1761,7 +1763,7 @@
         "ScrewAttack",
         "Morph",
         "canBeVeryPatient",
-        "canXRayClimb"
+        "canLongXRayClimb"
       ],
       "flashSuitChecked": true,
       "note": [
@@ -2058,6 +2060,38 @@
       "note": "Starting with a crouch, diagonal shinespark to the top to break the bomb blocks to the morph tunnels on the right."
     },
     {
+      "id": 107,
+      "link": [6, 3],
+      "name": "Behemoth Spark while Farming",
+      "requires": [
+        {"notable": "Behemoth Shinespark"},
+        "h_ZebesIsAwake",
+        "canTrickyDodgeEnemies",
+        "canFarmWhileShooting",
+        "Morph",
+        "canMoonfall",
+        {"or": [
+          "Plasma",
+          "ScrewAttack",
+          "canInsaneJump"
+        ]},
+        {"resourceMissingAtMost": [{"type": "Missile", "count": 0}]},
+        {"canShineCharge": {"usedTiles": 28, "openEnd": 0}},
+        {"shinespark": {"frames": 50, "excessFrames": 3}},
+        {"obstaclesCleared": ["A"]},
+        {"or": [
+          "h_ClimbWithoutLava",
+          {"obstaclesNotCleared": ["B"]}
+        ]}
+      ],
+      "note": [
+        "Manipulate the Pirates to the right wall while climbing the room.",
+        "Kill all the Pirates while moonfalling down the right side.",
+        "Then quickly gain a shinecharge, crouch, and perform a diagonal shinespark to the top,",
+        "collecting the drops along the way."
+      ]
+    },
+    {
       "id": 94,
       "link": [6, 3],
       "name": "Behemoth Spark Top, Use Flash Suit",
@@ -2117,14 +2151,28 @@
         {"notable": "Behemoth Shinespark"},
         "Morph",
         {"canShineCharge": {"usedTiles": 28, "openEnd": 0}},
-        {"shinespark": {"frames": 147, "excessFrames": 124}},
+        {"or": [
+          {"shinespark": {"frames": 147, "excessFrames": 124}},
+          {"and": [
+            "h_ZebesIsAwake",
+            "canTrickyUseFrozenEnemies",
+            {"shinespark": {"frames": 24, "excessFrames": 1}}
+          ]}
+        ]},
         {"obstaclesCleared": ["A"]},
         {"or": [
           "h_ClimbWithoutLava",
           {"obstaclesNotCleared": ["B"]}
         ]}
       ],
-      "note": "Diagonal shinespark up the climb to break the bomb blocks to the morph tunnels on the right."
+      "note": [
+        "Diagonal shinespark up the climb to break the bomb blocks to the morph tunnels on the right.",
+        "A frozen Pirate can be used to stop the spark just above the bottom tunnel."
+      ],
+      "devNote": [
+        "FIXME: if Zebes is awake, it is possible to farm the Pirates in the room after breaking the blocks;",
+        "this also applies to the other forms of Behemoth spark in this room (as long as the lava is not active)."
+      ]
     },
     {
       "id": 98,
@@ -2247,15 +2295,11 @@
         ]},
         {"or": [
           {"and": [
-            {"resetRoom": {
-              "nodes": [1]
-            }},
+            {"resetRoom": {"nodes": [1]}},
             {"cycleFrames": 2350}
           ]},
           {"and": [
-            {"resetRoom": {
-              "nodes": [2]
-            }},
+            {"resetRoom": {"nodes": [2]}},
             {"or": [
               "h_useMorphBombs",
               "ScrewAttack"
@@ -2263,23 +2307,17 @@
             {"cycleFrames": 2270}
           ]},
           {"and": [
-            {"resetRoom": {
-              "nodes": [3]
-            }},
+            {"resetRoom": {"nodes": [3]}},
             "h_useMorphBombs",
             {"cycleFrames": 2695}
           ]},
           {"and": [
-            {"resetRoom": {
-              "nodes": [4]
-            }},
+            {"resetRoom": {"nodes": [4]}},
             "h_useMorphBombs",
             {"cycleFrames": 2480}
           ]},
           {"and": [
-            {"resetRoom": {
-              "nodes": [5]
-            }},
+            {"resetRoom": {"nodes": [5]}},
             {"cycleFrames": 1905}
           ]}
         ]}
@@ -2345,6 +2383,6 @@
       ]
     }
   ],
-  "nextStratId": 107,
+  "nextStratId": 109,
   "nextNotableId": 7
 }

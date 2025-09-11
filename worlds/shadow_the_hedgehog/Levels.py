@@ -160,7 +160,7 @@ def IsRegionRestrictionApplication(region_restriction, options, starting_items):
         return False
 
     if region_restriction == REGION_RESTRICTION_TYPES.Explosion and not \
-            (options.weapon_sanity_unlock and options.object_units):
+            (options.weapon_sanity_unlock or options.object_units):
         return False
 
     if region_restriction == REGION_RESTRICTION_TYPES.Explosion and "Bombs" in starting_items:
@@ -1014,8 +1014,8 @@ def GetLevelObjectNames(stageId, alignmentId, objectName, i):
 # Minimum requirements for minimal traversal (so add 1)
 MINIMUM_STAGE_REQUIREMENTS = \
 [
-    (STAGE_WESTOPOLIS, MISSION_ALIGNMENT_HERO, 1),
-    (STAGE_WESTOPOLIS, MISSION_ALIGNMENT_DARK, 1),
+    (STAGE_WESTOPOLIS, MISSION_ALIGNMENT_HERO, 2),
+    (STAGE_WESTOPOLIS, MISSION_ALIGNMENT_DARK, 6),
 
     (STAGE_GLYPHIC_CANYON, MISSION_ALIGNMENT_HERO, 1),
 
@@ -1027,6 +1027,7 @@ MINIMUM_STAGE_REQUIREMENTS = \
     (STAGE_DEATH_RUINS, MISSION_ALIGNMENT_HERO, 5),
 
     (STAGE_AIR_FLEET, MISSION_ALIGNMENT_HERO, 9),
+    (STAGE_IRON_JUNGLE, MISSION_ALIGNMENT_DARK, 2),
     # Iron Jungle Dark, probably not?
     (STAGE_SPACE_GADGET, MISSION_ALIGNMENT_DARK, 1),
     (STAGE_BLACK_COMET, MISSION_ALIGNMENT_DARK, 1),

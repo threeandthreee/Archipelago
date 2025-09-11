@@ -180,6 +180,24 @@ class JunkTier(Range):
     range_end = 8
     default = 1
 
+class JItems(Choice):
+    """Affects whether items not in the US release of FF4 will appear in shops or the item pool.
+    Does not affect enemy drops/steals."""
+    display_name = "J Items"
+    option_allow = 0
+    option_no_shops = 1
+    option_no_itempool = 2
+    option_none = 3
+
+class MIABRandomization(Choice):
+    """Affects where MIABs are randomized to and their contents.
+    Randomized will randomize the location of MIAB chests, while Vanilla keeps them in their default location.
+    Vanilla Exclude acts as vanilla, but progression will never be placed in their locations."""
+    display_name = "MIAB Randomization"
+    option_randomized = 0
+    option_vanilla = 1
+    option_vanilla_exclude = 2
+
 class ShopRandomization(Choice):
     """Affects the placement of items in shops. See FE documentation for more for now."""
     display_name = "Shop Randomization"
@@ -378,10 +396,12 @@ class FF4FEOptions(PerGameCommonOptions):
     PartySize: PartySize
     CharactersPermajoin: CharactersPermajoin
     CharactersPermadie: CharactersPermadie
+    MIABRandomization: MIABRandomization
     ItemRandomization: ItemRandomization
     MinTier: MinTier
     MaxTier: MaxTier
     JunkTier: JunkTier
+    JItems: JItems
     ShopRandomization: ShopRandomization
     FreeShops: FreeShops
     NoAdamantArmors: NoAdamantArmors
@@ -423,7 +443,8 @@ ff4fe_option_groups = [
         MaxTier,
         JunkTier,
         JunkedItems,
-        KeptItems
+        KeptItems,
+        JItems
     ]),
     OptionGroup("Challenge Flags", [
         HeroChallenge,
@@ -437,6 +458,7 @@ ff4fe_option_groups = [
         WackyChallenge
     ]),
     OptionGroup("Miscellaneous Flags", [
+        MIABRandomization,
         ShopRandomization,
         FreeShops,
         StarterKitOne,

@@ -67,6 +67,28 @@ class EtankColorBlue(Range):
     range_end = 255
     default = 148
 
+class ItemDotChange(Choice):
+    """
+    This option affects what happens to item dots on the map after item collection:
+    - Fade: Item dots fade to a darker color but remain visible.
+    - Disappear: Item dots disappear entirely.
+    """ 
+    display_name = "Item dot change"
+    option_Fade = 0
+    option_Disappear = 1
+    default = 0
+
+class TransitionLetters(Choice):
+    """
+    This option affects how transitions between areas are marked on the map:
+    - Arrows: An arrow is used, showing the direction of the transition.
+    - Letters: A letter is used, the first letter of the name of the neighboring area.
+    """ 
+    option_Arrows = 0
+    option_Letters = 1
+    display_name = "Transition letters"
+    default = 1
+
 class RoomTheme(Choice):
     """
     This setting controls the palettes for rooms (affecting foregrounds and backgrounds):
@@ -190,16 +212,6 @@ class TileTheme(Choice):
     option_Invisible = 17
     default = 0
 
-    def current_key_pascal(self):
-        """Converts a snake_case string to PascalCase."""
-        # Replace underscores with spaces
-        temp_string = self.current_key.replace("_", " ")
-        # Capitalize the first letter of each word
-        titled_string = temp_string.title()
-        # Remove spaces to form PascalCase
-        pascal_case_string = titled_string.replace(" ", "")
-        return pascal_case_string
-
 class ReserveHudStyle(Choice):
     """
     The setting affects how reserve tanks are displayed on the HUD.
@@ -223,6 +235,12 @@ class ScrewAttackAnimation(Choice):
     option_Vanilla = 0
     option_Split = 1
     default = 0
+
+class RoomNames(DefaultOnToggle):
+    """
+    If enabled, then the name of the current room is shown at the bottom of the pause menu map screen.
+    """ 
+    display_name = "Room names"
 
 class ControllerButton(Choice):
     #option_Default = 0
@@ -344,7 +362,7 @@ class MapRandoOptions(OptionDict):
     Otherwise, you can use your preferred Map Rando Settings Presets on maprando.com, export its JSON and directly embed it under here like so:
 
     map_rando_options: {
-      "version": 118,
+      "version": 119,
       "name": my_custom_preset,
         ...
     }
@@ -357,7 +375,7 @@ class MapRandoOptions(OptionDict):
     display_name = "Map Rando Options"
     value: dict[str, dict[str, typing.Any]]
     default =   {
-                    "version": 118,
+                    "version": 119,
                     "skill_assumption_settings": {
                         "preset": "Basic"
                     },
@@ -380,8 +398,6 @@ class MapRandoOptions(OptionDict):
                         "wall_jump": "Vanilla",
                         "etank_refill": "Vanilla",
                         "area_assignment": "Standard",
-                        "item_dot_change": "Fade",
-                        "transition_letters": True,
                         "door_locks_size": "Large",
                         "maps_revealed": "No",
                         "map_station_reveal": "Full",
@@ -406,6 +422,8 @@ class SMMROptions(PerGameCommonOptions):
     etank_color_red: EtankColorRed
     etank_color_green: EtankColorGreen
     etank_color_blue: EtankColorBlue
+    item_dot_change: ItemDotChange
+    transition_letters: TransitionLetters
     room_theme: RoomTheme
     door_colors: DoorColors
     music: Music
@@ -416,6 +434,7 @@ class SMMROptions(PerGameCommonOptions):
     tile_theme: TileTheme
     reserve_hud_style: ReserveHudStyle
     screw_attack_animation: ScrewAttackAnimation
+    room_names: RoomNames
     shot: Shot
     jump: Jump
     dash: Dash

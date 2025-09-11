@@ -285,16 +285,35 @@
       "link": [1, 1],
       "name": "G-Mode Setup - Get Hit By Gamet",
       "requires": [
+        "canComplexGMode",
+        "canTrickyUseFrozenEnemies",
+        "SpaceJump"
+      ],
+      "exitCondition": {
+        "leaveWithGModeSetup": {}
+      },
+      "flashSuitChecked": true,
+      "note": [
+        "Lure the Gamets to the top left door with Ice and Space Jump.",
+        "First lure the Gamets vertically using the Kamer platform and Ice, which is much easier with HiJump disabled.",
+        "Then freeze them again after they separate and are high enough to align with the door.",
+        "Space Jump to the left of them and refreeze them as they move to the left, then quickly climb back up to the top left before they thaw."
+      ]
+    },
+    {
+      "id": 88,
+      "link": [1, 1],
+      "name": "G-Mode Setup - Get Hit By Gamet, Tricky Manipulation",
+      "requires": [
+        "canTrickyGMode",
         "canTrickyUseFrozenEnemies",
         {"or": [
-          "SpaceJump",
           "Grapple",
           {"and": [
-            "canTrickyJump",
             "HiJump",
             {"or": [
               "SpeedBooster",
-              "canInsaneJump",
+              "canWalljump",
               "canSpringBallJumpMidAir"
             ]}
           ]}
@@ -305,12 +324,13 @@
       },
       "flashSuitChecked": true,
       "note": [
-        "Lure the Gamets to the top left door with Ice and Space Jump, Grapple, or HiJump.",
+        "Lure the Gamets to the top left door with Ice and Grapple or HiJump.",
         "First lure the Gamets vertically using the Kamer platform and Ice, which is much easier with HiJump disabled.",
         "Then freeze them again after they separate and are high enough to align with the door.",
         "With HiJump and another jump assist, jump to the left of the Gamets as they thaw and refreeze them a bit more to the left so that they will be on screen when Samus is on the left ledge.",
         "It is possible with HiJump and Ice alone, but much trickier. Use the Gamets as a platform or perform a running jump from the Kamer platform to get up to the left door."
-      ]
+      ],
+      "devNote": "This is possible with fewer requirements, but it is already pretty terrible."
     },
     {
       "id": 8,
@@ -488,16 +508,22 @@
     {
       "id": 17,
       "link": [2, 6],
-      "name": "G-Mode Morph",
+      "name": "Indirect G-Mode Morph",
       "entranceCondition": {
         "comeInWithGMode": {
-          "mode": "any",
+          "mode": "indirect",
           "morphed": true
         },
-        "comesThroughToilet": "no"
+        "comesThroughToilet": "any"
       },
-      "requires": [],
-      "flashSuitChecked": true
+      "requires": [
+        "h_artificialMorphMovement"
+      ],
+      "flashSuitChecked": true,
+      "devNote": [
+        "It is possible to do this with direct G-mode, but it requires entering the room at the very edge of the transition, which isn't modeled.",
+        "it could be possible to get to wherever 6 is defined with Power Bombs, but there is nothing useful to do at 6, except maybe unlock door 3, which isn't modeled."
+      ]
     },
     {
       "id": 52,
@@ -608,7 +634,10 @@
         "canHorizontalDamageBoost",
         {"enemyDamage": {"enemy": "Gamet", "type": "contact", "hits": 1}}
       ],
-      "note": "Use the moving platform (Kamer) to elevate the Gamets."
+      "note": [
+        "Use the moving platform (Kamer) to elevate the Gamets, then damage boost off of them to get to the top left.",
+        "Alternatively, it is possible to wall jump off of the right overhang and damage boost from the ceiling Ripper, but it is likely more difficult."
+      ]
     },
     {
       "id": 60,
@@ -797,7 +826,7 @@
       "note": [
         "Exit the previous room with Samus in a standing pose (while grappled).",
         "After teleporting, press right to release Grapple while staying standing (not being forced into a crouch).",
-        "Then X-ray climb to get up to the door transition, without needing to open the door."
+        "Then X-ray climb 1 screen to get up to the door transition, without needing to open the door."
       ]
     },
     {
@@ -876,8 +905,10 @@
       "link": [3, 3],
       "name": "Gamet Farm",
       "requires": [
-        {"refill": ["Energy", "Missile", "Super", "PowerBomb"]}
-      ]
+        {"simpleCycleFrames": 90},
+        {"cycleFrames": 20}
+      ],
+      "farmCycleDrops": [{"enemy": "Gamet", "count": 5}]
     },
     {
       "id": 28,
@@ -943,7 +974,8 @@
       ],
       "note": [
         "Crouch jump then down grab starting from the moving platform. A very fast crouch jump is necessary in order to not have lowered the platform too low."
-      ]
+      ],
+      "devNote": "This is possible even with a blue suit, by crouching and quickly using X-ray, waiting for the shinecharge frames to end, and then jumping and down grabbing."
     },
     {
       "id": 70,
@@ -1189,6 +1221,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         "canXRayClimb"
       ],
       "flashSuitChecked": true,
@@ -1205,6 +1238,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         "canXRayClimb"
       ],
       "bypassesDoorShell": true,
@@ -1337,7 +1371,7 @@
       "note": [
         "Exit the previous room with Samus in a standing pose (while grappled).",
         "After teleporting, press right to release Grapple while staying standing (not being forced into a crouch).",
-        "Then X-ray climb to get up to the door transition, without needing to open the door.",
+        "Then X-ray climb 1 screen to get up to the door transition, without needing to open the door.",
         "Samus will not be visible during the climb."
       ]
     },
@@ -1538,7 +1572,7 @@
       "link": [6, 1],
       "name": "G-Mode Morph IBJ",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         {"or": [
           "h_artificialMorphLongIBJ",
           {"and": [
@@ -1554,26 +1588,13 @@
       "link": [6, 4],
       "name": "G-Mode Morph IBJ",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         {"or": [
           "h_artificialMorphLongIBJ",
           "h_artificialMorphJumpIntoIBJ"
         ]}
       ],
       "flashSuitChecked": true
-    },
-    {
-      "id": 76,
-      "link": [6, 4],
-      "name": "G-Mode Morph Spring Ball Bomb Jump",
-      "requires": [
-        "canEnterGMode",
-        "canTrickyJump",
-        "h_artificialMorphSpringBallBombJump"
-      ],
-      "flashSuitChecked": true,
-      "note": "It is possible to perform a Spring Ball Bomb Jump from the Kamer, but it is rarely useful.",
-      "devNote": "The Spring Ball Bomb Jump is likely only useful for avoiding a crouch jump to preserve a blue suit."
     }
   ],
   "notables": [
@@ -1583,6 +1604,6 @@
       "note": "Use the moving platform (Kamer) to elevate the Gamets."
     }
   ],
-  "nextStratId": 88,
+  "nextStratId": 89,
   "nextNotableId": 3
 }

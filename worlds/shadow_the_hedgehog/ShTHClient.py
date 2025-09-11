@@ -41,6 +41,8 @@ valid_game_bytes = [
     bytes(SHADOW_THE_HEDGEHOG_GAME_ID_SX, "utf-8")
 ]
 
+SAVE_VALUE_CHECK = False
+
 @dataclass
 class CharacterAddress:
     name: str
@@ -795,7 +797,6 @@ class ShTHCommandProcessor(ClientCommandProcessor):
         if len(item_weights.keys()) == 0:
             logger.info("Nothing to hint on")
 
-        print(item_weights)
         randomised_item = random.sample(list(item_weights.keys()), k=1, weights=list(item_weights.values()))[0]
         logger.info("Recommended item to hint for is:%s", randomised_item)
 
@@ -1011,7 +1012,9 @@ def GetStageClearAddresses():
 
 
 def writeBytes(addr, data):
-    #print("write=", addr, data)
+    #traceback.print_stack()
+
+    print("write=", addr, data)
     dolphin_memory_engine.write_bytes(addr, data)
 
 
@@ -1560,7 +1563,6 @@ class ShTHContext(CommonContext):
                 for item in args["items"]:
                     self.items_to_handle.append((item, self.last_rcvd_index))
                     self.last_rcvd_index += 1
-                    #print("lrcvdi", self.last_rcvd_index, item)
             self.items_to_handle.sort(key=lambda v: v[1])
         elif cmd == "Retrieved":
             pass
@@ -1760,7 +1762,7 @@ async def check_save_loaded(ctx):
     ctx.save_rejected = False
     if loaded_bytes == 0:
         first_game_load = True
-    elif loaded_bytes != ctx.save_value:
+    elif SAVE_VALUE_CHECK and loaded_bytes != ctx.save_value:
         logger.error("Unrecognised save value. Please load from the correct/new save.")
         ctx.save_rejected = True
         loaded = False
@@ -1788,7 +1790,7 @@ async def check_save_loaded(ctx):
                     ctx.available_levels.append(stage)
 
             if not is_mission_completable(ctx, stage, alignment):
-                print("IMC", stage, alignment, "not completable")
+                #print("IMC", stage, alignment, "not completable")
                 continue
 
             time_bytes = dolphin_memory_engine.read_bytes(clear_address_time, 6)
@@ -2085,7 +2087,7 @@ def is_mission_completable(ctx, stage, alignment):
     if clear.requirement_count is None:
         return True
 
-    stage_detail = ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_COMPLETION,
+    stage_detail = ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_OBJECTIVE,
                                                   clear.mission_object_name, ctx,
                                                                   clear.stageId, clear.alignmentId,
                                                                   ctx.override_settings)
@@ -2095,6 +2097,11 @@ def is_mission_completable(ctx, stage, alignment):
     if not is_objective_sanity or\
         ctx.objective_sanity_behaviour == Options.ObjectiveSanityBehaviour.option_base_clear:
         return True
+
+    stage_detail = ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_COMPLETION,
+                                                             clear.mission_object_name, ctx,
+                                                             clear.stageId, clear.alignmentId,
+                                                             ctx.override_settings)
 
     max_required = ShadowUtils.getMaxRequired(stage_detail, clear.requirement_count,
         stage, alignment, ctx.override_settings)
@@ -2129,7 +2136,6 @@ def complete_completable_levels(ctx):
             continue
 
         completable = is_mission_completable(ctx, mission.stageId, mission.alignmentId)
-        print("Completable:", mission, completable)
         if not completable:
             continue
 
@@ -2910,7 +2916,6 @@ def get_last_index(ctx):
 
         current_potential_bytes = dolphin_memory_engine.read_bytes(decided_last_index_address, 4)
         current_potential = int.from_bytes(current_potential_bytes[1:3], byteorder="big")
-        print("Get last index message", current_potential, decided_last_index_address)
         ctx.last_save_index = current_potential
 
     return ctx.last_save_index
@@ -2924,7 +2929,6 @@ def get_last_index_message(ctx):
 
         current_potential_bytes = dolphin_memory_engine.read_bytes(decided_last_index_address, 4)
         current_potential = int.from_bytes(current_potential_bytes[1:3], byteorder="big")
-        print("Get last index message", current_potential, decided_last_index_address)
         ctx.last_save_index = current_potential
 
     if ctx.last_save_index_message is None:
@@ -3483,8 +3487,6 @@ async def handle_objects(ctx, current_level):
             if object.index not in ctx.level_state["spawn_messages"]:
                 are_locations = [o for o in object_locations if o.locationId in ctx.server_locations
                                  and o.locationId == object_id]
-                print("LSD", loaded_spawn_data, object.index, ctx.level_state["spawn_messages"],
-                      ctx.level_state["spawn_message"], object.name, are_locations)
                 if len(are_locations) > 0:
                     should_display = len([ o for o in are_locations if o.locationId in ctx.missing_locations]) > 0
 
@@ -3749,7 +3751,7 @@ async def handle_objects(ctx, current_level):
             object_values_complete.append(0x8)
 
         if object.object_type in [
-                                  Objects.ObjectType.GUN_SOLIDER
+                                  Objects.ObjectType.GUN_SOLDIER
                                   ]:
             object_values_complete.append(0x9)
             #object_values_complete.append(0xB)
@@ -3927,7 +3929,7 @@ def DisplayMessages(ctx):
         if next_message > last_index:
             rec_info = [ m[0] for m in messages if m[1] == next_message ][0]
 
-        if rec_info is not None:
+        if rec_info is not None and rec_info.item is not None and rec_info.item in info:
             message = f"Received {info[rec_info.item].name}"
 
         if message is not None:
@@ -4229,6 +4231,14 @@ async def update_level_behaviour(ctx, current_level, death):
     if heroInfo is not None and heroInfo.requirement_count is not None:
         hero_count = ctx.level_state["hero_count"]
 
+        location_details = ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_OBJECTIVE,
+                                                                     heroInfo.mission_object_name,
+                                                                     ctx, heroInfo.stageId,
+                                                                     heroInfo.alignmentId,
+                                                                     ctx.override_settings)
+
+        result_sanity = ShadowUtils.GetObjectiveSanityFlag(ctx, location_details)
+
         heroMaxAdjusted = ShadowUtils.getMaxRequired(
             ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_COMPLETION,
                                                       heroInfo.mission_object_name, ctx,
@@ -4249,22 +4259,32 @@ async def update_level_behaviour(ctx, current_level, death):
 
         hero_write = hero_count
 
-        if ctx.objective_sanity and ctx.objective_sanity_behaviour != Options.ObjectiveSanityBehaviour.option_default:
+        if (ctx.objective_sanity and ctx.objective_sanity_behaviour == Options.ObjectiveSanityBehaviour.option_base_clear
+                and result_sanity):
             hero_write = ctx.level_state["hero_progress"]
 
-        if ctx.objective_sanity and ctx.objective_sanity_behaviour != Options.ObjectiveSanityBehaviour.option_base_clear:
+        if ctx.objective_sanity and ctx.objective_sanity_behaviour != Options.ObjectiveSanityBehaviour.option_base_clear\
+                and result_sanity:
             restore_hero = True
 
         set_max_up = False
         hero_completable = ctx.level_state["hero_completable"]
         if hero_completable == COMPLETE_FLAG_OFF:
             set_max_up = True
-            if ctx.objective_sanity: #and ctx.objective_sanity_behaviour != Options.ObjectiveSanityBehaviour.option_base_clear:
+            if ctx.objective_sanity and result_sanity: #and ctx.objective_sanity_behaviour != Options.ObjectiveSanityBehaviour.option_base_clear:
                 hero_count_max = heroMaxAvailable + extra_increase
-            #elif ctx.objective_sanity:
-            #    hero_count_max = extra_increase
             else:
-                hero_count_max = heroMaxAdjusted
+                relevant_keys = [ l for l in Levels.MINIMUM_STAGE_REQUIREMENTS if
+                                  l[0] == current_level and l[1] == MISSION_ALIGNMENT_HERO ]
+                if len(relevant_keys) == 1:
+                    max_value = relevant_keys[0][2] + 1
+                    if heroMaxAdjusted < max_value:
+                        hero_count_max = max_value
+                        logger.error("Issue with total hero enemies from created seed")
+                    else:
+                        hero_count_max = heroMaxAdjusted
+                else:
+                        hero_count_max = heroMaxAdjusted
             ctx.level_state["hero_completable"] = COMPLETE_FLAG_OFF_SET
         elif hero_completable == COMPLETE_FLAG_READY:
             set_max_up = True
@@ -4289,7 +4309,7 @@ async def update_level_behaviour(ctx, current_level, death):
             new_bytes = new_count.to_bytes(hero_address_size, byteorder='big')
             writeBytes(hero_address_total, new_bytes)
 
-        if handle_count > 0 and hero_write is not None and ctx.objective_sanity\
+        if handle_count > 0 and hero_write is not None and ctx.objective_sanity and result_sanity\
                 and ctx.objective_sanity_behaviour != Options.ObjectiveSanityBehaviour.option_base_clear:
             new_count = hero_write
             new_bytes = new_count.to_bytes(hero_address_size, byteorder='big')
@@ -4297,7 +4317,14 @@ async def update_level_behaviour(ctx, current_level, death):
 
     if darkInfo is not None and darkInfo.requirement_count is not None:
         dark_count = ctx.level_state["dark_count"]
-        dark_write = dark_count
+
+        location_details = ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_OBJECTIVE,
+                                                                     darkInfo.mission_object_name,
+                                                                     ctx, darkInfo.stageId,
+                                                                     darkInfo.alignmentId,
+                                                                     ctx.override_settings)
+
+        result_sanity = ShadowUtils.GetObjectiveSanityFlag(ctx, location_details)
 
         darkMaxAdjusted = ShadowUtils.getMaxRequired(
             ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_COMPLETION,
@@ -4318,18 +4345,32 @@ async def update_level_behaviour(ctx, current_level, death):
             difference_over = 0
 
         set_max_up = False
-        if ctx.objective_sanity and ctx.objective_sanity_behaviour != Options.ObjectiveSanityBehaviour.option_base_clear:
+        dark_write = dark_count
+        if (ctx.objective_sanity and ctx.objective_sanity_behaviour == Options.ObjectiveSanityBehaviour.option_base_clear
+                and result_sanity):
+            dark_write = ctx.level_state["dark_progress"]
+
+        if ctx.objective_sanity and ctx.objective_sanity_behaviour != Options.ObjectiveSanityBehaviour.option_base_clear\
+                and result_sanity:
             restore_dark = True
 
         dark_completable = ctx.level_state["dark_completable"]
         if dark_completable == COMPLETE_FLAG_OFF:
             set_max_up = True
-            if ctx.objective_sanity: #and ctx.objective_sanity_behaviour != Options.ObjectiveSanityBehaviour.option_base_clear:
+            if ctx.objective_sanity and result_sanity: #and ctx.objective_sanity_behaviour != Options.ObjectiveSanityBehaviour.option_base_clear:
                 dark_count_max = darkMaxAvailable + extra_increase
-            #elif ctx.objective_sanity:
-            #    dark_count_max = extra_increase
             else:
-                dark_count_max = darkMaxAdjusted
+                relevant_keys = [l for l in Levels.MINIMUM_STAGE_REQUIREMENTS if
+                                 l[0] == current_level and l[1] == MISSION_ALIGNMENT_DARK]
+                if len(relevant_keys) == 1:
+                    max_value = relevant_keys[0][2] + 1
+                    if darkMaxAdjusted < max_value:
+                        logger.error("Issue with total dark enemies from created seed")
+                        dark_count_max = max_value
+                    else:
+                        dark_count_max = darkMaxAdjusted
+                else:
+                    dark_count_max = darkMaxAdjusted
             ctx.level_state["dark_completable"] = COMPLETE_FLAG_OFF_SET
         elif dark_completable == COMPLETE_FLAG_READY:
             set_max_up = True
@@ -4350,8 +4391,9 @@ async def update_level_behaviour(ctx, current_level, death):
         if dark_count >= darkMaxAdjusted or ctx.objective_sanity_behaviour == Options.ObjectiveSanityBehaviour.option_base_clear:
             dark_max_hit = True
 
-        if ctx.objective_sanity and ctx.objective_sanity_behaviour != Options.ObjectiveSanityBehaviour.option_default:
-            dark_write = ctx.level_state["dark_progress"]
+        #if ctx.objective_sanity and ctx.objective_sanity_behaviour != Options.ObjectiveSanityBehaviour.option_default and \
+        #        result_sanity:
+        #    dark_write = ctx.level_state["dark_progress"]
 
         if set_max_up and dark_address_total is not None:
             #dark_total_address = dark_address - 16
@@ -4366,14 +4408,12 @@ async def update_level_behaviour(ctx, current_level, death):
 
             new_count = dark_count_max
             new_bytes = new_count.to_bytes(dark_address_size, byteorder='big')
-            print("Write dark total to", new_bytes)
             writeBytes(dark_address_total, new_bytes)
 
-        if handle_count > 0 and dark_write is not None and ctx.objective_sanity \
+        if handle_count > 0 and dark_write is not None and ctx.objective_sanity and result_sanity\
                 and ctx.objective_sanity_behaviour != Options.ObjectiveSanityBehaviour.option_base_clear:
             new_count = dark_write
             new_bytes = new_count.to_bytes(dark_address_size, byteorder='big')
-            print("Write dark to", new_bytes)
             writeBytes(dark_address, new_bytes)
 
     ## Handle new events
@@ -4519,7 +4559,6 @@ async def update_level_behaviour(ctx, current_level, death):
                 ctx.level_state["gun_progress"] -= 1
 
         if current_count > gun_count:
-            #print("gun count increased --", current_count, gun_count)
             if current_count > gunInfo.total_count + extra_increase:
                 if ctx.info_logging:
                     logger.error("Error with gun count: %d %d", current_count, gunInfo.total_count + extra_increase)
@@ -4540,7 +4579,6 @@ async def update_level_behaviour(ctx, current_level, death):
                 ctx.level_state["egg_progress"] -= 1
 
         if current_count > egg_count:
-            #print("egg count increased --", current_count, egg_count)
             if current_count > eggInfo.total_count + extra_increase:
                 if ctx.info_logging:
                     logger.error("Error with egg count: %d %d", current_count, eggInfo.total_count + extra_increase)
@@ -4762,7 +4800,6 @@ def resetGameState(ctx):
 
 async def check_charactersanity(ctx, level):
     if level is None:
-        #print("Nothing to do")
         return
 
     messages = []
@@ -4776,7 +4813,6 @@ async def check_charactersanity(ctx, level):
     new_met_characters = []
 
     if "characters_set" not in ctx.level_state:
-        #print("Loading -- unset")
         check = True
         set_state = False
     elif ctx.level_state["characters_set"]:
@@ -4784,7 +4820,6 @@ async def check_charactersanity(ctx, level):
         set_state = True
         check = True
     else:
-        #print("Set and is false, unloaded")
         check = True
         set_state = True
 
@@ -4814,17 +4849,14 @@ async def check_charactersanity(ctx, level):
                 char_seen = dolphin_memory_engine.read_bytes(relevantChar.met_address, 1)
                 char_seen_value = int.from_bytes(char_seen, byteorder='big')
                 if char_seen_value == 0:
-                    print("Force character seen", character)
                     new_value = 1
                     new_bytes = new_value.to_bytes(1, byteorder='big')
                     writeBytes(relevantChar.met_address, new_bytes)
 
         if set_state:
-            #print("Set to true")
             ctx.level_state["characters_set"] = True
 
     if set_state and len(new_met_characters) > 0:
-        #print("Set met charatcers")
         ctx.characters_met.extend(new_met_characters)
 
     if len(messages) > 0 and set_state:

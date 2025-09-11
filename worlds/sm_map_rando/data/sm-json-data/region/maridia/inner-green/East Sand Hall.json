@@ -125,6 +125,90 @@
       }
     },
     {
+      "id": 73,
+      "link": [1, 1],
+      "name": "Evir Farm (1 Evir, Grapple)",
+      "requires": [
+        {"resetRoom": {"nodes": [1]}},
+        "canSuitlessMaridia",
+        "Grapple",
+        "canDodgeWhileShooting",
+        {"or": [
+          {"and": [
+            "Plasma",
+            {"cycleFrames": 180}
+          ]},
+          {"and": [
+            "Wave",
+            {"cycleFrames": 240}
+          ]},
+          {"and": [
+            "Spazer",
+            "canFarmWhileShooting",
+            {"cycleFrames": 280}
+          ]}
+        ]}
+      ],
+      "farmCycleDrops": [{"enemy": "Evir", "count": 1}],
+      "note": [
+        "Fire angle-down shots to kill the first Evir from safely on the ledge,",
+        "then collect the drop using Grapple.",
+        "Crouching can help in reaching the Evir's drop if it is low."
+      ]
+    },
+    {
+      "id": 74,
+      "link": [1, 1],
+      "name": "Evir Farm (2 Evirs)",
+      "requires": [
+        {"resetRoom": {"nodes": [1]}},
+        "canPlayInSand",
+        "canDodgeWhileShooting",
+        {"or": [
+          {"and": [
+            "Gravity",
+            "ScrewAttack",
+            {"cycleFrames": 320}
+          ]},
+          {"and": [
+            "Plasma",
+            {"cycleFrames": 330},
+            {"or": [
+              "Gravity",
+              {"and": [
+                "canSuitlessMaridia",
+                "HiJump",
+                {"cycleFrames": 50}
+              ]}
+            ]}
+          ]},
+          {"and": [
+            {"or": [
+              "Wave",
+              "Spazer"
+            ]},
+            "canFarmWhileShooting",
+            {"cycleFrames": 975},
+            {"or": [
+              "Gravity",
+              {"and": [
+                "canSuitlessMaridia",
+                "HiJump",
+                {"cycleFrames": 90}
+              ]}
+            ]}
+          ]}
+        ]}
+      ],
+      "farmCycleDrops": [{"enemy": "Evir", "count": 2}],
+      "note": [
+        "If Screw Attack or Plasma are available, farm the two Evirs closest to the door.",
+        "With Wave or Spazer, it won't be possible to kill the second Evir in time,",
+        "in which case the room can be crossed to reach a third one."
+      ],
+      "devNote": ["Farming a third Evir is possible but would rarely be worthwhile."]
+    },
+    {
       "id": 2,
       "link": [1, 1],
       "name": "Crystal Flash",
@@ -138,7 +222,11 @@
       "link": [1, 1],
       "name": "G-Mode Setup - Get Hit By Evir Projectile",
       "requires": [
-        "h_navigateUnderwater"
+        "h_navigateUnderwater",
+        {"or": [
+          "Gravity",
+          "canComplexGMode"
+        ]}
       ],
       "exitCondition": {
         "leaveWithGModeSetup": {}
@@ -414,6 +502,7 @@
       },
       "requires": [
         "canSuitlessMaridia",
+        "h_crouchJumpDownGrab",
         "canInsaneJump"
       ],
       "flashSuitChecked": true,
@@ -421,7 +510,7 @@
         "The sand does not impede Samus in G-Mode.",
         "Carefully jump over the first two Evirs. Crouch against the pillar and wait a brief moment before jumping and down grabbing onto it.",
         "Lure the third Evir's projectile by jumping then crouch jump and down grab the second pillar.",
-        "Getting onto the final pillar is the hardest pard, which requires a subpixel precise jump.",
+        "Getting onto the final pillar is the hardest part, which requires a subpixel precise jump.",
         "Carefully lure the Evir projectile while getting into position, one pixel from the right edge.",
         "Stand and spinjump to the right. Note that running before jumping doesn't help."
       ]
@@ -590,6 +679,25 @@
         "Requires a runway of 7 tiles (with no open end) in the adjacent room. Requires two precise inputs of jumping through the doorway and a short aiming down press before hitting the ceiling.",
         "Damage boost off of the right Evir in order to land on the first pillar. With Ice, instead freeze the Evir to land on it and avoid the damage.",
         "When entering the room with a bad jump, it is possible to perform a midair wiggle to get back to the door platform."
+      ]
+    },
+    {
+      "id": 70,
+      "link": [1, 4],
+      "name": "Suitless Bootless Evir Freeze (Left to Center)",
+      "requires": [
+        {"notable": "Suitless Bootless Evir Freeze (Left to Center)"},
+        "canSuitlessMaridia",
+        "canTrickyJump",
+        "canTrickyUseFrozenEnemies",
+        "canPlayInSand",
+        "canCameraManip"
+      ],
+      "note": [
+        "When entering the room, immediately shoot straight ahead to freeze the second Evir,",
+        "then quickly also freeze the first Evir, with a diagonal-down shot.",
+        "Wait on top of the first Evir for the second Evir to sink far enough to be able to jump onto it,",
+        "then use it as a platform to jump onto the first pillar (either directly or after a jump on the sand)."
       ]
     },
     {
@@ -966,6 +1074,132 @@
       }
     },
     {
+      "id": 75,
+      "link": [2, 2],
+      "name": "Suitless Evir Farm (1 Evir, Grapple)",
+      "requires": [
+        {"resetRoom": {"nodes": [2]}},
+        "canDodgeWhileShooting",
+        "canSuitlessMaridia",
+        "HiJump",
+        "Grapple",
+        {"or": [
+          {"and": [
+            "Plasma",
+            {"cycleFrames": 240}
+          ]},
+          {"and": [
+            "Wave",
+            {"disableEquipment": "Ice"},
+            "canFarmWhileShooting",
+            {"cycleFrames": 420}
+          ]}
+        ]}
+      ],
+      "farmCycleDrops": [{"enemy": "Evir", "count": 1}],
+      "note": [
+        "If Plasma is available, quickly fire two shots when entering to kill the Evir;",
+        "it can help to crouch for the second shot.",
+        "If only Wave is available, quickly fire three shots,",
+        "then jump out exactly one tile away from the ledge",
+        "and fire three more shots angled-down to kill the Evir.",
+        "In any case, use Grapple to collect the drop from the pillar without needing to drop down."
+      ],
+      "devNote": ["If Gravity is available, then other farm strats can be used instead."]
+    },
+    {
+      "id": 76,
+      "link": [2, 2],
+      "name": "Evir Farm (1 Evir, Gravity, Strong Weapon)",
+      "requires": [
+        {"resetRoom": {"nodes": [2]}},
+        "Gravity",
+        {"or": [
+          "ScrewAttack",
+          {"and": [
+            "Plasma",
+            "Wave"
+          ]}
+        ]},
+        "canCarefulJump",
+        {"cycleFrames": 290},
+        {"or": [
+          "SpaceJump",
+          {"and": [
+            "canPlayInSand",
+            {"or": [
+              "HiJump",
+              "canWalljump",
+              {"and": [
+                "canGravityJump",
+                "h_doubleEquipmentScreenCycleFrames"
+              ]}
+            ]}
+          ]}
+        ]}
+      ],
+      "farmCycleDrops": [{"enemy": "Evir", "count": 1}],
+      "devNote": [
+        "Other ways of farming Evirs with Gravity are covered in the 3 Evir farm strat.",
+        "These strong weapon cases are unique in that farming just the first Evir can be done at significantly lower difficulty."
+      ]
+    },
+    {
+      "id": 77,
+      "link": [2, 2],
+      "name": "Evir Farm (3 Evirs, Gravity)",
+      "requires": [
+        {"resetRoom": {"nodes": [2]}},
+        "Gravity",
+        "canDodgeWhileShooting",
+        "canPlayInSand",
+        {"or": [
+          {"and": [
+            "Plasma",
+            "Wave"
+          ]},
+          "canTrickyJump"
+        ]},
+        {"or": [
+          {"and": [
+            "Plasma",
+            {"cycleFrames": 900}
+          ]},
+          {"and": [
+            "Wave",
+            {"disableEquipment": "Ice"},
+            {"cycleFrames": 1320}
+          ]},
+          {"and": [
+            "ScrewAttack",
+            "canFarmWhileShooting",
+            {"cycleFrames": 980}
+          ]},
+          {"and": [
+            "Spazer",
+            {"disableEquipment": "Ice"},
+            "canFarmWhileShooting",
+            {"cycleFrames": 1360}
+          ]}
+        ]},
+        {"or": [
+          "canWalljump",
+          "HiJump",
+          {"and": [
+            "canGravityJump",
+            "h_doubleEquipmentScreenCycleFrames"
+          ]}
+        ]}
+      ],
+      "farmCycleDrops": [{"enemy": "Evir", "count": 3}],
+      "note": [
+        "The Evirs must be killed quickly before they descend too far.",
+        "It can help to fire at the Evirs from a safe distance",
+        "so they will not be triggered to attack Samus."
+      ],
+      "devNote": ["FIXME: HiJump + Spring fling can be an alternative to Gravity."]
+    },
+    {
       "id": 38,
       "link": [2, 2],
       "name": "Crystal Flash",
@@ -980,7 +1214,7 @@
       "name": "G-Mode Setup - Get Hit By Evir Projectile",
       "requires": [
         "Gravity",
-        "canTrickyJump"
+        "canComplexGMode"
       ],
       "exitCondition": {
         "leaveWithGModeSetup": {}
@@ -997,11 +1231,11 @@
       "name": "Right Door G-Mode Setup Suitless HiJump",
       "requires": [
         {"notable": "Right Door G-Mode Setup Suitless HiJump"},
+        "canTrickyGMode",
         "canSuitlessMaridia",
         "canPlayInSand",
         "canMidairWiggle",
-        "HiJump",
-        "canInsaneJump"
+        "HiJump"
       ],
       "exitCondition": {
         "leaveWithGModeSetup": {}
@@ -1009,7 +1243,7 @@
       "flashSuitChecked": true,
       "note": [
         "The Evir won't shoot unless Samus enters the sand falls. Getting to the transition tiles while standing before the projectile while suitless is very precise.",
-        "From the sand, turnaround spinjump towards the right. Turn towards the sandfall about when you're level with the platform. Turn right and shoot as soon as you enter the sandfall. And try to land right next to the transition."
+        "From the sand, turnaround spinjump towards the right. Turn towards the sandfall about when you're just above the platform. Turn right and shoot as soon as you enter the sandfall. And try to land right next to the transition."
       ]
     },
     {
@@ -1099,6 +1333,31 @@
       ]
     },
     {
+      "id": 71,
+      "link": [2, 4],
+      "name": "Door Stuck Flatley Jump",
+      "entranceCondition": {
+        "comeInWithDoorStuckSetup": {}
+      },
+      "requires": [
+        {"notable": "Door Stuck Flatley Jump"},
+        "canInsaneJump",
+        "h_usePowerBomb",
+        "canTrickyUseFrozenEnemies",
+        "canPlayInSand"
+      ],
+      "note": [
+        "Enter the room with a door stuck setup.",
+        "Perform a frame-perfect Flatley jump from inside the door to just barely reach the first pillar.",
+        "Use a Power Bomb to make the Evir rise.",
+        "Freeze it and use it as a platform to jump across."
+      ],
+      "devNote": [
+        "This is only really useful when entering from a water room,",
+        "since otherwise there is an easier strat that simply runs into the room with momentum and jumps."
+      ]
+    },
+    {
       "id": 65,
       "link": [3, 1],
       "name": "Use Flash Suit",
@@ -1125,13 +1384,20 @@
       "requires": [
         "h_navigateUnderwater",
         {"or": [
+          "canInsaneJump",
+          {"enemyDamage": {"enemy": "Evir", "type": "particle", "hits": 1}}
+        ]},
+        {"or": [
           "Gravity",
           "HiJump",
           "canSpringBallJumpMidAir"
         ]}
       ],
       "flashSuitChecked": true,
-      "note": "The sand does not impede Samus in G-Mode.",
+      "note": [
+        "The sand does not impede Samus in G-Mode.",
+        "Enter the room on the right half of the transition, where both Evirs will be off camera to avoid their projectiles."
+      ],
       "devNote": "Only the last jump needs any items."
     },
     {
@@ -1148,15 +1414,23 @@
       "requires": [
         "h_navigateUnderwater",
         {"or": [
+          "canInsaneJump",
+          {"enemyDamage": {"enemy": "Evir", "type": "particle", "hits": 1}}
+        ]},
+        {"or": [
           "Gravity",
           "HiJump",
           "canSpringBallJumpMidAir",
-          "canTrickyJump"
+          {"and": [
+            "h_crouchJumpDownGrab",
+            "canInsaneJump"
+          ]}
         ]}
       ],
       "flashSuitChecked": true,
       "note": [
         "The sand does not impede Samus in G-Mode.",
+        "Enter the room on the right half of the transition, where both Evirs will be off camera to avoid their projectiles.",
         "It is possible to jump to the tall pillar with nothing, requiring a subpixel precise jump.",
         "Running before jumping doesn't help. Stand one pixel from the right edge and spinjump to the right."
       ]
@@ -1356,18 +1630,16 @@
           }},
           {"enemyDamage": {"enemy": "Evir", "type": "particle", "hits": 1}}
         ]},
-        {"and": [
-          "canPlayInSand",
-          {"or": [
-            "canWalljump",
-            "HiJump",
-            "canUseFrozenEnemies",
-            "canGravityJump",
-            {"and": [
-              "canTrickyJump",
-              "can4HighMidAirMorph",
-              "canTrickySpringBallJump"
-            ]}
+        "canPlayInSand",
+        {"or": [
+          "canWalljump",
+          "HiJump",
+          "canUseFrozenEnemies",
+          "canGravityJump",
+          {"and": [
+            "canTrickyJump",
+            "can4HighMidAirMorph",
+            "canTrickySpringBallJump"
           ]}
         ]}
       ]
@@ -1444,6 +1716,30 @@
         "Jump on the sand to the right while freezing the Evir as high as possible. Refreeze the Evir so it is a slightly higher platform than the right pillar.",
         "Perform a spring ball jump with a stationary lateral mid-air morph from the left side of the current platform to get onto the Evir. Use a running jump off of the Evir.",
         "As a backup, it may be possible to make the Evir rise again by hitting it with a PB - place the PB in the air to avoid double hitting and killing it."
+      ]
+    },
+    {
+      "id": 72,
+      "link": [4, 2],
+      "name": "Suitless Bootless Evir Climb",
+      "requires": [
+        {"notable": "Suitless Bootless Evir Climb"},
+        "h_usePowerBomb",
+        "canBePatient",
+        "canTrickyUseFrozenEnemies",
+        "canPlayInSand",
+        "canTrickyDodgeEnemies"
+      ],
+      "note": [
+        "Use a Power Bomb to make the right-most Evir rise.",
+        "Freeze it low and jump onto it.",
+        "Crouch and continue holding down;",
+        "when the Evir is about to thaw, jump with a buffered aim-down and refreeze the Evir after it climbs a few pixels.",
+        "Repeat many times until gaining enough height to spin jump onto the pillar."
+      ],
+      "detailNote": [
+        "With each refreeze, it is recommended that Samus switch which side of the Evir to stand on,",
+        "to avoid a risk of getting shot by the Evir."
       ]
     },
     {
@@ -1575,8 +1871,39 @@
         "Perform a 1-tap to gain blue speed with a significant amount of momentum.",
         "Run through the door, and jump any time after the transition, crossing the room."
       ]
+    },
+    {
+      "id": 13,
+      "name": "Suitless Bootless Evir Freeze (Left to Center)",
+      "note": [
+        "When entering the room, immediately shoot straight ahead to freeze the second Evir,",
+        "then quickly also freeze the first Evir.",
+        "Wait on top of the first Evir for the second Evir to sink far enough to be able to jump onto it,",
+        "then use it as a platform to jump onto the first pillar (either directly or after a jump on the sand)."
+      ]
+    },
+    {
+      "id": 14,
+      "name": "Suitless Bootless Evir Climb",
+      "note": [
+        "Use a Power Bomb to make the right-most Evir rise.",
+        "Freeze it low and jump onto it.",
+        "Crouch and continue holding down;",
+        "when the Evir is about to thaw, jump with a buffered aim-down and refreeze the Evir after it climbs a few pixels.",
+        "Repeat many times until gaining enough height to spin jump onto the pillar."
+      ]
+    },
+    {
+      "id": 15,
+      "name": "Door Stuck Flatley Jump",
+      "note": [
+        "Enter the room with a door stuck setup.",
+        "Perform a frame-perfect Flatley jump from inside the door to just barely reach the first pillar.",
+        "Use a Power Bomb to make the Evir rise.",
+        "Freeze it with Ice to jump across."
+      ]
     }
   ],
-  "nextStratId": 70,
-  "nextNotableId": 13
+  "nextStratId": 78,
+  "nextNotableId": 16
 }

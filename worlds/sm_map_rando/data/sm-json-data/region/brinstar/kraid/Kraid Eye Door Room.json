@@ -92,8 +92,10 @@
       "link": [1, 1],
       "name": "Zeb Farm",
       "requires": [
-        {"refill": ["Energy", "Missile", "Super"]}
-      ]
+        {"simpleCycleFrames": 85},
+        {"cycleFrames": 20}
+      ],
+      "farmCycleDrops": [{"enemy": "Zeb", "count": 1}]
     },
     {
       "id": 2,
@@ -144,6 +146,26 @@
         "leaveWithGModeSetup": {}
       },
       "flashSuitChecked": true
+    },
+    {
+      "id": 45,
+      "link": [1, 1],
+      "name": "X-Mode, Leave Shinecharged",
+      "requires": [
+        "canXMode",
+        {"thornHits": 2},
+        "h_shinechargeMaxRunway",
+        {"shineChargeFrames": 110}
+      ],
+      "exitCondition": {
+        "leaveShinecharged": {}
+      },
+      "flashSuitChecked": true,
+      "note": ["A very precise bounce is needed in order to enter X-mode with dash speed."],
+      "devNote": [
+        "Two thorn hits are expected.",
+        "Lenience is not included because there is a farm available."
+      ]
     },
     {
       "id": 5,
@@ -304,7 +326,9 @@
         {"shinespark": {"frames": 36}}
       ],
       "exitCondition": {
-        "leaveWithSpark": {}
+        "leaveWithSpark": {
+          "position": "top"
+        }
       },
       "unlocksDoors": [
         {"types": ["super"], "requires": []},
@@ -615,7 +639,7 @@
       "requires": [
         {"or": [
           "canTrickyUseFrozenEnemies",
-          "canTrickyJump"
+          "canComplexGMode"
         ]}
       ],
       "exitCondition": {
@@ -900,23 +924,46 @@
       ]
     },
     {
+      "id": 46,
+      "link": [3, 3],
+      "name": "X-Mode, Leave Shinecharged",
+      "requires": [
+        "canXMode",
+        {"thornHits": 2},
+        "h_shinechargeMaxRunway",
+        {"shineChargeFrames": 155}
+      ],
+      "exitCondition": {
+        "leaveShinecharged": {}
+      },
+      "flashSuitChecked": true,
+      "note": ["A very precise bounce is needed in order to enter X-mode with dash speed."],
+      "devNote": [
+        "Two thorn hits are expected.",
+        "Lenience is not included because there is a farm available."
+      ]
+    },
+    {
       "id": 43,
       "link": [3, 3],
       "name": "G-Mode Setup - Get Hit By Zeb",
       "requires": [
         {"or": [
           "canTrickyUseFrozenEnemies",
-          "canTrickyJump"
+          "canComplexGMode"
         ]}
       ],
       "exitCondition": {
         "leaveWithGModeSetup": {}
       },
       "flashSuitChecked": true,
-      "note": "Lure a Zeb by freezing it or by moving quickly while carefully preventing it from going off screen."
+      "note": [
+        "Lure a Zeb by freezing it or by moving quickly while carefully preventing it from going off screen.",
+        "It is possible to lure the Zeb from the left side of the right pillar, which can be helpful without ice."
+      ]
     }
   ],
   "notables": [],
-  "nextStratId": 45,
+  "nextStratId": 47,
   "nextNotableId": 1
 }

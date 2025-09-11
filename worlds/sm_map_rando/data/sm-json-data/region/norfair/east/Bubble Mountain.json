@@ -392,6 +392,18 @@
       "flashSuitChecked": true
     },
     {
+      "id": 216,
+      "link": [1, 1],
+      "name": "Waver Farm",
+      "requires": [
+        {"resetRoom": {"nodes": [1]}},
+        {"cycleFrames": 80}
+      ],
+      "resetsObstacles": ["A"],
+      "farmCycleDrops": [{"enemy": "Waver", "count": 1}],
+      "flashSuitChecked": true
+    },
+    {
       "id": 4,
       "link": [1, 1],
       "name": "G-Mode Setup - Get Hit By Waver",
@@ -616,7 +628,7 @@
         "canCarefulJump",
         {"or": [
           "canCameraManip",
-          "canStaggeredWalljump",
+          "canTrickyWalljump",
           {"and": [
             "canNeutralDamageBoost",
             {"enemyDamage": {"enemy": "Cacatac", "type": "contact", "hits": 1}}
@@ -655,19 +667,35 @@
     {
       "id": 11,
       "link": [1, 7],
-      "name": "Open Door Full Runway Jump",
+      "name": "Jump Across",
       "requires": [
         {"doorUnlockedAtNode": 1},
-        {"or": [
-          "canTrickyJump",
-          {"and": [
-            "SpeedBooster",
-            "canCarefulJump"
-          ]}
-        ]},
+        "canTrickyJump",
         "canCameraManip"
       ],
+      "wallJumpAvoid": true,
       "note": "Kill King Cac by scrolling the camera, before attempting the jump."
+    },
+    {
+      "id": 221,
+      "link": [1, 7],
+      "name": "Speedy Jump Across",
+      "requires": [
+        "SpeedBooster",
+        "canCarefulJump",
+        {"or": [
+          {"doorUnlockedAtNode": 1},
+          "canTrickyJump"
+        ]},
+        {"or": [
+          "canCameraManip",
+          {"and": [
+            "canNeutralDamageBoost",
+            {"enemyDamage": {"enemy": "Cacatac", "type": "contact", "hits": 1}}
+          ]}
+        ]}
+      ],
+      "note": "King Cac can be killed by scrolling the camera before jumping across."
     },
     {
       "id": 12,
@@ -675,12 +703,16 @@
       "name": "Airball",
       "requires": [
         "canLateralMidAirMorph",
-        "canTrickyJump",
+        {"or": [
+          "canTrickyJump",
+          {"doorUnlockedAtNode": 1}
+        ]},
         {"or": [
           "canCameraManip",
           {"enemyDamage": {"enemy": "Cacatac", "type": "contact", "hits": 1}}
         ]}
-      ]
+      ],
+      "note": "King Cac can be killed by scrolling the camera before jumping across."
     },
     {
       "id": 13,
@@ -815,6 +847,18 @@
       "flashSuitChecked": true
     },
     {
+      "id": 222,
+      "link": [2, 1],
+      "name": "Frozen Waver, Normalized Room Entry",
+      "entranceCondition": {
+        "comeInNormally": {}
+      },
+      "requires": [
+        "canTrickyUseFrozenEnemies"
+      ],
+      "note": "Freeze the Wavers on entry, as their initial pattern makes climbing much easier."
+    },
+    {
       "id": 18,
       "link": [2, 1],
       "name": "X-Ray Climb",
@@ -838,6 +882,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         "canXRayClimb"
       ],
       "bypassesDoorShell": true,
@@ -1097,7 +1142,7 @@
         "comeInWithGrappleSwing": {
           "blocks": [
             {"position": [6, 4], "note": "Grapple Tutorial Room 2"},
-            {"position": [6, 2], "note": "Spiky Acid Snakes Tunnel"},
+            {"position": [6, 2], "note": "Lava Grapple Tunnel"},
             {
               "position": [5, 2],
               "note": "The Moat, Double Chamber, Wrecked Ship Energy Tank Room"
@@ -1544,6 +1589,18 @@
       "unlocksDoors": [{"types": ["ammo"], "requires": []}]
     },
     {
+      "id": 223,
+      "link": [2, 7],
+      "name": "Frozen Waver, Normalized Room Entry",
+      "entranceCondition": {
+        "comeInNormally": {}
+      },
+      "requires": [
+        "canTrickyUseFrozenEnemies"
+      ],
+      "note": "Freeze the Wavers on entry, as their initial pattern makes climbing much easier."
+    },
+    {
       "id": 38,
       "link": [2, 7],
       "name": "Speedy Jump",
@@ -1608,7 +1665,7 @@
         "canConsecutiveWalljump",
         "canPreciseWalljump",
         {"or": [
-          "canStaggeredWalljump",
+          "canTrickyWalljump",
           "ScrewAttack",
           "canWalljumpWithCharge",
           {"and": [
@@ -1632,7 +1689,7 @@
         "canCarefulJump",
         "canConsecutiveWalljump",
         {"or": [
-          "canStaggeredWalljump",
+          "canTrickyWalljump",
           "ScrewAttack",
           "canWalljumpWithCharge",
           {"and": [
@@ -1656,7 +1713,7 @@
         "canCarefulJump",
         "canConsecutiveWalljump",
         {"or": [
-          "canStaggeredWalljump",
+          "canTrickyWalljump",
           "ScrewAttack",
           "canWalljumpWithCharge",
           {"and": [
@@ -1810,7 +1867,7 @@
         "comeInWithDoorStuckSetup": {}
       },
       "requires": [
-        "canXRayClimb"
+        "canLongXRayClimb"
       ],
       "flashSuitChecked": true,
       "note": "Climb up 2 screens."
@@ -1826,7 +1883,8 @@
         }
       },
       "requires": [
-        "canXRayClimb"
+        "canComplexGMode",
+        "canLongXRayClimb"
       ],
       "bypassesDoorShell": true,
       "flashSuitChecked": true,
@@ -1904,7 +1962,7 @@
         "comeInWithGrappleSwing": {
           "blocks": [
             {"position": [6, 4], "note": "Grapple Tutorial Room 2"},
-            {"position": [6, 2], "note": "Spiky Acid Snakes Tunnel"},
+            {"position": [6, 2], "note": "Lava Grapple Tunnel"},
             {
               "position": [5, 2],
               "note": "The Moat, Double Chamber, Wrecked Ship Energy Tank Room"
@@ -2094,7 +2152,9 @@
       "id": 205,
       "link": [3, 3],
       "name": "G-Mode Setup - Get Hit By Waver",
-      "requires": [],
+      "requires": [
+        "canComplexGMode"
+      ],
       "exitCondition": {
         "leaveWithGModeSetup": {}
       },
@@ -2280,7 +2340,7 @@
         "comeInWithDoorStuckSetup": {}
       },
       "requires": [
-        "canXRayClimb",
+        "canLongXRayClimb",
         "canBePatient"
       ],
       "flashSuitChecked": true,
@@ -2297,7 +2357,8 @@
         }
       },
       "requires": [
-        "canXRayClimb",
+        "canComplexGMode",
+        "canLongXRayClimb",
         "canBePatient"
       ],
       "bypassesDoorShell": true,
@@ -2318,7 +2379,8 @@
         }
       },
       "requires": [
-        "canXRayClimb"
+        "canComplexGMode",
+        "canLongXRayClimb"
       ],
       "bypassesDoorShell": true,
       "flashSuitChecked": true,
@@ -2373,6 +2435,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         "canXRayClimb"
       ],
       "bypassesDoorShell": true,
@@ -2423,9 +2486,7 @@
       "requires": [
         "h_frozenEnemyRunway",
         {"or": [
-          {"resetRoom": {
-            "nodes": [4, 5]
-          }},
+          {"resetRoom": {"nodes": [4, 5]}},
           {"ammo": {"type": "Super", "count": 1}}
         ]}
       ],
@@ -2455,15 +2516,35 @@
       "flashSuitChecked": true
     },
     {
+      "id": 217,
+      "link": [4, 4],
+      "name": "Single Sova Farm",
+      "requires": [
+        {"or": [
+          {"and": [
+            {"resetRoom": {"nodes": [4]}},
+            {"cycleFrames": 155}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [5]}},
+            {"cycleFrames": 180}
+          ]}
+        ]}
+      ],
+      "resetsObstacles": ["A"],
+      "farmCycleDrops": [{"enemy": "Sova", "count": 1}]
+    },
+    {
       "id": 76,
       "link": [4, 4],
       "name": "G-Mode Setup - Get Hit By Sova",
       "requires": [
         {"or": [
-          {"resetRoom": {
-            "nodes": [4, 5]
-          }},
-          {"ammo": {"type": "Super", "count": 1}}
+          {"resetRoom": {"nodes": [4, 5]}},
+          {"and": [
+            "canComplexGMode",
+            {"ammo": {"type": "Super", "count": 1}}
+          ]}
         ]}
       ],
       "exitCondition": {
@@ -2516,6 +2597,10 @@
       "note": [
         "The blocks are breakable with 4 Power Bombs.",
         "Horizontally bomb over the vertical door then up two ledges before placing a Power Bomb that can reach the blocks above."
+      ],
+      "devNote": [
+        "FIXME: It is possible to enter 5 in indirect, and shoot the door at 4 if it has ever been locked,",
+        "or 5 if its still locked to overload PLMs and go through the bomb maze."
       ]
     },
     {
@@ -2836,10 +2921,10 @@
     {
       "id": 94,
       "link": [6, 1],
-      "name": "Grapple Teleport X-Ray Climb",
+      "name": "Grapple Teleport X-Ray Climb (1 Screen)",
       "entranceCondition": {
         "comeInWithGrappleTeleport": {
-          "blockPositions": [[2, 28], [2, 29], [2, 34]]
+          "blockPositions": [[2, 28], [2, 29]]
         }
       },
       "requires": [
@@ -2850,7 +2935,28 @@
       "note": [
         "Exit the previous room with Samus in a standing pose (while grappled) with a horizontal position of 21 (as far right as possible).",
         "After teleporting, press right to release Grapple while staying standing (not being forced into a crouch).",
-        "Then X-ray climb to get up to the door transition above, without needing to open the door.",
+        "Then X-ray climb 1 screen to get up to the door transition above, without needing to open the door.",
+        "At the beginning of the climb, avoid pressing left without X-Ray being held, to prevent triggering the transition of the lower door."
+      ]
+    },
+    {
+      "id": 214,
+      "link": [6, 1],
+      "name": "Grapple Teleport X-Ray Climb (2 Screens)",
+      "entranceCondition": {
+        "comeInWithGrappleTeleport": {
+          "blockPositions": [[2, 34]]
+        }
+      },
+      "requires": [
+        "canLongXRayClimb"
+      ],
+      "bypassesDoorShell": true,
+      "flashSuitChecked": true,
+      "note": [
+        "Exit the previous room with Samus in a standing pose (while grappled) with a horizontal position of 21 (as far right as possible).",
+        "After teleporting, press right to release Grapple while staying standing (not being forced into a crouch).",
+        "Then X-ray climb 2 screens to get up to the door transition above, without needing to open the door.",
         "At the beginning of the climb, avoid pressing left without X-Ray being held, to prevent triggering the transition of the lower door."
       ]
     },
@@ -2935,7 +3041,7 @@
       "note": [
         "Exit the previous room with Samus in a standing pose (while grappled) with a horizontal position of 21 (as far right as possible).",
         "After teleporting, press right to release Grapple while staying standing (not being forced into a crouch).",
-        "Then X-ray climb to get up to the door transition above, without needing to open the door.",
+        "Then X-ray climb 1 screen to get up to the door transition above, without needing to open the door.",
         "At the beginning of the climb, avoid pressing left without X-Ray being held, to prevent triggering the transition of the lower door."
       ]
     },
@@ -3083,6 +3189,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         "canXRayClimb"
       ],
       "bypassesDoorShell": true,
@@ -3428,10 +3535,10 @@
     {
       "id": 119,
       "link": [7, 1],
-      "name": "Grapple Teleport X-Ray Climb",
+      "name": "Grapple Teleport X-Ray Climb (1 Screen)",
       "entranceCondition": {
         "comeInWithGrappleTeleport": {
-          "blockPositions": [[2, 28], [2, 29], [2, 34]]
+          "blockPositions": [[2, 28], [2, 29]]
         }
       },
       "requires": [
@@ -3442,7 +3549,28 @@
       "note": [
         "Exit the previous room with Samus in a standing pose (while grappled) with a horizontal position of 21 (as far right as possible).",
         "After teleporting, press right to release Grapple while staying standing (not being forced into a crouch).",
-        "Then X-ray climb to get up to the door transition above, without needing to open the door.",
+        "Then X-ray climb 1 screen to get up to the door transition above, without needing to open the door.",
+        "At the beginning of the climb, avoid pressing left without X-Ray being held, to prevent triggering the transition of the lower door."
+      ]
+    },
+    {
+      "id": 215,
+      "link": [7, 1],
+      "name": "Grapple Teleport X-Ray Climb (2 Screens)",
+      "entranceCondition": {
+        "comeInWithGrappleTeleport": {
+          "blockPositions": [[2, 34]]
+        }
+      },
+      "requires": [
+        "canLongXRayClimb"
+      ],
+      "bypassesDoorShell": true,
+      "flashSuitChecked": true,
+      "note": [
+        "Exit the previous room with Samus in a standing pose (while grappled) with a horizontal position of 21 (as far right as possible).",
+        "After teleporting, press right to release Grapple while staying standing (not being forced into a crouch).",
+        "Then X-ray climb 2 screens to get up to the door transition above, without needing to open the door.",
         "At the beginning of the climb, avoid pressing left without X-Ray being held, to prevent triggering the transition of the lower door."
       ]
     },
@@ -3527,7 +3655,7 @@
       "note": [
         "Exit the previous room with Samus in a standing pose (while grappled) with a horizontal position of 21 (as far right as possible).",
         "After teleporting, press right to release Grapple while staying standing (not being forced into a crouch).",
-        "Then X-ray climb to get up to the door transition above, without needing to open the door.",
+        "Then X-ray climb 1 screen to get up to the door transition above, without needing to open the door.",
         "At the beginning of the climb, avoid pressing left without X-Ray being held, to prevent triggering the transition of the lower door."
       ]
     },
@@ -3758,14 +3886,40 @@
       "link": [7, 7],
       "name": "Cacatac and Waver Farm",
       "requires": [
-        {"resetRoom": {
-          "nodes": [6, 7]
-        }},
-        {"partialRefill": {"type": "Energy", "limit": 160}},
-        {"partialRefill": {"type": "Super", "limit": 5}},
-        {"partialRefill": {"type": "Missile", "limit": 6}}
+        {"or": [
+          {"and": [
+            {"resetRoom": {"nodes": [1]}},
+            {"or": [
+              {"and": [
+                "Grapple",
+                {"cycleFrames": 300}
+              ]},
+              {"and": [
+                "SpaceJump",
+                {"cycleFrames": 390}
+              ]},
+              {"and": [
+                "HiJump",
+                "canTrickyWalljump",
+                {"cycleFrames": 690}
+              ]}
+            ]}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [6]}},
+            {"cycleFrames": 370}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [7]}},
+            {"cycleFrames": 360}
+          ]}
+        ]}
       ],
-      "resetsObstacles": ["A"]
+      "resetsObstacles": ["A"],
+      "farmCycleDrops": [
+        {"enemy": "Cacatac", "count": 1},
+        {"enemy": "Waver", "count": 1}
+      ]
     },
     {
       "id": 133,
@@ -3844,12 +3998,13 @@
       "requires": [
         {"tech": "canBombHorizontally"},
         "h_artificialMorphPowerBomb",
-        "h_additionalBomb"
+        "h_additionalBomb",
+        "canTrickyDodgeEnemies"
       ],
       "flashSuitChecked": true,
       "note": [
-        "Use one Power Bomb to jump towards the Cacatac then a second to jump over it and down below.",
-        "Do not land where the Cacatac was, or Samus will get hit by its invisible spikes."
+        "Wait for the Waver to pass or quickly use a Power Bomb to boost over the gap towards the Cacatac.",
+        "Use a second Power Bomb to jump over it and down below; hold left as soon as Samus starts moving upward, in order to avoid the invisible Cacatac spikes."
       ]
     },
     {
@@ -3861,10 +4016,25 @@
           "canWalljump",
           "HiJump",
           "SpaceJump",
-          "canIBJ",
           "canSpringBallJumpMidAir"
         ]}
       ]
+    },
+    {
+      "id": 213,
+      "link": [8, 9],
+      "name": "IBJ",
+      "requires": [
+        "canIBJ",
+        {"or": [
+          {"enemyKill": {
+            "enemies": [["Ripper"]],
+            "explicitWeapons": ["ScrewAttack", "Super", "PowerBomb"]
+          }},
+          "canJumpIntoIBJ"
+        ]}
+      ],
+      "note": ["Either kill the Ripper, or dodge it by jumping into IBJ."]
     },
     {
       "id": 203,
@@ -3953,11 +4123,16 @@
       "requires": [
         "canUseFrozenEnemies",
         {"or": [
-          "canTrickyUseFrozenEnemies",
-          "canWalljump",
           "HiJump",
           "canSpringBallJumpMidAir",
-          "h_crouchJumpDownGrab"
+          {"and": [
+            "canWalljump",
+            "canTrickyUseFrozenEnemies"
+          ]},
+          {"and": [
+            "canTrickyJump",
+            "canTrickyUseFrozenEnemies"
+          ]}
         ]}
       ]
     },
@@ -4048,10 +4223,17 @@
       "name": "Frozen Waver",
       "requires": [
         "canUseFrozenEnemies",
+        "canCarefulJump",
         {"or": [
-          "canTrickyUseFrozenEnemies",
           "canWalljump",
-          "HiJump"
+          {"and": [
+            "canTrickyUseFrozenEnemies",
+            {"or": [
+              "canTrickyJump",
+              "HiJump",
+              "canSpringBallJumpMidAir"
+            ]}
+          ]}
         ]}
       ]
     },
@@ -4071,7 +4253,7 @@
       "name": "Right Side Delayed Walljumps",
       "requires": [
         {"notable": "Right Side Delayed Walljumps"},
-        "canDelayedWalljump",
+        "canTrickyWalljump",
         "canConsecutiveWalljump"
       ],
       "note": "A tricky, delayed walljump makes it possible to climb to top right in-room, with nothing."
@@ -4097,25 +4279,198 @@
       "link": [9, 9],
       "name": "Waver Farm",
       "requires": [
-        {"resetRoom": {
-          "nodes": [2, 3]
-        }},
-        {"partialRefill": {"type": "Energy", "limit": 100}},
-        {"partialRefill": {"type": "Missile", "limit": 6}}
+        {"or": [
+          {"and": [
+            {"resetRoom": {"nodes": [2]}},
+            {"cycleFrames": 660}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [3]}},
+            {"cycleFrames": 720}
+          ]}
+        ]}
       ],
-      "resetsObstacles": ["A"]
+      "resetsObstacles": ["A"],
+      "farmCycleDrops": [{"enemy": "Waver", "count": 2}]
+    },
+    {
+      "id": 218,
+      "link": [9, 9],
+      "name": "Sova Farm",
+      "requires": [
+        {"or": [
+          {"and": [
+            {"resetRoom": {"nodes": [1]}},
+            {"or": [
+              {"and": [
+                "SpaceJump",
+                {"cycleFrames": 1500}
+              ]},
+              {"and": [
+                "HiJump",
+                "canTrickyWalljump",
+                {"cycleFrames": 1320}
+              ]},
+              {"and": [
+                "HiJump",
+                "canSpringBallJumpMidAir",
+                {"cycleFrames": 1320},
+                "h_doubleEquipmentScreenCycleFrames"
+              ]}
+            ]}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [2]}},
+            {"cycleFrames": 1140}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [3]}},
+            {"cycleFrames": 1140}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [4]}},
+            {"cycleFrames": 720}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [5]}},
+            {"cycleFrames": 730}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [6]}},
+            {"cycleFrames": 1770},
+            {"or": [
+              "SpaceJump",
+              {"and": [
+                "HiJump",
+                "canTrickyWalljump"
+              ]}
+            ]}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [7]}},
+            {"cycleFrames": 1740},
+            {"or": [
+              "SpaceJump",
+              {"and": [
+                "HiJump",
+                "canTrickyWalljump"
+              ]}
+            ]}
+          ]}
+        ]},
+        "h_useMorphBombs"
+      ],
+      "resetsObstacles": ["A"],
+      "farmCycleDrops": [{"enemy": "Sova", "count": 3}]
+    },
+    {
+      "id": 219,
+      "link": [9, 9],
+      "name": "Cacatac and Waver Farm",
+      "requires": [
+        {"or": [
+          {"resetRoom": {"nodes": [2]}},
+          {"and": [
+            {"resetRoom": {"nodes": [3]}},
+            {"cycleFrames": 60}
+          ]}
+        ]},
+        {"or": [
+          {"and": [
+            "SpaceJump",
+            {"cycleFrames": 600}
+          ]},
+          {"and": [
+            "HiJump",
+            "canTrickyWalljump",
+            {"cycleFrames": 660}
+          ]}
+        ]}
+      ],
+      "resetsObstacles": ["A"],
+      "farmCycleDrops": [
+        {"enemy": "Cacatac", "count": 1},
+        {"enemy": "Waver", "count": 2}
+      ]
+    },
+    {
+      "id": 220,
+      "link": [9, 9],
+      "name": "Ripper Farm",
+      "requires": [
+        "ScrewAttack",
+        {"or": [
+          "canWalljump",
+          "HiJump",
+          "SpaceJump",
+          {"and": [
+            "canSpringBallJumpMidAir",
+            "h_doubleEquipmentScreenCycleFrames",
+            {"cycleFrames": 20}
+          ]},
+          {"and": [
+            "canIBJ",
+            {"cycleFrames": 600}
+          ]}
+        ]},
+        {"or": [
+          {"and": [
+            {"resetRoom": {"nodes": [1]}},
+            {"or": [
+              {"and": [
+                "SpaceJump",
+                {"cycleFrames": 1050}
+              ]},
+              {"and": [
+                "HiJump",
+                "canTrickyWalljump",
+                {"cycleFrames": 970}
+              ]},
+              {"and": [
+                "HiJump",
+                "canSpringBallJumpMidAir",
+                {"cycleFrames": 970},
+                "h_doubleEquipmentScreenCycleFrames"
+              ]}
+            ]}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [2]}},
+            {"cycleFrames": 840}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [3]}},
+            {"cycleFrames": 960}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [4]}},
+            {"cycleFrames": 1800},
+            "h_useMorphBombs"
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [5]}},
+            {"cycleFrames": 1800},
+            "h_useMorphBombs"
+          ]}
+        ]}
+      ],
+      "resetsObstacles": ["A"],
+      "farmCycleDrops": [
+        {"enemy": "Ripper 2 (red)", "count": 1},
+        {"enemy": "Waver", "count": 1}
+      ]
     },
     {
       "id": 160,
       "link": [10, 1],
       "name": "G-Mode Morph IBJ",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         "h_artificialMorphLongIBJ",
         {"or": [
           "h_artificialMorphPowerBomb",
           {"and": [
-            "canTrickyJump",
+            "canTrickyDodgeEnemies",
             {"or": [
               "canBePatient",
               "canDoubleBombJump"
@@ -4131,7 +4486,7 @@
       "link": [10, 3],
       "name": "Base",
       "requires": [
-        "canEnterGMode"
+        "canGMode"
       ],
       "flashSuitChecked": true
     },
@@ -4140,7 +4495,7 @@
       "link": [10, 3],
       "name": "G-Mode Morph Power Bomb the Blocks",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         "h_artificialMorphPowerBomb"
       ],
       "clearsObstacles": ["A"],
@@ -4151,12 +4506,12 @@
       "link": [10, 7],
       "name": "G-Mode Morph IBJ",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         "h_artificialMorphLongIBJ",
         {"or": [
           "h_artificialMorphPowerBomb",
           {"and": [
-            "canTrickyJump",
+            "canTrickyDodgeEnemies",
             "canBePatient",
             {"or": [
               "canBeVeryPatient",
@@ -4193,6 +4548,6 @@
       "note": "A tricky, delayed walljump makes it possible to climb to top right in-room, with nothing."
     }
   ],
-  "nextStratId": 213,
+  "nextStratId": 224,
   "nextNotableId": 4
 }

@@ -8,13 +8,13 @@ import orjson
 import pkgutil
 from collections import defaultdict
 from dataclasses import dataclass
-from enum import IntEnum
+from enum import Enum, IntEnum
 from pkg_resources import resource_listdir, resource_isdir
 from typing import Dict, List, NamedTuple, Set, FrozenSet, Any, Tuple
 from BaseClasses import ItemClassification
 
-APWORLD_VERSION = "0.9.5"
-POPTRACKER_CHECKSUM = 0xA6E2C575
+APWORLD_VERSION = "1.0.0 Beta 1"
+POPTRACKER_CHECKSUM = 0x4A497E8F
 NUM_REAL_SPECIES = 386
 
 
@@ -76,41 +76,28 @@ class Warp:
 class ItemData(NamedTuple):
     name: str
     item_id: int
+    price: int
     classification: ItemClassification
     tags: FrozenSet[str]
 
 
 class LocationCategory(IntEnum):
-    BADGE = 0
-    HM = 1
-    KEY_ITEM = 2
-    RUNNING_SHOES = 3
-    EXTRA_KEY_ITEM = 4
-    FLY_UNLOCK = 5
-    SPLIT_CARD_KEY = 6
-    SPLIT_ISLAND_PASS = 7
-    SPLIT_TEA = 8
-    GYM_KEY = 9
-    ITEM_BALL = 10
-    HIDDEN_ITEM = 11
-    HIDDEN_ITEM_RECURRING = 12
-    STARTING_ITEM = 13
-    NPC_GIFT = 14
-    POKEMON_REQUEST = 15
-    SHOPSANITY = 16
-    TRAINERSANITY = 17
-    FAMESANITY = 18
-    FAMESANITY_POKEMON_REQUEST = 19
-    DEXSANITY = 20
-    EVENT = 21
-    EVENT_SHOP = 22
-    EVENT_WILD_POKEMON = 23
-    EVENT_STATIC_POKEMON = 24
-    EVENT_LEGENDARY_POKEMON = 25
-    EVENT_EVOLUTION_POKEMON = 26
-    EVENT_TRAINER_SCALING = 27
-    EVENT_WILD_POKEMON_SCALING = 28
-    EVENT_STATIC_POKEMON_SCALING = 29
+    OVERWORLD_ITEM = 0
+    NPC_GIFT = 1
+    HIDDEN_ITEM = 2
+    TOWN_VISIT = 3
+    SHOP_ITEM = 4
+    TRAINER = 5
+    FAME_ENTRY = 6
+    POKEDEX = 7
+    EVENT = 8
+    EVENT_WILD_POKEMON = 9
+    EVENT_STATIC_POKEMON = 10
+    EVENT_LEGENDARY_POKEMON = 11
+    EVENT_EVOLUTION_POKEMON = 12
+    EVENT_TRAINER_SCALING = 13
+    EVENT_WILD_POKEMON_SCALING = 14
+    EVENT_STATIC_POKEMON_SCALING = 15
 
 
 class LocationData(NamedTuple):
@@ -121,6 +108,7 @@ class LocationData(NamedTuple):
     address: Dict[str, int | List[int]]
     flag: int
     category: LocationCategory
+    include: FrozenSet[str]
     tags: FrozenSet[str]
 
 
@@ -136,14 +124,18 @@ class EncounterTableData(NamedTuple):
     address: Dict[str, int]
 
 
+class EncounterType(Enum):
+    LAND = "Land"
+    WATER = "Water"
+    FISHING = "Fishing"
+
+
 @dataclass
 class MapData:
     name: str
     header_address: Dict[str, int]
     warp_table_address: Dict[str, int]
-    land_encounters: EncounterTableData | None
-    water_encounters: EncounterTableData | None
-    fishing_encounters: EncounterTableData | None
+    encounters: Dict[EncounterType, EncounterTableData]
     kanto: bool
 
 
@@ -164,7 +156,7 @@ class RegionData:
     has_water: bool
     has_fishing: bool
     kanto: bool
-    exits: Dict[str, str]
+    exits: Dict[str, str | List[str]]
     warps: List[str]
     locations: List[str]
     events: List[str]
@@ -179,7 +171,7 @@ class RegionData:
         self.has_water = has_water
         self.has_fishing = has_fishing
         self.kanto = kanto
-        self.exits = []
+        self.exits = {}
         self.warps = []
         self.locations = []
         self.events = []
@@ -248,7 +240,7 @@ class StarterData:
 @dataclass
 class MiscPokemonData:
     species_id: Dict[str, int]
-    level: [str, int]
+    level: Dict[str, int]
     address: Dict[str, int]
     level_address: Dict[str, int]
 
@@ -317,7 +309,7 @@ class ScalingData:
     region: str
     kanto: bool
     connections: List[str]
-    type: str | None
+    type: EncounterType | None
     category: LocationCategory
     locations: Dict[str, List[str]]
 
@@ -326,6 +318,8 @@ class ScalingData:
 class FlyData:
     name: str
     display_name: str
+    map: str
+    region: str
     map_group: int
     map_num: int
     x_pos: int
@@ -798,10 +792,7 @@ def init() -> None:
 
     # Create map data
     for map_name, map_json in extracted_data["maps"].items():
-        land_encounters = None
-        water_encounters = None
-        fishing_encounters = None
-
+        encounter_tables: Dict[EncounterType, EncounterTableData] = {}
         if "land_encounters" in map_json:
             land_slots: Dict[str, List[EncounterSpeciesData]] = {}
             for version, slots in map_json["land_encounters"]["slots"].items():
@@ -813,7 +804,7 @@ def init() -> None:
                         slot_data["max_level"]
                     ))
                 land_slots[version] = version_slots
-            land_encounters = EncounterTableData(
+            encounter_tables[EncounterType.LAND] = EncounterTableData(
                 land_slots,
                 map_json["land_encounters"]["address"]
             )
@@ -828,7 +819,7 @@ def init() -> None:
                         slot_data["max_level"]
                     ))
                 water_slots[version] = version_slots
-            water_encounters = EncounterTableData(
+            encounter_tables[EncounterType.WATER] = EncounterTableData(
                 water_slots,
                 map_json["water_encounters"]["address"]
             )
@@ -843,7 +834,7 @@ def init() -> None:
                         slot_data["max_level"]
                     ))
                 fishing_slots[version] = version_slots
-            fishing_encounters = EncounterTableData(
+            encounter_tables[EncounterType.FISHING] = EncounterTableData(
                 fishing_slots,
                 map_json["fishing_encounters"]["address"]
             )
@@ -852,9 +843,7 @@ def init() -> None:
             map_name,
             map_json["header_address"],
             map_json["warp_table_address"],
-            land_encounters,
-            water_encounters,
-            fishing_encounters,
+            encounter_tables,
             True
         )
 
@@ -925,43 +914,7 @@ def init() -> None:
                     location_address,
                     location_json["flag"],
                     LocationCategory[location_data[location_id]["category"]],
-                    frozenset(location_data[location_id]["tags"])
-                )
-            elif "SHOP_TWO_ISLAND" in location_id:
-                extra_addresses = {
-                    "SHOP_TWO_ISLAND_EXPANDED3_1": ["SHOP_TWO_ISLAND_INITIAL_1", "SHOP_TWO_ISLAND_EXPANDED1_1",
-                                                    "SHOP_TWO_ISLAND_EXPANDED2_1"],
-                    "SHOP_TWO_ISLAND_EXPANDED3_2": ["SHOP_TWO_ISLAND_EXPANDED1_2", "SHOP_TWO_ISLAND_EXPANDED2_2"],
-                    "SHOP_TWO_ISLAND_EXPANDED3_5": ["SHOP_TWO_ISLAND_EXPANDED2_3"],
-                    "SHOP_TWO_ISLAND_EXPANDED3_6": ["SHOP_TWO_ISLAND_EXPANDED1_3", "SHOP_TWO_ISLAND_EXPANDED2_4"],
-                    "SHOP_TWO_ISLAND_EXPANDED3_7": ["SHOP_TWO_ISLAND_INITIAL_2", "SHOP_TWO_ISLAND_EXPANDED1_4",
-                                                    "SHOP_TWO_ISLAND_EXPANDED2_5"],
-                    "SHOP_TWO_ISLAND_EXPANDED3_8": ["SHOP_TWO_ISLAND_EXPANDED2_6"]
-                }
-
-                alternate_shop_jsons = list()
-                if location_id in extra_addresses:
-                    alternate_shop_jsons = [extracted_data["locations"][alternate]
-                                            for alternate in extra_addresses[location_id]]
-
-                location_address: Dict[str, List[int]] = dict()
-
-                for game_version_revision in location_json["address"].keys():
-                    location_address[game_version_revision] = [location_json["address"][game_version_revision]]
-
-                for game_version_revision in location_address.keys():
-                    for alternate_shop_json in alternate_shop_jsons:
-                        location_address[game_version_revision].append(
-                            alternate_shop_json["address"][game_version_revision])
-
-                new_location = LocationData(
-                    location_id,
-                    location_data[location_id]["name"],
-                    region_id,
-                    location_json["default_item"],
-                    location_address,
-                    location_json["flag"],
-                    LocationCategory[location_data[location_id]["category"]],
+                    frozenset(location_data[location_id]["include"]),
                     frozenset(location_data[location_id]["tags"])
                 )
             else:
@@ -973,6 +926,7 @@ def init() -> None:
                     location_json["address"],
                     location_json["flag"],
                     LocationCategory[location_data[location_id]["category"]],
+                    frozenset(location_data[location_id]["include"]),
                     frozenset(location_data[location_id]["tags"])
                 )
 
@@ -1028,6 +982,7 @@ def init() -> None:
         data.items[data.constants[item_id_name]] = ItemData(
             attributes["name"],
             data.constants[item_id_name],
+            extracted_data["item_prices"][item_id_name],
             item_classification,
             frozenset(attributes["tags"])
         )
@@ -1105,7 +1060,7 @@ def init() -> None:
             starter_data["address"]
         )
 
-    # Create legendary pokemon data
+    # Create legendary Pokémon data
     for name, legendary_data in extracted_data["legendary_pokemon"].items():
         data.legendary_pokemon[name] = MiscPokemonData(
             legendary_data["species"],
@@ -1114,7 +1069,7 @@ def init() -> None:
             legendary_data["level_address"]
         )
 
-    # Create misc pokemon data
+    # Create misc Pokémon data
     for name, misc_data in extracted_data["misc_pokemon"].items():
         data.misc_pokemon[name] = MiscPokemonData(
             misc_data["species"],
@@ -1123,7 +1078,7 @@ def init() -> None:
             misc_data["level_address"]
         )
 
-    # Create trade pokemon data
+    # Create trade Pokémon data
     for name, trade_pokemon in extracted_data["trade_pokemon"].items():
         data.trade_pokemon[name] = TradePokemonData(
             trade_pokemon["species"],
@@ -1194,7 +1149,7 @@ def init() -> None:
             scaling_json["region"],
             scaling_json["kanto"],
             scaling_json["connections"],
-            scaling_json["type"],
+            EncounterType[scaling_json["type"]] if "type" in scaling_json else None,
             LocationCategory[scaling_json["category"]],
             scaling_json["locations"]
         )
@@ -1710,489 +1665,401 @@ move_name_map = {j: data.constants[i] for i, j in [
     ("MOVE_PSYCHO_BOOST", "Psycho Boost")
 ]}
 
-kanto_fly_destinations: Dict[str, Dict[str, List[FlyData]]] = {
-    "Pallet Town": {
-        "Pallet Town": [
-            FlyData("Player's House", "PALLET TOWN", 3, 0, 6, 8, 1, 246),
-            FlyData("Rival's House", "PALLET TOWN", 3, 0, 15, 8, 1, 246),
-            FlyData("Professor Oak's Lab", "PALLET TOWN", 3, 0, 16, 14, 1, 246)
-        ]
-    },
-    "Viridian City": {
-        "Viridian City South": [
-            FlyData("Viridian Pokemon Center", "VIRIDIAN CITY", 3, 1, 26, 27, 1, 180),
-            FlyData("Virdian Nickname House", "VIRIDIAN CITY", 3, 1, 25, 12, 1, 180),
-            FlyData("Viridian School", "VIRIDIAN CITY", 3, 1, 25, 19, 1, 180),
-            FlyData("Viridian Poke Mart", "VIRIDIAN CITY", 3, 1, 36, 20, 1, 180)
-        ],
-        "Viridian City North": [
-            FlyData("Viridian Gym", "VIRIDIAN CITY", 3, 1, 36, 11, 1, 180)
-        ]
-    },
-    "Pewter City": {
-        "Pewter City": [
-            FlyData("Pewter Museum (West)", "PEWTER CITY", 3, 2, 17, 7, 1, 92),
-            FlyData("Pewter Gym", "PEWTER CITY", 3, 2, 15, 17, 1, 92),
-            FlyData("Pewter Poke Mart", "PEWTER CITY", 3, 2, 28, 19, 1, 92),
-            FlyData("Pewter Nidoran House", "PEWTER CITY", 3, 2, 33, 12, 1, 92),
-            FlyData("Pewter Pokemon Center", "PEWTER CITY", 3, 2, 17, 26, 1, 92),
-            FlyData("Pewter Info House", "PEWTER CITY", 3, 2, 9, 31, 1, 92)
-        ],
-        "Pewter City Near Museum": [
-            FlyData("Pewter Museum (East)", "PEWTER CITY", 3, 2, 25, 5, 1, 92)
-        ]
-    },
-    "Cerulean City": {
-        "Cerulean City": [
-            FlyData("Badge Guy's House (Front)", "CERULEAN CITY", 3, 3, 10, 12, 1, 80),
-            FlyData("Robbed House (Front)", "CERULEAN CITY", 3, 3, 30, 12, 1, 80),
-            FlyData("Cerulean Trade House", "CERULEAN CITY", 3, 3, 15, 18, 1, 80),
-            FlyData("Cerulean Pokemon Center", "CERULEAN CITY", 3, 3, 22, 20, 1, 80),
-            FlyData("Cerulean Gym", "CERULEAN CITY", 3, 3, 31, 22, 1, 80),
-            FlyData("Bike Shop", "CERULEAN CITY", 3, 3, 13, 29, 1, 80),
-            FlyData("Cerulean Poke Mart", "CERULEAN CITY", 3, 3, 29, 29, 1, 80),
-            FlyData("Wonder News House", "CERULEAN CITY", 3, 3, 23, 29, 1, 80),
-            FlyData("Berry Powder Man's House", "CERULEAN CITY", 3, 3, 17, 12, 1, 80)
-        ],
-        "Cerulean City Backyard": [
-            FlyData("Badge Guy's House (Back)", "CERULEAN CITY", 3, 3, 10, 8, 1, 80)
-        ],
-        "Cerulean City Outskirts": [
-            FlyData("Robbed House (Back)", "CERULEAN CITY", 3, 3, 31, 8, 1, 80)
-        ],
-        "Cerulean City Near Cave": [
-            FlyData("Cerulean Cave", "CERULEAN CITY", 3, 3, 1, 13, 1, 80)
-        ]
-    },
-    "Vermilion City": {
-        "Vermilion City": [
-            FlyData("Vermilion Fishing House", "VERMILION CITY", 3, 5, 9, 7, 1, 212),
-            FlyData("Vermilion Pokemon Center", "VERMILION CITY", 3, 5, 15, 7, 1, 212),
-            FlyData("Pokemon Fan Club", "VERMILION CITY", 3, 5, 12, 18, 1, 212),
-            FlyData("Vermilion Trade House", "VERMILION CITY", 3, 5, 19, 18, 1, 212),
-            FlyData("Vermilion Poke Mart", "VERMILION CITY", 3, 5, 29, 18, 1, 212),
-            FlyData("Vermilion Pidgey House", "VERMILION CITY", 3, 5, 28, 25, 1, 212)
-        ],
-        "Vermilion City Near Gym": [
-            FlyData("Vermilion Gym", "VERMILION CITY", 3, 5, 14, 26, 1, 212)
-        ],
-        "Vermilion City Near Harbor": [
-            FlyData("Vermilion Harbor", "VERMILION CITY", 3, 5, 23, 34, 1, 212)
-        ]
-    },
-    "Lavender Town": {
-        "Lavender Town": [
-            FlyData("Pokemon Tower", "LAVENDER TOWN", 3, 4, 18, 7, 1, 150),
-            FlyData("Lavender Pokemon Center", "LAVENDER TOWN", 3, 4, 6, 6, 1, 150),
-            FlyData("Volunteer Pokemon House", "LAVENDER TOWN", 3, 4, 10, 12, 1, 150),
-            FlyData("Lavender Cubone House", "LAVENDER TOWN", 3, 4, 5, 17, 1, 150),
-            FlyData("Name Rater's House", "LAVENDER TOWN", 3, 4, 10, 17, 1, 150),
-            FlyData("Lavender Poke Mart", "LAVENDER TOWN", 3, 4, 20, 16, 1, 150)
-        ]
-    },
-    "Celadon City": {
-        "Celadon City": [
-            FlyData("Celadon Game Corner", "CELADON CITY", 3, 6, 34, 22, 1, 143),
-            FlyData("Celadon Department Store (West)", "CELADON CITY", 3, 6, 11, 15, 1, 143),
-            FlyData("Celadon Department Store (East)", "CELADON CITY", 3, 6, 15, 15, 1, 143),
-            FlyData("Celadon Condominiums (Front)", "CELADON CITY", 3, 6, 30, 12, 1, 143),
-            FlyData("Celadon Pokemon Center", "CELADON CITY", 3, 6, 48, 12, 1, 143),
-            FlyData("Celadon Game Corner Prize Room", "CELADON CITY", 3, 6, 39, 21, 1, 143),
-            FlyData("Celadon Restaurant", "CELADON CITY", 3, 6, 37, 30, 1, 143),
-            FlyData("Celadon Rocket House", "CELADON CITY", 3, 6, 41, 30, 1, 143),
-            FlyData("Celadon Hotel", "CELADON CITY", 3, 6, 49, 30, 1, 143),
-            FlyData("Celadon Condominiums (Back)", "CELADON CITY", 3, 6, 30, 4, 1, 143)
-        ],
-        "Celadon City Near Gym": [
-            FlyData("Celadon Gym", "CELADON CITY", 3, 6, 11, 31, 1, 143)
-        ]
-    },
-    "Fuchsia City": {
-        "Fuchsia City": [
-            FlyData("Safari Zone Entrance", "FUCHSIA CITY", 3, 7, 24, 6, 1, 276),
-            FlyData("Safari Zone Warden's House", "FUCHSIA CITY", 3, 7, 33, 32, 1, 276),
-            FlyData("Fuchsia Poke Mart", "FUCHSIA CITY", 3, 7, 11, 16, 1, 276),
-            FlyData("Safari Zone Office", "FUCHSIA CITY", 3, 7, 28, 17, 1, 276),
-            FlyData("Fuchsia Gym", "FUCHSIA CITY", 3, 7, 9, 33, 1, 276),
-            FlyData("Bill's Grandpa's House", "FUCHSIA CITY", 3, 7, 14, 32, 1, 276),
-            FlyData("Fuchsia Pokemon Center", "FUCHSIA CITY", 3, 7, 25, 32, 1, 276),
-            FlyData("Fuchsia Fishing House (Front)", "FUCHSIA CITY", 3, 7, 38, 32, 1, 276),
-            FlyData("Move Deleter's House", "FUCHSIA CITY", 3, 7, 19, 32, 1, 276)
-        ],
-        "Fuchsia City Backyard": [
-            FlyData("Fuchsia Fishing House (Back)", "FUCHSIA CITY", 3, 7, 39, 28, 1, 276)
-        ]
-    },
-    "Saffron City": {
-        "Saffron City": [
-            FlyData("Silph Co.", "SAFFRON CITY", 3, 10, 33, 31, 1, 146),
-            FlyData("Copycat's House", "SAFFRON CITY", 3, 10, 22, 15, 1, 146),
-            FlyData("Saffron Dojo", "SAFFRON CITY", 3, 10, 40, 13, 1, 146),
-            FlyData("Saffron Gym", "SAFFRON CITY", 3, 10, 46, 13, 1, 146),
-            FlyData("Saffron Pidgey House", "SAFFRON CITY", 3, 10, 27, 22, 1, 146),
-            FlyData("Saffron Poke Mart", "SAFFRON CITY", 3, 10, 40, 22, 1, 146),
-            FlyData("Saffron Pokemon Center", "SAFFRON CITY", 3, 10, 24, 39, 1, 146),
-            FlyData("Mr. Psychic's House", "SAFFRON CITY", 3, 10, 43, 39, 1, 146),
-            FlyData("Route 7 Gate (East)", "SAFFRON CITY", 3, 10, 8, 27, 1, 146),
-            FlyData("Route 5 Gate (South)", "SAFFRON CITY", 3, 10, 34, 6, 1, 146),
-            FlyData("Route 8 Gate (West)", "SAFFRON CITY", 3, 10, 58, 27, 1, 146),
-            FlyData("Route 6 Gate (North)", "SAFFRON CITY", 3, 10, 34, 46, 1, 146),
-            FlyData("Pokemon Trainer Fan Club", "SAFFRON CITY", 3, 10, 47, 22, 1, 146)
-        ]
-    },
-    "Cinnabar Island": {
-        "Cinnabar Island": [
-            FlyData("Pokemon Mansion", "CINNABAR ISLAND", 3, 8, 8, 4, 1, 312),
-            FlyData("Cinnabar Gym", "CINNABAR ISLAND", 3, 8, 20, 5, 1, 312),
-            FlyData("Pokemon Lab", "CINNABAR ISLAND", 3, 8, 8, 10, 1, 312),
-            FlyData("Cinnabar Pokemon Center", "CINNABAR ISLAND", 3, 8, 14, 12, 1, 312),
-            FlyData("Cinnabar Poke Mart", "CINNABAR ISLAND", 3, 8, 19, 12, 1, 312)
-        ]
-    },
-    "Indigo Plateau": {
-        "Indigo Plateau": [
-            FlyData("Indigo Plateau Pokemon Center", "INDIGO PLATEAU", 3, 9, 11, 7, 1, 68)
-        ]
-    },
-    "Route 2": {
-        "Route 2 Southwest": [
-            FlyData("Viridian Forest South Gate", "ROUTE 2", 3, 20, 5, 52, 1, 136)
-        ],
-        "Route 2 Northwest": [
-            FlyData("Viridian Forest North Gate", "ROUTE 2", 3, 20, 5, 13, 1, 114)
-        ],
-        "Route 2 Northeast": [
-            FlyData("Diglett's Cave North Entrance", "ROUTE 2", 3, 20, 17, 12, 1, 114),
-            FlyData("Route 2 Trade House", "ROUTE 2", 3, 20, 17, 23, 1, 114)
-        ],
-        "Route 2 East": [
-            FlyData("Route 2 Gate (North)", "ROUTE 2", 3, 20, 18, 41, 1, 136)
-        ],
-        "Route 2 Southeast": [
-            FlyData("Route 2 Gate (South)", "ROUTE 2", 3, 20, 18, 47, 1, 136)
-        ]
-    },
-    "Route 4": {
-        "Route 4 West": [
-            FlyData("Mt. Moon (West)", "ROUTE 4", 3, 22, 19, 6, 1, 75),
-            FlyData("Route 4 Pokemon Center", "ROUTE 4", 3, 22, 12, 6, 1, 74)
-        ],
-        "Route 4 East": [
-            FlyData("Mt. Moon (East)", "ROUTE 4", 3, 22, 32, 6, 1, 75)
-        ]
-    },
-    "Route 5": {
-        "Route 5": [
-            FlyData("Route 5 Pokemon Day Care", "ROUTE 5", 3, 23, 23, 26, 1, 124),
-            FlyData("Route 5 Gate (North)", "ROUTE 5", 3, 23, 24, 32, 1, 124)
-        ],
-        "Route 5 Near Tunnel": [
-            FlyData("Underground Path North Entrance", "ROUTE 5", 3, 23, 31, 32, 1, 124)
-        ]
-    },
-    "Route 6": {
-        "Route 6": [
-            FlyData("Route 6 Gate (South)", "ROUTE 6", 3, 24, 12, 6, 1, 168)
-        ],
-        "Route 6 Near Tunnel": [
-            FlyData("Underground Path South Entrance", "ROUTE 6", 3, 24, 19, 14, 1, 168)
-        ]
-    },
-    "Route 7": {
-        "Route 7": [
-            FlyData("Route 7 Gate (West)", "ROUTE 7", 3, 25, 15, 10, 1, 145)
-        ],
-        "Route 7 Near Tunnel": [
-            FlyData("Underground Path West Entrance", "ROUTE 7", 3, 25, 7, 15, 1, 144)
-        ]
-    },
-    "Route 8": {
-        "Route 8": [
-            FlyData("Route 8 Gate (East)", "ROUTE 8", 3, 26, 7, 10, 1, 147)
-        ],
-        "Route 8 Near Tunnel": [
-            FlyData("Underground Path East Entrance", "ROUTE 8", 3, 26, 13, 5, 1, 147)
-        ]
-    },
-    "Route 10": {
-        "Route 10 North": [
-            FlyData("Rock Tunnel (North)", "ROUTE 10", 3, 28, 8, 20, 1, 84),
-            FlyData("Route 10 Pokemon Center", "ROUTE 10", 3, 28, 13, 21, 1, 84)
-        ],
-        "Route 10 South": [
-            FlyData("Rock Tunnel (South)", "ROUTE 10", 3, 28, 8, 58, 1, 128)
-        ],
-        "Route 10 Near Power Plant": [
-            FlyData("Power Plant (Front)", "ROUTE 10", 3, 28, 7, 41, 1, 106)
-        ],
-        "Route 10 Near Power Plant Back": [
-            FlyData("Power Plant (Back)", "ROUTE 10", 3, 28, 2, 37, 1, 106)
-        ]
-    },
-    "Route 11": {
-        "Route 11 West": [
-            FlyData("Diglett's Cave South Entrance", "ROUTE 11", 3, 29, 6, 8, 1, 213),
-            FlyData("Route 11 Gate (West)", "ROUTE 11", 3, 29, 58, 10, 1, 215)
-        ],
-        "Route 11 East": [
-            FlyData("Route 11 Gate (East)", "ROUTE 11", 3, 29, 65, 10, 1, 215)
-        ]
-    },
-    "Route 12": {
-        "Route 12 North": [
-            FlyData("Route 12 Gate (North)", "ROUTE 12", 3, 30, 14, 15, 1, 172)
-        ],
-        "Route 12 Center": [
-            FlyData("Route 12 Gate (South)", "ROUTE 12", 3, 30, 14, 22, 1, 172)
-        ],
-        "Route 12 South": [
-            FlyData("Route 12 Fishing House", "ROUTE 12", 3, 30, 12, 87, 1, 238)
-        ]
-    },
-    "Route 15": {
-        "Route 15 South": [
-            FlyData("Route 15 Gate (East)", "ROUTE 15", 3, 33, 16, 11, 1, 277)
-        ],
-        "Route 15 Southwest": [
-            FlyData("Route 15 Gate (West)", "ROUTE 15", 3, 33, 9, 11, 1, 277)
-        ]
-    },
-    "Route 16": {
-        "Route 16 Northeast": [
-            FlyData("Route 16 Gate (Northeast)", "ROUTE 16", 3, 34, 27, 6, 1, 141)
-        ],
-        "Route 16 Northwest": [
-            FlyData("Route 16 Fly House", "ROUTE 16", 3, 34, 10, 6, 1, 139),
-            FlyData("Route 16 Gate (Northwest)", "ROUTE 16", 3, 34, 20, 6, 1, 140)
-        ],
-        "Route 16 Center": [
-            FlyData("Route 16 Gate (Southeast)", "ROUTE 16", 3, 34, 27, 13, 1, 141)
-        ]
-    },
-    "Route 18": {
-        "Route 18 East": [
-            FlyData("Route 18 Gate (East)", "ROUTE 18", 3, 36, 48, 9, 1, 275)
-        ]
-    },
-    "Route 20": {
-        "Route 20 Near North Cave": [
-            FlyData("Seafoam Islands (North)", "ROUTE 20", 3, 38, 60, 9, 1, 316)
-        ],
-        "Route 20 Near South Cave": [
-            FlyData("Seafoam Islands (South)", "ROUTE 20", 3, 38, 72, 15, 1, 317)
-        ]
-    },
-    "Route 22": {
-        "Route 22": [
-            FlyData("Route 22 Gate (South)", "ROUTE 22", 3, 41, 8, 6, 1, 178)
-        ]
-    },
-    "Route 23": {
-        "Route 23 South": [
-            FlyData("Route 22 Gate (North)", "ROUTE 23", 3, 42, 8, 153, 1, 156)
-        ],
-        "Route 23 Near Cave": [
-            FlyData("Victory Road (West)", "ROUTE 23", 3, 42, 5, 29, 1, 90)
-        ],
-        "Route 23 North": [
-            FlyData("Victory Road (East)", "ROUTE 23", 3, 42, 18, 29, 1, 90)
-        ]
-    },
-    "Route 25": {
-        "Route 25": [
-            FlyData("Sea Cottage", "ROUTE 25", 3, 44, 51, 5, 1, 38)
-        ]
-    },
-    "Navel Rock Exterior": {
-        "Navel Rock Exterior": [
-            FlyData("Navel Rock", "NAVEL ROCK", 2, 0, 9, 9, 3, 186),
-            FlyData("Navel Rock Harbor", "NAVEL ROCK", 2, 0, 9, 16, 3, 186)
-        ]
-    },
-    "Birth Island Exterior": {
-        "Birth Island Exterior": [
-            FlyData("Birth Island Harbor", "BIRTH ISLAND", 2, 56, 15, 24, 4, 304)
-        ]
-    }
+pallet_fly_destinations: List[FlyData] = [
+    FlyData("Player's House", "PALLET TOWN", "Pallet Town", "Pallet Town", 3, 0, 6, 8, 1, 246),
+    FlyData("Rival's House", "PALLET TOWN", "Pallet Town", "Pallet Town", 3, 0, 15, 8, 1, 246),
+    FlyData("Professor Oak's Lab", "PALLET TOWN", "Pallet Town", "Pallet Town", 3, 0, 16, 14, 1, 246)
+]
+
+viridian_fly_destinations: List[FlyData] = [
+    FlyData("Viridian Pokemon Center", "VIRIDIAN CITY", "Viridian City", "Viridian City (South)", 3, 1, 26, 27, 1, 180),
+    FlyData("Virdian Nickname House", "VIRIDIAN CITY", "Viridian City", "Viridian City (South)", 3, 1, 25, 12, 1, 180),
+    FlyData("Viridian School", "VIRIDIAN CITY", "Viridian City", "Viridian City (South)", 3, 1, 25, 19, 1, 180),
+    FlyData("Viridian Poke Mart", "VIRIDIAN CITY", "Viridian City", "Viridian City (South)", 3, 1, 36, 20, 1, 180),
+    FlyData("Viridian Gym", "VIRIDIAN CITY", "Viridian City", "Viridian City (North)", 3, 1, 36, 11, 1, 180),
+    FlyData("Viridian Forest South Gate", "ROUTE 2", "Route 2", "Route 2 (Southwest)", 3, 20, 5, 52, 1, 136),
+    FlyData("Route 2 Gate (South)", "ROUTE 2", "Route 2", "Route 2 (Southeast)", 3, 20, 18, 47, 1, 136),
+    FlyData("Route 22 Gate (South)", "ROUTE 22", "Route 22", "Route 22 (West)", 3, 41, 8, 6, 1, 178)
+]
+
+pewter_fly_destinations: List[FlyData] = [
+    FlyData("Pewter Museum (West)", "PEWTER CITY", "Pewter City", "Pewter City", 3, 2, 17, 7, 1, 92),
+    FlyData("Pewter Gym", "PEWTER CITY", "Pewter City", "Pewter City", 3, 2, 15, 17, 1, 92),
+    FlyData("Pewter Poke Mart", "PEWTER CITY", "Pewter City", "Pewter City", 3, 2, 28, 19, 1, 92),
+    FlyData("Pewter Nidoran House", "PEWTER CITY", "Pewter City", "Pewter City", 3, 2, 33, 12, 1, 92),
+    FlyData("Pewter Pokemon Center", "PEWTER CITY", "Pewter City", "Pewter City", 3, 2, 17, 26, 1, 92),
+    FlyData("Pewter Info House", "PEWTER CITY", "Pewter City", "Pewter City", 3, 2, 9, 31, 1, 92),
+    FlyData("Pewter Museum (East)", "PEWTER CITY", "Pewter City", "Pewter City (Near Museum)", 3, 2, 25, 5, 1, 92),
+    FlyData("Viridian Forest North Gate", "ROUTE 2", "Route 2", "Route 2 (Northwest)", 3, 20, 5, 13, 1, 114),
+    FlyData("Diglett's Cave North Entrance", "ROUTE 2", "Route 2", "Route 2 (Northeast)", 3, 20, 17, 12, 1, 114),
+    FlyData("Route 2 Trade House", "ROUTE 2", "Route 2", "Route 2 (Northeast)", 3, 20, 17, 23, 1, 114),
+    FlyData("Route 2 Gate (North)", "ROUTE 2", "Route 2", "Route 2 (East)", 3, 20, 18, 41, 1, 136)
+]
+
+cerulean_fly_destinations: List[FlyData] = [
+    FlyData("Badge Guy's House (Front)", "CERULEAN CITY", "Cerulean City", "Cerulean City", 3, 3, 10, 12, 1, 80),
+    FlyData("Robbed House (Front)", "CERULEAN CITY", "Cerulean City", "Cerulean City", 3, 3, 30, 12, 1, 80),
+    FlyData("Cerulean Trade House", "CERULEAN CITY", "Cerulean City", "Cerulean City", 3, 3, 15, 18, 1, 80),
+    FlyData("Cerulean Pokemon Center", "CERULEAN CITY", "Cerulean City", "Cerulean City", 3, 3, 22, 20, 1, 80),
+    FlyData("Cerulean Gym", "CERULEAN CITY", "Cerulean City", "Cerulean City", 3, 3, 31, 22, 1, 80),
+    FlyData("Bike Shop", "CERULEAN CITY", "Cerulean City", "Cerulean City", 3, 3, 13, 29, 1, 80),
+    FlyData("Cerulean Poke Mart", "CERULEAN CITY", "Cerulean City", "Cerulean City", 3, 3, 29, 29, 1, 80),
+    FlyData("Wonder News House", "CERULEAN CITY", "Cerulean City", "Cerulean City", 3, 3, 23, 29, 1, 80),
+    FlyData("Berry Powder Man's House", "CERULEAN CITY", "Cerulean City", "Cerulean City", 3, 3, 17, 12, 1, 80),
+    FlyData("Badge Guy's House (Back)", "CERULEAN CITY", "Cerulean City", "Cerulean City (Backyard)", 3, 3, 10, 8, 1,
+            80),
+    FlyData("Robbed House (Back)", "CERULEAN CITY", "Cerulean City", "Cerulean City (Outskirts)", 3, 3, 31, 8, 1, 80),
+    FlyData("Cerulean Cave", "CERULEAN CITY", "Cerulean City", "Cerulean City (Near Cave)", 3, 3, 1, 13, 1, 80),
+    FlyData("Mt. Moon (East)", "ROUTE 4", "Route 4", "Route 4 (East)", 3, 22, 32, 6, 1, 75),
+    FlyData("Route 5 Gate (North)", "ROUTE 5", "Route 5", "Route 5", 3, 23, 24, 32, 1, 124),
+    FlyData("Route 5 Pokemon Day Care", "ROUTE 5", "Route 5", "Route 5 (Near Daycare)", 3, 23, 23, 26, 1, 124),
+    FlyData("Underground Path North Entrance", "ROUTE 5", "Route 5", "Route 5 (Near Underground)", 3, 23, 31, 32, 1,
+            124),
+    FlyData("Sea Cottage", "ROUTE 25", "Route 25", "Route 25", 3, 44, 51, 5, 1, 38)
+]
+
+vermilion_fly_destinations: List[FlyData] = [
+    FlyData("Vermilion Fishing House", "VERMILION CITY", "Vermilion City", "Vermilion City", 3, 5, 9, 7, 1, 212),
+    FlyData("Vermilion Pokemon Center", "VERMILION CITY", "Vermilion City", "Vermilion City", 3, 5, 15, 7, 1, 212),
+    FlyData("Pokemon Fan Club", "VERMILION CITY", "Vermilion City", "Vermilion City", 3, 5, 12, 18, 1, 212),
+    FlyData("Vermilion Trade House", "VERMILION CITY", "Vermilion City", "Vermilion City", 3, 5, 19, 18, 1, 212),
+    FlyData("Vermilion Poke Mart", "VERMILION CITY", "Vermilion City", "Vermilion City", 3, 5, 29, 18, 1, 212),
+    FlyData("Vermilion Pidgey House", "VERMILION CITY", "Vermilion City", "Vermilion City", 3, 5, 28, 25, 1, 212),
+    FlyData("Vermilion Gym", "VERMILION CITY", "Vermilion City", "Vermilion City (Near Gym)", 3, 5, 14, 26, 1, 212),
+    FlyData("Vermilion Harbor", "VERMILION CITY", "Vermilion City", "Vermilion City (Near Harbor)", 3, 5, 23, 34, 1,
+            212),
+    FlyData("Route 6 Gate (South)", "ROUTE 6", "Route 6", "Route 6", 3, 24, 12, 6, 1, 168),
+    FlyData("Underground Path South Entrance", "ROUTE 6", "Route 6", "Route 6 (Near Underground)", 3, 24, 19, 14, 1,
+            168),
+    FlyData("Diglett's Cave South Entrance", "ROUTE 11", "Route 11", "Route 11 (West)", 3, 29, 6, 8, 1, 213),
+    FlyData("Route 11 Gate (West)", "ROUTE 11", "Route 11", "Route 11 (West)", 3, 29, 58, 10, 1, 215),
+    FlyData("Route 11 Gate (East)", "ROUTE 11", "Route 11", "Route 11 (East)", 3, 29, 65, 10, 1, 215)
+]
+
+lavender_fly_destinations: List[FlyData] = [
+    FlyData("Pokemon Tower", "LAVENDER TOWN", "Lavender Town", "Lavender Town", 3, 4, 18, 7, 1, 150),
+    FlyData("Lavender Pokemon Center", "LAVENDER TOWN", "Lavender Town", "Lavender Town", 3, 4, 6, 6, 1, 150),
+    FlyData("Volunteer Pokemon House", "LAVENDER TOWN", "Lavender Town", "Lavender Town", 3, 4, 10, 12, 1, 150),
+    FlyData("Lavender Cubone House", "LAVENDER TOWN", "Lavender Town", "Lavender Town", 3, 4, 5, 17, 1, 150),
+    FlyData("Name Rater's House", "LAVENDER TOWN", "Lavender Town", "Lavender Town", 3, 4, 10, 17, 1, 150),
+    FlyData("Lavender Poke Mart", "LAVENDER TOWN", "Lavender Town", "Lavender Town", 3, 4, 20, 16, 1, 150),
+    FlyData("Route 8 Gate (East)", "ROUTE 8", "Route 8", "Route 8", 3, 26, 7, 10, 1, 147),
+    FlyData("Underground Path East Entrance", "ROUTE 8", "Route 8", "Route 8 (Near Underground)", 3, 26, 13, 5, 1, 147),
+    FlyData("Route 12 Gate (North)", "ROUTE 12", "Route 12", "Route 12 (North)", 3, 30, 14, 15, 1, 172),
+    FlyData("Route 12 Gate (South)", "ROUTE 12", "Route 12", "Route 12 (Center)", 3, 30, 14, 22, 1, 172),
+    FlyData("Route 12 Fishing House", "ROUTE 12", "Route 12", "Route 12 (South)", 3, 30, 12, 87, 1, 238)
+]
+
+celadon_fly_destinations: List[FlyData] = [
+    FlyData("Celadon Game Corner", "CELADON CITY", "Celadon City", "Celadon City", 3, 6, 34, 22, 1, 143),
+    FlyData("Celadon Department Store (West)", "CELADON CITY", "Celadon City", "Celadon City", 3, 6, 11, 15, 1, 143),
+    FlyData("Celadon Department Store (East)", "CELADON CITY", "Celadon City", "Celadon City", 3, 6, 15, 15, 1, 143),
+    FlyData("Celadon Condominiums (Front)", "CELADON CITY", "Celadon City", "Celadon City", 3, 6, 30, 12, 1, 143),
+    FlyData("Celadon Pokemon Center", "CELADON CITY", "Celadon City", "Celadon City", 3, 6, 48, 12, 1, 143),
+    FlyData("Celadon Game Corner Prize Room", "CELADON CITY", "Celadon City", "Celadon City", 3, 6, 39, 21, 1, 143),
+    FlyData("Celadon Restaurant", "CELADON CITY", "Celadon City", "Celadon City", 3, 6, 37, 30, 1, 143),
+    FlyData("Celadon Rocket House", "CELADON CITY", "Celadon City", "Celadon City", 3, 6, 41, 30, 1, 143),
+    FlyData("Celadon Hotel", "CELADON CITY", "Celadon City", "Celadon City", 3, 6, 49, 30, 1, 143),
+    FlyData("Celadon Condominiums (Back)", "CELADON CITY", "Celadon City", "Celadon City", 3, 6, 30, 4, 1, 143),
+    FlyData("Celadon Gym", "CELADON CITY", "Celadon City", "Celadon City (Near Gym)", 3, 6, 11, 31, 1, 143),
+    FlyData("Route 7 Gate (West)", "ROUTE 7", "Route 7", "Route 7", 3, 25, 15, 10, 1, 145),
+    FlyData("Underground Path West Entrance", "ROUTE 7", "Route 7", "Route 7 (Near Underground)", 3, 25, 7, 15, 1, 144),
+    FlyData("Route 16 Gate (Northeast)", "ROUTE 16", "Route 16", "Route 16 (Northeast)", 3, 34, 27, 6, 1, 141),
+    FlyData("Route 16 Fly House", "ROUTE 16", "Route 16", "Route 16 (Northwest)", 3, 34, 10, 6, 1, 139),
+    FlyData("Route 16 Gate (Northwest)", "ROUTE 16", "Route 16", "Route 16 (Northwest)", 3, 34, 20, 6, 1, 140),
+    FlyData("Route 16 Gate (Southeast)", "ROUTE 16", "Route 16", "Route 16 (Center)", 3, 34, 27, 13, 1, 141)
+]
+
+fuchsia_fly_destinations: List[FlyData] = [
+    FlyData("Safari Zone Entrance", "FUCHSIA CITY", "Fuchsia City", "Fuchsia City", 3, 7, 24, 6, 1, 276),
+    FlyData("Safari Zone Warden's House", "FUCHSIA CITY", "Fuchsia City", "Fuchsia City", 3, 7, 33, 32, 1, 276),
+    FlyData("Fuchsia Poke Mart", "FUCHSIA CITY", "Fuchsia City", "Fuchsia City", 3, 7, 11, 16, 1, 276),
+    FlyData("Safari Zone Office", "FUCHSIA CITY", "Fuchsia City", "Fuchsia City", 3, 7, 28, 17, 1, 276),
+    FlyData("Fuchsia Gym", "FUCHSIA CITY", "Fuchsia City", "Fuchsia City", 3, 7, 9, 33, 1, 276),
+    FlyData("Bill's Grandpa's House", "FUCHSIA CITY", "Fuchsia City", "Fuchsia City", 3, 7, 14, 32, 1, 276),
+    FlyData("Fuchsia Pokemon Center", "FUCHSIA CITY", "Fuchsia City", "Fuchsia City", 3, 7, 25, 32, 1, 276),
+    FlyData("Fuchsia Fishing House (Front)", "FUCHSIA CITY", "Fuchsia City", "Fuchsia City", 3, 7, 38, 32, 1, 276),
+    FlyData("Move Deleter's House", "FUCHSIA CITY", "Fuchsia City", "Fuchsia City", 3, 7, 19, 32, 1, 276),
+    FlyData("Fuchsia Fishing House (Back)", "FUCHSIA CITY", "Fuchsia City", "Fuchsia City (Backyard)", 3, 7, 39, 28, 1,
+            276),
+    FlyData("Route 15 Gate (East)", "ROUTE 15", "Route 15", "Route 15 (South)", 3, 33, 16, 11, 1, 277),
+    FlyData("Route 15 Gate (West)", "ROUTE 15", "Route 15", "Route 15 (Southwest)", 3, 33, 9, 11, 1, 277),
+    FlyData("Route 18 Gate (East)", "ROUTE 18", "Route 18", "Route 18 (East)", 3, 36, 48, 9, 1, 275),
+    FlyData("Seafoam Islands (North)", "ROUTE 20", "Route 20", "Route 20 (Near North Cave)", 3, 38, 60, 9, 1, 316)
+]
+
+saffron_fly_destinations: List[FlyData] = [
+    FlyData("Silph Co.", "SAFFRON CITY", "Saffron City", "Saffron City", 3, 10, 33, 31, 1, 146),
+    FlyData("Copycat's House", "SAFFRON CITY", "Saffron City", "Saffron City", 3, 10, 22, 15, 1, 146),
+    FlyData("Saffron Dojo", "SAFFRON CITY", "Saffron City", "Saffron City", 3, 10, 40, 13, 1, 146),
+    FlyData("Saffron Gym", "SAFFRON CITY", "Saffron City", "Saffron City", 3, 10, 46, 13, 1, 146),
+    FlyData("Saffron Pidgey House", "SAFFRON CITY", "Saffron City", "Saffron City", 3, 10, 27, 22, 1, 146),
+    FlyData("Saffron Poke Mart", "SAFFRON CITY", "Saffron City", "Saffron City", 3, 10, 40, 22, 1, 146),
+    FlyData("Saffron Pokemon Center", "SAFFRON CITY", "Saffron City", "Saffron City", 3, 10, 24, 39, 1, 146),
+    FlyData("Mr. Psychic's House", "SAFFRON CITY", "Saffron City", "Saffron City", 3, 10, 43, 39, 1, 146),
+    FlyData("Route 7 Gate (East)", "SAFFRON CITY", "Saffron City", "Saffron City", 3, 10, 8, 27, 1, 146),
+    FlyData("Route 5 Gate (South)", "SAFFRON CITY", "Saffron City", "Saffron City", 3, 10, 34, 6, 1, 146),
+    FlyData("Route 8 Gate (West)", "SAFFRON CITY", "Saffron City", "Saffron City", 3, 10, 58, 27, 1, 146),
+    FlyData("Route 6 Gate (North)", "SAFFRON CITY", "Saffron City", "Saffron City", 3, 10, 34, 46, 1, 146),
+    FlyData("Pokemon Trainer Fan Club", "SAFFRON CITY", "Saffron City", "Saffron City", 3, 10, 47, 22, 1, 146)
+]
+
+cinnabar_fly_destinations: List[FlyData] = [
+    FlyData("Pokemon Mansion", "CINNABAR ISLAND", "Cinnabar Island", "Cinnabar Island", 3, 8, 8, 4, 1, 312),
+    FlyData("Cinnabar Gym", "CINNABAR ISLAND", "Cinnabar Island", "Cinnabar Island", 3, 8, 20, 5, 1, 312),
+    FlyData("Pokemon Lab", "CINNABAR ISLAND", "Cinnabar Island", "Cinnabar Island", 3, 8, 8, 10, 1, 312),
+    FlyData("Cinnabar Pokemon Center", "CINNABAR ISLAND", "Cinnabar Island", "Cinnabar Island", 3, 8, 14, 12, 1, 312),
+    FlyData("Cinnabar Poke Mart", "CINNABAR ISLAND", "Cinnabar Island", "Cinnabar Island", 3, 8, 19, 12, 1, 312),
+    FlyData("Seafoam Islands (South)", "ROUTE 20", "Route 20", "Route 20 (Near South Cave)", 3, 38, 72, 15, 1, 317)
+]
+
+indigo_fly_destinations: List[FlyData] = [
+    FlyData("Indigo Plateau Pokemon Center", "INDIGO PLATEAU", "Indigo Plateau", "Indigo Plateau", 3, 9, 11, 7, 1, 68),
+    FlyData("Route 22 Gate (North)", "ROUTE 23", "Route 23", "Route 23 (South)", 3, 42, 8, 153, 1, 156),
+    FlyData("Victory Road (West)", "ROUTE 23", "Route 23", "Route 23 (Near Cave)", 3, 42, 5, 29, 1, 90),
+    FlyData("Victory Road (East)", "ROUTE 23", "Route 23", "Route 23 (North)", 3, 42, 18, 29, 1, 90)
+]
+
+route_4_fly_destinations: List[FlyData] = [
+    FlyData("Mt. Moon (West)", "ROUTE 4", "Route 4", "Route 4 (West)", 3, 22, 19, 6, 1, 75),
+    FlyData("Route 4 Pokemon Center", "ROUTE 4", "Route 4", "Route 4 (West)", 3, 22, 12, 6, 1, 74)
+]
+
+route_10_fly_destinations: List[FlyData] = [
+    FlyData("Rock Tunnel (North)", "ROUTE 10", "Route 10", "Route 10 (North)", 3, 28, 8, 20, 1, 84),
+    FlyData("Route 10 Pokemon Center", "ROUTE 10", "Route 10", "Route 10 (North)", 3, 28, 13, 21, 1, 84),
+    FlyData("Rock Tunnel (South)", "ROUTE 10", "Route 10", "Route 10 (South)", 3, 28, 8, 58, 1, 128),
+    FlyData("Power Plant (Front)", "ROUTE 10", "Route 10", "Route 10 (Near Power Plant)", 3, 28, 7, 41, 1, 106),
+    FlyData("Power Plant (Back)", "ROUTE 10", "Route 10", "Route 10 (Near Power Plant Back)", 3, 28, 2, 37, 1, 106)
+]
+
+navel_rock_fly_destinations: List[FlyData] = [
+    FlyData("Navel Rock", "NAVEL ROCK", "Navel Rock Exterior", "Navel Rock Exterior", 2, 0, 9, 9, 3, 186),
+    FlyData("Navel Rock Harbor", "NAVEL ROCK", "Navel Rock Exterior", "Navel Rock Exterior", 2, 0, 9, 16, 3, 186)
+]
+
+birth_island_fly_destinations: List[FlyData] = [
+    FlyData("Birth Island Harbor", "BIRTH ISLAND", "Birth Island Exterior", "Birth Island Exterior", 2, 56, 15, 24, 4,
+            304)
+]
+
+one_island_fly_destinations: List[FlyData] = [
+    FlyData("One Island Pokemon Center", "ONE ISLAND", "One Island", "One Island Town", 3, 12, 14, 6, 2, 177),
+    FlyData("One Island Old Couple's House", "ONE ISLAND", "One Island", "One Island Town", 3, 12, 19, 10, 2, 177),
+    FlyData("One Island Lass' House", "ONE ISLAND", "One Island", "One Island Town", 3, 12, 8, 12, 2, 177),
+    FlyData("One Island Harbor", "ONE ISLAND", "One Island", "One Island Town", 3, 12, 12, 18, 2, 177),
+    FlyData("Ember Spa", "KINDLE ROAD", "Kindle Road", "Kindle Road (Center)", 3, 45, 15, 59, 2, 112),
+    FlyData("Mt. Ember", "KINDLE ROAD", "Kindle Road", "Kindle Road (North)", 3, 45, 11, 6, 2, 68)
+]
+
+two_island_fly_destinations: List[FlyData] = [
+    FlyData("Two Island Game Corner", "TWO ISLAND", "Two Island", "Two Island Town", 3, 13, 39, 10, 2, 207),
+    FlyData("Move Maniac's House", "TWO ISLAND", "Two Island", "Two Island Town", 3, 13, 33, 10, 2, 207),
+    FlyData("Two Island Pokemon Center", "TWO ISLAND", "Two Island", "Two Island Town", 3, 13, 21, 8, 2, 207),
+    FlyData("Two Island Harbor", "TWO ISLAND", "Two Island", "Two Island Town", 3, 13, 10, 8, 2, 207),
+    FlyData("Starter Tutor's House", "CAPE BRINK", "Cape Brink", "Cape Brink", 3, 47, 12, 17, 2, 163)
+]
+
+three_island_fly_destinations: List[FlyData] = [
+    FlyData("Three Isle Path (West)", "THREE ISLE PORT", "Three Isle Port", "Three Isle Port (West)", 3, 49, 16, 5, 2,
+            304),
+    FlyData("Three Island Harbor", "THREE ISLE PORT", "Three Isle Port", "Three Isle Port (West)", 3, 49, 12, 13, 2,
+            304),
+    FlyData("Three Isle Path (East)", "THREE ISLE PORT", "Three Isle Port", "Three Isle Port (East)", 3, 49, 38, 6, 2,
+            305),
+    FlyData("Lostelle's House", "THREE ISLAND", "Three Island", "Three Island Town (South)", 3, 14, 3, 32, 2, 282),
+    FlyData("Three Island Pokemon Center", "THREE ISLAND", "Three Island", "Three Island Town (South)", 3, 14, 14, 28,
+            2, 282),
+    FlyData("Three Island Poke Mart", "THREE ISLAND", "Three Island", "Three Island Town (North)", 3, 14, 18, 13, 2,
+            282),
+    FlyData("Sabrina Fan's House", "THREE ISLAND", "Three Island", "Three Island Town (North)", 3, 14, 4, 7, 2, 282),
+    FlyData("Three Island Beauty's House", "THREE ISLAND", "Three Island", "Three Island Town (North)", 3, 14, 12, 7, 2,
+            282),
+    FlyData("Three Island Worried Father's House", "THREE ISLAND", "Three Island", "Three Island Town (North)", 3, 14,
+            12, 13, 2, 282),
+    FlyData("Lostelle's Friend's House", "THREE ISLAND", "Three Island", "Three Island Town (North)", 3, 14, 13, 20, 2,
+            282),
+    FlyData("Berry Forest", "BOND BRIDGE", "Bond Bridge", "Bond Bridge", 3, 48, 12, 7, 2, 278)
+]
+
+four_island_fly_destinations: List[FlyData] = [
+    FlyData("Four Island Pokemon Center", "FOUR ISLAND", "Four Island", "Four Island Town", 3, 15, 18, 21, 3, 91),
+    FlyData("Four Island Pokemon Day Care", "FOUR ISLAND", "Four Island", "Four Island Town", 3, 15, 12, 14, 3, 91),
+    FlyData("Four Island Move Tutor's House", "FOUR ISLAND", "Four Island", "Four Island Town", 3, 15, 25, 15, 3, 91),
+    FlyData("Lorelei's House", "FOUR ISLAND", "Four Island", "Four Island Town", 3, 15, 33, 24, 3, 91),
+    FlyData("Sticker Man's House", "FOUR ISLAND", "Four Island", "Four Island Town", 3, 15, 25, 27, 3, 91),
+    FlyData("Four Island Harbor", "FOUR ISLAND", "Four Island", "Four Island Town", 3, 15, 10, 28, 3, 91),
+    FlyData("Four Island Poke Mart", "FOUR ISLAND", "Four Island", "Four Island Town", 3, 15, 22, 27, 3, 91),
+    FlyData("Icefall Cave", "FOUR ISLAND", "Four Island", "Four Island Town (Near Cave)", 3, 15, 38, 13, 3, 91)
+]
+
+five_island_fly_destinations: List[FlyData] = [
+    FlyData("Five Island Harbor", "FIVE ISLAND", "Five Island", "Five Island Town", 3, 16, 12, 14, 3, 258),
+    FlyData("Five Island Pokemon Center", "FIVE ISLAND", "Five Island", "Five Island Town", 3, 16, 18, 7, 3, 258),
+    FlyData("Five Island Couple's House", "FIVE ISLAND", "Five Island", "Five Island Town", 3, 16, 12, 7, 3, 258),
+    FlyData("Five Island Old Man's House", "FIVE ISLAND", "Five Island", "Five Island Town", 3, 16, 22, 10, 3, 258),
+    FlyData("Rocket Warehouse", "FIVE ISLE MEADOW", "Five Isle Meadow", "Five Isle Meadow", 3, 56, 12, 22, 3, 281),
+    FlyData("Selphy's House", "RESORT GORGEOUS", "Resort Gorgeous", "Resort Gorgeous (Near Resort)", 3, 54, 39, 9, 3,
+            215),
+    FlyData("Lost Cave", "RESORT GORGEOUS", "Resort Gorgeous", "Resort Gorgeous (Near Cave)", 3, 54, 64, 14, 3, 216)
+]
+
+six_island_fly_destinations: List[FlyData] = [
+    FlyData("Six Island Harbor", "SIX ISLAND", "Six Island", "Six Island Town", 3, 18, 11, 23, 4, 127),
+    FlyData("Six Island Pokemon Center", "SIX ISLAND", "Six Island", "Six Island Town", 3, 18, 11, 12, 4, 127),
+    FlyData("Six Island Old Man's House", "SIX ISLAND", "Six Island", "Six Island Town", 3, 18, 16, 18, 4, 127),
+    FlyData("Six Island Poke Mart", "SIX ISLAND", "Six Island", "Six Island Town", 3, 18, 20, 12, 4, 127),
+    FlyData("Water Path Heracross Woman's House", "WATER PATH", "Water Path", "Water Path (North)", 3, 60, 5, 14, 4,
+            84),
+    FlyData("Water Path Man's House", "WATER PATH", "Water Path", "Water Path (North)", 3, 60, 11, 20, 4, 84),
+    FlyData("Dotted Hole", "RUIN VALLEY", "Ruin Valley", "Ruin Valley", 3, 61, 24, 25, 4, 192),
+    FlyData("Pattern Bush (East)", "GREEN PATH", "Green Path", "Green Path (East)", 3, 59, 63, 11, 4, 83),
+    FlyData("Pattern Bush (West)", "GREEN PATH", "Green Path", "Green Path (West)", 3, 59, 45, 11, 4, 82),
+    FlyData("Altering Cave", "OUTCAST ISLAND", "Outcast Island", "Outcast Island", 3, 58, 7, 22, 4, 15)
+]
+
+seven_island_fly_destinations: List[FlyData] = [
+    FlyData("Seven Island Trainer Battle House", "SEVEN ISLAND", "Seven Island", "Seven Island Town", 3, 17, 11, 10, 4,
+            181),
+    FlyData("Seven Island Poke Mart", "SEVEN ISLAND", "Seven Island", "Seven Island Town", 3, 17, 5, 10, 4, 181),
+    FlyData("Seven Island Pokemon Center", "SEVEN ISLAND", "Seven Island", "Seven Island Town", 3, 17, 12, 4, 4, 181),
+    FlyData("Seven Island Harbor", "SEVEN ISLAND", "Seven Island", "Seven Island Town", 3, 17, 16, 13, 4, 181),
+    FlyData("Tanoby Key", "SEVAULT CANYON", "Sevault Canyon", "Sevault Canyon", 3, 64, 7, 18, 4, 204),
+    FlyData("Sevault Canyon Chansey House", "SEVAULT CANYON", "Sevault Canyon", "Sevault Canyon", 3, 64, 14, 62, 4,
+            248),
+    FlyData("Viapois Chamber", "TANOBY RUINS", "Tanoby Ruins", "Tanoby Ruins (Viapois Island)", 3, 65, 11, 7, 4, 267),
+    FlyData("Rixy Chamber", "TANOBY RUINS", "Tanoby Ruins", "Tanoby Ruins (Rixy Island)", 3, 65, 12, 16, 4, 267),
+    FlyData("Scufib Chamber", "TANOBY RUINS", "Tanoby Ruins", "Tanoby Ruins (Scufib Island)", 3, 65, 32, 10, 4, 268),
+    FlyData("Dilford Chamber", "TANOBY RUINS", "Tanoby Ruins", "Tanoby Ruins (Dilford Island)", 3, 65, 44, 12, 4, 269),
+    FlyData("Weepth Chamber", "TANOBY RUINS", "Tanoby Ruins", "Tanoby Ruins (Weepth Island)", 3, 65, 88, 9, 4, 271),
+    FlyData("Liptoo Chamber", "TANOBY RUINS", "Tanoby Ruins", "Tanoby Ruins (Liptoo Island)", 3, 65, 103, 11, 4, 272),
+    FlyData("Monean Chamber", "TANOBY RUINS", "Tanoby Ruins", "Tanoby Ruins (Monean Island)", 3, 65, 120, 11, 4, 273),
+    FlyData("Trainer Tower", "TRAINER TOWER", "Trainer Tower Exterior", "Trainer Tower Exterior (North)", 3, 62, 58, 8,
+            4, 137)
+]
+
+kanto_fly_destinations: List[FlyData] = [
+    *pallet_fly_destinations, *viridian_fly_destinations, *pewter_fly_destinations, *cerulean_fly_destinations,
+    *vermilion_fly_destinations, *lavender_fly_destinations, *celadon_fly_destinations, *fuchsia_fly_destinations,
+    *saffron_fly_destinations, *cinnabar_fly_destinations, *indigo_fly_destinations, *route_4_fly_destinations,
+    *route_10_fly_destinations
+]
+
+sevii_123_fly_destinations: List[FlyData] = [
+    *one_island_fly_destinations, *two_island_fly_destinations, *three_island_fly_destinations
+]
+
+sevii_45_fly_destinations: List[FlyData] = [
+    *four_island_fly_destinations, *five_island_fly_destinations, *navel_rock_fly_destinations
+]
+
+sevii_67_fly_destinations: List[FlyData] = [
+    *six_island_fly_destinations, *seven_island_fly_destinations, *birth_island_fly_destinations
+]
+
+sevii_fly_destinations: List[FlyData] = [
+    *sevii_123_fly_destinations, *sevii_45_fly_destinations, *sevii_67_fly_destinations
+]
+
+all_fly_destinations: List[FlyData] = [
+    *kanto_fly_destinations, *sevii_fly_destinations
+]
+
+fly_destination_areas: Dict[str, List[FlyData]] = {
+    "Pallet Town Fly Destination": pallet_fly_destinations,
+    "Viridian City Fly Destination": viridian_fly_destinations,
+    "Pewter City Fly Destination": pewter_fly_destinations,
+    "Route 4 Fly Destination": route_4_fly_destinations,
+    "Cerulean City Fly Destination": cerulean_fly_destinations,
+    "Vermilion City Fly Destination": vermilion_fly_destinations,
+    "Route 10 Fly Destination": route_10_fly_destinations,
+    "Lavender Town Fly Destination": lavender_fly_destinations,
+    "Celadon City Fly Destination": celadon_fly_destinations,
+    "Fuchsia City Fly Destination": fuchsia_fly_destinations,
+    "Saffron City Fly Destination": saffron_fly_destinations,
+    "Cinnabar Island Fly Destination": cinnabar_fly_destinations,
+    "Indigo Plateau Fly Destination": indigo_fly_destinations,
+    "One Island Fly Destination": one_island_fly_destinations,
+    "Two Island Fly Destination": two_island_fly_destinations,
+    "Three Island Fly Destination": three_island_fly_destinations,
+    "Four Island Fly Destination": four_island_fly_destinations,
+    "Five Island Fly Destination": five_island_fly_destinations,
+    "Six Island Fly Destination": six_island_fly_destinations,
+    "Seven Island Fly Destination": seven_island_fly_destinations,
 }
 
-sevii_fly_destinations: Dict[str, Dict[str, List[FlyData]]] = {
-    "One Island": {
-        "One Island Town": [
-            FlyData("One Island Pokemon Center", "ONE ISLAND", 3, 12, 14, 6, 2, 177),
-            FlyData("One Island Old Couple's House", "ONE ISLAND", 3, 12, 19, 10, 2, 177),
-            FlyData("One Island Lass' House", "ONE ISLAND", 3, 12, 8, 12, 2, 177),
-            FlyData("One Island Harbor", "ONE ISLAND", 3, 12, 12, 18, 2, 177)
-        ]
-    },
-    "Kindle Road": {
-        "Kindle Road Center": [
-            FlyData("Ember Spa", "KINDLE ROAD", 3, 45, 15, 59, 2, 112)
-        ],
-        "Kindle Road North": [
-            FlyData("Mt. Ember", "KINDLE ROAD", 3, 45, 11, 6, 2, 68)
-        ]
-    },
-    "Two Island": {
-        "Two Island Town": [
-            FlyData("Two Island Game Corner", "TWO ISLAND", 3, 13, 39, 10, 2, 207),
-            FlyData("Move Maniac's House", "TWO ISLAND", 3, 13, 33, 10, 2, 207),
-            FlyData("Two Island Pokemon Center", "TWO ISLAND", 3, 13, 21, 8, 2, 207),
-            FlyData("Two Island Harbor", "TWO ISLAND", 3, 13, 10, 8, 2, 207)
-        ]
-    },
-    "Cape Brink": {
-        "Cape Brink": [
-            FlyData("Starter Tutor's House", "CAPE BRINK", 3, 47, 12, 17, 2, 163)
-        ]
-    },
-    "Three Isle Port": {
-        "Three Isle Port West": [
-            FlyData("Three Isle Path (West)", "THREE ISLE PORT", 3, 49, 16, 5, 2, 304),
-            FlyData("Three Island Harbor", "THREE ISLE PORT", 3, 49, 12, 13, 2, 304)
-        ],
-        "Three Isle Port East": [
-            FlyData("Three Isle Path (East)", "THREE ISLE PORT", 3, 49, 38, 6, 2, 305)
-        ]
-    },
-    "Three Island": {
-        "Three Island Town South": [
-            FlyData("Lostelle's House", "THREE ISLAND", 3, 14, 3, 32, 2, 282),
-            FlyData("Three Island Pokemon Center", "THREE ISLAND", 3, 14, 14, 28, 2, 282)
-        ],
-        "Three Island Town North": [
-            FlyData("Three Island Poke Mart", "THREE ISLAND", 3, 14, 18, 13, 2, 282),
-            FlyData("Sabrina Fan's House", "THREE ISLAND", 3, 14, 4, 7, 2, 282),
-            FlyData("Three Island Beauty's House", "THREE ISLAND", 3, 14, 12, 7, 2, 282),
-            FlyData("Three Island Worried Father's House", "THREE ISLAND", 3, 14, 12, 13, 2, 282),
-            FlyData("Lostelle's Friend's House", "THREE ISLAND", 3, 14, 13, 20, 2, 282)
-        ]
-    },
-    "Bond Bridge": {
-        "Bond Bridge": [
-            FlyData("Berry Forest", "BOND BRIDGE", 3, 48, 12, 7, 2, 278)
-        ]
-    },
-    "Four Island": {
-        "Four Island Town": [
-            FlyData("Four Island Pokemon Center", "FOUR ISLAND", 3, 15, 18, 21, 3, 91),
-            FlyData("Four Island Pokemon Day Care", "FOUR ISLAND", 3, 15, 12, 14, 3, 91),
-            FlyData("Four Island Move Tutor's House", "FOUR ISLAND", 3, 15, 25, 15, 3, 91),
-            FlyData("Lorelei's House", "FOUR ISLAND", 3, 15, 33, 24, 3, 91),
-            FlyData("Sticker Man's House", "FOUR ISLAND", 3, 15, 25, 27, 3, 91),
-            FlyData("Four Island Harbor", "FOUR ISLAND", 3, 15, 10, 28, 3, 91),
-            FlyData("Four Island Poke Mart", "FOUR ISLAND", 3, 15, 22, 27, 3, 91)
-        ],
-        "Four Island Town Near Cave": [
-            FlyData("Icefall Cave", "FOUR ISLAND", 3, 15, 38, 13, 3, 91)
-        ]
-    },
-    "Five Island": {
-        "Five Island Town": [
-            FlyData("Five Island Harbor", "FIVE ISLAND", 3, 16, 12, 14, 3, 258),
-            FlyData("Five Island Pokemon Center", "FIVE ISLAND", 3, 16, 18, 7, 3, 258),
-            FlyData("Five Island Couple's House", "FIVE ISLAND", 3, 16, 12, 7, 3, 258),
-            FlyData("Five Island Old Man's House", "FIVE ISLAND", 3, 16, 22, 10, 3, 258)
-        ]
-    },
-    "Five Isle Meadow": {
-        "Five Isle Meadow": [
-            FlyData("Rocket Warehouse", "FIVE ISLE MEADOW", 3, 56, 12, 22, 3, 281)
-        ]
-    },
-    "Resort Gorgeous": {
-        "Resort Gorgeous Near Resort": [
-            FlyData("Selphy's House", "RESORT GORGEOUS", 3, 54, 39, 9, 3, 215)
-        ],
-        "Resort Gorgeous Near Cave": [
-            FlyData("Lost Cave", "RESORT GORGEOUS", 3, 54, 64, 14, 3, 216)
-        ]
-    },
-    "Six Island": {
-        "Six Island Town": [
-            FlyData("Six Island Harbor", "SIX ISLAND", 3, 18, 11, 23, 4, 127),
-            FlyData("Six Island Pokemon Center", "SIX ISLAND", 3, 18, 11, 12, 4, 127),
-            FlyData("Six Island Old Man's House", "SIX ISLAND", 3, 18, 16, 18, 4, 127),
-            FlyData("Six Island Poke Mart", "SIX ISLAND", 3, 18, 20, 12, 4, 127)
-        ]
-    },
-    "Water Path": {
-        "Water Path North": [
-            FlyData("Water Path Heracross Woman's House", "WATER PATH", 3, 60, 5, 14, 4, 84),
-            FlyData("Water Path Man's House", "WATER PATH", 3, 60, 11, 20, 4, 84)
-        ]
-    },
-    "Ruin Valley": {
-        "Ruin Valley": [
-            FlyData("Dotted Hole", "RUIN VALLEY", 3, 61, 24, 25, 4, 192)
-        ]
-    },
-    "Green Path": {
-        "Green Path East": [
-            FlyData("Pattern Bush (East)", "GREEN PATH", 3, 59, 63, 11, 4, 83)
-        ],
-        "Green Path West": [
-            FlyData("Pattern Bush (West)", "GREEN PATH", 3, 59, 45, 11, 4, 82)
-        ]
-    },
-    "Outcast Island": {
-        "Outcast Island": [
-            FlyData("Altering Cave", "OUTCAST ISLAND", 3, 58, 7, 22, 4, 15)
-        ]
-    },
-    "Seven Island": {
-        "Seven Island Town": [
-            FlyData("Seven Island Trainer Battle House", "SEVEN ISLAND", 3, 17, 11, 10, 4, 181),
-            FlyData("Seven Island Poke Mart", "SEVEN ISLAND", 3, 17, 5, 10, 4, 181),
-            FlyData("Seven Island Pokemon Center", "SEVEN ISLAND", 3, 17, 12, 4, 4, 181),
-            FlyData("Seven Island Harbor", "SEVEN ISLAND", 3, 17, 16, 13, 4, 181)
-        ]
-    },
-    "Sevault Canyon": {
-        "Sevault Canyon": [
-            FlyData("Tanoby Key", "SEVAULT CANYON", 3, 64, 7, 18, 4, 204),
-            FlyData("Sevault Canyon Chansey House", "SEVAULT CANYON", 3, 64, 14, 62, 4, 248)
-        ]
-    },
-    "Tanoby Ruins": {
-        "Tanoby Ruins Viapois Island": [
-            FlyData("Viapois Chamber", "TANOBY RUINS", 3, 65, 11, 7, 4, 267)
-        ],
-        "Tanoby Ruins Rixy Island": [
-            FlyData("Rixy Chamber", "TANOBY RUINS", 3, 65, 12, 16, 4, 267)
-        ],
-        "Tanoby Ruins Scufib Island": [
-            FlyData("Scufib Chamber", "TANOBY RUINS", 3, 65, 32, 10, 4, 268)
-        ],
-        "Tanoby Ruins Dilford Island": [
-            FlyData("Dilford Chamber", "TANOBY RUINS", 3, 65, 44, 12, 4, 269)
-        ],
-        "Tanoby Ruins Weepth Island": [
-            FlyData("Weepth Chamber", "TANOBY RUINS", 3, 65, 88, 9, 4, 271)
-        ],
-        "Tanoby Ruins Liptoo Island": [
-            FlyData("Liptoo Chamber", "TANOBY RUINS", 3, 65, 103, 11, 4, 272)
-        ],
-        "Tanoby Ruins Monean Island": [
-            FlyData("Monean Chamber", "TANOBY RUINS", 3, 65, 120, 11, 4, 273)
-        ]
-    },
-    "Trainer Tower Exterior": {
-        "Trainer Tower Exterior North": [
-            FlyData("Trainer Tower", "TRAINER TOWER", 3, 62, 58, 8, 4, 137)
-        ]
-    }
+fly_destination_maps: Dict[str, List[FlyData]] = {
+    "Pallet Town Fly Destination": kanto_fly_destinations,
+    "Viridian City Fly Destination": kanto_fly_destinations,
+    "Pewter City Fly Destination": kanto_fly_destinations,
+    "Route 4 Fly Destination": kanto_fly_destinations,
+    "Cerulean City Fly Destination": kanto_fly_destinations,
+    "Vermilion City Fly Destination": kanto_fly_destinations,
+    "Route 10 Fly Destination": kanto_fly_destinations,
+    "Lavender Town Fly Destination": kanto_fly_destinations,
+    "Celadon City Fly Destination": kanto_fly_destinations,
+    "Fuchsia City Fly Destination": kanto_fly_destinations,
+    "Saffron City Fly Destination": kanto_fly_destinations,
+    "Cinnabar Island Fly Destination": kanto_fly_destinations,
+    "Indigo Plateau Fly Destination": kanto_fly_destinations,
+    "One Island Fly Destination": sevii_123_fly_destinations,
+    "Two Island Fly Destination": sevii_123_fly_destinations,
+    "Three Island Fly Destination": sevii_123_fly_destinations,
+    "Four Island Fly Destination": sevii_45_fly_destinations,
+    "Five Island Fly Destination": sevii_45_fly_destinations,
+    "Six Island Fly Destination": sevii_67_fly_destinations,
+    "Seven Island Fly Destination": sevii_67_fly_destinations,
 }
 
-fly_plando_maps: Dict[str, Tuple[str, str, FlyData]] = {}
-for map, regions in kanto_fly_destinations.items():
-    for region, warps in regions.items():
-        for warp in warps:
-            fly_plando_maps[warp.name] = (map, region, warp)
-for map, regions in sevii_fly_destinations.items():
-    for region, warps in regions.items():
-        for warp in warps:
-            fly_plando_maps[warp.name] = (map, region, warp)
+fly_destination_regions: Dict[str, List[FlyData]] = {
+    "Pallet Town Fly Destination": kanto_fly_destinations,
+    "Viridian City Fly Destination": kanto_fly_destinations,
+    "Pewter City Fly Destination": kanto_fly_destinations,
+    "Route 4 Fly Destination": kanto_fly_destinations,
+    "Cerulean City Fly Destination": kanto_fly_destinations,
+    "Vermilion City Fly Destination": kanto_fly_destinations,
+    "Route 10 Fly Destination": kanto_fly_destinations,
+    "Lavender Town Fly Destination": kanto_fly_destinations,
+    "Celadon City Fly Destination": kanto_fly_destinations,
+    "Fuchsia City Fly Destination": kanto_fly_destinations,
+    "Saffron City Fly Destination": kanto_fly_destinations,
+    "Cinnabar Island Fly Destination": kanto_fly_destinations,
+    "Indigo Plateau Fly Destination": kanto_fly_destinations,
+    "One Island Fly Destination": sevii_fly_destinations,
+    "Two Island Fly Destination": sevii_fly_destinations,
+    "Three Island Fly Destination": sevii_fly_destinations,
+    "Four Island Fly Destination": sevii_fly_destinations,
+    "Five Island Fly Destination": sevii_fly_destinations,
+    "Six Island Fly Destination": sevii_fly_destinations,
+    "Seven Island Fly Destination": sevii_fly_destinations,
+}
+
+fly_destination_random: Dict[str, List[FlyData]] = {
+    "Pallet Town Fly Destination": all_fly_destinations,
+    "Viridian City Fly Destination": all_fly_destinations,
+    "Pewter City Fly Destination": all_fly_destinations,
+    "Route 4 Fly Destination": all_fly_destinations,
+    "Cerulean City Fly Destination": all_fly_destinations,
+    "Vermilion City Fly Destination": all_fly_destinations,
+    "Route 10 Fly Destination": all_fly_destinations,
+    "Lavender Town Fly Destination": all_fly_destinations,
+    "Celadon City Fly Destination": all_fly_destinations,
+    "Fuchsia City Fly Destination": all_fly_destinations,
+    "Saffron City Fly Destination": all_fly_destinations,
+    "Cinnabar Island Fly Destination": all_fly_destinations,
+    "Indigo Plateau Fly Destination": all_fly_destinations,
+    "One Island Fly Destination": all_fly_destinations,
+    "Two Island Fly Destination": all_fly_destinations,
+    "Three Island Fly Destination": all_fly_destinations,
+    "Four Island Fly Destination": all_fly_destinations,
+    "Five Island Fly Destination": all_fly_destinations,
+    "Six Island Fly Destination": all_fly_destinations,
+    "Seven Island Fly Destination": all_fly_destinations,
+}
+
+fly_plando_maps: Dict[str, FlyData] = {}
+for fly_data in all_fly_destinations:
+    fly_plando_maps[fly_data.name] = fly_data
 
 NATIONAL_ID_TO_SPECIES_ID = {species.national_dex_number: i for i, species in data.species.items()}
 NAME_TO_SPECIES_ID = {species.name: i for i, species in data.species.items()}

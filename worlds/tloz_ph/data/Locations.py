@@ -2633,12 +2633,13 @@ LOCATIONS_DATA = {
         "floor_id": 0x0,
         "y": 0x2666,
         "id": 249,
+        "delay_reset": True
     },
 
     # ========== Ruins Island ============
 
     "Isle of Ruins Like-Like Dig": {
-        "region_id": "ruins dig",
+        "region_id": "ruins nw dig",
         "vanilla_item": "Big Green Rupee (100)",
         "stage_id": 0x11,
         "floor_id": 0x1,
@@ -2650,7 +2651,7 @@ LOCATIONS_DATA = {
         "id": 250,
     },
     "Isle of Ruins Bonk Tree": {
-        "region_id": "ruins",
+        "region_id": "ruins nw across bridge",
         "vanilla_item": "Big Red Rupee (200)",
         "stage_id": 0x11,
         "floor_id": 0x1,
@@ -2659,7 +2660,7 @@ LOCATIONS_DATA = {
         "id": 251,
     },
     "Isle of Ruins Doylan's Item": {
-        "region_id": "ruins",
+        "region_id": "doylan chamber",
         "vanilla_item": "King's Key",
         "stage_id": 0x22,
         "floor_id": 0x1,
@@ -2668,14 +2669,14 @@ LOCATIONS_DATA = {
         "id": 252,
     },
     "Isle of Ruins Lower Water Cave Chest": {
-        "region_id": "ruins water",
+        "region_id": "ruins nw cave",
         "vanilla_item": "Wisdom Gem",
         "stage_id": 0x12,
         "floor_id": 0xb,
         "id": 253,
     },
     "Isle of Ruins Maze Chest": {
-        "region_id": "ruins water",
+        "region_id": "ruins nw maze lower chest",
         "vanilla_item": "Power Gem",
         "stage_id": 0x12,
         "floor_id": 0x1,
@@ -2683,7 +2684,7 @@ LOCATIONS_DATA = {
         "id": 254,
     },
     "Isle of Ruins Dodge Boulders Chest": {
-        "region_id": "ruins water",
+        "region_id": "ruins ne lower",
         "vanilla_item": "Big Green Rupee (100)",
         "stage_id": 0x12,
         "floor_id": 0x2,
@@ -2695,7 +2696,7 @@ LOCATIONS_DATA = {
         "id": 255,
     },
     "Isle of Ruins Push Boulder Chest": {
-        "region_id": "ruins water",
+        "region_id": "ruins ne secret chest",
         "vanilla_item": "Wisdom Gem",
         "stage_id": 0x12,
         "floor_id": 0x2,
@@ -2705,7 +2706,7 @@ LOCATIONS_DATA = {
         "id": 256,
     },
     "Isle of Ruins Outside Doylan's Temple Chest": {
-        "region_id": "ruins water",
+        "region_id": "ruins ne behind temple",
         "vanilla_item": "Courage Gem",
         "stage_id": 0x12,
         "floor_id": 0x2,
@@ -2716,7 +2717,7 @@ LOCATIONS_DATA = {
         "id": 257,
     },
     "Isle of Ruins Outside Mutoh's Temple Chest": {
-        "region_id": "ruins water",
+        "region_id": "ruins ne behind temple",
         "vanilla_item": "Big Red Rupee (200)",
         "stage_id": 0x11,
         "floor_id": 0x2,

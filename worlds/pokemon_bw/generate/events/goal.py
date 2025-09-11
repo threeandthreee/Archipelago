@@ -1,18 +1,17 @@
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING
 
 from ...locations import PokemonBWLocation
-from BaseClasses import ItemClassification, CollectionState
+from BaseClasses import ItemClassification
 from ...items import PokemonBWItem
 
 if TYPE_CHECKING:
     from ... import PokemonBWWorld
-    from BaseClasses import Region
 
 
-def create(world: "PokemonBWWorld", regions: dict[str, "Region"]) -> None:
+def create(world: "PokemonBWWorld") -> None:
 
     location: PokemonBWLocation
-    rule: Callable[[CollectionState], bool]
+    regions = world.regions
     match world.options.goal.current_key:
         case "ghetsis":
             location = PokemonBWLocation(world.player, "Defeat Ghetsis", None, regions["N's Castle"])
@@ -30,10 +29,10 @@ def create(world: "PokemonBWWorld", regions: dict[str, "Region"]) -> None:
         # case "national_pokedex":
         # case "custom_pokedex":
         case "tmhm_hunt":
-            from ...data.items.tm_hm import tm, hm
+            from ...data.items.tm_hm import tm as tm_items, hm as hm_items
             location = PokemonBWLocation(world.player, "Verify TMs/HMs", None, regions["Castelia City"])
             regions["Castelia City"].locations.append(location)
-            location.access_rule = lambda state: state.has_all(tm, world.player) and state.has_all(hm, world.player)
+            location.access_rule = lambda state: state.has_all(tm_items, world.player) and state.has_all(hm_items, world.player)
         case "seven_sages_hunt":
             location = PokemonBWLocation(world.player, "Find all seven sages", None, regions["N's Castle"])
             regions["N's Castle"].locations.append(location)

@@ -12,8 +12,13 @@ from ..Util import *
 
 if TYPE_CHECKING:
     from worlds._bizhawk.context import BizHawkClientContext
+    try:
+        from ..data.Entrances import PhantomHourglassEntrance
+    except ImportError:
+        print("Missing <game>Entrance dataclass")
 
 logger = logging.getLogger("Client")
+# Adding test edit
 
 # Split up large values to write into smaller chunks
 def split_bits(value, size):
@@ -78,7 +83,7 @@ async def write_memory_values(ctx, address: int, values: list, domain="Main RAM"
     if not overwrite:
         prev = await read_memory_value(ctx, address, len(values), domain)
         new_values = [old | new for old, new in zip(split_bits(prev, size), values)]
-        print(f"values: {new_values}, old: {split_bits(prev, size)}")
+        print(f"\tvalues: {new_values}, old: {split_bits(prev, size)}")
     else:
         new_values = values
     await bizhawk.write(ctx.bizhawk_ctx, [(address, new_values, domain)])
@@ -110,7 +115,7 @@ class DSZeldaClient(BizHawkClient):
         self.location_area_to_watches = build_location_room_to_watches()
         self.scene_to_dynamic_flag = build_scene_to_dynamic_flag()
         self.hint_scene_to_watches = build_hint_scene_to_watches()
-        self.entrance_id_to_entrance, self.entrance_id_to_exits = build_entrance_id_to_data()
+        self.entrance_id_to_entrance = build_entrance_id_to_data()
 
         self.starting_flags = None
         self.dungeon_key_data = None
@@ -173,8 +178,8 @@ class DSZeldaClient(BizHawkClient):
         self._log_received_items = False
 
         self.warp_to_start_flag = False
-        self.er_map: dict[int, dict[tuple, tuple]] = {}
-        self.er_in_scene: dict[tuple, tuple[int, int, int]] | None = None
+        self.er_map: dict[int, dict["PhantomHourglassEntrance", "PhantomHourglassEntrance"]] = {}
+        self.er_in_scene: dict["PhantomHourglassEntrance", "PhantomHourglassEntrance"] | None = None
         self.er_exit_coord_writes: list | None = None
 
         self.delay_pickup = None
@@ -188,9 +193,13 @@ class DSZeldaClient(BizHawkClient):
     async def validate_rom(self, ctx: "BizHawkClientContext") -> bool:
         try:
             if not await self.check_game_version(ctx):
+                logger.error("Invalid rom")
                 return False
         except bizhawk.RequestFailedError:
-            print("Invalid rom")
+            logger.error("Invalid rom")
+            return False
+        except UnicodeDecodeError:
+            logger.error("You are using Bizhawk version 2.9.x, please use version 2.10.x")
             return False
 
         ctx.game = self.game
@@ -344,16 +353,10 @@ class DSZeldaClient(BizHawkClient):
             if in_game and self._from_menu:
                 self._generate_er_map(ctx)
                 self._from_menu = False
-                ctx.watcher_timeout = 0.15  # 9 frame interval to catch 11 frame ER windows
+                ctx.watcher_timeout = 0.1  # 9 frame interval to catch 11 frame ER windows (old)
+                                           # 6 frame intervals to catch bounce timings
                 await self.enter_game(ctx)
                 print(f"Started Game")
-
-            # If new file, set up starting flags
-            if slot_memory == 0 and not loading:
-                if self.watched_intro_cs(ctx):  # Check if watched intro cs
-                    await self._set_starting_flags(ctx)
-                else:
-                    return
 
             # Get current scene
             current_room = read_result.get("room", None)
@@ -371,27 +374,34 @@ class DSZeldaClient(BizHawkClient):
             if current_scene != self.last_scene and not self._entered_entrance and not self._loading_scene:
 
                 # Trigger a different entrance to vanilla
-                current_scene = await self._entrance_warp(ctx, current_scene, current_entrance)
+                current_stage, current_room, current_entrance = await self._entrance_warp(ctx, current_scene, current_entrance)
+                current_scene = current_stage * 0x100 + current_room
 
                 # Backup in case of missing loading
                 self._backup_coord_read = await self.get_coords(ctx, multi=True)
+
+                # Send data to tracker
+                await self.ut_bounce_scene(ctx, current_stage, current_room, current_entrance)
 
                 # Set dynamic flags on scene
                 await self._reset_dynamic_flags(ctx)
                 await self._set_dynamic_flags(ctx, current_scene)
 
 
-                # Load potential entrance warp destinations, and dynamic entrances
-                self.er_in_scene = self.er_map.get(current_scene, dict())
-                await self._set_dynamic_entrances(ctx, current_scene)
 
-                print(f"Entered new scene {hex(current_scene)} with ER {self.er_in_scene}")
                 self._entered_entrance = time.time()  # Triggered first part of loading - setting new room
                 self.entering_dungeon = None
-                self.delay_reset = False
+                if self.delay_reset:
+                    self.delay_reset = 0
+                    await self._remove_vanilla_item(ctx, num_received_items)
 
             # Nothing happens while loading
             if not loading and not self._loading_scene and not self._entered_entrance:
+
+                # If new file, set up starting flags
+                if slot_memory == 0:
+                    if await self.watched_intro_cs(ctx):  # Check if watched intro cs
+                        await self._set_starting_flags(ctx)
 
                 # Read for checks on specific global flags
                 if len(self.watches) > 0:
@@ -411,6 +421,8 @@ class DSZeldaClient(BizHawkClient):
                 if self.getting_location and not self.receiving_location and self.locations_in_scene is not None:
                     self.receiving_location = True
                     print("Receiving Item")
+                    if self.delay_reset > 1:
+                        self.delay_reset = 0
                     await self._process_checked_locations(ctx, None, detection_type=self.getting_location_type)
 
                 # Process received items
@@ -427,12 +439,16 @@ class DSZeldaClient(BizHawkClient):
                                 f"Reset item count to Multiworld's. If this is the wrong save file, you can safely quit without saving.")
 
                 # Exit location received cs
-                if self.receiving_location and not self.getting_location and not self.delay_reset:
-                    print("Item Received Successfully")
+                if self.receiving_location and not self.getting_location:
                     self.receiving_location = False
 
+                    # Increment delay reset, probably haven't received item yet
+                    if self.delay_reset == 1:
+                        self.delay_reset += 1
+                        print(f"Delay Reset still active, {self.delay_reset}")
+
                     # Check for delayed pickup first!
-                    if self.delay_pickup is not None:
+                    elif self.delay_pickup is not None:
                         print(f"Delay pickup {self.delay_pickup}")
                         fallback, pickups = self.delay_pickup
                         need_fallback = True
@@ -460,13 +476,9 @@ class DSZeldaClient(BizHawkClient):
 
                     # Remove vanilla item
                     elif self.last_vanilla_item:
+                        print("Item Received Successfully")
                         await self._remove_vanilla_item(ctx, num_received_items)
 
-                # Address reads often give items before animation
-                if self.delay_reset and self.getting_location:
-                    self.delay_reset = False
-                    self.receiving_location = False
-                    print(f"Delay reset over for {self.last_vanilla_item}")
 
                 await self.detect_warp_to_start(ctx, read_result)
                 await self.process_in_game(ctx, read_result)
@@ -493,6 +505,14 @@ class DSZeldaClient(BizHawkClient):
                 print("Fully Loaded Room", current_scene)
                 self._loading_scene = False
                 self._backup_coord_read = None
+
+                # Load potential entrance warp destinations, and dynamic entrances
+                self.er_in_scene = self.er_map.get(current_scene, dict())
+                await self._set_dynamic_entrances(ctx, current_scene)
+
+                print(f"Entered new scene {hex(current_scene)} with ER:")
+                for i, v in self.er_in_scene.items():
+                    print(f"\t{i} => {v} {i.exit}")
 
                 await self.process_on_room_load(ctx, current_scene, read_result)
                 await self._load_local_locations(ctx, current_scene)
@@ -522,7 +542,7 @@ class DSZeldaClient(BizHawkClient):
 
             # In case of a short load being missed, have a backup check on coords (they stay the same during transitions)
             if self._entered_entrance and self._backup_coord_read:
-                if time.time() - self._entered_entrance > 2:
+                if time.time() - self._entered_entrance > 1:
                     if not loading_scene:
                         self._loading_scene = True  # Second phase of loading room
                         self._entered_entrance = False
@@ -545,38 +565,46 @@ class DSZeldaClient(BizHawkClient):
         pass
 
     def _generate_er_map(self, ctx):
-        # Creates a map from scene to dict of
-        #   detect_exit (stage, scene, entrance, link_y, extra_data) to er_exit (stage, scene, entrance, link_x | None, link_y, link_z)
+        # Creates a map from scene to dict of entrance dataclass to exit dataclass
         if ctx.slot_data.get("er_pairings", None):
             res = {}
             pairings = {int(k): v for k, v in ctx.slot_data["er_pairings"].items()}
 
             # Loop through entrance data, format data
             for data in self.entrances.values():
-                stage, room, entrance = data["entrance"]
-                link_coords = data.get("coords", None)
-
-                # Handle extra data
-                extra_data = {"y": link_coords[1]} if link_coords else {}  # Ensure that the y value is always checked
-                extra_data |= data.get("extra_data", {})  # Contains additional boundaries and stuff
-                extra_data = tuple(extra_data.items()) if extra_data else None
-                detect_data = tuple(list(data["exit"]) + [extra_data])  # wow this is stupid
-
-                # Create default dict for scene
-                scene = stage * 0x100 + room
-                res.setdefault(scene, dict())
 
                 # Figure pair from generation
-                if data["id"] in pairings:
-                    exit_id = pairings[data["id"]]
+                if data.id in pairings:
+                    exit_id = pairings[data.id]
                     exit_data = self.entrance_id_to_entrance[exit_id]
 
-                    # Don't save vanilla entrances. No fix for continuous cause exit data does not store extra_data
-                    if detect_data[3] is None or detect_data[:2] != exit_data[:2]:  # TODO: This looks wrong
-                        res[scene][detect_data] = exit_data
+                    # Create map from scene to entrance dataclass
+                    res.setdefault(data.scene, {})
+                    res[data.scene][data] = exit_data
+                    print(f"Creating scene data {hex(data.scene)}: {data} => {exit_data}")
+                    res = self.add_special_er_data(ctx, res, data.scene, data, exit_data)
 
             self.er_map = res
-            print(f"ER Map: {self.er_map}")
+            print(f"ER Map:")
+            for scene, data in self.er_map.items():
+                print(f"\t{hex(scene)}")
+                for d2, d3 in data.items():
+                    print(f"\t\t{d2} => {d3}")
+
+
+
+    def add_special_er_data(self, ctx, er_map, scene, detect_data, exit_data):
+        """
+        for adding special bonus data to ER dictionary.
+        Used in ph for making sure Isle of Ruins entrances work no matter the water level.
+        :param ctx:
+        :param er_map:
+        :param scene:
+        :param detect_data:
+        :param exit_data:
+        :return:
+        """
+        return er_map
 
     async def enter_game(self, ctx):
         """
@@ -615,8 +643,9 @@ class DSZeldaClient(BizHawkClient):
         """
 
     async def _entrance_warp(self, ctx, going_to, entrance=0):
-        write_list = []
-        res = going_to
+        e_write_list = []
+        res = ((going_to & 0xFF00) >> 8, going_to & 0xFF, entrance)
+        defer_entrance = False
 
         def write_entrance(s, r, e):
             return [(self.scene_addr[0], split_bits(s, 4), "Main RAM"),
@@ -624,13 +653,29 @@ class DSZeldaClient(BizHawkClient):
                     (self.scene_addr[2], split_bits(0, 4), "Main RAM"),
                     (self.scene_addr[3], split_bits(e, 1), "Main RAM")]
 
+        def write_er(exit_d: "PhantomHourglassEntrance"):
+            write_res = write_entrance(*exit_d.entrance)
+            if exit_d.entrance[2] > 0xF0:
+                x, y, z = exit_d.coords
+                print(f"exit coords {x} {y} {z}")
+                self.er_exit_coord_writes = [(self.exit_coords_addr[0], split_bits(x, 4), "Main RAM"),
+                                             (self.exit_coords_addr[1], split_bits(y, 4), "Main RAM"),
+                                             (self.exit_coords_addr[2], split_bits(z, 4), "Main RAM")]
+
+            return write_res
+
+        def post_process(d):
+            new_entrance = d.entrance
+            d.debug_print()
+            return write_er(d), new_entrance
+
         # Warp to start
         if self.warp_to_start_flag:
             self.warp_to_start_flag = False
             home = self.starting_entrance[0]*0x100 + self.starting_entrance[1]
             if home != self.last_scene:
-                write_list += write_entrance(*self.starting_entrance)
-                res = home
+                e_write_list += write_entrance(*self.starting_entrance)
+                res = self.starting_entrance
                 self.current_stage = self.starting_entrance[0]
                 logger.info("Warping to Start")
             else:
@@ -638,48 +683,61 @@ class DSZeldaClient(BizHawkClient):
 
         elif self.er_in_scene:
 
-            def write_er(exit_d):
-                exit_stage, exit_room, exit_entrance, *exit_coords = exit_d
-                write_res = write_entrance(exit_stage, exit_room, exit_entrance)
-                if exit_coords[0] is not None:
-                    x, y, z = exit_coords
-                    print(f"exit coords {x} {y} {z}")
-                    self.er_exit_coord_writes = [(self.exit_coords_addr[0], split_bits(x, 4), "Main RAM"),
-                                                 (self.exit_coords_addr[1], split_bits(y, 4), "Main RAM"),
-                                                 (self.exit_coords_addr[2], split_bits(z, 4), "Main RAM")]
+            # Determine Entrance Warp
+            coords = await self.get_coords(ctx)
+            for detect_data, exit_data in self.er_in_scene.items():
+                if detect_data.detect_exit(going_to, entrance, coords, self.er_y_offest):
+                    if await self.conditional_er(ctx, exit_data):
+                        print(f"Detected entrance: {detect_data} => {exit_data}")
+                        e_write_list, res = post_process(exit_data)
+                        defer_entrance = True
+                    else:
+                        e_write_list, res = post_process(detect_data)
+                    break
 
-                return write_res
+        # Unrandomized entrances can still have bounce conditions
+        if not e_write_list:
+            bounce_entrance = await self.conditional_bounce(ctx, going_to, entrance)
+            print(f"Trying bounce: {bounce_entrance}")
+            if bounce_entrance:
+                e_write_list, res = post_process(bounce_entrance)
 
-            # If not a continuous boundary
-            true_going_to = ((going_to & 0xFF00) // 0x100, going_to & 0xFF, entrance, None)
-            if entrance < 0xF0:
-                print("True Going To", true_going_to)
-                if true_going_to in self.er_in_scene:
-                    write_list += write_er(self.er_in_scene[true_going_to])
-                    stage, room, *_ = self.er_in_scene[true_going_to]
-                    res = stage * 0x100 + room
-            else:
-                coords = await self.get_coords(ctx, False)
-                for detect_data, exit_data in self.er_in_scene.items():
-                    if detect_data[3] and detect_data[:2] == true_going_to[:2]:
-                        # Do location comparison
-                        extra_data = {key: value for key, value in list(detect_data[3])}
-                        print(f"Extra data: {extra_data} from {list(detect_data[3])}")
-                        y = extra_data.get("y", coords["y"]-self.er_y_offest)
-                        x_max = extra_data.get("x_max", 0x8FFFFFFF)
-                        x_min = extra_data.get("x_min", -0x8FFFFFFF)
-                        z_max = extra_data.get("z_max", 0x8FFFFFFF)
-                        z_min = extra_data.get("z_min", -0x8FFFFFFF)
 
-                        if coords["y"] - self.er_y_offest == y and x_max > coords["x"] > x_min and z_max > coords["z"] > z_min:
-                            write_list += write_er(exit_data)
-                            stage, room, *_ = exit_data
-                            res = stage * 0x100 + room
+        if e_write_list:
+            await bizhawk.write(ctx.bizhawk_ctx, e_write_list)
+        if defer_entrance:
+            await self.store_visited_entrances(ctx, detect_data, exit_data)
 
-        if write_list:
-            await bizhawk.write(ctx.bizhawk_ctx, write_list)
         return res
 
+    async def conditional_bounce(self, cxt, scene, entrance) -> "PhantomHourglassEntrance" or None:
+        """
+        checks for bounce conditions if entrance is not affected by ER.
+        returns the entrance to return to
+        :param cxt:
+        :param scene:
+        :param entrance:
+        :return:
+        """
+
+    async def store_visited_entrances(self, ctx, detect_data, exit_data):
+        """
+        store visited entrances as a set of ints to datastorage
+        :param ctx:
+        :param detect_data:
+        :param exit_data:
+        :return:
+        """
+
+    async def conditional_er(self, ctx, conditions) -> bool:
+        """
+        for handling custom conditional ER statements.
+        If return false, ER will pop you back out the entrance you came from
+        :param ctx:
+        :param conditions:
+        :return:
+        """
+        return True
 
     async def _reset_dynamic_flags(self, ctx):
         print(f"resetting flags {self._dynamic_flags_to_reset}")
@@ -788,7 +846,6 @@ class DSZeldaClient(BizHawkClient):
         def check_locations(d):
             for loc in d.get("has_locations", []):
                 if self.location_name_to_id[loc] not in ctx.checked_locations:
-                    print(f"missing location: {loc}")
                     return False
             for loc in d.get("not_has_locations", []):
                 if self.location_name_to_id[loc] in ctx.checked_locations:
@@ -881,7 +938,6 @@ class DSZeldaClient(BizHawkClient):
         else:
             # Get link's coords
             link_coords = await self.get_coords(ctx)
-            print(link_coords)
 
             # Certain checks use their detection method to differentiate them, like frogs and salvage
             locations_in_scene = self.locations_in_scene.copy()
@@ -896,9 +952,9 @@ class DSZeldaClient(BizHawkClient):
 
                 print(f"Processing locs {loc_name}")
                 print(
-                    f"{location.get('x_max', 0x8FFFFFFF)} > {link_coords['x']} > {location.get('x_min', -0x8FFFFFFF)}")
+                    f"\t{location.get('x_max', 0x8FFFFFFF)} > {link_coords['x']} > {location.get('x_min', -0x8FFFFFFF)}")
                 print(
-                    f"{location.get('z_max', 0x8FFFFFFF)} > {link_coords['z']} > {location.get('z_min', -0x8FFFFFFF)}")
+                    f"\t{location.get('z_max', 0x8FFFFFFF)} > {link_coords['z']} > {location.get('z_min', -0x8FFFFFFF)}")
 
                 if (location.get("x_max", 0x8FFFFFFF) > link_coords["x"] > location.get("x_min", -0x8FFFFFFF) and
                         location.get("z_max", 0x8FFFFFFF) > link_coords["z"] > location.get("z_min", -0x8FFFFFFF) and
@@ -922,7 +978,7 @@ class DSZeldaClient(BizHawkClient):
 
         # Delay reset of vanilla item from certain address reads
         if location is not None and "delay_reset" in location:
-            self.delay_reset = True
+            self.delay_reset = 1
             print(f"Started Delay Reset for {self.last_vanilla_item}")
 
         # Send locations
@@ -1334,7 +1390,7 @@ class DSZeldaClient(BizHawkClient):
                 else:
                     if "sram_addr" in location and location["sram_addr"] is not None:
                         sram_read_list[loc_name] = (location["sram_addr"], 1, "SRAM")
-                        print(f"Created sram read for loacation {loc_name}")
+                        print(f"\tCreated sram read for loacation {loc_name}")
 
                 if "address" in location:
                     self.watches[loc_name] = (location["address"], 1, "Main RAM")
@@ -1460,3 +1516,14 @@ class DSZeldaClient(BizHawkClient):
         :return:
         """
 
+    async def ut_bounce_scene(self, ctx, stage, room, entrance):
+        print(f"UT Bouncing {hex(stage)} {room} {entrance}")
+        await ctx.send_msgs([{
+            "cmd": "Bounce",
+            "games": [self.game],
+            "slots": [ctx.slot],
+            "tags": ['Tracker'],
+            "data": {"stage": stage,
+                     "room": room,
+                     "entrance": entrance}
+        }])

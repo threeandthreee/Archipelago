@@ -1,3 +1,68 @@
+# 1.0.0
+## Updates
++ Reworked the Fossil checks
+  + You can now only grab one fossil in Mt. Moon (it doesn't matter which you will get the same item)
+  + The second fossil check can be gotten in the Pokémon Lab Experiment Room after you have gotten the one in Mt. Moon and revived enough fossils (set by an option)
++ Updated option `randomize_fly_destinations`
+  + Off: Fly destinations are not randomized
+  + Area: Fly destinations will be randomized to a location in the same area as its original location (e.g. Vermilion Fly Destination would go to either Vermilion City, Route 6, or Route 11)
+  + Map: Fly destinations will be randomized to a location on the same map as its original location (e.g. One Island Fly Destination would go to either One Island, Two Island, or Three Island)
+  + Region: Fly destinations will be randomized to a location in the same region as its original location (e.g. Sevii fly destinations would go to another location on the Sevii Islands)
+  + Completely Random: Fly destinations are completely random
++ Updated option `shopsanity`
+  + Local non-progression shop items can now be purchased repeatedly 
++ Reworked option `shop_prices`
+  + Changed so that item's prices are determined by their base price
+    + Vanilla: Items cost their base price
+    + Cheap: Items cost 50% of their base price
+    + Affordable: Items cost between 50% - 100% of their base price
+    + Standard: Items cost 50% - 150% of their base price
+    + Expensive: Items cost 100% - 150% of their base price
+  + Changes shop prices even if `shopsanity` isn't on
++ New option `consistent_shop_prices`
+  + Sets whether all instances of an item will cost the same price in every shop (e.g. if a Potion's price in a shop is
+    200 then all Potions in shops will cost 200)
++ Removed options `minimum_shop_price` and `maximum_shop_price`
++ New option `shuffle_pokedex`
+  + Vanilla: The Pokédex is obtained by delivering the parcel to Professor Oak
+  + Shuffle: The Pokédex is shuffled into the item pool
+  + Start With: You start with the Pokédex
++ New option `shuffle_ledge_jump`
+  + Shuffles the ability to jump down ledges into the item pool. If not shuffled then you will start with it
++ New option `post_goal_locations`
+  + Sets whether locations that are locked behind completing your goal are included
++ New option `fishing_rods`
+  + Vanilla: The fishing rods are all separate items in the pool and can be found in any order
+  + There are three Progressive Rods in the pool, and you will always obtain them in order from Old Rod to Super Rod
++ New option `bicycle_requires_ledge_jump`
+  + Sets whether the ability to jump down ledges is required for the Bicycle to jump down ledges
++ New option `acrobatic_bicycle`
+  + Sets whether the bicycle can be used to jump up ledges. If `bicycle_requires_ledge_jump` is on then you will need to be able to jump down ledges in order to jump up them as well
++ New option `fossil_count`
+  + Sets the number of fossils you need to revive in order to get the fossil check in the Pokémon Lab
++ New option `base_stats`
+  + Vanilla: Base stats are unchanged
+  + Shuffle: Base stats are shuffled amongst each other
+  + Keep BST: Random base stats, but base stat total is preserved
+  + Completely Random: Random base stats and base stat total
++ The Title Screen locations have been removed. All items that you can start with (e.g. Berry Pouch, TM Case, etc.) will be added to your `start_inventory`
++ The fences in Pallet Town and Route 21 have been modified so that you can surf left to right in Pallet Town without accidentally leaving the water
++ Restored the triggers for the first Rival battle
++ NPCs and events that block the player will now force the player back the direction they came from (e.g. Pewter City Roadblock, Route 23 Guard, etc.)
++ Increased Trainer money rewards so that they scale based on party size and Pokémon's BST
++ Updated the Two Island Market Stall so that you can view all the items in the shop immediately
++ The Nurse in Silph Co. will still heal you even after Silph Co. has been liberated
++ Local non-progression items are purchasable repeatedly in shops when `shopsanity` is on. This also applies if `remote_items` is on
++ Lemonade is no longer sold in the Pokémon Center shop. If `shopsanity` is on then at least one Lemonade will be placed in a shop location
+
+## Bug Fixes
+- Fixed an issue with displaying move data in battle during double battles
+- Fixed an issue where Route 21 fishing battles were not in logic unless you could surf
+
+# 0.9.6
+# Bug Fixes
++ Fixed an issue where trying to generate a seed with `dungeon_entrance_shuffle` on using Archipelago 0.6.3 would fail
+
 # 0.9.5
 ## Bug Fixes
 + Fixed an error that could occur when connecting to the client if the `provide_hints` setting was set to either `progression` or `progression_and_useful`

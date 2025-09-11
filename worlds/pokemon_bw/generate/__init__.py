@@ -1,5 +1,9 @@
+from typing import NamedTuple
 
-class SpeciesEntry:
+from ..data import InclusionRule, ExtendedRule
+
+
+class SpeciesEntry(NamedTuple):
     type_1: str
     type_2: str
     base_hp: int
@@ -20,3 +24,33 @@ class SpeciesEntry:
     level_up_moves: list[tuple[int, str]]
     # TM number (internal order is TM1-95 HM1-6)
     tm_hm_moves: set[str]
+
+
+class EncounterEntry(NamedTuple):
+    species_id: tuple[int, int]
+    encounter_region: str
+    file_index: tuple[int, int, int]
+    write: bool
+
+
+class StaticEncounterEntry(NamedTuple):
+    species_id: tuple[int, int]
+    encounter_region: str
+    inclusion_rule: InclusionRule | None
+    access_rule: ExtendedRule | None
+
+
+class TradeEncounterEntry(NamedTuple):
+    species_id: tuple[int, int]
+    wanted_dex_number: int
+    encounter_region: str
+
+
+class TrainerPokemonEntry(NamedTuple):
+    trainer_id: int
+    team_number: int
+    species: str
+    # ability: int
+    # nature: int
+    # held_item: str | None
+    # moves: tuple[str, str, str, str] | None

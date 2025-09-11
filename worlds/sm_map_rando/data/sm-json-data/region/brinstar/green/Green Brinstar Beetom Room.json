@@ -178,19 +178,34 @@
       "link": [1, 1],
       "name": "Beetom Farm",
       "requires": [
-        {"resetRoom": {
-          "nodes": [1, 2]
-        }},
+        {"resetRoom": {"nodes": [1, 2]}},
         {"or": [
-          "ScrewAttack",
+          {"and": [
+            "ScrewAttack",
+            {"cycleFrames": 180}
+          ]},
           {"and": [
             "Ice",
-            "h_useMorphBombs"
+            "h_useMorphBombs",
+            {"cycleFrames": 300}
+          ]},
+          {"and": [
+            {"or": [
+              "Ice",
+              "canTrickyDodgeEnemies",
+              {"enemyDamage": {"enemy": "Beetom", "type": "contact", "hits": 1}}
+            ]},
+            {"or": [
+              {"resourceAvailable": [{"type": "Energy", "count": 50}]},
+              {"resourceAvailable": [{"type": "PowerBomb", "count": 4}]}
+            ]},
+            "h_usePowerBomb",
+            {"cycleFrames": 210}
           ]}
-        ]},
-        {"refill": ["PowerBomb"]}
+        ]}
       ],
       "clearsObstacles": ["A"],
+      "farmCycleDrops": [{"enemy": "Beetom", "count": 4}],
       "flashSuitChecked": true,
       "note": "Kill the Beetoms with Screw Attack or by freezing them and using Bombs or Power Bombs.",
       "devNote": [
@@ -295,9 +310,7 @@
       "link": [1, 1],
       "name": "10 Power Bomb Crystal Flash",
       "requires": [
-        {"resetRoom": {
-          "nodes": [1, 2]
-        }},
+        {"resetRoom": {"nodes": [1, 2]}},
         {"or": [
           {"obstaclesCleared": ["A"]},
           {"enemyDamage": {"enemy": "Beetom", "type": "contact", "hits": 1}}

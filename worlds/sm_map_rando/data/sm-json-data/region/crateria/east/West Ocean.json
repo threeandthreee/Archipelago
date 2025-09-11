@@ -395,9 +395,9 @@
           "devNote": [
             "It's possible to stop half-way by shooting open the door that appears to lead to Bowling Alley",
             "This has limited usefulness, because this door actually leads to the same transition as the bottom right door (to the Wrecked Ship Entrance).",
-            "Likewise the door on the left, which appears to lead to Bowling Alley Path, actually leads to the same transition as the bottom left door (to the Moat).",
+            "Likewise the door on the left, which appears to lead to Pancakes and Wavers Room, actually leads to the same transition as the bottom left door (to the Moat).",
             "There is a potential application by using this runway to the right, as it is longer than the one in front of the bottom right door.",
-            "FIXME: add nodes to represent the doors that appear to lead left and right to Bowling Alley Path and Bowling Alley, and add a similar strat leading there."
+            "FIXME: add nodes to represent the doors that appear to lead left and right to Pancakes and Wavers Room and Bowling Alley, and add a similar strat leading there."
           ]
         },
         {"id": 15},
@@ -797,6 +797,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         "canXRayClimb"
       ],
       "bypassesDoorShell": true,
@@ -935,6 +936,18 @@
         "The Moonfall must be performed at the very edge of the slope so that Samus fully falls to the lower area.",
         "The first Moonfall will clip into the slope above the walkway, and the second Moonfall will clip all the way through.",
         "Pose changing can send Samus inside of the walkway, where the right door connects to the WS main entrance door, and the left door connects to the Moat door."
+      ]
+    },
+    {
+      "id": 145,
+      "link": [3, 5],
+      "name": "Super Sink",
+      "entranceCondition": {
+        "comeInWithSuperSink": {}
+      },
+      "requires": [],
+      "note": [
+        "Enter the room with a super sink, in order to clip down several screens to the bottom part of the room."
       ]
     },
     {
@@ -1314,6 +1327,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         {"notable": "Get Inside the Bridge"},
         "canSkipDoorLock",
         {"or": [
@@ -1391,6 +1405,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         {"notable": "Get Inside the Bridge"},
         {"or": [
           "canArtificialMorph",
@@ -1453,6 +1468,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         {"or": [
           "canArtificialMorph",
           "canWalljump",
@@ -1494,7 +1510,7 @@
             {"shinespark": {"frames": 35, "excessFrames": 10}}
           ]}
         ]},
-        "canXRayClimb"
+        "canLongXRayClimb"
       ],
       "flashSuitChecked": true,
       "note": "Climb up 2 screens."
@@ -1510,7 +1526,7 @@
         {"shineChargeFrames": 1},
         {"shinespark": {"frames": 1, "excessFrames": 1}},
         "canShinesparkDeepStuck",
-        "canXRayClimb"
+        "canLongXRayClimb"
       ],
       "flashSuitChecked": true,
       "note": "Climb up 2 screens."
@@ -1574,7 +1590,8 @@
         }
       },
       "requires": [
-        "canXRayClimb",
+        "canComplexGMode",
+        "canLongXRayClimb",
         "canBePatient"
       ],
       "bypassesDoorShell": true,
@@ -1595,7 +1612,8 @@
         }
       },
       "requires": [
-        "canXRayClimb",
+        "canComplexGMode",
+        "canLongXRayClimb",
         "canBePatient"
       ],
       "flashSuitChecked": true,
@@ -1612,7 +1630,7 @@
         {"shineChargeFrames": 1},
         {"shinespark": {"frames": 1, "excessFrames": 1}},
         "canShinesparkDeepStuck",
-        "canXRayClimb",
+        "canLongXRayClimb",
         "canBePatient"
       ],
       "flashSuitChecked": true,
@@ -1629,7 +1647,8 @@
         }
       },
       "requires": [
-        "canXRayClimb",
+        "canComplexGMode",
+        "canLongXRayClimb",
         "canBePatient"
       ],
       "bypassesDoorShell": true,
@@ -1877,6 +1896,35 @@
       }
     },
     {
+      "id": 142,
+      "link": [5, 5],
+      "name": "Leave With Controlled Spring Ball Bounce",
+      "requires": [
+        "canTrickySpringBallBounce"
+      ],
+      "exitCondition": {
+        "leaveWithSpringBallBounce": {
+          "remoteRunway": {
+            "length": 22,
+            "openEnd": 1
+          },
+          "landingRunway": {
+            "length": 9,
+            "openEnd": 1,
+            "steepUpTiles": 2
+          },
+          "minExtraRunSpeed": "$1.2",
+          "maxExtraRunSpeed": "$4.8",
+          "blue": "any",
+          "movementType": "controlled"
+        }
+      },
+      "note": [
+        "Use the runway on the left side of the room to gain speed and bounce across the room."
+      ],
+      "devNote": ["Higher speed (at least up to $4.C) is possible with greater difficulty."]
+    },
+    {
       "id": 69,
       "link": [5, 5],
       "name": "Leave With Spring Ball Bounce (Space Jump)",
@@ -1978,6 +2026,7 @@
       "name": "G-Mode Setup Lure Zeb from Below (to Top Right Section - Top Right Door)",
       "requires": [
         {"notable": "G-Mode Setup Lure Zeb from Below"},
+        "canComplexGMode",
         "canTrickyUseFrozenEnemies",
         {"or": [
           "h_bombThings",
@@ -2007,6 +2056,7 @@
       "name": "G-Mode Setup Lure Zeb from Below (to Top Right Section - Bottom Right Door)",
       "requires": [
         {"notable": "G-Mode Setup Lure Zeb from Below"},
+        "canComplexGMode",
         "canTrickyUseFrozenEnemies",
         {"or": [
           "h_bombThings",
@@ -2064,8 +2114,10 @@
       "link": [6, 6],
       "name": "Zeb Farm",
       "requires": [
-        {"refill": ["Energy", "Missile", "Super"]}
-      ]
+        {"simpleCycleFrames": 85},
+        {"cycleFrames": 20}
+      ],
+      "farmCycleDrops": [{"enemy": "Zeb", "count": 1}]
     },
     {
       "id": 79,
@@ -2193,9 +2245,9 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         "canXRayStandUp",
         "canPartialFloorClip",
-        "canInsaneJump",
         "canDownGrab",
         {"or": [
           "h_artificialMorphSpringBall",
@@ -2224,6 +2276,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         "canXRayClimb"
       ],
       "flashSuitChecked": true,
@@ -2461,9 +2514,15 @@
       "requires": [
         "canUseEnemies",
         {"or": [
-          "canCarefulJump",
-          "canUseFrozenEnemies",
-          "canPreciseWalljump"
+          {"and": [
+            "canUseFrozenEnemies",
+            "canPreciseWalljump"
+          ]},
+          "canTrickyWalljump",
+          {"and": [
+            "canCameraManip",
+            "canCarefulJump"
+          ]}
         ]}
       ],
       "note": [
@@ -2832,14 +2891,125 @@
       "link": [13, 13],
       "name": "Ripper2 Farm",
       "requires": [
-        {"resetRoom": {
-          "nodes": [1, 4, 5]
-        }},
         "ScrewAttack",
-        {"partialRefill": {"type": "Super", "limit": 4}},
-        {"partialRefill": {"type": "Energy", "limit": 80}}
+        "canCarefulJump",
+        {"or": [
+          {"and": [
+            {"resetRoom": {"nodes": [1]}},
+            {"cycleFrames": 1000}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [4]}},
+            {"or": [
+              {"and": [
+                "canWalljump",
+                {"cycleFrames": 380}
+              ]},
+              {"and": [
+                "SpaceJump",
+                {"cycleFrames": 320}
+              ]}
+            ]}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [5]}},
+            {"cycleFrames": 480}
+          ]}
+        ]}
       ],
-      "resetsObstacles": ["A", "B"]
+      "resetsObstacles": ["A", "B"],
+      "farmCycleDrops": [{"enemy": "Ripper 2 (green)", "count": 1}]
+    },
+    {
+      "id": 143,
+      "link": [13, 13],
+      "name": "Skultera Farm",
+      "requires": [
+        {"or": [
+          {"and": [
+            {"resetRoom": {"nodes": [1]}},
+            {"or": [
+              {"and": [
+                "Gravity",
+                {"cycleFrames": 790}
+              ]},
+              {"cycleFrames": 1380}
+            ]}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [4]}},
+            {"or": [
+              {"and": [
+                "Gravity",
+                "SpaceJump",
+                {"cycleFrames": 750}
+              ]},
+              {"and": [
+                "Gravity",
+                "canWalljump",
+                {"cycleFrames": 1020}
+              ]},
+              {"and": [
+                "SpaceJump",
+                {"cycleFrames": 1390}
+              ]},
+              {"and": [
+                "canWalljump",
+                {"cycleFrames": 1420}
+              ]}
+            ]}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [5]}},
+            {"or": [
+              {"and": [
+                "Gravity",
+                "SpaceJump",
+                {"cycleFrames": 690}
+              ]},
+              {"and": [
+                "Gravity",
+                "canWalljump",
+                {"cycleFrames": 820}
+              ]},
+              {"and": [
+                "Gravity",
+                {"cycleFrames": 1110}
+              ]},
+              {"cycleFrames": 1600}
+            ]}
+          ]}
+        ]},
+        {"or": [
+          {"and": [
+            "ScrewAttack",
+            "Gravity"
+          ]},
+          {"and": [
+            "Plasma",
+            {"cycleFrames": 50}
+          ]},
+          {"and": [
+            "Wave",
+            {"cycleFrames": 160}
+          ]},
+          {"and": [
+            "Spazer",
+            {"cycleFrames": 200}
+          ]},
+          {"and": [
+            "Ice",
+            {"cycleFrames": 290}
+          ]},
+          {"and": [
+            "canPseudoScrew",
+            {"cycleFrames": 290}
+          ]},
+          {"cycleFrames": 500}
+        ]}
+      ],
+      "resetsObstacles": ["A", "B"],
+      "farmCycleDrops": [{"enemy": "Skultera", "count": 2}]
     },
     {
       "id": 126,
@@ -2881,7 +3051,7 @@
       "link": [15, 16],
       "name": "G-mode Overload PLMs with Grapple",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         "Grapple",
         "Morph"
       ],
@@ -2892,7 +3062,7 @@
       "link": [15, 16],
       "name": "G-mode Overload PLMs by Bombing Crumble Block with Space Jump",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         "h_useMorphBombs",
         "SpaceJump",
         "canBeVeryPatient"
@@ -2905,7 +3075,7 @@
       "link": [15, 16],
       "name": "G-mode Overload PLMs by Bombing Crumble Block",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         "h_artificialMorphLongIBJ",
         "h_artificialMorphCeilingBombJump"
       ],
@@ -2916,9 +3086,9 @@
     {
       "id": 133,
       "link": [16, 14],
-      "name": "Base",
+      "name": "G-Mode Through the Crumble Block",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         {"or": [
           {"and": [
             "SpaceJump",
@@ -2935,12 +3105,43 @@
       "flashSuitChecked": true
     },
     {
+      "id": 144,
+      "link": [16, 14],
+      "name": "Shinespark Through Crumble Blocks, Quick Morph",
+      "requires": [
+        "canComplexGMode",
+        {"canShineCharge": {
+          "usedTiles": 23,
+          "steepUpTiles": 6,
+          "steepDownTiles": 1,
+          "openEnd": 1
+        }},
+        {"shinespark": {"frames": 23, "excessFrames": 0}},
+        "can4HighMidAirMorph",
+        {"or": [
+          "h_artificialMorphBombThings",
+          "h_artificialMorphSpringBall",
+          "can3HighWallMidAirMorph"
+        ]}
+      ],
+      "flashSuitChecked": true,
+      "note": [
+        "Shinespark vertically through the crumble block and quickly morph and move left into the bomb block just below.",
+        "Align Samus on the second downward slope in front of the door before sparking."
+      ],
+      "devNote": [
+        "The canInsaneJump is used as a difficulty placement, as this strat is unintuitive.",
+        "FIXME: This can't be used if going 17->16 and Power Bombing the item with canRiskPermanentLossOfAccess, because the block will remain solid."
+      ]
+    },
+    {
       "id": 134,
       "link": [17, 1],
       "name": "G-mode Overload PLMs by Power Bombing Morph Maze Item",
       "requires": [
+        "canPowerBombItemOverloadPLMs",
+        "canComplexGMode",
         {"notable": "G-mode Overload PLMs by Power Bombing Morph Maze Item"},
-        "canEnterGMode",
         "h_usePowerBomb",
         {"or": [
           "SpaceJump",
@@ -2965,8 +3166,9 @@
       "link": [17, 16],
       "name": "G-mode Overload PLMs by Power Bombing Morph Maze Item, Permanent Softlock Risk",
       "requires": [
+        "canPowerBombItemOverloadPLMs",
+        "canComplexGMode",
         {"notable": "G-mode Overload PLMs by Power Bombing Morph Maze Item"},
-        "canEnterGMode",
         {"itemNotCollectedAtNode": 10},
         "canRiskPermanentLossOfAccess",
         {"or": [
@@ -3098,7 +3300,7 @@
       ]
     }
   ],
-  "nextStratId": 142,
+  "nextStratId": 146,
   "nextNotableId": 14,
-  "note": "The section between Bowling Alley Path and Bowling Alley is excluded from West Ocean and considered as its own room instead (Homing Geemer Room)"
+  "note": "The section between Pancakes and Wavers Room and Bowling Alley is excluded from West Ocean and considered as its own room instead (Homing Geemer Room)"
 }

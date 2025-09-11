@@ -3,23 +3,25 @@ Functions related to AP regions for Pokémon FireRed and LeafGreen (see ./data/r
 """
 from typing import TYPE_CHECKING, Dict, List, Tuple, Callable
 from BaseClasses import CollectionState, ItemClassification, Region
-from .data import (data, LocationCategory, fly_plando_maps, kanto_fly_destinations, sevii_fly_destinations,
-                   starting_town_blacklist_map)
+from .data import (data, EncounterType, LocationCategory, fly_destination_areas, fly_destination_maps,
+                   fly_destination_random, fly_destination_regions, fly_plando_maps, starting_town_blacklist_map)
 from .items import PokemonFRLGItem
 from .locations import PokemonFRLGLocation
-from .options import LevelScaling
+from .options import LevelScaling, RandomizeFlyDestinations
 
 if TYPE_CHECKING:
     from . import PokemonFRLGWorld
 
 INDIRECT_CONDITIONS: Dict[str, List[str]] = {
-    "Seafoam Islands 1F": ["Seafoam Islands B3F Southwest Surfing Spot", "Seafoam Islands B3F Southwest Landing",
-                           "Seafoam Islands B3F East Landing (South)", "Seafoam Islands B3F East Surfing Spot (South)",
-                           "Seafoam Islands B3F South Water (Water Battle)"],
-    "Seafoam Islands B3F Southwest": ["Seafoam Islands B4F Surfing Spot (West)",
-                                      "Seafoam Islands B4F Near Articuno Landing"],
-    "Victory Road 3F Southwest": ["Victory Road 2F Center Rock Barrier"],
-    "Vermilion City": ["Navel Rock Arrival", "Birth Island Arrival"]
+    "Seafoam Islands 1F": ["Seafoam Islands B3F (West) Surfing Spot (Bottom)",
+                           "Seafoam Islands B3F (West) Landing Spot (Bottom)",
+                           "Seafoam Islands B3F (East) Landing Spot (Bottom)",
+                           "Seafoam Islands B3F (East) Surfing Spot (Bottom)",
+                           "Seafoam Islands B3F (South Water) Water Battle"],
+    "Seafoam Islands B3F (West)": ["Seafoam Islands B4F Surfing Spot (Left)",
+                                   "Seafoam Islands B4F (Near Articuno) Landing Spot"],
+    "Victory Road 3F (Southwest)": ["Victory Road 2F Southeast Rock Barrier (Left)"],
+    "Vermilion City": ["Depart Seagallop (Navel Rock)", "Depart Seagallop (Birth Island)"]
 }
 
 STATIC_POKEMON_SPOILER_NAMES = {
@@ -62,7 +64,7 @@ STATIC_POKEMON_SPOILER_NAMES = {
 
 starting_town_map = {
     "SPAWN_PALLET_TOWN": "Pallet Town",
-    "SPAWN_VIRIDIAN_CITY": "Viridian City South",
+    "SPAWN_VIRIDIAN_CITY": "Viridian City (South)",
     "SPAWN_PEWTER_CITY": "Pewter City",
     "SPAWN_CERULEAN_CITY": "Cerulean City",
     "SPAWN_LAVENDER_TOWN": "Lavender Town",
@@ -72,11 +74,11 @@ starting_town_map = {
     "SPAWN_CINNABAR_ISLAND": "Cinnabar Island",
     "SPAWN_INDIGO_PLATEAU": "Indigo Plateau",
     "SPAWN_SAFFRON_CITY": "Saffron City",
-    "SPAWN_ROUTE4": "Route 4 West",
-    "SPAWN_ROUTE10": "Route 10 North",
+    "SPAWN_ROUTE4": "Route 4 (West)",
+    "SPAWN_ROUTE10": "Route 10 (North)",
     "SPAWN_ONE_ISLAND": "One Island Town",
     "SPAWN_TWO_ISLAND": "Two Island Town",
-    "SPAWN_THREE_ISLAND": "Three Island Town South",
+    "SPAWN_THREE_ISLAND": "Three Island Town (South)",
     "SPAWN_FOUR_ISLAND": "Four Island Town",
     "SPAWN_FIVE_ISLAND": "Five Island Town",
     "SPAWN_SEVEN_ISLAND": "Seven Island Town",
@@ -123,13 +125,14 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
 
     # Used in connect_to_map_encounters. Splits encounter categories into "subcategories" and gives them names
     # and rules so the rods can only access their specific slots.
-    encounter_categories: Dict[str, List[Tuple[str | None, range, Callable[[CollectionState], bool] | None]]] = {
-        "Land": [(None, range(0, 12), None)],
-        "Water": [(None, range(0, 5), None)],
-        "Fishing": [
-            ("Old Rod", range(0, 2), lambda state: state.has("Old Rod", world.player)),
-            ("Good Rod", range(2, 5), lambda state: state.has("Good Rod", world.player)),
-            ("Super Rod", range(5, 10), lambda state: state.has("Super Rod", world.player)),
+    encounter_categories: Dict[EncounterType,
+                               List[Tuple[str | None, range, Callable[[CollectionState], bool] | None]]] = {
+        EncounterType.LAND: [(None, range(0, 12), None)],
+        EncounterType.WATER: [(None, range(0, 5), None)],
+        EncounterType.FISHING: [
+            ("Old Rod", range(0, 2), lambda state: world.logic.has_old_rod(state)),
+            ("Good Rod", range(2, 5), lambda state: world.logic.has_good_rod(state)),
+            ("Super Rod", range(5, 10), lambda state: world.logic.has_super_rod(state)),
         ],
     }
 
@@ -150,20 +153,19 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
         if True in include_slots and encounter_region_name is None:
             raise AssertionError(f"{region.name} has encounters but does not have an encounter region name")
 
-        for i, encounter_category in enumerate(encounter_categories.items()):
+        for i, (encounter_type, subcategories) in enumerate(encounter_categories.items()):
             if include_slots[i]:
-                region_name = f"{encounter_region_name} {encounter_category[0]} Encounters"
+                region_name = f"{encounter_region_name} ({encounter_type.value} Encounters)"
 
                 # If the region hasn't been created yet, create it now
                 try:
                     encounter_region = regions[region_name]
                 except KeyError:
                     encounter_region = PokemonFRLGRegion(region_name, world.player, world.multiworld)
-                    encounter_slots = getattr(world.modified_maps[map_name],
-                                              f"{encounter_category[0].lower()}_encounters").slots[game_version]
+                    encounter_slots = world.modified_maps[map_name].encounters[encounter_type].slots[game_version]
 
                     # Subcategory is for splitting fishing rods; land and water only have one subcategory
-                    for subcategory in encounter_category[1]:
+                    for subcategory in subcategories:
                         # Want to create locations per species, not per slot
                         # encounter_categories includes info on which slots belong to which subcategory
                         unique_species = []
@@ -174,17 +176,17 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
 
                         # Create a location for the species
                         for j, species_id in enumerate(unique_species):
-                            subcategory_name = subcategory[0] if subcategory[0] is not None else encounter_category[0]
+                            type_name = subcategory[0] if subcategory[0] is not None else encounter_type.value
 
                             encounter_location = PokemonFRLGLocation(
                                 world.player,
-                                f"{encounter_region_name} - {subcategory_name} Encounter {j + 1}",
+                                f"{encounter_region_name} - {type_name} Encounter {j + 1}",
                                 None,
                                 LocationCategory.EVENT_WILD_POKEMON,
                                 encounter_region,
                                 None,
                                 None,
-                                spoiler_name=f"{encounter_region_name} ({subcategory_name})",
+                                spoiler_name=f"{encounter_region_name} ({type_name})",
                             )
                             encounter_location.show_in_spoiler = False
 
@@ -207,24 +209,30 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
                     regions[region_name] = encounter_region
 
                 # Encounter region exists, just connect to it
-                region.connect(encounter_region, f"{region.name} ({encounter_category[0]} Battle)")
+                region.connect(encounter_region, f"{region.name} {encounter_type.value} Battle")
 
     def exclude_region(region_id: str):
         elite_four_ids = [
             "REGION_POKEMON_LEAGUE_LORELEIS_ROOM/MAIN", "REGION_POKEMON_LEAGUE_BRUNOS_ROOM/MAIN",
             "REGION_POKEMON_LEAGUE_AGATHAS_ROOM/MAIN", "REGION_POKEMON_LEAGUE_LANCES_ROOM/MAIN"
         ]
+        cerulean_cave_ids = [
+            "REGION_CERULEAN_CAVE_1F/SOUTHEAST", "REGION_CERULEAN_CAVE_1F/WATER", "REGION_CERULEAN_CAVE_1F/NORTHEAST",
+            "REGION_CERULEAN_CAVE_1F/CENTER", "REGION_CERULEAN_CAVE_1F/NORTHWEST", "REGION_CERULEAN_CAVE_2F/NORTHEAST",
+            "REGION_CERULEAN_CAVE_2F/NORTHWEST", "REGION_CERULEAN_CAVE_2F/WEST", "REGION_CERULEAN_CAVE_2F/EAST",
+            "REGION_CERULEAN_CAVE_2F/CENTER", "REGION_CERULEAN_CAVE_B1F/MAIN", "REGION_CERULEAN_CAVE_B1F/WATER"
+        ]
 
         if world.options.kanto_only and not data.regions[region_id].kanto:
             return True
         if world.options.skip_elite_four and region_id in elite_four_ids:
             return True
+        if not world.cerulean_cave_included and region_id in cerulean_cave_ids:
+            return True
         return False
 
     def exclude_event(event_id: str):
         if world.options.kanto_only and event_id == "EVENT_DEFEAT_CHAMPION_REMATCH":
-            return True
-        if data.events[event_id].category == LocationCategory.EVENT_SHOP and world.options.shopsanity:
             return True
         if data.events[event_id].category == LocationCategory.EVENT_EVOLUTION_POKEMON:
             # Exclude the event if the evolution method is not required for logic.
@@ -235,7 +243,7 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
         return False
 
     def exclude_exit(region_id: str, exit_region_id: str):
-        if world.options.kanto_only and not data.regions[exit_region_id].kanto:
+        if exclude_region(exit_region_id):
             return True
         if (not world.options.kanto_only and
                 region_id == "REGION_CINNABAR_ISLAND_POKEMON_CENTER_1F/MAIN" and
@@ -250,7 +258,10 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
             return True
         if dest_warp.parent_region_id is None:
             return True
-        if world.options.kanto_only and not data.regions[dest_warp.parent_region_id].kanto:
+        # These two warps need to always be included even if the destination warps parent region isn't
+        if source_warp.name in ("Pokemon League", "Pokemon League Champion's Room Exit (South)"):
+            return False
+        if exclude_region(dest_warp.parent_region_id):
             return True
         return False
 
@@ -263,6 +274,11 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
             "TRAINER_SCALING_POKEMON_LEAGUE_CHAMPIONS_ROOM/MAIN",
             "TRAINER_SCALING_POKEMON_LEAGUE_CHAMPIONS_ROOM_REMATCH/MAIN"
         ]
+        cerulean_cave_ids = [
+            "WILD_SCALING_CERULEAN_CAVE_1F/LAND_ENCOUNTERS", "WILD_SCALING_CERULEAN_CAVE_2F/LAND_ENCOUNTERS",
+            "WILD_SCALING_CERULEAN_CAVE_B1F/LAND_ENCOUNTERS", "WILD_SCALING_CERULEAN_CAVE_1F/WATER_ENCOUNTERS",
+            "WILD_SCALING_CERULEAN_CAVE_B1F/WATER_ENCOUNTERS", "STATIC_SCALING_CERULEAN_CAVE_B1F/WATER"
+        ]
 
         if world.options.kanto_only and not data.scaling[scaling_id].kanto:
             return True
@@ -270,48 +286,26 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
             return True
         if not world.options.skip_elite_four and scaling_id in champion_ids:
             return True
+        if not world.cerulean_cave_included and scaling_id in cerulean_cave_ids:
+            return True
+        if ("Block Tower" in world.options.modify_world_state.value and
+                scaling_id == "STATIC_SCALING_POKEMON_TOWER_6F/MAIN"):
+            return True
+        if ("Block Tower" not in world.options.modify_world_state.value and
+                scaling_id == "STATIC_SCALING_POKEMON_TOWER_1F/MAIN"):
+            return True
         return False
 
-    def modify_entrance_name(world: "PokemonFRLGWorld", name: str) -> str:
-        route_2_modification = {
-            "Route 2 Northwest Cuttable Tree": "Route 2 Northwest Smashable Rock",
-            "Route 2 Northeast Cuttable Tree (North)": "Route 2 Northeast Smashable Rock",
-            "Route 2 Northeast Cuttable Tree (South)": "Route 2 Northeast Cuttable Tree"
-        }
-        block_tunnels = {
-            "Route 5 Unobstructed Path": "Route 5 Smashable Rocks",
-            "Route 5 Near Tunnel Unobstructed Path": "Route 5 Near Tunnel Smashable Rocks",
-            "Route 6 Unobstructed Path": "Route 6 Smashable Rocks",
-            "Route 6 Near Tunnel Unobstructed Path": "Route 6 Near Tunnel Smashable Rocks",
-            "Route 7 Unobstructed Path": "Route 7 Smashable Rocks",
-            "Route 7 Near Tunnel Unobstructed Path": "Route 7 Near Tunnel Smashable Rocks",
-            "Route 8 Unobstructed Path": "Route 8 Smashable Rocks",
-            "Route 8 Near Tunnel Unobstructed Path": "Route 8 Near Tunnel Smashable Rocks"
-        }
-        block_pokemon_tower = {
-            "Pokemon Tower 1F Unobstructed Path": "Pokemon Tower 1F Reveal Ghost",
-            "Pokemon Tower 1F Near Stairs Unobstructed Path": "Pokemon Tower 1F Near Stairs Pass Ghost"
-        }
-        rotue_23_trees = {
-            "Route 23 Near Water Unobstructed Path": "Route 23 Near Water Cuttable Trees",
-            "Route 23 Center Unobstructed Path": "Route 23 Center Cuttable Trees"
-        }
-        route_23_modification = {
-            "Route 23 South Water Unobstructed Path": "Route 23 Waterfall Ascend",
-            "Route 23 North Water Unobstructed Path": "Route 23 Waterfall Drop"
-        }
+    def exclude_scaling_map(map_id: str) -> bool:
+        cerulean_cave_ids = [
+            "MAP_CERULEAN_CAVE_1F", "MAP_CERULEAN_CAVE_2F", "MAP_CERULEAN_CAVE_B1F"
+        ]
 
-        if "Modify Route 2" in world.options.modify_world_state.value and name in route_2_modification.keys():
-            return route_2_modification[name]
-        if "Block Tunnels" in world.options.modify_world_state.value and name in block_tunnels.keys():
-            return block_tunnels[name]
-        if "Block Tower" in world.options.modify_world_state.value and name in block_pokemon_tower.keys():
-            return block_pokemon_tower[name]
-        if "Route 23 Trees" in world.options.modify_world_state.value and name in rotue_23_trees.keys():
-            return rotue_23_trees[name]
-        if "Modify Route 23" in world.options.modify_world_state.value and name in route_23_modification.keys():
-            return route_23_modification[name]
-        return name
+        if world.options.kanto_only and not data.maps[map_id].kanto:
+            return True
+        if not world.cerulean_cave_included and map_id in cerulean_cave_ids:
+            return True
+        return False
 
     regions: Dict[str, Region] = {}
     connections: List[Tuple[str, str, str]] = []
@@ -345,11 +339,15 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
             event.show_in_spoiler = False
             new_region.locations.append(event)
 
-        for exit_region_id, exit_name in region_data.exits.items():
+        for exit_region_id, exit_names in region_data.exits.items():
             if exclude_exit(region_id, exit_region_id):
                 continue
             exit_region_name = data.regions[exit_region_id].name
-            connections.append((exit_name, region_name, exit_region_name))
+            if type(exit_names) is list:
+                for exit_name in exit_names:
+                    connections.append((exit_name, region_name, exit_region_name))
+            else:
+                connections.append((exit_names, region_name, exit_region_name))
 
         for warp in region_data.warps:
             if exclude_warp(warp):
@@ -371,7 +369,6 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
                                   (region_data.has_land, region_data.has_water, region_data.has_fishing))
 
     for name, source, dest in connections:
-        name = modify_entrance_name(world, name)
         regions[source].connect(regions[dest], name)
 
     if world.options.level_scaling != LevelScaling.option_off:
@@ -431,18 +428,17 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
                 elif scaling_data.category == LocationCategory.EVENT_WILD_POKEMON_SCALING:
                     index = 1
                     events: Dict[str, Tuple[str, List[str], Callable[[CollectionState], bool] | None]] = {}
-                    encounter_category_data = encounter_categories[scaling_data.type]
+                    encounter_type = EncounterType(scaling_data.type)
+                    encounter_category_data = encounter_categories[encounter_type]
                     for data_id in data_ids:
-                        map_data = data.maps[data_id]
-                        if world.options.kanto_only and not map_data.kanto:
+                        if exclude_scaling_map(data_id):
                             continue
-                        encounters = (map_data.land_encounters if scaling_data.type == "Land" else
-                                      map_data.water_encounters if scaling_data.type == "Water" else
-                                      map_data.fishing_encounters)
+                        map_data = world.modified_maps[data_id]
+                        encounters = map_data.encounters[encounter_type]
                         for subcategory in encounter_category_data:
                             for i in subcategory[1]:
-                                subcategory_name = subcategory[0] if subcategory[0] is not None else scaling_data.type
-                                species_name = f"{subcategory_name} {encounters.slots[game_version][i].species_id}"
+                                type_name = subcategory[0] if subcategory[0] is not None else encounter_type.value
+                                species_name = f"{type_name} {encounters.slots[game_version][i].species_id}"
                                 if species_name not in events:
                                     encounter_data = (f"{location_name} {index}", [f"{data_id} {i}"], subcategory[2])
                                     events[species_name] = encounter_data
@@ -499,10 +495,10 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
 
                     for data_id in location.data_ids:
                         data_ids = data_id.split()
-                        map_data = data.maps[data_ids[0]]
-                        encounters = (map_data.land_encounters if "Land" in location.name else
-                                      map_data.water_encounters if "Water" in location.name else
-                                      map_data.fishing_encounters)
+                        map_data = world.modified_maps[data_ids[0]]
+                        encounters = (map_data.encounters[EncounterType.LAND] if "Land" in location.name else
+                                      map_data.encounters[EncounterType.WATER] if "Water" in location.name else
+                                      map_data.encounters[EncounterType.FISHING])
 
                         encounter_max_level = encounters.slots[game_version][int(data_ids[1])].max_level
                         max_level = max(max_level, encounter_max_level)
@@ -533,39 +529,36 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
             allowed_starting_towns = [town for town in starting_town_map.keys() if town not in forbidden_starting_towns]
         world.starting_town = world.random.choice(allowed_starting_towns)
 
-    if world.options.randomize_fly_destinations:
-        fly_destinations = kanto_fly_destinations.copy()
-        if not world.options.kanto_only:
-            fly_destinations.update(sevii_fly_destinations)
+    if world.options.randomize_fly_destinations != RandomizeFlyDestinations.option_off:
+        fly_destinations = {}
+        if world.options.randomize_fly_destinations == RandomizeFlyDestinations.option_area:
+            fly_destinations = fly_destination_areas.copy()
+        elif world.options.randomize_fly_destinations == RandomizeFlyDestinations.option_map:
+            fly_destinations = fly_destination_maps.copy()
+        elif world.options.randomize_fly_destinations == RandomizeFlyDestinations.option_region:
+            fly_destinations = fly_destination_regions.copy()
+        elif world.options.randomize_fly_destinations == RandomizeFlyDestinations.option_completely_random:
+            fly_destinations = fly_destination_random.copy()
         maps_already_chosen = set()
-        exit_already_randomized = set()
-        for exit_name, warp_name in world.options.fly_destination_plando.value.items():
-            fly_plando = fly_plando_maps[warp_name]
-            if fly_plando[0] in maps_already_chosen or fly_plando[0] not in fly_destinations.keys():
-                continue
-            exit = world.multiworld.get_entrance(exit_name, world.player)
-            regions[exit.connected_region.name].entrances.remove(exit)
-            exit.connected_region = None
-            maps_already_chosen.add(fly_plando[0])
-            exit_already_randomized.add(exit_name)
-            exit.connected_region = regions[fly_plando[1]]
-            regions[fly_plando[1]].entrances.append(exit)
-            world.fly_destination_data[fly_destination_entrance_map[exit.name]] = fly_plando[2]
         for exit in regions["Sky"].exits:
-            if exit.name in exit_already_randomized:
-                continue
+            use_plando = False
+            fly_data = None
+            allowed_fly_destinations = [fly for fly in fly_destinations[exit.name]
+                                        if fly.map not in maps_already_chosen and fly.region in regions.keys()]
+            if exit.name in world.options.fly_destination_plando.value.keys():
+                fly_plando = fly_plando_maps[world.options.fly_destination_plando.value[exit.name]]
+                if (fly_plando.map not in maps_already_chosen and
+                    fly_plando.region in regions.keys() and
+                    fly_plando in allowed_fly_destinations):
+                    use_plando = True
+                    fly_data = fly_plando
+            if not use_plando:
+                fly_data = world.random.choice(allowed_fly_destinations)
             regions[exit.connected_region.name].entrances.remove(exit)
-            exit.connected_region = None
-            allowed_maps = [k for k in fly_destinations.keys() if k not in maps_already_chosen]
-            map = world.random.choice(allowed_maps)
-            allowed_regions = list(fly_destinations[map].keys())
-            map_region = world.random.choice(allowed_regions)
-            allowed_warps = fly_destinations[map][map_region]
-            map_warp = world.random.choice(allowed_warps)
-            maps_already_chosen.add(map)
-            exit.connected_region = regions[map_region]
-            regions[map_region].entrances.append(exit)
-            world.fly_destination_data[fly_destination_entrance_map[exit.name]] = map_warp
+            exit.connected_region = regions[fly_data.region]
+            regions[fly_data.region].entrances.append(exit)
+            world.fly_destination_data[fly_destination_entrance_map[exit.name]] = fly_data
+            maps_already_chosen.add(fly_data.map)
 
     regions["Title Screen"].connect(regions[starting_town_map[world.starting_town]], "Start Game")
     regions["Title Screen"].connect(regions["Player's PC"], "Use PC")

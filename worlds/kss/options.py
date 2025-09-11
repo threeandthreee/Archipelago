@@ -1,7 +1,11 @@
+from __future__ import annotations
+
 from Options import (PerGameCommonOptions, Range, Choice, OptionSet, OptionDict, DeathLinkMixin, Toggle,
                      OptionCounter, Visibility)
 from dataclasses import dataclass
 from schema import Schema, And, Use, Optional, Or
+from typing import Any
+import random
 from .aesthetics import palette_addresses
 
 
@@ -40,7 +44,7 @@ class RequiredSubgames(OptionSet):
         "Milky Way Wishes",
         "The Arena"
     }
-    default = ["Milky Way Wishes"]
+    default = {"Milky Way Wishes"}
 
 
 class StartingSubgame(Choice):
@@ -133,7 +137,7 @@ class Consumables(OptionSet):
     and Invincibility Candy.
     """
     display_name = "Consumable Checks"
-    valid_keys = ("Maxim Tomato", "1-Up", "Invincibility Candy")
+    valid_keys = {"Maxim Tomato", "1-Up", "Invincibility Candy"}
 
     default = frozenset()
 
@@ -152,8 +156,8 @@ class KirbyFlavorPreset(Choice, OptionDict):
     display_name = "Kirby Flavor"
     valid_keys = sorted(palette_addresses.keys())
     schema = Schema(Or(str, int, {
-        Optional(And(str, Use(str.title), lambda s: s in palette_addresses)): And(str, Use(str.lower),
-                                                                                  lambda s: s in KirbyFlavorPreset.options)
+        Optional(And(str, Use(str.title), lambda s: s in palette_addresses)):
+            And(str, Use(str.lower), lambda s: s in KirbyFlavorPreset.options)
     }))
     default = 0
     option_default = 0
@@ -173,26 +177,42 @@ class KirbyFlavorPreset(Choice, OptionDict):
     option_miku = 14
     option_custom = -1
 
-    def __init__(self, value):
-        self.value: int | dict = value
+    def __init__(self, value: int | dict[str, Any]) -> None:
+        self.value: int | dict[str, Any] = value
 
     @classmethod
-    def from_any(cls, value):
+    def parse_weighted_option(cls, value: dict[str, int]) -> str:
+        for key in value.keys():
+            if key.lower() not in cls.options and key.lower() != "random":
+                raise KeyError(
+                    f'Could not find option "{key}" for "{cls.__name__}", '
+                    f'known options are {", ".join(f"{option}" for option in cls.name_lookup.values())}')
+        return random.choices(list(value.keys()), weights=list(value.values()), k=1)[0]
+
+    @classmethod
+    def from_any(cls, value: Any) -> Choice | OptionDict:
         if isinstance(value, dict):
+            if any(key not in cls.valid_keys for key in value.keys()):
+                # We have to assume that this is a weighted option
+                val = cls.parse_weighted_option(value)
+                return super().from_any(val)
+            for key in value.keys():
+                if value[key].lower() == "random":
+                    value[key] = random.choice(list([key for key, val in cls.options.items() if val >= 0]))
             return cls(value)
         else:
             return super().from_any(value)
 
-    def verify_keys(self):
+    def verify_keys(self) -> None:
         if not isinstance(self.value, int):
             super().verify_keys()
 
     @classmethod
-    def get_option_name(cls, value):
+    def get_option_name(cls, value: int | dict[str, str]) -> str:
         if isinstance(value, int):
             return cls.name_lookup[value].replace("_", " ").title()
         else:
-            return super().get_option_name(value)
+            return ", ".join(f"{key}: {v}" for key, v in value.items())
 
 
 class KirbyFlavor(OptionDict):
@@ -228,3 +248,4 @@ class KSSOptions(PerGameCommonOptions, DeathLinkMixin):
     milky_way_wishes_mode: MilkyWayWishesMode
     kirby_flavor_preset: KirbyFlavorPreset
     kirby_flavor: KirbyFlavor
+    

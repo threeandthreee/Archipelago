@@ -342,15 +342,58 @@
     {
       "id": 1,
       "link": [1, 1],
-      "name": "Geega and Beetom Farm",
+      "name": "Beetom Farm",
       "requires": [
+        {"or": [
+          {"and": [
+            {"resetRoom": {"nodes": [1]}},
+            {"cycleFrames": 570}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [1]}},
+            "ScrewAttack",
+            {"cycleFrames": 480}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [3, 4]}},
+            "HiJump",
+            "canWalljump",
+            {"cycleFrames": 800}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [5]}},
+            {"notable": "Hero Shot"},
+            {"or": [
+              {"and": [
+                "ScrewAttack",
+                "canConsecutiveWalljump",
+                {"cycleFrames": 1080}
+              ]},
+              {"and": [
+                "canTrickyWalljump",
+                {"cycleFrames": 1770}
+              ]}
+            ]}
+          ]}
+        ]},
         {"or": [
           "ScrewAttack",
           "h_useMorphBombs",
-          {"resourceCapacity": [{"type": "Missile", "count": 1}]},
-          {"resourceCapacity": [{"type": "Super", "count": 1}]}
-        ]},
-        {"refill": ["Energy", "Missile", "Super", "PowerBomb"]}
+          "h_usePowerBomb",
+          {"and": [
+            {"or": [
+              {"resourceCapacity": [{"type": "Missile", "count": 1}]},
+              {"resourceCapacity": [{"type": "Super", "count": 1}]}
+            ]},
+            {"cycleFrames": 500}
+          ]}
+        ]}
+      ],
+      "resetsObstacles": ["A", "B"],
+      "farmCycleDrops": [{"enemy": "Beetom", "count": 1}],
+      "devNote": [
+        "Using a Power Bomb to farm the Beetom is only useful if Power Bomb drops are modified to give more than 1.",
+        "FIXME: Other options for resetting the room at the top and bottom nodes are possible."
       ]
     },
     {
@@ -358,7 +401,24 @@
       "link": [1, 1],
       "name": "Geega Farm",
       "requires": [
-        {"refill": ["Energy", "Missile", "Super"]}
+        {"cycleFrames": 140}
+      ],
+      "farmCycleDrops": [{"enemy": "Geega", "count": 1}],
+      "devNote": [
+        "We use `cycleFrames` here rather than `simpleCycleFrames` because it is non-trivial to avoid Geega damage while farming."
+      ]
+    },
+    {
+      "id": 131,
+      "link": [1, 1],
+      "name": "Double Geega Farm",
+      "requires": [
+        "canDodgeWhileShooting",
+        {"cycleFrames": 200}
+      ],
+      "farmCycleDrops": [{"enemy": "Geega", "count": 2}],
+      "devNote": [
+        "We use `cycleFrames` here rather than `simpleCycleFrames` because it is non-trivial to avoid Geega damage while farming."
       ]
     },
     {
@@ -513,7 +573,7 @@
         {"enemyDamage": {"enemy": "Beetom", "type": "contact", "hits": 1}},
         {"enemyDamage": {"enemy": "Ripper", "type": "contact", "hits": 1}},
         "canWallIceClip",
-        "canXRayClimb"
+        "canLongXRayClimb"
       ],
       "flashSuitChecked": true,
       "note": [
@@ -1042,6 +1102,20 @@
       ]
     },
     {
+      "id": 133,
+      "link": [1, 5],
+      "name": "X-Ray Climb",
+      "entranceCondition": {
+        "comeInWithDoorStuckSetup": {}
+      },
+      "requires": [
+        "canLongXRayClimb",
+        "canBePatient"
+      ],
+      "flashSuitChecked": true,
+      "note": "Climb up 4 screens."
+    },
+    {
       "id": 31,
       "link": [1, 5],
       "name": "Grapple Teleport Door Lock Skip",
@@ -1216,7 +1290,8 @@
         }
       },
       "requires": [
-        "canXRayClimb"
+        "canComplexGMode",
+        "canLongXRayClimb"
       ],
       "bypassesDoorShell": true,
       "flashSuitChecked": true,
@@ -1236,6 +1311,22 @@
           "openEnd": 0
         }
       }
+    },
+    {
+      "id": 132,
+      "link": [2, 2],
+      "name": "Beetom Farm",
+      "requires": [
+        {"resetRoom": {"nodes": [2]}},
+        {"cycleFrames": 300},
+        "h_usePowerBomb"
+      ],
+      "clearsObstacles": ["A"],
+      "resetsObstacles": ["B"],
+      "farmCycleDrops": [{"enemy": "Beetom", "count": 1}],
+      "devNote": [
+        "This strat is only useful if Power Bomb drops are modified to give more than 1."
+      ]
     },
     {
       "id": 43,
@@ -1262,6 +1353,20 @@
       ],
       "clearsObstacles": ["A"],
       "flashSuitChecked": true
+    },
+    {
+      "id": 134,
+      "link": [2, 5],
+      "name": "X-Ray Climb",
+      "entranceCondition": {
+        "comeInWithDoorStuckSetup": {}
+      },
+      "requires": [
+        "canLongXRayClimb",
+        "canBeVeryPatient"
+      ],
+      "flashSuitChecked": true,
+      "note": "Climb up 6 screens."
     },
     {
       "id": 45,
@@ -1389,7 +1494,7 @@
         {"enemyDamage": {"enemy": "Beetom", "type": "contact", "hits": 1}},
         {"enemyDamage": {"enemy": "Ripper", "type": "contact", "hits": 1}},
         "canWallIceClip",
-        "canXRayClimb"
+        "canLongXRayClimb"
       ],
       "flashSuitChecked": true,
       "note": [
@@ -1854,7 +1959,7 @@
         {"enemyDamage": {"enemy": "Beetom", "type": "contact", "hits": 1}},
         {"enemyDamage": {"enemy": "Ripper", "type": "contact", "hits": 1}},
         "canWallIceClip",
-        "canXRayClimb"
+        "canLongXRayClimb"
       ],
       "flashSuitChecked": true,
       "note": [
@@ -2201,7 +2306,7 @@
         {"enemyDamage": {"enemy": "Beetom", "type": "contact", "hits": 1}},
         {"enemyDamage": {"enemy": "Ripper", "type": "contact", "hits": 1}},
         "canWallIceClip",
-        "canXRayClimb"
+        "canLongXRayClimb"
       ],
       "flashSuitChecked": true,
       "note": [
@@ -2547,8 +2652,7 @@
       "requires": [
         {"notable": "Hero Shot"},
         "canHeroShot",
-        "canPreciseWalljump",
-        "canStaggeredWalljump"
+        "canTrickyWalljump"
       ],
       "note": "Wall jump between the Rippers. Either shoot the block, fall, and quickly climb again, or shoot from the bottom and follow Samus's shot up the tower."
     },
@@ -2885,6 +2989,6 @@
       ]
     }
   ],
-  "nextStratId": 131,
+  "nextStratId": 135,
   "nextNotableId": 10
 }

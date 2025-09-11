@@ -2,7 +2,7 @@ from typing import List, Set
 
 from BaseClasses import CollectionState, MultiWorld
 
-from .data import LocationCategory
+from .data import EncounterType, LocationCategory
 from .locations import PokemonFRLGLocation
 from .options import LevelScaling
 from .regions import PokemonFRLGRegion
@@ -201,9 +201,11 @@ def level_scaling(multiworld: MultiWorld):
                     elif encounter_location.category == LocationCategory.EVENT_WILD_POKEMON_SCALING:
                         data_ids = data_id.split()
                         map_data = world.modified_maps[data_ids[0]]
-                        encounters = (map_data.land_encounters if "Land" in encounter_location.name else
-                                      map_data.water_encounters if "Water" in encounter_location.name else
-                                      map_data.fishing_encounters)
+                        encounters = (map_data.encounters[EncounterType.LAND]
+                                      if "Land" in encounter_location.name else
+                                      map_data.encounters[EncounterType.WATER]
+                                      if "Water" in encounter_location.name else
+                                      map_data.encounters[EncounterType.FISHING])
                         encounter_data = encounters.slots[game_version][int(data_ids[1])]
                         new_max_level = round(max((new_base_level * encounter_data.max_level / old_base_level),
                                                   (new_base_level + encounter_data.max_level - old_base_level)))

@@ -41,7 +41,7 @@ def build_hint_text(world: "MetroidFusionWorld", hinted_pair: HintedPair):
                          f"[COLOR=2]{hinted_pair.location.name}[/COLOR]")
     return f"{item_text} can be found at {location_text}."
 
-def create_hints(world: "MetroidFusionWorld"):
+def create_hints(world: "MetroidFusionWorld") -> tuple[list[str], list[HintedPair]]:
     hinted_pairs: set[HintedPair] = set()
 
     hinted_locations = world.random.sample(major_location_names, 5)
@@ -52,9 +52,11 @@ def create_hints(world: "MetroidFusionWorld"):
 
     hinted_items = world.random.sample(items_to_hint, 5)
     for item in hinted_items:
-        location_object = world.multiworld.find_item_locations(item, world.player)[0]
-        item_object = location_object.item
-        hinted_pairs.add(HintedPair(location_object, item_object))
+        locations = world.multiworld.find_item_locations(item, world.player)
+        if len(locations) > 0:
+            location_object = locations[0]
+            item_object = location_object.item
+            hinted_pairs.add(HintedPair(location_object, item_object))
 
     while len(hinted_pairs) < 11:
         new_location = world.random.choice(sorted(list(world.get_locations())))

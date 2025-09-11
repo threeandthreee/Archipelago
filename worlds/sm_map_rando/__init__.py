@@ -27,7 +27,7 @@ from .ips import IPS_Patch
 from .Client import SMMRSNIClient
 from importlib.metadata import version, PackageNotFoundError
 
-required_pysmmaprando_version = "0.118.2"
+required_pysmmaprando_version = "0.119.1"
 
 class WrongVersionError(Exception):
     pass
@@ -126,12 +126,15 @@ class SMMapRandoWorld(World):
 
     item_name_to_id = {item_name: items_start_id + idx for idx, item_name in 
                                 enumerate(itertools.chain(map_rando_app_data.game_data.item_isv.keys,
-                                                          ["ArchipelagoItem", "ArchipelagoProgItem"]))}
+                                                          ["ArchipelagoItem", "ArchipelagoProgItem", "ArchipelagoUsefulItem", "ArchipelagoUsefulProgItem",
+                                                           "ProgMissile", "ProgSuper", "ProgPowerBomb"]))}
     location_name_to_id = {loc_name: locations_start_id + location_address_to_id[str(addr)] for idx, (loc_name, addr) in 
                                 enumerate(itertools.chain(zip(  smmr_location_names, 
                                                                 map_rando_app_data.game_data.get_location_addresses())))}
     
+    missile_item_id = 1
     nothing_item_id = 22
+    prog_missile_item_id = 27
 
     web = SMMapRandoWeb()
 
@@ -175,15 +178,7 @@ class SMMapRandoWorld(World):
             entrance = Entrance(player, exit, ret)
             ret.exits.append(entrance)
             if items_required is not None:
-                counter = Counter(items_required)
-                if counter.get("Missile", 0) > 3:
-                    counter["Missile"] = 3
-                if counter.get("Super", 0) > 2:
-                    counter["Super"] = 2
-                if counter.get("PowerBomb", 0) > 3:
-                    counter["PowerBomb"] = 3
-
-                set_rule(entrance, lambda state : state.has_all_counts(counter, player))
+                set_rule(entrance, lambda state : state.has_all_counts(Counter(items_required), player))
         return ret
 
     def create_regions(self):
@@ -202,7 +197,22 @@ class SMMapRandoWorld(World):
         cumulative_required_items = []
 
         for spoilerSummary in self.randomizer_ap.spoiler_log.summary:
-            cumulative_required_items.extend([spoilerItemSummary.item for spoilerItemSummary in spoilerSummary.items])
+            counter = Counter(cumulative_required_items)
+            for spoilerItemSummary in spoilerSummary.items:
+                if spoilerItemSummary.item == "Missile":
+                    if counter.get("ProgMissile", 0) < 3:
+                        counter["ProgMissile"] += 1
+                        cumulative_required_items.append("ProgMissile")
+                elif spoilerItemSummary.item == "Super":
+                    if counter.get("ProgSuper", 0) < 2:
+                        counter["ProgSuper"] += 1
+                        cumulative_required_items.append("ProgSuper")
+                elif spoilerItemSummary.item == "PowerBomb":
+                    if counter.get("ProgPowerBomb", 0) < 3:
+                        counter["ProgPowerBomb"] += 1
+                        cumulative_required_items.append("ProgPowerBomb")
+                else:
+                    cumulative_required_items.append(spoilerItemSummary.item)
             self.region_dict.append(self.create_region(  self.multiworld, 
                                                         self.player, 
                                                         f"step {spoilerSummary.step}",
@@ -242,33 +252,34 @@ class SMMapRandoWorld(World):
     def create_items(self):
         pool = []
         item_placement = [item.to_int() for item in self.randomizer_ap.randomization.item_placement]
-        seen_item_type = set() 
         weaponCount = [0, 0, 0]         
-
         for spoilerSummary in self.randomizer_ap.spoiler_log.summary:
             for spoilerItemSummary in spoilerSummary.items:
                 isAdvancement = True
-                if spoilerItemSummary.item == 'Missile':
+                new_item_name = spoilerItemSummary.item
+                if new_item_name == 'Missile':
                     if weaponCount[0] < 3:
                         weaponCount[0] += 1
+                        new_item_name = 'ProgMissile'
                     else:
                         isAdvancement = False
-                elif spoilerItemSummary.item == 'Super':
+                elif new_item_name == 'Super':
                     if weaponCount[1] < 2:
                         weaponCount[1] += 1
+                        new_item_name = 'ProgSuper'
                     else:
                         isAdvancement = False
-                elif spoilerItemSummary.item == 'PowerBomb':
+                elif new_item_name == 'PowerBomb':
                     if weaponCount[2] < 3:
                         weaponCount[2] += 1
+                        new_item_name = 'ProgPowerBomb'
                     else:
                         isAdvancement = False
-                elif spoilerItemSummary.item == 'Nothing':
+                elif new_item_name == 'Nothing':
                     isAdvancement = False
                 new_item_id = SMMapRandoWorld.item_name_to_id[spoilerItemSummary.item]
                 item_placement[SMMapRandoWorld.smmr_location_names.index(f"{spoilerItemSummary.location.room} {spoilerItemSummary.location.node}")] = -1
-                seen_item_type.add(new_item_id)
-                mr_item = SMMRItem(spoilerItemSummary.item, 
+                mr_item = SMMRItem(new_item_name,
                             ItemClassification.progression if isAdvancement else ItemClassification.filler, 
                             new_item_id, 
                             player=self.player,
@@ -320,10 +331,11 @@ class SMMapRandoWorld(World):
             setattr(self.multiworld, "_smmr_spheres", spheres)
     
     def create_item(self, name: str) -> Item:
-        return SMMRItem(name, ItemClassification.progression, self.item_name_to_id[name], player=self.player, step=0)
+        is_progression = name != 'Missile' and name != 'Super' and name != 'PowerBomb' and name != 'Nothing'
+        return SMMRItem(name, ItemClassification.progression if is_progression else ItemClassification.filler, self.item_name_to_id[name], player=self.player, step=0)
 
     def get_filler_item_name(self) -> str:
-        return "Missile"
+        return self.multiworld.random.choice(['Missile', 'Missile', 'Missile', 'Missile', 'Missile', 'Super', 'PowerBomb'])
 
     def getWordArray(self, w: int) -> List[int]:
         """ little-endian convert a 16-bit number to an array of numbers <= 255 each """
@@ -387,6 +399,16 @@ class SMMapRandoWorld(World):
             data.append(w0)
             data.append(w1)
         return data
+    
+    def current_key_pascal(self, option):
+        """Converts a snake_case string to PascalCase."""
+        # Replace underscores with spaces
+        temp_string = option.current_key.replace("_", " ")
+        # Capitalize the first letter of each word
+        titled_string = temp_string.title()
+        # Remove spaces to form PascalCase
+        pascal_case_string = titled_string.replace(" ", "")
+        return pascal_case_string
         
     def generate_output(self, output_directory: str):
         with open(get_base_rom_path(), 'rb') as stream:
@@ -396,15 +418,18 @@ class SMMapRandoWorld(World):
             self.rom,
             "",
             f"{self.options.etank_color_red.value:02X}{self.options.etank_color_green.value:02X}{self.options.etank_color_blue.value:02X}",
+            self.current_key_pascal(self.options.item_dot_change),
+            self.options.transition_letters.value == 1,
             bool(self.options.reserve_hud_style.value),
             self.options.room_palettes.current_key,
-            self.options.tile_theme.current_key_pascal(),
+            self.current_key_pascal(self.options.tile_theme),
             self.options.door_colors.current_key,
             self.options.music.current_key,
             bool(self.options.disable_beeping.value),
             self.options.screen_shaking.current_key.title(),
             self.options.screen_flashing.current_key.title(),
             bool(self.options.screw_attack_animation.value),
+            bool(self.options.room_names.value),
             self.options.shot.current_key.title(),
             self.options.jump.current_key.title(),
             self.options.dash.current_key.title(),
@@ -439,21 +464,30 @@ class SMMapRandoWorld(World):
             bool(self.options.moonwalk.value)
         )
         sorted_item_locs = list(self.locations.values())
-        items = [MapRandoItem(
-                (itemLoc.item.code 
-                    if isinstance(itemLoc.item, SMMRItem) else 
-                (self.item_name_to_id['ArchipelagoProgItem'] 
-                    if itemLoc.item.classification == ItemClassification.progression else
-                self.item_name_to_id['ArchipelagoItem']))
-                - items_start_id)
-                    for itemLoc in sorted_item_locs if itemLoc.address is not None]
+        items = []
+        for itemLoc in sorted_item_locs:
+            if itemLoc.address is not None:
+                item_code = items_start_id
+                if isinstance(itemLoc.item, SMMRItem):
+                    item_code = itemLoc.item.code if itemLoc.item.code - items_start_id < SMMapRandoWorld.prog_missile_item_id else itemLoc.item.code - SMMapRandoWorld.prog_missile_item_id + SMMapRandoWorld.missile_item_id
+                elif itemLoc.item.advancement:
+                    if itemLoc.item.useful:
+                        item_code = self.item_name_to_id['ArchipelagoUsefulProgItem']
+                    else:
+                        item_code = self.item_name_to_id['ArchipelagoProgItem']
+                else:
+                    if itemLoc.item.useful:
+                        item_code = self.item_name_to_id['ArchipelagoUsefulItem']
+                    else:
+                        item_code = self.item_name_to_id['ArchipelagoItem']
+                items.append(MapRandoItem(item_code - items_start_id))
         
         # if start location isnt Escape
         if (len(self.randomizer_ap.spoiler_log.summary) > 0):
             spheres: List[Location] = getattr(self.multiworld, "_smmr_spheres", None)
             summary =  [   (
                             sphere_idx, 
-                            loc.item.code - items_start_id, 
+                            (loc.item.code if loc.item.code - items_start_id < SMMapRandoWorld.prog_missile_item_id else loc.item.code - SMMapRandoWorld.prog_missile_item_id + SMMapRandoWorld.missile_item_id) - items_start_id, 
                             self.multiworld.get_player_name(loc.player) + " world" if loc.player != self.player else None
                         ) 
                     for sphere_idx, sphere in enumerate(spheres) for loc in sphere if loc.item.player == self.player and loc.item.name != "Nothing"
@@ -476,7 +510,6 @@ class SMMapRandoWorld(World):
             map_rando_app_data, 
             self.map_rando_settings,
             self.randomizer_ap.randomization,
-            self.randomizer_ap.randomization.map,
             False,
             items,
             item_spoiler_infos

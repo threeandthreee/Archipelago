@@ -212,3 +212,4 @@ extended_rules_list: tuple = (
 
 changeable_seasons: InclusionRule = lambda world: world.options.season_control != "vanilla"
 disabled: InclusionRule = lambda world: False  # Due to missing wild randomization
+randomized_wild: InclusionRule = lambda world: "Randomize" in world.options.randomize_wild_pokemon

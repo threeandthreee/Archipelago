@@ -188,9 +188,13 @@ class PhantomHourglassFrogRandomization(Choice):
 
 class PhantomHourglassBoatRequiresSeaChart(Toggle):
     """
-    If True, heading out to sea from mercay requires the SW sea chart.
-    WARNING! If set to False and you travel without a sea chart, you can't come back without warping to start.
-    Frogs require their sea chart to work
+    If True, heading out to sea from any island requires the sea chart for the ocean it's connected to.
+    WARNING! If set to False and you cross a sea boundary without a sea chart, you can't come back without warping to start.
+    This is in logic.
+    Sea Charts for the quadrant you are entering are always required to cross the quadrant boundary.
+    The chart from the one you are exiting is not.
+    Frogs require their sea chart to work.
+    Works from all islands and with entrance rando
     """
     display_name = "Boat Requires Sea Chart"
     default = 1
@@ -483,6 +487,17 @@ class PhantomHourglassShuffleDungeonEntrances(Toggle):
     display_name = "shuffle_dungeon_entrances"
     default = 0
 
+class PhantomHourglassShuffleIslands(Toggle):
+    """
+    EXPERIMENTAL!!! Use at your own risk!
+    Shuffle what island port leads to which island overworld.
+    Does not include ghost ship or travellers ships.
+    Currently incompatible with boat requires sea chart.
+    Full entrance rando coming soon!
+    """
+    display_name = "shuffle_island_entrances"
+    default = 0
+
 @dataclass
 class PhantomHourglassOptions(PerGameCommonOptions):
     # Accessibility
@@ -543,6 +558,7 @@ class PhantomHourglassOptions(PerGameCommonOptions):
 
     # ER
     shuffle_dungeon_entrances: PhantomHourglassShuffleDungeonEntrances
+    shuffle_island_entrances: PhantomHourglassShuffleIslands
 
     # Cosmetic
     additional_metal_names: PhantomHourglassAdditionalMetalNames
@@ -608,7 +624,8 @@ ph_option_groups = [
         PhantomHourglassTimeIncrement
     ]),
     OptionGroup("Entrance Randomizer Options", [
-        PhantomHourglassShuffleDungeonEntrances
+        PhantomHourglassShuffleDungeonEntrances,
+        PhantomHourglassShuffleIslands
     ]),
     OptionGroup("Cosmetic Options", [
         PhantomHourglassAdditionalMetalNames

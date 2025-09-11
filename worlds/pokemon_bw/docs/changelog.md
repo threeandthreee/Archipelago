@@ -1,6 +1,56 @@
 # Changelog
 Versions are sorted in ascending order, i.e. the most recent changes are at the top.
 
+## 0.3.2
+
+- Made option descriptions in template yamls look nicer
+- Added some more information to the option description of `master_ball_seller`
+- Fixed certain wild Pokémon randomization modifiers leading to nondeterministic randomization
+  - This also fixes UT having wrong logic (especially regarding Dexsanity), but already generated worlds cannot be fixed
+  - Has to be tested using UT
+- Fixed client crashing immediately if Master Ball seller cost is set to anything other than 0 or nothing
+- Fixed multiple custom menus in the Pokémon Center PC freezing the game after displaying a text box
+
+## 0.3.1
+
+- Fixed UT not working
+
+## 0.3.0: Actual Randomization
+
+### Content
+
+- Added wild pokémon randomization, including the following modifiers:
+  - Randomize
+  - Ensure all obtainable
+  - Similar base stats
+  - Type themed areas
+  - Area 1-to-1
+  - Merge Phenomenons
+  - Prevent rare encounters
+- Added a master ball seller option
+  - 4 different sellers: NPC in N's Castle, Undella Mansion seller, PC, Cheren's Mom (multiple choice)
+  - Different cost modifiers: Free, 1000, 3000, 10000 (multiple choice, random cost in range if multiple)
+- Added level adjusting option for wild and trainer Pokémon
+- Added trainer pokémon randomization, for now including following modifiers:
+  - Randomize
+  - Similar base stats
+- Added encounter plando, currently only for wild pokémon
+  - Working with and without randomized wild pokémon
+
+### QoL
+
+- Made key items and other important items get checked and re-added if not in save file after connecting
+- Wrote player name into rom, hopefully making the client always automatically connect to the correct slot
+- Changed the item description of a few non-vanilla key items
+- An option to adjust certain aspects of Pokémon randomization
+  - Only having the leniency for "Similar base stats" modifiers for now
+
+### Bug fixes
+
+- Fixed rare(?) BizHawk client crashing due to slotdata not being received yet
+- Fixed items getting lost after soft resetting after receiving an item after the last save
+- Fixed TM/HM checking NPC not showing up when `pokemon_master` is chosen as the goal
+
 ## 0.2.1
 
 - Fixed UT not working

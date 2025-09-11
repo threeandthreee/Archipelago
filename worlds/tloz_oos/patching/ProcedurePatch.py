@@ -25,6 +25,10 @@ class OoSPatchExtensions(APPatchExtension):
             raise Exception(f"Invalid version: this patch was generated on v{patch_data['version']}, "
                             f"you are currently using v{VERSION[0]},{VERSION[1]}")
 
+        # Initialize random seed with the one used for generation + the player ID, so that cosmetic stuff set
+        # to "random" always generate the same for successive patchings for a given slot
+        random.seed(patch_data["seed"] + caller.player)
+
         assembler = Z80Assembler(CAVE_DATA, DEFINES, rom)
         dictionary = parse_dict_seasons(rom_data)
         texts = parse_all_texts(rom_data, dictionary)
@@ -67,9 +71,6 @@ class OoSPatchExtensions(APPatchExtension):
         if patch_data["options"]["randomize_ai"]:
             randomize_ai_for_april_fools(rom_data, patch_data["seed"] + caller.player)
 
-        # Initialize random seed with the one used for generation + the player ID, so that cosmetic stuff set
-        # to "random" always generate the same for successive patchings for a given slot
-        random.seed(patch_data["seed"] + caller.player)
         # Apply cosmetic settings
         set_heart_beep_interval_from_settings(rom_data)
         set_character_sprite_from_settings(rom_data)

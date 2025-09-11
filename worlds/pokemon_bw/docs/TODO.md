@@ -1,14 +1,7 @@
 # Important stuff
 
-
-# For 0.3.0
-
-- remove notice on dexsanity option
-- remove wild rando notice on game info page
-- bake player name into rom header
-- key item and tm re-adding mechanism, because of pkhex
-  - also add that and pkhex in general to faq
-- change key items' descriptions
+- "no legendary" modifier for wild and trainer pokemon
+- master ball seller cost random 0-10000 if no cost selected
 
 # Not urgent
 
@@ -18,10 +11,14 @@
 - more inclusion rules
 - complete levelup movesets
 - advertise on ds romhacking servers
+- ask for ndspy licensing
 - make simple script compiler, use for starting season, season npc vanish, tmhm hunt npc vanish, and other future stuff
 - change rules dict to being filled on the way
 - organize imports for type hints behind TYPE_CHECKING
 - musharna encounter not appearing on first visit?
+- make client use guarded_write
+- add npc to dragonspiral tower that tells you how to travers 2F
+- plando items having issues? plandoing basic badge into abyssal ruins sometimes raises fillerrors regarding this item not being placeable
 
 # Single reports, cannot recreate, need to wait for more reports
 
@@ -30,4 +27,4 @@
 - ranger claude talking french after battle?
 - Some hidden items are not checkable immediately?
 - grunt in pinwheel forest with dragon skull not talking anymore after obtaining the dragon skull
-- Save file corrupt after beating Ghetsis, need to investigate, maybe AR codes, maybe auto release after goal
+- stone grunts not disappearing?

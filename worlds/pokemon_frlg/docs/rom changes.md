@@ -44,7 +44,7 @@ predetermined priority
 * All evolution items have been turned into key items that can be used repeatedly. A new evolution item, the Link Cable, has been added to the game
 * A new page has been added to Pokémon's Dex entires that lists out the areas where you can find them and what they can evolve into
 * Talking to the Mystery Gift Man on the 2nd floor of any Pokémon Center will allow you to respawn any static encounters you haven't caught yet
-* Talking to the Wireless Club Attendant (left) on the 2nd floor of any Pokémon Center will let you fight a random uncatchable Pokemon in order to grind exp and money
+* Talking to the Wireless Club Attendant (left) on the 2nd floor of any Pokémon Center will let you fight a random uncatchable Pokémon in order to grind exp and money
 * Talking to the Direct Corner Attendant (right) on the 2nd floor of any Pokémon Center will allow you to purchase various consumable items you have already found
 * The Pikachu tutorial in the intro is skipped
 * The intro sequence of the game has been changed:
@@ -54,7 +54,7 @@ predetermined priority
   * Professor Oak's Lab starts at the point where you need to do the first rival battle. The trigger for the rival battle has been removed and the battle can be initiated by talking to him
 * The Old Man catching tutorial is skipped
 * Miguel's position in Mt. Moon will change based on which side you enter from
-* You are able to pick up both fossils in Mt. Moon after beating Miguel
+* Both fossils in Mt. Moon will give you the same item so it doesn't matter which one you pick up. The second fossil can be obtained in the Pokémon Lab after you have revived a certain number of fossils
 * The Team Rocket Grunt on Route 24 won't give you your reward until after the battle
 * The S.S. Anne will never depart
 * The Vermilion Gym puzzle doesn't reset if you get the second trash can switch wrong

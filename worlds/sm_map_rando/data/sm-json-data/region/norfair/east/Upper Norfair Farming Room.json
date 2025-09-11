@@ -129,6 +129,7 @@
       "to": [
         {"id": 1},
         {"id": 3},
+        {"id": 4},
         {"id": 5}
       ]
     },
@@ -213,9 +214,7 @@
       "unlocksDoors": [
         {
           "types": ["ammo"],
-          "requires": [
-            {"obstaclesCleared": ["A"]}
-          ]
+          "requires": [{"obstaclesCleared": ["A"]}]
         }
       ],
       "flashSuitChecked": true
@@ -740,7 +739,7 @@
       "note": [
         "Exit the previous room with Samus in a standing pose (while grappled) with a horizontal position of 21 (as far right as possible).",
         "After teleporting, press right to release Grapple while staying standing (not being forced into a crouch).",
-        "Then X-ray climb to get to the door transition above, without needing to open the door.",
+        "Then X-ray climb 1 screen to get to the door transition above, without needing to open the door.",
         "Samus will not be visible during the climb.",
         "At the beginning of the climb, avoid pressing left without X-Ray being held, to prevent triggering the transition of the bottom door."
       ]
@@ -793,9 +792,7 @@
       "unlocksDoors": [
         {
           "types": ["ammo"],
-          "requires": [
-            {"obstaclesCleared": ["A"]}
-          ]
+          "requires": [{"obstaclesCleared": ["A"]}]
         }
       ],
       "flashSuitChecked": true
@@ -1018,6 +1015,15 @@
       ]
     },
     {
+      "id": 60,
+      "link": [4, 4],
+      "name": "Crystal Flash",
+      "requires": [
+        "h_heatedCrystalFlash"
+      ],
+      "flashSuitChecked": true
+    },
+    {
       "id": 35,
       "link": [4, 5],
       "name": "Base",
@@ -1030,10 +1036,12 @@
       "link": [5, 1],
       "name": "G-Mode Setup - Get Hit By Gamet",
       "requires": [
+        "canComplexGMode",
         {"heatFrames": 480},
         {"or": [
           "canTrickyUseFrozenEnemies",
-          "canTrickyJump"
+          "canMoonwalk",
+          "canInsaneJump"
         ]}
       ],
       "exitCondition": {
@@ -1210,9 +1218,9 @@
       ]
     },
     {
-      "id": 45,
+      "id": 61,
       "link": [5, 5],
-      "name": "Gamet Farm",
+      "name": "Approach Farm",
       "requires": [
         {"or": [
           {"and": [
@@ -1221,8 +1229,23 @@
           ]},
           {"heatFrames": 50}
         ]},
-        {"refill": ["Energy", "Missile", "Super", "PowerBomb"]}
-      ]
+        {"partialRefill": {"type": "RegularEnergy", "limit": 50}}
+      ],
+      "flashSuitChecked": true,
+      "note": "Regain some energy in order to use the Gamet Farm."
+    },
+    {
+      "id": 45,
+      "link": [5, 5],
+      "name": "Gamet Farm",
+      "requires": [
+        {"simpleHeatFrames": 80},
+        {"heatFrames": 30},
+        {"simpleCycleFrames": 80},
+        {"cycleFrames": 30}
+      ],
+      "farmCycleDrops": [{"enemy": "Gamet", "count": 5}],
+      "flashSuitChecked": true
     }
   ],
   "notables": [
@@ -1232,6 +1255,6 @@
       "note": "Farm before, during, and after the gate glitch in order to open the gate without wasting ammo or Energy."
     }
   ],
-  "nextStratId": 60,
+  "nextStratId": 62,
   "nextNotableId": 2
 }

@@ -40,13 +40,11 @@ def apply_base_patch(rom: Rom) -> None:
 
 
 def disable_demos(rom: Rom) -> None:
-    # TODO: Move to patch
     # b 0x8087460
     rom.write_16(0x87436, 0xE013)
 
 
 def skip_door_transitions(rom: Rom) -> None:
-    # TODO: Move to patch
     rom.write_32(0x69500, 0x3000BDE)
     rom.write_8(0x694E2, 0xC)
 
@@ -90,13 +88,13 @@ def apply_pbs_without_bombs(rom: Rom) -> None:
     apply_patch_in_asm_path(rom, "bombless_pbs.ips")
 
 
-def apply_anti_softlock_edits(rom: Rom) -> None:
-    apply_patch_in_asm_path(rom, "anti_softlock.ips")
-
-
 def apply_reveal_hidden_tiles(rom: Rom) -> None:
     rom.write_8(rom.read_ptr(ReservedConstants.REVEAL_HIDDEN_TILES_ADDR), 1)
 
 
 def apply_reveal_unexplored_doors(rom: Rom) -> None:
     apply_patch_in_asm_path(rom, "unhidden_map_doors.ips")
+
+
+def apply_accessibility_patch(rom: Rom) -> None:
+    apply_patch_in_asm_path(rom, "accessibility.ips")

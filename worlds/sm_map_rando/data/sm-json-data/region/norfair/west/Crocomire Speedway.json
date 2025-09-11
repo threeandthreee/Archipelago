@@ -549,22 +549,94 @@
       "devNote": "FIXME: R-Mode can be used instead of a Crystal Flash but that depends on having more Reserve Energy than Regular Energy."
     },
     {
+      "id": 96,
+      "link": [2, 2],
+      "name": "Multiviola Pirate Farm",
+      "requires": [
+        "h_heatProof",
+        {"resetRoom": {"nodes": [2]}},
+        {"cycleFrames": 1200},
+        {"or": [
+          "Plasma",
+          {"and": [
+            "Wave",
+            {"cycleFrames": 120}
+          ]},
+          {"and": [
+            "Spazer",
+            {"cycleFrames": 300}
+          ]},
+          {"and": [
+            "canPseudoScrew",
+            {"cycleFrames": 220}
+          ]}
+        ]}
+      ],
+      "resetsObstacles": ["A"],
+      "farmCycleDrops": [
+        {"enemy": "Multiviola", "count": 4},
+        {"enemy": "Red Space Pirate (standing)", "count": 3}
+      ]
+    },
+    {
+      "id": 97,
+      "link": [2, 2],
+      "name": "Multiviola Pirate SpeedBooster Farm",
+      "requires": [
+        "h_heatProof",
+        {"resetRoom": {"nodes": [2]}},
+        {"cycleFrames": 60},
+        {"simpleCycleFrames": 560},
+        "SpeedBooster"
+      ],
+      "resetsObstacles": ["A"],
+      "farmCycleDrops": [
+        {"enemy": "Multiviola", "count": 1},
+        {"enemy": "Red Space Pirate (standing)", "count": 4}
+      ],
+      "note": "Drops do not linger long enough to kill every single Pirate."
+    },
+    {
+      "id": 98,
+      "link": [2, 2],
+      "name": "Cacatac Farm",
+      "requires": [
+        "h_heatProof",
+        "SpeedBooster",
+        {"resetRoom": {"nodes": [2]}},
+        {"cycleFrames": 350},
+        {"simpleCycleFrames": 800},
+        {"or": [
+          "Plasma",
+          {"and": [
+            "Wave",
+            {"cycleFrames": 30}
+          ]},
+          {"and": [
+            "Spazer",
+            {"cycleFrames": 30}
+          ]},
+          {"and": [
+            "Grapple",
+            {"cycleFrames": 45}
+          ]},
+          {"cycleFrames": 120}
+        ]}
+      ],
+      "clearsObstacles": ["A"],
+      "farmCycleDrops": [{"enemy": "Cacatac", "count": 2}],
+      "devNote": "Some frames added to account for spike RNG."
+    },
+    {
       "id": 75,
       "link": [2, 4],
       "name": "G-Mode Setup - Get Hit By Multiviola, Complex Manipulation",
       "requires": [
+        "canTrickyGMode",
         "h_heatProof",
         "canBePatient",
         "canCameraManip",
-        "SpeedBooster",
-        {"or": [
-          "canTrickyDodgeEnemies",
-          {"enemyDamage": {"enemy": "Multiviola", "type": "contact", "hits": 3}}
-        ]},
-        {"or": [
-          "canTrickyUseFrozenEnemies",
-          "canTrickyDodgeEnemies"
-        ]}
+        "SpeedBooster"
       ],
       "exitCondition": {
         "leaveWithGModeSetup": {}
@@ -711,27 +783,14 @@
         }
       },
       "requires": [
-        "canTrickyJump",
+        "canTrickyDodgeEnemies",
         {"or": [
           {"ammo": {"type": "PowerBomb", "count": 6}},
           {"and": [
+            "h_artificialMorphMovement",
             {"or": [
-              {"and": [
-                "h_artificialMorphSpringBall",
-                "canTrickyDodgeEnemies"
-              ]},
-              {"and": [
-                "h_artificialMorphIBJ",
-                "canInsaneJump"
-              ]},
-              {"and": [
-                {"ammo": {"type": "PowerBomb", "count": 1}},
-                "h_artificialMorphSpringBall"
-              ]},
-              {"and": [
-                {"ammo": {"type": "PowerBomb", "count": 2}},
-                "h_artificialMorphIBJ"
-              ]}
+              "canInsaneJump",
+              "h_artificialMorphPowerBomb"
             ]},
             {"or": [
               "h_artificialMorphPowerBomb",
@@ -844,10 +903,10 @@
       "name": "Cross Room Jump Into Speedball (HiJump)",
       "entranceCondition": {
         "comeInWithPlatformBelow": {
-          "maxLeftPosition": 0,
-          "minRightPosition": 22,
           "minHeight": 9,
-          "maxHeight": 10
+          "maxHeight": 10,
+          "maxLeftPosition": 0,
+          "minRightPosition": 22
         },
         "comesThroughToilet": "any"
       },
@@ -858,9 +917,7 @@
         "canSpeedball",
         {"heatFrames": 505}
       ],
-      "devNote": [
-        "This strat is applicable only with Crocomire's Room and Post Crocomire Jump Room."
-      ]
+      "devNote": ["This strat is applicable only with Crocomire's Room and Indiana Jones Room."]
     },
     {
       "id": 69,
@@ -868,10 +925,10 @@
       "name": "Cross Room Jump Into Speedball (Tricky Dash Jump)",
       "entranceCondition": {
         "comeInWithPlatformBelow": {
-          "maxLeftPosition": 0,
-          "minRightPosition": 41.5,
           "minHeight": 10,
-          "maxHeight": 10
+          "maxHeight": 10,
+          "maxLeftPosition": 0,
+          "minRightPosition": 41.5
         },
         "comesThroughToilet": "any"
       },
@@ -1027,8 +1084,8 @@
       "name": "Full Speed Reverse Speedball",
       "entranceCondition": {
         "comeInBlueSpinning": {
-          "unusableTiles": 1,
-          "minExtraRunSpeed": "$7.0"
+          "minExtraRunSpeed": "$7.0",
+          "unusableTiles": 1
         }
       },
       "requires": [
@@ -1048,8 +1105,8 @@
       "name": "High Speed Reverse Speedball",
       "entranceCondition": {
         "comeInBlueSpinning": {
-          "unusableTiles": 1,
-          "minExtraRunSpeed": "$6.5"
+          "minExtraRunSpeed": "$6.5",
+          "unusableTiles": 1
         }
       },
       "requires": [
@@ -1232,7 +1289,7 @@
     {
       "id": 23,
       "link": [4, 2],
-      "name": "Grapple Teleport X-Ray Climb",
+      "name": "Grapple Teleport X-Ray Climb (1 Screen)",
       "entranceCondition": {
         "comeInWithGrappleTeleport": {
           "blockPositions": [[2, 18], [2, 19], [2, 28], [2, 29]]
@@ -1247,20 +1304,20 @@
       "note": [
         "Exit the previous room with Samus in a standing pose (while grappled).",
         "After teleporting, press right to release Grapple while staying standing (not being forced into a crouch).",
-        "Then X-ray climb to get up to the door transition, without needing to open the door."
+        "Then X-ray climb 1 screen to get up to the door transition, without needing to open the door."
       ]
     },
     {
       "id": 24,
       "link": [4, 2],
-      "name": "Grapple Teleport X-Ray Climb (Two Screens)",
+      "name": "Grapple Teleport X-Ray Climb (2 Screens)",
       "entranceCondition": {
         "comeInWithGrappleTeleport": {
           "blockPositions": [[2, 34]]
         }
       },
       "requires": [
-        "canXRayClimb",
+        "canLongXRayClimb",
         {"heatFrames": 2800}
       ],
       "bypassesDoorShell": true,
@@ -1268,7 +1325,7 @@
       "note": [
         "Exit the previous room with Samus in a standing pose (while grappled).",
         "After teleporting, press right to release Grapple while staying standing (not being forced into a crouch).",
-        "Then X-ray climb to get up to the door transition, without needing to open the door."
+        "Then X-ray climb 2 screens to get up to the door transition, without needing to open the door."
       ]
     },
     {
@@ -1778,7 +1835,7 @@
     {
       "id": 37,
       "link": [5, 2],
-      "name": "Grapple Teleport X-Ray Climb",
+      "name": "Grapple Teleport X-Ray Climb (1 Screen)",
       "entranceCondition": {
         "comeInWithGrappleTeleport": {
           "blockPositions": [[2, 18], [2, 19], [2, 28], [2, 29]]
@@ -1793,20 +1850,20 @@
       "note": [
         "Exit the previous room with Samus in a standing pose (while grappled).",
         "After teleporting, press right to release Grapple while staying standing (not being forced into a crouch).",
-        "Then X-ray climb to get up to the door transition, without needing to open the door."
+        "Then X-ray climb 1 screen to get up to the door transition, without needing to open the door."
       ]
     },
     {
       "id": 38,
       "link": [5, 2],
-      "name": "Grapple Teleport X-Ray Climb (Two Screens)",
+      "name": "Grapple Teleport X-Ray Climb (2 Screens)",
       "entranceCondition": {
         "comeInWithGrappleTeleport": {
           "blockPositions": [[2, 34]]
         }
       },
       "requires": [
-        "canXRayClimb",
+        "canLongXRayClimb",
         {"heatFrames": 2800}
       ],
       "bypassesDoorShell": true,
@@ -1886,30 +1943,47 @@
     {
       "id": 40,
       "link": [5, 5],
-      "name": "Cacatac Super Farm",
-      "requires": [
-        "h_heatProof",
-        {"resetRoom": {
-          "nodes": [1, 3, 4, 5]
-        }},
-        {"partialRefill": {"type": "Super", "limit": 10}}
-      ],
-      "resetsObstacles": ["A"]
-    },
-    {
-      "id": 67,
-      "link": [5, 5],
       "name": "Cacatac Farm",
       "requires": [
         "h_heatProof",
-        {"resetRoom": {
-          "nodes": [1, 3, 4, 5]
-        }},
-        {"resourceMissingAtMost": [{"type": "Super", "count": 4}]},
-        {"refill": ["Super"]},
-        {"partialRefill": {"type": "Energy", "limit": 200}}
+        {"or": [
+          {"and": [
+            {"resetRoom": {"nodes": [1]}},
+            {"cycleFrames": 450}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [3]}},
+            {"cycleFrames": 300}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [4]}},
+            {"cycleFrames": 360}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [5]}},
+            {"cycleFrames": 200}
+          ]}
+        ]},
+        {"or": [
+          "Plasma",
+          {"and": [
+            "Wave",
+            {"cycleFrames": 30}
+          ]},
+          {"and": [
+            "Spazer",
+            {"cycleFrames": 30}
+          ]},
+          {"and": [
+            "Grapple",
+            {"cycleFrames": 45}
+          ]},
+          {"cycleFrames": 120}
+        ]}
       ],
-      "resetsObstacles": ["A"]
+      "resetsObstacles": ["A"],
+      "farmCycleDrops": [{"enemy": "Cacatac", "count": 2}],
+      "devNote": "Some frames added to account for spike RNG."
     },
     {
       "id": 41,
@@ -2101,6 +2175,50 @@
         "Note that there is a slight incline just before the bridge, which can be used as an indicator for where to Space Jump."
       ],
       "devNote": "Requires leaving the room, as Samus is off camera and shouldn't be expected to do more in-room."
+    },
+    {
+      "id": 94,
+      "link": [7, 2],
+      "name": "G-Mode, Heatproof, Fix Camera",
+      "requires": [
+        "canGMode",
+        "h_heatProof",
+        {"or": [
+          "h_bombThings",
+          "h_useSpringBall"
+        ]},
+        {"or": [
+          "h_usePowerBomb",
+          "h_hasBeamUpgrade",
+          "ScrewAttack",
+          {"ammo": {"type": "Missile", "count": 3}},
+          {"ammo": {"type": "Super", "count": 3}},
+          "canComplexGMode"
+        ]}
+      ],
+      "flashSuitChecked": true,
+      "note": [
+        "Exit G-mode before the crumble bridge, this is when the floor starts sloping up slightly.",
+        "Without a way to kill the pirates, touch the camera scroll block briefly before the bridge, then run over the bridge and through the pirates before fixing the camera, to not have to deal with the pirates.",
+        "Otherwise, it may be worth killing the pirates for some Energy to be able to tank a hit later.",
+        "Use a Bomb, Power Bomb, or Spring Ball to get over the Speed blocks. Then carefully avoid or kill the remaining enemies."
+      ]
+    },
+    {
+      "id": 95,
+      "link": [7, 2],
+      "name": "G-Mode, Fix Camera, Speedy Exit",
+      "requires": [
+        "canComplexGMode",
+        "h_heatedGMode",
+        "h_getBlueSpeedMaxRunway",
+        {"heatFrames": 375}
+      ],
+      "flashSuitChecked": true,
+      "note": [
+        "Exit G-mode before the crumble bridge, this is when the floor starts sloping up slightly.",
+        "Run over the bridge and through the pirates without fixing the camera, to safely run through the pirates."
+      ]
     },
     {
       "id": 85,
@@ -2316,7 +2434,7 @@
       ]
     }
   ],
-  "nextStratId": 94,
+  "nextStratId": 99,
   "nextNotableId": 5,
   "devNote": [
     "FIXME: A moonfall using Multiviolas might be possible to bypass the door shell below."

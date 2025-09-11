@@ -215,7 +215,10 @@ class OracleOfSeasonsClient(BizHawkClient):
             bit_mask = location["scouting_mask"] if "scouting_mask" in location else 0x10
             if flag_bytes[byte_offset] & bit_mask == bit_mask:
                 if "owl_id" in location:
-                    location_id, player = ctx.slot_data["item_hints"][location["owl_id"]]
+                    hint = ctx.slot_data["item_hints"][location["owl_id"]]
+                    if hint is None:
+                        continue
+                    location_id, player = hint
                 else:
                     # Map has been visited, scout the location if it hasn't been already
                     player = ctx.slot

@@ -50,6 +50,8 @@ def normalize_text(text: str) -> str:
     words = text.split(" ")
     for word in words:
         word_length = sum(1 for c in word if c not in text_colors)
+        if "\\link_name" in word:
+            word_length -= 5
         if word_length > 16:
             word = f"{word[:15]}.{''.join([c for c in word[15:] if c in text_colors])}"
             pass

@@ -38,6 +38,7 @@ class ItemData:
 all_items: list[ItemData] = []
 filler_items: list[ItemData] = []
 useful_items: list[ItemData] = []
+j_items: list[ItemData] = []
 items_by_tier: list[list[ItemData]] = [
     [],
     [],
@@ -71,6 +72,8 @@ for item in itemscsv.create_view():
     all_items.append(new_item)
     if item_tier != -1 and item_tier != 99:
         items_by_tier[item_tier - 1].append(new_item)
+    if item.j == "J":
+        j_items.append(new_item)
 
 
 useful_items = [item for item in all_items if item.classification == ItemClassification.useful and item.name != "Spoon"]

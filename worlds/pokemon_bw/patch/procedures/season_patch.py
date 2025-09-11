@@ -7,10 +7,10 @@ import pkgutil
 from .. import otpp
 
 if TYPE_CHECKING:
-    from ...rom import PokemonBlackPatch
+    from ...rom import PokemonBWPatch
 
 
-def patch(rom: NintendoDSRom, world_package: str, bw_patch_instance: "PokemonBlackPatch") -> None:
+def patch(rom: NintendoDSRom, world_package: str, bw_patch_instance: "PokemonBWPatch") -> None:
     otpp_patch: bytes = pkgutil.get_data(world_package, "patch/seasons_otpp/ov20_decomp")
     overlay_table = rom.loadArm9Overlays()
     ov20 = overlay_table[20]

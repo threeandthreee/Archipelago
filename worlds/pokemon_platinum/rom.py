@@ -4,9 +4,9 @@
 # Licensed under MIT. See LICENSE
 
 import bsdiff4
+from collections import Counter
 import os
 import pkgutil
-import random
 from typing import Any, Dict, TYPE_CHECKING
 from settings import get_settings
 from worlds.Files import APAutoPatchInterface
@@ -139,7 +139,7 @@ def process_name(name: str, world: "PokemonPlatinumWorld") -> bytes:
         return b'\xFF' * 16
     if name == "random":
         other_players = [world.multiworld.get_file_safe_player_name(id) for id in world.multiworld.player_name if id != world.player] # type: ignore
-        random.shuffle(other_players)
+        world.random.shuffle(other_players)
         # if no player name matches, then return vanilla
         for name in other_players:
             ret = encode_name(name)
@@ -158,20 +158,20 @@ def process_name(name: str, world: "PokemonPlatinumWorld") -> bytes:
 def generate_output(world: "PokemonPlatinumWorld", output_directory: str, patch: PokemonPlatinumPatch) -> None:
     game_opts = world.options.game_options
     ap_bin = bytes()
-    ap_bin += process_name(game_opts.default['default_player_name'], world)
-    ap_bin += process_name(game_opts.default['default_rival_name'], world)
-    match game_opts.default['default_gender']:
+    ap_bin += process_name(game_opts.default_player_name, world)
+    ap_bin += process_name(game_opts.default_rival_name, world)
+    match game_opts.default_gender:
         case "male":
             ap_bin += b'\x00'
         case "female":
             ap_bin += b'\x01'
         case "random":
-            ap_bin += random.choice([b'\x00', b'\x01'])
+            ap_bin += world.random.choice([b'\x00', b'\x01'])
         case "vanilla":
             ap_bin += b'\x02'
         case _:
-            raise ValueError(f"invalid default gender: \"{game_opts.default['default_gender']}\"")
-    match game_opts.default['text_speed']:
+            raise ValueError(f"invalid default gender: \"{game_opts.default_gender}\"")
+    match game_opts.text_speed:
         case "fast":
             ap_bin += b'\x02'
         case "slow":
@@ -179,29 +179,29 @@ def generate_output(world: "PokemonPlatinumWorld", output_directory: str, patch:
         case "mid":
             ap_bin += b'\x01'
         case _:
-            raise ValueError(f"invalid text speed: \"{game_opts.default['text_speed']}\"")
-    match game_opts.default['sound']:
+            raise ValueError(f"invalid text speed: \"{game_opts.text_speed}\"")
+    match game_opts.sound:
         case "mono":
             ap_bin += b'\x01'
         case "stereo":
             ap_bin += b'\x00'
         case _:
-            raise ValueError(f"invalid sound: \"{game_opts.default['sound']}\"")
-    match game_opts.default['battle_scene']:
+            raise ValueError(f"invalid sound: \"{game_opts.sound}\"")
+    match game_opts.battle_scene:
         case "off":
             ap_bin += b'\x01'
         case "on":
             ap_bin += b'\x00'
         case _:
-            raise ValueError(f"invalid battle scene: \"{game_opts.default['battle_scene']}\"")
-    match game_opts.default['battle_style']:
+            raise ValueError(f"invalid battle scene: \"{game_opts.battle_scene}\"")
+    match game_opts.battle_style:
         case "set":
             ap_bin += b'\x01'
         case "shift":
             ap_bin += b'\x00'
         case _:
-            raise ValueError(f"invalid battle style: \"{game_opts.default['battle_style']}\"")
-    match game_opts.default['button_mode']:
+            raise ValueError(f"invalid battle style: \"{game_opts.battle_style}\"")
+    match game_opts.button_mode:
         case "start=x":
             ap_bin += b'\x01'
         case "l=a":
@@ -209,23 +209,14 @@ def generate_output(world: "PokemonPlatinumWorld", output_directory: str, patch:
         case "normal":
             ap_bin += b'\x00'
         case _:
-            raise ValueError(f"invalid button mode: \"{game_opts.default['button_mode']}\"")
-    text_frame = game_opts.default['text_frame']
+            raise ValueError(f"invalid button mode: \"{game_opts.button_mode}\"")
+    text_frame = game_opts.text_frame
     if isinstance(text_frame, int) and 1 <= text_frame and text_frame <= 20:
         ap_bin += (text_frame - 1).to_bytes(length=1, byteorder='little')
     elif text_frame == "random":
-        ap_bin += random.randint(0, 19).to_bytes(length=1, byteorder='little')
+        ap_bin += world.random.randint(0, 19).to_bytes(length=1, byteorder='little')
     else:
         raise ValueError(f"invalid text frame: \"{text_frame}\"")
-    match game_opts.default['received_items_notification']:
-        case "nothing":
-            ap_bin += b'\x00'
-        case "message":
-            ap_bin += b'\x03'
-        case "jingle":
-            ap_bin += b'\x04'
-        case _:
-            raise ValueError(f"invalid received items notification: \"{game_opts.default['received_items_notification']}\"")
 
     if world.options.hm_badge_requirement.value == 1:
         hm_accum = 0
@@ -237,8 +228,33 @@ def generate_output(world: "PokemonPlatinumWorld", output_directory: str, patch:
         hm_accum = 0xFF
     ap_bin += hm_accum.to_bytes(length=1, byteorder='little')
 
-    ap_bin += world.options.exp_multiplier.value.to_bytes(length=1, byteorder='little')
-    ap_bin += world.options.blind_trainers.value.to_bytes(length=1, byteorder='little')
+    def add_opt_byte(name: str):
+        nonlocal ap_bin
+        ap_bin += getattr(world.options, name).value.to_bytes(length=1, byteorder='little')
+
+    add_opt_byte("exp_multiplier")
+    add_opt_byte("parcel_coupons_route_203")
+    add_opt_byte("regional_dex_goal")
+    add_opt_byte("marsh_pass")
+    add_opt_byte("remote_items")
+    add_opt_byte("early_sunyshore")
+    add_opt_byte("unown_option")
+    add_opt_byte("pastoria_barriers")
+
+    match game_opts.received_items_notification:
+        case "nothing":
+            ap_bin += b'\x00'
+        case "message":
+            ap_bin += b'\x03'
+        case "jingle":
+            ap_bin += b'\x04'
+        case _:
+            raise ValueError(f"invalid received items notification: \"{game_opts.received_items_notification}\"")
+    add_opt_byte("blind_trainers")
+    add_opt_byte("fps60")
+    add_opt_byte("hm_cut_ins")
+    add_opt_byte("buck_pos")
+    ap_bin += (world.options.hb_speed.value - 1).to_bytes(length=1, byteorder='little')
 
     if len(ap_bin) % 2 == 1:
         ap_bin += b'\x00'
@@ -261,7 +277,7 @@ def generate_output(world: "PokemonPlatinumWorld", output_directory: str, patch:
         table = LocationTable(location.address >> 16)
         id = location.address & 0xFFFF
         filled_locations.add(location.name)
-        if location.native_item:
+        if location.item.player == world.player:
             item_id = location.item.code
         else:
             item_id = 0xE000
@@ -269,7 +285,11 @@ def generate_output(world: "PokemonPlatinumWorld", output_directory: str, patch:
 
     for location in locations.values():
         if location.label not in filled_locations:
-            put_in_table(location.table, location.id, items[location.original_item].get_raw_id())
+            if isinstance(location.original_item, str):
+                original_item = location.original_item
+            else:
+                original_item = world.random.choice(location.original_item)
+            put_in_table(location.table, location.id, items[original_item].get_raw_id())
 
     ap_bin += len(tables).to_bytes(length=4, byteorder='little')
     for table in sorted(tables.keys()):
@@ -277,8 +297,9 @@ def generate_output(world: "PokemonPlatinumWorld", output_directory: str, patch:
         ap_bin += (len(data) // 2).to_bytes(length=4, byteorder='little')
         ap_bin += data
 
-    start_inventory = world.options.start_inventory
-    entries = [world.item_name_to_id[label].to_bytes(length=2, byteorder='little') + count.to_bytes(length=2, byteorder='little') for label, count in start_inventory.items()]
+    precollected = world.multiworld.precollected_items[world.player]
+    start_inventory: Counter[int] = Counter(map(lambda item : item.code, precollected)) # type: ignore
+    entries = [code.to_bytes(length=2, byteorder='little') + count.to_bytes(length=2, byteorder='little') for code, count in start_inventory.items()]
     ap_bin += len(entries).to_bytes(length=4, byteorder='little')
     ap_bin += b''.join(entries)
 

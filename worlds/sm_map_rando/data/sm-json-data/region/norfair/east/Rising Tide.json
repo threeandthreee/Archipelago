@@ -94,13 +94,78 @@
       "name": "Sova Farm",
       "requires": [
         "h_heatProof",
-        {"resetRoom": {
-          "nodes": [1, 2]
-        }},
-        {"partialRefill": {"type": "Energy", "limit": 200}},
-        {"partialRefill": {"type": "Super", "limit": 3}},
-        {"partialRefill": {"type": "Missile", "limit": 10}}
+        {"resetRoom": {"nodes": [1]}},
+        {"cycleFrames": 680},
+        {"or": [
+          "SpaceJump",
+          {"cycleFrames": 40}
+        ]},
+        {"or": [
+          "Wave",
+          "Spazer",
+          "Plasma",
+          {"cycleFrames": 360}
+        ]}
+      ],
+      "farmCycleDrops": [{"enemy": "Sova", "count": 4}]
+    },
+    {
+      "id": 38,
+      "link": [1, 1],
+      "name": "Dragon and Sova Farm",
+      "requires": [
+        {"resetRoom": {"nodes": [1]}},
+        "h_heatProof",
+        "Plasma",
+        {"or": [
+          {"and": [
+            "h_lavaProof",
+            {"or": [
+              {"and": [
+                "Morph",
+                {"cycleFrames": 1170}
+              ]},
+              {"cycleFrames": 1500}
+            ]}
+          ]},
+          {"and": [
+            "SpaceJump",
+            {"cycleFrames": 1440}
+          ]},
+          {"and": [
+            "Grapple",
+            {"cycleFrames": 1800}
+          ]}
+        ]}
+      ],
+      "farmCycleDrops": [
+        {"enemy": "Sova", "count": 5},
+        {"enemy": "Dragon", "count": 4}
       ]
+    },
+    {
+      "id": 39,
+      "link": [1, 1],
+      "name": "Squeept Farm",
+      "requires": [
+        "h_heatProof",
+        "ScrewAttack",
+        {"or": [
+          {"and": [
+            {"resetRoom": {"nodes": [1]}},
+            {"cycleFrames": 340}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [2]}},
+            {"cycleFrames": 900},
+            {"or": [
+              "SpaceJump",
+              {"cycleFrames": 320}
+            ]}
+          ]}
+        ]}
+      ],
+      "farmCycleDrops": [{"enemy": "Squeept", "count": 2}]
     },
     {
       "id": 3,
@@ -191,24 +256,43 @@
     {
       "id": 8,
       "link": [1, 2],
-      "name": "Speedball Roll Under",
+      "name": "Speedball Roll Under (Come in Getting Blue Speed)",
       "entranceCondition": {
-        "comeInSpeedballing": {
-          "runway": {
-            "length": 3,
-            "openEnd": 1
-          }
+        "comeInGettingBlueSpeed": {
+          "length": 3,
+          "openEnd": 1,
+          "minExtraRunSpeed": "$0.E",
+          "maxExtraRunSpeed": "$1.B"
         }
       },
       "requires": [
         "canSpeedball",
         "canSlowShortCharge",
+        {"heatFrames": 350}
+      ],
+      "note": "Jump between the first and second floating platforms, to speedball through the room.",
+      "devNote": ["Some heat frames are implicit in the entrance condition."]
+    },
+    {
+      "id": 37,
+      "link": [1, 2],
+      "name": "Speedball Roll Under (Come in Blue Spinning)",
+      "entranceCondition": {
+        "comeInBlueSpinning": {
+          "minExtraRunSpeed": "$0.E",
+          "maxExtraRunSpeed": "$1.9",
+          "unusableTiles": 3
+        }
+      },
+      "requires": [
+        "canSpeedball",
+        "canSlowShortCharge",
+        "canInsaneJump",
         {"heatFrames": 360}
       ],
-      "devNote": [
-        "FIXME: Coming in already in speedball wouldn't work here, so this isn't the right entrance condition.",
-        "After a new entrance condition is developed which can properly represent this, it should be switched to use it.",
-        "5 Unusable tiles."
+      "note": [
+        "Jump into the room with blue speed,",
+        "and fall between the door ledge and the first floating platform, to speedball through the room."
       ]
     },
     {
@@ -335,6 +419,27 @@
         "The left-most Sova falls into the lava and walks to the right.",
         "It is important to prevent the Dragons from shooting too many fireballs, as they will eventually prevent drops from appearing.",
         "Keeping the Sova on camera and moving a reasonable amount of the time will prevent the drops from being overloaded."
+      ]
+    },
+    {
+      "id": 35,
+      "link": [1, 2],
+      "name": "Spring Ball Bounce",
+      "entranceCondition": {
+        "comeInRunning": {
+          "speedBooster": false,
+          "minTiles": 4
+        }
+      },
+      "requires": [
+        "canTrickySpringBallBounce",
+        "canInsaneJump",
+        "canBeVeryPatient",
+        {"heatFrames": 390}
+      ],
+      "note": [
+        "Use controlled Spring Ball bounces to cross the whole room while avoiding all enemy damage.",
+        "There is a significant chance of failure due to bad Squeept RNG."
       ]
     },
     {
@@ -630,6 +735,27 @@
       ]
     },
     {
+      "id": 36,
+      "link": [2, 1],
+      "name": "Spring Ball Bounce",
+      "entranceCondition": {
+        "comeInRunning": {
+          "speedBooster": false,
+          "minTiles": 4
+        }
+      },
+      "requires": [
+        "canTrickySpringBallBounce",
+        "canInsaneJump",
+        "canBeVeryPatient",
+        {"heatFrames": 390}
+      ],
+      "note": [
+        "Use controlled Spring Ball bounces to cross the whole room while avoiding all enemy damage.",
+        "There is a significant chance of failure due to bad Squeept RNG."
+      ]
+    },
+    {
       "id": 24,
       "link": [2, 2],
       "name": "Leave with Runway",
@@ -640,6 +766,73 @@
           "openEnd": 1
         }
       }
+    },
+    {
+      "id": 40,
+      "link": [2, 2],
+      "name": "Sova Farm",
+      "requires": [
+        "h_heatProof",
+        {"resetRoom": {"nodes": [2]}},
+        {"cycleFrames": 720},
+        {"or": [
+          "SpaceJump",
+          {"cycleFrames": 30}
+        ]},
+        {"or": [
+          "Wave",
+          "Spazer",
+          "Plasma",
+          {"and": [
+            "canFarmWhileShooting",
+            {"cycleFrames": 30}
+          ]}
+        ]},
+        {"or": [
+          "canTrickyJump",
+          {"cycleFrames": 60}
+        ]}
+      ],
+      "farmCycleDrops": [{"enemy": "Sova", "count": 4}],
+      "devNote": "Add canTrickyJump for catching the Sovas on their first cycles."
+    },
+    {
+      "id": 41,
+      "link": [2, 2],
+      "name": "Dragon and Sova Farm",
+      "requires": [
+        {"resetRoom": {"nodes": [2]}},
+        "h_heatProof",
+        "Plasma",
+        {"or": [
+          {"and": [
+            "h_lavaProof",
+            {"or": [
+              {"and": [
+                "Morph",
+                {"cycleFrames": 930}
+              ]},
+              {"and": [
+                "SpaceJump",
+                {"cycleFrames": 1100}
+              ]},
+              {"cycleFrames": 1290}
+            ]}
+          ]},
+          {"and": [
+            "SpaceJump",
+            {"cycleFrames": 1230}
+          ]},
+          {"and": [
+            "Grapple",
+            {"cycleFrames": 1680}
+          ]}
+        ]}
+      ],
+      "farmCycleDrops": [
+        {"enemy": "Sova", "count": 5},
+        {"enemy": "Dragon", "count": 4}
+      ]
     },
     {
       "id": 25,
@@ -672,6 +865,6 @@
     }
   ],
   "notables": [],
-  "nextStratId": 35,
+  "nextStratId": 42,
   "nextNotableId": 1
 }

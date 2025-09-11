@@ -28,7 +28,7 @@ class SearchSanity(DefaultOnToggle):
 class ShopSanity(DefaultOnToggle):
     """
     Buying a piece of equipment causes a location check instead of buying it. Adds progressive equipment items instead.
-    This adds 13 checks. WARNING: Toggle shop randomization at your own risk with this on, it is not accounted for in logic.
+    This adds 13 checks. This option overrides and disables the randomized equipment shops option below.
     """
     display_name = "ShopSanity"
 
@@ -47,6 +47,8 @@ class RandomSpellLearning(Toggle):
 class RandomWeaponShops(Toggle):
     """
     The weapons available in each shop will be randomized.
+
+    Overriden and disabled by Shopsanity option above.
     """
     display_name = "Random Weapon Shops"
 

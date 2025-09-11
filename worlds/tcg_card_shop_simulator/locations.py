@@ -428,24 +428,25 @@ def get_card_checks_internal(card_sanity, border_sanity, foil_sanity, checks_per
     expansion = Expansion(1 if card_region >= 4 else 0)
     rarity = Rarity((card_region % 4) + 1)
 
-    if card_sanity > 0 and card_sanity > card_region:
-        for index, data in enumerate(card_rarity):
-            data = cast(MonsterData, data)
-            if data.rarity != rarity:
-                continue
-            for border in Border:
-                if border_sanity < border.value:
+    if card_sanity > 0:
+        if card_sanity > card_region:
+            for index, data in enumerate(card_rarity):
+                data = cast(MonsterData, data)
+                if data.rarity != rarity:
                     continue
+                for border in Border:
+                    if border_sanity < border.value:
+                        continue
 
-                name, code = generate_card(data.name, index, border, 0, expansion, rarity)
-                card_locs[name] = code
-                if create_hints and world:
-                    world.hints[code] = f"Card is in {expansion.name} {rarity.name} Packs"
-                if foil_sanity:
-                    name, code = generate_card(data.name, index, border, 1, expansion, rarity)
+                    name, code = generate_card(data.name, index, border, 0, expansion, rarity)
                     card_locs[name] = code
                     if create_hints and world:
                         world.hints[code] = f"Card is in {expansion.name} {rarity.name} Packs"
+                    if foil_sanity:
+                        name, code = generate_card(data.name, index, border, 1, expansion, rarity)
+                        card_locs[name] = code
+                        if create_hints and world:
+                            world.hints[code] = f"Card is in {expansion.name} {rarity.name} Packs"
     else:
         for i in range(checks_per_pack):
             name = f"Open {expansion.name} {rarity.name} cards {i+1}"

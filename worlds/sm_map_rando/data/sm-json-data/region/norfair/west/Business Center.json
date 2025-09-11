@@ -782,6 +782,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         "canXRayClimb"
       ],
       "bypassesDoorShell": true,
@@ -1554,7 +1555,8 @@
         }
       },
       "requires": [
-        "canXRayClimb"
+        "canComplexGMode",
+        "canLongXRayClimb"
       ],
       "bypassesDoorShell": true,
       "flashSuitChecked": true,
@@ -1617,6 +1619,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         "canXRayClimb"
       ],
       "bypassesDoorShell": true,
@@ -2195,7 +2198,8 @@
           "morphed": false
         }
       },
-      "flashSuitChecked": true
+      "flashSuitChecked": true,
+      "devNote": "FIXME: There could be a 4->7 variant with an ice clip or CF clip through the shot blocks."
     },
     {
       "id": 75,
@@ -2416,6 +2420,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         "canXRayClimb"
       ],
       "bypassesDoorShell": true,
@@ -2549,7 +2554,8 @@
         }
       },
       "requires": [
-        "canXRayClimb",
+        "canComplexGMode",
+        "canLongXRayClimb",
         "canBePatient"
       ],
       "bypassesDoorShell": true,
@@ -3179,7 +3185,8 @@
         }
       },
       "requires": [
-        "canXRayClimb"
+        "canComplexGMode",
+        "canLongXRayClimb"
       ],
       "bypassesDoorShell": true,
       "flashSuitChecked": true,
@@ -4245,13 +4252,40 @@
       "link": [8, 8],
       "name": "Sova Farm",
       "requires": [
-        {"resetRoom": {
-          "nodes": [1, 2, 3, 4, 5, 6, 7]
-        }},
-        {"partialRefill": {"type": "Energy", "limit": 500}},
-        {"partialRefill": {"type": "Super", "limit": 10}},
-        {"partialRefill": {"type": "Missile", "limit": 24}}
-      ]
+        {"or": [
+          {"and": [
+            {"resetRoom": {"nodes": [1, 6]}},
+            {"cycleFrames": 660}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [2]}},
+            {"cycleFrames": 670}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [3, 5]}},
+            {"cycleFrames": 630}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [4]}},
+            {"cycleFrames": 750}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [7]}},
+            {"cycleFrames": 1700}
+          ]}
+        ]},
+        {"or": [
+          "Spazer",
+          "Wave",
+          "Plasma",
+          {"and": [
+            "Grapple",
+            {"cycleFrames": 120}
+          ]},
+          {"cycleFrames": 150}
+        ]}
+      ],
+      "farmCycleDrops": [{"enemy": "Sova", "count": 6}]
     },
     {
       "id": 160,

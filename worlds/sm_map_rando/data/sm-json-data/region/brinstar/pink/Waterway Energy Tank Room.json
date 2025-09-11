@@ -167,18 +167,70 @@
       "link": [1, 1],
       "name": "Zero Farm",
       "requires": [
-        "h_heatProof",
+        {"resetRoom": {"nodes": [1]}},
         {"or": [
           {"and": [
             "Gravity",
-            {"refill": ["PowerBomb"]}
+            {"or": [
+              {"and": [
+                {"or": [
+                  "Wave",
+                  "Spazer",
+                  "Plasma"
+                ]},
+                {"cycleFrames": 340}
+              ]},
+              {"and": [
+                "ScrewAttack",
+                {"cycleFrames": 360}
+              ]},
+              {"and": [
+                "Grapple",
+                {"cycleFrames": 360}
+              ]},
+              {"cycleFrames": 420}
+            ]}
           ]},
-          {"partialRefill": {"type": "PowerBomb", "limit": 6}}
+          {"and": [
+            {"or": [
+              "Charge",
+              "Wave",
+              "Spazer",
+              "Plasma"
+            ]},
+            {"cycleFrames": 690}
+          ]},
+          {"cycleFrames": 780}
         ]}
       ],
-      "devNote": [
-        "FIXME: The h_heatProof requirement is because Zeros only drop small energy, not enough to guarantee progress if the neighboring room is heated",
-        "Later we should remove this in favor of some way to require that the neighboring room is not heated."
+      "resetsObstacles": ["A"],
+      "farmCycleDrops": [{"enemy": "Zero", "count": 2}]
+    },
+    {
+      "id": 37,
+      "link": [1, 1],
+      "name": "Zero, Puyo, and Skultera Farm",
+      "requires": [
+        {"resetRoom": {"nodes": [1]}},
+        "Gravity",
+        "h_getBlueSpeedMaxRunway",
+        {"or": [
+          {"and": [
+            {"or": [
+              "Plasma",
+              "Wave",
+              "Spazer"
+            ]},
+            {"cycleFrames": 440}
+          ]},
+          {"cycleFrames": 510}
+        ]}
+      ],
+      "resetsObstacles": ["A"],
+      "farmCycleDrops": [
+        {"enemy": "Zero", "count": 2},
+        {"enemy": "Puyo", "count": 3},
+        {"enemy": "Skultera", "count": 2}
       ]
     },
     {
@@ -679,6 +731,6 @@
       ]
     }
   ],
-  "nextStratId": 37,
+  "nextStratId": 38,
   "nextNotableId": 2
 }

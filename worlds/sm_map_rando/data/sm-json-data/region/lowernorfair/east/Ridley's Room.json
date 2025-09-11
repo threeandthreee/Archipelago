@@ -164,8 +164,23 @@
         {"enemyDamage": {"enemy": "Ridley", "type": "contact", "hits": 1}}
       ],
       "gModeRegainMobility": {},
+      "flashSuitChecked": true
+    },
+    {
+      "id": 31,
+      "link": [1, 1],
+      "name": "G-Mode Setup - Get Hit By Ridley",
+      "requires": [
+        {"heatFrames": 500},
+        {"not": "f_DefeatedRidley"},
+        "canRiskPermanentLossOfAccess"
+      ],
+      "exitCondition": {
+        "leaveWithGModeSetup": {}
+      },
       "flashSuitChecked": true,
-      "devNote": "FIXME: Ridley could also be used to set up G-mode, but the chaos of the fight makes this difficult."
+      "note": "Get into position and Ridley will hit Samus shorly after starting to move.",
+      "devNote": "Not likely to be possible, as it requires canRiskPermanentLossOfAccess and Ridley alive with the door unlocked."
     },
     {
       "id": 26,
@@ -178,8 +193,8 @@
               "minHeight": 1,
               "maxHeight": 1,
               "minTiles": 17,
-              "obstructions": [[1, 0]],
               "speedBooster": true,
+              "obstructions": [[1, 0]],
               "requires": [
                 {"or": [
                   {"and": [
@@ -203,8 +218,8 @@
               "minHeight": 2,
               "maxHeight": 2,
               "minTiles": 11.4375,
-              "obstructions": [[1, 0]],
               "speedBooster": true,
+              "obstructions": [[1, 0]],
               "requires": [
                 "canTrickyDashJump",
                 "canTrickySpringBallJump",
@@ -220,8 +235,8 @@
               "minHeight": 2,
               "maxHeight": 2,
               "minTiles": 12.4375,
-              "obstructions": [[1, 0]],
               "speedBooster": true,
+              "obstructions": [[1, 0]],
               "requires": [
                 "HiJump",
                 {"heatFrames": 95}
@@ -232,8 +247,8 @@
               "minHeight": 3,
               "maxHeight": 3,
               "minTiles": 10.4375,
-              "obstructions": [[1, 0]],
               "speedBooster": true,
+              "obstructions": [[1, 0]],
               "requires": [
                 "canTrickyDashJump",
                 "canTrickySpringBallJump",
@@ -249,8 +264,8 @@
               "minHeight": 2,
               "maxHeight": 2,
               "minTiles": 45,
-              "obstructions": [[2, 0]],
               "speedBooster": true,
+              "obstructions": [[2, 0]],
               "requires": [
                 "canInsaneJump",
                 {"heatFrames": 85}
@@ -261,8 +276,8 @@
               "minHeight": 2,
               "maxHeight": 2,
               "minTiles": 45,
-              "obstructions": [[3, 0]],
               "speedBooster": true,
+              "obstructions": [[3, 0]],
               "requires": [
                 "canInsaneJump",
                 "canMomentumConservingMorph",
@@ -284,8 +299,8 @@
               "minHeight": 3,
               "maxHeight": 3,
               "minTiles": 37.4375,
-              "obstructions": [[3, 0]],
               "speedBooster": true,
+              "obstructions": [[3, 0]],
               "requires": [
                 "canInsaneJump",
                 "canMomentumConservingMorph",
@@ -306,8 +321,8 @@
               "minHeight": 2,
               "maxHeight": 2,
               "minTiles": 45,
-              "obstructions": [[4, 0]],
               "speedBooster": true,
+              "obstructions": [[4, 0]],
               "requires": [
                 "canInsaneJump",
                 "canMomentumConservingMorph",
@@ -321,8 +336,8 @@
               "minHeight": 3,
               "maxHeight": 3,
               "minTiles": 39.4375,
-              "obstructions": [[3, 2]],
               "speedBooster": true,
+              "obstructions": [[3, 2]],
               "requires": [
                 "canTrickyJump",
                 {"or": [
@@ -373,7 +388,7 @@
         "comeInWithGrappleSwing": {
           "blocks": [
             {"position": [6, 4], "note": "Grapple Tutorial Room 2"},
-            {"position": [6, 2], "note": "Spiky Acid Snakes Tunnel"},
+            {"position": [6, 2], "note": "Lava Grapple Tunnel"},
             {
               "position": [5, 2],
               "note": "The Moat, Double Chamber, Wrecked Ship Energy Tank Room"
@@ -393,6 +408,90 @@
       "name": "Base",
       "requires": [
         {"heatFrames": 50}
+      ]
+    },
+    {
+      "id": 27,
+      "link": [1, 3],
+      "name": "G-Mode Crystal Flash Stuck Ridley",
+      "entranceCondition": {
+        "comeInWithGMode": {
+          "mode": "any",
+          "morphed": false,
+          "mobility": "mobile"
+        }
+      },
+      "requires": [
+        {"notable": "G-Mode Crystal Flash Stuck Ridley"},
+        "canComplexGMode",
+        "h_heatedGMode",
+        "h_CrystalFlash",
+        "h_usePowerBomb",
+        {"or": [
+          {"and": [
+            {"or": [
+              "canWalljump",
+              "HiJump",
+              "canSpringBallJumpMidAir",
+              "SpaceJump"
+            ]},
+            {"ridleyKill": {"powerBombs": false, "gMode": true, "stuck": "bottom"}}
+          ]},
+          {"ridleyKill": {"powerBombs": false, "gMode": true, "stuck": "top"}}
+        ]},
+        {"autoReserveTrigger": {}},
+        {"heatFrames": 520},
+        {"partialRefill": {"type": "Energy", "limit": 100}}
+      ],
+      "setsFlags": ["f_DefeatedRidley"],
+      "note": [
+        "Enter the room in G-mode, perform a Crystal Flash, then lay an additional Power Bomb, preferably at the top of the room.",
+        "The Power Bomb will not explode but will continually force Ridley into a corner of the room.",
+        "If the Power Bomb is laid near the top of the room, then Ridley will be forced into the bottom of the room,",
+        "making it easy to damage Ridley at the highest possible rate;",
+        "if the Power Bomb is laid lower, Ridley will be forced to the top of room, and Samus will have to jump repeatedly to bring it on camera.",
+        "in which case Ridley can still be damaged but more slowly and with some caution needed to avoid invisible fireballs.",
+        "After reducing Ridley's health to zero, take damage from Ridley or an invisible fireball to trigger auto-reserves and exit G-mode.",
+        "Then get grabbed by Ridley to finish the fight."
+      ]
+    },
+    {
+      "id": 28,
+      "link": [1, 3],
+      "name": "G-Mode Ridley with 30 Supers",
+      "entranceCondition": {
+        "comeInWithGMode": {
+          "mode": "any",
+          "morphed": false,
+          "mobility": "mobile"
+        }
+      },
+      "requires": [
+        {"notable": "G-Mode Ridley with 30 Supers"},
+        "canTrickyGMode",
+        "h_heatedGMode",
+        {"heatFrames": 0},
+        {"ammo": {"type": "Super", "count": 30}},
+        {"or": [
+          {"and": [
+            "h_heatedGModePauseAbuse",
+            {"resourceAtMost": [{"type": "Energy", "count": 1}]},
+            {"partialRefill": {"type": "Energy", "limit": 100}}
+          ]},
+          "free"
+        ]}
+      ],
+      "setsFlags": ["f_DefeatedRidley"],
+      "note": [
+        "Enter the room in G-mode and quickly kill Ridley with 30 Supers.",
+        "G-mode protects against heat damage but also causes Ridley's fireballs to be invisible and not move.",
+        "As long as Ridley is swooping, not many fireballs will be placed, so delaying Ridley from pogoing can be helpful.",
+        "Once Ridley begins pogoing, it generally becomes unsafe for Samus to jump high because of the risk of touching a fireball.",
+        "By the end of the fight, projectiles will probably be overloaded, causing Ridley's drops not to spawn;",
+        "they can be collected by exiting G-mode just before drops spawn, and pause abusing if necessary."
+      ],
+      "devNote": [
+        "FIXME: Leaving back through the open door while still in G-Mode is also possible, and free to do."
       ]
     },
     {
@@ -474,6 +573,42 @@
       "devNote": "FIXME: Ridley could also be used to set up G-mode, but the chaos of the fight makes this difficult."
     },
     {
+      "id": 32,
+      "link": [2, 2],
+      "name": "G-Mode Setup - Get Hit By Ridley",
+      "requires": [
+        {"heatFrames": 900},
+        {"or": [
+          "canTrickyGMode",
+          {"heatFrames": 180}
+        ]},
+        "canComplexGMode",
+        {"or": [
+          "SpaceJump",
+          "canWalljump",
+          {"and": [
+            "HiJump",
+            "canSpringBallJumpMidAir"
+          ]}
+        ]},
+        {"not": "f_DefeatedRidley"},
+        "canRiskPermanentLossOfAccess"
+      ],
+      "exitCondition": {
+        "leaveWithGModeSetup": {}
+      },
+      "flashSuitChecked": true,
+      "note": [
+        "It is much more common for Ridley to hit Samus when Ridley is facing left.",
+        "One way to get Ridley to turn around is when it pogos on the right side of the room, stationary spin jump and break spin.",
+        "The fireballs can be tricky to deal with in the door frame, but can be done by dropping down and quickly wall jumping back up or by kagoing them."
+      ],
+      "devNote": [
+        "Not likely to be possible, as it requires canRiskPermanentLossOfAccess and Ridley alive with the door unlocked.",
+        "The extra heat frames are a leniency to account for randomness."
+      ]
+    },
+    {
       "id": 6,
       "link": [2, 2],
       "name": "Carry G-Mode Back Through",
@@ -489,10 +624,13 @@
           "canWalljump",
           {"and": [
             "canJumpIntoIBJ",
-            "canTrickyJump",
+            "canInsaneJump",
             {"or": [
-              "canLongIBJ",
-              "HiJump"
+              "HiJump",
+              {"and": [
+                "canLongIBJ",
+                "canDoubleBombJump"
+              ]}
             ]}
           ]},
           {"and": [
@@ -578,6 +716,95 @@
       "flashSuitChecked": true
     },
     {
+      "id": 29,
+      "link": [2, 3],
+      "name": "G-Mode Crystal Flash Stuck Ridley",
+      "entranceCondition": {
+        "comeInWithGMode": {
+          "mode": "any",
+          "morphed": false,
+          "mobility": "mobile"
+        }
+      },
+      "requires": [
+        {"notable": "G-Mode Crystal Flash Stuck Ridley"},
+        "canComplexGMode",
+        "h_heatedGMode",
+        "h_CrystalFlash",
+        "h_usePowerBomb",
+        {"or": [
+          {"and": [
+            {"or": [
+              "canWalljump",
+              "HiJump",
+              "canSpringBallJumpMidAir",
+              "SpaceJump"
+            ]},
+            {"ridleyKill": {"powerBombs": false, "gMode": true, "stuck": "bottom"}}
+          ]},
+          {"ridleyKill": {"powerBombs": false, "gMode": true, "stuck": "top"}}
+        ]},
+        {"autoReserveTrigger": {}},
+        {"heatFrames": 520},
+        {"partialRefill": {"type": "Energy", "limit": 100}}
+      ],
+      "setsFlags": ["f_DefeatedRidley"],
+      "note": [
+        "Enter the room in G-mode, perform a Crystal Flash, then lay an additional Power Bomb, preferably at the top of the room.",
+        "The Power Bomb will not explode but will continually force Ridley into a corner of the room.",
+        "If the Power Bomb is laid near the top of the room, then Ridley will be forced into the bottom of the room,",
+        "making it easy to damage Ridley at the highest possible rate;",
+        "if the Power Bomb is laid lower, Ridley will be forced to the top of room, and Samus will have to jump repeatedly to bring it on camera.",
+        "in which case Ridley can still be damaged but more slowly and with some caution needed to avoid invisible fireballs.",
+        "After reducing Ridley's health to zero, take damage from Ridley or an invisible fireball to trigger auto-reserves and exit G-mode.",
+        "Then get grabbed by Ridley to finish the fight."
+      ],
+      "devNote": [
+        "FIXME: artificial morph with direct G-mode is another option for laying a Power Bomb at the top of the room,",
+        "by landing on the door ledge on entry (the Morph item would still be needed since the Crystal Flash forces Samus out of being morphed)."
+      ]
+    },
+    {
+      "id": 30,
+      "link": [2, 3],
+      "name": "G-Mode Ridley with 30 Supers",
+      "entranceCondition": {
+        "comeInWithGMode": {
+          "mode": "any",
+          "morphed": false,
+          "mobility": "mobile"
+        }
+      },
+      "requires": [
+        {"notable": "G-Mode Ridley with 30 Supers"},
+        "canTrickyGMode",
+        "h_heatedGMode",
+        {"heatFrames": 0},
+        {"ammo": {"type": "Super", "count": 30}},
+        {"or": [
+          {"and": [
+            "h_heatedGModePauseAbuse",
+            {"resourceAtMost": [{"type": "Energy", "count": 1}]},
+            {"partialRefill": {"type": "Energy", "limit": 100}}
+          ]},
+          "free"
+        ]}
+      ],
+      "setsFlags": ["f_DefeatedRidley"],
+      "note": [
+        "Enter the room in G-mode and quickly kill Ridley with 30 Supers.",
+        "G-mode protects against heat damage but also causes Ridley's fireballs to be invisible and not move.",
+        "As long as Ridley is swooping, not many fireballs will be placed, so delaying Ridley from pogoing can be helpful.",
+        "Once Ridley begins pogoing, it generally becomes unsafe for Samus to jump high because of the risk of touching a fireball.",
+        "By the end of the fight, projectiles will probably be overloaded, causing Ridley's drops not to spawn;",
+        "they can be collected by exiting G-mode just before drops spawn, and pause abusing if necessary."
+      ],
+      "devNote": [
+        "FIXME: Leaving back through the open door while still in G-Mode is also possible,",
+        "but difficult to do without touching an invisible fireball."
+      ]
+    },
+    {
       "id": 9,
       "link": [3, 1],
       "name": "Base",
@@ -609,21 +836,23 @@
       "name": "IBJ",
       "requires": [
         "h_heatProof",
-        {"and": [
-          "canJumpIntoIBJ",
-          "canTrickyJump",
-          {"or": [
-            "canLongIBJ",
-            "HiJump"
-          ]}
-        ]},
-        {"and": [
-          "f_DefeatedRidley",
-          {"or": [
-            "canLongIBJ",
-            {"and": [
-              "canJumpIntoIBJ",
+        {"or": [
+          {"and": [
+            "canJumpIntoIBJ",
+            "canTrickyJump",
+            {"or": [
+              "canLongIBJ",
               "HiJump"
+            ]}
+          ]},
+          {"and": [
+            "f_DefeatedRidley",
+            {"or": [
+              "canLongIBJ",
+              {"and": [
+                "canJumpIntoIBJ",
+                "HiJump"
+              ]}
             ]}
           ]}
         ]}
@@ -662,9 +891,7 @@
       "name": "Heat Proof Ridley",
       "requires": [
         "h_heatProof",
-        {"enemyKill": {
-          "enemies": [["Ridley"]]
-        }}
+        {"ridleyKill": {}}
       ],
       "setsFlags": ["f_DefeatedRidley"]
     },
@@ -675,9 +902,7 @@
       "requires": [
         {"notable": "Ridley without Heat Protection"},
         {"heatFrames": 0},
-        {"enemyKill": {
-          "enemies": [["Ridley"]]
-        }}
+        {"ridleyKill": {}}
       ],
       "setsFlags": ["f_DefeatedRidley"],
       "note": "Fight Ridley without immunity to heat damage.",
@@ -698,8 +923,24 @@
       "id": 1,
       "name": "Ridley without Heat Protection",
       "note": "Fight Ridley without immunity to heat damage."
+    },
+    {
+      "id": 2,
+      "name": "G-Mode Crystal Flash Stuck Ridley",
+      "note": [
+        "In G-mode, use a Crystal Flash and an additional Power Bomb to get Ridley stuck in a corner of the room.",
+        "To end the fight, exit G-mode by using damage from Ridley to trigger auto-reserves."
+      ]
+    },
+    {
+      "id": 3,
+      "name": "G-Mode Ridley with 30 Supers",
+      "note": [
+        "In G-Mode, use 30 Supers to end the fight quickly, carefully avoiding the invisible fireballs that Ridley spawns.",
+        "Use X-Ray to exit G-Mode precisely at the end of the fight just before drops spawn."
+      ]
     }
   ],
-  "nextStratId": 27,
-  "nextNotableId": 2
+  "nextStratId": 33,
+  "nextNotableId": 4
 }

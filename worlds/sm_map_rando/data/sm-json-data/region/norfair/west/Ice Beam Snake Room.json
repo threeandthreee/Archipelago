@@ -211,6 +211,53 @@
       "flashSuitChecked": true
     },
     {
+      "id": 71,
+      "link": [1, 1],
+      "name": "Sova Farm",
+      "requires": [
+        "h_heatProof",
+        {"resetRoom": {"nodes": [1]}},
+        {"or": [
+          "canWalljump",
+          {"and": [
+            "HiJump",
+            "canSpringBallJumpMidAir",
+            "h_doubleEquipmentScreenCycleFrames",
+            {"cycleFrames": 40}
+          ]},
+          {"and": [
+            "Morph",
+            {"cycleFrames": 380}
+          ]}
+        ]},
+        {"or": [
+          {"and": [
+            "canMidAirMorph",
+            "Plasma",
+            "canTrickyJump",
+            {"cycleFrames": 600}
+          ]},
+          {"and": [
+            "canMidAirMorph",
+            "Plasma",
+            "canInsaneJump",
+            {"cycleFrames": 520}
+          ]},
+          {"and": [
+            {"or": [
+              "Wave",
+              "Spazer",
+              "Plasma",
+              "Grapple",
+              {"cycleFrames": 45}
+            ]},
+            {"cycleFrames": 700}
+          ]}
+        ]}
+      ],
+      "farmCycleDrops": [{"enemy": "Sova", "count": 3}]
+    },
+    {
       "id": 4,
       "link": [1, 1],
       "name": "G-Mode Regain Mobility",
@@ -342,7 +389,10 @@
             "HiJump",
             "h_artificialMorphSpringBall"
           ]},
-          "h_artificialMorphSpringBallBombJump"
+          {"and": [
+            "h_artificialMorphSpringBallBombJump",
+            "h_additionalBomb"
+          ]}
         ]},
         "h_heatedGModeOffCameraDoor"
       ],
@@ -579,6 +629,7 @@
       ],
       "flashSuitChecked": true,
       "note": "Kill the Sovas or wait at around 25 seconds for them to get out of the way before going down and passing them while climbing to the top door.",
+      "detailNote": "It is possible to wait 2.5 minutes for the Sovas to return on camera to be sure Samus won't touch them.",
       "devNote": [
         "The single tile ledge at this door doesn't seem to make it any slower to exit.",
         "It is probably possible to farm the Sovas at this door, but it would be difficult and isn't expected."
@@ -637,13 +688,24 @@
       "name": "Sova Farm",
       "requires": [
         "h_heatProof",
-        {"resetRoom": {
-          "nodes": [2]
-        }},
-        {"partialRefill": {"type": "Energy", "limit": 300}},
-        {"partialRefill": {"type": "Missile", "limit": 16}},
-        {"partialRefill": {"type": "Super", "limit": 5}}
-      ]
+        {"resetRoom": {"nodes": [2]}},
+        {"cycleFrames": 120},
+        {"or": [
+          "Wave",
+          "Spazer",
+          "Plasma",
+          {"and": [
+            "ScrewAttack",
+            {"cycleFrames": 35}
+          ]},
+          {"and": [
+            "Grapple",
+            {"cycleFrames": 25}
+          ]},
+          {"cycleFrames": 60}
+        ]}
+      ],
+      "farmCycleDrops": [{"enemy": "Sova", "count": 3}]
     },
     {
       "id": 16,
@@ -744,6 +806,7 @@
       ],
       "flashSuitChecked": true,
       "note": "Kill the Sovas or wait at least 20 seconds for them to get out of the way before going to the bottom door.",
+      "detailNote": "It is slightly safer but very slow to wait 2.5 minutes for the Sovas to return on camera to be sure Samus won't touch them.",
       "devNote": "It is probably possible to farm the Sovas at this door, but it would be difficult and isn't expected."
     },
     {
@@ -753,6 +816,27 @@
       "requires": [
         "Morph",
         {"heatFrames": 200}
+      ]
+    },
+    {
+      "id": 70,
+      "link": [2, 4],
+      "name": "G-Mode Morph, Blind Camera Fix",
+      "entranceCondition": {
+        "comeInWithGMode": {
+          "mode": "any",
+          "morphed": true
+        }
+      },
+      "requires": [
+        "h_heatedGMode",
+        "h_artificialMorphMovement",
+        {"heatFrames": 120}
+      ],
+      "flashSuitChecked": true,
+      "note": [
+        "Kill the Sovas or wait at around 25 seconds for them to get out of the way before going down.",
+        "Exit G-mode on the first ledge on the left, then jump and press against the right wall to touch the camera scroll block and fix the camera."
       ]
     },
     {
@@ -1057,7 +1141,10 @@
             "HiJump",
             "h_artificialMorphSpringBall"
           ]},
-          "h_artificialMorphSpringBallBombJump"
+          {"and": [
+            "h_artificialMorphSpringBallBombJump",
+            "h_additionalBomb"
+          ]}
         ]},
         "h_heatedGModeOffCameraDoor"
       ],
@@ -1107,6 +1194,43 @@
       ],
       "flashSuitChecked": true,
       "note": "Kill the Fune before Crystal Flashing."
+    },
+    {
+      "id": 72,
+      "link": [3, 3],
+      "name": "Sova Farm",
+      "requires": [
+        "h_heatProof",
+        {"resetRoom": {"nodes": [3]}},
+        {"or": [
+          {"and": [
+            "canMidAirMorph",
+            "canTrickyJump",
+            {"or": [
+              "HiJump",
+              "canWalljump"
+            ]},
+            "Plasma",
+            {"cycleFrames": 540}
+          ]},
+          {"and": [
+            "canMidAirMorph",
+            {"or": [
+              "Wave",
+              "Spazer",
+              "Plasma",
+              "Grapple",
+              {"cycleFrames": 45}
+            ]},
+            {"cycleFrames": 690}
+          ]},
+          {"and": [
+            "canDodgeWhileShooting",
+            {"cycleFrames": 1140}
+          ]}
+        ]}
+      ],
+      "farmCycleDrops": [{"enemy": "Sova", "count": 3}]
     },
     {
       "id": 24,
@@ -1460,9 +1584,18 @@
       "requires": [
         {"heatFrames": 50}
       ]
+    },
+    {
+      "id": 73,
+      "link": [5, 5],
+      "name": "Crystal Flash",
+      "requires": [
+        "h_heatedCrystalFlash"
+      ],
+      "flashSuitChecked": true
     }
   ],
   "notables": [],
-  "nextStratId": 70,
+  "nextStratId": 74,
   "nextNotableId": 1
 }

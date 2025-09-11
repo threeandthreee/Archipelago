@@ -221,6 +221,62 @@
       }
     },
     {
+      "id": 97,
+      "link": [1, 1],
+      "name": "Single Multiviola Farm",
+      "requires": [
+        "h_heatProof",
+        {"resetRoom": {"nodes": [1]}},
+        {"cycleFrames": 130},
+        {"or": [
+          "Plasma",
+          "Wave",
+          "Spazer",
+          {"cycleFrames": 30}
+        ]}
+      ],
+      "farmCycleDrops": [{"enemy": "Multiviola", "count": 1}]
+    },
+    {
+      "id": 61,
+      "link": [1, 1],
+      "name": "Alcoon and Multiviola Farm",
+      "requires": [
+        "h_heatProof",
+        {"resetRoom": {"nodes": [1]}},
+        {"or": [
+          "Plasma",
+          "ScrewAttack",
+          {"and": [
+            "Wave",
+            {"cycleFrames": 90}
+          ]},
+          {"and": [
+            "Spazer",
+            {"cycleFrames": 205}
+          ]},
+          {"and": [
+            "canDodgeWhileShooting",
+            {"cycleFrames": 315}
+          ]}
+        ]},
+        {"or": [
+          "canWalljump",
+          "HiJump",
+          "h_crouchJumpDownGrab",
+          {"and": [
+            "SpaceJump",
+            {"cycleFrames": 20}
+          ]}
+        ]},
+        {"cycleFrames": 285}
+      ],
+      "farmCycleDrops": [
+        {"enemy": "Multiviola", "count": 1},
+        {"enemy": "Alcoon", "count": 2}
+      ]
+    },
+    {
       "id": 2,
       "link": [1, 1],
       "name": "Crystal Flash",
@@ -471,11 +527,9 @@
         }
       },
       "requires": [
+        "canTrickyDodgeEnemies",
         {"or": [
-          {"and": [
-            "h_artificialMorphBombHorizontally",
-            "canTrickyJump"
-          ]},
+          "h_artificialMorphBombHorizontally",
           "h_artificialMorphJumpIntoIBJ",
           {"and": [
             "h_artificialMorphIBJ",
@@ -641,7 +695,7 @@
       "note": [
         "Exit the previous room with Samus in a standing pose (while grappled).",
         "After teleporting, press right to release Grapple while staying standing (not being forced into a crouch).",
-        "Then X-ray climb to get up to the door transition, without needing to open the door."
+        "Then X-ray climb 1 screen to get up to the door transition, without needing to open the door."
       ]
     },
     {
@@ -656,6 +710,39 @@
           "gentleDownTiles": 4
         }
       }
+    },
+    {
+      "id": 98,
+      "link": [2, 2],
+      "name": "Alcoon and Multiviola Farm",
+      "requires": [
+        "h_heatProof",
+        {"resetRoom": {"nodes": [2]}},
+        {"or": [
+          "ScrewAttack",
+          {"and": [
+            "Plasma",
+            {"cycleFrames": 25}
+          ]},
+          {"and": [
+            "Wave",
+            {"cycleFrames": 40}
+          ]},
+          {"and": [
+            "Spazer",
+            {"cycleFrames": 100}
+          ]},
+          {"and": [
+            "canDodgeWhileShooting",
+            {"cycleFrames": 220}
+          ]}
+        ]},
+        {"cycleFrames": 245}
+      ],
+      "farmCycleDrops": [
+        {"enemy": "Multiviola", "count": 1},
+        {"enemy": "Alcoon", "count": 1}
+      ]
     },
     {
       "id": 11,
@@ -1140,7 +1227,7 @@
       "note": [
         "Exit the previous room with Samus in a standing pose (while grappled).",
         "After teleporting, press right to release Grapple while staying standing (not being forced into a crouch).",
-        "Then X-ray climb to get up to the door transition, without needing to open the door."
+        "Then X-ray climb 1 screen to get up to the door transition, without needing to open the door."
       ]
     },
     {
@@ -1321,6 +1408,42 @@
           "openEnd": 1
         }
       }
+    },
+    {
+      "id": 99,
+      "link": [3, 3],
+      "name": "Alcoon and Multiviola Farm",
+      "requires": [
+        "h_heatProof",
+        {"resetRoom": {"nodes": [3]}},
+        {"or": [
+          "Plasma",
+          "ScrewAttack",
+          {"and": [
+            "Wave",
+            {"cycleFrames": 90}
+          ]},
+          {"and": [
+            "Spazer",
+            {"cycleFrames": 90}
+          ]},
+          {"and": [
+            "canDodgeWhileShooting",
+            {"cycleFrames": 285}
+          ]}
+        ]},
+        {"or": [
+          "canWalljump",
+          "HiJump",
+          "h_crouchJumpDownGrab",
+          "SpaceJump"
+        ]},
+        {"cycleFrames": 210}
+      ],
+      "farmCycleDrops": [
+        {"enemy": "Multiviola", "count": 1},
+        {"enemy": "Alcoon", "count": 1}
+      ]
     },
     {
       "id": 28,
@@ -1748,7 +1871,7 @@
       "note": [
         "Exit the previous room with Samus in a standing pose (while grappled).",
         "After teleporting, press right to release Grapple while staying standing (not being forced into a crouch).",
-        "Then X-ray climb to get up to the door transition, without needing to open the door."
+        "Then X-ray climb 1 screen to get up to the door transition, without needing to open the door."
       ]
     },
     {
@@ -1932,6 +2055,65 @@
       }
     },
     {
+      "id": 100,
+      "link": [4, 4],
+      "name": "Alcoon and Multiviola Farm",
+      "requires": [
+        "h_heatProof",
+        {"resetRoom": {"nodes": [4]}},
+        {"or": [
+          "Plasma",
+          "ScrewAttack",
+          {"and": [
+            "Wave",
+            {"cycleFrames": 20}
+          ]},
+          {"and": [
+            "Spazer",
+            {"cycleFrames": 90}
+          ]},
+          {"and": [
+            "canDodgeWhileShooting",
+            {"cycleFrames": 260},
+            {"or": [
+              "canFarmWhileShooting",
+              {"cycleFrames": 90}
+            ]}
+          ]}
+        ]},
+        {"or": [
+          "canWalljump",
+          "HiJump",
+          "h_crouchJumpDownGrab",
+          "SpaceJump"
+        ]},
+        {"cycleFrames": 450}
+      ],
+      "farmCycleDrops": [
+        {"enemy": "Multiviola", "count": 1},
+        {"enemy": "Alcoon", "count": 2}
+      ]
+    },
+    {
+      "id": 101,
+      "link": [4, 4],
+      "name": "Single Multiviola Farm",
+      "requires": [
+        "h_heatProof",
+        {"resetRoom": {"nodes": [4]}},
+        {"cycleFrames": 200},
+        "canCameraManip",
+        {"or": [
+          "Plasma",
+          "Wave",
+          "Spazer",
+          {"cycleFrames": 30}
+        ]}
+      ],
+      "farmCycleDrops": [{"enemy": "Multiviola", "count": 1}],
+      "note": "Jump and aim down two to three times to activate the Multiviola."
+    },
+    {
       "id": 43,
       "link": [4, 4],
       "name": "Crystal Flash",
@@ -1945,6 +2127,7 @@
       "link": [4, 4],
       "name": "G-Mode Setup - Get Hit By Multiviola",
       "requires": [
+        "canComplexGMode",
         {"or": [
           "canWalljump",
           "HiJump",
@@ -2122,7 +2305,7 @@
       "note": [
         "Exit the previous room with Samus in a standing pose (while grappled).",
         "After teleporting, press right to release Grapple while staying standing (not being forced into a crouch).",
-        "Then X-ray climb to get up to the door transition, without needing to open the door."
+        "Then X-ray climb 1 screen to get up to the door transition, without needing to open the door."
       ]
     },
     {
@@ -2153,7 +2336,7 @@
       "requires": [
         "Morph",
         "ScrewAttack",
-        {"heatFrames": 780}
+        {"heatFrames": 600}
       ]
     },
     {
@@ -2162,7 +2345,7 @@
       "name": "Power Bomb",
       "requires": [
         "h_usePowerBomb",
-        {"heatFrames": 850}
+        {"heatFrames": 660}
       ]
     },
     {
@@ -2171,7 +2354,38 @@
       "name": "Bombs",
       "requires": [
         "h_useMorphBombs",
-        {"heatFrames": 1130}
+        {"heatFrames": 730}
+      ]
+    },
+    {
+      "id": 102,
+      "link": [5, 6],
+      "name": "Cross with Crystal Flash (Early Position)",
+      "requires": [
+        {"heatFrames": 250},
+        "h_heatedCrystalFlash",
+        {"heatFrames": 380}
+      ]
+    },
+    {
+      "id": 103,
+      "link": [5, 6],
+      "name": "Cross with Crystal Flash (Later Position)",
+      "requires": [
+        {"heatFrames": 450},
+        {"or": [
+          "ScrewAttack",
+          {"and": [
+            "h_usePowerBomb",
+            {"heatFrames": 40}
+          ]},
+          {"and": [
+            "h_useMorphBombs",
+            {"heatFrames": 80}
+          ]}
+        ]},
+        "h_heatedCrystalFlash",
+        {"heatFrames": 250}
       ]
     },
     {
@@ -2182,8 +2396,11 @@
         {"or": [
           "canWalljump",
           "HiJump",
-          "SpaceJump",
-          "h_crouchJumpDownGrab"
+          "h_crouchJumpDownGrab",
+          {"and": [
+            "SpaceJump",
+            {"heatFrames": 40}
+          ]}
         ]},
         {"heatFrames": 100}
       ],
@@ -2289,35 +2506,9 @@
           "requires": [{"heatFrames": 20}]
         }
       ]
-    },
-    {
-      "id": 61,
-      "link": [6, 6],
-      "name": "Alcoon and Multiviola Farm",
-      "requires": [
-        "h_heatProof",
-        {"or": [
-          "canDodgeWhileShooting",
-          "ScrewAttack",
-          "Wave",
-          "Ice",
-          "Spazer",
-          "Plasma"
-        ]},
-        {"or": [
-          "canWalljump",
-          "HiJump",
-          "h_crouchJumpDownGrab"
-        ]},
-        {"resetRoom": {
-          "nodes": [1, 2, 3, 4]
-        }},
-        {"partialRefill": {"type": "Missile", "limit": 12}},
-        {"refill": ["PowerBomb"]}
-      ]
     }
   ],
   "notables": [],
-  "nextStratId": 97,
+  "nextStratId": 104,
   "nextNotableId": 1
 }

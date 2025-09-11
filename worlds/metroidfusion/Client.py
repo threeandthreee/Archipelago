@@ -1,11 +1,10 @@
 import logging
-from collections import deque
 from typing import TYPE_CHECKING
 
-from BaseClasses import ItemClassification
-from NetUtils import ClientStatus, HintStatus
+from NetUtils import ClientStatus
 
 import worlds._bizhawk as bizhawk
+from settings import get_settings
 from worlds._bizhawk.client import BizHawkClient
 
 from .data import memory
@@ -13,8 +12,7 @@ from .data.minor_locations import location_order as minor_location_order
 from .data.major_locations import location_order as major_location_order
 
 if TYPE_CHECKING:
-    from worlds._bizhawk.context import BizHawkClientContext
-
+    from worlds._bizhawk.context import BizHawkClientContext, BizHawkClientCommandProcessor
 
 logger = logging.getLogger("Client")
 
@@ -24,7 +22,6 @@ def get_byte_bit_from_index(index):
 
 def get_bit_value_from_position(position):
     return 2 ** position
-
 
 class MetroidFusionClient(BizHawkClient):
     game = "Metroid Fusion"
@@ -40,7 +37,9 @@ class MetroidFusionClient(BizHawkClient):
         self.rom = "ROM"
         self.location_name_to_id: dict[str, int] | None = None
         self.logged_version = False
+        self.display_location_found_messages = True
         self.current_sectpr = 0
+        self.locations_hinted: list[str] = list()
 
     async def validate_rom(self, ctx: "BizHawkClientContext") -> bool:
         try:
@@ -70,7 +69,8 @@ class MetroidFusionClient(BizHawkClient):
             logger.info(f"Metroid Fusion APWorld v{int.from_bytes(patch_version)} was used for patching.")
             logger.info(f"Metroid Fusion APWorld v{MetroidFusionWorld.version} used for playing.")
             self.logged_version = True
-
+            self.display_location_found_messages = (get_settings()["metroidfusion_options"]
+                                                    .get("display_location_found_messages", True))
         return True
 
     async def set_auth(self, ctx: "BizHawkClientContext") -> None:
@@ -127,9 +127,10 @@ class MetroidFusionClient(BizHawkClient):
         for location in found_locations:
             ctx.locations_checked.add(location)
             location_name = ctx.location_names.lookup_in_game(location)
-            logger.info(
-                f'New Check: {location_name} ({len(ctx.locations_checked)}/'
-                f'{len(ctx.missing_locations) + len(ctx.checked_locations)})')
+            if self.display_location_found_messages:
+                logger.info(
+                    f'New Check: {location_name} ({len(ctx.locations_checked)}/'
+                    f'{len(ctx.missing_locations) + len(ctx.checked_locations)})')
 
     async def received_items_check(self, ctx: "BizHawkClientContext"):
         write_list: list[tuple[int, list[int], str]] = []
@@ -174,6 +175,8 @@ class MetroidFusionClient(BizHawkClient):
                 up_bit = get_bit_value_from_position(upgrade.toggled_bit)
                 new_toggled_value = current_upgrade_toggled_data | up_bit
                 write_list.append((upgrade.toggled_address, [new_toggled_value], self.iwram))
+                if "Beam" in current_item_name:
+                    write_list.append((memory.graphics_reload_flag, [1], self.iwram))
                 if current_item_name == "Missile Data":
                     missile_max_address = memory.tanks["Missile Tank"].max_address
                     missile_current_address = memory.tanks["Missile Tank"].current_address
@@ -284,6 +287,8 @@ class MetroidFusionClient(BizHawkClient):
             for item in ctx.items_received:
                 current_item_id = item.item
                 current_item_name = ctx.item_names.lookup_in_game(current_item_id, ctx.game)
+                if "Beam" in current_item_name:
+                    write_list.append((memory.graphics_reload_flag, [1], self.iwram))
                 if current_item_name == "Infant Metroid":
                     infant_metroid_count += 1
                 elif current_item_name in memory.upgrades.keys():
@@ -375,16 +380,14 @@ class MetroidFusionClient(BizHawkClient):
                     room_key = key
             if "Hints" in ctx.slot_data.keys():
                 hints = ctx.slot_data["Hints"]
-                if room_key in hints:
+                if room_key in hints and room_key not in self.locations_hinted:
                     location_id = hints[room_key]["Location"]
                     player_id = hints[room_key]["Player"]
-                    if player_id == ctx.slot:
-                        if location_id not in ctx.locations_scouted:
-                            ctx.locations_scouted.add(location_id)
-                            await ctx.send_msgs([{
-                                "cmd": "LocationScouts",
-                                "locations": [location_id],
-                                "create_as_hint": 2}])
+                    self.locations_hinted.append(room_key)
+                    await ctx.send_msgs([{
+                        "cmd": "CreateHints",
+                        "locations": [location_id],
+                        "player": player_id}])
 
     async def update_map(self, ctx: "BizHawkClientContext"):
         current_sector = await self.read_ram_value_guarded(ctx, memory.current_area, self.iwram)

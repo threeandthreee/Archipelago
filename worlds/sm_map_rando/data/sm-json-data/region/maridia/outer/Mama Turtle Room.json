@@ -37,8 +37,8 @@
       "nodeAddress": "0x7C47D",
       "mapTileMask": [
         [0, 2, 1],
-        [0, 1, 1],
-        [0, 1, 1],
+        [0, 2, 1],
+        [0, 2, 1],
         [1, 1, 1]
       ]
     },
@@ -52,7 +52,7 @@
       "mapTileMask": [
         [0, 1, 1],
         [0, 1, 2],
-        [0, 1, 1],
+        [0, 1, 2],
         [1, 1, 1]
       ]
     },
@@ -77,7 +77,7 @@
       "mapTileMask": [
         [0, 1, 1],
         [0, 2, 1],
-        [0, 1, 1],
+        [0, 2, 1],
         [1, 1, 1]
       ],
       "note": "Out of the water, on the top left ledge."
@@ -89,8 +89,8 @@
       "nodeSubType": "junction",
       "mapTileMask": [
         [0, 1, 2],
-        [0, 1, 1],
-        [0, 1, 1],
+        [0, 1, 2],
+        [0, 1, 2],
         [1, 1, 1]
       ],
       "note": "Out of the water, on the top right ledge above item."
@@ -190,22 +190,20 @@
     {
       "id": 2,
       "link": [1, 1],
-      "name": "Stutter Water Shinecharge, Shinespark Return",
+      "name": "Stutter Shinecharge, Leave With Spark",
       "entranceCondition": {
-        "comeInRunning": {
-          "speedBooster": true,
+        "comeInStutterShinecharging": {
           "minTiles": 2
         }
       },
       "requires": [
         "canStutterWaterShineCharge",
         "canShinechargeMovementComplex",
-        "h_shinechargeMaxRunway",
         {"or": [
-          {"shinespark": {"frames": 9}},
+          {"shinespark": {"frames": 12}},
           {"and": [
             "canShinechargeMovementTricky",
-            {"shinespark": {"frames": 2}}
+            {"shinespark": {"frames": 3}}
           ]}
         ]}
       ],
@@ -215,6 +213,295 @@
       "unlocksDoors": [
         {"types": ["super"], "requires": []},
         {"types": ["missiles", "powerbomb"], "requires": ["never"]}
+      ]
+    },
+    {
+      "id": 57,
+      "link": [1, 1],
+      "name": "Very Precise Stutter Shinecharge, Leave With Spark",
+      "entranceCondition": {
+        "comeInStutterShinecharging": {
+          "minTiles": 1
+        }
+      },
+      "requires": [
+        "canShinechargeMovementComplex",
+        "canPreciseStutterWaterShineCharge",
+        "canInsaneJump",
+        "h_shinechargeMaxRunway",
+        {"or": [
+          {"shinespark": {"frames": 12}},
+          {"and": [
+            "canShinechargeMovementTricky",
+            {"shinespark": {"frames": 3}}
+          ]}
+        ]}
+      ],
+      "exitCondition": {
+        "leaveWithSpark": {}
+      },
+      "unlocksDoors": [
+        {"types": ["super"], "requires": []},
+        {"types": ["missiles", "powerbomb"], "requires": ["never"]}
+      ],
+      "note": [
+        "With only 1 tile of runway, this requires a single-frame stutter (release forward then repress on the next frame), on the last possible frame."
+      ]
+    },
+    {
+      "id": 58,
+      "link": [1, 1],
+      "name": "Precise Stutter Shinecharge, Leave Shinecharged (5-tile runway)",
+      "entranceCondition": {
+        "comeInStutterShinecharging": {
+          "minTiles": 5
+        }
+      },
+      "requires": [
+        "canPreciseStutterWaterShineCharge",
+        "canShinechargeMovementTricky",
+        "canInsaneJump",
+        {"shineChargeFrames": 130},
+        {"or": [
+          "canBeVeryPatient",
+          {"shineChargeFrames": 15}
+        ]}
+      ],
+      "exitCondition": {
+        "leaveShinecharged": {}
+      },
+      "unlocksDoors": [
+        {"types": ["super"], "requires": []},
+        {"types": ["missiles", "powerbomb"], "requires": ["never"]}
+      ],
+      "note": [
+        "With a runway of 5 tiles (open end) in the other room,",
+        "the ideal timing for the stutter is to release forward for 5 frames, and repress forward on the last possible frame before the transition.",
+        "Other timings can work, but will gain the shinecharge further from the door, leaving fewer shinecharge frames remaining.",
+        "After gaining the shinecharge, continue holding forward in order to make Samus stand.",
+        "Then turnaround spin jump back toward the door, and continue spin jumping to reach the transition with a shinecharge."
+      ]
+    },
+    {
+      "id": 59,
+      "link": [1, 1],
+      "name": "Precise Stutter Shinecharge, Leave Shinecharged (4-tile runway)",
+      "entranceCondition": {
+        "comeInStutterShinecharging": {
+          "minTiles": 4
+        }
+      },
+      "requires": [
+        "canPreciseStutterWaterShineCharge",
+        "canShinechargeMovementTricky",
+        "canInsaneJump",
+        {"shineChargeFrames": 140},
+        {"or": [
+          "canBeVeryPatient",
+          {"shineChargeFrames": 10}
+        ]}
+      ],
+      "exitCondition": {
+        "leaveShinecharged": {}
+      },
+      "unlocksDoors": [
+        {"types": ["super"], "requires": []},
+        {"types": ["missiles", "powerbomb"], "requires": ["never"]}
+      ],
+      "note": [
+        "With only a runway of 4 tiles (open end) in the other room,",
+        "the ideal timing for the stutter is to release forward for 4 frames, and repress forward on the last possible frame before the transition.",
+        "It also works well to release forward for 3 frames and repress on the last possible frame.",
+        "Other timings can also work, but may gain the shinecharge further from the door, leaving fewer shinecharge frames remaining.",
+        "After gaining the shinecharge, continue holding forward in order to make Samus stand.",
+        "Then turnaround spin jump back toward the door, and continue spin jumping to reach the transition with a shinecharge."
+      ]
+    },
+    {
+      "id": 60,
+      "link": [1, 1],
+      "name": "Precise Stutter Shinecharge, Leave Shinecharged (3-tile runway)",
+      "entranceCondition": {
+        "comeInStutterShinecharging": {
+          "minTiles": 3
+        }
+      },
+      "requires": [
+        "canPreciseStutterWaterShineCharge",
+        "canShinechargeMovementTricky",
+        "canInsaneJump",
+        {"shineChargeFrames": 145},
+        {"or": [
+          "canBeVeryPatient",
+          {"shineChargeFrames": 10}
+        ]}
+      ],
+      "exitCondition": {
+        "leaveShinecharged": {}
+      },
+      "unlocksDoors": [
+        {"types": ["super"], "requires": []},
+        {"types": ["missiles", "powerbomb"], "requires": ["never"]}
+      ],
+      "note": [
+        "With only a runway of 3 tiles (open end) in the other room,",
+        "the ideal timing for the stutter is to release forward for 3 or 4 frames, and repress forward on the last possible frame before the transition.",
+        "Other timings can work, but will gain the shinecharge further from the door, leaving fewer shinecharge frames remaining.",
+        "After gaining the shinecharge, continue holding forward in order to make Samus stand.",
+        "Then turnaround spin jump back toward the door, and continue spin jumping to reach the transition with a shinecharge.",
+        "Alternatively, with greater difficulty but saving some shinecharge frames,",
+        "after performing the turnaround spin jump, briefly moonwalk back, then retain momentum by boomeranging forward",
+        "(switching from pressing backward to pressing forward on the next frame),",
+        "and arm pump to reach the door quickly."
+      ],
+      "devNote": [
+        "The same shinecharge frames could be achieved with a closed end runway (effective length of 2.4375),",
+        "with a 3-frame stutter, but there doesn't appear to be any application."
+      ]
+    },
+    {
+      "id": 61,
+      "link": [1, 1],
+      "name": "Precise Stutter Shinecharge, Leave Shinecharged (2-tile runway)",
+      "entranceCondition": {
+        "comeInStutterShinecharging": {
+          "minTiles": 2
+        }
+      },
+      "requires": [
+        "canPreciseStutterWaterShineCharge",
+        "canShinechargeMovementTricky",
+        "canInsaneJump",
+        {"shineChargeFrames": 150},
+        {"or": [
+          "canBeVeryPatient",
+          {"shineChargeFrames": 15}
+        ]}
+      ],
+      "exitCondition": {
+        "leaveShinecharged": {}
+      },
+      "unlocksDoors": [
+        {"types": ["super"], "requires": []},
+        {"types": ["missiles", "powerbomb"], "requires": ["never"]}
+      ],
+      "note": [
+        "With only a runway of 2 tiles (open end) in the other room,",
+        "the ideal timing for the stutter is to release forward for 3 frames, and repress forward on the last possible frame before the transition.",
+        "Other timings can work, but will gain the shinecharge further from the door, leaving fewer shinecharge frames remaining.",
+        "After gaining the shinecharge, continue holding forward in order to make Samus stand.",
+        "Then turnaround spin jump back toward the door, and continue spin jumping to reach the transition with a shinecharge.",
+        "Alternatively, with greater difficulty but saving some shinecharge frames,",
+        "after performing the turnaround spin jump, briefly moonwalk back, then retain momentum by boomeranging forward",
+        "(switching from pressing backward to pressing forward on the next frame),",
+        "and arm pump to reach the door quickly."
+      ],
+      "devNote": [
+        "FIXME: The canBeVeryPatient requirement is for difficulty placement of the boomerang method;",
+        "but the boomerang (or maybe specifically the moonwalk boomerang) should possibly be its own tech,",
+        "and the same with rapid arm pumping."
+      ]
+    },
+    {
+      "id": 62,
+      "link": [1, 1],
+      "name": "Precise Stutter Shinecharge, Leave Shinecharged (1-tile runway)",
+      "entranceCondition": {
+        "comeInStutterShinecharging": {
+          "minTiles": 1
+        }
+      },
+      "requires": [
+        "canPreciseStutterWaterShineCharge",
+        "canInsaneJump",
+        "canBeVeryPatient",
+        "canShinechargeMovementTricky",
+        {"shineChargeFrames": 160}
+      ],
+      "exitCondition": {
+        "leaveShinecharged": {}
+      },
+      "unlocksDoors": [
+        {"types": ["super"], "requires": []},
+        {"types": ["missiles", "powerbomb"], "requires": ["never"]}
+      ],
+      "note": [
+        "With only 1 tile of runway in the other room, Samus should ideally start on the last pixel of runway with X subpixels of $3FFF or less.",
+        "Run toward the door, releasing forward for exactly 1 frame and pressing it again on the last possible frame before the transition.",
+        "Starting with X subpixels of $7FFF can also work (e.g., by simply backing against the door ledge, then jumping and turning around mid-air);",
+        "in this case, Samus must advance 1 or 2 pixels with an arm pump before the transition (e.g., firing a shot or pressing and/or releasing an angle button),",
+        "and the shinecharge will be gained slightly further away from the door.",
+        "After gaining the shinecharge, continue holding forward in order to make Samus stand.",
+        "Then turnaround spin jump back toward the door, and continue spin jumping to reach the transition with a shinecharge.",
+        "Alternatively, with greater difficulty but saving some shinecharge frames,",
+        "after performing the turnaround spin jump, briefly moonwalk back, then retain momentum by boomeranging forward",
+        "(switching from pressing backward to pressing forward on the next frame),",
+        "and arm pump to reach the door quickly."
+      ],
+      "detailNote": [
+        "Ideal subpixels ($3FFF) can be achieved using one of several methods:",
+        "1) press forward against the door ledge (or a wall aligned with it);",
+        "jump, and while mid-air, tap forward for exactly 1 frame to land with subpixels $BFFF,",
+        "moonwalk back for exactly 1 frame to end with subpixels $3FFF.",
+        "2) press forward against the door ledge (from a platform below, assuming one exists)",
+        "turn around (while on the ground), and moonwalk back two pixels,",
+        "then jump and mid-air turnaround onto the ledge;",
+        "if Samus jumped from the correct pixel but does not land on the ledge, then it was needed to moonwalk back 1 more frame;",
+        "in this case it is possible to retry by doing a mid-air turnaround back onto the platform, and moonwalking back for 1 frame.",
+        "3) if X-Ray is available, press against the door ledge (from a platform below, assuming one exists)",
+        "turn around (while on the ground), then jump and mid-air turnaround toward the door,",
+        "and use X-Ray to turnaround in place away from the door;",
+        "repeat this sequence 3 more times: jump, mid-air turnaround, X-Ray turnaround;",
+        "then do one more jump and mid-air turnaround, high enough to land on the door ledge,",
+        "and Samus should be in the correct position with subpixels $3FFF."
+      ]
+    },
+    {
+      "id": 63,
+      "link": [1, 1],
+      "name": "Precise Stutter Shinecharge, Leave With Temporary Blue",
+      "entranceCondition": {
+        "comeInStutterShinecharging": {
+          "minTiles": 2
+        }
+      },
+      "requires": [
+        "canPreciseStutterWaterShineCharge",
+        "canXRayTurnaround",
+        "canChainTemporaryBlue"
+      ],
+      "exitCondition": {
+        "leaveWithTemporaryBlue": {}
+      },
+      "unlocksDoors": [{"types": ["ammo"], "requires": []}]
+    },
+    {
+      "id": 64,
+      "link": [1, 1],
+      "name": "Very Precise Stutter Shinecharge, Leave With Temporary Blue",
+      "entranceCondition": {
+        "comeInStutterShinecharging": {
+          "minTiles": 1
+        }
+      },
+      "requires": [
+        "canPreciseStutterWaterShineCharge",
+        "canInsaneJump",
+        "canXRayTurnaround",
+        "canChainTemporaryBlue"
+      ],
+      "exitCondition": {
+        "leaveWithTemporaryBlue": {}
+      },
+      "unlocksDoors": [{"types": ["ammo"], "requires": []}],
+      "note": [
+        "With only 1 tile of runway in the other room, Samus should ideally start on the last pixel of runway with X subpixels of $3FFF or less.",
+        "Run toward the door, releasing forward for exactly 1 frame and pressing it again on the last possible frame before the transition.",
+        "Starting with X subpixels of $7FFF can also work (e.g., by simply backing against the door ledge, then jumping and turning around mid-air);",
+        "in this case, Samus must advance 1 or 2 pixels with an arm pump before the transition (e.g., firing a shot or pressing and/or releasing an angle button),"
+      ],
+      "devNote": [
+        "FIXME: The canInsaneJump requirement is for difficulty placement; use a more appropriate tech if possible."
       ]
     },
     {
@@ -344,15 +631,13 @@
       "link": [1, 2],
       "name": "Stutter Water Shinecharge",
       "entranceCondition": {
-        "comeInRunning": {
-          "speedBooster": true,
+        "comeInStutterShinecharging": {
           "minTiles": 2
         }
       },
       "requires": [
         "canStutterWaterShineCharge",
         "canShinechargeMovement",
-        "h_shinechargeMaxRunway",
         {"or": [
           {"shinespark": {"frames": 61, "excessFrames": 7}},
           {"and": [
@@ -367,6 +652,38 @@
         ]}
       ],
       "clearsObstacles": ["B"],
+      "devNote": "This could have a few more excess frames if not getting on top of the block to go to 2."
+    },
+    {
+      "id": 65,
+      "link": [1, 2],
+      "name": "Precise Stutter Water Shinecharge",
+      "entranceCondition": {
+        "comeInStutterShinecharging": {
+          "minTiles": 1
+        }
+      },
+      "requires": [
+        "canPreciseStutterWaterShineCharge",
+        "canShinechargeMovement",
+        {"or": [
+          {"shinespark": {"frames": 61, "excessFrames": 7}},
+          {"and": [
+            "canMidairShinespark",
+            {"shinespark": {"frames": 56, "excessFrames": 7}}
+          ]},
+          {"and": [
+            "canMidairShinespark",
+            "HiJump",
+            {"shinespark": {"frames": 52, "excessFrames": 7}}
+          ]}
+        ]}
+      ],
+      "clearsObstacles": ["B"],
+      "note": [
+        "With only 1 tile of runway, this requires releasing forward for 1 or 2 frames",
+        "and repressing forward on the last possible frame."
+      ],
       "devNote": "This could have a few more excess frames if not getting on top of the block to go to 2."
     },
     {
@@ -1027,7 +1344,8 @@
       ],
       "clearsObstacles": ["B"],
       "note": [
-        "Perform a running stationary spinjump from a precise spot, then a CWJ with slightly more speed off the wall one tile further out.",
+        "Perform a running stationary spinjump from a precise spot, with 3 frames of dash speed (the maximum possible);",
+        "then do a CWJ off the wall above, one tile further out.",
         "This makes it possible to just barely walljump off the grapple block."
       ]
     },
@@ -1149,6 +1467,6 @@
       ]
     }
   ],
-  "nextStratId": 57,
+  "nextStratId": 66,
   "nextNotableId": 3
 }

@@ -500,13 +500,15 @@
       "name": "Geemer, Skree, and Reo Farm",
       "requires": [
         "h_ZebesIsAwake",
-        {"resetRoom": {
-          "nodes": [1]
-        }},
-        {"refill": ["Missile"]},
-        {"partialRefill": {"type": "Energy", "limit": 200}}
+        {"resetRoom": {"nodes": [1]}},
+        {"cycleFrames": 400}
       ],
-      "resetsObstacles": ["A", "B", "C", "D"]
+      "resetsObstacles": ["A", "B", "C", "D"],
+      "farmCycleDrops": [
+        {"enemy": "Geemer (blue)", "count": 2},
+        {"enemy": "Skree", "count": 2},
+        {"enemy": "Reo", "count": 1}
+      ]
     },
     {
       "id": 15,
@@ -586,9 +588,13 @@
       "name": "Ceiling Item Jump Into IBJ",
       "requires": [
         "canJumpIntoIBJ",
-        "canDoubleBombJump"
+        "canTrickyJump"
       ],
-      "note": "An alternate strat to canBombAboveIBJ. Shoot the block, jump into an IBJ, then do a quick double bomb jump to make it in time."
+      "note": [
+        "Shoot the block, jump into an IBJ, gaining height quickly enough to make it in time.",
+        "This can be done with as few as 2 bombs,",
+        "in which case it is similar to the start of a double bomb jump."
+      ]
     },
     {
       "id": 23,
@@ -884,6 +890,37 @@
       "note": "Falling down the shaft and breaking the crumble block does not require Morph."
     },
     {
+      "id": 69,
+      "link": [2, 2],
+      "name": "Geemer, Skree, and Reo Farm",
+      "requires": [
+        {"notable": "Return Through Crumble Blocks"},
+        "h_ZebesIsAwake",
+        "Morph",
+        {"or": [
+          "ScrewAttack",
+          "h_useMorphBombs"
+        ]},
+        {"or": [
+          "canConsecutiveWalljump",
+          "SpaceJump"
+        ]},
+        {"resetRoom": {"nodes": [2]}},
+        {"cycleFrames": 1350}
+      ],
+      "clearsObstacles": ["A", "B"],
+      "resetsObstacles": ["C", "D"],
+      "farmCycleDrops": [
+        {"enemy": "Geemer (blue)", "count": 2},
+        {"enemy": "Skree", "count": 2},
+        {"enemy": "Reo", "count": 1}
+      ],
+      "devNote": [
+        "Returning with an IBJ or frozen Geemer would also be possible,",
+        "but these are probably too slow to model in a farm strat."
+      ]
+    },
+    {
       "id": 38,
       "link": [2, 2],
       "name": "Crystal Flash",
@@ -955,7 +992,7 @@
       "link": [4, 1],
       "name": "Artificial Morph Remotely Collect the Item",
       "requires": [
-        "canEnterGMode",
+        "canComplexGMode",
         {"obstaclesCleared": ["D"]}
       ],
       "flashSuitChecked": true,
@@ -1225,7 +1262,7 @@
         {"notable": "Geemer Ice Stuck XRay Climb"},
         "h_ZebesIsAwake",
         "canWallIceClip",
-        "canXRayClimb",
+        "canLongXRayClimb",
         "Grapple",
         {"ammo": {"type": "Super", "count": 1}},
         {"enemyDamage": {"enemy": "Geemer (blue)", "type": "contact", "hits": 1}}
@@ -1266,27 +1303,73 @@
       "link": [5, 2],
       "name": "G-Mode Morph Bomb the Crumble Block",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         "h_artificialMorphIBJ",
         {"or": [
           "canConsecutiveWalljump",
           "SpaceJump",
           {"and": [
             "h_artificialMorphLongIBJ",
-            "canOffScreenMovement"
+            {"or": [
+              "Morph",
+              "canOffScreenMovement"
+            ]}
           ]}
         ]}
       ],
       "flashSuitChecked": true,
-      "note": "Overload PLMs by repeatidly bombing the Power Bomb blocks or the side of the crumble block, then enter through the crumble block.",
-      "devNote": "The off screen movement is just during an IBJ, and only if wall jumps are disabled. But the IBJ is long and Samus is covered for most of it."
+      "note": [
+        "Overload PLMs by repeatidly bombing the Power Bomb blocks or the side of the crumble block, then enter through the crumble block.",
+        "If Samus is then going to IBJ up the shaft, and she has Morph, it is worth exiting G-mode first to allow the camera to follow her."
+      ],
+      "devNote": "The off screen movement is just during an artificial morphed IBJ - the IBJ is long and Samus is covered for most of it."
+    },
+    {
+      "id": 70,
+      "link": [5, 2],
+      "name": "G-Mode Morph Shoot the Ceiling Block Item",
+      "requires": [
+        "canGMode",
+        "Morph",
+        {"or": [
+          "canConsecutiveWalljump",
+          "SpaceJump"
+        ]}
+      ],
+      "flashSuitChecked": true,
+      "note": [
+        "Overload PLMs by shooting the ceiling block item many times.",
+        "Because the item is in a shot block, this does not require Direct G-mode, nor does it require the item to be uncollected."
+      ]
+    },
+    {
+      "id": 71,
+      "link": [5, 2],
+      "name": "G-Mode Morph Power Bomb the Ceiling Block Item",
+      "requires": [
+        "canPowerBombItemOverloadPLMs",
+        "canGMode",
+        "h_artificialMorphPowerBomb",
+        "h_artificialMorphMovement",
+        {"or": [
+          "canConsecutiveWalljump",
+          "SpaceJump"
+        ]}
+      ],
+      "clearsObstacles": ["B", "C"],
+      "flashSuitChecked": true,
+      "note": [
+        "Overload PLMs with a single Power Bomb by hitting the ceiling block item.",
+        "This can be done with a single precisely placed Power Bomb. There should be one empty tile between Samus and the right wall.",
+        "Because the item is in a shot block, this does not require Direct G-mode, nor does it require the item to be uncollected."
+      ]
     },
     {
       "id": 58,
       "link": [5, 4],
       "name": "G-Mode Morph",
       "requires": [
-        "canEnterGMode"
+        "canGMode"
       ],
       "flashSuitChecked": true
     },
@@ -1295,7 +1378,7 @@
       "link": [5, 4],
       "name": "G-Mode Morph with Power Bomb",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         "h_artificialMorphPowerBomb"
       ],
       "clearsObstacles": ["B", "C"],
@@ -1303,32 +1386,11 @@
       "note": "The blocks will not break if PLMs are already overloaded. Exiting G-Mode before the Power Bomb explodes will ensure they break."
     },
     {
-      "id": 60,
-      "link": [6, 2],
-      "name": "G-Mode Morph Power Bomb the Item",
-      "requires": [
-        "canEnterGMode",
-        {"itemNotCollectedAtNode": 4},
-        "canRiskPermanentLossOfAccess",
-        "h_artificialMorphPowerBomb",
-        "h_artificialMorphMovement",
-        {"or": [
-          "canConsecutiveWalljump",
-          "SpaceJump"
-        ]}
-      ],
-      "flashSuitChecked": true,
-      "note": [
-        "Overload PLMs with a single Power Bomb by hitting the item at the right end of the room.",
-        "This can be done with a single precisely placed Power Bomb. There should be 4 empty tiles between Samus and the left of the blocks when the bomb is placed."
-      ]
-    },
-    {
       "id": 61,
       "link": [6, 4],
-      "name": "G-Mode Morph Remotely Collect the Item",
+      "name": "G-Mode Morph Touch the Item (Prepare to Remote Acquire)",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         {"itemNotCollectedAtNode": 4},
         "h_artificialMorphMovement"
       ],
@@ -1349,7 +1411,7 @@
       "link": [6, 5],
       "name": "Base",
       "requires": [
-        "canEnterGMode"
+        "canGMode"
       ],
       "flashSuitChecked": true
     }
@@ -1410,6 +1472,6 @@
       ]
     }
   ],
-  "nextStratId": 69,
+  "nextStratId": 72,
   "nextNotableId": 8
 }

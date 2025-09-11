@@ -1339,7 +1339,7 @@
               "speedBooster": true,
               "obstructions": [[1, 0]],
               "note": [
-                "Applies to Early Super Room, Bowling Alley (Bottom), Blue Hopper Room, Dust Torizo Room, and Noob Bridge."
+                "Applies to Early Super Room, Bowling Alley (Bottom), Tourian Hopper Room, Dust Torizo Room, and Noob Bridge."
               ]
             },
             {
@@ -1352,7 +1352,7 @@
                 "canInsaneJump"
               ],
               "note": [
-                "Applies to Bowling Alley (Bottom), Blue Hopper Room, Dust Torizo Room, and Noob Bridge.",
+                "Applies to Bowling Alley (Bottom), Tourian Hopper Room, Dust Torizo Room, and Noob Bridge.",
                 "Without Speed Booster, this requires specific positioning to align Samus to just barely clear the door ledge."
               ]
             },
@@ -1363,7 +1363,7 @@
               "speedBooster": "any",
               "obstructions": [[1, 0]],
               "note": [
-                "Applies to Bomb Torizo Room, Pink Brinstar Hopper Room, Phantoon's Room, Big Boy Room, Double Chamber."
+                "Applies to Bomb Torizo Room, Pink Brinstar Wave Gate Room, Phantoon's Room, Big Boy Room, Double Chamber."
               ]
             },
             {
@@ -1373,7 +1373,7 @@
               "speedBooster": true,
               "obstructions": [[1, 0], [3, 2]],
               "note": [
-                "Applies to Bomb Torizo Room, Pink Brinstar Hopper Room, Phantoon's Room, Big Boy Room, Double Chamber, and Metal Pirates Room.",
+                "Applies to Bomb Torizo Room, Pink Brinstar Wave Gate Room, Phantoon's Room, Big Boy Room, Double Chamber, and Metal Pirates Room.",
                 "With extra run speed exactly $1.2, this works without collision oscillation.",
                 "Extra run speed up through $1.8 also work but with collision oscillation giving a 50% failure rate, as with most other setups."
               ]
@@ -2157,6 +2157,34 @@
       "flashSuitChecked": true
     },
     {
+      "id": 110,
+      "link": [3, 3],
+      "name": "Carry G-Mode Back Up, Bomb Into Spring Ball Jump",
+      "entranceCondition": {
+        "comeInWithGMode": {
+          "mode": "direct",
+          "morphed": true
+        },
+        "comesThroughToilet": "any"
+      },
+      "requires": [
+        "h_artificialMorphUnderwaterBombIntoSpringBallJump"
+      ],
+      "exitCondition": {
+        "leaveWithGMode": {
+          "morphed": false
+        }
+      },
+      "bypassesDoorShell": "free",
+      "flashSuitChecked": true,
+      "note": [
+        "Pause and jump just before the fade out finishes. Turn off Spring Ball and place a Bomb just above where Samus' head would be if standing.",
+        "Pause again between 23-25 frames later and equip Spring Ball; Samus has a three frame window where she has upward momentum from the Bomb and can jump again.",
+        "The positioning of the Bomb is quite lenient, with an 11 frame window for where it can be placed.",
+        "Unmorph at the top of the jump to touch the transition blocks."
+      ]
+    },
+    {
       "id": 50,
       "link": [3, 4],
       "name": "Base",
@@ -2181,6 +2209,21 @@
         "canXRayTurnaround"
       ],
       "clearsObstacles": ["A"]
+    },
+    {
+      "id": 109,
+      "link": [3, 5],
+      "name": "G-Mode Overload PLMs, Through the Bomb Blocks",
+      "entranceCondition": {
+        "comeInWithGMode": {
+          "mode": "any",
+          "morphed": false
+        },
+        "comesThroughToilet": "any"
+      },
+      "requires": [],
+      "flashSuitChecked": true,
+      "note": "There are camera scroll blocks, which can be used to overload PLMs, just above the bomb blocks."
     },
     {
       "id": 52,
@@ -2636,6 +2679,6 @@
       ]
     }
   ],
-  "nextStratId": 109,
+  "nextStratId": 111,
   "nextNotableId": 3
 }

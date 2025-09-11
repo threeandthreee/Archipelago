@@ -1,4 +1,4 @@
-VERSION = (12, 3)
+VERSION = (12, 4)
 ROM_HASH = "f2dc6c4e093e4f8c6cbea80e8dbd62cb"
 
 DIRECTION_UP = 0

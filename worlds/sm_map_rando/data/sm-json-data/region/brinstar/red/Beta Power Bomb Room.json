@@ -352,6 +352,28 @@
       ]
     },
     {
+      "id": 30,
+      "link": [1, 1],
+      "name": "Sidehopper Farm",
+      "requires": [
+        {"resetRoom": {"nodes": [1]}},
+        {"or": [
+          {"and": [
+            "ScrewAttack",
+            {"cycleFrames": 240}
+          ]},
+          {"and": [
+            "canDodgeWhileShooting",
+            "Plasma",
+            {"cycleFrames": 380}
+          ]}
+        ]}
+      ],
+      "clearsObstacles": ["A"],
+      "resetsObstacles": ["B"],
+      "farmCycleDrops": [{"enemy": "Sidehopper", "count": 2}]
+    },
+    {
       "id": 3,
       "link": [1, 1],
       "name": "Crystal Flash",
@@ -501,6 +523,23 @@
       ]
     },
     {
+      "id": 31,
+      "link": [1, 2],
+      "name": "Super Sink",
+      "entranceCondition": {
+        "comeInWithSuperSink": {}
+      },
+      "requires": [
+        "h_useSpringBall",
+        {"thornHits": 3},
+        {"samusEaterFrames": 160}
+      ],
+      "note": [
+        "Enter the room with a super sink, and hold left, in order to clip down through the Power Bomb blocks.",
+        "Use Spring Ball to navigate the thorns and Samus Eaters with limited damage."
+      ]
+    },
+    {
       "id": 19,
       "link": [2, 1],
       "name": "Base",
@@ -522,7 +561,11 @@
       "name": "Damage Boost Escape",
       "requires": [
         {"obstaclesCleared": ["B"]},
-        "canHorizontalDamageBoost",
+        "canNeutralDamageBoost",
+        {"or": [
+          "canMidAirMorph",
+          "canCarefulJump"
+        ]},
         {"thornHits": 1}
       ]
     },
@@ -602,6 +645,6 @@
     }
   ],
   "notables": [],
-  "nextStratId": 30,
+  "nextStratId": 32,
   "nextNotableId": 1
 }

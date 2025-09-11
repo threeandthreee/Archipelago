@@ -164,6 +164,64 @@
       "flashSuitChecked": true
     },
     {
+      "id": 65,
+      "link": [1, 1],
+      "name": "Sova and Dessgeega Farm",
+      "requires": [
+        "h_heatProof",
+        {"resetRoom": {"nodes": [1]}},
+        {"or": [
+          {"and": [
+            "HiJump",
+            "canWalljump",
+            {"cycleFrames": 450}
+          ]},
+          {"and": [
+            "canPreciseWalljump",
+            {"cycleFrames": 600}
+          ]},
+          {"and": [
+            "SpaceJump",
+            {"cycleFrames": 660}
+          ]},
+          {"and": [
+            "h_useSpringBall",
+            {"cycleFrames": 650}
+          ]},
+          {"and": [
+            "h_useMorphBombs",
+            {"cycleFrames": 720}
+          ]}
+        ]},
+        {"or": [
+          "Plasma",
+          "Spazer",
+          "Wave",
+          {"and": [
+            "Ice",
+            {"cycleFrames": 130}
+          ]},
+          {"and": [
+            "ScrewAttack",
+            {"cycleFrames": 100}
+          ]},
+          {"and": [
+            "canPseudoScrew",
+            {"cycleFrames": 130}
+          ]},
+          {"and": [
+            "canTrickyJump",
+            {"cycleFrames": 160}
+          ]}
+        ]}
+      ],
+      "farmCycleDrops": [
+        {"enemy": "Sova", "count": 2},
+        {"enemy": "Sm. Dessgeega", "count": 2}
+      ],
+      "flashSuitChecked": true
+    },
+    {
       "id": 3,
       "link": [1, 1],
       "name": "G-Mode Regain Mobility",
@@ -425,7 +483,7 @@
       ],
       "flashSuitChecked": true,
       "note": [
-        "Carefully roll under the Sm. Desgeegas or kill them with a Power Bomb (while avoiding killing the Sova).",
+        "Wait for the Sova to pass then carefully roll under the Sm. Desgeegas or kill them with a Power Bomb (while avoiding killing the Sova).",
         "It is possible to kill a Sova on the door and pause abuse to grab its Energy drop on G-mode exit.",
         "The local or global Sova can be used. To use the local one, keep it off camera when possible and horizontally boost to jump over both stairs at once.",
         "With Spring Ball or a moderately good IBJ, Samus should be able to get through the morph tunnel before the global Sova, otherwise it takes just over a minute for it to return."
@@ -462,6 +520,70 @@
       "name": "Crystal Flash",
       "requires": [
         "h_heatedCrystalFlash"
+      ],
+      "flashSuitChecked": true
+    },
+    {
+      "id": 66,
+      "link": [2, 2],
+      "name": "Sova and Dessgeega Farm",
+      "requires": [
+        "h_heatProof",
+        {"resetRoom": {"nodes": [2]}},
+        {"or": [
+          {"and": [
+            "HiJump",
+            {"cycleFrames": 550}
+          ]},
+          {"and": [
+            "SpaceJump",
+            {"cycleFrames": 610}
+          ]},
+          {"and": [
+            "h_useSpringBall",
+            "h_doubleEquipmentScreenCycleFrames",
+            {"cycleFrames": 600}
+          ]},
+          {"and": [
+            "canIBJ",
+            {"cycleFrames": 1220}
+          ]},
+          {"and": [
+            "canJumpIntoIBJ",
+            {"cycleFrames": 830}
+          ]}
+        ]},
+        {"or": [
+          "Plasma",
+          {"and": [
+            "Spazer",
+            {"cycleFrames": 50}
+          ]},
+          {"and": [
+            "Wave",
+            {"cycleFrames": 50}
+          ]},
+          {"and": [
+            "Ice",
+            {"cycleFrames": 260}
+          ]},
+          {"and": [
+            "ScrewAttack",
+            {"cycleFrames": 80}
+          ]},
+          {"and": [
+            "canPseudoScrew",
+            {"cycleFrames": 160}
+          ]},
+          {"and": [
+            "canTrickyJump",
+            {"cycleFrames": 540}
+          ]}
+        ]}
+      ],
+      "farmCycleDrops": [
+        {"enemy": "Sova", "count": 2},
+        {"enemy": "Sm. Dessgeega", "count": 2}
       ],
       "flashSuitChecked": true
     },
@@ -527,6 +649,45 @@
       "flashSuitChecked": true,
       "note": "Exit G-mode below the shot blocks.",
       "devNote": "This is just used to save Energy, when Samus doesn't have a way to get though the morph tunnel."
+    },
+    {
+      "id": 67,
+      "link": [2, 3],
+      "name": "Dessgeega Dodge",
+      "requires": [
+        {"notable": "Dessgeega Dodge (Right-to-Left)"},
+        "canTrickyDodgeEnemies",
+        "canInsaneJump",
+        {"heatFramesWithEnergyDrops": {
+          "frames": 295,
+          "drops": [{"enemy": "Sova", "count": 1}]
+        }}
+      ],
+      "note": [
+        "Manipulate the movement of the Sm. Dessgeegas by entering the room in a specific way.",
+        "Multiple setups are possible:",
+        "A relatively safe method is to walk into the room (with no dash speed, and any amount of base speed or none at all),",
+        "walk off the ledge, and press against the opposite ledge to align with it.",
+        "After landing, wait a moment, then run off the edge and across the room.",
+        "If successful, the first Sm. Dessgeega should have hopped to the right, out of Samus' way,",
+        "and the second Sm. Dessgeega should do a big hop while Samus runs under it.",
+        "A more aggressive method involves walking into the room,",
+        "and holding dash starting when Samus is about 1 tile from falling off the ledge;",
+        "start holding forward again slightly before landing on the small floating platform, while continuing to hold dash."
+      ],
+      "detailNote": [
+        "Rooms containing hopper-type enemies (including Sm. Dessgeegas) reset RNG on entry,",
+        "which makes it possible to manipulate their movement in a deterministic way.",
+        "It also means the Sova drop can be manipulated by killing it on specific frames relative to room entry.",
+        "Because the Sova is global, its position can be used as a cue for when to kill it.",
+        "If Samus is full on Missiles, there are several 3-frame windows of where it can be killed to obtain a big energy.",
+        "The exact timing required for the shot will depend on the weapon used."
+      ],
+      "devNote": [
+        "Manipulating the second Sm. Dessgeega is much more precise than manipulating the first.",
+        "The way the strat is written, manipulating the Sova drop isn't technically expected,",
+        "though in practice getting a big energy is required to make it through the room tankless."
+      ]
     },
     {
       "id": 12,
@@ -628,17 +789,30 @@
       "name": "Up from Below",
       "requires": [
         {"or": [
-          "canPreciseWalljump",
-          "SpaceJump",
+          {"and": [
+            "canPreciseWalljump",
+            {"heatFrames": 150}
+          ]},
+          {"and": [
+            "SpaceJump",
+            {"heatFrames": 210}
+          ]},
           {"and": [
             "HiJump",
-            {"or": [
-              "canWalljump",
-              "SpeedBooster"
-            ]}
+            "canWalljump",
+            {"heatFrames": 180}
+          ]},
+          {"and": [
+            "HiJump",
+            "SpeedBooster",
+            "canCarefulJump",
+            {"heatFrames": 100}
           ]}
         ]},
-        {"heatFrames": 210}
+        {"or": [
+          "canHeroShot",
+          {"heatFrames": 100}
+        ]}
       ]
     },
     {
@@ -706,9 +880,7 @@
         ]},
         {"or": [
           {"and": [
-            {"resetRoom": {
-              "nodes": [1]
-            }},
+            {"resetRoom": {"nodes": [1]}},
             {"or": [
               "canWalljump",
               "SpaceJump",
@@ -716,9 +888,7 @@
             ]}
           ]},
           {"and": [
-            {"resetRoom": {
-              "nodes": [2]
-            }},
+            {"resetRoom": {"nodes": [2]}},
             {"or": [
               "HiJump",
               "SpaceJump"
@@ -1276,6 +1446,23 @@
       "requires": [
         {"heatFrames": 350}
       ]
+    },
+    {
+      "id": 68,
+      "link": [5, 5],
+      "name": "Crystal Flash",
+      "requires": [
+        "h_heatedCrystalFlash"
+      ],
+      "flashSuitChecked": true,
+      "note": [
+        "If the Dessgeegas are still alive, perform the Crystal Flash on the floating platform to be safe.",
+        "By performing it on the far left edge of the platform (hanging over the edge slightly),",
+        "both Dessgeegas can be killed by the Power Bomb blast."
+      ],
+      "devNote": [
+        "FIXME: Model killing the Dessgeegas using a Power Bomb or Crystal Flash here."
+      ]
     }
   ],
   "notables": [
@@ -1328,8 +1515,16 @@
         "Jump when passing under the floating platform and barely avoid hitting the rightmost wall.",
         "Wall jump on the horizontal spire near to the door."
       ]
+    },
+    {
+      "id": 7,
+      "name": "Dessgeega Dodge (Right-to-Left)",
+      "note": [
+        "By entering the room in a specific way, manipulate the Sm. Dessgeegas to hop in a way that",
+        "they do not block Samus' path while traversing the room from right to left."
+      ]
     }
   ],
-  "nextStratId": 65,
-  "nextNotableId": 7
+  "nextStratId": 69,
+  "nextNotableId": 8
 }

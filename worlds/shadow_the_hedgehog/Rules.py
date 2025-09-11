@@ -22,7 +22,8 @@ def GetKeyRule(stage, player):
     relevant_key_base = [ k for k in Locations.KeyLocations if k.stageId == stage]
     key_regions = relevant_key_base[0].region
     regions = set([ Names.GetDistributionRegionEventName(stage, k) for k in key_regions])
-    return lambda state, ri=regions: state.has_all(ri, player)
+    region_names = list(set([ stage_id_to_region(stage, k) for k in key_regions]))
+    return lambda state, ri=regions: state.has_all(ri, player), region_names
 
 def GetRelevantTokenItem(token: LocationInfo):
     level_token_items = GetLevelTokenItems()
@@ -51,20 +52,21 @@ def GetRelevantTokenItem(token: LocationInfo):
 
 def handle_path_rules(options, player, additional_level_region, path_type):
     rule = lambda state: True
+    indirects = []
 
     if additional_level_region.hardLogicOnly:
         if options.logic_level != Options.LogicLevel.option_hard:
             print("Path denied", additional_level_region)
             rule = lambda state: False
-            return rule
+            return rule, indirects
 
     if not Levels.IsLogicLevelApplicable(additional_level_region, options, path_type, options.start_inventory):
-        return rule
+        return rule, indirects
 
     if Names.REGION_RESTRICTION_TYPES.Impassable in additional_level_region.restrictionTypes:
         # Temp solution
         final_item = Items.GetFinalItem()
-        return lambda state: state.has(final_item.name, player)
+        return lambda state: state.has(final_item.name, player), indirects
 
     if options.chaos_control_logic_level != Options.ChaosControlLogicLevel.option_off \
         and additional_level_region.chaosControlLogicRequiresHeal:
@@ -77,16 +79,17 @@ def handle_path_rules(options, player, additional_level_region, path_type):
                 options.chaos_control_logic_level not in \
                 [Options.ChaosControlLogicLevel.option_off, Options.ChaosControlLogicLevel.option_easy]:
 
-            return weapon_rule
+            return weapon_rule, indirects
 
         if additional_level_region.chaosControlLogicType == Options.ChaosControlLogicLevel.option_hard and \
                 options.chaos_control_logic_level == Options.ChaosControlLogicLevel.option_hard:
 
-            return weapon_rule
+            return weapon_rule, indirects
 
     if Names.REGION_RESTRICTION_TYPES.KeyDoor in additional_level_region.restrictionTypes:
-        key_rule = GetKeyRule(additional_level_region.stageId, player)
+        key_rule, regions = GetKeyRule(additional_level_region.stageId, player)
         rule = lambda state,r=rule: key_rule(state) and r(state)
+        indirects.extend(regions)
 
     if Names.REGION_RESTRICTION_TYPES.ShootOrTurret in additional_level_region.restrictionTypes:
         if options.weapon_sanity_unlock and options.vehicle_logic:
@@ -272,9 +275,11 @@ def handle_path_rules(options, player, additional_level_region, path_type):
         access_rule = lambda state: state.can_reach_region(
             stage_id_to_region(additional_level_region.stageId, required_stage_region), player)
 
+        indirects.append(stage_id_to_region(additional_level_region.stageId, required_stage_region))
+
         rule = lambda state, r=rule: access_rule(state) and r(state)
 
-    return rule
+    return rule, indirects
 
 def restrict_objects(multiworld, world, player):
     world_locations = [ l.name for l in world.get_locations()]
@@ -285,7 +290,7 @@ def restrict_objects(multiworld, world, player):
             location_with_restriction = world.get_location(entry_location_name)
             dummy_region = Levels.LevelRegion(object.stage, object.region, [object.restrictionType])
             location_with_restriction.access_rule = handle_path_rules(world.options, player, dummy_region,
-                                                                      Levels.REGION_RESTRICTION_REFERENCE_TYPES.BaseLogic)
+                                                                      Levels.REGION_RESTRICTION_REFERENCE_TYPES.BaseLogic)[0]
 
 def lock_warp_items(multiworld, world, player):
 
@@ -421,11 +426,19 @@ def set_rules(multiworld: MultiWorld, world: World, player: int):
             base_region = world.get_region(base_region_name)
             new_region = world.get_region(new_region_name)
 
-            path_rule = handle_path_rules(world.options, player, additional_level_region,
+            path_rule, indirects = handle_path_rules(world.options, player, additional_level_region,
                                           Levels.REGION_RESTRICTION_REFERENCE_TYPES.BaseLogic)
             if path_rule is not None:
-                connect(world.player, base_region_name+ ">" + "(" + str(additional_level_region.restrictionTypes) + ")" + new_region_name,
+                connection_name = base_region_name+ ">" + "(" + str(additional_level_region.restrictionTypes) + ")" + new_region_name
+                connect(world.player, connection_name,
                     base_region, new_region, path_rule)
+
+                if indirects is not None:
+                    for indirect in indirects:
+                        multiworld.register_indirect_condition(
+                            multiworld.get_region(indirect, player),
+                            multiworld.get_entrance(connection_name, player))
+
             else:
                 print("Path rule is None", base_region_name, new_region_name)
 
@@ -464,7 +477,7 @@ def set_rules(multiworld: MultiWorld, world: World, player: int):
 
                     logic_type = Levels.REGION_RESTRICTION_REFERENCE_TYPES.BaseLogic
 
-                    req_rule_a = handle_path_rules(world.options, player, lr,
+                    req_rule_a, indirects_a = handle_path_rules(world.options, player, lr,
                                                  logic_type)
                     if req_rule_a is not None:
                         req_rule = lambda state, z=req_rule, a=req_rule_a: \
@@ -480,7 +493,7 @@ def set_rules(multiworld: MultiWorld, world: World, player: int):
 
                     logic_type = Levels.REGION_RESTRICTION_REFERENCE_TYPES.CraftLogic
 
-                    req_rule_b = handle_path_rules(world.options, player, lr,
+                    req_rule_b,indirects_b = handle_path_rules(world.options, player, lr,
                                                  logic_type)
                     if req_rule_b is not None:
                         req_rule = lambda state, z=req_rule, b=req_rule_b: \
@@ -489,6 +502,7 @@ def set_rules(multiworld: MultiWorld, world: World, player: int):
                                 r_rule(state) and l_rule(state))
                         rule_change = True
 
+            # This part sets up accessibilty to the locations
             if clear.getDistribution() is not None:
 
                 # This functionality requires access to ALL to complete which is inflating
@@ -502,60 +516,66 @@ def set_rules(multiworld: MultiWorld, world: World, player: int):
 
                 if clear.requirement_count is not None and world.options.objective_sanity:
 
-                    max_required = ShadowUtils.getMaxRequired(
-                        ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_OBJECTIVE,
-                                                                  clear.mission_object_name, world.options,
-                                                                  clear.stageId, clear.alignmentId,
-                                                                  world.options.percent_overrides),
-                        clear.requirement_count, clear.stageId, clear.alignmentId,
-                        override_settings)
+                    location_details = ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_OBJECTIVE,
+                                                                                 clear.mission_object_name,
+                                                                                 world.options, clear.stageId,
+                                                                                 clear.alignmentId,
+                                                                                 world.options.percent_overrides)
 
-                    frequency_required = ShadowUtils.getMaxRequired(
-                        ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_OBJECTIVE_FREQUENCY,
-                                                                  clear.mission_object_name, world.options,
-                                                                  clear.stageId, clear.alignmentId,
-                                                                  world.options.percent_overrides),
-                        100, clear.stageId, clear.alignmentId,
-                        override_settings)
+                    result_sanity = ShadowUtils.GetObjectiveSanityFlag(world.options, location_details)
+                    if result_sanity:
 
-                    progress_distribution = clear.getDistribution().items()
-                    progress_dist_by_name = {}
+                        max_required = ShadowUtils.getMaxRequired(
+                            location_details,
+                            clear.requirement_count, clear.stageId, clear.alignmentId,
+                            override_settings)
 
-                    total = 0
+                        frequency_required = ShadowUtils.getMaxRequired(
+                            ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_OBJECTIVE_FREQUENCY,
+                                                                      clear.mission_object_name, world.options,
+                                                                      clear.stageId, clear.alignmentId,
+                                                                      world.options.percent_overrides),
+                            100, clear.stageId, clear.alignmentId,
+                            override_settings)
 
-                    if world.options.objective_sanity_system == Options.ObjectiveSanitySystem.option_individual:
-                        if (clear.stageId, clear.alignmentId) in Objects.STAGE_OBJECT_ITEMS:
-                            lookup_info = Objects.STAGE_OBJECT_ITEMS[(clear.stageId, clear.alignmentId)]
-                            is_objectable = lookup_info[1]
-                            if is_objectable == Objects.WORKS_WITH_INDIVIDUAL:
-                                total = -1
-                    if total != -1:
-                        for region, count in progress_distribution:
-                            progress_dist_by_name[Names.GetDistributionRegionEventName(clear.stageId, region)] = count
-                            total += count
+                        progress_distribution = clear.getDistribution().items()
+                        progress_dist_by_name = {}
 
-                    for l in range(1, total + 1):
-                        if l > max_required:
-                            break
+                        total = 0
 
-                        if l % frequency_required != 0 and max_required != l:
-                            continue
+                        if world.options.objective_sanity_system == Options.ObjectiveSanitySystem.option_individual:
+                            if (clear.stageId, clear.alignmentId) in Objects.STAGE_OBJECT_ITEMS:
+                                lookup_info = Objects.STAGE_OBJECT_ITEMS[(clear.stageId, clear.alignmentId)]
+                                is_objectable = lookup_info[1]
+                                if is_objectable == Objects.WORKS_WITH_INDIVIDUAL:
+                                    total = -1
+                        if total != -1:
+                            for region, count in progress_distribution:
+                                progress_dist_by_name[Names.GetDistributionRegionEventName(clear.stageId, region)] = count
+                                total += count
 
-                        prog_rule = lambda state, ix=l, data=progress_dist_by_name, keys=progress_dist_by_name.keys() \
-                            : CountRegionAccessibility(state, keys, data, ix, player)
+                        for l in range(1, total + 1):
+                            if l > max_required:
+                                break
 
-                        location_id, objective_location_name = (
-                            Levels.GetLevelObjectNames(clear.stageId, clear.alignmentId, clear.mission_object_name,
-                                                l))
-                        location = multiworld.get_location(objective_location_name, player)
+                            if l % frequency_required != 0 and max_required != l:
+                                continue
 
-                        progression_rule = lambda state, p_rule=prog_rule, r_rule=req_rule : \
-                            p_rule(state) and r_rule(state)
+                            prog_rule = lambda state, ix=l, data=progress_dist_by_name, keys=progress_dist_by_name.keys() \
+                                : CountRegionAccessibility(state, keys, data, ix, player)
 
-                        add_rule(location, progression_rule)
+                            location_id, objective_location_name = (
+                                Levels.GetLevelObjectNames(clear.stageId, clear.alignmentId, clear.mission_object_name,
+                                                    l))
+                            location = multiworld.get_location(objective_location_name, player)
 
-                        if l > max_required:
-                            break
+                            progression_rule = lambda state, p_rule=prog_rule, r_rule=req_rule : \
+                                p_rule(state) and r_rule(state)
+
+                            add_rule(location, progression_rule)
+
+                            if l > max_required:
+                                break
 
 
             if clear.requirement_count is not None:
@@ -570,7 +590,17 @@ def set_rules(multiworld: MultiWorld, world: World, player: int):
                     override_settings)
 
                 new_rule = lambda state: True
-                if world.options.objective_sanity and world.options.objective_sanity_behaviour != Options.ObjectiveSanityBehaviour.option_base_clear:
+
+                location_details = ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_OBJECTIVE,
+                                                                             clear.mission_object_name,
+                                                                             world.options, clear.stageId,
+                                                                             clear.alignmentId,
+                                                                             world.options.percent_overrides)
+
+                result_sanity = ShadowUtils.GetObjectiveSanityFlag(world.options, location_details)
+
+                if world.options.objective_sanity and world.options.objective_sanity_behaviour != Options.ObjectiveSanityBehaviour.option_base_clear \
+                    and result_sanity:
                     new_rule = lambda state, itemname=item_name, count=max_required: state.has(itemname, player, count=count)
 
                 progress_distribution = clear.getDistribution().items()
@@ -585,13 +615,14 @@ def set_rules(multiworld: MultiWorld, world: World, player: int):
 
                 finish_count = 1
                 if (not world.options.objective_sanity
-                        or world.options.objective_sanity_behaviour != Options.ObjectiveSanityBehaviour.option_default):
+                        or world.options.objective_sanity_behaviour != Options.ObjectiveSanityBehaviour.option_default) or \
+                        not result_sanity:
                     finish_count = max_required
                     if finish_count == 0:
                         finish_count = 1
 
                 # Enemy stage clears don't require completing objectives
-                if world.options.objective_sanity and world.options.objective_sanity_behaviour == Options.ObjectiveSanityBehaviour.option_default and \
+                if world.options.enemy_objective_sanity and world.options.objective_sanity_behaviour == Options.ObjectiveSanityBehaviour.option_default and \
                     clear.mission_object_name in ("Soldier", "Artificial Chaos", "Alien"):
                     finish_count = 0
 
@@ -663,7 +694,7 @@ def set_rules(multiworld: MultiWorld, world: World, player: int):
                 continue
             lr = Levels.LevelRegion(boss.stageId, None, boss.requirements)
             lr.setLogicType(boss.logicType)
-            req_rule = handle_path_rules(world.options, player, lr, Levels.REGION_RESTRICTION_REFERENCE_TYPES.BossLogic)
+            req_rule, indirects = handle_path_rules(world.options, player, lr, Levels.REGION_RESTRICTION_REFERENCE_TYPES.BossLogic)
             if req_rule is not None:
                 boss_rule = lambda state, r_rule=req_rule: r_rule(state)
                 boss_id, boss_name = Locations.GetBossLocationName(boss.name, boss.stageId)
@@ -700,6 +731,7 @@ def set_rules(multiworld: MultiWorld, world: World, player: int):
                     continue
                 region_stage = world.get_region(stage_id_to_region(stage, region_index))
                 region_stage.connect(region, region_name_for_character(Levels.LEVEL_ID_TO_LEVEL[stage], character))
+
 
     for weapon in Weapons.WEAPON_INFO:
         if weapon.name in world.available_weapons:
@@ -826,21 +858,30 @@ def set_rules(multiworld: MultiWorld, world: World, player: int):
 
         for entrance in devil_doom_region.entrances:
             entrance.access_rule = lambda state, er=e_rule, b_rule=entrance.access_rule: er(state) and b_rule(state)
-            #entrance.access_rule = lambda state, er=e_rule : er(state) and state.can_reach_region(devil_doom_story_region, player)
-        #multiworld.register_indirect_condition(multiworld.get_region(devil_doom_story_region, player),
-        #                                       multiworld.get_entrance('devil-doom-fight', player))
 
     else:
         last_way_region = multiworld.get_region(stage_id_to_region(Levels.STAGE_THE_LAST_WAY), player)
-        connect(world.player, 'LastStoryToLastWay', multiworld.get_region("Menu", player),
+        lw_entrance = connect(world.player, 'LastStoryToLastWay', multiworld.get_region("Menu", player),
                 last_way_region, rule=e_rule)
         # Ensure TLW is beatable
         tlw_location_id, tlw_location_name = Levels.GetLevelCompletionNames(Levels.STAGE_THE_LAST_WAY, Levels.MISSION_ALIGNMENT_NEUTRAL)
         last_way_rule = lambda state: state.can_reach_location(tlw_location_name, player)
+        dd_region = multiworld.get_region(Regions.stage_id_to_region(Levels.BOSS_DEVIL_DOOM), player)
         entrance = connect(world.player, "LastWayToDevilDoom", last_way_region,
-                multiworld.get_region(Regions.stage_id_to_region(Levels.BOSS_DEVIL_DOOM), player))
+                dd_region)
 
         entrance.access_rule = lambda state, lw_rule=last_way_rule, er=e_rule: er(state) and lw_rule(state)
+        multiworld.register_indirect_condition(
+            last_way_region,entrance)
+        multiworld.register_indirect_condition(
+            last_way_region, lw_entrance)
+        multiworld.register_indirect_condition(
+            dd_region, entrance)
+
+        for i in [l for l in Levels.INDIVIDUAL_LEVEL_REGIONS if l.stageId == Levels.STAGE_THE_LAST_WAY]:
+            lw_sub_region = multiworld.get_region(stage_id_to_region(Levels.STAGE_THE_LAST_WAY, i.regionIndex), player)
+            multiworld.register_indirect_condition(
+                lw_sub_region, entrance)
 
     final_item = Items.GetFinalItem()
     mw_final_item = ShadowTheHedgehogItem(final_item, world.player)

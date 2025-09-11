@@ -10,21 +10,19 @@ if TYPE_CHECKING:
     from ...data import SpeciesData
 
 
-def create(world: "PokemonBWWorld", regions: dict[str, "Region"]) -> dict[str, "SpeciesData"]:
-    from ...data.locations.encounters.slots import table
+def create(world: "PokemonBWWorld") -> dict[str, "SpeciesData"]:
     from ...data.pokemon.species import by_id as species_by_id, by_name as species_by_name
 
     catchable_species_data: dict[str, "SpeciesData"] = {}
-    is_black = world.options.version == "black"
     # To remove duplicates
     available_in_region: dict[str, set[str]] = {}
 
-    for name, data in table.items():
-        if data.encounter_region in regions:
+    for name, data in world.wild_encounter.items():
+        if data.encounter_region in world.regions:
             if data.encounter_region not in available_in_region:
                 available_in_region[data.encounter_region] = set()
-            r: "Region" = regions[data.encounter_region]
-            species_id: tuple[int, int] = data.species_black if is_black else data.species_white
+            r: "Region" = world.regions[data.encounter_region]
+            species_id: tuple[int, int] = data.species_id
             species_name: str = species_by_id[species_id]
             if species_name in available_in_region[data.encounter_region]:
                 continue

@@ -345,6 +345,21 @@ DYNAMIC_FLAGS = {
         "overwrite_if_true": [(0x1BA540, 0x14)],
         "reset_flags": ["RESET Wisdom Gem cap"]
     },
+    "Power Gem cap packs": {
+        "on_scenes": [0x1701],
+        "count_gems": "Power",
+        "overwrite_if_true": [(0x1BA541, 0x14)],
+    },
+    "Courage Gem cap packs": {
+        "on_scenes": [0x1701],
+        "count_gems": "Courage",
+        "overwrite_if_true": [(0x1BA542, 0x14)],
+    },
+    "Wisdom Gem cap packs": {
+        "on_scenes": [0x1701],
+        "count_gems": "Wisdom",
+        "overwrite_if_true": [(0x1BA540, 0x14)],
+    },
     "RESET Power Gem cap": {
         "overwrite_if_true": [(0x1BA541, "Power Gem")],
     },
@@ -474,15 +489,20 @@ DYNAMIC_FLAGS = {
         "has_slot_data": [["boat_requires_sea_chart", 0]],
         "set_if_true": [(0x1B5580, 0x4)],
     },
+    "Always Spawn linebeck 2 port rando": {
+        "on_scenes": [0xB03],
+        "has_slot_data": [["boat_requires_sea_chart", 0], ["shuffle_island_entrances", 1]],
+        "set_if_true": [(0x1B5580, 0x4)],
+    },
     "Spawn Linebeck if setting": {
         "on_scenes": [0xB03],
-        "has_slot_data": [["boat_requires_sea_chart", 1]],
+        "has_slot_data": [["boat_requires_sea_chart", 1], ["shuffle_island_entrances", 0]],
         "has_items": [("SW Sea Chart", 1)],
         "set_if_true": [(0x1B5580, 0x4)],
     },
     "Despawn Linebeck if setting": {
         "on_scenes": [0xB03],
-        "has_slot_data": [["boat_requires_sea_chart", 1]],
+        "has_slot_data": [["boat_requires_sea_chart", 1], ["shuffle_island_entrances", 0]],
         "has_items": [("SW Sea Chart", 0)],
         "unset_if_true": [(0x1B5580, 0x4)],
     },
@@ -828,17 +848,17 @@ DYNAMIC_FLAGS = {
     },
     # Dungeons and metals
     "Goron temple metals": {
-        # "on_scenes": [0x2000],
+        "on_scenes": [0x2000, 0x2E00, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005, 0x2006],
         "unset_if_true": [(0x1B558B, 0x40)],
         "reset_flags": ["RESET Goron temple metals"]
     },
     "RESET Goron temple metals": {
-        "on_scenes": [0x1000],
+        # "on_scenes": [0x1000],
         "has_items": [("Crimzonine", 1)],
         "set_if_true": [(0x1B558B, 0x40)]
     },
     "Ice temple metals": {
-        "on_scenes": [0x1F00],
+        "on_scenes": [0x1F00, 0x1F03, 0x1F06],
         "unset_if_true": [(0x1B558B, 0x20)],
         "reset_flags": ["RESET Ice Field pre-dungeon",
                         "RESET Ice Field post-dungeon"]
@@ -995,31 +1015,15 @@ DYNAMIC_FLAGS = {
         "unset_if_true": [(0x1B55A2, 0x40)]
     },
     # Doyland
-    "Doyland has lowered water": {
+    "Doyland lower water": {
         "on_scenes": [0x2201],
-        "check_bits": {0x1B5582: 0x4},
-        "unset_if_true": [(0x1B5582, 0x4)],
-        "set_if_true": [(0x1B5590, 0x02)]  # Water state memory
+        "not_has_locations": ["Isle of Ruins Doylan's Item"],
+        "unset_if_true": [(0x1B5582, 0x4), (0x1B55A9, 0x30)],
+        "reset_flags": ["RESET Doyland lowered water"]
     },
-    "Doyland memory bit": {
-        "on_scenes": [0x2200],
-        "not_last_scenes": [0x2201],
-        "unset_if_true": [(0x1B5590, 0x02)],  # Memory of water
-    },
-    "RESET Doyland has lowered water": {
-        "on_scenes": [0x2200],
-        "not_last_scenes": [0x1102, 0x1202],
-        "check_bits": {0x1B5590: 0x02},  # Memory of water level
+    "RESET Doyland lowered water": {
+        "has_lowered_water": True,
         "set_if_true": [(0x1B5582, 0x4)],  # Water level
-        "unset_if_true": [(0x1B5590, 0x02)],
-    },
-    "RESET Doyland memory bit": {
-        "on_scenes": [0x1102, 0x1202],
-        "set_if_true": [(0x1B5590, 0x02)],  # Memory of water
-    },
-    "Doylan post temple item": {
-        "on_scenes": [0x2201],
-        "unset_if_true": [(0x1B55A9, 0x20)],
     },
     "Ice Field pre-dungeon": {
         "on_scenes": [0xF03, 0xF01],

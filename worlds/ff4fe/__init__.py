@@ -3,7 +3,8 @@ import logging
 import os
 import threading
 import typing
-from typing import Mapping, Any
+from copy import copy
+from typing import Mapping, Any, TextIO
 
 import Utils
 import settings
@@ -16,7 +17,7 @@ from . import rules
 from .Client import FF4FEClient
 from .itempool import create_itempool
 from .items import FF4FEItem, ItemData
-from .locations import FF4FELocation
+from .locations import FF4FELocation, new_location, get_location_data
 from .options import FF4FEOptions, ff4fe_option_groups, ff4fe_options_presets
 from . import topology, flags
 from .rom import FF4FEProcedurePatch
@@ -69,7 +70,7 @@ class FF4FEWorld(World):
     item_name_groups = items.item_name_groups
 
     location_name_groups = locations.area_groups
-    version = 6
+    version = 7
 
 
     def __init__(self, multiworld: MultiWorld, player: int):
@@ -79,6 +80,8 @@ class FF4FEWorld(World):
         self.second_character = "None"
         self.objective_count = -1
         self.dark_matters: list[FF4FEItem] = list()
+        self.miabs: dict[str, int] = dict()
+        self.miab_reward_codes: dict[str, int] = dict()
         self.rom_name = None
         self.rom_name_text = None
 
@@ -107,9 +110,32 @@ class FF4FEWorld(World):
     def stage_assert_generate(cls, multiworld: "MultiWorld") -> None:
         logging.info(f"FF4FE APWorld version v{cls.version} used for generation.")
 
+    @classmethod
+    def stage_write_spoiler_header(cls, multiworld: "MultiWorld", spoiler_handle: TextIO):
+        spoiler_handle.write(f"FF4FE APWorld Version:           v{cls.version}\n")
+
     def generate_early(self) -> None:
+        if self.options.MIABRandomization == self.options.MIABRandomization.option_randomized:
+            for area, codes in locations.miab_area_codes.items():
+                candidate_locations = copy(locations.miab_candidate_locations[area])
+                self.random.shuffle(candidate_locations)
+                for code in codes:
+                    vanilla_fight_location = locations.vanilla_miabs[code]
+                    vanilla_fight = locations.vanilla_miab_fight_codes[vanilla_fight_location]
+                    new_location = candidate_locations.pop()
+                    self.miabs[new_location] = vanilla_fight
+                    self.miab_reward_codes[new_location] = code
+        elif self.options.MIABRandomization == self.options.MIABRandomization.option_vanilla:
+            self.miabs = copy(locations.vanilla_miab_fight_codes)
+            self.miab_reward_codes = copy(locations.vanilla_miabs_by_loc_name)
+        elif self.options.MIABRandomization == self.options.MIABRandomization.option_vanilla_exclude:
+            self.miabs = copy(locations.vanilla_miab_fight_codes)
+            self.miab_reward_codes = copy(locations.vanilla_miabs_by_loc_name)
+            for key in self.miabs.keys():
+                self.options.exclude_locations.value.add(key)
         if self.options.EnableDefaultPriorityLocations:
             self.options.priority_locations.value = (self.options.priority_locations.value |
+                                                     (set(self.miabs.keys())) |
                                                      (set(locations.major_location_names) -
                                                       self.options.exclude_locations.value))
         if self.options.ForgeTheCrystal:
@@ -427,6 +453,11 @@ class FF4FEWorld(World):
     def get_pre_fill_items(self) -> list["Item"]:
         return self.dark_matters
 
+    def write_spoiler(self, spoiler_handle: TextIO) -> None:
+        spoiler_handle.write("\nMIAB Locations:\n")
+        for location, code in self.miab_reward_codes.items():
+            spoiler_handle.write(f"{locations.miab_names[code]} {location}\n")
+
     def generate_output(self, output_directory: str) -> None:
         # Standard rom name stuff.
         self.rom_name_text = f'4FE{Utils.__version__.replace(".", "")[0:3]}_{self.player}_{self.multiworld.seed:11}'
@@ -474,21 +505,27 @@ class FF4FEWorld(World):
             # Placement dictionary doesn't need AP event logic stuff.
             if location.name in [event.name for event in events.boss_events] or location.name.startswith("Objective"):
                 continue
-            location_data = [loc for loc in locations.all_locations if loc.name == location.name].pop()
+            location_data = get_location_data(location.name)
+            miab_fight = self.miabs.get(location.name, 0)
+            miab_reward_code = self.miab_reward_codes.get(location.name, 0)
             if location.item.player == self.player:
                 item_data = [item for item in items.all_items if item.name == location.item.name].pop()
                 placement_dict[location_data.fe_id] = {
                     "location_data": location_data.to_json(),
                     "item_data": item_data.to_json(),
                     "item_name": item_data.name,
-                    "player_name": self.multiworld.player_name[location.item.player]
+                    "player_name": self.multiworld.player_name[location.item.player],
+                    "miab": miab_fight,
+                    "miab_reward_code": miab_reward_code
                 }
             else:
                 placement_dict[location_data.fe_id] = {
                     "location_data": location_data.to_json(),
                     "item_data": ItemData.create_ap_item().to_json(),
                     "item_name": location.item.name,
-                    "player_name": self.multiworld.player_name[location.item.player]
+                    "player_name": self.multiworld.player_name[location.item.player],
+                    "miab": miab_fight,
+                    "miab_reward_code": miab_reward_code
                 }
         return placement_dict
 

@@ -102,6 +102,8 @@ def build_shops_flags(options: FF4FEOptions):
         shops_flags = f"Scabins"
     if options.FreeShops:
         shops_flags += "/free"
+    if options.JItems == options.JItems.option_no_shops or options.JItems == options.JItems.option_none:
+        shops_flags += "/no:j"
     return shops_flags
 
 def build_bosses_flags(options: FF4FEOptions):

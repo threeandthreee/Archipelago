@@ -85,6 +85,7 @@ current_area = 0x2C
 current_room = 0x2D
 samus_pose = 0x1245
 navigation_pose = 0x36
+graphics_reload_flag = 0x5671
 
 navigation_rooms: dict[str, FusionNavigationRoom] = {
     "MainDeckEast": FusionNavigationRoom(0, 9),

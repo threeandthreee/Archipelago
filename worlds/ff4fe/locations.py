@@ -1,7 +1,4 @@
-import os.path
 import pkgutil
-from pkgutil import get_data
-from typing import List
 
 from BaseClasses import Location
 from . import csvdb
@@ -11,7 +8,7 @@ class FF4FELocation(Location):
     surface = ""
     area = ""
 
-class LocationData():
+class LocationData:
     name: str
     surface: str
     area: str
@@ -34,12 +31,23 @@ class LocationData():
     def __repr__(self):
         return self.name
 
+class MIAB:
+    fe_id: int
+    vanilla_location: str
+    candidates: list[str]
+    location: str
+
+
 
 all_locations: list[LocationData] = []
 
+miab_candidate_locations: dict[str, list[str]] = {}
+
 locationscsv = csvdb.CsvDb(pkgutil.get_data(__name__, "data/treasure.csvdb").decode().splitlines())
 
-for location in locationscsv.create_view():
+locations_view = locationscsv.create_view()
+
+for location in locations_view:
     if location.exclude != "":
         if location.exclude == "key":
             # Rat Tail and Ribbon chests are a little special in FE, as they're treasure chests but are considered
@@ -54,6 +62,18 @@ for location in locationscsv.create_view():
                     new_location.name = f"Lunar Subterrane -- B7 (right room) -- Ribbon Right"
             all_locations.append(new_location)
         continue
+    if location.fight != "":
+        if location.area not in miab_candidate_locations.keys():
+            miab_candidate_locations[location.area] = []
+            area_locations = locations_view.get_refined_view(lambda loc: loc.area == location.area)
+            for area_location in area_locations:
+                if area_location.exclude == "":
+                    subname = f"{((' -- ' + area_location.spoilersubarea) if area_location.spoilersubarea != '' else '')}"
+                    name = (f"{area_location.spoilerarea}"
+                            f"{subname}"
+                            f" -- {area_location.spoilerdetail}")
+                    miab_candidate_locations[location.area].append(name)
+
     new_location = LocationData("", location.world, location.area, int(location.flag, 16), False)
     subname = f"{((' -- ' + location.spoilersubarea) if location.spoilersubarea != '' else '')}"
     new_location.name = (f"{location.spoilerarea}"
@@ -67,8 +87,6 @@ minor_location_names = [location.name for location in minor_locations]
 # This is actually a custom data table for the reward locations, mimicking the format of the treasure locations.
 locationscsv = csvdb.CsvDb(pkgutil.get_data(__name__, "data/rewardslots.csvdb").decode().splitlines())
 
-miab_slots = []
-
 for location in locationscsv.create_view():
     # All reward locations are given their ID plus 512 so we can't confuse them with regular chests.
     new_location = LocationData("", location.world, location.area, int(location.fecode, 16) + 0x200, True)
@@ -76,8 +94,6 @@ for location in locationscsv.create_view():
     new_location.name = (f"{location.spoilerarea}"
                          f"{subname}"
                          f" -- {location.spoilerdetail}")
-    if "Monster in a Box" in new_location.name:
-        miab_slots.append(new_location.name)
     all_locations.append(new_location)
 
 major_locations = [location for location in all_locations if location.major_slot == True]
@@ -203,13 +219,120 @@ for location in all_locations:
         if location.name not in character_locations and "Objective" not in location.name:
             area_groups[area_name].append(location.name)
 
-area_groups["MIABs"] = []
-for location in miab_slots:
-    area_groups["MIABs"].append(location)
-
 for i in range(32):
     all_locations.append(LocationData(f"Objective {i + 1} Status", "Overworld", "BaronTown", 0xEE00 + i, False))
 
+
+vanilla_miabs = {
+    0x3C: "Tower of Zot -- 2F -- chest",
+    0x3D: "Eblan Castle -- West tower 1F -- right",
+    0x3E: "Eblan Castle -- East tower 2F -- right side, top chest",
+    0x3F: "Eblan Castle -- Basement -- right",
+    0x40: "Tower of Bab-il (lower) -- 2F -- east room chest",
+    0x41: "Tower of Bab-il (lower) -- 2F -- south room chest",
+    0x42: "Tower of Bab-il (lower) -- 4F -- east left room chest",
+    0x43: "Tower of Bab-il (lower) -- 4F -- northeast room chest",
+    0x44: "Cave Eblana -- Save Room -- hidden chest",
+    0x45: "Tower of Bab-il (upper) -- B2F -- chest (long bridge)",
+    0x46: "Land of Monsters -- B3F -- top",
+    0x47: "Sylvan Cave -- B2F (west half) -- north room, through secret path",
+    0x48: "Sylvan Cave -- Poison treasury -- top left",
+    0x49: "Sylvan Cave -- Poison treasury -- top middle",
+    0x4A: "Sylvan Cave -- Poison treasury -- top right",
+    0x4B: "Sylvan Cave -- Poison treasury -- bottom left",
+    0x4C: "Sylvan Cave -- Poison treasury -- bottom middle",
+    0x4D: "Sylvan Cave -- Poison treasury -- bottom right",
+    0x4E: "Giant of Bab-il -- Passage -- chest",
+    0x4F: "Lunar Path -- bottom right",
+    0x50: "Lunar Subterrane -- B1 -- through secret path",
+    0x51: "Lunar Subterrane -- B2 (route to altar) -- chest",
+    0x52: "Lunar Subterrane -- B4 -- bottom left",
+    0x53: "Lunar Subterrane -- B5 (main route) -- top left",
+    0x54: "Lunar Subterrane -- B5 -- on bridge to hidden altar",
+    0x55: "Lunar Subterrane -- B5 (through first interior passage south exit) -- chest",
+    0x56: "Lunar Subterrane -- B5 (main route) -- right",
+    0x57: "Lunar Subterrane -- B5 (main route) -- bottom left",
+    0x58: "Lunar Subterrane -- B5 to B6 passage -- chest"
+}
+
+miab_names = {
+    0x3C: "Tower of Zot MIAB:             ",
+    0x3D: "Eblan Castle MIAB 1:           ",
+    0x3E: "Eblan Castle MIAB 2:           ",
+    0x3F: "Eblan Castle MIAB 3:           ",
+    0x40: "Tower of Bab-il (lower) MIAB 1:",
+    0x41: "Tower of Bab-il (lower) MIAB 2:",
+    0x42: "Tower of Bab-il (lower) MIAB 3:",
+    0x43: "Tower of Bab-il (lower) MIAB 4:",
+    0x44: "Cave Eblana MIAB:              ",
+    0x45: "Tower of Bab-il (upper) MIAB:  ",
+    0x46: "Land of Monsters MIAB:         ",
+    0x47: "Sylvan Cave MIAB 1:            ",
+    0x48: "Sylvan Cave MIAB 2:            ",
+    0x49: "Sylvan Cave MIAB 3:            ",
+    0x4A: "Sylvan Cave MIAB 4:            ",
+    0x4B: "Sylvan Cave MIAB 5:            ",
+    0x4C: "Sylvan Cave MIAB 6:            ",
+    0x4D: "Sylvan Cave MIAB 7:            ",
+    0x4E: "Giant of Bab-il MIAB:          ",
+    0x4F: "Lunar Path MIAB:               ",
+    0x50: "Lunar Subterrane MIAB 1:       ",
+    0x51: "Lunar Subterrane MIAB 2:       ",
+    0x52: "Lunar Subterrane MIAB 3:       ",
+    0x53: "Lunar Subterrane MIAB 4:       ",
+    0x54: "Lunar Subterrane MIAB 5:       ",
+    0x55: "Lunar Subterrane MIAB 6:       ",
+    0x56: "Lunar Subterrane MIAB 7:       ",
+    0x57: "Lunar Subterrane MIAB 8:       ",
+    0x58: "Lunar Subterrane MIAB 9:       "
+}
+
+vanilla_miabs_by_loc_name = {v: k for k, v in vanilla_miabs.items()}
+
+vanilla_miab_fight_codes = {
+    "Eblan Castle -- West tower 1F -- right": 0x1C0,
+    "Eblan Castle -- East tower 2F -- right side, top chest": 0x1C1,
+    "Eblan Castle -- Basement -- right": 0x1C2,
+    "Tower of Zot -- 2F -- chest": 0x1C3,
+    "Tower of Bab-il (upper) -- B2F -- chest (long bridge)": 0x1C4,
+    "Giant of Bab-il -- Passage -- chest": 0x1C7,
+    "Cave Eblana -- Save Room -- hidden chest": 0x1C6,
+    "Tower of Bab-il (lower) -- 2F -- east room chest": 0x1E0,
+    "Tower of Bab-il (lower) -- 2F -- south room chest": 0x1E1,
+    "Tower of Bab-il (lower) -- 4F -- east left room chest": 0x1E2,
+    "Tower of Bab-il (lower) -- 4F -- northeast room chest": 0x1E3,
+    "Land of Monsters -- B3F -- top": 0x1E4,
+    "Sylvan Cave -- B2F (west half) -- north room, through secret path": 0x1E5,
+    "Sylvan Cave -- Poison treasury -- top left": 0x1E6,
+    "Sylvan Cave -- Poison treasury -- top middle": 0x1E6,
+    "Sylvan Cave -- Poison treasury -- top right": 0x1E6,
+    "Sylvan Cave -- Poison treasury -- bottom left": 0x1E7,
+    "Sylvan Cave -- Poison treasury -- bottom middle": 0x1E8,
+    "Sylvan Cave -- Poison treasury -- bottom right": 0x1E9,
+    "Lunar Path -- bottom right": 0x1EA,
+    "Lunar Subterrane -- B1 -- through secret path": 0x1EB,
+    "Lunar Subterrane -- B2 (route to altar) -- chest": 0x1EC,
+    "Lunar Subterrane -- B4 -- bottom left": 0x1F3,
+    "Lunar Subterrane -- B5 (main route) -- top left": 0x1EE,
+    "Lunar Subterrane -- B5 -- on bridge to hidden altar": 0x1F4,
+    "Lunar Subterrane -- B5 (through first interior passage south exit) -- chest": 0x1F0,
+    "Lunar Subterrane -- B5 (main route) -- right": 0x1F1,
+    "Lunar Subterrane -- B5 (main route) -- bottom left": 0x1F2,
+    "Lunar Subterrane -- B5 to B6 passage -- chest": 0x1ED
+}
+
+miab_area_codes = {
+    "Zot": [0x3C],
+    "Eblan": [0x3D, 0x3E, 0x3F],
+    "LowerBabil": [0x40, 0x41, 0x42, 0x43],
+    "CaveEblan": [0x44],
+    "UpperBabil": [0x45],
+    "CaveOfSummons": [0x46],
+    "SylvanCave": [0x47, 0x48, 0x49, 0x4A, 0x4B, 0x4C, 0x4D],
+    "Giant": [0x4E],
+    "LunarPath": [0x4F],
+    "LunarCore": [0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58]
+}
 
 class Curve():
     tier1: int

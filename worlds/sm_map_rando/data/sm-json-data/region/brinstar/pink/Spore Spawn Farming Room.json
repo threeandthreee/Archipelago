@@ -80,7 +80,25 @@
       "link": [1, 1],
       "name": "Zeb Farm",
       "requires": [
-        {"refill": ["Energy", "Missile", "Super"]}
+        {"simpleCycleFrames": 85},
+        {"cycleFrames": 20}
+      ],
+      "farmCycleDrops": [{"enemy": "Zeb", "count": 1}]
+    },
+    {
+      "id": 19,
+      "link": [1, 1],
+      "name": "Double Zeb Farm",
+      "requires": [
+        "canDodgeWhileShooting",
+        {"cycleFrames": 105}
+      ],
+      "farmCycleDrops": [{"enemy": "Zeb", "count": 2}],
+      "note": [
+        "Jump back and forth between the left two bug pipes to farm them simultaneously."
+      ],
+      "devNote": [
+        "We use `cycleFrames` here rather than `simpleCycleFrames` because it requires non-trivial movement to maintain the double farm pattern."
       ]
     },
     {
@@ -348,6 +366,6 @@
       ]
     }
   ],
-  "nextStratId": 19,
+  "nextStratId": 20,
   "nextNotableId": 2
 }

@@ -496,6 +496,34 @@
       "flashSuitChecked": true
     },
     {
+      "id": 74,
+      "link": [2, 2],
+      "name": "Viola Farm",
+      "requires": [
+        "h_heatProof",
+        "Morph",
+        {"resetRoom": {"nodes": [2]}},
+        {"or": [
+          {"and": [
+            {"or": [
+              "Plasma",
+              "Wave",
+              "Spazer"
+            ]},
+            {"cycleFrames": 630}
+          ]},
+          {"and": [
+            "Grapple",
+            {"cycleFrames": 680}
+          ]},
+          {"cycleFrames": 770}
+        ]}
+      ],
+      "resetsObstacles": ["A"],
+      "farmCycleDrops": [{"enemy": "Viola", "count": 4}],
+      "flashSuitChecked": true
+    },
+    {
       "id": 13,
       "link": [2, 3],
       "name": "Base",
@@ -657,7 +685,7 @@
       ],
       "note": [
         "Fall into the first Samus Eater in Hellway or the second Samus Eater of Alpha Power Bomb Room.",
-        "After teleporting and passing through the transition, X-Ray climb to reach the space above, to the left of the blue gate.",
+        "After teleporting and passing through the transition, X-Ray climb 1 screen to reach the space above, to the left of the blue gate.",
         "Samus will be off-camera, but the slopes at the top will push the camera up, indicating when the climb is done."
       ],
       "devNote": [
@@ -683,7 +711,7 @@
       ],
       "note": [
         "Jump into the first ceiling Samus Eater in Hellway.",
-        "After teleporting and passing through the transition, X-Ray climb to reach the space above, to the right of the blue gate.",
+        "After teleporting and passing through the transition, X-Ray climb 1 screen to reach the space above, to the right of the blue gate.",
         "Samus will be off-camera, but the slopes at the top will push the camera up, indicating when the climb is done.",
         "Off-camera the gate can be opened with Wave beam but not with a gate glitch."
       ],
@@ -707,13 +735,44 @@
       "name": "Viola Farm",
       "requires": [
         "h_heatProof",
-        {"resetRoom": {
-          "nodes": [1, 3, 4]
-        }},
-        {"refill": ["PowerBomb"]}
+        {"or": [
+          {"and": [
+            {"resetRoom": {"nodes": [1, 4]}},
+            {"or": [
+              {"and": [
+                {"or": [
+                  "Plasma",
+                  "Wave",
+                  "Spazer"
+                ]},
+                {"cycleFrames": 450}
+              ]},
+              {"and": [
+                "Grapple",
+                {"cycleFrames": 530}
+              ]},
+              {"cycleFrames": 660}
+            ]}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [3]}},
+            {"or": [
+              {"and": [
+                {"or": [
+                  "Plasma",
+                  "Wave",
+                  "Spazer"
+                ]},
+                {"cycleFrames": 450}
+              ]},
+              {"cycleFrames": 500}
+            ]}
+          ]}
+        ]}
       ],
       "resetsObstacles": ["A"],
-      "devNote": "FIXME: Resetting the room using door node 2 would also be possible if the obstacle is cleared."
+      "farmCycleDrops": [{"enemy": "Viola", "count": 4}],
+      "flashSuitChecked": true
     },
     {
       "id": 19,
@@ -1060,7 +1119,7 @@
       "note": [
         "Exit the previous room with Samus in a standing pose (while grappled).",
         "After teleporting, press right to release Grapple while staying standing (not being forced into a crouch).",
-        "Then X-ray climb to get up to the door transition, without needing to open the door."
+        "Then X-ray climb 1 screen to get up to the door transition, without needing to open the door."
       ]
     },
     {
@@ -1471,6 +1530,6 @@
     }
   ],
   "notables": [],
-  "nextStratId": 74,
+  "nextStratId": 75,
   "nextNotableId": 1
 }

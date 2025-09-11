@@ -164,7 +164,8 @@
         {
           "id": 4,
           "devNote": "This link assumes the grapple block has been broken from below."
-        }
+        },
+        {"id": 5}
       ]
     }
   ],
@@ -206,12 +207,12 @@
     {
       "id": 3,
       "link": [1, 2],
-      "name": "Left-Side X-Ray Climb",
+      "name": "X-Ray Climb",
       "entranceCondition": {
         "comeInWithDoorStuckSetup": {}
       },
       "requires": [
-        "canXRayClimb",
+        "canLongXRayClimb",
         "canBePatient",
         "canOffScreenMovement",
         {"or": [
@@ -296,12 +297,12 @@
     {
       "id": 8,
       "link": [1, 5],
-      "name": "Left-Side X-Ray Climb",
+      "name": "X-Ray Climb",
       "entranceCondition": {
         "comeInWithDoorStuckSetup": {}
       },
       "requires": [
-        "canXRayClimb",
+        "canLongXRayClimb",
         "canBePatient"
       ],
       "flashSuitChecked": true,
@@ -368,12 +369,12 @@
     {
       "id": 14,
       "link": [3, 2],
-      "name": "Right-Side X-Ray Climb",
+      "name": "X-Ray Climb",
       "entranceCondition": {
         "comeInWithDoorStuckSetup": {}
       },
       "requires": [
-        "canXRayClimb",
+        "canLongXRayClimb",
         "canBePatient"
       ],
       "flashSuitChecked": true,
@@ -465,10 +466,11 @@
             "canConsecutiveWalljump",
             {"or": [
               "ScrewAttack",
-              "canStaggeredWalljump"
+              "canTrickyWalljump"
             ]}
           ]},
-          "h_pauseAbuseMinimalReserveRefill"
+          "h_pauseAbuseMinimalReserveRefill",
+          "canTrickyDodgeEnemies"
         ]}
       ],
       "note": [
@@ -710,7 +712,7 @@
         "canConsecutiveWalljump",
         {"or": [
           "ScrewAttack",
-          "canStaggeredWalljump",
+          "canTrickyWalljump",
           "canWalljumpWithCharge",
           {"enemyDamage": {"enemy": "Menu", "type": "contact", "hits": 1}}
         ]}
@@ -734,7 +736,7 @@
         {"or": [
           {"enemyDamage": {"enemy": "Menu", "type": "contact", "hits": 1}},
           "ScrewAttack",
-          "canStaggeredWalljump",
+          "canTrickyWalljump",
           "canPseudoScrew",
           "h_pauseAbuseMinimalReserveRefill"
         ]}
@@ -813,6 +815,22 @@
       "link": [5, 4],
       "name": "Base",
       "requires": []
+    },
+    {
+      "id": 40,
+      "link": [5, 5],
+      "name": "Menu Farm",
+      "requires": [
+        {"resetRoom": {"nodes": [1, 3]}},
+        "Grapple",
+        "Gravity",
+        "SpaceJump",
+        "ScrewAttack",
+        "canConsecutiveWalljump",
+        {"cycleFrames": 1120}
+      ],
+      "farmCycleDrops": [{"enemy": "Menu", "count": 6}],
+      "devNote": ["FIXME: Many other options are possible for movement and weapons."]
     }
   ],
   "notables": [
@@ -866,6 +884,6 @@
       ]
     }
   ],
-  "nextStratId": 40,
+  "nextStratId": 41,
   "nextNotableId": 6
 }

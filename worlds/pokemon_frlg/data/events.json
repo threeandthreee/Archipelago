@@ -60,64 +60,14 @@
     "item": "Deliver Oak's Parcel",
     "category": "EVENT"
   },
+  "EVENT_MIGUEL_TAKES_FOSSIL": {
+    "name": "Mt. Moon B2F - Pickup Fossil",
+    "item": "Miguel Takes Fossil",
+    "category": "EVENT"
+  },
   "EVENT_SAVE_BILL": {
     "name": "Route 25 Sea Cottage - Cell Separation System",
     "item": "Help Bill",
-    "category": "EVENT"
-  },
-  "EVENT_BUY_FIRE_STONE": {
-    "name": "Celadon Department Store 4F - Evo Shop Item 3",
-    "item": "Fire Stone",
-    "category": "EVENT_SHOP"
-  },
-  "EVENT_BUY_THUNDER_STONE": {
-    "name": "Celadon Department Store 4F - Evo Shop Item 4",
-    "item": "Thunder Stone",
-    "category": "EVENT_SHOP"
-  },
-  "EVENT_BUY_WATER_STONE": {
-    "name": "Celadon Department Store 4F - Evo Shop Item 5",
-    "item": "Water Stone",
-    "category": "EVENT_SHOP"
-  },
-  "EVENT_BUY_LEAF_STONE": {
-    "name": "Celadon Department Store 4F - Evo Shop Item 6",
-    "item": "Leaf Stone",
-    "category": "EVENT_SHOP"
-  },
-  "EVENT_BUY_KINGS_ROCK": {
-    "name": "Celadon Department Store 4F - Held Shop Item 1",
-    "item": "King's Rock",
-    "category": "EVENT"
-  },
-  "EVENT_BUY_METAL_COAT": {
-    "name": "Celadon Department Store 4F - Held Shop Item 2",
-    "item": "Metal Coat",
-    "category": "EVENT"
-  },
-  "EVENT_BUY_DRAGON_SCALE": {
-    "name": "Celadon Department Store 4F - Held Shop Item 3",
-    "item": "Dragon Scale",
-    "category": "EVENT"
-  },
-  "EVENT_BUY_UP_GRADE": {
-    "name": "Celadon Department Store 4F - Held Shop Item 4",
-    "item": "Up-Grade",
-    "category": "EVENT"
-  },
-  "EVENT_BUY_DEEP_SEA_SCALE": {
-    "name": "Celadon Department Store 4F - Held Shop Item 5",
-    "item": "Deep Sea Scale",
-    "category": "EVENT"
-  },
-  "EVENT_BUY_DEEP_SEA_TOOTH": {
-    "name": "Celadon Department Store 4F - Held Shop Item 6",
-    "item": "Deep Sea Tooth",
-    "category": "EVENT"
-  },
-  "EVENT_BUY_HEART_SCALE": {
-    "name": "Celadon Department Store 4F - Held Shop Item 7",
-    "item": "Heart Scale",
     "category": "EVENT"
   },
   "EVENT_BUY_VENDING_MACHINE_LEMONADE": {
@@ -139,11 +89,6 @@
     "name": "One Island Pokemon Center 1F - Help Celio",
     "item": "Restore Pokemon Network Machine",
     "category": "EVENT"
-  },
-  "EVENT_BUY_MARKET_LEMONADE": {
-    "name": "Two Island Town - Market Stall Item 5",
-    "item": "Lemonade",
-    "category": "EVENT_SHOP"
   },
   "EVENT_DELIVER_METEORITE": {
     "name": "Two Island Game Corner - Lostelle's Dad's Delivery",
@@ -230,11 +175,6 @@
     "name": "Power Plant - Legendary Pokemon",
     "item": "Static Pokemon",
     "category": "EVENT_LEGENDARY_POKEMON"
-  },
-  "STATIC_POKEMON_MAROWAK": {
-    "name": "Pokemon Tower - Ghost Pokemon",
-    "item": "Missable Pokemon",
-    "category": "EVENT_STATIC_POKEMON"
   },
   "CELADON_PRIZE_POKEMON_1": {
     "name": "Celadon Game Corner Prize Room - Prize Pokemon 1",

@@ -115,14 +115,70 @@
       "link": [1, 1],
       "name": "Ripper Farm",
       "requires": [
-        "h_heatProof",
         "ScrewAttack",
-        {"resetRoom": {
-          "nodes": [1]
-        }},
-        {"refill": ["Energy", "Super"]}
+        {"resetRoom": {"nodes": [1]}},
+        {"heatFrames": 215},
+        {"cycleFrames": 215},
+        {"or": [
+          "canInsaneJump",
+          {"and": [
+            "canFarmWhileShooting",
+            {"heatFrames": 45},
+            {"cycleFrames": 45}
+          ]},
+          {"and": [
+            {"heatFrames": 360},
+            {"cycleFrames": 360}
+          ]}
+        ]}
       ],
-      "resetsObstacles": ["A"]
+      "resetsObstacles": ["A"],
+      "farmCycleDrops": [{"enemy": "Ripper 2 (red)", "count": 5}]
+    },
+    {
+      "id": 41,
+      "link": [1, 1],
+      "name": "Partial Ripper Farm (Supers)",
+      "entranceCondition": {
+        "comeInNormally": {}
+      },
+      "requires": [
+        "ScrewAttack",
+        "canDodgeWhileShooting",
+        {"heatFrames": 200},
+        {"resourceAvailable": [{"type": "Energy", "count": 50}]},
+        {"partialRefill": {"type": "Super", "limit": 5}},
+        {"heatFrames": 80}
+      ]
+    },
+    {
+      "id": 42,
+      "link": [1, 1],
+      "name": "Partial Ripper Farm (Energy)",
+      "entranceCondition": {
+        "comeInNormally": {}
+      },
+      "requires": [
+        "ScrewAttack",
+        "canFarmWhileShooting",
+        {"or": [
+          {"and": [
+            "canPauseAbuse",
+            "canInsaneJump",
+            {"heatFrames": 60}
+          ]},
+          {"heatFrames": 120}
+        ]},
+        {"or": [
+          {"and": [
+            {"resourceMissingAtMost": [{"type": "Super", "count": 0}]},
+            {"partialRefill": {"type": "Energy", "limit": 100}}
+          ]},
+          {"partialRefill": {"type": "Energy", "limit": 70}}
+        ]},
+        {"heatFrames": 60}
+      ],
+      "note": "If Supers are not full, time the collection of energy to force further Energy drops."
     },
     {
       "id": 3,
@@ -902,7 +958,6 @@
           {"obstaclesCleared": ["A"]}
         ]}
       ],
-      "clearsObstacles": ["A"],
       "unlocksDoors": [
         {
           "types": ["missiles"],
@@ -914,6 +969,7 @@
           "requires": [{"heatFrames": 40}]
         }
       ],
+      "clearsObstacles": ["A"],
       "devNote": ["FIXME: The gate can be opened from a distance to save some health."]
     },
     {
@@ -927,6 +983,6 @@
     }
   ],
   "notables": [],
-  "nextStratId": 41,
+  "nextStratId": 43,
   "nextNotableId": 1
 }
