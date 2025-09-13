@@ -31,6 +31,7 @@ class DarkCloudWorld(World):
     Dark Cloud 1
     """
     game = dc1_name
+    is_experimental = True
     required_client_version = (0, 6, 1)
     options_dataclass = DarkCloudOptions
     options: DarkCloudOptions
