@@ -1,4 +1,4 @@
-# Setup Guide for Metroid Fusion: Archipelago
+# Setup Guide for TCG Card Shop Simulator: Archipelago
 
 ## Required Software
 

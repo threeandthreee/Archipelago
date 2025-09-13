@@ -1,4 +1,4 @@
-# Metroid Fusion
+# TCG Card Shop Simluator
 
 ## What is this game?
 
