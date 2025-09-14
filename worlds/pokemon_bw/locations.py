@@ -47,37 +47,37 @@ def create_rule_dict(world: "PokemonBWWorld") -> "RulesDict":
     return {rule: f(rule) for rule in extended_rules_list} | {None: None}
 
 
-def create_and_place_event_locations(world: "PokemonBWWorld", regions: dict[str, Region],
-                                     rules: "RulesDict") -> dict[str, "SpeciesData"]:
-    """Returns a set of species that are actually catchable in this world."""
+def create_and_place_event_locations(world: "PokemonBWWorld") -> dict[str, "SpeciesData"]:
+    """Returns a dict of species that are actually catchable in this world."""
     from .generate.events import wild, static, evolutions, goal, species_tables
 
-    catchable_species_data: dict[str, "SpeciesData"] = wild.create(world, regions) | static.create(world, regions, rules)
-    evolutions.create(world, regions, catchable_species_data)
+    catchable_species_data: dict[str, "SpeciesData"] = wild.create(world) | static.create(world)
+    evolutions.create(world, catchable_species_data)
     species_tables.populate(world, catchable_species_data)
-    goal.create(world, regions)
+    goal.create(world)
     return catchable_species_data
 
 
-def create_and_place_locations(world: "PokemonBWWorld", regions: dict[str, Region],
-                               rules: "RulesDict", catchable_species_data: dict[str, "SpeciesData"]) -> None:
+def create_and_place_locations(world: "PokemonBWWorld", catchable_species_data: dict[str, "SpeciesData"]) -> None:
     from .generate.locations import overworld_items, hidden_items, other, badge_rewards, tm_hm, dexsanity
 
-    overworld_items.create(world, regions, rules)
-    hidden_items.create(world, regions, rules)
-    other.create(world, regions, rules)
-    badge_rewards.create(world, regions, rules)
-    tm_hm.create(world, regions, rules)
-    dexsanity.create(world, regions, catchable_species_data)
+    overworld_items.create(world)
+    hidden_items.create(world)
+    other.create(world)
+    badge_rewards.create(world)
+    tm_hm.create(world)
+    dexsanity.create(world, catchable_species_data)
 
 
-def connect_regions(world: "PokemonBWWorld", regions: dict[str, Region], rules: "RulesDict") -> None:
+def connect_regions(world: "PokemonBWWorld") -> None:
     from .data.locations import region_connections as gameplay_connections
     from .data.locations.encounters import region_connections as encounter_connections
 
     # Create gameplay region connections
     for name, data in gameplay_connections.connections.items():
-        regions[data.exiting_region].connect(regions[data.entering_region], name, rules[data.rule])
+        world.regions[data.exiting_region].connect(
+            world.regions[data.entering_region], name, world.rules_dict[data.rule]
+        )
 
     def combine_and(connection_rules: tuple["ExtendedRule", ...]) -> "AccessRule":
         def f(state) -> bool:
@@ -89,16 +89,18 @@ def connect_regions(world: "PokemonBWWorld", regions: dict[str, Region], rules: 
 
     for name, data in encounter_connections.connections.items():
         if (data.inclusion_rule is None) or data.inclusion_rule(world):
-            if data.rules not in rules:
+            if data.rules not in world.rules_dict:
                 # Assuming single rules are already in rules because of extended_rules_list
-                rules[data.rules] = combine_and(data.rules)
-            regions[data.exiting_region].connect(regions[data.entering_region], name, rules[data.rules])
+                world.rules_dict[data.rules] = combine_and(data.rules)
+            world.regions[data.exiting_region].connect(
+                world.regions[data.entering_region], name, world.rules_dict[data.rules]
+            )
 
     world.multiworld.register_indirect_condition(
-        regions["Mistralton Cave Inner"], world.get_entrance("Pinwheel Forest east")
+        world.regions["Mistralton Cave Inner"], world.get_entrance("Pinwheel Forest east")
     )
     world.multiworld.register_indirect_condition(
-        regions["N's Castle"], world.get_entrance("Relic Castle B5F castleside")
+        world.regions["N's Castle"], world.get_entrance("Relic Castle B5F castleside")
     )
 
 

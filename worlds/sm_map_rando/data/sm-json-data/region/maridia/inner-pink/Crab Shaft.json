@@ -403,22 +403,33 @@
     {
       "id": 3,
       "link": [1, 1],
-      "name": "Sciser Farm",
+      "name": "Sciser Farm (2 Scisers)",
       "requires": [
-        {"resetRoom": {
-          "nodes": [1]
-        }},
-        {"partialRefill": {"type": "Energy", "limit": 240}},
-        {"partialRefill": {"type": "PowerBomb", "limit": 6}},
+        {"resetRoom": {"nodes": [1]}},
         {"or": [
-          "Gravity",
-          "Spazer",
-          "Wave",
-          "Plasma",
-          "canUseGrapple",
-          "canBePatient"
+          {"and": [
+            "Grapple",
+            {"cycleFrames": 560}
+          ]},
+          {"and": [
+            {"or": [
+              "Plasma",
+              "Wave",
+              "Spazer"
+            ]},
+            {"cycleFrames": 620}
+          ]},
+          {"and": [
+            "Ice",
+            {"cycleFrames": 780}
+          ]},
+          {"and": [
+            "canDodgeWhileShooting",
+            {"cycleFrames": 860}
+          ]}
         ]}
-      ]
+      ],
+      "farmCycleDrops": [{"enemy": "Sciser", "count": 2}]
     },
     {
       "id": 4,
@@ -974,7 +985,7 @@
         "Hold down and back through the transition, to perform a momentum-conserving turnaround past the corner.",
         "Perform a mid-air Spring Ball jump, timing a pause to hit soon after the mid-air jump.",
         "Unequip Spring Ball, lay a Bomb about half a tile below the peak of the jump.",
-        "Press pause at the peak of the jump, tp reequip Spring Ball immediately after Samus is boosted by the bomb.",
+        "Press pause at the peak of the jump, to reequip Spring Ball immediately after Samus is boosted by the bomb.",
         "Buffer a jump out of the unpause, to get a second Spring Ball jump and make it up."
       ]
     },
@@ -1039,7 +1050,7 @@
         "comeInWithGrappleSwing": {
           "blocks": [
             {"position": [6, 4], "note": "Grapple Tutorial Room 2"},
-            {"position": [6, 2], "note": "Spiky Acid Snakes Tunnel"},
+            {"position": [6, 2], "note": "Lava Grapple Tunnel"},
             {
               "position": [5, 2],
               "note": "The Moat, Double Chamber, Wrecked Ship Energy Tank Room"
@@ -1069,6 +1080,18 @@
         ]}
       ],
       "devNote": "The requirements are for getting onto the platform."
+    },
+    {
+      "id": 92,
+      "link": [1, 4],
+      "name": "Bootless Underwater Wall Jump",
+      "requires": [
+        {"notable": "Very Long Bootless Underwater Wall Jump"},
+        "canBootless2WideUWJ",
+        "canBeExtremelyPatient",
+        "canSpringBallJumpMidAir"
+      ],
+      "note": "Perform a very long, very unforgiving, bootless underwater wall jump."
     },
     {
       "id": 85,
@@ -1346,27 +1369,96 @@
     {
       "id": 43,
       "link": [2, 2],
-      "name": "Sciser Farm",
+      "name": "Sciser Farm (3 Scisers)",
       "requires": [
-        {"resetRoom": {
-          "nodes": [2]
-        }},
         {"or": [
+          {"resetRoom": {"nodes": [2]}},
           {"and": [
-            {"partialRefill": {"type": "Energy", "limit": 240}},
-            {"partialRefill": {"type": "PowerBomb", "limit": 6}}
+            {"resetRoom": {"nodes": [1]}},
+            {"or": [
+              {"and": [
+                "Gravity",
+                {"cycleFrames": 180}
+              ]},
+              {"and": [
+                "HiJump",
+                "h_crouchJumpDownGrab",
+                {"cycleFrames": 540}
+              ]}
+            ]}
           ]},
           {"and": [
-            {"refill": ["Energy", "PowerBomb"]},
+            {"resetRoom": {"nodes": [3]}},
+            "Gravity",
             {"or": [
-              "Gravity",
-              "Spazer",
-              "Wave",
-              "Plasma",
-              "canUseGrapple"
-            ]}
+              "canWalljump",
+              "HiJump",
+              "SpaceJump"
+            ]},
+            {"cycleFrames": 460}
           ]}
+        ]},
+        {"or": [
+          {"and": [
+            "Gravity",
+            {"or": [
+              {"and": [
+                "Grapple",
+                {"cycleFrames": 300}
+              ]},
+              {"and": [
+                "ScrewAttack",
+                {"cycleFrames": 360}
+              ]},
+              {"and": [
+                "Plasma",
+                {"cycleFrames": 370}
+              ]},
+              {"and": [
+                "canPseudoScrew",
+                {"cycleFrames": 400}
+              ]},
+              {"and": [
+                "Wave",
+                {"cycleFrames": 430}
+              ]},
+              {"and": [
+                "Spazer",
+                {"cycleFrames": 460}
+              ]},
+              {"and": [
+                "Ice",
+                {"cycleFrames": 690}
+              ]},
+              {"cycleFrames": 800}
+            ]}
+          ]},
+          {"and": [
+            "Grapple",
+            {"cycleFrames": 640}
+          ]},
+          {"and": [
+            "Plasma",
+            {"cycleFrames": 670}
+          ]},
+          {"and": [
+            "Wave",
+            {"cycleFrames": 720}
+          ]},
+          {"and": [
+            "Spazer",
+            {"cycleFrames": 750}
+          ]},
+          {"and": [
+            "Ice",
+            {"cycleFrames": 1050}
+          ]},
+          {"cycleFrames": 1120}
         ]}
+      ],
+      "farmCycleDrops": [{"enemy": "Sciser", "count": 3}],
+      "devNote": [
+        "Other, slower methods are possible for resetting the room using the upper doors."
       ]
     },
     {
@@ -1911,6 +2003,55 @@
       ]
     },
     {
+      "id": 93,
+      "link": [4, 4],
+      "name": "Sciser Farm (1 Sciser, Fast Cycle)",
+      "requires": [
+        {"resetRoom": {"nodes": [3]}},
+        {"or": [
+          "canCrouchJump",
+          "h_underwaterCrouchJumpWithFlashSuit"
+        ]},
+        "canTrickyJump",
+        {"or": [
+          {"and": [
+            "Plasma",
+            {"cycleFrames": 150}
+          ]},
+          {"and": [
+            "canFarmWhileShooting",
+            "Wave",
+            "Spazer",
+            {"cycleFrames": 160}
+          ]},
+          {"and": [
+            "Grapple",
+            {"cycleFrames": 160}
+          ]}
+        ]},
+        {"or": [
+          {"and": [
+            "Grapple",
+            "canPrepareForNextRoom",
+            {"or": [
+              "canResetFallSpeed",
+              "canPreciseWalljump"
+            ]},
+            "canFarmWhileShooting"
+          ]},
+          "HiJump",
+          "Gravity",
+          {"and": [
+            "canSpringBallJumpMidAir",
+            "h_doubleEquipmentScreenCycleFrames",
+            {"cycleFrames": 55}
+          ]}
+        ]}
+      ],
+      "farmCycleDrops": [{"enemy": "Sciser", "count": 1}],
+      "devNote": "FIXME: for the Grapple case, a water entry above can work as an alternative to wall jump or unmorph."
+    },
+    {
       "id": 59,
       "link": [4, 4],
       "name": "Crystal Flash",
@@ -2049,8 +2190,13 @@
         "Perform a tight down grab to get onto it then jump through the door shell.",
         "Knocking the crab off while it is on the the door or ceiling will not work."
       ]
+    },
+    {
+      "id": 5,
+      "name": "Very Long Bootless Underwater Wall Jump",
+      "note": ["Perform a very long, very unforgiving, bootless underwater wall jump."]
     }
   ],
-  "nextStratId": 92,
-  "nextNotableId": 5
+  "nextStratId": 94,
+  "nextNotableId": 6
 }

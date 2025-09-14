@@ -5,7 +5,7 @@ legendary: dict[str, StaticEncounterData] = {
     "Guidance Chamber Static Encounter": StaticEncounterData((638, 0), (638, 0), "Mistralton Cave Inner", None, None),
     "Trial Chamber Static Encounter": StaticEncounterData((639, 0), (639, 0), "Victory Road", None, can_use_strength),
     "Rumination Field Static Encounter": StaticEncounterData((640, 0), (640, 0), "Pinwheel Forest East", None, None),
-    "Abundant Shrine Static Encounter": StaticEncounterData((645, 0), (645, 0), "Abundant Shrine", disabled, has_forces_of_nature),
+    "Abundant Shrine Static Encounter": StaticEncounterData((645, 0), (645, 0), "Abundant Shrine", randomized_wild, has_forces_of_nature),
     "Giant Chasm Static Encounter": StaticEncounterData((646, 0), (646, 0), "Giant Chasm Inner Cave", None, None),
     "Liberty Garden Static Encounter": StaticEncounterData((494, 0), (494, 0), "Liberty Garden", None, None),
     "Dragonspiral Tower Static Encounter": StaticEncounterData((643, 0), (644, 0), "Dragonspiral Tower", None, can_beat_ghetsis),
@@ -16,7 +16,7 @@ gift: dict[str, StaticEncounterData] = {
     "Marvelous Bridge Sold Encounter": StaticEncounterData((129, 0), (129, 0), "Marvelous Bridge", None, None),
     "Route 18 Egg Encounter": StaticEncounterData((636, 0), (636, 0), "Route 18", None, None),
     "Dreamyard Gift Encounter": StaticEncounterData((511, 0), (511, 0), "Dreamyard Entrance", disabled, None),  # will require being randomized
-    "Castelia City Gift Encounter": StaticEncounterData((570, 0), (570, 0), "Castelia City", disabled, has_celebi),
+    "Castelia City Gift Encounter": StaticEncounterData((570, 0), (570, 0), "Castelia City", randomized_wild, has_celebi),
 }
 
 fossils: dict[str, StaticEncounterData] = {
@@ -53,5 +53,5 @@ static: dict[str, StaticEncounterData] = {
     "Route 10 Item Encounter 2": StaticEncounterData((590, 0), (590, 0), "Route 10", None, None),
     "Route 10 Item Encounter 3": StaticEncounterData((591, 0), (591, 0), "Route 10", None, None),
     "Route 10 Item Encounter 4": StaticEncounterData((591, 0), (591, 0), "Route 10", None, None),
-    "Lostlorn Forest Static Encounter": StaticEncounterData((571, 0), (571, 0), "Lostlorn Forest", disabled, has_legendary_beasts),
+    "Lostlorn Forest Static Encounter": StaticEncounterData((571, 0), (571, 0), "Lostlorn Forest", randomized_wild, has_legendary_beasts),
 }

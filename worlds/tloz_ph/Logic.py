@@ -10,6 +10,7 @@ def make_overworld_logic():
         # ====== Mercay Island ==============
 
         ["mercay sw", "mercay dig spot", False, "shovel"],
+        ["mercay se", "mercay island", True, None],
         ["mercay island", "mercay zora cave", False, "explosives"],
         ["mercay zora cave", "mercay zora cave south", False, "bow"],
         ["mercay island", "mercay zora cave south", False, "sword_scroll_clip"],
@@ -21,7 +22,6 @@ def make_overworld_logic():
         ["mercay oshus", "mercay oshus gem", False, "oshus_gem"],
         ["mercay oshus", "mercay oshus phantom blade", False, "can_make_phantom_sword"],
         ["mercay oshus phantom blade", "mercay oshus gem", False, None],
-        ["mercay se", "sw ocean", False, "sea_chart", "SW"],
 
         # ER
         ["mercay island", "mercay sw", False, None],
@@ -131,10 +131,10 @@ def make_overworld_logic():
 
         # ============ Shops ====================
 
-        ["mercay island", "shop power gem", False, "can_buy_gem"],
-        ["mercay island", "shop quiver", False, "can_buy_quiver"],
-        ["mercay island", "shop bombchu bag", False, "can_buy_chu_bag"],
-        ["mercay island", "shop heart container", False, "can_buy_heart"],
+        ["mercay shop", "shop power gem", False, "can_buy_gem"],
+        ["mercay shop", "shop quiver", False, "can_buy_quiver"],
+        ["mercay shop", "shop bombchu bag", False, "can_buy_chu_bag"],
+        ["mercay shop", "shop heart container", False, "can_buy_heart"],
 
         ["sw ocean east", "beedle", False, None],
         ["beedle", "beedle gem", False, "beedle_shop", 500],
@@ -151,17 +151,33 @@ def make_overworld_logic():
 
         # ============ SW Ocean =================
 
-        ["mercay island", "sw ocean east", False, "boat_access"],
-        ["sw ocean east", "cannon island", False, None],
-        ["sw ocean east", "ember port", True, None],
+        ["mercay se", "mercay boat", False, "boat_access"],
+        ["mercay boat", "mercay se", False, None],
+        ["mercay boat", "sw ocean east", True, "require_chart", "SW"],
+        ["cannon boat", "cannon island", True, None],
+        ["cannon boat", "sw ocean east", True, "require_chart", "SW"],
+        ["ember boat", "ember port", True, None],
+        ["ember boat", "sw ocean east", True, "require_chart", "SW"],
         ["sw ocean east", "sw ocean crest salvage", False, "salvage_courage_crest"],
-        ["sw ocean east", "sw ocean west", False, "ocean_sw_west"],
-        ["sw ocean west", "molida island", False, None],
-        ["sw ocean west", "spirit island", False, None],
+        ["sw ocean east", "sw ocean west", False, "cannon"],
+        ["sw ocean west", "sw ocean east", False, "cannon"],
+        ["molida boat", "molida island", True, None],
+        ["molida boat", "sw ocean west", True, "require_chart", "SW"],
+        ["spirit boat", "spirit island", True, None],
+        ["spirit boat", "sw ocean west", True, "require_chart", "SW"],
         ["sw ocean west", "sw ocean nyave", False, "nyave_fight"],
         ["sw ocean nyave", "sw ocean nyave trade", False, "guard_notebook"],
         ["sw ocean west", "sw ocean frog phi", False, "cannon"],
         ["sw ocean east", "sw ocean frog x", False, "cannon"],
+        ["sw ocean west", "frog warps", False, None],
+        ["sw ocean east", "frog warps", False, None],
+
+        # ============= Frog Warps ==================
+        ["frog warps", "sw ocean west", False, "frog_phi"],
+        ["frog warps", "sw ocean east", False, "frog_x"],
+        ["frog warps", "nw ocean", False, "frog_n"],
+        ["frog warps", "ne ocean", False, "frog_square"],
+        ["frog warps", "se ocean", False, "frog_se"],
 
         # ============ Cannon Island ===============
 
@@ -217,7 +233,7 @@ def make_overworld_logic():
         ["tof 3f", "tof 3f key drop", False, "boomerang"],
         ["tof 3f key drop", "tof 3f boss key", False, "tof_3f_bk"],  # All 3F checks need boomerang, UT included
         ["tof 3f boss key", "tof blaaz", False, "tof_blaaz"],  # Includes UT
-        ["tof blaaz", "post tof", False, None],
+        ["tof blaaz", "post tof", False, None],  # Used for events
 
         # =========== Molida Island ===============
 
@@ -231,8 +247,7 @@ def make_overworld_logic():
         ["molida north", "molida north grapple", False, "grapple"],
         ["molida north", "toc gates", False, "enter_toc"],
         ["toc gates", "toc", True, None],
-        ["toc crayk", "post toc", False, None],
-        ["post toc", "molida archery", False, None],
+        ["molida island", "molida archery", False, "has", "_beat_toc"],
 
         # =============== Temple of Courage ================
 
@@ -264,6 +279,7 @@ def make_overworld_logic():
         ["toc bk chest", "toc before boss", False, "simple_boss_key", "Temple of Courage"],
         ["toc before boss", "toc before boss chest", False, "boom"],
         ["toc before boss", "toc crayk", False, "bow"],
+        ["toc crayk", "post toc", False, None],  # Used for events
 
         # ================ Spirit Island =====================
 
@@ -277,12 +293,18 @@ def make_overworld_logic():
 
         # ============ Ocean NW ===============
         ["sw ocean west", "nw ocean", False, "sea_chart", "NW"],
-        ["sw ocean east", "nw ocean", False, "frog_n"],
+        ["nw ocean", "sw ocean west", False, "sea_chart", "SW"],
+        ["nw ocean", "sw ocean east", False, "sea_chart", "SW"],
+        ["nw ocean", "frog warps", False, None],
         ["nw ocean", "nw ocean frog n", False, "cannon"],
-        ["nw ocean", "gust", True, None],
-        ["nw ocean", "bannan", False, None],
-        ["nw ocean", "zauz", False, None],
-        ["nw ocean", "uncharted", False, None],
+        ["gust boat", "gust", True, None],
+        ["gust boat", "nw ocean", True, "require_chart", "NW"],
+        ["bannan boat", "bannan", True, None],
+        ["bannan boat", "nw ocean", True, "require_chart", "NW"],
+        ["zauz boat", "zauz", True, None],
+        ["zauz boat", "nw ocean", True, "require_chart", "NW"],
+        ["uncharted boat", "uncharted", True, None],
+        ["uncharted boat", "nw ocean", True, "require_chart", "NW"],
         ["nw ocean", "ghost ship", False, "ghost_ship"],
         ["nw ocean", "porl", False, None],
         ["porl", "porl item", False, "sword"],
@@ -343,13 +365,21 @@ def make_overworld_logic():
 
         # ================= SE Ocean ====================
 
-        ["sw ocean", "se ocean", False, "se_ocean"],
+        ["sw ocean east", "se ocean", False, "se_ocean"],
+        ["se ocean", "sw ocean east", False, "sea_chart", "SW"],
+        ["se ocean", "frog warps", False, None],
         ["se ocean", "se ocean frogs", False, "cannon"],
-        ["se ocean", "goron", False, "can_pass_sea_monsters"],
+        ["se ocean", "goron boat", False, "can_pass_sea_monsters"],
+        ["goron boat", "se ocean", False, "require_chart", "SE"],
+        ["goron", "goron boat", True, None],
         ["se ocean", "se ocean trade", False, "kaleidoscope"],
-        ["se ocean", "iof", False, "can_pass_sea_monsters"],
-        ["se ocean", "harrow", False, "sword"],
-        ["se ocean", "ds", False, None],
+        ["se ocean", "frost boat", False, "can_pass_sea_monsters"],
+        ["frost boat", "se ocean", False, "require_chart", "SE"],
+        ["frost boat", "iof", True, None],
+        ["harrow boat", "harrow", True, None],
+        ["harrow boat", "se ocean", True, "require_chart", "SE"],
+        ["ds boat", "ds", True, None],
+        ["ds boat", "se ocean", True, "require_chart", "SE"],
         ["se ocean", "pirate ambush", False, "beat_gs"],
 
         # ================= Goron Island ====================
@@ -364,7 +394,7 @@ def make_overworld_logic():
         ["goron", "goron outside temple", False, "hammer_clip"],
         ["goron outside temple", "goron north", False, "bombs"],
         ["goron outside temple", "gt", True, None],
-        ["gt dongo", "goron chief 2", False, "goron_chus"],
+        ["goron quiz", "goron chief 2", False, "has", "_beat_gt"],
 
         # ================= Goron Temple ====================
         ["gt", "gt 2", False, "goron_entrance"],
@@ -375,17 +405,19 @@ def make_overworld_logic():
         ["gt b2", "gt b2 back", False, "gt_b2_back"],
         ["gt b2 back", "gt bk chest", False, "chus"],
         ["gt b2", "gt dongo", False, "gt_dongo"],
+        ["gt dongo", "post gt", False, None],
 
         # ================= Harrow Island ====================
 
-        ["harrow", "harrow dig", False, "shovel"],
+        ["harrow", "harrow sword", False, "sword"],
+        ["harrow sword", "harrow dig", False, "shovel"],
         ["harrow dig", "harrow dig 2", False, "sea_chart", "NE"],
 
         # ================= Dee Ess Island ====================
 
         ["ds", "ds dig", False, "shovel"],
         ["ds", "ds combat", False, "can_kill_eye_brute"],
-        ["gt dongo", "ds race", False, None],
+        ["ds", "ds race", False, "has", "_beat_gt"],
 
         # ================= Isle of Frost ====================
 
@@ -418,13 +450,17 @@ def make_overworld_logic():
 
         # ================= NE Ocean ====================
 
-        ["sw ocean", "ne ocean", False, "frog_square"],
         ["se ocean", "ne ocean", False, "sea_chart", "NE"],
+        ["ne ocean", "se ocean", False, "sea_chart", "SE"],
+        ["ne ocean", "frog warps", False, None],
         ["ne ocean", "ne ocean frog", False, "cannon"],
         ["ne ocean", "ne ocean combat", False, "can_kill_blue_chu"],
-        ["ne ocean", "iotd", False, None],
-        ["ne ocean", "maze", False, "sword"],
-        ["ne ocean", "ruins port", False, "regal_necklace"],
+        ["dead boat", "iotd", True, None],
+        ["dead boat", "ne ocean", True, "require_chart", "NE"],
+        ["maze boat", "maze", True, None],
+        ["maze boat", "ne ocean", True, "require_chart", "NE"],
+        ["ne ocean inner", "ruins boat", True, None],
+        ["ruins boat", "ruins port", True, "require_chart", "NE"],
         ["ne ocean", "pirate ambush", False, "beat_gs"],
 
         # ================= IotD ====================
@@ -435,11 +471,58 @@ def make_overworld_logic():
 
         # ================= Isle of Ruins ====================
 
-        ["ruins port", "ruins cave", True, None],
-        ["ruins cave", "ruins", True, "cave_damage"],
-        ["ruins", "ruins dig", False, "shovel"],
-        ["ruins", "ruins water", False, "kings_key"],
-        ["ruins water", "mutoh", True, None],
+        ["ruins port", "ruins geozard cave east", True, None],
+        ["ruins geozard cave east", "ruins geozard cave west", True, "ruins_geozards"],
+        ["ruins geozard cave west", "ruins sw maze upper", True, None],
+        ["ruins sw maze upper", "ruins port", False, None],
+        ["ruins sw maze upper", "ruins sw maze lower", False, "ruins_water"],
+        ["ruins sw port cliff", "ruins sw maze upper", False, None],
+        ["ruins sw maze lower", "ruins sw maze lower exit", True, "ruins_water"],
+        ["ruins sw maze lower exit", "ruins nw maze lower exit", True, None],
+        ["ruins sw maze upper", "ruins nw maze upper exit", True, None],
+        ["ruins sw maze lower", "ruins nw maze lower chest", True, "ruins_water"],
+
+        ["ruins nw maze lower exit", "ruins nw boulders", False, None],
+        ["ruins nw maze upper exit", "ruins nw boulders", False, None],
+        ["ruins nw boulders", "ruins nw dig", False, "shovel"],
+        ["ruins nw port cliff", "ruins nw maze lower chest", False, "ruins_water"],
+        ["ruins nw boulders", "ruins nw across bridge", True, None],
+        ["ruins nw boulders", "bremeur", True, None],
+        ["bremeur", "bremeur kings key", False, "kings_key"],
+        ["ruins nw boulders", "ruins nw port cliff", False, None],
+        ["ruins nw port cliff", "ruins sw port cliff", True, None],
+        ["ruins nw boulders", "ruins nw lower", False, "ruins_water"],
+        ["ruins nw across bridge", "ruins nw cave", True, "ruins_water"],  # this means cave might not be in logic while accessible...
+        ["ruins nw across bridge", "ruins nw alcove", False, "ruins_water"],
+        ["ruins nw across bridge", "ruins ne enter upper", True, None],
+        ["ruins nw return", "ruins nw boulders", False, None],
+        ["ruins nw across bridge", "ruins nw return",  False, "hard_logic"],
+        ["ruins nw lower", "ruins ne lower", True, "ruins_water"],
+
+        ["ruins ne enter upper", "ruins ne doylan bridge", False, None],
+        ["ruins ne doylan bridge", "ruins ne lower", False, "ruins_water"],
+        ["ruins ne doylan bridge", "ruins ne behind temple", True, "ruins_water"],
+        ["ruins ne doylan bridge", "ruins nw return", True, None],
+        ["ruins ne doylan bridge", "doylan temple", True, None],
+        ["doylan temple", "doylan chamber", True, None],
+        ["ruins ne lower", "ruins nw alcove", True, "ruins_water"],
+        ["ruins ne lower", "ruins ne behind temple", True, "grapple"],
+        ["ruins ne lower", "ruins se lower", True, "ruins_water"],
+        ["ruins ne behind temple", "ruins se coast", True, "ruins_water"],
+        ["ruins ne outside temple", "ruins ne behind temple", False, "ruins_water"],
+        ["ruins ne outside temple", "mutoh", True, None],
+        ["ruins ne outside temple", "ruins ne geozards", False, "ruins_water"],
+        ["ruins ne geozards", "ruins ne outside temple", False, "damage"],
+
+        ["ruins se lower", "ruins ne secret chest", True, "ruins_water"],
+        ["ruins se lower", "ruins se return bridge east", True, "ruins_water"],
+        ["ruins se return bridge west", "ruins se return bridge east", False, "hammer"],
+        ["ruins se return bridge east", "ruins se return bridge west", False, None],
+        ["ruins se lower", "ruins se outside max", True, "ruins_water"],
+        ["ruins se return bridge west", "ruins sw port cliff", True, None],
+        ["ruins se outside max", "max", True, None],
+        ["ruins se lower", "ruins se path to temple", False, None],
+        ["ruins se path to temple", "ruins ne geozards", True, "ruins_water"],
 
         # ================= Mutoh's Temple ====================
 
@@ -452,14 +535,15 @@ def make_overworld_logic():
 
         # ================= Maze Island ====================
 
-        ["maze", "maze east", False, "explosives"],
-        ["maze", "maze normal", False, "bow"],
+        ["maze", "maze sword", False, "sword"],
+        ["maze sword", "maze east", False, "explosives"],
+        ["maze sword", "maze normal", False, "bow"],
         ["maze normal", "maze expert", False, "grapple"],
-        ["maze", "maze dig", False, "shovel"],
+        ["maze sword", "maze dig", False, "shovel"],
 
         # ========== Fishing ====================
 
-        ["sw ocean", "fishing", False, "fishing_rod"],
+        ["frog warps", "fishing", False, "fishing_rod"],
         ["fishing", "fishing bcl", False, "big_catch_lure"],
         ["fishing", "fishing rsf", False, "can_catch_rsf"],
         ["fishing", "fishing shadows", False, "swordfish_shadows"],
@@ -473,6 +557,7 @@ def make_overworld_logic():
         ["se ocean", "se ocean salvage", False, "salvage"],
         ["ne ocean", "ne ocean salvage", False, "salvage"],
         ["ne ocean", "ne ocean inner", False, "regal_necklace"],
+        ["ne ocean inner", "ne ocean", False, None],
         ["ne ocean inner", "ne ocean salvage inner", False, "salvage"],
         ["ne ocean", "nw ocean corner salvage", False, "salvage_behind_bannan"],
 
@@ -535,18 +620,18 @@ def create_connections(multiworld: MultiWorld, player: int, origin_name: str, op
 
         if entrance_key in test_entrances:
             # Set entrance data
-            entrance_data = ENTRANCES[test_entrances[entrance_key]]
-            rando_type_bool = entrance_data.get("two_way", True)
+            entrance_data = test_entrances[entrance_key]
+            rando_type_bool = entrance_data.two_way
             entrance.randomization_type = EntranceType.TWO_WAY if rando_type_bool else EntranceType.ONE_WAY
-            entrance.randomization_group = entrance_data["direction"] | (entrance_data["type"])
-            entrance.name = test_entrances[entrance_key]
+            entrance.randomization_group = entrance_data.direction | entrance_data.category_group
+            entrance.name = entrance_data.name
             multiworld.worlds[player].entrances[entrance.name] = entrance
 
     all_logic = [
         make_overworld_logic()
     ]
 
-    test_entrances = {(e["entrance_region"], e["exit_region"]): name for name, e in ENTRANCES.items()}
+    test_entrances = {(e.entrance_region, e.exit_region): e for e in ENTRANCES.values()}
 
     # Create connections
     for logic_array in all_logic:

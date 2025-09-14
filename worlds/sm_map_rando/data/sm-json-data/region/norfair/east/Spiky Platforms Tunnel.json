@@ -165,7 +165,7 @@
     {
       "id": 7,
       "link": [1, 2],
-      "name": "Bounceball Double Lava Bath (Longer Runway)",
+      "name": "Bounceball Lava Bath (3-tile runway)",
       "entranceCondition": {
         "comeInRunning": {
           "speedBooster": false,
@@ -187,7 +187,7 @@
     {
       "id": 8,
       "link": [1, 2],
-      "name": "Bounceball Double Lava Bath (Short Runway)",
+      "name": "Bounceball Lava Bath (1-tile runway)",
       "entranceCondition": {
         "comeInRunning": {
           "speedBooster": false,
@@ -198,7 +198,24 @@
         "canBounceBall",
         "canWalljump",
         {"heatFrames": 600},
-        {"lavaFrames": 85}
+        {"lavaFrames": 70}
+      ],
+      "note": [
+        "Perform a bounceball to minimize lava damage.",
+        "Move quickly to reach the second Tripper on its first cycle.",
+        "Ride it, morph to avoid spike damage, shoot open the door, and run off of the Tripper (rather than jumping off)."
+      ]
+    },
+    {
+      "id": 26,
+      "link": [1, 2],
+      "name": "Bounceball Lava Bath (No runway)",
+      "requires": [
+        "canBounceBall",
+        "canInsaneJump",
+        "canWalljump",
+        {"heatFrames": 600},
+        {"lavaFrames": 80}
       ],
       "note": [
         "Perform a bounceball to minimize lava damage.",
@@ -269,7 +286,28 @@
       "note": "Morph and ride the Trippers.",
       "devNote": [
         "FIXME: It is possible to start a Diagonal IBJ from the sinking tripper, but it's very precise (3 frame window if Samus doesn't move).",
-        "One of these frames gives a normal IBJ, which shouldn't be expected (1 frame for the first Bomb, then 3 frames for the second)."
+        "Only one of these frames gives a normal IBJ, which shouldn't be expected (1 frame for the first Bomb, then 3 frames for the second)."
+      ]
+    },
+    {
+      "id": 28,
+      "link": [1, 2],
+      "name": "Crystal Flash and Lava Bath",
+      "requires": [
+        "canSuitlessLavaDive",
+        {"heatFrames": 425},
+        "h_heatedCrystalFlash",
+        {"heatFrames": 300},
+        {"lavaFrames": 70}
+      ],
+      "note": [
+        "Ride the first Tripper, using Morph to avoid spike damage, then perform a Crystal Flash.",
+        "The second Tripper will likely either be destroyed or in a bad pattern,",
+        "making it necessary to jump through the lava to cross the rest of the room."
+      ],
+      "detailNote": [
+        "It may help to use the Tripper to do a big jump past the shutter before doing the Crystal Flash;",
+        "otherwise the shutter might end up closed and get in the way."
       ]
     },
     {
@@ -359,7 +397,7 @@
     {
       "id": 14,
       "link": [2, 1],
-      "name": "Bounceball Double Lava Bath (Longer Runway)",
+      "name": "Bounceball Lava Bath (3-tile runway)",
       "entranceCondition": {
         "comeInRunning": {
           "speedBooster": false,
@@ -369,7 +407,7 @@
       "requires": [
         "canBounceBall",
         "canWalljump",
-        {"heatFrames": 600},
+        {"heatFrames": 590},
         {"lavaFrames": 60}
       ],
       "note": ["Perform a bounceball to minimize lava damage.", "Ride the second Tripper."]
@@ -377,20 +415,54 @@
     {
       "id": 15,
       "link": [2, 1],
-      "name": "Bounceball Double Lava Bath (Shorter Runway)",
+      "name": "Bounceball Lava Bath (1-tile runway)",
       "entranceCondition": {
         "comeInRunning": {
           "speedBooster": false,
-          "minTiles": 3
+          "minTiles": 1
         }
       },
       "requires": [
         "canBounceBall",
         "canWalljump",
-        {"heatFrames": 600},
-        {"lavaFrames": 85}
+        {"heatFrames": 590},
+        {"lavaFrames": 70}
       ],
       "note": ["Perform a bounceball to minimize lava damage.", "Ride the second Tripper."]
+    },
+    {
+      "id": 27,
+      "link": [2, 1],
+      "name": "Bounceball Lava Bath (No runway)",
+      "requires": [
+        "canInsaneJump",
+        "canBounceBall",
+        "canWalljump",
+        {"heatFrames": 590},
+        {"lavaFrames": 80}
+      ],
+      "note": ["Perform a bounceball to minimize lava damage.", "Ride the second Tripper."]
+    },
+    {
+      "id": 29,
+      "link": [2, 1],
+      "name": "Crystal Flash and Lava Bath",
+      "requires": [
+        "canSuitlessLavaDive",
+        {"heatFrames": 425},
+        "h_heatedCrystalFlash",
+        {"heatFrames": 300},
+        {"lavaFrames": 70}
+      ],
+      "note": [
+        "Ride the first Tripper, using Morph to avoid spike damage, then perform a Crystal Flash.",
+        "The second Tripper will likely either be destroyed or in a bad pattern,",
+        "making it necessary to jump through the lava to cross the rest of the room."
+      ],
+      "detailNote": [
+        "It may help to use the Tripper to do a big jump past the shutter before doing the Crystal Flash;",
+        "otherwise the shutter might end up closed and get in the way."
+      ]
     },
     {
       "id": 24,
@@ -558,6 +630,6 @@
     }
   ],
   "notables": [],
-  "nextStratId": 26,
+  "nextStratId": 30,
   "nextNotableId": 1
 }

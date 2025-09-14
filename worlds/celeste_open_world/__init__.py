@@ -1,5 +1,6 @@
 from copy import deepcopy
 import math
+from typing import TextIO
 
 from BaseClasses import ItemClassification, Location, MultiWorld, Region, Tutorial
 from Utils import visualize_regions
@@ -40,6 +41,8 @@ class CelesteOpenWorld(World):
     web = CelesteOpenWebWorld()
     options_dataclass = CelesteOptions
     options: CelesteOptions
+
+    apworld_version = 10005
 
     level_data: dict[str, Level] = load_logic_data()
 
@@ -122,22 +125,22 @@ class CelesteOpenWorld(World):
         goal_item_loc.place_locked_item(self.create_item(ItemName.house_keys))
         location_count -= 1
 
-        epilogue_region: Region = self.multiworld.get_region(self.epilogue_start_region, self.player)
+        epilogue_region: Region = self.get_region(self.epilogue_start_region)
         epilogue_region.add_locations({ItemName.victory: None }, CelesteLocation)
-        victory_loc: Location = self.multiworld.get_location(ItemName.victory, self.player)
+        victory_loc: Location = self.get_location(ItemName.victory)
         victory_loc.place_locked_item(self.create_item(ItemName.victory))
 
         # Checkpoints
         for item_name in self.active_checkpoint_names:
             if self.options.checkpointsanity:
                 if not self.options.goal_area_checkpointsanity and goal_area_option_to_display_name[self.options.goal_area] in item_name:
-                    checkpoint_loc: Location = self.multiworld.get_location(item_name, self.player)
+                    checkpoint_loc: Location = self.get_location(item_name)
                     checkpoint_loc.place_locked_item(self.create_item(item_name))
                     location_count -= 1
                 else:
                     item_pool.append(self.create_item(item_name))
             else:
-                checkpoint_loc: Location = self.multiworld.get_location(item_name, self.player)
+                checkpoint_loc: Location = self.get_location(item_name)
                 checkpoint_loc.place_locked_item(self.create_item(item_name))
                 location_count -= 1
 
@@ -146,7 +149,7 @@ class CelesteOpenWorld(World):
             item_pool += [self.create_item(item_name) for item_name in self.active_key_names]
         else:
             for item_name in self.active_key_names:
-                key_loc: Location = self.multiworld.get_location(item_name, self.player)
+                key_loc: Location = self.get_location(item_name)
                 key_loc.place_locked_item(self.create_item(item_name))
                 location_count -= 1
 
@@ -155,13 +158,13 @@ class CelesteOpenWorld(World):
             item_pool += [self.create_item(item_name) for item_name in self.active_gem_names]
         else:
             for item_name in self.active_gem_names:
-                gem_loc: Location = self.multiworld.get_location(item_name, self.player)
+                gem_loc: Location = self.get_location(item_name)
                 gem_loc.place_locked_item(self.create_item(item_name))
                 location_count -= 1
 
         # Clutter Events
         for item_name in self.active_clutter_names:
-            clutter_loc: Location = self.multiworld.get_location(item_name, self.player)
+            clutter_loc: Location = self.get_location(item_name)
             clutter_loc.place_locked_item(self.create_item(item_name))
             location_count -= 1
 
@@ -172,7 +175,7 @@ class CelesteOpenWorld(World):
         real_total_strawberries: int = min(self.options.total_strawberries.value, location_count - goal_area_location_count - len(item_pool))
         self.strawberries_required = int(real_total_strawberries * (self.options.strawberries_required_percentage / 100))
 
-        menu_region = self.multiworld.get_region("Menu", self.player)
+        menu_region = self.get_region("Menu")
         if getattr(self, "goal_start_region", None):
             menu_region.add_exits([self.goal_start_region], {self.goal_start_region: lambda state: state.has(ItemName.strawberry, self.player, self.strawberries_required)})
         if getattr(self, "goal_checkpoint_names", None):
@@ -251,7 +254,7 @@ class CelesteOpenWorld(World):
 
     def fill_slot_data(self):
         return {
-            "apworld_version": 10004,
+            "apworld_version": self.apworld_version,
             "min_mod_version": 10000,
 
             "death_link": self.options.death_link.value,
@@ -291,6 +294,13 @@ class CelesteOpenWorld(World):
             "require_cassettes": self.options.require_cassettes.value,
             "chosen_poem": self.random.randint(0, 119),
         }
+
+    @classmethod
+    def stage_write_spoiler_header(cls, multiworld: MultiWorld, spoiler_handle: TextIO):
+        major: int = cls.apworld_version // 10000
+        minor: int = (cls.apworld_version % 10000) // 100
+        bugfix: int = (cls.apworld_version % 100)
+        spoiler_handle.write(f"\nCeleste (Open World) APWorld v{major}.{minor}.{bugfix}\n")
 
     def output_active_traps(self) -> dict[int, int]:
         trap_data = {}
@@ -347,5 +357,5 @@ class CelesteOpenWorld(World):
     #            print(f"{{ \"{name}\", 0x{id:X} }},", file=f)
     #
     #def generate_output(self, output_directory: str):
-    #    visualize_regions(self.multiworld.get_region("Menu", self.player), f"Player{self.player}.puml", show_entrance_names=False,
+    #    visualize_regions(self.get_region("Menu"), f"Player{self.player}.puml", show_entrance_names=False,
     #                  regions_to_highlight=self.multiworld.get_all_state(self.player).reachable_regions[self.player])

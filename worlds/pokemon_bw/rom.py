@@ -1,4 +1,3 @@
-import asyncio
 import os
 import pathlib
 import zipfile
@@ -10,23 +9,15 @@ from settings import get_settings
 from worlds.Files import APAutoPatchInterface
 from typing import TYPE_CHECKING, Any, Dict, Callable
 
-from .patch.procedures import base_patch, season_patch
+from .patch.procedures import base_patch, season_patch, write_wild_pokemon, level_adjustments, write_trainer_pokemon
 
 if TYPE_CHECKING:
     from . import PokemonBWWorld
 
 
-cached_rom: list[str | None] = [None]
-
-
-async def keep_cache_alive():
-    while cached_rom[0] is not None:
-        await asyncio.sleep(5)
-
-
 class PokemonBlackPatch(APAutoPatchInterface):
     game = "Pokemon Black and White"
-    bw_patch_format = (0, 2, 0)
+    bw_patch_format = (0, 3, 0)
     patch_file_ending = ".apblack"
     result_file_ending = ".nds"
 
@@ -54,7 +45,7 @@ class PokemonBlackPatch(APAutoPatchInterface):
 
 class PokemonWhitePatch(APAutoPatchInterface):
     game = "Pokemon Black and White"
-    bw_patch_format = (0, 2, 0)
+    bw_patch_format = (0, 3, 0)
     patch_file_ending = ".apwhite"
     result_file_ending = ".nds"
 
@@ -80,24 +71,43 @@ class PokemonWhitePatch(APAutoPatchInterface):
         return PatchMethods.get_file(self, file)
 
 
+PokemonBWPatch = PokemonBlackPatch | PokemonWhitePatch
+
+
 class PatchMethods:
 
     @staticmethod
-    def write_contents(patch: PokemonBlackPatch | PokemonWhitePatch, opened_zipfile: zipfile.ZipFile) -> None:
+    def write_contents(patch: PokemonBWPatch, opened_zipfile: zipfile.ZipFile) -> None:
+
+        write_wild = False
+        for encounter in patch.world.wild_encounter.values():
+            if encounter.write:
+                write_wild = True
+                break
 
         procedures: list[str] = ["base_patch"]
         if patch.world.options.season_control != "vanilla":
             procedures.append("season_patch")
+        if write_wild:
+            procedures.append("write_wild_pokemon")
+            write_wild_pokemon.write_patch(patch, opened_zipfile)
+        if "Randomize" in patch.world.options.randomize_trainer_pokemon:
+            procedures.append("write_trainer_pokemon")
+            write_trainer_pokemon.write_species(patch, opened_zipfile)
+        if "Wild" in patch.world.options.adjust_levels:
+            procedures.append("adjust_wild_levels")
+        if "Trainer" in patch.world.options.adjust_levels:
+            procedures.append("adjust_trainer_levels")
 
         opened_zipfile.writestr("procedures.txt", "\n".join(procedures))
 
     @staticmethod
-    def get_manifest(patch: PokemonBlackPatch | PokemonWhitePatch, manifest: dict[str, Any]) -> Dict[str, Any]:
+    def get_manifest(patch: PokemonBWPatch, manifest: dict[str, Any]) -> Dict[str, Any]:
         manifest["bw_patch_format"] = patch.bw_patch_format
         return manifest
 
     @staticmethod
-    def patch(patch: PokemonBlackPatch | PokemonWhitePatch, target: str, version: str) -> None:
+    def patch(patch: PokemonBWPatch, target: str, version: str) -> None:
         patch.read()
 
         if not pathlib.Path(target).exists():
@@ -109,11 +119,8 @@ class PatchMethods:
             with open(target, 'wb') as f:
                 f.write(rom.save(updateDeviceCapacity=True))
 
-        cached_rom[0] = patch.player_name
-        asyncio.run_coroutine_threadsafe(keep_cache_alive(), asyncio.new_event_loop())
-
     @staticmethod
-    def read_contents(patch: PokemonBlackPatch | PokemonWhitePatch, opened_zipfile: zipfile.ZipFile,
+    def read_contents(patch: PokemonBWPatch, opened_zipfile: zipfile.ZipFile,
                       manifest: Dict[str, Any]) -> Dict[str, Any]:
 
         for file in opened_zipfile.namelist():
@@ -128,15 +135,19 @@ class PatchMethods:
         return manifest
 
     @staticmethod
-    def get_file(patch: PokemonBlackPatch | PokemonWhitePatch, file: str) -> bytes:
+    def get_file(patch: PokemonBWPatch, file: str) -> bytes:
         if file not in patch.files:
             patch.read()
         return patch.files[file]
 
 
-patch_procedures: dict[str, Callable[[ndspy_rom.NintendoDSRom, str, PokemonBlackPatch], None]] = {
+patch_procedures: dict[str, Callable[[ndspy_rom.NintendoDSRom, str, PokemonBWPatch], None]] = {
     "base_patch": base_patch.patch,
     "season_patch": season_patch.patch,
+    "write_wild_pokemon": write_wild_pokemon.patch,
+    "write_trainer_pokemon": write_trainer_pokemon.patch_species,
+    "adjust_wild_levels": level_adjustments.patch_wild,
+    "adjust_trainer_levels": level_adjustments.patch_trainer,
 }
 
 

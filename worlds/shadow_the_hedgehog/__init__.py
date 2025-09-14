@@ -126,6 +126,20 @@ class ShtHWorld(World):
                 self.starting_items.append(item)
                 self.multiworld.push_precollected(self.create_item(item))
 
+        # Test here
+
+        locs = self.get_locations()
+        l_count = len([ l for l in locs if not l.locked ])
+        l_x = Locations.count_locations(self)
+
+        if l_count != l_x:
+            print("Invalid location counting")
+
+        player_items = [ a for a in self.multiworld.itempool if a.player == self.player ]
+        if len(player_items) not in [l_count, l_x]:
+            print("Invalid item pool vs locations")
+
+
 
 
     def check_invalid_configurations(self):
@@ -203,6 +217,9 @@ class ShtHWorld(World):
             self.options.logic_level != Options.LogicLevel.option_hard:
                 # TODO Handle expert? here in future:
             self.options.chaos_control_logic_level = Options.ChaosControlLogicLevel(Options.ChaosControlLogicLevel.option_off)
+
+        if not self.options.enemy_objective_sanity and self.options.enemy_sanity:
+            self.options.enemy_sanity = Options.Enemysanity(False)
 
         # TODO: Add handle for having excluded all stages
 

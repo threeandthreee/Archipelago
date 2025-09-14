@@ -10,7 +10,7 @@ nes_logger = logging.getLogger("NES")
 logger = logging.getLogger("Client")
 
 EXPECTED_ROM_NAME = "DWAPV"
-EXPECTED_VERSION = "042"
+EXPECTED_VERSION = "050"
 EQUIPMENT_BYTES = [0x1, 0x2, 0x3, 0x4, 0x8, 0xC, 0x10, 0x14, 0x18, 0x1C, 0x20, 0x40, 0x60, 0x80, 0xA0, 0xC0, 0xE0]
 
 class DragonWarriorClient(BizHawkClient):
@@ -54,7 +54,7 @@ class DragonWarriorClient(BizHawkClient):
         
         current_map, chests_array, recv_count, inventory_bytes, \
             dragonlord_dead, herbs, equip_byte, level_byte, gold_byte, \
-            ap_byte = await read(ctx.bizhawk_ctx, [
+            ap_byte, status_byte = await read(ctx.bizhawk_ctx, [
             (0x45, 1, "RAM"),
             (0x601C, 16, "System Bus"), # Bruh moment
             (0x0E, 1, "RAM"),
@@ -64,7 +64,8 @@ class DragonWarriorClient(BizHawkClient):
             (0xBE, 1, "RAM"),
             (0xC7, 1, "RAM"),
             (0xBD, 1, "RAM"),
-            (0x01, 1, "RAM")
+            (0x01, 1, "RAM"),
+            (0xDF, 1, "RAM") 
         ])
 
         if current_map[0] == 0:  # Don't start processing until we load a map
@@ -81,6 +82,27 @@ class DragonWarriorClient(BizHawkClient):
             await ctx.send_msgs([{
                 "cmd": "StatusUpdate",
                 "status": ClientStatus.CLIENT_GOAL
+            }])
+
+        # Send Shop Hints
+        equipment_locations = []
+        match current_map[0]:
+            case 0x07: # Kol
+                equipment_locations = [0x01, 0x10, 0x14, 0x60, 0x80]
+            case 0x08: # Brecconary
+                equipment_locations = [0x01, 0x04, 0x08, 0x20, 0x40, 0x60]
+            case 0x09: # Garinham
+                equipment_locations = [0x02, 0x08, 0x0C, 0x10, 0x40, 0x60, 0x80]
+            case 0x0A: # Cantlin
+                equipment_locations = [0x02, 0x03, 0x0C, 0x10, 0x14, 0x18, 0x20, 0x40, 0x60, 0xA0, 0xC0]
+            case 0x0B: # Rimuldar 
+                equipment_locations = [0x10, 0x14, 0x18, 0x60, 0x80, 0xA0]
+        
+        if equipment_locations:
+            await ctx.send_msgs([{
+                "cmd": "LocationScouts",
+                "locations": equipment_locations,
+                "create_as_hint": 2
             }])
 
         # Chest checks, See locations.py for an explanation
@@ -111,6 +133,22 @@ class DragonWarriorClient(BizHawkClient):
         if ap_byte[0] == 0xFF:
             if 0xFF not in ctx.checked_locations:
                 new_checks.append(0xFF)
+
+         # Princess Rescue - Carrying Gwaelin
+        status_bits = status_byte
+
+        if status_bits[0] & 0x01:  # From mcgrew notes This is picking her up
+            gwaelin_location = 0x150513
+            if gwaelin_location not in ctx.checked_locations:
+                new_checks.append(gwaelin_location)
+
+        # Princess returned - trigger Gwaelin's Love item check
+        if status_bits[0] & 0x02:
+            love_location = 0x050304
+            if love_location not in ctx.checked_locations: 
+               new_checks.append(love_location)
+
+
 
         # Buying equipment
         if ap_byte[0] in EQUIPMENT_BYTES:
@@ -212,7 +250,6 @@ class DragonWarriorClient(BizHawkClient):
             elif item.item == 0xFF: # Erdrick's Sword
                 new_byte = equip_byte[0] | 0xE0
                 writes.append((0xBE, new_byte.to_bytes(1, 'little'), "RAM"))
-            
             elif item.item == 0xFE: # Erdrick's Armor
                 new_byte = equip_byte[0] | 0x1C
                 writes.append((0xBE, new_byte.to_bytes(1, 'little'), "RAM"))

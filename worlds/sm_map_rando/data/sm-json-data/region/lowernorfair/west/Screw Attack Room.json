@@ -92,7 +92,12 @@
     },
     {
       "id": "B",
-      "name": "Bottom Bomb Blocks",
+      "name": "Some Bottom Bomb Blocks",
+      "obstacleType": "inanimate"
+    },
+    {
+      "id": "C",
+      "name": "All Bottom Bomb Blocks",
       "obstacleType": "inanimate"
     }
   ],
@@ -150,6 +155,7 @@
     {
       "from": 5,
       "to": [
+        {"id": 1},
         {"id": 2},
         {"id": 3},
         {"id": 4},
@@ -201,29 +207,29 @@
         "h_heatedCrystalFlash",
         {"heatFrames": 10}
       ],
-      "clearsObstacles": ["B"],
+      "clearsObstacles": ["B", "C"],
       "flashSuitChecked": true
     },
     {
       "id": 3,
       "link": [1, 2],
-      "name": "Shinespark",
+      "name": "Come in Shinecharged, Shinespark",
       "entranceCondition": {
         "comeInShinecharged": {}
       },
       "requires": [
-        {"shineChargeFrames": 25},
-        "h_navigateHeatRooms",
-        {"heatFrames": 200},
+        {"shineChargeFrames": 5},
+        {"heatFrames": 180},
         {"shinespark": {"frames": 31, "excessFrames": 10}}
       ],
       "clearsObstacles": ["B"],
-      "flashSuitChecked": true
+      "flashSuitChecked": true,
+      "note": ["Enter shinecharged, ideally with a low spin jump through the door."]
     },
     {
       "id": 76,
       "link": [1, 2],
-      "name": "Direct jump with Screw Attack",
+      "name": "Direct Jump with Screw Attack",
       "entranceCondition": {
         "comeInJumping": {
           "speedBooster": true,
@@ -248,7 +254,7 @@
     {
       "id": 77,
       "link": [1, 2],
-      "name": "Direct jump with SpeedBooster",
+      "name": "Direct Jump with Speed Booster",
       "entranceCondition": {
         "comeInGettingBlueSpeed": {
           "length": 0,
@@ -423,8 +429,8 @@
         "comeInShinecharged": {}
       },
       "requires": [
-        {"shineChargeFrames": 35},
-        {"heatFrames": 210},
+        {"shineChargeFrames": 40},
+        {"heatFrames": 220},
         {"or": [
           {"shinespark": {"frames": 41, "excessFrames": 4}},
           {"and": [
@@ -444,12 +450,14 @@
         "comeInWithDoorStuckSetup": {}
       },
       "requires": [
-        "canXRayClimb",
+        "canLongXRayClimb",
         {"heatFrames": 2800}
       ],
       "flashSuitChecked": true,
       "note": "Climb up 2 screens.",
-      "devNote": "Heat frames split into the actual climb and the setup in the adjacent room."
+      "devNote": [
+        "FIXME: The heatFrames for this and almost all other heated X-ray climbs are much too loose."
+      ]
     },
     {
       "id": 6,
@@ -568,8 +576,7 @@
       "link": [1, 4],
       "name": "Base",
       "requires": [
-        "h_navigateHeatRooms",
-        {"heatFrames": 60}
+        {"heatFrames": 55}
       ]
     },
     {
@@ -729,7 +736,7 @@
     {
       "id": 78,
       "link": [1, 5],
-      "name": "Direct jump with Screw Attack",
+      "name": "Direct Jump with Screw Attack",
       "entranceCondition": {
         "comeInJumping": {
           "speedBooster": true,
@@ -748,7 +755,7 @@
     {
       "id": 79,
       "link": [1, 5],
-      "name": "Direct jump with SpeedBooster",
+      "name": "Direct Jump with Speed Booster",
       "entranceCondition": {
         "comeInGettingBlueSpeed": {
           "length": 0,
@@ -767,7 +774,7 @@
     {
       "id": 10,
       "link": [1, 5],
-      "name": "Left-Side X-Ray Climb (to Middle Door)",
+      "name": "X-Ray Climb",
       "entranceCondition": {
         "comeInWithDoorStuckSetup": {}
       },
@@ -818,9 +825,12 @@
         ]},
         {"heatFrames": 80}
       ],
-      "clearsObstacles": ["B"],
+      "clearsObstacles": ["B", "C"],
       "flashSuitChecked": true,
-      "note": "Bomb the blocks before exiting G-mode and jumping through."
+      "note": "Bomb the blocks before exiting G-mode and jumping through.",
+      "devNote": [
+        "FIXME: If Bombs are available (vs. Power Bombs), it's not necessary to break all the bottom blocks."
+      ]
     },
     {
       "id": 122,
@@ -1002,7 +1012,7 @@
       "requires": [
         "canPrepareForNextRoom",
         "canCarefulJump",
-        {"heatFrames": 55},
+        {"heatFrames": 40},
         {"doorUnlockedAtNode": 2}
       ],
       "unlocksDoors": [
@@ -1025,6 +1035,42 @@
       "unlocksDoors": [{"types": ["ammo"], "requires": []}]
     },
     {
+      "id": 142,
+      "link": [2, 2],
+      "name": "Power Bomb Top Blocks",
+      "requires": [
+        "canCarefulJump",
+        "canMidAirMorph",
+        "h_usePowerBomb",
+        {"heatFrames": 150}
+      ],
+      "clearsObstacles": ["A"],
+      "note": [
+        "Jump and lay a Power Bomb mid-air, to break the top bomb blocks.",
+        "With a quick mid-air morph, the Power Bomb can be laid from within the top tile of the doorway;",
+        "alternatively, Samus can jump away from the doorway and lay it higher."
+      ],
+      "devNote": [
+        "The heat frames include time for the Power Bomb explosion to progress far enough",
+        "to not interfere with pausing for a spring ball jump afterward."
+      ]
+    },
+    {
+      "id": 143,
+      "link": [2, 2],
+      "name": "Springwall with Bombs",
+      "requires": [
+        "canSpringwall",
+        "h_useMorphBombs",
+        {"heatFrames": 190}
+      ],
+      "clearsObstacles": ["A"],
+      "note": [
+        "Use a wall jump into spring ball jump to break one of the bomb blocks above.",
+        "Then land back in the doorway."
+      ]
+    },
+    {
       "id": 14,
       "link": [2, 2],
       "name": "Crystal Flash",
@@ -1032,7 +1078,7 @@
         {"heatFrames": 40},
         "h_heatedCrystalFlash"
       ],
-      "clearsObstacles": ["B"],
+      "clearsObstacles": ["B", "C"],
       "flashSuitChecked": true
     },
     {
@@ -1089,7 +1135,31 @@
     {
       "id": 17,
       "link": [2, 3],
-      "name": "Space Screw",
+      "name": "Space Screw (Air Entry)",
+      "entranceCondition": {
+        "comeInJumping": {
+          "speedBooster": "any",
+          "minTiles": 0.4375
+        }
+      },
+      "requires": [
+        "canPrepareForNextRoom",
+        "SpaceJump",
+        "ScrewAttack",
+        {"or": [
+          {"heatFrames": 180},
+          {"and": [
+            "HiJump",
+            {"heatFrames": 125}
+          ]}
+        ]}
+      ],
+      "clearsObstacles": ["A"]
+    },
+    {
+      "id": 144,
+      "link": [2, 3],
+      "name": "Space Screw (Water Entry)",
       "entranceCondition": {
         "comeInNormally": {}
       },
@@ -1097,14 +1167,30 @@
         "canPrepareForNextRoom",
         "SpaceJump",
         "ScrewAttack",
-        {"heatFrames": 200}
+        {"or": [
+          {"heatFrames": 250},
+          {"and": [
+            "HiJump",
+            {"heatFrames": 170}
+          ]}
+        ]}
       ],
       "clearsObstacles": ["A"]
     },
     {
+      "id": 145,
+      "link": [2, 3],
+      "name": "Springwall",
+      "requires": [
+        {"obstaclesCleared": ["A"]},
+        "canSpringwall",
+        {"heatFrames": 170}
+      ]
+    },
+    {
       "id": 18,
       "link": [2, 3],
-      "name": "Doorway Speedjump",
+      "name": "Doorway Speedy Jump",
       "requires": [
         {"obstaclesCleared": ["A"]},
         "HiJump",
@@ -1196,7 +1282,7 @@
     {
       "id": 21,
       "link": [2, 3],
-      "name": "Transition Screwjump",
+      "name": "Transition Screw Jump",
       "entranceCondition": {
         "comeInRunning": {
           "speedBooster": true,
@@ -1204,7 +1290,7 @@
         }
       },
       "requires": [
-        {"notable": "Transition Screwjump"},
+        {"notable": "Transition Screw Jump"},
         "h_navigateHeatRooms",
         "ScrewAttack",
         "HiJump",
@@ -1217,7 +1303,7 @@
     {
       "id": 80,
       "link": [2, 3],
-      "name": "Transition Screwjump (Tricky Jump)",
+      "name": "Transition Screw Jump (Tricky Jump)",
       "entranceCondition": {
         "comeInRunning": {
           "speedBooster": true,
@@ -1225,7 +1311,7 @@
         }
       },
       "requires": [
-        {"notable": "Transition Screwjump"},
+        {"notable": "Transition Screw Jump"},
         "h_navigateHeatRooms",
         "ScrewAttack",
         "HiJump",
@@ -1239,7 +1325,7 @@
     {
       "id": 81,
       "link": [2, 3],
-      "name": "Transition Screwjump (No Walljump)",
+      "name": "Transition Screw Jump (No Walljump)",
       "entranceCondition": {
         "comeInRunning": {
           "speedBooster": true,
@@ -1247,7 +1333,7 @@
         }
       },
       "requires": [
-        {"notable": "Transition Screwjump"},
+        {"notable": "Transition Screw Jump"},
         "h_navigateHeatRooms",
         "ScrewAttack",
         "HiJump",
@@ -1259,7 +1345,7 @@
     {
       "id": 22,
       "link": [2, 3],
-      "name": "Transition Screwjump (Tricky Dash Jump)",
+      "name": "Transition Screw Jump (Tricky Dash Jump)",
       "entranceCondition": {
         "comeInRunning": {
           "speedBooster": true,
@@ -1267,7 +1353,7 @@
         }
       },
       "requires": [
-        {"notable": "Transition Screwjump"},
+        {"notable": "Transition Screw Jump"},
         "h_navigateHeatRooms",
         "ScrewAttack",
         "HiJump",
@@ -1276,7 +1362,10 @@
         {"heatFrames": 150}
       ],
       "clearsObstacles": ["A"],
-      "note": "Run through the doorway with enough momentum to break the bomb blocks with Screw."
+      "note": "Run through the doorway with enough momentum to break the bomb blocks with Screw.",
+      "devNote": [
+        "FIXME: Add option(s) to break the blocks with Screw Attack and then fall down."
+      ]
     },
     {
       "id": 23,
@@ -1408,9 +1497,9 @@
             {
               "minHeight": 2,
               "maxHeight": 2,
-              "obstructions": [[1, 0]],
               "minTiles": 27.4375,
               "speedBooster": true,
+              "obstructions": [[1, 0]],
               "requires": [
                 "HiJump",
                 {"heatFrames": 110}
@@ -1420,9 +1509,9 @@
             {
               "minHeight": 2,
               "maxHeight": 2,
-              "obstructions": [[1, 0]],
               "minTiles": 45,
               "speedBooster": true,
+              "obstructions": [[1, 0]],
               "requires": [
                 "canTrickyDashJump",
                 "canInsaneJump",
@@ -1433,9 +1522,9 @@
             {
               "minHeight": 3,
               "maxHeight": 3,
-              "obstructions": [[1, 0]],
               "minTiles": 28.2472,
               "speedBooster": true,
+              "obstructions": [[1, 0]],
               "requires": [
                 "HiJump",
                 {"heatFrames": 110}
@@ -1445,9 +1534,9 @@
             {
               "minHeight": 1,
               "maxHeight": 1,
-              "obstructions": [[3, 0]],
               "minTiles": 23.8731,
               "speedBooster": true,
+              "obstructions": [[3, 0]],
               "environment": "water",
               "requires": [
                 "HiJump",
@@ -1463,9 +1552,9 @@
             {
               "minHeight": 1,
               "maxHeight": 1,
-              "obstructions": [[3, 0]],
               "minTiles": 36.3703,
               "speedBooster": true,
+              "obstructions": [[3, 0]],
               "environment": "water",
               "requires": [
                 "canTrickyDashJump",
@@ -1482,9 +1571,9 @@
             {
               "minHeight": 2,
               "maxHeight": 2,
-              "obstructions": [[3, 0]],
               "minTiles": 31,
               "speedBooster": true,
+              "obstructions": [[3, 0]],
               "requires": [
                 "HiJump",
                 "canInsaneJump",
@@ -1495,9 +1584,9 @@
             {
               "minHeight": 3,
               "maxHeight": 3,
-              "obstructions": [[3, 0]],
               "minTiles": 30.4375,
               "speedBooster": true,
+              "obstructions": [[3, 0]],
               "requires": [
                 "HiJump",
                 "canInsaneJump",
@@ -1510,9 +1599,9 @@
             {
               "minHeight": 3,
               "maxHeight": 3,
-              "obstructions": [[3, 2]],
               "minTiles": 32.4375,
               "speedBooster": true,
+              "obstructions": [[3, 2]],
               "requires": [
                 "HiJump",
                 {"heatFrames": 110}
@@ -1522,9 +1611,9 @@
             {
               "minHeight": 3,
               "maxHeight": 3,
-              "obstructions": [[5, 2]],
               "minTiles": 31.4375,
               "speedBooster": true,
+              "obstructions": [[5, 2]],
               "requires": [
                 "HiJump",
                 "canInsaneJump",
@@ -1579,6 +1668,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         "h_heatProof",
         {"or": [
           "canWalljump",
@@ -1795,7 +1885,7 @@
     {
       "id": 34,
       "link": [2, 5],
-      "name": "Transition Speedjump with Bombs",
+      "name": "Transition Speedy Jump with Bombs",
       "entranceCondition": {
         "comeInJumping": {
           "speedBooster": true,
@@ -1803,11 +1893,11 @@
         }
       },
       "requires": [
-        {"notable": "Transition Speedjump with Bombs"},
+        {"notable": "Transition Speedy Jump with Bombs"},
         "HiJump",
         "canMidAirMorph",
         "h_useMorphBombs",
-        {"heatFrames": 200}
+        {"heatFrames": 155}
       ],
       "clearsObstacles": ["A"],
       "note": "Run in the adjacent room and jump through the door, to place a Bomb to break the top bomb blocks."
@@ -1815,7 +1905,7 @@
     {
       "id": 35,
       "link": [2, 5],
-      "name": "Transition Speedjump with Bombs (Tricky Dash Jump)",
+      "name": "Transition Speedy Jump with Bombs (Tricky Dash Jump)",
       "entranceCondition": {
         "comeInJumping": {
           "speedBooster": true,
@@ -1823,12 +1913,12 @@
         }
       },
       "requires": [
-        {"notable": "Transition Speedjump with Bombs"},
+        {"notable": "Transition Speedy Jump with Bombs"},
         "HiJump",
         "canTrickyDashJump",
         "canMidAirMorph",
         "h_useMorphBombs",
-        {"heatFrames": 200}
+        {"heatFrames": 155}
       ],
       "clearsObstacles": ["A"],
       "note": "Run in the adjacent room and jump through the door, to place a Bomb to break the top bomb blocks."
@@ -1868,9 +1958,9 @@
             {
               "minHeight": 1,
               "maxHeight": 1,
-              "obstructions": [[1, 0]],
               "minTiles": 16,
               "speedBooster": true,
+              "obstructions": [[1, 0]],
               "requires": [
                 "HiJump",
                 {"getBlueSpeed": {"usedTiles": 14, "openEnd": 1}},
@@ -1885,9 +1975,9 @@
             {
               "minHeight": 3,
               "maxHeight": 3,
-              "obstructions": [[3, 0]],
               "minTiles": 21.4375,
               "speedBooster": true,
+              "obstructions": [[3, 0]],
               "environment": "water",
               "requires": [
                 "HiJump",
@@ -1932,9 +2022,12 @@
         ]},
         {"heatFrames": 0}
       ],
-      "clearsObstacles": ["B"],
+      "clearsObstacles": ["B", "C"],
       "flashSuitChecked": true,
-      "note": "Bomb the blocks before exiting G-mode and jumping through."
+      "note": "Bomb the blocks before exiting G-mode and jumping through.",
+      "devNote": [
+        "FIXME: If Bombs are available (vs. Power Bombs), it's not necessary to break all the bottom blocks."
+      ]
     },
     {
       "id": 127,
@@ -2033,9 +2126,12 @@
         "h_additionalBomb",
         {"heatFrames": 0}
       ],
-      "clearsObstacles": ["A", "B"],
+      "clearsObstacles": ["A", "B", "C"],
       "flashSuitChecked": true,
-      "note": "Bomb all the blocks before exiting G-mode near the lower bomb blocks."
+      "note": "Bomb all the blocks before exiting G-mode near the lower bomb blocks.",
+      "devNote": [
+        "FIXME: If Bombs are available (vs. Power Bombs), it's not necessary to break all the bottom blocks."
+      ]
     },
     {
       "id": 130,
@@ -2067,11 +2163,14 @@
         "h_additionalBomb",
         {"heatFrames": 0}
       ],
-      "clearsObstacles": ["A", "B"],
+      "clearsObstacles": ["A", "B", "C"],
       "flashSuitChecked": true,
       "note": [
         "Bomb all the blocks before exiting G-mode near the lower bomb blocks.",
         "It is possible to fall back onto the door shell with artificial morph, then use Spring Ball to place a Power Bomb high enough."
+      ],
+      "devNote": [
+        "FIXME: If Bombs are available (vs. Power Bombs), it's not necessary to break all the bottom blocks."
       ]
     },
     {
@@ -2401,6 +2500,18 @@
       ]
     },
     {
+      "id": 146,
+      "link": [3, 2],
+      "name": "Super Sink",
+      "entranceCondition": {
+        "comeInWithSuperSink": {}
+      },
+      "requires": [
+        {"heatFrames": 115}
+      ],
+      "note": ["Enter the room with a super sink, in order to clip down to the door below."]
+    },
+    {
       "id": 40,
       "link": [3, 3],
       "name": "Leave With Runway (Blocks Broken)",
@@ -2466,18 +2577,23 @@
       "name": "Temporary Blue (Full Runway)",
       "entranceCondition": {
         "comeInShinecharging": {
-          "length": 12,
+          "length": 11,
           "openEnd": 0
         }
       },
       "requires": [
         "canTemporaryBlue",
         "canXRayTurnaround",
-        {"heatFrames": 285}
+        {"heatFrames": 160},
+        {"or": [
+          "canXRayCancelShinecharge",
+          {"heatFrames": 160}
+        ]}
       ],
       "clearsObstacles": ["A", "B"],
       "flashSuitChecked": true,
-      "note": "This expects the more controlled Temporary Blue to fall though the blocks, not storing a shinecharge on the first breakable block."
+      "note": "This expects the more controlled Temporary Blue to fall though the blocks, not storing a shinecharge on the first breakable block.",
+      "devNote": ["A significant amount of heat frames are implicit in the entrance condition."]
     },
     {
       "id": 44,
@@ -2491,7 +2607,11 @@
       },
       "requires": [
         "canTemporaryBlue",
-        {"heatFrames": 240}
+        {"heatFrames": 160},
+        {"or": [
+          "canXRayCancelShinecharge",
+          {"heatFrames": 160}
+        ]}
       ],
       "clearsObstacles": ["A", "B"],
       "flashSuitChecked": true,
@@ -2647,7 +2767,7 @@
       "name": "Power Bombs",
       "requires": [
         "h_usePowerBomb",
-        {"heatFrames": 220}
+        {"heatFrames": 195}
       ],
       "clearsObstacles": ["A"]
     },
@@ -2657,7 +2777,7 @@
       "name": "Bombs",
       "requires": [
         "h_useMorphBombs",
-        {"heatFrames": 220}
+        {"heatFrames": 185}
       ],
       "clearsObstacles": ["A"]
     },
@@ -2672,7 +2792,7 @@
         }
       },
       "requires": [
-        {"heatFrames": 120}
+        {"heatFrames": 110}
       ],
       "clearsObstacles": ["A"],
       "devNote": "FIXME: Running in is not required. Entering the room with canBlueSpaceJump could work, for example."
@@ -2906,13 +3026,86 @@
       "clearsObstacles": ["A", "B"]
     },
     {
+      "id": 147,
+      "link": [4, 3],
+      "name": "IBJ",
+      "requires": [
+        {"obstaclesCleared": ["B", "C"]},
+        "canLongIBJ",
+        {"or": [
+          {"heatFrames": 2090},
+          {"and": [
+            "canJumpIntoIBJ",
+            {"or": [
+              {"heatFrames": 1510},
+              {"and": [
+                "canDoubleBombJump",
+                {"heatFrames": 980}
+              ]},
+              {"and": [
+                "HiJump",
+                "canDoubleBombJump",
+                {"heatFrames": 860}
+              ]}
+            ]}
+          ]}
+        ]},
+        {"or": [
+          {"obstaclesCleared": ["A"]},
+          "canPowerBombMidIBJ",
+          {"and": [
+            "canBombAboveIBJ",
+            {"heatFrames": 60}
+          ]}
+        ]}
+      ],
+      "clearsObstacles": ["A"],
+      "devNote": [
+        "This assumes the bottom bomb blocks are completely broken,",
+        "making it necessary to start the IBJ from the bottom of the room."
+      ]
+    },
+    {
+      "id": 148,
+      "link": [4, 4],
+      "name": "IBJ to Break the Top Blocks",
+      "requires": [
+        {"obstaclesCleared": ["B", "C"]},
+        "canLongIBJ",
+        {"or": [
+          {"heatFrames": 2120},
+          {"and": [
+            "canJumpIntoIBJ",
+            {"or": [
+              {"heatFrames": 1540},
+              {"and": [
+                "canDoubleBombJump",
+                {"heatFrames": 1010}
+              ]},
+              {"and": [
+                "HiJump",
+                "canDoubleBombJump",
+                {"heatFrames": 890}
+              ]}
+            ]}
+          ]}
+        ]}
+      ],
+      "clearsObstacles": ["A"],
+      "note": "This expects that Samus falls down afterwards.",
+      "devNote": [
+        "This assumes the bottom bomb blocks are completely broken,",
+        "making it necessary to start the IBJ from the bottom of the room."
+      ]
+    },
+    {
       "id": 57,
       "link": [4, 4],
       "name": "Crystal Flash",
       "requires": [
         "h_heatedCrystalFlash"
       ],
-      "clearsObstacles": ["B"],
+      "clearsObstacles": ["B", "C"],
       "flashSuitChecked": true
     },
     {
@@ -2920,7 +3113,7 @@
       "link": [4, 5],
       "name": "Lower Bomb Blocks Already Broken",
       "requires": [
-        {"heatFrames": 120},
+        {"heatFrames": 70},
         {"obstaclesCleared": ["B"]}
       ]
     },
@@ -2930,7 +3123,7 @@
       "name": "Screw",
       "requires": [
         "ScrewAttack",
-        {"heatFrames": 120}
+        {"heatFrames": 70}
       ],
       "clearsObstacles": ["B"]
     },
@@ -2940,9 +3133,9 @@
       "name": "Power Bomb",
       "requires": [
         "h_usePowerBomb",
-        {"heatFrames": 220}
+        {"heatFrames": 170}
       ],
-      "clearsObstacles": ["B"]
+      "clearsObstacles": ["B", "C"]
     },
     {
       "id": 61,
@@ -2954,7 +3147,37 @@
           "h_useSpringBall"
         ]},
         "h_useMorphBombs",
-        {"heatFrames": 220}
+        {"heatFrames": 200}
+      ],
+      "clearsObstacles": ["B"]
+    },
+    {
+      "id": 149,
+      "link": [5, 1],
+      "name": "Base",
+      "requires": [
+        "ScrewAttack",
+        {"heatFrames": 90}
+      ],
+      "clearsObstacles": ["B"]
+    },
+    {
+      "id": 150,
+      "link": [5, 1],
+      "name": "Power Bomb",
+      "requires": [
+        "h_usePowerBomb",
+        {"heatFrames": 140}
+      ],
+      "clearsObstacles": ["B", "C"]
+    },
+    {
+      "id": 151,
+      "link": [5, 1],
+      "name": "Bombs",
+      "requires": [
+        "h_useMorphBombs",
+        {"heatFrames": 125}
       ],
       "clearsObstacles": ["B"]
     },
@@ -2963,20 +3186,34 @@
       "link": [5, 2],
       "name": "Base",
       "requires": [
-        {"heatFrames": 80},
         {"or": [
-          "HiJump",
-          "SpaceJump",
-          "canWalljump",
-          "h_crouchJumpDownGrab",
-          "canSpringBallJumpMidAir",
+          {"and": [
+            "HiJump",
+            {"heatFrames": 45}
+          ]},
+          {"and": [
+            "SpaceJump",
+            {"heatFrames": 80}
+          ]},
+          {"and": [
+            "canWalljump",
+            {"heatFrames": 50}
+          ]},
+          {"and": [
+            "h_crouchJumpDownGrab",
+            {"heatFrames": 65}
+          ]},
+          {"and": [
+            "canSpringBallJumpMidAir",
+            {"heatFrames": 80}
+          ]},
           {"and": [
             "canIBJ",
-            {"heatFrames": 440}
+            {"heatFrames": 520}
           ]},
           {"and": [
             "canJumpIntoIBJ",
-            {"heatFrames": 80}
+            {"heatFrames": 160}
           ]}
         ]}
       ]
@@ -2986,27 +3223,31 @@
       "link": [5, 3],
       "name": "IBJ",
       "requires": [
-        {"obstaclesCleared": ["A"]},
+        {"obstaclesNotCleared": ["C"]},
+        "canJumpIntoIBJ",
         "canLongIBJ",
-        {"heatFrames": 1300}
+        {"or": [
+          {"heatFrames": 1300},
+          {"and": [
+            "canDoubleBombJump",
+            {"heatFrames": 690}
+          ]},
+          {"and": [
+            "HiJump",
+            "canDoubleBombJump",
+            {"heatFrames": 590}
+          ]}
+        ]},
+        {"or": [
+          {"obstaclesCleared": ["A"]},
+          "canPowerBombMidIBJ",
+          {"and": [
+            "canBombAboveIBJ",
+            {"heatFrames": 60}
+          ]}
+        ]}
       ],
-      "devNote": [
-        "FIXME: This is a longer IBJ if B is broken with a power bomb (All the blocks are broken).",
-        "FIXME: Add more IBJ variations."
-      ]
-    },
-    {
-      "id": 64,
-      "link": [5, 3],
-      "name": "IBJ to Break the Top Blocks",
-      "requires": [
-        "h_navigateHeatRooms",
-        "canLongIBJ",
-        "canPowerBombMidIBJ",
-        {"heatFrames": 1300}
-      ],
-      "clearsObstacles": ["A"],
-      "note": "Place a Power Bomb during the IBJ to break the blocks without falling."
+      "clearsObstacles": ["A"]
     },
     {
       "id": 65,
@@ -3018,7 +3259,13 @@
           {"obstaclesCleared": ["A"]},
           "ScrewAttack"
         ]},
-        {"heatFrames": 400}
+        {"or": [
+          {"heatFrames": 300},
+          {"and": [
+            "HiJump",
+            {"heatFrames": 200}
+          ]}
+        ]}
       ]
     },
     {
@@ -3028,7 +3275,7 @@
       "requires": [
         {"obstaclesCleared": ["A"]},
         "h_heatedSpringwall",
-        {"heatFrames": 245}
+        {"heatFrames": 200}
       ]
     },
     {
@@ -3055,7 +3302,7 @@
         "h_usePowerBomb",
         {"heatFrames": 140}
       ],
-      "clearsObstacles": ["B"]
+      "clearsObstacles": ["B", "C"]
     },
     {
       "id": 69,
@@ -3070,7 +3317,7 @@
     {
       "id": 70,
       "link": [5, 5],
-      "name": "Power Bombs",
+      "name": "Power Bomb to Break the Top Blocks",
       "requires": [
         "h_usePowerBomb",
         "canTrivialMidAirMorph",
@@ -3087,12 +3334,27 @@
       "link": [5, 5],
       "name": "IBJ to Break the Top Blocks",
       "requires": [
+        {"obstaclesNotCleared": ["C"]},
         "canLongIBJ",
-        {"heatFrames": 1150}
+        "canJumpIntoIBJ",
+        {"or": [
+          {"heatFrames": 1150},
+          {"and": [
+            "canDoubleBombJump",
+            {"heatFrames": 660}
+          ]},
+          {"and": [
+            "HiJump",
+            "canDoubleBombJump",
+            {"heatFrames": 540}
+          ]}
+        ]}
       ],
       "clearsObstacles": ["A"],
-      "note": "Expects that Samus falls down afterwards.",
-      "devNote": "FIXME: This assumes B is not broken, add other IBJ variants."
+      "note": "This expects that Samus falls down afterwards.",
+      "devNote": [
+        "This assumes the lower bomb blocks are not completely broken (due to having used a Power Bomb)."
+      ]
     },
     {
       "id": 72,
@@ -3102,9 +3364,19 @@
         "h_useMorphBombs",
         "SpaceJump",
         "canMidAirMorph",
-        {"heatFrames": 250}
+        {"or": [
+          {"heatFrames": 340},
+          {"and": [
+            "HiJump",
+            {"heatFrames": 250}
+          ]}
+        ]}
       ],
-      "clearsObstacles": ["A"]
+      "clearsObstacles": ["A"],
+      "devNote": [
+        "FIXME: add strats that enter spinning from node 2 and use Space Jump + Bombs to break the blocks;",
+        "consider both air and water entry."
+      ]
     },
     {
       "id": 73,
@@ -3113,7 +3385,7 @@
       "requires": [
         "h_useMorphBombs",
         "h_heatedSpringwall",
-        {"heatFrames": 250}
+        {"heatFrames": 220}
       ],
       "clearsObstacles": ["A"],
       "note": "Use a Springwall to get up to the bomb blocks, to break them with a bomb."
@@ -3126,19 +3398,19 @@
         {"heatFrames": 40},
         "h_heatedCrystalFlash"
       ],
-      "clearsObstacles": ["B"],
+      "clearsObstacles": ["B", "C"],
       "flashSuitChecked": true
     }
   ],
   "notables": [
     {
       "id": 2,
-      "name": "Transition Screwjump",
+      "name": "Transition Screw Jump",
       "note": "Run through the doorway with enough momentum to break the bomb blocks with Screw."
     },
     {
       "id": 3,
-      "name": "Transition Speedjump with Bombs",
+      "name": "Transition Speedy Jump with Bombs",
       "note": "Run in the adjacent room and jump through the door, to place a Bomb to break the obstacle."
     },
     {
@@ -3158,6 +3430,6 @@
       ]
     }
   ],
-  "nextStratId": 142,
+  "nextStratId": 152,
   "nextNotableId": 6
 }

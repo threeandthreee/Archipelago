@@ -195,6 +195,10 @@ Itemmessageskind = typ.Literal[
     'CustomMessage',
     'MessageID'
 ]
+Jingle = typ.Literal[
+    'Minor',
+    'Major'
+]
 
 class BlocklayerItem(typ.TypedDict, total=False):
     X: Typeu8
@@ -227,6 +231,7 @@ class MarsschemaLocationsMajorlocationsItem(typ.TypedDict):
     """Valid items for shuffling."""
 
     ItemMessages: typ.NotRequired[Itemmessages]
+    Jingle: Jingle
 
 class MarsschemaLocationsMinorlocationsItem(typ.TypedDict):
     Area: Areaid
@@ -248,6 +253,7 @@ class MarsschemaLocationsMinorlocationsItem(typ.TypedDict):
     """Valid graphics for minor location items."""
 
     ItemMessages: typ.NotRequired[Itemmessages]
+    Jingle: Jingle
 
 class MarsschemaLocations(typ.TypedDict):
     """Specifies how the item locations in the game should be changed."""
@@ -458,6 +464,12 @@ class MarsschemaNavigationtext(typ.TypedDict, total=False):
     """Assigns the ship specific text."""
 
 
+
+class MarsschemaTitletextItem(typ.TypedDict, total=False):
+    Text: typ.Annotated[str, '/^[ -~]{0,30}$/']
+    """The ASCII text for this line"""
+
+    LineNum: typ.Annotated[int, '0 <= value <= 14']
 MarsschemaCreditstextItemLinetype = typ.Literal[
     'Blank',
     'Blue',
@@ -581,6 +593,9 @@ class Marsschema(typ.TypedDict, total=False):
     NavigationText: dict[Validlanguages, MarsschemaNavigationtext] = None
     """Specifies text to be displayed at navigation rooms and the ship."""
 
+    TitleText: list[MarsschemaTitletextItem] = None
+    """Lines of ascii text to write to the title screen."""
+
     CreditsText: list[MarsschemaCreditstextItem]
     """Lines of text to insert into the credits."""
 
@@ -611,8 +626,8 @@ class Marsschema(typ.TypedDict, total=False):
     PowerBombsWithoutBombs: bool = False
     """When enabled, lets you use Power Bombs without needing to collect Bomb Data."""
 
-    AntiSoftlockRoomEdits: bool = False
-    """Changes room layouts when enabled to prevent some accidental softlocks."""
+    AccessibilityPatches: bool = False
+    """Whether to apply patches for better accessibility."""
 
     LevelEdits: dict[Areaidkey, dict[str, MarsschemaLeveledits]]
     """Specifies room edits that should be done. These will be applied last."""

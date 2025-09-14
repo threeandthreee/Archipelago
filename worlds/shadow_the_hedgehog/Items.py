@@ -309,32 +309,32 @@ def GetSpecialWeapons():
     weapons = []
 
     weapons.append(
-        ItemInfo(id_s + 3, "Samurai Blade", ItemClassification.useful,
+        ItemInfo(id_s + 3, "Samurai Blade", ItemClassification.progression,
                  None, None, "SpecialWeapon", None)
     )
 
     weapons.append(
-        ItemInfo(id_s + 2, "Satellite Gun", ItemClassification.useful,
+        ItemInfo(id_s + 2, "Satellite Gun", ItemClassification.progression,
                  None, None, "SpecialWeapon", None)
     )
 
     weapons.append(
-        ItemInfo(id_s + 1, "Egg Vacuum", ItemClassification.useful,
+        ItemInfo(id_s + 1, "Egg Vacuum", ItemClassification.progression,
                  None, None, "SpecialWeapon", None)
     )
 
     weapons.append(
-        ItemInfo(id_s + 4, "Omochao Gun", ItemClassification.useful,
+        ItemInfo(id_s + 4, "Omochao Gun", ItemClassification.progression,
                  None, None, "SpecialWeapon", None)
     )
 
     weapons.append(
-        ItemInfo(id_s + 5, "Heal Cannon", ItemClassification.useful,
+        ItemInfo(id_s + 5, "Heal Cannon", ItemClassification.progression,
                  None, None, "SpecialWeapon", None)
     )
 
     weapons.append(
-        ItemInfo(id_s + 6, "Shadow Rifle", ItemClassification.useful,
+        ItemInfo(id_s + 6, "Shadow Rifle", ItemClassification.progression,
                  None, None, "SpecialWeapon", None)
     )
 
@@ -403,9 +403,6 @@ def GetJunkItemInfo():
 
     ring_items = GetRingItems()
     junk_items.extend(ring_items)
-
-    #special_weapons = GetSpecialWeapons()
-    #junk_items.extend(special_weapons)
 
     return junk_items
 
@@ -492,7 +489,9 @@ def AddItemsToStartInventory(world, count):
     base_plando_items = []
     plando_items = ShadowUtils.GetPlandoItems(world)
 
-    valid_removals = [ i for i in world.multiworld.itempool if i.name not in base_plando_items
+    multiworld_itempool_self = [ i for i in world.multiworld.itempool if i.player == world.player ]
+
+    valid_removals = [ i for i in multiworld_itempool_self if i.name not in base_plando_items
                        and i.classification == ItemClassification.progression and i.name not in plando_items]
 
     if len(valid_removals) < count:
@@ -523,6 +522,15 @@ def CountItems(world: World):
     for item in stage_objective_items_full:
         lookup = [x for x in MissionClearLocations
                   if x.stageId == item.stageId and x.alignmentId == item.alignmentId][0]
+
+        location_details = ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_OBJECTIVE,
+                                                  lookup.mission_object_name,
+                                                  world.options, lookup.stageId, lookup.alignmentId,
+                                                  world.options.percent_overrides)
+
+        result_sanity = ShadowUtils.GetObjectiveSanityFlag(world.options, location_details)
+        if not result_sanity:
+            continue
 
         max_available = ShadowUtils.getMaxRequired(
             ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_OBJECTIVE_AVAILABLE,
@@ -631,6 +639,15 @@ def GetStageItems(world, stage_objective_items=None):
 
         lookup = [x for x in MissionClearLocations
                   if x.stageId == item.stageId and x.alignmentId == item.alignmentId][0]
+
+        location_details = ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_OBJECTIVE,
+                                                                     lookup.mission_object_name,
+                                                                     world.options, lookup.stageId, lookup.alignmentId,
+                                                                     world.options.percent_overrides)
+
+        result_sanity = ShadowUtils.GetObjectiveSanityFlag(world.options, location_details)
+        if not result_sanity:
+            continue
 
         relevant_objective_complete = ShadowUtils.getMaxRequired(ShadowUtils.getObjectiveTypeAndPercentage(ShadowUtils.TYPE_ID_COMPLETION,
                                                   lookup.mission_object_name, world.options,
@@ -919,7 +936,8 @@ def PopulateItemPool(world: World):
             item_count = increment_item_count(item_count, 1)
         if world.options.object_ziplines and (ObjectTypes.ObjectType.GUN_ZIPWIRE in available_objects
             or ObjectTypes.ObjectType.SPACE_ZIPWIRE in available_objects or ObjectTypes.ObjectType.GUN_ZIPWIRE in available_objects or
-            ObjectTypes.ObjectType.BALLOON_ZIPWIRE in available_objects and "Zipwire" not in world.starting_items):
+            ObjectTypes.ObjectType.BALLOON_ZIPWIRE in available_objects or
+            ObjectTypes.ObjectType.CIRCUS_ZIPWIRE in available_objects) and "Zipwire" not in world.starting_items:
             mw_object_items.append(ShadowTheHedgehogItem
                                    ([o for o in object_items if o.name == "Zipwire"]
                                     [0], world.player))
@@ -993,11 +1011,16 @@ def PopulateItemPool(world: World):
         reverse_count = -junk_count
         junk_count = 0
 
-    if not world.options.include_last_way_shuffle and not world.options.exclude_go_mode_items:
-        tlw_locations = count_last_way_locations(world)
+    if not world.options.include_last_way_shuffle:
+        if not world.options.exclude_go_mode_items:
+            tlw_locations = count_last_way_locations(world)
+        else:
+            tlw_locations = 1
         if junk_count < tlw_locations:
             reverse_count += tlw_locations
             junk_count += tlw_locations
+
+
 
     logging.info("Junk counts are: junk:%d, reverse:%d", junk_count, reverse_count)
     if junk_count > 0:

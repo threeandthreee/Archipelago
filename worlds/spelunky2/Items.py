@@ -1,6 +1,7 @@
 from typing import Optional, NamedTuple
 from BaseClasses import Item, ItemClassification
-
+from . import locked_items, item_options
+from .enums import ItemName, ShortcutName, WorldName
 
 class Spelunky2Item(Item):
     game = "Spelunky 2"
@@ -13,121 +14,138 @@ class Spelunky2ItemData(NamedTuple):
 
 
 filler_items = {
-    "Rope Pile": Spelunky2ItemData(1),
-    "Bomb Bag": Spelunky2ItemData(2),
-    "Bomb Box": Spelunky2ItemData(3),
-    "Cooked Turkey": Spelunky2ItemData(4),
-    "Royal Jelly": Spelunky2ItemData(5),
-    "Gold Bar": Spelunky2ItemData(6),
+    ItemName.ROPE_PILE.value:   Spelunky2ItemData(1),
+    ItemName.BOMB_BAG.value:    Spelunky2ItemData(2),
+    ItemName.BOMB_BOX.value:    Spelunky2ItemData(3),
+    ItemName.COOKED_TURKEY.value: Spelunky2ItemData(4),
+    ItemName.ROYAL_JELLY.value: Spelunky2ItemData(5),
+    ItemName.GOLD_BAR.value:    Spelunky2ItemData(6),
+    ItemName.EMERALD_GEM.value: Spelunky2ItemData(7),
+    ItemName.SAPPHIRE_GEM.value: Spelunky2ItemData(8),
+    ItemName.RUBY_GEM.value:    Spelunky2ItemData(9),
+    ItemName.DIAMOND_GEM.value: Spelunky2ItemData(10),
 }
 
-characters = {
-    # Excluded until I figure out how to randomize starting characters
-    # "Ana Spelunky": Spelunky2ItemData(7, ItemClassification.filler),
-    # "Margaret Tunnel": Spelunky2ItemData(8, ItemClassification.filler),
-    # "Colin Northward": Spelunky2ItemData(9, ItemClassification.filler),
-    # "Roffy D. Sloth": Spelunky2ItemData(10, ItemClassification.filler),
-    "Alto Singh": Spelunky2ItemData(11, ItemClassification.filler),
-    "Liz Mutton": Spelunky2ItemData(12, ItemClassification.filler),
-    "Nekka the Eagle": Spelunky2ItemData(13, ItemClassification.filler),
-    "LISE Project": Spelunky2ItemData(14, ItemClassification.filler),
-    "Coco Von Diamonds": Spelunky2ItemData(15, ItemClassification.filler),
-    "Manfred Tunnel": Spelunky2ItemData(16, ItemClassification.filler),
-    "Little Jay": Spelunky2ItemData(17, ItemClassification.filler),
-    "Tina Flan": Spelunky2ItemData(18, ItemClassification.filler),
-    "Valerie Crump": Spelunky2ItemData(19, ItemClassification.filler),
-    "Au": Spelunky2ItemData(20, ItemClassification.filler),
-    "Demi Von Diamonds": Spelunky2ItemData(21, ItemClassification.filler),
-    "Pilot": Spelunky2ItemData(22, ItemClassification.filler),
-    "Princess Airyn": Spelunky2ItemData(23, ItemClassification.filler),
-    "Dirk Yamaoka": Spelunky2ItemData(24, ItemClassification.filler),
-    "Guy Spelunky": Spelunky2ItemData(25, ItemClassification.filler),
-    "Classic Guy": Spelunky2ItemData(26, ItemClassification.filler)
+characters = {  # 4 Characters randomly chosen, Ana/Margaret/Colin/Roffy will be found where non-starters exist
+    # ItemName.ANA_SPELUNKY.value:      Spelunky2ItemData(101),
+    # ItemName.MARGARET_TUNNEL.value:   Spelunky2ItemData(102),
+    # ItemName.COLIN_NORTHWARD.value:   Spelunky2ItemData(103),
+    # ItemName.ROFFY_D_SLOTH.value:     Spelunky2ItemData(104),
+    ItemName.ALTO_SINGH.value:         Spelunky2ItemData(105),
+    ItemName.LIZ_MUTTON.value:         Spelunky2ItemData(106),
+    ItemName.NEKKA_THE_EAGLE.value:    Spelunky2ItemData(107),
+    ItemName.LISE_PROJECT.value:       Spelunky2ItemData(108),
+    ItemName.COCO_VON_DIAMONDS.value:  Spelunky2ItemData(109),
+    ItemName.MANFRED_TUNNEL.value:     Spelunky2ItemData(110),
+    ItemName.LITTLE_JAY.value:         Spelunky2ItemData(111),
+    ItemName.TINA_FLAN.value:          Spelunky2ItemData(112),
+    ItemName.VALERIE_CRUMP.value:      Spelunky2ItemData(113),
+    ItemName.AU.value:                 Spelunky2ItemData(114),
+    ItemName.DEMI_VON_DIAMONDS.value:  Spelunky2ItemData(115),
+    ItemName.PILOT.value:              Spelunky2ItemData(116),
+    ItemName.PRINCESS_AIRYN.value:     Spelunky2ItemData(117),
+    ItemName.DIRK_YAMAOKA.value:       Spelunky2ItemData(118),
+    ItemName.GUY_SPELUNKY.value:       Spelunky2ItemData(119),
+    ItemName.CLASSIC_GUY.value:        Spelunky2ItemData(120),
 }
 
-key_items = {
-    "Udjat Eye": Spelunky2ItemData(27, ItemClassification.progression),
-    "Hedjet": Spelunky2ItemData(28, ItemClassification.progression),
-    "Crown": Spelunky2ItemData(29, ItemClassification.progression),
-    "Ankh": Spelunky2ItemData(30, ItemClassification.progression),
-    "Tablet of Destiny": Spelunky2ItemData(31, ItemClassification.progression),
-    "Excalibur": Spelunky2ItemData(32, ItemClassification.progression),
-    "Scepter": Spelunky2ItemData(33, ItemClassification.progression),
-    "Hou Yi's Bow": Spelunky2ItemData(34, ItemClassification.progression),
-    "Arrow of Light": Spelunky2ItemData(35, ItemClassification.progression),
-    "Ushabti": Spelunky2ItemData(36, ItemClassification.progression)  # Might change my mind about this one
-}
+locked_items_dict = {}
+item_code = 200
+for item_name in locked_items:
+    item_code += 1
+    locked_items_dict[item_name] = Spelunky2ItemData(item_code, ItemClassification.progression)
+
+upgrade_items_dict = {}
+item_code = 300
+for item_name in item_options:
+    item_code += 1
+    upgrade_items_dict[f"{item_name} Upgrade"] = Spelunky2ItemData(item_code, ItemClassification.useful)
+
+waddler_items_dict = {}
+item_code = 400
+for item_name in locked_items:
+    item_code += 1
+    waddler_items_dict[f"{item_name} Waddler Upgrade"] = Spelunky2ItemData(item_code, ItemClassification.useful)
 
 permanent_upgrades = {
-    "Starting Health Upgrade": Spelunky2ItemData(37, ItemClassification.useful, 16),
-    "Starting Bomb Upgrade": Spelunky2ItemData(38, ItemClassification.useful, 6),
-    "Starting Rope Upgrade": Spelunky2ItemData(39, ItemClassification.useful, 6),
-    "Paste": Spelunky2ItemData(40, ItemClassification.useful),
-    # "Four-Leaf Clover": Spelunky2ItemData(41, ItemClassification.useful),
-    "Progressive Compass": Spelunky2ItemData(42, ItemClassification.progression, 2),
-    "Eggplant": Spelunky2ItemData(43, ItemClassification.progression),
-    "Cosmic Ocean Checkpoint": Spelunky2ItemData(44, ItemClassification.useful)  # No amount set since it depends on player settings
+    ItemName.HEALTH_UPGRADE.value:           Spelunky2ItemData(501, ItemClassification.useful, 0),
+    ItemName.BOMB_UPGRADE.value:             Spelunky2ItemData(502, ItemClassification.useful, 0),
+    ItemName.ROPE_UPGRADE.value:             Spelunky2ItemData(503, ItemClassification.useful, 0),
+    ItemName.COSMIC_OCEAN_CP.value:          Spelunky2ItemData(504, ItemClassification.useful, 0),  # Count set by player settings
 }
 
-shortcuts = {
-    # "Progressive Shortcut": Spelunky2ItemData(45, ItemClassification.progression, 3),
-    # "Dwelling Shortcut": Spelunky2ItemData(46, ItemClassification.useful),
-    # "Olmec's Lair Shortcut": Spelunky2ItemData(47, ItemClassification.progression),
-    # "Ice Caves Shortcut": Spelunky2ItemData(48, ItemClassification.progression)
+shortcuts = {  # TODO: Maybe add more shortcuts by editing the Camp to allow specific world selection from camp
+    # ShortcutName.PROGRESSIVE.value:      Spelunky2ItemData(601, ItemClassification.helpful),
+    # ShortcutName.DWELLING.value:         Spelunky2ItemData(602, ItemClassification.helpful),
+    # ShortcutName.JUNGLE.value:           Spelunky2ItemData(603, ItemClassification.helpful),
+    # ShortcutName.VOLCANA.value:          Spelunky2ItemData(604, ItemClassification.helpful),
+    # ShortcutName.OLMECS_LAIR.value:      Spelunky2ItemData(605, ItemClassification.helpful),
+    # ShortcutName.TIDE_POOL.value:        Spelunky2ItemData(606, ItemClassification.helpful),
+    # ShortcutName.TEMPLE.value:           Spelunky2ItemData(607, ItemClassification.helpful),
+    # ShortcutName.ICE_CAVES.value:        Spelunky2ItemData(608, ItemClassification.helpful),
+    # ShortcutName.NEO_BABYLON.value:      Spelunky2ItemData(609, ItemClassification.helpful),  # literal "Neo Babylon" vs enum is "Neo Babylon Shortcut"
+    # ShortcutName.SUNKEN_CITY.value:      Spelunky2ItemData(610, ItemClassification.helpful),  # literal "Sunken City" vs enum is "Sunken City Shortcut"
 }
 
 world_unlocks = {
-    "Progressive World Unlock": Spelunky2ItemData(49, ItemClassification.progression, 7),
-    "Jungle": Spelunky2ItemData(50, ItemClassification.progression),
-    "Volcana": Spelunky2ItemData(51, ItemClassification.progression),
-    "Olmec's Lair": Spelunky2ItemData(52, ItemClassification.progression),
-    "Tide Pool": Spelunky2ItemData(53, ItemClassification.progression),
-    "Temple": Spelunky2ItemData(54, ItemClassification.progression),
-    "Ice Caves": Spelunky2ItemData(55, ItemClassification.progression),
-    "Neo Babylon": Spelunky2ItemData(56, ItemClassification.progression),
-    "Sunken City": Spelunky2ItemData(57, ItemClassification.progression),
-    "Cosmic Ocean": Spelunky2ItemData(58, ItemClassification.progression),
+    WorldName.PROGRESSIVE.value: Spelunky2ItemData(701, ItemClassification.progression, 0),  # Count set by goal
+    WorldName.JUNGLE.value:       Spelunky2ItemData(702, ItemClassification.progression, 0),
+    WorldName.VOLCANA.value:      Spelunky2ItemData(703, ItemClassification.progression, 0),
+    WorldName.OLMECS_LAIR.value:  Spelunky2ItemData(704, ItemClassification.progression, 0),
+    WorldName.TIDE_POOL.value:    Spelunky2ItemData(705, ItemClassification.progression, 0),
+    WorldName.TEMPLE.value:       Spelunky2ItemData(706, ItemClassification.progression, 0),
+    WorldName.ICE_CAVES.value:    Spelunky2ItemData(707, ItemClassification.progression, 0),
+    WorldName.NEO_BABYLON.value:  Spelunky2ItemData(708, ItemClassification.progression, 0),
+    WorldName.SUNKEN_CITY.value:  Spelunky2ItemData(709, ItemClassification.progression, 0),
+    WorldName.COSMIC_OCEAN.value: Spelunky2ItemData(710, ItemClassification.progression, 0),
 }
 
 traps = {
-    "Poison Trap": Spelunky2ItemData(59, ItemClassification.trap),
-    "Curse Trap": Spelunky2ItemData(60, ItemClassification.trap),
-    "Ghost Trap": Spelunky2ItemData(61, ItemClassification.trap),
-    "Stun Trap": Spelunky2ItemData(62, ItemClassification.trap),
-    "Loose Bombs Trap": Spelunky2ItemData(63, ItemClassification.trap),
-    "Blindness Trap": Spelunky2ItemData(64, ItemClassification.trap),
-    # "Amnesia Trap": Spelunky2ItemData(65, ItemClassification.trap),
-    # "Angry Shopkeepers Trap": Spelunky2ItemData(66, ItemClassification.trap),
-    "Punish Ball Trap": Spelunky2ItemData(67, ItemClassification.trap)
+    ItemName.POISON_TRAP.value:      Spelunky2ItemData(801, ItemClassification.trap, 0),
+    ItemName.CURSE_TRAP.value:       Spelunky2ItemData(802, ItemClassification.trap, 0),
+    ItemName.GHOST_TRAP.value:       Spelunky2ItemData(803, ItemClassification.trap, 0),
+    ItemName.STUN_TRAP.value:        Spelunky2ItemData(804, ItemClassification.trap, 0),
+    ItemName.LOOSE_BOMBS_TRAP.value: Spelunky2ItemData(805, ItemClassification.trap, 0),
+    ItemName.BLINDNESS_TRAP.value:   Spelunky2ItemData(806, ItemClassification.trap, 0),
+    # ItemName.AMNESIA_TRAP.value:     Spelunky2ItemData(807, ItemClassification.trap, 0),
+    # ItemName.ANGRY_SHOPKEEPERS_TRAP.value: Spelunky2ItemData(808, ItemClassification.trap, 0),
+    ItemName.PUNISH_BALL_TRAP.value: Spelunky2ItemData(809, ItemClassification.trap, 0),
 }
 
+# Populate further with locked_items, starter_items and quest_items inside __init.py__ based on Options
 item_data_table = {
     **filler_items,
     **characters,
-    **key_items,
+    **locked_items_dict,
+    **upgrade_items_dict,
+    **waddler_items_dict,
     **permanent_upgrades,
-    # **shortcuts,
     **world_unlocks,
+    # **shortcuts,
     **traps
 }
 
 filler_weights = {
-            "Rope Pile": 15,
-            "Bomb Bag": 15,
-            "Bomb Box": 5,
-            "Cooked Turkey": 20,
-            "Royal Jelly": 5,
-            "Gold Bar Gold": 40
-        }
+    ItemName.ROPE_PILE.value:    0,
+    ItemName.BOMB_BAG.value:     0,
+    ItemName.BOMB_BOX.value:     0,
+    ItemName.COOKED_TURKEY.value:0,
+    ItemName.ROYAL_JELLY.value:  0,
+    ItemName.GOLD_BAR.value:     0,
+    ItemName.EMERALD_GEM.value:  0,
+    ItemName.SAPPHIRE_GEM.value: 0,
+    ItemName.RUBY_GEM.value:     0,
+    ItemName.DIAMOND_GEM.value:  0,
+}
 
 trap_weights = {
-    "Poison Trap": 0,
-    "Curse Trap": 0,
-    "Ghost Trap": 0,
-    "Stun Trap": 0,
-    "Loose Bombs Trap": 0,
-    "Blindness Trap": 0,
-    # "Amnesia Trap": 0,
-    # "Angry Shopkeepers Trap": 0,
-    "Punish Ball Trap": 0
+    ItemName.POISON_TRAP.value:      0,
+    ItemName.CURSE_TRAP.value:       0,
+    ItemName.GHOST_TRAP.value:       0,
+    ItemName.STUN_TRAP.value:        0,
+    ItemName.LOOSE_BOMBS_TRAP.value: 0,
+    ItemName.BLINDNESS_TRAP.value:   0,
+    # ItemName.AMNESIA_TRAP.value:         0,
+    # ItemName.ANGRY_SHOPKEEPERS_TRAP.value:0,
+    ItemName.PUNISH_BALL_TRAP.value: 0,
 }

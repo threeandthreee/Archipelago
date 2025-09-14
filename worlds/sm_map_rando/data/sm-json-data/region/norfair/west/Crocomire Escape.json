@@ -165,11 +165,18 @@
             "HiJump",
             "SpeedBooster"
           ]},
-          "h_lavaProof"
+          {"and": [
+            "canComplexGMode",
+            "h_lavaProof"
+          ]}
         ]},
         "h_heatedGModeOpenDifferentDoor"
       ],
       "flashSuitChecked": true,
+      "note": [
+        "Go over the plateau, or under it with lava protection.",
+        "To avoid the Dragon's fireballs, be sure to kill it quickly, overload the drops with the Dragons on the left first, or exit G-mode."
+      ],
       "devNote": "FIXME: Damage through the lava could work, or maybe a Geruta damage boost. (Energy from immobile or CF)"
     },
     {
@@ -348,7 +355,7 @@
       "note": [
         "Exit the previous room with Samus in a standing pose (while grappled).",
         "After teleporting, press right to release Grapple while staying standing (not being forced into a crouch).",
-        "Then X-ray climb to get up to the door transition, without needing to open the door.",
+        "Then X-ray climb 1 screen to get up to the door transition, without needing to open the door.",
         "Samus will not be visible during the climb."
       ]
     },
@@ -357,6 +364,7 @@
       "link": [2, 1],
       "name": "G-Mode Setup - Get Hit By Geruta, Heatproof, Morph",
       "requires": [
+        "canComplexGMode",
         "h_heatProof",
         "canBePatient",
         "canCameraManip",
@@ -425,6 +433,7 @@
       "link": [2, 1],
       "name": "G-Mode Setup - Get Hit By Geruta, Heatproof, Morphless",
       "requires": [
+        "canComplexGMode",
         "h_heatProof",
         "canBePatient",
         "canCameraManip",
@@ -488,6 +497,7 @@
       "link": [2, 1],
       "name": "G-Mode Setup - Get Hit By Geruta, Heatproof, Frozen Geruta Step",
       "requires": [
+        "canComplexGMode",
         "h_heatProof",
         "canBeVeryPatient",
         "canCameraManip",
@@ -526,6 +536,7 @@
       },
       "requires": [
         "canTrickyUseFrozenEnemies",
+        "canTrickyDodgeEnemies",
         {"or": [
           "HiJump",
           "canSpringBallJumpMidAir"
@@ -566,12 +577,23 @@
               "canInsaneJump",
               "h_additionalBomb"
             ]}
+          ]},
+          {"and": [
+            "canHorizontalShinespark",
+            {"canShineCharge": {"usedTiles": 15, "openEnd": 2}},
+            {"shinespark": {"frames": 40, "excessFrames": 18}}
+          ]},
+          {"and": [
+            {"notable": "Ceiling Mockball Spring Fling"},
+            "SpeedBooster",
+            "canInsaneJump",
+            "canMomentumConservingMorph",
+            "canSpringFling"
           ]}
         ]},
         "h_heatedGModeOpenDifferentDoor"
       ],
-      "flashSuitChecked": true,
-      "devNote": "FIXME: A variant with shinesparking can be added. (Energy from immobile, CF, or energy free sparks)"
+      "flashSuitChecked": true
     },
     {
       "id": 52,
@@ -678,6 +700,47 @@
       ]
     },
     {
+      "id": 65,
+      "link": [2, 2],
+      "name": "G-Mode Setup - Get Hit By Geruta",
+      "requires": [
+        "canComplexGMode",
+        "h_heatProof",
+        "canBePatient",
+        {"or": [
+          {"and": [
+            "canInsaneJump",
+            "canTrickyUseFrozenEnemies"
+          ]},
+          {"enemyDamage": {"enemy": "Geruta", "type": "contact", "hits": 2}}
+        ]},
+        {"or": [
+          "canInsaneJump",
+          "canTrickyUseFrozenEnemies",
+          "Charge",
+          "Plasma",
+          "h_usePowerBomb",
+          {"ammo": {"type": "Missile", "count": 3}},
+          {"ammo": {"type": "Super", "count": 1}},
+          {"and": [
+            "ScrewAttack",
+            {"lavaFrames": 20}
+          ]}
+        ]}
+      ],
+      "exitCondition": {
+        "leaveWithGModeSetup": {}
+      },
+      "flashSuitChecked": true,
+      "note": [
+        "On room entry, perform a low spin jump onto the first ledge to avoid getting the Geruta to swoop to the right.",
+        "Jump against the left wall, then move right and the Geruta should come down quickly.",
+        "Move back and forth until it comes down further. This can be tricky if needing to avoid contact damage.",
+        "Quickly freezing the Geruta as it starts to come down can be used to avoid taking a hit.",
+        "Killing the Dragon on room entry can also be helpful."
+      ]
+    },
+    {
       "id": 53,
       "link": [2, 2],
       "name": "G-Mode With Frozen Geruta, Remote Acquire Item",
@@ -688,7 +751,9 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         "canTrickyUseFrozenEnemies",
+        "canTrickyDodgeEnemies",
         {"or": [
           "HiJump",
           "canSpringBallJumpMidAir"
@@ -710,6 +775,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         {"or": [
           "SpaceJump",
           {"and": [
@@ -727,6 +793,18 @@
             "canUnmorphBombBoost",
             "h_crouchJumpDownGrab",
             "canInsaneJump"
+          ]},
+          {"and": [
+            "canHorizontalShinespark",
+            {"canShineCharge": {"usedTiles": 15, "openEnd": 2}},
+            {"shinespark": {"frames": 40, "excessFrames": 18}}
+          ]},
+          {"and": [
+            {"notable": "Ceiling Mockball Spring Fling"},
+            "SpeedBooster",
+            "canInsaneJump",
+            "canMomentumConservingMorph",
+            "canSpringFling"
           ]}
         ]},
         "h_heatedDirectGModeLeaveSameDoor"
@@ -750,6 +828,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         {"or": [
           "h_artificialMorphLongIBJ",
           "h_artificialMorphJumpIntoIBJ"
@@ -758,6 +837,92 @@
       ],
       "collectsItems": [3],
       "flashSuitChecked": true
+    },
+    {
+      "id": 66,
+      "link": [2, 2],
+      "name": "Geruta Farm",
+      "requires": [
+        {"resetRoom": {"nodes": [2]}},
+        "h_heatProof",
+        {"cycleFrames": 300},
+        {"or": [
+          "Plasma",
+          "ScrewAttack",
+          "Wave",
+          "Spazer",
+          "canPseudoScrew",
+          {"cycleFrames": 90}
+        ]}
+      ],
+      "resetsObstacles": ["A"],
+      "farmCycleDrops": [{"enemy": "Geruta", "count": 1}]
+    },
+    {
+      "id": 67,
+      "link": [2, 2],
+      "name": "Dragon Farm (Lava Dive)",
+      "requires": [
+        {"resetRoom": {"nodes": [2]}},
+        "h_heatProof",
+        "h_lavaProof",
+        "Gravity",
+        {"cycleFrames": 500},
+        {"or": [
+          "ScrewAttack",
+          {"and": [
+            "Plasma",
+            {"cycleFrames": 60}
+          ]},
+          {"and": [
+            "h_useMorphBombs",
+            "canFarmWhileShooting",
+            {"cycleFrames": 1700}
+          ]}
+        ]}
+      ],
+      "resetsObstacles": ["A"],
+      "farmCycleDrops": [{"enemy": "Dragon", "count": 5}]
+    },
+    {
+      "id": 68,
+      "link": [2, 2],
+      "name": "Dragon Farm (Avoid Lava)",
+      "requires": [
+        {"resetRoom": {"nodes": [2]}},
+        "h_heatProof",
+        {"or": [
+          {"and": [
+            "Morph",
+            "Grapple",
+            "Plasma",
+            "canCameraManip",
+            {"cycleFrames": 1620}
+          ]},
+          {"and": [
+            "HiJump",
+            "SpeedBooster",
+            "Grapple",
+            "Plasma",
+            "canCameraManip",
+            {"cycleFrames": 1920}
+          ]},
+          {"and": [
+            "SpaceJump",
+            "Plasma",
+            "canCameraManip",
+            {"cycleFrames": 1770}
+          ]},
+          {"and": [
+            "canPreciseSpaceJump",
+            "ScrewAttack",
+            {"cycleFrames": 1440}
+          ]}
+        ]}
+      ],
+      "resetsObstacles": ["A"],
+      "farmCycleDrops": [{"enemy": "Dragon", "count": 5}],
+      "note": "Jump and aim down to make the Dragons active by bringing them on camera."
     },
     {
       "id": 15,
@@ -1087,6 +1252,7 @@
       "requires": [
         "h_heatedGMode",
         "canTrickyUseFrozenEnemies",
+        "canTrickyDodgeEnemies",
         {"or": [
           "HiJump",
           "canSpringBallJumpMidAir"
@@ -1130,6 +1296,11 @@
             ]}
           ]},
           {"and": [
+            "canHorizontalShinespark",
+            {"canShineCharge": {"usedTiles": 15, "openEnd": 2}},
+            {"shinespark": {"frames": 40, "excessFrames": 18}}
+          ]},
+          {"and": [
             {"notable": "Ceiling Mockball Spring Fling"},
             "SpeedBooster",
             "canInsaneJump",
@@ -1140,7 +1311,7 @@
         {"heatFrames": 0}
       ],
       "flashSuitChecked": true,
-      "devNote": "FIXME: Variants with shinesparking or Geruta damage boost can be added. (Energy from immobile, CF, or energy free sparks)"
+      "devNote": "FIXME: Variants with Geruta damage boost can be added. (Energy from immobile or CF)"
     },
     {
       "id": 58,
@@ -1175,6 +1346,7 @@
       "requires": [
         "h_heatedGMode",
         "canTrickyUseFrozenEnemies",
+        "canTrickyDodgeEnemies",
         {"or": [
           "HiJump",
           "canSpringBallJumpMidAir"
@@ -1220,6 +1392,11 @@
               "canInsaneJump",
               "h_additionalBomb"
             ]}
+          ]},
+          {"and": [
+            "canHorizontalShinespark",
+            {"canShineCharge": {"usedTiles": 15, "openEnd": 2}},
+            {"shinespark": {"frames": 40, "excessFrames": 18}}
           ]},
           {"and": [
             {"notable": "Ceiling Mockball Spring Fling"},
@@ -1431,6 +1608,21 @@
       "note": "This strat just waits out the Dragon."
     },
     {
+      "id": 69,
+      "link": [3, 2],
+      "name": "Frozen Geruta Platform",
+      "requires": [
+        "h_heatProof",
+        "canTrickyUseFrozenEnemies",
+        {"or": [
+          "HiJump",
+          "canTrickyDodgeEnemies"
+        ]}
+      ],
+      "flashSuitChecked": true,
+      "note": "It is possible to lure the Geruta to be used as a platform with nothing but Ice."
+    },
+    {
       "id": 38,
       "link": [3, 2],
       "name": "Reverse Shinespark",
@@ -1543,6 +1735,6 @@
       ]
     }
   ],
-  "nextStratId": 65,
+  "nextStratId": 70,
   "nextNotableId": 8
 }

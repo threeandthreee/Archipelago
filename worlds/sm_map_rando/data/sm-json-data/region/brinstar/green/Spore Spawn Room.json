@@ -134,7 +134,8 @@
       "note": [
         "Use the Plasma Special Beam Attack to kill Spore Spawn from above.",
         "Stand in the middle of the second lowest platform above Spore Spawn, facing left and crouched.",
-        "Then use Xray to kill Spore Spawn in 1 cycle."
+        "Then quickly use X-Ray to kill Spore Spawn in 1 cycle.",
+        "Jumping against the ledge above then rotating to the left after landing will put Samus into a good position."
       ]
     },
     {
@@ -158,6 +159,18 @@
       "devNote": [
         "Even though the fight is active, node 2 can freely enter the fight or leave the room.",
         "FIXME: A different exact fall speed value changes the movements needed for the clip."
+      ]
+    },
+    {
+      "id": 17,
+      "link": [1, 2],
+      "name": "Super Sink",
+      "entranceCondition": {
+        "comeInWithSuperSink": {}
+      },
+      "requires": [],
+      "note": [
+        "Enter the room with a super sink, in order to clip down into the fight arena."
       ]
     },
     {
@@ -300,6 +313,6 @@
       ]
     }
   ],
-  "nextStratId": 17,
+  "nextStratId": 18,
   "nextNotableId": 3
 }

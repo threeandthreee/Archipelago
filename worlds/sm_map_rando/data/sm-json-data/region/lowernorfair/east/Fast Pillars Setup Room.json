@@ -162,6 +162,75 @@
   ],
   "strats": [
     {
+      "id": 109,
+      "link": [1, 1],
+      "name": "Viola Farm",
+      "requires": [
+        "h_heatProof",
+        "h_usePowerBomb",
+        {"resetRoom": {"nodes": [1]}},
+        {"cycleFrames": 360},
+        {"or": [
+          "ScrewAttack",
+          "canDodgeWhileShooting"
+        ]},
+        {"or": [
+          "canWalljump",
+          "SpaceJump",
+          {"and": [
+            "HiJump",
+            {"cycleFrames": 20}
+          ]},
+          {"and": [
+            "canSpringBallJumpMidAir",
+            "h_doubleEquipmentScreenCycleFrames",
+            {"cycleFrames": 60}
+          ]}
+        ]}
+      ],
+      "clearsObstacles": ["A"],
+      "farmCycleDrops": [{"enemy": "Viola", "count": 2}],
+      "flashSuitChecked": true,
+      "note": "Enter the room standing so the Pirate will shoot and then walk away."
+    },
+    {
+      "id": 110,
+      "link": [1, 1],
+      "name": "Pirate Farm",
+      "requires": [
+        "h_heatProof",
+        {"resetRoom": {"nodes": [1]}},
+        {"or": [
+          {"and": [
+            "canDodgeWhileShooting",
+            "Charge",
+            "Plasma",
+            {"cycleFrames": 215}
+          ]},
+          {"and": [
+            "canFarmWhileShooting",
+            "Charge",
+            "Wave",
+            "Spazer",
+            "Ice",
+            {"cycleFrames": 630}
+          ]},
+          {"and": [
+            "ScrewAttack",
+            {"cycleFrames": 135}
+          ]}
+        ]}
+      ],
+      "resetsObstacles": ["A"],
+      "farmCycleDrops": [
+        {"enemy": "Yellow Space Pirate (standing)", "count": 1},
+        {"enemy": "Yellow Space Pirate (wall)", "count": 1}
+      ],
+      "flashSuitChecked": true,
+      "note": "If using Charge, shoot at the standing Pirate and then crouch to avoid any lazers.",
+      "devNote": "FIXME: There are slower ways to farm these."
+    },
+    {
       "id": 1,
       "link": [1, 1],
       "name": "Leave With Runway (Pirates Alive)",
@@ -476,21 +545,40 @@
       "requires": [
         "canXRayClimb",
         {"enemyDamage": {
-          "enemy": "Yellow Space Pirate (wall)",
-          "type": "contact",
-          "hits": 2
+          "enemy": "Yellow Space Pirate (standing)",
+          "type": "laser",
+          "hits": 1
         }},
-        {"enemyKill": {
-          "enemies": [["Yellow Space Pirate (standing)", "Yellow Space Pirate (wall)"]],
-          "explicitWeapons": ["Missile", "Super"]
-        }},
+        {"or": [
+          {"and": [
+            "canTrickyDodgeEnemies",
+            {"enemyKill": {
+              "enemies": [["Yellow Space Pirate (standing)", "Yellow Space Pirate (wall)"]],
+              "explicitWeapons": ["Super", "Charge+Plasma"]
+            }}
+          ]},
+          {"and": [
+            {"enemyDamage": {
+              "enemy": "Yellow Space Pirate (wall)",
+              "type": "contact",
+              "hits": 1
+            }},
+            {"enemyKill": {
+              "enemies": [["Yellow Space Pirate (standing)", "Yellow Space Pirate (wall)"]],
+              "explicitWeapons": ["Missile", "Super", "Charge+Plasma"]
+            }}
+          ]}
+        ]},
         {"heatFrames": 1260}
       ],
       "flashSuitChecked": true,
       "note": [
         "X-Ray climb up the left wall in order to jump to the center platform.",
-        "Quickly kill the pirates using ammo before beginning the X-Ray climb.",
+        "Quickly kill the pirates before beginning the X-Ray climb.",
         "Climb to just above the door shell and do a turnaround spinjump to reach the platform."
+      ],
+      "devNote": [
+        "FIXME: other weapons could work for killing the Pirates, with more damage taken."
       ]
     },
     {
@@ -579,8 +667,8 @@
       "name": "Come in Running, Tricky Dash Jump",
       "entranceCondition": {
         "comeInRunning": {
-          "minTiles": 1,
-          "speedBooster": true
+          "speedBooster": true,
+          "minTiles": 1
         }
       },
       "requires": [
@@ -914,7 +1002,7 @@
             {"position": [8, 3], "note": "Grapple Beam Room"},
             {"position": [7, 3], "note": "Colosseum"},
             {"position": [6, 4], "note": "Grapple Tutorial Room 2"},
-            {"position": [6, 2], "note": "Spiky Acid Snakes Tunnel"}
+            {"position": [6, 2], "note": "Lava Grapple Tunnel"}
           ]
         }
       },
@@ -970,7 +1058,7 @@
             "canJumpIntoIBJ"
           ]}
         ]},
-        {"heatFrames": 80}
+        {"heatFrames": 70}
       ],
       "flashSuitChecked": true,
       "note": "After climbing the room, it is possible to shoot at the door and then use X-Ray, so the shot hits immediately afterwards.",
@@ -993,8 +1081,11 @@
         "h_heatedGMode",
         {"ammo": {"type": "PowerBomb", "count": 3}},
         "h_artificialMorphIBJ",
-        "canInsaneJump",
-        {"heatFrames": 80}
+        {"or": [
+          "canInsaneJump",
+          {"ammo": {"type": "PowerBomb", "count": 3}}
+        ]},
+        {"heatFrames": 70}
       ],
       "clearsObstacles": ["A"],
       "flashSuitChecked": true,
@@ -1021,14 +1112,14 @@
         "h_heatedGMode",
         "h_artificialMorphIBJ",
         "canTrickyGMode",
-        {"heatFrames": 80}
+        {"heatFrames": 70}
       ],
       "flashSuitChecked": true,
       "note": [
         "IBJ up the room while avoiding any of the invisible, stationary lasers that the pirates have placed;",
         "it is possible to manipulate the bottom pirate to place several lasers, in order to overload them,",
         "and then IBJ over the pirate and IBJ again from the right corner.",
-        "OVerloading the lasers can prevent the wall pirates from placing one when they jump. Abort the IBJ and fall if necessary to avoid a pirate hit.",
+        "Overloading the lasers can prevent the wall pirates from placing one when they jump. Abort the IBJ and fall if necessary to avoid a pirate hit.",
         "It is then possible to shoot at the door and then use X-Ray, so the shot hits immediately afterwards."
       ]
     },
@@ -1066,6 +1157,32 @@
       "note": [
         "Shoot at the Standing Pirate to prevent it from attacking.",
         "Then clip through the Power Bomb blocks with a moonfall."
+      ]
+    },
+    {
+      "id": 108,
+      "link": [1, 5],
+      "name": "Pirate Ice Moonfall Clip",
+      "requires": [
+        "Charge",
+        "h_heatProof",
+        "canTrickyUseFrozenEnemies",
+        "canEnemyStuckMoonfall",
+        "canFreeFallClip"
+      ],
+      "note": [
+        "Freeze the standing Pirate and one of the wall Pirates above it, to be able to moonfall between them.",
+        "While moonfalling, charge a shot to kill the bottom Pirate, hold forward to change poses and clip past the Power Bomb blocks below."
+      ],
+      "detailNote": [
+        "To freeze the standing Pirate, it can help to 'doppler' it:",
+        "stun the Pirate by firing an uncharged shot from a distance, then walk toward it while charging.",
+        "Crouch while the standing Pirate is frozen, and when it thaws it will not see Samus.",
+        "Allow it to walk as far left as possible, and freeze it again.",
+        "Manipulate a wall Pirate using the fact that it climb upwards after jumping to the left and downward after jumping to the right.",
+        "Frozen enemies thaw sooner in Norfair rooms, which makes this trick very precise.",
+        "The clip will fail if Samus has either too little or too much fall speed.",
+        "There is a 6-frame window to kill the bottom Pirate to fall with a correct amount of speed."
       ]
     },
     {
@@ -1118,6 +1235,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         "canXRayClimb",
         {"heatFrames": 1600}
       ],
@@ -1152,6 +1270,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         "h_heatProof",
         "canXRayClimb"
       ],
@@ -1362,6 +1481,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         "canXRayClimb",
         {"heatFrames": 1650}
       ],
@@ -1634,14 +1754,15 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         "h_heatProof",
-        "canXRayClimb"
+        "canLongXRayClimb"
       ],
       "bypassesDoorShell": true,
       "flashSuitChecked": true,
       "note": [
         "Enter with G-mode direct, back up to between 1 and 6 pixels from the door transition, and activate X-ray to get very deep stuck in the door.",
-        "Climb up 1 screen, and perform a turnaround buffered spin-jump away from the door to trigger the transition, bypassing any lock on the door."
+        "Climb up 2 screens, and perform a turnaround buffered spin-jump away from the door to trigger the transition, bypassing any lock on the door."
       ]
     },
     {
@@ -1986,6 +2107,75 @@
       "devNote": ["FIXME: An option of killing the Pirate can also be possible."]
     },
     {
+      "id": 111,
+      "link": [4, 4],
+      "name": "Viola Farm",
+      "requires": [
+        "h_heatProof",
+        "h_usePowerBomb",
+        {"resetRoom": {"nodes": [4]}},
+        {"cycleFrames": 540},
+        {"or": [
+          "ScrewAttack",
+          "canInsaneJump"
+        ]},
+        {"or": [
+          "canWalljump",
+          "HiJump",
+          {"and": [
+            "SpaceJump",
+            {"cycleFrames": 60}
+          ]},
+          {"and": [
+            "canSpringBallJumpMidAir",
+            "h_doubleEquipmentScreenCycleFrames",
+            "h_doubleEquipmentScreenCycleFrames",
+            {"cycleFrames": 180}
+          ]}
+        ]}
+      ],
+      "clearsObstacles": ["A"],
+      "farmCycleDrops": [{"enemy": "Viola", "count": 2}],
+      "flashSuitChecked": true,
+      "note": [
+        "Bait the top Pirate back to the left and then each Pirate will be clear of the door for a short time.",
+        "Place the Power Bomb on the floor to kill the Violas together."
+      ]
+    },
+    {
+      "id": 112,
+      "link": [4, 4],
+      "name": "Pirate Farm",
+      "requires": [
+        "h_heatProof",
+        {"resetRoom": {"nodes": [4]}},
+        {"or": [
+          {"and": [
+            "canDodgeWhileShooting",
+            "Charge",
+            "Plasma",
+            {"cycleFrames": 240}
+          ]},
+          {"and": [
+            "canFarmWhileShooting",
+            "Charge",
+            "Wave",
+            "Spazer",
+            "Ice",
+            {"cycleFrames": 705}
+          ]},
+          {"and": [
+            "ScrewAttack",
+            {"cycleFrames": 185}
+          ]}
+        ]}
+      ],
+      "resetsObstacles": ["A"],
+      "farmCycleDrops": [{"enemy": "Yellow Space Pirate (wall)", "count": 1}],
+      "flashSuitChecked": true,
+      "devNote": "FIXME: There are more ways to farm the Pirates."
+    },
+    {
       "id": 51,
       "link": [4, 4],
       "name": "Crystal Flash",
@@ -2094,7 +2284,7 @@
       "name": "HiJump",
       "requires": [
         "HiJump",
-        {"heatFrames": 250},
+        {"heatFrames": 200},
         {"or": [
           {"and": [
             "h_usePowerBomb",
@@ -2119,11 +2309,17 @@
       "name": "HiJumpless",
       "requires": [
         {"or": [
-          "canPreciseWalljump",
+          {"and": [
+            "canPreciseWalljump",
+            {"or": [
+              "canStationarySpinJump",
+              {"heatFrames": 250}
+            ]}
+          ]},
           "canSpringBallJumpMidAir",
           "SpaceJump"
         ]},
-        {"heatFrames": 400},
+        {"heatFrames": 250},
         {"or": [
           "h_usePowerBomb",
           {"obstaclesCleared": ["A"]}
@@ -2321,13 +2517,35 @@
       "name": "Viola Farm",
       "requires": [
         "h_heatProof",
-        {"resetRoom": {
-          "nodes": [2, 3]
-        }},
-        {"refill": ["PowerBomb"]}
+        {"resetRoom": {"nodes": [2, 3]}},
+        {"cycleFrames": 200}
       ],
       "resetsObstacles": ["A"],
+      "farmCycleDrops": [{"enemy": "Viola", "count": 2}],
       "flashSuitChecked": true
+    },
+    {
+      "id": 113,
+      "link": [5, 5],
+      "name": "Fast Viola Farm",
+      "requires": [
+        {"heatFrames": 200},
+        {"partialRefill": {"type": "PowerBomb", "limit": 2}}
+      ],
+      "flashSuitChecked": true
+    },
+    {
+      "id": 114,
+      "link": [5, 5],
+      "name": "Long Viola Farm",
+      "requires": [
+        {"resetRoom": {"nodes": [2, 3]}},
+        {"heatFrames": 1440},
+        {"partialRefill": {"type": "PowerBomb", "limit": 12}}
+      ],
+      "resetsObstacles": ["A"],
+      "flashSuitChecked": true,
+      "devNote": "Extra heat frames are added in case the adjacent room is also heated."
     },
     {
       "id": 62,
@@ -2351,6 +2569,6 @@
     }
   ],
   "notables": [],
-  "nextStratId": 108,
+  "nextStratId": 115,
   "nextNotableId": 1
 }

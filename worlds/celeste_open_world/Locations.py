@@ -27,7 +27,7 @@ class CelesteLocationData(NamedTuple):
 checkpoint_location_data_table: dict[str, CelesteLocationData] = {}
 key_location_data_table: dict[str, CelesteLocationData] = {}
 
-location_id_offsets: dict[LocationType, int] = {
+location_id_offsets: dict[LocationType, int | None] = {
     LocationType.strawberry:        celeste_base_id,
     LocationType.golden_strawberry: celeste_base_id + 0x1000,
     LocationType.cassette:          celeste_base_id + 0x2000,
@@ -139,13 +139,23 @@ def create_regions_and_locations(world: CelesteOpenWorld):
                         world.active_gem_names.append(level_location.display_name)
 
                     location_rule = None
-                    if len(level_location.possible_access) > 0:
+                    if len(level_location.possible_access) == 1:
+                        only_access = level_location.possible_access[0]
+                        if len(only_access) == 1:
+                            only_item = level_location.possible_access[0][0]
+                            def location_rule_func(state, only_item=only_item):
+                                return state.has(only_item, world.player)
+                            location_rule = location_rule_func
+                        else:
+                            def location_rule_func(state, only_access=only_access):
+                                return state.has_all(only_access, world.player)
+                            location_rule = location_rule_func
+                    elif len(level_location.possible_access) > 0:
                         def location_rule_func(state, level_location=level_location):
                             for sublist in level_location.possible_access:
                                 if state.has_all(sublist, world.player):
                                     return True
                             return False
-
                         location_rule = location_rule_func
 
                     if level_location.loc_type == LocationType.clutter:
@@ -162,14 +172,26 @@ def create_regions_and_locations(world: CelesteOpenWorld):
                     region.locations.append(location)
 
             for pre_region in room.regions:
-                region = world.multiworld.get_region(pre_region.name, world.player)
+                region = world.get_region(pre_region.name)
                 for connection in pre_region.connections:
                     connection_rule = None
-                    if len(connection.possible_access) > 0:
+                    if len(connection.possible_access) == 1:
+                        only_access = connection.possible_access[0]
+                        if len(only_access) == 1:
+                            only_item = connection.possible_access[0][0]
+                            def connection_rule_func(state, only_item=only_item):
+                                return state.has(only_item, world.player)
+                            connection_rule = connection_rule_func
+                        else:
+                            def connection_rule_func(state, only_access=only_access):
+                                return state.has_all(only_access, world.player)
+                            connection_rule = connection_rule_func
+                    elif len(connection.possible_access) > 0:
                         def connection_rule_func(state, connection=connection):
                             for sublist in connection.possible_access:
                                 if state.has_all(sublist, world.player):
                                     return True
+                            return False
 
                         connection_rule = connection_rule_func
 
@@ -208,15 +230,15 @@ def create_regions_and_locations(world: CelesteOpenWorld):
                     }, CelesteLocation)
 
         for room_connection in level.room_connections:
-            source_region = world.multiworld.get_region(room_connection.source.name, world.player)
+            source_region = world.get_region(room_connection.source.name)
             source_region.add_exits([room_connection.dest.name])
             if room_connection.two_way:
-                dest_region = world.multiworld.get_region(room_connection.dest.name, world.player)
+                dest_region = world.get_region(room_connection.dest.name)
                 dest_region.add_exits([room_connection.source.name])
 
         if level.name == "10b":
             # Manually connect the two parts of Farewell
-            source_region = world.multiworld.get_region("10a_e-08_east", world.player)
+            source_region = world.get_region("10a_e-08_east")
             source_region.add_exits(["10b_f-door_west"])
 
         if level.name == "10c":
@@ -224,11 +246,11 @@ def create_regions_and_locations(world: CelesteOpenWorld):
             golden_items: list[str] = [ItemName.traffic_blocks, ItemName.dash_refills, ItemName.double_dash_refills, ItemName.dream_blocks, ItemName.swap_blocks, ItemName.move_blocks, ItemName.blue_boosters, ItemName.springs, ItemName.feathers, ItemName.coins, ItemName.red_boosters, ItemName.kevin_blocks, ItemName.core_blocks, ItemName.fire_ice_balls, ItemName.badeline_boosters, ItemName.bird, ItemName.breaker_boxes, ItemName.pufferfish, ItemName.jellyfish, ItemName.pink_cassette_blocks, ItemName.blue_cassette_blocks, ItemName.yellow_cassette_blocks, ItemName.green_cassette_blocks]
             golden_rule = lambda state: state.has_all(golden_items, world.player)
 
-            source_region_end = world.multiworld.get_region("10b_j-19_top", world.player)
+            source_region_end = world.get_region("10b_j-19_top")
             source_region_end.add_exits(["10c_end-golden_bottom"], {"10c_end-golden_bottom": golden_rule})
-            source_region_moon = world.multiworld.get_region("10b_j-16_east", world.player)
+            source_region_moon = world.get_region("10b_j-16_east")
             source_region_moon.add_exits(["10c_end-golden_bottom"], {"10c_end-golden_bottom": golden_rule})
-            source_region_golden = world.multiworld.get_region("10c_end-golden_top", world.player)
+            source_region_golden = world.get_region("10c_end-golden_top")
             source_region_golden.add_exits(["10b_GOAL_main"])
 
 

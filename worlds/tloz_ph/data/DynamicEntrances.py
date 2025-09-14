@@ -22,13 +22,13 @@ DYNAMIC_ENTRANCES = {
                               "Temple of Fire 1F Maze Chest"],
     },
     "Shortcut to Temple of Wind": {
-        "entrance": "Ocean NW Isle of Gust",
+        "entrance": "Ocean NW Gust",
         "destination": "ToW Entrance",
         "has_slot_data": [("dungeon_shortcuts", 1)],
         "has_locations": LOCATION_GROUPS["Isle of Gust"],
     },
     "Shortcut to Temple of Wind no digging": {
-        "entrance": "Ocean NW Isle of Gust",
+        "entrance": "Ocean NW Gust",
         "destination": "ToW Entrance",
         "has_slot_data": [("dungeon_shortcuts", 1), ("randomize_digs", 0)],
         "has_locations": [
@@ -112,25 +112,10 @@ for name, data in DYNAMIC_ENTRANCES.items():
     entrance_data = ENTRANCES[data["entrance"]]
     destination_data = ENTRANCES[data["destination"]]
 
-    entrance_scene = create_scene_id(entrance_data["entrance"])
-    detect_scene = create_scene_id(entrance_data["exit"])
-
-    link_coords = entrance_data.get("coords", None)
-
-    # Handle extra data
-    extra_data = {"y": link_coords[1]} if link_coords else {}  # Ensure that the y value is always checked
-    extra_data |= entrance_data.get("extra_data", {})  # Contains additional boundaries and stuff
-    extra_data = tuple(extra_data.items()) if extra_data else None
-    coords = list(link_coords) if link_coords else [None]
-
-    # Values for Client.er_in_scene
-    exit_data = list(destination_data["entrance"]) + coords
-    detect_data = tuple(list(entrance_data["exit"]) + [extra_data])
-
-
+    entrance_scene = entrance_data.scene
 
     # Save er_in_scene values in data
-    data["detect_data"] = detect_data
-    data["exit_data"] = exit_data
-    DYNAMIC_ENTRANCES_BY_SCENE.setdefault(entrance_scene, dict())
+    data["detect_data"] = entrance_data
+    data["exit_data"] = destination_data
+    DYNAMIC_ENTRANCES_BY_SCENE.setdefault(entrance_scene, {})
     DYNAMIC_ENTRANCES_BY_SCENE[entrance_scene][name] = data

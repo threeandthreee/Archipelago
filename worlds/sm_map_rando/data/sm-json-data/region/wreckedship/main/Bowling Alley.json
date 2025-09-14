@@ -141,6 +141,19 @@
         [1, 1, 1, 2, 2, 1],
         [0, 1, 1, 1, 1, 1]
       ]
+    },
+    {
+      "id": 7,
+      "name": "Bowling In G-Mode",
+      "nodeType": "junction",
+      "nodeSubType": "g-mode",
+      "mapTileMask": [
+        [0, 0, 1, 1, 1, 1],
+        [1, 2, 2, 2, 2, 1],
+        [0, 1, 1, 1, 1, 1]
+      ],
+      "note": "Represents being in the statue's hands with G-mode and morph or artificial morph, and about to fall into the spike pit.",
+      "devNote": "Strats that go to or from this node require canComplexGMode, because the way it behaves and how you need to move while off camera after the Chozo ride is unintuitive."
     }
   ],
   "obstacles": [
@@ -183,8 +196,10 @@
     {
       "from": 2,
       "to": [
+        {"id": 1},
         {"id": 2},
-        {"id": 6}
+        {"id": 6},
+        {"id": 7}
       ]
     },
     {
@@ -213,6 +228,14 @@
     {
       "from": 6,
       "to": [
+        {"id": 1},
+        {"id": 3}
+      ]
+    },
+    {
+      "from": 7,
+      "to": [
+        {"id": 2},
         {"id": 3}
       ]
     }
@@ -416,6 +439,73 @@
       ],
       "clearsObstacles": ["B"],
       "note": "The camera will not follow Samus after clipping."
+    },
+    {
+      "id": 69,
+      "link": [2, 1],
+      "name": "Shinespark Slope Clip X-Ray Climb (Power Off)",
+      "requires": [
+        {"not": "f_DefeatedPhantoon"},
+        "canRiskPermanentLossOfAccess",
+        "h_shinechargeMaxRunway",
+        "canShinechargeMovement",
+        {"shinespark": {"frames": 1, "excessFrames": 1}},
+        "canShinesparkSlopeClip",
+        "canXRayClimb",
+        {"or": [
+          {"getBlueSpeed": {"usedTiles": 16, "steepDownTiles": 4, "openEnd": 0}},
+          "can4HighMidAirMorph"
+        ]}
+      ],
+      "exitCondition": {
+        "leaveNormally": {}
+      },
+      "unlocksDoors": [{"types": ["ammo"], "requires": []}],
+      "note": [
+        "Gain a shinecharge near the Chozo statue, jump on top of it,",
+        "press against the wall to the right, and activate a horizontal shinespark to the right.",
+        "Samus will clip into the wall and be able to X-Ray climb to the space above."
+      ],
+      "detailNote": [
+        "This trick works because the wall is made of half-tile slopes, rather than regular solid tiles."
+      ],
+      "devNote": [
+        "The leaveNormally is to ensure it won't be required to do the Speed block moondance blind up there."
+      ]
+    },
+    {
+      "id": 70,
+      "link": [2, 1],
+      "name": "Shinespark Slope Clip X-Ray Climb (Come in Shinecharged)",
+      "entranceCondition": {
+        "comeInShinecharged": {}
+      },
+      "requires": [
+        {"shineChargeFrames": 50},
+        "canShinechargeMovementTricky",
+        {"shinespark": {"frames": 88, "excessFrames": 0}},
+        "canShinesparkSlopeClip",
+        "canXRayClimb",
+        {"or": [
+          {"getBlueSpeed": {"usedTiles": 16, "steepDownTiles": 4, "openEnd": 0}},
+          "can4HighMidAirMorph"
+        ]}
+      ],
+      "exitCondition": {
+        "leaveNormally": {}
+      },
+      "unlocksDoors": [{"types": ["ammo"], "requires": []}],
+      "note": [
+        "Jump close to ceiling, and activate a shinespark to the right.",
+        "If successful, Samus will clip into the wall behind the Chozo statue and be able to X-Ray climb up."
+      ],
+      "detailNote": [
+        "Only certain horizontal positions will cause Samus to clip into the wall.",
+        "It will work to activate the spark while Samus is centered under the second Grapple block or slightly to the left."
+      ],
+      "devNote": [
+        "The leaveNormally is to ensure it won't be required to do the Speed block moondance blind up there."
+      ]
     },
     {
       "id": 11,
@@ -721,6 +811,10 @@
       "requires": [
         "canTrickyJump",
         "canUseIFrames",
+        {"or": [
+          "canHorizontalDamageBoost",
+          "canInsaneJump"
+        ]},
         {"spikeHits": 2}
       ],
       "note": "This is doable even without any momentum from a previous room, but pretty tight."
@@ -800,6 +894,121 @@
       "devNote": "There is no reason to go back to the left."
     },
     {
+      "id": 63,
+      "link": [2, 7],
+      "name": "G-Mode, Bowling",
+      "entranceCondition": {
+        "comeInWithGMode": {
+          "mode": "any",
+          "morphed": false
+        }
+      },
+      "requires": [
+        "canComplexGMode",
+        "f_DefeatedPhantoon",
+        "Morph",
+        {"or": [
+          "SpaceJump",
+          {"and": [
+            "canUseIFrames",
+            {"spikeHits": 2},
+            {"or": [
+              "canHorizontalDamageBoost",
+              "canInsaneJump",
+              "SpeedBooster",
+              {"spikeHits": 1}
+            ]}
+          ]}
+        ]}
+      ],
+      "flashSuitChecked": true,
+      "note": [
+        "Ride the statue, which will not take Samus down, and will instead drop her off in the spike pit somewhat near the door."
+      ]
+    },
+    {
+      "id": 64,
+      "link": [2, 7],
+      "name": "G-Mode, Crystal Flash, Bowling",
+      "entranceCondition": {
+        "comeInWithGMode": {
+          "mode": "any",
+          "morphed": false
+        }
+      },
+      "requires": [
+        "canComplexGMode",
+        "f_DefeatedPhantoon",
+        "h_CrystalFlash",
+        {"or": [
+          "SpaceJump",
+          {"and": [
+            "canUseIFrames",
+            "h_pauseAbuseMinimalReserveRefill",
+            "h_pauseAbuseMinimalReserveRefill",
+            "h_pauseAbuseMinimalReserveRefill"
+          ]},
+          {"and": [
+            "canUseIFrames",
+            "SpeedBooster",
+            "h_pauseAbuseMinimalReserveRefill",
+            "h_pauseAbuseMinimalReserveRefill"
+          ]}
+        ]}
+      ],
+      "flashSuitChecked": true,
+      "note": [
+        "Crystal Flash then pause abuse to cross the spikeway with minimal Energy loss.",
+        "Ride the statue, which will not take Samus down, and will instead drop her off in the spike pit somewhat near the door."
+      ]
+    },
+    {
+      "id": 65,
+      "link": [2, 7],
+      "name": "G-Mode Morph, Bowling, Spring Fling",
+      "entranceCondition": {
+        "comeInWithGMode": {
+          "mode": "any",
+          "morphed": true
+        }
+      },
+      "requires": [
+        "canComplexGMode",
+        "f_DefeatedPhantoon",
+        "h_artificialMorphSpringFling",
+        "canInsaneJump",
+        {"spikeHits": 4}
+      ],
+      "flashSuitChecked": true,
+      "note": [
+        "Spring fling many times to cross the spikeway with as few hits as possible.",
+        "Ride the statue, which will not take Samus down, and will instead drop her off in the spike pit somewhat near the door."
+      ]
+    },
+    {
+      "id": 66,
+      "link": [2, 7],
+      "name": "G-Mode Morph, Bowling, Long Ceiling IBJ",
+      "entranceCondition": {
+        "comeInWithGMode": {
+          "mode": "any",
+          "morphed": true
+        }
+      },
+      "requires": [
+        "canComplexGMode",
+        "f_DefeatedPhantoon",
+        {"notable": "Ceiling Bomb Jump"},
+        "canLongCeilingBombJump",
+        "canBeVeryPatient"
+      ],
+      "flashSuitChecked": true,
+      "note": [
+        "This is a very long ceiling bomb jump.",
+        "Ride the statue, which will not take Samus down, and will instead drop her off in the spike pit somewhat near the door."
+      ]
+    },
+    {
       "id": 35,
       "link": [3, 2],
       "name": "X-Ray Climb",
@@ -835,6 +1044,10 @@
           ]}
         ]}
       ],
+      "exitCondition": {
+        "leaveNormally": {}
+      },
+      "unlocksDoors": [{"types": ["ammo"], "requires": []}],
       "flashSuitChecked": true,
       "note": [
         "Climb up about half a screen.",
@@ -852,7 +1065,8 @@
       "devNote": [
         "FIXME: The canBeVeryPatient is for difficulty placement, as the damageless Space Jump version would likely require many attempts.",
         "The resourceCapacity requirement is to ensure that reserve energy management will not be needed for the lower-difficulty version of the strat;",
-        "this could be refined since suits can affect spike damage, but we don't yet have a good way to represent that cleanly, given that randomizers are likely to modify suit damage protection."
+        "this could be refined since suits can affect spike damage, but we don't yet have a good way to represent that cleanly, given that randomizers are likely to modify suit damage protection.",
+        "The leaveNormally is because the camera will be broken and we don't want to require unreasonable things without being able to reset it."
       ]
     },
     {
@@ -1156,8 +1370,8 @@
           ]},
           {"canShineCharge": {"usedTiles": 14, "openEnd": 1}}
         ]},
-        {"thornHits": 1},
-        "h_spikeSuitThornHitLeniency",
+        {"spikeHits": 1},
+        "h_spikeSuitSpikeHitLeniency",
         "canSpikeSuit",
         {"shinespark": {"frames": 6, "excessFrames": 6}}
       ],
@@ -1266,6 +1480,10 @@
         "Grapple",
         {"obstaclesNotCleared": ["B"]}
       ],
+      "exitCondition": {
+        "leaveNormally": {}
+      },
+      "unlocksDoors": [{"types": ["ammo"], "requires": []}],
       "flashSuitChecked": true,
       "note": "Menu to Grappling Beam before the crystal flash ends and mash shoot while holding down."
     },
@@ -1282,6 +1500,10 @@
         {"canShineCharge": {"usedTiles": 25, "openEnd": 1}},
         {"shinespark": {"frames": 0, "excessFrames": 0}}
       ],
+      "exitCondition": {
+        "leaveNormally": {}
+      },
+      "unlocksDoors": [{"types": ["ammo"], "requires": []}],
       "flashSuitChecked": true,
       "note": [
         "Fall through the Crumble blocks in order to damage down using either the spikes or repeated Shinesparks.",
@@ -1319,6 +1541,154 @@
       "clearsObstacles": ["A"]
     },
     {
+      "id": 61,
+      "link": [6, 1],
+      "name": "Grapple Block, Crystal Flash, X-Ray Climb",
+      "requires": [
+        {"notable": "Grapple Block Crystal Flash"},
+        "canUseGrapple",
+        "canJumpIntoRespawningBlock",
+        "canTrickyJump",
+        {"or": [
+          "HiJump",
+          "canTrickySpringBallJump",
+          {"and": [
+            "canSpringBallJumpMidAir",
+            {"not": "f_DefeatedPhantoon"},
+            "canRiskPermanentLossOfAccess"
+          ]}
+        ]},
+        "h_bombThings",
+        "h_CrystalFlash",
+        "canXRayClimb",
+        {"or": [
+          "h_fourTileJumpMorph",
+          "h_useSpringBall",
+          "canIBJ",
+          "SpeedBooster",
+          {"and": [
+            {"not": "f_DefeatedPhantoon"},
+            "canRiskPermanentLossOfAccess"
+          ]}
+        ]}
+      ],
+      "exitCondition": {
+        "leaveNormally": {}
+      },
+      "unlocksDoors": [{"types": ["ammo"], "requires": []}],
+      "flashSuitChecked": true,
+      "note": [
+        "Jump or Spring Ball jump into a breakable Grapple block.",
+        "The timing is precise and it can help to break two Grapple blocks to use one as a cue.",
+        "Crystal Flash then X-ray climb to the region above (less than 1 screen).",
+        "There is a chance that Samus will not be able to Crystal Flash unless first placing a Bomb or Power Bomb."
+      ],
+      "devNote": "FIXME: This may be possible with a spike hit and speedy jump."
+    },
+    {
+      "id": 62,
+      "link": [6, 1],
+      "name": "IBJ into Grapple Block, Crystal Flash, X-Ray Climb",
+      "requires": [
+        {"notable": "Grapple Block Crystal Flash"},
+        "canUseGrapple",
+        "canJumpIntoRespawningBlock",
+        "canInsaneJump",
+        "canJumpIntoIBJ",
+        "canDoubleBombJump",
+        {"or": [
+          {"spikeHits": 1},
+          {"and": [
+            {"not": "f_DefeatedPhantoon"},
+            "canRiskPermanentLossOfAccess"
+          ]}
+        ]},
+        "h_CrystalFlash",
+        "canXRayClimb"
+      ],
+      "exitCondition": {
+        "leaveNormally": {}
+      },
+      "unlocksDoors": [{"types": ["ammo"], "requires": []}],
+      "flashSuitChecked": true,
+      "note": [
+        "IBJ into a breakable Grapple block.",
+        "The timing is very precise and requires a quick morph and ascent with precisely placed double bomb jumps.",
+        "Crystal Flash then X-ray climb to the region above (less than 1 screen).",
+        "There is a chance that Samus will not be able to Crystal Flash unless first placing a Bomb or Power Bomb."
+      ],
+      "devNote": "FIXME: This may be possible without a spike hit."
+    },
+    {
+      "id": 71,
+      "link": [6, 1],
+      "name": "Grapple Fling into Grapple Block, Crystal Flash, X-Ray Climb",
+      "requires": [
+        {"notable": "Grapple Block Crystal Flash"},
+        "canPreciseGrapple",
+        "canJumpIntoRespawningBlock",
+        "canInsaneJump",
+        "h_bombThings",
+        "h_CrystalFlash",
+        "canXRayClimb",
+        {"or": [
+          "h_fourTileJumpMorph",
+          "h_useSpringBall",
+          "canIBJ",
+          "SpeedBooster",
+          {"and": [
+            {"not": "f_DefeatedPhantoon"},
+            "canRiskPermanentLossOfAccess"
+          ]}
+        ]}
+      ],
+      "exitCondition": {
+        "leaveNormally": {}
+      },
+      "unlocksDoors": [{"types": ["ammo"], "requires": []}],
+      "flashSuitChecked": true,
+      "note": [
+        "Use a Grapple fling to get stuck inside a breakable Grapple block.",
+        "It can help to break two or more Grapple blocks in a row.",
+        "Crystal Flash then X-ray climb to the region above (less than 1 screen).",
+        "There is a chance that Samus will not be able to Crystal Flash unless first placing a Bomb or Power Bomb."
+      ]
+    },
+    {
+      "id": 72,
+      "link": [6, 1],
+      "name": "Shinespark Slope Clip X-Ray Climb (X-Mode)",
+      "requires": [
+        "canXMode",
+        "h_XModeSpikeHit",
+        "h_shinechargeMaxRunway",
+        "canShinechargeMovement",
+        {"shinespark": {"frames": 1, "excessFrames": 1}},
+        "canShinesparkSlopeClip",
+        "canXRayClimb",
+        {"or": [
+          {"getBlueSpeed": {"usedTiles": 16, "steepDownTiles": 4, "openEnd": 0}},
+          "can4HighMidAirMorph"
+        ]}
+      ],
+      "exitCondition": {
+        "leaveNormally": {}
+      },
+      "unlocksDoors": [{"types": ["ammo"], "requires": []}],
+      "note": [
+        "Use X-mode to gain a shinecharge near the Chozo statue.",
+        "Jump onto the Chozo statue, press against the wall, and shinespark into it to clip in;",
+        "then X-Ray climb up."
+      ],
+      "detailNote": [
+        "A second spike hit can be avoided by holding an angle button to turn around while in X-mode;",
+        "arm pump to move out of the spikes before activating the shinecharge and exiting X-mode."
+      ],
+      "devNote": [
+        "The leaveNormally is to ensure it won't be required to do the Speed block moondance blind up there."
+      ]
+    },
+    {
       "id": 54,
       "link": [6, 3],
       "name": "Bowling!",
@@ -1327,6 +1697,56 @@
         "Morph"
       ],
       "clearsObstacles": ["C"]
+    },
+    {
+      "id": 67,
+      "link": [7, 2],
+      "name": "G-Mode, Bowling Without Going Down",
+      "requires": [
+        "canComplexGMode",
+        {"or": [
+          "h_artificialMorphBombThings",
+          {"spikeHits": 1}
+        ]},
+        {"or": [
+          "canInsaneJump",
+          {"spikeHits": 1}
+        ]}
+      ],
+      "flashSuitChecked": true,
+      "note": [
+        "Quickly unmorph and jump to the left edge to take as few spike hits as possible.",
+        "It is also possible to place a bomb or Power Bomb just before being grabbed by the statue before the bowling ride.",
+        "Samus will experience the boost after the ride, which can boost her straight onto the statue."
+      ]
+    },
+    {
+      "id": 68,
+      "link": [7, 3],
+      "name": "G-Mode, Bowling Then Go Down",
+      "requires": [
+        "canComplexGMode",
+        {"or": [
+          "h_artificialMorphBombThings",
+          {"spikeHits": 1}
+        ]},
+        {"or": [
+          "canInsaneJump",
+          {"spikeHits": 1}
+        ]}
+      ],
+      "exitCondition": {
+        "leaveNormally": {}
+      },
+      "unlocksDoors": [{"types": ["ammo"], "requires": []}],
+      "flashSuitChecked": true,
+      "note": [
+        "Quickly unmorph and jump onto the bowling statue. Be careful not to jump below its hand and be pushed back down.",
+        "It is also possible to place a bomb or Power Bomb just before being grabbed by the statue before the bowling ride.",
+        "Samus will experience the boost after the ride, which can boost her straight onto the statue.",
+        "Exit G-mode then jump to the right into the spike pit, which will now have a section that is air. Go to the bottom door to exit the room and fix the camera."
+      ],
+      "devNote": "FIXME: It is possible to go down and grab one or both items then return, but that is a difficult trek while blind, with the Workrobots awake."
     }
   ],
   "notables": [
@@ -1370,8 +1790,15 @@
         "A shot from crouch will reach the bottom block by following the shot as a ball, or wave beam works from the stairs.",
         "Screw Attack is still needed to clear the bomb blocks."
       ]
+    },
+    {
+      "id": 5,
+      "name": "Grapple Block Crystal Flash",
+      "note": [
+        "Jump into a breakable Grapple block. Crystal Flash then X-ray climb to the region above."
+      ]
     }
   ],
-  "nextStratId": 61,
-  "nextNotableId": 5
+  "nextStratId": 73,
+  "nextNotableId": 7
 }

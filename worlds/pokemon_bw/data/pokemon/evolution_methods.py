@@ -45,9 +45,15 @@ can_buy_item: dict[int, ExtendedRule] = {
     537: can_buy_item_undella,  # Prism Scale
 }
 
-in_vanilla_east: ExtendedRule = lambda state, world: state.can_reach_region("Route 15", world.player)
+in_vanilla_east: ExtendedRule = lambda state, world: (
+    state.can_reach_region("Route 15", world.player)
+    and "Wild" not in world.options.adjust_levels
+)
 can_challenge_alder: ExtendedRule = lambda state, world: state.can_reach_region("N's Castle", world.player)
-between_ghetsis_and_alder: ExtendedRule = lambda state, world: in_vanilla_east(state, world) or can_challenge_alder(state, world)
+between_ghetsis_and_alder: ExtendedRule = lambda state, world: (
+    in_vanilla_east(state, world)
+    or can_challenge_alder(state, world)
+)
 is_in_appropriate_region: dict[int, ExtendedRule] = {
     0: always_possible,
     1: always_possible,
@@ -55,10 +61,11 @@ is_in_appropriate_region: dict[int, ExtendedRule] = {
     3: lambda state, world: state.can_reach_region("Pinwheel Forest Outside", world.player),
     4: lambda state, world: state.can_reach_region("Castelia City", world.player),
     5: lambda state, world: state.can_reach_region("Desert Resort", world.player),
-    6: lambda state, world: in_vanilla_east(state, world) or
+    6: lambda state, world: state.can_reach_region("Undella Town", world.player) or  # Includes in_vanilla_east
                             state.can_reach_region("Mistralton Cave Inner", world.player) or
                             state.can_reach_region("Chargestone Cave", world.player),
-    7: lambda state, world: in_vanilla_east(state, world) or state.can_reach_region("Twist Mountain", world.player),
+    7: lambda state, world: state.can_reach_region("Route 13", world.player) or  # Includes in_vanilla_east
+                            state.can_reach_region("Twist Mountain", world.player),
     8: lambda state, world: in_vanilla_east(state, world) or state.can_reach_region("Opelucid City", world.player),
     9: lambda state, world: in_vanilla_east(state, world) or state.can_reach_region("Victory Road", world.player),
     10: lambda state, world: in_vanilla_east(state, world) or state.can_reach_region("Pokémon League", world.player),

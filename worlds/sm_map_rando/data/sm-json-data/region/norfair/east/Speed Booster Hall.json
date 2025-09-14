@@ -122,20 +122,56 @@
       "name": "Geruta Farm",
       "requires": [
         "h_heatProof",
-        {"resetRoom": {
-          "nodes": [1]
-        }},
+        {"resetRoom": {"nodes": [1]}},
         {"or": [
-          "ScrewAttack",
-          "Ice",
-          "Spazer",
-          "Wave",
-          "Plasma"
+          "SpeedBooster",
+          {"cycleFrames": 225}
         ]},
-        {"partialRefill": {"type": "Energy", "limit": 140}},
-        {"partialRefill": {"type": "Missile", "limit": 10}}
+        {"or": [
+          {"and": [
+            "Plasma",
+            {"cycleFrames": 790}
+          ]},
+          {"and": [
+            "Spazer",
+            {"cycleFrames": 1020}
+          ]},
+          {"and": [
+            "Wave",
+            {"cycleFrames": 960}
+          ]},
+          {"and": [
+            "Ice",
+            {"cycleFrames": 930}
+          ]},
+          {"and": [
+            "canPseudoScrew",
+            {"cycleFrames": 930}
+          ]},
+          {"and": [
+            "canDodgeWhileShooting",
+            {"cycleFrames": 1350}
+          ]}
+        ]}
       ],
-      "resetsObstacles": ["A"]
+      "resetsObstacles": ["A"],
+      "farmCycleDrops": [{"enemy": "Geruta", "count": 3}]
+    },
+    {
+      "id": 37,
+      "link": [1, 1],
+      "name": "Geruta and Metaree Farm",
+      "requires": [
+        "h_heatProof",
+        {"resetRoom": {"nodes": [1]}},
+        "ScrewAttack",
+        {"cycleFrames": 1140}
+      ],
+      "resetsObstacles": ["A"],
+      "farmCycleDrops": [
+        {"enemy": "Metaree", "count": 2},
+        {"enemy": "Geruta", "count": 3}
+      ]
     },
     {
       "id": 3,
@@ -154,10 +190,10 @@
       "link": [1, 1],
       "name": "G-Mode Setup - Get Hit By Geruta",
       "requires": [
+        "canComplexGMode",
         {"heatFrames": 2100},
         {"or": [
           "h_heatProof",
-          "canTrickyJump",
           "canCrumbleJump"
         ]}
       ],
@@ -176,7 +212,8 @@
       "name": "Base",
       "requires": [
         {"obstaclesNotCleared": ["A"]},
-        {"heatFrames": 650}
+        {"simpleHeatFrames": 560},
+        {"heatFrames": 60}
       ],
       "unlocksDoors": [
         {
@@ -192,7 +229,8 @@
       "name": "Leave with Runway",
       "requires": [
         {"obstaclesNotCleared": ["A"]},
-        {"heatFrames": 630}
+        {"simpleHeatFrames": 560},
+        {"heatFrames": 60}
       ],
       "exitCondition": {
         "leaveWithRunway": {
@@ -229,18 +267,20 @@
       "requires": [
         {"obstaclesNotCleared": ["A"]},
         "SpeedBooster",
-        {"heatFrames": 360}
+        {"simpleHeatFrames": 310},
+        {"heatFrames": 40}
       ],
       "clearsObstacles": ["A"]
     },
     {
       "id": 8,
       "link": [1, 2],
-      "name": "Speed Run and Leave Shinecharged",
+      "name": "Speed Run, Leave Shinecharged",
       "requires": [
         {"obstaclesNotCleared": ["A"]},
         "h_shinechargeMaxRunway",
-        {"heatFrames": 360},
+        {"simpleHeatFrames": 310},
+        {"heatFrames": 40},
         {"shineChargeFrames": 35}
       ],
       "exitCondition": {
@@ -255,12 +295,13 @@
     {
       "id": 9,
       "link": [1, 2],
-      "name": "Speed Run and Leave Running",
+      "name": "Speed Run, Leave With Runway",
       "requires": [
         {"obstaclesNotCleared": ["A"]},
         "SpeedBooster",
         "canHeroShot",
-        {"heatFrames": 290}
+        {"simpleHeatFrames": 250},
+        {"heatFrames": 40}
       ],
       "exitCondition": {
         "leaveWithRunway": {
@@ -275,6 +316,29 @@
       "note": "Shoot from the middle of the second set of crumble blocks from the left."
     },
     {
+      "id": 38,
+      "link": [1, 2],
+      "name": "Double Crystal Flash",
+      "requires": [
+        {"simpleHeatFrames": 160},
+        {"heatFrames": 40},
+        "h_heatedCrystalFlash",
+        {"simpleHeatFrames": 140},
+        {"heatFrames": 40},
+        "h_heatedCrystalFlash",
+        {"simpleHeatFrames": 240},
+        {"heatFrames": 30}
+      ],
+      "note": [
+        "Use a Crystal Flash after crossing 3 crumble block bridges,",
+        "and a second Crystal Flash after crossing 3 more."
+      ],
+      "detailNote": [
+        "In order to cross without tanks or Speed Booster,",
+        "some arm pumping is helpful but not required."
+      ]
+    },
+    {
       "id": 10,
       "link": [1, 2],
       "name": "Transition with Stored Fall Speed",
@@ -285,10 +349,14 @@
       },
       "requires": [
         {"or": [
-          {"heatFrames": 650},
+          {"and": [
+            {"simpleHeatFrames": 560},
+            {"heatFrames": 60}
+          ]},
           {"and": [
             "SpeedBooster",
-            {"heatFrames": 360}
+            {"simpleHeatFrames": 310},
+            {"heatFrames": 40}
           ]}
         ]}
       ],
@@ -314,10 +382,14 @@
       },
       "requires": [
         {"or": [
-          {"heatFrames": 650},
+          {"and": [
+            {"simpleHeatFrames": 560},
+            {"heatFrames": 60}
+          ]},
           {"and": [
             "SpeedBooster",
-            {"heatFrames": 360}
+            {"simpleHeatFrames": 310},
+            {"heatFrames": 40}
           ]}
         ]}
       ],
@@ -337,10 +409,10 @@
       "link": [1, 2],
       "name": "G-Mode Setup - Get Hit By Geruta",
       "requires": [
+        "canComplexGMode",
         {"heatFrames": 2200},
         {"or": [
           "h_heatProof",
-          "canTrickyJump",
           "canCrumbleJump"
         ]}
       ],
@@ -396,7 +468,8 @@
       "name": "Base",
       "requires": [
         {"obstaclesNotCleared": ["A"]},
-        {"heatFrames": 650}
+        {"simpleHeatFrames": 560},
+        {"heatFrames": 60}
       ],
       "unlocksDoors": [
         {
@@ -451,7 +524,8 @@
       "name": "Leave with Runway",
       "requires": [
         {"obstaclesNotCleared": ["A"]},
-        {"heatFrames": 630}
+        {"simpleHeatFrames": 560},
+        {"heatFrames": 60}
       ],
       "exitCondition": {
         "leaveWithRunway": {
@@ -478,18 +552,20 @@
       "requires": [
         {"obstaclesNotCleared": ["A"]},
         "SpeedBooster",
-        {"heatFrames": 360}
+        {"simpleHeatFrames": 310},
+        {"heatFrames": 40}
       ],
       "clearsObstacles": ["A"]
     },
     {
       "id": 16,
       "link": [2, 1],
-      "name": "Speed Run and Leave Shinecharged",
+      "name": "Speed Run, Leave Shinecharged",
       "requires": [
         {"obstaclesNotCleared": ["A"]},
         "h_shinechargeMaxRunway",
-        {"heatFrames": 360},
+        {"simpleHeatFrames": 310},
+        {"heatFrames": 40},
         {"shineChargeFrames": 35}
       ],
       "exitCondition": {
@@ -504,12 +580,13 @@
     {
       "id": 17,
       "link": [2, 1],
-      "name": "Speed Run and Leave Running",
+      "name": "Speed Run, Leave With Runway",
       "requires": [
         {"obstaclesNotCleared": ["A"]},
         "SpeedBooster",
         "canHeroShot",
-        {"heatFrames": 290}
+        {"simpleHeatFrames": 250},
+        {"heatFrames": 40}
       ],
       "exitCondition": {
         "leaveWithRunway": {
@@ -539,6 +616,30 @@
       "devNote": [
         "There is enough time to visit 3 and return to 2 before performing this strat with the shinespark.",
         "The obstacle being broken means Samus has run far enough to charge a shinespark."
+      ]
+    },
+    {
+      "id": 39,
+      "link": [2, 1],
+      "name": "Double Crystal Flash",
+      "requires": [
+        {"obstaclesNotCleared": ["A"]},
+        {"simpleHeatFrames": 135},
+        {"heatFrames": 40},
+        "h_heatedCrystalFlash",
+        {"simpleHeatFrames": 130},
+        {"heatFrames": 40},
+        "h_heatedCrystalFlash",
+        {"simpleHeatFrames": 280},
+        {"heatFrames": 30}
+      ],
+      "note": [
+        "Use a Crystal Flash after crossing 4 crumble block bridges,",
+        "and a second Crystal Flash in the middle of the large ramp in the center of the room."
+      ],
+      "detailNote": ["This allows crossing the room without tanks or Speed Booster."],
+      "devNote": [
+        "FIXME: this may not be possible if the lava is rising (with Speed Booster and the flag not yet set)."
       ]
     },
     {
@@ -619,7 +720,7 @@
       "note": [
         "Exit the previous room with Samus in a standing pose (while grappled).",
         "After teleporting, press right to release Grapple while staying standing (not being forced into a crouch).",
-        "Then X-ray climb to get up to the door transition, without needing to open the door."
+        "Then X-ray climb 1 screen to get up to the door transition, without needing to open the door."
       ],
       "devNote": [
         "FIXME: Add a way to model the flag that gets set in this room after outrunning the lava, with SpeedBooster collected.",
@@ -690,10 +791,10 @@
       "link": [2, 1],
       "name": "G-Mode Setup - Get Hit By Geruta",
       "requires": [
+        "canComplexGMode",
         {"heatFrames": 2250},
         {"or": [
           "h_heatProof",
-          "canTrickyJump",
           "canCrumbleJump"
         ]}
       ],
@@ -738,14 +839,72 @@
       }
     },
     {
+      "id": 40,
+      "link": [2, 2],
+      "name": "Geruta Farm",
+      "requires": [
+        "h_heatProof",
+        {"resetRoom": {"nodes": [2]}},
+        {"or": [
+          "SpeedBooster",
+          {"cycleFrames": 170}
+        ]},
+        {"or": [
+          {"and": [
+            "Plasma",
+            {"cycleFrames": 790}
+          ]},
+          {"and": [
+            "Spazer",
+            {"cycleFrames": 1290}
+          ]},
+          {"and": [
+            "Wave",
+            {"cycleFrames": 1140}
+          ]},
+          {"and": [
+            "Ice",
+            {"cycleFrames": 1320}
+          ]},
+          {"and": [
+            "ScrewAttack",
+            {"cycleFrames": 1140}
+          ]},
+          {"and": [
+            "canPseudoScrew",
+            {"cycleFrames": 1200}
+          ]},
+          {"and": [
+            "canDodgeWhileShooting",
+            {"cycleFrames": 1500}
+          ]}
+        ]},
+        {"or": [
+          "canInsaneJump",
+          {"and": [
+            "canTrickyJump",
+            "canWalljump",
+            {"cycleFrames": 60}
+          ]},
+          {"and": [
+            "h_lavaProof",
+            {"cycleFrames": 180}
+          ]}
+        ]}
+      ],
+      "resetsObstacles": ["A"],
+      "farmCycleDrops": [{"enemy": "Geruta", "count": 3}],
+      "devNote": "FIXME: The rising lava event may make it impossible to reset at 2."
+    },
+    {
       "id": 32,
       "link": [2, 2],
       "name": "G-Mode Setup - Get Hit By Geruta",
       "requires": [
+        "canComplexGMode",
         {"heatFrames": 2500},
         {"or": [
           "h_heatProof",
-          "canTrickyJump",
           "canCrumbleJump"
         ]}
       ],
@@ -792,6 +951,6 @@
     }
   ],
   "notables": [],
-  "nextStratId": 37,
+  "nextStratId": 41,
   "nextNotableId": 1
 }

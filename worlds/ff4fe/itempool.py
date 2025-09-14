@@ -96,6 +96,9 @@ def create_general_pool(world: "FF4FEWorld", location_count: int, key_item_count
             pass
     refined_filler = [item for item in refined_filler if item.tier >= world.options.MinTier.value]
     refined_useful = [item for item in refined_useful if item.tier <= world.options.MaxTier.value]
+    if world.options.JItems > 1: # If JItems is set to No Itempool or None
+        refined_filler = [item for item in refined_filler if item not in items.j_items]
+        refined_useful = [item for item in refined_useful if item not in items.j_items]
     refined_set = [*refined_useful, *refined_filler]
     if world.options.ItemRandomization.current_key == "standard":
         refined_set = [item for item in refined_set if item.tier < 6]

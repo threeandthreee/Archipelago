@@ -611,6 +611,47 @@ BossClearLocations = \
     BossClearLocation(BOSS_DEVIL_DOOM)
 ]
 
+def GetEnemyLocationName(stageId, enemyClass, objectName, i):
+    id_name = int(str(LOCATION_ID_PLUS) + str(1) + str(stageId) + str(enemyClass) + str(i) + "3")
+    objective_location_name = "Enemysanity:" + (LEVEL_ID_TO_LEVEL[stageId] + " " + objectName + " (" + str(i) + ")")
+
+    return id_name, objective_location_name
+
+def GetCheckpointLocationName(stageId, objectName, i):
+    id_name = int(str(LOCATION_ID_PLUS) + str(1) + str(stageId) + str(0) + str(i) + "4")
+    objective_location_name = "Checkpointsanity:" + (LEVEL_ID_TO_LEVEL[stageId] + " " + objectName + " (" + str(i) + ")")
+
+    return id_name, objective_location_name
+
+def GetCharacterLocationName(objectName,i):
+    id_name = int(str(LOCATION_ID_PLUS) + str(1) + "000" + str(0) + str(i) + "5")
+    objective_location_name = "Charactersanity:" + objectName
+
+    return id_name, objective_location_name
+
+def GetKeysanityLocationName(stageId, i):
+    id_name = int(str(LOCATION_ID_PLUS) + str(0) + str(stageId) + str(i+1) + "7")
+    view_name = (LEVEL_ID_TO_LEVEL[stageId] + " Key " + str(i+1))
+
+    return id_name, view_name
+
+def GetWeaponsanityLocationName(weaponName, weaponId):
+    id_name = int(str(LOCATION_ID_PLUS) + str(weaponId) + "8")
+    view_name = "Held Weapon:" + weaponName
+
+    return id_name, view_name
+
+def GetBossLocationName(bossName, bossStageId):
+    id_name = int(str(LOCATION_ID_PLUS) + str(bossStageId) + str(LOCATION_TYPE_BOSS))
+    view_name = "Boss:" + bossName
+
+    return id_name, view_name
+
+def GetClearLocation():
+    return [LocationInfo(LOCATION_TYPE_OTHER, LOCATION_ID_PLUS + 1000, Levels.DevilDoom_Name,
+                  stageId=None, alignmentId=None, total=None, count=None, other=None)]
+
+
 def GetEnemySanityLocations():
     EnemySanityLocations = []
     for stage in [ s for s in Levels.ALL_STAGES if s not in Levels.BOSS_STAGES ]:
@@ -624,7 +665,7 @@ def GetEnemySanityLocations():
                 count += items
 
             EnemySanityLocations.append(
-                EnemySanityLocation(stage, ENEMY_CLASS_GUN, count, "GUN Solider")
+                EnemySanityLocation(stage, ENEMY_CLASS_GUN, count, "GUN Soldier")
                     .setEnemyDistribution(dark_mission_enemies),
             )
 
@@ -1116,68 +1157,6 @@ def GetAlignmentsForStage(stageId):
 
     return missions
 
-def GetLocationDict():
-    all_locations = GetAllLocationInfo()
-
-    result = {}
-    for location_type in all_locations:
-        for location in location_type:
-            result[location.name] = location.locationId
-
-    return result
-
-def GetLocationInfoDict():
-    all_locations = GetAllLocationInfo()
-
-    result = {}
-    for location_type in all_locations:
-        for location in location_type:
-            result[location.locationId] = location
-
-    return result
-
-
-
-def GetEnemyLocationName(stageId, enemyClass, objectName, i):
-    id_name = int(str(LOCATION_ID_PLUS) + str(1) + str(stageId) + str(enemyClass) + str(i) + "3")
-    objective_location_name = "Enemysanity:" + (LEVEL_ID_TO_LEVEL[stageId] + " " + objectName + " (" + str(i) + ")")
-
-    return id_name, objective_location_name
-
-def GetCheckpointLocationName(stageId, objectName, i):
-    id_name = int(str(LOCATION_ID_PLUS) + str(1) + str(stageId) + str(0) + str(i) + "4")
-    objective_location_name = "Checkpointsanity:" + (LEVEL_ID_TO_LEVEL[stageId] + " " + objectName + " (" + str(i) + ")")
-
-    return id_name, objective_location_name
-
-def GetCharacterLocationName(objectName,i):
-    id_name = int(str(LOCATION_ID_PLUS) + str(1) + "000" + str(0) + str(i) + "5")
-    objective_location_name = "Charactersanity:" + objectName
-
-    return id_name, objective_location_name
-
-def GetKeysanityLocationName(stageId, i):
-    id_name = int(str(LOCATION_ID_PLUS) + str(0) + str(stageId) + str(i+1) + "7")
-    view_name = (LEVEL_ID_TO_LEVEL[stageId] + " Key " + str(i+1))
-
-    return id_name, view_name
-
-def GetWeaponsanityLocationName(weaponName, weaponId):
-    id_name = int(str(LOCATION_ID_PLUS) + str(weaponId) + "8")
-    view_name = "Held Weapon:" + weaponName
-
-    return id_name, view_name
-
-def GetBossLocationName(bossName, bossStageId):
-    id_name = int(str(LOCATION_ID_PLUS) + str(bossStageId) + str(LOCATION_TYPE_BOSS))
-    view_name = "Boss:" + bossName
-
-    return id_name, view_name
-
-
-def GetClearLocation():
-    return [LocationInfo(LOCATION_TYPE_OTHER, LOCATION_ID_PLUS + 1000, Levels.DevilDoom_Name,
-                  stageId=None, alignmentId=None, total=None, count=None, other=None)]
 
 def GetAllLocationInfo():
     mission_clear_locations = []
@@ -1331,6 +1310,46 @@ def GetAllLocationInfo():
             enemysanity_locations, checkpointsanity_locations, charactersanity_locations,
             token_locations, keysanity_locations, weaponsanity_locations, boss_locations,
             warp_locations, object_locations)
+
+
+def GetLocationDict():
+    all_locations = GetAllLocationInfo()
+
+    result = {}
+    for location_type in all_locations:
+        for location in location_type:
+            result[location.name] = location.locationId
+
+    return result
+
+def GetDuplicateLocations():
+    ll = GetLocationDict()
+    known = {}
+    for l in ll.items():
+        l_name = l[0]
+        l_id = l[1]
+        if l_id in known:
+            print(f"Found duplicate location ID ({l_id}) for: {l_name}, {known[l_id]}")
+
+        if l_id not in known:
+            known[l_id] = []
+
+        known[l_id].append(l_name)
+
+    return
+
+#GetDuplicateLocations()
+
+def GetLocationInfoDict():
+    all_locations = GetAllLocationInfo()
+
+    result = {}
+    for location_type in all_locations:
+        for location in location_type:
+            result[location.locationId] = location
+
+    return result
+
 
 
 def is_token_required_by_goal(options, token : LocationInfo, available_levels):
@@ -1711,9 +1730,9 @@ def create_locations(world, regions: Dict[str, Region]):
 
 
     if world.options.level_progression != Options.LevelProgression.option_select:
-        SetStoryClearEvents(world, world.player, menu_region)
+        SetStoryClearEvents(world, world.player, regions)
 
-    SetRegionEvents(world, world.player, menu_region)
+    SetRegionEvents(world, world.player, regions)
 
     end_region = regions[Regions.stage_id_to_region(Levels.BOSS_DEVIL_DOOM)]
     devil_doom_location = ShadowTheHedgehogLocation(world.player, end_location[0].name, end_location[0].locationId, end_region)
@@ -2072,7 +2091,7 @@ def getLocationGroups():
 
 
 
-def SetStoryClearEvents(world, player, menu_region):
+def SetStoryClearEvents(world, player, regions):
     story_clear_events = []
     for story in world.shuffled_story_mode:
         if story.start_stage_id not in world.available_story_levels:
@@ -2089,23 +2108,28 @@ def SetStoryClearEvents(world, player, menu_region):
             continue
 
         view_name = Names.GetMissionClearEventName(story.start_stage_id, story.alignment_id)
-        story_clear_event = ShadowTheHedgehogLocation(player, view_name, None, menu_region)
+        region_name = Regions.stage_id_to_region(story.start_stage_id, 0)
+        o_region = regions[region_name]
+        story_clear_event = ShadowTheHedgehogLocation(player, view_name, None, o_region)
         story_clear_event.show_in_spoiler = True
         story_clear_events.append(story_clear_event)
+        o_region.locations.append(story_clear_event)
 
     for w in [l for l in world.shuffled_story_mode if l.boss is not None
                                                       and l.boss in world.available_story_levels
               and l.start_stage_id in world.available_levels
               and (l.end_stage_id is not None and l.end_stage_id in world.available_levels)]:
         view_name = Names.GetBossClearEventName(w.boss, w.start_stage_id, w.alignment_id)
-        story_clear_event = ShadowTheHedgehogLocation(player, view_name, None, menu_region)
+        region_name = Regions.stage_id_to_region(w.start_stage_id, 0)
+        o_region = regions[region_name]
+        story_clear_event = ShadowTheHedgehogLocation(player, view_name, None, o_region)
         story_clear_event.show_in_spoiler = True
         story_clear_events.append(story_clear_event)
+        o_region.locations.append(story_clear_event)
 
-    menu_region.locations.extend(story_clear_events)
     return story_clear_events
 
-def SetRegionEvents(world, player, menu_region):
+def SetRegionEvents(world, player, regions):
     region_events = []
     for level in Levels.ALL_STAGES:
         if level in BOSS_STAGES:
@@ -2115,10 +2139,12 @@ def SetRegionEvents(world, player, menu_region):
             continue
 
         view_name = Names.GetDistributionRegionEventName(level, 0)
-        region_event = ShadowTheHedgehogLocation(player, view_name, None, menu_region)
+        region_name = Regions.stage_id_to_region(level, 0)
+        o_region = regions[region_name]
+        region_event = ShadowTheHedgehogLocation(player, view_name, None, o_region)
         region_event.show_in_spoiler = False
         region_event.progress_type = LocationProgressType.PRIORITY
-        region_events.append(region_event)
+        o_region.locations.append(region_event)
 
     for region in Levels.INDIVIDUAL_LEVEL_REGIONS:
         if region.stageId not in world.available_levels:
@@ -2129,12 +2155,16 @@ def SetRegionEvents(world, player, menu_region):
             continue
 
         view_name = Names.GetDistributionRegionEventName(region.stageId, region.regionIndex)
-        region_event = ShadowTheHedgehogLocation(player, view_name, None, menu_region)
+        region_name = Regions.stage_id_to_region(region.stageId, region.regionIndex)
+        o_region = regions[region_name]
+        region_event = ShadowTheHedgehogLocation(player, view_name, None, o_region)
         region_event.show_in_spoiler = False
         region_event.progress_type = LocationProgressType.PRIORITY
-        region_events.append(region_event)
+        #region_events.append(region_event)
 
-    menu_region.locations.extend(region_events)
+        o_region.locations.append(region_event)
+
+    #menu_region.locations.extend(region_events)
 
 
 

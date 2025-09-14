@@ -189,7 +189,7 @@
   "ITEM_FIRE_STONE": {
     "name": "Fire Stone",
     "classification": "PROGRESSION",
-    "tags": ["Key Items", "Evolution Items", "Unique Items"]
+    "tags": ["Key Items", "Evolution Items"]
   },
   "ITEM_FIVE_PASS": {
     "name": "Five Pass",
@@ -239,7 +239,7 @@
   "ITEM_LEAF_STONE": {
     "name": "Leaf Stone",
     "classification": "PROGRESSION",
-    "tags": ["Key Items", "Evolution Items", "Unique Items"]
+    "tags": ["Key Items", "Evolution Items"]
   },
   "ITEM_LETTER": {
     "name": "Letter",
@@ -269,7 +269,7 @@
   "ITEM_MOON_STONE": {
     "name": "Moon Stone",
     "classification": "PROGRESSION",
-    "tags": ["Key Items", "Evolution Items", "Unique Items"]
+    "tags": ["Key Items", "Evolution Items"]
   },
   "ITEM_MYSTIC_TICKET": {
     "name": "Mystic Ticket",
@@ -306,6 +306,11 @@
     "classification": "PROGRESSION",
     "tags": ["Key Items", "Unique Items"]
   },
+  "ITEM_POKEDEX": {
+    "name": "Pokedex",
+    "classification": "PROGRESSION",
+    "tags": ["Key Items", "Unique Items"]
+  },
   "ITEM_POWDER_JAR": {
     "name": "Powder Jar",
     "classification": "FILLER",
@@ -320,6 +325,11 @@
     "name": "Progressive Pass",
     "classification": "PROGRESSION",
     "tags": ["Key Items", "Island Passes", "Progressive Items"]
+  },
+  "ITEM_PROG_ROD": {
+    "name": "Progressive Rod",
+    "classification": "PROGRESSION",
+    "tags": ["Key Items", "Rods", "Progressive Items"]
   },
   "ITEM_PURPLE_TEA": {
     "name": "Purple Tea",
@@ -394,7 +404,7 @@
   "ITEM_SUN_STONE": {
     "name": "Sun Stone",
     "classification": "PROGRESSION",
-    "tags": ["Key Items", "Evolution Items", "Unique Items"]
+    "tags": ["Key Items", "Evolution Items"]
   },
   "ITEM_SUPER_ROD": {
     "name": "Super Rod",
@@ -419,7 +429,7 @@
   "ITEM_THUNDER_STONE": {
     "name": "Thunder Stone",
     "classification": "PROGRESSION",
-    "tags": ["Key Items", "Evolution Items","Unique Items"]
+    "tags": ["Key Items", "Evolution Items"]
   },
   "ITEM_TM_CASE": {
     "name": "TM Case",
@@ -459,7 +469,13 @@
   "ITEM_WATER_STONE": {
     "name": "Water Stone",
     "classification": "PROGRESSION",
-    "tags": ["Key Items", "Evolution Items", "Unique Items"]
+    "tags": ["Key Items", "Evolution Items"]
+  },
+
+  "ITEM_LEDGE_JUMP": {
+    "name": "Ledge Jump",
+    "classification": "PROGRESSION",
+    "tags": ["Abilities"]
   },
 
   "ITEM_FLY_PALLET": {
@@ -701,7 +717,7 @@
   },
   "ITEM_LEMONADE": {
     "name": "Lemonade",
-    "classification": "PROGRESSION",
+    "classification": "FILLER",
     "tags": ["Healing Items", "HP Healing Items"]
   },
   "ITEM_MOOMOO_MILK": {

@@ -15,7 +15,7 @@ from .level_edits import apply_level_edits
 from .locations import LocationSettings
 from .minimap import apply_base_minimap_edits, apply_minimap_edits
 from .misc_patches import (
-    apply_anti_softlock_edits,
+    apply_accessibility_patch,
     apply_base_patch,
     apply_pbs_without_bombs,
     apply_reveal_hidden_tiles,
@@ -34,6 +34,7 @@ from .rom import Rom
 from .room_names import write_room_names
 from .starting import set_starting_items, set_starting_location
 from .text import write_seed_hash
+from .titlescreen_text import write_title_text
 
 
 def validate_patch_data(patch_data: dict) -> MarsSchema:
@@ -73,10 +74,6 @@ def patch(
 
     # Apply base asm patch first
     apply_base_patch(rom)
-
-    # Softlock edits need to be done early to prevent later edits messing things up.
-    if patch_data.get("AntiSoftlockRoomEdits"):
-        apply_anti_softlock_edits(rom)
 
     # Randomize palettes - palettes are randomized first in case the item
     # patcher needs to copy tilesets
@@ -146,6 +143,8 @@ def patch(
         write_credits(rom, credits_text)
 
     # Misc patches
+    if patch_data.get("AccessibilityPatches"):
+        apply_accessibility_patch(rom)
 
     if patch_data.get("DisableDemos"):
         disable_demos(rom)
@@ -193,6 +192,11 @@ def patch(
         set_door_locks(rom, door_locks)
 
     write_seed_hash(rom, patch_data["SeedHash"])
+
+    # Title-screen text
+    if title_screen_text := patch_data.get("TitleText"):
+        status_update("Writing title screen text...", -1)
+        write_title_text(rom, title_screen_text)
 
     rom.save(output_path)
     status_update(f"Output written to {output_path}", -1)

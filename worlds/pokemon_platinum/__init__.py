@@ -12,9 +12,10 @@ from worlds.AutoWorld import WebWorld, World
 
 from .client import PokemonPlatinumClient
 from .data import items as itemdata
+from .data.locations import RequiredLocations
 from .items import create_item_label_to_code_map, get_item_classification, PokemonPlatinumItem, get_item_groups
 from .locations import PokemonPlatinumLocation, create_location_label_to_code_map, create_locations
-from .options import PokemonPlatinumOptions
+from .options import PokemonPlatinumOptions, UnownsOption
 from .regions import create_regions
 from .rom import generate_output, PokemonPlatinumPatch
 from .rules import set_rules
@@ -56,6 +57,12 @@ class PokemonPlatinumWorld(World):
     location_name_to_id = create_location_label_to_code_map()
     item_name_groups = get_item_groups()
 
+    required_locations: RequiredLocations
+
+    def generate_early(self) -> None:
+        self.required_locations = RequiredLocations(self.options)
+        self.options.validate()
+
     def get_filler_item_name(self) -> str:
         # TODO
         return "Great Ball"
@@ -73,8 +80,13 @@ class PokemonPlatinumWorld(World):
             locations)
 
         add_items: list[str] = []
-        if self.options.master_repel.value == 1:
-            add_items.append("master_repel")
+        for item in ["master_repel", "s_s_ticket", "marsh_pass", "storage_key"]:
+            if getattr(self.options, item).value == 1:
+                add_items.append(item)
+        if self.options.bag.value == 1:
+            add_items.append("bag")
+        else:
+            self.multiworld.push_precollected(self.create_item(itemdata.items["bag"].label))
 
         itempool = []
         for loc in item_locations:
@@ -87,6 +99,8 @@ class PokemonPlatinumWorld(World):
                 itempool.append(self.create_item_by_code(item_id))
 
         self.multiworld.itempool += itempool
+        for item in add_items:
+            self.multiworld.push_precollected(self.create_item(itemdata.items[item].label))
 
     def create_item(self, name: str) -> PokemonPlatinumItem:
         return self.create_item_by_code(self.item_name_to_id[name])
@@ -117,5 +131,5 @@ class PokemonPlatinumWorld(World):
             self.player)
 
     def fill_slot_data(self) -> Mapping[str, Any]:
-        ret = self.options.as_dict("goal")
+        ret = self.options.as_dict("goal", "remote_items")
         return ret

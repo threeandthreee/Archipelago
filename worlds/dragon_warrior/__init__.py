@@ -9,6 +9,7 @@ from .locations import create_locations, all_locations, location_names
 from .regions import create_regions, connect_regions
 import settings
 from BaseClasses import Item, ItemClassification, Location, MultiWorld, Tutorial
+from Utils import visualize_regions
 from worlds.AutoWorld import World, WebWorld
 from .rom import DRAGON_WARRIOR_PRG0_HASH, DRAGON_WARRIOR_PRG1_HASH, DWPatch
 from .options import DWOptions, DWOptionGroups
@@ -78,21 +79,22 @@ class DragonWarriorWorld(World):
         itempool = []
 
         # Get the accurate location count between sanity options
-        total_locations = 31 + len(level_locations) + len(high_level_locations) + \
+        total_locations = 33 + len(level_locations) + len(high_level_locations) + \
             (self.options.searchsanity * 3) + (self.options.shopsanity * 15)
 
         # The following items always get placed
         itempool += [self.create_item(names.silver_harp),
-                     self.create_item(names.staff_of_rain), 
+                     self.create_item(names.staff_of_rain),     
                      self.create_item(names.stones_of_sunlight),
                      self.create_item(names.magic_key),
                      self.create_item(names.death_necklace),
                      self.create_item(names.cursed_belt),
                      self.create_item(names.fighters_ring),
-                     self.create_item(names.high_gold),
+                     self.create_item(names.gwaelins_love),
                      self.create_item(names.high_gold),
                      self.create_item(names.high_gold),
                      self.create_item(names.high_gold)]
+        
         
         # The following items are conditional
         if self.options.searchsanity:
@@ -133,6 +135,8 @@ class DragonWarriorWorld(World):
 
         self.multiworld.completion_condition[self.player] = lambda state: \
             state.has(names.ball_of_light, self.player)
+        
+        # visualize_regions(self.get_region("Menu"), "dw_regions.puml", show_locations=True)
 
 
     def create_item(self, name: str, force_non_progression=False) -> Item:

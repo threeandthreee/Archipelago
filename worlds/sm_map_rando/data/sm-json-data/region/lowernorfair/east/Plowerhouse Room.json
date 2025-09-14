@@ -21,8 +21,7 @@
       "doorEnvironments": [{"physics": "air"}],
       "mapTileMask": [
         [2, 2, 1]
-      ],
-      "devNote": "FIXME can leave charged by charging in the acid"
+      ]
     },
     {
       "id": 2,
@@ -34,8 +33,7 @@
       "doorEnvironments": [{"physics": "air"}],
       "mapTileMask": [
         [1, 2, 2]
-      ],
-      "devNote": "FIXME can leave charged by charging in the acid"
+      ]
     },
     {
       "id": 3,
@@ -235,7 +233,7 @@
     {
       "id": 4,
       "link": [1, 2],
-      "name": "Avoid the Holtzes",
+      "name": "Zebbo Damage Boost",
       "requires": [
         "canTrickyJump",
         "canHorizontalDamageBoost",
@@ -246,6 +244,51 @@
       "note": [
         "Turn back to the left after entering the room then run under the Holtzes.",
         "Damage from a Zebbo from the right farm to gain invulnerability frames, then jump through the last two Holtzes."
+      ]
+    },
+    {
+      "id": 52,
+      "link": [1, 2],
+      "name": "Cross While Farming",
+      "requires": [
+        "canFarmWhileShooting",
+        {"or": [
+          {"and": [
+            {"heatFramesWithEnergyDrops": {
+              "frames": 120,
+              "drops": [{"enemy": "Zebbo", "count": 1}]
+            }},
+            {"heatFramesWithEnergyDrops": {
+              "frames": 130,
+              "drops": [{"enemy": "Zebbo", "count": 1}]
+            }},
+            {"heatFramesWithEnergyDrops": {
+              "frames": 140,
+              "drops": [{"enemy": "Zebbo", "count": 1}]
+            }},
+            {"heatFrames": 100}
+          ]},
+          {"and": [
+            {"or": [
+              "Spazer",
+              "Wave",
+              "Plasma"
+            ]},
+            {"heatFramesWithEnergyDrops": {
+              "frames": 100,
+              "drops": [{"enemy": "Zebbo", "count": 1}]
+            }},
+            {"heatFramesWithEnergyDrops": {
+              "frames": 100,
+              "drops": [{"enemy": "Zebbo", "count": 1}]
+            }},
+            {"heatFramesWithEnergyDrops": {
+              "frames": 130,
+              "drops": [{"enemy": "Zebbo", "count": 1}]
+            }},
+            {"heatFrames": 100}
+          ]}
+        ]}
       ]
     },
     {
@@ -319,24 +362,12 @@
       "requires": [
         {"or": [
           "ScrewAttack",
-          "canTrickyGMode",
+          "canInsaneJump",
           {"and": [
             "canTrickyDodgeEnemies",
-            "Plasma",
-            {"or": [
-              "Wave",
-              "Ice"
-            ]}
-          ]},
-          {"and": [
-            "canInsaneJump",
             "Plasma"
           ]},
-          {"enemyDamage": {"enemy": "Holtz", "type": "contact", "hits": 1}},
-          {"and": [
-            "canInsaneJump",
-            {"enemyDamage": {"enemy": "Zebbo", "type": "contact", "hits": 1}}
-          ]}
+          {"enemyDamage": {"enemy": "Holtz", "type": "contact", "hits": 1}}
         ]},
         {"or": [
           "h_heatedGModePauseAbuse",
@@ -346,7 +377,8 @@
       "flashSuitChecked": true,
       "note": [
         "Kill or dodge the Holtz while crossing the room. With Plasma and Wave or Ice, it is possible to quickly kill the Holtz while at the left door.",
-        "Otherwise, jump immediately on entry while Samus still has i-frames to get to the left of the first Zebbo and kill it.",
+        "Otherwise, in direct G-mode, jump immediately on entry while Samus still has i-frames to get to the left of the first Zebbo and kill it,",
+        "and in indirect G-mode, move to the left then run under the Holtzes.",
         "Carefully cross the room while killing the Holtz without luring them, or dodge them.",
         "It is possible to kill a Zebbo by the door and pause abuse to grab its Energy drop on G-mode exit, which requires not killing the right Zebbo until it is in location."
       ]
@@ -470,7 +502,7 @@
     {
       "id": 12,
       "link": [2, 1],
-      "name": "Quick Run Through",
+      "name": "Zebbo Damage Boost",
       "requires": [
         "canTrickyJump",
         "canHorizontalDamageBoost",
@@ -478,6 +510,40 @@
         {"heatFrames": 315}
       ],
       "flashSuitChecked": true
+    },
+    {
+      "id": 53,
+      "link": [2, 1],
+      "name": "Tricky Dodge",
+      "requires": [
+        "canTrickyDodgeEnemies",
+        {"or": [
+          "canInsaneJump",
+          "canPreciseWalljump"
+        ]},
+        {"heatFrames": 310}
+      ]
+    },
+    {
+      "id": 54,
+      "link": [2, 1],
+      "name": "Cross While Farming",
+      "requires": [
+        "canFarmWhileShooting",
+        {"heatFramesWithEnergyDrops": {
+          "frames": 100,
+          "drops": [{"enemy": "Zebbo", "count": 1}]
+        }},
+        {"heatFramesWithEnergyDrops": {
+          "frames": 125,
+          "drops": [{"enemy": "Zebbo", "count": 1}]
+        }},
+        {"heatFramesWithEnergyDrops": {
+          "frames": 125,
+          "drops": [{"enemy": "Zebbo", "count": 1}]
+        }},
+        {"heatFrames": 130}
+      ]
     },
     {
       "id": 42,
@@ -1018,8 +1084,10 @@
       "name": "Zebbo Farm",
       "requires": [
         "h_heatProof",
-        {"refill": ["Energy", "Missile", "Super"]}
+        {"simpleCycleFrames": 100},
+        {"cycleFrames": 20}
       ],
+      "farmCycleDrops": [{"enemy": "Zebbo", "count": 1}],
       "flashSuitChecked": true
     },
     {
@@ -1029,17 +1097,25 @@
       "requires": [
         "h_heatProof",
         {"or": [
+          {"and": [
+            {"resetRoom": {"nodes": [1]}},
+            {"cycleFrames": 120}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [2]}},
+            {"cycleFrames": 260}
+          ]}
+        ]},
+        {"or": [
           "ScrewAttack",
           {"and": [
             "Plasma",
-            "Wave"
+            "Wave",
+            {"cycleFrames": 60}
           ]}
-        ]},
-        {"resetRoom": {
-          "nodes": [1, 2]
-        }},
-        {"refill": ["PowerBomb"]}
+        ]}
       ],
+      "farmCycleDrops": [{"enemy": "Holtz", "count": 2}],
       "flashSuitChecked": true
     },
     {
@@ -1054,6 +1130,6 @@
     }
   ],
   "notables": [],
-  "nextStratId": 52,
+  "nextStratId": 55,
   "nextNotableId": 1
 }

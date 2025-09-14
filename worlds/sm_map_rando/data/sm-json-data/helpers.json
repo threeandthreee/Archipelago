@@ -52,7 +52,7 @@
             "In the original game, some items don't spawn until certain conditions are met.",
             "These may be unintuitive to players, so randomizers may want to instead spawn all items at all times, which can be done by removing the 'never' in this helper.",
             "Seven of the eight items in Wrecked Ship only spawn if Phantoon is defeated.",
-            "The item in missile in the Final Missile Room, and the Power Bomb in the Morph Ball Room only spawn if Zebes is awake.",
+            "The item in 230 Missile Room, and the Power Bomb in the Morph Ball Room only spawn if Zebes is awake.",
             "The item in the Pit Room only spawns if both Morph and Missiles have been collected.",
             "In addition, in the original game, Morph will no longer spawn if Zebes is awake; this bug is considered never valuable and the data lists it as always spawned regardless of this helper."
           ]
@@ -264,7 +264,7 @@
           "requires": [ "never" ],
           "devNote": [
             "In Vanilla, there is a bug placing the closing door at the top of the Etecoon Shaft in the wrong location.",
-            "Additionally, the top right door in both Pink Brinstar Power Bomb Room and Halfie Climb Room are immediately closed.",
+            "Additionally, the top right door in both Mission Impossible Room and Halfie Climb Room are immediately closed.",
             "This affects the closing animation and prevents return through the door while in direct G-mode.",
             "This also prevents getting doorstuck, although that doesn't seem to be important in any of these locations."
           ]
@@ -285,6 +285,27 @@
         {
           "name": "h_ShinesparksCostEnergy",
           "requires": []
+        },
+        {
+          "name": "h_equipmentScreenCycleFrames",
+          "requires": [
+            {"cycleFrames": 300}
+          ],
+          "note": [
+            "This represents the amount of time that could be required in the pause menu to equip or unequip items."
+          ],
+          "devNote": [
+            "This is not perfectly precise as the time spent in the pause menu can vary,",
+            "depending on which items are collected and which items are being equipped or unequipped.",
+            "It is intended as a typical value for common actions such as performing a Gravity jump or mid-air Spring Ball jump."
+          ]
+        },
+        {
+          "name": "h_doubleEquipmentScreenCycleFrames",
+          "requires": [
+            "h_equipmentScreenCycleFrames",
+            "h_equipmentScreenCycleFrames"
+          ]
         }
       ]
     },
@@ -384,6 +405,16 @@
           "name": "h_spikeSuitSamusEaterLeniency",
           "requires": [
             {"samusEaterFrames": 320}
+          ]
+        },
+        {
+          "name": "h_speedKeepSpikeHitLeniency",
+          "requires": [
+            "h_XModeSpikeHitLeniency"
+          ],
+          "devNote": [
+            "Since a (spike) speed keep requires a frame-perfect unmorph with the same timing as spike X-mode,",
+            "it is a reasonable default to have them share the same lenience."
           ]
         },
         {
@@ -795,7 +826,7 @@
         {
           "name": "h_heatedCrystalFlash",
           "requires": [
-            {"heatFrames": 185},
+            {"simpleHeatFrames": 185},
             {"or": [
               {"and": [
                 "h_heatProof",
@@ -804,7 +835,7 @@
               "canHeatedCrystalFlash"
             ]},
             "h_heatedCrystalFlashRefill",
-            {"heatFrames": 20}
+            {"simpleHeatFrames": 20}
           ],
           "devNote": [
             "These requirements are tight but include time to morph before laying the Power Bomb and to land after the Crystal Flash refill completes."
@@ -813,7 +844,7 @@
         {
           "name": "h_heatedLavaCrystalFlash",
           "requires": [
-            {"heatFrames": 185},
+            {"simpleHeatFrames": 185},
             {"lavaFrames": 185},
             {"or": [
               {"and": [
@@ -841,7 +872,7 @@
         {
           "name": "h_heatedAcidCrystalFlash",
           "requires": [
-            {"heatFrames": 185},
+            {"simpleHeatFrames": 185},
             {"acidFrames": 185},
             "canHeatedCrystalFlash",
             "h_heatedAcidCrystalFlashRefill",
@@ -939,6 +970,13 @@
           ]
         },
         {
+          "name": "h_speedKeepSpikeHit",
+          "requires": [
+            {"spikeHits": 1},
+            "h_speedKeepSpikeHitLeniency"
+          ]
+        },
+        {
           "name": "h_XRayMorphIceClip",
           "requires": [
             "canXRayCeilingClip",
@@ -967,6 +1005,14 @@
               "h_preciseIceClip",
               "h_highPixelIceClip"
             ]}
+          ]
+        },
+        {
+          "name": "h_flashSuitIceClip",
+          "requires": [
+            "canTrickyUseFrozenEnemies",
+            "canCeilingClip",
+            {"useFlashSuit": {}}
           ]
         },
         {
@@ -1099,7 +1145,7 @@
         {
           "name": "h_heatedGMode",
           "requires": [
-            "canEnterGMode",
+            "canGMode",
             {"or": [
               "h_heatProof",
               "canHeatedGMode"
@@ -1109,8 +1155,15 @@
         {
           "name": "h_heatedGModePauseAbuse",
           "requires": [
-            "h_heatedGMode",
-            "canPauseAbuse"
+            "canGMode",
+            "canPauseAbuse",
+            {"or": [
+              "h_heatProof",
+              {"and": [
+                "canComplexGMode",
+                "canHeatedGMode"
+              ]}
+            ]}
           ]
         },
         {
@@ -1283,10 +1336,6 @@
         {
           "name": "h_artificialMorphResetFallSpeed",
           "requires": [{"tech": "canResetFallSpeed"}]
-        },
-        {
-          "name": "h_artificialMorphSpringFling",
-          "requires": [{"tech": "canSpringFling"}]
         },
         {
           "name": "h_artificialMorphSpringBallBombJump",

@@ -428,6 +428,64 @@
       ]
     },
     {
+      "id": 89,
+      "link": [1, 1],
+      "name": "Single Multiviola Farm",
+      "requires": [
+        "canPrepareForNextRoom",
+        "h_heatProof",
+        {"resetRoom": {"nodes": [1]}},
+        {"or": [
+          "Plasma",
+          "ScrewAttack",
+          {"and": [
+            "canPseudoScrew",
+            {"cycleFrames": 30}
+          ]},
+          {"and": [
+            "Wave",
+            "Ice",
+            {"cycleFrames": 30}
+          ]}
+        ]},
+        {"cycleFrames": 60}
+      ],
+      "resetsObstacles": ["A", "B", "C", "D", "E", "F"],
+      "farmCycleDrops": [{"enemy": "Multiviola", "count": 1}]
+    },
+    {
+      "id": 90,
+      "link": [1, 1],
+      "name": "Multiviola and Dessgeega Farm",
+      "requires": [
+        "canPrepareForNextRoom",
+        "canDodgeWhileShooting",
+        "h_heatProof",
+        {"resetRoom": {"nodes": [1]}},
+        {"or": [
+          {"and": [
+            "Plasma",
+            "Wave",
+            {"cycleFrames": 770}
+          ]},
+          {"and": [
+            "Plasma",
+            {"cycleFrames": 1290}
+          ]},
+          {"and": [
+            "ScrewAttack",
+            {"cycleFrames": 610}
+          ]}
+        ]}
+      ],
+      "clearsObstacles": ["C", "E", "F"],
+      "resetsObstacles": ["A", "B", "D"],
+      "farmCycleDrops": [
+        {"enemy": "Multiviola", "count": 2},
+        {"enemy": "Dessgeega", "count": 5}
+      ]
+    },
+    {
       "id": 4,
       "link": [1, 1],
       "name": "Crystal Flash",
@@ -1212,6 +1270,17 @@
       "clearsObstacles": ["D"]
     },
     {
+      "id": 88,
+      "link": [4, 6],
+      "name": "Cross with Crystal Flash",
+      "requires": [
+        "h_usePowerBomb",
+        {"heatFrames": 260},
+        "h_heatedCrystalFlash",
+        {"heatFrames": 120}
+      ]
+    },
+    {
       "id": 52,
       "link": [6, 1],
       "name": "Blue Suit Run",
@@ -1858,6 +1927,6 @@
       ]
     }
   ],
-  "nextStratId": 88,
+  "nextStratId": 91,
   "nextNotableId": 5
 }

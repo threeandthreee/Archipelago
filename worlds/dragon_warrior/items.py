@@ -17,27 +17,27 @@ equipment_table = {
     names.progressive_weapon: ItemData(0xE20, True),
     names.progressive_armor: ItemData(0xE04, True),
     names.progressive_shield: ItemData(0xE01, True),
-    names.erdricks_armor: ItemData(0xFE, True, True),
-    names.erdricks_sword: ItemData(0xFF, True, True),
-    names.dragon_scale: ItemData(0x4, False, True),
-    names.fighters_ring: ItemData(0x6, False, True)
+    names.erdricks_armor: ItemData(0xFE, True, useful=True),
+    names.erdricks_sword: ItemData(0xFF, True, useful=True),
+    names.dragon_scale: ItemData(0x4, False, useful=True),
+    names.fighters_ring: ItemData(0x6, False, useful=True)
 }
 
 important_table = {
     names.fairy_flute: ItemData(0x5, True),
     names.erdricks_token: ItemData(0x7, True),
-    # names.gwaelins_love: ItemData(0x8, True),
+    names.gwaelins_love: ItemData(0x8, True),
     names.silver_harp: ItemData(0xA, True),
     names.stones_of_sunlight: ItemData(0xC, True),
     names.staff_of_rain: ItemData(0xD, True),
     names.rainbow_drop: ItemData(0xE, True),
-    names.magic_key: ItemData(0xD4, True, True),
+    names.magic_key: ItemData(0xD4, True, useful=True),
     names.ball_of_light: ItemData(0x12345, True)
 }
 
 cursed_table = {
     names.cursed_belt: ItemData(0x9),
-    names.death_necklace: ItemData(0xB, False, True)
+    names.death_necklace: ItemData(0xB, False, useful=True)
 }
 
 filler_table = {

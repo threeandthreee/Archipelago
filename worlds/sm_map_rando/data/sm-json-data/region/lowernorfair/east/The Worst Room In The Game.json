@@ -153,6 +153,7 @@
       "to": [
         {"id": 1},
         {"id": 3},
+        {"id": 4},
         {"id": 5}
       ]
     },
@@ -178,6 +179,7 @@
         {"id": 1},
         {"id": 2},
         {"id": 3},
+        {"id": 4},
         {"id": 5}
       ]
     },
@@ -374,6 +376,21 @@
       "flashSuitChecked": true
     },
     {
+      "id": 83,
+      "link": [1, 4],
+      "name": "Quick Pirate Avoid and Weave",
+      "requires": [
+        "canInsaneJump",
+        "canTrickyDodgeEnemies",
+        {"heatFrames": 190},
+        {"or": [
+          "canDownBack",
+          "Morph",
+          {"heatFrames": 40}
+        ]}
+      ]
+    },
+    {
       "id": 4,
       "link": [1, 5],
       "name": "Base",
@@ -395,25 +412,19 @@
       "link": [1, 5],
       "name": "Quick Pirate Avoid",
       "requires": [
+        "canTrickyJump",
+        {"heatFrames": 110},
         {"or": [
           {"and": [
             "canInsaneJump",
-            {"heatFrames": 110},
-            {"or": [
-              "canDownBack",
-              "Morph",
-              {"heatFrames": 40}
-            ]}
+            "canTrickyDodgeEnemies"
           ]},
-          {"and": [
-            "canTrickyJump",
-            {"heatFrames": 145},
-            {"or": [
-              "canDownBack",
-              "Morph",
-              {"heatFrames": 40}
-            ]}
-          ]}
+          {"heatFrames": 35}
+        ]},
+        {"or": [
+          "canDownBack",
+          "Morph",
+          {"heatFrames": 40}
         ]}
       ],
       "note": [
@@ -432,8 +443,9 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         "h_heatProof",
-        "canXRayClimb",
+        "canLongXRayClimb",
         "canBeVeryPatient"
       ],
       "bypassesDoorShell": true,
@@ -522,6 +534,28 @@
       }
     },
     {
+      "id": 86,
+      "link": [2, 2],
+      "name": "Yellow Space Pirates Farm",
+      "requires": [
+        "h_heatProof",
+        {"resetRoom": {"nodes": [2]}},
+        {"or": [
+          "ScrewAttack",
+          {"and": [
+            "Charge",
+            "Plasma",
+            "Wave",
+            "Ice"
+          ]}
+        ]},
+        {"cycleFrames": 285}
+      ],
+      "resetsObstacles": ["A"],
+      "farmCycleDrops": [{"enemy": "Yellow Space Pirate (wall)", "count": 2}],
+      "devNote": "FIXME: There are more possible beam combinations."
+    },
+    {
       "id": 8,
       "link": [2, 2],
       "name": "Crystal Flash (Frozen Namihe)",
@@ -541,9 +575,7 @@
         {"heatFrames": 60},
         "h_heatedCrystalFlash",
         {"heatFrames": 90},
-        {"resetRoom": {
-          "nodes": [2]
-        }}
+        {"resetRoom": {"nodes": [2]}}
       ],
       "resetsObstacles": ["A"],
       "flashSuitChecked": true,
@@ -569,7 +601,8 @@
           "h_heatedGModeOpenDifferentDoor",
           {"and": [
             "h_heatedGModePauseAbuse",
-            "canInsaneJump"
+            "canInsaneJump",
+            "canComplexGMode"
           ]}
         ]}
       ],
@@ -806,7 +839,7 @@
         "canDodgeWhileShooting",
         "Charge",
         "h_heatProof",
-        "canDelayedWalljump",
+        "canTrickyWalljump",
         {"or": [
           "ScrewAttack",
           {"and": [
@@ -938,7 +971,7 @@
       },
       "requires": [
         {"notable": "X-Ray Climb"},
-        "canXRayClimb",
+        "canLongXRayClimb",
         {"enemyDamage": {"enemy": "Namihe", "type": "fireball", "hits": 2}},
         {"enemyDamage": {
           "enemy": "Yellow Space Pirate (wall)",
@@ -952,7 +985,7 @@
         "Climb the room while avoiding wall pirates and Namihe flames.",
         "Immediately climb above the Namihe flames and wait for the wall pirate to jump across into Samus.",
         "Once the pirate starts going up, resume X-Ray climbing.",
-        "This is a Two screen X-Ray climb.  Watch for enemies when fixing the camera after the climb."
+        "This is a 2-screen X-Ray climb.  Watch for enemies when fixing the camera after the climb."
       ],
       "devNote": "Two Namihe hits as leniency."
     },
@@ -1308,14 +1341,14 @@
     {
       "id": 32,
       "link": [3, 1],
-      "name": "Grapple Teleport X-Ray Climb (Two Screens)",
+      "name": "Grapple Teleport X-Ray Climb (2 Screens)",
       "entranceCondition": {
         "comeInWithGrappleTeleport": {
           "blockPositions": [[2, 34]]
         }
       },
       "requires": [
-        "canXRayClimb",
+        "canLongXRayClimb",
         {"heatFrames": 2800},
         {"enemyDamage": {"enemy": "Namihe", "type": "kago", "hits": 9}},
         {"enemyDamage": {
@@ -1329,7 +1362,7 @@
       "note": [
         "Exit the previous room with Samus in a standing pose (while grappled).",
         "After teleporting, press right to release Grapple while staying standing (not being forced into a crouch).",
-        "Then X-ray climb to get up to the door transition, without needing to open the door.",
+        "Then X-ray climb 2 screens to get up to the door transition, without needing to open the door.",
         "Climb quickly in order to minimize damage from the Namihe and the Pirate."
       ]
     },
@@ -1484,6 +1517,19 @@
       "flashSuitChecked": true
     },
     {
+      "id": 84,
+      "link": [3, 4],
+      "name": "Pirate Jump and Weave",
+      "requires": [
+        "canTrickyJump",
+        {"heatFrames": 175}
+      ],
+      "note": [
+        "Spin jump over the pirate; aiming down mid jump can help.",
+        "Then weave between the platforms below."
+      ]
+    },
+    {
       "id": 35,
       "link": [3, 5],
       "name": "Base",
@@ -1576,6 +1622,28 @@
         ]}
       ],
       "clearsObstacles": ["A"]
+    },
+    {
+      "id": 85,
+      "link": [4, 2],
+      "name": "X-Mode Temporary Blue",
+      "requires": [
+        {"notable": "X-Mode Temporary Blue"},
+        "canLateralMidAirMorph",
+        "canXMode",
+        "h_XModeSpikeHit",
+        "h_shinechargeMaxRunway",
+        "canTemporaryBlue",
+        {"heatFrames": 290}
+      ],
+      "note": [
+        "Starting from approximately the center of the floating platform, run and jump to the left,",
+        "and perform a lateral mid-air morph to hit the spike from below (landing on the Namihe) and enter X-mode.",
+        "Hold an angle button to turn around to the right while retaining dash speed.",
+        "Arm pump a tile or two to the right, so that the Namihe is no longer below Samus.",
+        "Gain a shinecharge and continue holding down while exiting X-mode to obtain temporary blue,",
+        "and use it to break the bomb blocks below while falling through them."
+      ]
     },
     {
       "id": 39,
@@ -1807,6 +1875,16 @@
       "requires": [
         "h_heatProof",
         {"or": [
+          {"and": [
+            {"resetRoom": {"nodes": [1]}},
+            {"cycleFrames": 270}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [3]}},
+            {"cycleFrames": 130}
+          ]}
+        ]},
+        {"or": [
           "ScrewAttack",
           {"and": [
             "Charge",
@@ -1814,14 +1892,11 @@
             "Wave",
             "Ice"
           ]}
-        ]},
-        {"resetRoom": {
-          "nodes": [1, 3]
-        }},
-        {"partialRefill": {"type": "Energy", "limit": 199}},
-        {"partialRefill": {"type": "Missile", "limit": 10}}
+        ]}
       ],
-      "resetsObstacles": ["A"]
+      "resetsObstacles": ["A"],
+      "farmCycleDrops": [{"enemy": "Yellow Space Pirate (standing)", "count": 1}],
+      "devNote": "FIXME: There are more possible beam combinations."
     },
     {
       "id": 55,
@@ -1969,7 +2044,7 @@
             {"heatFrames": 200}
           ]},
           {"and": [
-            "canDelayedWalljump",
+            "canTrickyWalljump",
             "canWallJumpInstantMorph",
             "h_useMorphBombs",
             {"heatFrames": 520}
@@ -2101,8 +2176,16 @@
         "Break the bomb blocks in The Worst Room In The Game with extremely precise walljumps.",
         "Either with a fully delayed max height jump from the wall, or with an instant turnaround after jumping from the lower layer of bomb blocks."
       ]
+    },
+    {
+      "id": 9,
+      "name": "X-Mode Temporary Blue",
+      "note": [
+        "Enter X-mode using the spike above the lower left Namihe.",
+        "Use it to obtain temporary blue and fall through the bomb blocks."
+      ]
     }
   ],
-  "nextStratId": 83,
-  "nextNotableId": 9
+  "nextStratId": 87,
+  "nextNotableId": 10
 }

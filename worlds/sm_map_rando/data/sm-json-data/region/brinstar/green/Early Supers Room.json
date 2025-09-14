@@ -272,8 +272,10 @@
       "link": [1, 1],
       "name": "Zeb Farm",
       "requires": [
-        {"refill": ["Energy", "Missile", "Super"]}
+        {"simpleCycleFrames": 85},
+        {"cycleFrames": 20}
       ],
+      "farmCycleDrops": [{"enemy": "Zeb", "count": 1}],
       "flashSuitChecked": true
     },
     {
@@ -396,9 +398,7 @@
               "canSpringBallJumpMidAir",
               "h_crouchJumpDownGrab"
             ]},
-            {"resetRoom": {
-              "nodes": [1]
-            }}
+            {"resetRoom": {"nodes": [1]}}
           ]
         }
       ],
@@ -433,9 +433,7 @@
               "canSpringBallJumpMidAir",
               "h_crouchJumpDownGrab"
             ]},
-            {"resetRoom": {
-              "nodes": [1]
-            }}
+            {"resetRoom": {"nodes": [1]}}
           ]
         }
       ],
@@ -490,9 +488,6 @@
         "This assumes that Samus comes from the left with Speed, a mockball, or a crouch gate clip.",
         "After the crumbles are broken, shoot the ceiling block and wait by the door for the Waver to come.",
         "Note that if Samus takes more than 35 seconds after entering the room, before shooting the ceiling, the Waver will not come down."
-      ],
-      "devNote": [
-        "FIXME: It is possible to come in from the right and get under the gate to break the crumbles."
       ]
     },
     {
@@ -803,6 +798,46 @@
       }
     },
     {
+      "id": 47,
+      "link": [2, 2],
+      "name": "Waver and Sidehopper Farm",
+      "requires": [
+        {"resetRoom": {"nodes": [2]}},
+        {"or": [
+          "canWalljump",
+          "canCrouchJump"
+        ]},
+        {"or": [
+          {"and": [
+            "Plasma",
+            {"cycleFrames": 600}
+          ]},
+          {"and": [
+            "ScrewAttack",
+            {"cycleFrames": 700}
+          ]},
+          {"and": [
+            {"or": [
+              "Wave",
+              "Spazer"
+            ]},
+            {"cycleFrames": 750}
+          ]},
+          {"and": [
+            "canDodgeWhileShooting",
+            {"cycleFrames": 1050}
+          ]}
+        ]}
+      ],
+      "clearsObstacles": ["A"],
+      "resetsObstacles": ["B"],
+      "farmCycleDrops": [
+        {"enemy": "Waver", "count": 4},
+        {"enemy": "Sm. Sidehopper", "count": 3}
+      ],
+      "flashSuitChecked": true
+    },
+    {
       "id": 30,
       "link": [2, 2],
       "name": "Crystal Flash",
@@ -810,6 +845,126 @@
         "h_CrystalFlash"
       ],
       "flashSuitChecked": true
+    },
+    {
+      "id": 48,
+      "link": [2, 2],
+      "name": "G-Mode Setup - Get Hit By Waver (Come in Jumping)",
+      "entranceCondition": {
+        "comeInJumping": {
+          "speedBooster": false,
+          "minTiles": 4
+        }
+      },
+      "requires": [
+        "canCrouchGateClip",
+        "canComplexGMode"
+      ],
+      "exitCondition": {
+        "leaveWithGModeSetup": {}
+      },
+      "unlocksDoors": [{"types": ["ammo"], "requires": []}],
+      "flashSuitChecked": true,
+      "note": [
+        "Jump into the room and aim down to get under the first shutter, then break the crumble blocks to the left.",
+        "This is the only way for the Wavers to reach the door.",
+        "After the crumbles are broken, shoot the ceiling block and wait by the door for the Waver to come."
+      ]
+    },
+    {
+      "id": 49,
+      "link": [2, 2],
+      "name": "G-Mode Setup - Get Hit By Waver (Come in Jumping, Mockball)",
+      "entranceCondition": {
+        "comeInJumping": {
+          "speedBooster": "any",
+          "minTiles": 1
+        }
+      },
+      "requires": [
+        "can4HighMidAirMorph",
+        "canMockball",
+        "canComplexGMode"
+      ],
+      "exitCondition": {
+        "leaveWithGModeSetup": {}
+      },
+      "unlocksDoors": [{"types": ["ammo"], "requires": []}],
+      "flashSuitChecked": true,
+      "note": [
+        "Jump into the room and mockball to get under the first shutter, to break the crumble blocks to the left.",
+        "Stop before passing under the second shutter.",
+        "Breaking these crumble blocks is the only way for the Wavers to reach the door.",
+        "After the crumbles are broken, shoot the ceiling block and wait by the door for the Waver to come."
+      ]
+    },
+    {
+      "id": 50,
+      "link": [2, 2],
+      "name": "G-Mode Setup - Get Hit By Waver (Come in Space Jumping)",
+      "entranceCondition": {
+        "comeInSpaceJumping": {
+          "speedBooster": false,
+          "minTiles": 4
+        }
+      },
+      "requires": [
+        "canCrouchGateClip",
+        "canComplexGMode"
+      ],
+      "exitCondition": {
+        "leaveWithGModeSetup": {}
+      },
+      "unlocksDoors": [{"types": ["ammo"], "requires": []}],
+      "flashSuitChecked": true,
+      "note": [
+        "Space Jump into the room and aim down to get under the first shutter, then break the crumble blocks to the left.",
+        "This is the only way for the Wavers to reach the door.",
+        "After the crumbles are broken, shoot the ceiling block and wait by the door for the Waver to come."
+      ]
+    },
+    {
+      "id": 51,
+      "link": [2, 2],
+      "name": "G-Mode Setup - Get Hit By Waver (Come in With Side Platform)",
+      "entranceCondition": {
+        "comeInWithSidePlatform": {
+          "platforms": [
+            {
+              "minHeight": 1,
+              "maxHeight": 2,
+              "minTiles": 4,
+              "speedBooster": false,
+              "obstructions": [[1, 0]],
+              "note": [
+                "Skree Boost Room and Butterfly Room are minimal-runway examples that this applies to."
+              ]
+            },
+            {
+              "minHeight": 3,
+              "maxHeight": 3,
+              "minTiles": 5,
+              "speedBooster": false,
+              "obstructions": [[1, 0]],
+              "note": ["Bomb Torizo Room is a minimal-runway example that this applies to."]
+            }
+          ]
+        }
+      },
+      "requires": [
+        "canCrouchGateClip",
+        "canComplexGMode"
+      ],
+      "exitCondition": {
+        "leaveWithGModeSetup": {}
+      },
+      "unlocksDoors": [{"types": ["ammo"], "requires": []}],
+      "flashSuitChecked": true,
+      "note": [
+        "Jump into the room and aim down to get under the first shutter, then break the crumble blocks to the left.",
+        "This is the only way for the Wavers to reach the door.",
+        "After the crumbles are broken, shoot the ceiling block and wait by the door for the Waver to come."
+      ]
     },
     {
       "id": 31,
@@ -922,6 +1077,6 @@
       ]
     }
   ],
-  "nextStratId": 47,
+  "nextStratId": 52,
   "nextNotableId": 4
 }

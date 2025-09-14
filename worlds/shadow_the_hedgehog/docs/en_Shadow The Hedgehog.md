@@ -7,7 +7,7 @@ You can read through all the options and generate a YAML [here](../player-option
 ## What does randomization do to this game?
 
 Randomisation in this game affects the memory of the game to unlock various events and behaviours. Level access is determined based on settings, either unlocking them individually through Select mode, playing through story mode, or a combination of both.
-Once you have the goal met, The Last Way will open and be available from the Story menu.
+Once you have the goal met, The Last Way will open and be available from the Story menu. If you play story mode, then the game recommends playing through story mode, and new missions will became available from clearing stages. If you play story/shuffle/last way shuffle, The Last Way will *not* open up, and must be found through story mode, same with Devil Doom.
 
 ## What items and locations get randomized?
 
@@ -22,7 +22,7 @@ Likewise, all of these mission objectives are items that can be received, requir
 the several Dark and Hero missions of the game.
 
 The game includes further enemysanity and configuration around the percent of these checks to include.
-Checkpoint sanity is a recent addition, allowing each numbered checkpoint to be an individual check.
+Checkpoint sanity allows each numbered checkpoint to be an individual check.
 
 Enemysanity logic requires the entire stage to be accessible for any of the checks to be in logic.
 
@@ -30,7 +30,11 @@ Keysanity is an additional, this keeps track of each individual key rather the c
 
 Weaponsanity is an option which prevents you from holding weapons until they are unlocked, which has an affect on logic. There is an option to add checks for holding each weapon, and this can be configured to be only when unlocked as well.
 
-Veichle logic exists and is written, but has no effect on gameplay. You can use this mode, as the logic handles it, but the game will not restrict you from using them.
+Veichle sanity has been implemented, allowing for vehicles to despawn until you have the correct multiworld item.
+
+Object unlocks are also included, similar to vehicles, which despawns objects in the stages needed to progress. All of these are seperately configurable and include Pulleys, Ziplines, Light Dash Trails, Warp Holes and Rockets.
+
+Other checks include checking shadow boxes, gold beetles, energy cores and keydoors.
 
 There are some junk items and special weapon unlocks are also available, regardless of weaponsanity.
 
@@ -54,10 +58,12 @@ the total amount required for each check per level will be increased by 2. This 
 This is to prevent levels and checks becoming unreachable once you have all the required items as you would unable to play some levels as the level would auto-complete.
 
 Once you make progress on an objective, the number will increase in game, but will be reset when handled by the client.
-The client will keep the current amount set to the amount you have received from the Multiworld.
 
-If you have the original max (remember, 2 less than what is displayed) you can complete the level.
-Ensure you have the mission character selected and pause the game, press the Z button, and the total value will visibly change.
+The client will keep the current amount set to the amount you have received from the Multiworld. Objective-less sanity does not behaviour like this. In any objective sanity mode, this is required to lower the max, which defaults to +100 to the maximum available value in the world.
+
+Ensure you have the mission character selected and pause the game, hold the Z button, and the total value will visibly change. Enemy-based levels will autoclear at this point, otherwise you must clear 1 more in the objective. As such, ensure to do this BEFORE activating the last available in the stage.
+
+Other objective sanity modes will reset to different numbers and not sent to finish, but will still change the max value once the level is reasonably completable.
 
 Levels which require you to defeat a number of enemies of a particular type will clear as soon as you close the pause menu.
 Other missions require you to achieve 1 more step in the objective.
@@ -129,8 +135,10 @@ When you receive an item, the Text Client will update to inform you.
 
 ## Can I play offline?
 
-This game requires to be online at all times as it is completely memory based. Level restriction and similar paths
-will not work when playing offline, nor will item collection.
+This game requires to be connected to the server at all times as it is if you wish to connect to a multiworld. Features such as level restriction and object progression will not work if you are offline. This is due to the in-memory handling, and nothing is stored currently in the save file for completed data.
+
+However, you can play a solo world offline if you so wish to do so, just generate your solo world seed, open the Archipelago Launcher and select Host. Then open your generated seed and open the Shadow the Hedgehog Client to start playing.
+
 
 ## How do I finish an objective?
 Meet the alignment character in the stage, select that mission, pause the game, press Z and the requirement count
@@ -144,6 +152,8 @@ For further details, fully read other sections.
 You select your goal type when setting up in the yaml file. Once you reach these conditions you have set,
 based on percentage and enabling, Last Story will unlock in the Story menu. Walk through this and defeat the final boss to finish.
 Each goal has a seperate token or required it based on the flags set.
+If you are playing Story Mode with story shuffle and last way shuffle enabled, you must find Devil Doom in the story shuffle. If you get to this stage earlier, the game will set your rings to 0, causing you to be unable to finish the super-form boss.
 
 ## Known Issues
-N/A
+- Some stages do not currently implement per-sanity, currently
+- Easy logic has not been idealised yet, please report issues that may affect easy logic. (Easy logic is deemed anything that a new player might expect to be required as it is there in vanilla, even when there is an method, such as the Gun Jumper in Sky Troops)

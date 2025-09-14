@@ -3,8 +3,10 @@ import dataclasses
 import os
 import typing
 import logging
+import struct
 
 import settings
+import Utils
 from BaseClasses import CollectionState, Entrance, Item, ItemClassification, Location, Tutorial
 from Fill import fill_restrictive
 from worlds.AutoWorld import WebWorld, World
@@ -50,6 +52,17 @@ class LinksAwakeningSettings(settings.Group):
         description = "LADX ROM File"
         md5s = [LADXProcedurePatch.hash]
 
+        @classmethod
+        def validate(cls, path: str) -> None:
+            try:
+                super().validate(path)
+            except ValueError:
+                Utils.messagebox(
+                    "Error",
+                    "Provided rom does not match hash for English 1.0/revision-0 of Link's Awakening DX",
+                    True)
+                raise
+
     class RomStart(str):
         """
         Set this to false to never autostart a rom (such as after patching)
@@ -81,6 +94,24 @@ class LinksAwakeningSettings(settings.Group):
         Only .bin or .bdiff files
         The same directory will be checked for a matching text modification file
         """
+        def browse(self, filetypes=None, **kwargs):
+            filetypes = [("Binary / Patch files", [".bin", ".bdiff"])]
+            return super().browse(filetypes=filetypes, **kwargs)
+
+        @classmethod
+        def validate(cls, path: str) -> None:
+            with open(path, "rb", buffering=0) as f:
+                header, size = struct.unpack("<II", f.read()[:8])
+                if path.endswith('.bin') and header == 0xDEADBEEF and size < 1024:
+                    # detect extended spritesheets from upstream ladxr
+                    Utils.messagebox(
+                        "Error",
+                        "Extended sprite sheets are not supported. Try again with a different gfxmod file, "
+                        "or provide no file to continue without modifying graphics.",
+                        True)
+                    raise ValueError("Provided gfxmod file is an extended sheet, which is not supported")
+
+
 
     rom_file: RomFile = RomFile(RomFile.copy_to)
     rom_start: typing.Union[RomStart, bool] = True
@@ -205,10 +236,10 @@ class LinksAwakeningWorld(World):
 
         assert(start)
 
-        menu_region = LinksAwakeningRegion("Menu", None, "Menu", self.player, self.multiworld)
+        menu_region = LinksAwakeningRegion("Menu", None, "Menu", self.player, self.multiworld)        
         menu_region.exits = [Entrance(self.player, "Start Game", menu_region)]
         menu_region.exits[0].connect(start)
-
+        
         self.multiworld.regions.append(menu_region)
 
         # Place RAFT, other access events
@@ -216,14 +247,14 @@ class LinksAwakeningWorld(World):
             for loc in region.locations:
                 if loc.address is None:
                     loc.place_locked_item(self.create_event(loc.ladxr_item.event))
-
+        
         # Connect Windfish -> Victory
         windfish = self.multiworld.get_region("Windfish", self.player)
         l = Location(self.player, "Windfish", parent=windfish)
         windfish.locations = [l]
-
+                
         l.place_locked_item(self.create_event("An Alarm Clock"))
-
+        
         self.multiworld.completion_condition[self.player] = lambda state: state.has("An Alarm Clock", player=self.player)
 
     def create_item(self, item_name: str):
@@ -299,8 +330,8 @@ class LinksAwakeningWorld(World):
         event_location = Location(self.player, "Can Play Trendy Game", parent=trendy_region)
         trendy_region.locations.insert(0, event_location)
         event_location.place_locked_item(self.create_event("Can Play Trendy Game"))
-
-        self.dungeon_locations_by_dungeon = [[], [], [], [], [], [], [], [], []]
+       
+        self.dungeon_locations_by_dungeon = [[], [], [], [], [], [], [], [], []]     
         for r in self.multiworld.get_regions(self.player):
             # Set aside dungeon locations
             if r.dungeon_index:
@@ -374,7 +405,7 @@ class LinksAwakeningWorld(World):
 
         # set containing the list of all possible dungeon locations for the player
         all_dungeon_locs = set()
-
+        
         # Do dungeon specific things
         for dungeon_index in range(0, 9):
             # set up allow-list for dungeon specific items
@@ -387,7 +418,7 @@ class LinksAwakeningWorld(World):
             # ...also set the rules for the dungeon
             for location in locs:
                 orig_rule = location.item_rule
-                # If an item is about to be placed on a dungeon location, it can go there iff
+                # If an item is about to be placed on a dungeon location, it can go there iff 
                 # 1. it fits the general rules for that location (probably 'return True' for most places)
                 # 2. Either
                 #    2a. it's not a restricted dungeon item
@@ -449,7 +480,7 @@ class LinksAwakeningWorld(World):
             for loc in r.locations:
                 if isinstance(loc, LinksAwakeningLocation):
                     assert(loc.item)
-
+                        
                     # If we're a links awakening item, just use the item
                     if isinstance(loc.item, LinksAwakeningItem):
                         loc.ladxr_item.item = loc.item.item_data.ladxr_id

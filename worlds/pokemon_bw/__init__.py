@@ -3,11 +3,12 @@ import os
 from typing import ClassVar, Mapping, Any, List
 
 import settings
-from BaseClasses import MultiWorld, Tutorial, Item, Location
-from Options import Option
+from BaseClasses import MultiWorld, Tutorial, Item, Location, Region
+from Options import Option, OptionError
 from worlds.AutoWorld import World, WebWorld
 from . import items, locations, options, bizhawk_client, rom, groups
-
+from .generate import EncounterEntry, StaticEncounterEntry, TradeEncounterEntry, TrainerPokemonEntry
+from .data import RulesDict
 
 bizhawk_client.register_client()
 
@@ -24,8 +25,18 @@ class PokemonBWSettings(settings.Group):
         description = "Pokemon White Version ROM"
         copy_to = "PokemonWhite.nds"
 
+    class RemoveCollectedFieldItems(settings.Bool):
+        """Toggles whether overworld and hidden items should be automatically removed
+        if collected by another player."""
+
+    class EnableEncounterPlando(settings.Bool):
+        """Toggles whether Encounter Plando is enabled for players in generation.
+        If disabled, yamls that use Encounter Plando do not raise OptionErrors, but display a warning."""
+
     black_rom: PokemonBlackRomFile = PokemonBlackRomFile(PokemonBlackRomFile.copy_to)
     white_rom: PokemonWhiteRomFile = PokemonWhiteRomFile(PokemonWhiteRomFile.copy_to)
+    # remove_collected_field_items: RemoveCollectedFieldItems | bool = False
+    enable_encounter_plando: EnableEncounterPlando | bool = True
 
 
 class PokemonBWWeb(WebWorld):
@@ -84,10 +95,19 @@ class PokemonBWWorld(World):
         self.to_be_filled_locations: int = 0
         self.seed: int = 0
         self.to_be_locked_items: dict[str, list[items.PokemonBWItem] | dict[str, items.PokemonBWItem]] = {}
+        self.wild_encounter: dict[str, EncounterEntry] = {}
+        self.static_encounter: dict[str, StaticEncounterEntry] | None = None
+        self.trade_encounter: dict[str, TradeEncounterEntry] | None = None
+        self.trainer_teams: list[TrainerPokemonEntry] | None = None
+        self.regions: dict[str, Region] | None = None
+        self.rules_dict: RulesDict | None = None
+        self.master_ball_seller_cost: int = 0
 
         self.ut_active: bool = False
 
     def generate_early(self) -> None:
+        from .generate.encounter import wild, checklist, static, plando
+        from .generate import trainers
 
         # Load values from UT if this is a regenerated world
         if hasattr(self.multiworld, "re_gen_passthrough"):
@@ -101,11 +121,43 @@ class PokemonBWWorld(World):
                     if opt is not None:
                         setattr(self.options, key, opt.from_any(value))
                 self.seed = re_ge_slot_data["seed"]
-                self.random.seed(self.seed)
-                return
 
-        self.seed = self.random.getrandbits(64)
+        if not self.ut_active:
+            self.seed = self.random.getrandbits(64)
+
         self.random.seed(self.seed)
+        cost_start, cost_end = -1, -1
+        if "Cost: Free" in self.options.master_ball_seller:
+            cost_start = 0
+            cost_end = 0
+        if "Cost: 1000" in self.options.master_ball_seller:
+            cost_start = 1000 if cost_start == -1 else cost_start
+            cost_end = 1000
+        if "Cost: 3000" in self.options.master_ball_seller:
+            cost_start = 3000 if cost_start == -1 else cost_start
+            cost_end = 3000
+        if "Cost: 10000" in self.options.master_ball_seller:
+            cost_start = 10000 if cost_start == -1 else cost_start
+            cost_end = 10000
+        if cost_start == -1 and len(self.options.master_ball_seller.value) > 0:
+            raise OptionError(f"Player {self.player} ({self.player_name}) added "
+                              f"{len(self.options.master_ball_seller.value)} Master Ball seller(s) "
+                              f"without adding any cost modifier")
+        self.master_ball_seller_cost = self.random.randrange(cost_start, cost_end+1, 500) if cost_start != -1 else 0
+        self.regions = locations.get_regions(self)
+        self.rules_dict = locations.create_rule_dict(self)
+        locations.connect_regions(self)
+        locations.cleanup_regions(self.regions)
+        species_checklist = checklist.get_species_checklist(self)
+        slots_checklist = checklist.get_slots_checklist(self)
+        # Static and trade encounter generation also remove and add species from/to checklist
+        self.wild_encounter |= plando.generate_wild(self, species_checklist, slots_checklist)  # only removes species and slots
+        self.trade_encounter = static.generate_trade_encounters(self, species_checklist)  # removes and adds species
+        self.static_encounter = static.generate_static_encounters(self, species_checklist)  # only removes species
+        self.wild_encounter |= wild.generate_wild_encounters(  # only removes species
+            self, species_checklist, slots_checklist
+        )
+        self.trainer_teams = trainers.generate_trainer_teams(self)
 
     def create_item(self, name: str) -> items.PokemonBWItem:
         return items.generate_item(name, self)
@@ -114,20 +166,17 @@ class PokemonBWWorld(World):
         return items.generate_filler(self)
 
     def create_regions(self) -> None:
-        regions = locations.get_regions(self)
-        rules = locations.create_rule_dict(self)
-        locations.connect_regions(self, regions, rules)
-        locations.cleanup_regions(regions)
-        catchable_species_data = locations.create_and_place_event_locations(self, regions, rules)
-        locations.create_and_place_locations(self, regions, rules, catchable_species_data)
-        self.to_be_filled_locations = locations.count_to_be_filled_locations(regions)
-        self.multiworld.regions.extend(regions.values())
+        catchable_species_data = locations.create_and_place_event_locations(self)
+        locations.create_and_place_locations(self, catchable_species_data)
+        self.to_be_filled_locations = locations.count_to_be_filled_locations(self.regions)
+        self.multiworld.regions.extend(self.regions.values())
 
     def create_items(self) -> None:
         item_pool = items.get_main_item_pool(self)
         items.populate_starting_inventory(self, item_pool)
         if len(item_pool) > self.to_be_filled_locations:
-            raise Exception(f"Player {self.player_name} has more guaranteed items than to-be-filled locations."
+            raise Exception(f"Player {self.player_name} has more guaranteed items ({len(item_pool)}) "
+                            f"than to-be-filled locations ({self.to_be_filled_locations})."
                             f"Please report this to the devs and provide the yaml used for generating.")
         for _ in range(self.to_be_filled_locations-len(item_pool)):
             item_pool.append(self.create_item(self.get_filler_item_name()))
@@ -181,19 +230,26 @@ class PokemonBWWorld(World):
         # Some options and data are included for UT
         return {
             "options": {
-                "goal": self.options.goal.current_key,
                 "version": self.options.version.current_key,
+                "goal": self.options.goal.current_key,
+                "randomize_wild_pokemon": self.options.randomize_wild_pokemon.value,
+                "randomize_trainer_pokemon": self.options.randomize_trainer_pokemon.value,
+                "pokemon_randomization_adjustments": self.options.pokemon_randomization_adjustments.value,
+                "encounter_plando": self.options.encounter_plando.value,
                 "shuffle_badges": self.options.shuffle_badges.current_key,
                 "shuffle_tm_hm": self.options.shuffle_tm_hm.current_key,
                 "dexsanity": self.options.dexsanity.value,
                 "season_control": self.options.season_control.current_key,
+                "adjust_levels": self.options.adjust_levels.value,
+                "master_ball_seller": self.options.master_ball_seller.value,
                 "modify_item_pool": self.options.modify_item_pool.value,
                 "modify_logic": self.options.modify_logic.value,
             },
-            "seed": self.seed,
+            "seed": self.seed,  # Needed for UT
+            "master_ball_seller_cost": self.master_ball_seller_cost,  # NOT needed for UT
         }
 
     def interpret_slot_data(self, slot_data: dict[str, Any]) -> dict[str, Any]:
         """Helper function for Universal Tracker"""
-        _ = self  # Damn PyCharm saying "meThoD mAy bE stAtiC"
+        _ = self  # Damn PyCharm screaming "meThoD mAy bE stAtiC"
         return slot_data

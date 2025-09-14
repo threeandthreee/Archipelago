@@ -1,6 +1,7 @@
 from enum import IntFlag
-from typing import NamedTuple
+from dataclasses import dataclass
 from BaseClasses import ItemClassification
+
 
 class ItemGroups(IntFlag):
     Parts = 1 << 1
@@ -34,10 +35,12 @@ class ItemGroups(IntFlag):
     NeverExclude = 1 << 29
 
 
-class ItemData(NamedTuple):
+@dataclass
+class ItemData:
     """Represents an item in the pool, it could be a resource bundle, production recipe, trap, etc."""
     category: ItemGroups
     code: int
     type: ItemClassification = ItemClassification.filler
     count: int = 1
-    """How many of this item exists in the pool. 0 means none, but still defines the item so it can be added in the starting inventory for example"""
+    """How many of this item exists in the pool. 0 means none, but still defines the item so it can be added in the 
+    starting inventory for example"""

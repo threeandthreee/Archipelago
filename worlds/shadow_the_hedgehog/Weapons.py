@@ -546,7 +546,7 @@ WeaponGroups = {
 
     "Worm Weapons": [WEAPONS.WORM_SHOOTER, WEAPONS.WIDE_WORM_SHOOTER, WEAPONS.BIG_WORM_SHOOTER],
 
-    "Gun Solider Weapons": [WEAPONS.PISTOL, WEAPONS.GRENADE_LAUNCHER, WEAPONS.SURVIVAL_KNIFE,
+    "Gun Soldier Weapons": [WEAPONS.PISTOL, WEAPONS.GRENADE_LAUNCHER, WEAPONS.SURVIVAL_KNIFE,
                             WEAPONS.SUB_MACHINE_GUN],
 
     "Gun Mech Weapons": [WEAPONS.SEMI_AUTOMATIC_RIFLE, WEAPONS.LASER_RIFLE, WEAPONS.HEAVY_MACHINE_GUN,
@@ -571,6 +571,15 @@ def GetWeaponClassification(world, weapon : WeaponInfo):
         return ItemClassification.progression
 
     if WeaponAttributes.SPECIAL in weapon.attributes and world.options.weapon_sanity_hold:
+        return ItemClassification.progression
+
+    # technically need to check if item is required for any regions
+    # skip over this issue for now
+    # but an issue with easy logic Gold Beetle (Vacuum)
+    # and hard logic Doom (Satelitte)
+    # and Shadow Rifle for easy craft logic
+
+    if WeaponAttributes.SPECIAL in weapon.attributes:
         return ItemClassification.progression
 
     if len(weapon.attributes) == 0:

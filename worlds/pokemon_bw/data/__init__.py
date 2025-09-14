@@ -1,6 +1,6 @@
 from typing import NamedTuple, Callable, Literal, TYPE_CHECKING, TypeVar, Any, Union
 
-from BaseClasses import ItemClassification, LocationProgressType, CollectionState, Item
+from BaseClasses import ItemClassification, LocationProgressType, CollectionState
 
 if not TYPE_CHECKING:
     AccessRule: type = Any
@@ -66,12 +66,10 @@ class DexLocationData(NamedTuple):
 
 
 class EncounterData(NamedTuple):
-    # (dex number, form)
     species_black: tuple[int, int]
     species_white: tuple[int, int]
     encounter_region: str
-    # The following will become important when wild encounter randomization happens
-    # index: int
+    file_index: tuple[int, int, int]
 
 
 class StaticEncounterData(NamedTuple):
@@ -91,6 +89,31 @@ class TradeEncounterData(NamedTuple):
     wanted_black: int
     wanted_white: int
     encounter_region: str
+
+
+class TrainerData(NamedTuple):
+    id: int
+    trainer_class: int
+    pokemon_count: int
+    items: tuple[str | None, str | None, str | None, str | None] | None  # Will be filled in the future
+    held_items: bool
+    unique_moves: bool
+    pokemon_entry_length: int
+    # region: str
+    # gym: str | None  # City name without the "City"
+
+
+class TrainerPokemonData(NamedTuple):
+    trainer_id: int
+    team_number: int
+    ivs: int
+    gender: int
+    ability: int
+    level: int
+    nature: int
+    species: str
+    # held_item: str | None
+    # moves: tuple[str, str, str, str] | None
 
 
 class RegionConnectionData(NamedTuple):
@@ -159,6 +182,20 @@ class EvolutionMethodData(NamedTuple):
 
 class TypeData(NamedTuple):
     id: int
+
+
+class WildAdjustmentData(NamedTuple):
+    calculation: Callable[[int], int]
+    file: int
+    season: int
+    method: Literal[
+        "grass", "dark grass", "rustling grass", "surfing", "surfing rippling", "fishing", "fishing rippling"
+    ]
+
+
+class TrainerAdjustmentData(NamedTuple):
+    calculation: Callable[[int], int]
+    trainer_id: int
 
 
 AnyItemData: type = Union[ItemData, BadgeItemData, SeasonItemData]

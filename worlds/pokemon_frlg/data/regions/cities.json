@@ -1,7 +1,7 @@
 {
   "REGION_PALLET_TOWN/VISIT": {
     "parent_map": "MAP_PALLET_TOWN",
-    "name": "Pallet Town Visit",
+    "name": "Pallet Town (Visit)",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -28,8 +28,8 @@
     "events": [],
     "exits": {
       "REGION_PALLET_TOWN/WATER": "Pallet Town Surfing Spot",
-      "REGION_PALLET_TOWN/VISIT": "Pallet Town Visit",
-      "REGION_ROUTE1/MAIN": "Pallet Town Exit"
+      "REGION_PALLET_TOWN/VISIT": "Visit Pallet Town",
+      "REGION_ROUTE1/MAIN": "Pallet Town Exit (North)"
     },
     "warps": {
       "MAP_PALLET_TOWN:0/MAP_PALLET_TOWN_PLAYERS_HOUSE_1F:0": "Player's House",
@@ -39,7 +39,7 @@
   },
   "REGION_PALLET_TOWN/WATER": {
     "parent_map": "MAP_PALLET_TOWN",
-    "name": "Pallet Town Water",
+    "name": "Pallet Town (Water)",
     "encounter_region": "Pallet Town",
     "has_land": false,
     "has_water": true,
@@ -48,9 +48,8 @@
     "locations": [],
     "events": [],
     "exits": {
-      "REGION_PALLET_TOWN/MAIN": "Pallet Town Landing",
-      "REGION_PALLET_TOWN/VISIT": "Pallet Town Water Visit",
-      "REGION_ROUTE21/MAIN": "Pallet Town Water Exit"
+      "REGION_PALLET_TOWN/MAIN": "Pallet Town Landing Spot",
+      "REGION_ROUTE21/MAIN": "Pallet Town Exit (South)"
     },
     "warps": {}
   },
@@ -115,6 +114,7 @@
       "FAME_CHECKER_DAISY_1",
       "FAME_CHECKER_OAK_3",
       "FAME_CHECKER_OAK_6",
+      "NPC_GIFT_GOT_POKEDEX",
       "NPC_GIFT_GOT_FIRST_POKEBALLS",
       "FAME_CHECKER_OAK_2",
       "NPC_GIFT_GOT_POKEBALLS_FROM_OAK_AFTER_22_RIVAL"
@@ -129,7 +129,7 @@
   },
   "REGION_VIRIDIAN_CITY/VISIT": {
     "parent_map": "MAP_VIRIDIAN_CITY",
-    "name": "Viridian City Visit",
+    "name": "Viridian City (Visit)",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -144,7 +144,7 @@
   },
   "REGION_VIRIDIAN_CITY/SOUTH": {
     "parent_map": "MAP_VIRIDIAN_CITY",
-    "name": "Viridian City South",
+    "name": "Viridian City (South)",
     "encounter_region": "Viridian City",
     "has_land": false,
     "has_water": false,
@@ -156,22 +156,22 @@
     ],
     "events": [],
     "exits": {
-      "REGION_VIRIDIAN_CITY/NORTH": "Viridian City South Roadblock",
-      "REGION_VIRIDIAN_CITY/WATER": "Viridian City South Surfing Spot",
-      "REGION_VIRIDIAN_CITY/VISIT": "Viridian City South Visit",
-      "REGION_ROUTE1/MAIN": "Viridian City South Exit (South)",
-      "REGION_ROUTE22/MAIN": "Viridian City South Exit (West)"
+      "REGION_VIRIDIAN_CITY/NORTH": ["Viridian City Roadblock (Bottom)", "Viridian City Ledge (Bottom)", "Viridian City Cuttable Tree (Left)"],
+      "REGION_VIRIDIAN_CITY/WATER": "Viridian City Surfing Spot",
+      "REGION_VIRIDIAN_CITY/VISIT": "Visit Viridian City (South)",
+      "REGION_ROUTE1/MAIN": "Viridian City Exit (South)",
+      "REGION_ROUTE22/EAST": "Viridian City Exit (West)"
     },
     "warps": {
       "MAP_VIRIDIAN_CITY:0/MAP_VIRIDIAN_CITY_POKEMON_CENTER_1F:0": "Viridian Pokemon Center",
-      "MAP_VIRIDIAN_CITY:1/MAP_VIRIDIAN_CITY_HOUSE:0": "Virdian Nickname House",
+      "MAP_VIRIDIAN_CITY:1/MAP_VIRIDIAN_CITY_HOUSE:0": "Viridian Nickname House",
       "MAP_VIRIDIAN_CITY:3/MAP_VIRIDIAN_CITY_SCHOOL:0": "Viridian School",
       "MAP_VIRIDIAN_CITY:4/MAP_VIRIDIAN_CITY_MART:0": "Viridian Poke Mart"
     }
   },
   "REGION_VIRIDIAN_CITY/NORTH": {
     "parent_map": "MAP_VIRIDIAN_CITY",
-    "name": "Viridian City North",
+    "name": "Viridian City (North)",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -182,9 +182,9 @@
     ],
     "events": [],
     "exits": {
-      "REGION_VIRIDIAN_CITY/SOUTH": "Viridian City North Ledge Drop",
-      "REGION_VIRIDIAN_CITY/VISIT": "Viridian City North Visit",
-      "REGION_ROUTE2/SOUTHWEST": "Viridian City North Exit"
+      "REGION_VIRIDIAN_CITY/SOUTH": ["Viridian City Roadblock (Top)", "Viridian City Ledge (Top)", "Viridian City Cuttable Tree (Right)"],
+      "REGION_VIRIDIAN_CITY/VISIT": "Visit Viridian City (North)",
+      "REGION_ROUTE2/SOUTHWEST": "Viridian City Exit (North)"
     },
     "warps": {
       "MAP_VIRIDIAN_CITY:2/MAP_VIRIDIAN_CITY_GYM:0": "Viridian Gym"
@@ -192,7 +192,7 @@
   },
   "REGION_VIRIDIAN_CITY/WATER": {
     "parent_map": "MAP_VIRIDIAN_CITY",
-    "name": "Viridian City Water",
+    "name": "Viridian City (Water)",
     "encounter_region": "Viridian City",
     "has_land": false,
     "has_water": true,
@@ -322,7 +322,7 @@
   },
   "REGION_PEWTER_CITY/VISIT": {
     "parent_map": "MAP_PEWTER_CITY",
-    "name": "Pewter City Visit",
+    "name": "Pewter City (Visit)",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -346,15 +346,14 @@
     "locations": [
       "FAME_CHECKER_BROCK_1",
       "FAME_CHECKER_BROCK_3",
-      "HIDDEN_ITEM_PEWTER_CITY_POKE_BALL",
-      "NPC_GIFT_GOT_RUNNING_SHOES"
+      "HIDDEN_ITEM_PEWTER_CITY_POKE_BALL"
     ],
     "events": [],
     "exits": {
-      "REGION_PEWTER_CITY/NEAR_MUSEUM": "Pewter City Cuttable Tree",
-      "REGION_PEWTER_CITY/VISIT": "Pewter City Visit",
-      "REGION_ROUTE2/NORTHWEST": "Pewter City Exit (South)",
-      "REGION_ROUTE3/MAIN": "Pewter City Exit (East)"
+      "REGION_PEWTER_CITY/NEAR_ROADBLOCK": "Pewter City Roadblock (Left)",
+      "REGION_PEWTER_CITY/NEAR_MUSEUM": ["Pewter City Ledge (Bottom)", "Pewter City Cuttable Tree (Right)"],
+      "REGION_PEWTER_CITY/VISIT": "Visit Pewter City",
+      "REGION_ROUTE2/NORTHWEST": "Pewter City Exit (South)"
     },
     "warps": {
       "MAP_PEWTER_CITY:0/MAP_PEWTER_CITY_MUSEUM_1F:0": "Pewter Museum (West)",
@@ -365,9 +364,27 @@
       "MAP_PEWTER_CITY:6/MAP_PEWTER_CITY_HOUSE2:0": "Pewter Info House"
     }
   },
+  "REGION_PEWTER_CITY/NEAR_ROADBLOCK": {
+    "parent_map": "MAP_PEWTER_CITY",
+    "name": "Pewter City (Near Roadblock)",
+    "encounter_region": null,
+    "has_land": false,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [
+      "NPC_GIFT_GOT_RUNNING_SHOES"
+    ],
+    "events": [],
+    "exits": {
+      "REGION_PEWTER_CITY/MAIN": "Pewter City Roadblock (Right)",
+      "REGION_ROUTE3/MAIN": "Pewter City Exit (East)"
+    },
+    "warps": {}
+  },
   "REGION_PEWTER_CITY/NEAR_MUSEUM": {
     "parent_map": "MAP_PEWTER_CITY",
-    "name": "Pewter City Near Museum",
+    "name": "Pewter City (Near Museum)",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -376,8 +393,8 @@
     "locations": [],
     "events": [],
     "exits": {
-      "REGION_PEWTER_CITY/MAIN": "Pewter City Near Museum Ledge Drop",
-      "REGION_PEWTER_CITY/VISIT": "Pewter City Near Museum Visit"
+      "REGION_PEWTER_CITY/MAIN": ["Pewter City Ledge (Top)", "Pewter City Cuttable Tree (Left)"],
+      "REGION_PEWTER_CITY/VISIT": "Visit Pewter City (Near Museum)"
     },
     "warps": {
       "MAP_PEWTER_CITY:1/MAP_PEWTER_CITY_MUSEUM_1F:1": "Pewter Museum (East)"
@@ -385,7 +402,7 @@
   },
   "REGION_PEWTER_CITY_MUSEUM_1F/WEST": {
     "parent_map": "MAP_PEWTER_CITY_MUSEUM_1F",
-    "name": "Pewter Museum 1F West",
+    "name": "Pewter Museum 1F (West)",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -401,7 +418,7 @@
   },
   "REGION_PEWTER_CITY_MUSEUM_1F/EAST": {
     "parent_map": "MAP_PEWTER_CITY_MUSEUM_1F",
-    "name": "Pewter Museum 1F East",
+    "name": "Pewter Museum 1F (East)",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -544,7 +561,7 @@
   },
   "REGION_CERULEAN_CITY/VISIT": {
     "parent_map": "MAP_CERULEAN_CITY",
-    "name": "Cerulean City Visit",
+    "name": "Cerulean City (Visit)",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -573,8 +590,8 @@
     ],
     "events": [],
     "exits": {
-      "REGION_CERULEAN_CITY/OUTSKIRTS": "Cerulean City Cuttable Tree",
-      "REGION_CERULEAN_CITY/VISIT": "Cerulean City Visit",
+      "REGION_CERULEAN_CITY/OUTSKIRTS": ["Cerulean City Ledge (Bottom)", "Cerulean City Cuttable Tree (Top)"],
+      "REGION_CERULEAN_CITY/VISIT": "Visit Cerulean City",
       "REGION_ROUTE4/SOUTHEAST": "Cerulean City Exit (West)",
       "REGION_ROUTE24/MAIN": "Cerulean City Exit (North)"
     },
@@ -592,7 +609,7 @@
   },
   "REGION_CERULEAN_CITY/BACKYARD": {
     "parent_map": "MAP_CERULEAN_CITY",
-    "name": "Cerulean City Backyard",
+    "name": "Cerulean City (Backyard)",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -603,7 +620,7 @@
     ],
     "events": [],
     "exits": {
-      "REGION_CERULEAN_CITY/VISIT": "Cerulean City Backyard Visit"
+      "REGION_CERULEAN_CITY/VISIT": "Visit Cerulean City (Backyard)"
     },
     "warps": {
       "MAP_CERULEAN_CITY:9/MAP_CERULEAN_CITY_HOUSE1:1": "Badge Guy's House (Back)"
@@ -611,7 +628,7 @@
   },
   "REGION_CERULEAN_CITY/OUTSKIRTS": {
     "parent_map": "MAP_CERULEAN_CITY",
-    "name": "Cerulean City Outskirts",
+    "name": "Cerulean City (Outskirts)",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -623,10 +640,10 @@
     ],
     "events": [],
     "exits": {
-      "REGION_CERULEAN_CITY/MAIN": "Cerulean City Outskirts Ledge Drop",
-      "REGION_CERULEAN_CITY/VISIT": "Cerulean City Outskirts Visit",
-      "REGION_ROUTE5/MAIN": "Cerulean City Outskirts Exit (South)",
-      "REGION_ROUTE9/MAIN": "Cerulean City Outskirts Exit (East)"
+      "REGION_CERULEAN_CITY/MAIN": ["Cerulean City Ledge (Top)", "Cerulean City Cuttable Tree (Bottom)"],
+      "REGION_CERULEAN_CITY/VISIT": "Visit Cerulean City (Outskirts)",
+      "REGION_ROUTE5/MAIN": "Cerulean City Exit (South)",
+      "REGION_ROUTE9/MAIN": "Cerulean City Exit (East)"
     },
     "warps": {
       "MAP_CERULEAN_CITY:10/MAP_CERULEAN_CITY_HOUSE2:1": "Robbed House (Back)"
@@ -634,7 +651,7 @@
   },
   "REGION_CERULEAN_CITY/WATER": {
     "parent_map": "MAP_CERULEAN_CITY",
-    "name": "Cerulean City Water",
+    "name": "Cerulean City (Water)",
     "encounter_region": "Cerulean City",
     "has_land": false,
     "has_water": true,
@@ -643,15 +660,15 @@
     "locations": [],
     "events": [],
     "exits": {
-      "REGION_CERULEAN_CITY/NEAR_CAVE": "Cerulean City Near Cave Landing",
-      "REGION_ROUTE4/WATER": "Cerulean City Water Exit (West)",
-      "REGION_ROUTE24/WATER": "Cerulean City Water Exit (North)"
+      "REGION_CERULEAN_CITY/NEAR_CAVE": "Cerulean City Landing Spot",
+      "REGION_ROUTE4/WATER": "Cerulean City (Water) Exit (West)",
+      "REGION_ROUTE24/WATER": "Cerulean City (Water) Exit (North)"
     },
     "warps": {}
   },
   "REGION_CERULEAN_CITY/NEAR_CAVE": {
     "parent_map": "MAP_CERULEAN_CITY",
-    "name": "Cerulean City Near Cave",
+    "name": "Cerulean City (Near Cave)",
     "encounter_region": "Cerulean City",
     "has_land": false,
     "has_water": false,
@@ -660,9 +677,9 @@
     "locations": [],
     "events": [],
     "exits": {
-      "REGION_CERULEAN_CITY/WATER": "Cerulean City Near Cave Surfing Spot",
-      "REGION_CERULEAN_CITY/VISIT": "Cerulean City Near Cave Visit",
-      "REGION_ROUTE4/NORTHEAST": "Cerulean City Near Cave Exit"
+      "REGION_CERULEAN_CITY/WATER": "Cerulean City Surfing Spot",
+      "REGION_CERULEAN_CITY/VISIT": "Visit Cerulean City (Near Cave)",
+      "REGION_ROUTE4/NORTHEAST": "Cerulean City (Near Cave) Exit (West)"
     },
     "warps": {
       "MAP_CERULEAN_CITY:8/MAP_CERULEAN_CAVE_1F:0": "Cerulean Cave"
@@ -853,7 +870,7 @@
   },
   "REGION_VERMILION_CITY/VISIT": {
     "parent_map": "MAP_VERMILION_CITY",
-    "name": "Vermilion City Visit",
+    "name": "Vermilion City (Visit)",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -879,14 +896,14 @@
     ],
     "events": [],
     "exits": {
-      "REGION_VERMILION_CITY/NEAR_GYM": "Vermilion City Cuttable Tree",
-      "REGION_VERMILION_CITY/NEAR_HARBOR": "Vermilion City Checkpoint",
-      "REGION_VERMILION_CITY/NEAR_SIGN": "Vermilion City Read Sign",
+      "REGION_VERMILION_CITY/NEAR_GYM": "Vermilion City Cuttable Tree (Top)",
+      "REGION_VERMILION_CITY/NEAR_HARBOR": "Vermilion City Checkpoint (Top)",
+      "REGION_VERMILION_CITY/NEAR_SIGN": "Vermilion City Read Sign (Top)",
       "REGION_VERMILION_CITY/WATER": "Vermilion City Surfing Spot",
-      "REGION_VERMILION_CITY/VISIT": "Vermilion City Visit",
+      "REGION_VERMILION_CITY/VISIT": "Visit Vermilion City",
       "REGION_ROUTE6/MAIN": "Vermilion City Exit (North)",
       "REGION_ROUTE11/WEST": "Vermilion City Exit (East)",
-      "REGION_SEAGALLOP": "Vermilion City Seagallop"
+      "REGION_SEAGALLOP": "Board Seagallop (Vermilion City)"
     },
     "warps": {
       "MAP_VERMILION_CITY:1/MAP_VERMILION_CITY_HOUSE1:0": "Vermilion Fishing House",
@@ -899,7 +916,7 @@
   },
   "REGION_VERMILION_CITY/NEAR_GYM": {
     "parent_map": "MAP_VERMILION_CITY",
-    "name": "Vermilion City Near Gym",
+    "name": "Vermilion City (Near Gym)",
     "encounter_region": "Vermilion City",
     "has_land": false,
     "has_water": false,
@@ -908,10 +925,10 @@
     "locations": [],
     "events": [],
     "exits": {
-      "REGION_VERMILION_CITY/MAIN": "Vermilion City Near Gym Cuttable Tree",
-      "REGION_VERMILION_CITY/NEAR_SIGN": "Vermilion City Near Gym Read Sign",
-      "REGION_VERMILION_CITY/WATER": "Vermilion City Near Gym Surfing Spot",
-      "REGION_VERMILION_CITY/VISIT": "Vermilion City Near Gym Visit"
+      "REGION_VERMILION_CITY/MAIN": "Vermilion City Cuttable Tree (Bottom)",
+      "REGION_VERMILION_CITY/NEAR_SIGN": "Vermilion City Read Sign (Bottom)",
+      "REGION_VERMILION_CITY/WATER": "Vermilion City (Near Gym) Surfing Spot",
+      "REGION_VERMILION_CITY/VISIT": "Visit Vermilion City (Near Gym)"
     },
     "warps": {
       "MAP_VERMILION_CITY:7/MAP_VERMILION_CITY_GYM:0": "Vermilion Gym"
@@ -919,7 +936,7 @@
   },
   "REGION_VERMILION_CITY/NEAR_HARBOR": {
     "parent_map": "MAP_VERMILION_CITY",
-    "name": "Vermilion City Near Harbor",
+    "name": "Vermilion City (Near Harbor)",
     "encounter_region": "Vermilion City",
     "has_land": false,
     "has_water": false,
@@ -928,7 +945,8 @@
     "locations": [],
     "events": [],
     "exits": {
-      "REGION_VERMILION_CITY/MAIN": "Vermilion City Near Harbor Checkpoint"
+      "REGION_VERMILION_CITY/MAIN": "Vermilion City Checkpoint (Bottom)",
+      "REGION_SEAGALLOP": "Board Seagallop (Vermilion Harbor)"
     },
     "warps": {
       "MAP_VERMILION_CITY:0/MAP_SSANNE_EXTERIOR:0": "Vermilion Harbor"
@@ -936,7 +954,7 @@
   },
   "REGION_VERMILION_CITY/NEAR_SIGN": {
     "parent_map": "MAP_VERMILION_CITY",
-    "name": "Vermilion City Near Sign",
+    "name": "Vermilion City (Near Sign)",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -951,7 +969,7 @@
   },
   "REGION_VERMILION_CITY/WATER": {
     "parent_map": "MAP_VERMILION_CITY",
-    "name": "Vermilion City Water",
+    "name": "Vermilion City (Water)",
     "encounter_region": "Vermilion City",
     "has_land": false,
     "has_water": true,
@@ -960,8 +978,8 @@
     "locations": [],
     "events": [],
     "exits": {
-      "REGION_VERMILION_CITY/MAIN": "Vermilion City Landing",
-      "REGION_VERMILION_CITY/NEAR_GYM": "Vermilion City Near Gym Landing"
+      "REGION_VERMILION_CITY/MAIN": "Vermilion City Landing Spot",
+      "REGION_VERMILION_CITY/NEAR_GYM": "Vermilion City (Near Gym) Landing Spot"
     },
     "warps": {}
   },
@@ -1119,7 +1137,7 @@
   },
   "REGION_LAVENDER_TOWN/VISIT": {
     "parent_map": "MAP_LAVENDER_TOWN",
-    "name": "Lavender Town Visit",
+    "name": "Lavender Town (Visit)",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -1143,7 +1161,7 @@
     "locations": [],
     "events": [],
     "exits": {
-      "REGION_LAVENDER_TOWN/VISIT": "Lavender Town Visit",
+      "REGION_LAVENDER_TOWN/VISIT": "Visit Lavender Town",
       "REGION_ROUTE8/MAIN": "Lavender Town Exit (West)",
       "REGION_ROUTE10/SOUTH": "Lavender Town Exit (North)",
       "REGION_ROUTE12/NORTH": "Lavender Town Exit (South)"
@@ -1266,7 +1284,7 @@
   },
   "REGION_CELADON_CITY/VISIT": {
     "parent_map": "MAP_CELADON_CITY",
-    "name": "Celadon City Visit",
+    "name": "Celadon City (Visit)",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -1293,9 +1311,9 @@
     ],
     "events": [],
     "exits": {
-      "REGION_CELADON_CITY/NEAR_GYM": "Celadon City Cuttable Tree",
+      "REGION_CELADON_CITY/NEAR_GYM": "Celadon City Cuttable Tree (Top)",
       "REGION_CELADON_CITY/WATER": "Celadon City Surfing Spot",
-      "REGION_CELADON_CITY/VISIT": "Celadon City Visit",
+      "REGION_CELADON_CITY/VISIT": "Visit Celadon City",
       "REGION_ROUTE7/MAIN": "Celadon City Exit (East)",
       "REGION_ROUTE16/SOUTHEAST": "Celadon City Exit (West)"
     },
@@ -1314,7 +1332,7 @@
   },
   "REGION_CELADON_CITY/NEAR_GYM": {
     "parent_map": "MAP_CELADON_CITY",
-    "name": "Celadon City Near Gym",
+    "name": "Celadon City (Near Gym)",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -1325,8 +1343,8 @@
     ],
     "events": [],
     "exits": {
-      "REGION_CELADON_CITY/MAIN": "Celadon City Near Gym Cuttable Tree",
-      "REGION_CELADON_CITY/VISIT": "Celadon City Near Gym Visit"
+      "REGION_CELADON_CITY/MAIN": "Celadon City Cuttable Tree (Bottom)",
+      "REGION_CELADON_CITY/VISIT": "Visit Celadon City (Near Gym)"
     },
     "warps": {
       "MAP_CELADON_CITY:6/MAP_CELADON_CITY_GYM:0": "Celadon Gym"
@@ -1334,7 +1352,7 @@
   },
   "REGION_CELADON_CITY/WATER": {
     "parent_map": "MAP_CELADON_CITY",
-    "name": "Celadon City Water",
+    "name": "Celadon City (Water)",
     "encounter_region": "Celadon City",
     "has_land": false,
     "has_water": true,
@@ -1428,8 +1446,8 @@
       "REGION_CELADON_CITY_DEPARTMENT_STORE_ELEVATOR/MAIN": "Celadon Department Store 2F Elevator"
     },
     "warps": {
-      "MAP_CELADON_CITY_DEPARTMENT_STORE_2F:1/MAP_CELADON_CITY_DEPARTMENT_STORE_1F:3": "Celadon Department Store 2F Stairs (West)",
-      "MAP_CELADON_CITY_DEPARTMENT_STORE_2F:2/MAP_CELADON_CITY_DEPARTMENT_STORE_3F:1": "Celadon Department Store 2F Stairs (East)"
+      "MAP_CELADON_CITY_DEPARTMENT_STORE_2F:1/MAP_CELADON_CITY_DEPARTMENT_STORE_1F:3": "Celadon Department Store 2F West Stairs",
+      "MAP_CELADON_CITY_DEPARTMENT_STORE_2F:2/MAP_CELADON_CITY_DEPARTMENT_STORE_3F:1": "Celadon Department Store 2F East Stairs"
     }
   },
   "REGION_CELADON_CITY_DEPARTMENT_STORE_3F/MAIN": {
@@ -1446,8 +1464,8 @@
       "REGION_CELADON_CITY_DEPARTMENT_STORE_ELEVATOR/MAIN": "Celadon Department Store 3F Elevator"
     },
     "warps": {
-      "MAP_CELADON_CITY_DEPARTMENT_STORE_3F:1/MAP_CELADON_CITY_DEPARTMENT_STORE_2F:2": "Celadon Department Store 3F Stairs (East)",
-      "MAP_CELADON_CITY_DEPARTMENT_STORE_3F:2/MAP_CELADON_CITY_DEPARTMENT_STORE_4F:1": "Celadon Department Store 3F Stairs (West)"
+      "MAP_CELADON_CITY_DEPARTMENT_STORE_3F:1/MAP_CELADON_CITY_DEPARTMENT_STORE_2F:2": "Celadon Department Store 3F East Stairs",
+      "MAP_CELADON_CITY_DEPARTMENT_STORE_3F:2/MAP_CELADON_CITY_DEPARTMENT_STORE_4F:1": "Celadon Department Store 3F West Stairs"
     }
   },
   "REGION_CELADON_CITY_DEPARTMENT_STORE_4F/MAIN": {
@@ -1464,27 +1482,22 @@
       "SHOP_CELADON_CITY_DEPT_EVO_3",
       "SHOP_CELADON_CITY_DEPT_EVO_4",
       "SHOP_CELADON_CITY_DEPT_EVO_5",
-      "SHOP_CELADON_CITY_DEPT_EVO_6"
+      "SHOP_CELADON_CITY_DEPT_EVO_6",
+      "SHOP_CELADON_CITY_DEPT_HELD_1",
+      "SHOP_CELADON_CITY_DEPT_HELD_2",
+      "SHOP_CELADON_CITY_DEPT_HELD_3",
+      "SHOP_CELADON_CITY_DEPT_HELD_4",
+      "SHOP_CELADON_CITY_DEPT_HELD_5",
+      "SHOP_CELADON_CITY_DEPT_HELD_6",
+      "SHOP_CELADON_CITY_DEPT_HELD_7"
     ],
-    "events": [
-      "EVENT_BUY_FIRE_STONE",
-      "EVENT_BUY_THUNDER_STONE",
-      "EVENT_BUY_WATER_STONE",
-      "EVENT_BUY_LEAF_STONE",
-      "EVENT_BUY_KINGS_ROCK",
-      "EVENT_BUY_METAL_COAT",
-      "EVENT_BUY_DRAGON_SCALE",
-      "EVENT_BUY_UP_GRADE",
-      "EVENT_BUY_DEEP_SEA_SCALE",
-      "EVENT_BUY_DEEP_SEA_TOOTH",
-      "EVENT_BUY_HEART_SCALE"
-    ],
+    "events": [],
     "exits": {
       "REGION_CELADON_CITY_DEPARTMENT_STORE_ELEVATOR/MAIN": "Celadon Department Store 4F Elevator"
     },
     "warps": {
-      "MAP_CELADON_CITY_DEPARTMENT_STORE_4F:1/MAP_CELADON_CITY_DEPARTMENT_STORE_3F:2": "Celadon Department Store 4F Stairs (West)",
-      "MAP_CELADON_CITY_DEPARTMENT_STORE_4F:2/MAP_CELADON_CITY_DEPARTMENT_STORE_5F:1": "Celadon Department Store 4F Stairs (East)"
+      "MAP_CELADON_CITY_DEPARTMENT_STORE_4F:1/MAP_CELADON_CITY_DEPARTMENT_STORE_3F:2": "Celadon Department Store 4F West Stairs",
+      "MAP_CELADON_CITY_DEPARTMENT_STORE_4F:2/MAP_CELADON_CITY_DEPARTMENT_STORE_5F:1": "Celadon Department Store 4F East Stairs"
     }
   },
   "REGION_CELADON_CITY_DEPARTMENT_STORE_5F/MAIN": {
@@ -1515,8 +1528,8 @@
       "REGION_CELADON_CITY_DEPARTMENT_STORE_ELEVATOR/MAIN": "Celadon Department Store 5F Elevator"
     },
     "warps": {
-      "MAP_CELADON_CITY_DEPARTMENT_STORE_5F:1/MAP_CELADON_CITY_DEPARTMENT_STORE_4F:2": "Celadon Department Store 5F Stairs (East)",
-      "MAP_CELADON_CITY_DEPARTMENT_STORE_5F:2/MAP_CELADON_CITY_DEPARTMENT_STORE_ROOF:0": "Celadon Department Store 5F Stairs (West)"
+      "MAP_CELADON_CITY_DEPARTMENT_STORE_5F:1/MAP_CELADON_CITY_DEPARTMENT_STORE_4F:2": "Celadon Department Store 5F East Stairs",
+      "MAP_CELADON_CITY_DEPARTMENT_STORE_5F:2/MAP_CELADON_CITY_DEPARTMENT_STORE_ROOF:0": "Celadon Department Store 5F West Stairs"
     }
   },
   "REGION_CELADON_CITY_DEPARTMENT_STORE_ROOF/MAIN": {
@@ -1561,7 +1574,7 @@
   },
   "REGION_CELADON_CITY_CONDOMINIUMS_1F/FRONT": {
     "parent_map": "MAP_CELADON_CITY_CONDOMINIUMS_1F",
-    "name": "Celadon Condominiums 1F Front",
+    "name": "Celadon Condominiums 1F (Front)",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -1577,13 +1590,13 @@
     "events": [],
     "exits": {},
     "warps": {
-      "MAP_CELADON_CITY_CONDOMINIUMS_1F:0/MAP_CELADON_CITY:3": "Celadon Condominiums 1F Front Exit",
-      "MAP_CELADON_CITY_CONDOMINIUMS_1F:2/MAP_CELADON_CITY_CONDOMINIUMS_2F:3": "Celadon Condominiums 1F Front Stairs"
+      "MAP_CELADON_CITY_CONDOMINIUMS_1F:0/MAP_CELADON_CITY:3": "Celadon Condominiums 1F Exit (Front)",
+      "MAP_CELADON_CITY_CONDOMINIUMS_1F:2/MAP_CELADON_CITY_CONDOMINIUMS_2F:3": "Celadon Condominiums 1F Northeast Stairs"
     }
   },
   "REGION_CELADON_CITY_CONDOMINIUMS_1F/BACK": {
     "parent_map": "MAP_CELADON_CITY_CONDOMINIUMS_1F",
-    "name": "Celadon Condominiums 1F Back",
+    "name": "Celadon Condominiums 1F (Back)",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -1593,13 +1606,13 @@
     "events": [],
     "exits": {},
     "warps": {
-      "MAP_CELADON_CITY_CONDOMINIUMS_1F:1/MAP_CELADON_CITY_CONDOMINIUMS_2F:0": "Celadon Condominiums 1F Back Stairs",
-      "MAP_CELADON_CITY_CONDOMINIUMS_1F:3/MAP_CELADON_CITY:10": "Celadon Condominiums 1F Back Exit"
+      "MAP_CELADON_CITY_CONDOMINIUMS_1F:1/MAP_CELADON_CITY_CONDOMINIUMS_2F:0": "Celadon Condominiums 1F Northwest Stairs",
+      "MAP_CELADON_CITY_CONDOMINIUMS_1F:3/MAP_CELADON_CITY:10": "Celadon Condominiums 1F Exit (Back)"
     }
   },
   "REGION_CELADON_CITY_CONDOMINIUMS_2F/FRONT": {
     "parent_map": "MAP_CELADON_CITY_CONDOMINIUMS_2F",
-    "name": "Celadon Condominiums 2F Front",
+    "name": "Celadon Condominiums 2F (Front)",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -1611,13 +1624,13 @@
     "events": [],
     "exits": {},
     "warps": {
-      "MAP_CELADON_CITY_CONDOMINIUMS_2F:2/MAP_CELADON_CITY_CONDOMINIUMS_3F:3": "Celadon Condominiums 2F Front Stairs (West)",
-      "MAP_CELADON_CITY_CONDOMINIUMS_2F:3/MAP_CELADON_CITY_CONDOMINIUMS_1F:2": "Celadon Condominiums 2F Front Stairs (East)"
+      "MAP_CELADON_CITY_CONDOMINIUMS_2F:2/MAP_CELADON_CITY_CONDOMINIUMS_3F:3": "Celadon Condominiums 2F Northeast Stairs (Left)",
+      "MAP_CELADON_CITY_CONDOMINIUMS_2F:3/MAP_CELADON_CITY_CONDOMINIUMS_1F:2": "Celadon Condominiums 2F Northeast Stairs (Right)"
     }
   },
   "REGION_CELADON_CITY_CONDOMINIUMS_2F/BACK": {
     "parent_map": "MAP_CELADON_CITY_CONDOMINIUMS_2F",
-    "name": "Celadon Condominiums 2F Back",
+    "name": "Celadon Condominiums 2F (Back)",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -1627,13 +1640,13 @@
     "events": [],
     "exits": {},
     "warps": {
-      "MAP_CELADON_CITY_CONDOMINIUMS_2F:0/MAP_CELADON_CITY_CONDOMINIUMS_1F:1": "Celadon Condominiums 2F Back Stairs (East)",
-      "MAP_CELADON_CITY_CONDOMINIUMS_2F:1/MAP_CELADON_CITY_CONDOMINIUMS_3F:0": "Celadon Condominiums 2F Back Stairs (West)"
+      "MAP_CELADON_CITY_CONDOMINIUMS_2F:0/MAP_CELADON_CITY_CONDOMINIUMS_1F:1": "Celadon Condominiums 2F Northwest Stairs (Right)",
+      "MAP_CELADON_CITY_CONDOMINIUMS_2F:1/MAP_CELADON_CITY_CONDOMINIUMS_3F:0": "Celadon Condominiums 2F Northwest Stairs (Left)"
     }
   },
   "REGION_CELADON_CITY_CONDOMINIUMS_3F/FRONT": {
     "parent_map": "MAP_CELADON_CITY_CONDOMINIUMS_3F",
-    "name": "Celadon Condominiums 3F Front",
+    "name": "Celadon Condominiums 3F (Front)",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -1643,13 +1656,13 @@
     "events": [],
     "exits": {},
     "warps": {
-      "MAP_CELADON_CITY_CONDOMINIUMS_3F:2/MAP_CELADON_CITY_CONDOMINIUMS_ROOF:1": "Celadon Condominiums 3F Front Stairs (East)",
-      "MAP_CELADON_CITY_CONDOMINIUMS_3F:3/MAP_CELADON_CITY_CONDOMINIUMS_2F:2": "Celadon Condominiums 3F Front Stairs (West)"
+      "MAP_CELADON_CITY_CONDOMINIUMS_3F:2/MAP_CELADON_CITY_CONDOMINIUMS_ROOF:1": "Celadon Condominiums 3F Northeast Stairs (Right)",
+      "MAP_CELADON_CITY_CONDOMINIUMS_3F:3/MAP_CELADON_CITY_CONDOMINIUMS_2F:2": "Celadon Condominiums 3F Northeast Stairs (Left)"
     }
   },
   "REGION_CELADON_CITY_CONDOMINIUMS_3F/BACK": {
     "parent_map": "MAP_CELADON_CITY_CONDOMINIUMS_3F",
-    "name": "Celadon Condominiums 3F Back",
+    "name": "Celadon Condominiums 3F (Back)",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -1659,13 +1672,13 @@
     "events": [],
     "exits": {},
     "warps": {
-      "MAP_CELADON_CITY_CONDOMINIUMS_3F:0/MAP_CELADON_CITY_CONDOMINIUMS_2F:1": "Celadon Condominiums 3F Back Stairs (West)",
-      "MAP_CELADON_CITY_CONDOMINIUMS_3F:1/MAP_CELADON_CITY_CONDOMINIUMS_ROOF:0": "Celadon Condominiums 3F Back Stairs (East)"
+      "MAP_CELADON_CITY_CONDOMINIUMS_3F:0/MAP_CELADON_CITY_CONDOMINIUMS_2F:1": "Celadon Condominiums 3F Northwest Stairs (Left)",
+      "MAP_CELADON_CITY_CONDOMINIUMS_3F:1/MAP_CELADON_CITY_CONDOMINIUMS_ROOF:0": "Celadon Condominiums 3F Northwest Stairs (Right)"
     }
   },
   "REGION_CELADON_CITY_CONDOMINIUMS_ROOF/FRONT": {
     "parent_map": "MAP_CELADON_CITY_CONDOMINIUMS_ROOF",
-    "name": "Celadon Condominiums Roof Front",
+    "name": "Celadon Condominiums Roof (Front)",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -1675,12 +1688,12 @@
     "events": [],
     "exits": {},
     "warps": {
-      "MAP_CELADON_CITY_CONDOMINIUMS_ROOF:1/MAP_CELADON_CITY_CONDOMINIUMS_3F:2": "Celadon Condominiums Roof Front Stairs"
+      "MAP_CELADON_CITY_CONDOMINIUMS_ROOF:1/MAP_CELADON_CITY_CONDOMINIUMS_3F:2": "Celadon Condominiums Roof Northeast Stairs"
     }
   },
   "REGION_CELADON_CITY_CONDOMINIUMS_ROOF/BACK": {
     "parent_map": "MAP_CELADON_CITY_CONDOMINIUMS_ROOF",
-    "name": "Celadon Condominiums Roof Back",
+    "name": "Celadon Condominiums Roof (Back)",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -1690,7 +1703,7 @@
     "events": [],
     "exits": {},
     "warps": {
-      "MAP_CELADON_CITY_CONDOMINIUMS_ROOF:0/MAP_CELADON_CITY_CONDOMINIUMS_3F:1": "Celadon Condominiums Roof Back Stairs",
+      "MAP_CELADON_CITY_CONDOMINIUMS_ROOF:0/MAP_CELADON_CITY_CONDOMINIUMS_3F:1": "Celadon Condominiums Roof Northwest Stairs",
       "MAP_CELADON_CITY_CONDOMINIUMS_ROOF:2/MAP_CELADON_CITY_CONDOMINIUMS_ROOF_ROOM:0": "Celadon Condominiums Roof Room"
     }
   },
@@ -1788,7 +1801,7 @@
   },
   "REGION_CELADON_CITY_GYM/BEHIND_TREES": {
     "parent_map": "MAP_CELADON_CITY_GYM",
-    "name": "Celadon Gym Behind Trees",
+    "name": "Celadon Gym (Behind Trees)",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -1864,7 +1877,7 @@
   },
   "REGION_FUCHSIA_CITY/VISIT": {
     "parent_map": "MAP_FUCHSIA_CITY",
-    "name": "Fuchsia City Visit",
+    "name": "Fuchsia City (Visit)",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -1891,7 +1904,7 @@
     ],
     "events": [],
     "exits": {
-      "REGION_FUCHSIA_CITY/VISIT": "Fuchsia City Visit",
+      "REGION_FUCHSIA_CITY/VISIT": "Visit Fuchsia City",
       "REGION_ROUTE15/SOUTHWEST": "Fuchsia City Exit (East)",
       "REGION_ROUTE18/EAST": "Fuchsia City Exit (West)",
       "REGION_ROUTE19/MAIN": "Fuchsia City Exit (South)"
@@ -1910,7 +1923,7 @@
   },
   "REGION_FUCHSIA_CITY/BACKYARD": {
     "parent_map": "MAP_FUCHSIA_CITY",
-    "name": "Fuchsia City Backyard",
+    "name": "Fuchsia City (Backyard)",
     "encounter_region": "Fuchsia City",
     "has_land": false,
     "has_water": false,
@@ -1921,8 +1934,8 @@
     ],
     "events": [],
     "exits": {
-      "REGION_FUCHSIA_CITY/WATER": "Fuchsia City Backyard Surfing Spot",
-      "REGION_FUCHSIA_CITY/VISIT": "Fuchsia City Backyard Visit"
+      "REGION_FUCHSIA_CITY/WATER": "Fuchsia City Surfing Spot",
+      "REGION_FUCHSIA_CITY/VISIT": "Visit Fuchsia City (Backyard)"
     },
     "warps": {
       "MAP_FUCHSIA_CITY:8/MAP_FUCHSIA_CITY_HOUSE2:1": "Fuchsia Fishing House (Back)"
@@ -1930,7 +1943,7 @@
   },
   "REGION_FUCHSIA_CITY/WATER": {
     "parent_map": "MAP_FUCHSIA_CITY",
-    "name": "Fuchsia City Water",
+    "name": "Fuchsia City (Water)",
     "encounter_region": "Fuchsia City",
     "has_land": false,
     "has_water": true,
@@ -2127,7 +2140,7 @@
   },
   "REGION_SAFFRON_CITY/VISIT": {
     "parent_map": "MAP_SAFFRON_CITY",
-    "name": "Saffron City Visit",
+    "name": "Saffron City (Visit)",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -2154,7 +2167,7 @@
     ],
     "events": [],
     "exits": {
-      "REGION_SAFFRON_CITY/VISIT": "Saffron City Visit"
+      "REGION_SAFFRON_CITY/VISIT": "Visit Saffron City"
     },
     "warps": {
       "MAP_SAFFRON_CITY:0/MAP_SILPH_CO_1F:0": "Silph Co.",
@@ -2242,13 +2255,13 @@
     "events": [],
     "exits": {},
     "warps": {
-      "MAP_SAFFRON_CITY_GYM:0/MAP_SAFFRON_CITY:3": "Saffron Gym South Exit",
+      "MAP_SAFFRON_CITY_GYM:0/MAP_SAFFRON_CITY:3": "Saffron Gym Exit",
       "MAP_SAFFRON_CITY_GYM:1/MAP_SAFFRON_CITY_GYM:30": "Saffron Gym South Warp Tile"
     }
   },
   "REGION_SAFFRON_CITY_GYM/SOUTHEAST": {
     "parent_map": "MAP_SAFFRON_CITY_GYM",
-    "name": "Saffron Gym Southeast",
+    "name": "Saffron Gym (Southeast)",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -2268,7 +2281,7 @@
   },
   "REGION_SAFFRON_CITY_GYM/SOUTHWEST": {
     "parent_map": "MAP_SAFFRON_CITY_GYM",
-    "name": "Saffron Gym Southwest",
+    "name": "Saffron Gym (Southwest)",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -2288,7 +2301,7 @@
   },
   "REGION_SAFFRON_CITY_GYM/EAST": {
     "parent_map": "MAP_SAFFRON_CITY_GYM",
-    "name": "Saffron Gym East",
+    "name": "Saffron Gym (East)",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -2309,7 +2322,7 @@
   },
   "REGION_SAFFRON_CITY_GYM/WEST": {
     "parent_map": "MAP_SAFFRON_CITY_GYM",
-    "name": "Saffron Gym West",
+    "name": "Saffron Gym (West)",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -2329,7 +2342,7 @@
   },
   "REGION_SAFFRON_CITY_GYM/NORTHEAST": {
     "parent_map": "MAP_SAFFRON_CITY_GYM",
-    "name": "Saffron Gym Northeast",
+    "name": "Saffron Gym (Northeast)",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -2349,7 +2362,7 @@
   },
   "REGION_SAFFRON_CITY_GYM/NORTH": {
     "parent_map": "MAP_SAFFRON_CITY_GYM",
-    "name": "Saffron Gym North",
+    "name": "Saffron Gym (North)",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -2369,7 +2382,7 @@
   },
   "REGION_SAFFRON_CITY_GYM/NORTHWEST": {
     "parent_map": "MAP_SAFFRON_CITY_GYM",
-    "name": "Saffron Gym Northwest",
+    "name": "Saffron Gym (Northwest)",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -2389,7 +2402,7 @@
   },
   "REGION_SAFFRON_CITY_GYM/CENTER": {
     "parent_map": "MAP_SAFFRON_CITY_GYM",
-    "name": "Saffron Gym Center",
+    "name": "Saffron Gym (Center)",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -2516,7 +2529,7 @@
   },
   "REGION_CINNABAR_ISLAND/VISIT": {
     "parent_map": "MAP_CINNABAR_ISLAND",
-    "name": "Cinnabar Island Visit",
+    "name": "Cinnabar Island (Visit)",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -2544,7 +2557,8 @@
     "events": [],
     "exits": {
       "REGION_CINNABAR_ISLAND/WATER": "Cinnabar Island Surfing Spot",
-      "REGION_CINNABAR_ISLAND/VISIT": "Cinnabar Island Visit"
+      "REGION_CINNABAR_ISLAND/VISIT": "Visit Cinnabar Island",
+      "REGION_ROUTE21/MAIN": "Cinnabar Island Exit (North)"
     },
     "warps": {
       "MAP_CINNABAR_ISLAND:0/MAP_POKEMON_MANSION_1F:0": "Pokemon Mansion",
@@ -2556,7 +2570,7 @@
   },
   "REGION_CINNABAR_ISLAND/WATER": {
     "parent_map": "MAP_CINNABAR_ISLAND",
-    "name": "Cinnabar Island Water",
+    "name": "Cinnabar Island (Water)",
     "encounter_region": "Cinnabar Island",
     "has_land": false,
     "has_water": true,
@@ -2565,9 +2579,8 @@
     "locations": [],
     "events": [],
     "exits": {
-      "REGION_CINNABAR_ISLAND/MAIN": "Cinnabar Island Landing",
-      "REGION_ROUTE20/WEST": "Cinnabar Island Water Exit (East)",
-      "REGION_ROUTE21/MAIN": "Cinnabar Island Water Exit (North)"
+      "REGION_CINNABAR_ISLAND/MAIN": "Cinnabar Island Landing Spot",
+      "REGION_ROUTE20/WEST": "Cinnabar Island Exit (East)"
     },
     "warps": {}
   },
@@ -2664,7 +2677,9 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [],
+    "locations": [
+      "NPC_GIFT_GOT_FOSSIL_FROM_CINNABAR"
+    ],
     "events": [
       "GIFT_POKEMON_OMANYTE",
       "GIFT_POKEMON_KABUTO",
@@ -2738,7 +2753,7 @@
   },
   "REGION_INDIGO_PLATEAU_EXTERIOR/VISIT": {
     "parent_map": "MAP_INDIGO_PLATEAU_EXTERIOR",
-    "name": "Indigo Plateau Visit",
+    "name": "Indigo Plateau (Visit)",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -2762,8 +2777,8 @@
     "locations": [],
     "events": [],
     "exits": {
-      "REGION_INDIGO_PLATEAU_EXTERIOR/VISIT": "Indigo Plateau Visit",
-      "REGION_ROUTE23/NORTH": "Indigo Plateau Exit"
+      "REGION_INDIGO_PLATEAU_EXTERIOR/VISIT": "Visit Indigo Plateau",
+      "REGION_ROUTE23/NORTH": "Indigo Plateau Exit (South)"
     },
     "warps": {
       "MAP_INDIGO_PLATEAU_EXTERIOR:0/MAP_INDIGO_PLATEAU_POKEMON_CENTER_1F:0": "Indigo Plateau Pokemon Center"

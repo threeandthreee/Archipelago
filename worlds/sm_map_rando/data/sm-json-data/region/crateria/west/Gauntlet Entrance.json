@@ -81,6 +81,32 @@
   ],
   "strats": [
     {
+      "id": 48,
+      "link": [1, 1],
+      "name": "Waver Farm",
+      "requires": [
+        {"resetRoom": {"nodes": [1]}},
+        {"or": [
+          {"and": [
+            "ScrewAttack",
+            "canDodgeWhileShooting",
+            {"cycleFrames": 600}
+          ]},
+          {"and": [
+            "h_bombThings",
+            "canTrickyDodgeEnemies",
+            {"cycleFrames": 850}
+          ]}
+        ]}
+      ],
+      "resetsObstacles": ["A"],
+      "farmCycleDrops": [{"enemy": "Waver", "count": 2}],
+      "devNote": [
+        "There is a third Waver on the right side of the room,",
+        "but generally it would not be worthwhile to cross the room for it."
+      ]
+    },
+    {
       "id": 1,
       "link": [1, 1],
       "name": "Leave with Runway",
@@ -465,7 +491,7 @@
         "canChainTemporaryBlue",
         {"acidFrames": 10},
         {"or": [
-          "canStaggeredWalljump",
+          "canTrickyWalljump",
           {"acidFrames": 30}
         ]}
       ],
@@ -844,6 +870,28 @@
       ]
     },
     {
+      "id": 49,
+      "link": [2, 2],
+      "name": "Waver Farm",
+      "requires": [
+        {"resetRoom": {"nodes": [2]}},
+        "canDodgeWhileShooting",
+        {"or": [
+          {"and": [
+            "ScrewAttack",
+            {"cycleFrames": 420}
+          ]},
+          {"and": [
+            "h_bombThings",
+            "canTrickyDodgeEnemies",
+            {"cycleFrames": 630}
+          ]}
+        ]}
+      ],
+      "resetsObstacles": ["A"],
+      "farmCycleDrops": [{"enemy": "Waver", "count": 1}]
+    },
+    {
       "id": 38,
       "link": [2, 2],
       "name": "Leave with Runway",
@@ -1023,6 +1071,6 @@
       ]
     }
   ],
-  "nextStratId": 48,
+  "nextStratId": 50,
   "nextNotableId": 4
 }

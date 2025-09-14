@@ -238,6 +238,47 @@
       }
     },
     {
+      "id": 56,
+      "link": [1, 1],
+      "name": "Owtch Farm",
+      "requires": [
+        "canDodgeWhileShooting",
+        {"or": [
+          {"and": [
+            {"resetRoom": {"nodes": [1]}},
+            {"cycleFrames": 320}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [2]}},
+            {"cycleFrames": 470},
+            {"or": [
+              "canWalljump",
+              "SpaceJump"
+            ]}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [3]}},
+            {"cycleFrames": 1680},
+            "canTrickyWalljump",
+            "canTrickyJump"
+          ]}
+        ]},
+        {"or": [
+          "Plasma",
+          "Charge"
+        ]},
+        {"cycleFrames": 300}
+      ],
+      "farmCycleDrops": [{"enemy": "Owtch", "count": 1}],
+      "devNote": [
+        "The extra 300 frames is for waiting a random amount of time for the Owtch to go left.",
+        "The Owtch can also be killed with Screw Attack,",
+        "but farming the Rippers would make more sense in that case.",
+        "FIXME: A more specific enemy-knowledge tech should ideally be required,",
+        "for understanding how to kill the Owtch."
+      ]
+    },
+    {
       "id": 6,
       "link": [1, 1],
       "name": "Crystal Flash",
@@ -591,32 +632,6 @@
       "unlocksDoors": [{"types": ["ammo"], "requires": []}]
     },
     {
-      "id": 12,
-      "link": [1, 2],
-      "name": "G-Mode Morph",
-      "entranceCondition": {
-        "comeInWithGMode": {
-          "mode": "any",
-          "morphed": true
-        }
-      },
-      "requires": [
-        {"or": [
-          {"and": [
-            "h_artificialMorphIBJ",
-            {"or": [
-              "Gravity",
-              "h_artificialMorphSpringBall",
-              "h_artificialMorphPowerBomb",
-              {"enemyDamage": {"enemy": "Ripper", "type": "contact", "hits": 1}}
-            ]}
-          ]},
-          "h_artificialMorphSpringBallBombJump"
-        ]}
-      ],
-      "flashSuitChecked": true
-    },
-    {
       "id": 41,
       "link": [1, 2],
       "name": "Use Flash Suit",
@@ -652,7 +667,7 @@
       "entranceCondition": {
         "comeInWithGrappleSwing": {
           "blocks": [
-            {"position": [6, 2], "note": "Spiky Acid Snakes Tunnel"},
+            {"position": [6, 2], "note": "Lava Grapple Tunnel"},
             {
               "position": [5, 2],
               "note": "The Moat, Double Chamber, Wrecked Ship Energy Tank Room"
@@ -712,7 +727,7 @@
         "comeInWithDoorStuckSetup": {}
       },
       "requires": [
-        "canXRayClimb",
+        "canLongXRayClimb",
         "canBePatient"
       ],
       "flashSuitChecked": true,
@@ -731,10 +746,7 @@
       "requires": [
         {"or": [
           "canTrivialUseFrozenEnemies",
-          {"and": [
-            "canPreciseWalljump",
-            "canStaggeredWalljump"
-          ]}
+          "canTrickyWalljump"
         ]}
       ],
       "flashSuitChecked": true
@@ -780,7 +792,7 @@
     {
       "id": 17,
       "link": [1, 4],
-      "name": "G-Mode Morph IBJ, PB, Spring Ball",
+      "name": "G-Mode Morph IBJ, Power Bomb, Spring Ball",
       "entranceCondition": {
         "comeInWithGMode": {
           "mode": "any",
@@ -808,7 +820,7 @@
     {
       "id": 18,
       "link": [1, 4],
-      "name": "G-Mode Morph IBJ, PB",
+      "name": "G-Mode Morph IBJ, Power Bomb",
       "entranceCondition": {
         "comeInWithGMode": {
           "mode": "any",
@@ -820,7 +832,12 @@
         {"or": [
           "Gravity",
           "h_artificialMorphPowerBomb",
-          {"enemyDamage": {"enemy": "Ripper", "type": "contact", "hits": 1}}
+          {"enemyDamage": {"enemy": "Ripper", "type": "contact", "hits": 1}},
+          {"and": [
+            "canInsaneJump",
+            "h_artificialMorphDoubleBombJump",
+            "h_artificialMorphStaggeredIBJ"
+          ]}
         ]},
         "h_artificialMorphPowerBomb",
         {"or": [
@@ -1011,8 +1028,11 @@
       "link": [2, 3],
       "name": "Staggered Wall Climb",
       "requires": [
-        "canPreciseWalljump",
-        "canStaggeredWalljump"
+        "canTrickyWalljump",
+        {"or": [
+          "canTrickyJump",
+          {"enemyDamage": {"enemy": "Ripper", "type": "contact", "hits": 2}}
+        ]}
       ]
     },
     {
@@ -1060,6 +1080,39 @@
       ]
     },
     {
+      "id": 58,
+      "link": [2, 3],
+      "name": "Dodge Rippers Space Jump",
+      "requires": [
+        "SpaceJump",
+        {"or": [
+          {"and": [
+            "HiJump",
+            "canCarefulJump"
+          ]},
+          "canTrickyJump"
+        ]}
+      ]
+    },
+    {
+      "id": 59,
+      "link": [2, 3],
+      "name": "Dodge Rippers IBJ",
+      "requires": [
+        {"notable": "Dodge Rippers IBJ"},
+        "canTrickyDodgeEnemies",
+        "canStaggeredIBJ",
+        {"or": [
+          "canBeVeryPatient",
+          {"enemyDamage": {"enemy": "Ripper", "type": "contact", "hits": 3}}
+        ]}
+      ],
+      "note": [
+        "Align with the right wall of the shaft by pressing against it.",
+        "Use precise Bomb placements to IBJ while dodging the Rippers."
+      ]
+    },
+    {
       "id": 55,
       "link": [2, 3],
       "name": "Side Platform Cross Room Jump into Spring Ball Jump",
@@ -1070,32 +1123,32 @@
               "minHeight": 2,
               "maxHeight": 2,
               "minTiles": 45,
-              "obstructions": [[1, 0]],
               "speedBooster": true,
+              "obstructions": [[1, 0]],
               "note": ["This applies to Noob Bridge."]
             },
             {
               "minHeight": 2,
               "maxHeight": 2,
               "minTiles": 45,
-              "obstructions": [[3, 0]],
               "speedBooster": true,
+              "obstructions": [[3, 0]],
               "note": ["This applies to Statues Hallway and Baby Kraid Room."]
             },
             {
               "minHeight": 3,
               "maxHeight": 3,
               "minTiles": 45,
-              "obstructions": [[3, 0]],
               "speedBooster": true,
+              "obstructions": [[3, 0]],
               "note": ["This applies to Bowling Alley (middle, power off) and Basement (power on)."]
             },
             {
               "minHeight": 3,
               "maxHeight": 3,
               "minTiles": 39.4375,
-              "obstructions": [[3, 2]],
               "speedBooster": true,
+              "obstructions": [[3, 2]],
               "note": ["This applies to Metal Pirates Room."]
             }
           ]
@@ -1150,7 +1203,7 @@
         "comeInWithDoorStuckSetup": {}
       },
       "requires": [
-        "canXRayClimb"
+        "canLongXRayClimb"
       ],
       "flashSuitChecked": true,
       "note": "Climb up 1.5 screens."
@@ -1209,9 +1262,10 @@
       "requires": [
         {"or": [
           "canTrivialUseFrozenEnemies",
+          "canTrickyWalljump",
           {"and": [
-            "canPreciseWalljump",
-            "canStaggeredWalljump"
+            "SpaceJump",
+            "canTrickyJump"
           ]}
         ]}
       ],
@@ -1258,7 +1312,7 @@
     {
       "id": 36,
       "link": [2, 4],
-      "name": "G-Mode Morph IBJ, PB",
+      "name": "G-Mode Morph IBJ, Power Bomb",
       "entranceCondition": {
         "comeInWithGMode": {
           "mode": "any",
@@ -1279,6 +1333,24 @@
         "The Rippers can be killed with two Power Bombs, or one carefully placed Power Bomb and a careful dodge of the top-most Ripper.",
         "With a single Power Bomb, place it at least two tiles above the first Ripper. This can be achieved with a Staggered IBJ or a Spring Ball Bomb Boost.",
         "Then climb the right side of the shaft and dodge the top Ripper."
+      ]
+    },
+    {
+      "id": 60,
+      "link": [2, 4],
+      "name": "G-Mode Morph IBJ, Dodge Rippers",
+      "requires": [
+        {"notable": "Dodge Rippers IBJ"},
+        "canTrickyDodgeEnemies",
+        "canStaggeredIBJ",
+        {"or": [
+          "canBeVeryPatient",
+          {"enemyDamage": {"enemy": "Ripper", "type": "contact", "hits": 3}}
+        ]}
+      ],
+      "note": [
+        "Positioning so that Samus will be against the right wall of the shaft,",
+        "use precise Bomb placements to IBJ while dodging the Rippers."
       ]
     },
     {
@@ -1326,6 +1398,36 @@
       "flashSuitChecked": true
     },
     {
+      "id": 57,
+      "link": [3, 3],
+      "name": "Ripper Farm",
+      "requires": [
+        "ScrewAttack",
+        {"or": [
+          {"and": [
+            {"resetRoom": {"nodes": [1]}},
+            {"cycleFrames": 780}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [2]}},
+            {"cycleFrames": 710}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [3]}},
+            {"cycleFrames": 1560}
+          ]}
+        ]},
+        {"or": [
+          "canConsecutiveWalljump",
+          {"and": [
+            "SpaceJump",
+            {"cycleFrames": 240}
+          ]}
+        ]}
+      ],
+      "farmCycleDrops": [{"enemy": "Ripper", "count": 6}]
+    },
+    {
       "id": 43,
       "link": [3, 3],
       "name": "Carry G-Mode Back Up the Elevator",
@@ -1348,7 +1450,7 @@
       "link": [4, 3],
       "name": "Base",
       "requires": [
-        "canEnterGMode"
+        "canGMode"
       ],
       "flashSuitChecked": true
     },
@@ -1357,7 +1459,7 @@
       "link": [4, 3],
       "name": "Carry G-Mode Up the Elevator",
       "requires": [
-        "canEnterGMode"
+        "canGMode"
       ],
       "exitCondition": {
         "leaveWithGMode": {
@@ -1367,9 +1469,19 @@
       "flashSuitChecked": true
     }
   ],
-  "notables": [],
-  "nextStratId": 56,
-  "nextNotableId": 1,
+  "notables": [
+    {
+      "id": 1,
+      "name": "Dodge Rippers IBJ",
+      "wallJumpAvoid": true,
+      "note": [
+        "Align with the right wall of the shaft by pressing against it.",
+        "Use precise Bomb placements to IBJ while dodging the Rippers."
+      ]
+    }
+  ],
+  "nextStratId": 61,
+  "nextNotableId": 2,
   "devNote": [
     "FIXME: A 2->3 'Come In Shinecharging, Leave Shinecharged' strat is theoretically possible",
     "with 20 shinecharge frames remaining, with HiJump + Screw Attack; but the walljump climb is very difficult."

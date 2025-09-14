@@ -383,7 +383,7 @@
     {
       "id": 9,
       "link": [2, 1],
-      "name": "Grapple Teleport X-Ray Climb",
+      "name": "Grapple Teleport X-Ray Climb (1 Screen)",
       "entranceCondition": {
         "comeInWithGrappleTeleport": {
           "blockPositions": [[2, 18], [2, 19], [2, 28], [2, 29]]
@@ -399,20 +399,20 @@
       "note": [
         "Exit the previous room with Samus in a standing pose (while grappled).",
         "After teleporting, press right to release Grapple while staying standing (not being forced into a crouch).",
-        "Then X-ray climb to get up to the door transition, without needing to open the door."
+        "Then X-ray climb 1 screen to get up to the door transition, without needing to open the door."
       ]
     },
     {
       "id": 10,
       "link": [2, 1],
-      "name": "Grapple Teleport X-Ray Climb (Two Screens)",
+      "name": "Grapple Teleport X-Ray Climb (2 Screens)",
       "entranceCondition": {
         "comeInWithGrappleTeleport": {
           "blockPositions": [[2, 34]]
         }
       },
       "requires": [
-        "canXRayClimb",
+        "canLongXRayClimb",
         {"heatFrames": 2800},
         {"lavaFrames": 2500}
       ],
@@ -421,7 +421,7 @@
       "note": [
         "Exit the previous room with Samus in a standing pose (while grappled).",
         "After teleporting, press right to release Grapple while staying standing (not being forced into a crouch).",
-        "Then X-ray climb to get up to the door transition, without needing to open the door."
+        "Then X-ray climb 2 screens to get up to the door transition, without needing to open the door."
       ]
     },
     {
@@ -495,7 +495,7 @@
             {"gravitylessLavaFrames": 125}
           ]},
           {"and": [
-            "canStaggeredWalljump",
+            "canTrickyWalljump",
             {"lavaFrames": 20},
             {"gravitylessLavaFrames": 230}
           ]}
@@ -536,6 +536,7 @@
       },
       "requires": [
         {"notable": "Artificial Morph, Triple Spring Ball Jump"},
+        "canTrickyGMode",
         "h_artificialMorphDoubleSpringBallJump",
         "canInsaneJump",
         {"gravitylessLavaFrames": 640},
@@ -559,6 +560,7 @@
       },
       "requires": [
         {"notable": "Artificial Morph, Triple Spring Ball Jump"},
+        "canTrickyGMode",
         {"tech": "canDoubleSpringBallJumpMidAir"},
         "h_artificialMorphSpringBall",
         "canInsaneJump",
@@ -682,7 +684,7 @@
         ]},
         "canTrickyJump",
         "canBounceBall",
-        {"heatFrames": 435},
+        {"heatFrames": 365},
         {"lavaFrames": 305}
       ],
       "note": [
@@ -762,7 +764,7 @@
         ]},
         "canTrickyJump",
         "canBounceBall",
-        {"heatFrames": 330},
+        {"heatFrames": 260},
         {"lavaFrames": 200}
       ],
       "note": [
@@ -881,8 +883,7 @@
         "HiJump",
         "canSuitlessLavaDive",
         "canUseEnemies",
-        "canPreciseWalljump",
-        "canStaggeredWalljump",
+        "canTrickyWalljump",
         {"heatFrames": 270},
         {"gravitylessLavaFrames": 240}
       ],
@@ -943,7 +944,7 @@
         "canInsaneWalljump",
         "canInsaneJump",
         "canUseIFrames",
-        "canStaggeredWalljump",
+        "canTrickyWalljump",
         "canFastWalljumpClimb",
         "canUseEnemies",
         "canKago",
@@ -1133,7 +1134,8 @@
       "requires": [
         "canSuitlessLavaDive",
         "canGravityJump",
-        "canStaggeredWalljump",
+        "canTrickyWalljump",
+        "canTrickyJump",
         {"heatFrames": 290},
         {"gravitylessLavaFrames": 230},
         {"lavaFrames": 20}
@@ -1173,7 +1175,7 @@
         {"notable": "HiJumpless Dive"},
         "canSuitlessLavaDive",
         "canUseIFrames",
-        "canStaggeredWalljump",
+        "canTrickyWalljump",
         "canFastWalljumpClimb",
         "canUseEnemies",
         "canCameraManip",
@@ -1182,9 +1184,34 @@
         {"enemyDamage": {"enemy": "Namihe", "type": "fireball", "hits": 1}}
       ],
       "note": [
-        "Use the bottommost right side Namihe to generate a flame and walk with it to the bottommost left Namihe head",
+        "Use the bottom-most right-side Namihe to generate a flame and walk with it to the bottom-most left Namihe head.",
         "Use a turnaround animation as Samus is hit by the flame to cancel out knockback frames.",
         "While invulnerability frames are active, walljump up the spikes either 2 or 3 times and jump accross to catch the middle wall and climb from there."
+      ]
+    },
+    {
+      "id": 55,
+      "link": [5, 3],
+      "name": "HiJumpless Dive with Pause Abuse",
+      "requires": [
+        {"notable": "HiJumpless Dive"},
+        "canSuitlessLavaDive",
+        "canUseIFrames",
+        "canTrickyWalljump",
+        "canFastWalljumpClimb",
+        "canUseEnemies",
+        "canCameraManip",
+        {"heatFrames": 175},
+        {"gravitylessLavaFrames": 175},
+        "h_pauseAbuseMinimalReserveRefill",
+        {"heatFrames": 375},
+        {"gravitylessLavaFrames": 300}
+      ],
+      "note": [
+        "Use the bottom-most right-side Namihe to generate a flame and walk with it to the bottommost left Namihe head.",
+        "Pause and use a turnaround animation as Samus is hit by the flame to cancel out knockback frames.",
+        "Manually refill energy from reserves.",
+        "While invulnerability frames are active, wall jump up the spikes either 2 or 3 times and jump accross to catch the middle wall and climb from there."
       ]
     },
     {
@@ -1359,6 +1386,6 @@
       ]
     }
   ],
-  "nextStratId": 55,
+  "nextStratId": 56,
   "nextNotableId": 10
 }

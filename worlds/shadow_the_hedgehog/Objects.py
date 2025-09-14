@@ -45,7 +45,7 @@ def GetObjectSanityTypes():
 
 def GetPlayableObjectTypes():
     return [
-                        ObjectType.GUN_SOLIDER,
+                        ObjectType.GUN_SOLDIER,
                         ObjectType.GOLD_BEETLE, ObjectType.SHADOW_BOX,
                           ObjectType.ENERGY_CORE, ObjectType.KEY_DOOR,
                           ObjectType.ENERGY_CORE_IN_WOOD_BOX,
@@ -116,8 +116,8 @@ def GetAlienTypes():
              ObjectType.BLACK_WORM , ObjectType.BLACK_LARVAE, ObjectType.ARTIFICIAL_CHAOS]
 
 def GetGunTypes():
-    return [ObjectType.GUN_SOLIDER, ObjectType.GUN_BEETLE,
-             ObjectType.BIG_FOOT, ObjectType.GUN_ROBOT]
+    return [ObjectType.GUN_SOLDIER, ObjectType.GUN_BEETLE,
+            ObjectType.BIG_FOOT, ObjectType.GUN_ROBOT]
 
 def GetEggTypes():
     return [ObjectType.EGG_CLOWN, ObjectType.EGG_PAWN, ObjectType.SHADOW_ANDROID ]
@@ -146,7 +146,7 @@ def GetEnemyDistributionInStageByBaseType(level, enemyType):
                  ObjectType.BLACK_WORM , ObjectType.BLACK_LARVAE, ObjectType.ARTIFICIAL_CHAOS]
 
     elif enemyType == ENEMY_CLASS_GUN:
-        types = [ObjectType.GUN_SOLIDER, ObjectType.GUN_BEETLE,
+        types = [ObjectType.GUN_SOLDIER, ObjectType.GUN_BEETLE,
                  ObjectType.BIG_FOOT, ObjectType.GUN_ROBOT]
 
     elif enemyType == ENEMY_CLASS_EGG:
@@ -245,7 +245,7 @@ def GetTypeId(objectType):
     if objectType == ObjectType.ARTIFICIAL_CHAOS:
         return 0x92
 
-    if objectType == ObjectType.GUN_SOLIDER:
+    if objectType == ObjectType.GUN_SOLDIER:
         return 0x64
 
     if objectType == ObjectType.GUN_BEETLE:
@@ -616,7 +616,7 @@ def TypeToString(type):
         return "Dark Spin Entry"
 
     elif type == 0x64:
-        return "GUN Solider"
+        return "GUN Soldier"
 
     elif type == 0x65:
         return "GUN Beetle"
@@ -812,7 +812,7 @@ def PrintSETChange(address, index, type, previous, new, additional_bytes):
             region = relevant_line["region"]
             counter = relevant_line["counter"]
 
-            prints.append( f"SETObject(ObjectType.{typeString.upper().replace(" ","_")}, Levels.STAGE_DEATH_RUINS, "
+            prints.append( "SETObject(ObjectType."+typeString.upper().replace(" ","_")+",Levels.STAGE_DEATH_RUINS"
                    f"{index}, \'{counter}\', region={region}),")
 
     if l:
@@ -916,8 +916,8 @@ DOES_NOT_WORK_WITH_INDIVIDUAL = 1
 WORKS_WITH_INDIVIDUAL = 2
 
 STAGE_OBJECT_ITEMS = {
-    (Levels.STAGE_WESTOPOLIS, Levels.MISSION_ALIGNMENT_DARK): ( [ObjectType.GUN_SOLIDER, ObjectType.GUN_BEETLE,
-             ObjectType.BIG_FOOT, ObjectType.GUN_ROBOT],WORKS_WITH_INDIVIDUAL),
+    (Levels.STAGE_WESTOPOLIS, Levels.MISSION_ALIGNMENT_DARK): ( [ObjectType.GUN_SOLDIER, ObjectType.GUN_BEETLE,
+                                                                 ObjectType.BIG_FOOT, ObjectType.GUN_ROBOT],WORKS_WITH_INDIVIDUAL),
     (Levels.STAGE_WESTOPOLIS, Levels.MISSION_ALIGNMENT_HERO): ([ObjectType.BLACK_ASSASSIN, ObjectType.BLACK_VOLT, ObjectType.BLACK_HAWK,
              ObjectType.BLACK_WARRIOR, ObjectType.BLACK_OAK, ObjectType.BLACK_WING,
              ObjectType.BLACK_WORM, ObjectType.BLACK_LARVAE],WORKS_WITH_INDIVIDUAL),
@@ -929,15 +929,15 @@ STAGE_OBJECT_ITEMS = {
     (Levels.STAGE_LETHAL_HIGHWAY, Levels.MISSION_ALIGNMENT_HERO): (ObjectType.LETHAL_HIGHWAY_TANK,DOES_NOT_WORK_WITH_INDIVIDUAL),
     (Levels.STAGE_CRYPTIC_CASTLE, Levels.MISSION_ALIGNMENT_DARK): (ObjectType.CRYPTIC_CASTLE_LANTERN,WORKS_WITH_INDIVIDUAL),
     (Levels.STAGE_CRYPTIC_CASTLE, Levels.MISSION_ALIGNMENT_HERO): ([ObjectType.CREAM, ObjectType.CHEESE],WORKS_WITH_INDIVIDUAL),
-    (Levels.STAGE_PRISON_ISLAND, Levels.MISSION_ALIGNMENT_DARK): ( [ObjectType.GUN_SOLIDER, ObjectType.GUN_BEETLE,
-             ObjectType.BIG_FOOT, ObjectType.GUN_ROBOT],WORKS_WITH_INDIVIDUAL),
+    (Levels.STAGE_PRISON_ISLAND, Levels.MISSION_ALIGNMENT_DARK): ( [ObjectType.GUN_SOLDIER, ObjectType.GUN_BEETLE,
+                                                                    ObjectType.BIG_FOOT, ObjectType.GUN_ROBOT],WORKS_WITH_INDIVIDUAL),
     (Levels.STAGE_PRISON_ISLAND, Levels.MISSION_ALIGNMENT_HERO): (ObjectType.PRISON_ISLAND_DISC,WORKS_WITH_INDIVIDUAL),
-    (Levels.STAGE_CIRCUS_PARK, Levels.MISSION_ALIGNMENT_DARK): ( [ObjectType.GUN_SOLIDER, ObjectType.GUN_BEETLE,
-             ObjectType.BIG_FOOT, ObjectType.GUN_ROBOT],WORKS_WITH_INDIVIDUAL),
+    (Levels.STAGE_CIRCUS_PARK, Levels.MISSION_ALIGNMENT_DARK): ( [ObjectType.GUN_SOLDIER, ObjectType.GUN_BEETLE,
+                                                                  ObjectType.BIG_FOOT, ObjectType.GUN_ROBOT],WORKS_WITH_INDIVIDUAL),
     (Levels.STAGE_CENTRAL_CITY, Levels.MISSION_ALIGNMENT_DARK): (ObjectType.CENTRAL_CITY_BIG_BOMB,WORKS_WITH_INDIVIDUAL),
     (Levels.STAGE_CENTRAL_CITY, Levels.MISSION_ALIGNMENT_HERO): (ObjectType.SMALL_BOMB,DOES_NOT_WORK_WITH_INDIVIDUAL),
-    (Levels.STAGE_THE_DOOM, Levels.MISSION_ALIGNMENT_DARK): ( [ObjectType.GUN_SOLIDER, ObjectType.GUN_BEETLE,
-             ObjectType.BIG_FOOT, ObjectType.GUN_ROBOT],WORKS_WITH_INDIVIDUAL),
+    (Levels.STAGE_THE_DOOM, Levels.MISSION_ALIGNMENT_DARK): ( [ObjectType.GUN_SOLDIER, ObjectType.GUN_BEETLE,
+                                                               ObjectType.BIG_FOOT, ObjectType.GUN_ROBOT],WORKS_WITH_INDIVIDUAL),
     (Levels.STAGE_THE_DOOM, Levels.MISSION_ALIGNMENT_HERO): (ObjectType.DOOM_RESEARCHER,WORKS_WITH_INDIVIDUAL),
     (Levels.STAGE_SKY_TROOPS, Levels.MISSION_ALIGNMENT_DARK): (ObjectType.SKY_TROOPS_EGG_SHIP,WORKS_WITH_INDIVIDUAL),
     (Levels.STAGE_SKY_TROOPS, Levels.MISSION_ALIGNMENT_HERO): (ObjectType.SKY_TROOPS_TEMPLE,WORKS_WITH_INDIVIDUAL),
@@ -951,14 +951,14 @@ STAGE_OBJECT_ITEMS = {
     (Levels.STAGE_AIR_FLEET, Levels.MISSION_ALIGNMENT_HERO): ([ObjectType.BLACK_ASSASSIN, ObjectType.BLACK_VOLT, ObjectType.BLACK_HAWK,
              ObjectType.BLACK_WARRIOR, ObjectType.BLACK_OAK, ObjectType.BLACK_WING,
              ObjectType.BLACK_WORM, ObjectType.BLACK_LARVAE],WORKS_WITH_INDIVIDUAL),
-    (Levels.STAGE_IRON_JUNGLE, Levels.MISSION_ALIGNMENT_DARK): ( [ObjectType.GUN_SOLIDER, ObjectType.GUN_BEETLE,
-             ObjectType.BIG_FOOT, ObjectType.GUN_ROBOT],WORKS_WITH_INDIVIDUAL),
+    (Levels.STAGE_IRON_JUNGLE, Levels.MISSION_ALIGNMENT_DARK): ( [ObjectType.GUN_SOLDIER, ObjectType.GUN_BEETLE,
+                                                                  ObjectType.BIG_FOOT, ObjectType.GUN_ROBOT],WORKS_WITH_INDIVIDUAL),
     (Levels.STAGE_IRON_JUNGLE, Levels.MISSION_ALIGNMENT_HERO): (ObjectType.IRON_JUNGLE_EGG_BALLOON,DOES_NOT_WORK_WITH_INDIVIDUAL),
     (Levels.STAGE_SPACE_GADGET, Levels.MISSION_ALIGNMENT_DARK): (ObjectType.SPACE_GADGET_DEFENSE_UNIT,WORKS_WITH_INDIVIDUAL),
     (Levels.STAGE_LOST_IMPACT, Levels.MISSION_ALIGNMENT_HERO): (ObjectType.ARTIFICIAL_CHAOS,WORKS_WITH_INDIVIDUAL),
     (Levels.STAGE_GUN_FORTRESS, Levels.MISSION_ALIGNMENT_DARK): (ObjectType.GUN_FORTRESS_COMPUTER,WORKS_WITH_INDIVIDUAL),
-    (Levels.STAGE_BLACK_COMET, Levels.MISSION_ALIGNMENT_DARK): ( [ObjectType.GUN_SOLIDER, ObjectType.GUN_BEETLE,
-             ObjectType.BIG_FOOT, ObjectType.GUN_ROBOT],WORKS_WITH_INDIVIDUAL),
+    (Levels.STAGE_BLACK_COMET, Levels.MISSION_ALIGNMENT_DARK): ( [ObjectType.GUN_SOLDIER, ObjectType.GUN_BEETLE,
+                                                                  ObjectType.BIG_FOOT, ObjectType.GUN_ROBOT],WORKS_WITH_INDIVIDUAL),
     (Levels.STAGE_LAVA_SHELTER, Levels.MISSION_ALIGNMENT_DARK): (ObjectType.LAVA_SHELTER_DEFENSE,WORKS_WITH_INDIVIDUAL),
     (Levels.STAGE_COSMIC_FALL, Levels.MISSION_ALIGNMENT_HERO): (ObjectType.COSMIC_FALL_COMPUTER_ROOM,DOES_NOT_WORK_WITH_INDIVIDUAL),
     (Levels.STAGE_FINAL_HAUNT, Levels.MISSION_ALIGNMENT_DARK): (ObjectType.FINAL_HAUNT_SHIELD, DOES_NOT_WORK_WITH_INDIVIDUAL),

@@ -472,9 +472,9 @@
       "flashSuitChecked": true
     },
     {
-      "id": 90,
+      "id": 92,
       "link": [1, 1],
-      "name": "G-Mode through Bomb Blocks, Ship Refill",
+      "name": "G-Mode Power Bomb the Blocks",
       "entranceCondition": {
         "comeInWithGMode": {
           "mode": "any",
@@ -482,6 +482,27 @@
         }
       },
       "requires": [
+        "h_artificialMorphPowerBomb",
+        {"or": [
+          "h_artificialMorphMovement",
+          "h_artificialMorphBombHorizontally"
+        ]}
+      ],
+      "clearsObstacles": ["A"],
+      "flashSuitChecked": true
+    },
+    {
+      "id": 90,
+      "link": [1, 1],
+      "name": "G-Mode through Bomb Blocks, Ship Refill, Return",
+      "entranceCondition": {
+        "comeInWithGMode": {
+          "mode": "any",
+          "morphed": false
+        }
+      },
+      "requires": [
+        "canComplexGMode",
         {"refill": ["Energy", "Missile", "Super", "PowerBomb"]},
         {"or": [
           "SpaceJump",
@@ -489,7 +510,7 @@
             "HiJump",
             "canSpringBallJumpMidAir"
           ]},
-          "canDelayedWalljump",
+          "canTrickyWalljump",
           {"and": [
             "SpeedBooster",
             "HiJump"
@@ -547,7 +568,13 @@
         }
       },
       "requires": [
-        {"refill": ["Energy", "Missile", "Super", "PowerBomb"]}
+        {"or": [
+          {"and": [
+            "canComplexGMode",
+            {"refill": ["Energy", "Missile", "Super", "PowerBomb"]}
+          ]},
+          "free"
+        ]}
       ],
       "flashSuitChecked": true,
       "note": [
@@ -1345,11 +1372,38 @@
         }
       },
       "requires": [
-        "canXRayClimb",
+        "canComplexGMode",
+        "canLongXRayClimb",
         "canBePatient"
       ],
       "flashSuitChecked": true,
       "note": "Climb up 3 screens."
+    },
+    {
+      "id": 93,
+      "link": [4, 3],
+      "name": "G-Mode Deep Stuck X-Ray Climb, Ship Refill",
+      "entranceCondition": {
+        "comeInWithGMode": {
+          "mode": "direct",
+          "morphed": false
+        }
+      },
+      "requires": [
+        "canComplexGMode",
+        {"or": [
+          "canWalljump",
+          "HiJump",
+          "canSpringBallJumpMidAir",
+          "h_getBlueSpeedMaxRunway",
+          "ScrewAttack"
+        ]},
+        {"refill": ["Energy", "Missile", "Super", "PowerBomb"]},
+        "canLongXRayClimb",
+        "canBePatient"
+      ],
+      "flashSuitChecked": true,
+      "note": "Refill at the ship then return and X-Ray climb up 3 screens."
     },
     {
       "id": 58,
@@ -1377,7 +1431,7 @@
       },
       "requires": [
         {"notable": "Crystal Flash X-Ray Climb"},
-        "canXRayClimb",
+        "canLongXRayClimb",
         "h_CrystalFlash"
       ],
       "flashSuitChecked": true,
@@ -1401,13 +1455,45 @@
         }
       },
       "requires": [
-        "canXRayClimb",
-        "canBeVeryPatient"
+        "canComplexGMode",
+        "canLongXRayClimb",
+        "canBePatient"
       ],
       "bypassesDoorShell": true,
       "flashSuitChecked": true,
       "note": [
         "Enter with G-mode direct, back up to between 1 and 6 pixels from the door transition, and activate X-ray to get very deep stuck in the door.",
+        "Climb up 3 screens, and perform a turnaround buffered spin-jump away from the door to trigger the transition, bypassing any lock on the door."
+      ]
+    },
+    {
+      "id": 94,
+      "link": [4, 3],
+      "name": "Very Deep Stuck X-Ray Climb, Ship Refill",
+      "entranceCondition": {
+        "comeInWithGMode": {
+          "mode": "direct",
+          "morphed": false
+        }
+      },
+      "requires": [
+        "canComplexGMode",
+        {"or": [
+          "canWalljump",
+          "HiJump",
+          "canSpringBallJumpMidAir",
+          "h_getBlueSpeedMaxRunway",
+          "ScrewAttack"
+        ]},
+        {"refill": ["Energy", "Missile", "Super", "PowerBomb"]},
+        "canLongXRayClimb",
+        "canBePatient"
+      ],
+      "bypassesDoorShell": true,
+      "flashSuitChecked": true,
+      "note": [
+        "Enter with G-mode direct, refill at the ship and return.",
+        "Back up to between 1 and 6 pixels from the door transition, and activate X-ray to get very deep stuck in the door.",
         "Climb up 3 screens, and perform a turnaround buffered spin-jump away from the door to trigger the transition, bypassing any lock on the door."
       ]
     },
@@ -1631,7 +1717,7 @@
       "link": [5, 7],
       "name": "Gauntlet Walljumps",
       "requires": [
-        "canDelayedWalljump",
+        "canTrickyWalljump",
         {"or": [
           "HiJump",
           "canConsecutiveWalljump"
@@ -1757,7 +1843,7 @@
       "link": [8, 1],
       "name": "G-Mode Morph Power Bomb",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         {"or": [
           "h_artificialMorphLongIBJ",
           {"and": [
@@ -1778,7 +1864,7 @@
       "link": [8, 1],
       "name": "G-Mode Morph Screw Attack",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         "h_artificialMorphLongIBJ",
         "ScrewAttack"
       ],
@@ -1790,7 +1876,7 @@
       "link": [8, 3],
       "name": "G-Mode Morph IBJ",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         "h_artificialMorphLongIBJ"
       ],
       "flashSuitChecked": true
@@ -1800,7 +1886,7 @@
       "link": [8, 4],
       "name": "G-Mode Morph Power Bomb",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         "h_artificialMorphPowerBomb"
       ],
       "clearsObstacles": ["B"],
@@ -1812,7 +1898,7 @@
       "link": [8, 4],
       "name": "G-Mode Morph IBJ",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         "h_artificialMorphIBJ"
       ],
       "flashSuitChecked": true,
@@ -1851,6 +1937,6 @@
       ]
     }
   ],
-  "nextStratId": 92,
+  "nextStratId": 95,
   "nextNotableId": 6
 }

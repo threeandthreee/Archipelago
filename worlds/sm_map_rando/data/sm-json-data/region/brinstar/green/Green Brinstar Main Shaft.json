@@ -1534,6 +1534,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         "canXRayClimb"
       ],
       "bypassesDoorShell": true,
@@ -2364,7 +2365,8 @@
         }
       },
       "requires": [
-        "canXRayClimb"
+        "canComplexGMode",
+        "canLongXRayClimb"
       ],
       "bypassesDoorShell": true,
       "flashSuitChecked": true,
@@ -2444,6 +2446,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         "canXRayClimb"
       ],
       "bypassesDoorShell": true,
@@ -3043,7 +3046,8 @@
         }
       },
       "requires": [
-        "canXRayClimb"
+        "canComplexGMode",
+        "canLongXRayClimb"
       ],
       "bypassesDoorShell": true,
       "flashSuitChecked": true,
@@ -3572,6 +3576,18 @@
       "note": ["Land in the right side of the third Samus Eater on the floor of Hellway."]
     },
     {
+      "id": 265,
+      "link": [6, 13],
+      "name": "Super Sink",
+      "entranceCondition": {
+        "comeInWithSuperSink": {}
+      },
+      "requires": [],
+      "note": [
+        "Enter the room with a super sink, and hold left, to clip down past the Power Bomb blocks."
+      ]
+    },
+    {
       "id": 258,
       "link": [6, 16],
       "name": "G-Mode",
@@ -3615,7 +3631,8 @@
         }
       },
       "requires": [
-        "canXRayClimb",
+        "canComplexGMode",
+        "canLongXRayClimb",
         "canBePatient"
       ],
       "bypassesDoorShell": true,
@@ -3695,6 +3712,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         "canXRayClimb"
       ],
       "bypassesDoorShell": true,
@@ -3907,7 +3925,7 @@
     {
       "id": 167,
       "link": [7, 12],
-      "name": "Right-Side X-Ray Climb",
+      "name": "X-Ray Climb",
       "entranceCondition": {
         "comeInWithDoorStuckSetup": {}
       },
@@ -3953,7 +3971,8 @@
         }
       },
       "requires": [
-        "canXRayClimb",
+        "canComplexGMode",
+        "canLongXRayClimb",
         "canBeVeryPatient"
       ],
       "bypassesDoorShell": true,
@@ -4018,7 +4037,8 @@
         }
       },
       "requires": [
-        "canXRayClimb",
+        "canComplexGMode",
+        "canLongXRayClimb",
         "canBeVeryPatient"
       ],
       "bypassesDoorShell": true,
@@ -4061,7 +4081,8 @@
         }
       },
       "requires": [
-        "canXRayClimb",
+        "canComplexGMode",
+        "canLongXRayClimb",
         "canBePatient"
       ],
       "bypassesDoorShell": true,
@@ -4275,7 +4296,7 @@
         "comeInWithDoorStuckSetup": {}
       },
       "requires": [
-        "canXRayClimb",
+        "canLongXRayClimb",
         "canBePatient"
       ],
       "flashSuitChecked": true,
@@ -4514,6 +4535,7 @@
         {"or": [
           "h_artificialMorphIBJ",
           {"and": [
+            "canPowerBombItemOverloadPLMs",
             "h_artificialMorphSpringBall",
             "h_artificialMorphPowerBomb"
           ]}
@@ -4845,8 +4867,8 @@
       "name": "Cross-Room Spring Ball Bounce",
       "entranceCondition": {
         "comeInWithSpringBallBounce": {
-          "movementType": "any",
           "speedBooster": true,
+          "movementType": "any",
           "remoteAndLandingMinTiles": [[42, 0]]
         }
       },
@@ -5009,13 +5031,58 @@
       "link": [12, 12],
       "name": "Zeela Farm",
       "requires": [
-        {"resetRoom": {
-          "nodes": [1, 2, 3, 4, 5, 6]
-        }},
-        {"refill": ["Energy", "Missile", "Super"]}
+        {"or": [
+          {"and": [
+            {"resetRoom": {"nodes": [2, 3, 4]}},
+            {"cycleFrames": 660}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [5, 6]}},
+            {"cycleFrames": 760}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [1]}},
+            {"cycleFrames": 1700}
+          ]}
+        ]},
+        {"or": [
+          "Wave",
+          "Spazer",
+          "Plasma",
+          {"cycleFrames": 120}
+        ]}
       ],
       "resetsObstacles": ["A"],
+      "farmCycleDrops": [{"enemy": "Zeela", "count": 4}],
       "flashSuitChecked": true
+    },
+    {
+      "id": 263,
+      "link": [12, 12],
+      "name": "Ripper Farm",
+      "requires": [
+        "ScrewAttack",
+        {"or": [
+          {"and": [
+            {"resetRoom": {"nodes": [2, 3]}},
+            {"cycleFrames": 375}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [4]}},
+            {"cycleFrames": 445}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [5, 6]}},
+            {"cycleFrames": 600}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [1]}},
+            {"cycleFrames": 1530}
+          ]}
+        ]}
+      ],
+      "resetsObstacles": ["A"],
+      "farmCycleDrops": [{"enemy": "Ripper 2 (red)", "count": 2}]
     },
     {
       "id": 229,
@@ -5123,6 +5190,26 @@
         "Freeze the wall crawler at a precise location in order to jump through the Power Bomb Blocks.",
         "The pixel window is larger and higher with Morph and an X-Ray Stand Up."
       ]
+    },
+    {
+      "id": 264,
+      "link": [13, 13],
+      "name": "Zeela Farm",
+      "requires": [
+        {"or": [
+          {"and": [
+            {"resetRoom": {"nodes": [7]}},
+            {"cycleFrames": 270}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [8]}},
+            {"cycleFrames": 620}
+          ]}
+        ]}
+      ],
+      "resetsObstacles": ["A"],
+      "farmCycleDrops": [{"enemy": "Zeela", "count": 1}],
+      "flashSuitChecked": true
     },
     {
       "id": 237,
@@ -5278,7 +5365,7 @@
       "link": [16, 1],
       "name": "G-Mode Up the Elevator",
       "requires": [
-        "canEnterGMode"
+        "canGMode"
       ],
       "exitCondition": {
         "leaveWithGMode": {
@@ -5335,6 +5422,6 @@
       ]
     }
   ],
-  "nextStratId": 263,
+  "nextStratId": 266,
   "nextNotableId": 5
 }

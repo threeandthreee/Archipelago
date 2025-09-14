@@ -216,6 +216,28 @@
       "flashSuitChecked": true
     },
     {
+      "id": 142,
+      "link": [1, 1],
+      "name": "Ripper Farm",
+      "requires": [
+        "h_heatProof",
+        "SpaceJump",
+        "ScrewAttack",
+        {"or": [
+          {"and": [
+            {"resetRoom": {"nodes": [1]}},
+            {"cycleFrames": 660}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [2]}},
+            {"cycleFrames": 810}
+          ]}
+        ]}
+      ],
+      "resetsObstacles": ["A"],
+      "farmCycleDrops": [{"enemy": "Ripper 2 (green)", "count": 1}]
+    },
+    {
       "id": 3,
       "link": [1, 2],
       "name": "Base",
@@ -560,7 +582,7 @@
         {"or": [
           {"heatFrames": 560},
           {"and": [
-            "canCarefulJump",
+            "canTrickyWalljump",
             {"heatFrames": 360}
           ]},
           {"and": [
@@ -613,7 +635,7 @@
       "link": [2, 1],
       "name": "Delayed Walljump",
       "requires": [
-        "canDelayedWalljump",
+        "canTrickyWalljump",
         "canConsecutiveWalljump",
         "canTrickyJump",
         "canUseEnemies",
@@ -729,6 +751,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         "h_heatProof",
         "canXRayClimb"
       ],
@@ -746,6 +769,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         "h_heatProof",
         "canXRayClimb"
       ],
@@ -1013,7 +1037,7 @@
             {"position": [8, 3], "note": "Grapple Beam Room"},
             {"position": [7, 3], "note": "Colosseum"},
             {"position": [6, 4], "note": "Grapple Tutorial Room 2"},
-            {"position": [6, 2], "note": "Spiky Acid Snakes Tunnel"},
+            {"position": [6, 2], "note": "Lava Grapple Tunnel"},
             {
               "position": [5, 2],
               "note": "The Moat, Double Chamber, Wrecked Ship Energy Tank Room"
@@ -1105,8 +1129,8 @@
           "runway": {
             "length": 28,
             "openEnd": 0,
-            "gentleDownTiles": 3,
-            "gentleUpTiles": 3
+            "gentleUpTiles": 3,
+            "gentleDownTiles": 3
           },
           "obstruction": [1, 0]
         }
@@ -1716,7 +1740,7 @@
       "note": [
         "Exit the previous room with Samus in a standing pose (while grappled) with a horizontal position of 21 (as far right as possible).",
         "After teleporting, press right to release Grapple while staying standing (not being forced into a crouch).",
-        "Then X-ray climb to get up to the door transition, without needing to open the door.",
+        "Then X-ray climb 1 screen to get up to the door transition, without needing to open the door.",
         "Samus will not be visible during the climb.",
         "At the beginning of the climb, avoid pressing left without X-Ray being held, to prevent triggering the transition of the bottom door."
       ]
@@ -1732,6 +1756,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         {"or": [
           "h_artificialMorphCeilingBombJump",
           {"and": [
@@ -1859,6 +1884,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         {"or": [
           "h_artificialMorphCeilingBombJump",
           {"and": [
@@ -1979,6 +2005,22 @@
         "h_heatedCrystalFlash"
       ],
       "flashSuitChecked": true
+    },
+    {
+      "id": 143,
+      "link": [3, 3],
+      "name": "Ripper Farm",
+      "requires": [
+        "h_heatProof",
+        "SpaceJump",
+        "ScrewAttack",
+        {"resetRoom": {"nodes": [3]}},
+        {"cycleFrames": 230}
+      ],
+      "resetsObstacles": ["A"],
+      "farmCycleDrops": [{"enemy": "Ripper 2 (green)", "count": 1}],
+      "flashSuitChecked": true,
+      "devNote": "FIXME: It is possible but risky to farm using hijump, walljump, and crumble jumps."
     },
     {
       "id": 44,
@@ -2119,6 +2161,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         {"or": [
           "SpaceJump",
           "canPreciseGrapple",
@@ -2164,6 +2207,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         {"or": [
           "ScrewAttack",
           "h_usePowerBomb",
@@ -2189,6 +2233,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         {"or": [
           "h_artificialMorphLongCeilingBombJump",
           {"and": [
@@ -2533,6 +2578,134 @@
       "note": "Bomb horizontally on room entry to jump over the Ripper and land on the crumble blocks, or use a Power Bomb to kill the Ripper."
     },
     {
+      "id": 139,
+      "link": [3, 4],
+      "name": "G-Mode, Open Gate",
+      "entranceCondition": {
+        "comeInWithGMode": {
+          "mode": "any",
+          "morphed": false
+        }
+      },
+      "requires": [
+        "canComplexGMode",
+        "h_heatedGMode",
+        {"or": [
+          "SpaceJump",
+          "canPreciseGrapple",
+          "canSpringBallJumpMidAir",
+          "canInsaneWalljump",
+          {"and": [
+            "HiJump",
+            "canWalljump"
+          ]},
+          {"and": [
+            "HiJump",
+            "SpeedBooster"
+          ]},
+          {"and": [
+            "canStaggeredIBJ",
+            "canDoubleBombJump",
+            "canBombHorizontally"
+          ]},
+          "h_IBJFromSpikes"
+        ]},
+        {"heatFrames": 35}
+      ],
+      "clearsObstacles": ["A"],
+      "flashSuitChecked": true,
+      "note": [
+        "Jump onto the crumble blocks to make them solid, then use them as a platform to cross the room.",
+        "With Grapple, a running jump then single Grapple swing can be used before PLMs are overloaded, alternatively jump on the crumble blocks and Grapple the Ripper.",
+        "In indirect G-mode, stand where the gate will spawn and exit G-mode to open the gate.",
+        "In direct G-mode, overload PLMs by shooting the gate then position Samus a few pixels away from the gate to where upward diagonal shots go through it.",
+        "Crouch then shoot diagonally and quickly exit G-mode (3-7 frames later) to open the gate on G-mode exit."
+      ],
+      "devNote": [
+        "The canComplexGMode is only used here to describe opening the gate in direct G-mode without gate glitching.",
+        "However, the indirect variant still requires canHeatedGMode or Varia - with Varia, indirect strats can instead be used to go to the top left door and return."
+      ]
+    },
+    {
+      "id": 140,
+      "link": [3, 4],
+      "name": "G-Mode, Kill the Ripper then IBJ, Open Gate",
+      "entranceCondition": {
+        "comeInWithGMode": {
+          "mode": "any",
+          "morphed": false
+        }
+      },
+      "requires": [
+        "canComplexGMode",
+        "h_heatedGMode",
+        {"or": [
+          "ScrewAttack",
+          "h_usePowerBomb",
+          {"ammo": {"type": "Missile", "count": 2}},
+          {"ammo": {"type": "Super", "count": 1}}
+        ]},
+        "canIBJ",
+        "canBombHorizontally",
+        {"heatFrames": 35}
+      ],
+      "clearsObstacles": ["A"],
+      "flashSuitChecked": true,
+      "note": [
+        "Jump onto the crumble blocks to make them solid, then use them as a platform to cross the room.",
+        "In indirect G-mode, stand where the gate will spawn and exit G-mode to open the gate.",
+        "In direct G-mode, overload PLMs by shooting the gate then position Samus a few pixels away from the gate to where upward diagonal shots go through it.",
+        "Crouch then shoot diagonally and quickly exit G-mode (3-7 frames later) to open the gate on G-mode exit."
+      ],
+      "devNote": [
+        "The canComplexGMode is only used here to describe opening the gate in direct G-mode without gate glitching.",
+        "However, the indirect variant still requires canHeatedGMode or Varia - with Varia, indirect strats can instead be used to go to the top left door and return."
+      ]
+    },
+    {
+      "id": 141,
+      "link": [3, 4],
+      "name": "G-Mode Morph, Open Gate",
+      "entranceCondition": {
+        "comeInWithGMode": {
+          "mode": "any",
+          "morphed": true
+        }
+      },
+      "requires": [
+        "canComplexGMode",
+        "h_heatedGMode",
+        {"or": [
+          "h_artificialMorphCeilingBombJump",
+          {"and": [
+            "h_artificialMorphBombHorizontally",
+            "h_artificialMorphIBJ",
+            "h_artificialMorphPowerBomb"
+          ]},
+          {"and": [
+            "h_artificialMorphBombHorizontally",
+            "canTrickyDodgeEnemies",
+            "h_artificialMorphDoubleBombJump",
+            "h_artificialMorphStaggeredIBJ"
+          ]}
+        ]},
+        {"heatFrames": 35}
+      ],
+      "clearsObstacles": ["A"],
+      "flashSuitChecked": true,
+      "note": [
+        "Bomb horizontally on room entry to jump over the Ripper and land on the crumble blocks, or use a Power Bomb to kill the Ripper.",
+        "In indirect G-mode, stand where the gate will spawn and exit G-mode to open the gate.",
+        "In direct G-mode, overload PLMs by shooting the gate then position Samus a few pixels away from the gate to where upward diagonal shots go through it.",
+        "Crouch then shoot diagonally and quickly exit G-mode (3-7 frames later) to open the gate on G-mode exit."
+      ],
+      "devNote": [
+        "Artificial morph strats can be useful, for instance, in indirect G-mode without heat protection, where Samus needs to collect the item.",
+        "The canComplexGMode is only used here to describe opening the gate in direct G-mode without gate glitching.",
+        "However, the indirect variant still requires canHeatedGMode or Varia - with Varia, indirect strats can instead be used to go to the top left door and return."
+      ]
+    },
+    {
       "id": 60,
       "link": [3, 5],
       "name": "Base",
@@ -2551,6 +2724,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         {"or": [
           "SpaceJump",
           "canSpringBallJumpMidAir",
@@ -2598,6 +2772,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         {"or": [
           "ScrewAttack",
           "h_usePowerBomb",
@@ -2626,6 +2801,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         {"or": [
           "h_artificialMorphCeilingBombJump",
           {"and": [
@@ -2970,15 +3146,49 @@
       "requires": [
         "h_heatProof",
         "Morph",
-        {"resetRoom": {
-          "nodes": [2]
-        }},
-        {"partialRefill": {"type": "PowerBomb", "limit": 4}},
-        {"partialRefill": {"type": "Super", "limit": 4}},
-        {"refill": ["Energy", "Missile"]}
+        {"or": [
+          {"and": [
+            {"resetRoom": {"nodes": [1]}},
+            {"or": [
+              {"and": [
+                "SpaceJump",
+                {"cycleFrames": 1060}
+              ]},
+              {"and": [
+                "HiJump",
+                "SpeedBooster",
+                {"cycleFrames": 940}
+              ]}
+            ]}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [2]}},
+            {"cycleFrames": 830}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [3]}},
+            {"or": [
+              {"and": [
+                "SpaceJump",
+                {"cycleFrames": 1160}
+              ]},
+              {"and": [
+                "HiJump",
+                "SpeedBooster",
+                {"or": [
+                  "Grapple",
+                  "canWalljump"
+                ]},
+                {"cycleFrames": 1190}
+              ]}
+            ]}
+          ]}
+        ]}
       ],
       "resetsObstacles": ["A"],
-      "devNote": "FIXME: Other nodes could be used to reset the room, with additional requirements."
+      "farmCycleDrops": [{"enemy": "Kago", "count": 1}],
+      "flashSuitChecked": true,
+      "devNote": "FIXME: There are more possible item combinations."
     },
     {
       "id": 78,
@@ -2994,6 +3204,7 @@
       "link": [6, 1],
       "name": "Direct G-Mode, Remote Acquire Item",
       "requires": [
+        "canComplexGMode",
         "Morph",
         {"or": [
           "SpaceJump",
@@ -3027,6 +3238,7 @@
       "link": [6, 1],
       "name": "Direct G-Mode, Remote Acquire Item, Kago Farm",
       "requires": [
+        "canComplexGMode",
         "Morph",
         {"or": [
           "SpaceJump",
@@ -3070,6 +3282,7 @@
       "link": [6, 2],
       "name": "Direct G-Mode, Remote Acquire Item",
       "requires": [
+        "canComplexGMode",
         "Morph",
         "h_heatedGModeOpenDifferentDoor"
       ],
@@ -3081,6 +3294,7 @@
       "link": [6, 2],
       "name": "Direct G-Mode, Remote Acquire Item, Kago Farm",
       "requires": [
+        "canComplexGMode",
         "Morph",
         "Plasma",
         "h_heatedGModePauseAbuse"
@@ -3224,7 +3438,7 @@
       ]
     }
   ],
-  "nextStratId": 139,
+  "nextStratId": 144,
   "nextNotableId": 5,
   "devNote": [
     "FIXME: Heat frames could be represented more accurately if a node were added to the left of the morph tunnel (or possibly if node 5 were moved to be on that side):",

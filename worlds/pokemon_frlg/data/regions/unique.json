@@ -7,10 +7,7 @@
     "has_water": false,
     "has_fishing": false,
     "kanto": true,
-    "locations": [
-      "STARTING_ITEM_BERRY_POUCH",
-      "STARTING_ITEM_TM_CASE"
-    ],
+    "locations": [],
     "events": [],
     "exits": {},
     "warps": {}
@@ -673,16 +670,16 @@
     "locations": [],
     "events": [],
     "exits": {
-      "REGION_VERMILION_CITY/MAIN": "Vermilion City Arrival",
-      "REGION_ONE_ISLAND_HARBOR/MAIN": "One Island Arrival",
-      "REGION_TWO_ISLAND_HARBOR/MAIN": "Two Island Arrival",
-      "REGION_THREE_ISLAND_HARBOR/MAIN": "Three Island Arrival",
-      "REGION_FOUR_ISLAND_HARBOR/MAIN": "Four Island Arrival",
-      "REGION_FIVE_ISLAND_HARBOR/MAIN": "Five Island Arrival",
-      "REGION_SIX_ISLAND_HARBOR/MAIN": "Six Island Arrival",
-      "REGION_SEVEN_ISLAND_HARBOR/MAIN": "Seven Island Arrival",
-      "REGION_NAVEL_ROCK_HARBOR/MAIN": "Navel Rock Arrival",
-      "REGION_BIRTH_ISLAND_HARBOR/MAIN": "Birth Island Arrival"
+      "REGION_VERMILION_CITY/MAIN": "Depart Seagallop (Vermilion City)",
+      "REGION_ONE_ISLAND_HARBOR/MAIN": "Depart Seagallop (One Island)",
+      "REGION_TWO_ISLAND_HARBOR/MAIN": "Depart Seagallop (Two Island)",
+      "REGION_THREE_ISLAND_HARBOR/MAIN": "Depart Seagallop (Three Island)",
+      "REGION_FOUR_ISLAND_HARBOR/MAIN": "Depart Seagallop (Four Island)",
+      "REGION_FIVE_ISLAND_HARBOR/MAIN": "Depart Seagallop (Five Island)",
+      "REGION_SIX_ISLAND_HARBOR/MAIN": "Depart Seagallop (Six Island)",
+      "REGION_SEVEN_ISLAND_HARBOR/MAIN": "Depart Seagallop (Seven Island)",
+      "REGION_NAVEL_ROCK_HARBOR/MAIN": "Depart Seagallop (Navel Rock)",
+      "REGION_BIRTH_ISLAND_HARBOR/MAIN": "Depart Seagallop (Birth Island)"
     },
     "warps": {}
   }

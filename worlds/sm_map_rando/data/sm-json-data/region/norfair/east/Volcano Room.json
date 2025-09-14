@@ -108,22 +108,25 @@
       "exitCondition": {
         "leaveWithRunway": {
           "length": 8,
-          "openEnd": 1
+          "openEnd": 1,
+          "heated": false
         }
-      }
+      },
+      "unlocksDoors": [{"types": ["ammo"], "requires": []}]
     },
     {
       "id": 2,
       "link": [1, 1],
       "name": "Crystal Flash",
+      "entranceCondition": {
+        "comeInNormally": {}
+      },
       "requires": [
-        {"resetRoom": {
-          "nodes": [1]
-        }},
+        {"resetRoom": {"nodes": [1]}},
         "h_CrystalFlash"
       ],
       "flashSuitChecked": true,
-      "devNote": "Resetting the room through node 1 ensures that there is no heat."
+      "devNote": "The comeInNormally entrance condition ensures that there is no heat."
     },
     {
       "id": 3,
@@ -147,6 +150,24 @@
             {"lavaFrames": 60}
           ]}
         ]}
+      ],
+      "exitCondition": {
+        "leaveNormally": {}
+      },
+      "unlocksDoors": [
+        {
+          "types": ["missiles"],
+          "requires": [{"lavaFrames": 80}]
+        },
+        {"types": ["super"], "requires": []},
+        {
+          "types": ["powerbomb"],
+          "requires": [{"lavaFrames": 60}]
+        }
+      ],
+      "devNote": [
+        "FIXME: A leaveWithRunway variation could be added, but it would require Speed Booster to be disabled,",
+        "which would need new schema support in order to properly match entrance conditions in the next room."
       ]
     },
     {
@@ -160,18 +181,85 @@
           {"and": [
             "canCarefulJump",
             "canMockball",
-            {"lavaFrames": 180}
+            {"lavaFrames": 155}
           ]},
-          {"lavaFrames": 220}
+          {"lavaFrames": 200}
         ]},
         {"or": [
           {"and": [
             "canSpaceJumpWaterBounce",
-            {"lavaFrames": 120}
+            {"or": [
+              {"and": [
+                "canPreciseSpaceJump",
+                {"lavaFrames": 35}
+              ]},
+              {"lavaFrames": 60}
+            ]}
           ]},
           {"lavaFrames": 150}
         ]}
+      ],
+      "exitCondition": {
+        "leaveNormally": {}
+      },
+      "unlocksDoors": [
+        {
+          "types": ["missiles"],
+          "requires": [{"lavaFrames": 80}]
+        },
+        {"types": ["super"], "requires": []},
+        {
+          "types": ["powerbomb"],
+          "requires": [{"lavaFrames": 150}]
+        }
       ]
+    },
+    {
+      "id": 13,
+      "link": [1, 2],
+      "name": "Farm Funes and Suitless Lava Dive",
+      "requires": [
+        "canSuitlessLavaDive",
+        "canFarmWhileShooting",
+        {"enemyKill": {
+          "enemies": [["Fune", "Fune"]],
+          "explicitWeapons": ["PowerBomb"]
+        }},
+        "canMockball",
+        {"lavaFramesWithEnergyDrops": {
+          "frames": 120,
+          "drops": [{"enemy": "Fune", "count": 1}]
+        }},
+        {"lavaFrames": 35},
+        {"or": [
+          {"and": [
+            "canSpaceJumpWaterBounce",
+            {"or": [
+              {"and": [
+                "canPreciseSpaceJump",
+                {"lavaFrames": 35}
+              ]},
+              {"lavaFrames": 60}
+            ]}
+          ]},
+          {"lavaFrames": 150}
+        ]}
+      ],
+      "exitCondition": {
+        "leaveNormally": {}
+      },
+      "unlocksDoors": [
+        {
+          "types": ["missiles"],
+          "requires": [{"lavaFrames": 80}]
+        },
+        {"types": ["super"], "requires": []},
+        {
+          "types": ["powerbomb"],
+          "requires": [{"lavaFrames": 150}]
+        }
+      ],
+      "devNote": "FIXME: a Gravity version of this could be added."
     },
     {
       "id": 5,
@@ -185,11 +273,15 @@
         ]},
         {"heatFrames": 420}
       ],
+      "exitCondition": {
+        "leaveNormally": {}
+      },
       "unlocksDoors": [
         {
           "types": ["missiles"],
           "requires": [{"heatFrames": 20}]
         },
+        {"types": ["super"], "requires": []},
         {
           "types": ["powerbomb"],
           "requires": [{"heatFrames": 60}]
@@ -211,7 +303,8 @@
       "exitCondition": {
         "leaveWithRunway": {
           "length": 8,
-          "openEnd": 1
+          "openEnd": 1,
+          "heated": true
         }
       },
       "unlocksDoors": [
@@ -238,6 +331,65 @@
           {"heatFrames": 35}
         ]},
         {"heatFrames": 405}
+      ],
+      "exitCondition": {
+        "leaveNormally": {}
+      },
+      "unlocksDoors": [
+        {
+          "types": ["missiles"],
+          "requires": [{"heatFrames": 20}]
+        },
+        {"types": ["super"], "requires": []},
+        {
+          "types": ["powerbomb"],
+          "requires": [{"heatFrames": 60}]
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "link": [2, 1],
+      "name": "Come in Running, Space Jump",
+      "entranceCondition": {
+        "comeInRunning": {
+          "speedBooster": "any",
+          "minTiles": 2
+        }
+      },
+      "requires": [
+        "Morph",
+        "SpaceJump",
+        "canMockball",
+        {"heatFrames": 390}
+      ],
+      "exitCondition": {
+        "leaveNormally": {}
+      },
+      "unlocksDoors": [
+        {
+          "types": ["missiles"],
+          "requires": [{"heatFrames": 20}]
+        },
+        {"types": ["super"], "requires": []},
+        {
+          "types": ["powerbomb"],
+          "requires": [{"heatFrames": 60}]
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "link": [2, 1],
+      "name": "Crystal Flash below Shot Blocks",
+      "requires": [
+        {"heatFrames": 180},
+        "h_heatedCrystalFlash",
+        {"heatFrames": 250}
+      ],
+      "devNote": [
+        "FIXME: by adding a junction here, we could account for more ways of entering the room;",
+        "but a junction would complicate how the heated/unheated state of the room is tracked."
       ]
     },
     {
@@ -315,6 +467,7 @@
       },
       "requires": [
         "h_heatedGMode",
+        "canComplexGMode",
         "canOffScreenMovement",
         {"or": [
           "h_artificialMorphMovement",
@@ -335,7 +488,25 @@
             ]}
           ]}
         ]},
-        {"heatFrames": 1000}
+        {"heatFrames": 1000},
+        {"or": [
+          "canTrickyGMode",
+          {"heatFrames": 500}
+        ]}
+      ],
+      "exitCondition": {
+        "leaveNormally": {}
+      },
+      "unlocksDoors": [
+        {
+          "types": ["missiles"],
+          "requires": [{"heatFrames": 20}]
+        },
+        {"types": ["super"], "requires": []},
+        {
+          "types": ["powerbomb"],
+          "requires": [{"heatFrames": 60}]
+        }
       ],
       "flashSuitChecked": true,
       "note": [
@@ -353,13 +524,12 @@
       "entranceCondition": {
         "comeInNormally": {}
       },
-      "requires": [
-        {"heatFrames": 60}
-      ],
+      "requires": [],
       "exitCondition": {
         "leaveWithRunway": {
           "length": 6,
-          "openEnd": 1
+          "openEnd": 1,
+          "heated": true
         }
       },
       "unlocksDoors": [{"types": ["ammo"], "requires": []}]
@@ -374,13 +544,10 @@
       "requires": [
         "h_heatedCrystalFlash"
       ],
-      "flashSuitChecked": true,
-      "devNote": [
-        "When coming from 1: A lava proof CF could CF at 1, otherwise going through this door should be less damage than staying in Lava."
-      ]
+      "flashSuitChecked": true
     }
   ],
   "notables": [],
-  "nextStratId": 13,
+  "nextStratId": 16,
   "nextNotableId": 1
 }

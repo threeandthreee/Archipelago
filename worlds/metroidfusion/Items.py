@@ -1,5 +1,5 @@
 from BaseClasses import ItemClassification
-from .data.items import all_item_data
+from .data.items import all_item_data, events
 
 
 class ItemData:
@@ -30,6 +30,7 @@ for item in all_item_data:
 
 item_names = [item for item in item_table.keys()]
 
+valid_item_names = [*item_names, *[event[3] for event in events]]
 # Everything not listed here has a quantity of one
 default_item_quantities = {
     "Nothing": 0,
@@ -66,6 +67,11 @@ major_abilities = [
     "Ice Beam"
 ]
 
+major_jingles = [
+    *major_abilities,
+    "Infant Metroid"
+]
+
 ap_name_to_mars_name = {
     "Nothing": "None",
     "Level 0 Keycard": "Level0",
@@ -97,3 +103,5 @@ ap_name_to_mars_name = {
     "Ice Trap": "IceTrap",
     "Infant Metroid": "InfantMetroid"
 }
+
+mars_name_to_ap_name = {v: k for k, v in ap_name_to_mars_name.items()}

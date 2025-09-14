@@ -378,8 +378,6 @@ def ChaosShuffle(world):
 
         final_bosses.append(Levels.BOSS_DEVIL_DOOM)
 
-
-
     world.random.shuffle(stages_to_assign)
 
     bosses_to_assign = []
@@ -388,7 +386,6 @@ def ChaosShuffle(world):
         bosses_to_assign.extend(boss_set)
 
     world.random.shuffle(bosses_to_assign)
-    world.random.shuffle(final_bosses)
 
     # Potentially duplicate some bosses for more clarity
 

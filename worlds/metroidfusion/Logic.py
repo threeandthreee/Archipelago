@@ -2,8 +2,8 @@ from copy import copy
 from typing import TYPE_CHECKING
 
 from BaseClasses import CollectionState
-from .data.locations import Requirement, Level2KeycardRequirement
-from .Items import item_names
+from .data.locations import Requirement
+from .Items import valid_item_names
 
 if TYPE_CHECKING:
     from worlds.metroidfusion import MetroidFusionOptions
@@ -11,10 +11,13 @@ if TYPE_CHECKING:
 class LogicObject():
     requirements: list[list[str]] = []
     energy_tanks: int = 0
+    calculated_energy_tanks: int = 0
     player: int
+    options: "MetroidFusionOptions"
 
-    def __init__(self, player: int):
+    def __init__(self, player: int, options: "MetroidFusionOptions"):
         self.player = player
+        self.options = options
 
     def logic_rule(self, state: CollectionState) -> bool:
         if len(self.requirements) == 0:
@@ -26,7 +29,11 @@ class LogicObject():
             else:
                 expression = expression or state.has_all(requirement_list, self.player)
         if self.energy_tanks > 0:
-            expression = bool(expression) and state.has("Energy Tank", self.player, self.energy_tanks)
+            if self.options.ElevatorShuffle.value > self.options.ElevatorShuffle.option_none:
+                self.calculated_energy_tanks = self.energy_tanks // 2
+            else:
+                self.calculated_energy_tanks = self.energy_tanks
+            expression = expression and state.has("Energy Tank", self.player, self.calculated_energy_tanks)
         return expression
 
 
@@ -36,7 +43,7 @@ def create_logic_rule_for_list(requirements: list[Requirement], options: "Metroi
     requirements_list = []
     for requirement in requirements:
         new_rule = create_logic_rule(requirement, options, debug)
-        energy_tanks += new_rule[1]
+        energy_tanks = max(energy_tanks, new_rule[1])
         for requirement2 in new_rule[0]:
             requirements_list.append(requirement2)
         continue
@@ -49,6 +56,7 @@ def create_logic_rule(requirement: Requirement, options: "MetroidFusionOptions",
         if debug:
             print(requirement)
             print(requirements_list)
+            print("")
         return requirements_list, energy_tanks_needed
     else:
         if debug:
@@ -61,15 +69,15 @@ def unpack_requirement(requirement: Requirement, possibilities: list[list[str]],
         for nested_requirement in requirement.other_requirements:
             current_parent_items = copy(parent_items)
             for item_needed in requirement.items_needed:
-                assert item_needed in item_names, (item_needed, requirement)
+                assert item_needed in valid_item_names, (item_needed, requirement)
             parent_items.extend(requirement.items_needed)
             energy_tanks += unpack_requirement(nested_requirement, possibilities, parent_items)
             parent_items = copy(current_parent_items)
     elif len(requirement.items_needed) > 0:
         items_needed = copy(requirement.items_needed)
         for item_needed in items_needed:
-            assert item_needed in item_names, (item_needed, requirement)
+            assert item_needed in valid_item_names, (item_needed, requirement)
         items_needed.extend(parent_items)
         possibilities.append(items_needed)
-    energy_tanks += requirement.energy_tanks_needed
+    energy_tanks = max(energy_tanks, requirement.energy_tanks_needed)
     return energy_tanks

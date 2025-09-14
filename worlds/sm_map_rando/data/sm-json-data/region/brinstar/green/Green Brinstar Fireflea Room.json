@@ -170,11 +170,18 @@
       "link": [1, 1],
       "name": "Fireflea Farm",
       "requires": [
-        {"resetRoom": {
-          "nodes": [1, 2]
-        }},
-        {"refill": ["Energy", "PowerBomb"]}
+        {"or": [
+          {"and": [
+            {"resetRoom": {"nodes": [1]}},
+            {"cycleFrames": 630}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [2]}},
+            {"cycleFrames": 900}
+          ]}
+        ]}
       ],
+      "farmCycleDrops": [{"enemy": "Fireflea", "count": 5}],
       "flashSuitChecked": true
     },
     {
@@ -264,9 +271,7 @@
         {"thornHits": 1},
         {"or": [
           "h_spikeSuitThornHitLeniency",
-          {"resetRoom": {
-            "nodes": [1, 2]
-          }}
+          {"resetRoom": {"nodes": [1, 2]}}
         ]},
         "canSpikeSuit",
         {"shinespark": {"frames": 5, "excessFrames": 5}}

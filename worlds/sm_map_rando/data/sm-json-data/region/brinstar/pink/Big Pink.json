@@ -324,7 +324,7 @@
         [1, 0, 0, 0, 0],
         [1, 0, 0, 0, 0]
       ],
-      "note": "Represents being on the second platform coming out of the right wall above the door to the Pink Hopper Room. This is below the floating platform by the Grapple blocks."
+      "note": "Represents being on the second platform coming out of the right wall above the door to the Pink Brinstar Wave Gate Room. This is below the floating platform by the Grapple blocks."
     },
     {
       "id": 16,
@@ -471,6 +471,7 @@
         {"id": 4},
         {"id": 10},
         {"id": 13},
+        {"id": 14},
         {"id": 15},
         {"id": 16},
         {"id": 17}
@@ -504,6 +505,7 @@
         {"id": 8},
         {"id": 12},
         {"id": 13},
+        {"id": 14},
         {"id": 15},
         {"id": 16},
         {"id": 17}
@@ -784,7 +786,7 @@
           {"enemyDamage": {"enemy": "Sm. Sidehopper", "type": "contact", "hits": 1}}
         ]},
         {"or": [
-          "canInsaneJump",
+          "canComplexGMode",
           "h_artificialMorphPowerBomb",
           {"enemyDamage": {"enemy": "Sm. Sidehopper", "type": "contact", "hits": 1}}
         ]}
@@ -832,7 +834,7 @@
       "note": [
         "Roll through the camera scroll blocks and then through the bomb block.",
         "Avoiding the hoppers can be tricky. Power Bomb them or lure them off-camera to the right while above.",
-        "It is possible to kill the Zebbos by placing a bomb next to the tube.",
+        "It is possible to kill the Zebs by placing a bomb next to the tube.",
         "It is also possible to kill them and get on top of the pipe with a single Power Bomb; boost vertically then fall and delay the forward press."
       ]
     },
@@ -852,7 +854,7 @@
       "flashSuitChecked": true,
       "note": [
         "Roll through the camera scroll blocks and then through the bomb block.",
-        "It is possible to kill the Zebbo by placing a Bomb next to its tube."
+        "It is possible to kill the Zeb by placing a Bomb next to its tube."
       ]
     },
     {
@@ -930,11 +932,11 @@
       ],
       "flashSuitChecked": true,
       "note": [
-        "It is possible to kill a Zebbo and get on top of the pipe with a single Power Bomb; boost vertically then fall and delay the forward press.",
+        "It is possible to kill a Zeb and get on top of the pipe with a single Power Bomb; boost vertically then fall and delay the forward press.",
         "Use a Power Bomb to boost horizontally to the Morph tunnel to the left and overload PLMs using the camera scroll blocks in front of the bomb blocks.",
         "Carefully roll through the rest of the room and through the bomb blocks to the lowest item."
       ],
-      "devNote": "With Morph, Bombs, or Spring Ball, 1->15->12 will be used instead."
+      "devNote": "With Morph, Bombs, or Spring Ball, 2->15->12 will be used instead."
     },
     {
       "id": 21,
@@ -978,7 +980,7 @@
       "flashSuitChecked": true,
       "note": [
         "Avoiding the hoppers can be tricky. Power Bomb them or lure them off-camera to the right while above.",
-        "It is possible to kill the Zebbos by placing a bomb next to the tube.",
+        "It is possible to kill the Zebs by placing a bomb next to the tube.",
         "It is also possible to kill them and get on top of the pipe with a single Power Bomb; boost vertically then fall and delay the forward press."
       ]
     },
@@ -1054,7 +1056,7 @@
       "flashSuitChecked": true,
       "note": [
         "Avoiding the hoppers can be tricky. Power Bomb them or lure them off-camera to the right while above.",
-        "It is possible to kill the Zebbos by placing a bomb next to the tube.",
+        "It is possible to kill the Zebs by placing a bomb next to the tube.",
         "IBJ from the lower hopper pit, or with HiJump, perform a Spring Fling from the right pillar by jumping immediately before the pause finishes and turning off Spring Ball,",
         "quickly pausing again and turning Spring Ball back on can help as well."
       ]
@@ -1084,7 +1086,7 @@
       "flashSuitChecked": true,
       "note": [
         "Avoiding the hoppers can be tricky. Power Bomb them or lure them off-camera to the right while above.",
-        "It is possible to kill the Zebbos by placing a bomb next to the tube."
+        "It is possible to kill the Zebs by placing a bomb next to the tube."
       ]
     },
     {
@@ -1098,11 +1100,12 @@
         }
       },
       "requires": [
-        "canXRayClimb"
+        "canLongXRayClimb"
       ],
       "note": [
         "Fall into the first Samus Eater in Hellway or the second Samus Eater of Alpha Power Bomb Room.",
-        "After teleporting and passing through the transition, X-Ray climb to reach the space above, to the left of the morph tunnel and bomb block.",
+        "After teleporting and passing through the transition, X-Ray climb (about 2 screens) to reach the space above,",
+        "to the left of the morph tunnel and bomb block.",
         "Samus will be off-camera, but the slopes at the top will push the camera up, indicating when the climb is done."
       ],
       "devNote": ["Other Samus Eaters can also probably work."]
@@ -1124,6 +1127,7 @@
       "link": [3, 3],
       "name": "G-Mode Setup - Get Hit By Zeb",
       "requires": [
+        "canComplexGMode",
         "canTrickyUseFrozenEnemies"
       ],
       "exitCondition": {
@@ -1174,6 +1178,71 @@
       "link": [3, 13],
       "name": "Base",
       "requires": []
+    },
+    {
+      "id": 178,
+      "link": [3, 13],
+      "name": "G-mode Morph Power Bomb Item, Remote Acquire",
+      "entranceCondition": {
+        "comeInWithGMode": {
+          "mode": "direct",
+          "morphed": true
+        }
+      },
+      "requires": [
+        "canPowerBombItemOverloadPLMs",
+        "h_artificialMorphSpringBall",
+        {"or": [
+          "canInsaneJump",
+          "h_artificialMorphPowerBomb",
+          {"enemyDamage": {"enemy": "Sm. Sidehopper", "type": "contact", "hits": 1}}
+        ]},
+        "h_artificialMorphPowerBomb"
+      ],
+      "clearsObstacles": ["B"],
+      "collectsItems": [10],
+      "flashSuitChecked": true,
+      "note": [
+        "As long as the Sidehoppers haven't been lured to the right, fall into the pit and use a Power Bomb to kill them or dodge them.",
+        "Place a Power Bomb one tile below the Morph tunnel to the left to overload PLMs using the item. Exit G-mode, grab the item and return."
+      ],
+      "devNote": [
+        "This does not include canRiskPermanentLossOfAccess because the only use of the strat is to collect the item. This is also why C is no cleared.",
+        "Only this door and the one just below the hopper pit on the right will benefit from this, and only without Morph or Bombs, otherwise PLMs could be overloaded simpler ways."
+      ]
+    },
+    {
+      "id": 179,
+      "link": [3, 14],
+      "name": "G-mode Morph Power Bomb Item, Loss of Acess",
+      "entranceCondition": {
+        "comeInWithGMode": {
+          "mode": "direct",
+          "morphed": true
+        }
+      },
+      "requires": [
+        "canPowerBombItemOverloadPLMs",
+        {"itemNotCollectedAtNode": 10},
+        "canRiskPermanentLossOfAccess",
+        "h_artificialMorphSpringBall",
+        {"or": [
+          "canInsaneJump",
+          "h_artificialMorphPowerBomb",
+          {"enemyDamage": {"enemy": "Sm. Sidehopper", "type": "contact", "hits": 1}}
+        ]},
+        "h_artificialMorphPowerBomb"
+      ],
+      "clearsObstacles": ["B", "C"],
+      "flashSuitChecked": true,
+      "note": [
+        "As long as the Sidehoppers haven't been lured to the right, fall into the pit and use a Power Bomb to kill them or dodge them.",
+        "Place a Power Bomb one tile below the Morph tunnel to the left to overload PLMs using the item."
+      ],
+      "devNote": [
+        "Techincally, obstacles B and C are not cleared until exiting G-mode, but those obstacles are not used by G-mode strats.",
+        "Only this door and the one just below the hopper pit on the right will benefit from this, and only without Morph or Bombs, otherwise PLMs could be overloaded simpler ways."
+      ]
     },
     {
       "id": 28,
@@ -1281,12 +1350,13 @@
         }
       },
       "requires": [
-        "canXRayClimb",
+        "canLongXRayClimb",
         "canBePatient"
       ],
       "note": [
         "Fall into the first Samus Eater in Hellway or the second Samus Eater of Alpha Power Bomb Room.",
-        "After teleporting and passing through the transition, X-Ray climb to reach the space above, to the left of the morph tunnel and bomb block.",
+        "After teleporting and passing through the transition, X-Ray climb (about 3 screens) to reach the space above,",
+        "to the left of the morph tunnel and bomb block.",
         "Samus will be off-camera, but the slopes at the top will push the camera up, indicating when the climb is done."
       ],
       "devNote": ["Other Samus Eaters can also probably work."]
@@ -1356,6 +1426,7 @@
       "link": [4, 4],
       "name": "G-Mode Setup - Get Hit By Zeb",
       "requires": [
+        "canComplexGMode",
         "canTrickyUseFrozenEnemies",
         {"or": [
           "h_usePowerBomb",
@@ -1515,6 +1586,8 @@
         }
       },
       "requires": [
+        "canPowerBombItemOverloadPLMs",
+        "canComplexGMode",
         {"itemNotCollectedAtNode": 10},
         "canRiskPermanentLossOfAccess",
         "canArtificialMorph",
@@ -1564,6 +1637,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         "canArtificialMorph",
         "h_artificialMorphIBJ",
         {"or": [
@@ -1600,6 +1674,8 @@
         }
       },
       "requires": [
+        "canPowerBombItemOverloadPLMs",
+        "canComplexGMode",
         {"itemNotCollectedAtNode": 10},
         "canRiskPermanentLossOfAccess",
         "canArtificialMorph",
@@ -1624,12 +1700,13 @@
         }
       },
       "requires": [
-        "canXRayClimb",
+        "canLongXRayClimb",
         "canBePatient"
       ],
       "note": [
         "Fall into the first Samus Eater in Hellway or the second Samus Eater of Alpha Power Bomb Room.",
-        "After teleporting and passing through the transition, X-Ray climb to reach the space above, to the left of the morph tunnel and bomb block.",
+        "After teleporting and passing through the transition, X-Ray climb (about 4 screens) to reach the space above,",
+        "to the left of the morph tunnel and bomb block.",
         "Samus will be off-camera, but the slopes at the top will push the camera up, indicating when the climb is done."
       ],
       "devNote": ["Other Samus Eaters can also probably work."]
@@ -1637,7 +1714,7 @@
     {
       "id": 40,
       "link": [5, 4],
-      "name": "Left-Side X-Ray Climb",
+      "name": "X-Ray Climb",
       "entranceCondition": {
         "comeInWithDoorStuckSetup": {}
       },
@@ -1733,7 +1810,8 @@
         }
       },
       "requires": [
-        "canXRayClimb",
+        "canComplexGMode",
+        "canLongXRayClimb",
         "canBePatient"
       ],
       "bypassesDoorShell": true,
@@ -1945,6 +2023,71 @@
       "requires": []
     },
     {
+      "id": 180,
+      "link": [6, 13],
+      "name": "G-mode Morph Power Bomb Item, Remote Acquire",
+      "entranceCondition": {
+        "comeInWithGMode": {
+          "mode": "direct",
+          "morphed": true
+        }
+      },
+      "requires": [
+        "canPowerBombItemOverloadPLMs",
+        "h_artificialMorphSpringBall",
+        {"or": [
+          "canInsaneJump",
+          "h_artificialMorphPowerBomb",
+          {"enemyDamage": {"enemy": "Sm. Sidehopper", "type": "contact", "hits": 1}}
+        ]},
+        "h_artificialMorphPowerBomb"
+      ],
+      "clearsObstacles": ["B"],
+      "collectsItems": [10],
+      "flashSuitChecked": true,
+      "note": [
+        "As long as the Sidehoppers haven't been lured to the right, fall into the pit and use a Power Bomb to kill them or dodge them.",
+        "Place a Power Bomb one tile below the Morph tunnel to the left to overload PLMs using the item. Exit G-mode, grab the item and return."
+      ],
+      "devNote": [
+        "This does not include canRiskPermanentLossOfAccess because the only use of the strat is to collect the item. This is also why C is no cleared.",
+        "Only this door and the one just above the hopper pit on the left will benefit from this, and only without Morph or Bombs, otherwise PLMs could be overloaded simpler ways."
+      ]
+    },
+    {
+      "id": 181,
+      "link": [6, 14],
+      "name": "G-mode Morph Power Bomb Item, Loss of Acess",
+      "entranceCondition": {
+        "comeInWithGMode": {
+          "mode": "direct",
+          "morphed": true
+        }
+      },
+      "requires": [
+        "canPowerBombItemOverloadPLMs",
+        {"itemNotCollectedAtNode": 10},
+        "canRiskPermanentLossOfAccess",
+        "h_artificialMorphSpringBall",
+        {"or": [
+          "canInsaneJump",
+          "h_artificialMorphPowerBomb",
+          {"enemyDamage": {"enemy": "Sm. Sidehopper", "type": "contact", "hits": 1}}
+        ]},
+        "h_artificialMorphPowerBomb"
+      ],
+      "clearsObstacles": ["B", "C"],
+      "flashSuitChecked": true,
+      "note": [
+        "As long as the Sidehoppers haven't been lured to the right, fall into the pit and use a Power Bomb to kill them or dodge them.",
+        "Place a Power Bomb one tile below the Morph tunnel to the left to overload PLMs using the item."
+      ],
+      "devNote": [
+        "Techincally, obstacles B and C are not cleared until exiting G-mode, but those obstacles are not used by G-mode strats.",
+        "Only this door and the one just above the hopper pit on the left will benefit from this, and only without Morph or Bombs, otherwise PLMs could be overloaded simpler ways."
+      ]
+    },
+    {
       "id": 60,
       "link": [6, 15],
       "name": "G-mode Morph",
@@ -2064,7 +2207,7 @@
         "canShinechargeMovementComplex",
         "Morph",
         {"obstaclesCleared": ["F"]},
-        {"shineChargeFrames": 155}
+        {"shineChargeFrames": 145}
       ],
       "exitCondition": {
         "leaveShinecharged": {}
@@ -2154,9 +2297,9 @@
             {
               "minHeight": 3,
               "maxHeight": 3,
-              "obstructions": [[3, 2]],
               "minTiles": 39.4375,
               "speedBooster": true,
+              "obstructions": [[3, 2]],
               "requires": [
                 {"or": [
                   "h_heatProof",
@@ -2212,7 +2355,7 @@
       "name": "Temporary Blue Springball Bounce (Come in Shinecharging)",
       "entranceCondition": {
         "comeInShinecharging": {
-          "length": 7,
+          "length": 6,
           "openEnd": 0
         }
       },
@@ -2298,7 +2441,8 @@
         }
       },
       "requires": [
-        "canXRayClimb",
+        "canComplexGMode",
+        "canLongXRayClimb",
         "canBeVeryPatient"
       ],
       "bypassesDoorShell": true,
@@ -2319,7 +2463,8 @@
         }
       },
       "requires": [
-        "canXRayClimb"
+        "canComplexGMode",
+        "canLongXRayClimb"
       ],
       "bypassesDoorShell": true,
       "flashSuitChecked": true,
@@ -2339,12 +2484,12 @@
         }
       },
       "requires": [
-        "canXRayClimb",
-        "canBePatient"
+        "canXRayClimb"
       ],
       "note": [
         "Jump into the second Samus Eater in the ceiling of Hellway.",
-        "After teleporting and passing through the transition, X-Ray climb to reach the space above, to the right of the morph tunnel and Super block.",
+        "After teleporting and passing through the transition, X-Ray climb 1 screen to reach the space above,",
+        "to the right of the morph tunnel and Super block.",
         "Samus will be off-camera, so it may be hard to tell when the climb is done;",
         "moving left and right is a safe way to test, as it will cause the camera to scroll if Samus is at the top."
       ],
@@ -2367,6 +2512,7 @@
       "link": [8, 8],
       "name": "G-Mode Setup - Get Hit By Reo",
       "requires": [
+        "canComplexGMode",
         "Morph"
       ],
       "exitCondition": {
@@ -2463,7 +2609,7 @@
     {
       "id": 77,
       "link": [8, 13],
-      "name": "Right-Side X-Ray Climb",
+      "name": "X-Ray Climb",
       "entranceCondition": {
         "comeInWithDoorStuckSetup": {}
       },
@@ -2471,7 +2617,7 @@
         "canXRayClimb"
       ],
       "flashSuitChecked": true,
-      "note": "Climb up 1 screen."
+      "note": "Climb up 1 screen (or 2 tiles less than a screen)."
     },
     {
       "id": 69,
@@ -2648,6 +2794,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         "h_CrystalFlash",
         "canMidAirMorph"
       ],
@@ -2686,6 +2833,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         {"or": [
           "h_artificialMorphIBJ",
           "Morph",
@@ -3029,10 +3177,12 @@
       "link": [13, 4],
       "name": "Leave With Temporary Blue (Tricky Spring Ball Bounce)",
       "requires": [
+        {"notable": "Return Through Crumble Blocks"},
         {"obstaclesCleared": ["C"]},
         {"canShineCharge": {"usedTiles": 16, "openEnd": 0}},
         "canTrickySpringBallBounce",
-        "canChainTemporaryBlue"
+        "canChainTemporaryBlue",
+        "canInsaneJump"
       ],
       "exitCondition": {
         "leaveWithTemporaryBlue": {}
@@ -3117,7 +3267,8 @@
         "Likewise, with the Reo knockback method either 2 or 4 pixels can work, though it is more reliable in the 2-pixel position;",
         "it helps to take the knockback a few pixels away from the wall, as it takes a few frames for the horizontal speed of the knockback to reach its maximum.",
         "The trick can work with Samus facing either toward or away from the wall when taking knockback;",
-        "facing away makes it easier to quickly kill the Reo afterward to avoid taking a second hit."
+        "facing away makes it easier to quickly kill the Reo afterward to avoid taking a second hit.",
+        "FIXME: describe how to do this by freezing the Zeb higher, above node 5."
       ]
     },
     {
@@ -3222,7 +3373,7 @@
       "name": "Zeb Ice Clip",
       "requires": [
         {"notable": "Zeb Ice Clip"},
-        "canStaggeredWalljump",
+        "canTrickyWalljump",
         "canCameraManip",
         {"or": [
           "Wave",
@@ -3233,7 +3384,7 @@
       "flashSuitChecked": true,
       "note": [
         "Raise a Zeb to be just below the crumble blocks and blindly freeze it to set up an ice clip to reach the Power Bomb room exit door.",
-        "Get a bug from the pipe to spawn facing left and freeze it while moving to the ledge below the Hopper room door.",
+        "Get a bug from the pipe to spawn facing left and freeze it while moving to the ledge below the Wave Gate Room door.",
         "While crouched, a spazer or wave beam shot will shoot through the floor in front of Samus.",
         "The bug must be frozen at a height between where Samus is crouched and where she is standing.",
         "Once frozen, somehow track how long until the freeze effect expires, and when the bug will reach the crumble blocks.",
@@ -3247,7 +3398,7 @@
       "name": "Blind Zeb Ice Clip (Preserve Flash Suit)",
       "requires": [
         {"notable": "Blind Zeb Ice Clip (Preserve Flash Suit)"},
-        "canStaggeredWalljump",
+        "canTrickyWalljump",
         "canCameraManip",
         "canOffScreenMovement",
         {"or": [
@@ -3260,7 +3411,7 @@
       "flashSuitChecked": true,
       "note": [
         "Raise a Zeb to be just below the crumble blocks and blindly freeze it to set up an ice clip to reach the Power Bomb room exit door.",
-        "Get a bug from the pipe to spawn facing left and freeze it while moving to the ledge below the Hopper room door.",
+        "Get a bug from the pipe to spawn facing left and freeze it while moving to the ledge below the Wave Gate Room door.",
         "While crouched, a spazer or wave beam shot will shoot through the floor in front of Samus.",
         "Shoot then immediately jump so that the bug can be frozen at a pixel perfect height, which is higher than where it would typically be frozen (when not needing to preserve a flash suit).",
         "Once frozen, wait for the bug to thaw, then blindly follow it to the left without letting it go off camera, which would cause it to despawn.",
@@ -3268,10 +3419,40 @@
       ]
     },
     {
+      "id": 177,
+      "link": [13, 5],
+      "name": "Zeb Ice Clip SBA",
+      "requires": [
+        {"notable": "Zeb Ice Clip"},
+        "canSpecialBeamAttack",
+        {"ammo": {"type": "PowerBomb", "count": 1}},
+        "canTrickyWalljump",
+        "h_preciseIceClip",
+        {"disableEquipment": "Ice"}
+      ],
+      "flashSuitChecked": true,
+      "note": [
+        "Freeze the Zeb low in the pipe. Crouch and shoot works for that, or shooting as Samus is approaching it.",
+        "Jump on the left side of the pipe and walk right until you get blocked by the frozen Zeb.",
+        "Start the ice SBA facing right. The bottom particle will instantly kill the Zeb. Turn around towards the left.",
+        "At the right moment, jump to prevent the tail particle of the clockwise rotation to freeze the Zeb inside the pipe.",
+        "As Samus starts falling down again, push left to freeze the rising Zeb with the leading particle of the rotation.",
+        "While preserving the remaining 2 particles, spinjump over the frozen Zeb to quickly get to the floor above Samus.",
+        "Run left until Samus hits the wall. While in the standing pose and holding jump, press right to do a buffered turnaround spinjump. Holding L+R during the jump can help to stop at the correct position after landing.",
+        "Wait until one of the remaining particles flies off and freezes the Zeb at the correct height.",
+        "Move towards the right side of the floor below the Zeb pipe. While running left, un- and then re-equip ice to synchronize with the Zeb. At the left side, jump up and shoot up to freeze the Zeb one last time, then walljump up and do the clip.",
+        "Note: If the Zeb drops something, the frozen position at the end will be 1 pixel lower. This doesn't matter, both pixels work."
+      ],
+      "devNote": [
+        "Disabling Ice is not a hard requirement, some other timing method could be used."
+      ]
+    },
+    {
       "id": 146,
       "link": [13, 5],
       "name": "G-Mode Setup - Get Hit By Reo",
       "requires": [
+        "canTrickyGMode",
         "h_preciseIceClip",
         {"notable": "Reo Ice Clip Without Morph and X-Ray"}
       ],
@@ -3545,7 +3726,8 @@
       "link": [13, 13],
       "name": "Zeb Farm",
       "requires": [
-        {"cycleFrames": 105}
+        {"simpleCycleFrames": 85},
+        {"cycleFrames": 20}
       ],
       "farmCycleDrops": [{"enemy": "Zeb", "count": 1}]
     },
@@ -3554,7 +3736,7 @@
       "link": [14, 4],
       "name": "Exit G-Mode",
       "requires": [
-        "canEnterGMode"
+        "canGMode"
       ],
       "clearsObstacles": ["C"],
       "flashSuitChecked": true
@@ -3564,7 +3746,7 @@
       "link": [14, 4],
       "name": "Leave with G-Mode",
       "requires": [
-        "canEnterGMode"
+        "canGMode"
       ],
       "exitCondition": {
         "leaveWithGMode": {
@@ -3578,7 +3760,7 @@
       "link": [14, 4],
       "name": "G-Mode Morph, Power Bomb the Blocks",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         "h_artificialMorphPowerBomb"
       ],
       "clearsObstacles": ["B", "C"],
@@ -3590,7 +3772,7 @@
       "link": [15, 1],
       "name": "G-mode Morph",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         {"or": [
           "Morph",
           {"and": [
@@ -3618,7 +3800,7 @@
       "link": [15, 1],
       "name": "G-mode Morph Overload PLMs with Power Bombs and Spring Ball",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         "h_artificialMorphSpringBallBombJump",
         "h_artificialMorphPowerBomb",
         "h_artificialMorphPowerBomb",
@@ -3644,7 +3826,7 @@
       "link": [15, 8],
       "name": "G-mode Morph",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         "h_artificialMorphMovement"
       ]
     },
@@ -3653,7 +3835,7 @@
       "link": [15, 10],
       "name": "G-mode Morph with Bombs",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         "h_artificialMorphLongIBJ",
         {"or": [
           "canTrickyDodgeEnemies",
@@ -3673,7 +3855,7 @@
       "link": [15, 10],
       "name": "G-mode Morph with HiJump Spring Fling",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         "HiJump",
         "h_artificialMorphSpringFling",
         {"or": [
@@ -3693,7 +3875,7 @@
       "link": [15, 12],
       "name": "G-mode Morph Overload PLMs",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         "h_artificialMorphMovement"
       ],
       "flashSuitChecked": true,
@@ -3704,9 +3886,9 @@
       "link": [15, 13],
       "name": "G-mode Morph Power Bomb the Blocks",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         {"or": [
-          "canInsaneJump",
+          "canComplexGMode",
           "h_artificialMorphPowerBomb",
           {"enemyDamage": {"enemy": "Sm. Sidehopper", "type": "contact", "hits": 1}}
         ]},
@@ -3724,7 +3906,7 @@
       "link": [15, 14],
       "name": "G-mode Overload PLMs with Morph",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         "canMidAirMorph"
       ],
       "flashSuitChecked": true,
@@ -3738,7 +3920,7 @@
       "link": [15, 14],
       "name": "G-mode Morph Overload PLMs with Bombs",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         "h_artificialMorphIBJ",
         {"or": [
           "canTrickyDodgeEnemies",
@@ -3759,7 +3941,7 @@
       "link": [15, 14],
       "name": "G-mode Morph Overload PLMs with Spring Ball",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         "h_artificialMorphSpringBall",
         "canCameraManip",
         {"or": [
@@ -3787,7 +3969,7 @@
       "link": [16, 1],
       "name": "G-mode Morph",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         {"or": [
           "Morph",
           "h_artificialMorphIBJ",
@@ -3819,7 +4001,7 @@
       "link": [16, 4],
       "name": "G-mode Morph",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         "h_artificialMorphMovement",
         {"or": [
           "Morph",
@@ -3843,7 +4025,7 @@
       "link": [16, 8],
       "name": "G-mode Morph",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         "h_artificialMorphMovement",
         {"or": [
           "Morph",
@@ -3866,7 +4048,7 @@
       "link": [16, 12],
       "name": "G-mode Morph",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         "h_artificialMorphMovement",
         {"or": [
           "Morph",
@@ -3892,7 +4074,7 @@
       "link": [17, 1],
       "name": "G-mode Morph",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         {"or": [
           "Morph",
           "h_artificialMorphIBJ",
@@ -3915,7 +4097,7 @@
         ]},
         {"or": [
           "Morph",
-          "canInsaneJump",
+          "canComplexGMode",
           {"and": [
             "canTrickyDodgeEnemies",
             "h_artificialMorphSpringBall"
@@ -3946,7 +4128,7 @@
       "link": [17, 4],
       "name": "G-mode Morph",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         {"or": [
           "Morph",
           "h_artificialMorphIBJ",
@@ -3967,7 +4149,7 @@
         ]},
         {"or": [
           "Morph",
-          "canInsaneJump",
+          "canComplexGMode",
           {"and": [
             "canTrickyDodgeEnemies",
             "h_artificialMorphSpringBall"
@@ -3991,7 +4173,7 @@
       "link": [17, 4],
       "name": "G-mode Morph, Power Bomb the Blocks",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         {"or": [
           "Morph",
           "h_artificialMorphIBJ",
@@ -4012,7 +4194,7 @@
         ]},
         {"or": [
           "Morph",
-          "canInsaneJump",
+          "canComplexGMode",
           {"and": [
             "canTrickyDodgeEnemies",
             "h_artificialMorphSpringBall"
@@ -4037,7 +4219,7 @@
       "link": [17, 8],
       "name": "G-mode Morph",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         "h_artificialMorphMovement"
       ],
       "collectsItems": [11],
@@ -4048,7 +4230,7 @@
       "link": [17, 12],
       "name": "G-mode Morph",
       "requires": [
-        "canEnterGMode",
+        "canGMode",
         {"itemNotCollectedAtNode": 11},
         "canRiskPermanentLossOfAccess"
       ],
@@ -4135,7 +4317,7 @@
       "name": "Zeb Ice Clip",
       "note": [
         "Raise a Zeb to be just below the crumble blocks and blindly freeze it to set up an ice clip to reach the Power Bomb room exit door.",
-        "Get a bug from the pipe to spawn facing left and freeze it while moving to the ledge below the Hopper room door.",
+        "Get a bug from the pipe to spawn facing left and freeze it while moving to the ledge below the Wave Gate Room door.",
         "While crouched, a spazer or wave beam shot will shoot through the floor in front of Samus.",
         "The bug must be frozen at a height between where Samus is crouched and where she is standing.",
         "Once frozen, somehow track how long until the freeze effect expires, and when the bug will reach the crumble blocks.",
@@ -4148,7 +4330,7 @@
       "name": "Blind Zeb Ice Clip (Preserve Flash Suit)",
       "note": [
         "Raise a Zeb to be just below the crumble blocks and blindly freeze it to set up an ice clip to reach the Power Bomb room exit door.",
-        "Get a bug from the pipe to spawn facing left and freeze it while moving to the ledge below the Hopper room door.",
+        "Get a bug from the pipe to spawn facing left and freeze it while moving to the ledge below the Wave Gate Room door.",
         "While crouched, a spazer or wave beam shot will shoot through the floor in front of Samus.",
         "Shoot then immediately jump so that the bug can be frozen at a pixel perfect height, which is higher than where it would typically be frozen (when not needing to preserve a flash suit).",
         "Once frozen, wait for the bug to thaw, then blindly follow it to the left without letting it go off camera, which would cause it to despawn.",
@@ -4172,6 +4354,6 @@
       ]
     }
   ],
-  "nextStratId": 177,
+  "nextStratId": 182,
   "nextNotableId": 14
 }

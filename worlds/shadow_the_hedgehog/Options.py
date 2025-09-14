@@ -220,12 +220,18 @@ class WeaponsanityUnlock(Toggle):
     display_name = "Weapon Sanity Unlock"
 
 class WeaponSanityMinAvailable(Range):
+    """
+        Minimum value for weapon copies to be in the item pool.
+    """
     display_name = "Weapon Sanity Min Available"
     range_start = 1
     range_end = 5
     default = 1
 
 class WeaponSanityMaxAvailable(Range):
+    """
+        Maximum value for weapon weapons to be in the item pool.
+    """
     display_name = "Weapon Sanity Max Available"
     range_start = 1
     range_end = 5

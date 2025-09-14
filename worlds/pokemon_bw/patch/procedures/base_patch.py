@@ -9,7 +9,7 @@ import pkgutil
 from .. import otpp
 
 if TYPE_CHECKING:
-    from ...rom import PokemonBlackPatch
+    from ...rom import PokemonBWPatch
 
 
 class PatchProcedure(NamedTuple):
@@ -18,7 +18,10 @@ class PatchProcedure(NamedTuple):
     narc_filename: str
 
 
-def patch(rom: NintendoDSRom, world_package: str, bw_patch_instance: "PokemonBlackPatch") -> None:
+def patch(rom: NintendoDSRom, world_package: str, bw_patch_instance: "PokemonBWPatch") -> None:
+
+    pad = rom.pad088[:0x18] + bw_patch_instance.player_name.encode()
+    rom.pad088 = pad + bytes(0x38 - len(pad))
 
     # open patch files zip and create dict of patch procedures
     base_otpp_zip = pkgutil.get_data(world_package, "patch/base_otpp.zip")

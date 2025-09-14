@@ -88,8 +88,9 @@
       "name": "Magdollite Farm",
       "requires": [
         "h_heatProof",
-        {"refill": ["Energy", "Missile"]}
+        {"cycleFrames": 310}
       ],
+      "farmCycleDrops": [{"enemy": "Magdollite", "count": 3}],
       "flashSuitChecked": true
     },
     {
@@ -106,12 +107,13 @@
       "link": [1, 1],
       "name": "G-Mode Setup - Get Hit By Multiviola",
       "requires": [
+        "canComplexGMode",
         {"heatFrames": 1880},
         {"or": [
-          "canTrickyDodgeEnemies",
+          "canInsaneJump",
           "h_heatProof",
           {"and": [
-            "canTrickyJump",
+            "canTrickyDodgeEnemies",
             {"heatFrames": 350},
             {"enemyDamage": {"enemy": "Magdollite", "type": "flame", "hits": 2}}
           ]}
@@ -679,11 +681,28 @@
       "flashSuitChecked": true
     },
     {
+      "id": 32,
+      "link": [2, 2],
+      "name": "Double Magdollite Farm",
+      "requires": [
+        "h_heatProof",
+        "canTrickyJump",
+        {"cycleFrames": 320}
+      ],
+      "farmCycleDrops": [{"enemy": "Magdollite", "count": 6}],
+      "flashSuitChecked": true,
+      "note": "It may help to desynchronize the Magdollites by bringing them on camera at different times."
+    },
+    {
       "id": 27,
       "link": [2, 2],
       "name": "G-Mode Setup - Get Hit By Multiviola",
       "requires": [
-        {"heatFrames": 570}
+        {"heatFrames": 570},
+        {"or": [
+          "canTrickyDodgeEnemies",
+          {"enemyDamage": {"enemy": "Multiviola", "type": "contact", "hits": 1}}
+        ]}
       ],
       "exitCondition": {
         "leaveWithGModeSetup": {}
@@ -694,6 +713,6 @@
     }
   ],
   "notables": [],
-  "nextStratId": 32,
+  "nextStratId": 33,
   "nextNotableId": 1
 }

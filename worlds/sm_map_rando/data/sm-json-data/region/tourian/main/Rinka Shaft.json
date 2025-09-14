@@ -205,7 +205,7 @@
       "link": [1, 1],
       "name": "G-Mode Setup - Get Hit By Rinka",
       "requires": [
-        "canTrickyJump"
+        "canComplexGMode"
       ],
       "exitCondition": {
         "leaveWithGModeSetup": {}
@@ -279,6 +279,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         "canXRayClimb"
       ],
       "bypassesDoorShell": true,
@@ -642,8 +643,9 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         {"enemyDamage": {"enemy": "Rinka", "type": "contact", "hits": 1}},
-        "canXRayClimb"
+        "canLongXRayClimb"
       ],
       "bypassesDoorShell": true,
       "flashSuitChecked": true,
@@ -671,8 +673,9 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         "Ice",
-        "canXRayClimb"
+        "canLongXRayClimb"
       ],
       "bypassesDoorShell": true,
       "flashSuitChecked": true,
@@ -694,9 +697,10 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         "h_CrystalFlash",
         {"autoReserveTrigger": {}},
-        "canXRayClimb",
+        "canLongXRayClimb",
         {"enemyDamage": {"enemy": "Rinka", "type": "contact", "hits": 2}}
       ],
       "bypassesDoorShell": true,
@@ -794,6 +798,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         {"enemyDamage": {"enemy": "Rinka", "type": "contact", "hits": 1}},
         "canXRayClimb"
       ],
@@ -823,6 +828,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         "Ice",
         "canXRayClimb"
       ],
@@ -846,6 +852,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         "h_CrystalFlash",
         {"autoReserveTrigger": {}},
         "canXRayClimb",

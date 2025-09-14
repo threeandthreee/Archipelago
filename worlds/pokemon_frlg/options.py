@@ -81,12 +81,24 @@ class DungeonEntranceShuffle(Choice):
     option_full = 3
 
 
-class RandomizeFlyDestinations(Toggle):
+class RandomizeFlyDestinations(Choice):
     """
     Randomizes where each fly point takes you. The new fly destinations can be almost any outdoor warp point in the
     game with a few exceptions (Cycling Road Gates for example).
+
+    - Off: Fly destinations are not randomized
+    - Area: Fly destinations will be randomized to a location in the same area as its original location (e.g. Vermilion Fly Destination would go to either Vermilion City, Route 6, or Route 11)
+    - Map: Fly destinations will be randomized to a location on the same map as its original location (e.g. One Island Fly Destination would go to either One Island, Two Island, or Three Island)
+    - Region: Fly destinations will be randomized to a location in the same region as its original location (e.g. Sevii fly destinations would go to another location on the Sevii Islands)
+    - Completely Random: Fly destinations are completely random
     """
     display_name = "Randomize Fly Destinations"
+    default = 0
+    option_off = 0
+    option_area = 1
+    option_map = 2
+    option_region = 3
+    option_completely_random = 4
 
 
 class FlyDestinationPlando(OptionDict):
@@ -164,45 +176,37 @@ class ExtraKeyItems(Toggle):
 class Shopsanity(Toggle):
     """
     Shuffles shop items into the general item pool. The Celadon Department Store 4F Held Items Shop is not shuffled.
+
+    IMPORTANT NOTE: There is a non-randomized shop on the Pokecenter 2F where you can always buy Poke Balls, Potions, etc.
     """
     display_name = "Shopsanity"
 
 
 class ShopPrices(Choice):
     """
-    Sets how Shop Item's prices are determined when Shopsanity is on.
+    Sets how shop item's prices are randomized.
 
-    - Spheres: Shop prices are determined by sphere access
-    - Classification: Shop prices are determined by item classifications (Progression, Useful, Filler/Trap)
-    - Spheres and Classifications: Shop prices are determined by both sphere access and item classifications
-    - Completely Random: Shop prices will be completely random
+    - Vanilla: Items cost their base price
+    - Cheap: Items cost 50% of their base price
+    - Affordable: Items cost between 50% - 100% of their base price
+    - Standard: Items cost 50% - 150% of their base price
+    - Expensive: Items cost 100% - 150% of their base price
     """
     display_name = "Shop Prices"
-    default = 2
-    option_spheres = 0
-    option_classification = 1
-    option_spheres_and_classification = 2
-    option_completely_random = 3
+    default = 0
+    option_vanilla = 0
+    option_cheap = 1
+    option_affordable = 2
+    option_standard = 3
+    option_expensive = 4
 
 
-class MinimumShopPrice(Range):
+class ConsistentShopPrices(Toggle):
     """
-    Sets the minimum cost of Shop Items when Shopsanity is on.
+    Sets whether all instances of an item will cost the same price in every shop (e.g. if a Potion's price in a shop is
+    200 then all Potions in shops will cost 200).
     """
-    display_name = "Minimum Shop Price"
-    default = 100
-    range_start = 1
-    range_end = 9999
-
-
-class MaximumShopPrice(Range):
-    """
-    Sets the maximum cost of Shop Items when Shopsanity is on.
-    """
-    display_name = "Maximum Shop Price"
-    default = 3000
-    range_start = 1
-    range_end = 9999
+    display_name = "Consistent Shop Prices"
 
 
 class Trainersanity(NamedRange):
@@ -282,6 +286,20 @@ class PokemonRequestLocations(Toggle):
     display_name = "Pokemon Request Locations"
 
 
+class ShufflePokedex(Choice):
+    """
+    Shuffle the Pokedex into the item pool, or start with it.
+
+    The Pokedex is hard required for any of the Oak's Aide or Dexsanity locations and is logically required for any of
+    the Pokemon Request Locations and In-Game Trades.
+    """
+    display_name = "Shuffle Pokedex"
+    default = 2
+    option_vanilla = 0
+    option_shuffle = 1
+    option_start_with = 2
+
+
 class ShuffleRunningShoes(Choice):
     """
     Shuffle the running shoes into the item pool, or start with it.
@@ -305,6 +323,22 @@ class ShuffleTMCase(Toggle):
     Shuffles the TM case into the item pool. If not shuffled then you will start with it.
     """
     display_name = "Shuffle TM Case"
+
+
+class ShuffleLedgeJump(Toggle):
+    """
+    Shuffles the ability to jump down ledges into the item pool. If not shuffled then you will start with it.
+    """
+    display_name = "Shuffle Ledge Jump"
+
+
+class PostGoalLocations(Toggle):
+    """
+    Shuffles locations into the item pool that are only accessible after your goal is completed.
+
+    If Cerulean Cave access is locked by your goal then Cerulean Cave won't be included in Dungeon Entrance Shuffle.
+    """
+    display_name = "Post Goal Locations"
 
 
 class CardKey(Choice):
@@ -339,6 +373,19 @@ class IslandPasses(Choice):
     option_progressive = 1
     option_split = 2
     option_progressive_split = 3
+
+
+class FishingRods(Choice):
+    """
+    Sets how the fishing rods are handled.
+
+    - Vanilla: The fishing rods are all separate items in the pool and can be found in any order
+    - Progressive: There are three Progressive Rods in the pool, and you will always obtain them in order from Old Rod to Super Rod
+    """
+    display_name = "Fishing Rods"
+    default = 0
+    option_vanilla = 0
+    option_progressive = 1
 
 
 class SplitTeas(Toggle):
@@ -411,6 +458,20 @@ class FameCheckerRequired(DefaultOnToggle):
     """
     display_name = "Fame Checker Required"
 
+
+class BicycleRequiresLedgeJump(DefaultOnToggle):
+    """
+    Sets whether the Bicycle requires you to have the Ledge Jump ability in order to jump ledges.
+    """
+    display_name = "Bicycle Requires Ledge Jump"
+
+
+class AcrobaticBicycle(Toggle):
+    """
+    Sets whether the Bicycle is able to jump up ledges in addition to jumping down ledges. If the Bicycle Requires Ledge
+    Jump setting is on then the Ledge Jump ability is necessary in order to jump up ledges as well.
+    """
+    display_name = "Acrobatic Bicycle"
 
 class EvolutionsRequired(OptionSet):
     """
@@ -571,6 +632,16 @@ class OaksAideRoute15(Range):
     default = 25
     range_start = 0
     range_end = 50
+
+
+class PokemonLabFossilCount(Range):
+    """
+    Sets the number of fossils you need to revive at the Pokemon Lab in order to obtain the second fossil.
+    """
+    display_name = "Pokemon Lab Fossil Count"
+    default = 3
+    range_start = 0
+    range_end = 3
 
 
 class ViridianGymRequirement(Choice):
@@ -1013,6 +1084,23 @@ class MoveBlacklist(OptionSet):
     valid_keys = sorted(move_name_map.keys())
 
 
+class RandomizeBaseStats(Choice):
+    """
+    Randomize the base stats for every species.
+
+    - Vanilla: Base stats are unchanged
+    - Shuffle: Base stats are shuffled amongst each other
+    - Keep BST: Random base stats, but base stat total is preserved
+    - Completely Random: Random base stats and base stat total
+    """
+    display_name = "Randomize Base Stats"
+    default = 0
+    option_vanilla = 0
+    option_shuffle = 1
+    option_keep_bst = 2
+    option_completely_random = 3
+
+
 class PhysicalSpecialSplit(Toggle):
     """
     Changes the damage category that moves use to match the categories since the Gen IV physical/special split instead
@@ -1218,7 +1306,7 @@ class RandomizeMusic(Toggle):
 
 class RandomizeFanfares(Toggle):
     """
-    Shuffles fanfares for item pickups, healing at the pokecenter, etc.
+    Shuffles fanfares for item pickups, healing at the Pokecenter, etc.
     """
     display_name = "Randomize Fanfares"
 
@@ -1311,24 +1399,29 @@ class PokemonFRLGOptions(PerGameCommonOptions):
     extra_key_items: ExtraKeyItems
     shopsanity: Shopsanity
     shop_prices: ShopPrices
-    minimum_shop_price: MinimumShopPrice
-    maximum_shop_price: MaximumShopPrice
+    consistent_shop_prices: ConsistentShopPrices
     trainersanity: Trainersanity
     dexsanity: Dexsanity
     famesanity: Famesanity
     shuffle_fly_unlocks: ShuffleFlyUnlocks
     pokemon_request_locations: PokemonRequestLocations
+    shuffle_pokedex: ShufflePokedex
     shuffle_running_shoes: ShuffleRunningShoes
     shuffle_berry_pouch: ShuffleBerryPouch
     shuffle_tm_case: ShuffleTMCase
+    shuffle_ledge_jump: ShuffleLedgeJump
+    post_goal_locations: PostGoalLocations
     card_key: CardKey
     island_passes: IslandPasses
+    fishing_rods: FishingRods
     split_teas: SplitTeas
     gym_keys: GymKeys
 
     itemfinder_required: ItemfinderRequired
     flash_required: FlashRequired
     fame_checker_required: FameCheckerRequired
+    bicycle_requires_ledge_jump: BicycleRequiresLedgeJump
+    acrobatic_bicycle: AcrobaticBicycle
     evolutions_required: EvolutionsRequired
     evolution_methods_required: EvolutionMethodsRequired
     viridian_city_roadblock: ViridianCityRoadblock
@@ -1342,6 +1435,7 @@ class PokemonFRLGOptions(PerGameCommonOptions):
     oaks_aide_route_11: OaksAideRoute11
     oaks_aide_route_16: OaksAideRoute16
     oaks_aide_route_15: OaksAideRoute15
+    fossil_count: PokemonLabFossilCount
 
     viridian_gym_requirement: ViridianGymRequirement
     viridian_gym_count: ViridianGymCount
@@ -1377,6 +1471,7 @@ class PokemonFRLGOptions(PerGameCommonOptions):
     move_match_type_bias: MoveMatchTypeBias
     move_normal_type_bias: MoveNormalTypeBias
     move_blacklist: MoveBlacklist
+    base_stats: RandomizeBaseStats
     physical_special_split: PhysicalSpecialSplit
     move_types: RandomizeMoveTypes
     damage_categories: RandomizeDamageCategories

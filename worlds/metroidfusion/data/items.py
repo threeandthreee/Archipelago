@@ -1,4 +1,5 @@
 from BaseClasses import ItemClassification
+from worlds.metroidfusion.data.locations import Sector4PumpControl, OperationsDeck
 
 all_item_data = [
     # Name, Major, Groups, ID
@@ -26,9 +27,14 @@ all_item_data = [
     ("Screw Attack", ItemClassification.progression, ["Weapons", "Suit"], 22),
     ("Ice Beam", ItemClassification.progression, ["Weapons", "Beams"], 23),
     ("Missile Tank", ItemClassification.filler, ["Weapons", "Missiles"], 24),
-    ("Energy Tank", ItemClassification.progression, ["Suit", "Defense"], 25),
+    ("Energy Tank", ItemClassification.progression_deprioritized_skip_balancing, ["Suit", "Defense"], 25),
     ("Power Bomb Tank", ItemClassification.filler, ["Weapons", "Bombs"], 26),
     ("Ice Trap", ItemClassification.trap, [], 27),
     ("Infant Metroid", ItemClassification.progression, ["Metroid"], 28),
     ("Nothing", ItemClassification.filler, [], 29),
+]
+
+events: list[tuple[str, ItemClassification, str, str]] = [
+    ("Victory", ItemClassification.progression, OperationsDeck.name, "Victory"),
+    ("Pump Control", ItemClassification.progression, Sector4PumpControl.name, "Pump Control Activated")
 ]

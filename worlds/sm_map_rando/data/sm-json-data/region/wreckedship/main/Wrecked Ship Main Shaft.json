@@ -256,6 +256,14 @@
       "enemyName": "Kzan",
       "quantity": 4,
       "homeNodes": [8]
+    },
+    {
+      "id": "e6",
+      "groupName": "Wrecked Ship Main Shaft Custom Covern",
+      "enemyName": "Custom Covern (Atomic)",
+      "quantity": 1,
+      "homeNodes": [1, 3, 4, 7],
+      "stopSpawn": ["f_DefeatedPhantoon"]
     }
   ],
   "links": [
@@ -418,7 +426,6 @@
       "name": "G-Mode Setup - Frozen Atomic",
       "requires": [
         "canUpwardGModeSetup",
-        "canTwoTileSqueeze",
         "canTrickyUseFrozenEnemies",
         "f_DefeatedPhantoon",
         {"enemyDamage": {"enemy": "Atomic", "type": "contact", "hits": 1}}
@@ -429,7 +436,12 @@
       "flashSuitChecked": true,
       "note": [
         "Bring two atomics to the top of the room.",
-        "Stand on one frozen Atomic to bring a second Atomic to the correct height to use as a crouch platform."
+        "Stand on one frozen Atomic to freeze a second Atomic at the correct height to use as a platform."
+      ],
+      "devNote": [
+        "It doesn't seem possible with a Covern. Samus needs to be moving upwards 1+ pixel per frame for 16 frames to spawn the Covern.",
+        "Jumping or with Spring Ball are less than 16 before going through the door. If below the platform, the Covern cannot spawn high enough (it spawns 4 tiles above Samus's middle).",
+        "A bomb boost only gives 10 satisfactory frames. Moving diagonally resets the counter in a weird way."
       ]
     },
     {
@@ -456,6 +468,7 @@
         "comesThroughToilet": "any"
       },
       "requires": [
+        "canComplexGMode",
         {"or": [
           "h_artificialMorphPowerBomb",
           {"and": [
@@ -672,7 +685,7 @@
     {
       "id": 20,
       "link": [2, 8],
-      "name": "G-mode Morph to Missiles While Blind",
+      "name": "G-mode Morph to Item While Blind",
       "entranceCondition": {
         "comeInWithGMode": {
           "mode": "any",
@@ -680,13 +693,23 @@
         }
       },
       "requires": [
-        "canOffScreenMovement"
+        {"or": [
+          {"and": [
+            "canOffScreenMovement",
+            "canTrickyGMode"
+          ]},
+          {"and": [
+            {"not": "f_DefeatedPhantoon"},
+            "canRiskPermanentLossOfAccess"
+          ]}
+        ]}
       ],
       "flashSuitChecked": true,
       "note": [
         "Use the camera scroll blocks just right of the bomb blocks, in order to overload PLMs and go through them.",
         "Exit g-mode and travel to the item and back while off screen."
-      ]
+      ],
+      "devNote": "This is only useful if the item is Morph. If Samus already has Morph, she can fix the camera, using another strat."
     },
     {
       "id": 21,
@@ -715,26 +738,6 @@
         }
       },
       "devNote": "It is technically possible to reset at 7 and keep the top layer of obstacle B intact by clipping through the blocks"
-    },
-    {
-      "id": 23,
-      "link": [3, 3],
-      "name": "Atomic Farm",
-      "requires": [
-        "f_DefeatedPhantoon",
-        {"or": [
-          "ScrewAttack",
-          "Wave",
-          "Spazer",
-          "Plasma"
-        ]},
-        {"resetRoom": {
-          "nodes": [3]
-        }},
-        {"partialRefill": {"type": "Energy", "limit": 400}},
-        {"partialRefill": {"type": "Missile", "limit": 10}}
-      ],
-      "resetsObstacles": ["A", "B", "C"]
     },
     {
       "id": 24,
@@ -930,6 +933,28 @@
       ]
     },
     {
+      "id": 108,
+      "link": [3, 7],
+      "name": "G-Mode Setup - Get Hit by Thawing Atomic",
+      "requires": [
+        "f_DefeatedPhantoon",
+        "canWallIceClip",
+        "canDownwardGModeSetup",
+        "Morph"
+      ],
+      "exitCondition": {
+        "leaveWithGModeSetup": {}
+      },
+      "unlocksDoors": [{"types": ["ammo"], "requires": []}],
+      "flashSuitChecked": true,
+      "note": [
+        "Run from the ledge into the open doorway while hitting the frozen Atomic and the door transition simultaneously, just as the Atomic thaws and touches Samus during the transition.",
+        "Note that this requires a precise freeze (2 pixel window), a small pixel starting window (approximately 3 pixel window), precise thaw timing, and a 50% success rate due to collision oscillation.",
+        "The positioning of the Atomic is where its hitbox is one or two pixels away from the edge of the door frame, so that Samus can clip into the wall and stand as she touches the transition."
+      ],
+      "devNote": "This can not work with a Covern, as it only moves vertically and can't hit Samus in the transition."
+    },
+    {
       "id": 38,
       "link": [3, 8],
       "name": "Blocks Already Broken",
@@ -1106,13 +1131,23 @@
             "HiJump"
           ]}
         ]},
-        "canOffScreenMovement"
+        {"or": [
+          {"and": [
+            "canOffScreenMovement",
+            "canTrickyGMode"
+          ]},
+          {"and": [
+            {"not": "f_DefeatedPhantoon"},
+            "canRiskPermanentLossOfAccess"
+          ]}
+        ]}
       ],
       "flashSuitChecked": true,
       "note": [
         "Use the camera scroll blocks just right of the bomb blocks, in order to overload PLMs and go through them.",
         "Exit g-mode and travel to the item and back while off screen."
-      ]
+      ],
+      "devNote": "This is only useful if the item is Morph. If Samus already has Morph, she can fix the camera, using another strat."
     },
     {
       "id": 106,
@@ -1136,7 +1171,7 @@
       ],
       "note": [
         "Fall into the first Samus Eater in Hellway or the second Samus Eater of Alpha Power Bomb Room.",
-        "After teleporting and passing through the transition, X-Ray climb to reach the space above, to the left of the bomb blocks.",
+        "After teleporting and passing through the transition, X-Ray climb to reach the space above (about 1 screen), to the left of the bomb blocks.",
         "Samus will be off-camera, but the slopes at the top will push the camera up, indicating when the climb is done.",
         "Equip Morph Ball and touch the scroll PLMs in the morph tunnel, to fix the camera to be able to see the way to the item."
       ],
@@ -1289,18 +1324,198 @@
       "requires": [
         "f_DefeatedPhantoon",
         {"or": [
-          "ScrewAttack",
-          "Wave",
-          "Spazer",
-          "Plasma"
+          {"and": [
+            {"resetRoom": {"nodes": [1]}},
+            {"cycleFrames": 1740}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [2]}},
+            {"cycleFrames": 1200}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [3]}},
+            {"cycleFrames": 1400}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [4]}},
+            {"cycleFrames": 1050}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [5]}},
+            {"cycleFrames": 1050}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [6]}},
+            {"cycleFrames": 1830},
+            "h_useMorphBombs"
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [7]}},
+            {"cycleFrames": 2000},
+            "Morph",
+            {"or": [
+              "Wave",
+              "Bombs",
+              "Spazer"
+            ]},
+            {"or": [
+              "Bombs",
+              "SpringBall",
+              {"and": [
+                "canMidAirMorph",
+                "canCrouchJump"
+              ]}
+            ]}
+          ]}
         ]},
-        {"resetRoom": {
-          "nodes": [1, 2, 4, 5]
-        }},
-        {"partialRefill": {"type": "Energy", "limit": 400}},
-        {"partialRefill": {"type": "Missile", "limit": 10}}
+        {"or": [
+          "ScrewAttack",
+          "Plasma",
+          {"and": [
+            "Wave",
+            {"cycleFrames": 60}
+          ]},
+          {"and": [
+            "Spazer",
+            {"cycleFrames": 330}
+          ]},
+          {"and": [
+            "canDodgeWhileShooting",
+            {"cycleFrames": 900}
+          ]}
+        ]},
+        {"or": [
+          "canWalljump",
+          "h_crouchJumpDownGrab",
+          "HiJump",
+          "SpaceJump",
+          {"and": [
+            "canIBJ",
+            {"cycleFrames": 750}
+          ]},
+          {"and": [
+            "canSpringBallJumpMidAir",
+            {"cycleFrames": 30},
+            "h_doubleEquipmentScreenCycleFrames"
+          ]}
+        ]}
       ],
-      "resetsObstacles": ["A", "B", "C"]
+      "resetsObstacles": ["A", "B", "C"],
+      "farmCycleDrops": [{"enemy": "Atomic", "count": 4}]
+    },
+    {
+      "id": 109,
+      "link": [4, 4],
+      "name": "Conservative Covern Farm",
+      "requires": [
+        {"not": "f_DefeatedPhantoon"},
+        {"or": [
+          {"and": [
+            {"resetRoom": {"nodes": [1, 2, 3, 4, 5]}},
+            {"cycleFrames": 2000}
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [6]}},
+            {"cycleFrames": 2000},
+            "h_useMorphBombs"
+          ]},
+          {"and": [
+            {"resetRoom": {"nodes": [7]}},
+            {"cycleFrames": 2000},
+            "Morph",
+            {"or": [
+              "Wave",
+              "Bombs",
+              "Spazer"
+            ]},
+            {"or": [
+              "Bombs",
+              "SpringBall",
+              {"and": [
+                "canMidAirMorph",
+                "canCrouchJump"
+              ]}
+            ]}
+          ]}
+        ]},
+        {"or": [
+          "ScrewAttack",
+          "Plasma",
+          {"and": [
+            "Wave",
+            {"cycleFrames": 60}
+          ]},
+          {"and": [
+            "Spazer",
+            {"cycleFrames": 150}
+          ]},
+          {"and": [
+            "Ice",
+            "canDodgeWhileShooting",
+            {"cycleFrames": 240}
+          ]}
+        ]},
+        {"or": [
+          "canWalljump",
+          "h_crouchJumpDownGrab",
+          "HiJump",
+          "SpaceJump",
+          {"and": [
+            "canIBJ",
+            {"cycleFrames": 750}
+          ]},
+          {"and": [
+            "canSpringBallJumpMidAir",
+            {"cycleFrames": 30},
+            "h_doubleEquipmentScreenCycleFrames"
+          ]}
+        ]}
+      ],
+      "resetsObstacles": ["A", "B", "C"],
+      "farmCycleDrops": [{"enemy": "Custom Covern (Atomic)", "count": 4}],
+      "note": "There is additional movement expected to represent reaching the Atomics who appear when the power is on.",
+      "devNote": [
+        "This is Covern farm with a reduced drop chance so as to be applicable while powered off without breaking the powered on state.",
+        "Cycle frames represent the slower of killing 4 atomics or killing 4 coverns.",
+        "These Coverns have reduced Power Bomb and Super drop chance."
+      ]
+    },
+    {
+      "id": 110,
+      "link": [4, 4],
+      "name": "Covern Farm",
+      "requires": [
+        {"not": "f_DefeatedPhantoon"},
+        "canRiskPermanentLossOfAccess",
+        {"or": [
+          "ScrewAttack",
+          {"and": [
+            "Plasma",
+            {"cycleFrames": 60}
+          ]},
+          {"and": [
+            "Wave",
+            {"cycleFrames": 120}
+          ]},
+          {"and": [
+            "Spazer",
+            {"cycleFrames": 150}
+          ]},
+          {"and": [
+            "Ice",
+            "canDodgeWhileShooting",
+            {"cycleFrames": 240}
+          ]},
+          {"and": [
+            "canPseudoScrew",
+            "canFarmWhileShooting",
+            {"cycleFrames": 120}
+          ]},
+          {"cycleFrames": 540}
+        ]},
+        {"cycleFrames": 480}
+      ],
+      "farmCycleDrops": [{"enemy": "Covern", "count": 1}]
     },
     {
       "id": 54,
@@ -1428,13 +1643,23 @@
         }
       },
       "requires": [
-        "canOffScreenMovement"
+        {"or": [
+          {"and": [
+            "canOffScreenMovement",
+            "canTrickyGMode"
+          ]},
+          {"and": [
+            {"not": "f_DefeatedPhantoon"},
+            "canRiskPermanentLossOfAccess"
+          ]}
+        ]}
       ],
       "flashSuitChecked": true,
       "note": [
         "Use the camera scroll blocks just right of the bomb blocks, in order to overload PLMs and go through them.",
         "Exit g-mode and travel to the item and back while off screen."
-      ]
+      ],
+      "devNote": "This is only useful if the item is Morph. If Samus already has Morph, she can fix the camera, using another strat."
     },
     {
       "id": 63,
@@ -1499,6 +1724,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         "canXRayClimb"
       ],
       "bypassesDoorShell": true,
@@ -1698,13 +1924,23 @@
         }
       },
       "requires": [
-        "canOffScreenMovement"
+        {"or": [
+          {"and": [
+            "canOffScreenMovement",
+            "canTrickyGMode"
+          ]},
+          {"and": [
+            {"not": "f_DefeatedPhantoon"},
+            "canRiskPermanentLossOfAccess"
+          ]}
+        ]}
       ],
       "flashSuitChecked": true,
       "note": [
         "Use the camera scroll blocks just right of the bomb blocks, in order to overload PLMs and go through them.",
         "Exit g-mode and travel to the item and back while off screen."
-      ]
+      ],
+      "devNote": "This is only useful if the item is Morph. If Samus already has Morph, she can fix the camera, using another strat."
     },
     {
       "id": 78,
@@ -1778,6 +2014,43 @@
           "openEnd": 0
         }
       }
+    },
+    {
+      "id": 111,
+      "link": [6, 6],
+      "name": "Covern Farm",
+      "requires": [
+        {"not": "f_DefeatedPhantoon"},
+        "canRiskPermanentLossOfAccess",
+        {"or": [
+          "ScrewAttack",
+          {"and": [
+            "Plasma",
+            {"cycleFrames": 60}
+          ]},
+          {"and": [
+            "Wave",
+            {"cycleFrames": 120}
+          ]},
+          {"and": [
+            "Spazer",
+            {"cycleFrames": 150}
+          ]},
+          {"and": [
+            "Ice",
+            "canDodgeWhileShooting",
+            {"cycleFrames": 240}
+          ]},
+          {"and": [
+            "canPseudoScrew",
+            "canFarmWhileShooting",
+            {"cycleFrames": 120}
+          ]},
+          {"cycleFrames": 540}
+        ]},
+        {"cycleFrames": 480}
+      ],
+      "farmCycleDrops": [{"enemy": "Covern", "count": 1}]
     },
     {
       "id": 83,
@@ -1945,26 +2218,38 @@
     {
       "id": 92,
       "link": [7, 7],
-      "name": "Coverns and Atomics Farm (Power Off)",
+      "name": "Atomics Farm (Power Off)",
       "requires": [
         {"not": "f_DefeatedPhantoon"},
         "canRiskPermanentLossOfAccess",
         {"or": [
-          "Ice",
-          "Wave",
-          "Spazer",
-          "Plasma",
+          {"and": [
+            "Plasma",
+            "canDodgeWhileShooting",
+            {"cycleFrames": 360}
+          ]},
+          {"and": [
+            "Wave",
+            {"cycleFrames": 330}
+          ]},
+          {"and": [
+            "Spazer",
+            {"cycleFrames": 450}
+          ]},
           {"and": [
             "h_useMorphBombs",
-            "ScrewAttack"
+            {"cycleFrames": 840}
+          ]},
+          {"and": [
+            "Ice",
+            "canFarmWhileShooting",
+            {"cycleFrames": 840}
           ]}
         ]},
-        {"resetRoom": {
-          "nodes": [7]
-        }},
-        {"refill": ["Energy", "Missile", "Super"]}
+        {"resetRoom": {"nodes": [7]}}
       ],
       "resetsObstacles": ["A", "B", "C"],
+      "farmCycleDrops": [{"enemy": "Trapped Atomic", "count": 2}],
       "note": [
         "To shoot the Atomics with Ice or Plasma, crouch near the edge of the glass and shoot forward;",
         "angled shots downwards also work but from a tile further back."
@@ -1974,6 +2259,43 @@
         "Screw Attack can kill the Coverns quickly, but can't kill the Atomics. Bombs can kill the Atimics easily, but not the Coverns.",
         "FIXME: Should this require another tech? canRiskPermanentLossOfAccess is a pretty high-level requirement."
       ]
+    },
+    {
+      "id": 112,
+      "link": [7, 7],
+      "name": "Covern Farm",
+      "requires": [
+        {"not": "f_DefeatedPhantoon"},
+        "canRiskPermanentLossOfAccess",
+        {"or": [
+          "ScrewAttack",
+          {"and": [
+            "Plasma",
+            {"cycleFrames": 60}
+          ]},
+          {"and": [
+            "Wave",
+            {"cycleFrames": 120}
+          ]},
+          {"and": [
+            "Spazer",
+            {"cycleFrames": 150}
+          ]},
+          {"and": [
+            "Ice",
+            "canDodgeWhileShooting",
+            {"cycleFrames": 240}
+          ]},
+          {"and": [
+            "canPseudoScrew",
+            "canFarmWhileShooting",
+            {"cycleFrames": 120}
+          ]},
+          {"cycleFrames": 540}
+        ]},
+        {"cycleFrames": 480}
+      ],
+      "farmCycleDrops": [{"enemy": "Covern", "count": 1}]
     },
     {
       "id": 93,
@@ -2150,6 +2472,6 @@
       ]
     }
   ],
-  "nextStratId": 108,
+  "nextStratId": 113,
   "nextNotableId": 4
 }

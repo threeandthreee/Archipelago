@@ -11,11 +11,6 @@
   - Automatically via [smm.ficsit.app](https://smm.ficsit.app/) or
   - Manually via [latest stable release on GitHub](https://github.com/satisfactorymodding/SatisfactoryModManager/releases/latest/)
 
-> ⚠ Pre-Release Note: Since this game has not been merged into AP core yet,
-> you will need the Archipelago Client from [its GitHub Releases page](https://github.com/ArchipelagoMW/Archipelago/releases/latest)
-> to generate the world locally.
-> See the other Pre-Release notes in this document for more information.
-
 ## Overview
 
 This guide walks you through installing the Satisfactory Archipelago mod via the Satisfactory Mod Manager,
@@ -94,10 +89,6 @@ You may also wish to install some of the suggested mods mentioned on the
 If you are playing multiplayer in the same Satisfactory world, all Satisfactory Clients should have the same mods installed.
 The Mod Manager's profile import/export feature makes coordinating this easy.
 
-> ⚠ Pre-Release Note: The above link does not work because it would go to the live Archipelago site.
-> Use this link instead:
-> <https://github.com/Jarno458/Archipelago/blob/Satisfactory/worlds/satisfactory/docs/en_Satisfactory.md#additional-mods>
-
 ## Connecting to Someone Else's Satisfactory Game
 
 If you are joining someone else's existing Satisfactory game,
@@ -132,19 +123,11 @@ The Player Settings page on the website
 allows you to configure your personal settings and export a config file from them.
 Satisfactory player settings page: [Satisfactory Settings Page](/games/Satisfactory/player-settings)
 
-> ⚠ Pre-Release Note: The above link does not work because it would go to the live Archipelago site.
-> Manually construct a yaml yourself from the one pinned in the Discord:
-> <https://discord.com/channels/731205301247803413/1018853131859267656>
-
 #### Verifying Your Config File
 
 If you would like to validate your config file to make sure it works,
 you may do so on the YAML Validator page.
 YAML Validator page: [Yaml Validation Page](/mysterycheck)
-
-> ⚠ Pre-Release Note: The above link does not work because it would go to the live Archipelago site.
-> Manually construct a yaml yourself from the one pinned in the Discord:
-> <https://discord.com/channels/731205301247803413/1018853131859267656>
 
 #### Starting Inventory
 
@@ -165,25 +148,9 @@ Advanced users can utilize the
 and [Plando](/tutorial/Archipelago/plando)
 to futher customize their experience.
 
-> ⚠ Pre-Release Note: The above links do not work because it would go to the live Archipelago site.
-> See these links instead:
->
-> - <https://archipelago.gg/tutorial/Archipelago/advanced_settings/en>
-> - <https://archipelago.gg/tutorial/Archipelago/plando/en>
-
 ### Generating and Hosting the Multiworld
 
 Generating a game and hosting an Archipelago server is explained in the [Archipelago Setup Guide](/tutorial/Archipelago/setup/en).
-
-> ⚠ Pre-Release Note: The above link does not work because it would go to the live Archipelago site.
-> Use this link instead:
-> <https://archipelago.gg/tutorial/Archipelago/setup/en>
-
-> ⚠ Pre-Release Note:
-> Since the Satisfactory game is not merged into AP core, you must generate the world locally using the Archipelago Client.
-> Download the latest `.apworld` from the [GitHub Releases page](https://github.com/Jarno458/SatisfactoryArchipelagoMod/releases/latest) 
-> then follow the directions in the above guide to generate the world.
-> Once your world is generated you can host it on the Archipelago website as usual.
 
 ### Creating the Satisfactory World
 
@@ -196,22 +163,16 @@ Next, enter the connection details in the relevant fields.
 
 - **Server URI**: Archipelago Server URI and port, for example, `archipelago.gg:49236`
 - **User Name**: The name you entered as your Player Name when you created your config file. It's also listed in the Name column of your room page.
-- **Password**: The password for your slot, blank if you did not assign one.
+- **Password**: The password for your Archipelago room, blank if you did not assign or receive one.
 
 Note that the Satisfactory Host/Client does *not* need a copy of your Archipelago config file.
 The mod communicates with the Archipelago Server, which already has your config file,
 to generate the required content at runtime.
 
-Consider enabling Advanced Game Settings to allow dealing with bugs that may arise.
-Within the Advanced Game Settings menus,
-you may wish to switch the "Keep Inventory" setting to "Keep Everything" to avoid dropping items on death,
-although this will never lock you out of progression.
+Consider setting the following options in the "Options" > "Gameplay" section, especially because they are per-user and persist across your game saves:
 
-> Note: Satisfactory dedicated servers do not currently have a user interface for the Mod Savegame Setting system.
-> and [the starting inventory feature does not currently work on dedicated servers](https://github.com/Jarno458/SatisfactoryArchipelagoMod/issues/105).
-> If you are setting up a dedicated server as your Satisfactory Host, to work around these limitations,
-> create the save locally in your Satisfactory Client first,
-> then upload the save file to your server using the [Server Manager](https://satisfactory.wiki.gg/wiki/Dedicated_servers#Loading_a_save_file).
+- **Creature Hostility**: `Default` (the game's default). Some of the mod's Traps involve creatures, and having them Passive or Retaliate cheapens the experience.
+- **Keep Inventory**: `Keep Everything` or `Keep Equipment` (the game's default). Although dying and dropping items will never lock you out of progression, Free Samples and Bundles means you can easily gain items you can't easily replace.
 
 ### Verifying Connection Success
 
@@ -223,17 +184,9 @@ For more information about the commands you can use, see the [Commands Guide](/t
 Note that Archipelago commands are not prefixed with `!` inside of Satisfactory.
 You may wish to use the Text Client to run commands since Satisfactory's in game chat is not very user friendly.
 
-> ⚠ Pre-Release Note: The above link does not work because it would go to the live Archipelago site.
-> Use this link instead:
-> <https://archipelago.gg/tutorial/Archipelago/commands/en>
-
 Check out the HUB to get started!
 
 See the [Troubleshooting section below](#troubleshooting) if you encounter any issues.
-
-<!-- ## Other Settings
-
-TODO implement filter_item_sends and bridge_chat_out mentioned in the Factorio guide? -->
 
 ### Allowing Other People to Join Your Game
 
@@ -275,6 +228,3 @@ enter the updated Server URI, then save and reload the game.
   - Use the Mod Manager to generate a debug zip and attach that file.
    [Satisfactory Modding Documentation FAQ: Generating a debug zip](https://docs.ficsit.app/satisfactory-modding/latest/faq.html#_where_can_i_find_the_games_log_files)
   - Attach your Archipelago config file and spoiler to your report.
-- If your early game power grid is repeatedly shutting down for unclear reasons,
-  ensure you are not wearing a Hover Pack, as they draw 100 MW.
-<!-- TODO remove hoverpack note once the mod is added as a dependency -->

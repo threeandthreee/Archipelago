@@ -487,21 +487,13 @@
         }
       },
       "requires": [
-        "canLongChainTemporaryBlue",
+        "canChainTemporaryBlue",
         {"or": [
-          {"and": [
-            "Gravity",
-            "HiJump",
-            "canSpringBallJumpMidAir"
-          ]},
+          "canBlueSpaceJump",
           {"and": [
             "canGravityJump",
-            {"or": [
-              "HiJump",
-              "canSpringBallJumpMidAir"
-            ]}
-          ]},
-          "canBlueSpaceJump"
+            "canLongChainTemporaryBlue"
+          ]}
         ]}
       ],
       "exitCondition": {
@@ -562,6 +554,35 @@
         "Enter with enough speed to jump over all the water, morphing mid-air and then unmorphing into temporary blue.",
         "Morph just before hitting the ceiling, in order to extend the jump horizontally."
       ]
+    },
+    {
+      "id": 65,
+      "link": [1, 2],
+      "name": "Come in Getting Blue Speed, Leave With Temporary Blue (Spring Ball Bounce)",
+      "entranceCondition": {
+        "comeInGettingBlueSpeed": {
+          "length": 2,
+          "openEnd": 0,
+          "steepDownTiles": 1,
+          "minExtraRunSpeed": "$0.8"
+        }
+      },
+      "requires": [
+        "canTrickySpringBallBounce",
+        "canChainTemporaryBlue",
+        "canSpeedball"
+      ],
+      "exitCondition": {
+        "leaveWithTemporaryBlue": {}
+      },
+      "unlocksDoors": [{"types": ["ammo"], "requires": []}],
+      "collectsItems": [3],
+      "flashSuitChecked": true,
+      "note": [
+        "Enter with blue speed and bounce on the item pedestal to make it across, then unmorph into temporary blue.",
+        "If entering at high speed, morph on the left side of the pedestal so that there is enough space to use a controlled Spring Ball bounce."
+      ],
+      "detailNote": ["If entering with very low speed, a spring fling can help make it across."]
     },
     {
       "id": 20,
@@ -763,7 +784,7 @@
       "note": [
         "Exit the previous room with Samus in a standing pose (while grappled).",
         "After teleporting, press right to release Grapple while staying standing (not being forced into a crouch).",
-        "Then X-ray climb to get up to the door transition, without needing to open the door.",
+        "Then X-ray climb 1 screen to get up to the door transition, without needing to open the door.",
         "Samus will not be visible during the climb."
       ]
     },
@@ -1106,6 +1127,29 @@
       ]
     },
     {
+      "id": 64,
+      "link": [3, 2],
+      "name": "CWJ Bomb Boost",
+      "requires": [
+        {"notable": "CWJ Bomb Boost"},
+        "canCWJ",
+        "canWallJumpBombBoost",
+        "canResetFallSpeed"
+      ],
+      "note": [
+        "Stand on the item pedestal facing right.",
+        "Perform a short stationary spin jump with some dash speed, and do a continuous wall jump off the item pedestal.",
+        "Lay a Power Bomb (or Bomb) and use it to boost to the right, with a well-timed unmorph to reset fall speed."
+      ],
+      "detailNote": [
+        "It is ideal to gain 3 frames of dash speed, the maximum possible, but lower amounts can work.",
+        "It is even possible to do a regular wall jump instead of a CWJ, but the CWJ makes it significantly more lenient.",
+        "It is best for the wall jump to be performed as high as possible.",
+        "If Speed Booster is available, equipping it will generally be helpful,",
+        "as it will increase the height of Samus' wall jump based on the amount of dash speed."
+      ]
+    },
+    {
       "id": 54,
       "link": [3, 2],
       "name": "Ceiling Bomb Jump",
@@ -1234,8 +1278,17 @@
         "Moonwalk into the transition on the same frame that the Grapple Beam reaches the Grapple block.",
         "Continue holding Grapple through the door transition to initiate a teleport in the next room."
       ]
+    },
+    {
+      "id": 3,
+      "name": "CWJ Bomb Boost",
+      "note": [
+        "Stand on the item pedestal facing right.",
+        "Perform a stationary spin jump with some dash speed, and do a continuous wall jump off the item pedestal.",
+        "Lay a Power Bomb (or Bomb) and use it to boost to the right, with a well-timed unmorph to reset fall speed."
+      ]
     }
   ],
-  "nextStratId": 64,
-  "nextNotableId": 3
+  "nextStratId": 66,
+  "nextNotableId": 4
 }

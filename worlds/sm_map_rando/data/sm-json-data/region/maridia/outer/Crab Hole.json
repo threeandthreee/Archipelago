@@ -168,10 +168,55 @@
       "name": "Sciser Farm",
       "requires": [
         "h_navigateUnderwater",
-        {"resetRoom": {
-          "nodes": [1, 4]
-        }},
-        {"refill": ["Energy", "PowerBomb"]}
+        {"or": [
+          {"resetRoom": {"nodes": [1]}},
+          {"and": [
+            {"resetRoom": {"nodes": [4]}},
+            {"cycleFrames": 50}
+          ]}
+        ]},
+        {"or": [
+          {"and": [
+            "canUseGrapple",
+            {"cycleFrames": 120}
+          ]},
+          {"and": [
+            "Gravity",
+            "ScrewAttack",
+            {"cycleFrames": 225}
+          ]},
+          {"and": [
+            "Plasma",
+            {"cycleFrames": 260}
+          ]},
+          {"and": [
+            "Wave",
+            {"cycleFrames": 300}
+          ]},
+          {"and": [
+            "Spazer",
+            {"cycleFrames": 330}
+          ]},
+          {"and": [
+            "Gravity",
+            "canPseudoScrew",
+            {"cycleFrames": 400}
+          ]},
+          {"and": [
+            "Ice",
+            {"cycleFrames": 600}
+          ]},
+          {"and": [
+            "canFarmWhileShooting",
+            {"cycleFrames": 880}
+          ]},
+          {"cycleFrames": 1500}
+        ]}
+      ],
+      "farmCycleDrops": [{"enemy": "Sciser", "count": 3}],
+      "devNote": [
+        "One more Sciser could be farmed, but in most scenarios it seems not worth it.",
+        "Gravity can also slightly speed up some other variants but not enough to be worth modeling."
       ]
     },
     {
@@ -627,7 +672,7 @@
     {
       "id": 15,
       "link": [1, 4],
-      "name": "Carry G-Mode Through Tube (Left to Right)",
+      "name": "Carry G-Mode Through Tube",
       "entranceCondition": {
         "comeInWithGMode": {
           "mode": "any",
@@ -645,7 +690,7 @@
     {
       "id": 16,
       "link": [1, 4],
-      "name": "Carry G-Mode Morph Through Tube (Left to Right)",
+      "name": "Carry G-Mode Morph Through Tube",
       "entranceCondition": {
         "comeInWithGMode": {
           "mode": "any",
@@ -667,9 +712,12 @@
             "Gravity",
             "h_artificialMorphBombHorizontally",
             {"or": [
-              "h_artificialMorphBombThings",
-              "canTrickyJump",
-              {"enemyDamage": {"enemy": "Sciser", "type": "contact", "hits": 1}}
+              "h_additionalBomb",
+              "canTrickyGMode",
+              {"and": [
+                "canTrickyDodgeEnemies",
+                "canGravityJump"
+              ]}
             ]}
           ]}
         ]}
@@ -680,9 +728,10 @@
         }
       },
       "flashSuitChecked": true,
-      "note": [
-        "To save a bomb, it is possible but difficult to roll from the doorway onto the platform with Gravity turned off.",
-        "This requires backing up slightly after entering the room then quickly rolling before the crabs. It is a bit tighter in direct G-Mode."
+      "note": "To save a bomb, it is possible to roll from the doorway onto the platform with movement similar to a Gravity jump - hold forward just before the pause to disable gravity.",
+      "devNote": [
+        "It is possible to cross with a single Power Bomb, but it requires a last pixel jump with a frame perfect forward press.",
+        "A crab hit could bounce Samus onto the middle platform, but the gravity jump is better. If Samus has a blue suit and cant pause, then she also cant boost from the crab."
       ]
     },
     {
@@ -816,7 +865,7 @@
     {
       "id": 24,
       "link": [2, 1],
-      "name": "Left-Side X-Ray Climb",
+      "name": "X-Ray Climb",
       "entranceCondition": {
         "comeInWithDoorStuckSetup": {}
       },
@@ -1336,7 +1385,16 @@
           ]},
           {"and": [
             "HiJump",
-            "h_highPixelIceClip"
+            "h_highPixelIceClip",
+            "canBeVeryPatient",
+            {"or": [
+              "HiJump",
+              "Gravity"
+            ]},
+            {"or": [
+              {"noFlashSuit": {}},
+              "canTrickyCarryFlashSuit"
+            ]}
           ]}
         ]}
       ],
@@ -1651,7 +1709,7 @@
       "entranceCondition": {
         "comeInWithGrappleSwing": {
           "blocks": [
-            {"position": [6, 2], "note": "Spiky Acid Snakes Tunnel"},
+            {"position": [6, 2], "note": "Lava Grapple Tunnel"},
             {
               "position": [5, 2],
               "note": "The Moat, Double Chamber, Wrecked Ship Energy Tank Room"
@@ -1770,10 +1828,51 @@
       "name": "Sciser Farm",
       "requires": [
         "h_navigateUnderwater",
-        {"resetRoom": {
-          "nodes": [2, 3]
-        }},
-        {"refill": ["Energy", "PowerBomb"]}
+        {"or": [
+          {"resetRoom": {"nodes": [2]}},
+          {"and": [
+            {"resetRoom": {"nodes": [3]}},
+            {"cycleFrames": 80}
+          ]}
+        ]},
+        {"or": [
+          {"and": [
+            "canUseGrapple",
+            {"cycleFrames": 95}
+          ]},
+          {"and": [
+            "Gravity",
+            "ScrewAttack",
+            {"cycleFrames": 120}
+          ]},
+          {"and": [
+            "Plasma",
+            {"cycleFrames": 150}
+          ]},
+          {"and": [
+            "Gravity",
+            "canPseudoScrew",
+            {"cycleFrames": 170}
+          ]},
+          {"and": [
+            "Wave",
+            {"cycleFrames": 180}
+          ]},
+          {"and": [
+            "Spazer",
+            {"cycleFrames": 200}
+          ]},
+          {"and": [
+            "Ice",
+            {"cycleFrames": 240}
+          ]},
+          {"cycleFrames": 300}
+        ]}
+      ],
+      "farmCycleDrops": [{"enemy": "Sciser", "count": 1}],
+      "devNote": [
+        "More than one Sciser could be farmed, but in most scenarios it seems not worth it.",
+        "Gravity can also slightly speed up some other variants but not enough to be worth modeling."
       ]
     },
     {
@@ -2113,7 +2212,7 @@
     {
       "id": 60,
       "link": [2, 5],
-      "name": "G-Mode (Bottom to Top)",
+      "name": "G-Mode",
       "entranceCondition": {
         "comeInWithGMode": {
           "mode": "any",
@@ -2156,7 +2255,7 @@
     {
       "id": 61,
       "link": [2, 5],
-      "name": "G-Mode Morph IBJ (Bottom to Top)",
+      "name": "G-Mode Morph IBJ",
       "entranceCondition": {
         "comeInWithGMode": {
           "mode": "any",
@@ -2180,7 +2279,7 @@
     {
       "id": 62,
       "link": [2, 5],
-      "name": "G-Mode Morph Gravity Jump (Bottom to Top)",
+      "name": "G-Mode Morph Gravity Jump",
       "entranceCondition": {
         "comeInWithGMode": {
           "mode": "any",
@@ -2682,7 +2781,7 @@
     {
       "id": 83,
       "link": [3, 4],
-      "name": "Right-Side X-Ray Climb",
+      "name": "X-Ray Climb",
       "entranceCondition": {
         "comeInWithDoorStuckSetup": {}
       },
@@ -2864,8 +2963,8 @@
               "minHeight": 1,
               "maxHeight": 1,
               "minTiles": 9,
-              "obstructions": [[1, 0]],
               "speedBooster": "any",
+              "obstructions": [[1, 0]],
               "requires": [
                 "canMomentumConservingTurnaround"
               ],
@@ -2879,34 +2978,34 @@
               "minHeight": 2,
               "maxHeight": 2,
               "minTiles": 9.4375,
-              "obstructions": [[1, 0]],
               "speedBooster": "any",
+              "obstructions": [[1, 0]],
               "requires": [
                 "canMomentumConservingTurnaround"
               ],
               "note": [
-                "This applies to Blue Hopper Room, Bowling Alley (bottom), Dust Torizo Room, and Noob Bridge."
+                "This applies to Tourian Hopper Room, Bowling Alley (bottom), Dust Torizo Room, and Noob Bridge."
               ]
             },
             {
               "minHeight": 3,
               "maxHeight": 3,
               "minTiles": 9.4375,
-              "obstructions": [[1, 0]],
               "speedBooster": true,
+              "obstructions": [[1, 0]],
               "requires": [
                 "canMomentumConservingTurnaround"
               ],
               "note": [
-                "This applies to Bomb Torizo Room, Pink Brinstar Hopper Room, Phantoon's Room, Big Boy Room, and Double Chamber."
+                "This applies to Bomb Torizo Room, Pink Brinstar Wave Gate Room, Phantoon's Room, Big Boy Room, and Double Chamber."
               ]
             },
             {
               "minHeight": 3,
               "maxHeight": 3,
               "minTiles": 14.4375,
-              "obstructions": [[3, 2]],
               "speedBooster": true,
+              "obstructions": [[3, 2]],
               "requires": [
                 "canMomentumConservingTurnaround"
               ],
@@ -2935,8 +3034,8 @@
               "minHeight": 1,
               "maxHeight": 1,
               "minTiles": 4,
-              "obstructions": [[1, 0]],
               "speedBooster": true,
+              "obstructions": [[1, 0]],
               "requires": [
                 "canMomentumConservingTurnaround"
               ],
@@ -2946,8 +3045,8 @@
               "minHeight": 2,
               "maxHeight": 2,
               "minTiles": 5.4375,
-              "obstructions": [[1, 0]],
               "speedBooster": "any",
+              "obstructions": [[1, 0]],
               "requires": [
                 "canMomentumConservingTurnaround"
               ],
@@ -2960,8 +3059,8 @@
               "minHeight": 3,
               "maxHeight": 3,
               "minTiles": 14.4375,
-              "obstructions": [[3, 2]],
               "speedBooster": "any",
+              "obstructions": [[3, 2]],
               "requires": [
                 {"or": [
                   "canMomentumConservingTurnaround",
@@ -3099,7 +3198,7 @@
             },
             {
               "position": [9, 2],
-              "note": "Crateria Super Room, Bubble Mountain, Spiky Acid Snakes Tunnel"
+              "note": "Climb Supers Room, Bubble Mountain, Lava Grapple Tunnel"
             }
           ]
         }
@@ -3111,7 +3210,7 @@
     {
       "id": 91,
       "link": [3, 5],
-      "name": "G-Mode (Bottom to Top)",
+      "name": "G-Mode",
       "entranceCondition": {
         "comeInWithGMode": {
           "mode": "any",
@@ -3154,7 +3253,7 @@
     {
       "id": 92,
       "link": [3, 5],
-      "name": "G-Mode Morph IBJ (Bottom to Top)",
+      "name": "G-Mode Morph IBJ",
       "entranceCondition": {
         "comeInWithGMode": {
           "mode": "any",
@@ -3178,7 +3277,7 @@
     {
       "id": 93,
       "link": [3, 5],
-      "name": "G-Mode Morph Gravity Jump (Bottom to Top)",
+      "name": "G-Mode Morph Gravity Jump",
       "entranceCondition": {
         "comeInWithGMode": {
           "mode": "any",
@@ -3394,7 +3493,7 @@
     {
       "id": 98,
       "link": [4, 1],
-      "name": "Carry G-Mode Through Tube (Right to Left)",
+      "name": "Carry G-Mode Through Tube",
       "entranceCondition": {
         "comeInWithGMode": {
           "mode": "any",
@@ -3412,7 +3511,7 @@
     {
       "id": 99,
       "link": [4, 1],
-      "name": "Carry G-Mode Morph Through Tube (Right to Left)",
+      "name": "Carry G-Mode Morph Through Tube",
       "entranceCondition": {
         "comeInWithGMode": {
           "mode": "any",
@@ -3429,7 +3528,15 @@
           ]},
           {"and": [
             "Gravity",
-            "h_artificialMorphBombHorizontally"
+            "h_artificialMorphBombHorizontally",
+            {"or": [
+              "h_additionalBomb",
+              "canTrickyGMode",
+              {"and": [
+                "canTrickyJump",
+                "canGravityJump"
+              ]}
+            ]}
           ]}
         ]}
       ],
@@ -3439,7 +3546,11 @@
         }
       },
       "flashSuitChecked": true,
-      "note": "To save a bomb, it is possible to roll from the doorway onto the platform with Gravity turned off."
+      "note": "To save a bomb, it is possible to roll from the doorway onto the platform with similar to a Gravity jump - hold forward just before the pause to disable gravity.",
+      "devNote": [
+        "It is possible to cross with a single Power Bomb, but it requires a last pixel jump with a frame perfect forward press.",
+        "A crab hit could bounce Samus onto the middle platform, but the gravity jump is better. If Samus has a blue suit and cant pause, then she also cant boost from the crab."
+      ]
     },
     {
       "id": 100,
@@ -3819,7 +3930,7 @@
       "link": [5, 1],
       "name": "Exit G-Mode",
       "requires": [
-        "canEnterGMode"
+        "canGMode"
       ],
       "flashSuitChecked": true
     },
@@ -3828,7 +3939,7 @@
       "link": [5, 1],
       "name": "Carry G-Mode Morph Left",
       "requires": [
-        "canEnterGMode"
+        "canGMode"
       ],
       "exitCondition": {
         "leaveWithGMode": {
@@ -3842,7 +3953,7 @@
       "link": [5, 4],
       "name": "Carry G-Mode Morph Right",
       "requires": [
-        "canEnterGMode"
+        "canGMode"
       ],
       "exitCondition": {
         "leaveWithGMode": {

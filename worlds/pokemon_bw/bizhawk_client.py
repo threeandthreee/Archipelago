@@ -25,7 +25,7 @@ class PokemonBWClient(BizHawkClient):
     patch_suffix = (".apblack", ".apwhite")
 
     ram_read_write_domain = "Main RAM"
-    rom_read_only_domain = "File on Disk"  # Doesn't work :(
+    rom_read_only_domain = "ROM"  # Only works on BizHawk 2.10+
     flags_amount = 2912
     flag_bytes_amount = math.ceil(flags_amount/8)
     dex_amount = 650
@@ -58,7 +58,6 @@ class PokemonBWClient(BizHawkClient):
         self.missing_flag_loc_ids: list[list[int]] = [[] for _ in range(self.flags_amount)]
         self.missing_dex_flag_loc_ids: list[list[int]] = [[] for _ in range(self.dex_amount)]
         self.save_data_address = 0
-        self.received_items_count = 0
         self.goal_checking_method: Callable[["PokemonBWClient", "BizHawkClientContext"],
                                             Coroutine[Any, Any, bool]] | None = None
         self.logger = logging.getLogger("Client")
@@ -71,22 +70,20 @@ class PokemonBWClient(BizHawkClient):
 
         Once this function has determined that the ROM should be handled by this client, it should also modify `ctx`
         as necessary (such as setting `ctx.game = self.game`, modifying `ctx.items_handling`, etc...)."""
-        from .rom import cached_rom
 
         header = await bizhawk.read(
             ctx.bizhawk_ctx, (
-                (self.header_address, 18, self.ram_read_write_domain),
+                (self.header_address, 0xc0, self.ram_read_write_domain),
             )
         )
-        if header[0] not in (b'POKEMON B\0\0\0IRBO01', b'POKEMON W\0\0\0IRAO01'):
+        if header[0][:18] not in (b'POKEMON B\0\0\0IRBO01', b'POKEMON W\0\0\0IRAO01'):
             return False
 
-        self.player_name = cached_rom[0]
+        self.player_name = header[0][0xa0:].strip(b'\0').decode()
         ctx.game = self.game
         ctx.items_handling = 0b111
         ctx.want_slot_data = True
         ctx.watcher_timeout = 1
-        cached_rom[0] = None
         return True
 
     async def set_auth(self, ctx: "BizHawkClientContext") -> None:
@@ -118,7 +115,13 @@ class PokemonBWClient(BizHawkClient):
         to have passed your validator when this function is called, and the emulator is very likely to be connected."""
 
         try:
-            if not ctx.server or not ctx.server.socket.open or ctx.server.socket.closed or self.debug_halt:
+            if (
+                not ctx.server or
+                not ctx.server.socket.open or
+                ctx.server.socket.closed or
+                ctx.slot_data is None or
+                self.debug_halt
+            ):
                 return
             read = await bizhawk.read(
                 ctx.bizhawk_ctx, (

@@ -301,6 +301,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         "h_artificialMorphBombs",
         "canTrickyJump"
       ],
@@ -437,12 +438,8 @@
       "requires": [
         "Morph",
         "Missile",
-        {"resetRoom": {
-          "nodes": [1]
-        }},
-        {"resetRoom": {
-          "nodes": [2]
-        }},
+        {"resetRoom": {"nodes": [1]}},
+        {"resetRoom": {"nodes": [2]}},
         {"cycleFrames": 930}
       ],
       "resetsObstacles": ["A"],
@@ -459,12 +456,8 @@
         "Morph",
         "Missile",
         {"or": [
-          {"resetRoom": {
-            "nodes": [1]
-          }},
-          {"resetRoom": {
-            "nodes": [2]
-          }}
+          {"resetRoom": {"nodes": [1]}},
+          {"resetRoom": {"nodes": [2]}}
         ]},
         {"cycleFrames": 930}
       ],
@@ -565,7 +558,9 @@
         }
       },
       "requires": [
-        "h_artificialMorphIBJ"
+        "canComplexGMode",
+        "h_artificialMorphIBJ",
+        "canTrickyJump"
       ],
       "clearsObstacles": ["A"],
       "flashSuitChecked": true,

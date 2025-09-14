@@ -214,7 +214,11 @@
       "link": [1, 1],
       "name": "Zebbo Farm",
       "requires": [
-        {"refill": ["Energy", "Missile", "Super"]}
+        {"cycleFrames": 140}
+      ],
+      "farmCycleDrops": [{"enemy": "Zebbo", "count": 1}],
+      "devNote": [
+        "We use cycleFrames here rather than simpleCycleFrames because of how the acid (and Yapping Maw) complicates the farm."
       ]
     },
     {
@@ -417,16 +421,16 @@
             {"doorUnlockedAtNode": 1},
             {"canShineCharge": {
               "usedTiles": 19,
-              "openEnd": 0,
               "steepUpTiles": 1,
-              "steepDownTiles": 1
+              "steepDownTiles": 1,
+              "openEnd": 0
             }}
           ]},
           {"canShineCharge": {
             "usedTiles": 18,
-            "openEnd": 0,
             "steepUpTiles": 1,
-            "steepDownTiles": 1
+            "steepDownTiles": 1,
+            "openEnd": 0
           }}
         ]},
         "h_runOverRespawningEnemies",
@@ -836,6 +840,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         {"itemNotCollectedAtNode": 3},
         "canRiskPermanentLossOfAccess",
         "h_artificialMorphMovement",
@@ -988,6 +993,7 @@
         }
       },
       "requires": [
+        "canComplexGMode",
         {"itemNotCollectedAtNode": 3},
         "canRiskPermanentLossOfAccess",
         "Morph",
@@ -1122,7 +1128,7 @@
         {"or": [
           {"and": [
             "canTrickyJump",
-            "canStaggeredWalljump"
+            "canTrickyWalljump"
           ]},
           {"and": [
             "canCarefulJump",

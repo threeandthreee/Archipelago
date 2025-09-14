@@ -59,12 +59,12 @@
       "name": "Bottom Right Shinecharged",
       "nodeType": "junction",
       "nodeSubType": "junction",
-      "note": "Gaining a shinecharge at the bottom-right of the room.",
       "mapTileMask": [
         [1, 1],
         [1, 0],
         [2, 0]
-      ]
+      ],
+      "note": "Gaining a shinecharge at the bottom-right of the room."
     }
   ],
   "enemies": [],
@@ -200,7 +200,7 @@
       "name": "Delayed Wall Jump",
       "requires": [
         "Gravity",
-        "canDelayedWalljump"
+        "canTrickyWalljump"
       ]
     },
     {
@@ -254,7 +254,7 @@
         "comeInWithDoorStuckSetup": {}
       },
       "requires": [
-        "canXRayClimb"
+        "canLongXRayClimb"
       ],
       "flashSuitChecked": true,
       "note": "Climb up 2 screens."
@@ -270,13 +270,14 @@
         }
       },
       "requires": [
-        "canXRayClimb"
+        "canComplexGMode",
+        "canLongXRayClimb"
       ],
       "bypassesDoorShell": true,
       "flashSuitChecked": true,
       "note": [
         "Enter with G-mode direct, back up to between 1 and 6 pixels from the door transition, and activate X-ray to get very deep stuck in the door.",
-        "Climb up 1 screen, and perform a turnaround buffered spin-jump away from the door to trigger the transition, bypassing any lock on the door."
+        "Climb up 2 screens, and perform a turnaround buffered spin-jump away from the door to trigger the transition, bypassing any lock on the door."
       ]
     },
     {
@@ -717,7 +718,7 @@
             {"position": [8, 3], "note": "Grapple Beam Room"},
             {"position": [7, 3], "note": "Colosseum"},
             {"position": [6, 4], "note": "Grapple Tutorial Room 2"},
-            {"position": [6, 2], "note": "Spiky Acid Snakes Tunnel"},
+            {"position": [6, 2], "note": "Lava Grapple Tunnel"},
             {
               "position": [5, 2],
               "note": "The Moat, Double Chamber, Wrecked Ship Energy Tank Room"
