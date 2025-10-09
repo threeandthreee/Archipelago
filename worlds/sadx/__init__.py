@@ -15,7 +15,7 @@ from .Regions import create_sadx_regions, get_location_ids_for_area
 from .Rules import create_sadx_rules, LocationDistribution
 from .StartingSetup import StarterSetup, generate_early_sadx, write_sadx_spoiler, CharacterArea, level_areas
 
-sadx_version = 112
+sadx_version = 113
 
 
 class SonicAdventureDXWeb(WebWorld):
@@ -332,6 +332,13 @@ class SonicAdventureDXWorld(World):
             "BigActionStageMissions": self.options.big_action_stage_missions.value,
 
             "JunkFillPercentage": self.options.junk_fill_percentage.value,
+
+            "IceTrapWeight": self.options.ice_trap_weight.value,
+            "SpringTrapWeight": self.options.spring_trap_weight.value,
+            "PoliceTrapWeight": self.options.police_trap_weight.value,
+            "BuyonTrapWeight": self.options.buyon_trap_weight.value,
+            "ReverseTrapWeight": self.options.reverse_trap_weight.value,
+            "GravityTrapWeight": self.options.gravity_trap_weight.value,
 
             "ReverseControlTrapDuration": self.options.reverse_trap_duration.value,
             "TrapsOnAdventureFields": self.options.traps_and_filler_on_adventure_fields.value,

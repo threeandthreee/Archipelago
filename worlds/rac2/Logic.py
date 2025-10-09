@@ -302,7 +302,8 @@ def dobbo_spiderbot_room_pb_rule(state: CollectionState, player: int) -> bool:
         return can_swingshot(state, player)
 
     return (can_swingshot(state, player)
-            and can_dynamo(state, player))
+            and can_dynamo(state, player)
+            and can_spiderbot(state, player))
 
 
 def dobbo_facility_glide_pb_rule(state: CollectionState, player: int) -> bool:
@@ -656,7 +657,7 @@ def smolg_warehouse_pb_rule(state: CollectionState, player: int) -> bool:
         return True
 
     return (can_dynamo(state, player)
-            or can_improved_jump(state, player))
+            and can_improved_jump(state, player))
 
 
 def damosel_hypnotist_rule(state: CollectionState, player: int) -> bool:

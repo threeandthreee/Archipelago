@@ -516,7 +516,7 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
     if world.options.random_starting_town:
         forbidden_starting_towns = ["SPAWN_INDIGO_PLATEAU"]
         if not world.options.shuffle_badges:
-            forbidden_starting_towns.append("SPAWN_ROUTE10")
+            forbidden_starting_towns.extend(["SPAWN_ROUTE4", "SPAWN_ROUTE10"])
         if world.options.kanto_only:
             forbidden_starting_towns.extend(["SPAWN_ONE_ISLAND", "SPAWN_TWO_ISLAND", "SPAWN_THREE_ISLAND",
                                              "SPAWN_FOUR_ISLAND", "SPAWN_FIVE_ISLAND", "SPAWN_SIX_ISLAND",

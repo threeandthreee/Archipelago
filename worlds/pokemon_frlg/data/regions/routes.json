@@ -196,7 +196,7 @@
     "events": [],
     "exits": {
       "REGION_ROUTE3/BETWEEN_LEDGES": "Route 3 Ledge",
-      "REGION_PEWTER_CITY/MAIN": "Route 3 Exit (West)",
+      "REGION_PEWTER_CITY/NEAR_ROADBLOCK": "Route 3 Exit (West)",
       "REGION_ROUTE4/WEST": "Route 3 Exit (North)"
     },
     "warps": {}

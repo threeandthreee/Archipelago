@@ -7,8 +7,8 @@ import bsdiff4
 
 from settings import get_settings
 from worlds.Files import APProcedurePatch, APTokenMixin, APPatchExtension
-from .data import data, MiscOption, POKEDEX_COUNT_OFFSET, APWORLD_VERSION, POKEDEX_OFFSET, EncounterType, \
-    FishingRodType, TreeRarity, FLY_UNLOCK_OFFSET, BETTER_MART_MARTS, MapPalette
+from .data import data, MiscOption, POKEDEX_COUNT_OFFSET, POKEDEX_OFFSET, EncounterType, \
+    FishingRodType, TreeRarity, FLY_UNLOCK_OFFSET, BETTER_MART_MARTS, MapPalette, GRASS_OFFSET
 from .items import item_const_name_to_id
 from .maps import FLASH_MAP_GROUPS
 from .options import UndergroundsRequirePower, RequireItemfinder, Goal, Route2Access, \
@@ -25,7 +25,7 @@ CRYSTAL_1_1_HASH = "301899b8087289a6436b0a241fbbb474"
 
 
 class PokemonCrystalAPPatchExtension(APPatchExtension):
-    game = "Pokemon Crystal"
+    game = data.manifest.game
 
     @staticmethod
     def apply_bsdiff4(caller: APProcedurePatch, rom: bytes, patch: str):
@@ -40,7 +40,7 @@ class PokemonCrystalAPPatchExtension(APPatchExtension):
 
 
 class PokemonCrystalProcedurePatch(APProcedurePatch, APTokenMixin):
-    game = "Pokemon Crystal"
+    game = data.manifest.game
     hash = [CRYSTAL_1_0_HASH, CRYSTAL_1_1_HASH]
     patch_file_ending = ".apcrystal"
     result_file_ending = ".gbc"
@@ -80,7 +80,9 @@ def generate_output(world: "PokemonCrystalWorld", output_directory: str, patch: 
         if location.address is None:
             continue
 
-        if location.address > POKEDEX_COUNT_OFFSET:
+        if location.address > GRASS_OFFSET:
+            location_address = location.rom_address
+        elif location.address > POKEDEX_COUNT_OFFSET:
             location_address = data.rom_addresses["AP_DexcountsanityItems"] + location.rom_address - 1
         elif location.address > POKEDEX_OFFSET:
             location_address = data.rom_addresses["AP_DexsanityItems"] + location.rom_address - 1
@@ -92,7 +94,13 @@ def generate_output(world: "PokemonCrystalWorld", output_directory: str, patch: 
             if item_id >= FLY_UNLOCK_OFFSET:
                 write_item(item_const_name_to_id("FLY_UNLOCK"), location_address)
 
-                if location.address > POKEDEX_COUNT_OFFSET:
+                if location.address >= GRASS_OFFSET:
+                    if hasattr(location, "original_grass_flag"):
+                        grass_address = location.original_grass_flag
+                    else:
+                        grass_address = location.address
+                    event_id = 0xF000 + (grass_address - GRASS_OFFSET)
+                elif location.address > POKEDEX_COUNT_OFFSET:
                     event_id = 0xFE00 + (location.address - POKEDEX_COUNT_OFFSET) - 1
                 elif location.address > POKEDEX_OFFSET:
                     event_id = 0xFF00 + (location.address - POKEDEX_OFFSET) - 1
@@ -166,7 +174,7 @@ def generate_output(world: "PokemonCrystalWorld", output_directory: str, patch: 
             text_adr = item_name_bank2 + text_offset
         else:
             # bank 3
-            bank = 0x7a
+            bank = 0x7c
             text_offset = (i + 1 - (item_name_bank1_capacity + item_name_bank2_capacity)) * 34
             text_adr = item_name_bank3 + text_offset
         write_bytes(patch, player_text + item_text, text_adr)
@@ -675,7 +683,7 @@ def generate_output(world: "PokemonCrystalWorld", output_directory: str, patch: 
                 write_bytes(patch, better_mart_bytes, mart_address)
             mart_address += 2
 
-    for hm in world.options.remove_badge_requirement.valid_keys:
+    for hm in [hm for hm in world.options.remove_badge_requirement.valid_keys if not hm.startswith("_")]:
         hm_address = data.rom_addresses[f"AP_Setting_HMBadges_{hm}"] + 1
         requirement = world.options.hm_badge_requirements.value
         if hm in world.options.remove_badge_requirement:
@@ -758,9 +766,6 @@ def generate_output(world: "PokemonCrystalWorld", output_directory: str, patch: 
         for trainer in missable_trainers:
             # the dw at +11 is the event flag.
             write_bytes(patch, [0xFF, 0xFF], data.rom_addresses[f"AP_Setting_Trainersanity_{trainer}"] + 11)
-
-    trainersanity_alerts_address = data.rom_addresses["AP_Setting_TrainersanityMessages"] + 1
-    write_bytes(patch, [world.options.trainersanity_alerts], trainersanity_alerts_address)
 
     for i, script in enumerate(world.generated_phone_traps):
         address = data.rom_addresses["AP_Setting_PhoneCallTrapTexts"] + (i * 0x400)
@@ -977,7 +982,7 @@ def generate_output(world: "PokemonCrystalWorld", output_directory: str, patch: 
 
     if world.options.enforce_wild_encounter_methods_logic:
         methods = [method in world.options.wild_encounter_methods_required.value for method in
-                   WildEncounterMethodsRequired.valid_keys]
+                   [key for key in WildEncounterMethodsRequired.valid_keys if not key.startswith("_")]]
 
         write_bytes(patch, methods, data.rom_addresses["AP_Setting_AllowedCatchTypes"])
 
@@ -996,7 +1001,7 @@ def generate_output(world: "PokemonCrystalWorld", output_directory: str, patch: 
     if world.options.always_unlock_fly_destinations:
         write_bytes(patch, [1], data.rom_addresses["AP_Setting_FlyUnlocksQoLEnabled"] + 2)
 
-    for map_group in world.options.dark_areas.valid_keys:
+    for map_group in [key for key in world.options.dark_areas.valid_keys if not key.startswith("_")]:
         maps = FLASH_MAP_GROUPS[map_group]
         for map in maps:
             map_data = data.maps[map]
@@ -1008,6 +1013,9 @@ def generate_output(world: "PokemonCrystalWorld", output_directory: str, patch: 
     if world.options.require_flash == RequireFlash.option_hard_required:
         write_bytes(patch, [1], data.rom_addresses["AP_Setting_FlashHardRequired"] + 1)
 
+    if world.options.require_flash and ("Ilex Forest" in world.options.dark_areas):
+        write_bytes(patch, [1], data.rom_addresses["AP_Setting_IlexRequiresFlash"] + 1)
+
     if world.options.field_moves_always_usable:
         write_bytes(patch, [1], data.rom_addresses["AP_Setting_FieldMovesAlwaysUsable_SetUp"] + 1)
         write_bytes(patch, [1], data.rom_addresses["AP_Setting_FieldMovesAlwaysUsable_CallMove"] + 1)
@@ -1018,11 +1026,11 @@ def generate_output(world: "PokemonCrystalWorld", output_directory: str, patch: 
         write_bytes(patch, name_bytes, data.rom_addresses["AP_Setting_DefaultTrainerName"])
 
     # Set slot auth
-    ap_version_text = convert_to_ingame_text(APWORLD_VERSION)[:19]
+    ap_version_text = convert_to_ingame_text(data.manifest.world_version)[:19]
     ap_version_text.append(0x50)
     # truncated to 19 to preserve the "v" at the beginning
     write_bytes(patch, world.auth, data.rom_addresses["AP_Seed_Auth"])
-    write_bytes(patch, APWORLD_VERSION.encode("ascii")[:32], data.rom_addresses["AP_Version"])
+    write_bytes(patch, data.manifest.world_version.encode("ascii")[:32], data.rom_addresses["AP_Version"])
     write_bytes(patch, ap_version_text, data.rom_addresses["AP_Version_Text"] + 1)
 
     patch.write_file("token_data.bin", patch.get_token_binary())

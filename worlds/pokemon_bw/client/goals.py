@@ -1,6 +1,5 @@
 
 from typing import TYPE_CHECKING, Coroutine, Any, Callable
-import worlds._bizhawk as bizhawk
 
 if TYPE_CHECKING:
     from ..bizhawk_client import PokemonBWClient
@@ -37,48 +36,38 @@ def get_method(client: "PokemonBWClient", ctx: "BizHawkClientContext") -> Callab
 
 
 async def defeat_ghetsis(client: "PokemonBWClient", ctx: "BizHawkClientContext") -> bool:
-    return client.flags_cache[2400//8] & 1 != 0
+    return client.get_flag(0x1D3)
 
 
 async def become_champion(client: "PokemonBWClient", ctx: "BizHawkClientContext") -> bool:
-    return client.flags_cache[2427//8] & 8 != 0
+    return client.get_flag(0x1D4)
 
 
 async def defeat_cynthia(client: "PokemonBWClient", ctx: "BizHawkClientContext") -> bool:
-    read = await bizhawk.read(
-        ctx.bizhawk_ctx, (
-            (client.save_data_address + client.var_offset + (2 * 0xE4), 1, client.ram_read_write_domain),
-        )
-    )
-    return read[0][0] >= 2
+    return (await client.read_var(ctx, 0xE4)) >= 2
 
 
 async def encounter_cobalion(client: "PokemonBWClient", ctx: "BizHawkClientContext") -> bool:
-    return client.flags_cache[649//8] & 2 != 0
+    return client.get_flag(649)
 
 
 async def verify_tms_hms(client: "PokemonBWClient", ctx: "BizHawkClientContext") -> bool:
-    return client.flags_cache[0x191//8] & 2 != 0
+    return client.get_flag(0x191)
 
 
 async def find_seven_sages(client: "PokemonBWClient", ctx: "BizHawkClientContext") -> bool:
-    read = await bizhawk.read(
-        ctx.bizhawk_ctx, (
-            (client.save_data_address + client.var_offset + (2 * 0xCC), 1, client.ram_read_write_domain),
-        )
-    )
-    return read[0][0] >= 6 and client.flags_cache[2400//8] & 1 != 0
+    return (await client.read_var(ctx, 0xCC)) >= 6 and await defeat_ghetsis(client, ctx)
 
 
 async def encounter_legendaries(client: "PokemonBWClient", ctx: "BizHawkClientContext") -> bool:
     return (
-        client.flags_cache[649//8] & 2 != 0 and  # Cobalion
-        client.flags_cache[650//8] & 4 != 0 and  # Terrakion
-        client.flags_cache[651//8] & 8 != 0 and  # Virizion
-        client.flags_cache[801//8] & 2 != 0 and  # Kyurem
-        client.flags_cache[779//8] & 8 != 0 and  # Victini
-        client.flags_cache[810//8] & 4 != 0 and  # Volcarona
-        client.flags_cache[0x1CE//8] & 64 != 0  # Reshiram/Zekrom
+        client.get_flag(649) and  # Cobalion
+        client.get_flag(650) and  # Terrakion
+        client.get_flag(651) and  # Virizion
+        client.get_flag(801) and  # Kyurem
+        client.get_flag(779) and  # Victini
+        client.get_flag(810) and  # Volcarona
+        client.get_flag(0x1CE)  # Reshiram/Zekrom
     )
 
 

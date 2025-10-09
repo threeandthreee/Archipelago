@@ -215,7 +215,8 @@ lumine_hall_text = [
     "My statistics show about 70% of kids these days don't stop to read bulletin boards anymore. Well, I had to shell out a lot of money for this, but let's see you ignore THIS one, suckers!          ...Brick Road",
     "I'm Ness... I could go for a burger right about now... That girl from Twoson sure is cute... I wonder if I should ask her out on a date... W...wha...? What's...? H-HEY! These thoughts are PRIVATE!",
     "Chris, when is Parasite Eve in AP?",
-    "Praise the Fool!"
+    "Praise the Fool!",
+    "Am I the only one who likes Sonic Unleashed?"
 ]
 
 spoiler_psi = {
@@ -270,7 +271,7 @@ spoiler_badges = {
 }
 
 
-def text_encoder(text, textcap) -> bytearray:
+def text_encoder(text: str, textcap: int) -> bytearray:
     """Return an encoded bytearray of in-game text from a string. Unknown characters will be replaced with a ?.
        textcap is the maximum allowed length of the text."""
     encoded_text = bytearray()
@@ -282,7 +283,7 @@ def text_encoder(text, textcap) -> bytearray:
     return encoded_text
 
 
-def calc_pixel_width(text) -> int:
+def calc_pixel_width(text: str) -> int:
     """Return the in-game width of a string. EarthBound uses a VWF, and some text strings
        need to be shortened to fit within in-game menus."""
     width = 0

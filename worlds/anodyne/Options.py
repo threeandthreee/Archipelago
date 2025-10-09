@@ -1,12 +1,12 @@
-import sys
 import typing
 from dataclasses import dataclass
-from enum import Enum, IntEnum
+from enum import IntEnum
 from typing import Type, List, Dict
 
-from Options import (Choice, DeathLink, PerGameCommonOptions, StartInventoryPool, Toggle, Range, OptionSet, TextChoice,
+from Options import (Choice, DeathLink, PerGameCommonOptions, StartInventoryPool, Toggle, Range, OptionSet,
                      DefaultOnToggle, NamedRange)
-from .Data import Regions
+from .Data import Locations
+from .Data.Regions import Red_Cave
 
 
 class SmallKeyMode(Choice):
@@ -86,12 +86,12 @@ class Dustsanity(Toggle):
 
 class RedCaveAccess(Choice):
     """
-    Select how progression through the Red Cave dungeon should be handled.
-    [Progressive] Three Progressive Red Cave items will be added to the pool, and each will open the next section of the dungeon, in the following order: left, right, top.
+    Select how progression through the Red Grotto dungeon should be handled.
+    [Progressive] Three Progressive Red Grotto items will be added to the pool, and each will open the next section of the dungeon, in the following order: left, right, top.
     [Original Dungeon] Same as above, but the progression items will be restricted to the original dungeon.
-    [Vanilla] The Red Cave will open up the same way it does in vanilla. The red tentacles will not be location checks.
+    [Vanilla] The Red Grotto will open up the same way it does in vanilla. The red tentacles will not be location checks.
     """
-    display_name = "Red Cave Access"
+    display_name = f"{Red_Cave.area_name()} Access"
     option_progressive = 0
     option_original_dungeon = 1
     option_vanilla = 2
@@ -105,6 +105,15 @@ class SplitWindmill(Toggle):
     [On] The Windmill doesn't do anything special, and instead becomes a location. Three items are added to the pool, one for each dungeon statue.
     """
     display_name = "Split Windmill"
+
+
+class IncludeBlueAndHappy(Toggle):
+    """
+    Select how Blue and Happy activation works
+    [Off] Blue and Happy behave like in vanilla. You need to complete the gauntlets and open the dams to fight Briar.
+    [On] The Blue and Happy dams become items that both need to be found to fight Briar. Both gauntlets have random items at the end.
+    """
+    display_name = "Include Blue and Happy"
 
 
 class StartBroom(Choice):
@@ -159,7 +168,7 @@ class RandomNexusGateOpenCount(Range):
     """
     display_name = "Random Open Nexus Gates Count"
     range_start = 1
-    range_end = len(Regions.regions_with_nexus_gate)
+    range_end = len(Locations.nexus_pad_locations)
     default = 4
 
 
@@ -170,7 +179,7 @@ class CustomNexusGatesOpen(OptionSet):
     Note that the Street Nexus Gate will always be open.
     """
     display_name = "Custom Open Nexus Gates"
-    valid_keys = set(Regions.regions_with_nexus_gate) - {"Happy","Blue"}
+    valid_keys = set(location.region.area_name() for location in Locations.nexus_pad_locations)
 
 
 class VictoryCondition(Choice):
@@ -249,12 +258,12 @@ class GateRequirements:
         [Blue Key] This gate opens with the blue key.
         [Bosses] This gate has a configurable amount of bosses required to be defeated, specified in the {0} gate boss requirement option.
         """
-        option_unlocked = GateType.UNLOCKED
-        option_cards = GateType.CARDS
-        option_green_key = GateType.GREEN
-        option_red_key = GateType.RED
-        option_blue_key = GateType.BLUE
-        option_bosses = GateType.BOSSES
+        option_unlocked = int(GateType.UNLOCKED)
+        option_cards = int(GateType.CARDS)
+        option_green_key = int(GateType.GREEN)
+        option_red_key = int(GateType.RED)
+        option_blue_key = int(GateType.BLUE)
+        option_bosses = int(GateType.BOSSES)
 
     class GateCardReq(Range):
         """
@@ -273,17 +282,21 @@ class GateRequirements:
 
 
 gatereq_classes: List[Type[GateRequirements]] = []
-gate_lookup: Dict[str,Type[GateRequirements]] = dict()
+gate_lookup: Dict[str, Type[GateRequirements]] = dict()
 
 
 def gate_req(gate_type: GateType, cards: int = 1):
     def decorator(cls: Type[GateRequirements]):
         # Need to reset module from abc to this module, and put the classes into global scope to make pickle work on them
-        cls.Gate = type(f"{cls.__name__}_Type", (cls.Gate,), {"__doc__": cls.Gate.__doc__.format(cls.name), "default": int(gate_type), '__module__':__name__})
+        cls.Gate = type(f"{cls.__name__}_Type", (cls.Gate,),
+                        {"__doc__": cls.Gate.__doc__.format(cls.name), "default": int(gate_type),
+                         '__module__': __name__})
 
         cls.GateCardReq = type(f"{cls.__name__}_CardReq", (cls.GateCardReq,),
-                               {"__doc__": cls.GateCardReq.__doc__.format(cls.name), "default": cards, '__module__':__name__})
-        cls.GateBossReq = type(f"{cls.__name__}_BossReq", (cls.GateBossReq,), {"__doc__": cls.GateBossReq.__doc__.format(cls.name), '__module__':__name__})
+                               {"__doc__": cls.GateCardReq.__doc__.format(cls.name), "default": cards,
+                                '__module__': __name__})
+        cls.GateBossReq = type(f"{cls.__name__}_BossReq", (cls.GateBossReq,),
+                               {"__doc__": cls.GateBossReq.__doc__.format(cls.name), '__module__': __name__})
         globals()[cls.Gate.__name__] = cls.Gate
         globals()[cls.GateCardReq.__name__] = cls.GateCardReq
         globals()[cls.GateBossReq.__name__] = cls.GateBossReq
@@ -438,7 +451,7 @@ class MitraHints(Choice):
     [None] Mitra does not give any hints.
     [Vague] Mitra only tells you the location of a progression item, but not what it is.
     [Precise] Mitra tells you the exact location of one of your progression items.
-    [Precise Hint] Same as Precise, but will be sent out as a hint (if it's at a local location).
+    [Precise Hint] Same as Precise, but will be sent out as a hint.
     """
     display_name = "Mitra Hint Mode"
     option_none = 0
@@ -451,26 +464,34 @@ class MitraHints(Choice):
 @dataclass
 @add_options
 class AnodyneGameOptions(PerGameCommonOptions):
-    small_key_mode: SmallKeyMode
-    small_key_shuffle: SmallKeyShuffle
-    health_cicada_shuffle: HealthCicadaShuffle
-    big_key_shuffle: BigKeyShuffle
-    fields_secret_paths: FieldsSecretPaths
-    dustsanity: Dustsanity
-    red_cave_access: RedCaveAccess
-    split_windmill: SplitWindmill
+    # Game Options
     start_broom: StartBroom
-    nexus_gate_shuffle: NexusGateShuffle
-    nexus_gates_open: NexusGatesOpen
-    random_nexus_gate_open_count: RandomNexusGateOpenCount
-    custom_nexus_gates_open: CustomNexusGatesOpen
     victory_condition: VictoryCondition
-    randomize_color_puzzle: RandomizeColorPuzzle
     postgame_mode: PostgameMode
-    forest_bunny_chest: IncludeForestBunnyChest
-    traps_percentage: TrapPercentage
-    card_amount: CardAmount
-    extra_cards: ExtraCardAmount
     mitra_hints: MitraHints
     death_link: DeathLink
     start_inventory_from_pool: StartInventoryPool
+    # Key Logic
+    small_key_mode: SmallKeyMode
+    small_key_shuffle: SmallKeyShuffle
+    big_key_shuffle: BigKeyShuffle
+    # Cards
+    card_amount: CardAmount
+    extra_cards: ExtraCardAmount
+    # Logic Changes
+    split_windmill: SplitWindmill
+    include_blue_happy: IncludeBlueAndHappy
+    fields_secret_paths: FieldsSecretPaths
+    randomize_color_puzzle: RandomizeColorPuzzle
+    nexus_gate_shuffle: NexusGateShuffle
+    red_grotto_access: RedCaveAccess
+    # Starting Nexus Gates
+    nexus_gates_open: NexusGatesOpen
+    random_nexus_gate_open_count: RandomNexusGateOpenCount
+    custom_nexus_gates_open: CustomNexusGatesOpen
+    # Extra Locations
+    dustsanity: Dustsanity
+    health_cicada_shuffle: HealthCicadaShuffle
+    forest_bunny_chest: IncludeForestBunnyChest
+    # Filler Items
+    traps_percentage: TrapPercentage

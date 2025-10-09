@@ -12,12 +12,12 @@ can_reach_moss_rock: ExtendedRule = lambda state, world: state.can_reach_region(
 can_reach_ice_rock: ExtendedRule = lambda state, world: state.can_reach_region("Twist Mountain", world.player)
 
 can_buy_item_castelia: ExtendedRule = lambda state, world: state.can_reach_region("Castelia City", world.player)
-can_get_item_chargestone: ExtendedRule = lambda state, world: state.can_reach_region("Castelia City", world.player)
-can_buy_item_twist: ExtendedRule = lambda state, world: state.can_reach_region("Castelia City", world.player)
-can_buy_item_mall: ExtendedRule = lambda state, world: state.can_reach_region("Castelia City", world.player)
-can_get_item_r10: ExtendedRule = lambda state, world: state.can_reach_region("Castelia City", world.player)
-can_buy_item_undella: ExtendedRule = lambda state, world: state.can_reach_region("Castelia City", world.player)
-can_get_item_chasm: ExtendedRule = lambda state, world: state.can_reach_region("Castelia City", world.player)
+can_get_item_chargestone: ExtendedRule = lambda state, world: state.can_reach_region("Chargestone Cave", world.player)
+can_buy_item_twist: ExtendedRule = lambda state, world: state.can_reach_region("Twist Mountain", world.player)
+can_buy_item_mall: ExtendedRule = lambda state, world: state.can_reach_region("Route 9", world.player)
+can_get_item_r10: ExtendedRule = lambda state, world: state.can_reach_region("Route 10", world.player)
+can_buy_item_undella: ExtendedRule = lambda state, world: state.can_reach_region("Undella Town", world.player)
+can_get_item_chasm: ExtendedRule = lambda state, world: state.can_reach_region("Giant Chasm Entrance Cave", world.player)
 can_buy_item: dict[int, ExtendedRule] = {
     80: can_buy_item_twist,  # Sun Stone
     81: can_buy_item_twist,  # Moon Stone

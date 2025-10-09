@@ -86,6 +86,11 @@ class TestEncounterPlandoAllParameters(PokemonBWTestBase):
                 "slots": [1, 3, 4],
                 "species": "Blastoise",
             },
+            {
+                "map": "Route 16",
+                "method": "Grass",
+                "species": "None",
+            },
         ],
     }
 

@@ -12,20 +12,20 @@ class FranchiseCount(Range):
     """Select how many franchises are required for completion.(Only used if Goal=complete_x_franchises)"""
     display_name = "Required Franchise Count"
     range_start = 1
-    range_end = 10
+    range_end = 50
     default = 1
 
 class DayCount(Range):
     """Select how many days are required for completion. (Only used if Goal=complete_x_days)"""
     display_name = "Required Day Count"
     range_start = 10
-    range_end = 100
+    range_end = 1000
     default = 10
 
 class DishCount(Range):
-    """How many dishes the player starts with (1-15)."""
+    """How many dishes the player starts with (1-15) or 0 for disabled."""
     display_name = "Starting Dish Count"
-    range_start = 1
+    range_start = 0
     range_end = 15
     default = 1
 

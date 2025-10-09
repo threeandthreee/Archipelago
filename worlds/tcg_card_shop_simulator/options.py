@@ -110,9 +110,9 @@ class ExtraStartingItemChecks(Range):
     """
 
     display_name = "Extra Starting Item Checks"
-    range_start = 4
+    range_start = 5
     range_end = 8
-    default = 4
+    default = 5
 
 class SellCheckAmount(Range):
     """

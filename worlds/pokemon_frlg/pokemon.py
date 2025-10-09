@@ -678,7 +678,6 @@ def randomize_wild_encounters(world: "PokemonFRLGWorld") -> None:
                             for priority_species_id in list(sorted(priority_species.copy())):
                                 if priority_species_id in candidate_ids:
                                     new_species_id = priority_species_id
-                                    priority_species.remove(priority_species_id)
                                     placed_priority_species = True
                                     break
 
@@ -691,6 +690,8 @@ def randomize_wild_encounters(world: "PokemonFRLGWorld") -> None:
 
                     species_old_to_new_map[species_id] = new_species_id
                     placed_species.add(new_species_id)
+                    if new_species_id in priority_species:
+                        priority_species.remove(new_species_id)
 
             # Actually create the new list of slots and encounter table
             new_slots: Dict[str, List[EncounterSpeciesData]] = copy.deepcopy(table.slots)
@@ -709,23 +710,26 @@ def randomize_wild_encounters(world: "PokemonFRLGWorld") -> None:
             route_21_encounters = new_encounters
 
     # If we failed to place Magikarp, Heracross, and/or Togepi put them in their vanilla spots
-    if data.constants["SPECIES_MAGIKARP"] in priority_species:
-        map_data = world.modified_maps["MAP_PALLET_TOWN"]
-        slots = map_data.encounters[EncounterType.FISHING].slots[game_version]
-        for i in [0, 1, 3]:
-            slots[i].species_id = data.constants["SPECIES_MAGIKARP"]
+    if world.options.pokemon_request_locations:
+        if data.constants["SPECIES_MAGIKARP"] in priority_species:
+            map_data = world.modified_maps["MAP_PALLET_TOWN"]
+            slots = map_data.encounters[EncounterType.FISHING].slots[game_version]
+            for i in [0, 1, 3]:
+                slots[i].species_id = data.constants["SPECIES_MAGIKARP"]
 
-    if data.constants["SPECIES_HERACROSS"] in priority_species:
-        map_data = world.modified_maps["MAP_SIX_ISLAND_PATTERN_BUSH"]
-        slots = map_data.encounters[EncounterType.LAND].slots[game_version]
-        for i in [5, 7, 9, 11]:
-            slots[i].species_id = data.constants["SPECIES_HERACROSS"]
+        if not world.options.kanto_only:
+            if data.constants["SPECIES_HERACROSS"] in priority_species:
+                map_data = world.modified_maps["MAP_SIX_ISLAND_PATTERN_BUSH"]
+                slots = map_data.encounters[EncounterType.LAND].slots[game_version]
+                for i in [5, 7, 9, 11]:
+                    slots[i].species_id = data.constants["SPECIES_HERACROSS"]
 
-    if data.constants["SPECIES_TOGEPI"] in priority_species:
-        map_data = world.modified_maps["MAP_FIVE_ISLAND_MEMORIAL_PILLAR"]
-        slots = map_data.encounters[EncounterType.LAND].slots[game_version]
-        for slot in slots:
-            slot.species_id = data.constants["SPECIES_TOGEPI"]
+            if world.options.famesanity:
+                if data.constants["SPECIES_TOGEPI"] in priority_species:
+                    map_data = world.modified_maps["MAP_FIVE_ISLAND_MEMORIAL_PILLAR"]
+                    slots = map_data.encounters[EncounterType.LAND].slots[game_version]
+                    for slot in slots:
+                        slot.species_id = data.constants["SPECIES_TOGEPI"]
 
 
 def randomize_starters(world: "PokemonFRLGWorld") -> None:

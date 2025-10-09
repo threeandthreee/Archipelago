@@ -5,14 +5,15 @@ from enum import auto, Enum
 from BaseClasses import ItemClassification
 from typing import Dict
 
-from worlds.spire.Characters import character_list, NUM_CUSTOM
+from .Characters import character_list
+from .Constants import NUM_CUSTOM
 
 
 CHAR_OFFSET = 20
 
 class ItemType(Enum):
-    DRAW = auto()
-    RARE_DRAW = auto()
+    CARD_REWARD = auto()
+    RARE_CARD_REWARD = auto()
     RELIC = auto()
     BOSS_RELIC = auto()
     GOLD = auto()
@@ -25,6 +26,9 @@ class ItemType(Enum):
     SHOP_REMOVE = auto()
     CHAR_UNLOCK = auto()
     POTION = auto()
+    ASCENSION_DOWN = auto()
+    TRAP = auto()
+    CAW_CAW = auto()
 
 
 class ItemData(typing.NamedTuple):
@@ -40,8 +44,8 @@ class ItemData(typing.NamedTuple):
         return ItemData(newcode, base.type, base.classification, base.event, base.is_victory)
 
 base_item_table: Dict[str, ItemData] = {
-    'Card Draw': ItemData(1, ItemType.DRAW),
-    'Rare Card Draw': ItemData(2, ItemType.RARE_DRAW),
+    'Card Reward': ItemData(1, ItemType.CARD_REWARD),
+    'Rare Card Reward': ItemData(2, ItemType.RARE_CARD_REWARD),
     'Relic': ItemData(3, ItemType.RELIC),
     'Boss Relic': ItemData(4, ItemType.BOSS_RELIC),
     'One Gold': ItemData(5, ItemType.GOLD, ItemClassification.filler),
@@ -58,6 +62,7 @@ base_item_table: Dict[str, ItemData] = {
     'Progressive Shop Remove': ItemData(13, ItemType.SHOP_REMOVE),
     'Unlock': ItemData(14, ItemType.CHAR_UNLOCK),
     'Potion': ItemData(18, ItemType.POTION, ItemClassification.useful),
+    'Ascension Down': ItemData(19, ItemType.ASCENSION_DOWN, ItemClassification.useful),
 
     # Event Items
     'Victory': ItemData(None, None, ItemClassification.progression, True, True),
@@ -74,9 +79,27 @@ base_event_item_pairs: Dict[str, str] = {
     "Act 3 Boss": "Beat Act 3 Boss"
 }
 
+trap_item_table = {
+    "Debuff Trap": ItemData(50000, ItemType.TRAP, ItemClassification.trap),
+    "Strong Debuff Trap": ItemData(50001, ItemType.TRAP, ItemClassification.trap),
+    "Killer Debuff Trap": ItemData(50002, ItemType.TRAP, ItemClassification.trap),
+    "Buff Trap": ItemData(50003, ItemType.TRAP, ItemClassification.trap),
+    "Strong Buff Trap": ItemData(50004, ItemType.TRAP, ItemClassification.trap),
+    "Status Card Trap": ItemData(50005, ItemType.TRAP, ItemClassification.trap),
+    "Gremlin Trap": ItemData(50006, ItemType.TRAP, ItemClassification.trap),
+}
+
+other_items = {
+    'CAW CAW': ItemData(100000, ItemType.CAW_CAW, ItemClassification.filler),
+}
+
 def create_item_tables(vanilla_chars: typing.List[str], extras: int) -> typing.Tuple[dict[str, ItemData], dict[
     typing.Union[str, int],dict[str,ItemData]], dict[str,str]]:
-    item_name_to_data = dict()
+    item_name_to_data = {
+        **trap_item_table,
+        **other_items,
+    }
+
     characters_to_items: dict[typing.Union[str, int],dict[str, ItemData]] = defaultdict(lambda: dict())
     event_item_pairs: dict[str, str] = dict()
     char_num = 0
@@ -111,6 +134,11 @@ def create_item_groups(chars_to_items: dict[typing.Union[str,int], dict[str, Ite
     unlock = set()
     potion = set()
     junk = set()
+    cards = set()
+    rare_cards = set()
+    relics = set()
+    boss_relics = set()
+    ascension_downs = set()
     ret = dict()
 
     ret["Gold"] =  gold
@@ -119,6 +147,11 @@ def create_item_groups(chars_to_items: dict[typing.Union[str,int], dict[str, Ite
     ret["Unlock"] = unlock
     ret["Junk"] = junk
     ret["Potion"] = potion
+    ret["Card Rewards"] = cards
+    ret["Rare Card Rewards"] = rare_cards
+    ret["Relics"] = relics
+    ret["Boss Relics"] = boss_relics
+    ret["Ascension Downs"] = ascension_downs
 
     for key, data in chars_to_items.items():
         char = key if type(key) == str else f"Custom Character {key+1}"
@@ -148,9 +181,20 @@ def create_item_groups(chars_to_items: dict[typing.Union[str,int], dict[str, Ite
                 unlock.add(item_name)
             elif item_data.type == ItemType.POTION:
                 potion.add(item_name)
+            elif item_data.type == ItemType.CARD_REWARD:
+                cards.add(item_name)
+            elif item_data.type == ItemType.RARE_CARD_REWARD:
+                rare_cards.add(item_name)
+            elif item_data.type == ItemType.RELIC:
+                relics.add(item_name)
+            elif item_data.type == ItemType.BOSS_RELIC:
+                boss_relics.add(item_name)
+            elif item_data.type == ItemType.ASCENSION_DOWN:
+                ascension_downs.add(item_name)
 
     return ret
 
 item_table, chars_to_items, event_item_pairs = create_item_tables(character_list, NUM_CUSTOM)
 
 item_groups = create_item_groups(chars_to_items)
+item_groups["Traps"] = set(trap_item_table.keys())

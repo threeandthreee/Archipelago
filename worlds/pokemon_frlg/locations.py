@@ -112,9 +112,7 @@ def create_locations(world: "PokemonFRLGWorld", regions: Dict[str, Region]) -> N
         post_champion_locations = [
             "TRAINER_ELITE_FOUR_LORELEI_2_REWARD", "TRAINER_ELITE_FOUR_BRUNO_2_REWARD",
             "TRAINER_ELITE_FOUR_AGATHA_2_REWARD", "TRAINER_ELITE_FOUR_LANCE_2_REWARD",
-            "TRAINER_CHAMPION_REMATCH_BULBASAUR_REWARD", "FAME_CHECKER_BRUNO_5", "SHOP_TWO_ISLAND_EXPANDED3_3",
-            "SHOP_TWO_ISLAND_EXPANDED3_4", "SHOP_TWO_ISLAND_EXPANDED3_5", "SHOP_TWO_ISLAND_EXPANDED3_8",
-            "SHOP_TWO_ISLAND_EXPANDED3_9"
+            "TRAINER_CHAMPION_REMATCH_BULBASAUR_REWARD", "FAME_CHECKER_BRUNO_5"
         ]
 
         post_champion_gossiper_locations = [

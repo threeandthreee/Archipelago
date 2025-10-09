@@ -1,10 +1,10 @@
-import itertools
-from typing import TYPE_CHECKING, Callable
+
+from typing import TYPE_CHECKING
 from .. import EncounterEntry
+import logging
 
 if TYPE_CHECKING:
     from ... import PokemonBWWorld
-    from ...data import SpeciesData
 
 
 def generate_wild(world: "PokemonBWWorld",
@@ -15,6 +15,7 @@ def generate_wild(world: "PokemonBWWorld",
     from .checklist import check_species
 
     ret: dict[str, EncounterEntry] = {}
+    warned = False
 
     method_abbr = {
         "Grass": "G",
@@ -47,6 +48,8 @@ def generate_wild(world: "PokemonBWWorld",
             species = plando.species[0]
         else:
             species = world.random.choice(plando.species)
+        if species.casefold() == "none":
+            continue
         species_data = by_name[species]
         species_id = (species_data.dex_number, species_data.form)
         map_abbr = maps[plando.map][0]
@@ -72,6 +75,12 @@ def generate_wild(world: "PokemonBWWorld",
             for slot in slots:
                 slot_in_file = method_shifting[plando.method] + slot
                 slot_name = f"{region} {slot}"
+                if slot_name in ret:
+                    if not warned:
+                        logging.warning(f"Player {world.player_name} defined multiple Encounter Plandos on the same "
+                                        f"slot(s). Only the first entry/entries will be included.")
+                        warned = True
+                    continue
                 ret[slot_name] = EncounterEntry(
                     species_id, region, (file_index, season_id, slot_in_file), True
                 )

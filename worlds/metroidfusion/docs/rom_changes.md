@@ -16,6 +16,7 @@
 - - The level 4 keycard is not required for the Operations Room.
 - - The Main Deck music will change to its endgame version when these requirements are fulfilled.
 - Room layouts have been changed to facilitate better randomization.
+- The self destruct timer doesn't start until you enter the Docking Bay after fighting the SA-X.
 - The western side of Sector 5 is always in its pre-Nightmare state, with changes to facilitate acquiring items and traversing to the Nightmare area.
 - You can now enable/disable power ups in the pause menu.
 - Rooms have been given names (credit goes to the Randovania team). Your current room name can be seen by pressing A on the map screen.

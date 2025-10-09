@@ -1,8 +1,13 @@
 from .enemy_attributes import excluded_enemies
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ... import EarthBoundWorld
+    from ...Rom import LocalRom
 
 
 class EnemyStatCopy:
-    def __init__(self, hp, exp, money, speed, offense, defense, level, guts, luck):
+    def __init__(self, hp: int, exp: int, money: int, speed: int, offense: int,
+                      defense: int, level: int, guts: int, luck: int):
         self.hp = hp
         self.exp = exp
         self.money = money
@@ -14,7 +19,7 @@ class EnemyStatCopy:
         self.luck = luck
 
 
-def randomize_enemy_stats(world, rom) -> None:
+def randomize_enemy_stats(world: "EarthBoundWorld", rom: "LocalRom") -> None:
     """Randomizes enemy stats. It does not actually randomize them, rather it gives enemies the stats of a random other enemy.
        Enemies have a 19% chance to have PP."""
     stat_copies = {}
@@ -61,4 +66,3 @@ def randomize_enemy_stats(world, rom) -> None:
                 world.enemies[f"{enemy} (2)"].money = world.enemies[enemy].money
                 rom.write_bytes(world.enemies[f"{enemy} (2)"].address + 0x3D, bytearray([world.enemies[enemy].guts]))
                 rom.write_bytes(world.enemies[f"{enemy} (2)"].address + 0x3E, bytearray([world.enemies[enemy].luck]))
-                

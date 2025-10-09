@@ -46,13 +46,79 @@
 3. Restart the Archipelago Launcher and open the Universal Tracker then connect with your server IP/port and slot name.
     - You don't need the yaml in your players folder for the tracker to work.
 
+## Music Randomization
+
+You can use music from SA2B, Sonic Heroes, or any extra custom songs you want.
+Both the Steam version and the original 2004 disc version work with music randomization.
+
+### SA2B Music
+
+If SA2B and SADX are installed in the same Steam folder, you don't have to do anything.  
+If not, or you want to copy the music manually, follow these steps:
+
+1. In the mod manager, open the SADX_Archipelago mod settings. Under Music Shuffle Settings, change the SA2B songs path
+   to `songs/ADX/`.
+2. Download SA2B from Steam and find the folder where it is installed.
+3. Go to `\Sonic Adventure 2\resource\gd_PC\` and copy the ADX folder.
+4. Paste the ADX folder inside the `\Sonic Adventure DX\songs\` folder (create the `songs` folder if it doesn't exist).
+
+### Sonic Heroes Music
+
+If you want to use Sonic Heroes music, follow these steps:
+
+1. Open your Sonic Heroes game folder.
+2. Go to the `\bgm\` folder and copy every file.
+3. Paste the ADX files into the `\Sonic Adventure DX\songs\custom\` folder (create the `songs\custom` folder if it
+   doesn't exist).
+
+### Extra Custom Music
+
+This mod supports any custom music you want to add, as long as it is in the ADX format.
+It's highly recommended that if you're going to add extra custom music, you change the path of the `songs.json` in the
+mod settings (under Music Shuffle Settings) to `songs/`, for example, so you don't override your mappings when updating
+the mod.
+
+To add custom music, follow these steps:
+
+1. Get the ADX files you want to add. You can get them from other games or convert them from other formats.
+2. Move the ADX files to the `\Sonic Adventure DX\songs\custom\` folder (create the `songs\custom` folder if it doesn't
+   exist).
+3. Inside the mod folder, open the `songs.json` file to add the song at the end. You can copy entries from other Heroes
+   songs.
+
+The entry must have this format:
+
+```json
+{
+  "myCustomSong": {
+    "name": "My Custom Song",
+    "type": "level"
+  }
+}
+```
+
+- The key name (`myCustomSong`) must match the name of your ADX file.
+- The `name` field is the name of the song that will be displayed in the game.
+- The `type` field determines how the song is shuffled when you shuffle by type:
+    - The type can be `level`, `fight`, `theme`, `jingle`, `menu`, `adventurefield`, `event`, or `any`.
+    - If the type is `jingle`, the song won't loop. Even in full randomization, jingles are randomized separately.
+    - If the type is `any`, the song will be randomized with any other song type, except jingles.
+- If you want to add these songs to the curated list of a level, you can do so by adding the song key to the
+  `curatedCustom` property of that level.
+
+- Additionally, if you don't want to modify the `songs.json` file, you can add custom music to the
+  `\Sonic Adventure DX\songs\custom\` folder, and it will be automatically included in the randomizer. The file name
+  will be
+  used as the song name, and the type will default to `any`.
+
 ## Supported and recommended mods/tools
 
 - The DC conversion mod is fully supported.
     - This includes every mod from the SA Mod Manager installer except for the "Steam Achievements Mod".
 - Kell's Super Sonic mod. If playing with Chaos Emeralds, you can only transform after collecting all 7.
 - Cream the Rabbit mod, every Tails check will work for her.
-- If you want to import or export Chao, you can use [this tool](https://chao-island.com/downloads/pc-tools/chao-exporter-importer/).
+- If you want to import or export Chao, you can
+  use [this tool](https://chao-island.com/downloads/pc-tools/chao-exporter-importer/).
     - Remember that by default, the chao save will be redirected to the `/mods/SADX_Archipelago/SAVEDATA` folder.
 
 ## Troubleshooting
@@ -77,3 +143,8 @@
     - Try enabling more options in the yaml, being too restrictive will prevent the world from generating.
 - While playing with Metal Sonic enabled, some checks aren't being sent correctly.
     - Disable the Metal Sonic code, this mod is not compatible with it.
+- Music not being picked up:
+    - Make sure the music files are in the correct format (ADX) and placed in the correct folder.
+    - If it seems like the game is not using your custom music, you can enable the **Show Missing Song Warning** option
+      in the mod settings to check.
+      If a song is missing, a warning message will appear showing the filename of the missing track.

@@ -34,6 +34,11 @@
   - An NPC in Nimbasa City that can change the weather (if `Season Control` is not `vanilla`)
   - An NPC in Castelia City that checks for the completion of the TM/HM hunt goal
   - An NPC in Accumula Town that resets static encounters (including gift and trade encounters)
+- Added the possibility to buy Master Balls for varying prices (if enabled) via the following ways:
+  - Cheren's Mom in Nuvema Town
+  - The NPC in Undella Town selling evolution items can also include Master Balls in his offers
+  - An NPC in N's Castle
+  - A new menu point in the PC
 - Removed the requirement to show a fateful encounter pokémon for ingame events
 - Removed certain time requirements from ingame events
   - The Musharna at Dreamyard now appears every day instead of only on Friday
@@ -43,4 +48,6 @@
   - Also made some events trigger every time instead of once a day
 - Prevented gym events from being disabled when beating the gym leader
 - The grunt at Pokémon League teleporting you to N's castle now stays even after defeating Ghetsis
+- Professor Juniper is now always in her laboratory, regardless of current story events
+- Fossils can now always be revived in the Nacrene City museum, regardless of current story events
 - Added a debug menu to the PC help menu

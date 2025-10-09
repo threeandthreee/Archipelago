@@ -330,17 +330,19 @@ class MusicSource(Choice):
     Custom songs are mapped to the Sonic Heroes soundtrack by default,
     but you're free to replace them with any songs you prefer.
 
-    Choose between: SADX (0), SADX + Custom (1), SA2B (2), SA2B + Custom (3), SADX + SA2B (4), and SADX + SA2B + Custom (5).
+    Choose between: SADX (0), SA2B (1), Custom (2), SADX + SA2B (3), SADX + Custom (4), SA2B + Custom (5),
+    or SADX + SA2B + Custom (6).
 
     NOTE: You must own SA2B and/or Sonic Heroes on PC to use their music.
     """
     display_name = "MusicSource"
     option_sadx = 0
-    option_sadx_custom = 1
-    option_sa2b = 2
-    option_sa2b_custom = 3
-    option_sadx_sa2b = 4
-    option_sadx_sa2b_custom = 5
+    option_sa2b = 1
+    option_custom = 2
+    option_sadx_sa2b = 3
+    option_sadx_custom = 4
+    option_sa2b_custom = 5
+    option_sadx_sa2b_custom = 6
     default = 0
 
 

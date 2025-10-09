@@ -403,7 +403,7 @@ def get_rules(world):
             "Level 5":
                 lambda state:
                     has_required_licenses(world, state, 5) \
-                    and has_worker(world, state) and state.has("Single Sided Shelf", world.player),#soft logic for placement only. not actually enforced
+                    and has_worker(world, state) and state.has("Progressive Shelf", world.player, 2),#soft logic for placement only. not actually enforced
             "Level 10":
                 lambda state:
                     has_required_licenses(world, state, 10) and can_sell_ghost(world, state) \
@@ -466,7 +466,7 @@ def get_rules(world):
                     has_required_licenses(world, state, 100),
             "Basic Card Pack":
                 lambda state:
-                state.has("Progressive Basic Card Pack", world.player),
+                state.has("Progressive Basic Card Pack", world.player) or state.has("Progressive Basic Card Box", world.player),
             "Rare Card Pack":
                 lambda state:
                 state.has("Progressive Rare Card Pack", world.player),
@@ -514,7 +514,7 @@ def get_rules(world):
                 state.has("Progressive Legendary Destiny Box", world.player),
             "Play Table Found":
                 lambda state:
-                state.has("Play Table", world.player),
+                state.has("Progressive Play Table", world.player),
             "Sell Tetramon":
                 lambda state:
                 (has_card_pack(world, state, CardRegion.BASIC) or has_card_pack(world, state, CardRegion.RARE)
