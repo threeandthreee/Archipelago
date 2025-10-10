@@ -10,6 +10,14 @@ from .Enums import level_areas, pascal_to_space
 
 class SADXProgressionBalancing(ProgressionBalancing):
     default = 80
+    special_range_names = {
+        "disabled": 0,
+        "normal": 80,
+        "extreme": 99,
+    }
+    __doc__ = ProgressionBalancing.__doc__.replace(f"default {ProgressionBalancing.default}", f"default {default}") \
+        if ProgressionBalancing.__doc__ else None
+
 
 
 class GoalRequiresLevels(DefaultOnToggle):
@@ -757,7 +765,6 @@ class TrapsAndFillerOnPerfectChaosFight(Toggle):
 
 @dataclass
 class SonicAdventureDXOptions(PerGameCommonOptions):
-    progression_balancing: SADXProgressionBalancing
     goal_requires_levels: GoalRequiresLevels
     levels_percentage: LevelPercentage
     goal_requires_chaos_emeralds: GoalRequiresChaosEmeralds
@@ -872,6 +879,7 @@ class SonicAdventureDXOptions(PerGameCommonOptions):
     traps_and_filler_on_boss_fights: TrapsAndFillerOnBossFights
     traps_and_filler_on_perfect_chaos_fight: TrapsAndFillerOnPerfectChaosFight
 
+    progression_balancing: SADXProgressionBalancing
 
 sadx_option_groups = [
     OptionGroup("General Options", [
