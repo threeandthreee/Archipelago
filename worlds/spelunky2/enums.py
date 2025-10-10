@@ -3,9 +3,11 @@ from enum import IntEnum, StrEnum
 JOURNAL_SUFFIX = " Journal Entry"
 UPGRADE_SUFFIX = " Upgrade"
 SHORTCUT_SUFFIX = " Shortcut"
+TRAP_SUFFIX = " Trap"
 VICTORY_STRING = "Victory"
 WORLD_2_STRING = "Any World 2"
 MAIN_MENU_STRING = "Menu"
+
 
 class Spelunky2Goal(IntEnum):
     EASY = 0
@@ -116,15 +118,15 @@ class ItemName(StrEnum):
     COSMIC_OCEAN_CP = "Cosmic Ocean Checkpoint"
 
     # AP Traps
-    POISON_TRAP = "Poison Trap"
-    CURSE_TRAP = "Curse Trap"
-    GHOST_TRAP = "Ghost Trap"
-    STUN_TRAP = "Stun Trap"
-    LOOSE_BOMBS_TRAP = "Loose Bombs Trap"
-    BLINDNESS_TRAP = "Blindness Trap"
-    AMNESIA_TRAP = "Amnesia Trap"
-    ANGRY_SHOPKEEPERS_TRAP = "Angry Shopkeepers Trap"
-    PUNISH_BALL_TRAP = "Punish Ball Trap"
+    POISON_TRAP = f"Poison{TRAP_SUFFIX}"
+    CURSE_TRAP = f"Curse{TRAP_SUFFIX}"
+    GHOST_TRAP = f"Ghost{TRAP_SUFFIX}"
+    STUN_TRAP = f"Stun{TRAP_SUFFIX}"
+    LOOSE_BOMBS_TRAP = f"Loose Bombs{TRAP_SUFFIX}"
+    BLINDNESS_TRAP = f"Blindness{TRAP_SUFFIX}"
+    AMNESIA_TRAP = f"Amnesia{TRAP_SUFFIX}"
+    ANGRY_SHOPKEEPERS_TRAP = f"Angry Shopkeepers{TRAP_SUFFIX}"
+    PUNISH_BALL_TRAP = f"Punish Ball{TRAP_SUFFIX}"
 
     # Characters
     ANA_SPELUNKY = "Ana Spelunky"
@@ -141,11 +143,9 @@ class ItemName(StrEnum):
     ROFFY_D_SLOTH = "Roffy D. Sloth"
     LIZ_MUTTON = "Liz Mutton"
     NEKKA_THE_EAGLE = "Nekka the Eagle"
-    LISE_SYSTEM = "Lise System"
     COCO_VON_DIAMONDS = "Coco Von Diamonds"
     MANFRED_TUNNEL = "Manfred Tunnel"
     LITTLE_JAY = "Little Jay"
-    TIJERINA_SPINK = "Tijerina Spink"
     VALERIE_CRUMP = "Valerie Crump"
     AU = "Au"
     DIRK_YAMAOKA = "Dirk Yamaoka"
@@ -182,6 +182,10 @@ class JournalName(StrEnum):
     EGGPLANT_WORLD = f"{WorldName.EGGPLANT.value}{JOURNAL_SUFFIX}"
     HUNDUN_HIDEAWAY = f"{LocationName.HUNDUN_HIDEAWAY}{JOURNAL_SUFFIX}"
     COSMIC_OCEAN = f"{WorldName.COSMIC_OCEAN.value}{JOURNAL_SUFFIX}"
+    ANA_SPELUNKY = f"{ItemName.ANA_SPELUNKY}{JOURNAL_SUFFIX}"
+    MARGARET_TUNNEL = f"{ItemName.MARGARET_TUNNEL}{JOURNAL_SUFFIX}"
+    COLIN_NORTHWARD = f"{ItemName.COLIN_NORTHWARD}{JOURNAL_SUFFIX}"
+    ROFFY_D_SLOTH = f"{ItemName.ROFFY_D_SLOTH}{JOURNAL_SUFFIX}"
     ALTO_SINGH = f"{ItemName.ALTO_SINGH.value}{JOURNAL_SUFFIX}"
     LIZ_MUTTON = f"{ItemName.LIZ_MUTTON.value}{JOURNAL_SUFFIX}"
     NEKKA_THE_EAGLE = f"{ItemName.NEKKA_THE_EAGLE.value}{JOURNAL_SUFFIX}"

@@ -10,6 +10,14 @@ from .Enums import level_areas, pascal_to_space
 
 class SADXProgressionBalancing(ProgressionBalancing):
     default = 80
+    special_range_names = {
+        "disabled": 0,
+        "normal": 80,
+        "extreme": 99,
+    }
+    __doc__ = ProgressionBalancing.__doc__.replace(f"default {ProgressionBalancing.default}", f"default {default}") \
+        if ProgressionBalancing.__doc__ else None
+
 
 
 class GoalRequiresLevels(DefaultOnToggle):
@@ -330,17 +338,19 @@ class MusicSource(Choice):
     Custom songs are mapped to the Sonic Heroes soundtrack by default,
     but you're free to replace them with any songs you prefer.
 
-    Choose between: SADX (0), SADX + Custom (1), SA2B (2), SA2B + Custom (3), SADX + SA2B (4), and SADX + SA2B + Custom (5).
+    Choose between: SADX (0), SA2B (1), Custom (2), SADX + SA2B (3), SADX + Custom (4), SA2B + Custom (5),
+    or SADX + SA2B + Custom (6).
 
     NOTE: You must own SA2B and/or Sonic Heroes on PC to use their music.
     """
     display_name = "MusicSource"
     option_sadx = 0
-    option_sadx_custom = 1
-    option_sa2b = 2
-    option_sa2b_custom = 3
-    option_sadx_sa2b = 4
-    option_sadx_sa2b_custom = 5
+    option_sa2b = 1
+    option_custom = 2
+    option_sadx_sa2b = 3
+    option_sadx_custom = 4
+    option_sa2b_custom = 5
+    option_sadx_sa2b_custom = 6
     default = 0
 
 
@@ -755,7 +765,6 @@ class TrapsAndFillerOnPerfectChaosFight(Toggle):
 
 @dataclass
 class SonicAdventureDXOptions(PerGameCommonOptions):
-    progression_balancing: SADXProgressionBalancing
     goal_requires_levels: GoalRequiresLevels
     levels_percentage: LevelPercentage
     goal_requires_chaos_emeralds: GoalRequiresChaosEmeralds
@@ -870,6 +879,7 @@ class SonicAdventureDXOptions(PerGameCommonOptions):
     traps_and_filler_on_boss_fights: TrapsAndFillerOnBossFights
     traps_and_filler_on_perfect_chaos_fight: TrapsAndFillerOnPerfectChaosFight
 
+    progression_balancing: SADXProgressionBalancing
 
 sadx_option_groups = [
     OptionGroup("General Options", [

@@ -160,3 +160,59 @@ class PokemonBWClient(BizHawkClient):
         except bizhawk.ConnectorError:
             pass
 
+    def get_flag(self, flag: int) -> bool:
+        return (self.flags_cache[flag//8] & (2 ** (flag % 8))) != 0
+
+    async def write_set_flag(self, ctx: "BizHawkClientContext", flag: int) -> None:
+        while not await bizhawk.guarded_write(
+            ctx.bizhawk_ctx, ((
+                self.save_data_address + self.flags_offset + (flag//8),
+                [self.flags_cache[flag//8] | (2 ** (flag % 8))],
+                self.ram_read_write_domain
+            ),), ((
+                self.save_data_address + self.flags_offset + (flag//8),
+                [self.flags_cache[flag//8]],
+                self.ram_read_write_domain
+            ),)
+        ):
+            self.flags_cache[flag//8] = (await bizhawk.read(
+                ctx.bizhawk_ctx, (
+                    (self.save_data_address + self.flags_offset + (flag//8), 1, self.ram_read_write_domain),
+                )
+            ))[0][0]
+        self.flags_cache[flag // 8] |= (2 ** (flag % 8))
+
+    async def write_unset_flag(self, ctx: "BizHawkClientContext", flag: int) -> None:
+        while not await bizhawk.guarded_write(
+            ctx.bizhawk_ctx, ((
+                self.save_data_address + self.flags_offset + (flag//8),
+                [self.flags_cache[flag//8] & (255 - (2 ** (flag % 8)))],
+                self.ram_read_write_domain
+            ),), ((
+                self.save_data_address + self.flags_offset + (flag//8),
+                [self.flags_cache[flag//8]],
+                self.ram_read_write_domain
+            ),)
+        ):
+            self.flags_cache[flag//8] = (await bizhawk.read(
+                ctx.bizhawk_ctx, (
+                    (self.save_data_address + self.flags_offset + (flag//8), 1, self.ram_read_write_domain),
+                )
+            ))[0][0]
+        self.flags_cache[flag // 8] &= (255 - (2 ** (flag % 8)))
+
+    async def write_var(self, ctx: "BizHawkClientContext", var: int, value: int, length=2) -> None:
+        await bizhawk.write(
+            ctx.bizhawk_ctx, ((
+                self.save_data_address + self.var_offset + (2 * var),
+                value.to_bytes(length, "little"),
+                self.ram_read_write_domain
+            ),)
+        )
+
+    async def read_var(self, ctx: "BizHawkClientContext", var: int, length=2) -> int:
+        return int.from_bytes((await bizhawk.read(
+            ctx.bizhawk_ctx, (
+                (self.save_data_address + self.var_offset + (2 * var), length, self.ram_read_write_domain),
+            )
+        ))[0], "little")

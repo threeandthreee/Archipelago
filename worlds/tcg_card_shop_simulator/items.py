@@ -59,7 +59,7 @@ def create_items(world):
         starting_items.append(
             Item(world.item_id_to_name[218 + world.options.start_with_worker.value], ItemClassification.progression, (218 + world.options.start_with_worker.value), world.player))
     starting_items.append(Item("FormatStandard", ItemClassification.useful, not_sellable_dict["FormatStandard"].code ,world.player))
-    starting_items.append(Item("Small Cabinet", ItemClassification.useful, not_sellable_dict["Small Cabinet"].code ,world.player))
+    starting_items.append(Item("Progressive Shelf", ItemClassification.useful, not_sellable_dict["Progressive Shelf"].code ,world.player))
     #create all items except ghosts and junk
     num = 0
     for item_name, item_data in item_dict.items():
@@ -69,12 +69,12 @@ def create_items(world):
         item_data.code in world.tt_licenses) and item_data.code not in world.starting_item_ids:
             create_item(world, item_name, item_data.classification, item_data.amount)
 
-    if total_location_count > 125:
+    if total_location_count > 140:
         for item_name, item_data in not_sellable_dict.items():
             amount = item_data.amount
             if item_name in (item.name for item in starting_items):
                 amount -= 1
-            create_item(world, item_name, item_data.classification, item_data.amount)
+            create_item(world, item_name, item_data.classification, amount)
     else:
         remaining_items = copy.deepcopy(not_sellable_dict)
 
@@ -132,7 +132,7 @@ def create_items(world):
     # -1 on LevelGoal because I place a victory item at the goal level
     junk_count = remaining_locations - trap_count - (1 if world.options.goal == 0 else 0)
 
-    # print(f"junk count {junk_count + trap_count}")
+    print(f"junk count {junk_count + trap_count}")
 
     trap_weights = {
         "Stink Trap": world.options.stink_trap,
@@ -163,6 +163,8 @@ def create_items(world):
     for name in trap:
         create_item(world, name, ItemClassification.trap)
     world.multiworld.itempool += world.itempool
+    if len(world.itempool) > total_location_count:
+        print(f"WARNING: Overfilled pool by {len(world.itempool) - total_location_count} items!")
     return starting_items, ghost_counts
 
 def get_junk_item_names(rand, k: int) -> str:
@@ -321,12 +323,12 @@ not_sellable_dict: Dict[str, ItemData] = {
     "Worker - Benji": ItemData(224, ItemClassification.useful),
     "Worker - Lauren": ItemData(225, ItemClassification.useful),
     "Worker - Axel": ItemData(226, ItemClassification.useful),
-    "Small Cabinet": ItemData(227, ItemClassification.progression),
-    "Small Metal Rack": ItemData(228, ItemClassification.useful),
-    "Single Sided Shelf": ItemData(229, ItemClassification.progression),
-    "Double Sided Shelf": ItemData(230, ItemClassification.useful),
-    "Wide Shelf": ItemData(231, ItemClassification.useful),
-    "Play Table": ItemData(232, ItemClassification.progression),
+    "Progressive Shelf": ItemData(227, ItemClassification.progression, 6),
+    "Progressive Wall Display Case": ItemData(228, ItemClassification.useful, 5),
+    "Progressive Card Projector": ItemData(229, ItemClassification.progression, 3),
+    "Progressive Pack Opener": ItemData(230, ItemClassification.useful, 3),
+    "Worker - Alexander": ItemData(231, ItemClassification.useful),
+    "Progressive Play Table": ItemData(232, ItemClassification.progression, 3),
     "Workbench": ItemData(233, ItemClassification.progression),
     "Trash Bin": ItemData(234, ItemClassification.useful),
     "Checkout Counter": ItemData(235, ItemClassification.progression),

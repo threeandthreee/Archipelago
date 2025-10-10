@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Sequence
+from typing import TYPE_CHECKING
 import worlds._bizhawk as bizhawk
 
 if TYPE_CHECKING:
@@ -28,61 +28,38 @@ async def late_setup(client: "PokemonBWClient", ctx: "BizHawkClientContext") -> 
 
     await reload_key_items(client, ctx)
 
-    writes: list[tuple[int, Sequence[int], str]] = []
-
     if ctx.slot_data["options"]["goal"] not in ("tmhm_hunt", "pokemon_master"):
-        writes.append((
-            client.save_data_address+client.flags_offset+(0x192//8),
-            [client.flags_cache[0x192//8] | 4],
-            client.ram_read_write_domain
-        ))
+        await client.write_set_flag(ctx, 0x192)
+    else:
+        await client.write_unset_flag(ctx, 0x192)
 
     if ctx.slot_data["options"]["season_control"] == "vanilla":
-        writes.append((
-            client.save_data_address+client.flags_offset+(0x193//8),
-            [client.flags_cache[0x193//8] | 8],
-            client.ram_read_write_domain
-        ))
-    elif ctx.slot_data["options"]["season_control"] == "randomized":
-        for network_item in ctx.items_received:
-            name = ctx.item_names.lookup_in_game(network_item.item)
-            if name in seasons.table:
-                writes.append((
-                    client.save_data_address+client.var_offset+(2*0xC1),
-                    [seasons.table[name].var_value],
-                    client.ram_read_write_domain
-                ))
-                break
+        await client.write_set_flag(ctx, 0x193)
+    else:
+        await client.write_unset_flag(ctx, 0x193)
+        if ctx.slot_data["options"]["season_control"] == "randomized":
+            for network_item in ctx.items_received:
+                name = ctx.item_names.lookup_in_game(network_item.item)
+                if name in seasons.table:
+                    await client.write_var(ctx, 0xC1, seasons.table[name].var_value)
+                    break
 
     master_ball_cost: int = ctx.slot_data["master_ball_seller_cost"]
-    writes.append((
-        client.save_data_address + client.var_offset + (2 * 0xF2),
-        master_ball_cost.to_bytes(2, "little"),
-        client.ram_read_write_domain
-    ))
-    if "N's Castle" in ctx.slot_data["options"]["master_ball_seller"]:
-        writes.append((
-            client.save_data_address+client.flags_offset+(0x1CF//8),
-            [client.flags_cache[0x1CF//8] | 128],
-            client.ram_read_write_domain
-        ))
-    if "PC" in ctx.slot_data["options"]["master_ball_seller"]:
-        writes.append((
-            client.save_data_address+client.flags_offset+(0x1D1//8),
-            [client.flags_cache[0x1D1//8] | 2],
-            client.ram_read_write_domain
-        ))
-    if "Cheren's Mom" in ctx.slot_data["options"]["master_ball_seller"]:
-        writes.append((
-            client.save_data_address+client.flags_offset+(0x1D2//8),
-            [client.flags_cache[0x1D2//8] | 4],
-            client.ram_read_write_domain
-        ))
-    if "Undella Mansion seller" in ctx.slot_data["options"]["master_ball_seller"]:
-        writes.append((
-            client.save_data_address+client.flags_offset+(0x1D0//8),
-            [client.flags_cache[0x1D0//8] | 1],
-            client.ram_read_write_domain
-        ))
-
-    await bizhawk.write(ctx.bizhawk_ctx, writes)
+    seller_modifiers = [mod.casefold() for mod in ctx.slot_data["options"]["master_ball_seller"]]
+    await client.write_var(ctx, 0xF2, master_ball_cost)
+    if "ns castle" in seller_modifiers:
+        await client.write_set_flag(ctx, 0x1CF)
+    else:
+        await client.write_unset_flag(ctx, 0x1CF)
+    if "pc" in seller_modifiers:
+        await client.write_set_flag(ctx, 0x1D1)
+    else:
+        await client.write_unset_flag(ctx, 0x1D1)
+    if "cherens mom" in seller_modifiers:
+        await client.write_set_flag(ctx, 0x1D2)
+    else:
+        await client.write_unset_flag(ctx, 0x1D2)
+    if "undella mansion seller" in seller_modifiers:
+        await client.write_set_flag(ctx, 0x1D0)
+    else:
+        await client.write_unset_flag(ctx, 0x1D0)

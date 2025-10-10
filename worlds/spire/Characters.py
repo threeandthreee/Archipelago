@@ -1,6 +1,6 @@
 from typing import List, Any
 
-from worlds.spire.Options import Character, NUM_CUSTOM
+from .Constants import NUM_CUSTOM
 
 NUM_CUSTOM = NUM_CUSTOM
 
@@ -36,10 +36,10 @@ official_names: List[str] = [
     "THE_COLLECTOR",
 ]
 
-character_option_map = {
-    value: key.lower()
-    for key, value in Character.options.items() if key != "spire_take_the_wheel"
-}
+# character_option_map = {
+#     value: key.lower()
+#     for key, value in Character.options.items()
+# }
 
 character_offset_map = {
     name.lower(): i
@@ -73,6 +73,7 @@ class CharacterConfig:
         self.ascension: int = kwargs['ascension']
         self.final_act: int = kwargs['final_act']
         self.downfall: int = kwargs['downfall']
+        self.ascension_down: int = kwargs['ascension_down']
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -86,6 +87,7 @@ class CharacterConfig:
             'ascension': self.ascension,
             'final_act': self.final_act != 0,
             'downfall': self.downfall != 0,
+            'ascension_down': self.ascension_down,
         }
 
     def __repr__(self):

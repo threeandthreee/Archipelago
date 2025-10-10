@@ -86,9 +86,14 @@ def shuffle_entrances(world: "FF1pixelWorld") -> None:
                                                              False,
                                                              options.shuffle_entrances > 0)
 
-    ow_pools["Chaos Shrine"] = EntranceShufflingData("Chaos Shrine",
+    ow_pools["Chaos Shrine Right"] = EntranceShufflingData("Chaos Shrine Right",
                                                             [e for e in global_entrances
-                                                             if e.region == regnames.chaos_shrine_1f_entrance],
+                                                             if e.name == entnames.chaos_shrine_1f_entrance_right_stairs],
+                                                            False,
+                                                            False)
+    ow_pools["Chaos Shrine Left"] = EntranceShufflingData("Chaos Shrine Left",
+                                                            [e for e in global_entrances
+                                                             if e.name == entnames.chaos_shrine_1f_entrance_left_stairs],
                                                             False,
                                                             False)
 
@@ -203,16 +208,49 @@ def shuffle_entrances(world: "FF1pixelWorld") -> None:
     # Chaos Shrine
     if options.shuffle_entrances > 0:
         chaos_entrances = [e for e in global_entrances if e.group == "Chaos Shrine"]
-        chaos_entrances_prog = [e for e in chaos_entrances if not e.deadend]
-        chaos_entrances_dead = [e for e in chaos_entrances if e.deadend]
+
+        lute_entrance = [e for e in chaos_entrances if e.name == entnames.chaos_shrine_2f_corridor_right_stairs][0]
+        final_entrance = [e for e in chaos_entrances if e.name == entnames.chaos_shrine_b4_right_stairs][0]
+        b1_deadeand_entrance = [e for e in chaos_entrances if e.name == entnames.chaos_shrine_1f_entrance_left_stairs][0]
+        chaos_entrances.remove(lute_entrance)
+        chaos_entrances.remove(final_entrance)
+        chaos_entrances.remove(b1_deadeand_entrance)
+
+        chaos_entrances_groups = [[lute_entrance, final_entrance], [b1_deadeand_entrance]]
+
+        while len(chaos_entrances) > 0:
+            picked_group = world.random.choice(chaos_entrances_groups)
+            picked_entrance = world.random.choice(chaos_entrances)
+            picked_group.append(picked_entrance)
+            chaos_entrances.remove(picked_entrance)
+
+        chaos_entrances_group = world.random.choice(chaos_entrances_groups)
+        chaos_entrances_groups.remove(chaos_entrances_group)
+
+        chaos_entrances_prog = [e for e in chaos_entrances_group if not e.deadend]
+        chaos_entrances_dead = [e for e in chaos_entrances_group if e.deadend]
 
         while len(chaos_entrances_prog) > 0:
             chaos_entrance = random_pop(world, chaos_entrances_prog)
-            place_entrance(ow_pools["Chaos Shrine"], chaos_entrance)
+            place_entrance(ow_pools["Chaos Shrine Right"], chaos_entrance)
 
         while len(chaos_entrances_dead) > 0:
             chaos_entrance = random_pop(world, chaos_entrances_dead)
-            place_entrance(ow_pools["Chaos Shrine"], chaos_entrance)
+            place_entrance(ow_pools["Chaos Shrine Right"], chaos_entrance)
+
+        chaos_entrances_group = world.random.choice(chaos_entrances_groups)
+        chaos_entrances_groups.remove(chaos_entrances_group)
+
+        chaos_entrances_prog = [e for e in chaos_entrances_group if not e.deadend]
+        chaos_entrances_dead = [e for e in chaos_entrances_group if e.deadend]
+
+        while len(chaos_entrances_prog) > 0:
+            chaos_entrance = random_pop(world, chaos_entrances_prog)
+            place_entrance(ow_pools["Chaos Shrine Left"], chaos_entrance)
+
+        while len(chaos_entrances_dead) > 0:
+            chaos_entrance = random_pop(world, chaos_entrances_dead)
+            place_entrance(ow_pools["Chaos Shrine Left"], chaos_entrance)
 
     # 6. Place everything else
     prog_mixed_entrances = [e for e in all_entrances if not e.deadend]

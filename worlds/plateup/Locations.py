@@ -23,8 +23,15 @@ base_stars = [
     ("Fifth Star", 151),
 ]
 
-for run in range(10):
-    offset = (run + 1) * 100000
+for run in range(50):  # expanded from 10 to 50 runs
+    # Original runs (0-9) keep legacy ID pattern for stability.
+    # Runs >=10 shift forward by +10 * 100000 (i.e., +1,000,000) to avoid collisions
+    # with dish location IDs in the 1010001-1150015 range (dish_id * 10000 + day).
+    if run < 10:
+        offset = (run + 1) * 100000
+    else:
+        # Skip over 1,010,000 to 1,150,015 dish range by adding 10 to run index in multiplier
+        offset = (run + 11) * 100000  # run 10 -> 2,100,000; run 49 -> 6,000,000
     suffix = "" if run == 0 else f" After Franchised{' ' + str(run) if run > 1 else ''}"
     prefix = "Franchise - "
 
@@ -38,9 +45,14 @@ for run in range(10):
         loc_id = offset + id_offset
         FRANCHISE_LOCATION_DICT[name] = loc_id
 
-for i in range(1, 11):
+for i in range(1, 51):  # expanded from 10 to 50
+    # Maintain legacy IDs up to 10 for stability, then jump to higher range to avoid dish collisions.
+    if i <= 10:
+        loc_id = 100000 * (i + 1)
+    else:
+        # Start at 2,200,000 for i=11 ( (11+11)*100000 ) matching offset schema above.
+        loc_id = 100000 * (i + 11)
     name = f"Franchise {i} times"
-    loc_id = 100000 * (i + 1)
     FRANCHISE_LOCATION_DICT[name] = loc_id
 
 for day in range(16, 21):
@@ -54,15 +66,15 @@ DAY_LOCATION_DICT: Dict[str, int] = {
     "Lose a Run": 100000
 }
 
-# Day checks up to 100
-for i in range(1, 101):
+# Day checks up to 1000
+for i in range(1, 1001):
     # e.g. “Complete Day 1” => ID=110001
     day_loc_id = 110000 + i
     day_name = f"Complete Day {i}"
     DAY_LOCATION_DICT[day_name] = day_loc_id
 
-# Star checks up to 33
-for i in range(1, 34):
+# Star checks up to 334 (supports day goal up to 1000 days => ceil(1000/3) = 334)
+for i in range(1, 335):
     # e.g. “Complete Star 1” => ID=120001
     star_loc_id = 120000 + i
     star_name = f"Complete Star {i}"

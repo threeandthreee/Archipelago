@@ -6,6 +6,19 @@ from .data import data, MapPalette
 from .maps import FLASH_MAP_GROUPS
 
 
+class EnhancedOptionSet(OptionSet):
+
+    def __init__(self, value):
+        if isinstance(value, list) and "_All" in value:
+            value = [k for k in self.valid_keys if not k.startswith("_")]
+        super().__init__(value)
+
+    def __init_subclass__(cls, **kwargs):
+        super.__init_subclass__()
+        cls.valid_keys += ["_Random", "_All"]
+        cls._valid_keys = frozenset(set(cls.valid_keys) | {"_Random", "_All"})
+
+
 class Goal(Choice):
     """
     Elite Four: Defeat the Champion and enter the Hall of Fame
@@ -262,9 +275,12 @@ class KantoAccessCount(Range):
     range_end = 16
 
 
-class DarkAreas(OptionSet):
+class DarkAreas(EnhancedOptionSet):
     """
     Sets which areas are dark until Flash is used
+
+- _All includes all areas
+- _Random has a 50% chance to include each area that is not already included
     """
     display_name = "Dark Areas"
     default = sorted(area for area, maps in FLASH_MAP_GROUPS.items() if data.maps[maps[0]].palette is MapPalette.Dark)
@@ -408,18 +424,6 @@ class Rematchsanity(Toggle):
     visibility = Visibility.none
 
 
-class TrainersanityAlerts(Choice):
-    """
-    Shows a message box or plays a sound for Trainersanity checks
-    Does not apply to some trainers with special handling
-    """
-    display_name = "Trainersanity Alerts"
-    default = 1
-    option_no_alerts = 0
-    option_message_box = 1
-    option_sound_only = 2
-
-
 class Dexsanity(NamedRange):
     """
     Adds checks for catching Pokemon
@@ -491,15 +495,18 @@ class DexsanityStarters(Choice):
     option_available_early = 2
 
 
-class WildEncounterMethodsRequired(OptionSet):
+class WildEncounterMethodsRequired(EnhancedOptionSet):
     """
     Sets which wild encounter types may be logically required
+
+    _Random has a 50% chance to include types which are not already included
+    _All will include all types
 
     Swarms and roamers are NEVER in logic
     """
     display_name = "Wild Encounter Methods Required"
     valid_keys = ["Land", "Surfing", "Fishing", "Headbutt", "Rock Smash"]
-    default = valid_keys
+    default = ["Land", "Surfing", "Fishing", "Headbutt", "Rock Smash"]
 
 
 class EnforceWildEncounterMethodsLogic(Toggle):
@@ -512,13 +519,16 @@ class EnforceWildEncounterMethodsLogic(Toggle):
     display_name = "Enforce Wild Encounter Methods Logic"
 
 
-class EvolutionMethodsRequired(OptionSet):
+class EvolutionMethodsRequired(EnhancedOptionSet):
     """
     Sets which types of evolutions may be logically required
+
+    _Random has a 50% chance to include types which are not already included
+    _All will include all types
     """
     display_name = "Evolution Methods Required"
     valid_keys = ["Level", "Level Tyrogue", "Use Item", "Happiness"]
-    default = valid_keys
+    default = ["Level", "Level Tyrogue", "Use Item", "Happiness"]
 
 
 class StaticPokemonRequired(DefaultOnToggle):
@@ -553,7 +563,7 @@ class EvolutionGymLevels(Range):
     range_end = 69
 
 
-class Shopsanity(OptionSet):
+class Shopsanity(EnhancedOptionSet):
     """
     Adds shop purchases as locations, items in shops are added to the item pool
     - Johto Marts: Adds Johto Poke Marts, including the Goldenrod Dept. Store.
@@ -562,7 +572,8 @@ class Shopsanity(OptionSet):
     points. Five Blue Card Points are added to the item pool. Points are not spent when purchasing.
     - Game Corners: The Game Corner TM shops are added.
     - Apricorns: Kurt's Apricorn Ball shop is added, each slot requires a different Apricorn. Apricorns are progression.
-    - "_All": Includes all valid options.
+    - _All: Includes all valid options.
+    - _Random: Each option that is not included has a 50% chance to be additionally included.
 
     IMPORTANT NOTE: There is a non-randomized shop on Pokecenter 2F, you can always buy Poke Balls, and Escape Ropes there.
     """
@@ -575,13 +586,7 @@ class Shopsanity(OptionSet):
     apricorns = "Apricorns"
     game_corners = "Game Corners"
 
-    valid_keys = [johto_marts, kanto_marts, blue_card, apricorns, game_corners, "_All"]
-
-    def __init__(self, value):
-        # If _all is selected, expand it into all the real shops
-        if isinstance(value, list) and "_All" in value:
-            value = [k for k in self.valid_keys if k != "_All"]
-        super().__init__(value)
+    valid_keys = [johto_marts, kanto_marts, blue_card, apricorns, game_corners]
 
 
 class ShopsanityPrices(Choice):
@@ -893,14 +898,15 @@ class LevelScaling(Choice):
 
 class LockKantoGyms(Choice):
     """
-    Logically lock entering all Kanto Gyms behind access to a high level Pokemon, included locations:
+    Logically lock entering all Kanto gyms and Mt. Moon behind access to a high level Pokemon, included locations:
     - Snorlax
     - Ho-oh
     - Lugia
     - Suicune
     - Silver Cave entrance
+    - Victory Road
 
-    You can still enter gyms without access to any of these.
+    You can still enter gyms and Mt. Moon without access to any of these.
 
     NOTE: It's not recommended to use this option with Level Scaling, as the Gym and wild Pokemon levels will be scaled
     """
@@ -1151,8 +1157,6 @@ class ConvergentEvolution(Choice):
     Random evolution can cause multiple Pokemon to evolve into the same Pokemon.
     - Avoid: Each Pokemon can only evolve from one Pokemon.
     - Allow: Multiple Pokemon can evolve into the same Pokemon. Makes breeding weird.
-
-    Note: Further affects breeding: If the evolution path splits, then the Pokemon with the lower ID will be selected.
     """
     display_name = "Convergent Evolution"
     default = 0
@@ -1223,14 +1227,6 @@ class RandomizeMusic(Choice):
     option_completely_random = 2
 
 
-# class RandomizeSFX(Toggle):
-#     """
-#     Randomize all sound effects
-#     """
-#     display_name = "Randomize SFX"
-#     default = 0
-
-
 class FreeFlyLocation(Choice):
     """
     - Free Fly: Unlocks a random Fly destination when Fly is obtained.
@@ -1289,9 +1285,12 @@ class HMBadgeRequirements(Choice):
     option_regional = 3
 
 
-class RemoveBadgeRequirement(OptionSet):
+class RemoveBadgeRequirement(EnhancedOptionSet):
     """
     Specify which HMs do not require a badge to use. This overrides the HM Badge Requirements setting.
+
+    _Random has a 50% chance to include HMs which are not already included
+    _All will include all HMs
 
     HMs should be provided in the form: "Fly".
     """
@@ -1321,23 +1320,16 @@ class RemoveIlexCutTree(DefaultOnToggle):
     display_name = "Remove Ilex Forest Cut Tree"
 
 
-class SaffronGatehouseTea(OptionSet):
+class SaffronGatehouseTea(EnhancedOptionSet):
     """
     Sets which Saffron City gatehouses require Tea to pass. Obtaining the Tea will unlock them all.
     If any gatehouses are enabled, adds a new location in Celadon Mansion 1F and adds Tea to the item pool.
-    Valid options are: North, East, South, West, and _Random in any combination.
+    Valid options are: North, East, South and West in any combination.
     _Random gives each gate that is not already included a 50% chance to be included.
     _All is shorthand for all valid options except _Random of course.
     """
     display_name = "Saffron Gatehouse Tea"
-    valid_keys = ["North", "East", "South", "West", "_Random", "_All"]
-
-    def __init__(self, value):
-        # If the user selected _all, replace it with all real keys
-        if isinstance(value, list) and "_All" in value:
-            # everything except _Random and _all itself
-            value = [k for k in self.valid_keys if k not in ("_Random", "_All")]
-        super().__init__(value)
+    valid_keys = ["North", "East", "South", "West"]
 
 
 class EastWestUnderground(Toggle):
@@ -1399,7 +1391,7 @@ class BuildAMart(OptionList):
     
     Available items: Antidote, Awakening, Burn Heal, Calcium, Carbos, Dire Hit, Elixer, Ether, Fresh Water, 
     Full Heal, Full Restore, Great Ball, Guard Spec, HP Up, Hyper Potion, Ice Heal, Iron, Lemonade, Max Elixer, 
-    Max Ether, Max Potion, Max Repel, Max Revive, Parlyz Heal, Potion, Protein, PP Up, Rare Candy, Repel, 
+    Max Ether, Max Potion, Max Repel, Max Revive, Park Ball, Parlyz Heal, Potion, Protein, PP Up, Rare Candy, Repel, 
     Revive, Soda Pop, Super Potion, Super Repel, Ultra Ball, X Accuracy, X Attack, X Defend, X Special, X Speed.
     """
     display_name = "Build-a-Mart"
@@ -1608,6 +1600,7 @@ class GameOptions(OptionDict):
     fast_egg_make: off/on - Sets whether eggs are guaranteed after one cycle at the day care
     guaranteed_catch: off/on - Sets whether balls have a 100% success rate
     hms_require_teaching: on/off - Sets whether it is required to teach field moves to use them in the field
+    item_notification: popup/sound/none - Sets how Trainersanity, Dex(count)sanity and Grasssanity locations show item notifications
     low_hp_beep: on/off - Sets whether the low HP beep is played in battle
     menu_account: on/off - Sets whether your start menu selection is remembered
     more_uncaught_encounters: on/off - Sets whether wild encounters of Pokemon you have not caught are more likely
@@ -1656,7 +1649,34 @@ class GameOptions(OptionDict):
         "ap_item_sound": "on",
         "trainersanity_indication": "off",
         "more_uncaught_encounters": "off",
+        "auto_hms": "off",
+        "hms_require_teaching": "on",
+        "item_notification": "popup",
     }
+
+
+class ExcludePostGoalLocations(DefaultOnToggle):
+    """
+    Excludes locations which require becoming champion when goal is becoming champion
+    """
+    display_name = "Exclude Post Goal Locations"
+
+
+class Grasssanity(Choice):
+    """
+    Adds Cutting grass tiles as locations, each one adds a Grass to the item pool, Grass smells good and sells for ¥1
+    Long grass tiles in National Park must be Cut twice and as such contribute two locations
+
+    - One Per Area: Selects a random grass tile in each Route or Area to be a location
+    - Full: Every grass tile is a location
+
+    WARNING: This option is dumb, it can add over 700 locations and over 700 useless filler items
+    """
+    display_name = "Grasssanity"
+    default = 0
+    option_off = 0
+    option_one_per_area = 1
+    option_full = 2
 
 
 class PokemonCrystalDeathLink(DeathLink):
@@ -1697,7 +1717,6 @@ class PokemonCrystalOptions(PerGameCommonOptions):
     mount_mortar_access: MountMortarAccess
     johto_trainersanity: JohtoTrainersanity
     kanto_trainersanity: KantoTrainersanity
-    trainersanity_alerts: TrainersanityAlerts
     rematchsanity: Rematchsanity
     randomize_wilds: RandomizeWilds
     dexsanity: Dexsanity
@@ -1759,7 +1778,6 @@ class PokemonCrystalOptions(PerGameCommonOptions):
     breeding_blocklist: BreedingBlocklist
     randomize_palettes: RandomizePalettes
     randomize_music: RandomizeMusic
-    # randomize_sfx: RandomizeSFX
     move_blocklist: MoveBlocklist
     tm_blocklist: TMBlocklist
     free_fly_location: FreeFlyLocation
@@ -1794,6 +1812,8 @@ class PokemonCrystalOptions(PerGameCommonOptions):
     start_inventory_from_pool: StartInventoryPool
     death_link: PokemonCrystalDeathLink
     always_unlock_fly_destinations: AlwaysUnlockFly
+    exclude_post_goal_locations: ExcludePostGoalLocations
+    grasssanity: Grasssanity
 
 
 OPTION_GROUPS = [
@@ -1836,7 +1856,9 @@ OPTION_GROUPS = [
          RandomizeFlyUnlocks,
          RequireItemfinder,
          RemoteItems,
-         ItemPoolFill]
+         ItemPoolFill,
+         ExcludePostGoalLocations,
+         Grasssanity]
     ),
     OptionGroup(
         "Shopsanity",
@@ -1918,8 +1940,7 @@ OPTION_GROUPS = [
     OptionGroup(
         "Trainersanity",
         [JohtoTrainersanity,
-         KantoTrainersanity,
-         TrainersanityAlerts]
+         KantoTrainersanity]
     ),
     OptionGroup(
         "Pokemon Logic",

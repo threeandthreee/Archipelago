@@ -63,6 +63,7 @@ class DexLocationData(NamedTuple):
     dex_number: int
     # Use special rule if there are more than one species for a dex entry (e.g. Wormadam, Deoxys, Castform, ...)
     special_rule: ExtendedRule | None = None
+    ut_alias: str | None = None
 
 
 class EncounterData(NamedTuple):

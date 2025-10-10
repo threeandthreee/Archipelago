@@ -8,6 +8,10 @@ if TYPE_CHECKING:
     from . import PokemonFRLGWorld
 
 
+RENEWABLE_PROGRESSION_ITEMS = ("Lemonade", "King's Rock", "Metal Coat", "Dragon Scale", "Up-Grade", "Deep Sea Scale",
+                               "Deep Sea Tooth", "Heart Scale")
+
+
 class PokemonFRLGItem(Item):
     game: str = "Pokemon FireRed and LeafGreen"
 
@@ -58,7 +62,8 @@ def get_random_item(world: "PokemonFRLGWorld", item_classification: ItemClassifi
     return world.random.choice(items).name
 
 def update_renewable_to_progression(item: PokemonFRLGItem) -> None:
-    renewable_progession_items = ("King's Rock", "Metal Coat", "Dragon Scale", "Up-Grade", "Deep Sea Scale",
-                                  "Deep Sea Tooth", "Heart Scale")
-    if item.name in renewable_progession_items:
+    if item.name in RENEWABLE_PROGRESSION_ITEMS:
         item.classification = ItemClassification.progression
+
+def is_renewable_progression(world: "PokemonFRLGWorld", item: Item) -> bool:
+    return item.name in RENEWABLE_PROGRESSION_ITEMS and item.player == world.player

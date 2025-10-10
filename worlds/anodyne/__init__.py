@@ -7,19 +7,21 @@ from dataclasses import dataclass
 
 from BaseClasses import Region, Location, Item, ItemClassification, CollectionState, Tutorial
 from Fill import fill_restrictive, FillError
-from Options import Accessibility
+from Options import Accessibility, OptionGroup
 from worlds.AutoWorld import WebWorld, World
-from typing import List, Callable, Dict, Any, Set, Iterable, Mapping, Type, Tuple
+from typing import List, Callable, Dict, Any, Set, Iterable, Type, Tuple, Optional
 
-from . import Constants
+from . import Constants, Options
 from .Constants import AccessRule
 
 from .Data import Items, Locations, Regions, Exits, Events
-from .Data.Items import big_keys
+from .Data.Events import EventData, EventFlags
+from .Data.Regions import RegionEnum, Nexus, Red_Cave, Blue, Happy, Forest, Windmill, Bedroom, Street, Hotel, Fields
 from .Options import AnodyneGameOptions, SmallKeyShuffle, StartBroom, VictoryCondition, BigKeyShuffle, \
     HealthCicadaShuffle, NexusGatesOpen, RedCaveAccess, PostgameMode, NexusGateShuffle, TrapPercentage, SmallKeyMode, \
     Dustsanity, GateType, gatereq_classes, CardAmount, EndgameRequirement, GateRequirements, MitraHints, gate_lookup, \
     OverworldFieldsGate
+from .ut_stuff import UTTrackerData
 
 
 class AnodyneLocation(Location):
@@ -32,6 +34,42 @@ class AnodyneItem(Item):
 
 class AnodyneWebWorld(WebWorld):
     theme = "dirt"
+    option_groups = [
+        OptionGroup("Key Logic", [
+            Options.SmallKeyMode,
+            Options.SmallKeyShuffle,
+            Options.BigKeyShuffle
+        ]),
+        OptionGroup("Cards", [
+            Options.CardAmount,
+            Options.ExtraCardAmount
+        ]),
+        OptionGroup("Logic Changes", [
+            Options.SplitWindmill,
+            Options.IncludeBlueAndHappy,
+            Options.FieldsSecretPaths,
+            Options.RandomizeColorPuzzle,
+            Options.NexusGateShuffle,
+            Options.RedCaveAccess
+        ]),
+        OptionGroup("Starting Nexus Gates", [
+            Options.NexusGatesOpen,
+            Options.RandomNexusGateOpenCount,
+            Options.CustomNexusGatesOpen
+        ]),
+        OptionGroup("Extra Locations", [
+            Options.Dustsanity,
+            Options.HealthCicadaShuffle,
+            Options.IncludeForestBunnyChest
+        ]),
+        OptionGroup("Filler Items", [
+            Options.TrapPercentage
+        ]),
+        OptionGroup("Big Gate Logic", [option for gatereqs in [
+            [gatereq.Gate, gatereq.GateCardReq, gatereq.GateBossReq]
+            for gatereq in Options.gatereq_classes] for option in gatereqs]
+                    )
+    ]
     tutorials = [Tutorial(
         "Multiworld Setup Guide",
         "A guide to playing Anodyne with Archipelago.",
@@ -56,19 +94,25 @@ class AnodyneWorld(World):
     topology_present = False  # show path to required location checks in spoiler
 
     ut_can_gen_without_yaml = True
+    tracker_world = UTTrackerData
+    using_ut: bool
+    found_entrances_datastorage_key = "Slot:{player}:EventMap"
+    tracked_events: EventFlags
 
-    version = "0.3.1"
+    version = "0.4.0"
 
     item_name_to_id = Constants.item_name_to_id
     location_name_to_id = Constants.location_name_to_id
     item_name_groups = Items.item_groups
     location_name_groups = Locations.location_groups
 
-    gates_unlocked: List[str]
+    origin_region_name = str(Regions.Nexus.bottom)
+
+    gates_unlocked: List[type[RegionEnum]]
     location_count: int
-    dungeon_items: Dict[str, List[Item]]
+    dungeon_items: Dict[type[RegionEnum], List[Item]]
     proxy_rules: Dict[str, List[str]]
-    shuffled_gates: Set[str]
+    shuffled_gates: Set[type[RegionEnum]]
 
     def generate_early(self):
         self.gates_unlocked = []
@@ -76,15 +120,18 @@ class AnodyneWorld(World):
         self.dungeon_items = dict()
         self.proxy_rules = dict()
         self.shuffled_gates = set()
+        self.using_ut = False
+        self.tracked_events = EventFlags(0)
 
         nexus_gate_open = self.options.nexus_gates_open
 
         # Street is always unlocked
         if hasattr(self.multiworld, "re_gen_passthrough") and "Anodyne" in self.multiworld.re_gen_passthrough:
+            self.using_ut = True
             # Universal tracker; ignored during normal gen.
             slot_data = self.multiworld.re_gen_passthrough["Anodyne"]
 
-            self.gates_unlocked = slot_data["nexus_gates_unlocked"]
+            self.gates_unlocked = [Regions.all_areas[i] for i in slot_data["nexus_gates_unlocked"]]
             self.options.small_key_mode.value = slot_data["small_key_mode"]
             self.options.small_key_shuffle.value = slot_data["shuffle_small_keys"]
             self.options.big_key_shuffle.value = slot_data["shuffle_big_gates"]
@@ -97,9 +144,14 @@ class AnodyneWorld(World):
             self.options.dustsanity.value = slot_data.get("dustsanity", False)
             if "endgame_card_requirement" in slot_data:
                 EndgameRequirement.cardoption(self.options).value = slot_data["endgame_card_requirement"]
+            self.options.include_blue_happy.value = slot_data.get("include_blue_happy", False)
+            self.options.red_grotto_access.value = RedCaveAccess.option_vanilla \
+                if slot_data.get("vanilla_red_cave", True) \
+                else RedCaveAccess.option_progressive
+            self.options.randomize_color_puzzle.value = slot_data.get("randomize_color_puzzle", False)
 
             self.options.card_amount.value = slot_data.get("card_amount", CardAmount.option_vanilla)
-            #For universal tracker, slot data already has final value for card amount + extra, extra can be set to 0
+            # For universal tracker, slot data already has final value for card amount + extra, extra can be set to 0
             self.options.extra_cards.value = 0
             for c in gatereq_classes:
                 option_name: str = slot_data.get(c.typename(), c.shorthand(self.options))
@@ -113,45 +165,49 @@ class AnodyneWorld(World):
                 else:
                     type_option.value = type_option.from_text(option_name).value
         elif len(self.options.custom_nexus_gates_open.value) > 0:
-            self.gates_unlocked.extend(self.options.custom_nexus_gates_open.value)
+            self.gates_unlocked.extend(Regions.area_lookup[name] for name in self.options.custom_nexus_gates_open.value)
         elif nexus_gate_open == NexusGatesOpen.option_street_and_fields:
-            self.gates_unlocked.append("Fields")
+            self.gates_unlocked.append(Fields)
         elif nexus_gate_open == NexusGatesOpen.option_early:
-            for region_name in Regions.early_nexus_gates:
-                self.gates_unlocked.append(region_name)
+            self.gates_unlocked.extend(Regions.early_nexus_gates)
         elif nexus_gate_open == NexusGatesOpen.option_all:
-            for region_name in Regions.regions_with_nexus_gate:
-                self.gates_unlocked.append(region_name)
+            for location in Locations.nexus_pad_locations:
+                self.gates_unlocked.append(location.region.__class__)
         elif nexus_gate_open in [NexusGatesOpen.option_random_count, NexusGatesOpen.option_random_pre_endgame]:
             random_nexus_gate_count = int(self.options.random_nexus_gate_open_count)
 
-            available_gates = Regions.regions_with_nexus_gate.copy()
+            available_gates = [location.region.__class__ for location in Locations.nexus_pad_locations]
             if nexus_gate_open == NexusGatesOpen.option_random_pre_endgame:
                 for gate in Regions.endgame_nexus_gates:
                     available_gates.remove(gate)
 
             if random_nexus_gate_count > len(available_gates):
                 logging.warning(
-                    f"Player {self.player_name} requested more random Nexus gates than are available. Adjusting down to {len(available_gates)}")
+                    f"Player {self.player_name} requested more random Nexus gates than are available. "
+                    f"Adjusting down to {len(available_gates)}")
                 random_nexus_gate_count = len(available_gates)
 
             self.gates_unlocked = self.random.sample(available_gates, random_nexus_gate_count)
 
-        if self.options.small_key_mode == SmallKeyMode.option_key_rings and self.options.small_key_shuffle == SmallKeyShuffle.option_vanilla:
+        if (self.options.small_key_mode == SmallKeyMode.option_key_rings and
+                self.options.small_key_shuffle == SmallKeyShuffle.option_vanilla):
             self.options.small_key_shuffle.value = SmallKeyShuffle.option_original_dungeon
             self.options.small_key_mode.value = SmallKeyMode.option_small_keys
             logging.warning(
-                f"Player {self.player_name} requested vanilla small keys with key rings on, changing to small key original dungeon")
+                f"Player {self.player_name} requested vanilla small keys with key rings on, "
+                f"changing to small key original dungeon")
 
         if self.options.nexus_gate_shuffle != NexusGateShuffle.option_off:
-            self.shuffled_gates = set(Regions.regions_with_nexus_gate) - set(self.gates_unlocked)
+            self.shuffled_gates = set(item.map for item in Items.Nexus.all()) - set(self.gates_unlocked)
 
             if self.options.nexus_gate_shuffle == NexusGateShuffle.option_all_except_endgame:
                 self.shuffled_gates -= set(Regions.endgame_nexus_gates)
 
-        if self.options.victory_condition == VictoryCondition.option_final_gate and self.options.postgame_mode == PostgameMode.option_disabled:
+        if (self.options.victory_condition == VictoryCondition.option_final_gate and
+                self.options.postgame_mode == PostgameMode.option_disabled):
             logging.warning(
-                f"Player {self.player_name} requested the final gate victory condition but turned off postgame. Changing goal to Briar")
+                f"Player {self.player_name} requested the final gate victory condition but turned off postgame. "
+                f"Changing goal to Briar")
             self.options.victory_condition.value = VictoryCondition.option_defeat_briar
 
         if all(gate in Regions.wrong_big_key_early_locked_nexus_gates for gate in self.gates_unlocked) and \
@@ -159,18 +215,15 @@ class AnodyneWorld(World):
                 self.options.big_key_shuffle == BigKeyShuffle.option_vanilla and \
                 OverworldFieldsGate.typeoption(self.options) in [GateType.BLUE, GateType.RED]:
             logging.warning(
-                f"Player {self.player_name} has locked themselves into the starting area with no escape. Reverting Overworld->Fields gate to default")
+                f"Player {self.player_name} has locked themselves into the starting area with no escape. "
+                f"Reverting Overworld->Fields gate to default")
             OverworldFieldsGate.typeoption(self.options).value = GateType.GREEN
 
     def create_item(self, name: str) -> Item:
-        if name in Items.progression_items:
-            item_class = ItemClassification.progression
-        elif name in Items.useful_items:
-            item_class = ItemClassification.useful
-        elif name in Items.trap_items:
-            item_class = ItemClassification.trap
-        else:
-            item_class = ItemClassification.filler
+        data = Items.all_items.get(name, None)
+        item_class = ItemClassification.filler
+        if data is not None:
+            item_class = data.classification
 
         return AnodyneItem(name, item_class, self.item_name_to_id.get(name, None), self.player)
 
@@ -187,54 +240,52 @@ class AnodyneWorld(World):
 
         placed_items = 0
 
-        excluded_items: set[str] = {
-            *Items.small_key_item_count.keys(),
-            *Items.key_rings,
-            *Items.big_keys,
-            "Health Cicada",
-            *Items.filler_items,
-            *Items.trap_items,
-            "Progressive Red Cave",
-            "Progressive Swap",
-            *Items.nexus_gate_items.keys(),
-            *Items.cards
-        }
+        prevent_autoplacement: list[Items.ItemData] = [
+            *Items.Keys.all(),
+            *Items.BigKey.all(),
+            *Items.Cicada.all(),
+            *Items.RedCaveUnlock.all(),
+            Items.Inventory.Progressive_Swap.item,
+            *Items.Nexus.all(),
+            *Items.Card.all()
+        ]
 
         if small_key_mode == SmallKeyMode.option_small_keys:
             if small_key_shuffle == SmallKeyShuffle.option_vanilla:
                 for location in Locations.all_locations:
                     if location.small_key:
-                        dungeon = Regions.dungeon_area_to_dungeon[location.region_name]
-                        item_name = f"Small Key ({dungeon})"
+                        item_name = Items.Keys.Small_Key[location.region.__class__].full_name
                         self.multiworld.get_location(location.name, self.player).place_locked_item(
                             self.create_item(item_name))
                         placed_items += 1
             elif small_key_shuffle == SmallKeyShuffle.option_original_dungeon:
-                for dungeon in Regions.dungeon_areas.keys():
-                    small_key_name = f"Small Key ({dungeon})"
+                for dungeon, count in Constants.small_key_count.items():
+                    small_key_name = Items.Keys.Small_Key[dungeon].full_name
                     items = self.dungeon_items.setdefault(dungeon, [])
 
-                    for _ in range(Items.small_key_item_count[small_key_name]):
+                    for _ in range(count):
                         items.append(self.create_item(small_key_name))
                         placed_items += 1
             else:
-                for key_item, key_count in Items.small_key_item_count.items():
-                    placed_items += key_count
+                for key_item in Items.Keys.Small_Key:
+                    count = Constants.small_key_count[key_item.map]
+                    placed_items += count
 
-                    for _ in range(key_count):
-                        item_pool.append(self.create_item(key_item))
+                    for _ in range(count):
+                        item_pool.append(self.create_item(key_item.full_name))
 
                     if small_key_shuffle == SmallKeyShuffle.option_own_world:
-                        local_item_pool.add(key_item)
+                        local_item_pool.add(key_item.full_name)
                     elif small_key_shuffle == SmallKeyShuffle.option_different_world:
-                        non_local_item_pool.add(key_item)
+                        non_local_item_pool.add(key_item.full_name)
         elif small_key_mode == SmallKeyMode.option_key_rings:
-            for key_item in Items.key_rings:
+            for dungeon in Constants.small_key_count.keys():
                 placed_items += 1
+                key_item = Items.Keys.Key_Ring[dungeon].full_name
                 item = self.create_item(key_item)
 
                 if small_key_shuffle == SmallKeyShuffle.option_original_dungeon:
-                    self.dungeon_items.setdefault(key_item[len("Key Ring ("):-1], []).append(item)
+                    self.dungeon_items.setdefault(dungeon, []).append(item)
                 else:
                     item_pool.append(item)
 
@@ -243,28 +294,28 @@ class AnodyneWorld(World):
                     elif small_key_shuffle == SmallKeyShuffle.option_different_world:
                         non_local_item_pool.add(key_item)
 
-        start_broom_item: str = ""
+        start_broom_item: Optional[Items.ItemData] = None
         if start_broom == StartBroom.option_normal:
-            start_broom_item = "Broom"
+            start_broom_item = Items.Inventory.Broom.item
         elif start_broom == StartBroom.option_wide:
-            start_broom_item = "Widen"
+            start_broom_item = Items.Inventory.Widen.item
         elif start_broom == StartBroom.option_long:
-            start_broom_item = "Extend"
+            start_broom_item = Items.Inventory.Extend.item
         elif start_broom == StartBroom.option_swap:
             if self.options.postgame_mode == PostgameMode.option_progressive:
                 # This is kind of an odd combination of options tbh.
-                start_broom_item = "Progressive Swap"
+                start_broom_item = Items.Inventory.Progressive_Swap.item
             else:
-                start_broom_item = "Swap"
+                start_broom_item = Items.Inventory.Swap.item
 
-        if start_broom_item != "":
-            self.multiworld.push_precollected(self.create_item(start_broom_item))
-            excluded_items.add(start_broom_item)
+        if start_broom_item is not None:
+            self.multiworld.push_precollected(self.create_item(start_broom_item.full_name))
+            prevent_autoplacement.append(start_broom_item)
 
         if health_cicada_shuffle != HealthCicadaShuffle.option_vanilla:
             health_cicada_amount = len([location for location in Locations.all_locations if location.health_cicada])
             placed_items += health_cicada_amount
-            item_name = "Health Cicada"
+            item_name = Items.Cicada.Health_Cicada.item.full_name
 
             if health_cicada_shuffle == HealthCicadaShuffle.option_own_world:
                 local_item_pool.add(item_name)
@@ -275,47 +326,53 @@ class AnodyneWorld(World):
                 item_pool.append(self.create_item(item_name))
 
         if big_key_shuffle not in [BigKeyShuffle.option_vanilla, BigKeyShuffle.option_unlocked]:
-            placed_items += len(Items.big_keys)
+            placed_items += len(Items.BigKey.all())
 
-            for big_key in Items.big_keys:
-                item_pool.append(self.create_item(big_key))
+            for big_key in Items.BigKey.all():
+                item_pool.append(self.create_item(big_key.full_name))
 
                 if big_key_shuffle == BigKeyShuffle.option_own_world:
-                    local_item_pool.add(big_key)
+                    local_item_pool.add(big_key.full_name)
                 elif big_key_shuffle == BigKeyShuffle.option_different_world:
-                    non_local_item_pool.add(big_key)
+                    non_local_item_pool.add(big_key.full_name)
 
-        if self.options.red_cave_access != RedCaveAccess.option_vanilla:
+        if self.options.red_grotto_access != RedCaveAccess.option_vanilla:
             placed_items += 3
 
             pool: List[Item] = item_pool
-            if self.options.red_cave_access == RedCaveAccess.option_original_dungeon:
-                pool = self.dungeon_items.setdefault("Red Cave", [])
+            if self.options.red_grotto_access == RedCaveAccess.option_original_dungeon:
+                pool = self.dungeon_items.setdefault(Red_Cave, [])
 
             for _ in range(3):
-                pool.append(self.create_item("Progressive Red Cave"))
+                pool.append(self.create_item(Items.RedCaveUnlock.names()[0]))
 
         if not self.options.split_windmill:
-            excluded_items.update(Items.statue_items)
+            prevent_autoplacement.extend(Items.StatueUnlocks.all())
+
+        if not self.options.include_blue_happy:
+            prevent_autoplacement.extend(Items.Dam.all())
 
         if self.options.postgame_mode == PostgameMode.option_disabled:
-            excluded_items.update(Items.postgame_cards)
+            prevent_autoplacement.extend(Items.postgame_cards)
 
         if self.options.postgame_mode == PostgameMode.option_progressive:
-            item_pool.append(self.create_item("Progressive Swap"))
+            prog_swap = Items.Inventory.Progressive_Swap.item
+            item_pool.append(self.create_item(prog_swap.full_name))
             placed_items += 1
 
             if start_broom != StartBroom.option_swap:
-                item_pool.append(self.create_item("Progressive Swap"))
+                item_pool.append(self.create_item(prog_swap.full_name))
                 placed_items += 1
 
-            excluded_items.add("Swap")
+            prevent_autoplacement.append(Items.Inventory.Swap.item)
 
         if self.options.nexus_gate_shuffle != NexusGateShuffle.option_off:
-            nexus_gate_items = [item_name for item_name, region in Items.nexus_gate_items.items()
-                                if region in self.shuffled_gates]
-            item_pool.extend(self.create_item(item_name) for item_name in nexus_gate_items)
+            nexus_gate_items = [Items.Nexus.GATE[loc.region.__class__] for loc in Locations.nexus_pad_locations
+                                if loc.region.__class__ in self.shuffled_gates]
+            item_pool.extend(self.create_item(item.full_name) for item in nexus_gate_items)
             placed_items += len(nexus_gate_items)
+
+        excluded_items = {item.full_name for item in prevent_autoplacement}
 
         for name in Items.all_items:
             if name not in excluded_items:
@@ -343,9 +400,9 @@ class AnodyneWorld(World):
             if cls.cardoption(self.options) > self.options.card_amount:
                 cls.cardoption(self.options).value = self.options.card_amount.value
 
-        for card in Items.cards[:self.options.card_amount + self.options.extra_cards]:
+        for card in Items.Card.all()[:self.options.card_amount + self.options.extra_cards]:
             placed_items += 1
-            item_pool.append(self.create_item(card))
+            item_pool.append(self.create_item(card.full_name))
 
         # If we have space for filler, prioritize adding in the ??? items that would be in-logic. Also add traps,
         # if enabled.
@@ -357,10 +414,10 @@ class AnodyneWorld(World):
             remaining_items -= num_traps
 
             for i in range(num_traps):
-                new_items.append(self.random.choice(Items.trap_items))
+                new_items.append(self.random.choice(Items.Trap.all()))
 
             secret_items = Items.early_secret_items if self.options.postgame_mode == PostgameMode.option_disabled \
-                else Items.secret_items
+                else Items.Secret.all()
 
             if self.options.postgame_mode == PostgameMode.option_disabled and self.options.fields_secret_paths:
                 secret_items = [*secret_items, *Items.secret_items_secret_paths]
@@ -370,7 +427,7 @@ class AnodyneWorld(World):
             else:
                 new_items.extend(self.random.sample(secret_items, remaining_items))
 
-            item_pool.extend(self.create_item(name) for name in new_items)
+            item_pool.extend(self.create_item(item.full_name) for item in new_items)
             placed_items += len(new_items)
 
         # If there's any space left after that, fill the slots with random filler.
@@ -388,17 +445,18 @@ class AnodyneWorld(World):
         include_postgame: bool = (self.options.postgame_mode != PostgameMode.option_disabled)
         dustsanity: bool = bool(self.options.dustsanity.value)
 
-        postgame_regions = Regions.postgame_regions if self.options.fields_secret_paths.value else Regions.postgame_regions + Regions.postgame_without_secret_paths
+        postgame_regions = Regions.postgame_regions if self.options.fields_secret_paths.value else (
+                Regions.postgame_regions + Regions.postgame_without_secret_paths)
 
-        all_regions: Dict[str, Region] = {}
+        all_regions: Dict[RegionEnum, Region] = {}
 
-        for region_name in Regions.all_regions:
-            if not include_postgame and region_name in postgame_regions:
+        for region_data in (m for area in Regions.all_areas for m in area):
+            if not include_postgame and region_data in postgame_regions:
                 continue
 
-            region = Region(region_name, self.player, self.multiworld)
-            if region_name in Locations.locations_by_region:
-                for location in Locations.locations_by_region[region_name]:
+            region = Region(str(region_data), self.player, self.multiworld)
+            if region_data in Locations.locations_by_region:
+                for location in Locations.locations_by_region[region_data]:
                     reqs: list[str] = location.reqs.copy()
 
                     if include_health_cicadas == HealthCicadaShuffle.option_vanilla and location.health_cicada:
@@ -407,23 +465,29 @@ class AnodyneWorld(World):
                     if include_big_keys == BigKeyShuffle.option_vanilla and location.big_key:
                         continue
 
-                    if self.options.red_cave_access == RedCaveAccess.option_vanilla and location.tentacle:
+                    if self.options.red_grotto_access == RedCaveAccess.option_vanilla and location.tentacle:
                         continue
 
-                    if not self.options.split_windmill and location.name == "Windmill - Activation":
+                    if (not self.options.split_windmill and location.region.area_name() == Windmill.area_name()
+                            and location.base_name == "Activation"):
                         continue
 
                     if not include_postgame and location.postgame(bool(self.options.fields_secret_paths.value)):
                         continue
 
-                    if not self.options.forest_bunny_chest and location.name == "Deep Forest - Bunny Chest":
+                    if (not self.options.forest_bunny_chest and location.region.area_name() == Forest.area_name()
+                            and location.base_name == "Bunny Chest"):
+                        continue
+
+                    if (not self.options.include_blue_happy and location.region.__class__
+                            in [Blue, Happy] and location.base_name == "Completion Reward"):
                         continue
 
                     if self.options.victory_condition == VictoryCondition.option_defeat_briar \
-                            and location.name == "GO - Defeat Briar":
+                            and location.base_name == "Defeat Briar":
                         continue
 
-                    if location.nexus_gate and location.region_name not in self.shuffled_gates:
+                    if location.nexus_gate and location.region.__class__ not in self.shuffled_gates:
                         continue
 
                     if location.dust:
@@ -435,20 +499,23 @@ class AnodyneWorld(World):
                     location_id = Constants.location_name_to_id[location.name]
 
                     new_location = AnodyneLocation(self.player, location.name, location_id, region)
-                    new_location.access_rule = Constants.get_access_rule(reqs, region_name, self)
+                    new_location.access_rule = Constants.get_access_rule(reqs, str(location.region), self)
                     region.locations.append(new_location)
 
                     self.location_count += 1
 
-            all_regions[region_name] = region
+            all_regions[region_data] = region
 
         for exit_vals in (
-                Exits.all_exits if not self.options.fields_secret_paths.value else Exits.all_exits + Exits.secret_path_connections):
-            exit1: str = exit_vals[0]
-            exit2: str = exit_vals[1]
+                Exits.all_exits if not self.options.fields_secret_paths.value
+                else Exits.all_exits + Exits.secret_path_connections):
+            exit1: RegionEnum = exit_vals[0]
+            exit2: RegionEnum = exit_vals[1]
             requirements: list[str] = exit_vals[2]
 
-            if not include_postgame and (exit1 in postgame_regions or exit2 in postgame_regions or "Progressive Swap:2" in requirements):
+            if not include_postgame and (
+                    exit1 in postgame_regions or exit2 in postgame_regions
+                    or f"{Items.Inventory.Progressive_Swap.item.full_name}:2" in requirements):
                 continue
 
             r1 = all_regions[exit1]
@@ -456,29 +523,36 @@ class AnodyneWorld(World):
 
             e = r1.create_exit(f"{exit1} to {exit2} exit")
             e.connect(r2)
-            e.access_rule = Constants.get_access_rule(requirements, exit1, self)
+            e.access_rule = Constants.get_access_rule(requirements, str(exit1), self)
 
-        for region_name in self.gates_unlocked:
-            all_regions["Nexus bottom"].create_exit(f"{region_name} Nexus Gate").connect(all_regions[region_name])
+        for region in self.gates_unlocked:
+            all_regions[Nexus.bottom].create_exit(f"{region.area_name()} Nexus Gate").connect(all_regions[{
+                location.region.__class__: location.region for location in Locations.nexus_pad_locations}[region]])
 
         if self.options.nexus_gate_shuffle != NexusGateShuffle.option_off:
-            for item_name, region_name in Items.nexus_gate_items.items():
-                if region_name in self.shuffled_gates:
-                    e = all_regions["Nexus bottom"].create_exit(f"{region_name} Nexus Gate")
-                    e.connect(all_regions[region_name])
-                    e.access_rule = Constants.get_access_rule([item_name], "Nexus bottom", self)
+            for location in Locations.nexus_pad_locations:
+                if location.region.__class__ in self.shuffled_gates:
+                    e = all_regions[Nexus.bottom].create_exit(f"{location.region.area_name()} Nexus Gate")
+                    e.connect(all_regions[location.region])
+                    e.access_rule = Constants.get_access_rule([Items.Nexus.GATE[location.region.__class__].full_name],
+                                                              "Nexus bottom", self)
 
-        for region_name, events in Events.events_by_region.items():
-            if not include_postgame and region_name in postgame_regions:
+        for event in Events.all_events:
+            if not event.is_active(self.options):
                 continue
 
-            for event_name in events:
-                if include_big_keys != BigKeyShuffle.option_vanilla and event_name in Items.big_keys:
-                    continue
+            if self.using_ut and bool(self.multiworld.__getattribute__("enforce_deferred_connections")):
+                event_region = Region(f"Event Region: {event.name}",self.player,self.multiworld)
+                entry = all_regions[event.region].create_exit(f"Get event: {event.name}")
+                entry.access_rule = Constants.get_access_rule(event.reqs,str(event.region),self)
+                entry.connect(event_region)
 
-                requirements: list[str] = Events.events_by_region[region_name][event_name]
-                self.create_event(all_regions[region_name], event_name, Constants.get_access_rule(requirements,
-                                                                                                  region_name, self))
+                self.create_event(event_region, event.name, self.ut_event_check(event))
+
+                self.multiworld.regions.append(event_region)
+            else:
+                self.create_event(all_regions[event.region], event.name, Constants.get_access_rule(event.reqs,
+                                                                                         str(event.region), self))
 
         self.multiworld.regions += all_regions.values()
 
@@ -486,6 +560,13 @@ class AnodyneWorld(World):
             from Utils import visualize_regions
 
             visualize_regions(self.multiworld.get_region("Menu", self.player), "my_world.puml")
+
+    def ut_event_check(self, event:EventData):
+        return lambda _: event.flag in self.tracked_events
+
+    def reconnect_found_entrances(self, key:str, value:Any):
+        if key.endswith("EventMap") and isinstance(value,int):
+            self.tracked_events = EventFlags(value)
 
     def create_gate_proxy_rule(self, cls: typing.Type[GateRequirements]):
         rules = []
@@ -504,53 +585,68 @@ class AnodyneWorld(World):
 
     def set_rules(self) -> None:
         if not self.options.split_windmill:
-            for statue in Items.statue_items:
-                self.proxy_rules[statue] = ["Windmill activated"]
+            for statue in Items.StatueUnlocks.all():
+                self.proxy_rules[statue.full_name] = ["Windmill activated"]
 
         if self.options.big_key_shuffle == BigKeyShuffle.option_unlocked:
-            for big_key in big_keys:
-                self.proxy_rules[big_key] = []
+            for big_key in Items.BigKey.all():
+                self.proxy_rules[big_key.full_name] = []
         elif self.options.big_key_shuffle == BigKeyShuffle.option_vanilla:
-            for big_key in big_keys:
-                self.proxy_rules[big_key] = [f"Grab {big_key}"]
+            for big_key in Items.BigKey.all():
+                self.proxy_rules[big_key.full_name] = [f"Grab {big_key.full_name}"]
 
         if self.options.small_key_mode == SmallKeyMode.option_unlocked:
-            for dungeon, amount in Items.small_key_item_count.items():
+            for dungeon, amount in Constants.small_key_count.items():
                 for i in range(amount):
-                    self.proxy_rules[f"{dungeon}:{i + 1}"] = []
+                    self.proxy_rules[f"{Items.Keys.Small_Key[dungeon].full_name}:{i + 1}"] = []
         elif self.options.small_key_mode == SmallKeyMode.option_key_rings:
-            for dungeon, amount in Items.small_key_item_count.items():
-                dungeon_name = dungeon[len("Small Key ("):-1]
+            for dungeon, amount in Constants.small_key_count.items():
                 for i in range(amount):
-                    self.proxy_rules[f"{dungeon}:{i + 1}"] = [f"Key Ring ({dungeon_name})"]
-        elif self.options.small_key_mode == SmallKeyMode.option_small_keys and self.options.small_key_shuffle == SmallKeyShuffle.option_vanilla:
-            # For vanilla key placement, the regular rules don't quite match up in this dungeon, but the dungeon is still solvable
-            for i in range(Items.small_key_item_count["Small Key (Hotel)"]):
-                self.proxy_rules[f"Small Key (Hotel):{i + 1}"] = []
+                    self.proxy_rules[f"{Items.Keys.Small_Key[dungeon].full_name}:{i + 1}"] = [
+                        Items.Keys.Key_Ring[dungeon].full_name]
+        elif (self.options.small_key_mode == SmallKeyMode.option_small_keys
+              and self.options.small_key_shuffle == SmallKeyShuffle.option_vanilla):
+            # For vanilla key placement, the regular rules don't quite match up in this dungeon,
+            # but the dungeon is still solvable
+            for i in range(Constants.small_key_count[Hotel]):
+                self.proxy_rules[f"{Items.Keys.Small_Key[Hotel].full_name}:{i + 1}"] = []
 
-        if self.options.red_cave_access == RedCaveAccess.option_vanilla:
+        if self.options.red_grotto_access == RedCaveAccess.option_vanilla:
             self.proxy_rules["RedCave-Left"] = ["Center left tentacle hit"]
             self.proxy_rules["RedCave-Right"] = ["Center right tentacle hit"]
             self.proxy_rules["RedCave-Top"] = ["Left tentacle hit", "Right tentacle hit"]
         else:
-            self.proxy_rules["RedCave-Left"] = ["Progressive Red Cave"]
-            self.proxy_rules["RedCave-Right"] = ["Progressive Red Cave:2"]
-            self.proxy_rules["RedCave-Top"] = ["Progressive Red Cave:3"]
+            item = Items.RedCaveUnlock.names()[0]
+            self.proxy_rules["RedCave-Left"] = [item]
+            self.proxy_rules["RedCave-Right"] = [f"{item}:2"]
+            self.proxy_rules["RedCave-Top"] = [f"{item}:3"]
 
         if self.options.randomize_color_puzzle:
             self.proxy_rules["GO Color Puzzle"] = ["Defeat Servants", "Defeat Watcher", "Defeat Manager"]
         else:
             self.proxy_rules["GO Color Puzzle"] = []
 
+        if self.options.include_blue_happy:
+            self.proxy_rules["Complete Blue"] = [Items.Dam.DAM[Blue].full_name]
+            self.proxy_rules["Complete Happy"] = [Items.Dam.DAM[Happy].full_name]
+            self.proxy_rules["Happy Open"] = []
+        else:
+            self.proxy_rules["Complete Blue"] = ["Blue Completion"]
+            self.proxy_rules["Complete Happy"] = ["Happy Completion"]
+            self.proxy_rules["Happy Open"] = ["Blue Completion"]
+
         if self.options.postgame_mode != PostgameMode.option_progressive:
-            self.proxy_rules["Progressive Swap:1"] = ["Swap"]
+            prog_swap = Items.Inventory.Progressive_Swap.item.full_name
+            swap = Items.Inventory.Swap.item.full_name
+            self.proxy_rules[f"{prog_swap}:1"] = [swap]
 
             if self.options.postgame_mode == PostgameMode.option_vanilla:
-                self.proxy_rules["Progressive Swap:2"] = ["Swap", "Defeat Briar"]
+                self.proxy_rules[f"{prog_swap}:2"] = [swap, "Defeat Briar"]
             elif self.options.postgame_mode == PostgameMode.option_unlocked:
-                self.proxy_rules["Progressive Swap:2"] = ["Swap"]
+                self.proxy_rules[f"{prog_swap}:2"] = [swap]
             else:
-                self.proxy_rules["Progressive Swap:2"] = ["Impossible"] #Shouldn't ever be asked for, but gives nice errors if it does
+                self.proxy_rules[f"{prog_swap}:2"] = [
+                    "Impossible"]  # Shouldn't ever be asked for, but gives nice errors if it does
 
         for cls in gatereq_classes:
             self.create_gate_proxy_rule(cls)
@@ -558,16 +654,16 @@ class AnodyneWorld(World):
         if self.options.fields_secret_paths.value:
             self.proxy_rules["SwapOrSecret"] = []
         else:
-            self.proxy_rules["SwapOrSecret"] = ["Progressive Swap:2"]
+            self.proxy_rules["SwapOrSecret"] = [f"{Items.Inventory.Progressive_Swap.item.full_name}:2"]
 
         if self.options.nexus_gate_shuffle or \
-                any(region in self.gates_unlocked for region in Regions.post_temple_boss_regions) and \
+                any(region in self.gates_unlocked for region in Regions.post_temple_boss_nexus_gates) and \
                 self.options.small_key_shuffle != SmallKeyShuffle.option_vanilla:
             # There is one keyblock in Temple of the Seeing One that has conditional logic based on whether it is
             # possible for the player to access the exit of the dungeon early.
-            self.proxy_rules["Temple Boss Access"] = ["Small Key (Temple of the Seeing One):3"]
+            self.proxy_rules["Temple Boss Access"] = [f"{Items.Keys.Small_Key[Bedroom].full_name}:3"]
         else:
-            self.proxy_rules["Temple Boss Access"] = ["Small Key (Temple of the Seeing One):2"]
+            self.proxy_rules["Temple Boss Access"] = [f"{Items.Keys.Small_Key[Bedroom].full_name}:2"]
 
         victory_condition: VictoryCondition = self.options.victory_condition
         requirements: list[str] = []
@@ -577,43 +673,47 @@ class AnodyneWorld(World):
         elif victory_condition == VictoryCondition.option_final_gate:
             requirements.append("Open final gate")
 
-        self.multiworld.completion_condition[self.player] = Constants.get_access_rule(requirements, "Event", self)
+        self.multiworld.completion_condition[self.player] = (
+            Constants.get_access_rule(requirements, "Event", self))
 
-        self.test_gate_requirements()
+        if not self.using_ut:
+            self.test_gate_requirements()
 
     def test_gate_requirements(self):
         state = CollectionState(self.multiworld)
-        #This function runs before start_inventory gets put in precollected, so need to put them there ourselves
+        # This function runs before start_inventory gets put in precollected, so need to put them there ourselves
         for item, amount in self.options.start_inventory:
             for _ in range(amount):
                 state.collect(self.create_item(item), True)
         state.sweep_for_advancements(self.multiworld.get_locations(self.player))
 
-        #Counter to keep track of how much extra progression items we've placed
+        # Counter to keep track of how much extra progression items we've placed
         placed_progression = 0
 
         def finished():
-            return self.multiworld.has_beaten_game(state, self.player) and all(loc.can_reach(state) for loc in self.multiworld.get_locations(self.player))
+            return self.multiworld.has_beaten_game(state, self.player) and all(
+                loc.can_reach(state) for loc in self.multiworld.get_locations(self.player))
 
-        def sort_key(req:AnodyneWorld.LogicRequirement):
+        def sort_key(req: AnodyneWorld.LogicRequirement):
             # Reverse order for sorting lexicographically
             return (
-                req.is_big_key_locked(), # Will only ever be true if big keys are fixed events
+                req.is_big_key_locked(),  # Will only ever be true if big keys are fixed events
                 req.needed_bosses(),
                 req.unlockable_by_num_items(state),
                 req.needed_cards(),
-                req.name # Name to ensure unique and consistent sort order across seeds
+                req.name  # Name to ensure unique and consistent sort order across seeds
             )
 
-        gate_max_cards:Dict[Type[GateRequirements],int] = defaultdict(lambda:49)
+        gate_max_cards: Dict[Type[GateRequirements], int] = defaultdict(lambda: 49)
 
         while not finished():
             max_placeable = len(self.multiworld.get_placeable_locations(state, self.player)) - placed_progression
 
-            #Sorting on location and entrance name to have consistent sorting
+            # Sorting on location and entrance name to have consistent sorting
             requirements = self.get_blocking_rules(state)
             for gate in (gate for r in requirements for gate in r.gates if r.is_gate_locked()):
-                gate_max_cards[gate] = min(gate_max_cards[gate], max_placeable + state.count_group("Cards", self.player))
+                gate_max_cards[gate] = min(gate_max_cards[gate],
+                                           max_placeable + state.count_group("Cards", self.player))
 
             requirements.sort(key=sort_key)
             to_fulfill = requirements[0]
@@ -623,8 +723,8 @@ class AnodyneWorld(World):
                               f"{to_fulfill._unlock_dict(state)}")
             else:
                 unlockable_gates = [r for r in requirements if
-                               r.is_gate_locked() and r.unlockable_by_num_items(state) - r.remaining_cards(
-                                   state) <= max_placeable]
+                                    r.is_gate_locked() and r.unlockable_by_num_items(state) - r.remaining_cards(
+                                        state) <= max_placeable]
                 if len(unlockable_gates) == 0:
                     logging.error("No gate to adjust and ran out of locations to put progression!")
                     return
@@ -632,31 +732,33 @@ class AnodyneWorld(World):
 
             if to_fulfill.gates:
                 max_cards = (max_placeable - to_fulfill.unlockable_by_num_items(state) +
-                             to_fulfill.remaining_cards(state) + state.count_group("Cards",self.player))
+                             to_fulfill.remaining_cards(state) + state.count_group("Cards", self.player))
                 if self.options.accessibility == Accessibility.option_minimal:
-                    #Minimal can get itself very easily stuck behind card gates
+                    # Minimal can get itself very easily stuck behind card gates
                     max_cards = min(gate_max_cards[gate] for gate in to_fulfill.gates)
                 max_bosses = state.count_from_list(Constants.groups["Bosses"], self.player)
                 for cls in to_fulfill.gates:
                     if cls.typeoption(self.options) == GateType.BOSSES:
                         logging.warning(
-                            f"Player {self.player_name} requested impossible gate. Adjusting {cls.typename()} down to {max_bosses} Bosses")
+                            f"Player {self.player_name} requested impossible gate. "
+                            f"Adjusting {cls.typename()} down to {max_bosses} Bosses")
                         cls.bossoption(self.options).value = max_bosses
                     elif cls.typeoption(self.options) == GateType.CARDS:
                         opt = cls.cardoption(self.options)
                         if opt.value > max_cards:
                             logging.warning(
-                                f"Player {self.player_name} requested impossible gate. Adjusting {cls.typename()} down to {max_cards} Cards")
+                                f"Player {self.player_name} requested impossible gate. "
+                                f"Adjusting {cls.typename()} down to {max_cards} Cards")
                         opt.value = min(opt.value, max_cards)
                     else:
-                        logging.warning(f"Player {self.player} requested self-locking big key gate. Opening up {cls.typename()}")
+                        logging.warning(
+                            f"Player {self.player} requested self-locking big key gate. Opening up {cls.typename()}")
                         cls.typeoption(self.options).value = GateType.UNLOCKED
-                    self.create_gate_proxy_rule(cls)  #Actually change the rule
+                    self.create_gate_proxy_rule(cls)  # Actually change the rule
                     state.stale[self.player] = True
 
             placed_progression += to_fulfill.unlockable_by_num_items(state)
             to_fulfill.collect(state)
-
 
             state.sweep_for_advancements(self.multiworld.get_locations(self.player))
 
@@ -678,13 +780,14 @@ class AnodyneWorld(World):
                     self.requirements[item] = count
 
         def is_event_locked(self):
-            return any(req in Events.all_events for req in self.requirements)
+            return any(req in Events.all_event_names for req in self.requirements)
 
         def is_gate_locked(self):
             return len(self.gates) > 0
 
         def is_big_key_locked(self):
-            return any(cls.typeoption(self.world.options) in [GateType.BLUE,GateType.RED,GateType.GREEN] for cls in self.gates)
+            return any(cls.typeoption(self.world.options) in [GateType.BLUE, GateType.RED, GateType.GREEN] for cls in
+                       self.gates)
 
         def is_unlockable_by_items(self):
             return not self.is_event_locked() and all(
@@ -705,7 +808,7 @@ class AnodyneWorld(World):
             ret: Dict[str, int] = {}
             for item, amount in self.requirements.items():
                 ret[item] = max(0, amount - state.count(item, self.world.player))
-            for card in itertools.islice((c for c in Items.cards if not state.has(c, self.world.player)),
+            for card in itertools.islice((c for c in Items.Card.names() if not state.has(c, self.world.player)),
                                          self.remaining_cards(state)):
                 ret[card] = 1
             return ret
@@ -714,7 +817,8 @@ class AnodyneWorld(World):
             return sum(self._unlock_dict(state).values())
 
         def collect(self, state: CollectionState):
-            for item in itertools.chain.from_iterable(itertools.repeat(i, n) for i, n in self._unlock_dict(state).items()):
+            for item in itertools.chain.from_iterable(
+                    itertools.repeat(i, n) for i, n in self._unlock_dict(state).items()):
                 state.collect(self.world.create_item(item), True)
 
     def get_blocking_rules(self, state: CollectionState):
@@ -725,9 +829,9 @@ class AnodyneWorld(World):
         # noinspection PyTypeChecker
         blocked_rules.extend((e.access_rule, e.name) for e in state.blocked_connections[self.player])
 
-        gate_types = [GateType.CARDS,GateType.BOSSES]
+        gate_types = [GateType.CARDS, GateType.BOSSES]
         if self.options.big_key_shuffle == BigKeyShuffle.option_vanilla:
-            gate_types.extend([GateType.BLUE,GateType.RED,GateType.GREEN])
+            gate_types.extend([GateType.BLUE, GateType.RED, GateType.GREEN])
 
         def reqs(r: str) -> Iterable[str]:
             if r in self.proxy_rules and not (
@@ -735,7 +839,7 @@ class AnodyneWorld(World):
                 return itertools.chain(*[reqs(sub_r) for sub_r in self.proxy_rules[r]])
             elif not Constants.check_access(state, self, r, "blocking_check"):
                 if r in Constants.groups:
-                    #If it's a group, return any of them(mostly used for the Combat group)
+                    # If it's a group, return any of them(mostly used for the Combat group)
                     return [Constants.groups[r][0]]
                 else:
                     return [r]
@@ -748,7 +852,7 @@ class AnodyneWorld(World):
         return [r for r in requirements if not r.is_event_locked()]
 
     def get_filler_item_name(self) -> str:
-        return self.random.choice(Items.non_secret_filler_items)
+        return self.random.choice(Items.Heal.names())
 
     def create_event(self, region: Region, event_name: str, access_rule: Callable[[CollectionState], bool]) -> None:
         loc = AnodyneLocation(self.player, event_name, None, region)
@@ -767,23 +871,26 @@ class AnodyneWorld(World):
                 continue
 
             current_items = confined_dungeon_items.copy()
-            confined_dungeon_items.clear() #Prevent the current items from being picked up by all state
+            confined_dungeon_items.clear()  # Prevent the current items from being picked up by all state
 
-            collection_state = self.multiworld.get_all_state(False,True) #This will pick up all unplaced dungeon items as well
+
+            # This will pick up all unplaced dungeon items as well
+            collection_state = self.multiworld.get_all_state(allow_partial_entrances=True)
 
             confined_dungeon_items.extend(current_items)
             del current_items
 
             dungeon_location_names = [location.name
-                                      for region_name in Regions.dungeon_areas[dungeon]
-                                      for location in Locations.locations_by_region.get(region_name, [])]
+                                      for region in dungeon
+                                      for location in Locations.locations_by_region.get(region, []) if
+                                      not location.outside_of_dungeon]
 
             if dungeon == "Street" and self.options.small_key_shuffle == SmallKeyShuffle.option_original_dungeon and \
                     self.options.nexus_gates_open == NexusGatesOpen.option_street_only and \
                     self.options.start_broom == StartBroom.option_none:
                 # This is a degenerate case; we need to prevent pre-fill from putting the Street small key in the Broom
                 # chest because if it does, there are no reachable locations at the start of the game.
-                dungeon_location_names.remove("Street - Broom Chest")
+                dungeon_location_names.remove(f"{Street.area_name()} - Broom Chest")
 
             dungeon_locations = [location for location in self.multiworld.get_unfilled_locations(self.player)
                                  if location.name in dungeon_location_names]
@@ -801,7 +908,7 @@ class AnodyneWorld(World):
                     if attempts_remaining == 0:
                         raise exc
                     logging.debug(f"Failed to shuffle dungeon items for player {self.player}. Retrying...")
-                #Reset locations fill_restrictive tried setting but failed to complete
+                # Reset locations fill_restrictive tried setting but failed to complete
                 for loc in dungeon_locations:
                     if loc.locked and loc.item is not None:
                         loc.locked = False
@@ -814,31 +921,31 @@ class AnodyneWorld(World):
     def fill_slot_data(self):
         return {
             "death_link": bool(self.options.death_link.value),
-            "small_keys": self.options.small_key_mode.current_key if self.options.small_key_mode != SmallKeyMode.option_small_keys else ("vanilla" if self.options.small_key_shuffle == SmallKeyShuffle.option_vanilla else "shuffled"),
-            # Mostly useless slots given that small_keys encapsulates all three as far as clients/trackers are concerned, but here for backwards compat
-            "unlock_gates": self.options.small_key_mode == SmallKeyMode.option_unlocked,
+            "small_keys": self.options.small_key_mode.current_key if
+            self.options.small_key_mode != SmallKeyMode.option_small_keys else (
+                "vanilla" if self.options.small_key_shuffle == SmallKeyShuffle.option_vanilla else "shuffled"),
             "small_key_mode": int(self.options.small_key_mode),
             "shuffle_small_keys": int(self.options.small_key_shuffle),
 
             "shuffle_big_gates": int(self.options.big_key_shuffle),
             "vanilla_health_cicadas": self.options.health_cicada_shuffle == HealthCicadaShuffle.option_vanilla,
-            "nexus_gates_unlocked": self.gates_unlocked,
-            "vanilla_red_cave": self.options.red_cave_access == RedCaveAccess.option_vanilla,
+            "nexus_gates_unlocked": [gate.area_id() for gate in self.gates_unlocked],
+            "vanilla_red_cave": self.options.red_grotto_access == RedCaveAccess.option_vanilla,
             "split_windmill": bool(self.options.split_windmill),
             "postgame_mode": int(self.options.postgame_mode),
             "nexus_gate_shuffle": int(self.options.nexus_gate_shuffle),
             "victory_condition": int(self.options.victory_condition),
             "forest_bunny_chest": bool(self.options.forest_bunny_chest.value),
             "dustsanity": bool(self.options.dustsanity),
-            "dust_sanity_base": self.location_name_to_id[
-                next(l for l in Locations.all_locations if l.dust).name] if self.options.dustsanity else "Disabled",
             "seed": self.random.randint(0, 1000000),
             "card_amount": self.options.card_amount + self.options.extra_cards,
             "fields_secret_paths": bool(self.options.fields_secret_paths),
             "shop_items": [dataclasses.asdict(item) for item in self.get_shop_items()],
             "randomize_color_puzzle": bool(self.options.randomize_color_puzzle),
-            "mitra_hints": [dataclasses.asdict(hint) for hint in self.get_mitra_hints(0 if self.options.mitra_hints == MitraHints.option_none else 8 + 1)],
+            "mitra_hints": [dataclasses.asdict(hint) for hint in
+                            self.get_mitra_hints(0 if self.options.mitra_hints == MitraHints.option_none else 8 + 1)],
             "mitra_hint_type": int(self.options.mitra_hints),
+            "include_blue_happy": bool(self.options.include_blue_happy),
             "version": self.version,
             **{c.typename(): c.shorthand(self.options) for c in gatereq_classes}
         }
@@ -858,21 +965,24 @@ class AnodyneWorld(World):
         # Do not change shop items if playing solo
         if self.multiworld.players == 1:
             return []
-        else:
+        elif sum(i.classification == ItemClassification.progression and i.player != self.player
+                 for i in self.multiworld.itempool) >= 3:
             items = self.random.sample(
                 [item for item in self.multiworld.itempool if
                  item.classification == ItemClassification.progression
                  and item.player != self.player],
                 3)
             return [AnodyneWorld.ShopItem(item.player, item.code) for item in items]
+        else:
+            return []
 
     def get_mitra_hints(self, count: int) -> List[ItemHint]:
-        possible_items =[item for item in self.multiworld.itempool if
-             item.classification == ItemClassification.progression
-             and item.player == self.player and item.location is not None]
+        possible_items = [item for item in self.multiworld.itempool if
+                          item.classification == ItemClassification.progression
+                          and item.player == self.player and item.location is not None]
         items = self.random.sample(
             possible_items,
-            min(count,len(possible_items)))
+            min(count, len(possible_items)))
 
         hints: List[AnodyneWorld.ItemHint] = []
 

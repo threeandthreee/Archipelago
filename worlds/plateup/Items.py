@@ -128,3 +128,23 @@ ITEMS = {
     "Random Customer Card": (20002, ItemClassification.trap),
     #endregion
 }
+
+# Add unlock items for each dish
+for dish_id, dish_name in {
+    101: "Salad",
+    102: "Steak",
+    103: "Burger",
+    104: "Coffee",
+    105: "Pizza",
+    106: "Dumplings",
+    107: "Turkey",
+    108: "Pie",
+    109: "Cakes",
+    110: "Spaghetti",
+    111: "Fish",
+    112: "Tacos",
+    113: "Hot Dogs",
+    114: "Breakfast",
+    115: "Stir Fry",
+}.items():
+    ITEMS[f"{dish_name} Unlock"] = (30000 + dish_id, ItemClassification.progression)

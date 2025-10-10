@@ -78,6 +78,12 @@ class RotNCollections:
         "Feisty Flowers": SongData(110, "Feisty Flowers", "Everhood", 5, 10, 19, 29, False),
         "Revenge": SongData(111, "Revenge", "Everhood", 5, 12, 20, 29, False),
         "Why Oh You Are LOVE": SongData(112, "Why Oh You Are LOVE", "Everhood", 5, 15, 21, 30, False),
+        #Monstercat
+        "Crab Rave": SongData(113, "Crab Rave", "Monstercat", 5, 11, 18, 24, False),
+        "Final Boss": SongData(114, "Final Boss", "Monstercat", 2, 9, 17, 25, False),
+        "New Game": SongData(115, "New Game", "Monstercat", 6, 11, 19, 25, False),
+        "Play": SongData(116, "Play", "Monstercat", 6, 11, 16, 26, False),
+        "Waiting for you (feat. Joanna Jones)": SongData(117, "Waiting for you (feat. Joanna Jones)", "Monstercat", 5, 11, 16, 22, False),
     }
 
     EXTRA_DATA: Dict[str, ExtraSongData] = {
@@ -136,6 +142,13 @@ class RotNCollections:
         "Feisty Flowers",
         "Revenge",
         "Why Oh You Are LOVE",
+
+        "Monstercat",
+        "Crab Rave",
+        "Final Boss",
+        "New Game",
+        "Play",
+        "Waiting for you (feat. Joanna Jones)",
     ]
 
     song_locations: Dict[str, int] = {}

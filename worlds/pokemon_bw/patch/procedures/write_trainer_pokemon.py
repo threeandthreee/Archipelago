@@ -36,12 +36,13 @@ def patch_species(rom: NintendoDSRom, world_package: str, bw_patch_instance: "Po
 
     for file_num in range(1, 616):
 
-        trainer_file = trainer_narc.files[file_num]
+        trainer_file = bytearray(trainer_narc.files[file_num])
         pokemon_file = bytearray(pokemon_narc.files[file_num])
         patch_file = bw_patch_instance.get_file(f"trainer/{file_num}_pokemon")
         unique_moves = trainer_file[0] % 2 == 1
         held_items = trainer_file[0] >= 2
         entry_length = 8 + (8 if unique_moves else 0) + (2 if held_items else 0)
+        remove_unique_moves = False
 
         for team_slot in range(len(patch_file)//3):
 
@@ -51,7 +52,19 @@ def patch_species(rom: NintendoDSRom, world_package: str, bw_patch_instance: "Po
 
             file_address = team_slot * entry_length + 4
             pokemon_file[file_address:file_address+3] = patch_file[patch_address:patch_address+3]
+            if unique_moves:
+                remove_unique_moves = True
 
-        pokemon_narc.files[file_num] = bytes(pokemon_file)
+        if remove_unique_moves:
+            trainer_file[0] &= 254
+            trainer_narc.files[file_num] = bytes(trainer_file)
+            new_pokemon_file = b''
+            for team_slot in range(len(pokemon_file)//entry_length):
+                file_address = team_slot * entry_length
+                new_pokemon_file += pokemon_file[file_address:file_address+entry_length-8]
+            pokemon_narc.files[file_num] = bytes(new_pokemon_file)
+        else:
+            pokemon_narc.files[file_num] = bytes(pokemon_file)
 
+    rom.setFileByName("a/0/9/2", trainer_narc.save())
     rom.setFileByName("a/0/9/3", pokemon_narc.save())

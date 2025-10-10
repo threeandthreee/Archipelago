@@ -1,4 +1,5 @@
 import pkgutil
+from collections import defaultdict
 from collections.abc import Sequence, Mapping
 from dataclasses import dataclass, field, replace
 from enum import Enum, StrEnum, IntEnum, auto
@@ -9,9 +10,9 @@ import yaml
 
 from BaseClasses import ItemClassification
 
-APWORLD_VERSION = "5.1.0-alpha.8"
 POKEDEX_OFFSET = 10000
 POKEDEX_COUNT_OFFSET = 20000
+GRASS_OFFSET = 30000
 FLY_UNLOCK_OFFSET = 512
 
 FRIENDLY_MART_NAMES = {
@@ -207,6 +208,7 @@ ADHOC_TRAINERSANITY_TRAINERS = [
     "RIVAL_4",
     "RIVAL_5",
     "RIVAL_6",
+    "RIVAL_7"
 ]
 
 
@@ -811,7 +813,23 @@ class MapData:
 
 
 @dataclass(frozen=True)
+class GrassTile:
+    name: str
+    xcoord: int
+    ycoord: int
+    rom_address: int
+    flag: int
+
+
+@dataclass(frozen=True)
+class ManifestData:
+    game: str
+    world_version: str
+
+
+@dataclass(frozen=True)
 class PokemonCrystalData:
+    manifest: ManifestData
     rom_version: int
     rom_version_11: int
     rom_addresses: Mapping[str, int]
@@ -839,6 +857,8 @@ class PokemonCrystalData:
     phone_scripts: Sequence[PhoneScriptData]
     request_pokemon: Sequence[str]
     adhoc_trainersanity: Mapping[int, int]
+    grass_tiles: Mapping[str, list[GrassTile]]
+    grass_regions: Mapping[str, list[str]]
 
 
 def load_json_data(data_name: str) -> list[Any] | Mapping[str, Any]:
@@ -847,6 +867,10 @@ def load_json_data(data_name: str) -> list[Any] | Mapping[str, Any]:
 
 def load_yaml_data(data_name: str) -> list[Any] | Mapping[str, Any]:
     return yaml.safe_load(pkgutil.get_data(__name__, "data/" + data_name).decode('utf-8-sig'))
+
+
+def load_manifest() -> list[Any] | Mapping[str, Any]:
+    return orjson.loads(pkgutil.get_data(__name__, "archipelago.json").decode('utf-8-sig'))
 
 
 def _parse_encounters(encounter_list: list) -> Sequence[EncounterMon]:
@@ -861,6 +885,7 @@ def _init() -> None:
     regions_json = load_json_data("regions.json")
     items_json = load_json_data("items.json")
     data_json = load_json_data("data.json")
+    manifest_json = load_manifest()
     rom_address_data = data_json["rom_addresses"]
     ram_address_data = data_json["ram_addresses"]
     event_flag_data = data_json["event_flags"]
@@ -874,7 +899,6 @@ def _init() -> None:
     mom_items_data = data_json["misc"]["mom_items"]
     tmhm_data = data_json["tmhm"]
     mart_data = data_json["marts"]
-    map_size_data = data_json["map_sizes"]
 
     claimed_locations: set[str] = set()
 
@@ -1219,6 +1243,7 @@ def _init() -> None:
         "auto_hms": PokemonCrystalGameSetting(4, 7, 1, ON_OFF, 0),
 
         "hms_require_teaching": PokemonCrystalGameSetting(5, 0, 1, ON_OFF, 1),
+        "item_notification": PokemonCrystalGameSetting(5, 1, 2, {"popup": 0, "sound": 1, "none": 2}, 0),
     }
 
     phone_scripts = []
@@ -1241,7 +1266,7 @@ def _init() -> None:
     maps = {}
 
     for map_name, map_data in data_json["maps"].items():
-        size = map_size_data[map_name]
+        size = map_data["size"]
         maps[map_name] = MapData(
             map_name,
             MapEnvironment.from_string(map_data["environment"]),
@@ -1251,8 +1276,47 @@ def _init() -> None:
             size[1]
         )
 
+    grass_tiles = {}
+    grass_regions = defaultdict(list)
+
+    grass_base_rom_addr = rom_address_data["AP_Setting_GrassTable"]
+
+    for region, tile_data in data_json["grasssanity"].items():
+        region_name = region.split(":")[0][7:]  # delete REGION_
+        region_name = region_name.lower().replace("_", " ").title()
+        region_name_regular = f"{region_name} - Grass"
+        region_name_long = f"{region_name} - Long Grass"
+        tiles = []
+        grass_regions[region_name_regular].append(region)
+        for tile in tile_data:
+            index = tile["index"]
+            x = tile["x"]
+            y = tile["y"]
+            rom_address = grass_base_rom_addr + (index * 5) + 4
+            grass_region_name = region_name_regular
+            if tile["long"]:
+                rom_address += 1  # account for regular grass terminator
+                grass_region_name = region_name_long
+            tiles.append(
+                GrassTile(
+                    name=f"{grass_region_name} ({x}, {y})",
+                    xcoord=x,
+                    ycoord=y,
+                    rom_address=rom_address,
+                    flag=GRASS_OFFSET + index,
+                )
+            )
+
+        grass_tiles[region] = tiles
+
+    manifest = ManifestData(
+        game=manifest_json["game"],
+        world_version=manifest_json["world_version"],
+    )
+
     global data
     data = PokemonCrystalData(
+        manifest=manifest,
         rom_version=data_json["rom_version"],
         rom_version_11=data_json["rom_version11"],
         ram_addresses=ram_address_data,
@@ -1280,6 +1344,8 @@ def _init() -> None:
         phone_scripts=phone_scripts,
         request_pokemon=REQUEST_POKEMON,
         adhoc_trainersanity=adhoc_trainersanity,
+        grass_tiles=grass_tiles,
+        grass_regions=grass_regions,
     )
 
 

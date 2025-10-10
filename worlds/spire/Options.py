@@ -4,25 +4,14 @@ from typing import List
 from schema import Schema, Optional, And
 
 from Options import TextChoice, Range, Toggle, PerGameCommonOptions, Visibility, OptionDict, Choice, OptionSet, \
-    FreeText, OptionGroup
+    OptionGroup, OptionCounter
+from .Items import trap_item_table
+from .Constants import NUM_CUSTOM
 
-NUM_CUSTOM = 5
 
 class Character(OptionSet):
-    """Enter the list of characters to play as.  Valid characters are:
-        'Ironclad'
-        'Silent'
-        'Defect'
-        'Watcher'
-        'Hermit'
-        'SlimeBoss'
-        'Guardian'
-        'Hexaghost'
-        'Champ'
-        'Gremlins'
-        'Automaton'
-        'Snecko'
-        'Collector'"""
+    """Deprecated, use the `characters` option"""
+    visibility = Visibility.none
     display_name = "Character"
     valid_keys = [
         "Ironclad",
@@ -39,10 +28,44 @@ class Character(OptionSet):
         "Snecko",
         "Collector",
     ]
-    default = ["Ironclad"]
+    default = []
     valid_keys_casefold = False
-    # TODO: Spire Takes the wheel doesn't work with the current setup
-    # option_spire_take_the_wheel = 12
+
+class Characters(OptionSet):
+    """Enter the list of characters to play as.  Valid characters are:
+        'Ironclad'
+        'Silent'
+        'Defect'
+        'Watcher'
+        'Hermit'
+        'SlimeBoss'
+        'Guardian'
+        'Hexaghost'
+        'Champ'
+        'Gremlins'
+        'Automaton'
+        'Snecko'
+        'Collector'"""
+    # For those wondering why there's a CharacterOption, it's because
+    # OptionDict doesn't show up on WebHost, which is what Advanced Character is
+    display_name = "Character"
+    valid_keys = [
+        "Ironclad",
+        "Silent",
+        "Defect",
+        "Watcher",
+        "Hermit",
+        "SlimeBoss",
+        "Guardian",
+        "Hexaghost",
+        "Champ",
+        "Gremlins",
+        "Automaton",
+        "Snecko",
+        "Collector",
+    ]
+    default = ["Ironclad", "Silent", "Defect", "Watcher"]
+    valid_keys_casefold = False
 
 class GoalNumChar(Range):
     """How many characters you need to complete a run with before you goal. 0 means all characters"""
@@ -56,15 +79,23 @@ class Ascension(Range):
     display_name = "Ascension"
     range_start = 0
     range_end = 20
-    default = 0
+    default = 5
 
 class PickNumberCharacters(Range):
     """Randomly select from the configured characters this many characters to generate for.
-    0 disables."""
+    0 disables.
+    For example, if "character" is configured to be:
+        character:
+            - Ironclad
+            - Silent
+            - Defect
+    And pick_num_characters is set to 2, then one possible outcome is
+    to have a run with Ironclad and Defect, but not the Silent.
+    """
     display_name = "Pick Number of Characters"
     range_start = 0
     range_end = 13 + NUM_CUSTOM - 1
-    default = 0
+    default = 2
 
 class FinalAct(Toggle):
     """Whether you will need to collect the 3 keys and beat the final act to complete the game."""
@@ -94,14 +125,14 @@ class CampfireSanity(Toggle):
     """Whether to shuffle being able to rest and smith at each campsite per act.  Also adds
     new locations at campsites per act."""
     display_name = "Campfire Sanity"
-    default = 0
+    default = 1
 
 class ShopSanity(Toggle):
     """Whether to shuffle shop slots into the pool.  Also adds new locations at the shop per slot shuffled."""
     display_name = "Shop Sanity"
     option_true = 1
     option_false = 0
-    default = 0
+    default = 1
 
 class ShopCardSlots(Range):
     """When shop_sanity is enabled, the number of colored card slots to shuffle."""
@@ -174,12 +205,13 @@ class ChattyMC(Toggle):
     display_name = "Chatty MC"
     default = 1
 
+
 class AdvancedChar(Toggle):
     """Whether to use the advanced characters feature. The normal options for character, ascension, etc. are ignored.
     See the "advanced_characters" option.
     """
     visibility = Visibility.template
-    display_name = "Multiple Character Run"
+    display_name = "Advanced Characters"
     option_true = 1
     option_false = 0
     default = 0
@@ -196,17 +228,34 @@ class LockCharacters(Choice):
     option_locked_fixed = 2
     default = 1
 
-class UnlockedCharacter(FreeText):
-    """Which character to start unlocked, if lock_characters is set to 2"""
+class UnlockedCharacter(TextChoice):
+    """Which character to start unlocked, if lock_characters is set to locked_fixed.
+    Can also enter a character name for modded characters."""
+    default = ""
+    option_ironclad = 0
+    option_silent = 1
+    option_defect = 2
+    option_watcher = 3
+    option_hermit = 4
+    option_slimeboss = 5
+    option_guardian = 6
+    option_hexaghost = 7
+    option_champ = 8
+    option_gremlins = 9
+    option_automaton = 10
+    option_snecko = 11
+    option_collector = 12
+
 
 class CharacterOptions(OptionDict):
     """The configuration for advanced characters.  Each character's options can be configured
     independently of each other.  No validation is done on the character name, so use carefully.
     Format is:
         <char name>:
-            ascension:
-            downfall:
-            final_act:
+            ascension: <number>
+            downfall: 0 or 1
+            final_act: 0 or 1
+            ascension_down: <number>
 
     If using a non-downfall modded character:
     Enter the internal ID of the character to use.
@@ -219,12 +268,15 @@ class CharacterOptions(OptionDict):
     sends them.  If none of the chosen character mods are installed, you will be playing
     a very boring Ironclad run.
     """
+    # For those wondering why on earth there's an advanced character option
+    # it's to support modded characters.
     visibility = Visibility.template
     default = {
         "ironclad": {
-            "ascension": 0,
+            "ascension": 1,
             "final_act": 1,
-            "downfall": 1,
+            "downfall": 0,
+            "ascension_down": 0,
         }
     }
     schema = Schema({
@@ -232,14 +284,55 @@ class CharacterOptions(OptionDict):
             Optional("ascension", default=0): And(int,lambda n: 0 <= n <= 20),
             Optional("final_act", default=0): And(int, lambda n: 0 <= n <= 1),
             Optional("downfall", default=0): And(int, lambda n: 0 <= n <= 1),
+            Optional("ascension_down", default=0): And(int, lambda n: 0 <= n <= 20)
         }
     })
+
+class AscensionDown(Range):
+    """The number of ascension downs to add to the item pool, per character. Only valid when
+    `use_advanced_characters` is false (see `advanced_characters`), and when `include_floor_checks` is true.
+    Will be ignored if invalid.
+
+    Logic does NOT account for this."""
+    display_name = "Ascension Down"
+    range_start = 0
+    range_end = 20
+    default = 0
+
+class TrapChance(Range):
+    """Chance that a filler item is replaced with a trap.  Requires `include_floor_checks`
+    for any traps to be added.
+    """
+    display_name = "Trap Chance"
+    range_start = 0
+    range_end = 100
+    default = 0
+
+class TrapWeights(OptionCounter):
+    """
+    The list of traps and corresponding weights that will be added to the item pool.
+    Debuff Trap - Start next combat with a weaker debuff
+    Strong debuff Trap - Start next combat with a strong debuff
+    Killer debuff Trap - Start next combat with a debuff has a good chance of killing you
+    Buff Trap - Next combat, enemies start buffed
+    Strong Buff Trap - Next combat, enemies start with a strong buff
+    Status Card Trap - Start next combat with status cards in your draw pile
+    Gremlin Trap - Next combat, a random gremlin is added to the enemies
+    """
+    display_name = "Trap Weights"
+    min = 0
+    default = {trap: 1 for trap in trap_item_table.keys()}
+    valid_keys = sorted(trap_item_table.keys())
+
+
 
 @dataclass
 class SpireOptions(PerGameCommonOptions):
     character: Character
+    characters: Characters
     num_chars_goal: GoalNumChar
     ascension: Ascension
+    ascension_down: AscensionDown
     final_act: FinalAct
     downfall: Downfall
     death_link: DeathLink
@@ -261,6 +354,8 @@ class SpireOptions(PerGameCommonOptions):
     shop_potion_slots: ShopPotionSlots
     shop_remove_slots: ShopRemoveSlots
     shop_sanity_costs: ShopSanityCosts
+    trap_chance: TrapChance
+    trap_weights: TrapWeights
 
 option_groups: List[OptionGroup] = [
     OptionGroup("Sanities", [
@@ -276,7 +371,11 @@ option_groups: List[OptionGroup] = [
         ShopRemoveSlots,
         ShopSanityCosts,
     ]),
+    OptionGroup("Traps", [
+        TrapChance,
+        TrapWeights
+    ]),
     OptionGroup("Misc", [
         ChattyMC,
-    ])
+    ]),
 ]

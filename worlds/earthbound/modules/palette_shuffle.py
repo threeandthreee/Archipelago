@@ -1,4 +1,9 @@
 from ..game_data.palettes_organized import map_palettes, nice_palettes, ugly_palettes, nonsense_palettes
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from . import EarthBoundWorld
+    from .Rom import LocalRom
+
 
 event_palettes = {
     "Happy-Happy Village": 0x8367,
@@ -7,7 +12,7 @@ event_palettes = {
     }
 
 
-def randomize_psi_palettes(world, rom) -> None:
+def randomize_psi_palettes(world: "EarthBoundWorld", rom: "LocalRom") -> None:
     spell_palettes = []
     for i in range(34):
         spell_palettes.append(0x0CF47F + (i * 8))
@@ -31,7 +36,7 @@ def randomize_psi_palettes(world, rom) -> None:
         rom.copy_bytes(pointer, 8, shuffled_palettes[index])
 
 
-def map_palette_shuffle(world, rom) -> None:
+def map_palette_shuffle(world: "EarthBoundWorld", rom: "LocalRom") -> None:
     for i in range(168):
         rom.copy_bytes(0x1A7CA7 + (i * 192), 191, 0x381000 + (i * 192))
     

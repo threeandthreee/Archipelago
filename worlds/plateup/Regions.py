@@ -33,12 +33,35 @@ def create_plateup_regions(world: "PlateUpWorld"):
             EXCLUDED_LOCATIONS.add(loc_id)
 
         required_franchises = world.options.franchise_count.value
-        max_franchise_id = (required_franchises + 1) * 100000
+
+        def run_index_from_name(n: str):
+            if not n.startswith("Franchise - "):
+                return None
+            if " After Franchised" not in n:
+                return 0
+            suffix_part = n.split(" After Franchised", 1)[1]
+            if suffix_part == "":
+                return 1
+            suffix_part = suffix_part.strip()
+            if suffix_part.isdigit():
+                return int(suffix_part)
+            return None
 
         for name, loc_id in FRANCHISE_LOCATION_DICT.items():
-            if loc_id < max_franchise_id or name == f"Franchise {required_franchises} times":
+            include = False
+            if name.startswith("Franchise ") and name.endswith(" times"):
+                try:
+                    count = int(name.removeprefix("Franchise ").removesuffix(" times"))
+                    include = count <= required_franchises
+                except ValueError:
+                    include = False
+            else:
+                run_idx = run_index_from_name(name)
+                if run_idx is not None and (run_idx + 1) <= required_franchises:
+                    include = True
+
+            if include:
                 loc = PlateUpLocation(world.player, name, loc_id, parent=progression_region)
-                # Mark location as excluded if it's in EXCLUDED_LOCATIONS
                 if loc_id in EXCLUDED_LOCATIONS:
                     loc.progress_type = LocationProgressType.EXCLUDED
                 progression_region.locations.append(loc)

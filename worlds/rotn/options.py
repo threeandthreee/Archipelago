@@ -7,7 +7,7 @@ class DLCMusicPacks(OptionSet):
     Choose which DLC Packs will be included in the pool of chooseable songs.
     Both individual songs and dlc pack names work.
 
-    Current DLC Pack Groups: ["Celeste", "Pizza Tower", "Hatsune Miku", "Hololive"]
+    Current DLC Pack Groups: ["Celeste", "Pizza Tower", "Hatsune Miku", "Hololive", "Everhood", "Monstercat"]
     """
     display_name = "DLC Packs"
     valid_keys = [dlc for dlc in RotNCollections.DLC]
@@ -177,7 +177,6 @@ class RotNOptions(PerGameCommonOptions):
     grade_needed: GradeNeeded
     diamond_count_percentage: DiamondCountPercentage
     diamond_win_percentage: DiamondWinPercentage
-    death_link: DeathLink
     include_songs: IncludeSongs
     exclude_songs: ExcludeSongs
     goal_song_pool: GoalSongPool

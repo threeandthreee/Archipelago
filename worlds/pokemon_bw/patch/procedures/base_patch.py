@@ -19,8 +19,9 @@ class PatchProcedure(NamedTuple):
 
 
 def patch(rom: NintendoDSRom, world_package: str, bw_patch_instance: "PokemonBWPatch") -> None:
+    from ...data import version
 
-    pad = rom.pad088[:0x18] + bw_patch_instance.player_name.encode()
+    pad = rom.pad088[:0x15] + bytes(version.rom()) + bw_patch_instance.player_name.encode()
     rom.pad088 = pad + bytes(0x38 - len(pad))
 
     # open patch files zip and create dict of patch procedures

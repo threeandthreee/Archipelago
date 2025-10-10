@@ -1,4 +1,4 @@
-menu = 'Menu'
+menu = "Menu"
 overworld = "Overworld"
 
 cornelia_region = "Cornelia Region"

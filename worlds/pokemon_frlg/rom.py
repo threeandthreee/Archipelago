@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Dict, List, Tuple
 from worlds.Files import APPatchExtension, APProcedurePatch, APTokenMixin, APTokenTypes
 from settings import get_settings
 from .data import data, APWORLD_VERSION, EvolutionMethodEnum, LocationCategory, TrainerPokemonDataTypeEnum
+from .items import is_renewable_progression
 from .locations import PokemonFRLGLocation
 from .options import (CardKey, Dexsanity, DungeonEntranceShuffle, FlashRequired, ForceFullyEvolved, IslandPasses,
                       ItemfinderRequired, HmCompatibility, LevelScaling, RandomizeDamageCategories,
@@ -905,6 +906,9 @@ def _set_shop_data(world: "PokemonFRLGWorld") -> None:
     already_set_prices: Dict[str, int] = {}
 
     for location in shop_locations:
+        if location.item is None:
+            continue
+
         item_address = location.item_address
 
         if location.item.player != world.player:
@@ -936,7 +940,9 @@ def _set_shop_data(world: "PokemonFRLGWorld") -> None:
         if location.item.player == world.player:
             already_set_prices[location.item.name] = price
 
-        if (location.item.advancement or location.item.player != world.player) and location.address is not None:
+        if ((location.item.advancement or location.item.player != world.player) and
+                location.address is not None and
+                not is_renewable_progression(world, location.item)):
             patch.write_token(item_address, 6, struct.pack("<B", 0))
 
 

@@ -1,193 +1,351 @@
-all_regions = [
-    "Menu",
-    "Apartment floor 1",
-    "Apartment floor 1 top left",
-    "Apartment floor 2",
-    "Apartment floor 2 top left",
-    "Apartment floor 3",
-    "Beach",
-    "Beach Gauntlet",
-    "Bedroom entrance",
-    "Bedroom core",
-    "Bedroom shieldy room",
-    "Bedroom after statue",
-    "Bedroom drawer",
-    "Bedroom exit",
-    "Blank start",
-    "Blank windmill",
-    "Blank ending",
-    "Blue",
-    "Cell",
-    "Circus", #entrance
-    "Circus entrance lake",
-    "Circus entry gauntlets",
-    "Circus past entrance lake",
-    "Circus circlejump gauntlets",
-    "Circus third key gauntlet",
-    "Circus boss gauntlet",
-    "Circus north gauntlet",
-    "Cliff",
-    "Cliff post windmill",
-    "Crowd floor 1",
-    "Crowd floor 2",
-    "Crowd floor 2 gauntlets",
-    "Crowd floor 3",
-    "Crowd floor 3 center",
-    "Crowd jump challenge",
-    "Crowd exit",
-    "Debug",
-    "Drawer",
-    "Drawer dark",
-    "Fields",
-    "Fields Lake",
-    "Fields Past Gate",
-    "Fields North Secret Area",
-    "Fields Goldman's Cave",
-    "Fields East",
-    "Forest",
-    "Go bottom",
-    "Go top",
-    "Happy",
-    "Happy gauntlet",
-    "Hotel roof",
-    "Hotel floor 4",
-    "Hotel floor 3",
-    "Hotel floor 2",
-    "Hotel floor 2 right",
-    "Hotel floor 1",
-    "Nexus bottom",
-    "Nexus top",
-    "Overworld",
-    "Overworld west",
-    "Overworld Gauntlet",
-    "Overworld post windmill",
-    "Red Cave top",
-    "Red Cave left",
-    "Red Cave center",
-    "Red Cave right",
-    "Red Cave bottom",
-    "Red Cave exit",
-    "Red Cave Isaac",
-    "Red Sea",
-    "Suburb",
-    "Suburb card house",
-    "Space",
-    "Space Gauntlet",
-    "Street",
-    "Terminal",
-    "Terminal top",
-    "Windmill entrance",
-    "Windmill",
-    "Boss Rush"
-]
+from abc import abstractmethod
+from enum import Enum, auto
 
-dungeon_areas = {
-    "Temple of the Seeing One": ["Bedroom entrance",
-                                 "Bedroom core",
-                                 "Bedroom shieldy room",
-                                 "Bedroom after statue",
-                                 "Bedroom exit"],
-    "Red Cave": ["Red Cave top",
-                 "Red Cave left",
-                 "Red Cave center",
-                 "Red Cave right",
-                 "Red Cave bottom",
-                 "Red Cave exit",
-                 "Red Cave Isaac"],
-    "Mountain Cavern": ["Crowd floor 1",
-                        "Crowd floor 2",
-                        "Crowd floor 2 gauntlets",
-                        "Crowd floor 3",
-                        "Crowd floor 3 center",
-                        "Crowd jump challenge",
-                        "Crowd exit"],
-    "Hotel": ["Hotel roof",
-              "Hotel floor 4",
-              "Hotel floor 3",
-              "Hotel floor 2",
-              "Hotel floor 2 right",
-              "Hotel floor 1"],
-    "Apartment": ["Apartment floor 1",
-                  "Apartment floor 1 top left",
-                  "Apartment floor 2",
-                  "Apartment floor 2 top left",
-                  "Apartment floor 3"],
-    "Circus":  ["Circus",
-                "Circus entrance lake",
-                "Circus entry gauntlets",
-                "Circus past entrance lake",
-                "Circus circlejump gauntlets",
-                "Circus third key gauntlet",
-                "Circus boss gauntlet",
-                "Circus north gauntlet"],
-    "Street": ["Street"],
+area_name_trans = {
+    "Overworld": "Woods",
+    "Bedroom": "Temple of the Seeing One",
+    "Red Cave": "Red Grotto",
+    "Crowd": "Mountain Cavern",
+    "Forest": "Deep Forest",
+    "Suburb": "Young Town",
+    "Terminal": "Crossing",
+    "Happy": "Red",
+    "Go": "Garden"
 }
 
-dungeon_area_to_dungeon = {name: dungeon for dungeon, names in dungeon_areas.items() for name in names}
+all_areas: list[type['RegionEnum']] = []
+area_lookup: dict[str, type['RegionEnum']] = {}
 
-# The Street nexus gate is open from the start
-regions_with_nexus_gate = [
-    "Apartment floor 1",
-    "Beach",
-    "Bedroom exit",
-    "Blue",
-    "Cell",
-    "Circus",
-    "Cliff",
-    "Crowd exit",
-    "Fields",
-    "Forest",
-    "Go bottom",
-    "Happy",
-    "Hotel floor 4",
-    "Overworld",
-    "Red Cave exit",
-    "Red Sea",
-    "Suburb",
-    "Space",
-    "Terminal",
-    "Windmill entrance",
-]
+
+class RegionEnum(Enum):
+    def __init_subclass__(cls, **kwargs):
+        all_areas.append(cls)
+        area_lookup[cls.area_name()] = cls
+
+    @staticmethod
+    def _generate_next_value_(name, start, count, last_values):
+        return "" if name == "DEFAULT" else name.replace('_', ' ')
+
+    @classmethod
+    def area_id(cls):
+        return all_areas.index(cls)
+
+    @classmethod
+    def area_name(cls):
+        name = cls.__name__.replace('_', ' ')
+        return area_name_trans.setdefault(name, name)
+
+    @classmethod
+    @abstractmethod
+    def nexus_ut_loc(cls) -> tuple[int, int]:
+        pass
+
+    def __str__(self):
+        return self.area_name() + (' ' + self.value).rstrip()
+
+
+class Apartment(RegionEnum):
+    @classmethod
+    def nexus_ut_loc(cls) -> tuple[int, int]:
+        return 592, 833
+
+    floor_1 = auto()
+    floor_1_top_left = auto()
+    floor_2 = auto()
+    floor_2_top_left = auto()
+    floor_3 = auto()
+
+
+class Beach(RegionEnum):
+    @classmethod
+    def nexus_ut_loc(cls) -> tuple[int, int]:
+        return 288, 721
+
+    DEFAULT = auto()
+    gauntlet = auto()
+
+
+class Bedroom(RegionEnum):
+    @classmethod
+    def nexus_ut_loc(cls) -> tuple[int, int]:
+        return 592, 897
+
+    entrance = auto()
+    core = auto()
+    shieldy_room = auto()
+    after_statue = auto()
+    exit = auto()
+    drawer = auto()
+
+
+class Blank(RegionEnum):
+    @classmethod
+    def nexus_ut_loc(cls) -> tuple[int, int]:
+        return 80, 400
+
+    windmill = auto()
+
+
+class Blue(RegionEnum):
+    @classmethod
+    def nexus_ut_loc(cls) -> tuple[int, int]:
+        return 352, 513
+
+    DEFAULT = auto()
+
+
+class Boss_Rush(RegionEnum):
+    @classmethod
+    def nexus_ut_loc(cls) -> tuple[int, int]:
+        return 512, 240
+
+    DEFAULT = auto()
+
+
+class Cell(RegionEnum):
+    @classmethod
+    def nexus_ut_loc(cls) -> tuple[int, int]:
+        return 272, 497
+
+    DEFAULT = auto()
+    past_gate = auto()
+
+
+class Circus(RegionEnum):
+    @classmethod
+    def nexus_ut_loc(cls) -> tuple[int, int]:
+        return 192, 497
+
+    DEFAULT = auto()
+    entrance_lake = auto()
+    entry_gauntlets = auto()
+    past_entrance_lake = auto()
+    circlejump_gauntlets = auto()
+    third_key_gauntlet = auto()
+    boss_gauntlet = auto()
+    north_gauntlet = auto()
+
+
+class Cliffs(RegionEnum):
+    @classmethod
+    def nexus_ut_loc(cls) -> tuple[int, int]:
+        return 512, 561
+
+    DEFAULT = auto()
+    post_windmill = auto()
+
+
+class Crowd(RegionEnum):
+    @classmethod
+    def nexus_ut_loc(cls) -> tuple[int, int]:
+        return 592, 561
+
+    floor_1 = auto()
+    floor_2 = auto()
+    floor_2_gauntlets = auto()
+    floor_3 = auto()
+    floor_3_center = auto()
+    jump_challenge = auto()
+    exit = auto()
+
+
+class Debug(RegionEnum):
+    @classmethod
+    def nexus_ut_loc(cls) -> tuple[int, int]:
+        return 256, 240
+
+    DEFAULT = auto()
+
+
+class Drawer(RegionEnum):
+    @classmethod
+    def nexus_ut_loc(cls) -> tuple[int, int]:
+        return 401, 244
+
+    DEFAULT = auto()
+    dark = auto()
+
+
+class Fields(RegionEnum):
+    @classmethod
+    def nexus_ut_loc(cls) -> tuple[int, int]:
+        return 400, 721
+
+    DEFAULT = auto()
+    Lake = auto()
+    Past_Gate = auto()
+    Terminal_Entrance = auto()
+    North_Secret_Area = auto()
+    Goldman = "Goldman's Cave"
+    East = auto()
+
+
+class Forest(RegionEnum):
+    @classmethod
+    def nexus_ut_loc(cls) -> tuple[int, int]:
+        return 512, 721
+
+    DEFAULT = auto()
+
+
+class Go(RegionEnum):
+    @classmethod
+    def nexus_ut_loc(cls) -> tuple[int, int]:
+        return 352, 577
+
+    bottom = auto()
+    top = auto()
+
+
+class Happy(RegionEnum):
+    @classmethod
+    def nexus_ut_loc(cls) -> tuple[int, int]:
+        return 448, 513
+
+    DEFAULT = auto()
+    gauntlet = auto()
+
+
+class Hotel(RegionEnum):
+    @classmethod
+    def nexus_ut_loc(cls) -> tuple[int, int]:
+        return 592, 497
+
+    roof = auto()
+    floor_4 = auto()
+    floor_4_pad = auto()
+    floor_3 = auto()
+    floor_2 = auto()
+    floor_2_right = auto()
+    floor_1 = auto()
+
+
+class Nexus(RegionEnum):
+    @classmethod
+    def nexus_ut_loc(cls) -> tuple[int, int]:
+        return 0, 0
+
+    bottom = auto()
+    top = auto()
+    ending = auto()
+
+
+class Overworld(RegionEnum):
+    @classmethod
+    def nexus_ut_loc(cls) -> tuple[int, int]:
+        return 512, 897
+
+    DEFAULT = auto()
+    west = auto()
+    Gauntlet = auto()
+    post_windmill = auto()
+
+
+class Red_Cave(RegionEnum):
+    @classmethod
+    def nexus_ut_loc(cls) -> tuple[int, int]:
+        return 192, 562
+
+    top = auto()
+    left = auto()
+    center = auto()
+    right = auto()
+    bottom = auto()
+    exit = auto()
+    Isaac = auto()
+
+
+class Red_Sea(RegionEnum):
+    @classmethod
+    def nexus_ut_loc(cls) -> tuple[int, int]:
+        return 272, 562
+
+    DEFAULT = auto()
+
+
+class Space(RegionEnum):
+    @classmethod
+    def nexus_ut_loc(cls) -> tuple[int, int]:
+        return 512, 497
+
+    DEFAULT = auto()
+    Gauntlet = auto()
+
+
+class Street(RegionEnum):
+    @classmethod
+    def nexus_ut_loc(cls) -> tuple[int, int]:
+        return 256, 897
+
+    DEFAULT = auto()
+
+
+class Suburb(RegionEnum):
+    @classmethod
+    def nexus_ut_loc(cls) -> tuple[int, int]:
+        return 512, 833
+
+    DEFAULT = auto()
+    card_house = auto()
+    past_gate = auto()
+
+
+class Terminal(RegionEnum):
+    @classmethod
+    def nexus_ut_loc(cls) -> tuple[int, int]:
+        return 352, 657
+
+    DEFAULT = auto()
+    top = auto()
+
+
+class Windmill(RegionEnum):
+    @classmethod
+    def nexus_ut_loc(cls) -> tuple[int, int]:
+        return 448, 657
+
+    DEFAULT = auto()
+    entrance = auto()
+
 
 early_nexus_gates = [
-    "Beach",
-    "Cliff",
-    "Fields",
-    "Forest",
-    "Overworld",
-    "Red Sea"
+    Beach,
+    Cliffs,
+    Fields,
+    Forest,
+    Overworld,
+    Red_Sea
 ]
 
 endgame_nexus_gates = [
-    "Blue",
-    "Go bottom",
-    "Happy",
+    Blue,
+    Go,
+    Happy,
+]
+
+post_temple_boss_nexus_gates: list[type[RegionEnum]] = [
+    Bedroom,
+    Suburb,
+    Apartment
 ]
 
 wrong_big_key_early_locked_nexus_gates = [
-    "Apartment floor 1",
-    "Bedroom exit",
-    "Suburb"
+    Apartment,
+    Bedroom,
+    Suburb
 ]
 
-postgame_regions = [
-    "Bedroom drawer",
-    "Blank windmill",
-    "Blank ending",
-    "Debug",
-    "Drawer",
-    "Drawer dark",
-    "Boss Rush",
-    "Nexus top",
-    "Space Gauntlet"
+postgame_regions: list[RegionEnum] = [
+    Bedroom.drawer,
+    *Drawer,
+    *Blank,
+    *Debug,
+    *Boss_Rush,
+    Nexus.top,
+    Nexus.ending,
+    Space.Gauntlet
 ]
 
-postgame_without_secret_paths = [
-    "Fields North Secret Area"
-]
-
-post_temple_boss_regions = [
-    "Bedroom exit",
-    "Suburb",
-    "Apartment floor 1",
+postgame_without_secret_paths: list[RegionEnum] = [
+    Fields.North_Secret_Area
 ]
