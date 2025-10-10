@@ -45,7 +45,6 @@ Version 1.0.0 will happen when certain important features are implemented.
   - Wild pokémon randomization
     - Also enables full dexsanity
   - Trainer pokémon randomization
-  - Adjust levels
   - Encounter Plando
   - Master Ball seller (OptionSet), random cost in range if multiple
     - N's Castle
@@ -56,18 +55,7 @@ Version 1.0.0 will happen when certain important features are implemented.
     - Cost: 1000
     - Cost: 3000
     - Cost: 10000
-
-### 0.4.0
-
-- More modifiers
-  - Randomize Wild Pokémon
-    - Prevent overpowered pokémon
-  - Randomize Trainer Pokémon 
-    - Prevent overpowered pokémon
-    - Force fully evolved
-- Randomization Blacklist
-  - Wild pokémon
-  - Trainer pokémon
+  - Adjust levels
 
 ### Another update #1: Pokédex stuff
 
@@ -84,7 +72,6 @@ Version 1.0.0 will happen when certain important features are implemented.
   - Seensanity
     - Also consider trainer pokémon
   - Decrease trainer eyesight
-  - Trainer rebattling
 
 ### Another update #3: Text stuff
 
@@ -109,7 +96,6 @@ Version 1.0.0 will happen when certain important features are implemented.
 - Running shoes as an item, making mom cutscene on route 2 a check
 - Relic castle room filling with sand unlockable via an item
 - Dowsing Machine as a hard requirement for hidden items
-- Free fly destination
 
 ## Big update #1 (Stats update, name WIP, required for core)
 
