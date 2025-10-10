@@ -197,3 +197,6 @@ _speedups.html
 .LSOverride
 Thumbs.db
 [Dd]esktop.ini
+
+# World files that need to be added but devs have named them improperly...
+!worlds/metroidprime/lib
