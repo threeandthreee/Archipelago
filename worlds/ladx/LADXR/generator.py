@@ -88,7 +88,7 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
     if options["gfxmod"]:
         user_settings = settings.get_settings()
         try:
-            gfx_mod_file = user_settings["ladx_options"]["gfx_mod_file"]
+            gfx_mod_file = user_settings["ladx_beta_options"]["gfx_mod_file"]
             patches.aesthetics.gfxMod(rom, gfx_mod_file)
         except FileNotFoundError:
             pass # if user just doesnt provide gfxmod file, let patching continue
