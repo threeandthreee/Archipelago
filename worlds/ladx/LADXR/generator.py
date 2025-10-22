@@ -56,6 +56,7 @@ from .patches import save as _
 from .patches import bingo as _
 from .patches import multiworld as _
 from .patches import tradeSequence as _
+from .patches import saveVictory as _
 from . import hints
 from . import utils
 
@@ -254,6 +255,7 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
         patches.core.quickswap(rom, 0)
 
     patches.core.addBootsControls(rom, options["boots_controls"])
+    patches.saveVictory.saveVictory(rom)
 
     random.seed(patch_data["seed"] + patch_data["player"])
     hints.addHints(rom, random, patch_data["hint_texts"])
