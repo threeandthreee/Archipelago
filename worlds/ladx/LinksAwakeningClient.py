@@ -879,7 +879,7 @@ def launch(*launch_args):
         parser.add_argument("--url", help="Archipelago connection url")
         parser.add_argument("--no-magpie", dest='magpie', default=True, action='store_false', help="Disable magpie bridge")
         parser.add_argument('diff_file', default="", type=str, nargs="?",
-                            help='Path to a .apladx Archipelago Binary Patch file')
+                            help='Path to a .apladxb Archipelago Binary Patch file')
 
         args = parser.parse_args(launch_args)
 

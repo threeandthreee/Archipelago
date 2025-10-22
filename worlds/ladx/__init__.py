@@ -39,9 +39,9 @@ components.append(Component(f"{LINKS_AWAKENING} Client",
                             func=launch_client,
                             component_type=Type.CLIENT,
                             icon=LINKS_AWAKENING,
-                            file_identifier=SuffixIdentifier('.apladx')))
+                            file_identifier=SuffixIdentifier('.apladxb')))
 
-icon_paths[LINKS_AWAKENING] = "ap:worlds.ladx/assets/MarinV-3_small.png"
+icon_paths[LINKS_AWAKENING] = "ap:worlds.ladx_beta/assets/MarinV-3_small.png"
 
 
 class LinksAwakeningSettings(settings.Group):
@@ -544,7 +544,9 @@ class LinksAwakeningWorld(World):
 
     def fill_slot_data(self):
         slot_data = {
-            "world_version": self.world_version.as_simple_string(),			"death_link": self.options.death_link.value,        }
+            "world_version": self.world_version.as_simple_string(),
+			"death_link": self.options.death_link.value,
+        }
 
         if not self.multiworld.is_race:
             # all of these option are NOT used by the LADX- or Text-Client.
