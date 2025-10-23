@@ -634,7 +634,7 @@ class LinksAwakeningContext(CommonContext):
                 ("Client", "Archipelago"),
                 ("Tracker", "Tracker"),
             ]
-            base_title = "Archipelago Links Awakening DX Client"
+            base_title = "Archipelago Links Awakening DX Beta Client"
 
             def build(self):
                 b = super().build()
@@ -738,6 +738,7 @@ class LinksAwakeningContext(CommonContext):
                 "server_address": self.server_address,
                 "slot_name": self.player_names[self.slot],
                 "password": self.password,
+                "client_version": LinksAwakeningWorld.world_version.as_simple_string(),
             })
             if self.slot_data.get("death_link"):
                 Utils.async_start(self.update_death_link(True))
@@ -875,7 +876,7 @@ def run_game(romfile: str) -> None:
 
 def launch(*launch_args):
     async def main():
-        parser = get_base_parser(description="Link's Awakening Client.")
+        parser = get_base_parser(description="Link's Awakening DX Beta Client.")
         parser.add_argument("--url", help="Archipelago connection url")
         parser.add_argument("--no-magpie", dest='magpie', default=True, action='store_false', help="Disable magpie bridge")
         parser.add_argument('diff_file', default="", type=str, nargs="?",
