@@ -77,31 +77,12 @@ class Rooster(DefaultOnToggle, LADXROption):
     ladxr_name = "rooster"
 
 
-class EntranceShuffle(Choice, LADXROption):
+class RandomStartLocation(DefaultOffToggle, LADXROption):
     """
-    Randomizes where overworld entrances lead.
-
-    **Simple:** Single-entrance caves/houses that have items are shuffled
-    amongst each other.
-
-    If *Dungeon Shuffle* is enabled, then dungeons will be shuffled with all the
-    non-connector entrances in the pool. Note, some entrances can lead into water, use
-    the warp-to-home from the save&quit menu to escape this.
+    Randomize where your starting house is located.
     """
-
-    # [Advanced] Simple, but two-way connector caves are shuffled in their own pool as well.
-    # [Expert] Advanced, but caves/houses without items are also shuffled into the Simple entrance pool.
-    # [Insanity] Expert, but the Raft Minigame hut and Mamu's cave are added to the non-connector pool.
-
-    option_none = 0
-    option_simple = 1
-    # option_advanced = 2
-    # option_expert = 3
-    # option_insanity = 4
-    default = option_none
-    display_name = "Entrance Shuffle"
-    ladxr_name = "entranceshuffle"
-    rich_text_doc = True
+    display_name = "Random Start Location"
+    ladxr_name = "randomstartlocation"
 
 
 class DungeonShuffle(DefaultOffToggle, LADXROption):
@@ -110,6 +91,64 @@ class DungeonShuffle(DefaultOffToggle, LADXROption):
     """
     display_name = "Dungeon Shuffle"
     ladxr_name = "dungeonshuffle"
+
+
+class EntranceShuffle(Choice, LADXROption):
+    """
+    Randomizes where overworld entrances lead.
+
+    **Simple:** Single-entrance caves/houses that contain items are shuffled.
+
+    **Split:** Connector caves are also shuffled, in a separate pool from single entrance caves.
+
+    **Mixed:** Connector caves are also shuffled, in the same pool as single entrance caves.
+
+    **Wild:** Connections can go from overworld to overworlds, or inside to inside.
+
+    **Chaos:** Entrances and exits are decoupled.
+
+    **Insane:** Combines chaos and wild, anything goes anywhere, there is no God.
+
+    If *Random Start Location* and/or *Dungeon Shuffle* is enabled, then these will be shuffled with all the
+    other entrances.
+    """
+    option_none = 0
+    option_simple = 1
+    option_split = 2
+    option_mixed = 3
+    option_wild = 4
+    option_chaos = 5
+    option_insane = 6
+    default = option_none
+    display_name = "Entrance Shuffle"
+    rich_text_doc = True
+    ladxr_name = "entranceshuffle"
+
+
+class ShuffleJunk(DefaultOffToggle, LADXROption):
+    """
+    Caves/houses without items are also shuffled when entrance shuffle is set.
+    """
+    display_name = "Shuffle Junk"
+    ladxr_name = "shufflejunk"
+
+
+class ShuffleAnnoying(DefaultOffToggle, LADXROption):
+    """
+    A few very annoying entrances (Mamu and the Raft House) will also be shuffled when entrance shuffle is set.
+    """
+    display_name = "Shuffle Annoying"
+    ladxr_name = "shuffleannoying"
+
+
+class ShuffleWater(DefaultOffToggle, LADXROption):
+    """
+    Entrances that lead to water (Manbo and Damp Cave) will also be shuffled when entrance shuffle is set.
+
+    Use the warp-to-home from the Save & Quit menu if you get stuck (hold A+B+Start+Select until it works).
+    """
+    display_name = "Shuffle Water"
+    ladxr_name = "shufflewater"
 
 
 class APTitleScreen(DefaultOnToggle):
@@ -609,8 +648,12 @@ ladx_option_groups = [
     OptionGroup("World Layout", [
         Overworld,
         Warps,
+        RandomStartLocation,
         DungeonShuffle,
         EntranceShuffle,
+        ShuffleJunk,
+        ShuffleAnnoying,
+        ShuffleWater,
     ]),
     OptionGroup("Item Pool", [
         ShuffleInstruments,
@@ -646,8 +689,12 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     logic: Logic
     tradequest: TradeQuest
     rooster: Rooster
-    experimental_dungeon_shuffle: DungeonShuffle
-    experimental_entrance_shuffle: EntranceShuffle
+    random_start_location: RandomStartLocation
+    dungeon_shuffle: DungeonShuffle
+    entrance_shuffle: EntranceShuffle
+    shuffle_junk: ShuffleJunk
+    shuffle_annoying: ShuffleAnnoying
+    shuffle_water: ShuffleWater
     goal: Goal
     instrument_count: InstrumentCount
     link_palette: LinkPalette
@@ -682,3 +729,5 @@ class LinksAwakeningOptions(PerGameCommonOptions):
 
     warp_improvements: Removed
     additional_warp_points: Removed
+    experimental_dungeon_shuffle: Removed
+    experimental_entrance_shuffle: Removed
