@@ -222,6 +222,9 @@ class Spelunky2World(World):
         self.filler_weights[ItemName.RUBY_GEM.value]    = self.options.ruby_gem_weight.value
         self.filler_weights[ItemName.DIAMOND_GEM.value] = self.options.diamond_gem_weight.value
 
+        if sum(self.filler_weights.values()) <= 0:
+            self.filler_weights = {ItemName.GOLD_BAR.value: 1}
+
         if self.options.enable_traps.value:
             self.trap_count = int(self.filler_count * (self.options.trap_weight.value / 100))
             self.filler_count -= self.trap_count

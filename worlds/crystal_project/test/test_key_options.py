@@ -1,7 +1,7 @@
 from .bases import CrystalProjectTestBase
 from ..constants.key_items import *
 from ..constants.keys import *
-from ..constants.regions import *
+from ..constants.ap_regions import *
 from ..items import key_rings, dungeon_keys
 
 class MultiuseKeyMethods(CrystalProjectTestBase):
@@ -16,17 +16,16 @@ class MultiuseKeyMethods(CrystalProjectTestBase):
 
     def has_skeleton_key(self):
         self.collect_mounts_and_progressive_levels_and_passes()
-
+        #Player can reach South Wing Rubble location without any prison keys if they go through the Tram
         unreachable_locations = ["Capital Sequoia Chest - Gardeners Shed 1",
                      "Capital Jail Chest - South Wing jail cell across from busted wall",
-                     "Capital Jail Chest - Fiercely guarded and locked behind South Wing rubble 1",
                      "Capital Jail Chest - West Wing jail cell among the glowy plants",
                      "Capital Jail Chest - Locked among the foliage in West Wing",
                      "Capital Jail Chest - Locked beyond overgrown West Wing hallway",
                      "Capital Jail Chest - East Wing bedroom closet twinsies the 1st",
                      "Capital Jail Chest - Locked in broken East Wing jail cell",
                      "Capital Jail Crystal - Reaper, above hell pool"]
-        reachable_locations = []
+        reachable_locations = ["Capital Jail Chest - Fiercely guarded and locked in South Wing rubble 1"]
         self.assert_locations(reachable_locations, unreachable_locations)
 
         self.collect(self.get_item_by_name(SKELETON_KEY))
@@ -94,9 +93,9 @@ class TestKeyRings(MultiuseKeyMethods):
 
     def test_has_jidamba_keyring(self):
         self.collect_mounts_and_progressive_levels_and_passes()
-        self.assertFalse(self.can_reach_region(JIDAMBA_EACLANEYA))
+        self.assertFalse(self.can_reach_region(JIDAMBA_EACLANEYA_AP_REGION))
         self.collect(self.get_item_by_name(JIDAMBA_KEY_RING))
-        self.assertTrue(self.can_reach_region(JIDAMBA_EACLANEYA))
+        self.assertTrue(self.can_reach_region(JIDAMBA_EACLANEYA_AP_REGION))
 
 class TestVanillaKeys(MultiuseKeyMethods):
     run_default_tests = False
@@ -119,16 +118,15 @@ class TestVanillaKeys(MultiuseKeyMethods):
 
     def test_has_prison_keys(self):
         self.collect_mounts_and_progressive_levels_and_passes()
-
+        #Player can reach South Wing Rubble location without any prison keys if they go through the Tram
         unreachable_locations = ["Capital Jail Chest - South Wing jail cell across from busted wall",
-                                 "Capital Jail Chest - Fiercely guarded and locked behind South Wing rubble 1",
                                  "Capital Jail Chest - West Wing jail cell among the glowy plants",
                                  "Capital Jail Chest - Locked among the foliage in West Wing",
                                  "Capital Jail Chest - Locked beyond overgrown West Wing hallway",
                                  "Capital Jail Chest - East Wing bedroom closet twinsies the 1st",
                                  "Capital Jail Chest - Locked in broken East Wing jail cell",
                                  "Capital Jail Crystal - Reaper, above hell pool"]
-        reachable_locations = []
+        reachable_locations = ["Capital Jail Chest - Fiercely guarded and locked in South Wing rubble 1"]
         self.assert_locations(reachable_locations, unreachable_locations)
 
         self.collect(self.get_item_by_name(SOUTH_WING_KEY))
@@ -167,13 +165,11 @@ class TestVanillaKeys(MultiuseKeyMethods):
         self.assert_locations(reachable_locations, unreachable_locations)
 
         self.collect_by_name(CELL_KEY)
-        expected_passing_location_a = "Capital Jail Chest - Fiercely guarded and locked behind South Wing rubble 1"
-        expected_passing_location_b = "Capital Jail Chest - Locked beyond overgrown West Wing hallway"
-        expected_passing_location_c = "Capital Jail Chest - Locked in broken East Wing jail cell"
+        expected_passing_location_a = "Capital Jail Chest - Locked beyond overgrown West Wing hallway"
+        expected_passing_location_b = "Capital Jail Chest - Locked in broken East Wing jail cell"
         unreachable_locations.remove(expected_passing_location_a)
         unreachable_locations.remove(expected_passing_location_b)
-        unreachable_locations.remove(expected_passing_location_c)
-        reachable_locations.extend([expected_passing_location_a, expected_passing_location_b, expected_passing_location_c])
+        reachable_locations.extend([expected_passing_location_a, expected_passing_location_b])
         self.assert_locations(reachable_locations, unreachable_locations)
 
 class TestKeyRingsSkeleFree(TestKeyRings):

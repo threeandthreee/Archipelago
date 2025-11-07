@@ -2,7 +2,7 @@ from typing import List, Set
 
 from BaseClasses import CollectionState, MultiWorld
 
-from .data import EncounterType, LocationCategory
+from .data import data, EncounterType, LocationCategory, TRAINER_REMATCH_MAP
 from .locations import PokemonFRLGLocation
 from .options import LevelScaling
 from .regions import PokemonFRLGRegion
@@ -149,11 +149,13 @@ def level_scaling(multiworld: MultiWorld):
         game_version = world.options.game_version.current_key
 
         if world.options.skip_elite_four:
-            e4_rematch_adjustment = 72 / 57
-            e4_base_level = 57
+            e4_base_level = data.trainers["TRAINER_CHAMPION_FIRST_BULBASAUR"].party.base_level
+            e4_rematch_base_level = data.trainers["TRAINER_CHAMPION_REMATCH_BULBASAUR"].party.base_level
+            e4_rematch_adjustment = e4_rematch_base_level / e4_base_level
         else:
-            e4_rematch_adjustment = 63 / 51
-            e4_base_level = 51
+            e4_base_level = data.trainers["TRAINER_ELITE_FOUR_LORELEI"].party.base_level
+            e4_rematch_base_level = data.trainers["TRAINER_ELITE_FOUR_LORELEI_2"].party.base_level
+            e4_rematch_adjustment = e4_rematch_base_level / e4_base_level
 
         for sphere in spheres:
             scaling_locations = [loc for loc in sphere if loc.player == world.player
@@ -176,37 +178,48 @@ def level_scaling(multiworld: MultiWorld):
                 elif trainer_location.name in ["Elite Four Rematch Scaling", "Champion Rematch Scaling"]:
                     new_base_level = max(new_base_level, round(e4_base_level * e4_rematch_adjustment))
 
-                for data_id in trainer_location.data_ids:
-                    trainer_data = world.modified_trainers[data_id]
+                for scaling_id in trainer_location.scaling_ids:
+                    trainer_data = world.modified_trainers[scaling_id]
                     for pokemon in trainer_data.party.pokemon:
                         new_level = round(min((new_base_level * pokemon.level / old_base_level),
                                               (new_base_level + pokemon.level - old_base_level)))
                         new_level = bound(new_level, 1, 100)
                         pokemon.level = new_level
+                    if f"{scaling_id}_REWARD" in TRAINER_REMATCH_MAP:
+                        trainer_base_level = data.trainers[scaling_id].party.base_level
+                        for rematch_id in TRAINER_REMATCH_MAP[f"{scaling_id}_REWARD"]:
+                            rematch_trainer_data = world.modified_trainers[rematch_id[:-7]]
+                            rematch_base_level = data.trainers[rematch_id[:-7]].party.base_level
+                            new_rematch_base_level = new_base_level * (rematch_base_level / trainer_base_level)
+                            for pokemon in rematch_trainer_data.party.pokemon:
+                                new_level = round(min((new_rematch_base_level * pokemon.level / rematch_base_level),
+                                                      (new_rematch_base_level + pokemon.level - rematch_base_level)))
+                                new_level = bound(new_level, 1, 100)
+                                pokemon.level = new_level
 
             for encounter_location in encounter_locations:
                 new_base_level = world.encounter_level_list.pop(0)
                 old_base_level = world.encounter_name_level_dict[encounter_location.name]
 
-                for data_id in encounter_location.data_ids:
+                for scaling_id in encounter_location.scaling_ids:
                     if encounter_location.category == LocationCategory.EVENT_STATIC_POKEMON_SCALING:
                         pokemon_data = None
 
-                        if data_id in world.modified_misc_pokemon:
-                            pokemon_data = world.modified_misc_pokemon[data_id]
-                        elif data_id in world.modified_legendary_pokemon:
-                            pokemon_data = world.modified_legendary_pokemon[data_id]
+                        if scaling_id in world.modified_misc_pokemon:
+                            pokemon_data = world.modified_misc_pokemon[scaling_id]
+                        elif scaling_id in world.modified_legendary_pokemon:
+                            pokemon_data = world.modified_legendary_pokemon[scaling_id]
 
                         pokemon_data.level[game_version] = new_base_level
                     elif encounter_location.category == LocationCategory.EVENT_WILD_POKEMON_SCALING:
-                        data_ids = data_id.split()
-                        map_data = world.modified_maps[data_ids[0]]
+                        scaling_ids = scaling_id.split()
+                        map_data = world.modified_maps[scaling_ids[0]]
                         encounters = (map_data.encounters[EncounterType.LAND]
                                       if "Land" in encounter_location.name else
                                       map_data.encounters[EncounterType.WATER]
                                       if "Water" in encounter_location.name else
                                       map_data.encounters[EncounterType.FISHING])
-                        encounter_data = encounters.slots[game_version][int(data_ids[1])]
+                        encounter_data = encounters.slots[game_version][int(scaling_ids[1])]
                         new_max_level = round(max((new_base_level * encounter_data.max_level / old_base_level),
                                                   (new_base_level + encounter_data.max_level - old_base_level)))
                         new_min_level = round(max((new_base_level * encounter_data.min_level / old_base_level),

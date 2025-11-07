@@ -10,7 +10,6 @@ import sys
 from CommonClient import ClientCommandProcessor, CommonContext, get_base_parser, gui_enabled, logger, server_loop
 from Utils import async_start, init_logging
 from worlds import network_data_package
-
 from .RomPatcher import apply_patch
 
 SYSTEM_MESSAGE_ID = 0
@@ -43,7 +42,7 @@ logger.info(network_data_package["games"].keys())
 dkr_loc_name_to_id: dict[str, int] = network_data_package["games"]["Diddy Kong Racing"]["location_name_to_id"]
 dkr_itm_name_to_id: dict[str, int] = network_data_package["games"]["Diddy Kong Racing"]["item_name_to_id"]
 
-version_number: str = "v1.0.0"
+version_number: str = "v1.1.0"
 apworld_version: str = "DKR" + version_number
 patched_rom_filename: str = "Diddy-Kong-Racing-AP-" + version_number + ".z64"
 vanilla_rom_md5: str = "4f0e07f0eeac7e5d7ce3a75461888d03"
@@ -95,7 +94,7 @@ class DiddyKongRacingContext(CommonContext):
         return
 
     def set_message(self, msg: dict) -> None:
-        self.messages.update({len(self.messages)+1: msg})
+        self.messages.update({len(self.messages) + 1: msg})
 
     def run_gui(self) -> None:
         from kvui import GameManager
@@ -135,7 +134,7 @@ class DiddyKongRacingContext(CommonContext):
                     for (name, i) in dkr_itm_name_to_id.items():
                         if item.item == i:
                             item_name = name
-                            break                    
+                            break
                     logger.info(player + " sent " + item_name)
                 logger.info("The above items will be sent when Diddy Kong Racing is loaded.")
                 self.startup = True
@@ -147,7 +146,10 @@ class DiddyKongRacingContext(CommonContext):
             logger.info(self.jsontotextparser(copy.deepcopy(args["data"])))
 
         if (args.get("type", None) in {"ItemSend"}
-                and (not self.ui or self.slot_concerns_self(args["receiving"]) or self.slot_concerns_self(args["item"].player))):
+                and (not self.ui
+                     or self.slot_concerns_self(args["receiving"])
+                     or self.slot_concerns_self(args["item"].player)
+                )):
             from_player = self.player_names[int(args["data"][0]["text"])]
             to_player = from_player
             for data_id, data in enumerate(args["data"]):
@@ -279,25 +281,29 @@ async def n64_sync_task(ctx: DiddyKongRacingContext) -> None:
 
 def get_slot_payload(ctx: DiddyKongRacingContext) -> str:
     payload = json.dumps({
-            "slot_player": ctx.slot_data["player_name"],
-            "slot_seed": ctx.slot_data["seed"],
-            "slot_victory_condition": ctx.slot_data["victory_condition"],
-            "slot_shuffle_wizpig_amulet": ctx.slot_data["shuffle_wizpig_amulet"],
-            "slot_shuffle_tt_amulet": ctx.slot_data["shuffle_tt_amulet"],
-            "slot_open_worlds": ctx.slot_data["open_worlds"],
-            "slot_door_requirement_progression": ctx.slot_data["door_requirement_progression"],
-            "slot_maximum_door_requirement": ctx.slot_data["maximum_door_requirement"],
-            "slot_shuffle_door_requirements": ctx.slot_data["shuffle_door_requirements"],
-            "slot_door_unlock_requirements": ctx.slot_data["door_unlock_requirements"],
-            "slot_boss_1_regional_balloons": ctx.slot_data["boss_1_regional_balloons"],
-            "slot_boss_2_regional_balloons": ctx.slot_data["boss_2_regional_balloons"],
-            "slot_wizpig_1_amulet_pieces": ctx.slot_data["wizpig_1_amulet_pieces"],
-            "slot_wizpig_2_amulet_pieces": ctx.slot_data["wizpig_2_amulet_pieces"],
-            "slot_wizpig_2_balloons": ctx.slot_data["wizpig_2_balloons"],
-            "slot_randomize_character_on_map_change": ctx.slot_data["randomize_character_on_map_change"],
-            "slot_power_up_balloon_type": ctx.slot_data["power_up_balloon_type"],
-            "slot_skip_trophy_races": ctx.slot_data["skip_trophy_races"]
-        })
+        "slot_player": ctx.slot_data["player_name"],
+        "slot_seed": ctx.slot_data["seed"],
+        "slot_victory_condition": ctx.slot_data["victory_condition"],
+        "slot_shuffle_wizpig_amulet": ctx.slot_data["shuffle_wizpig_amulet"],
+        "slot_shuffle_tt_amulet": ctx.slot_data["shuffle_tt_amulet"],
+        "slot_open_worlds": ctx.slot_data["open_worlds"],
+        "slot_door_requirement_progression": ctx.slot_data["door_requirement_progression"],
+        "slot_maximum_door_requirement": ctx.slot_data["maximum_door_requirement"],
+        "slot_shuffle_door_requirements": ctx.slot_data["shuffle_door_requirements"],
+        "slot_door_unlock_requirements": ctx.slot_data["door_unlock_requirements"],
+        "slot_shuffle_race_entrances": ctx.slot_data["shuffle_race_entrances"],
+        "slot_entrance_order": ctx.slot_data["entrance_order"],
+        "slot_boss_1_regional_balloons": ctx.slot_data["boss_1_regional_balloons"],
+        "slot_boss_2_regional_balloons": ctx.slot_data["boss_2_regional_balloons"],
+        "slot_wizpig_1_amulet_pieces": ctx.slot_data["wizpig_1_amulet_pieces"],
+        "slot_wizpig_2_amulet_pieces": ctx.slot_data["wizpig_2_amulet_pieces"],
+        "slot_wizpig_2_balloons": ctx.slot_data["wizpig_2_balloons"],
+        "slot_randomize_character_on_map_change": ctx.slot_data["randomize_character_on_map_change"],
+        "slot_mirrored_tracks": ctx.slot_data["mirrored_tracks"],
+        "slot_music": ctx.slot_data["music"],
+        "slot_power_up_balloon_type": ctx.slot_data["power_up_balloon_type"],
+        "slot_skip_trophy_races": ctx.slot_data["skip_trophy_races"]
+    })
     ctx.sendSlot = False
 
     return payload
@@ -307,17 +313,17 @@ def get_payload(ctx: DiddyKongRacingContext) -> str:
     if ctx.sync_ready:
         ctx.startup = True
         payload = json.dumps({
-                "items": [item.item for item in ctx.items_received],
-                "playerNames": [name for (i, name) in ctx.player_names.items() if i != 0],
-                "messages": [message for (i, message) in ctx.messages.items() if i != 0],
-            })
+            "items": [item.item for item in ctx.items_received],
+            "playerNames": [name for (i, name) in ctx.player_names.items() if i != 0],
+            "messages": [message for (i, message) in ctx.messages.items() if i != 0],
+        })
     else:
         ctx.startup = False
         payload = json.dumps({
-                "items": [],
-                "playerNames": [name for (i, name) in ctx.player_names.items() if i != 0],
-                "messages": [message for (i, message) in ctx.messages.items() if i != 0],
-            })
+            "items": [],
+            "playerNames": [name for (i, name) in ctx.player_names.items() if i != 0],
+            "messages": [message for (i, message) in ctx.messages.items() if i != 0],
+        })
 
     if len(ctx.messages) > 0:
         ctx.messages = {}
@@ -369,16 +375,31 @@ async def parse_payload(payload: dict, ctx: DiddyKongRacingContext) -> None:
                 }])
             ctx.location_table = locations
 
-        # For PopTracker
         if ctx.current_map != payload_current_map:
             ctx.current_map = payload_current_map
+
+            # For PopTracker
             await ctx.send_msgs([{
                 "cmd": "Set",
                 "key": f"Diddy_Kong_Racing_{ctx.team}_{ctx.slot}_map",
                 "default": hex(0),
                 "want_reply": False,
-                "operations": [{"operation": "replace",
-                    "value": hex(payload_current_map)}]
+                "operations": [{
+                    "operation": "replace",
+                    "value": hex(payload_current_map)
+                }]
+            }])
+
+            # For Universal Tracker deferred entrances
+            await ctx.send_msgs([{
+                "cmd": "Set",
+                "key": f"Diddy_Kong_Racing_{ctx.slot}_" + str(payload_current_map),
+                "default": False,
+                "want_reply": False,
+                "operations": [{
+                    "operation": "replace",
+                    "value": True
+                }]
             }])
 
     # Send Async Data.

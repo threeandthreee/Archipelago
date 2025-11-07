@@ -113,6 +113,10 @@ can_catch_all_deerlings: ExtendedRule = lambda state, world: (
     ), world.player)
 )
 
+can_use_strength_and_set_other_than_winter: ExtendedRule = lambda state, world: (
+    can_use_strength(state, world) and can_set_other_than_winter(state, world)
+)
+
 encounter_can_set_spring: ExtendedRule = lambda state, world: (
     state.can_reach_region("Nimbasa City", world.player) and (
         world.options.season_control == "changeable" or state.has("Spring", world.player)
@@ -146,6 +150,7 @@ can_cut_dreamyard_tree: ExtendedRule = lambda state, world: state.can_reach_regi
 can_go_deeper_into_relic_castle: ExtendedRule = lambda state, world: state.can_reach_region("Relic Castle Lower Floors", world.player)
 can_go_to_relic_castle_basement: ExtendedRule = lambda state, world: state.can_reach_region("Relic Castle Tower Lower Floors", world.player)
 can_find_woman_on_village_bridge: ExtendedRule = lambda state, world: state.can_reach_region("Village Bridge", world.player)
+can_go_to_nimbasa_city: ExtendedRule = lambda state, world: state.can_reach_region("Nimbasa City", world.player)
 
 
 # Encounter requirements
@@ -191,11 +196,11 @@ extended_rules_list: tuple = (
     has_trio_badge, has_basic_badge, has_insect_badge, has_bolt_badge,
     has_quake_badge, has_jet_badge, has_freeze_badge, has_legend_badge,
 
-    can_set_winter, can_set_other_than_winter, can_catch_all_deerlings,
+    can_set_winter, can_set_other_than_winter, can_catch_all_deerlings, can_use_strength_and_set_other_than_winter,
     encounter_can_set_spring, encounter_can_set_summer, encounter_can_set_autumn, encounter_can_set_winter,
 
     can_beat_ghetsis, can_encounter_swords_of_justice, can_cut_dreamyard_tree, can_go_deeper_into_relic_castle,
-    can_go_to_relic_castle_basement, can_find_woman_on_village_bridge,
+    can_go_to_relic_castle_basement, can_find_woman_on_village_bridge, can_go_to_nimbasa_city,
 
     has_forces_of_nature, has_celebi, has_legendary_beasts,
     has_25_species, has_51_species, has_60_species, has_115_species,

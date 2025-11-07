@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from Options import Choice, DefaultOnToggle, PerGameCommonOptions, Range, Toggle
+from Options import Choice, DefaultOnToggle, OptionGroup, PerGameCommonOptions, Range, Toggle
 
 
 class VictoryCondition(Choice):
@@ -60,6 +60,11 @@ class ShuffleDoorRequirements(Toggle):
     display_name = "Shuffle door requirements"
 
 
+class ShuffleRaceEntrances(Toggle):
+    """The race entrances behind all numbered doors will be shuffled"""
+    display_name = "Shuffle race entrances"
+
+
 class Boss1RegionalBalloons(Range):
     """The number of regional balloons required to unlock boss race 1 for that region"""
     display_name = "Boss 1 regional balloons"
@@ -117,6 +122,20 @@ class PowerUpBalloonType(Choice):
     option_random_hidden = 2
     default = option_vanilla
 
+
+class MirroredTracks(Choice):
+    """Whether tracks will be mirrored"""
+    display_name = "Mirrored tracks"
+    option_vanilla = 0
+    option_mirrored = 1
+    option_random_per_track = 2
+
+
+class RandomizeMusic(Toggle):
+    """Randomize music"""
+    display_name = "Randomize music"
+
+
 class SkipTrophyRaces(DefaultOnToggle):
     """Start with all 1st place trophies, so you only need to beat Wizpig 1 to unlock Future Fun Land"""
     display_name = "Skip trophy races"
@@ -131,11 +150,48 @@ class DiddyKongRacingOptions(PerGameCommonOptions):
     door_requirement_progression: DoorRequirementProgression
     maximum_door_requirement: MaximumDoorRequirement
     shuffle_door_requirements: ShuffleDoorRequirements
+    shuffle_race_entrances: ShuffleRaceEntrances
     boss_1_regional_balloons: Boss1RegionalBalloons
     boss_2_regional_balloons: Boss2RegionalBalloons
     wizpig_1_amulet_pieces: Wizpig1AmuletPieces
     wizpig_2_amulet_pieces: Wizpig2AmuletPieces
     wizpig_2_balloons: Wizpig2Balloons
     randomize_character_on_map_change: RandomizeCharacterOnMapChange
+    mirrored_tracks: MirroredTracks
+    randomize_music: RandomizeMusic
     power_up_balloon_type: PowerUpBalloonType
     skip_trophy_races: SkipTrophyRaces
+
+
+OPTION_GROUPS: list[OptionGroup] = [
+    OptionGroup("Victory", [
+        VictoryCondition
+    ]),
+    OptionGroup("Items", [
+        ShuffleWizpigAmulet,
+        ShuffleTTAmulet
+    ]),
+    OptionGroup("Doors", [
+        OpenWorlds,
+        DoorRequirementProgression,
+        MaximumDoorRequirement,
+        ShuffleDoorRequirements,
+        ShuffleRaceEntrances
+    ]),
+    OptionGroup("Bosses", [
+        Boss1RegionalBalloons,
+        Boss2RegionalBalloons,
+        Wizpig1AmuletPieces,
+        Wizpig2AmuletPieces,
+        Wizpig2Balloons
+    ]),
+    OptionGroup("Gameplay", [
+        RandomizeCharacterOnMapChange,
+        MirroredTracks,
+        PowerUpBalloonType
+    ]),
+    OptionGroup("Other", [
+        RandomizeMusic,
+        SkipTrophyRaces
+    ])
+]

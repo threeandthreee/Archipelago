@@ -109,8 +109,6 @@ class MZMWorld(World):
         elif self.options.logic_difficulty.value == LogicDifficulty.option_advanced:
             self.trick_allow_list = list(tricks_normal.keys())
             self.trick_allow_list.extend(tricks_advanced.keys())
-            #TODO just testing for now, determine if this is wanted
-            self.trick_allow_list.extend(tricky_shinesparks.keys())
         else:
             self.trick_allow_list = []
 
@@ -118,6 +116,9 @@ class MZMWorld(World):
             self.trick_allow_list.extend(hazard_runs_normal.keys())
         elif self.options.hazard_runs == HazardRuns.option_minimal:
             self.trick_allow_list.extend(hazard_runs_minimal.keys())
+
+        if self.options.tricky_shinesparks.value:
+            self.trick_allow_list.extend(tricky_shinesparks.keys())
 
         for allowed_trick in self.options.tricks_allowed.value:
             self.trick_allow_list.append(allowed_trick)
@@ -258,6 +259,7 @@ class MZMWorld(World):
     def fill_slot_data(self) -> Dict[str, Any]:
         return {
             "goal": self.options.goal.value,
+            "metroid_dna_required": self.options.metroid_dna_required.value,
             "game_difficulty": self.options.game_difficulty.value,
             "unknown_items_usable": self.options.fully_powered_suit.to_slot_data(),
             "walljumps": self.options.walljumps.value,

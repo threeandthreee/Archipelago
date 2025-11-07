@@ -24,6 +24,15 @@ game. The Steam version may be supported in the future.
 To continue an earlier game, you can perform the exact same steps as above. The
 randomizer will remember the details of your last nine unique connections.
 
+## Using Universal Tracker
+
+Anodyne has full UT support, including yamlless so setup is minimal.
+
+There is one extra thing you need for the full integration, and that is to download the anodyne-UniversalTracker.zip and select it when UT asks for the pack.
+This zip is release-specific and needs to be updated along with the apworld.
+
+It is separate to keep the download size for hosts low, or people who don't want to use UT.
+
 ## Frequently Asked Questions
 
 ### Will this impact the base game?
@@ -38,9 +47,3 @@ main game, so your vanilla saves will not be affected either.
 The randomizer generates a savefile name based on your Multiworld seed and slot
 number, so you should be able to seamlessly switch between multiworlds and even
 slots within a multiworld.
-
-The exception to this is different rooms created from the same multiworld seed.
-The client is unable to tell rooms in a seed apart (this is a limitation of the
-Archipelago API), so the client will use the same save file for the same slot in
-different rooms on the same seed. You can work around this by manually moving or
-removing the save file from the save file directory.

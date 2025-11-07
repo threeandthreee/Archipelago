@@ -213,6 +213,7 @@ def can_access_cosmic_ocean(world: "Spelunky2World", state: CollectionState, pla
                     state.has(WorldName.COSMIC_OCEAN, player)
                     or state.has(WorldName.PROGRESSIVE, player, 7)
             )
+            and can_access_sunken_city(world, state, player)
     )
 
 

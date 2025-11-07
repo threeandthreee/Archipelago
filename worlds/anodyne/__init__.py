@@ -7,9 +7,10 @@ from dataclasses import dataclass
 
 from BaseClasses import Region, Location, Item, ItemClassification, CollectionState, Tutorial
 from Fill import fill_restrictive, FillError
+from settings import Group, Bool, FilePath
 from Options import Accessibility, OptionGroup
 from worlds.AutoWorld import WebWorld, World
-from typing import List, Callable, Dict, Any, Set, Iterable, Type, Tuple, Optional
+from typing import ClassVar, List, Callable, Dict, Any, Set, Iterable, Type, Tuple, Optional
 
 from . import Constants, Options
 from .Constants import AccessRule
@@ -31,6 +32,14 @@ class AnodyneLocation(Location):
 class AnodyneItem(Item):
     game = "Anodyne"
 
+
+class AnodyneSettings(Group):
+    class UTTrackerPath(FilePath):
+        """Path to the user's Anodyne UT map pack."""
+        description = "Anodyne's Universal Tracker zip file"
+        required = False
+
+    ut_tracker_path: UTTrackerPath | str = UTTrackerPath()
 
 class AnodyneWebWorld(WebWorld):
     theme = "dirt"
@@ -91,6 +100,7 @@ class AnodyneWorld(World):
 
     options_dataclass = AnodyneGameOptions
     options: AnodyneGameOptions
+    settings: ClassVar[AnodyneSettings]
     topology_present = False  # show path to required location checks in spoiler
 
     ut_can_gen_without_yaml = True

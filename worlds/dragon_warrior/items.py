@@ -42,14 +42,11 @@ cursed_table = {
 
 filler_table = {
     names.herb: ItemData(0xF),
-    # names.torch: ItemData(0x1),
-    # names.fairy_water: ItemData(0x2),
-    # names.chimaera_wing: ItemData(0x3),
     names.gold: ItemData(0xD1),
 }
 
 useful_table = {
-    names.high_gold: ItemData(0xD2)
+    names.high_gold: ItemData(0xD2, useful=True)
 }
 
 item_table = {

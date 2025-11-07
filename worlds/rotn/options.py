@@ -1,4 +1,4 @@
-from Options import Toggle, Range, Choice, DeathLink, ItemSet, OptionSet, PerGameCommonOptions, OptionGroup, Removed
+from Options import Toggle, Range, Choice, ItemSet, OptionSet, PerGameCommonOptions, OptionGroup
 from dataclasses import dataclass
 from .RiftCollections import RotNCollections
 
@@ -7,7 +7,7 @@ class DLCMusicPacks(OptionSet):
     Choose which DLC Packs will be included in the pool of chooseable songs.
     Both individual songs and dlc pack names work.
 
-    Current DLC Pack Groups: ["Celeste", "Pizza Tower", "Hatsune Miku", "Hololive", "Everhood", "Monstercat"]
+    Current DLC Pack Groups: ["Celeste", "Pizza Tower", "Hatsune Miku", "Hololive", "Everhood", "Monstercat", "Shovel Knight]
     """
     display_name = "DLC Packs"
     valid_keys = [dlc for dlc in RotNCollections.DLC]
@@ -65,6 +65,15 @@ class IncludeBossBattles(Choice):
     option_true = 1
     option_Split = 2
 
+class DifficultyOption(OptionSet):
+    """
+    Determines what difficulties to be selected for song filtering (Rhythm Rifts only)
+    This setting will not force you to play on any of the selected difficulties and intened to be used with the following intensity settings
+    """
+    display_name = "Difficulty Selection"
+    default = ["Easy", "Medium", "Hard", "Impossible"]
+    valid_keys = ["Easy", "Medium", "Hard", "Impossible"]
+
 class MinIntensity(Range):
     """ 
     Ensures chosen rhythm rift will have a chart with an intensity value higher than this value (Rhythm Rifts only)
@@ -83,34 +92,9 @@ class MaxIntensity(Range):
     default = 30
     display_name = "Maximum Intensity"
 
-class MinDifficulty(Choice):
-    """
-    Minimum difficulty level for intensity range for filtering (Rhythm Rifts only)
-    This setting will still allow any difficulty to be beaten to send a check
-    """
-    display_name = "Minimum Difficulty"
-    option_Easy = 0
-    option_Medium = 1
-    option_Hard = 2
-    option_Impossible = 3
-
-class MaxDifficulty(Choice):
-    """
-    Maximum difficulty level for intensity range for filtering (Rhythm Rifts only)
-    This setting will still allow any difficulty to be beaten to send a check
-    """
-    display_name = "Maximum Difficulty"
-    option_Easy = 0
-    option_Medium = 1
-    option_Hard = 2
-    option_Impossible = 3
-    default = 3
-
 class GradeNeeded(Choice):
     """
-    Not Yet Implemented
-
-    Required grade that needs to be achieved to send a check
+    Minimum Grade required on song completion to send a check
     """
     display_name = "Grade Needed"
     option_Any = 0
@@ -120,6 +104,13 @@ class GradeNeeded(Choice):
     option_S = 4
     option_S_Plus = 5
     default = 0
+    
+class FullComboNeeded(Toggle):
+    """
+    Requires a full combo on song completion to send a check
+    """
+    display_name = "Full Combo Needed"
+    default = False
 
 class DiamondCountPercentage(Range):
     """Percentage of filler item to be replaced with diamonds."""
@@ -161,6 +152,25 @@ class GoalSongPool(ItemSet):
     verify_item_name = True
     display_name = "Goal Song Pool"
 
+rotn_option_groups = [
+    OptionGroup("Song Pool Settings", [
+        DLCMusicPacks,
+        IncludeRemixMode,
+        IncludeBossBattles,
+        IncludeMinigames,
+        IncludeSongs,
+        ExcludeSongs,
+        GoalSongPool,
+    ]),
+    OptionGroup("Difficulty Settings", [
+        DifficultyOption,
+        MinIntensity,
+        MaxIntensity,
+        GradeNeeded,
+        FullComboNeeded,
+    ]),
+]
+
 @dataclass
 class RotNOptions(PerGameCommonOptions):
     dlc_songs: DLCMusicPacks
@@ -170,11 +180,11 @@ class RotNOptions(PerGameCommonOptions):
     include_remix: IncludeRemixMode
     include_minigames: IncludeMinigames
     include_boss_battle: IncludeBossBattles
+    difficulty_option: DifficultyOption
     min_intensity: MinIntensity
     max_intensity: MaxIntensity
-    min_difficulty: MinDifficulty
-    max_difficulty: MaxDifficulty
     grade_needed: GradeNeeded
+    full_combo_needed: FullComboNeeded
     diamond_count_percentage: DiamondCountPercentage
     diamond_win_percentage: DiamondWinPercentage
     include_songs: IncludeSongs

@@ -182,6 +182,21 @@ class Shopsanity(Toggle):
     display_name = "Shopsanity"
 
 
+class ShopSlots(NamedRange):
+    """
+    Sets the number of slots per shop that can have progression items when shopsanity is on. Shop slots that cannot be
+    progression items will be filled with a random normal shop item from your world.
+    """
+    display_name = "Shop Slots"
+    default = 9
+    range_start = 0
+    range_end = 9
+    special_range_names = {
+        "none": 0,
+        "all": 9,
+    }
+
+
 class ShopPrices(Choice):
     """
     Sets how shop item's prices are randomized.
@@ -211,7 +226,7 @@ class ConsistentShopPrices(Toggle):
 
 class Trainersanity(NamedRange):
     """
-    Defeating a trainer gives you an item.
+    Beating a trainer gives you an item.
 
     You can specify how many Trainers should be a check between 0 and 456. If you have Kanto Only on, the amount of
     Trainer checks might be lower than the amount you specify. Trainers that have checks will periodically have an
@@ -228,6 +243,19 @@ class Trainersanity(NamedRange):
         "all": 456,
     }
 
+
+class Rematchsanity(Toggle):
+    """
+    Beating each of a trainer's rematches gives you an item. Only the rematches for trainers who have a trainersanity
+    item will give an item for rematchsanity.
+
+    Each trainer rematch will add a random filler item into the pool.
+
+    IMPORTANT NOTE: The conditions for triggering trainer rematches has been changed from the vanilla game. The first
+                    rematch is unlocked by obtaining the Vs. Seeker and then subsequent rematches are unlocked for every
+                    2 gyms beaten.
+    """
+    display_name = "Rematchsanity"
 
 class Dexsanity(NamedRange):
     """
@@ -1398,9 +1426,11 @@ class PokemonFRLGOptions(PerGameCommonOptions):
     shuffle_hidden: ShuffleHiddenItems
     extra_key_items: ExtraKeyItems
     shopsanity: Shopsanity
+    shop_slots: ShopSlots
     shop_prices: ShopPrices
     consistent_shop_prices: ConsistentShopPrices
     trainersanity: Trainersanity
+    rematchsanity: Rematchsanity
     dexsanity: Dexsanity
     famesanity: Famesanity
     shuffle_fly_unlocks: ShuffleFlyUnlocks

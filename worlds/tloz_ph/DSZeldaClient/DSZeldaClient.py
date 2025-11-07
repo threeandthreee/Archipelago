@@ -12,10 +12,7 @@ from ..Util import *
 
 if TYPE_CHECKING:
     from worlds._bizhawk.context import BizHawkClientContext
-    try:
-        from ..data.Entrances import PhantomHourglassEntrance
-    except ImportError:
-        print("Missing <game>Entrance dataclass")
+    from ..data.Entrances import PHTransition
 
 logger = logging.getLogger("Client")
 # Adding test edit
@@ -165,6 +162,7 @@ class DSZeldaClient(BizHawkClient):
         self.last_stage = None
         self.entering_from = None
         self.entering_dungeon = None
+        self.current_entrance = None
 
         self.stage_address = 0  # Used for scene flags
         self.new_stage_loading = None
@@ -178,8 +176,8 @@ class DSZeldaClient(BizHawkClient):
         self._log_received_items = False
 
         self.warp_to_start_flag = False
-        self.er_map: dict[int, dict["PhantomHourglassEntrance", "PhantomHourglassEntrance"]] = {}
-        self.er_in_scene: dict["PhantomHourglassEntrance", "PhantomHourglassEntrance"] | None = None
+        self.er_map: dict[int, dict["PHTransition", "PHTransition"]] = {}
+        self.er_in_scene: dict["PHTransition", "PHTransition"] | None = None
         self.er_exit_coord_writes: list | None = None
 
         self.delay_pickup = None
@@ -187,6 +185,8 @@ class DSZeldaClient(BizHawkClient):
         self.key_address = 0
         self.key_value = 0
         self.metal_count = 0
+
+        self.last_dungeon_warp_target = None
 
         self.tried_short_cs = False
 
@@ -302,6 +302,7 @@ class DSZeldaClient(BizHawkClient):
             self._loaded_menu_read_list = False
             self.last_scene = None
             self._from_menu = True
+            self.er_in_scene = None
             ctx.watcher_timeout = 0.5
             return
 
@@ -360,7 +361,8 @@ class DSZeldaClient(BizHawkClient):
 
             # Get current scene
             current_room = read_result.get("room", None)
-            current_room = 0 if current_room == 0xFF else current_room  # Resetting in a dungeon sets a special value
+            current_room = 0 if current_room == 0xFF and current_stage != 0x29 else current_room  # Resetting in a dungeon sets a special value
+            current_room = 3 if current_room == 0xFF else current_room
             self.current_scene = current_scene = current_stage * 0x100 + current_room
             current_entrance = read_result.get("entrance", 0)
             num_received_items = read_result.get("received_item_index", None)
@@ -372,10 +374,10 @@ class DSZeldaClient(BizHawkClient):
 
             # Process on new room. As soon as it's triggered, changing the scene variable changes entrance destination
             if current_scene != self.last_scene and not self._entered_entrance and not self._loading_scene:
-
                 # Trigger a different entrance to vanilla
                 current_stage, current_room, current_entrance = await self._entrance_warp(ctx, current_scene, current_entrance)
                 current_scene = current_stage * 0x100 + current_room
+                self.current_entrance = current_entrance
 
                 # Backup in case of missing loading
                 self._backup_coord_read = await self.get_coords(ctx, multi=True)
@@ -396,7 +398,7 @@ class DSZeldaClient(BizHawkClient):
                     await self._remove_vanilla_item(ctx, num_received_items)
 
             # Nothing happens while loading
-            if not loading and not self._loading_scene and not self._entered_entrance:
+            if ctx.server is not None and not loading and not self._loading_scene and not self._entered_entrance:
 
                 # If new file, set up starting flags
                 if slot_memory == 0:
@@ -426,7 +428,7 @@ class DSZeldaClient(BizHawkClient):
                     await self._process_checked_locations(ctx, None, detection_type=self.getting_location_type)
 
                 # Process received items
-                if num_received_items < len(ctx.items_received):
+                if num_received_items is not None and num_received_items < len(ctx.items_received):
                     if self._just_entered_game:
                         self._log_received_items = True
                     await self._process_received_items(ctx, num_received_items, self._log_received_items)
@@ -653,19 +655,30 @@ class DSZeldaClient(BizHawkClient):
                     (self.scene_addr[2], split_bits(0, 4), "Main RAM"),
                     (self.scene_addr[3], split_bits(e, 1), "Main RAM")]
 
-        def write_er(exit_d: "PhantomHourglassEntrance"):
-            write_res = write_entrance(*exit_d.entrance)
-            if exit_d.entrance[2] > 0xF0:
+        def write_er(exit_d: "PHTransition"):
+            if exit_d.entrance[2] == 0xFA:
+                # Special condition for exiting ships at sea
+                new_entrance = tuple(list(exit_d.entrance[:2]) + [exit_d.extra_data["ship_exit"]])
+                write_res = write_entrance(*new_entrance)
+            else:
+                write_res = write_entrance(*exit_d.entrance)
+
+            if exit_d.entrance[2] > 0xFA:
                 x, y, z = exit_d.coords
                 print(f"exit coords {x} {y} {z}")
                 self.er_exit_coord_writes = [(self.exit_coords_addr[0], split_bits(x, 4), "Main RAM"),
                                              (self.exit_coords_addr[1], split_bits(y, 4), "Main RAM"),
                                              (self.exit_coords_addr[2], split_bits(z, 4), "Main RAM")]
 
+            write_res += self.write_respawn_entrance(exit_d)
+
             return write_res
 
         def post_process(d):
             new_entrance = d.entrance
+            # Ship exits are weird
+            if new_entrance[2] == 0xFA:
+                new_entrance = tuple(list(new_entrance[:2]) + [d.extra_data["ship_exit"]])
             d.debug_print()
             return write_er(d), new_entrance
 
@@ -704,11 +717,20 @@ class DSZeldaClient(BizHawkClient):
 
 
         if e_write_list:
+            print(f"Writing entrance warp {e_write_list}")
             await bizhawk.write(ctx.bizhawk_ctx, e_write_list)
         if defer_entrance:
             await self.store_visited_entrances(ctx, detect_data, exit_data)
 
         return res
+
+    def write_respawn_entrance(self, exit_data):
+        """
+        when at sea in ph with island shuffle on, the respawn point is not tied to the exit and must be set manually.
+        :param exit_data:
+        :return: list of write data
+        """
+        return []
 
     async def conditional_bounce(self, cxt, scene, entrance) -> "PhantomHourglassEntrance" or None:
         """
@@ -818,7 +840,11 @@ class DSZeldaClient(BizHawkClient):
 
             # Overwrite er_in_scene with dynamic entrance
             detect_data = data["detect_data"]
-            self.er_in_scene[detect_data] = data["exit_data"]
+            if data["exit_data"] is None:
+                if data["destination"] == "_connected_dungeon_entrance":
+                    self.er_in_scene[detect_data] = self.update_boss_warp(ctx, self.current_stage, scene)
+            else:
+                self.er_in_scene[detect_data] = data["exit_data"]
             print(f"\t{detect_data} => {data['exit_data']}")
 
     async def _has_dynamic_requirements(self, ctx, data) -> bool:
@@ -865,8 +891,12 @@ class DSZeldaClient(BizHawkClient):
         def check_slot_data(d):
             if "has_slot_data" in d:
                 for slot, value in d["has_slot_data"]:
-                    if ctx.slot_data.get(slot, None) != value:
-                        return False
+                    if type(value) is list:
+                        if ctx.slot_data.get(slot, None) not in value:
+                            return False
+                    else:
+                        if ctx.slot_data.get(slot, None) != value:
+                            return False
             return True
 
         # Came from particular location
@@ -889,6 +919,14 @@ class DSZeldaClient(BizHawkClient):
                         return False
             return True
 
+        def has_entrance(d):
+            if "not_on_entrance" in d:
+                if self.current_entrance in d["not_on_entrance"]:
+                    return False
+            if "on_entrance" in d:
+                if self.current_entrance not in d["on_entrance"]:
+                    return False
+            return True
 
         if not check_items(data):
             print(f"\t{data['name']} does not have item reqs")
@@ -906,6 +944,8 @@ class DSZeldaClient(BizHawkClient):
             print(f"\t{data['name']} is missing bits")
             return False
         if not await self.has_special_dynamic_requirements(ctx, data):
+            return False
+        if not has_entrance(data):
             return False
 
         return True
@@ -968,6 +1008,7 @@ class DSZeldaClient(BizHawkClient):
                     local_checked_locations.add(loc_bytes)
                     await self._set_vanilla_item(ctx, location)
                     print(f"Got location {loc_name}! with vanilla {self.last_vanilla_item} id {loc_bytes}")
+                    self.locations_in_scene.pop(loc_name)  # Remove location for overlapping purposes
                     break
                 location = None
 
@@ -1029,7 +1070,8 @@ class DSZeldaClient(BizHawkClient):
         print(f"Setting vanilla for {item_data}")
         if item is not None and not item_data.get("dummy", False):
             if ("incremental" in item_data or "progressive" in item_data or
-                    item_data["id"] not in [i.item for i in ctx.items_received]):
+                    item_data["id"] not in [i.item for i in ctx.items_received] or
+                    item_data.get("always_process", False)):
                 self.last_vanilla_item.append(item)
 
                 await self.unset_special_vanilla_items(ctx, location, item)
@@ -1072,7 +1114,7 @@ class DSZeldaClient(BizHawkClient):
         print(f"Vanilla item: {self.last_vanilla_item} for {item_name}")
 
         # If same as vanilla item don't remove
-        if self.last_vanilla_item and item_name == self.last_vanilla_item[-1]:
+        if self.last_vanilla_item and item_name == self.last_vanilla_item[-1] and "Boss Key" not in item_name:
             self.last_vanilla_item.pop()
             print(f"oops it's vanilla or dummy! {self.last_vanilla_item}")
             write_list += await self.write_totok_keys_lol(ctx, item_name, item_data)
@@ -1370,6 +1412,16 @@ class DSZeldaClient(BizHawkClient):
                 await self.update_key_count(ctx, stage)
         self.entering_from = scene_id
 
+    def update_boss_warp(self, ctx, stage, scene_id):
+        """
+        method for setting self.last_dungeon_warp_target for redirecting warps after bosses in entrance rando
+        :param ctx:
+        :param stage:
+        :param scene_id:
+        :return: PHTransition for the location
+        """
+        return None
+
     async def _load_local_locations(self, ctx, scene):
         # Load locations in room into loop
         self.locations_in_scene = self.location_area_to_watches.get(scene, {})
@@ -1478,8 +1530,7 @@ class DSZeldaClient(BizHawkClient):
             if "locations" in hint_data:
                 # Hint required dungeons
                 if "Dungeon Hints" in hint_data["locations"]:
-                    for loc in ctx.slot_data.get("required_dungeon_locations", []):
-                        local_scouted_locations.add(self.location_name_to_id[loc])
+                    local_scouted_locations.update(self.dungeon_hints(ctx))
                 else:
                     locations_checked = ctx.locations_scouted
                     for loc in hint_data["locations"]:
@@ -1527,3 +1578,11 @@ class DSZeldaClient(BizHawkClient):
                      "room": room,
                      "entrance": entrance}
         }])
+
+    def dungeon_hints(self, ctx):
+        """
+        Write out dungeon hints depending on settings
+        :param ctx:
+        :return: list of location to scout
+        """
+        return []

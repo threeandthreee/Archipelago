@@ -8,7 +8,7 @@ from worlds.AutoWorld import WebWorld, World
 from .Items import JigsawItem, item_table, item_groups, encouragements
 from .Locations import JigsawLocation, location_table
 
-from .Options import JigsawOptions, OrientationOfImage, PieceOrder, PieceTypeOrder, jigsaw_option_groups, Rotations, GridType
+from .Options import GridTypeAndRotations, JigsawOptions, OrientationOfImage, PieceOrder, PieceTypeOrder, jigsaw_option_groups, GridType
 from .Rules import PuzzleBoard
 
 from worlds.LauncherComponents import (
@@ -52,7 +52,7 @@ class JigsawWorld(World):
     
     item_name_groups = item_groups
     
-    ap_world_version = "0.8.0"
+    ap_world_version = "0.9.1"
 
     def _get_jigsaw_data(self):
         return {
@@ -61,9 +61,11 @@ class JigsawWorld(World):
         
     def calculate_optimal_nx_and_ny(self, number_of_pieces, orientation):
         
-        if self.options.grid_type.value == GridType.option_meme_one_row:
+        if self.options.grid_type_and_rotations.value == GridTypeAndRotations.option_meme_one_row_no_rotation or self.options.grid_type_and_rotations.value == GridTypeAndRotations.option_meme_one_row_180_rotation:
+            self.uniform_piece_size = False
             return number_of_pieces, 1
-        if self.options.grid_type.value == GridType.option_meme_one_column:
+        if self.options.grid_type_and_rotations.value == GridTypeAndRotations.option_meme_one_column_no_rotation or self.options.grid_type_and_rotations.value == GridTypeAndRotations.option_meme_one_column_180_rotation:
+            self.uniform_piece_size = False
             return 1, number_of_pieces
         
         def mround(x):
@@ -101,16 +103,52 @@ class JigsawWorld(World):
         return optimal_nx, optimal_ny
         
     def generate_early(self):       
+        
+        self.rotations = None
+        if self.options.grid_type_and_rotations == GridTypeAndRotations.option_hex_60_rotation:
+            self.rotations = 60
+        elif self.options.grid_type_and_rotations == GridTypeAndRotations.option_square_90_rotation:
+            self.rotations = 90
+        elif self.options.grid_type_and_rotations == GridTypeAndRotations.option_hex_120_rotation:
+            self.rotations = 120
+        elif self.options.grid_type_and_rotations == GridTypeAndRotations.option_square_180_rotation or \
+             self.options.grid_type_and_rotations == GridTypeAndRotations.option_hex_180_rotation or \
+            self.options.grid_type_and_rotations == GridTypeAndRotations.option_meme_one_row_180_rotation or \
+            self.options.grid_type_and_rotations == GridTypeAndRotations.option_meme_one_column_180_rotation:
+            self.rotations = 180
+        else:
+            self.rotations = 360
+
+        self.grid_type = GridType.option_square
+        if self.options.grid_type_and_rotations == GridTypeAndRotations.option_hex_60_rotation or \
+           self.options.grid_type_and_rotations == GridTypeAndRotations.option_hex_120_rotation or \
+           self.options.grid_type_and_rotations == GridTypeAndRotations.option_hex_180_rotation or \
+            self.options.grid_type_and_rotations == GridTypeAndRotations.option_hex_no_rotation:
+            self.grid_type = GridType.option_hexagonal
+        elif self.options.grid_type.value == GridTypeAndRotations.option_meme_one_row_no_rotation or \
+            self.options.grid_type.value == GridTypeAndRotations.option_meme_one_row_180_rotation:
+            self.grid_type = GridType.option_meme_one_row
+        elif self.options.grid_type.value == GridTypeAndRotations.option_meme_one_column_no_rotation or \
+            self.options.grid_type.value == GridTypeAndRotations.option_meme_one_column_180_rotation:
+            self.grid_type = GridType.option_meme_one_column
+
+        self.uniform_piece_size = self.options.uniform_piece_size.value  # gets turned off later when using memes
+
         self.orientation = 1
         if self.options.orientation_of_image == OrientationOfImage.option_landscape:
             self.orientation = 1.5
-        if self.options.orientation_of_image == OrientationOfImage.option_portrait:
+        elif self.options.orientation_of_image == OrientationOfImage.option_portrait:
             self.orientation = 0.8
+        elif self.options.orientation_of_image == OrientationOfImage.option_more_landscape:
+            self.orientation = 2
+        elif self.options.orientation_of_image == OrientationOfImage.option_more_portrait:
+            self.orientation = 0.5
+
         self.nx, self.ny = self.calculate_optimal_nx_and_ny(self.options.number_of_pieces.value, self.orientation)
         self.max_piece_index = self.nx * self.ny
         
         self.npieces = self.max_piece_index
-        self.hexagonal = self.options.grid_type == GridType.option_hexagonal
+        self.hexagonal = self.grid_type == GridType.option_hexagonal
 
         if self.options.piece_order_type == PieceTypeOrder.option_random_order:
             pieces_groups = [[i for i in range(1, self.max_piece_index + 1)]]
@@ -292,13 +330,13 @@ class JigsawWorld(World):
         
         diff_traps = (self.options.number_of_fake_piece_bundles.value >= 1) + \
             (self.options.number_of_swap_traps.value >= 1) + \
-            (self.options.number_of_rotate_traps.value >= 1 and self.options.rotations != Rotations.option_no_rotation)
+            (self.options.number_of_rotate_traps.value >= 1 and self.rotations < 360)
             
         if diff_traps > 0 and self.npieces >= 10:
             
             max_traps_in_pool = self.options.number_of_fake_piece_bundles.value \
             + self.options.number_of_swap_traps.value \
-            + (self.options.number_of_rotate_traps.value if self.options.rotations != Rotations.option_no_rotation else 0)
+            + (self.options.number_of_rotate_traps.value if self.rotations < 360 else 0)
 
             self.locs_traps = max(diff_traps, min(int(max_locs / 2), max_traps_in_pool))
             locs_pieces = max_locs - self.locs_traps
@@ -325,7 +363,7 @@ class JigsawWorld(World):
         if self.locs_traps > 0 and self.npieces >= 10:
             fakes = self.options.number_of_fake_piece_bundles.value
             swaps = self.options.number_of_swap_traps.value
-            rotations = self.options.number_of_rotate_traps.value if self.options.rotations != Rotations.option_no_rotation else 0
+            rotations = self.options.number_of_rotate_traps.value if self.rotations < 360 else 0
             if fakes + swaps + rotations > self.locs_traps:
                 l_fakes = math.ceil(self.locs_traps * fakes / (fakes + swaps + rotations))
                 if swaps > 0:
@@ -507,14 +545,16 @@ class JigsawWorld(World):
         slot_data = self._get_jigsaw_data()
         jigsaw_options = self.options.as_dict(
             "which_image",
-            "rotations",
             "enable_clues",
             "total_size_of_image",
             "death_link",
-            "grid_type"
+            "border_type"
         )
         slot_data = {**slot_data, **jigsaw_options}  # combine the two
         
+        slot_data["uniform_piece_size"] = self.uniform_piece_size
+        slot_data["rotations"] = self.rotations
+        slot_data["grid_type"] = self.grid_type
         slot_data["orientation"] = self.orientation
         slot_data["nx"] = self.nx
         slot_data["ny"] = self.ny

@@ -10,7 +10,9 @@
   - Region: Fly destinations will be randomized to a location in the same region as its original location (e.g. Sevii fly destinations would go to another location on the Sevii Islands)
   - Completely Random: Fly destinations are completely random
 - Updated option `shopsanity`
-  - Local non-progression shop items can now be purchased repeatedly 
+  - Local non-progression shop items can now be purchased repeatedly
+- New option `shop_slots`
+  - Sets the number of slots per shop that can have multiworld items when shopsanity is on. Shop slots that do not have a multiworld item will be filled with a random normal shop item
 - Reworked option `shop_prices`
   - Changed so that item's prices are determined by their base price
     - Vanilla: Items cost their base price
@@ -23,6 +25,8 @@
   - Sets whether all instances of an item will cost the same price in every shop (e.g. if a Potion's price in a shop is
     200 then all Potions in shops will cost 200)
 - Removed options `minimum_shop_price` and `maximum_shop_price`
+- New option `rematchsanity`
+  - Beating each of a trainer's rematches gives you an item. Only the rematches for trainers who have a trainersanity item will give an item for rematchsanity
 - New option `shuffle_pokedex`
   - Vanilla: The Pokédex is obtained by delivering the parcel to Professor Oak
   - Shuffle: The Pokédex is shuffled into the item pool

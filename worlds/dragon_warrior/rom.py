@@ -24,6 +24,7 @@ class DWPatch(APAutoPatchInterface):
     flags: str
     searchsanity: bool
     shopsanity: bool
+    deathlink: bool
 
     def __init__(self,
                 path: str | None = None,
@@ -33,11 +34,13 @@ class DWPatch(APAutoPatchInterface):
                 *,
                 flags: str = "",
                 searchsanity: bool = False,
-                shopsanity: bool = False) -> None:
+                shopsanity: bool = False,
+                deathlink: bool = False) -> None:
         super().__init__(path=path, player=player, player_name=player_name, server=server)
         self.flags = flags
         self.searchsanity = searchsanity
         self.shopsanity = shopsanity
+        self.deathlink = deathlink > 0
 
     @classmethod
     def get_source_data(cls) -> bytes:
@@ -55,6 +58,9 @@ class DWPatch(APAutoPatchInterface):
         opened_zipfile.writestr("shopsanity.txt",
                                 str(self.shopsanity),
                                 compress_type=zipfile.ZIP_DEFLATED)
+        opened_zipfile.writestr("deathlink.txt",
+                                str(self.deathlink),
+                                compress_type=zipfile.ZIP_DEFLATED)
 
     @override
     def read_contents(self, opened_zipfile: zipfile.ZipFile) -> None:
@@ -62,11 +68,12 @@ class DWPatch(APAutoPatchInterface):
         self.flags = opened_zipfile.read("flags.txt").decode()
         self.searchsanity = opened_zipfile.read("search.txt").decode()
         self.shopsanity = opened_zipfile.read("shopsanity.txt").decode()
+        self.deathlink = opened_zipfile.read("deathlink.txt").decode()
     
     @override
     def patch(self, target: str) -> None:
         # Extract the dwr module from the .apworld depending on OS into a temp directory
-        current_directory = os.getcwd()
+        current_directory = Utils.user_path()
         new_dir = os.path.join(current_directory, "dragon_warrior_randomizer")
 
         if platform.system() == "Windows":
@@ -98,7 +105,7 @@ class DWPatch(APAutoPatchInterface):
         while len(temp) < 15:
             temp = temp + "0"
         seed = int(temp[:15])
-        write_rom(seed, self.flags, target, self.searchsanity, self.shopsanity)
+        write_rom(seed, self.flags, target, self.searchsanity, self.shopsanity, self.player_name, self.deathlink)
 
 
 def get_base_rom_bytes(file_name: str = "") -> bytes:
@@ -123,7 +130,18 @@ def get_base_rom_path(file_name: str = "") -> str:
         file_name = Utils.user_path(file_name)
     return file_name
 
-def write_rom(seed: int, flags: str, target: str, search: bool, shopsanity: bool) -> None:
+def write_rom(
+        seed: int, 
+        flags: str, 
+        target: str, 
+        search: bool, 
+        shopsanity: bool, 
+        player_name: str, 
+        deathlink: bool
+    ) -> None:
+    # Patch using DWRandomizer
+    if os.path.isfile(target):
+        return
     import dwr # type: ignore
     dwr.py_dwr_randomize(bytes(get_base_rom_path(), encoding="ascii"), 
                                seed, 
@@ -132,3 +150,14 @@ def write_rom(seed: int, flags: str, target: str, search: bool, shopsanity: bool
                                bytes(EXPECTED_VERSION, encoding="ascii"),
                                search == 'SearchSanity(Yes)',
                                shopsanity == 'ShopSanity(Yes)')
+    
+    # Write Slot Name and Deathlink status to ROM
+    with open(target, "r+b", buffering=0) as f:
+        f.seek(0xBFF0)
+        f.write(player_name.encode() + 0x00.to_bytes() * (16 - len(player_name)))  # Pad to 16 chars
+        f.flush()
+        if deathlink == "True":
+            f.seek(0x7FFF)
+            f.write(0xDE.to_bytes())
+            f.flush()
+        os.fsync(f.fileno())

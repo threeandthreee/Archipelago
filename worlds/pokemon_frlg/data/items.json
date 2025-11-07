@@ -463,7 +463,7 @@
   },
   "ITEM_VS_SEEKER": {
     "name": "Vs. Seeker",
-    "classification": "USEFUL",
+    "classification": "PROGRESSION",
     "tags": ["Key Items", "Unique Items"]
   },
   "ITEM_WATER_STONE": {

@@ -4,6 +4,7 @@ from typing import Dict
 from Options import Toggle, DefaultOnToggle, DeathLink, Choice, Range, Visibility, Option, OptionGroup
 from Options import PerGameCommonOptions, DeathLinkMixin, AssembleOptions, StartInventoryPool
 
+
 def create_option_groups() -> List[OptionGroup]:
     option_group_list: List[OptionGroup] = []
     for name, options in crystal_project_option_groups.items():
@@ -127,8 +128,8 @@ class Shopsanity(Choice):
     """
     When enabled, all shop inventories will be replaced with checks. Be prepared, adventurer.
 
-    Choosing "enabled and hint" will automatically create a hint for any item available in a store after you have visited it for the first time,
-    letting other players in the multiworld know you've seen their item.
+    Choosing "enabled and hint" will, when you CLOSE the store, automatically create a hint for every item you did not purchase
+    so other players will realize you have betrayed them by refusing to purchase their key progression item!
     """
     display_name = "Shopsanity"
     option_disabled = 0
@@ -136,7 +137,7 @@ class Shopsanity(Choice):
     option_enabled_and_hint = 2
     default = 0
 
-class Regionsanity(Toggle):
+class Regionsanity(Choice):
     """
     Nothing I have tried has been able to drive the citizens of Sequoia to collect enough crystals!
     Adventurers have had TOO MUCH freedom!  From now on, you will adventure where I tell you to.
@@ -148,9 +149,18 @@ class Regionsanity(Toggle):
     However, the Overpass and Underpass are regions of lawlessness where the Grandmaster has no authority! ;)
     (You're also still allowed to use the save points, we won't tell.)
 
+    If you put any region pass items in your starting inventory, the first one will be chosen as your starting region.
+
+    If regionsanity is set to extreme, the Grandmaster won't even let you walk through regions you don't have the pass for.
+    Spend more than 10 seconds in a region without a pass and the Grandmaster will teleport you!
+
     You will start the game with a pass for one reachable region.
     """
     display_name = "Regionsanity"
+    option_disabled = 0
+    option_enabled = 1
+    option_extreme = 2
+    default = 0
 
 #"""Progression Options"""
 class ProgressiveMountMode(DefaultOnToggle):
@@ -264,7 +274,8 @@ class ObscureRoutes(Toggle):
 
 class AutoSpendLP(Toggle):
     """
-    When enabled, every time a character earn LP it will automatically spend LP on abilities or passives.
+    When enabled, every time a character earns LP, it will automatically spend LP on abilities or passives.
+    Extra LP earned on a job that is maxed will be sent to your sub job or, if that is also maxed, a random un-maxed job.
     """
     display_name = "Automatically Spend LP"
 
@@ -307,6 +318,12 @@ class StartWithMaps(DefaultOnToggle):
     """
     display_name = "Begin with Area Maps"
 
+class FillFullMap(Toggle):
+    """
+    When enabled, the world map will start filled in for areas that the player has a map item for.
+    """
+    display_name = "Fill Full Map"
+
 class IncludeSummonAbilities(DefaultOnToggle):
     """
     When enabled, Summons are added to the item pool.
@@ -324,7 +341,7 @@ class IncludeScholarAbilities(DefaultOnToggle):
 #"""Bonus Fun"""
 class TrapLikelihood(Range):
     """
-    This is the likelihood that a trap will replace a filler check, a value of 0 means no traps
+    This is the likelihood that a trap will replace a filler check. A value of 0 means no traps.
     """
     display_name = "Trap Likelihood"
     range_start = 0
@@ -335,7 +352,7 @@ class ItemInfoMode(Choice):
     """
     For Full, all treasure and store icons on the map will display if they are progression, useful, or filler items.
 
-    For Earned, all treasure and store icons on the map will display as mimics until you obtain the map-revealing item that is not yet implemented idk come back v0.9.
+    For Earned, all treasure and store icons on the map will display as mimics until you obtain the map-revealing item that is not yet implemented idk come back later.
 
     For Obscured, all treasure and store icons on the map will display as mimics permanently.
     If you find skipping treasures is distasteful but part of your brain always wants to be efficient, this option is for you!
@@ -401,6 +418,7 @@ class CrystalProjectOptions(PerGameCommonOptions):
     progressiveEquipmentMode: ProgressiveEquipmentMode
     startWithTreasureFinder: StartWithTreasureFinder
     startWithMaps: StartWithMaps
+    fill_full_map: FillFullMap
     includeSummonAbilities: IncludeSummonAbilities
     includeScholarAbilities: IncludeScholarAbilities
     trapLikelihood: TrapLikelihood
@@ -412,6 +430,6 @@ crystal_project_option_groups: Dict[str, List[Any]] = {
     "Goal Options": [Goal, ClamshellGoalQuantity, ExtraClamshellsInPool, NewWorldStoneJobQuantity],
     "Location Options": [IncludedRegions, JobRando, StartingJobQuantity, KillBossesMode, Shopsanity, Regionsanity],
     "Progression Options": [ProgressiveMountMode, LevelGating, LevelComparedToEnemies, ProgressiveLevelSize, MaxLevel, KeyMode, ObscureRoutes, AutoSpendLP, AutoEquipPassives, EasyLeveling],
-    "Item Pool Options": [ProgressiveEquipmentMode, StartWithTreasureFinder, StartWithMaps, IncludeSummonAbilities, IncludeScholarAbilities],
+    "Item Pool Options": [ProgressiveEquipmentMode, StartWithTreasureFinder, StartWithMaps, FillFullMap, IncludeSummonAbilities, IncludeScholarAbilities],
     "Bonus Fun": [ItemInfoMode, RandomizeMusic, UseMods]
 }

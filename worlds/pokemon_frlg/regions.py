@@ -184,8 +184,6 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
                                 None,
                                 LocationCategory.EVENT_WILD_POKEMON,
                                 encounter_region,
-                                None,
-                                None,
                                 spoiler_name=f"{encounter_region_name} ({type_name})",
                             )
                             encounter_location.show_in_spoiler = False
@@ -328,8 +326,6 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
                                         None,
                                         event_data.category,
                                         new_region,
-                                        None,
-                                        None,
                                         spoiler_name=STATIC_POKEMON_SPOILER_NAMES[event_id]
                                         if event_id in STATIC_POKEMON_SPOILER_NAMES else None)
             event.place_locked_item(PokemonFRLGItem(event_data.item,
@@ -375,8 +371,8 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
         trainer_name_level_list: List[Tuple[str, int]] = []
         encounter_name_level_list: List[Tuple[str, int]] = []
 
-        for scaling_id, scaling_data in data.scaling.items():
-            if exclude_scaling(scaling_id):
+        for scaling_data_id, scaling_data in data.scaling.items():
+            if exclude_scaling(scaling_data_id):
                 continue
             if scaling_data.region not in regions:
                 region = PokemonFRLGRegion(scaling_data.region, world.player, world.multiworld)
@@ -390,7 +386,7 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
             else:
                 region = regions[scaling_data.region]
 
-            for location_name, data_ids in scaling_data.locations.items():
+            for location_name, scaling_ids in scaling_data.locations.items():
                 if scaling_data.category == LocationCategory.EVENT_TRAINER_SCALING:
                     scaling_event = PokemonFRLGLocation(
                         world.player,
@@ -398,9 +394,7 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
                         None,
                         scaling_data.category,
                         region,
-                        None,
-                        None,
-                        data_ids
+                        scaling_ids=scaling_ids
                     )
                     scaling_event.place_locked_item(PokemonFRLGItem("Trainer Party",
                                                                     ItemClassification.filler,
@@ -415,9 +409,7 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
                         None,
                         scaling_data.category,
                         region,
-                        None,
-                        None,
-                        data_ids
+                        scaling_ids=scaling_ids
                     )
                     scaling_event.place_locked_item(PokemonFRLGItem("Static Encounter",
                                                                     ItemClassification.filler,
@@ -430,21 +422,21 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
                     events: Dict[str, Tuple[str, List[str], Callable[[CollectionState], bool] | None]] = {}
                     encounter_type = EncounterType(scaling_data.type)
                     encounter_category_data = encounter_categories[encounter_type]
-                    for data_id in data_ids:
-                        if exclude_scaling_map(data_id):
+                    for scaling_id in scaling_ids:
+                        if exclude_scaling_map(scaling_id):
                             continue
-                        map_data = world.modified_maps[data_id]
+                        map_data = world.modified_maps[scaling_id]
                         encounters = map_data.encounters[encounter_type]
                         for subcategory in encounter_category_data:
                             for i in subcategory[1]:
                                 type_name = subcategory[0] if subcategory[0] is not None else encounter_type.value
                                 species_name = f"{type_name} {encounters.slots[game_version][i].species_id}"
                                 if species_name not in events:
-                                    encounter_data = (f"{location_name} {index}", [f"{data_id} {i}"], subcategory[2])
+                                    encounter_data = (f"{location_name} {index}", [f"{scaling_id} {i}"], subcategory[2])
                                     events[species_name] = encounter_data
                                     index = index + 1
                                 else:
-                                    events[species_name][1].append(f"{data_id} {i}")
+                                    events[species_name][1].append(f"{scaling_id} {i}")
 
                     for event in events.values():
                         scaling_event = PokemonFRLGLocation(
@@ -453,9 +445,7 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
                             None,
                             scaling_data.category,
                             region,
-                            None,
-                            None,
-                            event[1]
+                            scaling_ids=event[1]
                         )
 
                         scaling_event.place_locked_item(PokemonFRLGItem("Wild Encounter",
@@ -470,37 +460,36 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
         for region in regions.values():
             for location in region.locations:
                 if location.category == LocationCategory.EVENT_TRAINER_SCALING:
-                    min_level = 100
+                    base_level = 100
 
-                    for data_id in location.data_ids:
-                        trainer_data = data.trainers[data_id]
-                        for pokemon in trainer_data.party.pokemon:
-                            min_level = min(min_level, pokemon.level)
+                    for scaling_id in location.scaling_ids:
+                        trainer_data = data.trainers[scaling_id]
+                        base_level = min(base_level, trainer_data.party.base_level)
 
-                    trainer_name_level_list.append((location.name, min_level))
-                    world.trainer_name_level_dict[location.name] = min_level
+                    trainer_name_level_list.append((location.name, base_level))
+                    world.trainer_name_level_dict[location.name] = base_level
                 elif location.category == LocationCategory.EVENT_STATIC_POKEMON_SCALING:
-                    for data_id in location.data_ids:
+                    for scaling_id in location.scaling_ids:
                         pokemon_data = None
 
-                        if data_id in data.misc_pokemon:
-                            pokemon_data = data.misc_pokemon[data_id]
-                        elif data_id in data.legendary_pokemon:
-                            pokemon_data = data.legendary_pokemon[data_id]
+                        if scaling_id in data.misc_pokemon:
+                            pokemon_data = data.misc_pokemon[scaling_id]
+                        elif scaling_id in data.legendary_pokemon:
+                            pokemon_data = data.legendary_pokemon[scaling_id]
 
                         encounter_name_level_list.append((location.name, pokemon_data.level[game_version]))
                         world.encounter_name_level_dict[location.name] = pokemon_data.level[game_version]
                 elif location.category == LocationCategory.EVENT_WILD_POKEMON_SCALING:
                     max_level = 1
 
-                    for data_id in location.data_ids:
-                        data_ids = data_id.split()
-                        map_data = world.modified_maps[data_ids[0]]
+                    for scaling_id in location.scaling_ids:
+                        scaling_ids = scaling_id.split()
+                        map_data = world.modified_maps[scaling_ids[0]]
                         encounters = (map_data.encounters[EncounterType.LAND] if "Land" in location.name else
                                       map_data.encounters[EncounterType.WATER] if "Water" in location.name else
                                       map_data.encounters[EncounterType.FISHING])
 
-                        encounter_max_level = encounters.slots[game_version][int(data_ids[1])].max_level
+                        encounter_max_level = encounters.slots[game_version][int(scaling_ids[1])].max_level
                         max_level = max(max_level, encounter_max_level)
 
                     encounter_name_level_list.append((location.name, max_level))

@@ -4,17 +4,18 @@ from .constants.jobs import *
 from .constants.keys import *
 from .constants.key_items import *
 from .constants.maps import *
-from .constants.regions import *
+from .constants.ap_regions import *
+from .constants.display_regions import *
 from .constants.teleport_stones import *
 from .constants.item_groups import *
 from .constants.region_passes import *
 from .items import item_table, optional_scholar_abilities, get_random_starting_jobs, filler_items, \
     get_item_names_per_category, progressive_equipment, non_progressive_equipment, get_starting_jobs, \
     set_jobs_at_default_locations, default_starting_job_list, key_rings, dungeon_keys, singleton_keys, \
-    region_name_to_pass_dict
+    display_region_name_to_pass_dict
 from .locations import get_locations, get_bosses, get_shops, get_region_completions, LocationData
 from .presets import crystal_project_options_presets
-from .regions import init_areas
+from .regions import init_areas, ap_region_to_display_region_dictionary, display_region_subregions_dictionary
 from .options import CrystalProjectOptions, IncludedRegions, create_option_groups
 from .rules import CrystalProjectLogic
 from .mod_helper import ModLocationData, get_modded_items, get_modded_locations, \
@@ -41,7 +42,7 @@ class CrystalProjectWeb(WebWorld):
 
 class CrystalProjectWorld(World):
     """Crystal Project is a mix of old school job based jRPG mixed with a ton of 3D platforming and exploration."""
-    apworld_version = "0.9.0"
+    apworld_version = "0.10.0"
     game = "Crystal Project"
     options_dataclass = CrystalProjectOptions
     options: CrystalProjectOptions
@@ -99,7 +100,7 @@ class CrystalProjectWorld(World):
 
     def __init__(self, multiworld: "MultiWorld", player: int):
         super().__init__(multiworld, player)
-        self.starter_region: str = ""
+        self.starter_ap_region: str = ""
         self.starting_jobs: List[str] = []
         self.included_regions: List[str] = []
         self.statically_placed_jobs: int = 0
@@ -134,7 +135,7 @@ class CrystalProjectWorld(World):
                     self.options.useMods.value = slot_data["useMods"]
                     # self.modded_locations = slot_data["moddedLocationsForUT"]
                     # self.modded_shops = slot_data["moddedShopsForUT"]
-                    self.starter_region = slot_data["starter_region"]
+                    self.starter_ap_region = slot_data["starter_region"]
 
         self.multiworld.push_precollected(self.create_item(HOME_POINT_STONE))
 
@@ -180,26 +181,26 @@ class CrystalProjectWorld(World):
 
         if self.options.useMods:
             for modded_location in self.modded_locations:
-                location = LocationData(modded_location.region,
+                location = LocationData(display_region_subregions_dictionary[modded_location.display_region][0],
                                         modded_location.name,
                                         modded_location.code,
-                                        build_condition_rule(modded_location.rule_condition, self))
+                                        build_condition_rule(modded_location.display_region, modded_location.rule_condition, self))
                 locations.append(location)
 
         if self.options.useMods and self.options.shopsanity.value != self.options.shopsanity.option_disabled:
             for shop in self.modded_shops:
-                location = LocationData(shop.region,
+                location = LocationData(display_region_subregions_dictionary[shop.display_region][0],
                                         shop.name,
                                         shop.code,
-                                        build_condition_rule(shop.rule_condition, self))
+                                        build_condition_rule(shop.display_region, shop.rule_condition, self))
                 locations.append(location)
 
         if self.options.useMods and self.options.killBossesMode.value == self.options.killBossesMode.option_true:
             for modded_location in self.modded_bosses:
-                location = LocationData(modded_location.region,
+                location = LocationData(display_region_subregions_dictionary[modded_location.display_region][0],
                                         modded_location.name,
                                         modded_location.code,
-                                        build_condition_rule(modded_location.rule_condition, self))
+                                        build_condition_rule(modded_location.display_region, modded_location.rule_condition, self))
                 locations.append(location)
 
         if self.options.useMods:
@@ -220,10 +221,10 @@ class CrystalProjectWorld(World):
             logging.getLogger().info(message.format(self.options.newWorldStoneJobQuantity.value, jobs_earnable, self.player_name))
             self.options.newWorldStoneJobQuantity.value = jobs_earnable
 
-        # pick one region to give a starting pass to and then save that later
-        if self.options.regionsanity.value == self.options.regionsanity.option_true:
+        # pick one display region to give a starting pass to and then save that later
+        if self.options.regionsanity.value != self.options.regionsanity.option_disabled:
             starting_passes_list: List[str] = []
-            #checking the start inventory for region passes and using the first one as the starter region, if any
+            #checking the start inventory for region passes and using the first one to set the starter region, if any
             for item_name in self.options.start_inventory.keys():
                 if item_name in self.item_name_groups[PASS]:
                     starting_passes_list.append(item_name)
@@ -231,30 +232,35 @@ class CrystalProjectWorld(World):
                 if item_name in self.item_name_groups[PASS]:
                     starting_passes_list.append(item_name)
             if len(starting_passes_list) > 0:
-                for region_name in region_name_to_pass_dict:
-                    if region_name_to_pass_dict[region_name] == starting_passes_list[0]:
-                        self.starter_region = region_name
+                for display_region_name in display_region_name_to_pass_dict:
+                    if display_region_name_to_pass_dict[display_region_name] == starting_passes_list[0]:
+                        # The first subregion (AP Region) in a display region will be the starter region if a player puts that display region's pass in their starting inventory
+                        self.starter_ap_region = display_region_subregions_dictionary[display_region_name][0]
                         break
 
             # If this is UT re-gen the value isn't empty and we skip trying to pick a starter_region since we already have one
-            if self.starter_region == "":
+            if self.starter_ap_region == "":
                 initially_reachable_regions = []
                 # Generate a collection state that is a copy of the current state but also has all the passes so we can
                 # check what regions we can access without just getting told none because we have no passes
                 all_passes_state: CollectionState = CollectionState(self.multiworld)
-                self.origin_region_name = SPAWNING_MEADOWS
+                self.origin_region_name = SPAWNING_MEADOWS_AP_REGION
                 for region_pass in self.item_name_groups[PASS]:
                     all_passes_state.collect(self.create_item(region_pass), prevent_sweep=True)
-                for region in self.get_regions():
-                    if region.can_reach(all_passes_state) and region.name != MENU and region.name != MODDED_ZONE:
-                        if len(region.locations) > 3:
-                            initially_reachable_regions.append(region)
-                self.starter_region = self.random.choice(initially_reachable_regions).name
-            # logging.getLogger().info("Starting region is " + self.starter_region)
-            self.origin_region_name = self.starter_region
+                for ap_region in self.get_regions():
+                    #This checks what AP Regions are accessible to the player
+                    if ap_region.can_reach(all_passes_state) and ap_region.name != MENU_AP_REGION and ap_region.name != MODDED_ZONE_AP_REGION:
+                        if len(ap_region.locations) > 2:
+                            initially_reachable_regions.append(ap_region)
+                self.starter_ap_region = self.random.choice(initially_reachable_regions).name
+                #Until we have a teleport location in every single apregion, for now we take specifically the first apregion in the display regions subregion list
+                self.starter_ap_region = display_region_subregions_dictionary[ap_region_to_display_region_dictionary[self.starter_ap_region]][0]
+            #logging.getLogger().info("Starting region is " + self.starter_ap_region)
+            self.origin_region_name = self.starter_ap_region
             #only push if player doesn't already have the pass from their starting inventory
             if len(starting_passes_list) == 0:
-                self.multiworld.push_precollected(self.create_item(region_name_to_pass_dict[self.starter_region]))
+                #Converts the AP Region that was picked as the starting region to the Display Region containing that AP Region
+                self.multiworld.push_precollected(self.create_item(display_region_name_to_pass_dict[ap_region_to_display_region_dictionary[self.starter_ap_region]]))
 
     def create_item(self, name: str) -> Item:
         if name in item_table:
@@ -440,11 +446,11 @@ class CrystalProjectWorld(World):
             excluded_items.add(MIMIC_JOB)
 
         #regionsanity items
-        if self.options.regionsanity.value == self.options.regionsanity.option_false:
+        if self.options.regionsanity.value == self.options.regionsanity.option_disabled:
             for region_pass in self.item_name_groups[PASS]:
                 excluded_items.add(region_pass)
         else:
-            excluded_items.add(region_name_to_pass_dict[self.starter_region])
+            excluded_items.add(display_region_name_to_pass_dict[ap_region_to_display_region_dictionary[self.starter_ap_region]])
 
         return excluded_items
 
@@ -453,7 +459,7 @@ class CrystalProjectWorld(World):
 
         for name, data in item_table.items():
             if name not in excluded_items:
-                #Check region and add the region amounts; then check Shopsanity and add the shop amounts
+                #Check region type and add the region-type amounts; then check Shopsanity and add the shop amounts
                 amount:int = int(data.beginnerAmount or 0)
                 if self.options.shopsanity.value != self.options.shopsanity.option_disabled:
                     amount = amount + int(data.beginnerShops or 0)
@@ -472,12 +478,12 @@ class CrystalProjectWorld(World):
                         amount = amount + int(data.endGameShops or 0)
 
                 # Make sure new world pass is included if regionsanity is on and its required for the goal
-                if (self.options.regionsanity.value == self.options.regionsanity.option_true and
+                if (self.options.regionsanity.value != self.options.regionsanity.option_disabled and
                         (self.options.goal.value == self.options.goal.option_astley or self.options.goal.value == self.options.goal.option_true_astley) and
                         name == THE_NEW_WORLD_PASS):
                     amount = 1
                 # Same goes for old world pass
-                elif (self.options.regionsanity.value == self.options.regionsanity.option_true and
+                elif (self.options.regionsanity.value != self.options.regionsanity.option_disabled and
                         self.options.goal.value == self.options.goal.option_true_astley and
                         name == THE_OLD_WORLD_PASS):
                     amount = 1
@@ -538,11 +544,11 @@ class CrystalProjectWorld(World):
         if self.options.goal == self.options.goal.option_astley:
             win_condition_item = NEW_WORLD_STONE # todo should this still be here if we auto-hand you the stone?
             self.multiworld.completion_condition[self.player] = lambda state: logic.has_jobs(state, self.options.newWorldStoneJobQuantity.value)
-            self.included_regions.append(THE_NEW_WORLD)
+            self.included_regions.append(THE_NEW_WORLD_DISPLAY_NAME)
         elif self.options.goal == self.options.goal.option_true_astley:
             win_condition_item = OLD_WORLD_STONE
             self.multiworld.completion_condition[self.player] = lambda state: logic.has_jobs(state, self.options.newWorldStoneJobQuantity.value) and logic.old_world_requirements(state)
-            self.included_regions.append(THE_OLD_WORLD)
+            self.included_regions.append(THE_OLD_WORLD_DISPLAY_NAME)
         elif self.options.goal == self.options.goal.option_clamshells:
             win_condition_item = CLAMSHELL
             self.multiworld.completion_condition[self.player] = lambda state: state.has(win_condition_item, self.player, self.options.clamshellGoalQuantity.value)
@@ -566,7 +572,7 @@ class CrystalProjectWorld(World):
 
             for modded_location in self.modded_locations:
                 slot_data_locations.append({"Id": modded_location.offsetless_code,
-                                            "Region": modded_location.region,
+                                            "APRegion": display_region_subregions_dictionary[modded_location.display_region][0],
                                             "Name": modded_location.name,
                                             "Coordinates": modded_location.coordinates,
                                             "biomeId": modded_location.biomeId,
@@ -574,7 +580,7 @@ class CrystalProjectWorld(World):
             if self.options.shopsanity != self.options.shopsanity.option_disabled:
                 for shop in self.modded_shops:
                     slot_data_locations.append({ "Id": shop.offsetless_code,
-                                                 "Region": shop.region,
+                                                 "APRegion": display_region_subregions_dictionary[shop.display_region][0],
                                                  "Name": shop.name,
                                                  "Coordinates": shop.coordinates,
                                                  "BiomeId": shop.biomeId,
@@ -583,23 +589,25 @@ class CrystalProjectWorld(World):
             if self.options.killBossesMode == self.options.killBossesMode.option_true:
                 for boss in self.modded_bosses:
                     slot_data_locations.append({ "Id": boss.offsetless_code,
-                                                 "Region": boss.region,
+                                                 "APRegion": display_region_subregions_dictionary[boss.display_region][0],
                                                  "Name": boss.name,
                                                  "Coordinates": boss.coordinates,
                                                  "BiomeId": boss.biomeId,
                                                  "Rule": None })
 
             for location in self.removed_locations:
-                slot_data_removed_locations.append({"Id": location.offsetless_code,
-                                            "Region": location.region,
-                                            "Name": location.name,
-                                            "Coordinates": location.coordinates,
-                                            "biomeId": location.biomeId,
-                                            "Rule": None})
+                slot_data_removed_locations.append({"Id": location.code,
+                                            "APRegion": location.ap_region})
+
+        # TODO: when 0.6.4 ships, get rid of this and just use the contents of the try directly in the return statement for apworld_version
+        try:
+            apworld_version = CrystalProjectWorld.apworld_version
+        except:
+            apworld_version = self.apworld_version
 
         # look into replacing this big chonky return block with self.options.as_dict() and then just adding the extras to the dict after
         return {
-            "apworld_version": self.apworld_version,
+            "apworld_version": apworld_version,
             "goal": self.options.goal.value,
             "clamshellGoalQuantity": self.get_goal_clamshells(),
             "extraClamshellsInPool": self.get_extra_clamshells(),
@@ -611,7 +619,7 @@ class CrystalProjectWorld(World):
             "startingJobs": self.get_job_id_list(),
             "killBossesMode" : bool(self.options.killBossesMode.value),
             "shopsanity": self.options.shopsanity.value,
-            "regionsanity": bool(self.options.regionsanity.value),
+            "regionsanity": self.options.regionsanity.value,
             "includedRegions": self.included_regions,
             "includedRegionsOption": self.options.includedRegions.value,
             "progressiveMountMode": self.options.progressiveMountMode.value,
@@ -635,5 +643,6 @@ class CrystalProjectWorld(World):
             "removedLocations": slot_data_removed_locations,
             # "moddedLocationsForUT": self.modded_locations,
             # "moddedShopsForUT": self.modded_shops,
-            "starter_region": self.starter_region, # stored for UT re-gen
+            "starter_region": self.starter_ap_region, # stored for UT re-gen
+            "prefill_map": bool(self.options.fill_full_map.value),
         }

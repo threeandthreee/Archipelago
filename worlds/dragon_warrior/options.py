@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from Options import Choice, DefaultOnToggle, OptionGroup, PerGameCommonOptions, Range, Toggle
+from Options import Choice, DefaultOnToggle, OptionGroup, PerGameCommonOptions, Range, Toggle, DeathLink
 
 
 class LevelSanity(DefaultOnToggle):
@@ -25,22 +25,48 @@ class SearchSanity(DefaultOnToggle):
     """
     display_name = "SearchSanity"
 
-class ShopSanity(DefaultOnToggle):
+class ShopSanity(Toggle):
     """
-    Buying a piece of equipment causes a location check instead of buying it. Adds progressive equipment items instead.
+    Buying a piece of equipment sends a location check instead of buying it. Adds progressive equipment items instead.
     This adds 13 checks. This option overrides and disables the randomized equipment shops option below.
     """
     display_name = "ShopSanity"
 
+class MonsterSanity(Toggle):
+    """
+    Killing a monster for the first time sends a location check. This adds 40 checks. This option overrides and disables
+    the random monster zones option below.
+    """
+    display_name = "MonsterSanity"
+
 class RandomGrowth(Toggle):
     """ 
-    Player statistical growth at each level will be randomized 
+    Player statistical growth at each level will be randomized.
     """
     display_name = "Randomize Growth"
 
+class RandomMap(Toggle):
+    """
+    The overworld map will be randomly generated. Stairs leading to other maps (Tantegel Basement, Garin's Grave) 
+    are also shuffled.
+
+    Note that this is currently an experimental option! If you roll an unwinnable seed please let the developer know.
+    """
+    display_name = "Random Map"
+
+class RandomMapSize(Choice):
+    """
+    Sets the size of the randomly generated map.
+    """
+    display_name = "Random Map Size"
+    option_normal = 0
+    option_small = 1
+    option_very_small = 2
+    default = 0
+
 class RandomSpellLearning(Toggle):
     """ 
-    The order and level you learn spells will be random 
+    The order and level you learn spells will be random.
     """
     display_name = "Random Spell Learning"
 
@@ -160,12 +186,6 @@ class SpeedHacks(Toggle):
     """
     display_name = "Speed Hacks"
 
-# class OpenCharlock(Toggle):
-#     """
-#     No need to create a bridge to enter Charlock Castle
-#     """
-#     display_name = "Open Charlock"
-
 # class ShortCharlock(Toggle):
 #     """
 #     Charlock Dungeon will be much shorter
@@ -229,6 +249,20 @@ class InvisibleNPCs(Toggle):
     All NPCs will be invisible
     """
     display_name = "Invisible NPCs"
+
+class BonkDamage(Choice):
+    """
+    Bonking into walls will deal damage!
+    """
+    display_name = "Bonk Damage"
+    option_none = 0
+    option_1_hp = 1
+    option_2_hp = 2
+    option_20_hp = 3
+    option_instakill = 4
+    option_random_damage = 5
+    option_halve_health = 6
+    default = 0
 
 class EasyCharlock(Toggle):
     """ 
@@ -308,6 +342,22 @@ class AsceticKing(DefaultOnToggle):
     """
     display_name = "Ascetic King"
 
+class RunMechanics(Choice):
+    """
+    Change how a successful run is determined.
+
+    DW 1: Vanilla run mechanics
+    Safer DW 1: Vanilla run mechanics, 4th run attempt guaranteed
+    DW 2: 2/3 chance to run away at every attempt
+    DW 4: 1st attempt: 50%, 2nd attempt: 50%, 3rd attempt: 75%, 4th attempt, 100%
+    """
+    display_name = "Run Mechanics"
+    option_dw1 = 0
+    option_safer_dw1 = 1
+    option_dw2 = 2
+    option_dw4 = 3
+    default = 0
+
 class CharlockInn(Toggle):
     """ 
     Make the final dive easier by having a comfy bed and breakfast at the Dragonlord's
@@ -345,14 +395,18 @@ class DisableRedFlashes(Toggle):
     display_name = "Disable Red Flashes"
 
 DWOptionGroups = [
-    OptionGroup("Location Options", [
+    OptionGroup("Archipelago Options", [
         LevelSanity,
         LevelSanityRange,
         SearchSanity,
-        ShopSanity
+        ShopSanity,
+        MonsterSanity,
+        DeathLink
     ]),
     OptionGroup("Random Options", [
         RandomGrowth,
+        RandomMap,
+        RandomMapSize,
         RandomSpellLearning,
         RandomWeaponShops,
         RandomWeaponPrices,
@@ -371,7 +425,8 @@ DWOptionGroups = [
         OnlyHealmore,
         NoNumbers,
         InvisibleHero,
-        InvisibleNPCs
+        InvisibleNPCs,
+        BonkDamage
     ]),
     OptionGroup("QOL Options", [
         EnableMenuWrapping,
@@ -394,6 +449,7 @@ DWOptionGroups = [
         WarpWhistle,
         LevelupRefill,
         AsceticKing,
+        RunMechanics,
         CharlockInn,
         DL1Crits,
         DL2Crits
@@ -416,8 +472,12 @@ class DWOptions(PerGameCommonOptions):
     levelsanity_range: LevelSanityRange
     searchsanity: SearchSanity
     shopsanity: ShopSanity
+    monstersanity: MonsterSanity
+    death_link: DeathLink
 
     random_growth: RandomGrowth
+    random_map: RandomMap
+    random_map_size: RandomMapSize
     random_spell_learning: RandomSpellLearning
     random_weapon_shops: RandomWeaponShops
     random_weapon_prices: RandomWeaponPrices
@@ -436,6 +496,7 @@ class DWOptions(PerGameCommonOptions):
     no_numbers: NoNumbers
     invisible_hero: InvisibleHero
     invisible_npcs: InvisibleNPCs
+    bonk_damage: BonkDamage
 
     enable_menu_wrapping: EnableMenuWrapping
     enable_death_necklace: EnableDeathNecklace
@@ -457,6 +518,7 @@ class DWOptions(PerGameCommonOptions):
     warp_whistle: WarpWhistle
     levelup_refill: LevelupRefill
     ascetic_king: AsceticKing
+    run_mechanics: RunMechanics
     charlock_inn: CharlockInn
     dl1_crits: DL1Crits
     dl2_crits: DL2Crits
