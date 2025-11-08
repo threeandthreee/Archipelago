@@ -36,8 +36,7 @@ class WorldSetup:
             "moblin_cave": "MOBLIN_KING",
             "armos_temple": "ARMOS_KNIGHT",
         }
-        self.goal = "vanilla"
-        self.goal_count = 8
+        self.goal = None
         self.bingo_goals = None
         self.multichest = RUPEES_20
         self.map = None  # Randomly generated map data
@@ -208,7 +207,24 @@ class WorldSetup:
                 assert v not in found, f"one-on-one rule violated: {k}->{v}"
                 found.add(v)
 
-    def randomize(self, settings, rnd):
+    def randomize(self, settings, rnd, ap_options):
+        if settings.overworld == "dungeondive":
+            self.entrance_mapping = {"d%d" % (n): "d%d" % (n) for n in range(9)}
+        if settings.randomstartlocation and settings.entranceshuffle == "none":
+            start_location = start_locations[rnd.randrange(len(start_locations))]
+            if start_location != "start_house":
+                self.entrance_mapping[start_location] = "start_house"
+                self.entrance_mapping["start_house"] = start_location
+        
+        entrances = self.getEntrancePool(settings)
+        for entrance in entrances.copy():
+            self.entrance_mapping[entrance] = entrances.pop(rnd.randrange(len(entrances)))
+
+        # Shuffle connectors among themselves
+        entrances = self.getEntrancePool(settings, connectorsOnly=True)
+        for entrance in entrances.copy():
+            self.entrance_mapping[entrance] = entrances.pop(rnd.randrange(len(entrances)))
+
         if settings.boss != "default":
             values = list(range(9))
             if settings.heartcontainers:
@@ -230,29 +246,25 @@ class WorldSetup:
                 if settings.miniboss == 'shuffle':
                     values.remove(self.miniboss_mapping[key])
 
-        self.goal = settings.goal
-        if settings.goal == "specific":
-            if settings.goalcount == 'random':
-                self.goal_count = rnd.randint(1, 8)
-            else:
-                self.goal_count = max(1, int(settings.goalcount))
+        if settings.goal == 'random':
+            self.goal = rnd.randint(-1, 8)
+        elif settings.goal == 'open':
+            self.goal = -1
+        elif settings.goal in {"seashells", "bingo", "bingo-full"}:
+            self.goal = settings.goal
+        elif settings.goal == "specific":
+            instrument_count = max(1, ap_options.instrument_count.value)
             instruments = [c for c in "12345678"]
             rnd.shuffle(instruments)
-            self.goal = "=" + "".join(instruments[:self.goal_count])
-        elif "-" in settings.goal and not settings.goal.startswith("bingo"):
+            self.goal = "=" + "".join(instruments[:instrument_count])
+        elif "-" in settings.goal:
             a, b = settings.goal.split("-")
             if a == "open":
                 a = -1
-            self.goal = 'instruments'
-            self.goal_count = rnd.randint(int(a), int(b))
-        elif settings.goal == 'instruments':
-            if settings.goalcount == 'random':
-                self.goal_count = rnd.randint(-1, 8)
-                if self.goal_count < 0:
-                    self.goal = 'open'
-            else:
-                self.goal_count = int(settings.goalcount)
-        if self.goal in {"bingo", "bingo-double", "bingo-triple", "bingo-full"}:
+            self.goal = rnd.randint(int(a), int(b))
+        else:
+            self.goal = int(settings.goal)
+        if self.goal in {"bingo", "bingo-full"}:
             self.bingo_goals = bingo.randomizeGoals(rnd, settings)
 
         self.multichest = rnd.choices(MULTI_CHEST_OPTIONS, MULTI_CHEST_WEIGHTS)[0]
