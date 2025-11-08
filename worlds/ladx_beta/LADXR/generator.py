@@ -129,6 +129,7 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
     assembler.const("HARD_MODE", 1 if options["hard_mode"] else 0)
 
     patches.core.cleanup(rom)
+    patches.core.fixD7exit(rom)
     patches.save.singleSaveSlot(rom)
     patches.phone.patchPhone(rom)
     patches.photographer.fixPhotographer(rom)
