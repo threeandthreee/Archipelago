@@ -2,6 +2,7 @@ from .patches import enemies, bingo
 from .locations.items import *
 from .entranceInfo import ENTRANCE_INFO
 from . import logic
+from .utils import Error
 
 
 MULTI_CHEST_OPTIONS = [MAGIC_POWDER, BOMB, MEDICINE, RUPEES_50, RUPEES_20, RUPEES_100, RUPEES_200, RUPEES_500, SEASHELL, GEL, ARROWS_10, SINGLE_ARROW]
@@ -114,7 +115,7 @@ class WorldSetup:
         self.entrance_mapping[option] = target
 
     def inaccessibleEntrances(self, settings, entrancePool):
-        log = logic.main.Logic(settings, world_setup=self)
+        log = logic.Logic(settings, world_setup=self)
         return [x for x in entrancePool if log.world.entrances[x].location and log.world.entrances[x].location not in log.location_list]
 
     def _randomizeEntrances(self, rnd, entrancePool):
