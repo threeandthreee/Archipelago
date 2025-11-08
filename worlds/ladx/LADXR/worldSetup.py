@@ -36,13 +36,14 @@ class WorldSetup:
             "moblin_cave": "MOBLIN_KING",
             "armos_temple": "ARMOS_KNIGHT",
         }
-        self.goal = None
+        self.goal = "vanilla"
+        self.goal_count = 8
         self.bingo_goals = None
         self.multichest = RUPEES_20
         self.map = None  # Randomly generated map data
         self.inside_to_outside = True
         self.keep_two_way = True
-        self.one_to_one = True
+        self.one_on_one = True
 
     def getEntrancePool(self, settings, connectorsOnly=False):
         entrances = []
@@ -76,127 +77,136 @@ class WorldSetup:
         entrances += [f"{k}:inside" for k in entrances]
         return entrances
 
+    def _swapEntrances(self, a, b):
+        # Two two two-way entrances to connect disconnecting islands
+        assert self.keep_two_way
+        temp = self.entrance_mapping[a]
+        self.entrance_mapping[a] = self.entrance_mapping[b]
+        self.entrance_mapping[b] = temp
+        self.entrance_mapping[self.entrance_mapping[a]] = a
+        self.entrance_mapping[self.entrance_mapping[b]] = b
 
-    def _pair_equal_length_lists(self, outsides, insides, rnd):
-        mapping = {}
-        n = min(len(outsides), len(insides))
-        for i in range(n):
-            o = outsides[i]
-            i_ = insides[i]
-            mapping[o] = i_
-            mapping[i_] = o
-        return mapping
+    def _injectEntrance(self, source, target):
+        # Inject an entrance into a chain of entrances with decoupled mode
+        assert not self.keep_two_way
+        to_source = None
+        for k, v in self.entrance_mapping.items():
+            if v == source:
+                to_source = k
+                break
+        assert to_source is not None
+        temp = self.entrance_mapping[target]
+        self.entrance_mapping[target] = source
+        self.entrance_mapping[to_source] = temp
 
-    def _two_way_shuffle(self, entrances, rnd):
-        mapping = {}
-        all_entrances = list(entrances)
-        rnd.shuffle(all_entrances)
-        n = len(all_entrances)
-        i = 0
-        while i + 1 < n:
-            a, b = all_entrances[i], all_entrances[i + 1]
-            mapping[a] = b
-            mapping[b] = a
-            i += 2
-        if n % 2:
-            last = all_entrances[-1]
-            choice = rnd.choice(all_entrances[:-1])
-            mapping[last] = choice
-            mapping[choice] = last
-        return mapping
+    def _addConnectionTowards(self, sources, rnd, target):
+        # When no one-on-one requirement is needed, we can simply disconnect
+        # one of the doulble connected entrances.
+        entrance_to = {}
+        for s in sources:
+            if self.entrance_mapping[s] not in entrance_to:
+                entrance_to[self.entrance_mapping[s]] = []
+            entrance_to[self.entrance_mapping[s]].append(s)
+        options = []
+        for k, v in entrance_to.items():
+            if len(v) > 1:
+                options += v
+        option = rnd.choice(options)
+        self.entrance_mapping[option] = target
 
-    def _decoupled_shuffle(self, sources, targets, rnd):
-        mapping = {}
-        n = min(len(sources), len(targets))
-        for i in range(n):
-            mapping[sources[i]] = targets[i]
-        return mapping
+    def inaccessibleEntrances(self, settings, entrancePool):
+        log = logic.main.Logic(settings, world_setup=self)
+        return [x for x in entrancePool if log.world.entrances[x].location and log.world.entrances[x].location not in log.location_list]
 
-    def _randomizeEntrances(self, rnd, settings, entrancePool):
-        entrances = list(entrancePool)
-        outsides = [e for e in entrances if not e.endswith(":inside")]
-        insides  = [e for e in entrances if e.endswith(":inside")]
+    def _randomizeEntrances(self, rnd, entrancePool):
+        unmappedEntrances = list(entrancePool)
 
-        rnd.shuffle(outsides)
-        rnd.shuffle(insides)
-
-        mapping = {}
-
-        mode = settings.entranceshuffle
-        if mode == "simple":
-            mapping.update(self._pair_equal_length_lists(outsides, insides, rnd))
-        elif mode == "split":
-            singles = [e for e in entrances if ENTRANCE_INFO[e.replace(":inside", "")].type == "single"]
-            connectors = [e for e in entrances if ENTRANCE_INFO[e.replace(":inside", "")].type == "connector"]
-            mapping.update(self._pair_equal_length_lists(
-                [x for x in singles if not x.endswith(":inside")],
-                [x for x in singles if x.endswith(":inside")],
-                rnd
-            ))
-            mapping.update(self._pair_equal_length_lists(
-                [x for x in connectors if not x.endswith(":inside")],
-                [x for x in connectors if x.endswith(":inside")],
-                rnd
-            ))
-        elif mode == "mixed":
-            mapping.update(self._pair_equal_length_lists(outsides, insides, rnd))
-        elif mode == "wild":
-            mapping.update(self._two_way_shuffle(entrances, rnd))
-        elif mode == "chaos":
-            mapping.update(self._decoupled_shuffle(outsides, insides, rnd))
-        elif mode == "insane":
-            mapping.update(self._decoupled_shuffle(entrances, entrances, rnd))
-        else:  # none / vanilla
-            mapping = VANILLA_ENTRANCE_MAPPING.copy()
-
-        self.entrance_mapping = mapping
-        self._checkEntranceRules()
+        done = set()
+        for entrance in [x for x in entrancePool]:
+            if entrance in done:
+                continue
+            while entrance not in done:
+                pick_idx = rnd.randrange(len(unmappedEntrances))
+                pick = unmappedEntrances[pick_idx]
+                if pick == entrance:
+                    if len(unmappedEntrances) < 2:
+                        raise Error("Cannot map entrance to itself")
+                    continue
+                if self.inside_to_outside and entrance.endswith(":inside") == pick.endswith(":inside"):
+                    continue
+                if self.one_on_one:
+                    unmappedEntrances.pop(pick_idx)
+                self.entrance_mapping[entrance] = pick
+                done.add(entrance)
+                if self.keep_two_way:
+                    unmappedEntrances.remove(entrance)
+                    self.entrance_mapping[pick] = entrance
+                    done.add(pick)
 
     def pickEntrances(self, settings, rnd):
-        if settings.entranceshuffle == "none":
-            if settings.randomstartlocation:
-                start_location = start_locations[rnd.randrange(len(start_locations))]
-                if start_location != "start_house":
-                    # simple swap for starting house
-                    self.entrance_mapping = dict(self.entrance_mapping)  # make mutable copy
-                    self.entrance_mapping[start_location] = "start_house:inside"
-                    self.entrance_mapping["start_house:inside"] = start_location
-                    self.entrance_mapping["start_house"] = f"{start_location}:inside"
-                    self.entrance_mapping[f"{start_location}:inside"] = "start_house"
+        if settings.overworld in {"random", "dungeonchain", "alttp"}:
             return
+        if settings.overworld == "dungeondive":
+            self.entrance_mapping = {"d%d" % (n): "d%d:inside" % (n) for n in range(9)}
+            self.entrance_mapping.update({"d%d:inside" % (n): "d%d" % (n) for n in range(9)})
+        if settings.randomstartlocation and settings.entranceshuffle == "none":
+            start_location = start_locations[rnd.randrange(len(start_locations))]
+            if start_location != "start_house":
+                self.entrance_mapping[start_location] = "start_house:inside"
+                self.entrance_mapping["start_house:inside"] = start_location
+                self.entrance_mapping["start_house"] = f"{start_location}:inside"
+                self.entrance_mapping[f"{start_location}:inside"] = "start_house"
 
         entrancePool = self.getEntrancePool(settings)
-        self._randomizeEntrances(rnd, settings, entrancePool)
+        self._randomizeEntrances(rnd, entrancePool)
 
+        if settings.entranceshuffle == 'split':
+            # Shuffle connectors among themselves
+            # entrancePool is intentionally overwritten so we're only swapping connectors
+            entrancePool = self.getEntrancePool(settings, connectorsOnly=True)
+            self._randomizeEntrances(rnd, entrancePool)
+
+        # Make sure all entrances in the pool are accessible
+        for _ in range(1000):
+            islands = self.inaccessibleEntrances(settings, entrancePool)
+
+            if not islands:
+                break
+
+            island = rnd.choice(islands)
+            mains = [x for x in entrancePool if x not in islands]
+            main = rnd.choice(mains)
+
+            if self.inside_to_outside:
+                if island.endswith(":inside") != main.endswith(":inside"):
+                    continue
+
+            if not self.one_on_one:
+                self._addConnectionTowards(mains, rnd, island)
+            elif self.keep_two_way:
+                self._swapEntrances(island, main)
+            else:
+                self._injectEntrance(island, main)
+
+        if self.inaccessibleEntrances(settings, entrancePool):
+            raise Error("Failed to make all entrances accessible after a bunch of retries")
+        self._checkEntranceRules()
 
     def _checkEntranceRules(self):
-        mapping = self.entrance_mapping
-        keys = list(mapping.keys())
-        values = list(mapping.values())
-
-        # inside-to-outside
         if self.inside_to_outside:
-            for k, v in zip(keys, values):
+            for k, v in self.entrance_mapping.items():
                 if k.endswith(":inside"):
                     assert not v.endswith(":inside"), f"inside-to-outside rule violated: {k}->{v}"
                 else:
                     assert v.endswith(":inside"), f"inside-to-outside rule violated: {k}->{v}"
-
-        # two-way check (bidirectional) without following cycles
         if self.keep_two_way:
-            for k in keys:
-                v = mapping[k]
-                if v in mapping:
-                    # only check if v is a key, don't touch mapping[v] if not
-                    assert mapping.get(v) == k, f"keep-two-way rule violated: {k}->{v}"
-
-        # one-to-one
-        if self.one_to_one:
+            for k, v in self.entrance_mapping.items():
+                assert self.entrance_mapping[v] == k, f"keep-two-way rule violated: {k}->{v}"
+        if self.one_on_one:
             found = set()
-            for v in values:
-                assert v not in found, f"one-on-one rule violated: {v}"
+            for k, v in self.entrance_mapping.items():
+                assert v not in found, f"one-on-one rule violated: {k}->{v}"
                 found.add(v)
-
 
     def randomize(self, settings, rnd):
         if settings.boss != "default":
@@ -220,30 +230,37 @@ class WorldSetup:
                 if settings.miniboss == 'shuffle':
                     values.remove(self.miniboss_mapping[key])
 
-        if settings.goal == 'random':
-            self.goal = rnd.randint(-1, 8)
-        elif settings.goal == 'open':
-            self.goal = -1
-        elif settings.goal in {"seashells", "bingo", "bingo-full"}:
-            self.goal = settings.goal
-        elif "-" in settings.goal:
+        self.goal = settings.goal
+        if settings.goal == "specific":
+            if settings.goalcount == 'random':
+                self.goal_count = rnd.randint(1, 8)
+            else:
+                self.goal_count = max(1, int(settings.goalcount))
+            instruments = [c for c in "12345678"]
+            rnd.shuffle(instruments)
+            self.goal = "=" + "".join(instruments[:self.goal_count])
+        elif "-" in settings.goal and not settings.goal.startswith("bingo"):
             a, b = settings.goal.split("-")
             if a == "open":
                 a = -1
-            self.goal = rnd.randint(int(a), int(b))
-        else:
-            self.goal = int(settings.goal)
-        if self.goal in {"bingo", "bingo-full"}:
+            self.goal = 'instruments'
+            self.goal_count = rnd.randint(int(a), int(b))
+        elif settings.goal == 'instruments':
+            if settings.goalcount == 'random':
+                self.goal_count = rnd.randint(-1, 8)
+                if self.goal_count < 0:
+                    self.goal = 'open'
+            else:
+                self.goal_count = int(settings.goalcount)
+        if self.goal in {"bingo", "bingo-double", "bingo-triple", "bingo-full"}:
             self.bingo_goals = bingo.randomizeGoals(rnd, settings)
 
         self.multichest = rnd.choices(MULTI_CHEST_OPTIONS, MULTI_CHEST_WEIGHTS)[0]
 
         self.inside_to_outside = settings.entranceshuffle not in {"wild", "insane", "madness"}
         self.keep_two_way = settings.entranceshuffle not in {"chaos", "insane", "madness"}
-        self.one_to_one = settings.entranceshuffle not in {"madness"}
-        self.base_logic = logic.Logic(settings, world_setup=self)
+        self.one_on_one = settings.entranceshuffle not in {"madness"}
         self.pickEntrances(settings, rnd)
-
 
     def loadFromRom(self, rom):
         import patches.overworld
@@ -251,7 +268,8 @@ class WorldSetup:
             import patches.entrances
             self.entrance_mapping = patches.entrances.readEntrances(rom)
         else:
-            self.entrance_mapping = {"d%d" % (n): "d%d" % (n) for n in range(9)}
+            self.entrance_mapping = {"d%d" % (n): "d%d:inside" % (n) for n in range(9)}
+            self.entrance_mapping.update({"d%d:inside" % (n): "d%d" % (n) for n in range(9)})
         self.boss_mapping = patches.enemies.readBossMapping(rom)
         self.miniboss_mapping = patches.enemies.readMiniBossMapping(rom)
         self.goal = 8 # Better then nothing
