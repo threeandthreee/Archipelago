@@ -96,6 +96,8 @@ class WorldSetup:
                 break
         assert to_source is not None
         temp = self.entrance_mapping[target]
+        if target == source or to_source == temp:
+            return
         self.entrance_mapping[target] = source
         self.entrance_mapping[to_source] = temp
 
