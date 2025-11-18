@@ -54,7 +54,8 @@ class VersionError(Exception):
     pass
 
 
-def clamp(minimum, number, maximum):    return max(minimum, min(maximum, number))
+def clamp(minimum, number, maximum):
+    return max(minimum, min(maximum, number))
 
 
 class LAClientConstants:
@@ -637,7 +638,8 @@ class LinksAwakeningContext(CommonContext):
                 ("Client", "Archipelago"),
                 ("Tracker", "Tracker"),
             ]
-            base_title = f"Links Awakening DX Beta Client {LinksAwakeningWorld.world_version.as_simple_string()} | Archipelago"
+            base_title = f"Links Awakening DX Beta Client {LinksAwakeningWorld.world_version.as_simple_string()} | Archipelago"
+
             def build(self):
                 b = super().build()
 
@@ -735,7 +737,7 @@ class LinksAwakeningContext(CommonContext):
         if cmd == "Connected":
             self.game = self.slot_info[self.slot].game
             self.slot_data = args.get("slot_data", {})
-            generated_version = Utils.tuplize_version(self.slot_data.get("world_version", "2.0.0"))
+            generated_version = Utils.tuplize_version(self.slot_data.get("world_version", "13.1.0"))
             client_version = LinksAwakeningWorld.world_version
             if generated_version.major != client_version.major:
                 self.disconnected_intentionally = True

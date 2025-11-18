@@ -75,7 +75,7 @@ class VersionError(Exception):
 def generateRom(base_rom: bytes, args, patch_data: Dict):
     apworld_manifest = orjson.loads(pkgutil.get_data(__name__, "../archipelago.json").decode("utf-8"))
     patcher_version = Utils.tuplize_version(apworld_manifest["world_version"])
-    generated_version = Utils.tuplize_version(patch_data.get("generated_world_version", "2.0.0"))
+    generated_version = Utils.tuplize_version(patch_data.get("generated_world_version", "13.1.0"))
     if generated_version.major != patcher_version.major or generated_version.minor != patcher_version.minor:
         Utils.messagebox(
             "Error",
