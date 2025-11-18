@@ -21,6 +21,7 @@ from .LADXR.locations.instrument import Instrument
 from .LADXR.logic import Logic as LADXRLogic
 from .LADXR.settings import Settings as LADXRSettings
 from .LADXR.worldSetup import WorldSetup as LADXRWorldSetup
+from .LADXR.hints import generate_hint_texts
 from .Locations import (LinksAwakeningLocation,
                         LinksAwakeningRegion,
                         create_regions_from_ladxr,
@@ -473,6 +474,9 @@ class LinksAwakeningWorld(World):
         
         return "TRADING_ITEM_LETTER"
 
+    def post_fill(self) -> None:
+        self.ladx_in_game_hints = generate_hint_texts(self)
+
     def generate_output(self, output_directory: str):
         # copy items back to locations
         for r in self.multiworld.get_regions(self.player):
@@ -541,9 +545,26 @@ class LinksAwakeningWorld(World):
         return self.random.choices(self.filler_choices, self.filler_weights)[0]
 
     def fill_slot_data(self):
+        hint_data = {
+            k: {"location": v["location"], "player": v["player"]}
+            for k, v in self.ladx_in_game_hints.items()
+            if v is not None
+        }
+        hint_data.update({
+            0x030: {
+                "location": self.location_name_to_id["Shop 200 Item (Mabe Village)"],
+                "player": self.player,
+            },
+            0x02C: {
+                "location": self.location_name_to_id["Shop 980 Item (Mabe Village)"],
+                "player": self.player,
+            }
+        })
         slot_data = {
             "world_version": self.world_version.as_simple_string(),
-			"death_link": self.options.death_link.value,        }
+			"death_link": self.options.death_link.value,
+            "hint_data": hint_data,
+        }
 
         if not self.multiworld.is_race:
             # all of these option are NOT used by the LADX- or Text-Client.

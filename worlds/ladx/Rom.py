@@ -12,7 +12,6 @@ from typing import TYPE_CHECKING
 from .Common import *
 from .LADXR import generator
 from .LADXR.main import get_parser
-from .LADXR.hints import generate_hint_texts
 from .LADXR.locations.keyLocation import KeyLocation
 LADX_HASH = "07c211479386825042efb4ad31bb525f"
 
@@ -68,7 +67,10 @@ def write_patch_data(world: "LinksAwakeningWorld", patch: LADXProcedurePatch):
         "player_name": patch.player_name,
         "other_player_names": list(world.multiworld.player_name.values()),
         "item_list": binascii.hexlify(item_list).decode(),
-        "hint_texts": generate_hint_texts(world),
+        "hint_texts": {
+            k: (v["text"] if v is not None else None)
+            for k, v in world.ladx_in_game_hints.items()
+        },
         "world_setup": {
             "goal": world.ladxr_logic.world_setup.goal,
             "bingo_goals": world.ladxr_logic.world_setup.bingo_goals,
