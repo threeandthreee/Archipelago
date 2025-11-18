@@ -22,6 +22,7 @@ from .LADXR.logic import Logic as LADXRLogic
 from .LADXR.settings import Settings as LADXRSettings
 from .LADXR.worldSetup import WorldSetup as LADXRWorldSetup
 from .LADXR.explorer import Explorer as LADXRExplorer
+from .LADXR.hints import generate_hint_texts
 from .Locations import (LinksAwakeningLocation,
                         LinksAwakeningRegion,
                         create_regions_from_ladxr,
@@ -479,6 +480,9 @@ class LinksAwakeningWorld(World):
         fill_restrictive(self.multiworld, partial_all_state, all_dungeon_locs_to_fill, all_dungeon_items_to_fill, lock=True, single_player_placement=True, allow_partial=False)
 
 
+    def post_fill(self) -> None:
+        self.ladx_in_game_hints = generate_hint_texts(self)
+
     def generate_output(self, output_directory: str):
         matcher = ForeignItemIconMatcher()
         # copy items back to locations
@@ -549,9 +553,25 @@ class LinksAwakeningWorld(World):
         return self.random.choices(self.filler_choices, self.filler_weights)[0]
 
     def fill_slot_data(self):
+        hint_data = {
+            k: {"location": v["location"], "player": v["player"]}
+            for k, v in self.ladx_in_game_hints.items()
+            if v is not None
+        }
+        hint_data.update({
+            0x030: {
+                "location": self.location_name_to_id["Shop 200 Item (Mabe Village)"],
+                "player": self.player,
+            },
+            0x02C: {
+                "location": self.location_name_to_id["Shop 980 Item (Mabe Village)"],
+                "player": self.player,
+            }
+        })
         slot_data = {
             "world_version": self.world_version.as_simple_string(),
 			"death_link": self.options.death_link.value,
+            "hint_data": hint_data,
         }
 
         if not self.multiworld.is_race:
