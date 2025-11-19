@@ -65,18 +65,19 @@ def addHints(rom, rnd, hint_texts):
 
 
 def generate_hint_texts(world):
-    JUNK_HINT = 0.33
     our_items = [
-        item for item in world.multiworld.get_items()
-        if item.player == world.player
-        and not item.is_event
-        and not item.location.locked
+        location.item for location in world.multiworld.get_filled_locations()
+        if location.item.player == world.player
+        and not location.is_event
+        and not location.locked
+        and not location.item.name in world.options.in_game_hint_excluded_items
     ]
     world.random.shuffle(our_items)
+    our_items.sort(key=lambda item: item.name in world.options.in_game_hint_priority_items)
+
     hint_data = {}
-    def gen_hint():
-        chance = world.random.uniform(0, 1)
-        if chance < JUNK_HINT or not our_items:
+    def gen_hint(i):
+        if i >= world.options.in_game_hint_count or not our_items:
             return None
         else:
             item = our_items.pop()
@@ -101,6 +102,6 @@ def generate_hint_texts(world):
         }
     text_ids = hint_text_ids.copy()
     world.random.shuffle(text_ids)
-    for text_id in text_ids:
-        hint_data[text_id] = gen_hint()
+    for i, text_id in enumerate(text_ids):
+        hint_data[text_id] = gen_hint(i)
     return hint_data
