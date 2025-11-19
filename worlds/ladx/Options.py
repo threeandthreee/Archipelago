@@ -1,11 +1,8 @@
 from dataclasses import dataclass
 
-import os.path
-import typing
 import logging
-from Options import (Choice, Toggle, DefaultOnToggle, Range, FreeText, PerGameCommonOptions, OptionGroup, Removed,
-                     DeathLink, StartInventoryPool)from collections import defaultdict
-import Utils
+from Options import (Choice, Toggle, DefaultOnToggle, Range, PerGameCommonOptions, OptionGroup, Removed,
+                     DeathLink, StartInventoryPool, ItemSet)
 
 DefaultOffToggle = Toggle
 
@@ -546,12 +543,38 @@ class Warps(Choice):
     default = option_vanilla
 
 
-class InGameHints(DefaultOnToggle):
+class InGameHintCount(Range):
     """
-    When enabled, owl statues and library books may indicate the location of
-    your items in the multiworld.
+    Determines how many owl statues and library books will indicate the location
+    of your items in the multiworld. All others will give junk hints that reveal
+    nothing.
+
+    There are:
+    - 10 overworld owl statues
+    - 21 dungeon owl statues
+    - 7 hint books in the library
     """
-    display_name = "In-game Hints"
+    display_name = "In-Game Hint Count"
+    rich_text_doc = True
+    range_start = 0
+    range_end = 38
+    default = 26
+
+
+class InGameHintExcludedItems(ItemSet):
+    """
+    Indicated items will not be used for in-game hints.
+    """
+    display_name = "In-Game Hint Excluded Items"
+    rich_text_doc = True
+
+
+class InGameHintPriorityItems(ItemSet):
+    """
+    Indicated items will be prioritized for in-game hints.
+    """
+    display_name = "In-Game Hint Priority Items"
+    rich_text_doc = True
 
 
 class TarinsGift(Choice):
@@ -601,7 +624,6 @@ class ForeignItemIcons(Choice):
 
 ladx_option_groups = [
     OptionGroup("Gameplay Adjustments", [
-        InGameHints,
         TarinsGift,
         HardMode,
         TrendyGame,
@@ -638,7 +660,12 @@ ladx_option_groups = [
         MusicChangeCondition,
         LowHpBeep,
         NoFlash,
-    ])
+    ]),
+    OptionGroup("In-Game Hints", [
+        InGameHintCount,
+        InGameHintExcludedItems,
+        InGameHintPriorityItems,
+    ]),
 ]
 
 @dataclass
@@ -674,7 +701,9 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     low_hp_beep: LowHpBeep
     text_mode: TextMode
     no_flash: NoFlash
-    in_game_hints: InGameHints
+    in_game_hint_count: InGameHintCount
+    in_game_hint_excluded_items: InGameHintExcludedItems
+    in_game_hint_priority_items: InGameHintPriorityItems
     tarins_gift: TarinsGift
     overworld: Overworld
     stabilize_item_pool: StabilizeItemPool
@@ -683,3 +712,4 @@ class LinksAwakeningOptions(PerGameCommonOptions):
 
     warp_improvements: Removed
     additional_warp_points: Removed
+    in_game_hints: Removed
