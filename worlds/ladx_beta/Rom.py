@@ -138,8 +138,8 @@ def get_base_rom_path(file_name: str = "") -> str:
 
 
 def apply_overrides(patch_data: dict) -> None:
-    host_settings = settings.get_settings()
-    option_overrides = host_settings["ladx_beta_options"].get("option_overrides")
+    from . import LinksAwakeningWorld
+    option_overrides = getattr(LinksAwakeningWorld.settings, "option_overrides", None)
     if not option_overrides:
         return
     wrapped_overrides = {
