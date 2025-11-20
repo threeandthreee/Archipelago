@@ -1,13 +1,9 @@
 import binascii
 import importlib.util
 import importlib.machinery
-import os
 import random
 import pickle
 import Utils
-import settings
-import orjson
-import pkgutil
 from collections import defaultdict
 from typing import Dict
 
@@ -73,8 +69,8 @@ class VersionError(Exception):
 
 # Function to generate a final rom, this patches the rom with all required patches
 def generateRom(base_rom: bytes, args, patch_data: Dict):
-    apworld_manifest = orjson.loads(pkgutil.get_data(__name__, "../archipelago.json").decode("utf-8"))
-    patcher_version = Utils.tuplize_version(apworld_manifest["world_version"])
+    from .. import LinksAwakeningWorld
+    patcher_version = LinksAwakeningWorld.world_version
     generated_version = Utils.tuplize_version(patch_data.get("generated_world_version", "13.1.0"))
     if generated_version.major != patcher_version.major or generated_version.minor != patcher_version.minor:
         Utils.messagebox(
@@ -107,9 +103,8 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
         pymod.prePatch(rom)
 
     if options["gfxmod"]:
-        user_settings = settings.get_settings()
         try:
-            gfx_mod_file = user_settings["ladx_beta_options"]["gfx_mod_file"]
+            gfx_mod_file = LinksAwakeningWorld.settings.gfx_mod_file
             patches.aesthetics.gfxMod(rom, gfx_mod_file)
         except FileNotFoundError:
             pass # if user just doesnt provide gfxmod file, let patching continue
