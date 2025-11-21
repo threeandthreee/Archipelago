@@ -2,7 +2,7 @@ import binascii
 import dataclasses
 import os
 import typing
-import logging
+import struct
 
 import settings
 import Utils
