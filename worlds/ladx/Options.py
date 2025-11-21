@@ -572,15 +572,24 @@ class TarinsGift(Choice):
     default = option_local_progression
 
 
-class StabilizeItemPool(DefaultOffToggle):
+class MoreFiller(DefaultOnToggle):
     """
-    By default, some rupees in the item pool are randomly swapped with bombs,
-    arrows, powders, or capacity upgrades. This set of items is also used as
-    filler. This option disables that swapping and makes *Nothing* the filler
-    item.
+    Removes some rupees from the vanilla item pool to make more room for filler.
     """
-    display_name = "Stabilize Item Pool"
-    rich_text_doc = True
+    display_name = "More Filler"
+
+
+class FillerPool(Choice):
+    """
+    Sets which items can be added to the item pool to replace removed items.
+    """
+    display_name = "Filler Pool"
+    option_ammo = 0
+    option_rupees = 1
+    option_seashells = 2
+    # option_powerups = 3
+    option_traps = 4
+    option_nothing = 5
 
 
 class ForeignItemIcons(Choice):
@@ -621,7 +630,8 @@ ladx_option_groups = [
         ShuffleStoneBeaks,
         TradeQuest,
         Rooster,
-        StabilizeItemPool,
+        MoreFiller,
+        FillerPool,
     ]),
     OptionGroup("Quality of Life & Aesthetic", [
         NagMessages,
@@ -677,8 +687,10 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     in_game_hints: InGameHints
     tarins_gift: TarinsGift
     overworld: Overworld
-    stabilize_item_pool: StabilizeItemPool
+    more_filler: MoreFiller
+    filler_pool: FillerPool
     start_inventory_from_pool: StartInventoryPool
 
     warp_improvements: Removed
     additional_warp_points: Removed
+    stabilize_item_pool: Removed
