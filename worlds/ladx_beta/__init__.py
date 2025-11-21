@@ -198,12 +198,11 @@ class LinksAwakeningWorld(World):
         world_setup = LADXRWorldSetup()
         world_setup.randomize(self.ladxr_settings, self.random, self.options)
         self.ladxr_logic = LADXRLogic(configuration_options=self.ladxr_settings, world_setup=world_setup)
-        self.ladxr_itempool = LADXRItemPool(self.ladxr_logic, self.ladxr_settings, self.random, bool(self.options.stabilize_item_pool)).toDict()
+        self.ladxr_itempool = LADXRItemPool(self.ladxr_logic, self.ladxr_settings, self.random, bool(self.options.more_filler)).toDict()
 
 
     def generate_early(self) -> None:
-        self.dungeon_item_types = {
-        }
+        self.dungeon_item_types = {}
         for dungeon_item_type in ["maps", "compasses", "small_keys", "nightmare_keys", "stone_beaks", "instruments"]:
             option_name = "shuffle_" + dungeon_item_type
             option: DungeonItemShuffle = getattr(self.options, option_name)
@@ -222,6 +221,22 @@ class LinksAwakeningWorld(World):
                 self.options.non_local_items.value |= {
                     ladxr_item_to_la_item_name[f"{option.ladxr_item}{i}"] for i in range(1, num_items + 1)
                 }
+
+        if self.options.filler_pool == 'ammo':
+            self.filler_choices = ("Bomb", "Single Arrow", "10 Arrows", "Magic Powder", "Medicine")
+            self.filler_weights = ( 10,     5,              10,          10,             1)
+        elif self.options.filler_pool == 'rupees':
+            self.filler_choices = ("20 Rupees", "50 Rupees")
+            self.filler_weights = ( 3,           1)
+        elif self.options.filler_pool == 'seashells':
+            self.filler_choices = ("Seashell",)
+            self.filler_weights = (1,)
+        elif self.options.filler_pool == 'traps':
+            self.filler_choices = ("Zol Attack",)
+            self.filler_weights = (1,)
+        else:
+            self.filler_choices = ("Nothing",)
+            self.filler_weights = (1,)
 
     def create_regions(self) -> None:
         # Initialize
@@ -279,6 +294,9 @@ class LinksAwakeningWorld(World):
         # option_delete = 5
 
         for ladx_item_name, count in self.ladxr_itempool.items():
+            if ladx_item_name == 'FILLER':
+                for _ in range(count):
+                    itempool.append(self.create_item(self.get_filler_item_name()))
             # event
             if ladx_item_name not in ladxr_item_to_la_item_name:
                 continue
@@ -541,15 +559,9 @@ class LinksAwakeningWorld(World):
         change = super().remove(state, item)
         if change and item.name in self.rupees:
             state.prog_items[self.player]["RUPEES"] -= self.rupees[item.name]
-        return change
-
-    # Same fill choices and weights used in LADXR.itempool.__randomizeRupees
-    filler_choices = ("Bomb", "Single Arrow", "10 Arrows", "Magic Powder", "Medicine")
-    filler_weights = ( 10,     5,              10,          10,             1)
+        return change    
 
     def get_filler_item_name(self) -> str:
-        if self.options.stabilize_item_pool:
-            return "Nothing"
         return self.random.choices(self.filler_choices, self.filler_weights)[0]
 
     def fill_slot_data(self):
