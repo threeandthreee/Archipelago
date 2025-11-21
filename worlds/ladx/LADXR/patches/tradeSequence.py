@@ -87,14 +87,14 @@ def patchBananasSchule(rom):
         jr   z, $08
     """), fill_nop=True)
     rom.patch(0x19, 0x2DF0, 0x2DF9, ASM("ld hl, wTradeSequenceItem\nres 2, [hl]"), fill_nop=True)  # Take the trade item
-    # Change how the decision is made to render less bananas
-    rom.patch(0x19, 0x2EF1, 0x2EFA, ASM("""
+    # Don't render bananas, render whatever item we give
+    rom.patch(0x19, 0x2EF1, 0x2EFD, ASM("""
         ldh  a, [$F8]
         and  $20
-        jr   z, skip
-        dec  c
-        dec  c
-skip:   """), fill_nop=True)
+        jr   nz, skip
+        ld   a, $0F
+        rst  8
+skip:   ld   c, $00 ; we need this as the code is bugged and does not properly preserve c"""), fill_nop=True)
 
     # Part of the same entity code, but this is the painter, which changes the dialog depending on mermaid scale or magnifier
     rom.patch(0x19, 0x2F95, 0x2F9C, ASM("""
@@ -106,7 +106,7 @@ skip:   """), fill_nop=True)
         and  $20 ; Check for magnifier
         jr   z, $07
     """))
-    rom.patch(0x19, 0x2CE3, "9A159C15", "B41DB61D")  # Properly draw the dog food
+    rom.patch(0x19, 0x2CE3, "9A159C15", "A81DAA1D")  # Properly draw the dog food
 
 
 def patchKiki(rom):
@@ -117,7 +117,7 @@ def patchKiki(rom):
     """))
     rom.patch(0x07, 0x19AF, 0x19B4, "", fill_nop=True)  # Do not change trading item memory
     rom.patch(0x07, 0x19CC, 0x19D5, ASM("ld hl, wTradeSequenceItem\nres 3, [hl]"), fill_nop=True)  # Take the trade item
-    rom.patch(0x07, 0x194D, "9A179C17", "B81FBA1F")  # Properly draw the banana above kiki
+    rom.patch(0x07, 0x194D, "9A179C17", "AC1FAE1F")  # Properly draw the banana above kiki
 
 
 def patchTarin(rom):
@@ -132,6 +132,9 @@ def patchTarin(rom):
         and $40
         jr  z, $14 
     """))
+    # Honeycomb, change rendering
+    rom.patch(0x07, 0x0CB6, ASM("ld de, $4C93\ncall $3BC0"), ASM("ld a, $0F\nrst 8"), fill_nop=True)
+
     # Something about tarin changing messages or not showing up depending on the trade sequence
     rom.patch(0x05, 0x0BFF, 0x0C07, "", fill_nop=True)  # Just ignore the trade sequence
     rom.patch(0x05, 0x0D20, 0x0D27, "", fill_nop=True)  # Just ignore the trade sequence
@@ -153,6 +156,7 @@ def patchBear(rom):
         and  $20 ; check for honeycomb
         jr   z, $08
     """))
+    rom.patch(0x07, 0x0BDB, 0x0BE1, ASM("ld a, $0F\nrst 8"), fill_nop=True)
 
     rom.patch(0x07, 0x0C3C, 0x0C43, ASM("""
         nop
@@ -230,7 +234,7 @@ def patchGrandmaUlrira(rom):
     rom.patch(0x18, 0x0DC4, 0x0DC7, "", fill_nop=True)
     rom.patch(0x18, 0x0DE2, 0x0DEB, ASM("ld hl, wTradeSequenceItem2\nres 1, [hl]"), fill_nop=True)  # Take the trade item
     rom.patch(0x18, 0x0E1D, 0x0E20, "", fill_nop=True)
-    rom.patch(0x18, 0x0D13, "9A149C14", "D01CD21C")
+    rom.patch(0x18, 0x0D13, "9A149C14", "C41CC61C")
 
 
 def patchFisherman(rom):
@@ -246,6 +250,8 @@ def patchFisherman(rom):
     rom.patch(0x07, 0x04F3, 0x04F6, "", fill_nop=True)
     rom.patch(0x07, 0x057D, 0x0586, ASM("ld hl, wTradeSequenceItem2\nres 2, [hl]"), fill_nop=True)  # Take the trade item
     rom.patch(0x04, 0x1F88, 0x1F8B, "", fill_nop=True)
+    # Fix the sprite that is rendered (somehow this is the fishing minigame code)
+    rom.patch(0x04, 0x1F6A, 0x1F70, ASM("ld a, $0F\nrst 8"), fill_nop=True)
 
 
 def patchMermaid(rom):
