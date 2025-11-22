@@ -449,7 +449,7 @@ def ph_can_cut_small_trees(state: CollectionState, player: int):
 
 def ph_has_rupees(state: CollectionState, player: int, cost: int):
     # If has a farmable minigame and the means to sell, expensive things are in logic.
-    if ph_can_farm_rupees(state, player):
+    if ph_can_farm_rupees(state, player) or ph_UT_glitched_logic(state, player):
         return True
 
     # Count up regular rupee items
@@ -570,7 +570,7 @@ def ph_can_get_beedle_bronze(state, player):
     return any([ph_has_rupees(state, player, 80), ph_has_beedle_points(state, player, 1)])
 
 def ph_can_buy_gem(state: CollectionState, player: int):
-    return all([ph_has_bow(state, player), ph_island_shop(state, player, 500)])
+    return all([ph_island_shop(state, player, 500)])
 
 
 def ph_can_buy_quiver(state: CollectionState, player: int):
@@ -755,10 +755,7 @@ def ph_option_goal_midway(state: CollectionState, player: int):
     return state.multiworld.worlds[player].options.goal_requirements == "triforce_door"
 
 def ph_option_island_shuffle(state, player):
-    try:
-        return state.multiworld.worlds[player].options.shuffle_island_entrances
-    except AttributeError:
-        return False
+    return state.multiworld.worlds[player].options.shuffle_ports
 
 def ph_can_pass_sea_monsters(state, player):
     return any([
@@ -835,7 +832,7 @@ def ph_UT_glitched_logic(state, player):
 # ============== ER Options =============
 
 def ph_option_vanilla_caves(state, player):
-    return not state.multiworld.worlds[player].options.shuffle_caves
+    return state.multiworld.worlds[player].options.shuffle_caves in ["no_shuffle"]
 
 # ============= Key logic ==============
 
@@ -1038,19 +1035,18 @@ def ph_boat_access(state, player):
         ph_option_island_shuffle(state, player)
     ])
 
-def ph_can_enter_mp(state, player):
-    return any([
-        ph_can_cut_small_trees(state, player),
-        ph_has_small_keys(state, player, "Mountain Passage", 3),
-        ph_option_glitched_logic(state, player)  # Savewarp in back entrance / reverse cuccoo jump
-         ])
-
 # Handles keylocking due to lack of locations
 def ph_can_reach_mp2(state: CollectionState, player: int):
     return any([
         ph_has_small_keys(state, player, "Mountain Passage", 2),
-        ph_option_keys_in_own_dungeon(state, player),  # Guaranteed key in mp1 (if not keylocked or ER...)
-        ph_option_keys_vanilla(state, player),
+        all([
+            ph_option_keys_in_own_dungeon(state, player),  # Guaranteed key in mp1 (if not keylocked or ER...)
+            any([
+                ph_has_small_keys(state, player, "Mountain Passage", 1),
+                not ph_is_ut(state, player),
+                ph_UT_glitched_logic(state, player),
+            ])
+        ]),
         all([
             ph_UT_glitched_logic(state, player),
             ph_has_small_keys(state, player, "Mountain Passage", 1)
@@ -1060,6 +1056,7 @@ def ph_can_reach_mp2(state: CollectionState, player: int):
 def ph_can_reach_mp2_top(state, player):
     return any([
         ph_has_small_keys(state, player, "Mountain Passage", 2),
+        state.has("_mp1", player),
         all([
             ph_UT_glitched_logic(state, player),
             ph_has_small_keys(state, player, "Mountain Passage", 1)
@@ -1080,14 +1077,22 @@ def ph_mp2_bypass_fore(state, player):
         ph_mp2_bypass(state, player),
         all([
             ph_option_vanilla_caves(state, player),
-            ph_has_small_keys(state, player, "Mountain Passage", 2)
+            any([
+                ph_has_small_keys(state, player, "Mountain Passage", 2),
+                ph_UT_glitched_logic(state, player),
+                not ph_is_ut(state, player)
+            ])
         ])
     ])
 
 def ph_mp3(state, player):
     return any([
         ph_has_small_keys(state, player, "Mountain Passage", 3),
-
+        all([
+            state.has("_mp3", player),
+            ph_option_keys_in_own_dungeon(state, player),
+            ph_has_small_keys(state, player, "Mountain Passage", 1),
+            ]),
         all([
             ph_UT_glitched_logic(state, player),
             ph_has_small_keys(state, player, "Mountain Passage", 1)
@@ -1096,7 +1101,7 @@ def ph_mp3(state, player):
 
 def ph_mp3_back(state, player):
     return any([
-        ph_mp3(state, player),
+        ph_has_small_keys(state, player, "Mountain Passage", 3),
         all([
             ph_option_vanilla_caves(state, player),
             ph_has_small_keys(state, player, "Mountain Passage", 2),
@@ -1106,7 +1111,10 @@ def ph_mp3_back(state, player):
 def ph_mercay_passage_rat(state, player):
     return any([
         ph_can_kill_bat(state, player),
-        ph_clever_pots(state, player)  # only if not ER
+        all([
+            ph_clever_pots(state, player),  # only if not ER
+            ph_option_vanilla_caves(state, player)
+        ]),
     ])
 
 def ph_nyave_fight(state, player):
@@ -1359,8 +1367,21 @@ def ph_toc_key_door_3(state, player):
     return any([
         ph_has_small_keys(state, player, "Temple of Courage", 3),
         # UT
-        ph_toc_all_checks_door_3(state, player)
-    ]),
+        all([
+            ph_is_ut(state, player),
+            ph_toc_all_checks_door_3(state, player),
+        ]),
+        all([
+            ph_UT_glitched_logic(state, player),
+            ph_has_small_keys(state, player, "Temple of Courage", 1),
+            ph_has_hammer(state, player)
+        ]),
+        all([
+            ph_UT_glitched_logic(state, player),
+            ph_has_small_keys(state, player, "Temple of Courage", 2),
+            ph_has_grapple(state, player)
+        ])
+    ])
 
 def ph_toc_all_checks_door_3(state, player):
     return any([
@@ -1704,6 +1725,10 @@ def ph_mutoh_key_doors(state, player, glitched: int, not_glitched: int):
         all([
             ph_option_not_glitched_logic(state, player),
             ph_has_small_keys(state, player, "Mutoh's Temple", not_glitched)
+        ]),
+        all([
+            ph_UT_glitched_logic(state, player),
+            ph_has_small_keys(state, player, "Mutoh's Temple", 1)
         ])
     ])
 
@@ -2031,7 +2056,11 @@ def ph_totok_b2(state, player):
         ph_totok_has_floor_time(state, player, 2),
         any([
             ph_has_small_keys(state, player, "Temple of the Ocean King", 2),
-            ph_totok_b1_all_checks_ut(state, player)
+            ph_totok_b1_all_checks_ut(state, player),
+            all([
+                ph_has_small_keys(state, player, "Temple of the Ocean King", 1),
+                ph_UT_glitched_logic(state, player)
+            ])
         ])
     ])
 
@@ -2069,7 +2098,11 @@ def ph_totok_b3(state, player):
         ph_totok_has_floor_time(state, player, 3),  # Includes switch logic
         any([
             ph_has_small_keys(state, player, "Temple of the Ocean King", 3),
-            ph_totok_b2_all_checks_ut(state, player)
+            ph_totok_b2_all_checks_ut(state, player),
+            all([
+                ph_has_small_keys(state, player, "Temple of the Ocean King", 2),
+                ph_UT_glitched_logic(state, player)
+            ])
         ])
 
     ])
@@ -2183,20 +2216,35 @@ def ph_totok_b5(state, player):
         ph_totok_has_floor_time(state, player, 5),
         any([
             ph_totok_b4_all_checks_ut(state, player),
-            ph_has_small_keys(state, player, "Temple of the Ocean King", 5),
-            all([
-                ph_has_grapple(state, player),
-                ph_has_small_keys(state, player, "Temple of the Ocean King", 4)
-            ])
+            ph_totok_b5_key_count(state, player)
         ])
     ])
 
+def ph_totok_b5_key_count(state, player):
+    return any([
+            ph_has_small_keys(state, player, "Temple of the Ocean King", 5),
+            all([
+                any([
+                    ph_has_grapple(state, player),
+                    ph_UT_glitched_logic(state, player)
+                ]),
+                ph_has_small_keys(state, player, "Temple of the Ocean King", 4)
+            ]),
+            all([
+                ph_has_grapple(state, player),
+                ph_has_small_keys(state, player, "Temple of the Ocean King", 3),
+                ph_UT_glitched_logic(state, player)
+            ]),
+        ])
 
 def ph_totok_b5_alt(state, player):
     return all([
         ph_totok_has_floor_time(state, player, 5),
         ph_can_hit_bombchu_switches(state, player),
-        ph_has_small_keys(state, player, "Temple of the Ocean King", 5)
+        any([
+            ph_totok_b4_all_checks_ut(state, player),
+            ph_totok_b5_key_count(state, player)
+        ])
     ])
 
 
@@ -2446,7 +2494,15 @@ def ph_totok_b11(state, player):
             ph_has_small_keys(state, player, "Temple of the Ocean King", 6),
             all([
                 ph_has_small_keys(state, player, "Temple of the Ocean King", 5),
-                ph_has_grapple(state, player)
+                any([
+                    ph_has_grapple(state, player),
+                    ph_UT_glitched_logic(state, player)
+                ])
+            ]),
+            all([
+                ph_has_grapple(state, player),
+                ph_UT_glitched_logic(state, player),
+                ph_has_small_keys(state, player, "Temple of the Ocean King", 4),
             ])
         ])
     ])
@@ -2543,6 +2599,8 @@ def ph_get_switch_state(state: "CollectionState", player, entrance):
 def ph_switch_state_red(state, player, entrance):
     return ph_get_switch_state(state, player, entrance) & 0x1
 
+# This is pretty stupid, but is niceish when writing logic. Was originally intended for exporting logic to
+# poptracker but with the advancements in UT tracker that probably won't be necessary any more
 RULE_DICT = {
     "sword": ph_has_sword,
     "phantom_sword": ph_has_sword,
@@ -2717,7 +2775,6 @@ RULE_DICT = {
     # Specific Location
     # Overworld
     "boat_access": ph_boat_access,
-    "can_enter_mp": ph_can_enter_mp,
     "can_reach_mp2": ph_can_reach_mp2,
     "can_reach_mp2_top": ph_can_reach_mp2_top,
     "mp2_bypass": ph_mp2_bypass,

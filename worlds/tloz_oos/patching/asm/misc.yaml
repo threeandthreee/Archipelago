@@ -65,11 +65,14 @@
 # make all seeds grow in all seasons.
 0d/68b5/: cp a
 
-# allow harvesting seeds from trees with either slingshot or satchel.
+# allow harvesting seeds from trees with either slingshot or satchel or shooter.
 10//checkCanHarvestSeeds: |
     call checkTreasureObtained
     ret c
     ld a,TREASURE_SLINGSHOT
+    call checkTreasureObtained
+    ret c
+    ld a,TREASURE_SHOOTER
     jp checkTreasureObtained
 10/4b1a/: call checkCanHarvestSeeds
 
@@ -108,3 +111,10 @@
 # $14 $0e $0e $1e $20
 05/6988/: db $00,$00,$10,$20,$3e    # @rareItems
 05/6996/: db $00,$00,$04,$08,$0c    # @standardItems
+
+# Move the D5 dropping magnet ball up to not block the path when using the somaria block
+15/4f28/: db $28
+
+# Skip the screen to select link, secret or new game and skip to new game
+02/41cf/: db $02
+# 02/427d/ up to 02/42e3/ (included) => FREE SPACE

@@ -1,4 +1,4 @@
-02/4FA8/: |
+02/4fa8/: |
   ; This is where the game usually forbids opening a menu during intro, so we can use that space
   ld hl,wKeysPressed
   ldi a,(hl)
@@ -17,7 +17,7 @@
   and BTN_START
   jr z,@clear_keys
   ld a,(hl) ; wKeysJustPressed
-  ld hl,$cbd0 ; wInventorySubmenu0CursorPos
+  ld hl,wInventorySubmenu0CursorPos
   ld b,(hl)
   push bc
   push hl
@@ -25,7 +25,7 @@
   jr nz,@btn_a
   push hl
   push af
-  ld a,$80
+  ld a,<wInventoryB
   ld ($cbb6),a
   ld (hl),$00
   call $563d ; inventoryMenuState1@equipItem
@@ -34,7 +34,7 @@
   bit 1,a
   jr nz,@end
   @btn_a:
-  ld a,$81
+  ld a,<wInventoryA
   ld ($cbb6),a
   ld (hl),$01
   call $563d ; inventoryMenuState1@equipItem

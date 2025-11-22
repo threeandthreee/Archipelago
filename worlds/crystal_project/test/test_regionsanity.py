@@ -1,9 +1,13 @@
 from .bases import CrystalProjectTestBase
-from .. import PROGRESSIVE_MOUNT, GAEA_STONE, PYRAMID_KEY
+from ..options import *
+from ..constants.jobs import *
 from ..constants.region_passes import *
 from ..constants.ap_regions import *
 from ..constants.display_regions import *
-
+from ..constants.teleport_stones import *
+from ..constants.keys import *
+from ..constants.key_items import *
+from ..constants.mounts import *
 
 class TestRegionsanityOff(CrystalProjectTestBase):
     options = {
@@ -21,7 +25,8 @@ class TestRegionsanityOff(CrystalProjectTestBase):
 class TestRegionsanityOn(CrystalProjectTestBase):
     options = {
         "regionsanity": 1,
-        "start_inventory_from_pool": {SPAWNING_MEADOWS_PASS: 1}
+        "start_inventory_from_pool": {SPAWNING_MEADOWS_PASS: 1},
+        "kill_bosses_mode": KillBossesMode.option_true,
     }
 
     def test_region_accessibility(self):
@@ -85,3 +90,27 @@ class TestRegionsanityOn(CrystalProjectTestBase):
         self.collect_by_name(PYRAMID_KEY)
         self.assertTrue(self.can_reach_region(ANCIENT_RESERVOIR_AP_REGION))
         self.assert_locations(reachable_locations=[f"{ANCIENT_RESERVOIR_DISPLAY_NAME} Region Completion"])
+
+    def test_region_completion3(self):
+        # This test attempts to validate region completion logic for spawning meadows
+        self.assertFalse(self.can_reach_location(SPAWNING_MEADOWS_DISPLAY_NAME + " Region Completion"))
+        self.assertFalse(self.can_reach_location(SPAWNING_MEADOWS_DISPLAY_NAME + " Boss - Shaku Summon"))
+        self.assertFalse(self.can_reach_location(SPAWNING_MEADOWS_DISPLAY_NAME + " NPC - Butterfly Goo"))
+        self.collect_all_progressive_levels()
+        self.collect_by_name([SUMMONER_JOB])
+        self.assertFalse(self.can_reach_location(SPAWNING_MEADOWS_DISPLAY_NAME + " Region Completion"))
+        self.assertTrue(self.can_reach_location(SPAWNING_MEADOWS_DISPLAY_NAME + " Boss - Shaku Summon"))
+        self.assertFalse(self.can_reach_location(SPAWNING_MEADOWS_DISPLAY_NAME + " NPC - Butterfly Goo"))
+        self.collect(self.get_item_by_name(BLACK_SQUIRREL))
+        self.collect(self.get_item_by_name(BLACK_SQUIRREL))
+        self.assertFalse(self.can_reach_location(SPAWNING_MEADOWS_DISPLAY_NAME + " Region Completion"))
+        self.assertTrue(self.can_reach_location(SPAWNING_MEADOWS_DISPLAY_NAME + " Boss - Shaku Summon"))
+        self.assertFalse(self.can_reach_location(SPAWNING_MEADOWS_DISPLAY_NAME + " NPC - Butterfly Goo"))
+        self.collect(self.get_item_by_name(BLACK_SQUIRREL))
+        self.assertTrue(self.can_reach_location(SPAWNING_MEADOWS_DISPLAY_NAME + " Region Completion"))
+        self.assertTrue(self.can_reach_location(SPAWNING_MEADOWS_DISPLAY_NAME + " Boss - Shaku Summon"))
+        self.assertTrue(self.can_reach_location(SPAWNING_MEADOWS_DISPLAY_NAME + " NPC - Butterfly Goo"))
+
+    def world_setup(self, *args, **kwargs):
+        super().world_setup(seed=995067462)
+

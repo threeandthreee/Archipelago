@@ -1,3 +1,4 @@
+import logging
 from typing import Dict, Set, Tuple, NamedTuple, Optional, List, TYPE_CHECKING
 from BaseClasses import ItemClassification
 from .constants.item_groups import *
@@ -20,6 +21,11 @@ class ItemData(NamedTuple):
     category: str
     code: int
     classification: ItemClassification
+        #For maguffins, we use Progression + Deprioritize + SkipBalancing
+        #For progression items that you need a lot to unlock not much, and are therefore unsatisfying, we use Progression + Deprioritize
+        #For really neat progression items that are a BIG DEAL, we use Progression + Useful, just because that comes out a gold color instead of purple when colored text is used.
+        # deprioritize means it won't be picked for a priority location, because it would feel unsatisfying to get i.e. clam from a priority location
+        # skip balancing means that if you used progression balancing to try to force one player's items earlier than another, it will fill those with i.e. non-clams
     #Amount found in each region type; added together for each set you're including
     beginnerAmount: Optional[int] = 1
     advancedAmount: Optional[int] = 0
@@ -148,12 +154,12 @@ item_table: Dict[str, ItemData] = {
     CANOPY_KEY: ItemData(KEY, 116 + item_index_offset, ItemClassification.progression, 0, 0, 1), #Turn-in: Jidamba Tangle (unlocks Jidamba Eaclaneya), Expert Regions
     RAMPART_KEY: ItemData(KEY, 175 + item_index_offset, ItemClassification.progression, 0, 0, 1), #Turn-in: Castle Ramparts, Expert Regions
     FORGOTTEN_KEY: ItemData(KEY, 192 + item_index_offset, ItemClassification.progression, 0, 0, 1), #Turn-in: The Deep Sea, Expert Regions
-    SKELETON_KEY: ItemData(KEY, 147 + item_index_offset, ItemClassification.progression, 0, 1), #Everyone's best friend
-    PRISON_KEY_RING: ItemData(KEY, 501 + item_index_offset, ItemClassification.progression, 0, 1),
-    BEAURIOR_KEY_RING: ItemData(KEY, 502 + item_index_offset, ItemClassification.progression, 0, 0, 1),
-    ICE_PUZZLE_KEY_RING: ItemData(KEY, 503 + item_index_offset, ItemClassification.progression, 0, 0, 1),
-    SLIP_GLIDE_RIDE_KEY_RING: ItemData(KEY, 504 + item_index_offset, ItemClassification.progression, 0, 0, 1),
-    JIDAMBA_KEY_RING: ItemData(KEY, 505 + item_index_offset, ItemClassification.progression, 0, 0, 1),
+    SKELETON_KEY: ItemData(KEY, 147 + item_index_offset, ItemClassification.progression | ItemClassification.useful, 0, 1), #Everyone's best friend
+    PRISON_KEY_RING: ItemData(KEY, 650 + item_index_offset, ItemClassification.progression, 0, 1),
+    BEAURIOR_KEY_RING: ItemData(KEY, 651 + item_index_offset, ItemClassification.progression, 0, 0, 1),
+    ICE_PUZZLE_KEY_RING: ItemData(KEY, 652 + item_index_offset, ItemClassification.progression, 0, 0, 1),
+    SLIP_GLIDE_RIDE_KEY_RING: ItemData(KEY, 653 + item_index_offset, ItemClassification.progression, 0, 0, 1),
+    JIDAMBA_KEY_RING: ItemData(KEY, 654 + item_index_offset, ItemClassification.progression, 0, 0, 1),
 
     #Passes
     "Item - Quintar Pass": ItemData(ITEM, 7 + item_index_offset, ItemClassification.filler, 0), #We don't use this so it's filler to prevent it from being jsonified (now part of Progressive Quintar Flute)
@@ -165,11 +171,11 @@ item_table: Dict[str, ItemData] = {
     BLACK_SQUIRREL: ItemData(ITEM, 21 + item_index_offset, ItemClassification.progression, 4), #Turn-in: Spawning Meadows, Beginner Regions
     DOG_BONE: ItemData(ITEM, 6 + item_index_offset, ItemClassification.progression, 3), #Turn-in: Delende, Beginner Regions
     # Number of clamshells is set dynamically based on your Clamshells in pool variable
-    CLAMSHELL: ItemData(ITEM, 16 + item_index_offset, ItemClassification.progression, 0), #Turn-in: Seaside Cliffs, Beginner Regions
+    CLAMSHELL: ItemData(ITEM, 16 + item_index_offset, ItemClassification.progression | ItemClassification.deprioritized | ItemClassification.skip_balancing, 0), #Turn-in: Seaside Cliffs, Beginner Regions
     DIGESTED_HEAD: ItemData(ITEM, 17 + item_index_offset, ItemClassification.progression, 0, 3), #Turn-in: Capital Sequoia, Advanced Regions
     LOST_PENGUIN: ItemData(ITEM, 24 + item_index_offset, ItemClassification.progression, 0, 12), #Turn-in: Capital Sequoia, Advanced Regions
-    ELEVATOR_PART: ItemData(ITEM, 224 + item_index_offset, ItemClassification.progression, 0, 0, 10), #Turn-in: Shoudu Province, Expert Regions
-    UNDERSEA_CRAB: ItemData(ITEM, 212 + item_index_offset, ItemClassification.progression, 0, 0, 15), #Turn-in: The Deep Sea, Expert Regions
+    ELEVATOR_PART: ItemData(ITEM, 224 + item_index_offset, ItemClassification.progression | ItemClassification.deprioritized, 0, 0, 10), #Turn-in: Shoudu Province, Expert Regions
+    UNDERSEA_CRAB: ItemData(ITEM, 212 + item_index_offset, ItemClassification.progression | ItemClassification.deprioritized, 0, 0, 15), #Turn-in: The Deep Sea, Expert Regions
     WEST_LOOKOUT_TOKEN: ItemData(ITEM, 81 + item_index_offset, ItemClassification.progression, 0, 1), #Turn-in: Sara Sara Bazaar, Advanced Regions
     CENTRAL_LOOKOUT_TOKEN: ItemData(ITEM, 88 + item_index_offset, ItemClassification.progression, 0, 1), #Turn-in: Sara Sara Bazaar, Advanced Regions
     NORTH_LOOKOUT_TOKEN: ItemData(ITEM, 131 + item_index_offset, ItemClassification.progression, 0, 1), #Turn-in: Sara Sara Bazaar, Advanced Regions
@@ -263,14 +269,15 @@ item_table: Dict[str, ItemData] = {
     THE_NEW_WORLD_PASS: ItemData(PASS, 863 + item_index_offset, ItemClassification.progression, 0, 0, 0, 1),
 
     #Animal mount summons
-    PROGRESSIVE_QUINTAR_WOODWIND: ItemData(MOUNT, 39 + item_index_offset, ItemClassification.progression, 3), #Quintar Pass ID 7 & Quintar Flute ID 39 & Quintar Ocarina 115
-    IBEK_BELL: ItemData(MOUNT, 50 + item_index_offset, ItemClassification.progression),
-    OWL_DRUM: ItemData(MOUNT, 49 + item_index_offset, ItemClassification.progression),
-    PROGRESSIVE_SALMON_VIOLA: ItemData(MOUNT, 48 + item_index_offset, ItemClassification.progression, 2), #Salmon Violin ID 48 & Salmon Cello ID 114
-    PROGRESSIVE_MOUNT: ItemData(MOUNT, 700 + item_index_offset, ItemClassification.progression, 7),
+    PROGRESSIVE_QUINTAR_WOODWIND: ItemData(MOUNT, 39 + item_index_offset, ItemClassification.progression | ItemClassification.useful, 3), #Quintar Pass ID 7 & Quintar Flute ID 39 & Quintar Ocarina 115
+    IBEK_BELL: ItemData(MOUNT, 50 + item_index_offset, ItemClassification.progression | ItemClassification.useful),
+    OWL_DRUM: ItemData(MOUNT, 49 + item_index_offset, ItemClassification.progression | ItemClassification.useful),
+    PROGRESSIVE_SALMON_VIOLA: ItemData(MOUNT, 48 + item_index_offset, ItemClassification.progression | ItemClassification.useful, 2), #Salmon Violin ID 48 & Salmon Cello ID 114
+    PROGRESSIVE_MOUNT: ItemData(MOUNT, 700 + item_index_offset, ItemClassification.progression | ItemClassification.useful, 7),
 
     #Teleport items (shards not included since they are stones but worse)
     HOME_POINT_STONE: ItemData(TELEPORT_STONE, 19 + item_index_offset, ItemClassification.useful), #Starter pack
+    ARCHIPELAGO_STONE: ItemData(TELEPORT_STONE, 233 + item_index_offset, ItemClassification.useful), #Teleports you to your starting location
     GAEA_STONE: ItemData(TELEPORT_STONE, 23 + item_index_offset, ItemClassification.progression, 0, 1), #Teleport to Capital Sequoia, Advanced Regions
     MERCURY_STONE: ItemData(TELEPORT_STONE, 13 + item_index_offset, ItemClassification.progression), #Teleport to Beginner Regions
     POSEIDON_STONE: ItemData(TELEPORT_STONE, 57 + item_index_offset, ItemClassification.progression, 0, 1), #Teleport to Salmon River, Advanced Regions
@@ -1712,30 +1719,30 @@ default_starting_job_list: List[str] = [
 ]
 
 job_crystal_beginner_dictionary: Dict[str, str] = {
-    FENCER_JOB: FENCER_JOB_CRYSTAL_LOCATION,
-    SHAMAN_JOB: SHAMAN_JOB_CRYSTAL_LOCATION,
-    SCHOLAR_JOB: SCHOLAR_JOB_CRYSTAL_LOCATION,
-    AEGIS_JOB: AEGIS_JOB_CRYSTAL_LOCATION,
+    FENCER_JOB: THE_PALE_GROTTO_DISPLAY_NAME + FENCER_JOB_CRYSTAL_LOCATION,
+    SHAMAN_JOB: DRAFT_SHAFT_CONDUIT_DISPLAY_NAME + SHAMAN_JOB_CRYSTAL_LOCATION,
+    SCHOLAR_JOB: YAMAGAWA_MA_DISPLAY_NAME + SCHOLAR_JOB_CRYSTAL_LOCATION,
+    AEGIS_JOB: SKUMPARADISE_DISPLAY_NAME + AEGIS_JOB_CRYSTAL_LOCATION,
 }
 
 job_crystal_advanced_dictionary: Dict[str, str] = {
-    HUNTER_JOB: HUNTER_JOB_CRYSTAL_LOCATION,
-    CHEMIST_JOB: CHEMIST_JOB_CRYSTAL_LOCATION,
-    REAPER_JOB: REAPER_JOB_CRYSTAL_LOCATION,
-    NINJA_JOB: NINJA_JOB_CRYSTAL_LOCATION,
-    NOMAD_JOB: NOMAD_JOB_CRYSTAL_LOCATION,
-    DERVISH_JOB: DERVISH_JOB_CRYSTAL_LOCATION,
-    BEATSMITH_JOB: BEATSMITH_JOB_CRYSTAL_LOCATION,
+    HUNTER_JOB: QUINTAR_NEST_DISPLAY_NAME + HUNTER_JOB_CRYSTAL_LOCATION,
+    CHEMIST_JOB: QUINTAR_SANCTUM_DISPLAY_NAME + CHEMIST_JOB_CRYSTAL_LOCATION,
+    REAPER_JOB: CAPITAL_JAIL_DISPLAY_NAME + REAPER_JOB_CRYSTAL_LOCATION,
+    NINJA_JOB: OKIMOTO_NS_DISPLAY_NAME + NINJA_JOB_CRYSTAL_LOCATION,
+    NOMAD_JOB: RIVER_CATS_EGO_AP_REGION + NOMAD_JOB_CRYSTAL_LOCATION,
+    DERVISH_JOB: ANCIENT_RESERVOIR_DISPLAY_NAME + DERVISH_JOB_CRYSTAL_LOCATION,
+    BEATSMITH_JOB: CAPITAL_SEQUOIA_DISPLAY_NAME + BEATSMITH_JOB_CRYSTAL_LOCATION,
 }
 
 job_crystal_expert_dictionary: Dict[str, str] = {
-    SAMURAI_JOB: SAMURAI_JOB_CRYSTAL_LOCATION,
-    ASSASSIN_JOB: ASSASSIN_JOB_CRYSTAL_LOCATION,
-    VALKYRIE_JOB: VALKYRIE_JOB_CRYSTAL_LOCATION,
-    SUMMONER_JOB: SUMMONER_JOB_CRYSTAL_LOCATION,
-    BEASTMASTER_JOB: BEASTMASTER_JOB_CRYSTAL_LOCATION,
-    WEAVER_JOB: WEAVER_JOB_CRYSTAL_LOCATION,
-    MIMIC_JOB: MIMIC_JOB_CRYSTAL_LOCATION,
+    SAMURAI_JOB: SHOUDU_PROVINCE_DISPLAY_NAME + SAMURAI_JOB_CRYSTAL_LOCATION,
+    ASSASSIN_JOB: THE_UNDERCITY_DISPLAY_NAME + ASSASSIN_JOB_CRYSTAL_LOCATION,
+    VALKYRIE_JOB: BEAURIOR_VOLCANO_DISPLAY_NAME + VALKYRIE_JOB_CRYSTAL_LOCATION,
+    SUMMONER_JOB: SLIP_GLIDE_RIDE_DISPLAY_NAME + SUMMONER_JOB_CRYSTAL_LOCATION,
+    BEASTMASTER_JOB: CASTLE_RAMPARTS_DISPLAY_NAME + BEASTMASTER_JOB_CRYSTAL_LOCATION,
+    WEAVER_JOB: JIDAMBA_EACLANEYA_DISPLAY_NAME + WEAVER_JOB_CRYSTAL_LOCATION,
+    MIMIC_JOB: THE_CHALICE_OF_TAR_DISPLAY_NAME + MIMIC_JOB_CRYSTAL_LOCATION,
 }
 
 key_rings: Tuple[str, ...] = (
@@ -1875,31 +1882,38 @@ def get_item_names_per_category() -> Dict[str, Set[str]]:
     return categories
 
 def get_starting_jobs(world: "CrystalProjectWorld") -> List[str]:
-    if world.options.jobRando.value == world.options.jobRando.option_full:
-        return get_random_starting_jobs(world, world.options.startingJobQuantity.value)
+    if world.options.job_rando.value == world.options.job_rando.option_full:
+        return get_random_starting_jobs(world, world.options.starting_job_quantity.value)
     else:
         return default_starting_job_list
 
 def get_random_starting_jobs(self, count:int) -> List[str]:
-    if self.options.useMods.value == self.options.useMods.option_true:
+    if self.options.use_mods.value == self.options.use_mods.option_true:
         return self.random.sample(list(self.item_name_groups[JOB]), count)
     else:
         return self.random.sample(list(self.base_game_jobs), count)
 
-def set_jobs_at_default_locations(world: "CrystalProjectWorld"):
+def set_jobs_at_default_locations(world: "CrystalProjectWorld", player_name:str) -> Tuple[int, List[str]]:
     job_crystal_dictionary: Dict[str, str] = job_crystal_beginner_dictionary.copy() #if we don't use copy it means updating job_crystal_dictionary messes with the beginner dict too
+    jobs_not_to_exclude: List[str] = []
 
-    if world.options.includedRegions.value == world.options.includedRegions.option_advanced:
+    if world.options.included_regions.value == world.options.included_regions.option_advanced:
         job_crystal_dictionary.update(job_crystal_advanced_dictionary)
 
-    if (world.options.includedRegions.value == world.options.includedRegions.option_expert
-        or world.options.includedRegions.value == world.options.includedRegions.option_all):
+    if (world.options.included_regions.value == world.options.included_regions.option_expert
+        or world.options.included_regions.value == world.options.included_regions.option_all):
         job_crystal_dictionary.update(job_crystal_advanced_dictionary)
         job_crystal_dictionary.update(job_crystal_expert_dictionary)
 
     for job_name in job_crystal_dictionary:
-        world.get_location(job_crystal_dictionary[job_name]).place_locked_item(world.create_item(job_name))
-        #message = "Placing" + job_name + " at " + job_crystal_dictionary[job_name]
-        #world.logger.info(message)
+        try:
+            world.get_location(job_crystal_dictionary[job_name]).place_locked_item(world.create_item(job_name))
+            #message = "Placing" + job_name + " at " + job_crystal_dictionary[job_name]
+            #world.logger.info(message)
+        except KeyError:
+            jobs_not_to_exclude.append(job_name)
+            message = f"For player {player_name}: the crystal where {job_name} was placed was updated by a mod. It has been forced to be randomized instead of in its default location."
+            logging.getLogger().info(message)
 
-    return len(job_crystal_dictionary)
+
+    return len(job_crystal_dictionary), jobs_not_to_exclude

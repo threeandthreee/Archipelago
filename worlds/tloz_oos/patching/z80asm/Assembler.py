@@ -1,5 +1,5 @@
 from copy import copy
-from typing import Dict
+from typing import Dict, Optional
 
 from .Errors import *
 from .MnemonicsTree import MNEMONICS
@@ -65,7 +65,7 @@ class Z80Block:
 
 
 class Z80Assembler:
-    def __init__(self, bank_caves: List[int], defines: Dict[str, str], seasons_rom: bytes):
+    def __init__(self, bank_caves: List[int], defines: Dict[str, str], seasons_rom: bytes, ages_rom: Optional[bytes]):
         self.defines = {}
         for key, value in defines.items():
             self.define(key, value)
@@ -76,6 +76,7 @@ class Z80Assembler:
         self.global_labels = {}
         self.blocks = []
         self.seasons_rom = seasons_rom
+        self.ages_rom = ages_rom
 
     def define(self, key: str, replacement_string: str):
         if key in self.defines:
@@ -222,7 +223,7 @@ class Z80Assembler:
             block.local_labels[opcode[:-1]] = current_addr
             return 0
 
-        args = line[len(opcode)+1:].split(",")
+        args = line[len(opcode) + 1:].split(",")
         if len(args) == 0:
             args = [""]
 
@@ -254,7 +255,7 @@ class Z80Assembler:
                         generic_arg = f"({generic_arg})"
                     if generic_arg in mnemonic_tree:
                         arg = generic_arg
-                        extra_size = int(size/8)
+                        extra_size = int(size / 8)
                         break
                 if extra_size == 0:
                     raise UnknownMnemonicError(arg, line)
@@ -295,7 +296,7 @@ class Z80Assembler:
         # First try matching a specific keyword
         if opcode == "db":
             # Declare byte
-            return [parse_hex_byte(arg) for arg in args]
+            return [parse_byte(arg) for arg in args]
         if opcode == "dw":
             # Declare word
             return [b for arg in args for b in parse_hex_word(arg)]
@@ -303,11 +304,14 @@ class Z80Assembler:
             # Declare word big endian (reversed)
             return [b for arg in args for b in reversed(parse_hex_word(arg))]
         if opcode == "/copy":
-            address = 0x4000 * parse_hex_string_to_value(args[1]) + parse_hex_string_to_value(args[2])
+            offset = parse_hex_string_to_value(args[2])
+            if offset > 0x4000:
+                offset -= 0x4000
+            address = 0x4000 * parse_hex_string_to_value(args[1]) + offset
             if args[0] == "s":
                 return self.seasons_rom[address:address + parse_hex_string_to_value(args[3])]
             else:
-                raise NotImplementedError("Ages code import is not implemented yet")
+                return self.ages_rom[address:address + parse_hex_string_to_value(args[3])]
 
         # ...then try matching a mnemonic
         extra_bytes = []

@@ -1,15 +1,14 @@
 import logging
 import os
 import threading
-from typing import Any, ClassVar, Dict, List, Optional, Sequence, Set, Tuple
+from typing import ClassVar, Dict, Optional
 
 from . import names
 from .items import DWItem, item_table, filler_table, lookup_name_to_id, item_names
 from .locations import create_locations, all_locations, location_names
 from .regions import create_regions, connect_regions
 import settings
-from BaseClasses import Item, ItemClassification, Location, MultiWorld, Tutorial
-from Utils import visualize_regions
+from BaseClasses import Item, ItemClassification, MultiWorld, Tutorial
 from worlds.AutoWorld import World, WebWorld
 from .rom import DRAGON_WARRIOR_PRG0_HASH, DRAGON_WARRIOR_PRG1_HASH, DWPatch
 from .options import DWOptions, DWOptionGroups
@@ -48,6 +47,7 @@ class DragonWarriorWorld(World):
     on a quest to vanquish the Dragonlord, and save the land from darkness!
     """
     game = "Dragon Warrior"
+    authors = ["Serp"]
     settings_key = "dw_options"
     settings: ClassVar[DWSettings]
     options_dataclass = DWOptions
@@ -143,9 +143,6 @@ class DragonWarriorWorld(World):
 
         self.multiworld.completion_condition[self.player] = lambda state: \
             state.has(names.ball_of_light, self.player)
-        
-        # visualize_regions(self.get_region("Menu"), "dw_regions.puml", show_locations=True)
-
 
     def create_item(self, name: str, force_non_progression=False) -> Item:
         data = item_table[name]

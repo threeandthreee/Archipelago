@@ -3,6 +3,10 @@ from .data import LOCATIONS_DATA
 from .data.LogicPredicates import *
 from .Options import PhantomHourglassOptions
 from .data.Entrances import ENTRANCES
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .Subclasses import PHRegion
 
 def make_overworld_logic():
     overworld_logic = [
@@ -79,10 +83,11 @@ def make_overworld_logic():
         ["mercay passage 1", "mercay passage 2 exit", False, "mp2_bypass_fore"],
         ["mercay passage 2 exit", "mercay passage 1", False, "mp2_bypass"],
         ["mercay passage 2 exit", "mercay passage 3", True, None],
-        ["mercay passage 3", "mercay passage rat", False, "can_kill_bat"],
+        ["mercay passage 3", "mercay passage rat", False, "mp_rat"],
         ["mercay passage 3", "mercay passage 4", False, "mp3"],
         ["mercay passage 4", "mercay passage 3", False, "mp3_back"],
         ["mercay passage 4", "mercay se", True, None],
+        ["mercay passage 4", "mercay passage 1", False, "hard_logic"],  # Savewarp
 
         # ========== TotOK ===================
         ["totok", "totok 1f", False, "totok_1f"],
@@ -140,7 +145,8 @@ def make_overworld_logic():
         ["totok b9", "totok b9 phantom", False, "totok_b9_phantom"],
         ["totok b9", "totok b9 ghosts", False, "totok_b9_ghosts"],
 
-        ["totok b9", "totok b10", False, "totok_b10"],
+        ["totok b9", "totok b95", False, "totok_b10"],
+        ["totok b95", "totok b10", True, None],
 
         ["totok b10", "totok b10 key", False, "totok_b10_key"],
         ["totok b10", "totok b10 phantom", False, "totok_b10_phantom"],
@@ -355,7 +361,7 @@ def make_overworld_logic():
         ["toc before boss", "toc before boss chest", False, "boom"],
         ["toc before boss", "toc crayk", True, None],
         ["toc crayk", "post crayk", False, "bow"],
-        ["post crayk", "post toc", False, "bow"],  # Used for events
+        ["post crayk", "post toc", False, None],  # Used for events
 
         # ================ Spirit Island =====================
 
@@ -814,13 +820,17 @@ def is_item(item: Item, player: int, item_name: str):
 
 
 def create_connections(multiworld: MultiWorld, player: int, origin_name: str, options):
-    def create_entrance(r1, r2, *arguments):
+    def create_entrance(r1: "PHRegion", r2: "PHRegion", *arguments):
         entrance_key = (r1.name, r2.name)
+        name = None
+        if entrance_key in test_entrances:
+            entrance_data = test_entrances[entrance_key]
+            name = entrance_data.name
         if rule_lookup:
             rule_func = RULE_DICT[rule_lookup]
-            entrance = r1.connect(r2, None, lambda state: rule_func(state, player, *arguments))
+            entrance = r1.connect(r2, name, lambda state: rule_func(state, player, *arguments))
         else:
-            entrance = r1.connect(r2, None, None)
+            entrance = r1.connect(r2, name, None)
 
         if entrance_key in test_entrances:
             # Set entrance data

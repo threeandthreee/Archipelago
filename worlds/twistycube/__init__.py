@@ -6,6 +6,7 @@ from worlds.AutoWorld import WebWorld, World
 from .Items import item_table, item_groups, TwistyCubeItem as TwistyCubeItem
 from .Locations import TwistyCubeLocation, location_table
 from .Options import TwistyCubeOptions
+from .Puzzle import CubePuzzle
 
 
 from worlds.LauncherComponents import (
@@ -40,23 +41,29 @@ class TwistyCubeWorld(World):
     location_name_to_id = {name: data.id for name, data in location_table.items()}
         
     item_name_groups = item_groups
+
+    side_permutation: dict[str, str]
+
+    puzzle: CubePuzzle
     
-    ap_world_version = "0.0.1"
+    ap_world_version = "0.0.2"
 
     def _get_twistycube_data(self):
         return {
             "seed_name": self.multiworld.seed,
+            "color_permutation": self.color_permutation,
+            "ap_world_version": self.ap_world_version
         }
+
+    def generate_early(self):
+        self.puzzle = CubePuzzle(self.options.size_of_cube.value, self.random)
 
     def create_items(self):
         self.pool_contents = []
-        size = self.options.size_of_cube.value
-        colors = ['White', 'Yellow', 'Red', 'Orange', 'Blue', 'Green']
-        for i, color in enumerate(colors):
-            for j in range(size * size):
-                name = f"{color} Sticker #{j+1}"
-                self.pool_contents.append(name)
-        for j in range(self.options.starting_stickers.value):
+        for item in self.puzzle.get_items():
+            self.pool_contents.append(item)
+
+        for _ in range(self.options.starting_stickers.value):
             name = self.random.choice(self.pool_contents)
             self.multiworld.push_precollected(self.create_item(name))
             self.pool_contents.remove(name)
@@ -68,23 +75,21 @@ class TwistyCubeWorld(World):
         menu = Region("Menu", self.player, self.multiworld)
         board = Region("Board", self.player, self.multiworld)
         
-        size = self.options.size_of_cube.value
+        self.color_permutation = self.puzzle.get_color_permutation(bool(self.options.randomize_color_layout.value))
         
         all_locations = []
-        
-        for i in range(self.options.starting_stickers.value, size*size*6+1):
-            all_locations += [
-                TwistyCubeLocation(self.player, f"{i} Correct", location_table[f"{i} Correct"].id, i, board)
-            ]
+        for location, requirements in self.puzzle.get_location_table(self.options.starting_stickers.value).items():
+            all_locations.append(
+                TwistyCubeLocation(self.player, location, location_table[location].id, requirements, board)
+            )
 
         board.locations = all_locations
         
         for loc in board.locations:
-            reqs = loc.reqs
             loc.access_rule = lambda state, count=loc.reqs: state.has("stickers", self.player, count)
 
         # Change the victory location to an event and place the Victory item there.
-        victory_location_name = f"{size*size*6} Correct"
+        victory_location_name = self.puzzle.get_goal_location()
         self.get_location(victory_location_name).address = None
         self.get_location(victory_location_name).place_locked_item(
             Item("Victory", ItemClassification.progression, None, self.player)
@@ -132,18 +137,21 @@ class TwistyCubeWorld(World):
 
     def open_page(url):
         import webbrowser
-        import re
-        # Extract slot, pass, host, and port from the URL
-        # URL format: archipelago://slot:pass@host:port
-        match = re.match(r"archipelago://([^:]+):([^@]+)@([^:]+):(\d+)", url)
-        if not match:
-            raise ValueError("Invalid URL format")
+        import urllib.parse
+
+        parsed_url = urllib.parse.urlparse(url)
+        if parsed_url.scheme != "archipelago":
+            raise ValueError("URL must be an Archipelago URL")
+
+        query_parameters = {
+            "hostport": f"{parsed_url.hostname}:{parsed_url.port}",
+            "name": parsed_url.username
+        }
+        if parsed_url.password is not None:
+            query_parameters["password"] = parsed_url.password
         
-        slot, password, host, port = match.groups()
-        if password == "None":
-            webbrowser.open(f"http://cube-ap.netlify.app/?hostport={host}:{port}&name={slot}")
-        else:
-            webbrowser.open(f"http://cube-ap.netlify.app/?hostport={host}:{port}&name={slot}&password={password}")
+        target_url = f"http://cube-ap.netlify.app/?{urllib.parse.urlencode(query_parameters)}"
+        webbrowser.open(target_url)
 
     components.append(
         Component(

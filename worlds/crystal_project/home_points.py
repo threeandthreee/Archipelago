@@ -14,12 +14,12 @@ def get_home_points(player: Optional[int], options: Optional[CrystalProjectOptio
         LocationData(SPAWNING_MEADOWS_AP_REGION, "AP Spawn Point", 5003),
         LocationData(SPAWNING_MEADOWS_AP_REGION, "Old Nan's Watering Hole", 59),
 
-        LocationData(DELENDE_AP_REGION, "The Pale Grotto Entrance", 44),
-        LocationData(DELENDE_AP_REGION, "Soiled Den", 66),
-        LocationData(DELENDE_AP_REGION, "Cabin On The Cliff", 94),
-        LocationData(DELENDE_AP_REGION, "Fish Hatchery", 127),
-        LocationData(DELENDE_AP_REGION, "Delende Peak", 160),
-        LocationData(DELENDE_AP_REGION, "Delende Falls", 186),
+        LocationData(DELENDE_PLAINS_AP_REGION, "The Pale Grotto Entrance", 44),
+        LocationData(DELENDE_PLAINS_AP_REGION, "Soiled Den", 66),
+        LocationData(DELENDE_PLAINS_AP_REGION, "Fish Hatchery", 127),
+        LocationData(DELENDE_HIGH_BRIDGES_AP_REGION, "Cabin On The Cliff", 94),
+        LocationData(DELENDE_HIGH_BRIDGES_AP_REGION, "Delende Falls", 186),
+        LocationData(DELENDE_PEAK_AP_REGION, "Delende Peak", 160),
 
         LocationData(MERCURY_SHRINE_AP_REGION, "Mercury Shrine", 152),
 
@@ -47,7 +47,7 @@ def get_home_points(player: Optional[int], options: Optional[CrystalProjectOptio
 
         LocationData(ROLLING_QUINTAR_FIELDS_AP_REGION, "Quintar Enthusiast's House", 440),
         LocationData(ROLLING_QUINTAR_FIELDS_AP_REGION, "Rent-A-Quintar", 462),
-        LocationData(ROLLING_QUINTAR_FIELDS_AP_REGION, "Quintar Sanctum", 917, lambda state: logic.has_rental_quintar(state, ROLLING_QUINTAR_FIELDS_DISPLAY_NAME) or logic.has_vertical_movement(state)),
+        LocationData(SANCTUM_ENTRANCE_AP_REGION, "Quintar Sanctum", 917),
 
         LocationData(QUINTAR_SANCTUM_AP_REGION, "Quintar Nameko", 968),
 
@@ -62,7 +62,7 @@ def get_home_points(player: Optional[int], options: Optional[CrystalProjectOptio
 
         LocationData(CASTLE_SEQUOIA_AP_REGION, "Castle Sequoia Foyer", 514),
 
-        LocationData(POKO_POKO_DESERT_AP_REGION, "Labyrinth Encampment", 2712, lambda state: logic.has_horizontal_movement(state) and logic.has_vertical_movement(state)),
+        LocationData(TOWER_OF_ZOT_AP_REGION, "Labyrinth Encampment", 2712),
 
         LocationData(SARA_SARA_BAZAAR_AP_REGION, "Sara Sara Bazaar Port", 941),
         LocationData(SARA_SARA_BAZAAR_AP_REGION, "Poko Poko West Gate", 3783),

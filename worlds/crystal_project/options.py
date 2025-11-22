@@ -20,7 +20,8 @@ class Goal(Choice):
     
     Astley: Defeat Astley in the New World. A New World Stone will be given to the player after obtaining a certain number of jobs (starting Jobs don't count).
 
-    True Astley: A saga awaits you! Collect 4 Deity Eyes and the STEM WARD to challenge Gabriel for the Old World Stone. Then travel to the Old World to defeat Periculum and earn the Proof of Merit. Along the way, gather enough Jobs to unlock the New World Stone. Then you can venture to the New World to defeat true Astley to win!
+    True Astley: A saga awaits you! Collect 4 Deity Eyes and the STEM WARD to challenge Gabriel for the Old World Stone. Then travel to the Old World to defeat Periculum and earn the Proof of Merit.
+    Along the way, gather enough Jobs to unlock the New World Stone. Then you can venture to the New World to defeat true Astley to win!
     
     Clamshells: Collect enough clamshells for Mañana Man in Seaside Cliffs.
     """
@@ -98,7 +99,8 @@ class JobRando(Choice):
 
     Crystal: all vanilla Jobs normally received from crystals are chucked into the item pool.
 
-    Full: your starting jobs are randomized, and the rest of the vanilla Jobs are added to the item pool. Adjust the Starting Job Quantity (see below) for how many random Jobs you start with.
+    Full: your starting jobs are randomized, and the rest of the vanilla Jobs are added to the item pool.
+    Adjust the Starting Job Quantity (see below) for how many random Jobs you start with.
     """
     display_name = "Job Rando"
     option_none = 0
@@ -114,6 +116,16 @@ class StartingJobQuantity(Range):
     range_start = 1
     range_end = 6
     default = 6
+
+class DisableSparks(Toggle):
+    """
+    When enabled, enemy sparks are disabled: enemies will completely ignore the player, and touching them does not start combat.
+    An Enable/Disable Sparks button will appear in the game's Archipelago menu that you can use to toggle spark disabling on and off.
+    Explore unbothered by fiery plebeians, re-enable them when you deign to grind XP or earn money, and re-disable them when you've had enough of their nonsense!
+
+    However: if Kill Bosses is enabled, then boss sparks still have your number (a.k.a. chase you and start combat). They can sense your murderous intent.
+    """
+    display_name = "Disable Sparks"
 
 class KillBossesMode(Toggle):
     """
@@ -165,7 +177,7 @@ class Regionsanity(Choice):
 #"""Progression Options"""
 class ProgressiveMountMode(DefaultOnToggle):
     """
-    When enabled, all mount items are combined into a Progressive Mount Instrument and will be received in the approximate order you would receive them in the vanilla game every time:
+    When enabled, all mount items are combined into a Progressive Mount Instrument and will be received in the approximate order you would receive them in the vanilla game:
        Quintar Pass -> Quintar Flute -> Ibek Bell -> Owl Drum -> Salmon Violin -> Salmon Cello -> Quintar Ocarina
 
     When disabled, different mount types are separated:
@@ -204,7 +216,8 @@ class LevelGating(Choice):
 
 class LevelComparedToEnemies(Range):
     """
-    If Level Gating is on, this option changes what level you're expected to fight enemies. Set it higher if you want to be a higher level than enemies when you enter a region, or lower if you want to be lower.
+    If Level Gating is on, this option changes what level you're expected to fight enemies.
+    Set it higher if you want to be a higher level than enemies when you enter a region, or lower if you want to be lower.
 
     For example, if this is set to 5, and the enemy level of a region is 12, then the Level Gating options would require you to unlock level 17 (or for Level Capped, max level 17) for that region.
     If it's set to -5, and the enemy level of a region is 12, then the Level Gating options would require you to unlock level 7 (or for Level Capped, max level 7) for that region.
@@ -272,6 +285,21 @@ class ObscureRoutes(Toggle):
     """
     display_name = "Obscure Routes"
 
+class PrioritizeCrystals(DefaultOnToggle):
+    """
+    When enabled, crystals will be prioritized when placing progression items.
+
+    While you're here, did you know that all YAMLs for all worlds include a priority_locations and an exclude_locations option?
+    You can use these to flag any individual location or a location group as priority or excluded.
+    Priority locations will be chosen first when placing progression items, and excluded locations will be chosen last.
+
+    Here's an example:
+    priority_locations = ["Crystals", "Region Completions", "Bosses", "Salmon River NPC - Win the Salmon Race"]
+
+    Crystal Project's location groups: Crystals, Bosses, Region Completions, and Shops
+    """
+    display_name = "Prioritize Crystals"
+
 class AutoSpendLP(Toggle):
     """
     When enabled, every time a character earns LP, it will automatically spend LP on abilities or passives.
@@ -283,7 +311,7 @@ class AutoEquipPassives(Toggle):
     """
     When enabled, every time a character unlocks a new passive, it will equip it immediately if enough passive points are available.
     Passives with drawbacks, that enable equipping more gear types, or that modify threat are not automatically equipped.
-    If mods are enabled all passives are auto-equipped with no exclusions.
+    If mods are enabled, all passives are auto-equipped with no exclusions.
     """
     display_name = "Automatically Equip Passives"
 
@@ -328,7 +356,8 @@ class IncludeSummonAbilities(DefaultOnToggle):
     """
     When enabled, Summons are added to the item pool.
 
-    Note: It is not recommended to turn this off with Job Rando: Full and a low number of starting Jobs. You don't want to get stuck with just a Summoner who can only summon Pinga! (I'm sorry, Pinga.)
+    Note: It is not recommended to turn this off with Job Rando: Full and a low number of starting Jobs. You don't want to get stuck with just a Summoner who can only summon Pinga!
+    (I'm sorry, Pinga.)
     """
     display_name = "Include Summons in the item pool"
     
@@ -352,7 +381,7 @@ class ItemInfoMode(Choice):
     """
     For Full, all treasure and store icons on the map will display if they are progression, useful, or filler items.
 
-    For Earned, all treasure and store icons on the map will display as mimics until you obtain the map-revealing item that is not yet implemented idk come back later.
+    For Earned, all treasure and store icons on the map will display as mimics until you complete 50% of your checks.
 
     For Obscured, all treasure and store icons on the map will display as mimics permanently.
     If you find skipping treasures is distasteful but part of your brain always wants to be efficient, this option is for you!
@@ -372,7 +401,8 @@ class RandomizeMusic(Toggle):
 
 class UseMods(Toggle):
     """
-    WARNING: This setting is very in beta right now! Enabling it is not recommended for: multiworlds that do not allow releasing items or with Regionsanity enabled (some mods add items to regions but don't place them anywhere near that region).
+    WARNING: This setting is very in beta right now! Enabling it is not recommended for: multiworlds that do not allow releasing items or with Regionsanity enabled
+    (some mods add items to regions but don't place them anywhere near that region).
 
     When enabled, items and locations added by other Crystal Project mods will be added to the item and location pools at generation. Mods newer than Editor version 30 are incompatible.
 
@@ -380,11 +410,13 @@ class UseMods(Toggle):
     1. In order to select the mods you'd like to include in randomization, make a folder named "crystal_project_mods" inside your root Archipelago directory.
     2. Go to your Steam installation folder for Crystal Project (<YourSteamInstallFolder>/steamapps/workshop/content/1637730) and find the individual folders for the mods you'd like to include.
     3. Inside each mod's folder is a mod json. Copy that json to the crystal_project_mods folder you made inside the Archipelago directory.
-    4. If you have a specific order you want to apply the mods, rename the jsons such that they are in alphabetical order in the order you want them to be applied. E.g. name the first mod a_modname, the second b_modname, etc.
+    4. If you have a specific order you want to apply the mods, rename the jsons such that they are in alphabetical order in the order you want them to be applied.
+       E.g. name the first mod a_modname, the second b_modname, etc.
 
     NOTE: When this setting is on, all Crystal Project players in the multiworld with this setting enabled MUST use the same mods.
 
-    The in-game tracking will use special icons for modded locations that will not display their accessibility (as we can only guess at how accessible they are based on coordinates, and would prefer the tracking to be as accurate as possible).
+    The in-game tracking will use special icons for modded locations that will not display their accessibility (as we can only guess at how accessible they are based on coordinates,
+    and would prefer the tracking to be as accurate as possible).
 
     When disabled, only base game locations and items will be randomized. You can still use other mods - at your own risk, adventurer - they just won't add checks.
 
@@ -396,40 +428,42 @@ class UseMods(Toggle):
 class CrystalProjectOptions(PerGameCommonOptions):
     start_inventory_from_pool: StartInventoryPool
     goal: Goal
-    newWorldStoneJobQuantity: NewWorldStoneJobQuantity
-    clamshellGoalQuantity: ClamshellGoalQuantity
-    extraClamshellsInPool: ExtraClamshellsInPool
-    jobRando: JobRando
-    startingJobQuantity: StartingJobQuantity
-    killBossesMode: KillBossesMode
+    new_world_stone_job_quantity: NewWorldStoneJobQuantity
+    clamshell_goal_quantity: ClamshellGoalQuantity
+    extra_clamshells_in_pool: ExtraClamshellsInPool
+    job_rando: JobRando
+    starting_job_quantity: StartingJobQuantity
+    disable_sparks: DisableSparks
+    kill_bosses_mode: KillBossesMode
     shopsanity: Shopsanity
     regionsanity: Regionsanity
-    includedRegions: IncludedRegions
-    progressiveMountMode: ProgressiveMountMode
-    levelGating: LevelGating
-    levelComparedToEnemies: LevelComparedToEnemies
-    progressiveLevelSize: ProgressiveLevelSize
-    maxLevel: MaxLevel
-    keyMode: KeyMode
-    obscureRoutes: ObscureRoutes
+    included_regions: IncludedRegions
+    progressive_mount_mode: ProgressiveMountMode
+    level_gating: LevelGating
+    level_compared_to_enemies: LevelComparedToEnemies
+    progressive_level_size: ProgressiveLevelSize
+    max_level: MaxLevel
+    key_mode: KeyMode
+    obscure_routes: ObscureRoutes
+    prioritize_crystals: PrioritizeCrystals
     auto_spend_lp: AutoSpendLP
     auto_equip_passives: AutoEquipPassives
-    easyLeveling: EasyLeveling
-    progressiveEquipmentMode: ProgressiveEquipmentMode
-    startWithTreasureFinder: StartWithTreasureFinder
-    startWithMaps: StartWithMaps
+    easy_leveling: EasyLeveling
+    progressive_equipment_mode: ProgressiveEquipmentMode
+    start_with_treasure_finder: StartWithTreasureFinder
+    start_with_maps: StartWithMaps
     fill_full_map: FillFullMap
-    includeSummonAbilities: IncludeSummonAbilities
-    includeScholarAbilities: IncludeScholarAbilities
-    trapLikelihood: TrapLikelihood
+    include_summon_abilities: IncludeSummonAbilities
+    include_scholar_abilities: IncludeScholarAbilities
+    trap_likelihood: TrapLikelihood
     item_info_mode: ItemInfoMode
-    randomizeMusic: RandomizeMusic
-    useMods: UseMods
+    randomize_music: RandomizeMusic
+    use_mods: UseMods
 
 crystal_project_option_groups: Dict[str, List[Any]] = {
     "Goal Options": [Goal, ClamshellGoalQuantity, ExtraClamshellsInPool, NewWorldStoneJobQuantity],
-    "Location Options": [IncludedRegions, JobRando, StartingJobQuantity, KillBossesMode, Shopsanity, Regionsanity],
-    "Progression Options": [ProgressiveMountMode, LevelGating, LevelComparedToEnemies, ProgressiveLevelSize, MaxLevel, KeyMode, ObscureRoutes, AutoSpendLP, AutoEquipPassives, EasyLeveling],
+    "Location Options": [IncludedRegions, JobRando, StartingJobQuantity, DisableSparks, KillBossesMode, Shopsanity, Regionsanity],
+    "Progression Options": [ProgressiveMountMode, LevelGating, LevelComparedToEnemies, ProgressiveLevelSize, MaxLevel, KeyMode, ObscureRoutes, PrioritizeCrystals, AutoSpendLP, AutoEquipPassives, EasyLeveling],
     "Item Pool Options": [ProgressiveEquipmentMode, StartWithTreasureFinder, StartWithMaps, FillFullMap, IncludeSummonAbilities, IncludeScholarAbilities],
     "Bonus Fun": [ItemInfoMode, RandomizeMusic, UseMods]
 }

@@ -16,6 +16,10 @@
     db TREASURE_SLINGSHOT
     db option.defaultSeedType
     db $20
+
+    db TREASURE_SHOOTER
+    db option.defaultSeedType
+    db $20
     
     db $00  ; End of table
 # Change the pointer of @itemsToRemoveTable to point to its end of table byte,

@@ -15,6 +15,15 @@ ITEMS_DATA = {
         "classification": ItemClassification.progression_deprioritized,
         "id": 0x03
     },
+    "Bombs (20)": {
+        "classification": ItemClassification.progression_deprioritized,
+        "id": 0x03,
+        "subid": 0x03  # Just to make sure we're not erasing anything important, this goes over a 30 bombs drop
+    },
+    "Cane of Somaria": {
+        'classification': ItemClassification.progression,
+        'id': 0x04
+    },
     "Progressive Sword": {
         "classification": ItemClassification.progression,
         "id": 0x05
@@ -47,14 +56,23 @@ ITEMS_DATA = {
         "classification": ItemClassification.progression,
         "id": 0x08
     },
+    "Switch Hook": {
+        'classification': ItemClassification.progression,
+        'id': 0x0a
+    },
     "Biggoron's Sword": {
         "classification": ItemClassification.progression,
         "id": 0x0c
     },
-    #   "Bombchus (10)": {
-    #       'classification': ItemClassification.progression_deprioritized,
-    #       'id': 0x0d
-    #   },
+    "Bombchus (10)": {
+        'classification': ItemClassification.progression,
+        'id': 0x0d
+    },
+    "Bombchus (20)": {
+        'classification': ItemClassification.progression,
+        'id': 0x0d,
+        "subid": 0x01
+    },
     "Ricky's Flute": {
         "classification": ItemClassification.progression,
         "id": 0x0e,
@@ -70,6 +88,14 @@ ITEMS_DATA = {
         "id": 0x0e,
         "subid": 0x02
     },
+    "Seed Shooter": {
+        'classification': ItemClassification.progression,
+        'id': 0x0f
+    },
+    # "Progressive Harp": {
+    #     'classification': ItemClassification.progression,
+    #     'id': 0x11
+    # },
     "Progressive Slingshot": {
         "classification": ItemClassification.progression,
         "id": 0x13

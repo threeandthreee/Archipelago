@@ -17,7 +17,7 @@ class MultiuseKeyMethods(CrystalProjectTestBase):
     def has_skeleton_key(self):
         self.collect_mounts_and_progressive_levels_and_passes()
         #Player can reach South Wing Rubble location without any prison keys if they go through the Tram
-        unreachable_locations = ["Capital Sequoia Chest - Gardeners Shed 1",
+        unreachable_locations = ["Capital Sequoia Chest - Gardener's Shed 1",
                      "Capital Jail Chest - South Wing jail cell across from busted wall",
                      "Capital Jail Chest - West Wing jail cell among the glowy plants",
                      "Capital Jail Chest - Locked among the foliage in West Wing",
@@ -35,13 +35,13 @@ class MultiuseKeyMethods(CrystalProjectTestBase):
 
     def has_singleton_key(self):
         self.collect_mounts_and_progressive_levels_and_passes()
-        self.assertFalse(self.can_reach_location("Capital Sequoia Chest - Gardeners Shed 1"))
+        self.assertFalse(self.can_reach_location("Capital Sequoia Chest - Gardener's Shed 1"))
         self.collect(self.get_item_by_name(GARDENERS_KEY))
-        self.assertTrue(self.can_reach_location("Capital Sequoia Chest - Gardeners Shed 1"))
+        self.assertTrue(self.can_reach_location("Capital Sequoia Chest - Gardener's Shed 1"))
 
 class TestSkeletonKeyMode(MultiuseKeyMethods):
     options = {
-        "keyMode": 0
+        "key_mode": 0
     }
 
     def test_has_skeleton_key(self):
@@ -51,7 +51,7 @@ class TestKeyRings(MultiuseKeyMethods):
     run_default_tests = False
 
     options = {
-        "keyMode": 1
+        "key_mode": 1
     }
 
     def test_has_no_dungeon_keys(self):
@@ -101,7 +101,7 @@ class TestVanillaKeys(MultiuseKeyMethods):
     run_default_tests = False
 
     options = {
-        "keyMode": 2
+        "key_mode": 2
     }
 
     def test_has_no_keyring(self):
@@ -176,7 +176,7 @@ class TestKeyRingsSkeleFree(TestKeyRings):
     run_default_tests = False
 
     options = {
-        "keyMode": 3
+        "key_mode": 3
     }
 
     def test_has_no_dungeon_keys(self):
@@ -207,7 +207,7 @@ class TestVanillaKeysSkeleFree(TestVanillaKeys):
     run_default_tests = False
 
     options = {
-        "keyMode": 4
+        "key_mode": 4
     }
 
     def test_has_no_skeleton_key(self):

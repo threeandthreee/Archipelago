@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 from datetime import datetime
+from .data.Entrances import ENTRANCES
 
 from Options import Choice, DeathLink, DefaultOnToggle, PerGameCommonOptions, Range, Toggle, StartInventoryPool, \
-    ItemDict, ItemsAccessibility, ItemSet, Visibility, OptionGroup
+    ItemDict, ItemsAccessibility, ItemSet, Visibility, OptionGroup, PlandoConnections
 from worlds.tloz_ph.data.Items import ITEMS_DATA
 
 
@@ -66,7 +67,7 @@ class PhantomHourglassTimeIncrement(Range):
     If you exclude as many locations as possible, and have 30 metal items, generation breaks at 6 seconds
     """
     display_name = "Increment for each Sand of Hours"
-    range_start = 0
+    range_start = 1
     range_end = 5999
     default = 60
 
@@ -78,7 +79,6 @@ class PhantomHourglassRemoveItemsFromPool(ItemDict):
     before using it on long generations. Use at your own risk!
     """
     display_name = "remove_items_from_pool"
-    verify_item_name = False
 
 
 class PhantomHourglassLogic(Choice):
@@ -504,6 +504,12 @@ class PhantomHourglassRandomizeBeedlePoints(Choice):
     option_randomize_with_grinding = 3
     default = 1
 
+class PhantomHourglassAddItemsToPool(ItemDict):
+    """
+    Add items to pool. Useful for adding duplicates
+    """
+    display_name = "add_items_to_pool"
+
 class PhantomHourglassDungeonShortcuts(Toggle):
     """
     Adds shortcuts from the beginning of islands to their dungeons, often by entering the house nearest their port.
@@ -512,6 +518,14 @@ class PhantomHourglassDungeonShortcuts(Toggle):
     """
     display_name = "dungeon_shortcuts"
     default = 0
+
+class PhantomHourglassTotOKCheckpoints(Toggle):
+    """
+    Redirects the yellow warp portal in the lobby to the deepest floor with a blue warp you've visited.
+    Entering that blue warp again will take you one warp portal up the dungeon.
+    """
+    default = 0
+    visibility = Visibility.none
 
 class PhantomHourglassShuffleDungeonEntrances(Choice):
     """
@@ -551,11 +565,13 @@ class PhantomHourglassShuffleCaves(Choice):
     - no_shuffle: don't shuffle caves
     - shuffle: shuffle caves
     - simple_mixed_pool: shuffles caves with other entrance types that have this option
+    - shuffle_on_own_island: caves on each island will be shuffled with each other. Overrides the shuffle_between_islands option.
     """
     display_name = "shuffle_caves"
     option_no_shuffle = 0
     option_shuffle = 1
     option_simple_mixed_pool = 2
+    option_shuffle_on_own_island = 3
     default = 0
 
 class PhantomHourglassShuffleHouses(Choice):
@@ -565,11 +581,13 @@ class PhantomHourglassShuffleHouses(Choice):
     - no_shuffle: don't shuffle houses
     - shuffle: shuffle houses
     - simple_mixed_pool: shuffles houses with other entrance types that have this option
+    - shuffle_on_own_island: houses on each island will be shuffled with each other. Overrides the shuffle_between_islands option.
     """
     display_name = "shuffle_houses"
     option_no_shuffle = 0
     option_shuffle = 1
     option_simple_mixed_pool = 2
+    option_shuffle_on_own_island = 3
     default = 0
 
 class PhantomHourglassShuffleOverworldTransitions(Choice):
@@ -581,11 +599,13 @@ class PhantomHourglassShuffleOverworldTransitions(Choice):
     - no_shuffle: don't shuffle island transitions
     - shuffle: shuffle overworld transitions
     - simple_mixed_pool: shuffles houses with other entrance types that have this option
+    - shuffle_on_own_island: overworld transitions on each island will be shuffled with each other. Overrides the shuffle_between_islands option.
     """
     display_name = "shuffle_overworld_transitions"
     option_no_shuffle = 0
     option_shuffle = 1
     option_simple_mixed_pool = 2
+    option_shuffle_on_own_island = 3
     default = 0
 
 class PhantomHourglassShuffleBetweenIslands(Choice):
@@ -698,6 +718,21 @@ class PhantomHourglassRequireSpecificBosses(Toggle):
     display_name = "dungeon_reward_type"
     default = 1
 
+class PhantomHourglassEntrancePlando(PlandoConnections):
+    """
+    Plando entrance connections. Format is a list of dictionaries:
+    - entrance: "Entrance Name"
+      exit: "Exit Name"
+      direction: "Direction"
+      percentage: 100
+    Direction must be one of 'entrance', 'exit', or 'both', and defaults to 'both' if omitted.
+    Percentage is an integer from 1 to 100, and defaults to 100 when omitted.
+    Will disconnect entrances for you, and randomize their dangling entrances with each other if their entrance groups allow it.
+    """
+    display_name = "Transition Plando"
+    entrances = frozenset(ENTRANCES.keys())
+    exits = frozenset(ENTRANCES.keys())
+
 @dataclass
 class PhantomHourglassOptions(PerGameCommonOptions):
     # Accessibility
@@ -749,6 +784,7 @@ class PhantomHourglassOptions(PerGameCommonOptions):
     skip_ocean_fights: PhantomHourglassSkipOceanFights
     zauz_required_metals: PhantomHourglassZauzRequiredMetals
     dungeon_shortcuts: PhantomHourglassDungeonShortcuts
+    totok_checkpoints: PhantomHourglassTotOKCheckpoints
 
     # Spirit Gem options
     spirit_gem_packs: PhantomHourglassSpiritGemPacks
@@ -775,6 +811,7 @@ class PhantomHourglassOptions(PerGameCommonOptions):
     entrance_directionality: PhantomHourglassPreserveDirectionality
     shuffle_between_islands: PhantomHourglassShuffleBetweenIslands
     decouple_entrances: PhantomHourglassDecoupleEntrances
+    plando_transitions: PhantomHourglassEntrancePlando
 
     # Cosmetic
     additional_metal_names: PhantomHourglassAdditionalMetalNames
@@ -782,6 +819,7 @@ class PhantomHourglassOptions(PerGameCommonOptions):
     # Generic
     accessibility: ItemsAccessibility
     start_inventory_from_pool: StartInventoryPool
+    add_items_to_pool: PhantomHourglassAddItemsToPool
     remove_items_from_pool: PhantomHourglassRemoveItemsFromPool
     death_link: DeathLink
 
@@ -832,6 +870,7 @@ ph_option_groups = [
         PhantomHourglassSkipOceanFights,
         PhantomHourglassZauzRequiredMetals,
         PhantomHourglassDungeonShortcuts,
+        PhantomHourglassTotOKCheckpoints,
         PhantomHourglassSwitchBehaviour,
         PhantomHourglassBossKeyBehavior
     ]),
@@ -856,10 +895,15 @@ ph_option_groups = [
         PhantomHourglassShuffleBosses,
         PhantomHourglassPreserveDirectionality,
         PhantomHourglassDecoupleEntrances,
-        PhantomHourglassShuffleBetweenIslands
+        PhantomHourglassShuffleBetweenIslands,
+        PhantomHourglassEntrancePlando
     ]),
     OptionGroup("Cosmetic Options", [
         PhantomHourglassAdditionalMetalNames
+    ]),
+    OptionGroup("Item & Location Options", [
+        PhantomHourglassAddItemsToPool,
+        PhantomHourglassRemoveItemsFromPool
     ]),
 ]
 

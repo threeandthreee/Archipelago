@@ -18,27 +18,27 @@
 # format (ID, subID, jump address). these functions *must* pop af as the last
 # instruction before returning.
 3f//customSpriteJumpTable: |
-    dwbe 4700, locations.memberShop1
-    dwbe 4702, locations.memberShop2
-    dwbe 4705, locations.memberShop3
-    dwbe 4704, locations.horonShop1
-    dwbe 4703, locations.horonShop2
-    dwbe 4701, locations.horonShop3
-    dwbe 470e, locations.advanceShop1
-    dwbe 470f, locations.advanceShop2
-    dwbe 4710, locations.advanceShop3
-    dwbe 4709, locations.syrupShop2
-    dwbe 470a, locations.syrupShop3
-    dwbe 470b, locations.syrupShop1
-    dwbe 5900, locations.lostWoodsPedestal
-    dwbe 8100, locations.subrosianMarket1
-    dwbe 8104, locations.subrosianMarket2
-    dwbe 810a, locations.subrosianMarket3
-    dwbe 810c, locations.subrosianMarket4
-    dwbe 810d, locations.subrosianMarket5
-    dwbe c600, locations.d0SwordChest
-    dwbe e602, locations.templeOfSeasons
-    db ff
+    dwbe $4700, locations.memberShop1
+    dwbe $4702, locations.memberShop2
+    dwbe $4705, locations.memberShop3
+    dwbe $4704, locations.horonShop1
+    dwbe $4703, locations.horonShop2
+    dwbe $4701, locations.horonShop3
+    dwbe $470e, locations.advanceShop1
+    dwbe $470f, locations.advanceShop2
+    dwbe $4710, locations.advanceShop3
+    dwbe $4709, locations.syrupShop2
+    dwbe $470a, locations.syrupShop3
+    dwbe $470b, locations.syrupShop1
+    dwbe $5900, locations.lostWoodsPedestal
+    dwbe $8100, locations.subrosianMarket1
+    dwbe $8104, locations.subrosianMarket2
+    dwbe $810a, locations.subrosianMarket3
+    dwbe $810c, locations.subrosianMarket4
+    dwbe $810d, locations.subrosianMarket5
+    dwbe $c600, locations.d0SwordChest
+    dwbe $e602, locations.templeOfSeasons
+    db $ff
 
 # overrides the sprite data loaded for certain interactions. this is mostly
 # used for "non-item" interactions that depict items, like the ones in shops.
@@ -100,18 +100,18 @@
 
 # give items that don't normally appear as treasure interactions entries in
 # the treasure graphics table.
-3f/6790/: db 5f,16,33  # Ricky's flute (GFX #3c)
-3f/6793/: db 5f,16,23  # Dimitri's flute (GFX #3d)
-3f/6796/: db 5f,16,13  # Moosh's flute (GFX #3e)
-3f/6799/: db 5d,10,26  # Rare Peach Stone (GFX #3f)
+3f/6790/: db $5f,$16,$33  # Ricky's flute (GFX #3c)
+3f/6793/: db $5f,$16,$23  # Dimitri's flute (GFX #3d)
+3f/6796/: db $5f,$16,$13  # Moosh's flute (GFX #3e)
+3f/6799/: db $5d,$10,$26  # Rare Peach Stone (GFX #3f)
 
-3f/67b4/: db 5d,0c,13  # Member's Card (GFX #48)
-3f/67b7/: db 65,14,33  # Treasure Map (GFX #49)
-3f/67ba/: db 60,14,00  # Fool's Ore (GFX #4a)
-3f/67bd/: db 5d,00,23  # Potion (GFX #4b)
-3f/67c0/: db 65,0c,23  # Ribbon (GFX #4c)
-3f/67c3/: db 5c,0c,20  # Ore Chunks x10 (GFX #4d)
-3f/67c6/: db 5c,0c,10  # Ore Chunks x25 (GFX #4e)
+3f/67b4/: db $5d,$0c,$13  # Member's Card (GFX #48)
+3f/67b7/: db $65,$14,$33  # Treasure Map (GFX #49)
+3f/67ba/: db $60,$14,$00  # Fool's Ore (GFX #4a)
+3f/67bd/: db $5d,$00,$23  # Potion (GFX #4b)
+3f/67c0/: db $65,$0c,$23  # Ribbon (GFX #4c)
+3f/67c3/: db $5c,$0c,$20  # Ore Chunks x10 (GFX #4d)
+3f/67c6/: db $5c,$0c,$10  # Ore Chunks x25 (GFX #4e)
 
 # Add custom palette variants for rod of seasons to be able to know which
 # season it gives at first sight
@@ -127,7 +127,7 @@
 
 # Inject the "Archipelago Item" sprite in an unused sector of last items spritesheet
 1b/7a80/: |
-    db $03,$03,$07,$04,$0F,$08,$3F,$3C,$7E,$43,$F9,$87,$FD,$BF,$FA,$C6
-    db $FB,$87,$F7,$8C,$EF,$98,$8F,$F8,$4F,$78,$38,$3F,$04,$07,$03,$03
-    db $C0,$C0,$E0,$20,$90,$70,$3C,$FC,$7E,$C2,$F9,$87,$FD,$BF,$7F,$43
-    db $F9,$C7,$F1,$2F,$D1,$3F,$91,$7F,$12,$FE,$1C,$FC,$20,$E0,$C0,$C0
+    db $03,$03,$07,$04,$0f,$08,$3f,$3c,$7e,$43,$f9,$87,$fd,$bf,$fa,$c6
+    db $fb,$87,$f7,$8c,$ef,$98,$8f,$f8,$4f,$78,$38,$3f,$04,$07,$03,$03
+    db $c0,$c0,$e0,$20,$90,$70,$3c,$fc,$7e,$c2,$f9,$87,$fd,$bf,$7f,$43
+    db $f9,$c7,$f1,$2f,$d1,$3f,$91,$7f,$12,$fe,$1c,$fc,$20,$e0,$c0,$c0

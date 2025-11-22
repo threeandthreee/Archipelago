@@ -280,7 +280,7 @@ LOCATIONS_DATA = {
     },
     "Sunken City: Syrup Shop #3": {
         "region_id": "syrup shop",
-        "vanilla_item": "Bombs (10)",
+        "vanilla_item": "Bombchus (10)",
         "flag_byte": 0xc63f,
         "bit_mask": 0x40,
         "scouting_byte": 0xc89c,

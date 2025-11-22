@@ -182,7 +182,7 @@ def connect_regions(world: World) -> None:
     connect(world, world.player, region_names, names.garinham, names.hauksness,
         equipment_helper(world, 5, 5, 3))
     connect(world, world.player, region_names, names.garinham, names.cantlin,
-        equipment_helper(world, 4, 4, 2))
+        equipment_helper(world, 4, 4, 2, True))
     connect(world, world.player, region_names, names.overworld, names.erdricks_cave,
             lambda state: (not random_map or state.has(names.magic_key, world.player)))
     connect(world, world.player, region_names, names.garinham, names.mountain_cave,

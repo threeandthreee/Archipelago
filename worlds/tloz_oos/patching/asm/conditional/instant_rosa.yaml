@@ -1,8 +1,8 @@
 # This part is too long to fit in the vanilla code but is not fully there to save rom space
 15//rosa_full_unlock_end: |
-    ld l,$F9 ; room 4F9 flags
+    ld l,$f9 ; room 4F9 flags
     set 2,(hl)
-    ld a,$0B
+    ld a,$0b
     jp $30d3 ; unsetGlobalFlag
 
 # Override rosa_startDate to immediately open all 3 locks

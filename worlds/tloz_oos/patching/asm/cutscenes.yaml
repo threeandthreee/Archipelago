@@ -41,7 +41,7 @@
     db scriptend
 
 # Make the barrier cutscene not display the essences Link did not get
-15/6B9C/: |
+15/6b9c/: |
     call skipEssence
     jr nz,$15
 

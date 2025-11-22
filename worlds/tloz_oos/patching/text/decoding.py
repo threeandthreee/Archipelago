@@ -1,16 +1,23 @@
 from typing import Optional
 
 from ..RomData import RomData
-from . import simple_hex, char_table, kanji_table, text_offset_1_table_address, text_offset_2_table_address, text_table_eng_address, text_offset_split_index
+from . import char_table, kanji_table, text_offset_1_table_address_seasons, text_offset_2_table_address_seasons, text_table_eng_address_seasons, \
+    text_offset_split_index_seasons, text_offset_1_table_address_ages, text_offset_2_table_address_ages, text_table_eng_address_ages, \
+    text_offset_split_index_ages
+from ..Util import simple_hex
 from ..z80asm.Assembler import GameboyAddress
 
 
-def parse_dict_seasons(rom: RomData):
-    base_address = text_table_eng_address
+def parse_dict_seasons(rom: RomData, seasons: bool):
+    if seasons:
+        base_address = text_table_eng_address_seasons
+        text_offset_1 = GameboyAddress(rom.read_byte(text_offset_1_table_address_seasons), rom.read_word(text_offset_1_table_address_seasons + 1))
+    else:
+        base_address = text_table_eng_address_ages
+        text_offset_1 = GameboyAddress(rom.read_byte(text_offset_1_table_address_ages), rom.read_word(text_offset_1_table_address_seasons + 1))
     dict_entries_offset = rom.read_word(base_address)
 
     base_address += dict_entries_offset
-    text_offset_1 = GameboyAddress(rom.read_byte(text_offset_1_table_address), rom.read_word(text_offset_1_table_address + 1))
     text_offset_1_address = text_offset_1.address_in_rom()
 
     dict_seasons = {}
@@ -23,13 +30,20 @@ def parse_dict_seasons(rom: RomData):
     return dict_seasons
 
 
-def parse_all_texts(rom: RomData, dictionary: dict[str, str]):
-    text_offset_1 = GameboyAddress(rom.read_byte(text_offset_1_table_address), rom.read_word(text_offset_1_table_address + 1))
-    text_offset_1_address = text_offset_1.address_in_rom()
-    text_offset_2 = GameboyAddress(rom.read_byte(text_offset_2_table_address), rom.read_word(text_offset_2_table_address + 1))
-    text_offset_2_address = text_offset_2.address_in_rom()
+def parse_all_texts(rom: RomData, dictionary: dict[str, str], seasons: bool):
+    if seasons:
+        text_offset_1 = GameboyAddress(rom.read_byte(text_offset_1_table_address_seasons), rom.read_word(text_offset_1_table_address_seasons + 1))
+        text_offset_2 = GameboyAddress(rom.read_byte(text_offset_2_table_address_seasons), rom.read_word(text_offset_2_table_address_seasons + 1))
+        base_address = text_table_eng_address_seasons
+        text_offset_split_index = text_offset_split_index_seasons
+    else:
+        text_offset_1 = GameboyAddress(rom.read_byte(text_offset_1_table_address_ages), rom.read_word(text_offset_1_table_address_seasons + 1))
+        text_offset_2 = GameboyAddress(rom.read_byte(text_offset_2_table_address_ages), rom.read_word(text_offset_2_table_address_seasons + 1))
+        base_address = text_table_eng_address_ages
+        text_offset_split_index = text_offset_split_index_ages
 
-    base_address = text_table_eng_address
+    text_offset_1_address = text_offset_1.address_in_rom()
+    text_offset_2_address = text_offset_2.address_in_rom()
     current_offset_address = base_address + 8
     prev_offset = rom.read_word(current_offset_address)
     current_offset_address += 2
@@ -143,10 +157,10 @@ def decode_text(rom: RomData, entry_address: int, dictionary: Optional[dict[str,
 
 
 def fetch_data(rom: RomData, category_id: int, text_id: int, length: int, text_offset_1_address: int, text_offset_2_address: int) -> list[int]:
-    address = text_table_eng_address + category_id * 2
-    address = rom.read_word(address) + text_table_eng_address + text_id * 2
+    address = text_table_eng_address_seasons + category_id * 2
+    address = rom.read_word(address) + text_table_eng_address_seasons + text_id * 2
     address = rom.read_word(address)
-    if category_id < text_offset_split_index:
+    if category_id < text_offset_split_index_seasons:
         address += text_offset_1_address
     else:
         address += text_offset_2_address

@@ -11,7 +11,7 @@ nes_logger = logging.getLogger("NES")
 logger = logging.getLogger("Client")
 
 EXPECTED_ROM_NAME = "DWAPV"
-EXPECTED_VERSION = "100"
+EXPECTED_VERSION = "101"
 EQUIPMENT_BYTES = [0x1, 0x2, 0x3, 0x4, 0x8, 0xC, 0x10, 0x14, 0x18, 0x1C, 0x20, 0x40, 0x60, 0x80, 0xA0, 0xC0, 0xE0]
 ENEMY_NAMES = ['Slime', 'Red Slime', 'Drakee', 'Ghost', 'Magician', 'Magidrakee', 'Scorpion', 'Druin', 'Poltergeist',
                'Droll', 'Drakeema', 'Skeleton', 'Warlock', 'Metal Scorpion', 'Wolf', 'Wraith', 'Metal Slime', 'Specter',
@@ -167,7 +167,8 @@ class DragonWarriorClient(BizHawkClient):
             case 0x0B: # Rimuldar 
                 equipment_locations = [0x10, 0x14, 0x18, 0x60, 0x80, 0xA0]
         
-        if equipment_locations:
+        # Don't send scouts unless shopsanity is on, seeing if 0x01 is in the locations list
+        if equipment_locations and 0x01 in ctx.server_locations:
             await ctx.send_msgs([{
                 "cmd": "LocationScouts",
                 "locations": equipment_locations,
@@ -245,7 +246,9 @@ class DragonWarriorClient(BizHawkClient):
         # Compare items_received index in the RAM at 0x0E to len(ctx.items_received)
         # If smaller, we should grant the missing items
         important_items = [0x5, 0x7, 0x8, 0xA, 0xC, 0xD, 0xE]
-        filler_items = [0x1, 0x2, 0x3, 0x4, 0x6, 0x9, 0xB]
+        filler_items = [0x1, 0x2, 0x3, 0x9]
+        useful_items = [0x4, 0x6]
+        death_necklace = [0xB]
 
         recv_index = recv_count[0]
 
@@ -260,7 +263,7 @@ class DragonWarriorClient(BizHawkClient):
 
                 found_space = False
 
-                for i in range(len(inventory_bytes)):
+                for i in range(len(inventory_bytes)):  # Loop through inventory in RAM and find a free space
                     slot = inventory_bytes[i]
                     hi_item = ((slot & 0xF0) >> 4)
                     lo_item = slot & 0xF
@@ -285,6 +288,38 @@ class DragonWarriorClient(BizHawkClient):
                             new_byte = (item.item << 4) + lo_item
                             found_space = True
                         elif lo_item in filler_items:
+                            new_byte = (hi_item << 4) + item.item
+                            found_space = True
+                        if found_space:
+                            writes.append((0xC1 + i, new_byte.to_bytes(1, 'little'), "RAM"))
+                            break
+                
+                if not found_space:  # No filler items, kick out a useful item
+                    for i in range(len(inventory_bytes)):
+                        slot = inventory_bytes[i]
+                        hi_item = ((slot & 0xF0) >> 4)
+                        lo_item = slot & 0xF
+
+                        if hi_item in useful_items:
+                            new_byte = (item.item << 4) + lo_item
+                            found_space = True
+                        elif lo_item in useful_items:
+                            new_byte = (hi_item << 4) + item.item
+                            found_space = True
+                        if found_space:
+                            writes.append((0xC1 + i, new_byte.to_bytes(1, 'little'), "RAM"))
+                            break
+
+                if not found_space:  # Only option here is 7 quest items + Death Necklace, remove DN
+                    for i in range(len(inventory_bytes)):
+                        slot = inventory_bytes[i]
+                        hi_item = ((slot & 0xF0) >> 4)
+                        lo_item = slot & 0xF
+
+                        if hi_item in death_necklace:
+                            new_byte = (item.item << 4) + lo_item
+                            found_space = True
+                        elif lo_item in death_necklace:
                             new_byte = (hi_item << 4) + item.item
                             found_space = True
                         if found_space:

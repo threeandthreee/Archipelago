@@ -5,7 +5,7 @@ from typing import List
 from worlds.tloz_oos.patching.z80asm.Errors import ArgumentOverflowError
 
 
-def strip_line(line):
+def strip_line(line: str) -> str:
     """
     Strips indent and comment from line, if present.
     """
@@ -13,7 +13,7 @@ def strip_line(line):
     return re.sub(r" *[;#].*\n?", "", line)
 
 
-def parse_hex_string_to_value(string: str):
+def parse_hex_string_to_value(string: str) -> int:
     """
     Parse an hexadecimal string into a numeric value, handling some operators
     """
@@ -34,6 +34,13 @@ def parse_hex_string_to_value(string: str):
         return int(string, 16)
 
 
+def parse_bin_string_to_value(string: str) -> int:
+    """
+    Parse a binary string into a numeric value as small endian, no operator is supported
+    """
+    return int(string[:0:-1], 2)
+
+
 def value_to_byte_array(value: int, expected_size: int):
     """
     Converts a value into a little endian byte array
@@ -51,7 +58,16 @@ def value_to_byte_array(value: int, expected_size: int):
     return output
 
 
-def parse_hex_byte(string: str):
+def parse_byte(string: str) -> int:
+    if string.startswith("$"):
+        return parse_hex_byte(string)
+    elif string.startswith("%"):
+        return parse_bin_string_to_value(string)
+    else:
+        raise Exception(f"Invalid byte string : {string}")
+
+
+def parse_hex_byte(string: str) -> int:
     """
     Converts a byte literal hexadecimal string into a byte value
     (e.g. "$4F" => 0x4f)
@@ -84,10 +100,13 @@ def parse_argument(arg: str, mnemonic_subtree: collections.abc.Mapping) -> (str,
 
     # If argument is a literal, determine the expected size of that literal using the
     # mnemonic subtree that was passed as parameter
-    if arg.startswith("$"):
+    if arg.startswith("$") or arg.startswith("%"):
         value = 0
         try:
-            value = parse_hex_string_to_value(arg)
+            if arg.startswith("$"):
+                value = parse_hex_string_to_value(arg)
+            else:
+                value = parse_bin_string_to_value(arg)
         except ValueError:
             pass
 
@@ -96,7 +115,7 @@ def parse_argument(arg: str, mnemonic_subtree: collections.abc.Mapping) -> (str,
             if enclosed_in_parentheses:
                 generic_arg = f"({generic_arg})"
             if generic_arg in mnemonic_subtree:
-                return generic_arg, value_to_byte_array(value, int(size/8))
+                return generic_arg, value_to_byte_array(value, int(size / 8))
 
     # If we reached that point, this means we need to keep the symbol as it is: it can be a register name,
     # or an invalid name which will get rejected at a later point
@@ -104,4 +123,3 @@ def parse_argument(arg: str, mnemonic_subtree: collections.abc.Mapping) -> (str,
         return f"({arg})", []
     else:
         return arg, []
-

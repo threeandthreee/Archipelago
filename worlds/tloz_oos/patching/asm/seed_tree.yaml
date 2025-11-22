@@ -6,7 +6,7 @@
   db seedTree4.map, $0c
   db seedTree5.map, seedTree5.enabled ; 0d if enabled, 0e (wagons which are disabled in rando) if disabled
 
-04/670C/: |
+04/670c/: |
   ; Replaces roomTileChangesAfterLoad 09-0d with our own to free space
   dw roomTileChangesAfterLoadTree1
   dw roomTileChangesAfterLoadTree2
@@ -90,14 +90,14 @@
   ret
 
 # It huts a bit to take that much space in bank 0
-00/168E/: call smallerTreeGraphics1
+00/168e/: call smallerTreeGraphics1
 00//smallerTreeGraphics1: |
   ld a,($cc18) ; wLoadedTreeGfxActive
   bit 7,a
   jr z,@end
   ld b,$0f
   @end:
-  jp $064E ; decompressGraphics
+  jp $064e ; decompressGraphics
 00/16a2/: jp smallerTreeGraphics2
 00//smallerTreeGraphics2: |
   ld a,($cc18) ; wLoadedTreeGfxActive

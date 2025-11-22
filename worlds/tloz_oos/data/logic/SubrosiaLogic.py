@@ -68,7 +68,14 @@ def make_subrosia_logic(player: int):
         ["subrosia hide and seek sector", "subrosia temple sector", True, lambda state: oos_can_jump_4_wide_liquid(state, player)],
         ["subrosia hide and seek sector", "subrosia pirates sector", True, lambda state: oos_has_feather(state, player)],
 
-        ["subrosia east junction", "subrosia furnace sector", True, lambda state: oos_has_feather(state, player)],
+        ["subrosia east junction", "subrosia furnace sector", False, lambda state: oos_has_feather(state, player)],
+        ["subrosia furnace sector", "subrosia east junction", False, lambda state: any([
+            oos_has_feather(state, player),
+            all([
+                oos_option_medium_logic(state, player),
+                oos_has_switch_hook(state, player)
+            ])
+        ])],
 
         # Locations ###############################################################
 

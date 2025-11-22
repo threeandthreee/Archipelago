@@ -15,7 +15,8 @@ class TestMinLocationsMaxItems(WorldTestBase):
         "treehouse_old_man_requirement": 8,
         "deterministic_gasha_locations": 16,
         "enforce_potion_in_shop": True,
-        "shuffle_golden_ore_spots": True
+        "shuffle_golden_ore_spots": True,
+        "cross_items": True
     }
 
     def test_more_items_than_locations(self):

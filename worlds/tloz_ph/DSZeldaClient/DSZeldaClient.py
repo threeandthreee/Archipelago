@@ -816,7 +816,7 @@ class DSZeldaClient(BizHawkClient):
         # Write dynamic flags to memory
         read_list = {a: (a, 1, "Main RAM") for a in read_addr}
         prev = await read_memory_values(ctx, read_list)
-        print(f"{[[hex(int(a)), hex(v)] for a, v in prev.items()]}")
+        print(f"prevs: {[[hex(int(a)), hex(v)] for a, v in prev.items()]}")
 
         # Calculate values to write
         for a, v in set_bits.items():
@@ -826,7 +826,7 @@ class DSZeldaClient(BizHawkClient):
 
         # Write
         write_list = [(int(a), [v], "Main RAM") for a, v in prev.items()]
-        print(f"Dynaflags writes: {prev}")
+        print(f"Dynaflags writes: {[[hex(a), [hex(i) for i in v]] for a, v, _ in write_list]}")
         await bizhawk.write(ctx.bizhawk_ctx, write_list)
         return write_list
 
@@ -912,11 +912,17 @@ class DSZeldaClient(BizHawkClient):
         # Read a dict of addresses to see if they match value
         async def check_bits(d):
             if "check_bits" in d:
-                r_list = {addr: (addr, 1, "Main RAM") for addr, _ in d["check_bits"].items()}
+                r_list = {addr: (addr, 1, "Main RAM") for addr, _, *args in d["check_bits"]}
+                v_lookup = {addr: v for addr, v, *args in d["check_bits"]}
+                arg_lookup = {addr: args for addr, v, *args in d["check_bits"] if args}
                 values = await read_memory_values(ctx, r_list)
                 for addr, p in values.items():
-                    if not (p & d["check_bits"][addr]):
-                        return False
+                    if not arg_lookup[addr]:
+                        if not (p & v_lookup[addr]):
+                            return False
+                    elif "not" in arg_lookup[addr]:
+                        if p & v_lookup[addr]:
+                            return False
             return True
 
         def has_entrance(d):
@@ -1012,15 +1018,16 @@ class DSZeldaClient(BizHawkClient):
                     break
                 location = None
 
-        if location is not None and "set_bit" in location:
-            for addr, bit in location["set_bit"]:
-                print(f"Setting bit {bit} for location vanil {location['vanilla_item']}")
-                await write_memory_value(ctx, addr, bit)
+        if location is not None:
+            if "set_bit" in location:
+                for addr, bit in location["set_bit"]:
+                    print(f"Setting bit {bit} for location vanil {location['vanilla_item']}")
+                    await write_memory_value(ctx, addr, bit)
 
-        # Delay reset of vanilla item from certain address reads
-        if location is not None and "delay_reset" in location:
-            self.delay_reset = 1
-            print(f"Started Delay Reset for {self.last_vanilla_item}")
+            # Delay reset of vanilla item from certain address reads
+            if "delay_reset" in location:
+                self.delay_reset = 1
+                print(f"Started Delay Reset for {self.last_vanilla_item}")
 
         # Send locations
         # print(f"Local locations: {local_checked_locations} in \n{all_checked_locations}")
@@ -1096,6 +1103,7 @@ class DSZeldaClient(BizHawkClient):
         :param location:
         :return:
         """
+        return
 
     async def _process_received_items(self, ctx: "BizHawkClientContext", num_received_items: int, log_items=False) -> None:
         # If the game hasn't received all items yet and the received item struct doesn't contain an item, then
@@ -1424,7 +1432,7 @@ class DSZeldaClient(BizHawkClient):
 
     async def _load_local_locations(self, ctx, scene):
         # Load locations in room into loop
-        self.locations_in_scene = self.location_area_to_watches.get(scene, {})
+        self.locations_in_scene = self.location_area_to_watches.get(scene, {}).copy()
         print(f"Locations in scene {scene}: {self.locations_in_scene.keys()}")
         self.watches = {}
         sram_read_list = {}
@@ -1489,6 +1497,7 @@ class DSZeldaClient(BizHawkClient):
         if new_keys != 0:
             new_keys = 7 if new_keys >= 7 else new_keys
             new_keys, reset_key_count = await self.update_special_key_count(ctx, current_stage, new_keys, key_data, key_values, key_address)
+            new_keys = 0 if new_keys < 0 else new_keys
             write_list = [(key_address, [new_keys], "Main RAM")]
             if reset_key_count:
                 reset_tracker = (~key_data["filter"]) & key_values["tracker"]

@@ -75,3 +75,7 @@ def get_available_random_colors_from_sprite_name(sprite_filename: str):
         return list(CHARACTER_COLORS.values())  # Too long, not a color suffix
 
     return [color for letter, color in CHARACTER_COLORS.items() if letter in suffix]
+
+
+def simple_hex(num: int, size: int = 2) -> str:
+    return hex(num)[2:].rjust(2, "0")
