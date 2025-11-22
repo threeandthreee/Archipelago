@@ -1,18 +1,15 @@
 import binascii
 import importlib.util
 import importlib.machinery
-import os
 import random
 import pickle
 import Utils
-import settings
 from collections import defaultdict
 from typing import Dict
 
 from .romTables import ROMWithTables
 from . import assembler
 from . import patches
-from .utils import formatText
 from .patches import overworld as _
 from .patches import dungeon as _
 from .patches import entrances as _
@@ -57,17 +54,37 @@ from .patches import save as _
 from .patches import bingo as _
 from .patches import multiworld as _
 from .patches import tradeSequence as _
+from .patches import saveVictory as _
 from . import hints
+from . import utils
 
 from .patches import bank34
 from .roomEditor import RoomEditor, Object
 from .patches.aesthetics import rgb_to_bin, bin_to_rgb
 
-from .. import Common
 from .. import Options
+
+class VersionError(Exception):
+    pass
 
 # Function to generate a final rom, this patches the rom with all required patches
 def generateRom(base_rom: bytes, args, patch_data: Dict):
+    from .. import LinksAwakeningWorld
+    patcher_version = LinksAwakeningWorld.world_version
+    generated_version = Utils.tuplize_version(patch_data.get("generated_world_version", "13.1.0"))
+    if generated_version.major != patcher_version.major or generated_version.minor != patcher_version.minor:
+        Utils.messagebox(
+            "Error",
+            "The apworld version that this patch was generated on is incompatible with your installed world.\n\n"
+            f"Generated on {generated_version.as_simple_string()}\n"
+            f"Installed version {patcher_version.as_simple_string()}",
+            True
+        )
+        raise VersionError(
+            f"The installed world ({patcher_version.as_simple_string()}) is incompatible with the world this patch "
+            f"was generated on ({generated_version.as_simple_string()})"
+        )
+
     random.seed(patch_data["seed"] + patch_data["player"])
     multi_key = binascii.unhexlify(patch_data["multi_key"].encode())
     item_list = pickle.loads(binascii.unhexlify(patch_data["item_list"].encode()))
@@ -86,9 +103,8 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
         pymod.prePatch(rom)
 
     if options["gfxmod"]:
-        user_settings = settings.get_settings()
         try:
-            gfx_mod_file = user_settings[f"{Common.DIRECTORY}_options"]["gfx_mod_file"]
+            gfx_mod_file = LinksAwakeningWorld.settings.gfx_mod_file
             patches.aesthetics.gfxMod(rom, gfx_mod_file)
         except FileNotFoundError:
             pass # if user just doesnt provide gfxmod file, let patching continue
@@ -105,8 +121,8 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
     assembler.const("wCustomMessage", 0xC0A0)
     assembler.const("wOverworldRoomStatus", 0xD800)
 
-    # There's a third unused death count address, use it to count consecutive safe frames
-    assembler.const("wConsecutiveSafe", 0xDB59)
+    # Unused wram address, use it to track consecutive safe frames for death link
+    assembler.const("wConsecutiveSafe", 0xDBA8)
 
     # We store the link info in unused color dungeon flags, so it gets preserved in the savegame.
     assembler.const("wMWRecvIndexHi", 0xDDF6)
@@ -129,6 +145,7 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
     assembler.const("HARD_MODE", 1 if options["hard_mode"] else 0)
 
     patches.core.cleanup(rom)
+    patches.core.fixD7exit(rom)
     patches.save.singleSaveSlot(rom)
     patches.phone.patchPhone(rom)
     patches.photographer.fixPhotographer(rom)
@@ -238,10 +255,10 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
         rom.patch(0, 0x0003, "00", "01")
 
     # Patch the sword check on the shopkeeper turning around.
-    if options["stealing"] == 'disabled':
+    if options["stealing"] == Options.Stealing.option_disabled:
         rom.patch(4, 0x36F9, "FA4EDB", "3E0000")
-        rom.texts[0x2E] = formatText("Hey!  Welcome!  Did you know that I have eyes on the back of my head?")
-        rom.texts[0x2F] = formatText("Nothing escapes my gaze! Your thieving ways shall never prosper!")
+        rom.texts[0x2E] = utils.formatText("Hey!  Welcome!  Did you know that I have eyes on the back of my head?")
+        rom.texts[0x2F] = utils.formatText("Nothing escapes my gaze! Your thieving ways shall never prosper!")
 
     #if ladxr_settings["hpmode"] == 'inverted':
     #    patches.health.setStartHealth(rom, 9)
@@ -249,32 +266,32 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
     #    patches.health.setStartHealth(rom, 1)
 
     patches.inventory.songSelectAfterOcarinaSelect(rom)
-    if options["quickswap"] == 'a':
+    if options["quickswap"] == Options.Quickswap.option_a:
         patches.core.quickswap(rom, 1)
-    elif options["quickswap"] == 'b':
+    elif options["quickswap"] == Options.Quickswap.option_b:
         patches.core.quickswap(rom, 0)
 
     patches.core.addBootsControls(rom, options["boots_controls"])
+    patches.saveVictory.saveVictory(rom)
 
     random.seed(patch_data["seed"] + patch_data["player"])
     hints.addHints(rom, random, patch_data["hint_texts"])
 
-    world_setup = patch_data["world_setup"]
-    if world_setup["goal"] == "raft":
+    if patch_data["world_setup"]["goal"] == "raft":
         patches.goal.setRaftGoal(rom)
-    elif world_setup["goal"] in ("bingo", "bingo-full"):
-        patches.bingo.setBingoGoal(rom, world_setup["bingo_goals"], world_setup["goal"])
-    elif world_setup["goal"] == "seashells":
+    elif patch_data["world_setup"]["goal"] in ("bingo", "bingo-full"):
+        patches.bingo.setBingoGoal(rom, patch_data["world_setup"]["bingo_goals"], patch_data["world_setup"]["goal"])
+    elif patch_data["world_setup"]["goal"] == "seashells":
         patches.goal.setSeashellGoal(rom, 20)
-    elif isinstance(world_setup["goal"], str) and world_setup["goal"].startswith("="):
-        patches.goal.setSpecificInstruments(rom, [int(c) for c in world_setup["goal"][1:]])
+    elif isinstance(patch_data["world_setup"]["goal"], str) and patch_data["world_setup"]["goal"].startswith("="):
+        patches.goal.setSpecificInstruments(rom, [int(c) for c in patch_data["world_setup"]["goal"][1:]])
     else:
-        patches.goal.setRequiredInstrumentCount(rom, world_setup["goal"])
+        patches.goal.setRequiredInstrumentCount(rom, patch_data["world_setup"]["goal"])
 
     # Patch the generated logic into the rom
-    patches.chest.setMultiChest(rom, world_setup["multichest"])
+    patches.chest.setMultiChest(rom, patch_data["world_setup"]["multichest"])
     #if ladxr_settings["overworld"] not in {"dungeondive", "random"}:
-    patches.entrances.changeEntrances(rom, world_setup["entrance_mapping"])
+    patches.entrances.changeEntrances(rom, patch_data["world_setup"]["entrance_mapping"])
     for spot in item_list:
         if spot.item and spot.item.startswith("*"):
             spot.item = spot.item[1:]
@@ -285,8 +302,8 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
                 # There are only 101 player name slots (99 + "The Server" + "another world"), so don't use more than that
                 mw = 101
         spot.patch(rom, spot.item, multiworld=mw)
-    patches.enemies.changeBosses(rom, world_setup["boss_mapping"])
-    patches.enemies.changeMiniBosses(rom, world_setup["miniboss_mapping"])
+    patches.enemies.changeBosses(rom, patch_data["world_setup"]["boss_mapping"])
+    patches.enemies.changeMiniBosses(rom, patch_data["world_setup"]["miniboss_mapping"])
 
     if not args.romdebugmode:
         patches.core.addFrameCounter(rom, len(item_list))
