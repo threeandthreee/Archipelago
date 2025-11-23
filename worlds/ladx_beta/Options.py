@@ -666,6 +666,18 @@ class ForeignItemIcons(Choice):
     default = option_guess_by_name
 
 
+class Follower(Choice):
+    """
+    Gives you a pet follower in the game.
+    """
+    display_name = "Follower"
+    option_none = 0
+    option_fox = 1
+    option_navi = 2
+    option_ghost = 3
+    option_yip_yip = 4
+
+
 ladx_option_groups = [
     OptionGroup("Gameplay Adjustments", [
         HardMode,
@@ -708,6 +720,7 @@ ladx_option_groups = [
         MusicChangeCondition,
         LowHpBeep,
         NoFlash,
+        Follower,
     ]),
     OptionGroup("In-Game Hints", [
         InGameHintCount,
@@ -762,6 +775,7 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     filler_pool: FillerPool
     start_inventory_from_pool: StartInventoryPool
     expand_start: ExpandStart
+    follower: Follower
 
     warp_improvements: Removed
     additional_warp_points: Removed

@@ -84,8 +84,6 @@ def write_patch_data(world: "LinksAwakeningWorld", patch: LADXProcedurePatch):
         "options": world.options.as_dict(
             "tradequest",
             "rooster",
-            "experimental_dungeon_shuffle",
-            "experimental_entrance_shuffle",
             "goal",
             "instrument_count",
             "link_palette",
@@ -108,6 +106,8 @@ def write_patch_data(world: "LinksAwakeningWorld", patch: LADXProcedurePatch):
             "text_mode",
             "no_flash",
             "overworld",
+            "follower",
+            "entrance_shuffle",
         ),
     }
     patch.write_file("data.json", json.dumps(data_dict).encode('utf-8'))

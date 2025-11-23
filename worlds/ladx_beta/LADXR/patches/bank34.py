@@ -55,11 +55,11 @@ def addBank34(rom, item_list):
 
     ; this should be shared but I got link errors            
     OffsetPointerByRoomNumber:
-        ldh  a, [$F6] ; map room
+        ldh  a, [$FFF6] ; map room
         ld   e, a
         ld   a, [$DBA5] ; is indoor
         ld   d, a
-        ldh  a, [$F7]   ; mapId
+        ldh  a, [$FFF7]   ; mapId
         cp   $FF
         jr   nz, .notColorDungeon
 

@@ -124,7 +124,7 @@ UpdateInventoryMenu:
         add  hl, de
 
         ; Check if we need to increase the counter
-        ldh  a, [$E7] ; frame counter
+        ldh  a, [$FFE7] ; frame counter
         and  $0F
         jr   nz, .noInc
         ld   a, e
@@ -162,7 +162,7 @@ UpdateInventoryMenu:
 
         ; Write the tile attribute data
         ld   a, $01
-        ldh  [$4F], a
+        ldh  [$FF4F], a
 
         ld   hl, $9C6E
         call WriteToVRAM
@@ -176,7 +176,7 @@ UpdateInventoryMenu:
 
         ; Write the tile data
         xor  a
-        ldh  [$4F], a
+        ldh  [$FF4F], a
         
         pop  hl
         ld   de, 14
@@ -200,7 +200,7 @@ UpdateInventoryMenu:
         ret
 
 WriteToVRAM:
-        ldh  a, [$41]
+        ldh  a, [$FF41]
         and  $02
         jr   nz, WriteToVRAM
         ld   [hl], b

@@ -43,6 +43,7 @@ from .patches import droppedKey as _
 from .patches import goldenLeaf as _
 from .patches import songs as _
 from .patches import bowwow as _
+from .patches import follower as _
 from .patches import desert as _
 from .patches import reduceRNG as _
 from .patches import madBatter as _
@@ -202,9 +203,8 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
     patches.songs.upgradeMamu(rom)
 
     patches.tradeSequence.patchTradeSequence(rom, options)
-    patches.bowwow.fixBowwow(rom, everywhere=False)
-    # if ladxr_settings["bowwow"] != 'normal':
-    #    patches.bowwow.bowwowMapPatches(rom)
+    patches.bowwow.fixBowwow(rom)
+    patches.follower.patchFollowerCreation(rom, extra_spawn_index=int(options.get("follower", 0)))
     patches.desert.desertAccess(rom)
     # if ladxr_settings["overworld"] == 'dungeondive':
     #    patches.overworld.patchOverworldTilesets(rom)
@@ -308,7 +308,12 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
     if not args.romdebugmode:
         patches.core.addFrameCounter(rom, len(item_list))
 
-    patches.core.warpHome(rom)  # Needs to be done after setting the start location.
+    
+    patches.core.warpHome(rom, # Needs to be done after setting the start location.
+        options["entrance_shuffle"] == Options.EntranceShuffle.option_chaos or
+        options["entrance_shuffle"] == Options.EntranceShuffle.option_insane or
+        options["entrance_shuffle"] == Options.EntranceShuffle.option_madness)
+    
     patches.titleScreen.setRomInfo(rom, patch_data)
     if options["ap_title_screen"]:
         patches.titleScreen.setTitleGraphics(rom)

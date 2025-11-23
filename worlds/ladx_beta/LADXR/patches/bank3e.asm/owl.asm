@@ -10,7 +10,7 @@ HandleOwlStatue:
     ld   hl, $7B16
     call OffsetPointerByRoomNumber
     ld   a, [hl]
-    ldh  [$F1], a
+    ldh  [$FFF1], a
     call ItemMessage
     call GiveItemFromChest
     ret
@@ -21,9 +21,9 @@ GetRoomStatusAddressInHL:
     ld   a, [$DBA5] ; isIndoor
     ld   d, a
     ld   hl, $D800
-    ldh  a, [$F6]   ; room nr
+    ldh  a, [$FFF6]   ; room nr
     ld   e, a
-    ldh  a, [$F7]   ; map nr
+    ldh  a, [$FFF7]   ; map nr
     cp   $FF
     jr   nz, .notColorDungeon
 
@@ -46,17 +46,17 @@ GetRoomStatusAddressInHL:
 
 
 RenderOwlStatueItem:
-    ldh  a, [$F6] ; map room
+    ldh  a, [$FFF6] ; map room
     cp $B2
     jr nz, .NotYipYip
     ; Add 2 to room to set room pointer to an empty room for trade items
     add a, 2
-    ldh [$F6], a
+    ldh [$FFF6], a
     call RenderItemForRoom
-    ldh  a, [$F6] ; map room
+    ldh  a, [$FFF6] ; map room
     ; ...and undo it
     sub a, 2
-    ldh [$F6], a
+    ldh [$FFF6], a
     ret
 .NotYipYip:
     call RenderItemForRoom
