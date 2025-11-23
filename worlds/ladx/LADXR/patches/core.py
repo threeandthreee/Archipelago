@@ -564,7 +564,7 @@ def addBootsControls(rom, boots_controls: int):
           "wAButtonSlot": 0xDB01,
           "wBButtonSlot": 0xDB00,
           "wPegasusBootsChargeMeter": 0xC14B,
-          "hPressedButtonsMask": 0xCB
+          "hPressedButtonsMask": 0xFFCB
     }
     for c,v in consts.items():
         assembler.const(c, v)
