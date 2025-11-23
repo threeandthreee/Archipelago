@@ -80,8 +80,6 @@ def write_patch_data(world: "LinksAwakeningWorld", patch: LADXProcedurePatch):
         "options": world.options.as_dict(
             "tradequest",
             "rooster",
-            "experimental_dungeon_shuffle",
-            "experimental_entrance_shuffle",
             "goal",
             "instrument_count",
             "link_palette",
