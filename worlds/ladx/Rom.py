@@ -105,6 +105,7 @@ def write_patch_data(world: "LinksAwakeningWorld", patch: LADXProcedurePatch):
             "no_flash",
             "overworld",
             "follower",
+            "entrance_shuffle",
         ),
     }
     patch.write_file("data.json", json.dumps(data_dict).encode('utf-8'))

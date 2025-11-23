@@ -124,6 +124,7 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
     assembler.const("HARD_MODE", 1 if options["hard_mode"] else 0)
 
     patches.core.cleanup(rom)
+    patches.core.fixD7exit(rom)
     patches.save.singleSaveSlot(rom)
     patches.phone.patchPhone(rom)
     patches.photographer.fixPhotographer(rom)
@@ -259,6 +260,8 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
         patches.bingo.setBingoGoal(rom, patch_data["world_setup"]["bingo_goals"], patch_data["world_setup"]["goal"])
     elif patch_data["world_setup"]["goal"] == "seashells":
         patches.goal.setSeashellGoal(rom, 20)
+    elif isinstance(patch_data["world_setup"]["goal"], str) and patch_data["world_setup"]["goal"].startswith("="):
+        patches.goal.setSpecificInstruments(rom, [int(c) for c in patch_data["world_setup"]["goal"][1:]])
     else:
         patches.goal.setRequiredInstrumentCount(rom, patch_data["world_setup"]["goal"])
 
@@ -282,7 +285,12 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
     if not args.romdebugmode:
         patches.core.addFrameCounter(rom, len(item_list))
 
-    patches.core.warpHome(rom)  # Needs to be done after setting the start location.
+    
+    patches.core.warpHome(rom, # Needs to be done after setting the start location.
+        options["entrance_shuffle"] == Options.EntranceShuffle.option_chaos or
+        options["entrance_shuffle"] == Options.EntranceShuffle.option_insane or
+        options["entrance_shuffle"] == Options.EntranceShuffle.option_madness)
+    
     patches.titleScreen.setRomInfo(rom, patch_data)
     if options["ap_title_screen"]:
         patches.titleScreen.setTitleGraphics(rom)

@@ -6,8 +6,7 @@ from ..worldSetup import ENTRANCE_INFO
 
 class World:
     def __init__(self, options, world_setup, r):
-        self.overworld_entrance = {}
-        self.indoor_location = {}
+        self.entrances = {}
 
         mabe_village = Location("Mabe Village")
         Location().add(HeartPiece(0x2A4)).connect(mabe_village, r.bush)  # well
@@ -436,6 +435,7 @@ class World:
         d7_platau = Location()
         d7_tower = Location()
         d7_platau.connect(d7_tower, AND(POWER_BRACELET, BIRD_KEY), one_way=True)
+        d7_tower.connect(d7_platau, None, one_way=True)
         self._addEntrance("right_taltal_connector1", water_cave_hole, right_taltal_connector1, None)
         self._addEntrance("right_taltal_connector2", right_taltal_connector_outside1, right_taltal_connector1, None)
         self._addEntrance("right_taltal_connector3", right_taltal_connector_outside1, right_taltal_connector2, None)
@@ -658,33 +658,33 @@ class World:
         self.windfish = windfish
 
     def _addEntrance(self, name, outside, inside, requirement):
-        assert name not in self.overworld_entrance, "Duplicate entrance: %s" % name
+        assert name not in self.entrances, "Duplicate entrance: %s" % name
         assert name in ENTRANCE_INFO
-        self.overworld_entrance[name] = EntranceExterior(outside, requirement)
-        self.indoor_location[name] = inside
+        self.entrances[name] = EntranceExterior(outside, requirement)
+        self.entrances[f"{name}:inside"] = EntranceExterior(inside, None)
 
     def _addEntranceRequirement(self, name, requirement):
-        assert name in self.overworld_entrance
-        self.overworld_entrance[name].addRequirement(requirement)
+        assert name in self.entrances
+        self.entrances[name].addRequirement(requirement)
 
     def _addEntranceRequirementEnter(self, name, requirement):
-        assert name in self.overworld_entrance
-        self.overworld_entrance[name].addEnterRequirement(requirement)
+        assert name in self.entrances
+        self.entrances[name].addEnterRequirement(requirement)
 
     def _addEntranceRequirementExit(self, name, requirement):
-        assert name in self.overworld_entrance
-        self.overworld_entrance[name].addExitRequirement(requirement)
+        assert name in self.entrances
+        self.entrances[name].addExitRequirement(requirement)
 
     def updateIndoorLocation(self, name, location):
-        assert name in self.indoor_location
-        assert self.indoor_location[name] is None
-        self.indoor_location[name] = location
+        name = f"{name}:inside"
+        assert name in self.entrances, name
+        assert self.entrances[name].location is None
+        self.entrances[name].location = location
 
 
 class DungeonDiveOverworld:
     def __init__(self, options, r):
-        self.overworld_entrance = {}
-        self.indoor_location = {}
+        self.entrances = {}
 
         start_house = Location("Start House").add(StartItem())
         Location().add(ShopItem(0)).connect(start_house, OR(COUNT("RUPEES", 200), SWORD))
@@ -702,23 +702,23 @@ class DungeonDiveOverworld:
         windfish = Location("Windfish").connect(nightmare, AND(MAGIC_POWDER, SWORD, OR(BOOMERANG, BOW)))
 
         self.start = start_house
-        self.overworld_entrance = {
-            "d1": EntranceExterior(start_house, None),
-            "d2": EntranceExterior(start_house, None),
-            "d3": EntranceExterior(start_house, None),
-            "d4": EntranceExterior(start_house, None),
-            "d5": EntranceExterior(start_house, FLIPPERS),
-            "d6": EntranceExterior(start_house, None),
-            "d7": EntranceExterior(start_house, None),
-            "d8": EntranceExterior(start_house, None),
-            "d0": EntranceExterior(start_house, None),
+        self.entrances = {
+            "d1:inside": EntranceExterior(start_house, None),
+            "d2:inside": EntranceExterior(start_house, None),
+            "d3:inside": EntranceExterior(start_house, None),
+            "d4:inside": EntranceExterior(start_house, None),
+            "d5:inside": EntranceExterior(start_house, FLIPPERS),
+            "d6:inside": EntranceExterior(start_house, None),
+            "d7:inside": EntranceExterior(start_house, None),
+            "d8:inside": EntranceExterior(start_house, None),
+            "d0:inside": EntranceExterior(start_house, None),
         }
         self.egg = egg
         self.nightmare = nightmare
         self.windfish = windfish
 
     def updateIndoorLocation(self, name, location):
-        self.indoor_location[name] = location
+        self.entrances[f"{name}:inside"].location = location
 
 
 class EntranceExterior:

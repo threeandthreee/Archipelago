@@ -113,18 +113,26 @@ Spoiler logs can not be generated for ROMs generated with race mode enabled, and
 [Normal], requires magnifier to get the boomerang.
 [Trade], allows to trade an inventory item for a random other inventory item boomerang is shuffled.
 [Gift], You get a random gift of any item, and the boomerang is shuffled."""),
-            Setting('randomstartlocation', 'Gameplay', 'r', 'Random start location', default=False,
+            Setting('randomstartlocation', 'Entrances', 'r', 'Random start location', default=False,
                 description='Randomize where your starting house is located'),
-            Setting('dungeonshuffle', 'Gameplay', 'u', 'Dungeon shuffle', default=False,
+            Setting('dungeonshuffle', 'Entrances', 'u', 'Dungeon shuffle', default=False,
                 description='Randomizes the dungeon that each dungeon entrance leads to'),
-            Setting('entranceshuffle', 'Gameplay', 'E', 'Entrance randomizer', options=[("none", '', "Default"), ("simple", 's', "Simple"), ("advanced", 'a', "Advanced"), ("expert", 'E', "Expert"), ("insanity", 'I', "Insanity")], default='none',
+            Setting('entranceshuffle', 'Entrances', 'E', 'Entrance randomizer', options=[("none", '', "Default"), ("simple", 's', "Simple"), ("split", 'S', "Split"), ("mixed", 'm', "Mixed"), ("wild", 'w', "Wild"), ("chaos", "c", "Chaos"), ("insane", 'i', "Insane"), ("madness", 'M', "Madness")], default='none',
                 description="""Randomizes where overworld entrances lead to.
-[Simple] single entrance caves that contain items are randomized
-[Advanced] Connector caves are also randomized
-[Expert] Caves/houses without items are also randomized
-[Insanity] A few very annoying entrances will be randomized as well.
-If random start location and/or dungeon shuffle is enabled, then these will be shuffled with all the entrances.
-Note, some entrances can lead into water, use the warp-to-home from the save&quit menu to escape this."""),
+[Simple] Single entrance caves that contain items are randomized.
+[Split] Connector caves are also randomized, in a separate pool from single entrance caves.
+[Mixed] Connector caves are also randomized, in the same pool as single entrance caves.
+[Wild] Connections can go from overworld to overworld, or inside to inside.
+[Chaos] Entrance and exits are decoupled.
+[Insane] Combines chaos and wild, anything goes anywhere, there is no God.
+[Madness] Even worse then insane, it makes it so multiple entrances can lead to the same location.
+If random start location and/or dungeon shuffle is enabled, then these will be shuffled with all the entrances."""),
+            Setting('shufflejunk', 'Entrances', 'j', 'Shuffle itemless entrances', default=False,
+                description="Caves/houses without items are also randomized when entrance shuffle is set."),
+            Setting('shuffleannoying', 'Entrances', 'a', 'Shuffle annoying entrances', default=False,
+                description="A few very annoying entrances (Mamu and the Raft House) will also be randomized when entrance shuffle is set."),
+            Setting('shufflewater', 'Entrances', 'w', 'Shuffle water entrances', default=False,
+                description="Entrances that lead to water (Manbo and Damp Cave) will also be randomized when entrance shuffle is set. Use the warp-to-home from the Save & Quit menu if you get stuck (hold A+B+Start+Select until it works)."),
             Setting('boss', 'Gameplay', 'B', 'Boss shuffle', options=[('default', '', 'Normal'), ('shuffle', 's', 'Shuffle'), ('random', 'r', 'Randomize')], default='default',
                 description='Randomizes the dungeon bosses that each dungeon has'),
             Setting('miniboss', 'Gameplay', 'b', 'Miniboss shuffle', options=[('default', '', 'Normal'), ('shuffle', 's', 'Shuffle'), ('random', 'r', 'Randomize')], default='default',
@@ -135,7 +143,8 @@ Note, some entrances can lead into water, use the warp-to-home from the save&qui
                                                          ('open', 'O', 'Egg already open'), ('random', 'R', 'Random instrument count'),
                                                          ('open-4', '<', 'Random short game (0-4)'), ('5-8', '>', 'Random long game (5-8)'),
                                                          ('seashells', 'S', 'Seashell hunt (20)'), ('bingo', 'b', 'Bingo!'),
-                                                         ('bingo-full', 'B', 'Bingo-25!')], default='8',
+                                                         ('bingo-full', 'B', 'Bingo-25!'),
+                                                         ('specific', 's', '4 specific instruments')], default='8',
                 description="""Changes the goal of the game.
 [1-8 instruments], number of instruments required to open the egg.
 [No instruments] open the egg without instruments, still requires the ocarina with the balled of the windfish
