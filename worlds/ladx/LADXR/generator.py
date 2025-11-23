@@ -45,6 +45,7 @@ from .patches import droppedKey as _
 from .patches import goldenLeaf as _
 from .patches import songs as _
 from .patches import bowwow as _
+from .patches import follower as _
 from .patches import desert as _
 from .patches import reduceRNG as _
 from .patches import madBatter as _
@@ -179,9 +180,8 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
     patches.songs.upgradeMamu(rom)
 
     patches.tradeSequence.patchTradeSequence(rom, options)
-    patches.bowwow.fixBowwow(rom, everywhere=False)
-    # if ladxr_settings["bowwow"] != 'normal':
-    #    patches.bowwow.bowwowMapPatches(rom)
+    patches.bowwow.fixBowwow(rom)
+    patches.follower.patchFollowerCreation(rom, extra_spawn_index=int(options.get("follower", 0)))
     patches.desert.desertAccess(rom)
     # if ladxr_settings["overworld"] == 'dungeondive':
     #    patches.overworld.patchOverworldTilesets(rom)
