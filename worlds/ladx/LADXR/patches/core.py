@@ -125,17 +125,17 @@ def injectMainLoop(rom):
         rst  8
     """), fill_nop=True)
 
-def warpHome(rom):
+def warpHome(rom, force_inside=False):
     # Patch the S&Q menu to allow 3 options
     rom.patch(0x01, 0x012A, 0x0150, ASM("""
         ld   hl, $C13F
         call $6BA8 ; make sound on keypress
-        ldh  a, [$CC] ; load joystick status
+        ldh  a, [$FFCC] ; load joystick status
         and  $04      ; if up
         jr   z, noUp
         dec  [hl]
 noUp:
-        ldh  a, [$CC] ; load joystick status
+        ldh  a, [$FFCC] ; load joystick status
         and  $08      ; if down
         jr   z, noDown
         inc  [hl]
@@ -204,7 +204,7 @@ noWrapDown:
 
     one_way = {ENTRANCE_INFO[x].room for x in one_way}
 
-    if warp.room in one_way:
+    if warp.room in one_way or force_inside or warp.room > 0x100:
         # we're starting at a one way exit room
         # warp indoors to avoid soft locks
         type = 0x01
@@ -213,7 +213,7 @@ noWrapDown:
         x = 0x50
         y = 0x7f
 
-    rom.patch(0x01, 0x3E20, 0x3E6B, ASM("""
+    rom.patch(0x01, 0x3E20, 0x4000, ASM("""
         ; First, handle save & quit
         cp   $01
         jp   z, $40F9
@@ -240,11 +240,11 @@ noWrapDown:
         ld   a, $%02x ; Y
         ld   [$D405], a
 
-        ldh  a, [$98]
+        ldh  a, [$FF98]
         swap a
         and  $0F
         ld   e, a
-        ldh  a, [$99]
+        ldh  a, [$FF99]
         sub  $08
         and  $F0
         or   e
@@ -252,21 +252,22 @@ noWrapDown:
 
         ld   a, $07
         ld   [$DB96], a
+        
+        ; Clear all entity status, so they are no longer rendered.
+        ld   hl, $C280
+        xor  a
+        ld   [$C18E], a ; clear wRoomEvent so minibosses
+        ld   c, 16
+clearOAMLoop:
+        ld   [hl+], a
+        dec  c
+        jr   nz, clearOAMLoop
+        
         ret
         jp   $40BE  ; return to normal "return to game" handling
     """ % (type, map, room, x, y)), fill_nop=True)
 
-   # Patch the RAM clear not to delete our custom dialog when we screen transition
-   # This is kind of horrible as it relies on bank 1 being loaded, lol
-    rom.patch(0x01, 0x042C, "C629", "6B7E")
-    rom.patch(0x01, 0x3E6B, 0x3E7B, ASM("""
-        ld bc, $A0
-        call $29DC
-        ld bc, $1200
-        ld hl, $C100
-        call $29DF
-        ret
-    """), fill_nop=True)
+
     # Patch the S&Q screen to have 3 options.
     be = BackgroundEditor(rom, 0x0D)
     for n in range(2, 18):

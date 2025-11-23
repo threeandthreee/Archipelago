@@ -285,7 +285,12 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
     if not args.romdebugmode:
         patches.core.addFrameCounter(rom, len(item_list))
 
-    patches.core.warpHome(rom)  # Needs to be done after setting the start location.
+    
+    patches.core.warpHome(rom, # Needs to be done after setting the start location.
+        options["entrance_shuffle"] == Options.EntranceShuffle.option_chaos or
+        options["entrance_shuffle"] == Options.EntranceShuffle.option_insane or
+        options["entrance_shuffle"] == Options.EntranceShuffle.option_madness)
+    
     patches.titleScreen.setRomInfo(rom, patch_data)
     if options["ap_title_screen"]:
         patches.titleScreen.setTitleGraphics(rom)
