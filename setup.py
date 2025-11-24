@@ -62,7 +62,9 @@ from Utils import version_tuple, is_windows, is_linux
 from Cython.Build import cythonize
 
 
-non_apworlds: set[str] = {}
+non_apworlds: set[str] = {
+    "VVVVVV",
+}
 
 
 def download_SNI() -> None:
