@@ -63,6 +63,7 @@ from Cython.Build import cythonize
 
 
 non_apworlds: set[str] = {
+    "Archipelago",
     "VVVVVV",
 }
 
