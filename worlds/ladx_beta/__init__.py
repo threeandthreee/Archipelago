@@ -32,7 +32,7 @@ from .Options import DungeonItemShuffle, ShuffleInstruments, LinksAwakeningOptio
 from .Rom import LADXProcedurePatch, write_patch_data
 
 DEVELOPER_MODE = False
-
+TEST_PATCH = False
 
 def launch_client(*args):
     from .LinksAwakeningClient import launch as ladx_launch
@@ -538,6 +538,10 @@ class LinksAwakeningWorld(World):
                                                   f"{patch.patch_file_ending}")
 
         patch.write(out_path)
+
+        if TEST_PATCH:
+            import Patch
+            Patch.create_rom_file(out_path)
 
     def generate_multi_key(self):
         return bytearray(self.random.getrandbits(8) for _ in range(10)) + self.player.to_bytes(2, 'big')
