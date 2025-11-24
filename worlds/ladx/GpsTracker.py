@@ -66,13 +66,7 @@ class GpsTracker:
             return
 
         # We need to know how entrances were mapped at generation before we can autotrack them
-        self.entrance_mapping = {}
-
-        # Convert to upstream's newer format
-        for outside, inside in slot_data['entrance_mapping'].items():
-            new_inside = f"{inside}:inside"
-            self.entrance_mapping[outside] = new_inside
-            self.entrance_mapping[new_inside] = outside
+        self.entrance_mapping = slot_data['entrance_mapping']
 
         self.entrances_by_name = {} 
 
