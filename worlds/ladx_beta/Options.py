@@ -411,6 +411,7 @@ class TextMode(Choice, LADXROption):
     rich_text_doc = True
     option_normal = 0
     option_fast = 1
+    option_none = 2
     default = option_fast
 
 

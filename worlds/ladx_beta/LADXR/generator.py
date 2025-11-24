@@ -237,11 +237,10 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
         patches.hardMode.oneHitKO(rom)
     #if ladxr_settings["superweapons"]:
     #    patches.weapons.patchSuperWeapons(rom)
-    if options["text_mode"] == Options.TextMode.option_fast:
+    if options["text_mode"] >= Options.TextMode.option_fast:
         patches.aesthetics.fastText(rom)
-    #if ladxr_settings["textmode"] == 'none':
-    #    patches.aesthetics.fastText(rom)
-    #    patches.aesthetics.noText(rom)
+    if options["text_mode"] == Options.TextMode.option_none:
+        patches.aesthetics.noText(rom)
     if not options["nag_messages"]:
         patches.aesthetics.removeNagMessages(rom)
     if options["low_hp_beep"] == Options.LowHpBeep.option_slow:
