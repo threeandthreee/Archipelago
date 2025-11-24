@@ -496,12 +496,9 @@ class LinksAwakeningWorld(World):
 
         fill_restrictive(self.multiworld, partial_all_state, all_dungeon_locs_to_fill, all_dungeon_items_to_fill, lock=True, single_player_placement=True, allow_partial=False)
 
-
-    def post_fill(self) -> None:
-        self.ladx_in_game_hints = generate_hint_texts(self)
-
     def generate_output(self, output_directory: str):
         matcher = ForeignItemIconMatcher()
+        self.ladx_in_game_hints = generate_hint_texts(self)
         # copy items back to locations
         for r in self.multiworld.get_regions(self.player):
             for loc in r.locations:
