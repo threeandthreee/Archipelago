@@ -521,7 +521,7 @@ class LinksAwakeningClient():
         wDialogIndex = (await self.gameboy.async_read_memory(LAClientConstants.wDialogIndex))[0]
         wDialogIndexHi = (await self.gameboy.async_read_memory(LAClientConstants.wDialogIndexHi))[0]
         dialog_index = wDialogIndexHi << 8 | wDialogIndex
-        hint_data = ctx.slot_data.get("hint_data", {}).get(dialog_index.__str__(), None)
+        hint_data = ctx.slot_data.get("hint_data", {}).get(str(dialog_index), None)
         if hint_data and dialog_index not in ctx.hinted_locations:
             ctx.hinted_locations.add(dialog_index)
             await ctx.send_msgs([{
