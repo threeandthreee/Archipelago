@@ -62,20 +62,7 @@ from Utils import version_tuple, is_windows, is_linux
 from Cython.Build import cythonize
 
 
-non_apworlds: set[str] = {
-    "A Link to the Past",
-    "Adventure",
-    "Archipelago",
-    "Lufia II Ancient Cave",
-    "Meritous",
-    "Ocarina of Time",
-    "Overcooked! 2",
-    "Raft",
-    "Sudoku",
-    "Super Mario 64",
-    "VVVVVV",
-    "Wargroove",
-}
+non_apworlds: set[str] = {}
 
 
 def download_SNI() -> None:
