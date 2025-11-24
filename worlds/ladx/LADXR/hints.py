@@ -103,5 +103,5 @@ def generate_hint_texts(world):
     text_ids = hint_text_ids.copy()
     world.random.shuffle(text_ids)
     for i, text_id in enumerate(text_ids):
-        hint_data[text_id] = gen_hint(i)
+        hint_data[str(text_id)] = gen_hint(i)
     return hint_data

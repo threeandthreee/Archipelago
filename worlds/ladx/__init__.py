@@ -141,6 +141,8 @@ class LinksAwakeningWorld(World):
     ladxr_logic: LADXRLogic
     ladxr_itempool: LADXRItemPool
 
+    ladx_in_game_hints: dict = {}
+
     multi_key: bytearray
 
     rupees = {
