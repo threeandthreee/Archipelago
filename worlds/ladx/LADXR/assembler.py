@@ -4,6 +4,7 @@ from typing import Optional, Dict, Iterator, List, Union, Tuple, Generator
 from . import utils
 import os
 import re
+import pkgutil
 
 
 REGS8 = {"A": 7, "B": 0, "C": 1, "D": 2, "E": 3, "H": 4, "L": 5, "[HL]": 6}
@@ -265,8 +266,10 @@ class Assembler:
         self.__tok = Tokenizer("")
 
     def processFile(self, base_path: str, filename: str, **kwargs):
-        self.__base_path = base_path
-        self.process(open(os.path.join(base_path, filename), "rt").read(), **kwargs)
+        data = pkgutil.get_data(base_path, filename)
+        if data is None:
+            raise FileNotFoundError(f"{base_path}/{filename}")
+        self.process(data.decode("utf-8"), **kwargs)
 
     def newSection(self, *, base_address: Optional[int] = None, bank: Optional[int] = None):
         self.__current_section = Section(base_address, bank)
@@ -308,7 +311,10 @@ class Assembler:
                 elif start.value == '#INCLUDE':
                     filename = self.__tok.expect('STRING').value[1:-1]
                     self.__tok.expect('NEWLINE')
-                    self.__tok.shiftCode(open(os.path.join(self.__base_path, filename), "rt").read())
+                    data = pkgutil.get_data(self.__base_path, filename)
+                    if data is None:
+                        raise FileNotFoundError(f"{self.__base_path}/{filename}")
+                    self.__tok.shiftCode(data.decode("utf-8"))
                 elif start.value == '#ALIGN':
                     value = self.__tok.expect('NUMBER').value
                     self.__tok.expect('NEWLINE')
@@ -1074,7 +1080,10 @@ def const(name: str, value: int) -> None:
 
 def resetConsts() -> None:
     CONST_MAP.clear()
-    for line in open(os.path.join(os.path.dirname(__file__), "assembler.const"), "rt"):
+    data = pkgutil.get_data(__name__, "assembler.const")
+    if data is None:
+        raise FileNotFoundError(f"{__name__}/assembler.const")
+    for line in data.decode("utf-8").splitlines():
         if ":" in line:
             value, _, key = line.strip().partition(":")
             CONST_MAP[key.upper()] = int(value, 16)
@@ -1095,7 +1104,10 @@ def ASM(code: str, base_address: Optional[int] = None, labels_result: Optional[D
 
 def allOpcodesTest() -> None:
     import json
-    opcodes = json.load(open("Opcodes.json", "rt"))
+    data = pkgutil.get_data(__name__, "Opcodes.json")
+    if data is None:
+        raise FileNotFoundError(f"{__name__}/Opcodes.json")
+    opcodes = json.loads(data.decode("utf-8"))
     for label in (False, True):
         for prefix, codes in opcodes.items():
             for num, op in codes.items():
