@@ -309,7 +309,7 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
         patches.core.addFrameCounter(rom, len(item_list))
 
     
-    patches.core.warpHome(rom, options["entrance_shuffle"] >= 5) # chaos, insane
+    patches.core.warpHome(rom, options.get("entrance_shuffle", 0) >= 5) # chaos, insane
     
     patches.titleScreen.setRomInfo(rom, patch_data)
     if options["ap_title_screen"]:
