@@ -22,7 +22,7 @@ MainLoop:
     and  a
     jr   nz, .clearSafeAndRet
     ; Check if interaction is blocked
-    ldh  a, [$A1]
+    ldh  a, [$FFA1]
     and  a
     jr   z, .gameplayIsSafe
 .clearSafeAndRet:
@@ -87,7 +87,7 @@ MainLoop:
     ld   h, a
     ld   a, [wMWMultipurposeD] ; collect location lo
     ld   l, a
-    ldh  a, [$F6] ; current room
+    ldh  a, [$FFF6] ; current room
     cp   l
     jr   z, .clearCmdAndRet ; might be in current room
     ld   a, [hl]
@@ -139,7 +139,7 @@ MainLoop:
     cp   $F0
     jr   nc, HandleSpecialItem
     ; tmpChestItem = a
-    ldh  [$F1], a
+    ldh  [$FFF1], a
     ; Give the item
     call GiveItemFromChest
     ; Paste the item text
@@ -227,8 +227,8 @@ SpecialPieceOfPower:
     ld   a, $27
     ld   [$D368], a
     ld   a, $49
-    ldh  [$BD], a
-    ldh  [$BF], a
+    ldh  [$FFBD], a
+    ldh  [$FFBF], a
     ret
 SpecialHealth:
     ; Regen all health
@@ -266,11 +266,11 @@ LinkSpawnCucco:
     ; Place where link is at.
     ld   hl, $C200
     add  hl, de
-    ldh  a, [$98]
+    ldh  a, [$FF98]
     ld   [hl], a
     ld   hl, $C210
     add  hl, de
-    ldh  a, [$99]
+    ldh  a, [$FF99]
     ld   [hl], a
 
     ; Set the "hits till cucco killer attack" much lower
