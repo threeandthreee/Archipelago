@@ -657,14 +657,14 @@ def patchGhostFollower(rom):
     # Main entity code
     rom.patch(0x19, 0x1E18, 0x20B3, ASM("""
     GhostEntityHandler:
-        ldh  a, [hFrameCounter]
+        ldh  a, [$FFE7] ; hFrameCounter
         swap a
         and  1
         ld   hl, hActiveEntitySpriteVariant
         or   [hl]
         ld   [hl], a
 
-        ldh  a, [hFrameCounter]
+        ldh  a, [$FFE7] ; hFrameCounter
         add  c 
         and  $01
         jr   nz, .skipDraw
