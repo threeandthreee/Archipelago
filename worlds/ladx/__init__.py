@@ -473,11 +473,10 @@ class LinksAwakeningWorld(World):
                 return self.name_cache[name]
         
         return "TRADING_ITEM_LETTER"
-
-    def post_fill(self) -> None:
-        self.ladx_in_game_hints = generate_hint_texts(self)
+        
 
     def generate_output(self, output_directory: str):
+        self.ladx_in_game_hints = generate_hint_texts(self)
         # copy items back to locations
         for r in self.multiworld.get_regions(self.player):
             for loc in r.locations:
