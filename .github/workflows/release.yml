@@ -1,0 +1,12 @@
+name: Release APWorld
+on:
+  push:
+    tags:
+      - 'v?[0-9]+.[0-9]+.[0-9]*'
+jobs:
+  release:
+    uses: Eijebong/ap-actions/.github/workflows/release-apworld.yml@main
+    with:
+      apworld-path: worlds/ladx_beta
+      ap-version: '0.6.4'
+      python-version: '3.12'
