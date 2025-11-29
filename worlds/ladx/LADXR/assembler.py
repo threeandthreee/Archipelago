@@ -5,6 +5,7 @@ from . import utils
 import os
 import re
 import pkgutil
+import unicodedata
 
 
 REGS8 = {"A": 7, "B": 0, "C": 1, "D": 2, "E": 3, "H": 4, "L": 5, "[HL]": 6}
@@ -538,7 +539,9 @@ class Assembler:
     def insertString(self, token: Token) -> None:
         string = token.value
         if string.startswith('"') and string.endswith('"'):
-            self.__current_section.data += string[1:-1].encode("ascii")
+            string = string[1:-1]
+            string = unicodedata.normalize('NFKD', string)
+            self.__current_section.data += string.encode("latin1", "ignore")
         elif string.startswith("m\"") and string.endswith("\""):
             self.__current_section.data += utils.formatText(string[2:-1].replace("|", "\n"))
         else:
