@@ -232,6 +232,20 @@ components: List[Component] = [
     Component('Text Client', 'CommonClient', 'ArchipelagoTextClient', func=launch_textclient,
               description="Connect to a multiworld using the text client."),
     Component('LttP Adjuster', 'LttPAdjuster'),
+    # Ocarina of Time
+    Component('OoT Client', 'OoTClient',
+              file_identifier=SuffixIdentifier('.apz5')),
+    Component('OoT Adjuster', 'OoTAdjuster'),
+    # TLoZ
+    Component('Zelda 1 Client', 'Zelda1Client', file_identifier=SuffixIdentifier('.aptloz')),
+    # ChecksFinder
+    Component('ChecksFinder Client', 'ChecksFinderClient'),
+    # Zillion
+    Component('Zillion Client', 'ZillionClient',
+              file_identifier=SuffixIdentifier('.apzl')),
+
+    # MegaMan Battle Network 3
+    Component('MMBN3 Client', 'MMBN3Client', file_identifier=SuffixIdentifier('.apbn3')),
 
     Component("Export Datapackage", func=export_datapackage, component_type=Type.TOOL),
 ]
