@@ -516,14 +516,14 @@ class LinksAwakeningWorld(World):
                     elif self.options.foreign_item_icons == 'guess_by_name':
                         game = self.multiworld.game[loc.item.player]
                         loc.ladxr_item.item = matcher.get_icon_for_other_world(loc.item.name, game)
-                        loc.ladxr_item.setCustomItemName(loc.item.name)
+                        loc.ladxr_item.custom_item_name = loc.item.name
 
                     else:
                         if loc.item.advancement:
                             loc.ladxr_item.item = 'PIECE_OF_POWER'
                         else:
                             loc.ladxr_item.item = 'GUARDIAN_ACORN'
-                        loc.ladxr_item.setCustomItemName(loc.item.name)
+                        loc.ladxr_item.custom_item_name = loc.item.name
 
                     if loc.item:
                         loc.ladxr_item.item_owner = loc.item.player

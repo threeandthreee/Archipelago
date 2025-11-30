@@ -22,9 +22,6 @@ class ItemInfo:
     def setLocation(self, location):
         self._location = location
 
-    def setCustomItemName(self, name):
-        self.custom_item_name = name.replace('"', '"')
-
     def getOptions(self):
         return self.OPTIONS
 

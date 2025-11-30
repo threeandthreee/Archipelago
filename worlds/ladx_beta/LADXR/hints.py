@@ -89,8 +89,7 @@ def generate_hint_texts(world):
 
         hint = f"Your {item.name} is at {location_name}"
         if item.location.player != world.player:
-            # filter out { and } since they cause issues with string.format later on
-            player_name = world.multiworld.player_name[item.location.player].replace("{", "").replace("}", "")
+            player_name = world.multiworld.player_name[item.location.player]
             hint += f" in {player_name}'s world."
         else:
             hint += " in your world."
