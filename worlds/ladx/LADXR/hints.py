@@ -91,8 +91,6 @@ def generate_hint_texts(world):
             name = "Your"
         else:
             name = f"{world.multiworld.player_name[location.item.player]}'s"
-            # filter out { and } since they cause issues with string.format later on
-            name = name.replace("{", "").replace("}", "")
 
         if isinstance(location, LinksAwakeningLocation):
             location_name = location.ladxr_item.metadata.name
@@ -101,8 +99,7 @@ def generate_hint_texts(world):
 
         hint = f"{name} {location.item} is at {location_name}"
         if location.player != world.player:
-            # filter out { and } since they cause issues with string.format later on
-            player_name = world.multiworld.player_name[location.player].replace("{", "").replace("}", "")
+            player_name = world.multiworld.player_name[location.player]
             hint += f" in {player_name}'s world"
 
         # Cap hint size at 85
