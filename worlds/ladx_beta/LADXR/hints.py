@@ -55,7 +55,7 @@ def addHints(rom, rnd, hint_texts):
     for text_id, hint in hint_texts.items():
         if not hint:
             hint = rnd.choice(hints).format(*rnd.choice(useless_hint))
-        formatted = formatText(hint)
+        formatted = formatText(hint, skip_names=True)
         if len(formatted) > 97:
             formatted = formatted[:96] + formatted[-1:]
         rom.texts[int(text_id)] = formatted
