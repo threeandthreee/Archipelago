@@ -12,5 +12,5 @@ jobs:
           apworld-path: worlds/ladx_beta
           ap-version: '0.6.4'
           python-version: '3.12'
-          runs: 500 # This is optional
-          yamls-per-run: 1 # This is optional
+          runs: 100
+          yamls-per-run: 1
