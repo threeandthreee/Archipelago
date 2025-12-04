@@ -1,4 +1,6 @@
+import logging
 import os
+from threading import Event
 from typing import List, Union, ClassVar, Any, Optional, Tuple, Type
 
 import settings
@@ -24,6 +26,12 @@ class OracleOfSeasonsSettings(settings.Group):
         copy_to = "Legend of Zelda, The - Oracle of Seasons (USA).gbc"
         description = "OoS ROM File"
         md5s = [ROM_HASH]
+
+    class AgesRomFile(settings.UserFilePath):
+        """File name of the Oracle of Ages US ROM (only needed for cross items)"""
+        copy_to = "Legend of Zelda, The - Oracle of Ages (USA).gbc"
+        description = "OoA ROM File"
+        md5s = [AGES_ROM_HASH]
 
     class OoSCharacterSprite(str):
         """
@@ -59,6 +67,7 @@ class OracleOfSeasonsSettings(settings.Group):
         """
 
     rom_file: RomFile = RomFile(RomFile.copy_to)
+    ages_rom_file: AgesRomFile = AgesRomFile(AgesRomFile.copy_to)
     rom_start: bool = True
     character_sprite: Union[OoSCharacterSprite, str] = "link"
     character_palette: Union[OoSCharacterPalette, str] = "green"
@@ -97,7 +106,6 @@ class OracleOfSeasonsWorld(World):
     Gather the Essences of Nature, confront Onox and rescue Din to give nature some rest in Holodrum.
     """
     game = "The Legend of Zelda - Oracle of Seasons"
-    author = ["Dinopony", "Ishigh"]  # Not used by AP but a good way to keep who made that apworld when redistributed
     options_dataclass = OracleOfSeasonsOptions
     options: OracleOfSeasonsOptions
     # required_client_version = (0, 5, 1)
@@ -112,6 +120,10 @@ class OracleOfSeasonsWorld(World):
     item_name_groups = ITEM_GROUPS
     location_name_groups = LOCATION_GROUPS
     origin_region_name = "impa's house"
+
+    @classmethod
+    def version(cls) -> str:
+        return f"{cls.world_version.major}.{cls.world_version.minor}"
 
     def __init__(self, multiworld, player):
         super().__init__(multiworld, player)
@@ -131,8 +143,9 @@ class OracleOfSeasonsWorld(World):
         self.random_rings_pool: List[str] = []
         self.remaining_progressive_gasha_seeds = 0
 
+        self.made_hints = Event()
         self.region_hints: list[tuple[str, str | int]] = []
-        self.item_hints: list[tuple[str, str, int | None] | None] = []
+        self.item_hints: list[Item | None] = []
 
     def generate_early(self):
         if self.interpret_slot_data(None):
@@ -501,8 +514,6 @@ class OracleOfSeasonsWorld(World):
         self.create_event("tower of autumn", "_opened_tower_of_autumn")
         self.create_event("d2 moblin chest", "_reached_d2_bracelet_room")
         self.create_event("d5 drop ball", "_dropped_d5_magnet_ball")
-        self.create_event("d8 SE crystal", "_dropped_d8_SE_crystal")
-        self.create_event("d8 NE crystal", "_dropped_d8_NE_crystal")
         self.create_event("d2 rupee room", "_reached_d2_rupee_room")
         self.create_event("d6 rupee room", "_reached_d6_rupee_room")
         self.create_event("maku seed", "Maku Seed")
@@ -588,8 +599,10 @@ class OracleOfSeasonsWorld(World):
         ap_code = self.item_name_to_id[name]
 
         # A few items become progression only in hard logic
-        progression_items_in_medium_logic = ["Expert's Ring", "Fist Ring", "Swimmer's Ring", "Energy Ring"]
+        progression_items_in_medium_logic = ["Expert's Ring", "Fist Ring", "Swimmer's Ring", "Energy Ring", "Heart Ring L-2"]
         if self.options.logic_difficulty >= OracleOfSeasonsLogicDifficulty.option_medium and name in progression_items_in_medium_logic:
+            classification = ItemClassification.progression
+        if self.options.logic_difficulty >= OracleOfSeasonsLogicDifficulty.option_hard and name == "Heart Ring L-1":
             classification = ItemClassification.progression
         # As many Gasha Seeds become progression as the number of deterministic Gasha Nuts
         if self.remaining_progressive_gasha_seeds > 0 and name == "Gasha Seed":
@@ -614,7 +627,6 @@ class OracleOfSeasonsWorld(World):
                     excluded_mapass.add(f"Dungeon Map ({DUNGEON_NAMES[i]})")
                     excluded_mapass.add(f"Compass ({DUNGEON_NAMES[i]})")
 
-        removed_item_quantities = self.options.remove_items_from_pool.value.copy()
         item_pool_dict = {}
         filler_item_count = 0
         rupee_item_count = 0
@@ -628,11 +640,6 @@ class OracleOfSeasonsWorld(World):
             item_name = loc_data["vanilla_item"]
             if "Ring" in item_name:
                 item_name = "Random Ring"
-            if item_name in removed_item_quantities and removed_item_quantities[item_name] > 0:
-                # If item was put in the "remove_items_from_pool" option, replace it with a random filler item
-                removed_item_quantities[item_name] -= 1
-                filler_item_count += 1
-                continue
             if item_name == "Filler Item":
                 filler_item_count += 1
                 continue
@@ -682,6 +689,11 @@ class OracleOfSeasonsWorld(World):
                 filler_item_count += 1
                 continue
 
+            if item_name.startswith("Bombs (") or item_name.startswith("Bombchus ("):
+                # Not enough bombs in the pool, erase everything to redistribute them
+                filler_item_count += 1
+                continue
+
             if item_name == "Flute":
                 item_name = self.options.animal_companion.current_key.title() + "'s Flute"
             elif item_name in excluded_mapass:
@@ -689,16 +701,31 @@ class OracleOfSeasonsWorld(World):
 
             item_pool_dict[item_name] = item_pool_dict.get(item_name, 0) + 1
 
+        if self.options.exclude_dungeons_without_essence and len(self.essences_in_game) < 4:
+            # Compact the bomb items for smaller seeds to not clog the pool
+            item_pool_dict["Bombchus (20)"] = 5
+            item_pool_dict["Bombs (20)"] = 5
+            extra_items = 10
+        else:
+            item_pool_dict["Bombchus (10)"] = 10
+            item_pool_dict["Bombs (10)"] = 10
+            extra_items = 20
+        if self.options.cross_items:
+            item_pool_dict["Cane of Somaria"] = 1
+            item_pool_dict["Switch Hook"] = 2
+            item_pool_dict["Seed Shooter"] = 1
+            extra_items += 4
+
         # If Master Keys are enabled, put one for every dungeon
         if self.options.master_keys != OracleOfSeasonsMasterKeys.option_disabled:
             for small_key_name in ITEM_GROUPS["Master Keys"]:
                 item_pool_dict[small_key_name] = 1
-                filler_item_count -= 1
+                extra_items += 1
 
         # Add the required gasha seeds to the pool
         required_gasha_seeds = self.options.deterministic_gasha_locations.value
         item_pool_dict["Gasha Seed"] = required_gasha_seeds
-        filler_item_count -= required_gasha_seeds
+        extra_items += required_gasha_seeds
 
         if rupee_item_count > 0:
             rupee_item_pool, filler_item_count = self.build_rupee_item_dict(rupee_item_count, filler_item_count)
@@ -707,6 +734,20 @@ class OracleOfSeasonsWorld(World):
         if ore_item_count > 0:
             ore_item_pool, filler_item_count = self.build_ore_item_dict(ore_item_count, filler_item_count)
             item_pool_dict.update(ore_item_pool)
+
+        # Remove items from pool
+        for item, removed_amount in self.options.remove_items_from_pool.items():
+            if item in item_pool_dict:
+                current_amount = item_pool_dict[item]
+            else:
+                current_amount = 0
+            new_amount = current_amount - removed_amount
+            if new_amount < 0:
+                logging.warning(f"Not enough {item} to satisfy {self.player_name}'s remove_items_from_pool: "
+                                f"{-new_amount} missing")
+                new_amount = 0
+            item_pool_dict[item] = new_amount
+            filler_item_count += current_amount - new_amount
 
         # Add the required rings
         ring_copy = sorted(self.options.required_rings.value.copy())
@@ -720,6 +761,9 @@ class OracleOfSeasonsWorld(World):
             else:
                 # Take from filler after
                 filler_item_count -= 1
+
+        assert filler_item_count >= extra_items
+        filler_item_count -= extra_items
 
         # Add as many filler items as required
         for _ in range(filler_item_count):
@@ -792,8 +836,9 @@ class OracleOfSeasonsWorld(World):
     def get_pre_fill_items(self):
         return self.pre_fill_items
 
-    def pre_fill(self) -> None:
-        self.pre_fill_dungeon_items()
+    @classmethod
+    def stage_pre_fill(cls, multiworld: MultiWorld):
+        cls.stage_pre_fill_dungeon_items(multiworld)
 
     def filter_confined_dungeon_items_from_pool(self, items: List[Item]):
         confined_dungeon_items = []
@@ -830,34 +875,73 @@ class OracleOfSeasonsWorld(World):
             items.remove(item)
         self.pre_fill_items.extend(confined_dungeon_items)
 
-    def pre_fill_dungeon_items(self):
+    @classmethod
+    def stage_pre_fill_dungeon_items(cls, multiworld: MultiWorld):
         # If keysanity is off, dungeon items can only be put inside local dungeon locations, and there are not so many
         # of those which makes them pretty crowded.
         # This usually ends up with generator not having anywhere to place a few small keys, making the seed unbeatable.
-        # To circumvent this, we perform a restricted pre-fill here, placing only those dungeon items
+        # To circumvent this, we perform a restricted pre-fills here, placing only those dungeon items
         # before anything else.
-        for i in range(0, 9):
-            # Build a list of locations in this dungeon
-            dungeon_location_names = [name for name, loc in LOCATIONS_DATA.items()
-                                      if "dungeon" in loc and loc["dungeon"] == i]
-            dungeon_locations = [loc for loc in self.multiworld.get_locations(self.player)
-                                 if loc.name in dungeon_location_names and not loc.locked]
+        oos_players = multiworld.get_game_players(cls.game)
 
-            # From the list of all dungeon items that needs to be placed restrictively, only filter the ones for the
-            # dungeon we are currently processing.
-            confined_dungeon_items = [item for item in self.pre_fill_items
-                                      if item.name.endswith(f"({DUNGEON_NAMES[i]})")]
-            if len(confined_dungeon_items) == 0:
-                continue  # This list might be empty with some keysanity options
+        base_all_state = multiworld.get_all_state(False, collect_pre_fill_items=False, perform_sweep=False)
+        # Collect all pre_fill_items except our OoS's and then sweep. This gives more accurate results in cases of item
+        # plando being used to remove items from the item pool and placing them into locations locked behind pre_fill
+        # items.
+        for player in multiworld.player_ids:
+            if player in oos_players:
+                continue
+            subworld = multiworld.worlds[player]
+            for item in subworld.get_pre_fill_items():
+                subworld.collect(base_all_state, item)
+        base_all_state.sweep_for_advancements()
 
-            # Remove from the all_state the items we're about to place
-            for item in confined_dungeon_items:
-                self.pre_fill_items.remove(item)
-            collection_state = self.multiworld.get_all_state(False)
-            # Perform a prefill to place confined items inside locations of this dungeon
-            self.random.shuffle(dungeon_locations)
-            fill_restrictive(self.multiworld, collection_state, dungeon_locations, confined_dungeon_items,
-                             single_player_placement=True, lock=True, allow_excluded=True)
+        for filling_player in oos_players:
+            # Create a player-specific state for just the player that is filling dungeons.
+            per_player_base_all_state = base_all_state.copy()
+            # Collect the pre_fill_items() of all other OoS players into the state.
+            for other_player in oos_players:
+                if other_player == filling_player:
+                    continue
+                subworld = multiworld.worlds[other_player]
+                for item in subworld.get_pre_fill_items():
+                    subworld.collect(per_player_base_all_state, item)
+            # And then sweep the state to pick up pre-placed items.
+            per_player_base_all_state.sweep_for_advancements()
+
+            # Get the world for the player that is filling.
+            filling_world = multiworld.worlds[filling_player]
+
+            # Fill each of this world's dungeons.
+            for i in range(0, 9):
+                # Build a list of locations in this dungeon
+                dungeon_location_names = [name for name, loc in LOCATIONS_DATA.items()
+                                          if "dungeon" in loc and loc["dungeon"] == i]
+                dungeon_locations = [loc for loc in multiworld.get_locations(filling_player)
+                                     if loc.name in dungeon_location_names and not loc.locked]
+
+                # From the list of all dungeon items that needs to be placed restrictively, only filter the ones for the
+                # dungeon we are currently processing.
+                confined_dungeon_items = [item for item in filling_world.pre_fill_items
+                                          if item.name.endswith(f"({DUNGEON_NAMES[i]})")]
+                if len(confined_dungeon_items) == 0:
+                    continue  # This list might be empty with some keysanity options
+
+                # Remove from the pre_fill_items the items we're about to place
+                for item in confined_dungeon_items:
+                    filling_world.pre_fill_items.remove(item)
+                collection_state = per_player_base_all_state.copy()
+                # Collect the remaining pre_fill_items into the state.
+                for item in filling_world.get_pre_fill_items():
+                    collection_state.collect(item, True)
+                # Sweep the copied state across the entire multiworld to again account for unusual item plando. It is
+                # also beneficial to pass as maximal a state as possible to fill_restrictive to reduce how much sweeping
+                # fill_restrictive must do.
+                collection_state.sweep_for_advancements()
+                # Perform a prefill to place confined items inside locations of this dungeon
+                filling_world.random.shuffle(dungeon_locations)
+                fill_restrictive(multiworld, collection_state, dungeon_locations, confined_dungeon_items,
+                                 single_player_placement=True, lock=True, allow_excluded=True)
 
     def pre_fill_seeds(self) -> None:
         # The prefill algorithm for seeds has a few constraints:
@@ -954,6 +1038,8 @@ class OracleOfSeasonsWorld(World):
             if world.options.default_seed == "ember":
                 possible_items.append(["Seed Satchel"])
                 possible_items.append(["Progressive Slingshot"])
+                if world.options.cross_items:
+                    possible_items.append(["Seed Shooter"])
 
             if world.options.animal_companion == "dimitri":
                 possible_items.append(["Dimitri's Flute"])
@@ -974,6 +1060,11 @@ class OracleOfSeasonsWorld(World):
                     bush_breakers.append(["Bombs (10)", "Bombs (10)"])
                 if world.options.default_seed == "gale":
                     bush_breakers.append(["Progressive Slingshot"])
+                    if world.options.cross_items:
+                        bush_breakers.append(["Seed Shooter"])
+
+            if world.options.cross_items:
+                bush_breakers.append(["Switch Hook"])
 
             items = multiworld.random.choice(possible_items)
             if "Bush Breaker" in items:
@@ -1004,14 +1095,13 @@ class OracleOfSeasonsWorld(World):
             else:
                 break
 
-    def post_fill(self) -> None:
+    def generate_output(self, output_directory: str):
         if self.options.bird_hint.know_it_all():
             self.region_hints = create_region_hints(self)
 
         if self.options.bird_hint.owl():
             self.item_hints = create_item_hints(self)
-
-    def generate_output(self, output_directory: str):
+        self.made_hints.set()
         patch = oos_create_ap_procedure_patch(self)
         rom_path = os.path.join(output_directory, f"{self.multiworld.get_out_file_name_base(self.player)}"
                                                   f"{patch.patch_file_ending}")
@@ -1019,7 +1109,7 @@ class OracleOfSeasonsWorld(World):
 
     def fill_slot_data(self) -> dict:
         slot_data = {
-            "version": f"{VERSION[0]}.{VERSION[1]}",
+            "version": f"{self.world_version.as_simple_string()}",
             "options": self.options.as_dict(
                 *[option_name for option_name in OracleOfSeasonsOptions.type_hints
                   if hasattr(OracleOfSeasonsOptions.type_hints[option_name], "include_in_slot_data")]),
@@ -1035,6 +1125,7 @@ class OracleOfSeasonsWorld(World):
             "shop_costs": self.shop_prices,
         }
 
+        self.made_hints.wait()
         # The structure is made to make it easy to call CreateHints
         slot_data_item_hints = []
         for item_hint in self.item_hints:
@@ -1042,10 +1133,8 @@ class OracleOfSeasonsWorld(World):
                 # Joke hint
                 slot_data_item_hints.append(None)
                 continue
-            player = item_hint[2]
-            if player is None:
-                player = self.player
-            slot_data_item_hints.append((self.multiworld.get_location(item_hint[1], player).address, player))
+            location = item_hint.location
+            slot_data_item_hints.append((location.address, location.player))
         slot_data["item_hints"] = slot_data_item_hints
 
         return slot_data
@@ -1080,8 +1169,20 @@ class OracleOfSeasonsWorld(World):
 
     def collect(self, state: CollectionState, item: Item) -> bool:
         change = super().collect(state, item)
-        if not change or self.options.logic_difficulty < OracleOfSeasonsLogicDifficulty.option_hell:
-            return change
+        if not change:
+            return False
+
+        if item.name == "Bombs (10)":
+            state.prog_items[self.player]["Bombs"] += 1
+        elif item.name == "Bombs (20)":
+            state.prog_items[self.player]["Bombs"] += 2
+        elif item.name == "Bombchus (10)":
+            state.prog_items[self.player]["Bombchus"] += 1
+        elif item.name == "Bombchus (20)":
+            state.prog_items[self.player]["Bombchus"] += 2
+
+        if self.options.logic_difficulty < OracleOfSeasonsLogicDifficulty.option_hell:
+            return True
         if item.code is None or item.code >= 0x2100 and item.code != 0x2e00:  # Not usable item nor ember nor flippers
             return True
         state.tloz_oos_available_cuccos[self.player] = None
@@ -1089,8 +1190,20 @@ class OracleOfSeasonsWorld(World):
 
     def remove(self, state: CollectionState, item: Item) -> bool:
         change = super().remove(state, item)
-        if not change or self.options.logic_difficulty < OracleOfSeasonsLogicDifficulty.option_hell:
-            return change
+        if not change:
+            return False
+
+        if item.name == "Bombs (10)":
+            state.prog_items[self.player]["Bombs"] -= 1
+        elif item.name == "Bombs (20)":
+            state.prog_items[self.player]["Bombs"] -= 2
+        elif item.name == "Bombchus (10)":
+            state.prog_items[self.player]["Bombchus"] -= 1
+        elif item.name == "Bombchus (20)":
+            state.prog_items[self.player]["Bombchus"] -= 2
+
+        if self.options.logic_difficulty < OracleOfSeasonsLogicDifficulty.option_hell:
+            return True
         if item.code is None or item.code >= 0x2100 and item.code != 0x2e00:  # Not usable item nor ember nor flippers
             return True
         state.tloz_oos_available_cuccos[self.player] = None

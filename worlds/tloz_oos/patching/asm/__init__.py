@@ -2,6 +2,8 @@ asm_files = {
     "base": [
         "asm/animals.yaml",
         "asm/any_item_on_essence_pedestal.yaml",
+        "asm/bigger_inventory.yaml",
+        "asm/bombchus.yaml",
         "asm/boss_items.yaml",
         "asm/business_scrubs.yaml",
         "asm/collect.yaml",
@@ -64,5 +66,17 @@ asm_files = {
     ],
     "secret_locations": [
         "asm/conditional/secret_locations.yaml"
+    ],
+    "cross_items": [
+        "asm/cross_items/bank_46_redirects.yaml",
+        "asm/cross_items/bank_47_redirects.yaml",
+        "asm/cross_items/bank_4d_redirects.yaml",
+        "asm/cross_items/cane_of_somaria.yaml",
+        "asm/cross_items/enemy_collision.yaml",
+        "asm/cross_items/helmasaur.yaml",
+        "asm/cross_items/safe_inter_bank_call.yaml",
+        "asm/cross_items/seed_shooter.yaml",
+        "asm/cross_items/switch_hook.yaml",
+        "asm/cross_items/uncmp_gfx.yaml"
     ]
 }

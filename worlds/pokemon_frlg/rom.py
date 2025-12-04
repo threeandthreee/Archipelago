@@ -619,13 +619,13 @@ def write_tokens(world: "PokemonFRLGWorld") -> None:
     fame_checker_required = 1 if world.options.fame_checker_required else 0
     patch.write_token(options_address, 0x31, struct.pack("<B", fame_checker_required))
 
-    # Set bicycle requires ledge jump
-    bicycle_requires_ledge_jump = 1 if world.options.bicycle_requires_ledge_jump else 0
-    patch.write_token(options_address, 0x32, struct.pack("<B", bicycle_requires_ledge_jump))
-
     # Set acrobatic bicycle
     acrobatic_bicycle = 1 if world.options.acrobatic_bicycle else 0
-    patch.write_token(options_address, 0x33, struct.pack("<B", acrobatic_bicycle))
+    patch.write_token(options_address, 0x32, struct.pack("<B", acrobatic_bicycle))
+
+    # Set bicycle requires ledge jump
+    bicycle_requires_ledge_jump = 1 if world.options.bicycle_requires_ledge_jump else 0
+    patch.write_token(options_address, 0x33, struct.pack("<B", bicycle_requires_ledge_jump))
 
     # Set Oak's Aides counts
     oaks_aide_route_2 = world.options.oaks_aide_route_2.value

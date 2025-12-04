@@ -27,21 +27,30 @@ kanji_table = ("姫村下木東西南北地図出入口水氷池"
 
 text_colors = set("🟥🟩🟦⬜")
 
-text_table_eng = GameboyAddress(0x1c, 0x5c00)
-text_table_eng_address = text_table_eng.address_in_rom()
+text_table_eng_seasons = GameboyAddress(0x1c, 0x5c00)
+text_table_eng_address_seasons = text_table_eng_seasons.address_in_rom()
 
-text_offset_1_table = GameboyAddress(0x3f, 0x4fe2)
-text_offset_1_table_address = text_offset_1_table.address_in_rom()
-text_offset_2_table = GameboyAddress(0x3f, 0x4ffa)
-text_offset_2_table_address = text_offset_2_table.address_in_rom()
+text_offset_1_table_seasons = GameboyAddress(0x3f, 0x4fe2)
+text_offset_1_table_address_seasons = text_offset_1_table_seasons.address_in_rom()
+text_offset_2_table_seasons = GameboyAddress(0x3f, 0x4ffa)
+text_offset_2_table_address_seasons = text_offset_2_table_seasons.address_in_rom()
 
-text_offset_split_index = 0x2c
+text_offset_split_index_seasons = 0x2c
 
-text_addresses_limit = GameboyAddress(0x21, 0x4f71).address_in_rom()
+text_addresses_limit_seasons = GameboyAddress(0x21, 0x4e04).address_in_rom()
 
 
-def simple_hex(num: int) -> str:
-    return hex(num)[2:].rjust(2, "0")
+text_table_eng_ages = GameboyAddress(0x1d, 0x4000)
+text_table_eng_address_ages = text_table_eng_ages.address_in_rom()
+
+text_offset_1_table_ages = GameboyAddress(0x3f, 0x4fb3)
+text_offset_1_table_address_ages = text_offset_1_table_ages.address_in_rom()
+text_offset_2_table_ages = GameboyAddress(0x3f, 0x4fcb)
+text_offset_2_table_address_ages = text_offset_2_table_ages.address_in_rom()
+
+text_offset_split_index_ages = 0x2c
+
+text_addresses_limit_ages = GameboyAddress(0x23, 0x4e04).address_in_rom()
 
 
 def normalize_text(text: str) -> str:

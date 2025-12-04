@@ -7,7 +7,7 @@ import settings
 from BaseClasses import MultiWorld, Tutorial, Item, Location, Region
 from Options import Option
 from worlds.AutoWorld import World, WebWorld
-from . import items, locations, options, bizhawk_client, rom, groups
+from . import items, locations, options, bizhawk_client, rom, groups, tracker
 from .generate import EncounterEntry, StaticEncounterEntry, TradeEncounterEntry, TrainerPokemonEntry
 from .data import RulesDict
 
@@ -34,10 +34,15 @@ class PokemonBWSettings(settings.Group):
         """Toggles whether Encounter Plando is enabled for players in generation.
         If disabled, yamls that use Encounter Plando do not raise OptionErrors, but display a warning."""
 
+    class DumpPatchedFiles(settings.Bool):
+        """If enabled, files inside the rom that are changed as part of the patching process (except for base patches)
+        will be dumped into a zip file next to the patched rom (for debug purposes)."""
+
     black_rom: PokemonBlackRomFile = PokemonBlackRomFile(PokemonBlackRomFile.copy_to)
     white_rom: PokemonWhiteRomFile = PokemonWhiteRomFile(PokemonWhiteRomFile.copy_to)
     # remove_collected_field_items: RemoveCollectedFieldItems | bool = False
     enable_encounter_plando: EnableEncounterPlando | bool = True
+    dump_patched_files: DumpPatchedFiles | bool = False
 
 
 class PokemonBWWeb(WebWorld):
@@ -80,11 +85,25 @@ class PokemonBWWorld(World):
     tracker_world = {
         "map_page_folder": "tracker",
         "map_page_maps": "maps/maps.json",
-        "map_page_locations": "locations/locations.json"
+        "map_page_locations": {
+            "locations/locations.json",
+            "locations/submaps_cities.json",
+            "locations/submaps_dungeons.json",
+            "locations/submaps_routes.json",
+            "locations/old_compat.json",
+        },
+        "map_page_index": tracker.map_page_index,
+        "map_page_setting_key": "pokemon_bw_map_{team}_{player}",
     }
 
     def __init__(self, multiworld: MultiWorld, player: int):
         super().__init__(multiworld, player)
+
+        from .data.version import ap_minimum
+        from Utils import version_tuple
+        if version_tuple < ap_minimum():
+            raise Exception(f"Archipelago version too old for Pokémon BW "
+                            f"(requires minimum {ap_minimum()}, found {version_tuple}")
 
         self.strength_species: set[str] = set()
         self.cut_species: set[str] = set()
@@ -258,6 +277,7 @@ class PokemonBWWorld(World):
             "ut_compatibility": version.ut(),
             # NOT needed for UT
             "master_ball_seller_cost": self.master_ball_seller_cost,
+            "reusable_tms": self.options.reusable_tms.current_key,
         }
 
     def interpret_slot_data(self, slot_data: dict[str, Any]) -> dict[str, Any]:

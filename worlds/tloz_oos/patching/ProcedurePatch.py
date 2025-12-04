@@ -1,13 +1,12 @@
-import hashlib
+import json
 import pkgutil
 
 import yaml
-from worlds.Files import APProcedurePatch, APTokenMixin, APPatchExtension
 
+from worlds.Files import APProcedurePatch, APTokenMixin, APPatchExtension
 from .Functions import *
-from .Constants import *
 from .RomData import RomData
-from .text.decoding import parse_all_texts, parse_dict_seasons
+from .data_manager.text import get_text_data
 from .text.encoding import write_text_data
 from .z80asm.Assembler import Z80Assembler, Z80Block
 
@@ -17,27 +16,42 @@ class OoSPatchExtensions(APPatchExtension):
 
     @staticmethod
     def apply_patches(caller: APProcedurePatch, rom: bytes, patch_file: str) -> bytes:
+        from .. import OracleOfSeasonsWorld
         rom_data = RomData(rom)
-        patch_data = yaml.safe_load(caller.get_file(patch_file).decode("utf-8"))
+        patch_data = json.loads(caller.get_file(patch_file).decode("utf-8"))
 
         version = patch_data["version"].split(".")
-        if int(version[0]) != VERSION[0] or int(version[1]) > VERSION[1]:
+        world_version = OracleOfSeasonsWorld.world_version
+        if int(version[0]) != world_version.major or int(version[1]) > world_version.minor:
             raise Exception(f"Invalid version: this patch was generated on v{patch_data['version']}, "
-                            f"you are currently using v{VERSION[0]},{VERSION[1]}")
+                            f"you are currently using v{world_version.as_simple_string()}")
+
+        if patch_data["options"]["cross_items"]:
+            file_name = get_settings().tloz_oos_options.ages_rom_file
+            file_path = Utils.user_path(file_name)
+            rom_file = open(file_path, "rb")
+            ages_rom = bytes(rom_file.read())
+            rom_file.close()
+
+            for bank in range(0x40, 0x80):
+                bank = 0xdd  # TODO: this is an invalid instruction that hangs the game, it's easier to debug but looks worse, remove/comment out once stable
+                rom_data.add_bank(bank)
+            rom_data.update_rom_size()
+        else:
+            ages_rom = bytes()
 
         # Initialize random seed with the one used for generation + the player ID, so that cosmetic stuff set
         # to "random" always generate the same for successive patchings for a given slot
         random.seed(patch_data["seed"] + caller.player)
 
-        assembler = Z80Assembler(CAVE_DATA, DEFINES, rom)
-        dictionary = parse_dict_seasons(rom_data)
-        texts = parse_all_texts(rom_data, dictionary)
+        assembler = Z80Assembler(CAVE_DATA, DEFINES, rom, ages_rom)
+        dictionary, texts = get_text_data(rom_data, True)
 
         # Define assembly constants & floating chunks
         define_location_constants(assembler, patch_data)
         define_option_constants(assembler, patch_data)
         define_season_constants(assembler, patch_data)
-        make_text_data(texts, patch_data)
+        make_text_data(assembler, texts, patch_data)
         define_compass_rooms_table(assembler, patch_data)
         define_collect_properties_table(assembler, patch_data)
         define_additional_tile_replacements(assembler, patch_data)
@@ -51,7 +65,7 @@ class OoSPatchExtensions(APPatchExtension):
 
         # Parse assembler files, compile them and write the result in the ROM
         print("Compiling ASM files...")
-        write_text_data(rom_data, dictionary, texts)
+        write_text_data(rom_data, dictionary, texts, True)
         for file_path in get_asm_files(patch_data):
             data_loaded = yaml.safe_load(pkgutil.get_data(__name__, file_path))
             for metalabel, contents in data_loaded.items():
@@ -76,6 +90,7 @@ class OoSPatchExtensions(APPatchExtension):
         set_character_sprite_from_settings(rom_data)
         inject_slot_name(rom_data, caller.player_name)
 
+        rom_data.update_header_checksum()
         rom_data.update_checksum(0x14e)
         return rom_data.output()
 
@@ -94,16 +109,12 @@ class OoSProcedurePatch(APProcedurePatch, APTokenMixin):
     def get_source_data(cls) -> bytes:
         base_rom_bytes = getattr(cls, "base_rom_bytes", None)
         if not base_rom_bytes:
-            file_name = get_settings()["tloz_oos_options"]["rom_file"]
-            if not os.path.exists(file_name):
-                file_name = Utils.user_path(file_name)
+            file_name = get_settings().tloz_oos_options.rom_file
+            file_name = Utils.user_path(file_name)
 
-            base_rom_bytes = bytes(open(file_name, "rb").read())
+            rom_file = open(file_name, "rb")
+            base_rom_bytes = bytes(rom_file.read())
+            rom_file.close()
 
-            basemd5 = hashlib.md5()
-            basemd5.update(base_rom_bytes)
-            if ROM_HASH != basemd5.hexdigest():
-                raise Exception("Supplied ROM does not match known MD5 for Oracle of Seasons US version."
-                                "Get the correct game and version, then dump it.")
             setattr(cls, "base_rom_bytes", base_rom_bytes)
         return base_rom_bytes

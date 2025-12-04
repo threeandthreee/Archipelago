@@ -162,7 +162,7 @@
     pop de
     pop hl
     jr @scrubBuyEnd
-0f/757A/@scrubBuyEnd: ; # Label to mark end of empty block
+0f/757a/@scrubBuyEnd: ; # Label to mark end of empty block
 
 
 

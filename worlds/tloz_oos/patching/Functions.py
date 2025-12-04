@@ -8,7 +8,7 @@ from settings import get_settings
 from .RomData import RomData
 from .Util import *
 from .asm import asm_files
-from .text import simple_hex, normalize_text
+from .text import normalize_text
 from .z80asm.Assembler import Z80Assembler, GameboyAddress
 from .z80asm.Util import parse_hex_string_to_value
 from ..Hints import make_hint_texts
@@ -34,6 +34,8 @@ def get_asm_files(patch_data):
         files += asm_files["instant_rosa"]
     if get_settings()["tloz_oos_options"]["remove_music"]:
         files += asm_files["mute_music"]
+    if patch_data["options"]["cross_items"]:
+        files += asm_files["cross_items"]
     if patch_data["options"]["secret_locations"]:
         files += asm_files["secret_locations"]
     return files
@@ -398,10 +400,15 @@ def set_player_start_inventory(assembler: Z80Assembler, patch_data):
     if "Progressive Shield" in start_inventory_data:
         start_inventory_changes[parse_hex_string_to_value(DEFINES["wShieldLevel"])] \
             = start_inventory_data["Progressive Shield"]
+    bombs = 0
     if "Bombs (10)" in start_inventory_data:
+        bombs += start_inventory_data["Bombs (10)"] * 0x10
+    if "Bombs (20)" in start_inventory_data:
+        bombs += start_inventory_data["Bombs (20)"] * 0x20
+    if bombs > 0:
         start_inventory_changes[parse_hex_string_to_value(DEFINES["wCurrentBombs"])] \
             = start_inventory_changes[parse_hex_string_to_value(DEFINES["wMaxBombs"])] \
-            = min(start_inventory_data["Bombs (10)"] * 0x10, 0x99)
+            = min(bombs, 0x99)
         # The bomb amounts are stored in decimal
     if "Progressive Sword" in start_inventory_data:
         start_inventory_changes[0xc6ac] = start_inventory_data["Progressive Sword"]
@@ -419,9 +426,25 @@ def set_player_start_inventory(assembler: Z80Assembler, patch_data):
     if "Progressive Feather" in start_inventory_data:
         start_inventory_changes[parse_hex_string_to_value(DEFINES["wFeatherLevel"])] \
             = start_inventory_data["Progressive Feather"]
+    if "Switch Hook" in start_inventory_data:
+        start_inventory_changes[parse_hex_string_to_value(DEFINES["wSwitchHookLevel"])] \
+            = start_inventory_data["Switch Hook"]
+    bombchus = 0
+    if "Bombchus (10)" in start_inventory_data:
+        bombchus += start_inventory_data["Bombchus (10)"] * 0x10
+    if "Bombchus (20)" in start_inventory_data:
+        bombchus += start_inventory_data["Bombchus (20)"] * 0x20
+    if bombchus > 0:
+        start_inventory_changes[parse_hex_string_to_value(DEFINES["wNumBombchus"])] \
+            = start_inventory_changes[parse_hex_string_to_value(DEFINES["wMaxBombchus"])] \
+            = min(bombchus, 0x99)
+        # The bombchus amounts are stored in decimal
+
     seed_amount = 0
     if "Progressive Slingshot" in start_inventory_data:
         start_inventory_changes[0xc6b3] = start_inventory_data["Progressive Slingshot"]  # Slingshot level
+        seed_amount = 0x20
+    if "Seed Shooter" in start_inventory_data:
         seed_amount = 0x20
     if "Seed Satchel" in start_inventory_data:
         satchel_level = start_inventory_data["Seed Satchel"]
@@ -538,6 +561,9 @@ def alter_treasure_types(rom: RomData):
     # Make bombs increase max carriable quantity when obtained from treasures,
     # not drops (see asm/seasons/bomb_bag_behavior)
     set_treasure_data(rom, "Bombs (10)", None, None, 0x90)
+    set_treasure_data(rom, "Bombs (20)", 0x94, None, 0xa0)
+    set_treasure_data(rom, "Bombchus (10)", None, None, 0x90)
+    set_treasure_data(rom, "Bombchus (20)", None, None, 0xa0)
 
     # Colored Rod of Seasons to make them recognizable
     set_treasure_data(rom, "Rod of Seasons (Spring)", None, 0x4f)
@@ -597,6 +623,7 @@ def set_fixed_subrosia_seaside_location(rom: RomData, patch_data):
 
 
 def set_file_select_text(assembler: Z80Assembler, slot_name: str):
+    from .. import OracleOfSeasonsWorld
     def char_to_tile(c: str) -> int:
         if "0" <= c <= "9":
             return ord(c) - 0x20
@@ -611,7 +638,9 @@ def set_file_select_text(assembler: Z80Assembler, slot_name: str):
         else:
             return 0xfc  # All other chars are blank spaces
 
-    row_1 = [char_to_tile(c) for c in f"ARCHIPELAGO {VERSION[0]}.{VERSION[1]}".ljust(16, " ")]
+    row_1 = [char_to_tile(c) for c in
+             f"ARCHIPELAGO {OracleOfSeasonsWorld.version()}"
+             .ljust(16, " ")]
     row_2 = [char_to_tile(c) for c in slot_name.replace("-", " ").upper()]
     row_2_left_padding = int((16 - len(row_2)) / 2)
     row_2_right_padding = int(16 - row_2_left_padding - len(row_2))
@@ -644,7 +673,7 @@ def process_item_name_for_shop_text(item: Dict) -> str:
     return item_name
 
 
-def make_text_data(text: dict[str, str], patch_data):
+def make_text_data(assembler: Z80Assembler, text: dict[str, str], patch_data):
     # Process shops
     OVERWORLD_SHOPS = [
         "Horon Village: Shop",
@@ -720,79 +749,16 @@ def make_text_data(text: dict[str, str], patch_data):
                        "  \\optOK \\optNo thanks")
         text[tx_indices[symbolic_name]] = item_text
 
-    # New items
-    # Replace ring box 1
-    text["TX_0034"] = ("You got 🟥Ember\n"
-                       "Seeds⬜! Open\n"
-                       "your 🟥Seed\n"
-                       "Satchel⬜ to use\n"
-                       "them.")
-    # Replace ring box 1 unused text
-    text["TX_0057"] = ("You found an\n"
-                       "item for another\n"
-                       "world!")
-    # Replace ring box 2 unused text
-    text["TX_0058"] = ("You got 🟥25\n"
-                       "Ore Chunks⬜!")
+    # Cross items
+    assembler.define_byte("text.hook1.treasure", 0x3b)
+    assembler.define_byte("text.hook2.treasure", 0x51)
+    assembler.define_byte("text.cane.treasure", 0x53)
+    assembler.define_byte("text.shooter.treasure", 0x54)
 
-    # Trade items
-    # Cuccodex is fine
-    text["TX_005b"] = ("You got a\n"
-                       "\\col(84)🥚🟥 Lon Lon Egg⬜!\n"
-                       "It's a\n"
-                       "beauty aid?!?")
-    text["TX_005c"] = ("You got a\n"
-                       "\\col(84)🎎🟥 Ghastly Doll⬜!\n"
-                       "Looking at it\n"
-                       "gives you\n"
-                       "chills!")
-    text["TX_005d"] = ("You got an\n"
-                       "\\col(84)⚗🟥 Iron Pot⬜.\n"
-                       "It looks...\n"
-                       "well-seasoned.")
-    # Soup is fine
-    text["TX_005f"] = ("You got the\n"
-                       "\\col(84)🏺🟥 Goron Vase⬜!\n"
-                       "It's a very\n"
-                       "nice vase...")
-    text["TX_0060"] = ("You got a\n"
-                       "\\col(84)🐟🟥 Fish⬜! It's\n"
-                       "market fresh!")
-    text["TX_0061"] = ("You got a\n"
-                       "\\col(84)📢🟥 Megaphone⬜!\n"
-                       "Give a shout!")
-    text["TX_0062"] = ("You got a\n"
-                       "\\col(84)🍄🟥 Mushroom⬜!\n"
-                       "It smells weird.")
-    text["TX_0063"] = ("You got a\n"
-                       "\\col(84)🐦🟥 Wooden Bird⬜!\n"
-                       "It looks real!")
-    text["TX_0064"] = ("You got\n"
-                       "\\col(84)🛢🟥 Engine Grease⬜.")
-    text["TX_0065"] = ("You got a\n"
-                       "\\col(84)📻🟥 Phonograph⬜!\n"
-                       "What a tune!")
-
-    # Appraisal text
-    text["TX_301c"] = ("You got the\n"
-                       "\\call(fd)!")
-
-    # Map stuff, replaces the group 05 since it's all linked game dialogues
-    text["TX_0500"] = "Unknown Portal"
-    text["TX_0501"] = normalize_text("Portal to Eastern Suburbs")
-    text["TX_0502"] = normalize_text("Portal to Spool Swamp")
-    text["TX_0503"] = normalize_text("Portal to Mt. Cucco")
-    text["TX_0504"] = normalize_text("Portal to Eyeglass Lake")
-    text["TX_0505"] = normalize_text("Portal to Horon Village")
-    text["TX_0506"] = normalize_text("Portal to Temple Remains")
-    text["TX_0507"] = normalize_text("Portal to Temple Summit")
-    text["TX_0508"] = normalize_text("Portal to Subrosian Village")
-    text["TX_0509"] = normalize_text("Portal to Subrosian Market")
-    text["TX_050a"] = normalize_text("Portal to Subrosian Wilds")
-    text["TX_050b"] = normalize_text("Portal to Great Furnace")
-    text["TX_050c"] = normalize_text("Portal to House of Pirates")
-    text["TX_050d"] = normalize_text("Portal to Subrosian Volcanoes")
-    text["TX_050e"] = normalize_text("Portal to Subrosian Dungeon")
+    assembler.define_byte("text.hook1.inventory", 0x1e)
+    assembler.define_byte("text.hook2.inventory", 0x1e)
+    assembler.define_byte("text.cane.inventory", 0x1d)
+    assembler.define_byte("text.shooter.inventory", 0x2e)
 
     # Default satchel seed
     seed_name = SEED_ITEMS[patch_data["options"]["default_seed"]].replace(" ", "\n")
@@ -804,16 +770,6 @@ def make_text_data(text: dict[str, str], patch_data):
                            "nice, I unlocked\n"
                            "all the doors\n"
                            "here for you.")
-
-    # Reword the natzu deku to omit the secret and the full satchel
-    text["TX_4c43"] = ("\\sfx(c6)Come back\n"
-                       "with all five\n"
-                       "kinds of 🟥seeds⬜!")
-
-    # Remove the mention of 777 ore chunks
-    unlucky_text: str = text["TX_3a2f"]
-    index_777 = unlucky_text.index(" Get")
-    text["TX_3a2f"] = unlucky_text[:index_777]
 
     text["TX_3e1b"] = ("You've broken\n🟩\\num1 signs⬜!\n"
                        "You'd better not\n"
@@ -842,13 +798,6 @@ def make_text_data(text: dict[str, str], patch_data):
                          "You should know\n"
                        + seed_text)
 
-    # Replace the shield selling part of dekus which will never be used
-    text["TX_450a"] = ("\\sfx(c6)Greetings!\n"
-                       "I can refill\n"
-                       "your bag for\n"
-                       "🟩30 Rupees⬜ only.\n"
-                       "  \\optOK \\optNo thanks")
-
     # Golden beasts
     golden_beasts_requirement = patch_data["options"]["golden_beasts_requirement"]
     if golden_beasts_requirement == 0:
@@ -866,34 +815,20 @@ def make_text_data(text: dict[str, str], patch_data):
             text["TX_1f04"] = text["TX_1f04"].replace("beasts", "beast")
             text["TX_1f05"] = text["TX_1f05"].replace("beasts", "beast")
 
-    # Impa refills
-    text["TX_2503"] = ("Come see me if\n"
-                       "you need a\n"
-                       "refill!")
-
     # Maku tree sign
     essence_count = patch_data["options"]["required_essences"]
-    text["TX_2e00"] = (f"Find 🟥{essence_count} essence{'s' if essence_count != 0 else ''}⬜\n"
+    text["TX_2e00"] = (f"Find 🟥{essence_count} essence{'s' if essence_count != 1 else ''}⬜\n"
                        "to get the seed!")
 
     # Tarm ruins sign
     jewel_count = patch_data["options"]["tarm_gate_required_jewels"]
-    text["TX_2e12"] = (f"Bring 🟩{jewel_count}⬜ jewel{'s' if jewel_count != 0 else ''}\n"
+    text["TX_2e12"] = (f"Bring 🟩{jewel_count}⬜ jewel{'s' if jewel_count != 1 else ''}\n"
                        "for the door\n"
                        "to open.")
 
     # Tree house old man
-    essence_count = patch_data["options"]["required_essences"]
-    text["TX_3601"] = text["TX_3601"].replace("knows many\n🟥essences⬜...", f"has 🟥{essence_count} essence{'s' if essence_count != 0 else ''}⬜!")
-
-    # Change D8 introduction text to “Sword & Shield Dungeon” from “Sword & Shield Maze”,
-    # since every other mention of it was using “Dungeon” naming
-    text["TX_0208"] = text["TX_0208"].replace("Maze", "Dungeon")
-
-    # Now unused text from Maku talking
-    text["TX_1700"] = text["TX_1701"] = ""
-
-    text["TX_0602"] = "Unknown Dungeon"
+    essence_count = patch_data["options"]["treehouse_old_man_requirement"]
+    text["TX_3601"] = text["TX_3601"].replace("knows many\n🟥essences⬜...", f"has 🟥{essence_count} essence{'s' if essence_count != 1 else ''}⬜!")
 
     # With quick rosa, the escort code is disabled
     if patch_data["options"]["rosa_quick_unlock"]:

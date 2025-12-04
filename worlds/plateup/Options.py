@@ -22,6 +22,13 @@ class DayCount(Range):
     range_end = 1000
     default = 10
 
+class DayLeaseInterval(Range):
+    """How many in-game days between each required Day Lease (min 1)."""
+    display_name = "Day Lease Interval"
+    range_start = 1
+    range_end = 30
+    default = 5
+
 class DishCount(Range):
     """How many dishes the player starts with (1-15) or 0 for disabled."""
     display_name = "Starting Dish Count"
@@ -58,6 +65,8 @@ class ApplianceSpeedMode(Choice):
     option_separate = 1
     default = 0
 
+
+
 @dataclass
 class PlateUpOptions(PerGameCommonOptions):
     goal: Goal
@@ -68,3 +77,4 @@ class PlateUpOptions(PerGameCommonOptions):
     death_link: DeathLink
     death_link_behavior: DeathLinkBehavior
     appliance_speed_mode: ApplianceSpeedMode
+    day_lease_interval: DayLeaseInterval

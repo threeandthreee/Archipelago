@@ -2,22 +2,22 @@ from .bases import CrystalProjectTestBase
 from ..constants.key_items import *
 from ..constants.keys import *
 from ..constants.mounts import *
-from ..constants.regions import *
+from ..constants.ap_regions import *
 from BaseClasses import CollectionState
 
 
 class TestLevelGatingOff(CrystalProjectTestBase):
     options = {
-        "levelGating": 0,
-        "progressiveMountMode": 0,
-        "keyMode": 0,
-        "killBossesMode": 1
+        "level_gating": 0,
+        "progressive_mount_mode": 0,
+        "key_mode": 0,
+        "kill_bosses_mode": 1
     }
 
     def test_region_accessibility(self):
-        self.assertFalse(self.can_reach_region(ANCIENT_RESERVOIR))
+        self.assertFalse(self.can_reach_region(ANCIENT_RESERVOIR_AP_REGION))
         self.collect_by_name(PROGRESSIVE_SALMON_VIOLA)
-        self.assertTrue(self.can_reach_region(ANCIENT_RESERVOIR))
+        self.assertTrue(self.can_reach_region(ANCIENT_RESERVOIR_AP_REGION))
 
     def test_boss_accessibility(self):
         self.collect_mounts()
@@ -36,20 +36,20 @@ class TestLevelGatingOff(CrystalProjectTestBase):
 
 class TestLevelGatingLevelPasses(CrystalProjectTestBase):
     options = {
-        "progressiveMountMode": 0,
-        "keyMode": 0,
-        "killBossesMode": 1
+        "progressive_mount_mode": 0,
+        "key_mode": 0,
+        "kill_bosses_mode": 1
     }
     # Level gating defaults: Progressive Level Passes, Progressive Level Size = 6
     def test_region_accessibility(self):
         # Ancient Reservoir Min Level = 33; player starts with 1 Progressive Level
-        self.assertFalse(self.can_reach_region(ANCIENT_RESERVOIR))
+        self.assertFalse(self.can_reach_region(ANCIENT_RESERVOIR_AP_REGION))
         self.collect_by_name(PROGRESSIVE_SALMON_VIOLA)
-        self.assertFalse(self.can_reach_region(ANCIENT_RESERVOIR))
+        self.assertFalse(self.can_reach_region(ANCIENT_RESERVOIR_AP_REGION))
         self.collect_progressive_levels(4)
-        self.assertFalse(self.can_reach_region(ANCIENT_RESERVOIR))
+        self.assertFalse(self.can_reach_region(ANCIENT_RESERVOIR_AP_REGION))
         self.collect_progressive_levels(1)
-        self.assertTrue(self.can_reach_region(ANCIENT_RESERVOIR))
+        self.assertTrue(self.can_reach_region(ANCIENT_RESERVOIR_AP_REGION))
 
     def test_boss_accessibility(self):
         self.collect_mounts()
@@ -118,27 +118,27 @@ class TestLevelGatingLevelPasses(CrystalProjectTestBase):
 
 class TestLevelGatingLevelCapped(TestLevelGatingLevelPasses):
     options = {
-        "levelGating": 2,
-        "progressiveMountMode": 0,
-        "keyMode": 0,
-        "killBossesMode": 1
+        "level_gating": 2,
+        "progressive_mount_mode": 0,
+        "key_mode": 0,
+        "kill_bosses_mode": 1
     }
 
 class TestLevelGatingLevelCatchUp(TestLevelGatingLevelPasses):
     options = {
-        "levelGating": 3,
-        "progressiveMountMode": 0,
-        "keyMode": 0,
-        "killBossesMode": 1
+        "level_gating": 3,
+        "progressive_mount_mode": 0,
+        "key_mode": 0,
+        "kill_bosses_mode": 1
     }
 
 class TestMaxLevelIncrease(CrystalProjectTestBase):
     options = {
-        "levelGating": 1,
-        "maxLevel": 62,
-        "progressiveMountMode": 0,
-        "keyMode": 0,
-        "killBossesMode": 1
+        "level_gating": 1,
+        "max_level": 62,
+        "progressive_mount_mode": 0,
+        "key_mode": 0,
+        "kill_bosses_mode": 1
     }
 
     def test_boss_above_level_60(self):
@@ -164,17 +164,17 @@ class TestMaxLevelIncrease(CrystalProjectTestBase):
 
         # The Depths: 63
         self.collect_progressive_levels(9)
-        self.assertFalse(self.can_reach_region(THE_DEPTHS))
+        self.assertFalse(self.can_reach_region(THE_DEPTHS_AP_REGION))
         self.collect_progressive_levels(1)
-        self.assertTrue(self.can_reach_region(THE_DEPTHS))
+        self.assertTrue(self.can_reach_region(THE_DEPTHS_AP_REGION))
 
 class TestMaxLevelDecrease(CrystalProjectTestBase):
     options = {
-        "levelGating": 1,
-        "maxLevel": 3,
-        "progressiveMountMode": 0,
-        "keyMode": 0,
-        "killBossesMode": 1
+        "level_gating": 1,
+        "max_level": 3,
+        "progressive_mount_mode": 0,
+        "key_mode": 0,
+        "kill_bosses_mode": 1
     }
 
     # you can do everything at level 3 B)
@@ -182,7 +182,7 @@ class TestMaxLevelDecrease(CrystalProjectTestBase):
         self.collect_mounts()
         self.collect(self.get_item_by_name(SKELETON_KEY))
         # The Depths: 63
-        self.assertTrue(self.can_reach_region(THE_DEPTHS))
+        self.assertTrue(self.can_reach_region(THE_DEPTHS_AP_REGION))
 
     def test_number_of_progressive_levels_in_pool(self):
         # 0 Progressive Levels in the pool
@@ -194,38 +194,38 @@ class TestMaxLevelDecrease(CrystalProjectTestBase):
 
 class TestProgressiveLevelSize(CrystalProjectTestBase):
     options = {
-        "progressiveLevelSize": 10,
-        "progressiveMountMode": 0,
-        "keyMode": 0,
+        "progressive_level_size": 10,
+        "progressive_mount_mode": 0,
+        "key_mode": 0,
     }
 
     def test_region_accessibility(self):
         self.collect_mounts()
         # Ancient Reservoir Min Level = 33; player starts with 1 Progressive Level
-        self.assertFalse(self.can_reach_region(ANCIENT_RESERVOIR))
+        self.assertFalse(self.can_reach_region(ANCIENT_RESERVOIR_AP_REGION))
         self.collect_progressive_levels(2)
-        self.assertFalse(self.can_reach_region(ANCIENT_RESERVOIR))
+        self.assertFalse(self.can_reach_region(ANCIENT_RESERVOIR_AP_REGION))
         self.collect_progressive_levels(1)
-        self.assertTrue(self.can_reach_region(ANCIENT_RESERVOIR))
+        self.assertTrue(self.can_reach_region(ANCIENT_RESERVOIR_AP_REGION))
 
 class TestLevelComparedToEnemiesIncrease(CrystalProjectTestBase):
     options = {
-        "levelGating": 1,
-        "levelComparedToEnemies": 5,
-        "maxLevel": 62,
-        "progressiveMountMode": 0,
-        "keyMode": 0,
-        "killBossesMode": 1
+        "level_gating": 1,
+        "level_compared_to_enemies": 5,
+        "max_level": 62,
+        "progressive_mount_mode": 0,
+        "key_mode": 0,
+        "kill_bosses_mode": 1
     }
 
     def test_region_accessibility(self):
         self.collect_mounts()
         # Ancient Reservoir Min Level = 33; +5; player starts with 2 Progressive Levels b/c Spawning Meadows level is 3+5 = 8 and Progressive Level size is 6
-        self.assertFalse(self.can_reach_region(ANCIENT_RESERVOIR))
+        self.assertFalse(self.can_reach_region(ANCIENT_RESERVOIR_AP_REGION))
         self.collect_progressive_levels(4)
-        self.assertFalse(self.can_reach_region(ANCIENT_RESERVOIR))
+        self.assertFalse(self.can_reach_region(ANCIENT_RESERVOIR_AP_REGION))
         self.collect_progressive_levels(1)
-        self.assertTrue(self.can_reach_region(ANCIENT_RESERVOIR))
+        self.assertTrue(self.can_reach_region(ANCIENT_RESERVOIR_AP_REGION))
 
     def test_region_above_level_60(self):
         self.collect_mounts()
@@ -234,28 +234,28 @@ class TestLevelComparedToEnemiesIncrease(CrystalProjectTestBase):
 
         # The Depths: 63
         self.collect_progressive_levels(8)
-        self.assertFalse(self.can_reach_region(THE_DEPTHS))
+        self.assertFalse(self.can_reach_region(THE_DEPTHS_AP_REGION))
         self.collect_progressive_levels(1)
-        self.assertTrue(self.can_reach_region(THE_DEPTHS))
+        self.assertTrue(self.can_reach_region(THE_DEPTHS_AP_REGION))
 
 class TestLevelComparedToEnemiesDecrease(CrystalProjectTestBase):
     options = {
-        "levelGating": 1,
-        "levelComparedToEnemies": -5,
-        "maxLevel": 62,
-        "progressiveMountMode": 0,
-        "keyMode": 0,
-        "killBossesMode": 1
+        "level_gating": 1,
+        "level_compared_to_enemies": -5,
+        "max_level": 62,
+        "progressive_mount_mode": 0,
+        "key_mode": 0,
+        "kill_bosses_mode": 1
     }
 
     def test_region_accessibility(self):
         self.collect_mounts()
         # Ancient Reservoir Min Level = 33; -5; player starts with 1 Progressive Level; Progressive Level size 6 (default)
-        self.assertFalse(self.can_reach_region(ANCIENT_RESERVOIR))
+        self.assertFalse(self.can_reach_region(ANCIENT_RESERVOIR_AP_REGION))
         self.collect_progressive_levels(3)
-        self.assertFalse(self.can_reach_region(ANCIENT_RESERVOIR))
+        self.assertFalse(self.can_reach_region(ANCIENT_RESERVOIR_AP_REGION))
         self.collect_progressive_levels(1)
-        self.assertTrue(self.can_reach_region(ANCIENT_RESERVOIR))
+        self.assertTrue(self.can_reach_region(ANCIENT_RESERVOIR_AP_REGION))
 
     def test_region_above_level_60(self):
         self.collect_mounts()
@@ -264,6 +264,6 @@ class TestLevelComparedToEnemiesDecrease(CrystalProjectTestBase):
 
         # The Depths: 63
         self.collect_progressive_levels(8)
-        self.assertFalse(self.can_reach_region(THE_DEPTHS))
+        self.assertFalse(self.can_reach_region(THE_DEPTHS_AP_REGION))
         self.collect_progressive_levels(1)
-        self.assertTrue(self.can_reach_region(THE_DEPTHS))
+        self.assertTrue(self.can_reach_region(THE_DEPTHS_AP_REGION))

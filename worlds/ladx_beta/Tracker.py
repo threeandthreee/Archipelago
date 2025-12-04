@@ -64,8 +64,6 @@ class LocationTracker:
             '0x1F5': 0x06,
             '0x301-0': 0x10,
             '0x301-1': 0x10,
-            '0x2E9-0': 0x20,
-            '0x2E9-1': 0x40,
         }
 
         addressOverrides = {

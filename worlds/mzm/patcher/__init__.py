@@ -120,6 +120,7 @@ def apply_basepatch(rom: bytes) -> bytes:
 
 def write_seed_config(rom: LocalRom, patch: PatchJson):
     config = patch["config"]
+    goal = config.get("goal", "vanilla")
     seed_info = (
         patch.get("player_name", "").encode("utf-8")[:64],
         patch.get("seed_name", "").encode("utf-8")[:64],
@@ -136,11 +137,10 @@ def write_seed_config(rom: LocalRom, patch: PatchJson):
         config.get("skip_tourian_opening_cutscenes", False),
         2 * PIXEL_SIZE * config.get("elevator_speed", 1),
 
-        config.get("metroid_dna_required", 0),
+        config.get("metroid_dna_required", 5) if goal == "metroid_dna" else 0,
     )
     rom.write(get_rom_address("sRandoSeed"), struct.pack("<64s64s12B", *seed_info))
 
-    goal = config.get("goal", "vanilla")
     if goal != "vanilla":
         if goal == "bosses":
             event = Event.MOTHER_BRAIN_KILLED
@@ -222,22 +222,27 @@ def write_metroid_dna_status_screen_patch(rom: LocalRom):
     # Patch tile map
     grid_tile = _make_tile_bytes(736, 11)
     slash_tile = _make_tile_bytes(748, 11)
-    pause_screen_tilemap = rom.decompress_lzss(get_rom_address("sStatusScreenTilemap"))
-    edited_tilemap = bytearray(pause_screen_tilemap)
-    edited_tilemap[0x58:0x5A] = _make_tile_bytes(757, 11)
-    edited_tilemap[0x84:0xA4] = (
-        4 * grid_tile + slash_tile + 4 * grid_tile +
-        _make_tile_bytes(755, 11) + _make_tile_bytes(756, 11) +
-        2 * grid_tile + slash_tile + 2 * grid_tile
-    )
-    edited_tilemap[0xC4:0xD0] = 6 * _make_tile_bytes(758, 11)
-    for i, tile in enumerate(range(0xD4, 0xDA, 2)):
-        edited_tilemap[tile:tile + 2] = _make_tile_bytes(2 + i, 11)
-    for i, tile in enumerate(range(0xE0, 0xE4, 2)):
-        edited_tilemap[tile:tile + 2] = _make_tile_bytes(8 + i, 11)
-    edited_tilemap = lz10.compress(edited_tilemap)
-    assert len(edited_tilemap) <= 4 * 264
-    rom.write(get_rom_address("sStatusScreenTilemap"), edited_tilemap)
+
+    def patch_tilemap(symbol: str, length: int):
+        tilemap = rom.decompress_lzss(get_rom_address(symbol))
+        edited_tilemap = bytearray(tilemap)
+        edited_tilemap[0x58:0x5A] = _make_tile_bytes(757, 11)
+        edited_tilemap[0x84:0xA4] = (
+            4 * grid_tile + slash_tile + 4 * grid_tile +
+            _make_tile_bytes(755, 11) + _make_tile_bytes(756, 11) +
+            2 * grid_tile + slash_tile + 2 * grid_tile
+        )
+        edited_tilemap[0xC4:0xD0] = 6 * _make_tile_bytes(758, 11)
+        for i, tile in enumerate(range(0xD4, 0xDA, 2)):
+            edited_tilemap[tile:tile + 2] = _make_tile_bytes(2 + i, 11)
+        for i, tile in enumerate(range(0xE0, 0xE4, 2)):
+            edited_tilemap[tile:tile + 2] = _make_tile_bytes(8 + i, 11)
+        edited_tilemap = lz10.compress(edited_tilemap)
+        assert len(edited_tilemap) <= length
+        rom.write(get_rom_address(symbol), edited_tilemap)
+
+    patch_tilemap("sStatusScreenTilemap", 4 * 264)
+    patch_tilemap("sStatusScreenBackgroundTilemap", 4 * 169)
 
     # Shift energy text position
     rom.write(get_rom_address("sStatusScreenGroupsData", 5 * 5 + 2), bytes([2, 5]))

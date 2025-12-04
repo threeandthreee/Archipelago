@@ -7,9 +7,13 @@ from BaseClasses import Item, ItemClassification, CollectionState
 from typing import List, NamedTuple
 from .options import CrystalProjectOptions
 from .items import item_table, equipment_index_offset, item_index_offset, job_index_offset
-from .locations import get_locations, get_shops, get_bosses, npc_index_offset, treasure_index_offset, crystal_index_offset, boss_index_offset, shop_index_offset
+from .locations import LocationData, get_treasure_and_npc_locations, get_shop_locations, get_boss_locations, npc_index_offset, treasure_index_offset, crystal_index_offset, \
+    boss_index_offset, shop_index_offset, get_crystal_locations
 from .unused_locations import get_unused_locations
-from .constants.biomes import get_region_by_id
+from .constants.biomes import get_display_region_by_id
+from .constants.display_regions import *
+from .constants.keys import *
+from .constants.key_items import *
 from .rules import CrystalProjectLogic
 import json
 
@@ -34,7 +38,7 @@ class ModDataModel(object):
         self.__dict__ = json.loads(json_data)
 
 class ModLocationData(NamedTuple):
-    region: str
+    display_region: str
     name: str
     code: int
     offsetless_code: int
@@ -78,7 +82,7 @@ def get_mod_info() -> List[ModInfoModel]:
     equipment_ids_in_use: List[int] = [591, 592, 593, 594, 595, 596, 597, 598, 599, 600, 601, 602, 603, 604, 605, 606, 607, 608, 609, 610]
     item_ids_in_use: List[int] = [229, 230, 231, 232]
     job_ids_in_use: List[int] = []
-    entity_ids_in_use: List[int] = [5000, 5001, 5002, 5003]
+    entity_ids_in_use: List[int] = [5000, 5001, 5002, 5003, 5004]
     spark_ids_in_use: List[int] = []
     order_loaded = 1
 
@@ -317,16 +321,16 @@ def get_modded_bosses(mod_info: List[ModInfoModel]) -> List[ModLocationData]:
 
     return locations
 
-def get_removed_locations(mod_info: List[ModInfoModel]) -> List[ModLocationData]:
-    removed_locations: List[ModLocationData] = []
-    vanilla_locations = get_locations(-1, None)
-    vanilla_bosses = get_bosses(-1, None)
-    vanilla_shops = get_shops(-1, None)
+def get_removed_locations(mod_info: List[ModInfoModel]) -> List[LocationData]:
+    removed_locations: List[LocationData] = []
+    vanilla_treasures_and_npcs = get_treasure_and_npc_locations(-1, None)
+    vanilla_crystals = get_crystal_locations(-1, None)
+    vanilla_bosses = get_boss_locations(-1, None)
+    vanilla_shops = get_shop_locations(-1, None)
 
     for mod in mod_info:
         for location in mod.data_model.Entities:
             location_id = location['ID']
-            biome_id = location['BiomeID']
             has_no_npc_info = location['NpcData'] is None or not location['NpcData']['Pages']
 
             if has_no_npc_info and location['SignData'] is None and location['SparkData'] is None and location['DoorData'] is None and location['HomePointData'] is None and location['TreasureData'] is None and location['CrystalData'] is None and location['MarkerData'] is None:
@@ -336,21 +340,21 @@ def get_removed_locations(mod_info: List[ModInfoModel]) -> List[ModLocationData]
                 boss_id = location_id + boss_index_offset
                 shop_id = location_id + shop_index_offset
 
-                for vanilla_location in vanilla_locations:
-                    if vanilla_location.code == treasure_id:
-                        removed_locations.append(ModLocationData(vanilla_location.region, vanilla_location.name, vanilla_location.code, location_id, '0,0,0', biome_id, None))
-                    if vanilla_location.code == npc_id:
-                        removed_locations.append(ModLocationData(vanilla_location.region, vanilla_location.name, vanilla_location.code, location_id, '0,0,0', biome_id, None))
-                    if vanilla_location.code == crystal_id:
-                        removed_locations.append(ModLocationData(vanilla_location.region, vanilla_location.name, vanilla_location.code, location_id, '0,0,0', biome_id, None))
+                for treasure_or_npc in vanilla_treasures_and_npcs:
+                    if treasure_or_npc.code == treasure_id or treasure_or_npc.code == npc_id:
+                        removed_locations.append(LocationData(treasure_or_npc.ap_region, treasure_or_npc.name, location_id))
+
+                for crystal in vanilla_crystals:
+                    if crystal.code == crystal_id:
+                        removed_locations.append(LocationData(crystal.ap_region, crystal.name, location_id))
 
                 for boss in vanilla_bosses:
                     if boss.code == boss_id:
-                        removed_locations.append(ModLocationData(boss.region, boss.name, boss.code, location_id, '0,0,0', biome_id, None))
+                        removed_locations.append(LocationData(boss.ap_region, boss.name, location_id))
 
                 for shop in vanilla_shops:
                     if shop.code == shop_id:
-                        removed_locations.append(ModLocationData(shop.region, shop.name, shop.code, location_id, '0,0,0', biome_id, None))
+                        removed_locations.append(LocationData(shop.ap_region, shop.name, location_id))
 
     return removed_locations
 
@@ -363,7 +367,7 @@ def get_mod_directory() -> str:
 def build_npc_location(location, shifted_entity_ids: List[ModIncrementedIdData], excluded_ids: IdsExcludedFromRandomization) -> Optional[ModLocationData]:
     options: CrystalProjectOptions
     biome_id = location['BiomeID']
-    region = get_region_by_id(biome_id)
+    display_region = get_display_region_by_id(biome_id)
     item_id = location['ID']
 
     new_id = item_id
@@ -372,7 +376,7 @@ def build_npc_location(location, shifted_entity_ids: List[ModIncrementedIdData],
             new_id = incremented_id.new_id
 
     id_with_offset = new_id + npc_index_offset
-    name = region + ' NPC - Modded NPC ' + str(new_id)
+    name = display_region + ' NPC - Modded NPC ' + str(new_id)
     coord = location['Coord']
     coordinates = str(coord['X']) + ',' + str(coord['Y']) + ',' + str(coord['Z'])
     has_add_inventory = False
@@ -435,11 +439,11 @@ def build_npc_location(location, shifted_entity_ids: List[ModIncrementedIdData],
                 has_add_inventory = not is_excluded
 
     if has_add_inventory:
-        location_in_pool = any(location.code == id_with_offset for location in get_locations(-1, None))
+        location_in_pool = any(location.code == id_with_offset for location in get_treasure_and_npc_locations(-1, None))
         location_unused = any(location.code == id_with_offset for location in get_unused_locations())
 
         if not location_in_pool and not location_unused and not coordinates == "0,0,0":
-            location = ModLocationData(region, name, id_with_offset, new_id, coordinates, biome_id, rule_condition)
+            location = ModLocationData(display_region, name, id_with_offset, new_id, coordinates, biome_id, rule_condition)
             return location
 
     return None
@@ -449,7 +453,7 @@ def build_shop_locations(location, shifted_entity_ids: List[ModIncrementedIdData
     location_codes: List[int] = []
     options: CrystalProjectOptions
     biome_id = location['BiomeID']
-    region = get_region_by_id(biome_id)
+    display_region = get_display_region_by_id(biome_id)
     item_id = location['ID']
     coord = location['Coord']
     coordinates = str(coord['X']) + ',' + str(coord['Y']) + ',' + str(coord['Z'])
@@ -472,9 +476,9 @@ def build_shop_locations(location, shifted_entity_ids: List[ModIncrementedIdData
                 for shop_item in stock:
                     shop_item_id = new_id + id_offset
                     id_with_offset = shop_item_id + shop_index_offset
-                    shop_name = region + ' Shop - Modded Shop ' + str(shop_item_id)
+                    shop_name = display_region + ' Shop - Modded Shop ' + str(shop_item_id)
                     shop_item_excluded = is_item_at_location_excluded(shop_item, excluded_ids)
-                    shop_item_in_pool = any(location.code == id_with_offset for location in get_shops(-1, None))
+                    shop_item_in_pool = any(location.code == id_with_offset for location in get_shop_locations(-1, None))
 
                     if not shop_item_in_pool and not shop_item_excluded:
                         condition = shop_item['Condition']
@@ -483,7 +487,7 @@ def build_shop_locations(location, shifted_entity_ids: List[ModIncrementedIdData
                         else:
                             rule_condition = None
 
-                        location = ModLocationData(region, shop_name, id_with_offset, shop_item_id, coordinates, biome_id, rule_condition)
+                        location = ModLocationData(display_region, shop_name, id_with_offset, shop_item_id, coordinates, biome_id, rule_condition)
                         if not location.code in location_codes:
                             locations.append(location)
                             location_codes.append(location.code)
@@ -495,7 +499,7 @@ def build_shop_locations(location, shifted_entity_ids: List[ModIncrementedIdData
 def build_treasure_location(location, shifted_entity_ids: List[ModIncrementedIdData], excluded_ids: IdsExcludedFromRandomization) -> Optional[ModLocationData]:
     #Chests always add an item and never have conditions, so nice and easy
     biome_id = location['BiomeID']
-    region = get_region_by_id(biome_id)
+    display_region = get_display_region_by_id(biome_id)
     item_id = location['ID']
 
     new_id = item_id
@@ -504,16 +508,16 @@ def build_treasure_location(location, shifted_entity_ids: List[ModIncrementedIdD
             new_id = incremented_id.new_id
 
     id_with_offset = new_id + treasure_index_offset
-    name = region + ' Chest - Modded Chest ' + str(new_id)
+    name = display_region + ' Chest - Modded Chest ' + str(new_id)
     coord = location['Coord']
     coordinates = str(coord['X']) + ',' + str(coord['Y']) + ',' + str(coord['Z'])
     is_excluded = is_item_at_location_excluded(location['TreasureData'], excluded_ids)
 
-    location_in_pool = any(location.code == id_with_offset for location in get_locations(-1, None))
+    location_in_pool = any(location.code == id_with_offset for location in get_treasure_and_npc_locations(-1, None))
     location_unused = any(location.code == id_with_offset for location in get_unused_locations())
 
     if not location_in_pool and not location_unused and not is_excluded:
-        location = ModLocationData(region, name, id_with_offset, new_id, coordinates, biome_id, None)
+        location = ModLocationData(display_region, name, id_with_offset, new_id, coordinates, biome_id, None)
         return location
 
     return None
@@ -521,7 +525,7 @@ def build_treasure_location(location, shifted_entity_ids: List[ModIncrementedIdD
 def build_crystal_location(location, shifted_entity_ids: List[ModIncrementedIdData], excluded_ids: IdsExcludedFromRandomization) -> Optional[ModLocationData]:
     # Crystals always add a job and never have conditions, so nice and easy
     biome_id = location['BiomeID']
-    region = get_region_by_id(biome_id)
+    display_region = get_display_region_by_id(biome_id)
     item_id = location['ID']
 
     new_id = item_id
@@ -530,17 +534,17 @@ def build_crystal_location(location, shifted_entity_ids: List[ModIncrementedIdDa
             new_id = incremented_id.new_id
 
     id_with_offset = new_id + crystal_index_offset
-    name = region + ' Crystal - Modded Job ' + str(new_id)
+    name = display_region + ' Crystal - Modded Job ' + str(new_id)
     coord = location['Coord']
     coordinates = str(coord['X']) + ',' + str(coord['Y']) + ',' + str(coord['Z'])
     job_id = location['CrystalData']['JobID']
     is_excluded = job_id in excluded_ids.excluded_job_ids
 
-    location_in_pool = any(location.code == id_with_offset for location in get_locations(-1, None))
+    location_in_pool = any(location.code == id_with_offset for location in get_crystal_locations(-1, None))
     location_unused = any(location.code == id_with_offset for location in get_unused_locations())
 
     if not location_in_pool and not location_unused and not is_excluded:
-        location = ModLocationData(region, name, id_with_offset, new_id, coordinates, biome_id, None)
+        location = ModLocationData(display_region, name, id_with_offset, new_id, coordinates, biome_id, None)
 
         return location
 
@@ -549,7 +553,7 @@ def build_crystal_location(location, shifted_entity_ids: List[ModIncrementedIdDa
 def build_boss_npc(location, boss_troop_ids: List[int], shifted_entity_ids: List[ModIncrementedIdData]) -> Optional[ModLocationData]:
     options: CrystalProjectOptions
     biome_id = location['BiomeID']
-    region = get_region_by_id(biome_id)
+    display_region = get_display_region_by_id(biome_id)
     item_id = location['ID']
     troop_id = None
 
@@ -559,7 +563,7 @@ def build_boss_npc(location, boss_troop_ids: List[int], shifted_entity_ids: List
             new_id = incremented_id.new_id
 
     id_with_offset = new_id + boss_index_offset
-    name = region + ' Boss - Modded Boss ' + str(new_id)
+    name = display_region + ' Boss - Modded Boss ' + str(new_id)
     coord = location['Coord']
     coordinates = str(coord['X']) + ',' + str(coord['Y']) + ',' + str(coord['Z'])
     has_battle = False
@@ -611,10 +615,10 @@ def build_boss_npc(location, boss_troop_ids: List[int], shifted_entity_ids: List
 
     if has_battle:
         is_boss = troop_id in boss_troop_ids
-        location_in_pool = any(location.code == id_with_offset for location in get_bosses(-1, None))
+        location_in_pool = any(location.code == id_with_offset for location in get_boss_locations(-1, None))
 
         if is_boss and not location_in_pool:
-            location = ModLocationData(region, name, id_with_offset, new_id, coordinates, biome_id, rule_condition)
+            location = ModLocationData(display_region, name, id_with_offset, new_id, coordinates, biome_id, rule_condition)
             return location
 
     return None
@@ -631,7 +635,7 @@ def build_spark_location(location, shifted_entity_ids: List[ModIncrementedIdData
 
     options: CrystalProjectOptions
     biome_id = location['BiomeID']
-    region = get_region_by_id(biome_id)
+    display_region = get_display_region_by_id(biome_id)
     item_id = location['ID']
 
     new_id = item_id
@@ -640,23 +644,25 @@ def build_spark_location(location, shifted_entity_ids: List[ModIncrementedIdData
             new_id = incremented_id.new_id
 
     id_with_offset = new_id + boss_index_offset
-    name = region + ' Boss - Modded Boss ' + str(new_id)
+    name = display_region + ' Boss - Modded Boss ' + str(new_id)
     coord = location['Coord']
     coordinates = str(coord['X']) + ',' + str(coord['Y']) + ',' + str(coord['Z'])
 
-    location_in_pool = any(location.code == id_with_offset for location in get_bosses(-1, None))
+    location_in_pool = any(location.code == id_with_offset for location in get_boss_locations(-1, None))
 
     if not location_in_pool:
-        location = ModLocationData(region, name, id_with_offset, new_id, coordinates, biome_id, None)
+        location = ModLocationData(display_region, name, id_with_offset, new_id, coordinates, biome_id, None)
         return location
 
     return None
 
-def build_condition_rule(condition, world: "CrystalProjectWorld") -> Optional[Callable[[CollectionState], bool]]:
+def build_condition_rule(region, condition, world: "CrystalProjectWorld") -> Optional[Callable[[CollectionState], bool]]:
     logic = CrystalProjectLogic(world.player, world.options)
     job_id = None
     loot_type = None
     loot_id = None
+
+    region_rule = build_region_specific_rules(region, world.player, logic)
 
     if condition is not None:
         if 'Number' in condition['Data']:
@@ -666,7 +672,7 @@ def build_condition_rule(condition, world: "CrystalProjectWorld") -> Optional[Ca
             loot_type = condition['Data']['LootType']
             loot_id = condition['Data']['LootValue']
     else:
-        return lambda state: logic.has_swimming(state) and logic.has_glide(state) and logic.has_vertical_movement(state)
+        return lambda state: logic.has_swimming(state) and logic.has_glide(state) and logic.has_vertical_movement(state) and region_rule
 
     if loot_type is None and job_id is not None:
         archipelago_loot_id = job_id + job_index_offset
@@ -675,13 +681,31 @@ def build_condition_rule(condition, world: "CrystalProjectWorld") -> Optional[Ca
     elif loot_type == 2:
         archipelago_loot_id = loot_id + equipment_index_offset
     else:
-        return lambda state: logic.has_swimming(state) and logic.has_glide(state) and logic.has_vertical_movement(state)
+        return lambda state: logic.has_swimming(state) and logic.has_glide(state) and logic.has_vertical_movement(state) and region_rule
 
     if archipelago_loot_id in world.item_id_to_name:
         item_name = world.item_id_to_name[archipelago_loot_id]
-        return lambda state: logic.has_swimming(state) and logic.has_glide(state) and logic.has_vertical_movement(state) and state.has(item_name, world.player)
+        return lambda state: logic.has_swimming(state) and logic.has_glide(state) and logic.has_vertical_movement(state) and state.has(item_name, world.player) and region_rule
     else:
-        return lambda state: logic.has_swimming(state) and logic.has_glide(state) and logic.has_vertical_movement(state)
+        return lambda state: logic.has_swimming(state) and logic.has_glide(state) and logic.has_vertical_movement(state) and region_rule
+
+def build_region_specific_rules(region, player:int, logic: CrystalProjectLogic) -> Optional[Callable[[CollectionState], bool]]:
+    if region == CAPITAL_SEQUOIA_DISPLAY_NAME:
+        return lambda state: logic.has_key(state, LUXURY_KEY) and state.has(PROGRESSIVE_LUXURY_PASS, player) and logic.has_key(state, GARDENERS_KEY)
+    elif region == SARA_SARA_BAZAAR_DISPLAY_NAME:
+        return lambda state: logic.has_key(state, ROOM_ONE_KEY)
+    elif region == CAPITAL_JAIL_DISPLAY_NAME:
+        return lambda state: logic.has_key(state, SOUTH_WING_KEY) and logic.has_key(state, WEST_WING_KEY) and logic.has_key(state, EAST_WING_KEY) and logic.has_key(state, DARK_WING_KEY) and logic.has_key(state, CELL_KEY, 6)
+    elif region == BEAURIOR_ROCK_DISPLAY_NAME:
+        return lambda state: logic.has_key(state, SMALL_KEY, 4) and logic.has_key(state, BEAURIOR_BOSS_KEY)
+    elif region == SLIP_GLIDE_RIDE_DISPLAY_NAME:
+        return lambda state: logic.has_key(state, RED_DOOR_KEY, 3)
+    elif region == SEQUOIA_ATHENAEUM_DISPLAY_NAME:
+        return lambda state: logic.has_key(state, ICE_PUZZLE_KEY, 6)
+    elif region == CASTLE_RAMPARTS_DISPLAY_NAME:
+        return lambda state: logic.has_key(state, RAMPART_KEY)
+    else:
+        return lambda state: True
 
 def get_excluded_ids(mod: ModDataModel) -> IdsExcludedFromRandomization:
     if mod.System is not None and mod.System["Randomizer"] is not None:

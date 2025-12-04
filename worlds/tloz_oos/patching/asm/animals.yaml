@@ -26,7 +26,7 @@
     ld e,$02
     ld hl,animalSavePointTable
     call searchDoubleKey
-    jr nc,.done
+    jr nc,@done
     ld de,wRememberedCompanionY
     ldi a,(hl)
     ld (de),a
@@ -34,7 +34,7 @@
     ld a,(hl)
     ld (de),a
     
-    .done:
+    @done:
     pop de
     pop bc
     ld a,(wWarpDestRoom)

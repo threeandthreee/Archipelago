@@ -29,10 +29,10 @@ UTTrackerData = {
     "map_page_locations": "locations.json",
     "map_page_setting_key": "Slot:{player}:MapIndex",
     "map_page_index": map_page_index,
+    "external_pack_key": "ut_tracker_path",
     "location_setting_key": "Slot:{player}:MapLocation",
     "location_icon_coords": location_icon_coords,
 }
-
 
 def make_map():
     return sorted([{
@@ -78,3 +78,4 @@ if '.apworld' not in os.path.abspath(__file__):
         json.dump(make_map(), f, ensure_ascii=True, indent=4)
     with open(os.path.join(base_dir, 'tracker/locations.json'), 'w', encoding='utf-8') as f:
         json.dump(location_data(), f, ensure_ascii=True, indent=4)
+    del UTTrackerData["external_pack_key"]

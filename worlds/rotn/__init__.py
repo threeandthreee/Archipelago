@@ -4,7 +4,7 @@ from typing import List, ClassVar, Type
 from math import floor
 from Options import PerGameCommonOptions, OptionError
 
-from .options import RotNOptions
+from .options import RotNOptions, rotn_option_groups
 from .RiftCollections import RotNCollections
 from .items import RotNSongItem, RotNFixedItem
 from .locations import RotNLocation
@@ -15,14 +15,18 @@ class RotNWeb(WebWorld):
         "Multiworld Setup Guide",
         "A guide to setting up Rift of the Necrodancer Archipelago mod",
         "English",
-        "rift_en.md",
-        "rift/en",
+        "setup_en.md",
+        "setup/en",
         ["studkid"]
     )]
 
+    option_groups = rotn_option_groups
+
 class RotNWorld(World):
     """
-    Rift of the Necrodancer is a game that you play.
+    Rift of the Necrodancer is a rhythm game where you hit monsters to the beat of one of 60+ songs.
+    Play through a selection of randomly chosen songs, collecting diamonds
+    until you have enough to play and complete the goal song!
     """
     game = "Rift of the Necrodancer"
     options_dataclass: ClassVar[Type[PerGameCommonOptions]] = RotNOptions
@@ -30,6 +34,7 @@ class RotNWorld(World):
 
     topology_present = False
     web = RotNWeb()
+    ut_can_gen_without_yaml = True
 
     rift_collection = RotNCollections()
     filler_item_names = list(rift_collection.filler_items.keys())
@@ -37,13 +42,27 @@ class RotNWorld(World):
 
     item_name_to_id = {name: code for name, code in rift_collection.item_names_to_id.items()}
     location_name_to_id = {name: code for name, code in rift_collection.location_names_to_id.items()}
+    item_name_groups = rift_collection.getItemNameGroups()
 
     victory_song_name: str = ""
-    starting_songs: List[str]
+    victory_song_type: int = 0
+    starting_songs: List[str] = []
     included_songs: List[str]
+    final_song_ids: set[int] = set()
     location_count: int
 
     def generate_early(self):
+        # Universal Tracker Support
+        re_gen_passthrough = getattr(self.multiworld, "re_gen_passthrough", {})
+        if re_gen_passthrough and self.game in re_gen_passthrough:
+            slot_data: dict[str, any] = re_gen_passthrough[self.game]
+
+            if "finalSongIDs" in slot_data:
+                final = slot_data.get("finalSongIDs", [])
+                self.included_songs = [key for key, song in self.rift_collection.song_items.items() if song.song_name in final]
+                self.location_count = len(self.included_songs) * 2
+            return
+        
         min_diff = min(self.options.min_intensity.value, self.options.max_intensity.value)
         max_diff = max(self.options.min_intensity.value, self.options.max_intensity.value)
 
@@ -51,9 +70,6 @@ class RotNWorld(World):
         goal_song_pool = self.options.goal_song_pool.value
 
         while True:
-            if self.options.min_difficulty.value > self.options.max_difficulty.value:
-                raise OptionError("Max song difficulty is higher then min song difficulty.")
-
             available_song_keys = self.rift_collection.getSongsWithSettings(self.options, min_diff, max_diff)
             available_song_keys = self.handle_plando(available_song_keys)
 
@@ -68,11 +84,13 @@ class RotNWorld(World):
             if victory_song_keys:
                 chosen_song_index = self.random.randrange(0, len(victory_song_keys))
                 self.victory_song_name = victory_song_keys[chosen_song_index][1]
+                self.victory_song_type = self.rift_collection.song_items[self.victory_song_name].type
                 # Replace the chosen goal song's index with the index from the full list we saved earlier.
                 chosen_song_index = victory_song_keys[chosen_song_index][0]
             else:
                 chosen_song_index = self.random.randrange(0, len(available_song_keys))
                 self.victory_song_name = available_song_keys[chosen_song_index]
+                self.victory_song_type = self.rift_collection.song_items[self.victory_song_name].type
             del available_song_keys[chosen_song_index]
 
             count_needed_for_start = max(0, starter_song_count - len(self.starting_songs))
@@ -150,6 +168,7 @@ class RotNWorld(World):
             return RotNFixedItem(name, ItemClassification.filler, filler, self.player)
         
         song = self.rift_collection.song_items[name]
+        self.final_song_ids.add(song.song_name)
         return RotNSongItem(name, self.player, song)
     
     def get_filler_item_name(self):
@@ -220,15 +239,11 @@ class RotNWorld(World):
         all_selected_locations.extend(included_song_copy)
 
         # Adds 2 item locations per song/album to the menu region.
-        for i in range(0, len(all_selected_locations)):
-            name = all_selected_locations[i]
-            loc1 = RotNLocation(self.player,  name + "-0", self.rift_collection.song_locations[name + "-0"], menu_region)
-            loc1.access_rule = lambda state, place=name: state.has(place, self.player)
-            menu_region.locations.append(loc1)
-
-            loc2 = RotNLocation(self.player,  name + "-1", self.rift_collection.song_locations[name + "-1"], menu_region)
-            loc2.access_rule = lambda state, place=name: state.has(place, self.player)
-            menu_region.locations.append(loc2)
+        for name in all_selected_locations:
+            for j in range(2):
+                loc = RotNLocation(self.player, f"{name}-{j}", self.rift_collection.song_locations[f"{name}-{j}"], menu_region)
+                loc.access_rule = lambda state, item=name: state.has(item, self.player)
+                menu_region.locations.append(loc)
 
     def set_rules(self) -> None:
         self.multiworld.completion_condition[self.player] = lambda state: \
@@ -244,12 +259,19 @@ class RotNWorld(World):
         diamond_count = self.get_diamond_count()
         return max(1, floor(diamond_count * multiplier))
     
+    @staticmethod
+    def interpret_slot_data(slot_data: dict[str, any]) -> dict[str, any]:
+        return slot_data
+    
     def fill_slot_data(self):
         return {
             "victoryLocation": self.victory_song_name,
+            "victoryType": self.victory_song_type,
             "diamondWinCount": self.get_diamond_win_count(),
             "gradeNeeded": self.options.grade_needed.value,
+            "fullComboNeeded": self.options.full_combo_needed.value,
             "remixes": self.options.include_remix.value,
             "minigameMode": self.options.include_minigames.value,
             "bossMode": self.options.include_boss_battle.value,
+            "finalSongIDs": self.final_song_ids,
         }

@@ -62,6 +62,17 @@ for day in range(16, 21):
 
 FRANCHISE_LOCATION_DICT["Lose a Run"] = 100000
 
+# Mark any franchise days 16-20 across all runs as excluded to avoid placing important items there
+for name, loc_id in FRANCHISE_LOCATION_DICT.items():
+    if name.startswith("Franchise - Complete Day "):
+        try:
+            # Extract the numeric day immediately after "Complete Day "
+            day_str = name.split("Complete Day ", 1)[1].split(" ")[0].strip()
+            if day_str.isdigit() and int(day_str) >= 16:
+                EXCLUDED_LOCATIONS.add(loc_id)
+        except Exception:
+            pass
+
 DAY_LOCATION_DICT: Dict[str, int] = {
     "Lose a Run": 100000
 }

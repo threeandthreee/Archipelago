@@ -1,3 +1,4 @@
+import logging
 from typing import Dict, Set, Tuple, NamedTuple, Optional, List, TYPE_CHECKING
 from BaseClasses import ItemClassification
 from .constants.item_groups import *
@@ -10,7 +11,8 @@ from .constants.scholar_abilities import *
 from .constants.summons import *
 from .constants.teleport_stones import *
 from .constants.region_passes import *
-from .constants.regions import *
+from .constants.display_regions import *
+from .constants.crystal_locations import *
 
 if TYPE_CHECKING:
     from . import CrystalProjectWorld
@@ -19,6 +21,11 @@ class ItemData(NamedTuple):
     category: str
     code: int
     classification: ItemClassification
+        #For maguffins, we use Progression + Deprioritize + SkipBalancing
+        #For progression items that you need a lot to unlock not much, and are therefore unsatisfying, we use Progression + Deprioritize
+        #For really neat progression items that are a BIG DEAL, we use Progression + Useful, just because that comes out a gold color instead of purple when colored text is used.
+        # deprioritize means it won't be picked for a priority location, because it would feel unsatisfying to get i.e. clam from a priority location
+        # skip balancing means that if you used progression balancing to try to force one player's items earlier than another, it will fill those with i.e. non-clams
     #Amount found in each region type; added together for each set you're including
     beginnerAmount: Optional[int] = 1
     advancedAmount: Optional[int] = 0
@@ -107,12 +114,12 @@ item_table: Dict[str, ItemData] = {
     "Item - Decent Cod Bag": ItemData(ITEM, 185 + item_index_offset, ItemClassification.useful, 0, 0, 1), #Shoudu Province, Expert Zones
 
     #Fishing
-    "Item - Flimsy Rod": ItemData(ITEM, 55 + item_index_offset, ItemClassification.useful),
-    "Item - Tough Rod": ItemData(ITEM, 150 + item_index_offset, ItemClassification.useful),
-    "Item - Super Rod": ItemData(ITEM, 151 + item_index_offset, ItemClassification.useful),
-    "Item - Plug Lure": ItemData(ITEM, 91 + item_index_offset, ItemClassification.useful),
-    "Item - Fly Lure": ItemData(ITEM, 149 + item_index_offset, ItemClassification.useful),
-    "Item - Jigging Lure": ItemData(ITEM, 97 + item_index_offset, ItemClassification.useful),
+    "Item - Flimsy Rod": ItemData(TACKLE, 55 + item_index_offset, ItemClassification.progression, 1),
+    "Item - Tough Rod": ItemData(TACKLE, 150 + item_index_offset, ItemClassification.progression, 0, 0, 1),
+    "Item - Super Rod": ItemData(TACKLE, 151 + item_index_offset, ItemClassification.progression, 0, 0, 1),
+    "Item - Plug Lure": ItemData(TACKLE, 91 + item_index_offset, ItemClassification.progression, 1),
+    "Item - Fly Lure": ItemData(TACKLE, 149 + item_index_offset, ItemClassification.progression, 0, 0, 1),
+    "Item - Jigging Lure": ItemData(TACKLE, 97 + item_index_offset, ItemClassification.progression, 0, 0, 1),
 
     #Ore
     "Item - Silver Ore": ItemData(ORE, 3 + item_index_offset, ItemClassification.useful, 0, 18), #Used by Capital Blacksmith, Capital Sequoia, Advanced Regions
@@ -147,12 +154,12 @@ item_table: Dict[str, ItemData] = {
     CANOPY_KEY: ItemData(KEY, 116 + item_index_offset, ItemClassification.progression, 0, 0, 1), #Turn-in: Jidamba Tangle (unlocks Jidamba Eaclaneya), Expert Regions
     RAMPART_KEY: ItemData(KEY, 175 + item_index_offset, ItemClassification.progression, 0, 0, 1), #Turn-in: Castle Ramparts, Expert Regions
     FORGOTTEN_KEY: ItemData(KEY, 192 + item_index_offset, ItemClassification.progression, 0, 0, 1), #Turn-in: The Deep Sea, Expert Regions
-    SKELETON_KEY: ItemData(KEY, 147 + item_index_offset, ItemClassification.progression, 0, 1), #Everyone's best friend
-    PRISON_KEY_RING: ItemData(KEY, 501 + item_index_offset, ItemClassification.progression, 0, 1),
-    BEAURIOR_KEY_RING: ItemData(KEY, 502 + item_index_offset, ItemClassification.progression, 0, 0, 1),
-    ICE_PUZZLE_KEY_RING: ItemData(KEY, 503 + item_index_offset, ItemClassification.progression, 0, 0, 1),
-    SLIP_GLIDE_RIDE_KEY_RING: ItemData(KEY, 504 + item_index_offset, ItemClassification.progression, 0, 0, 1),
-    JIDAMBA_KEY_RING: ItemData(KEY, 505 + item_index_offset, ItemClassification.progression, 0, 0, 1),
+    SKELETON_KEY: ItemData(KEY, 147 + item_index_offset, ItemClassification.progression | ItemClassification.useful, 0, 1), #Everyone's best friend
+    PRISON_KEY_RING: ItemData(KEY, 650 + item_index_offset, ItemClassification.progression, 0, 1),
+    BEAURIOR_KEY_RING: ItemData(KEY, 651 + item_index_offset, ItemClassification.progression, 0, 0, 1),
+    ICE_PUZZLE_KEY_RING: ItemData(KEY, 652 + item_index_offset, ItemClassification.progression, 0, 0, 1),
+    SLIP_GLIDE_RIDE_KEY_RING: ItemData(KEY, 653 + item_index_offset, ItemClassification.progression, 0, 0, 1),
+    JIDAMBA_KEY_RING: ItemData(KEY, 654 + item_index_offset, ItemClassification.progression, 0, 0, 1),
 
     #Passes
     "Item - Quintar Pass": ItemData(ITEM, 7 + item_index_offset, ItemClassification.filler, 0), #We don't use this so it's filler to prevent it from being jsonified (now part of Progressive Quintar Flute)
@@ -164,11 +171,11 @@ item_table: Dict[str, ItemData] = {
     BLACK_SQUIRREL: ItemData(ITEM, 21 + item_index_offset, ItemClassification.progression, 4), #Turn-in: Spawning Meadows, Beginner Regions
     DOG_BONE: ItemData(ITEM, 6 + item_index_offset, ItemClassification.progression, 3), #Turn-in: Delende, Beginner Regions
     # Number of clamshells is set dynamically based on your Clamshells in pool variable
-    CLAMSHELL: ItemData(ITEM, 16 + item_index_offset, ItemClassification.progression, 0), #Turn-in: Seaside Cliffs, Beginner Regions
+    CLAMSHELL: ItemData(ITEM, 16 + item_index_offset, ItemClassification.progression | ItemClassification.deprioritized | ItemClassification.skip_balancing, 0), #Turn-in: Seaside Cliffs, Beginner Regions
     DIGESTED_HEAD: ItemData(ITEM, 17 + item_index_offset, ItemClassification.progression, 0, 3), #Turn-in: Capital Sequoia, Advanced Regions
     LOST_PENGUIN: ItemData(ITEM, 24 + item_index_offset, ItemClassification.progression, 0, 12), #Turn-in: Capital Sequoia, Advanced Regions
-    ELEVATOR_PART: ItemData(ITEM, 224 + item_index_offset, ItemClassification.progression, 0, 0, 10), #Turn-in: Shoudu Province, Expert Regions
-    UNDERSEA_CRAB: ItemData(ITEM, 212 + item_index_offset, ItemClassification.progression, 0, 0, 15), #Turn-in: The Deep Sea, Expert Regions
+    ELEVATOR_PART: ItemData(ITEM, 224 + item_index_offset, ItemClassification.progression | ItemClassification.deprioritized, 0, 0, 10), #Turn-in: Shoudu Province, Expert Regions
+    UNDERSEA_CRAB: ItemData(ITEM, 212 + item_index_offset, ItemClassification.progression | ItemClassification.deprioritized, 0, 0, 15), #Turn-in: The Deep Sea, Expert Regions
     WEST_LOOKOUT_TOKEN: ItemData(ITEM, 81 + item_index_offset, ItemClassification.progression, 0, 1), #Turn-in: Sara Sara Bazaar, Advanced Regions
     CENTRAL_LOOKOUT_TOKEN: ItemData(ITEM, 88 + item_index_offset, ItemClassification.progression, 0, 1), #Turn-in: Sara Sara Bazaar, Advanced Regions
     NORTH_LOOKOUT_TOKEN: ItemData(ITEM, 131 + item_index_offset, ItemClassification.progression, 0, 1), #Turn-in: Sara Sara Bazaar, Advanced Regions
@@ -224,7 +231,7 @@ item_table: Dict[str, ItemData] = {
     SARA_SARA_BEACH_EAST_PASS: ItemData(PASS, 827 + item_index_offset, ItemClassification.progression, 0, 1),
     SARA_SARA_BEACH_WEST_PASS: ItemData(PASS, 828 + item_index_offset, ItemClassification.progression, 0, 1),
     ANCIENT_RESERVOIR_PASS: ItemData(PASS, 829 + item_index_offset, ItemClassification.progression, 0, 1),
-    IBEK_CAVE_PASS: ItemData(PASS, 830 + item_index_offset, ItemClassification.progression, 0, 1),
+    #IBEK_CAVE_PASS: ItemData(PASS, 830 + item_index_offset, ItemClassification.progression, 0, 1),
     SALMON_BAY_PASS: ItemData(PASS, 831 + item_index_offset, ItemClassification.progression, 0, 1),
     #Expert
     THE_OPEN_SEA_PASS: ItemData(PASS, 832 + item_index_offset, ItemClassification.progression, 0, 0, 1),
@@ -262,14 +269,15 @@ item_table: Dict[str, ItemData] = {
     THE_NEW_WORLD_PASS: ItemData(PASS, 863 + item_index_offset, ItemClassification.progression, 0, 0, 0, 1),
 
     #Animal mount summons
-    PROGRESSIVE_QUINTAR_WOODWIND: ItemData(MOUNT, 39 + item_index_offset, ItemClassification.progression, 3), #Quintar Pass ID 7 & Quintar Flute ID 39 & Quintar Ocarina 115
-    IBEK_BELL: ItemData(MOUNT, 50 + item_index_offset, ItemClassification.progression),
-    OWL_DRUM: ItemData(MOUNT, 49 + item_index_offset, ItemClassification.progression),
-    PROGRESSIVE_SALMON_VIOLA: ItemData(MOUNT, 48 + item_index_offset, ItemClassification.progression, 2), #Salmon Violin ID 48 & Salmon Cello ID 114
-    PROGRESSIVE_MOUNT: ItemData(MOUNT, 700 + item_index_offset, ItemClassification.progression, 7),
+    PROGRESSIVE_QUINTAR_WOODWIND: ItemData(MOUNT, 39 + item_index_offset, ItemClassification.progression | ItemClassification.useful, 3), #Quintar Pass ID 7 & Quintar Flute ID 39 & Quintar Ocarina 115
+    IBEK_BELL: ItemData(MOUNT, 50 + item_index_offset, ItemClassification.progression | ItemClassification.useful),
+    OWL_DRUM: ItemData(MOUNT, 49 + item_index_offset, ItemClassification.progression | ItemClassification.useful),
+    PROGRESSIVE_SALMON_VIOLA: ItemData(MOUNT, 48 + item_index_offset, ItemClassification.progression | ItemClassification.useful, 2), #Salmon Violin ID 48 & Salmon Cello ID 114
+    PROGRESSIVE_MOUNT: ItemData(MOUNT, 700 + item_index_offset, ItemClassification.progression | ItemClassification.useful, 7),
 
     #Teleport items (shards not included since they are stones but worse)
     HOME_POINT_STONE: ItemData(TELEPORT_STONE, 19 + item_index_offset, ItemClassification.useful), #Starter pack
+    ARCHIPELAGO_STONE: ItemData(TELEPORT_STONE, 233 + item_index_offset, ItemClassification.useful), #Teleports you to your starting location
     GAEA_STONE: ItemData(TELEPORT_STONE, 23 + item_index_offset, ItemClassification.progression, 0, 1), #Teleport to Capital Sequoia, Advanced Regions
     MERCURY_STONE: ItemData(TELEPORT_STONE, 13 + item_index_offset, ItemClassification.progression), #Teleport to Beginner Regions
     POSEIDON_STONE: ItemData(TELEPORT_STONE, 57 + item_index_offset, ItemClassification.progression, 0, 1), #Teleport to Salmon River, Advanced Regions
@@ -1711,30 +1719,30 @@ default_starting_job_list: List[str] = [
 ]
 
 job_crystal_beginner_dictionary: Dict[str, str] = {
-    FENCER_JOB: "Pale Grotto Crystal - Fencer",
-    SHAMAN_JOB: "Draft Shaft Conduit Crystal - Shaman",
-    SCHOLAR_JOB: "Yamagawa M.A. Crystal - Jump into fireplace cave for Scholar",
-    AEGIS_JOB: "Skumparadise Crystal - Aegis",
+    FENCER_JOB: THE_PALE_GROTTO_DISPLAY_NAME + FENCER_JOB_CRYSTAL_LOCATION,
+    SHAMAN_JOB: DRAFT_SHAFT_CONDUIT_DISPLAY_NAME + SHAMAN_JOB_CRYSTAL_LOCATION,
+    SCHOLAR_JOB: YAMAGAWA_MA_DISPLAY_NAME + SCHOLAR_JOB_CRYSTAL_LOCATION,
+    AEGIS_JOB: SKUMPARADISE_DISPLAY_NAME + AEGIS_JOB_CRYSTAL_LOCATION,
 }
 
 job_crystal_advanced_dictionary: Dict[str, str] = {
-    HUNTER_JOB: "Quintar Nest Crystal - Hunter",
-    CHEMIST_JOB: "Quintar Sanctum Crystal - Chemist (of course this is in the shroom zone)",
-    REAPER_JOB: "Capital Jail Crystal - Reaper, above hell pool",
-    NINJA_JOB: "Okimoto N.S. Crystal - Ninja",
-    NOMAD_JOB: "River Cats Ego Crystal - Appease the QuizFish Nomad",
-    DERVISH_JOB: "Ancient Reservoir Crystal - Dervish",
-    BEATSMITH_JOB: "Capital Sequoia Crystal - Beatsmith",
+    HUNTER_JOB: QUINTAR_NEST_DISPLAY_NAME + HUNTER_JOB_CRYSTAL_LOCATION,
+    CHEMIST_JOB: QUINTAR_SANCTUM_DISPLAY_NAME + CHEMIST_JOB_CRYSTAL_LOCATION,
+    REAPER_JOB: CAPITAL_JAIL_DISPLAY_NAME + REAPER_JOB_CRYSTAL_LOCATION,
+    NINJA_JOB: OKIMOTO_NS_DISPLAY_NAME + NINJA_JOB_CRYSTAL_LOCATION,
+    NOMAD_JOB: RIVER_CATS_EGO_AP_REGION + NOMAD_JOB_CRYSTAL_LOCATION,
+    DERVISH_JOB: ANCIENT_RESERVOIR_DISPLAY_NAME + DERVISH_JOB_CRYSTAL_LOCATION,
+    BEATSMITH_JOB: CAPITAL_SEQUOIA_DISPLAY_NAME + BEATSMITH_JOB_CRYSTAL_LOCATION,
 }
 
 job_crystal_expert_dictionary: Dict[str, str] = {
-    SAMURAI_JOB: "Shoudu Province Crystal - Samurai for 3 Sky Arena wins",
-    ASSASSIN_JOB: "The Undercity Crystal - Assassin",
-    VALKYRIE_JOB: "Beaurior Volcano Crystal - Valkyrie",
-    SUMMONER_JOB: "Slip Glide Ride Crystal - Summoner",
-    BEASTMASTER_JOB: "Castle Ramparts Crystal - Beastmaster (say high to the Ramparts Demon!)",
-    WEAVER_JOB: "Jidamba Eaclaneya Crystal - Weaver",
-    MIMIC_JOB: "The Chalice of Tar Crystal - Biiiiiig glide to the Mimic",
+    SAMURAI_JOB: SHOUDU_PROVINCE_DISPLAY_NAME + SAMURAI_JOB_CRYSTAL_LOCATION,
+    ASSASSIN_JOB: THE_UNDERCITY_DISPLAY_NAME + ASSASSIN_JOB_CRYSTAL_LOCATION,
+    VALKYRIE_JOB: BEAURIOR_VOLCANO_DISPLAY_NAME + VALKYRIE_JOB_CRYSTAL_LOCATION,
+    SUMMONER_JOB: SLIP_GLIDE_RIDE_DISPLAY_NAME + SUMMONER_JOB_CRYSTAL_LOCATION,
+    BEASTMASTER_JOB: CASTLE_RAMPARTS_DISPLAY_NAME + BEASTMASTER_JOB_CRYSTAL_LOCATION,
+    WEAVER_JOB: JIDAMBA_EACLANEYA_DISPLAY_NAME + WEAVER_JOB_CRYSTAL_LOCATION,
+    MIMIC_JOB: THE_CHALICE_OF_TAR_DISPLAY_NAME + MIMIC_JOB_CRYSTAL_LOCATION,
 }
 
 key_rings: Tuple[str, ...] = (
@@ -1772,74 +1780,73 @@ singleton_keys: Tuple[str, ...] = (
     FORGOTTEN_KEY
 )
 
-region_name_to_pass_dict: Dict[str, str] = {
+display_region_name_to_pass_dict: Dict[str, str] = {
     #Beginner
-    SPAWNING_MEADOWS: SPAWNING_MEADOWS_PASS,
-    DELENDE: DELENDE_PASS,
-    SOILED_DEN: SOILED_DEN_PASS,
-    THE_PALE_GROTTO: THE_PALE_GROTTO_PASS,
-    SEASIDE_CLIFFS: SEASIDE_CLIFFS_PASS,
-    DRAFT_SHAFT_CONDUIT: DRAFT_SHAFT_CONDUIT_PASS,
-    MERCURY_SHRINE: MERCURY_SHRINE_PASS,
-    YAMAGAWA_MA: YAMAGAWA_MA_PASS,
-    PROVING_MEADOWS: PROVING_MEADOWS_PASS,
-    SKUMPARADISE: SKUMPARADISE_PASS,
+    SPAWNING_MEADOWS_DISPLAY_NAME: SPAWNING_MEADOWS_PASS,
+    DELENDE_DISPLAY_NAME: DELENDE_PASS,
+    SOILED_DEN_DISPLAY_NAME: SOILED_DEN_PASS,
+    THE_PALE_GROTTO_DISPLAY_NAME: THE_PALE_GROTTO_PASS,
+    SEASIDE_CLIFFS_DISPLAY_NAME: SEASIDE_CLIFFS_PASS,
+    DRAFT_SHAFT_CONDUIT_DISPLAY_NAME: DRAFT_SHAFT_CONDUIT_PASS,
+    MERCURY_SHRINE_DISPLAY_NAME: MERCURY_SHRINE_PASS,
+    YAMAGAWA_MA_DISPLAY_NAME: YAMAGAWA_MA_PASS,
+    PROVING_MEADOWS_DISPLAY_NAME: PROVING_MEADOWS_PASS,
+    SKUMPARADISE_DISPLAY_NAME: SKUMPARADISE_PASS,
     #Advanced
-    CAPITAL_SEQUOIA: CAPITAL_SEQUOIA_PASS,
-    JOJO_SEWERS: JOJO_SEWERS_PASS,
-    BOOMER_SOCIETY: BOOMER_SOCIETY_PASS,
-    ROLLING_QUINTAR_FIELDS: ROLLING_QUINTAR_FIELDS_PASS,
-    QUINTAR_NEST: QUINTAR_NEST_PASS,
-    QUINTAR_SANCTUM: QUINTAR_SANCTUM_PASS,
-    CAPITAL_JAIL: CAPITAL_JAIL_PASS,
-    CAPITAL_PIPELINE: CAPITAL_PIPELINE_PASS,
-    COBBLESTONE_CRAG: COBBLESTONE_CRAG_PASS,
-    OKIMOTO_NS: OKIMOTO_NS_PASS,
-    GREENSHIRE_REPRISE: GREENSHIRE_REPRISE_PASS,
-    SALMON_PASS: SALMON_PASS_PASS,
-    SALMON_RIVER: SALMON_RIVER_PASS,
-    SHOUDU_WATERFRONT: SHOUDU_WATERFRONT_PASS,
-    POKO_POKO_DESERT: POKO_POKO_DESERT_PASS,
-    SARA_SARA_BAZAAR: SARA_SARA_BAZAAR_PASS,
-    SARA_SARA_BEACH_EAST: SARA_SARA_BEACH_EAST_PASS,
-    SARA_SARA_BEACH_WEST: SARA_SARA_BEACH_WEST_PASS,
-    ANCIENT_RESERVOIR: ANCIENT_RESERVOIR_PASS,
-    IBEK_CAVE: IBEK_CAVE_PASS,
-    SALMON_BAY: SALMON_BAY_PASS,
+    CAPITAL_SEQUOIA_DISPLAY_NAME: CAPITAL_SEQUOIA_PASS,
+    JOJO_SEWERS_DISPLAY_NAME: JOJO_SEWERS_PASS,
+    BOOMER_SOCIETY_DISPLAY_NAME: BOOMER_SOCIETY_PASS,
+    ROLLING_QUINTAR_FIELDS_DISPLAY_NAME: ROLLING_QUINTAR_FIELDS_PASS,
+    QUINTAR_NEST_DISPLAY_NAME: QUINTAR_NEST_PASS,
+    QUINTAR_SANCTUM_DISPLAY_NAME: QUINTAR_SANCTUM_PASS,
+    CAPITAL_JAIL_DISPLAY_NAME: CAPITAL_JAIL_PASS,
+    CAPITAL_PIPELINE_DISPLAY_NAME: CAPITAL_PIPELINE_PASS,
+    COBBLESTONE_CRAG_DISPLAY_NAME: COBBLESTONE_CRAG_PASS,
+    OKIMOTO_NS_DISPLAY_NAME: OKIMOTO_NS_PASS,
+    GREENSHIRE_REPRISE_DISPLAY_NAME: GREENSHIRE_REPRISE_PASS,
+    SALMON_PASS_DISPLAY_NAME: SALMON_PASS_PASS,
+    SALMON_RIVER_DISPLAY_NAME: SALMON_RIVER_PASS,
+    SHOUDU_WATERFRONT_DISPLAY_NAME: SHOUDU_WATERFRONT_PASS,
+    POKO_POKO_DESERT_DISPLAY_NAME: POKO_POKO_DESERT_PASS,
+    SARA_SARA_BAZAAR_DISPLAY_NAME: SARA_SARA_BAZAAR_PASS,
+    SARA_SARA_BEACH_EAST_DISPLAY_NAME: SARA_SARA_BEACH_EAST_PASS,
+    SARA_SARA_BEACH_WEST_DISPLAY_NAME: SARA_SARA_BEACH_WEST_PASS,
+    ANCIENT_RESERVOIR_DISPLAY_NAME: ANCIENT_RESERVOIR_PASS,
+    SALMON_BAY_DISPLAY_NAME: SALMON_BAY_PASS,
     #Expert
-    THE_OPEN_SEA: THE_OPEN_SEA_PASS,
-    SHOUDU_PROVINCE: SHOUDU_PROVINCE_PASS,
-    THE_UNDERCITY: THE_UNDERCITY_PASS,
-    GANYMEDE_SHRINE: GANYMEDE_SHRINE_PASS,
-    BEAURIOR_VOLCANO: BEAURIOR_VOLCANO_PASS,
-    BEAURIOR_ROCK: BEAURIOR_ROCK_PASS,
-    LAKE_DELENDE: LAKE_DELENDE_PASS,
-    QUINTAR_RESERVE: QUINTAR_RESERVE_PASS,
-    DIONE_SHRINE: DIONE_SHRINE_PASS,
-    QUINTAR_MAUSOLEUM: QUINTAR_MAUSOLEUM_PASS,
-    EASTERN_CHASM: EASTERN_CHASM_PASS,
-    TALL_TALL_HEIGHTS: TALL_TALL_HEIGHTS_PASS,
-    NORTHERN_CAVE: NORTHERN_CAVE_PASS,
-    LANDS_END: LANDS_END_PASS,
-    SLIP_GLIDE_RIDE: SLIP_GLIDE_RIDE_PASS,
-    SEQUOIA_ATHENAEUM: SEQUOIA_ATHENAEUM_PASS,
-    NORTHERN_STRETCH: NORTHERN_STRETCH_PASS,
-    CASTLE_RAMPARTS: CASTLE_RAMPARTS_PASS,
-    THE_CHALICE_OF_TAR: THE_CHALICE_OF_TAR_PASS,
-    FLYERS_CRAG: FLYERS_CRAG_PASS,
-    JIDAMBA_TANGLE: JIDAMBA_TANGLE_PASS,
-    JIDAMBA_EACLANEYA: JIDAMBA_EACLANEYA_PASS,
-    THE_DEEP_SEA: THE_DEEP_SEA_PASS,
-    NEPTUNE_SHRINE: NEPTUNE_SHRINE_PASS,
-    JADE_CAVERN: JADE_CAVERN_PASS,
-    CONTINENTAL_TRAM: CONTINENTAL_TRAM_PASS,
+    THE_OPEN_SEA_DISPLAY_NAME: THE_OPEN_SEA_PASS,
+    SHOUDU_PROVINCE_DISPLAY_NAME: SHOUDU_PROVINCE_PASS,
+    THE_UNDERCITY_DISPLAY_NAME: THE_UNDERCITY_PASS,
+    GANYMEDE_SHRINE_DISPLAY_NAME: GANYMEDE_SHRINE_PASS,
+    BEAURIOR_VOLCANO_DISPLAY_NAME: BEAURIOR_VOLCANO_PASS,
+    BEAURIOR_ROCK_DISPLAY_NAME: BEAURIOR_ROCK_PASS,
+    LAKE_DELENDE_DISPLAY_NAME: LAKE_DELENDE_PASS,
+    QUINTAR_RESERVE_DISPLAY_NAME: QUINTAR_RESERVE_PASS,
+    DIONE_SHRINE_DISPLAY_NAME: DIONE_SHRINE_PASS,
+    QUINTAR_MAUSOLEUM_DISPLAY_NAME: QUINTAR_MAUSOLEUM_PASS,
+    EASTERN_CHASM_DISPLAY_NAME: EASTERN_CHASM_PASS,
+    TALL_TALL_HEIGHTS_DISPLAY_NAME: TALL_TALL_HEIGHTS_PASS,
+    NORTHERN_CAVE_DISPLAY_NAME: NORTHERN_CAVE_PASS,
+    LANDS_END_DISPLAY_NAME: LANDS_END_PASS,
+    SLIP_GLIDE_RIDE_DISPLAY_NAME: SLIP_GLIDE_RIDE_PASS,
+    SEQUOIA_ATHENAEUM_DISPLAY_NAME: SEQUOIA_ATHENAEUM_PASS,
+    NORTHERN_STRETCH_DISPLAY_NAME: NORTHERN_STRETCH_PASS,
+    CASTLE_RAMPARTS_DISPLAY_NAME: CASTLE_RAMPARTS_PASS,
+    THE_CHALICE_OF_TAR_DISPLAY_NAME: THE_CHALICE_OF_TAR_PASS,
+    FLYERS_CRAG_DISPLAY_NAME: FLYERS_CRAG_PASS,
+    JIDAMBA_TANGLE_DISPLAY_NAME: JIDAMBA_TANGLE_PASS,
+    JIDAMBA_EACLANEYA_DISPLAY_NAME: JIDAMBA_EACLANEYA_PASS,
+    THE_DEEP_SEA_DISPLAY_NAME: THE_DEEP_SEA_PASS,
+    NEPTUNE_SHRINE_DISPLAY_NAME: NEPTUNE_SHRINE_PASS,
+    JADE_CAVERN_DISPLAY_NAME: JADE_CAVERN_PASS,
+    CONTINENTAL_TRAM_DISPLAY_NAME: CONTINENTAL_TRAM_PASS,
     #End Game
-    ANCIENT_LABYRINTH: ANCIENT_LABYRINTH_PASS,
-    THE_SEQUOIA: THE_SEQUOIA_PASS,
-    THE_DEPTHS: THE_DEPTHS_PASS,
-    CASTLE_SEQUOIA: CASTLE_SEQUOIA_PASS,
-    THE_OLD_WORLD: THE_OLD_WORLD_PASS,
-    THE_NEW_WORLD: THE_NEW_WORLD_PASS,
+    ANCIENT_LABYRINTH_DISPLAY_NAME: ANCIENT_LABYRINTH_PASS,
+    THE_SEQUOIA_DISPLAY_NAME: THE_SEQUOIA_PASS,
+    THE_DEPTHS_DISPLAY_NAME: THE_DEPTHS_PASS,
+    CASTLE_SEQUOIA_DISPLAY_NAME: CASTLE_SEQUOIA_PASS,
+    THE_OLD_WORLD_DISPLAY_NAME: THE_OLD_WORLD_PASS,
+    THE_NEW_WORLD_DISPLAY_NAME: THE_NEW_WORLD_PASS,
 }
 
 filler_items: Tuple[str, ...] = (
@@ -1875,31 +1882,38 @@ def get_item_names_per_category() -> Dict[str, Set[str]]:
     return categories
 
 def get_starting_jobs(world: "CrystalProjectWorld") -> List[str]:
-    if world.options.jobRando.value == world.options.jobRando.option_full:
-        return get_random_starting_jobs(world, world.options.startingJobQuantity.value)
+    if world.options.job_rando.value == world.options.job_rando.option_full:
+        return get_random_starting_jobs(world, world.options.starting_job_quantity.value)
     else:
         return default_starting_job_list
 
 def get_random_starting_jobs(self, count:int) -> List[str]:
-    if self.options.useMods.value == self.options.useMods.option_true:
+    if self.options.use_mods.value == self.options.use_mods.option_true:
         return self.random.sample(list(self.item_name_groups[JOB]), count)
     else:
         return self.random.sample(list(self.base_game_jobs), count)
 
-def set_jobs_at_default_locations(world: "CrystalProjectWorld"):
+def set_jobs_at_default_locations(world: "CrystalProjectWorld", player_name:str) -> Tuple[int, List[str]]:
     job_crystal_dictionary: Dict[str, str] = job_crystal_beginner_dictionary.copy() #if we don't use copy it means updating job_crystal_dictionary messes with the beginner dict too
+    jobs_not_to_exclude: List[str] = []
 
-    if world.options.includedRegions.value == world.options.includedRegions.option_advanced:
+    if world.options.included_regions.value == world.options.included_regions.option_advanced:
         job_crystal_dictionary.update(job_crystal_advanced_dictionary)
 
-    if (world.options.includedRegions.value == world.options.includedRegions.option_expert
-        or world.options.includedRegions.value == world.options.includedRegions.option_all):
+    if (world.options.included_regions.value == world.options.included_regions.option_expert
+        or world.options.included_regions.value == world.options.included_regions.option_all):
         job_crystal_dictionary.update(job_crystal_advanced_dictionary)
         job_crystal_dictionary.update(job_crystal_expert_dictionary)
 
     for job_name in job_crystal_dictionary:
-        world.get_location(job_crystal_dictionary[job_name]).place_locked_item(world.create_item(job_name))
-        #message = "Placing" + job_name + " at " + job_crystal_dictionary[job_name]
-        #world.logger.info(message)
+        try:
+            world.get_location(job_crystal_dictionary[job_name]).place_locked_item(world.create_item(job_name))
+            #message = "Placing" + job_name + " at " + job_crystal_dictionary[job_name]
+            #world.logger.info(message)
+        except KeyError:
+            jobs_not_to_exclude.append(job_name)
+            message = f"For player {player_name}: the crystal where {job_name} was placed was updated by a mod. It has been forced to be randomized instead of in its default location."
+            logging.getLogger().info(message)
 
-    return len(job_crystal_dictionary)
+
+    return len(job_crystal_dictionary), jobs_not_to_exclude

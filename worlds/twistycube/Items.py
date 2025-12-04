@@ -3,6 +3,7 @@ import typing
 
 from BaseClasses import Item, ItemClassification
 from typing import Optional
+from .Puzzle import LARGEST_CUBE
 
 class ItemData(typing.NamedTuple):
     code: typing.Optional[int]
@@ -18,15 +19,11 @@ class TwistyCubeItem(Item):
         self.code = code
         self.location = None
 
-colors = ["White", "Yellow", "Red", "Orange", "Blue", "Green"]
-item_groups = {
-    color: [] for color in colors
-}
+all_items = LARGEST_CUBE.get_items()
+item_groups = LARGEST_CUBE.get_item_groups()
+
 item_table = {}
-for i in range(1, 17):
-    for j, color in enumerate(colors):
-        item_groups[color].append(f"{color} Sticker #{i}")
-        item_table[f"{colors[j]} Sticker #{i}"] = ItemData(267782000 + j * 16 + i, ItemClassification.progression)
+for i, item in enumerate(all_items):
+    item_table[item] = ItemData(267782000 + i, ItemClassification.progression)
   
 item_table["filler"] = ItemData(267781999, ItemClassification.filler)
-

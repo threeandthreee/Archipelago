@@ -100,7 +100,7 @@
     call createTreasure
     pop bc
 
-08/630F/: |
+08/630f/: |
     ld hl,$c866
     set 5,(hl)
 

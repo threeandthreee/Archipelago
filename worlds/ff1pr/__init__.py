@@ -52,10 +52,6 @@ class FF1pixelWorld(World):
     item_name_to_id = item_name_to_id
     location_name_to_id = standard_location_name_to_id.copy()
 
-    #items_to_ignore: List[int] = []
-    #result_entrances: Dict[str, str] = {}
-    #region_dict: Dict[str, Dict[str, str]] = {}
-
     def __init__(self, multiworld: MultiWorld, player: int):
         super().__init__(multiworld, player)
         self.spawn_airship = False

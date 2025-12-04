@@ -9,7 +9,7 @@ class SongData(NamedTuple):
     diff_medium: int
     diff_hard: int
     diff_impossible: int
-    remix: bool
+    type: str = "Rift"
 
 class ExtraSongData(NamedTuple):
     code: Optional[int]

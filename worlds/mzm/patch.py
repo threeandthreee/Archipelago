@@ -14,9 +14,9 @@ from worlds.Files import APPatchExtension, APProcedurePatch
 
 from .items import item_data_table, tank_data_table, major_item_data_table
 from .locations import full_location_table as location_table
-from .metadata import APWORLD_VERSION
 from .options import ChozodiaAccess, DisplayNonLocalItems, Goal, LayoutPatches
 from .patcher import MD5_US, patch_rom
+from .patcher.text import LINE_WIDTH, SPACE, Message, get_width_of_encoded_character
 from .item_sprites import Sprite, get_zero_mission_sprite, unknown_item_alt_sprites
 
 if TYPE_CHECKING:
@@ -89,18 +89,25 @@ def get_item_sprite(location: Location, world: MZMWorld) -> str:
     return sprite
 
 
+space_width = get_width_of_encoded_character(SPACE)
+
 def split_text(text: str):
     lines = [""]
     i = 0
+    width = 0
     while i < len(text):
         next_space = text.find(" ", i)
         if next_space == -1:
             next_space = len(text)
-        if len(lines[-1]) + next_space - i <= 40:
-            lines[-1] = f"{lines[-1]}{text[i:next_space]} "
+        next_word = text[i:next_space]
+        next_word_width = Message(next_word).display_width()
+        if width + space_width + next_word_width <= LINE_WIDTH:
+            lines[-1] = f"{lines[-1]}{next_word} "
+            width += space_width + next_word_width
         else:
             lines[-1] = lines[-1][:-1]
             lines.append(text[i:next_space] + " ")
+            width = next_word_width
         i = next_space + 1
     lines[-1] = lines[-1][:-1]
     return lines
@@ -128,8 +135,9 @@ def write_json_data(world: MZMWorld, patch: MZMProcedurePatch):
         "reveal_hidden_blocks": bool(world.options.reveal_hidden_blocks),
         "skip_tourian_opening_cutscenes": bool(world.options.skip_tourian_opening_cutscenes),
         "elevator_speed": world.options.elevator_speed.value,
-        "metroid_dna_required": world.options.metroid_dna_required.value,
     }
+    if world.options.goal.value == Goal.option_metroid_dna:
+        config["metroid_dna_required"] = world.options.metroid_dna_required.value
     data["config"] = config
 
     locations = []
@@ -169,10 +177,11 @@ def write_json_data(world: MZMWorld, patch: MZMProcedurePatch):
 
     text = {"Story": {}}
 
-    world_version = f" / APworld {APWORLD_VERSION}" if APWORLD_VERSION is not None else ""
+    ap_version = Utils.version_tuple.as_simple_string()
+    world_version = world.world_version.as_simple_string()
     text["Story"]["Intro"] = (f"AP {multiworld.seed_name}\n"
                               f"P{player} - {world.player_name}\n"
-                              f"Version {Utils.version_tuple.as_simple_string()}{world_version}\n"
+                              f"AP {ap_version} / World version: {world_version}\n"
                               "\n"
                               f"YOUR MISSION: {goal_texts[world.options.goal.value]}")
 

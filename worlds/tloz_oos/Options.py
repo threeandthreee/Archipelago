@@ -653,6 +653,15 @@ class OracleOfSeasonsRemoveItemsFromPool(ItemDict):
     verify_item_name = False
 
 
+class OracleOfSeasonsIncludeCrossItems(Toggle):
+    """
+    When enabled, add the cane of somaria to the item pool
+    ⚠ Requires the Oracles of Ages US ROM on patch, you won't be able to play without
+    """
+    display_name = "Cross Items"
+    include_in_patch = True
+
+
 class OracleOfSeasonsIncludeSecretLocations(Toggle):
     """
     When enabled, add the linked game secrets to the list of locations
@@ -770,6 +779,7 @@ class OracleOfSeasonsOptions(PerGameCommonOptions):
     required_rings: OracleOfSeasonsRequiredRings
     excluded_rings: OracleOfSeasonsExcludedRings
     fools_ore: OracleOfSeasonsFoolsOre
+    cross_items: OracleOfSeasonsIncludeCrossItems
     combat_difficulty: OracleOfSeasonsCombatDifficulty
     bird_hint: OracleOfSeasonsBirdHint
     randomize_ai: OracleOfSeasonsRandomizeAi
@@ -784,7 +794,8 @@ option_groups = [
         ItemsAccessibility,
         OracleOfSeasonsGoal,
         OracleOfSeasonsLogicDifficulty,
-        DeathLink,
+        OracleOfSeasonsIncludeCrossItems,
+        OracleOfSeasonsDeathLink,
     ]),
     OptionGroup("Optional Locations", [
         OracleOfSeasonsAdvanceShop,

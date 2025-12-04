@@ -1,4 +1,4 @@
-# Links Awakening DX
+# Links Awakening DX Beta
 
 ## Where is the options page?
 

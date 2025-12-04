@@ -1,15 +1,14 @@
 import logging
 import os
 import threading
-from typing import Any, ClassVar, Dict, List, Optional, Sequence, Set, Tuple
+from typing import ClassVar, Dict, Optional
 
 from . import names
 from .items import DWItem, item_table, filler_table, lookup_name_to_id, item_names
 from .locations import create_locations, all_locations, location_names
 from .regions import create_regions, connect_regions
 import settings
-from BaseClasses import Item, ItemClassification, Location, MultiWorld, Tutorial
-from Utils import visualize_regions
+from BaseClasses import Item, ItemClassification, MultiWorld, Tutorial
 from worlds.AutoWorld import World, WebWorld
 from .rom import DRAGON_WARRIOR_PRG0_HASH, DRAGON_WARRIOR_PRG1_HASH, DWPatch
 from .options import DWOptions, DWOptionGroups
@@ -48,6 +47,7 @@ class DragonWarriorWorld(World):
     on a quest to vanquish the Dragonlord, and save the land from darkness!
     """
     game = "Dragon Warrior"
+    authors = ["Serp"]
     settings_key = "dw_options"
     settings: ClassVar[DWSettings]
     options_dataclass = DWOptions
@@ -80,7 +80,8 @@ class DragonWarriorWorld(World):
 
         # Get the accurate location count between sanity options
         total_locations = 33 + len(level_locations) + len(high_level_locations) + \
-            (self.options.searchsanity * 3) + (self.options.shopsanity * 15)
+            (self.options.searchsanity * 3) + (self.options.shopsanity * 15) + \
+            (self.options.monstersanity * 40)
 
         # The following items always get placed
         itempool += [self.create_item(names.silver_harp),
@@ -128,6 +129,13 @@ class DragonWarriorWorld(World):
         else:
             itempool.append(self.create_item(names.erdricks_sword))
 
+        if self.options.monstersanity:  # Throw a few more of these in
+            itempool += [
+                self.create_item(names.high_gold),
+                self.create_item(names.high_gold),
+                self.create_item(names.high_gold),
+            ]
+
         while len(itempool) < total_locations:
             itempool += [self.create_item(self.get_filler_item_name())]
 
@@ -135,9 +143,6 @@ class DragonWarriorWorld(World):
 
         self.multiworld.completion_condition[self.player] = lambda state: \
             state.has(names.ball_of_light, self.player)
-        
-        # visualize_regions(self.get_region("Menu"), "dw_regions.puml", show_locations=True)
-
 
     def create_item(self, name: str, force_non_progression=False) -> Item:
         data = item_table[name]
@@ -165,7 +170,8 @@ class DragonWarriorWorld(World):
                             self.multiworld.player_name[self.player],
                             flags=self.determine_flags(),
                             searchsanity=self.options.searchsanity,
-                            shopsanity=self.options.shopsanity)
+                            shopsanity=self.options.shopsanity,
+                            deathlink=self.options.death_link)
             patch.write()
 
         except Exception:
@@ -173,66 +179,112 @@ class DragonWarriorWorld(World):
         finally:
             self.rom_name_available_event.set()
 
+    def fill_slot_data(self) -> Dict[str, any]:
+        return {
+            "searchsanity": self.options.searchsanity.value,
+            "levelsanity": self.options.levelsanity.value,
+            "shopsanity": self.options.shopsanity.value,
+            "monstersanity": self.options.monstersanity.value,
+            "death_link": self.options.death_link.value
+        }
+
     def determine_flags(self) -> str:
+        ops = self.options
         default_flags = "AAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAQAAAAAA"
         flag_list = []
         for flag in default_flags:
             flag_list.append(ord(flag))
 
         # If false, 0 * flag value, otherwise 1 * flag value
-        flag_list[1] += int(self.options.random_spell_learning) * 1     # B 
-        flag_list[1] += int(self.options.random_growth) * 16            # Q
-        flag_list[2] += int(self.options.random_weapon_prices) * 2      # C
-        flag_list[8] += int(self.options.random_monster_abilities) * 8  # I
-        flag_list[3] += int(self.options.heal_hurt_before_more) * 4     # E
-        flag_list[3] += int(self.options.random_xp_requirements) * 16
-        flag_list[2] += int(self.options.random_weapon_shops) * 8 * int(not self.options.shopsanity)  # Disable random shops when shopsanity is on
-        flag_list[8] += int(self.options.random_monster_zones) * 2
-        flag_list[9] += int(self.options.random_monster_stats) * 16
-        flag_list[9] += int(self.options.random_monster_xp) * 4
-        flag_list[9] += int(self.options.make_random_stats_consistent) * 1
+        flag_list[1] += int(ops.random_spell_learning) * 1     # B 
+        flag_list[1] += int(ops.random_map) * 4                # E
+        flag_list[1] += int(ops.random_growth) * 16            # Q
+        flag_list[2] += int(ops.random_weapon_prices) * 2      # C
+        flag_list[8] += int(ops.random_monster_abilities) * 8  # I
+        flag_list[3] += int(ops.heal_hurt_before_more) * 4
+        flag_list[3] += int(ops.random_xp_requirements) * 16
+        flag_list[2] += int(ops.random_weapon_shops) * 8 * int(not ops.shopsanity)  # Disable random shops when shopsanity is on
+        flag_list[8] += int(ops.random_monster_zones) * 2 * int(not ops.monstersanity) # Disable random monsters when monstersanity is on
+        flag_list[9] += int(ops.random_monster_stats) * 16
+        flag_list[9] += int(ops.random_monster_xp) * 4
+        flag_list[9] += int(ops.make_random_stats_consistent) * 1
 
-        flag_list[10] += int(self.options.scared_metal_slimes) * 8
-        flag_list[10] += int(self.options.scaled_metal_slime_xp) * 2
-        flag_list[10] += int(self.options.scared_metal_slimes) * 8
-        flag_list[14] += int(self.options.no_hurtmore) * 2
-        flag_list[25] += int(self.options.only_healmore) * 2
-        flag_list[15] += int(self.options.no_numbers) * 16
-        flag_list[15] += int(self.options.invisible_hero) * 4
-        flag_list[15] += int(self.options.invisible_npcs) * 1
+        flag_list[10] += int(ops.scared_metal_slimes) * 8
+        flag_list[10] += int(ops.scaled_metal_slime_xp) * 2
+        flag_list[10] += int(ops.scared_metal_slimes) * 8
+        flag_list[14] += int(ops.no_hurtmore) * 2
+        flag_list[25] += int(ops.only_healmore) * 2
+        flag_list[15] += int(ops.no_numbers) * 16
+        flag_list[15] += int(ops.invisible_hero) * 4
+        flag_list[15] += int(ops.invisible_npcs) * 1
 
-        flag_list[5] += int(self.options.enable_menu_wrapping) * 16
-        flag_list[5] += int(self.options.enable_death_necklace) * 4
-        flag_list[5] += int(self.options.enable_battle_torches) * 1
-        flag_list[6] += int(self.options.repel_in_dungeons) * 2
-        flag_list[7] += int(self.options.permanent_repel) * 16
-        flag_list[7] += int(self.options.permanent_torch) * 4
-        flag_list[11] += int(self.options.fast_text) * 4
-        flag_list[11] += int(self.options.speed_hacks) * 1
-        flag_list[21] += int(self.options.summer_sale) * 1
-        flag_list[21] += int(self.options.levelling_speed) * 4   # I think this just works???
-        flag_list[30] += int(self.options.level_1_radiant) * 8
-        flag_list[35] += int(self.options.level_1_repel) * 4
-        flag_list[16] += int(self.options.easy_charlock) * 8
-        flag_list[17] += int(self.options.modern_spell_names) * 1
-        flag_list[23] += int(self.options.skip_original_credits) * 4
-        flag_list[30] += int(self.options.return_escapes) * 4
-        flag_list[30] += int(self.options.return_to_town) * 2
-        flag_list[30] += int(self.options.warp_whistle) * 1
-        flag_list[31] += int(self.options.levelup_refill) * 8
-        flag_list[33] += int(self.options.ascetic_king) * 4
-        flag_list[24] += int(self.options.charlock_inn) * 8
-        flag_list[28] += int(self.options.dl1_crits) * 8
-        flag_list[28] += int(self.options.dl2_crits) * 2
+        flag_list[5] += int(ops.enable_menu_wrapping) * 16
+        flag_list[5] += int(ops.enable_death_necklace) * 4
+        flag_list[5] += int(ops.enable_battle_torches) * 1
+        flag_list[6] += int(ops.repel_in_dungeons) * 2
+        flag_list[7] += int(ops.permanent_repel) * 16
+        flag_list[7] += int(ops.permanent_torch) * 4
+        flag_list[11] += int(ops.fast_text) * 4
+        flag_list[11] += int(ops.speed_hacks) * 1
+        flag_list[21] += int(ops.summer_sale) * 1
+        flag_list[21] += int(ops.levelling_speed) * 4   # I think this just works???
+        flag_list[30] += int(ops.level_1_radiant) * 8
+        flag_list[35] += int(ops.level_1_repel) * 4
+        flag_list[16] += int(ops.easy_charlock) * 8
+        flag_list[17] += int(ops.modern_spell_names) * 1
+        flag_list[23] += int(ops.skip_original_credits) * 4
+        flag_list[30] += int(ops.return_escapes) * 4
+        flag_list[30] += int(ops.return_to_town) * 2
+        flag_list[30] += int(ops.warp_whistle) * 1
+        flag_list[31] += int(ops.levelup_refill) * 8
+        flag_list[33] += int(ops.ascetic_king) * 4
+        flag_list[24] += int(ops.charlock_inn) * 8
+        flag_list[28] += int(ops.dl1_crits) * 8
+        flag_list[28] += int(ops.dl2_crits) * 2
 
-        flag_list[22] += int(self.options.shuffle_music) * 4
-        flag_list[22] += int(self.options.disable_music) * 2
-        flag_list[23] += int(self.options.show_death_counter) * 16
-        flag_list[22] += int(self.options.disable_spell_flashing) * 1
-        flag_list[27] += int(self.options.disable_red_flashes) * 8
-        flag_list[18] += int(self.options.noir_mode) * 8
-        flag_list[27] += int(self.options.magic_herbs) * 16
-        flag_list[35] += int(self.options.normal_flute_speed) * 2
+        flag_list[22] += int(ops.shuffle_music) * 4
+        flag_list[22] += int(ops.disable_music) * 2
+        flag_list[23] += int(ops.show_death_counter) * 16
+        flag_list[22] += int(ops.disable_spell_flashing) * 1
+        flag_list[27] += int(ops.disable_red_flashes) * 8
+        flag_list[18] += int(ops.noir_mode) * 8
+        flag_list[27] += int(ops.magic_herbs) * 16
+        flag_list[35] += int(ops.normal_flute_speed) * 2
+
+        # Multiple-choice options
+        # Random Map Size
+        if ops.random_map_size == 2:
+            flag_list[20] += 1
+        else:
+            flag_list[21] += ops.random_map_size * 16
+
+        # Run Mechanics
+        if ops.run_mechanics == 1:
+            flag_list[33] += 1
+            flag_list[34] += 16
+        elif ops.run_mechanics == 2:
+            flag_list[34] += 16
+        elif ops.run_mechanics == 3:
+            flag_list[33] += 1
+
+        # Bonk Damage
+        match ops.bonk_damage:
+            case 0:
+                pass
+            case 1:
+                flag_list[29] += 8
+            case 2:
+                flag_list[29] += 16
+            case 3:
+                flag_list[29] += 24
+            case 4:
+                flag_list[28] += 1
+            case 5:
+                flag_list[28] += 1
+                flag_list[29] += 8
+            case 6:
+                flag_list[28] += 1
+                flag_list[29] += 16
 
         final_flags = ""
         for flag in flag_list:

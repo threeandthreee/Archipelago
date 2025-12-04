@@ -26,7 +26,7 @@ locked_items = sorted(powerup_options | equip_options | quest_items)
 character_options = frozenset({ItemName.ANA_SPELUNKY.value, ItemName.MARGARET_TUNNEL.value, ItemName.COLIN_NORTHWARD,
    ItemName.ROFFY_D_SLOTH, ItemName.ALTO_SINGH, ItemName.LIZ_MUTTON, ItemName.NEKKA_THE_EAGLE, ItemName.LISE_PROJECT,
    ItemName.COCO_VON_DIAMONDS, ItemName.MANFRED_TUNNEL, ItemName.LITTLE_JAY, ItemName.TINA_FLAN, ItemName.VALERIE_CRUMP,
-   ItemName.AU, ItemName.DEMI_VON_DIAMONDS, ItemName.PILOT, ItemName.PRINCESS_AIRYN, ItemName.DIAMOND_GEM,
+   ItemName.AU, ItemName.DEMI_VON_DIAMONDS, ItemName.PILOT, ItemName.PRINCESS_AIRYN, ItemName.DIRK_YAMAOKA,
    ItemName.GUY_SPELUNKY, ItemName.CLASSIC_GUY})  # noqa: E128
 # End of Master Item List
 

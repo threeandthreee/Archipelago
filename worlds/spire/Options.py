@@ -79,7 +79,7 @@ class Ascension(Range):
     display_name = "Ascension"
     range_start = 0
     range_end = 20
-    default = 5
+    default = 1
 
 class PickNumberCharacters(Range):
     """Randomly select from the configured characters this many characters to generate for.
@@ -125,14 +125,14 @@ class CampfireSanity(Toggle):
     """Whether to shuffle being able to rest and smith at each campsite per act.  Also adds
     new locations at campsites per act."""
     display_name = "Campfire Sanity"
-    default = 1
+    default = 0
 
 class ShopSanity(Toggle):
     """Whether to shuffle shop slots into the pool.  Also adds new locations at the shop per slot shuffled."""
     display_name = "Shop Sanity"
     option_true = 1
     option_false = 0
-    default = 1
+    default = 0
 
 class ShopCardSlots(Range):
     """When shop_sanity is enabled, the number of colored card slots to shuffle."""
@@ -221,7 +221,6 @@ class LockCharacters(Choice):
     locked_fixed means the unlocked_character option is used to determine which character to start with
     locked_random means which character you start with is randomized
     unlocked means you start with all characters available"""
-    visibility = Visibility.template
     display_name = "Lock Characters"
     option_unlocked = 0
     option_locked_random = 1

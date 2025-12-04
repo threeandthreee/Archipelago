@@ -85,17 +85,18 @@ def addBank34(rom, item_list):
     name = AnItemText
 
     def add_or_get_name(name):
+        formatted_name = formatText(name)[:-1][:64] # remove last char, limit to 64
         nonlocal nextItemLookup
-        if name in nameLookup:
-            return nameLookup[name]
-        if len(name) + 1 + nextItemLookup >= 0x4000:
+        if formatted_name in nameLookup:
+            return nameLookup[formatted_name]
+        if len(formatted_name) + 1 + nextItemLookup >= 0x4000:
             return nameLookup[AnItemText]
-        asm = ASM(f'db "{name}", $ff\n')
+        asm = ASM(f'db "{formatted_name}", $ff\n')
         rom.patch(0x34, nextItemLookup, None, asm)
         patch_len = len(binascii.unhexlify(asm))
-        nameLookup[name] = nextItemLookup + 0x4000
+        nameLookup[formatted_name] = nextItemLookup + 0x4000
         nextItemLookup += patch_len
-        return nameLookup[name]
+        return nameLookup[formatted_name]
 
     item_text_addr = add_or_get_name(AnItemText)
     #error_text_addr = add_or_get_name("Please report this check to #bug-reports in the AP discord")
@@ -117,8 +118,8 @@ def addBank34(rom, item_list):
         assert item.room < TotalRoomCount, item.room
         # Item names of exactly 255 characters will cause overwrites to occur in the text box
         # assert len(item.custom_item_name) < 0x100
-        # Custom text is only 95 bytes long, restrict to 50
-        addr = add_or_get_name(item.custom_item_name[:50])
+        # Custom text is only 95 bytes long, add_or_get_name restricts to 64
+        addr = add_or_get_name(item.custom_item_name)
         rom.patch(0x34, ItemNameLookupTable + item.room *
                   ItemNameLookupSize, None, to_hex_address(addr))
         if item.extra:

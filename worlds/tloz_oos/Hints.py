@@ -1,7 +1,13 @@
 import random
 
+from typing_extensions import TYPE_CHECKING
+
 from BaseClasses import ItemClassification, Item
-from .patching.text import normalize_text, simple_hex
+from .patching.Util import simple_hex
+from .patching.text import normalize_text
+
+if TYPE_CHECKING:
+    from . import OracleOfSeasonsWorld
 
 know_it_all_birds = [
     "TX_3200",  # "Know-It-All Bird #1",
@@ -303,13 +309,14 @@ def create_region_hints(world: "OracleOfSeasonsWorld") -> list[tuple[str, str | 
     return hint_data
 
 
-def create_item_hints(world: "OracleOfSeasonsWorld") -> list[tuple[str, str, int | None] | None]:
+def create_item_hints(world: "OracleOfSeasonsWorld") -> list[Item | None]:
     hint_data: list[tuple[str, str, int | None]] = []
     hintable_items: list[Item | None] = [location.item for location in world.multiworld.get_filled_locations()
                                          if location.item.player == world.player
                                          and location.item.advancement
                                          and not location.item.classification & ItemClassification.deprioritized
-                                         and not location.is_event]
+                                         and not location.is_event
+                                         and not location.locked]
     hintable_items.append(None)
 
     hinted_items: list[Item | None] = world.random.choices(hintable_items, k=len(owl_statues))
@@ -317,8 +324,5 @@ def create_item_hints(world: "OracleOfSeasonsWorld") -> list[tuple[str, str, int
         if hinted_item is None:
             hint_data.append(None)
             continue
-        player = hinted_item.location.player
-        if player == world.player:
-            player = None
-        hint_data.append([hinted_item.name, hinted_item.location.name, player])
+        hint_data.append(hinted_item)
     return hint_data

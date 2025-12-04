@@ -1,6 +1,5 @@
+import json
 from collections import defaultdict
-
-import yaml
 
 from typing import TYPE_CHECKING
 from worlds.tloz_oos.patching.ProcedurePatch import OoSProcedurePatch
@@ -18,7 +17,7 @@ def oos_create_ap_procedure_patch(world: "OracleOfSeasonsWorld") -> OoSProcedure
     patch.player_name = world.multiworld.get_player_name(world.player)
 
     patch_data = {
-        "version": f"{VERSION[0]}.{VERSION[1]}",
+        "version": f"{world.world_version.as_simple_string()}",
         "seed": world.multiworld.seed,
         "options": world.options.as_dict(
             *[option_name for option_name in OracleOfSeasonsOptions.type_hints
@@ -35,7 +34,6 @@ def oos_create_ap_procedure_patch(world: "OracleOfSeasonsWorld") -> OoSProcedure
         "shop_prices": world.shop_prices,
         "subrosia_seaside_location": world.random.randint(0, 3),
         "region_hints": world.region_hints,
-        "item_hints": world.item_hints,
     }
 
     for loc in world.multiworld.get_locations(world.player):
@@ -53,10 +51,25 @@ def oos_create_ap_procedure_patch(world: "OracleOfSeasonsWorld") -> OoSProcedure
                 "progression": loc.item.advancement
             }
 
+    patch_data_item_hints = []
+    for item_hint in world.item_hints:
+        if item_hint is None:
+            # Joke hint
+            patch_data_item_hints.append(None)
+            continue
+        location = item_hint.location
+        player = location.player
+        if player == world.player:
+            player = None
+        else:
+            player = world.multiworld.get_player_name(player)
+        patch_data_item_hints.append((item_hint.name, location.name, player))
+    patch_data["item_hints"] = patch_data_item_hints
+
     start_inventory = defaultdict(int)
     for item in world.multiworld.precollected_items[world.player]:
         start_inventory[item.name] += 1
     patch_data["start_inventory"] = dict(start_inventory)
 
-    patch.write_file("patch.dat", yaml.dump(patch_data).encode("utf-8"))
+    patch.write_file("patch.dat", json.dumps(patch_data).encode("utf-8"))
     return patch

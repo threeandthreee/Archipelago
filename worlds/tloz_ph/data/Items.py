@@ -793,45 +793,39 @@ ITEMS_DATA = {
     },
     "Boss Key (Temple of Fire)": {
         "classification": ItemClassification.progression,
-        "force_vanilla": True,
         "dungeon": True,
-        "dummy": True,
         "id": 105,
+        "always_process": True
     },
     "Boss Key (Temple of Wind)": {
         "classification": ItemClassification.progression,
-        "force_vanilla": True,
         "dungeon": 0x1d,
-        "dummy": True,
         "id": 106,
+        "always_process": True
     },
     "Boss Key (Temple of Courage)": {
         "classification": ItemClassification.progression,
-        "force_vanilla": True,
         "dungeon": True,
-        "dummy": True,
         "id": 107,
+        "always_process": True
     },
     "Boss Key (Goron Temple)": {
         "classification": ItemClassification.progression,
-        "force_vanilla": True,
         "dungeon": True,
-        "dummy": True,
         "id": 108,
+        "always_process": True
     },
     "Boss Key (Temple of Ice)": {
         "classification": ItemClassification.progression,
-        "force_vanilla": True,
         "dungeon": True,
-        "dummy": True,
         "id": 109,
+        "always_process": True
     },
     "Boss Key (Mutoh's Temple)": {
         "classification": ItemClassification.progression,
-        "force_vanilla": True,
         "dungeon": True,
-        "dummy": True,
         "id": 110,
+        "always_process": True
     },
     "Square Crystal (Temple of Courage)": {
         "classification": ItemClassification.progression,
@@ -1319,7 +1313,7 @@ ITEMS_DATA = {
         "size": 1,
         "id": 188,
     },
-    "_UT_Glitched_logic": {
+    "_UT_Glitched_Logic": {
         "classification": ItemClassification.progression,
         "dummy": True,
         "id": 189,
@@ -1335,11 +1329,8 @@ ITEMS_DATA = {
 # bulk data editing / export
 if __name__ == "__main__":
     for name, data in ITEMS_DATA.items():
-        if "progressive" not in data and "dummy" not in data:
-            if "value" not in data:
-                address = data.get('address', 0)
-                if address is not None:
-                    print(f"{name}, {hex(address)}")
+        if "address" not in data and "dummy" not in data and name not in ["Treasure", "Ship Part", "Oshus' Sword"] and "Boss Key" not in name and "Small Key" not in name and "progressive" not in data and "Potion" not in name:
+            print(name)
 """
     keys = set()
     for name, data in ITEMS_DATA.items():

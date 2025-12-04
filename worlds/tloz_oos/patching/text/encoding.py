@@ -2,9 +2,12 @@ import re
 from collections import defaultdict
 from functools import lru_cache
 from typing import List, Union, Optional
-from . import char_table, kanji_table, text_offset_split_index, text_offset_1_table_address, text_offset_2_table_address, text_table_eng_address, simple_hex, \
-    text_addresses_limit
+from . import char_table, kanji_table, text_offset_split_index_seasons, text_offset_1_table_address_seasons, text_offset_2_table_address_seasons, \
+    text_table_eng_address_seasons, \
+    text_addresses_limit_seasons, text_offset_split_index_ages, text_offset_1_table_address_ages, text_offset_2_table_address_ages, text_table_eng_address_ages, \
+    text_addresses_limit_ages
 from ..RomData import RomData
+from ..Util import simple_hex
 from ..z80asm.Assembler import GameboyAddress
 
 control_sequence_pattern = re.compile(r"""
@@ -214,7 +217,20 @@ def build_compact_table(data: dict[str, list[int]]) -> tuple[list[int], dict[str
     return compact, offsets
 
 
-def write_text_data(rom: RomData, dictionary: dict[str, str], texts: dict[str, str]):
+def write_text_data(rom: RomData, dictionary: dict[str, str], texts: dict[str, str], seasons: bool):
+    if seasons:
+        text_offset_split_index = text_offset_split_index_seasons
+        text_offset_1 = GameboyAddress(rom.read_byte(text_offset_1_table_address_seasons), rom.read_word(text_offset_1_table_address_seasons + 1))
+        text_offset_2 = GameboyAddress(rom.read_byte(text_offset_2_table_address_seasons), rom.read_word(text_offset_2_table_address_seasons + 1))
+        text_table_eng_address = text_table_eng_address_seasons
+        text_addresses_limit = text_addresses_limit_seasons
+    else:
+        text_offset_split_index = text_offset_split_index_ages
+        text_offset_1 = GameboyAddress(rom.read_byte(text_offset_1_table_address_ages), rom.read_word(text_offset_1_table_address_ages + 1))
+        text_offset_2 = GameboyAddress(rom.read_byte(text_offset_2_table_address_ages), rom.read_word(text_offset_2_table_address_ages + 1))
+        text_table_eng_address = text_table_eng_address_ages
+        text_addresses_limit = text_addresses_limit_ages
+
     dict1 = {}
     dict2 = {}
     for key in texts:
@@ -228,9 +244,7 @@ def write_text_data(rom: RomData, dictionary: dict[str, str], texts: dict[str, s
     encoded_dict2 = encode_dict(dict2, dictionary)
 
     offset_table_length = (len(encoded_dict1) + len(encoded_dict2)) * 2
-    text_offset_1 = GameboyAddress(rom.read_byte(text_offset_1_table_address), rom.read_word(text_offset_1_table_address + 1))
     text_offset_1_address = text_offset_1.address_in_rom()
-    text_offset_2 = GameboyAddress(rom.read_byte(text_offset_2_table_address), rom.read_word(text_offset_2_table_address + 1))
     text_offset_2_address = text_offset_2.address_in_rom()
     text_table_current_address = text_table_eng_address
     tx_table_current_address = text_table_eng_address + 0x64 * 2

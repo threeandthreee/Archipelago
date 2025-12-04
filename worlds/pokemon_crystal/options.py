@@ -1069,6 +1069,8 @@ class HMCompatibility(NamedRange):
     Headbutt and Rock Smash are considered HMs when applying compatibility
 
     Minimal compatibility will ensure only the minimum required number of Pokemon can learn each HM, usually one
+
+    You can look up HM compatible Pokemon in the Pokedex using the search function
     """
     display_name = "HM Compatibility"
     default = -1

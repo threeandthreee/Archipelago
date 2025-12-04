@@ -58,13 +58,14 @@ staff_of_rain_shrine = "Staff of Rain Shrine Region"
 erdricks_token_tile = "Erdrick's Token Tile Region"
 rainbow_drop_shrine = "Rainbow Drop Shrine Region"
 charlock_castle = "Charlock Castle Region"
+charlock_dragonlord = "Charlock Castle - Dragonlord"
 
 
 ######################
 #   LOCATION NAMES   #
 ######################
 
-# Levelups
+## Level-ups ##
 level_2 = "Level 2"
 level_3 = "Level 3"
 level_4 = "Level 4"
@@ -95,6 +96,68 @@ level_28 = "Level 28"
 level_29 = "Level 29"
 level_30 = "Level 30"
 
+## Monsters ##
+# Brecconnary
+slime = "Defeated Slime"
+red_slime = "Defeated Red Slime"
+drakee = "Defeated Drakee"
+
+# Garinham
+ghost = "Defeated Ghost"
+magician = "Defeated Magician"
+
+# Kol
+magidrakee = "Defeated Magidrakee"
+scorpion = "Defeated Scorpion"
+
+# Mountain Cave
+druin = "Defeated Druin"
+poltergeist = "Defeated Poltergeist"
+droll = "Defeated Droll"
+drakeema = "Defeated Drakeema"
+skeleton = "Defeated Skeleton"
+warlock = "Defeated Warlock"
+
+# Swamp Cave
+green_dragon = "Defeated Green Dragon"
+
+# Hauksness
+axe_knight = "Defeated Axe Knight"
+
+# Rimuldar
+metal_scorpion = "Defeated Metal Scorpion"
+wolf = "Defeated Wolf"
+wraith = "Defeated Wraith"
+wolflord = "Defeated Wolflord"
+goldman = "Defeated Goldman"
+
+# Cantlin
+metal_slime = "Defeated Metal Slime"
+specter = "Defeated Specter"
+druinlord = "Defeated Druinlord"
+drollmagi = "Defeated Drollmagi"
+wyvern = "Defeated Wyvern"
+rogue_scorpion = "Defeated Rogue Scorpion"
+wraith_knight = "Defeated Wraith Knight"
+knight = "Defeated Knight"
+magiwyvern = "Defeated Magiwyvern"
+demon_knight = "Defeated Demon Knight"
+werewolf = "Defeated Werewolf"
+starwyvern = "Defeated Starwyvern"
+wizard = "Defeated Wizard"
+
+# Charlock
+blue_dragon = "Defeated Blue Dragon"
+stoneman = "Defeated Stoneman"
+armored_knight = "Defeated Armored Knight"
+red_dragon = "Defeated Red Dragon"
+golem = "Defeated Golem"
+
+# Dragonlord
+dragonlord_1 = "Defeated Dragonlord 1"
+dragonlord_2 = "Defeated Dragonlord 2"
+
+## Chests and Shops ##
 # Tantegel Throne Room
 tantegel_throne_room_gold_chest = "Throne Room - Gold Chest"
 tantegel_throne_room_torch_chest = "Throne Room - Torch Chest"

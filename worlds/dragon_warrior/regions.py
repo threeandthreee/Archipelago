@@ -54,10 +54,14 @@ def create_regions(world: World, level_locations, high_level_locations) -> None:
     brecconary_locations = {}
     kol_locations = {}
     garinham_locations = {}
+    mountain_cave_locations = {**locations.mountain_cave_locations}
     rimuldar_locations = {}
     cantlin_locations = {}
+    swamp_cave_locations = {**locations.swamp_cave_locations}
     hauksness_locations = {}
     token_locations = {}
+    charlock_locations = {**locations.charlock_locations}
+    dragonlord_locations = {}
 
     if world.options.searchsanity:
         kol_locations = {**kol_locations, **locations.kol_locations}
@@ -70,6 +74,20 @@ def create_regions(world: World, level_locations, high_level_locations) -> None:
         garinham_locations = {**garinham_locations, **locations.garinham_locations}
         rimuldar_locations = {**rimuldar_locations, **locations.rimuldar_locations}
         cantlin_locations = {**cantlin_locations, **locations.cantlin_locations}
+
+    if world.options.monstersanity:
+        brecconary_locations = {**brecconary_locations, **locations.brecconary_monster_locations}
+        garinham_locations = {**garinham_locations, **locations.garinham_monster_locations}
+        kol_locations = {**kol_locations, **locations.kol_monster_locations}
+        mountain_cave_locations = {**mountain_cave_locations, **locations.mountain_cave_monster_locations}
+        rimuldar_locations = {**rimuldar_locations, **locations.rimuldar_monster_locations}
+        cantlin_locations = {**cantlin_locations, **locations.cantlin_monster_locations}
+        swamp_cave_locations = {**swamp_cave_locations, **locations.swamp_cave_monster_locations}
+        hauksness_locations = {**hauksness_locations, **locations.hauksness_monster_locations}
+        charlock_locations = {**charlock_locations, **locations.charlock_monster_locations}
+        dragonlord_locations = {**dragonlord_locations, **locations.charlock_dragonlord_locations}
+
+        
     
     menu_region = create_region(world, 'Menu', None)
 
@@ -96,13 +114,16 @@ def create_regions(world: World, level_locations, high_level_locations) -> None:
 
     cantlin_region = create_region(world, names.cantlin, cantlin_locations)
 
-    mountain_cave_region = create_region(world, names.mountain_cave, locations.mountain_cave_locations)
+    mountain_cave_region = create_region(world, names.mountain_cave, mountain_cave_locations)
 
-    swamp_cave_region = create_region(world, names.swamp_cave, locations.swamp_cave_locations)
+    swamp_cave_region = create_region(world, names.swamp_cave, swamp_cave_locations)
 
     garins_grave_region = create_region(world, names.garins_grave, locations.garins_grave_locations)
 
-    charlock_region = create_region(world, names.charlock_castle, locations.charlock_locations)
+    charlock_region = create_region(world, names.charlock_castle, charlock_locations)
+
+    # For MonsterSanity, connect with equipment so the Dragonlord kills don't have any
+    dragonlord_region = create_region(world, names.charlock_dragonlord, dragonlord_locations)
 
     hauksness_region = create_region(world, names.hauksness, hauksness_locations)
 
@@ -131,6 +152,7 @@ def create_regions(world: World, level_locations, high_level_locations) -> None:
         swamp_cave_region,
         garins_grave_region,
         charlock_region,
+        dragonlord_region,
         hauksness_region,
         erdricks_cave_region,
         shrine_of_rain_region,
@@ -140,6 +162,8 @@ def create_regions(world: World, level_locations, high_level_locations) -> None:
 
 
 def connect_regions(world: World) -> None:
+    # I'm gonna be lazy and just restrict where the magic key is on random maps to prevent softlocks
+    random_map = world.options.random_map
     searchsanity = world.options.searchsanity
     shopsanity = world.options.shopsanity
     region_names: Dict[str, int] = {}
@@ -147,10 +171,7 @@ def connect_regions(world: World) -> None:
     connect(world, world.player, region_names, 'Menu', names.tantegel_throne_room)
     connect(world, world.player, region_names, 'Menu', names.overworld)
     connect(world, world.player, region_names, names.overworld, names.strong_overworld,
-        lambda state: (state.has(names.magic_key, world.player) and (not shopsanity or
-                        (state.has(names.progressive_weapon, world.player, 3) and
-                        state.has(names.progressive_armor, world.player, 3) and
-                        state.has(names.progressive_shield, world.player, 2)))))
+        equipment_helper(world, 3, 3, 2, True))
     connect(world, world.player, region_names, names.overworld, names.breconnary)
     connect(world, world.player, region_names, names.overworld, names.garinham, 
         equipment_helper(world, 2, 2, 1))
@@ -158,40 +179,42 @@ def connect_regions(world: World) -> None:
         equipment_helper(world, 1, 1, 1))
     connect(world, world.player, region_names, names.overworld, names.rimuldar,
         equipment_helper(world, 3, 3, 1))
-    connect(world, world.player, region_names, names.overworld, names.hauksness,
+    connect(world, world.player, region_names, names.garinham, names.hauksness,
         equipment_helper(world, 5, 5, 3))
-    connect(world, world.player, region_names, names.overworld, names.cantlin,
-        equipment_helper(world, 4, 4, 2))
-    connect(world, world.player, region_names, names.overworld, names.erdricks_cave)
-    connect(world, world.player, region_names, names.overworld, names.mountain_cave,
-        equipment_helper(world, 3, 3, 2))
+    connect(world, world.player, region_names, names.garinham, names.cantlin,
+        equipment_helper(world, 4, 4, 2, True))
+    connect(world, world.player, region_names, names.overworld, names.erdricks_cave,
+            lambda state: (not random_map or state.has(names.magic_key, world.player)))
+    connect(world, world.player, region_names, names.garinham, names.mountain_cave,
+        equipment_helper(world, 3, 3, 2, random_map))
     connect(world, world.player, region_names, names.overworld, names.swamp_cave,
-        lambda state: (state.has(names.magic_key, world.player) and (not shopsanity or
-                (state.has(names.progressive_weapon, world.player, 4) and
-                state.has(names.progressive_armor, world.player, 4) and
-                state.has(names.progressive_shield, world.player, 2)))))
+        equipment_helper(world, 4, 4, 2, random_map))
 
 
-    connect(world, world.player, region_names, names.overworld, names.rainbow_drop_shrine,
+    connect(world, world.player, region_names, names.rimuldar, names.rainbow_drop_shrine,
         lambda state: (state.has(names.staff_of_rain, world.player) and 
                         state.has(names.stones_of_sunlight, world.player) and
                         state.has(names.magic_key, world.player) and
-                        (not searchsanity or state.has(names.erdricks_token, world.player))))
+                        (not searchsanity or (state.has(names.erdricks_token, world.player) and
+                                              state.has(names.fairy_flute, world.player)))))
 
     connect(world, world.player, region_names, names.overworld, names.tantegel_castle, 
         lambda state: (state.has(names.magic_key, world.player)))
-    connect(world, world.player, region_names, names.overworld, names.garinham_keys, 
+    connect(world, world.player, region_names, names.garinham, names.garinham_keys, 
         lambda state: (state.has(names.magic_key, world.player)))
     connect(world, world.player, region_names, names.rimuldar, names.rimuldar_keys,
         lambda state: (state.has(names.magic_key, world.player)))
     connect(world, world.player, region_names, names.garinham_keys, names.garins_grave,
         equipment_helper(world, 4, 3, 2))
-    connect(world, world.player, region_names, names.overworld, names.staff_of_rain_shrine, 
-        lambda state: (state.has(names.silver_harp, world.player)))
-    connect(world, world.player, region_names, names.overworld, names.erdricks_token_tile,
-        equipment_helper(world, 4, 4, 2))
+    connect(world, world.player, region_names, names.rimuldar, names.staff_of_rain_shrine, 
+        lambda state: (state.has(names.silver_harp, world.player) and 
+                       (not random_map or state.has(names.magic_key, world.player))))
+    connect(world, world.player, region_names, names.cantlin, names.erdricks_token_tile,
+        lambda state: (state.has(names.gwaelins_love, world.player)))
     connect(world, world.player, region_names, names.rainbow_drop_shrine, names.charlock_castle,
-        equipment_helper(world, 5, 5, 2))
+        equipment_helper(world, 6, 6, 2))
+    connect(world, world.player, region_names, names.charlock_castle, names.charlock_dragonlord,
+        equipment_helper(world, 7, 7, 3))
 
 def create_region(world: World, name: str, location_checks=None):
     ret = DWRegion(name, world.player, world.multiworld)
@@ -222,9 +245,10 @@ def connect(world: World, player: int, used_names: Dict[str, int], source: str, 
     source_region.exits.append(connection)
     connection.connect(target_region)
 
-def equipment_helper(world, weapons: int, armors: int, shields: int):
+def equipment_helper(world, weapons: int, armors: int, shields: int, key: bool = False):
     if not world.options.shopsanity:
         return lambda state: (True)
     return lambda state: (state.has(names.progressive_weapon, world.player, weapons) and 
                           state.has(names.progressive_armor, world.player, armors) and
-                          state.has(names.progressive_shield, world.player, shields))
+                          state.has(names.progressive_shield, world.player, shields) and
+                          (not key or state.has(names.magic_key, world.player)))

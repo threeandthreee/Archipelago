@@ -123,9 +123,9 @@
     nop
 
 # Remove useless stuff that makes dive items behave wrong on small keys
-09/419E/: |
+09/419e/: |
     db $00,$00,$00
-09/41A4/: |
+09/41a4/: |
     db $00,$00,$00,$00,$00
 
 # for the item dropped in the room *above* the trampoline.

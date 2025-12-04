@@ -1,3 +1,0 @@
-
-APWORLD_VERSION: str | None = None
-APWORLD_VERSION = '0.4.0-pre2'

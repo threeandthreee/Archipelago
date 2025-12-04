@@ -50,6 +50,10 @@ class BadRetroArchResponse(GameboyException):
     pass
 
 
+class VersionError(Exception):
+    pass
+
+
 def clamp(minimum, number, maximum):
     return max(minimum, min(maximum, number))
 
@@ -60,6 +64,8 @@ class LAClientConstants:
     SlotName = 0x0134
     wGameplayType = 0xDB95
     wHealth = 0xDB5A
+    wDialogIndex = 0xC173
+    wDialogIndexHi = 0xC112
 
     wMWRecvIndexHi = 0xDDF6   # RO: The index of the next item to receive.
     wMWRecvIndexLo = 0xDDF7   #     If given something different it will be ignored.
@@ -91,6 +97,8 @@ class MWCommands(IntEnum):
     # bit 2: collect location
     # bit 3: send death link
     # bit 4,5: clear trade item (bit in wMWMultipurposeF)
+    # bit 7: no commands happen unless this is set, the gb will unset this bit
+    #        after executing the command allowing for confirmation in client
     NONE =              0b00000000
     SEND_ITEM_SPECIAL = 0b00000001
     SEND_ITEM =         0b00000011
@@ -99,6 +107,7 @@ class MWCommands(IntEnum):
     DEATH_LINK =        0b00001000
     CLEAR_TRADE_1 =     0b00010000
     CLEAR_TRADE_2 =     0b00100000
+    EXECUTE_COMMAND =   0b10000000
 
 
 class DeathLinkStatus(IntEnum):
@@ -341,6 +350,7 @@ class RAGameboy():
     def send_mw_command(self, command, item_code=0xFF, item_sender=0x0000,
                         mp_c=0x00, mp_d=0x00, mp_e=0x00, mp_f=0x00,
                         mp_cd=0x0000, mp_ef=0x0000):
+        command |= MWCommands.EXECUTE_COMMAND
         [sender_high, sender_low] = struct.pack('>H', item_sender)
         if mp_cd:
             [mp_c, mp_d] = struct.pack('>H', mp_cd)
@@ -362,9 +372,10 @@ class LinksAwakeningClient():
     retroarch_port = None
     gameboy = None
 
-    def __init__(self, retroarch_host="127.0.0.1:55355"):
-        self.retroarch_address = retroarch_host.split(':')[0]
-        self.retroarch_port = int(retroarch_host.split(':')[1])
+    def __init__(self, retroarch_address="127.0.0.1", retroarch_port=55355):
+        self.retroarch_address = retroarch_address
+        self.retroarch_port = retroarch_port
+        pass
 
     stop_bizhawk_spam = False
     async def wait_for_retroarch_connection(self):
@@ -507,7 +518,22 @@ class LinksAwakeningClient():
         if not ctx.slot or not self.tracker.has_start_item():
             return
 
+        wDialogIndex = (await self.gameboy.async_read_memory(LAClientConstants.wDialogIndex))[0]
+        wDialogIndexHi = (await self.gameboy.async_read_memory(LAClientConstants.wDialogIndexHi))[0]
+        dialog_index = wDialogIndexHi << 8 | wDialogIndex
+        hint_data = ctx.slot_data.get("hint_data", {}).get(dialog_index.__str__(), None)
+        if hint_data and dialog_index not in ctx.hinted_locations:
+            ctx.hinted_locations.add(dialog_index)
+            await ctx.send_msgs([{
+                "cmd": "CreateHints",
+                "locations": [hint_data["location"]],
+                "player": hint_data["player"],
+            }])
+
         wGameplayType = (await self.gameboy.async_read_memory(LAClientConstants.wGameplayType))[0]
+        if wGameplayType == 1: # Credits
+            await win_cb()
+
         wHealth = (await self.gameboy.async_read_memory(LAClientConstants.wHealth))[0]
         cmd_block = await self.gameboy.async_read_memory(LAClientConstants.wMWRecvIndexHi, 3)
         if not await self.gameboy.check_safe_gameplay():
@@ -515,21 +541,22 @@ class LinksAwakeningClient():
 
         [wMWRecvIndexHi, wMWRecvIndexLo, wMWCommand] = cmd_block
 
-        if wGameplayType == 1: # Credits
-            await win_cb()
-
         if self.death_link_status == DeathLinkStatus.NONE:
             if not wHealth: # natural death
                 await death_link_cb()
                 self.death_link_status = DeathLinkStatus.DYING
         elif self.death_link_status == DeathLinkStatus.PENDING:
-            self.gameboy.send_mw_command(command=MWCommands.DEATH_LINK)
-            self.death_link_status = DeathLinkStatus.DYING
+            if wMWCommand & MWCommands.DEATH_LINK:
+                if not wMWCommand & MWCommands.EXECUTE_COMMAND:
+                    self.death_link_status = DeathLinkStatus.DYING
+                    self.gameboy.send_mw_command(command=MWCommands.NONE)
+            else:
+                self.gameboy.send_mw_command(command=MWCommands.DEATH_LINK)
         elif self.death_link_status == DeathLinkStatus.DYING:
             if wHealth:
                 self.death_link_status = DeathLinkStatus.NONE
 
-        if wMWCommand or self.death_link_status:
+        if wMWCommand & MWCommands.EXECUTE_COMMAND or self.death_link_status:
             return
 
         recv_index = wMWRecvIndexHi << 8 | wMWRecvIndexLo
@@ -593,6 +620,7 @@ class LinksAwakeningContext(CommonContext):
     client = None
     found_checks = set()
     scouted_locations = set()
+    hinted_locations = set()
     recvd_checks = {}
     last_resend = time.time()
 
@@ -605,8 +633,8 @@ class LinksAwakeningContext(CommonContext):
     def slot_storage_key(self):
         return f"{self.slot_info[self.slot].name}_{storage_key}"
 
-    def __init__(self, server_address: str | None, password: str | None, magpie: bool, retroarch_host: str | None) -> None:
-        self.client = LinksAwakeningClient(retroarch_host)
+    def __init__(self, server_address: str | None, password: str | None, magpie: bool) -> None:
+        self.client = LinksAwakeningClient()
         self.slot_data = {}
 
         if magpie:
@@ -625,7 +653,7 @@ class LinksAwakeningContext(CommonContext):
                 ("Client", "Archipelago"),
                 ("Tracker", "Tracker"),
             ]
-            base_title = f"Archipelago {Common.LINKS_AWAKENING} Client"
+            base_title = f"Links Awakening DX Beta Client {LinksAwakeningWorld.world_version.as_simple_string()} | Archipelago"
 
             def build(self):
                 b = super().build()
@@ -724,20 +752,23 @@ class LinksAwakeningContext(CommonContext):
         if cmd == "Connected":
             self.game = self.slot_info[self.slot].game
             self.slot_data = args.get("slot_data", {})
+            generated_version = Utils.tuplize_version(self.slot_data.get("world_version", "13.1.0"))
+            client_version = LinksAwakeningWorld.world_version
+            if generated_version.major != client_version.major:
+                self.disconnected_intentionally = True
+                raise VersionError(
+                    f"The installed world ({client_version.as_simple_string()}) is incompatible with "
+                    f"the world this game was generated on ({generated_version.as_simple_string()})"
+                )
             # This is sent to magpie over local websocket to make its own connection
             self.slot_data.update({
                 "server_address": self.server_address,
                 "slot_name": self.player_names[self.slot],
                 "password": self.password,
-                "client_version": Common.WORLD_VERSION,
+                "client_version": client_version.as_simple_string(),
             })
             if self.slot_data.get("death_link"):
                 Utils.async_start(self.update_death_link(True))
-
-            # We can process linked items on already-checked checks now that we have slot_data
-            if self.client.tracker:
-                checked_checks = set(self.client.tracker.all_checks) - set(self.client.tracker.remaining_checks)
-                self.add_linked_items(checked_checks)
 
             # We can process linked items on already-checked checks now that we have slot_data
             if self.client.tracker:
@@ -872,12 +903,11 @@ def run_game(romfile: str) -> None:
 
 def launch(*launch_args):
     async def main():
-        parser = get_base_parser(description="Link's Awakening Client.")
+        parser = get_base_parser(description="Link's Awakening DX Beta Client.")
         parser.add_argument("--url", help="Archipelago connection url")
         parser.add_argument("--no-magpie", dest='magpie', default=True, action='store_false', help="Disable magpie bridge")
-        parser.add_argument("--retroarch-host", default="127.0.0.1:55355", help="Retroarch connection address and port")
         parser.add_argument('diff_file', default="", type=str, nargs="?",
-                            help='Path to a .apladx Archipelago Binary Patch file')
+                            help='Path to a .apladxb Archipelago Binary Patch file')
 
         args = parser.parse_args(launch_args)
 
@@ -890,7 +920,7 @@ def launch(*launch_args):
             logger.info(f"wrote rom file to {rom_file}")
 
 
-        ctx = LinksAwakeningContext(args.connect, args.password, args.magpie, args.retroarch_host)
+        ctx = LinksAwakeningContext(args.connect, args.password, args.magpie)
 
         ctx.server_task = asyncio.create_task(server_loop(ctx), name="server loop")
 

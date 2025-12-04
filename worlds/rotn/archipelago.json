@@ -1,1 +1,6 @@
-{"compatible_version": 7, "version": 7, "game": "Rift of the Necrodancer"}
+{
+    "game": "Rift of the Necrodancer",
+    "authors": ["studkid"],
+    "world_version": "0.6.0",
+    "minimum_ap_version": "0.6.3"
+  }
