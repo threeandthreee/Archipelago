@@ -423,7 +423,8 @@ class LinksAwakeningClient():
         self.tracker = LocationTracker(self.gameboy)
         self.item_tracker = ItemTracker(self.gameboy)
         self.gps_tracker = GpsTracker(self.gameboy)
-        magpie.gps_tracker = self.gps_tracker
+        if magpie != None:
+            magpie.gps_tracker = self.gps_tracker
 
     # The key location is blocked from collection unless the value location
     # has also been checked.
