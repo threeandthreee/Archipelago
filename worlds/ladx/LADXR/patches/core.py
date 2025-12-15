@@ -130,12 +130,12 @@ def warpHome(rom, force_inside=False):
     rom.patch(0x01, 0x012A, 0x0150, ASM("""
         ld   hl, $C13F
         call $6BA8 ; make sound on keypress
-        ldh  a, [$CC] ; load joystick status
+        ldh  a, [$FFCC] ; load joystick status
         and  $04      ; if up
         jr   z, noUp
         dec  [hl]
 noUp:
-        ldh  a, [$CC] ; load joystick status
+        ldh  a, [$FFCC] ; load joystick status
         and  $08      ; if down
         jr   z, noDown
         inc  [hl]
@@ -240,11 +240,11 @@ noWrapDown:
         ld   a, $%02x ; Y
         ld   [$D405], a
 
-        ldh  a, [$98]
+        ldh  a, [$FF98]
         swap a
         and  $0F
         ld   e, a
-        ldh  a, [$99]
+        ldh  a, [$FF99]
         sub  $08
         and  $F0
         or   e
@@ -555,19 +555,6 @@ def fixD7exit(rom):
 def addBootsControls(rom, boots_controls: int):
     if boots_controls == BootsControls.option_vanilla:
         return
-    consts = {
-          "INVENTORY_PEGASUS_BOOTS": 0x8,
-          "INVENTORY_POWER_BRACELET": 0x3,
-          "UsePegasusBoots": 0x1705,
-          "J_A": (1 << 4),
-          "J_B": (1 << 5),
-          "wAButtonSlot": 0xDB01,
-          "wBButtonSlot": 0xDB00,
-          "wPegasusBootsChargeMeter": 0xC14B,
-          "hPressedButtonsMask": 0xFFCB
-    }
-    for c,v in consts.items():
-        assembler.const(c, v)
 
     BOOTS_START_ADDR = 0x11E8
     condition = {

@@ -117,7 +117,7 @@ class EntranceShuffle(Choice, LADXROption):
     rich_text_doc = True
 
 
-class RandomStartLocation(EntranceShuffle):
+class ShuffleStart(EntranceShuffle):
     """
     Randomizes where your starting house is located.
 
@@ -709,7 +709,7 @@ ladx_option_groups = [
         Overworld,
         Warps,
         EntranceRules,
-        RandomStartLocation,
+        ShuffleStart,
         ShuffleDungeons,
         ShuffleBasic,
         ShuffleJunk,
@@ -753,7 +753,7 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     tradequest: TradeQuest
     rooster: Rooster
     entrance_rules: EntranceRules
-    random_start_location: RandomStartLocation
+    shuffle_start: ShuffleStart
     shuffle_dungeons: ShuffleDungeons
     shuffle_basic: ShuffleBasic
     shuffle_junk: ShuffleJunk

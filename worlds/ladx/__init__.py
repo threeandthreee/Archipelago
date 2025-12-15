@@ -595,7 +595,7 @@ class LinksAwakeningWorld(World):
                 "tradequest",
                 "rooster",
                 "entrance_rules",
-                "random_start_location",
+                "shuffle_start",
                 "shuffle_dungeons",
                 "shuffle_basic",
                 "shuffle_junk",

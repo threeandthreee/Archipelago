@@ -1160,8 +1160,6 @@ resetConsts()
 
 if __name__ == "__main__":
     #allOpcodesTest()
-    const("CONST1", 1)
-    const("CONST2", 2)
     ASM("""
     ld a, (123)
     ld hl, $1234 + 456

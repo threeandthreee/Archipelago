@@ -159,10 +159,13 @@ class EntranceShuffler:
             self.entrance_pools["global"].add("start_house")
             self.entrance_pools["global"].add("start_house:inside")
         
+    def shuffle_entrances(self, rnd, world_setup: WorldSetup):
+        # use to verify valid mapping at the end
+        initial_logic = self._create_logic()
+
         # unmap entrances to be shuffled
-        for pool in self.entrance_pools.values():
-            for entrance in pool:
-                del self.entrance_mapping[entrance]
+        to_unmap = { entrance for pool in self.entrance_pools.values() for entrance in pool }
+        self.entrance_mapping = { k:v for k, v in self.entrance_mapping.items() if k not in to_unmap }
 
         # create a partial logic for our initial disconnected state
         logic = self._create_logic(partial=True)
@@ -189,7 +192,6 @@ class EntranceShuffler:
                         self.dead_ends.add(entrance)
             self.dead_ends.discard("start_house:inside")
 
-    def shuffle_entrances(self, rnd, world_setup: WorldSetup):
         if self.settings.randomstartlocation == "limited":
             start_location = rnd.choice(start_locations)
             self.entrance_mapping["start_house"] = f"{start_location}:inside"
@@ -216,7 +218,7 @@ class EntranceShuffler:
             mapped_entrances = set(self.entrance_mapping.keys())
             mapped_exits = set(self.entrance_mapping.values())
             entrances = sorted(entrances_reached - mapped_entrances)
-            assert entrances
+            assert entrances, "Backed self into a corner while mapping entrances"
             rnd.shuffle(entrances)
             ex: str|None = None
             for en in entrances: # pick an entrance and exit to connect
@@ -272,6 +274,10 @@ class EntranceShuffler:
                     break
             if not ex: # no valid exits for any entrances, move to next fill stage
                 fill_stage = fill_stage + 1
+        
+        logic = self._create_logic()
+        assert len(logic.location_list) == len(initial_logic.location_list)
+        assert len(logic.iteminfo_list) == len(initial_logic.iteminfo_list)
         return self.entrance_mapping
 
     def _create_logic(self, base_world_setup: WorldSetup|None = None, partial: bool = False) -> "logic.Logic":
