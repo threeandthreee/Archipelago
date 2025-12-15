@@ -8,7 +8,7 @@ BuildRemoteItemMessage:
 
 BuildItemMessage:    
     ld   hl, ItemNamePointers
-    ldh  a, [$F1]
+    ldh  a, [$FFF1]
     ld   d, $00
     ld   e, a
     add  hl, de
@@ -36,9 +36,9 @@ FoundItemForOtherPlayerPostfix:
 GotItemFromOtherPlayerPostfix:
     db m" from player X", $ff
 SpaceFrom:
-    db " from ", $ff, $ff
+    db "from ", $ff, $ff
 SpaceFor:
-    db " for ", $ff, $ff
+    db "for ", $ff, $ff
 MessagePad:
     jr .start    ; goto start
 .loop:

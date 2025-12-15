@@ -2,7 +2,7 @@ from ..assembler import ASM
 from ..roomEditor import RoomEditor
 
 
-def fixBowwow(rom, everywhere=False):
+def fixBowwow(rom):
     ### BowWow patches
     rom.patch(0x03, 0x1E0E, ASM("ld [$DB56], a"), "", fill_nop=True)  # Do not mark BowWow as kidnapped after we complete dungeon 1.
     rom.patch(0x15, 0x06B6, ASM("ld a, [$DB56]\ncp $80"), ASM("xor a"), fill_nop=True)  # always load the moblin boss
@@ -74,31 +74,14 @@ def fixBowwow(rom, everywhere=False):
     rom.patch(0x05, 0x0485, ASM("ld a, [$D151]"), ASM("ld a, [$D198]"))
     rom.patch(0x05, 0x04A4, ASM("ld a, [$D150]"), ASM("ld a, [$D197]"))
 
-    # Patch the bowwow create code to call our custom check of we are in swamp function.
-    if everywhere:
-        # Load followers in dungeons, caves, etc
-        rom.patch(0x01, 0x1FC1, ASM("ret z"), "", fill_nop=True)
-        rom.patch(0x01, 0x1FC4, ASM("ret z"), "", fill_nop=True)
-        rom.patch(0x01, 0x1FC7, ASM("ret z"), "", fill_nop=True)
-        rom.patch(0x01, 0x1FCA, ASM("ret c"), "", fill_nop=True)  # dungeon
-        # rom.patch(0x01, 0x1FBC, ASM("ret nz"), "", fill_nop=True)  # sidescroller: TOFIX this breaks fishing minigame reward
-    else:
-        # Patch the bowwow create code to call our custom check of we are in swamp function.
-        rom.patch(0x01, 0x211F, ASM("ldh a, [$F6]\ncp $A7\nret z\nld a, [$DB56]\ncp $01\njr nz, $36"), ASM("""
-            ld a, $07
-            rst 8
-            ld  a, e
-            and a
-            ret z
-        """), fill_nop=True)
-        # Patch bowwow to not stay around when we move from map to map
-        rom.patch(0x05, 0x0049, 0x0054, ASM("""
-            cp   [hl]
-            jr   z, Continue
-            ld   hl, $C280
-            add  hl, bc
-            ld   [hl], b
-            ret
+    # Patch bowwow to not stay around when we move from map to map
+    rom.patch(0x05, 0x0049, 0x0054, ASM("""
+        cp   [hl]
+        jr   z, Continue
+        ld   hl, $C280
+        add  hl, bc
+        ld   [hl], b
+        ret
 Continue:
         """), fill_nop=True)
 
@@ -124,7 +107,7 @@ Continue:
         pop  bc
         ret
     """), fill_nop=True)
-    rom.patch(0x05, 0x0387, ASM("ld a, $03\nldh [$F2], a"), "", fill_nop=True)  # remove the default chomp sfx
+    rom.patch(0x05, 0x0387, ASM("ld a, $03\nldh [$FFF2], a"), "", fill_nop=True)  # remove the default chomp sfx
 
     # Various enemies
     rom.banks[0x14][0x1218 + 0xC5] = 0x01  # Urchin

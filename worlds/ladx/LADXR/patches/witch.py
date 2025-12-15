@@ -22,7 +22,7 @@ def updateWitch(rom):
 powder:
         ld  e, $09 ; give powder every time after the first time.
         ld  a, e
-        ldh [$F1], a
+        ldh [$FFF1], a
         ld  a, $11
         rst 8
         jp $48F0
@@ -46,7 +46,7 @@ item:
     # Patch what happens when we pickup the toadstool, call our chest code to give a toadstool.
     rom.patch(0x03, 0x1D6F, 0x1D7D, ASM("""
         ld   a, $50
-        ldh  [$F1], a
+        ldh  [$FFF1], a
         ld  a, $02 ; give item
         rst 8
 
