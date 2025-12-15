@@ -130,12 +130,12 @@ def warpHome(rom, force_inside=False):
     rom.patch(0x01, 0x012A, 0x0150, ASM("""
         ld   hl, $C13F
         call $6BA8 ; make sound on keypress
-        ldh  a, [$FFCC] ; load joystick status
+        ldh  a, [$CC] ; load joystick status
         and  $04      ; if up
         jr   z, noUp
         dec  [hl]
 noUp:
-        ldh  a, [$FFCC] ; load joystick status
+        ldh  a, [$CC] ; load joystick status
         and  $08      ; if down
         jr   z, noDown
         inc  [hl]
@@ -240,11 +240,11 @@ noWrapDown:
         ld   a, $%02x ; Y
         ld   [$D405], a
 
-        ldh  a, [$FF98]
+        ldh  a, [$98]
         swap a
         and  $0F
         ld   e, a
-        ldh  a, [$FF99]
+        ldh  a, [$99]
         sub  $08
         and  $F0
         or   e
