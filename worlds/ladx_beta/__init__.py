@@ -2,7 +2,7 @@ import binascii
 import dataclasses
 import os
 import typing
-import logging
+import struct
 
 import settings
 import Utils
@@ -32,7 +32,7 @@ from .Options import DungeonItemShuffle, ShuffleInstruments, LinksAwakeningOptio
 from .Rom import LADXProcedurePatch, write_patch_data
 
 DEVELOPER_MODE = False
-
+TEST_PATCH = False
 
 def launch_client(*args):
     from .LinksAwakeningClient import launch as ladx_launch
@@ -181,6 +181,8 @@ class LinksAwakeningWorld(World):
     ladxr_logic: LADXRLogic
     ladxr_itempool: LADXRItemPool
 
+    ladx_in_game_hints: dict = {}
+
     multi_key: bytearray
 
     rupees = {
@@ -198,12 +200,25 @@ class LinksAwakeningWorld(World):
         world_setup = LADXRWorldSetup()
         world_setup.randomize(self.ladxr_settings, self.random, self.options)
         self.ladxr_logic = LADXRLogic(configuration_options=self.ladxr_settings, world_setup=world_setup)
-        self.ladxr_itempool = LADXRItemPool(self.ladxr_logic, self.ladxr_settings, self.random, bool(self.options.stabilize_item_pool)).toDict()
+        self.ladxr_itempool = LADXRItemPool(self.ladxr_logic, self.ladxr_settings, self.random, bool(self.options.more_filler)).toDict()
 
 
+    filler_choices = ("Nothing",)
+    filler_weights = (1,)
     def generate_early(self) -> None:
-        self.dungeon_item_types = {
-        }
+        if self.options.filler_pool == 'ammo':
+            self.filler_choices = ("Bomb", "Single Arrow", "10 Arrows", "Magic Powder", "Medicine")
+            self.filler_weights = ( 10,     5,              10,          10,             1)
+        elif self.options.filler_pool == 'rupees':
+            self.filler_choices = ("20 Rupees", "50 Rupees")
+            self.filler_weights = ( 3,           1)
+        elif self.options.filler_pool == 'seashells':
+            self.filler_choices = ("Seashell",)
+        elif self.options.filler_pool == 'traps':
+            self.filler_choices = ("Zol Attack",)
+            
+
+        self.dungeon_item_types = {}
         for dungeon_item_type in ["maps", "compasses", "small_keys", "nightmare_keys", "stone_beaks", "instruments"]:
             option_name = "shuffle_" + dungeon_item_type
             option: DungeonItemShuffle = getattr(self.options, option_name)
@@ -222,6 +237,7 @@ class LinksAwakeningWorld(World):
                 self.options.non_local_items.value |= {
                     ladxr_item_to_la_item_name[f"{option.ladxr_item}{i}"] for i in range(1, num_items + 1)
                 }
+
 
     def create_regions(self) -> None:
         # Initialize
@@ -279,6 +295,9 @@ class LinksAwakeningWorld(World):
         # option_delete = 5
 
         for ladx_item_name, count in self.ladxr_itempool.items():
+            if ladx_item_name == 'FILLER':
+                for _ in range(count):
+                    itempool.append(self.create_filler())
             # event
             if ladx_item_name not in ladxr_item_to_la_item_name:
                 continue
@@ -479,12 +498,9 @@ class LinksAwakeningWorld(World):
 
         fill_restrictive(self.multiworld, partial_all_state, all_dungeon_locs_to_fill, all_dungeon_items_to_fill, lock=True, single_player_placement=True, allow_partial=False)
 
-
-    def post_fill(self) -> None:
-        self.ladx_in_game_hints = generate_hint_texts(self)
-
     def generate_output(self, output_directory: str):
         matcher = ForeignItemIconMatcher()
+        self.ladx_in_game_hints = generate_hint_texts(self)
         # copy items back to locations
         for r in self.multiworld.get_regions(self.player):
             for loc in r.locations:
@@ -500,14 +516,14 @@ class LinksAwakeningWorld(World):
                     elif self.options.foreign_item_icons == 'guess_by_name':
                         game = self.multiworld.game[loc.item.player]
                         loc.ladxr_item.item = matcher.get_icon_for_other_world(loc.item.name, game)
-                        loc.ladxr_item.setCustomItemName(loc.item.name)
+                        loc.ladxr_item.custom_item_name = loc.item.name
 
                     else:
                         if loc.item.advancement:
                             loc.ladxr_item.item = 'PIECE_OF_POWER'
                         else:
                             loc.ladxr_item.item = 'GUARDIAN_ACORN'
-                        loc.ladxr_item.setCustomItemName(loc.item.name)
+                        loc.ladxr_item.custom_item_name = loc.item.name
 
                     if loc.item:
                         loc.ladxr_item.item_owner = loc.item.player
@@ -525,6 +541,10 @@ class LinksAwakeningWorld(World):
 
         patch.write(out_path)
 
+        if TEST_PATCH:
+            import Patch
+            Patch.create_rom_file(out_path)
+
     def generate_multi_key(self):
         return bytearray(self.random.getrandbits(8) for _ in range(10)) + self.player.to_bytes(2, 'big')
 
@@ -541,15 +561,9 @@ class LinksAwakeningWorld(World):
         change = super().remove(state, item)
         if change and item.name in self.rupees:
             state.prog_items[self.player]["RUPEES"] -= self.rupees[item.name]
-        return change
-
-    # Same fill choices and weights used in LADXR.itempool.__randomizeRupees
-    filler_choices = ("Bomb", "Single Arrow", "10 Arrows", "Magic Powder", "Medicine")
-    filler_weights = ( 10,     5,              10,          10,             1)
+        return change    
 
     def get_filler_item_name(self) -> str:
-        if self.options.stabilize_item_pool:
-            return "Nothing"
         return self.random.choices(self.filler_choices, self.filler_weights)[0]
 
     def fill_slot_data(self):
@@ -586,8 +600,12 @@ class LinksAwakeningWorld(World):
                 "logic",
                 "tradequest",
                 "rooster",
-                "experimental_dungeon_shuffle",
-                "experimental_entrance_shuffle",
+                "random_start_location",
+                "dungeon_shuffle",
+                "entrance_shuffle",
+                "shuffle_junk",
+                "shuffle_annoying",
+                "shuffle_water",
                 "trendy_game",
                 "gfxmod",
                 "shuffle_nightmare_keys",

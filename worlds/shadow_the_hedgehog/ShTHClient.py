@@ -1,4 +1,5 @@
 import asyncio
+import math
 import random
 import struct
 from datetime import datetime, timedelta
@@ -67,6 +68,8 @@ class GAME_ADDRESSES:
     ADDRESS_SOLDIER_COUNT = 0x8057FB4C
     ADDRESS_EGG_COUNT = 0x8057FB50
     SAVE_DATA_LOADED = 0x805E326B
+    CHECKPOINT_RESPAWN_ID = 0x80575FBF
+    STAGE_MUSIC_NAME = 0x805813D0
 
     ADDRESS_MISSION_MANAGER = 0x80575EF8
 
@@ -96,8 +99,6 @@ class GAME_ADDRESSES:
 
     ADDRESS_LEVEL_STATUS = 0x80575F80
     button_menu_address = 0x8056ED4F
-
-    CHECKPOINT_MAX_FLAG_ADDRESS = 0x80575FBF
     CHECKPOINT_FLAGS = [0x80575FFC, 0x80576018, 0x80576034, 0x80576050,
                         0x8057606C, 0x80576088, 0x805760A4, 0x805760C0]
 
@@ -163,14 +164,19 @@ class MenuOptions:
 
 
 
-
+last_level = None
 memory_data = {}
 def ShowSETChanges(current_level):
     global memory_data
+    global last_level
 
     if current_level is None:
         memory_data = {}
         return
+
+    if last_level != current_level:
+        last_level = current_level
+        memory_data = {}
 
     length = Objects.GetSETFileLength(current_level)
     if length is None or length == 0:
@@ -192,6 +198,7 @@ def ShowSETChanges(current_level):
 
         spawn_data = start_address  + (0x2C * i) + 0x20
         object_type = spawn_data + 0x08
+        link_id_ref = object_type + 0x02
         object_additional_pointer = None
 
         loaded_bytes = dolphin_memory_engine.read_bytes(spawn_data+3, 1)
@@ -199,6 +206,9 @@ def ShowSETChanges(current_level):
 
         loaded_bytes = dolphin_memory_engine.read_bytes(object_type, 2)
         loaded_object_type = int.from_bytes(loaded_bytes, byteorder='big')
+
+        loaded_bytes = dolphin_memory_engine.read_bytes(link_id_ref, 1)
+        link_id = int.from_bytes(loaded_bytes, byteorder='big')
 
         if loaded_spawn_data == 0 and loaded_object_type == 0 and spawn_data in memory_data:
             del memory_data[spawn_data]
@@ -218,7 +228,7 @@ def ShowSETChanges(current_level):
 
         if last_known_spawn != loaded_spawn_data:
             outputs = Objects.PrintSETChange(spawn_data, i, loaded_object_type, last_known_spawn, loaded_spawn_data,
-                                   loaded_from_extra_pointer_bytes)
+                                   loaded_from_extra_pointer_bytes, link_id)
             memory_data[spawn_data] = [loaded_spawn_data, loaded_object_type]
 
             new_outputs.extend(outputs)
@@ -252,29 +262,29 @@ class ShTHCommandProcessor(ClientCommandProcessor):
             logger.info(f"Dolphin Status: {self.ctx.dolphin_status}")
 
 
-    def _cmd_print_report(self):
-        for p in self.reports:
-            print("index=", p[0], "region=", p[1], "counter=", self.reports.index(p))
+    #def _cmd_print_report(self):
+    #    for p in self.reports:
+    #        print("index=", p[0], "region=", p[1], "counter=", self.reports.index(p))
 
-    def _cmd_region_break(self):
-        self.region += 1
+    #def _cmd_region_break(self):
+    #    self.region += 1
 
-    def _cmd_region_clear(self):
-        self.region = 0
-        self.reports = []
+    #def _cmd_region_clear(self):
+    #    self.region = 0
+    #    self.reports = []
 
-    def _cmd_set_r(self, *args):
-        arguments = self.parse_args(args)
-        self.reports.append((arguments["i"], self.region))
+    #def _cmd_set_r(self, *args):
+    #    arguments = self.parse_args(args)
+    #    self.reports.append((arguments["i"], self.region))
 
 
-    def arg_finish(self, build, type, results, value):
-        to_use = " ".join(build)
+    #def arg_finish(self, build, type, results, value):
+    ##    to_use = " ".join(build)
 
-        if value:
-            results[type] = to_use
-        else:
-            results[type+to_use] = True
+    #   if value:
+    #        results[type] = to_use
+    #    else:
+    #        results[type+to_use] = True
 
     def parse_args(self, args, value=True):
         arguments = {}
@@ -356,7 +366,18 @@ class ShTHCommandProcessor(ClientCommandProcessor):
                 available_names = [ Levels.LEVEL_ID_TO_LEVEL[n] for n in available]
                 logger.info(available_names)
 
+    def _cmd_gates(self, *args):
+        """Prints the requirements for the next available gate."""
+        if isinstance(self.ctx, ShTHContext):
+            gate_info = self.get_gate_info(self.ctx)
+            print(gate_info)
+            if len(gate_info) == 0:
+                logger.info("No more gates to open!")
+            else:
+                logger.info("\n".join([ str(g[0]) + ":" + str(g[1]) + "/" + str(g[2]) for g in gate_info]))
+
     def _cmd_token(self, *args):
+        """ Show requirements for GO Mode"""
         if isinstance(self.ctx, ShTHContext):
             stage = None
             arguments = self.parse_args(args)
@@ -367,6 +388,7 @@ class ShTHCommandProcessor(ClientCommandProcessor):
                 logger.info("\n".join([ f"{s[0]}={s[1]}/{s[2]}" for s in token_dict]))
 
     def _cmd_boss(self, *args):
+        """ Show story based requirements for accessibility to a boss"""
         if isinstance(self.ctx, ShTHContext):
             stage = None
             arguments = self.parse_args(args)
@@ -376,6 +398,7 @@ class ShTHCommandProcessor(ClientCommandProcessor):
             self.ctx.find_boss(stage)
 
     def _cmd_spawnmessage(self, *args):
+        """ Show spawn messages in game when information changes"""
         if isinstance(self.ctx, ShTHContext):
             if len(self.ctx.level_state.keys()) > 0:
                 self.ctx.level_state["spawn_message"] = True
@@ -383,6 +406,7 @@ class ShTHCommandProcessor(ClientCommandProcessor):
                 pass
 
     def _cmd_despawn(self, *args):
+        """Despawn enemies when the checked are cleared."""
         if isinstance(self.ctx, ShTHContext):
             if len(self.ctx.level_state.keys()) > 0:
                 self.ctx.level_state["despawn"] = True
@@ -673,6 +697,34 @@ class ShTHCommandProcessor(ClientCommandProcessor):
 
         return required_count, reached_count, current_count, freq_or_avail_count, completed
 
+    def get_gate_info(self, ctx):
+        required_items = ctx.gate_requirements
+        info = Items.GetItemLookupDict()
+        current_items = [info[i.item].name for i in ctx.items_received]
+
+        result = []
+        for item in required_items.items():
+            gate_no = item[0]
+            gate_reqs = item[1]
+            enough = True
+            for gate_req in gate_reqs.items():
+                item_name = gate_req[0]
+                count = gate_req[1]
+                if current_items.count(item_name) < count:
+                    enough = False
+
+            if not enough:
+                for gate_req in gate_reqs.items():
+                    item_name = gate_req[0]
+                    total = gate_req[1]
+                    count = current_items.count(item_name)
+                    result.append((item_name, count, total))
+                break
+            else:
+                print(f"Gate {gate_no} is open")
+
+        return result
+
 
     def get_required_tokens(self, ctx):
         token_requirements = []
@@ -726,6 +778,7 @@ class ShTHCommandProcessor(ClientCommandProcessor):
 
 
     def _cmd_story_progression(self, *args):
+        """ Show story accessible stages"""
         if isinstance(self.ctx, ShTHContext):
             arguments = self.parse_args(args)
 
@@ -762,6 +815,7 @@ class ShTHCommandProcessor(ClientCommandProcessor):
 
 
     def _cmd_story_hint(self, *args):
+        """Using known path data, recommend a location to hint"""
         data = self._cmd_story_progression("/q")
 
         item_weights = {}
@@ -804,7 +858,7 @@ class ShTHCommandProcessor(ClientCommandProcessor):
         #options = _cmd_story_progression("/q")
 
     def _cmd_sanity(self, *args):
-        """Prints the current weapons to the client."""
+        """Prints the current sanities to the client."""
         if isinstance(self.ctx, ShTHContext):
             arguments = self.parse_args(args)
             #print(arguments)
@@ -814,7 +868,7 @@ class ShTHCommandProcessor(ClientCommandProcessor):
                 stage = arguments["s"]
 
             if stage is None and (self.ctx.last_level is None or self.ctx.level_state.keys() == 0):
-                logger.info("You must be in a stage to use the sanity command.")
+                stages = self.ctx.available_levels
             else:
                 stageId = None
                 if stage is None:
@@ -829,42 +883,45 @@ class ShTHCommandProcessor(ClientCommandProcessor):
                             level_by_name = {v.upper(): k for k, v in Levels.LEVEL_ID_TO_LEVEL.items()}
                             if stage in level_by_name:
                                 stageId = level_by_name[stage]
+                stages = [stageId]
 
-                if stageId is not None:
-                    valid_types = ['dark', 'hero', 'gun', 'egg', 'alien', 'darkclear', 'heroclear']
-                    enemy_sanities = ['gun', 'alien', 'egg']
-                    objective_sanities = ['dark', 'hero']
-                    for valid_type in valid_types:
-                        if (valid_type in arguments.keys() or
-                                len(arguments) == 0 or
-                                (len(arguments) == 1 and stageId != self.ctx.last_level) ):
-                            if valid_type in enemy_sanities and not self.ctx.enemy_sanity:
-                                break
-                            if valid_type in objective_sanities and not self.ctx.objective_sanity:
-                                break
-                            details = self.get_required_and_active_count(self.ctx, stageId, valid_type)
-                            if details is None:
-                                continue
-                            location_total_required = details[0]
-                            location_reached_total = details[1]
-                            current_count = details[2]
-                            freq_or_avail = details[3]
-                            complete = details[4]
-                            if location_total_required > 0:
-                                if "clear" in valid_type and current_count is not None:
-                                    logger.info("%s sanity is %d/%d %s(%d available)", valid_type.capitalize(),
-                                                current_count, location_total_required,
-                                                "(Complete) " if complete else "",
-                                                freq_or_avail)
-                                elif current_count is not None:
-                                    logger.info("%s sanity is %d/%d (Current: %d) (Frequency %d)", valid_type.capitalize(),
-                                                location_reached_total, location_total_required, current_count,freq_or_avail)
-                                elif "clear" in valid_type:
-                                    pass
-                                else:
-                                    pass
-                else:
-                    logger.error("Invalid level provided")
+                stages = []
+                for stageId in stages:
+                    if stageId is not None:
+                        valid_types = ['dark', 'hero', 'gun', 'egg', 'alien', 'darkclear', 'heroclear']
+                        enemy_sanities = ['gun', 'alien', 'egg']
+                        objective_sanities = ['dark', 'hero']
+                        for valid_type in valid_types:
+                            if (valid_type in arguments.keys() or
+                                    len(arguments) == 0 or
+                                    (len(arguments) == 1 and stageId != self.ctx.last_level) ):
+                                if valid_type in enemy_sanities and not self.ctx.enemy_sanity:
+                                    break
+                                if valid_type in objective_sanities and not self.ctx.objective_sanity:
+                                    break
+                                details = self.get_required_and_active_count(self.ctx, stageId, valid_type)
+                                if details is None:
+                                    continue
+                                location_total_required = details[0]
+                                location_reached_total = details[1]
+                                current_count = details[2]
+                                freq_or_avail = details[3]
+                                complete = details[4]
+                                if location_total_required > 0:
+                                    if "clear" in valid_type and current_count is not None:
+                                        logger.info("%s sanity is %d/%d %s(%d available)", valid_type.capitalize(),
+                                                    current_count, location_total_required,
+                                                    "(Complete) " if complete else "",
+                                                    freq_or_avail)
+                                    elif current_count is not None:
+                                        logger.info("%s sanity is %d/%d (Current: %d) (Frequency %d)", valid_type.capitalize(),
+                                                    location_reached_total, location_total_required, current_count,freq_or_avail)
+                                    elif "clear" in valid_type:
+                                        pass
+                                    else:
+                                        pass
+                    else:
+                        logger.error("Invalid level provided")
 
 
 @dataclass
@@ -1116,6 +1173,7 @@ class ShTHContext(CommonContext):
         self.level_state = {}
         self.characters_met = []
         self.checkpoint_snapshots = []
+        self.checkpoint_trap_active = False
         self.lives = 0
         self.objective_sanity = False
         self.objective_percentage = 100
@@ -1132,6 +1190,14 @@ class ShTHContext(CommonContext):
         self.required_final_boss_tokens = 0
         self.requires_emeralds = True
         self.key_sanity = False
+        self.key_collection_method = Options.KeyCollectionMethod.default
+        self.keys_required_for_doors = Options.KeysRequiredForDoors.default
+        self.gates = {}
+        self.gate_requirements = {}
+        self.select_gates = Options.SelectGates.default
+        self.select_gates_count = Options.SelectGatesCount.default
+        self.gate_unlock_requirement = Options.GateUnlockRequirement.default
+
         self.enemy_sanity = False
         self.enemy_objective_sanity = False
         self.weapon_sanity_unlock = False
@@ -1158,6 +1224,11 @@ class ShTHContext(CommonContext):
         self.hero_gauge_last = 0
         self.dark_gauge_last = 0
 
+        self.poison_traps = 0
+        self.ammo_traps = 0
+        self.checkpoint_traps = 0
+        self.ammo_boosts = {}
+
         self.junk_delay = 0
 
         self.tokens = []
@@ -1182,11 +1253,13 @@ class ShTHContext(CommonContext):
         self.objective_enemy_percentage = 100
         self.objective_item_percentage_available = 100
         self.objective_item_enemy_percentage_available = 100
+        self.music = None
 
         # Name of the current stage as read from the game's memory. Sent to trackers whenever its value changes to
         # facilitate automatically switching to the map of the current stage.
         self.current_stage_name: str = ""
         self.level_keys = []
+        self.music = None
         self.key_restore_complete = False
         self.shuffled_story_mode = Story.DefaultStoryMode
         self.successful_shuffle = False
@@ -1362,6 +1435,7 @@ class ShTHContext(CommonContext):
             slot_data = args["slot_data"]
 
             if "check_level" in slot_data:
+                print("CheckLevel is", slot_data["check_level"])
                 self.level_buffer = slot_data["check_level"]
 
             if "objective_sanity" in slot_data:
@@ -1381,6 +1455,24 @@ class ShTHContext(CommonContext):
 
             if "key_sanity" in slot_data:
                 self.key_sanity = slot_data["key_sanity"]
+
+            if "key_collection_method" in slot_data:
+                self.key_collection_method = slot_data["key_collection_method"]
+
+            if "keys_required_for_doors" in slot_data:
+                self.keys_required_for_doors = slot_data["keys_required_for_doors"]
+
+            if "gates" in slot_data:
+                self.gates = slot_data["gates"]
+            if "gate_requirements" in slot_data:
+                self.gate_requirements = slot_data["gate_requirements"]
+                print("GR=", self.gate_requirements)
+            if "select_gates" in slot_data:
+                self.select_gates = slot_data["select_gates"]
+            if "select_gates_count" in slot_data:
+                self.select_gates_count = slot_data["select_gates_count"]
+            if "gate_unlock_requirement" in slot_data:
+                self.gate_unlock_requirement = slot_data["gate_unlock_requirement"]
 
             if "required_mission_tokens" in slot_data:
                 self.required_mission_tokens = slot_data["required_mission_tokens"]
@@ -1563,6 +1655,7 @@ class ShTHContext(CommonContext):
                 for item in args["items"]:
                     self.items_to_handle.append((item, self.last_rcvd_index))
                     self.last_rcvd_index += 1
+                    self.junk_delay = 0
             self.items_to_handle.sort(key=lambda v: v[1])
         elif cmd == "Retrieved":
             pass
@@ -1902,10 +1995,8 @@ async def check_save_loaded(ctx):
 
         if len(messages) > 0:
             unsent_messages = [ message for message in messages if message not in ctx.checked_locations]
-            #ctx.locations_checked = messages
             message = [{"cmd": 'LocationChecks', "locations": unsent_messages}]
             await ctx.send_msgs(message)
-            #ctx.locations_checked.extend(messages)
 
         if finished and not ctx.finished_game:
             clear_location = Locations.GetClearLocation()[0]
@@ -2008,6 +2099,9 @@ def HandleLocationAutoclears():
 
 def is_level_accessible(ctx, stageId, story=False):
     info = Items.GetItemLookupDict()
+
+    if stageId in ctx.available_levels:
+        return True
 
     if ctx.select_mode_available and not story:
         i = [
@@ -2408,6 +2502,8 @@ async def check_level_status(ctx):
     levels_to_unlock = [ info[level[0].item].stageId for level in i ]
     ctx.available_levels.extend(levels_to_unlock)
 
+    CheckGateConditions(ctx)
+
     remove = []
     for ix in i:
         ctx.handled.append(ix)
@@ -2514,6 +2610,8 @@ async def check_level_status(ctx):
                 ("temp" in ctx.level_state and ctx.level_state["temp"])):
             ctx.level_state = {}
             ctx.level_keys = []
+            ctx.music = None
+            print("Set music to None")
             ctx.key_restore_complete = False
             if ctx.auto_clear_missions:
                 new_messages = complete_completable_levels(ctx)
@@ -2876,23 +2974,39 @@ async def check_weapons(ctx, current_level):
                         messages.extend(weapon_locations)
                 current_weapon_id = None
 
-        if current_weapon_id is not None and ctx.weapon_sanity_hold_option in \
+        if current_weapon_id is not None:
+            check_ammo_boost = False
+            if ctx.weapon_sanity_hold_option in \
                 (WeaponsanityHold.option_unlocked, WeaponsanityHold.option_on):
 
-            if ctx.last_weapon != current_weapon_id:
-                logger.info("Now holding weapon: %s", weapon_dict_by_id[current_weapon_id].name)
-                ctx.last_weapon = current_weapon_id
+                if ctx.last_weapon != current_weapon_id:
+                    #logger.info("Now holding weapon: %s", weapon_dict_by_id[current_weapon_id].name)
+                    ctx.last_weapon = current_weapon_id
+                    check_ammo_boost = True
 
-            current_weapon = weapon_dict_by_id[current_weapon_id]
-            weapon_locations = [ l.locationId for l in weaponsanity_locations if l.other == current_weapon.name and \
-                                 l.locationId not in ctx.handled ]
-            messages.extend(weapon_locations)
+                current_weapon = weapon_dict_by_id[current_weapon_id]
+                weapon_locations = [ l.locationId for l in weaponsanity_locations if l.other == current_weapon.name and \
+                                     l.locationId not in ctx.handled ]
+                messages.extend(weapon_locations)
 
-            pass
+            if check_ammo_boost or ctx.last_weapon != current_weapon_id:
+                if current_weapon_id in ctx.ammo_boosts and ctx.ammo_boosts[current_weapon_id] != 0:
+                    value = ctx.ammo_boosts[current_weapon_id]
+                    ctx.ammo_boosts[current_weapon_id] = 0
+
+                    current_ammo_bytes = dolphin_memory_engine.read_bytes(GAME_ADDRESSES.CURRENT_AMMO_ADDRESS, 4)
+                    current_ammo = int.from_bytes(current_ammo_bytes, byteorder="big")
+                    if current_ammo < 10:
+                        new_ammo = 50 * value
+                    else:
+                        new_ammo = current_ammo * 2 * value
+
+                    new_bytes = new_ammo.to_bytes(4, byteorder='big')
+                    writeBytes(GAME_ADDRESSES.CURRENT_AMMO_ADDRESS, new_bytes)
+
 
 
     if len(messages) > 0:
-        # ctx.locations_checked = messages
         message = [{"cmd": 'LocationChecks', "locations": messages}]
         await ctx.send_msgs(message)
 
@@ -2918,6 +3032,8 @@ def get_last_index(ctx):
         current_potential = int.from_bytes(current_potential_bytes[1:3], byteorder="big")
         ctx.last_save_index = current_potential
 
+    #print("GLI", ctx.last_save_index)
+
     return ctx.last_save_index
 
 
@@ -2934,12 +3050,15 @@ def get_last_index_message(ctx):
     if ctx.last_save_index_message is None:
         ctx.last_save_index_message = ctx.last_save_index
 
+    print("GLIM", ctx.last_save_index_message)
+
     return ctx.last_save_index_message
 
 
 def set_last_index(ctx, new_value):
     decided_last_index_address = get_last_index_storage_location(ctx)
     if decided_last_index_address is None:
+        print("unable to set last index", ctx.level_buffer)
         return
 
     current_potential_bytes = list(dolphin_memory_engine.read_bytes(decided_last_index_address, 4))
@@ -2977,6 +3096,8 @@ def should_send_ring_link(ctx, death):
 async def handle_ring_link(ctx, level, death):
     ring_link = False
     old_tags = ctx.game_tags.copy()
+    if ctx.poison_traps > 0:
+        return
     if ctx.ring_link != Options.RingLink.option_off:
         if "RingLink" not in ctx.game_tags:
             ctx.game_tags.append("RingLink")
@@ -3042,14 +3163,6 @@ def handle_received_rings(ctx, data):
 async def check_junk(ctx, current_level, death):
     info = Items.GetItemLookupDict()
 
-    if ctx.junk_delay > 0:
-        if ctx.level_status not in [ LevelStatusOptions.Active, LevelStatusOptions.Paused,
-                                     LevelStatusOptions.InCutscene]:
-            ctx.junk_delay = 0
-        else:
-            ctx.junk_delay -= 1
-            return
-
     if ctx.level_status != LevelStatusOptions.Active:
         return
 
@@ -3058,19 +3171,65 @@ async def check_junk(ctx, current_level, death):
     filler = [(unlock,info[unlock[0].item]) for unlock in ctx.items_to_handle if unlock[0].item in info and \
         info[unlock[0].item].classification == ItemClassification.filler and unlock[1] > last_index ]
 
+    traps = [(unlock,info[unlock[0].item]) for unlock in ctx.items_to_handle if unlock[0].item in info and \
+        info[unlock[0].item].classification == ItemClassification.trap and unlock[1] > last_index ]
+
+    if ctx.junk_delay > 0 and len(traps) == 0:
+        if ctx.level_status not in [ LevelStatusOptions.Active, LevelStatusOptions.Paused,
+                                     LevelStatusOptions.InCutscene]:
+            ctx.junk_delay = 0
+        else:
+            ctx.junk_delay -= 1
+            return
+
     latest_index = None
 
+    maxable_items = []
     if len(filler) > 0:
-        latest_index = max([ u[0][1] for u in filler])
+        maxable_items.extend(filler)
+
+    if len(traps) > 0:
+        maxable_items.extend(traps)
+
+    if len(maxable_items) > 0:
+        latest_index = max([ u[0][1] for u in maxable_items])
 
     filler_nothing = [ f for f in filler if f[1].name == Items.Junk.NothingJunk]
     filler_gauge_dark = [ f for f in filler if f[1].type == "gauge" and f[1].alignmentId == MISSION_ALIGNMENT_DARK]
     filler_gauge_hero = [ f for f in filler if f[1].type == "gauge" and f[1].alignmentId == MISSION_ALIGNMENT_HERO]
     filler_rings = [ f for f in filler if f[1].type == "rings"]
+    filler_ammo_boosts = [ f for f in filler if f[1].type == "ammoboost"]
 
+    ammo_traps = [ a for a in traps if a[1].type == "ammotrap" ]
+    poison_traps = [a for a in traps if a[1].type == "poisontrap"]
+    checkpoint_traps = [a for a in traps if a[1].type == "checkpointtrap" ]
 
     newly_handled = []
     newly_handled.extend([f[0] for f in filler_nothing])
+
+    if len(ammo_traps) > 0:
+        print("add ammo traps")
+        ctx.ammo_traps += len(ammo_traps)
+        newly_handled.extend([u[0] for u in ammo_traps])
+
+    if len(poison_traps) > 0:
+        print("add poison traps")
+        ctx.poison_traps += len(poison_traps)
+        newly_handled.extend([u[0] for u in poison_traps])
+
+    if len(checkpoint_traps) > 0:
+        print("add check traps")
+        ctx.checkpoint_traps += len(checkpoint_traps)
+        newly_handled.extend([u[0] for u in checkpoint_traps])
+
+    if len(filler_ammo_boosts) > 0:
+        for boost in filler_ammo_boosts:
+            weapon_id = boost[1].value
+            if weapon_id not in ctx.ammo_boosts:
+                ctx.ammo_boosts[weapon_id] = 0
+            ctx.ammo_boosts[weapon_id] += 1
+
+        newly_handled.extend([u[0] for u in filler_ammo_boosts])
 
     RING_LIMIT = 999
     GAUGE_LIMIT = 30000
@@ -3110,7 +3269,6 @@ async def check_junk(ctx, current_level, death):
             #print("add hero gauge:", ctx.hero_gauge_buffer, gaugeJunk[1].value)
             ctx.hero_gauge_buffer += gaugeJunk[1].value
             newly_handled.append(gaugeJunk[0])
-
 
     if ctx.hero_max_meter > 0:
         ctx.hero_max_meter -= 10
@@ -3199,6 +3357,108 @@ async def check_junk(ctx, current_level, death):
             writeBytes(GAME_ADDRESSES.DARK_GAUGE_ADDRESS, new_bytes)
 
         ctx.dark_gauge_last = current_dark_gauge
+
+    if ctx.checkpoint_traps > 0:
+        current_check_choice = dolphin_memory_engine.read_bytes(GAME_ADDRESSES.CHECKPOINT_RESPAWN_ID, 4)
+        print("current check choice is", current_check_choice)
+        if current_check_choice not in [0, 1]:
+            checkpoint_data_for_stage = [c for c in Locations.CheckpointLocations if c.stageId == current_level]
+            print("checks", checkpoint_data_for_stage)
+            active = None
+            if len(checkpoint_data_for_stage) > 0:
+                print("available level checks")
+                total_count = checkpoint_data_for_stage[0].total_count
+
+                check_zero_addr = GAME_ADDRESSES.CHECKPOINT_FLAGS[0]
+                checkpoint_status_bytes = dolphin_memory_engine.read_bytes(check_zero_addr, 1)
+                checkpoint_zero_status = int.from_bytes(checkpoint_status_bytes, byteorder='big') == 1
+
+                # Checkpoint trap will only trigger on a check that isn't the first/second
+                # And also requires the first to be active for detecting restart
+
+                if checkpoint_zero_status:
+                    for i in range(1, total_count):
+                        print("count=", i)
+                        addr = GAME_ADDRESSES.CHECKPOINT_FLAGS[i]
+                        checkpoint_status_bytes = dolphin_memory_engine.read_bytes(addr, 1)
+                        checkpoint_status = int.from_bytes(checkpoint_status_bytes, byteorder='big') == 1
+                        print("check status=", checkpoint_status)
+                        if checkpoint_status:
+                            print("Yes check status", i)
+                            mission_clear_locations, mission_locations, end_location, enemysanity_locations, \
+                                checkpointsanity_locations, charactersanity_locations, \
+                                token_locations, keysanity_locations, weaponsanity_locations, boss_locations, \
+                                warp_locations, object_locations = Locations.GetAllLocationInfo()
+
+                            # Check the check has been completed beforeadding to active
+                            if ctx.checkpoint_sanity:
+                                locations = [c.locationId for c in checkpointsanity_locations if
+                                             c.stageId == current_level and
+                                             c.count == (i+1)]
+
+                                checked_locations = [ c for c in ctx.checked_locations if c in locations ]
+                                print("locs=", locations, checked_locations, ctx.checked_locations)
+
+                                if len(checked_locations) > 0:
+                                    print("active enabled")
+                                    active = addr
+                            else:
+                                print("force active enabled")
+                                active = addr
+
+            if active is not None:
+                print("Activate checkpoint trap")
+                ctx.checkpoint_trap_active = True
+                new_respawn_id = 0
+                new_bytes = new_respawn_id.to_bytes(4, byteorder='big')
+                writeBytes(GAME_ADDRESSES.CHECKPOINT_RESPAWN_ID, new_bytes)
+                writeBytes(active, new_bytes)
+                ctx.checkpoint_traps -= 1
+
+            pass
+    if ctx.poison_traps > 0:
+        print("Poison Traps ==", ctx.poison_traps)
+        current_rings_bytes = dolphin_memory_engine.read_bytes(GAME_ADDRESSES.RINGS_ADDRESS, 4)
+        current_rings = int.from_bytes(current_rings_bytes, byteorder="big")
+
+        if current_rings > 0:
+            print("Poisons, rings > 0")
+            new_rings = current_rings - math.floor(pow(current_rings, 0.3))
+            new_bytes = new_rings.to_bytes(4, byteorder='big')
+            writeBytes(GAME_ADDRESSES.RINGS_ADDRESS, new_bytes)
+            r = random.random()
+            if r < (1 / current_rings):
+                print("Poison reduce", r)
+                ctx.poison_traps -= 1
+        elif current_rings == 1:
+            print("Poisons, rings == 1")
+            new_rings = current_rings - 1
+            new_bytes = new_rings.to_bytes(4, byteorder='big')
+            writeBytes(GAME_ADDRESSES.RINGS_ADDRESS, new_bytes)
+            ctx.poison_traps -= 1
+        else:
+            print("Not doing anything ith poison trap")
+
+    if ctx.ammo_traps > 0:
+        print("Ammo Traps ==", ctx.ammo_traps)
+        current_ammo_bytes = dolphin_memory_engine.read_bytes(GAME_ADDRESSES.CURRENT_AMMO_ADDRESS, 4)
+        current_ammo = int.from_bytes(current_ammo_bytes, byteorder="big")
+
+        # TODO: Consider numbers based on the weapon held
+
+        if current_ammo % 10 > 1:
+            print("Activate ammo trap")
+            if current_ammo > 50:
+                new_ammo = 41
+            elif current_ammo > 30:
+                new_ammo = 21
+            else:
+                new_ammo = 1
+            new_bytes = new_ammo.to_bytes(4, byteorder='big')
+            writeBytes(GAME_ADDRESSES.CURRENT_AMMO_ADDRESS, new_bytes)
+            ctx.ammo_traps -= 1
+        else:
+            print("Not doing anything ith ammo trap")
 
     remove = []
     for r in newly_handled:
@@ -3372,6 +3632,8 @@ async def clearout_individual_enemies_by_percentage(ctx, stageId):
 
 async def handle_objects(ctx, current_level):
 
+    time = datetime.now()
+
     if ctx.level_state is None or len(ctx.level_state.keys()) == 0:
         return
 
@@ -3399,6 +3661,7 @@ async def handle_objects(ctx, current_level):
 
     start_address = GAME_ADDRESSES.LEVEL_SET_DATA
 
+    key_sanity = ctx.key_sanity
     object_unlocks = ctx.object_unlocks
     vehicle_sanity = ctx.vehicle_logic
     shadow_box_sanity = ctx.shadow_boxes
@@ -3475,8 +3738,12 @@ async def handle_objects(ctx, current_level):
         if expected_type is not None and Objects.GetTypeId(object.object_type) != loaded_object_type:
             if loaded_object_type == 0x00:
                 break
-            print("Failed to read type correctly", Objects.GetTypeId(object.object_type), loaded_object_type,
-                  expected_type, object.index, object.name)
+            print("Failed to read type correctly",
+                  "Coded Type", Objects.GetTypeId(object.object_type),
+                  "Loaded Type", loaded_object_type,
+                  "Coded Type", expected_type,
+                  "Index", object.index,
+                  "Name", object.name)
 
         # TODO: Only load the extra bytes when needed
         loaded_extra_pointer_bytes = dolphin_memory_engine.read_bytes(extra_data_pointer, 4)
@@ -3783,9 +4050,12 @@ async def handle_objects(ctx, current_level):
             object_values_complete.append(0x8)
 
         # Base style objects 0
-        if (shadow_box_sanity and object.object_type == Objects.ObjectType.SHADOW_BOX) or \
+        if (key_sanity and object.object_type == Objects.ObjectType.KEY) or \
+            (shadow_box_sanity and object.object_type == Objects.ObjectType.SHADOW_BOX) or \
             (core_sanity and object.object_type == Objects.ObjectType.ENERGY_CORE or \
-            object.object_type == Objects.ObjectType.ENERGY_CORE_IN_WOOD_BOX):
+            object.object_type == Objects.ObjectType.ENERGY_CORE_IN_WOOD_BOX) or \
+            (True and ( object.object_type in Objects.GetItemBoxTypes()
+            )):
 
             object_values_complete = [0x0]
 
@@ -3873,7 +4143,6 @@ async def handle_objects(ctx, current_level):
                     messages.extend(related_locations)
 
     if len(messages) > 0:
-        # ctx.locations_checked = messages
         message = [{"cmd": 'LocationChecks', "locations": messages}]
         await ctx.send_msgs(message)
 
@@ -4035,7 +4304,7 @@ async def update_level_behaviour(ctx, current_level, death):
 
     #ShowSETChanges(current_level)
 
-    DisplayMessages(ctx)
+    #DisplayMessages(ctx)
 
     # Add handle for first load of level, when state is blank
 
@@ -4081,6 +4350,9 @@ async def update_level_behaviour(ctx, current_level, death):
         ctx.level_state["key_index"] = 0
         ctx.level_state["characters_set"] = False
         ctx.level_state["spawn_messages"] = []
+        ctx.level_state["key_check_index"] = -1
+        ctx.level_state["music_set"] = True
+        ctx.checkpoint_trap_active = False
 
         ctx.checkpoint_snapshots = []
 
@@ -4645,16 +4917,27 @@ async def update_level_behaviour(ctx, current_level, death):
     checkpoint_data_for_stage = [c for c in Locations.CheckpointLocations if c.stageId == current_level]
     if len(checkpoint_data_for_stage) > 0:
         total_count = checkpoint_data_for_stage[0].total_count
-        max_checkpoint_bytes = dolphin_memory_engine.read_bytes(GAME_ADDRESSES.CHECKPOINT_MAX_FLAG_ADDRESS, 1)
+        max_checkpoint_bytes = dolphin_memory_engine.read_bytes(GAME_ADDRESSES.CHECKPOINT_RESPAWN_ID, 1)
         max_checkpoint = int.from_bytes(max_checkpoint_bytes, byteorder='big')
 
         if (max_checkpoint == 0 and len(ctx.level_state.keys()) > 0 and
                 len(ctx.checkpoint_snapshots) > 1):
-            if ctx.debug_logging:
-                logger.error("Detected a stage restart (CP)")
-            ctx.restart = True
-            ctx.level_state = {}
-            ctx.checkpoint_snapshots = []
+            if not ctx.checkpoint_trap_active:
+                if ctx.debug_logging:
+                    logger.error("Detected a stage restart (CP)")
+                ctx.restart = True
+                ctx.level_state = {}
+                ctx.checkpoint_snapshots = []
+            else:
+                first_addr = GAME_ADDRESSES.CHECKPOINT_FLAGS[0]
+                checkpoint_status_bytes = dolphin_memory_engine.read_bytes(first_addr, 1)
+                checkpoint_status = int.from_bytes(checkpoint_status_bytes, byteorder='big') == 1
+                if not checkpoint_status:
+                    if ctx.debug_logging:
+                        logger.error("Detected a stage restart (CP) (with checktrap)")
+                    ctx.restart = True
+                    ctx.level_state = {}
+                    ctx.checkpoint_snapshots = []
 
         active = []
         new = []
@@ -4665,25 +4948,24 @@ async def update_level_behaviour(ctx, current_level, death):
             if checkpoint_status:
                 active.append(i + 1)
         max_active = max(active) if len(active) > 0 else 0
-        if max_active != max_checkpoint:
-            if ctx.info_logging:
-                logger.error("Checkpoint data not valid %d %d", max_active, max_checkpoint)
-        else:
-            active_snapshots = [x[0] for x in ctx.checkpoint_snapshots]
-            for a in active:
-                if a not in active_snapshots:
-                    new.append(a)
-                    ctx.checkpoint_snapshots.append((a, deepcopy(ctx.level_state)))
-                    if ctx.checkpoint_sanity:
-                        locations = [c.locationId for c in checkpointsanity_locations if c.stageId == current_level and
-                                     c.count == a]
-                        messages.extend(locations)
+        #if max_active != max_checkpoint:
+        #    if ctx.info_logging:
+        #        logger.error("Checkpoint data not valid %d %d", max_active, max_checkpoint)
+        #else:
+        active_snapshots = [x[0] for x in ctx.checkpoint_snapshots]
+        for a in active:
+            if a not in active_snapshots:
+                new.append(a)
+                ctx.checkpoint_snapshots.append((a, deepcopy(ctx.level_state)))
+                if ctx.checkpoint_sanity:
+                    locations = [c.locationId for c in checkpointsanity_locations if c.stageId == current_level and
+                                 c.count == a]
+                    messages.extend(locations)
 
     if ctx.key_sanity and current_level in KEY_IDENTIFIER_BY_STAGE:
         key_addresses = GetKeysanityAddresses()
         if "key_index" in ctx.level_state:
             state_key_index = ctx.level_state["key_index"]
-            #logger.error("State Key Index: %d", state_key_index)
             if state_key_index < len(key_addresses):
                 current_key_bytes = dolphin_memory_engine.read_bytes(key_addresses[state_key_index], 4)
                 current_key_data = int.from_bytes(current_key_bytes, byteorder='big')
@@ -4694,36 +4976,82 @@ async def update_level_behaviour(ctx, current_level, death):
                         empty_bytes = 0xFFFFFFFF.to_bytes(4, byteorder='big')
                         writeBytes(key_addresses[state_key_index], empty_bytes)
                     elif current_key_data in key_options:
-                        ctx.level_state["key_index"] = state_key_index + 1
-                        ctx.level_keys.append(current_key_data)
-                        key_index = key_options.index(current_key_data)
-                        key_locations = [k for k in keysanity_locations if k.stageId == current_level and k.count == key_index]
-                        if len(key_locations) == 0:
-                            if ctx.error_logging:
-                                logger.error("Unable to find location associated %d %d", key_index, current_level)
+                        # What to do when the player gets a new key
+                        logger.error("Take key away when arch key item only")
+                        if ctx.key_collection_method == Options.KeyCollectionMethod.option_arch:
+                            empty_bytes = 0xFFFFFFFF.to_bytes(4, byteorder='big')
+                            writeBytes(key_addresses[state_key_index], empty_bytes)
                         else:
-                            messages.extend([k.locationId for k in key_locations])
+                            ctx.level_state["key_index"] = state_key_index + 1
+                            ctx.level_keys.append(current_key_data)
+
+                        #key_index = key_options.index(current_key_data)
+                        #key_locations = [k for k in keysanity_locations if k.stageId == current_level and k.count == key_index]
+                        #if len(key_locations) == 0:
+                        #    if ctx.error_logging:
+                        #        logger.error("Unable to find location associated %d %d", key_index, current_level)
+                        #else:
+                        #    messages.extend([k.locationId for k in key_locations])
+                    elif current_key_data == 0:
+                        # Fake key, ignore
+                        logger.error("Detected fake key - increment")
+                        ctx.level_state["key_index"] = state_key_index + 1
                     else:
                         if ctx.error_logging:
                             logger.error("Unknown key object: %d %s %s", current_level, str(key_options), str(current_key_data))
                         key_locations = [k for k in keysanity_locations if k.stageId == current_level and k.count == state_key_index]
                         messages.extend([k.locationId for k in key_locations])
                 elif not ctx.key_restore_complete:
-                    key_options_unknown = KEY_IDENTIFIER_BY_STAGE[current_level]
-                    keys_to_confirm = [ k for k in key_options_unknown if k not in ctx.level_keys]
-                    key_ind = [ key_options_unknown.index(k) for k in keys_to_confirm ]
-                    key_locations = [k.locationId for k in keysanity_locations if k.stageId == current_level and k.count in key_ind]
-                    checked_keys = [ c for c in ctx.checked_locations if c in key_locations]
-                    if len(checked_keys) > 0:
-                        first_key_location_id = checked_keys.pop()
-                        key_data = [k for k in keysanity_locations if k.locationId == first_key_location_id][0]
-                        key_value_to_write = key_options_unknown[key_data.count]
-                        restored_key_bytes = key_value_to_write.to_bytes(4, byteorder='big')
-
-                        writeBytes(key_addresses[state_key_index], restored_key_bytes)
+                    door_requirement = ctx.keys_required_for_doors
+                    if state_key_index < (5 - door_requirement):
+                        fake_key_value = 0
+                        fake_key_bytes = fake_key_value.to_bytes(4, byteorder='big')
+                        ctx.level_state["key_index"] = state_key_index + 1
+                        writeBytes(key_addresses[state_key_index], fake_key_bytes)
+                        logger.error("Fake key added")
                     else:
-                        ctx.key_restore_complete = True
+                        key_options_unknown = KEY_IDENTIFIER_BY_STAGE[current_level]
+                        keys_to_confirm = [ k for k in key_options_unknown if k not in ctx.level_keys]
+                        key_ind = [ key_options_unknown.index(k) for k in keys_to_confirm ]
+                        key_locations = [k.locationId for k in keysanity_locations if k.stageId == current_level and k.count in key_ind]
+                        checked_keys = [ c for c in ctx.checked_locations if c in key_locations]
+                        if len(checked_keys) > 0:
+                            first_key_location_id = checked_keys.pop()
+                            key_data = [k for k in keysanity_locations if k.locationId == first_key_location_id][0]
+                            key_value_to_write = key_options_unknown[key_data.count]
+                            restored_key_bytes = key_value_to_write.to_bytes(4, byteorder='big')
+                            logger.error("Key index restored")
+                            writeBytes(key_addresses[state_key_index], restored_key_bytes)
+                        else:
+                            logger.error("Key restore complete")
+                            info = Items.GetItemLookupDict()
 
+                            handled_key_items = [k for k in ctx.handled if info[k[0].item].type == "key"]
+                            for item in handled_key_items:
+                                ctx.handled.remove(item)
+
+                            ctx.key_restore_complete = True
+                else:
+                    if ctx.level_state["key_check_index"] != ctx.last_rcvd_index:
+                        info = Items.GetItemLookupDict()
+
+                        key_items = [unlock for unlock in ctx.items_to_handle if unlock[0].item in info and \
+                                              info[unlock[0].item].stageId == current_level and
+                                              info[unlock[0].item].type == "key" and unlock not in ctx.handled]
+
+                        for item in key_items:
+                            empty_bytes = 0x00.to_bytes(4, byteorder='big')
+                            writeBytes(key_addresses[state_key_index], empty_bytes)
+                            ctx.handled.append(item)
+                            state_key_index += 1
+                            logger.error("Give arch key")
+                            if state_key_index > 4:
+                                break
+
+                            logger.error("increment key index")
+                            ctx.level_state["key_index"] = state_key_index
+
+                        ctx.level_state["key_check_index"] = ctx.last_rcvd_index
         else:
             logger.error("Key index not present")
 
@@ -4751,7 +5079,6 @@ async def update_level_behaviour(ctx, current_level, death):
 
 
     if len(messages) > 0:
-        #ctx.locations_checked = messages
         message = [{"cmd": 'LocationChecks', "locations": messages}]
         await ctx.send_msgs(message)
 
@@ -4791,12 +5118,125 @@ async def check_death(ctx: ShTHContext):
 
     return False
 
+def CheckGateConditions(ctx: ShTHContext):
+    required_items = ctx.gate_requirements
+    info = Items.GetItemLookupDict()
+    current_items = [ info[i.item].name for i in ctx.items_received ]
+
+    max_gate = 0
+    for item in required_items.items():
+        gate_no = item[0]
+        gate_reqs = item[1]
+        enough = True
+        for gate_req in gate_reqs.items():
+            item_name = gate_req[0]
+            count = gate_req[1]
+            if current_items.count(item_name) < count:
+                enough = False
+                break
+
+        if enough:
+            max_gate = gate_no
+
+    for gate in ctx.gates.items():
+        if int(gate[0]) > int(max_gate):
+            continue
+
+        opening = False
+
+        stages = gate[1]
+        for stage in stages:
+            if stage not in ctx.available_levels:
+                if not opening:
+                    logger.info(f"Gate {gate[0]} is open!")
+                    logger.info("")
+                    opening = True
+                ctx.available_levels.append(stage)
+
 def resetGameState(ctx):
     if ctx.initialised:
         ctx.successful_shuffle = False
         ctx.initialised = False
         ctx.select_initialised = False
 
+music_files = [
+"sng_Battle1.adx",
+"sng_Battle2.adx",
+"sng_E1001.adx",
+"sng_E4101.adx",
+"sng_E4201.adx",
+"sng_E5024.adx",
+"sng_E5204.adx",
+"sng_E8003.adx",
+"sng_E8201.adx",
+"sng_stg0100.adx",
+"sng_stg0200.adx",
+"sng_stg0201.adx",
+"sng_stg0202.adx",
+"sng_stg0210.adx",
+"sng_stg0300.adx",
+"sng_stg0301.adx",
+"sng_stg0302.adx",
+"sng_stg0310.adx",
+"sng_stg0400.adx",
+"sng_stg0401.adx",
+"sng_stg0402.adx",
+"sng_stg0403.adx",
+"sng_stg0404.adx",
+"sng_stg0410.adx",
+"sng_stg0500.adx",
+"sng_stg0501.adx",
+"sng_stg0502.adx",
+"sng_stg0503.adx",
+"sng_stg0504.adx",
+"sng_stg0510.adx",
+"sng_stg0600.adx",
+"sng_stg0601.adx",
+"sng_stg0602.adx",
+"sng_stg0603.adx",
+"sng_stg0604.adx",
+"sng_stg0610.adx",
+"sng_stg0611.adx",
+"sng_stg0612.adx",
+"sng_stg0700.adx",
+"sng_stg0710.adx",
+"sng_stg0710b.adx",
+"sng_stg0800.adx",
+"sng_sys01.adx",
+"sng_sys02.adx",
+"sng_sys03.adx",
+"sng_sys04.adx",
+"sng_sys05.adx",
+"sng_vox01.adx",
+"sng_vox02.adx",
+"sng_vox03.adx",
+"sng_vox04.adx",
+"sng_vox05.adx",
+"sng_vox06.adx"
+]
+
+def GetStageSong():
+    possible_files = [ p for p in music_files if len(p) == 15]
+    return random.choice(possible_files)
+
+async def set_music(ctx, level):
+    if level is None:
+        return
+
+    set_state = False
+    if ("music_set" not in ctx.level_state or not ctx.level_state["music_set"]) and ctx.music is None:
+        set_state = True
+
+    if "music_set" in ctx.level_state:
+        ctx.music = None
+
+    if set_state:
+        chosen_value = GetStageSong()
+        new_bytes = bytes(chosen_value, "utf-8")
+        writeBytes(GAME_ADDRESSES.STAGE_MUSIC_NAME, new_bytes)
+        ctx.music = chosen_value
+
+    pass
 
 async def check_charactersanity(ctx, level):
     if level is None:
@@ -4842,6 +5282,7 @@ async def check_charactersanity(ctx, level):
             )
 
     if check:
+        #print("Check character state")
         for character in ctx.characters_met:
             relevantCharData = [c for c in GAME_ADDRESSES.CharacterAddresses if c.name == character]
             if len(relevantCharData) != 0:
@@ -4862,10 +5303,8 @@ async def check_charactersanity(ctx, level):
     if len(messages) > 0 and set_state:
         #print("Send messages")
         unsent_messages = [message for message in messages if message not in ctx.checked_locations]
-        # ctx.locations_checked = messages
         message = [{"cmd": 'LocationChecks', "locations": unsent_messages}]
         await ctx.send_msgs(message)
-        # ctx.locations_checked.extend(messages)
 
 
 async def dolphin_sync_task(ctx: ShTHContext):
@@ -4909,6 +5348,7 @@ async def dolphin_sync_task(ctx: ShTHContext):
                 level = await check_level_status(ctx)
                 check_cheats()
                 await check_charactersanity(ctx, level)
+                await set_music(ctx, level)
                 if level is not None and ctx.level_status is not None:
                     await update_level_behaviour(ctx,level, death)
                     await handle_ring_link(ctx, level, death)
@@ -4933,9 +5373,9 @@ async def dolphin_sync_task(ctx: ShTHContext):
                         await asyncio.sleep(5)
                     else:
                         logger.info(CONNECTION_CONNECTED_STATUS)
+                        logger.info(f"Shadow The Hedgehog Client connected: Version:{'.'.join([ str(s) for s in ShadowUtils.VERSION])}")
                         ctx.dolphin_status = CONNECTION_CONNECTED_STATUS
                         ctx.game_id = game_id_bytes
-                        #ctx.locations_checked = set()
                 else:
                     logger.info("Connection to Dolphin failed, attempting again in 5 seconds...")
                     ctx.dolphin_status = CONNECTION_LOST_STATUS

@@ -1,4 +1,3 @@
-from __future__ import annotations
 import os
 import sys
 import asyncio
@@ -6,6 +5,7 @@ import threading
 import importlib.util
 import Utils
 import pathlib
+from typing import Dict, NamedTuple, Optional
 
 from NetUtils import ClientStatus
 from CommonClient import gui_enabled, logger, get_base_parser, ClientCommandProcessor, \
@@ -28,7 +28,7 @@ class HadesClientCommandProcessor(ClientCommandProcessor):
     def _cmd_resync(self):
         """Manually trigger a resync."""
         #This is a really stupid solution, but it works so idk
-        asyncio.create_task(self.ctx.check_connection_and_send_items_and_request_starting_info(""))
+        Utils.async_start(self.ctx.check_connection_and_send_items_and_request_starting_info(""))
 
 
 class HadesContext(CommonContext):
@@ -36,27 +36,29 @@ class HadesContext(CommonContext):
     command_processor = HadesClientCommandProcessor
     game = "Hades"
     items_handling = 0b111  # full remote
-    cache_items_received_names = []
-    hades_slot_data = None
-    players_id_to_name = None
-    creating_location_to_item_mapping = False
-    missing_locations_cache = []
-    checked_locations_cache = []
-    location_name_to_id = None
-    location_to_item_map_created = False
-    deathlink_pending = False
-    deathlink_enabled = False
-    is_connected = False
-    is_receiving_items_from_connect_package = False
-    polycosmos_version = "0.13"
-    compact_setting_string = ""
+    polycosmos_version = "0.14"
+    
+    is_connected : bool
+    deathlink_pending : bool
+    deathlink_enabled : bool
+    creating_location_to_item_mapping : bool
+    is_receiving_items_from_connect_package : bool    
+    
+    location_name_to_id : dict
 
-    def __init__(self, server_address, password):
+    def __init__(self, server_address: Optional[str] = None, password: Optional[str] = None):
         super(HadesContext, self).__init__(server_address, password)
-        self.send_index: int = 0
-        self.syncing = False
-        self.awaiting_bridge = False
-        # Load here any data you might need the client to know about
+        self.hades_slot_data = None
+        
+        self.is_connected = False
+        self.deathlink_pending = False
+        self.deathlink_enabled = False
+        self.creating_location_to_item_mapping = False
+        self.is_receiving_items_from_connect_package = False
+
+        self.missing_locations_cache = []
+        self.checked_locations_cache = []
+
 
         # Add hook to comunicate with StyxScribe
         subsume.AddHook(self.send_location_check_to_server, styx_scribe_recieve_prefix + "Locations updated:",
@@ -69,7 +71,7 @@ class HadesContext(CommonContext):
         subsume.AddHook(self.send_location_hint_to_server, styx_scribe_recieve_prefix \
             + "Locations hinted:", "HadesClient")
 
-    async def server_auth(self, password_requested: bool = False):
+    async def server_auth(self, password_requested: bool = False) -> None:
         # This is called to autentificate with the server.
         if password_requested and not self.password:
             await super(HadesContext, self).server_auth(password_requested)
@@ -77,7 +79,7 @@ class HadesContext(CommonContext):
         self.tags = set()
         await self.send_connect()
 
-    async def connection_closed(self):
+    async def connection_closed(self) -> None:
         # This is called when the connection is closed (duh!)
         # This will send the message always, but only process by Styx scribe if actually in game
         subsume.Send(styx_scribe_send_prefix + "Connection Error")
@@ -102,22 +104,21 @@ class HadesContext(CommonContext):
 
     # ----------------- Package Management section starts --------------------------------
 
-    def on_package(self, cmd: str, args: dict):
+    def on_package(self, cmd: str, args: dict) -> None:
         # This is what is done when a package arrives.
         if cmd == "Connected":
             # What should be done in a connection package
-            self.cache_items_received_names.clear()
-            self.missing_locations_cache = args["missing_locations"]
-            self.checked_locations_cache = args["checked_locations"]
             self.hades_slot_data = args["slot_data"]
             if not (self.hades_slot_data["version_check"] == self.polycosmos_version):
                 stringError = "WORLD GENERATED WITH POLYCOSMOS " + self.hades_slot_data["version_check"] \
                             + " AND CLIENT USING POLYCOSMOS " + self.polycosmos_version + "\n"
-                stringError += "THIS ARE NOT COMPATIBLE"
+                stringError += "THESE ARE NOT COMPATIBLE"
                 raise Exception(stringError)
+            
             self.location_name_to_id = self.get_location_name_to_id()
+
             if "death_link" in self.hades_slot_data and self.hades_slot_data["death_link"]:
-                asyncio.create_task(self.update_death_link(True))
+                Utils.async_start(self.update_death_link(True))
                 self.deathlink_enabled = True
             self.is_connected = True
             self.is_receiving_items_from_connect_package = True 
@@ -127,20 +128,12 @@ class HadesContext(CommonContext):
             self.seed_name = args["seed_name"]
         
         if cmd == "RoomUpdate":
-            if "checked_lodations" in args:
-                collect_locations_cache = ""
-                for location in args["checked_locations"]:
-                    collect_locations_cache += self.location_names.lookup_in_slot(location) + "-"
-                if len(collect_locations_cache) > 0:
-                    collect_locations_cache = collect_locations_cache[:-1]
-                    subsume.Send(styx_scribe_send_prefix + "Locations collected:" + collect_locations_cache)
+             if "checked_lodations" in args and len(args["checked_locations"]) > 0:
+                subsume.Send(styx_scribe_send_prefix + "Locations collected:" + "-".join(
+                    (location) for location in args["checked_locations"]
+                ))
 
         if cmd == "ReceivedItems":
-            # What should be done when an Item is recieved.
-            # NOTE THIS GETS ALL ITEMS THAT HAVE BEEN RECIEVED! WE USE THIS FOR RESYNCS!
-            for item in args["items"]:
-                self.cache_items_received_names += [self.item_names.lookup_in_slot(item.item)]
-
             # We ignore sending the package to hades if just connected,
             # since the game is not ready for it (and will request it itself later)
             if self.is_receiving_items_from_connect_package:
@@ -150,46 +143,30 @@ class HadesContext(CommonContext):
         if cmd == "LocationInfo":
             if self.creating_location_to_item_mapping:
                 self.creating_location_to_item_mapping = False
-                asyncio.create_task(self.create_location_to_item_dictionary(args["locations"]))
+                self.create_location_to_item_dictionary(args["locations"])
                 return
             super().on_package(cmd, args)
-            
+        
         if cmd == "Bounced":
             if "tags" in args:
                 if "DeathLink" in args["tags"]:
                     self.on_deathlink(args["data"])
 
-    def send_items(self):
-        payload_message = self.parse_array_to_string(self.cache_items_received_names)
+    def send_items(self) -> None:
+        payload_message = ",".join(self.item_names.lookup_in_game(item.item) for item in self.items_received)
         subsume.Send(styx_scribe_send_prefix + "Items Updated:" + payload_message)
 
-    def parse_array_to_string(self, array_of_items):
-        message = ""
-        for itemname in array_of_items:
-            message += itemname
-            message += ","
-        return message
+    async def send_location_check_to_server(self, message : str) -> None:
+        await self.check_locations([self.location_name_to_id[message]])
 
-    async def send_location_check_to_server(self, message):
-        sendingLocationsId = []
-        sendingLocationsName = message
-        payload_message = []
-        sendingLocationsId += [self.location_name_to_id[sendingLocationsName]]
-        payload_message += [{"cmd": "LocationChecks", "locations": sendingLocationsId}]
-        asyncio.create_task(self.send_msgs(payload_message))
-
-    async def check_connection_and_send_items_and_request_starting_info(self, message):
+    async def check_connection_and_send_items_and_request_starting_info(self, message : str) -> None:
         if self.check_for_connection():
             self.is_receiving_items_from_connect_package = False
-            await self.send_items_and_request_starting_info(message)
+            # send items that were already cached in connect
+            self.send_items()
+            self.request_location_to_item_dictionary()
 
-    async def send_items_and_request_starting_info(self, message):
-        self.store_settings_data()
-        # send items that were already cached in connect
-        self.send_items()
-        self.request_location_to_item_dictionary()
-
-    def store_settings_data(self):
+    def store_settings_data(self) -> None:
         hades_settings_string = ""
         #codify in the string all heat settings
         hades_settings_string += str(self.hades_slot_data["heat_system"]) + "-"
@@ -238,26 +215,31 @@ class HadesContext(CommonContext):
         hades_settings_string += str(self.hades_slot_data["keepsakes_needed"]) + "-"
         hades_settings_string += str(self.hades_slot_data["fates_needed"]) + "-"
             
-        #Store the compact setting string
-        self.compact_setting_string = hades_settings_string
+        return hades_settings_string
 
-    def request_location_to_item_dictionary(self):
+    def request_location_to_item_dictionary(self) -> None:
         self.creating_location_to_item_mapping = True
-        request = self.missing_locations_cache + self.checked_locations_cache
-        asyncio.create_task(self.send_msgs([{"cmd": "LocationScouts", "locations": request, "create_as_hint": 0}]))
+        request = self.server_locations
+        Utils.async_start(self.send_msgs([{"cmd": "LocationScouts", "locations": request, "create_as_hint": 0}]))
 
-    async def create_location_to_item_dictionary(self, itemsdict):
+    def create_location_to_item_dictionary(self, itemsdict : Optional[dict]) -> None:
         locationItemMapping = ""
         for networkitem in itemsdict:
-            locationItemMapping += self.clear_invalid_char(self.location_names.lookup_in_slot(networkitem.location)) \
-                + "--" + self.clear_invalid_char(self.player_names[networkitem.player]) + "--" \
-                + self.clear_invalid_char(self.item_names.lookup_in_slot(networkitem.item, networkitem.player)) + "||"
+
+            location = self.parse_to_len_encode(self.location_names.lookup_in_slot(networkitem.location))
+            player_name = self.parse_to_len_encode(self.player_names[networkitem.player])
+            item_name = self.parse_to_len_encode(self.item_names.lookup_in_slot(networkitem.item, networkitem.player))
+                        
+            locationItemMapping += self.parse_to_len_encode(location+player_name+item_name)
             
         subsume.Send(styx_scribe_send_prefix + "Location to Item Map:" + locationItemMapping)
-        self.creating_location_to_item_dictionary = False
-        subsume.Send(styx_scribe_send_prefix + "Data finished" + self.compact_setting_string)
+        subsume.Send(styx_scribe_send_prefix + "Data finished" + self.store_settings_data())
     
-    def clear_invalid_char(self, inputstring: str):
+    def parse_to_len_encode(self, inputstring: str) -> str:
+        output = self.clear_invalid_char(inputstring)
+        return str(len(output)) + "|" + output
+
+    def clear_invalid_char(self, inputstring: str) -> str:
         newstr = inputstring.replace("{", "")
         newstr = newstr.replace("}", "")
         return newstr
@@ -266,7 +248,7 @@ class HadesContext(CommonContext):
 
     # ----------------- Hints from game section starts --------------------------------
 
-    async def send_location_hint_to_server(self, message):
+    async def send_location_hint_to_server(self, message : str) -> None:
         if self.hades_slot_data["store_give_hints"] == 0:
             return
         split_array = message.split("-")
@@ -274,30 +256,30 @@ class HadesContext(CommonContext):
         for location in split_array:
             if len(location) > 0:
                 request.append(self.location_name_to_id[location])
-        asyncio.create_task(self.send_msgs([{"cmd": "LocationScouts", "locations": request, "create_as_hint": 2}]))
+        Utils.async_start(self.send_msgs([{"cmd": "LocationScouts", "locations": request, "create_as_hint": 2}]))
 
     # ----------------- Hints from game section ends ------------------------
 
     # -------------deathlink section started --------------------------------
-    def on_deathlink(self, data: dict):
+    def on_deathlink(self, data: dict) -> None:
         # What should be done when a deathlink message is recieved
         if self.deathlink_pending:
             return
         self.deathlink_pending = True
         subsume.Send(styx_scribe_send_prefix + "Deathlink received")
         super().on_deathlink(data)
-        asyncio.create_task(self.wait_and_lower_deathlink_flag())
+        Utils.async_start(self.wait_and_lower_deathlink_flag())
 
-    def send_death(self, death_text: str = ""):
+    def send_death(self, death_text: str = "") -> None:
         # What should be done to send a death link
         # Avoid sending death if we died from a deathlink
         if self.deathlink_pending or not self.deathlink_enabled:
             return
         self.deathlink_pending = True
-        asyncio.create_task(super().send_death(death_text))
-        asyncio.create_task(self.wait_and_lower_deathlink_flag())
+        Utils.async_start(super().send_death(death_text))
+        Utils.async_start(self.wait_and_lower_deathlink_flag())
 
-    async def wait_and_lower_deathlink_flag(self):
+    async def wait_and_lower_deathlink_flag(self) -> None:
         await asyncio.sleep(3)
         self.deathlink_pending = False
 
@@ -306,7 +288,7 @@ class HadesContext(CommonContext):
     # -------------game completion section starts
     # this is to detect game completion. Note that on futher updates this will need --------------------------------
     # to be changed to adapt to new game completion conditions
-    def on_run_completion(self, message):
+    def on_run_completion(self, message : str) -> None:
         #parse message
         counters = message.split("-") 
         #counters[0] is number of clears, counters[1] is number of different weapons with runs clears.
@@ -316,19 +298,19 @@ class HadesContext(CommonContext):
         hasEnoughKeepsakes = self.hades_slot_data["keepsakes_needed"] <= int(counters[2])
         hasEnoughFates = self.hades_slot_data["fates_needed"] <= int(counters[3])
         if hasEnoughRuns and hasEnoughWeapons and hasEnoughKeepsakes and hasEnoughFates:
-            asyncio.create_task(self.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}]))
+            Utils.async_start(self.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}]))
             self.finished_game = True
 
     # -------------game completion section ended --------------------------------
 
     # ------------ game connection QoL handling
-    def check_for_connection(self):
+    def check_for_connection(self) -> bool:
         if not self.is_connected:
             subsume.Send(styx_scribe_send_prefix + "Connection Error")
             return False
         return True
 
-    # ------------ Helper method for 0.5.0
+    # ------------ Helper method to invert lookup table. Can erase if AP has its own internal one.
 
     def get_location_name_to_id(self):
         table = {}
@@ -336,9 +318,10 @@ class HadesContext(CommonContext):
             table[self.location_names.lookup_in_slot(locationid)] = locationid
         return table
 
+
     # ------------ gui section ------------------------------------------------
 
-    def run_gui(self):
+    def run_gui(self) -> None:
         from kvui import GameManager
 
         class HadesManager(GameManager):
@@ -346,14 +329,7 @@ class HadesContext(CommonContext):
             base_title = "Archipelago Hades Client"
 
         self.ui = HadesManager(self)
-        self.ui_task = asyncio.create_task(self.ui.async_run(), name="UI")
-
-
-def print_error_and_close(msg):
-    logger.error("Error: " + msg)
-    Utils.messagebox("Error", msg, error=True)
-    sys.exit(1)
-
+        self.ui_task = Utils.async_start(self.ui.async_run(), name="UI")
 
 #  ------------ Methods to start the client + Hades + StyxScribe ------------
 
@@ -364,7 +340,7 @@ def launch_hades():
 def launch():
     async def main(args):
         ctx = HadesContext(args.connect, args.password)
-        ctx.server_task = asyncio.create_task(server_loop(ctx), name="server loop")
+        ctx.server_task = Utils.async_start(server_loop(ctx), name="server loop")
         if gui_enabled:
             ctx.run_gui()
         ctx.run_cli()
@@ -377,7 +353,22 @@ def launch():
     import colorama
     # --------------------- Styx Scribe initialization -----------------
     styx_scribe_path = settings.get_settings()["hades_options"]["styx_scribe_path"]
+
+    # Parsing of styxscribe path. This will try to find it on the same folder if it fails.
+    last_slash = styx_scribe_path.rfind("/")
+    if (last_slash == -1):
+        print("Invalid path given to hades client for styxscribe. Cant parse")
+        return
+
+    filesbstr = styx_scribe_path[last_slash + 1 :]
+    if (filesbstr != "StyxScribe.py"):
+        print("Path given does not correspond to StyxScribe. Attempting to parse")
+        styx_scribe_path = styx_scribe_path[:last_slash + 1] + "StyxScribe.py"
+
     hadespath = os.path.dirname(styx_scribe_path)
+
+    if (not os.path.exists(hadespath)):
+        print("Styx scribe not found at path.")
 
     spec = importlib.util.spec_from_file_location("StyxScribe", str(styx_scribe_path))
     styx_scribe = importlib.util.module_from_spec(spec)

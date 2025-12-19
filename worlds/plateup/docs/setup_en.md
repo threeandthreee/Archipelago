@@ -1,22 +1,42 @@
-# PlateUp! Setup Guide
+# PlateUp! Randomizer Setup Guide
 
-### How to play:
+## Required Software
 
-TBA
+- [Archipelago](github.com/ArchipelagoMW/Archipelago/releases/latest)
+- [The PlateUp apworld](https://github.com/CazIsABoi/Archipelago/releases), 
+  if not bundled with your version of Archipelago
+- [PlateUp Archipelago Mod](https://steamcommunity.com/sharedfiles/filedetails/?id=3484431423) 
+  available in the Steam workshop as "Archipelago for PlateUp!"
+- Be sure to also install any mods that are listed as dependencies. Steam will ask.
 
+## How to play
 
-## Hosting a MultiWorld game
+First, you need a room to connect to. For this, you or someone you know has to generate a game.  
+This will not be explained here,
+but you can check the [Archipelago Setup Guide](https://archipelago.gg/tutorial/Archipelago/setup_en#generating-a-game).
 
-The recommended way to host a game is to use our hosting service. The process is relatively simple:
+You also need to have [Archipelago](github.com/ArchipelagoMW/Archipelago/releases/latest) installed
+and the [The APQuest apworld](https://github.com/CazIsABoi/Archipelago/releases) installed into Archipelago.
 
-1. Collect config files from your players.
-2. Create a zip file containing your players' config files.
-3. Upload that zip file to the Generate page above.
-    - Generate page: [WebHost Seed Generation Page](/generate)
-4. Wait a moment while the seed is generated.
-5. When the seed is generated, you will be redirected to a "Seed Info" page.
-6. Click "Create New Room". This will take you to the server page. Provide the link to this page to your players, so
-   they may download their patch files from there.
-7. Note that a link to a MultiWorld Tracker is at the top of the room page. The tracker shows the progress of all
-   players in the game. Any observers may also be given the link to this page.
-8. Once all players have joined, you may begin playing.
+## How to install
+
+1. [Recommended] Subscribe to the mod on the Steam Workshop
+2. Via GitHub
+   1. Download the zip file
+   2. Put the unzipped mod folder in the Mods folder (Windows: C:\Program Files (x86)\Steam\steamapps\common\PlateUp\PlateUp\Mods)
+
+## How to connect
+
+After installing the mod, launch PlateUp!. After going into the HQ (Lobby), you can open the menu and click through 
+the menu to find the "PlateupAP" menu: Options > PreferenceSystem > PlateupAP
+
+From here, you can use the "Create Config" option to generate a file where you can enter your room's connection info.
+This creates a file named `archipelago_config.json`
+
+- Windows: You can find the file by pressing `Windows` + `R` and pasting in the following path: 
+   `%AppData%\..\LocalLow\It's Happening\PlateUp`
+- Linux and Others: Starting from your Steam install folder, it may be located in a path like: 
+    `./Steam/steamapps/compatdata/1599600/pfx/drive_c/users/steamuser/AppData/LocalLow/It%27s%20Happening/PlateUp/PlateUpAPConfig/`
+
+Fill this file out with your room's info. If you don't have a username and/or password, then you can leave these fields 
+alone. Save the file and return to the game. Now you can click "Connect" to attempt to connect to the server.

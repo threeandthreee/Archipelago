@@ -29,22 +29,8 @@ class InventionsanityOption(DefaultOnToggle):
     
 
 class IncludeResourcePacksOption(Range):
-    """Adds packs of useful items for georama"""
+    """Adds packs of useful items"""
     display_name = "Number of resource packs to include in the pool"
-    range_start = 0
-    range_end = 100
-    default = 20
-
-class IncludeWeaponUpgradePacksOption(Range):
-    """Adds packs of useful items for weapon upgrades"""
-    display_name = "Number of weapon upgrade packs to include in the pool"
-    range_start = 0
-    range_end = 100
-    default = 20
-    
-class IncludeElementPacksOption(Range):
-    """Adds packs of useful items for georama"""
-    display_name = "Number of element packs to include in the pool"
     range_start = 0
     range_end = 100
     default = 20
@@ -86,10 +72,7 @@ class DC2Option(PerGameCommonOptions):
     #georamasanity: GeoramasanityOption
     #photosanity: PhotosanityOption
     #inventionsanity: InventionsanityOption
-    #resource_pack_count: IncludeResourcePacksOption
-    #weapon_upgrade_pack_count: IncludeWeaponUpgradePacksOption
-    #element_pack_count: IncludeElementPacksOption
-    #chapter_goal_count: ChapterGoalCountOption
+    resource_pack_count: IncludeResourcePacksOption
     abs_multiplier: ABSMultiplierOption
     gilda_multiplier: GildaMultiplierOption
     guaranteed_items: GuaranteedItemsOption

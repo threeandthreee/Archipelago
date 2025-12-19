@@ -5,7 +5,7 @@ from typing import ClassVar, Mapping, Any, List
 
 import settings
 from BaseClasses import MultiWorld, Tutorial, Item, Location, Region
-from Options import Option
+from Options import Option, OptionError
 from worlds.AutoWorld import World, WebWorld
 from . import items, locations, options, bizhawk_client, rom, groups, tracker
 from .generate import EncounterEntry, StaticEncounterEntry, TradeEncounterEntry, TrainerPokemonEntry
@@ -119,6 +119,8 @@ class PokemonBWWorld(World):
         self.static_encounter: dict[str, StaticEncounterEntry] | None = None
         self.trade_encounter: dict[str, TradeEncounterEntry] | None = None
         self.trainer_teams: list[TrainerPokemonEntry] | None = None
+        self.encounter_by_method: dict[str, tuple[list[str], list[int]]] = {}
+        self.dexsanity_numbers: list[int] = []
         self.regions: dict[str, Region] | None = None
         self.rules_dict: RulesDict | None = None
         self.master_ball_seller_cost: int = 0
@@ -154,6 +156,16 @@ class PokemonBWWorld(World):
 
         self.random.seed(self.seed)
 
+        # TODO quick bandaid fix, need to fix it in another way later
+        if (
+            # False and
+            self.options.modify_encounter_rates.current_key in ("invasive", "randomized_12") and
+            "Prevent rare encounters" in self.options.randomize_wild_pokemon
+        ):
+            raise OptionError(f"Player {self.player_name}: Modify Encounter Rates choice "
+                              f"\"{self.options.modify_encounter_rates.current_key}\" (currently) not allowed "
+                              f"in combination with \"Prevent rare encounters\" in wild randomization.")
+
         cost_start, cost_end = 999999, -1
         for modifier in self.options.master_ball_seller.value:
             if modifier.casefold().startswith("cost"):
@@ -178,6 +190,7 @@ class PokemonBWWorld(World):
         self.wild_encounter |= wild.generate_wild_encounters(  # only removes species
             self, species_checklist, slots_checklist
         )
+        self.encounter_by_method = wild.organize_by_method(self)
         self.trainer_teams = trainers.generate_trainer_teams(self)
 
     def create_item(self, name: str) -> items.PokemonBWItem:
@@ -201,25 +214,8 @@ class PokemonBWWorld(World):
                             f"Please report this to the devs and provide the yaml used for generating.")
         for _ in range(self.to_be_filled_locations-len(item_pool)):
             item_pool.append(self.create_item(self.get_filler_item_name()))
-        items.reserve_locked_items(self, item_pool)
-        self.multiworld.itempool += item_pool
-
-    def get_pre_fill_items(self) -> List[Item]:
-        return [
-            item
-            for item_list in self.to_be_locked_items if isinstance(item_list, list)
-            for item in item_list
-        ] + [
-            item_dict[name]
-            for item_dict in self.to_be_locked_items if isinstance(item_dict, dict)
-            for name in item_dict
-        ]
-
-    def pre_fill(self) -> None:
-        from .generate.locked_placement import place_badges_pre_fill, place_tm_hm_pre_fill
-
-        place_badges_pre_fill(self)
-        place_tm_hm_pre_fill(self)
+        items.place_locked_items(self, item_pool)
+        self.multiworld.itempool.extend(item_pool)
 
     def fill_hook(self,
                   progitempool: List[Item],
@@ -228,7 +224,7 @@ class PokemonBWWorld(World):
                   fill_locations: List[Location]) -> None:
         from .generate.locked_placement import place_tm_hm_fill, place_badges_fill
 
-        place_badges_fill(self, progitempool, fill_locations)
+        place_badges_fill(self, progitempool, usefulitempool, filleritempool, fill_locations)
         place_tm_hm_fill(self, progitempool, usefulitempool, filleritempool, fill_locations)
 
     def extend_hint_information(self, hint_data: dict[int, dict[int, str]]):
@@ -268,6 +264,7 @@ class PokemonBWWorld(World):
                 "dexsanity": self.options.dexsanity.value,
                 "season_control": self.options.season_control.current_key,
                 "adjust_levels": self.options.adjust_levels.value,
+                "modify_encounter_rates": self.options.modify_encounter_rates.value,  # value property because of plando
                 "master_ball_seller": self.options.master_ball_seller.value,
                 "modify_item_pool": self.options.modify_item_pool.value,
                 "modify_logic": self.options.modify_logic.value,
@@ -278,6 +275,9 @@ class PokemonBWWorld(World):
             # NOT needed for UT
             "master_ball_seller_cost": self.master_ball_seller_cost,
             "reusable_tms": self.options.reusable_tms.current_key,
+            # Needed for PopTracker
+            "encounter_by_method": {method: lists[1] for method, lists in self.encounter_by_method.items()},
+            "dexsanity_pokemon": self.dexsanity_numbers,
         }
 
     def interpret_slot_data(self, slot_data: dict[str, Any]) -> dict[str, Any]:

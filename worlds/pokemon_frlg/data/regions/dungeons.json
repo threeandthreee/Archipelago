@@ -197,64 +197,6 @@
       "MAP_MT_MOON_B2F:3/MAP_MT_MOON_B1F:6": "Mt. Moon B2F Northwest Ladder"
     }
   },
-  "REGION_UNDERGROUND_PATH_NORTH_ENTRANCE/MAIN": {
-    "parent_map": "MAP_UNDERGROUND_PATH_NORTH_ENTRANCE",
-    "name": "Underground Path North Entrance",
-    "encounter_region": null,
-    "has_land": false,
-    "has_water": false,
-    "has_fishing": false,
-    "kanto": true,
-    "locations": [],
-    "events": [
-      "TRADE_POKEMON_NIDORAN"
-    ],
-    "exits": {},
-    "warps": {
-      "MAP_UNDERGROUND_PATH_NORTH_ENTRANCE:0/MAP_ROUTE5:0": "Underground Path North Entrance Exit",
-      "MAP_UNDERGROUND_PATH_NORTH_ENTRANCE:1/MAP_UNDERGROUND_PATH_NORTH_SOUTH_TUNNEL:0": "Underground Path North Entrance Stairs"
-    }
-  },
-  "REGION_UNDERGROUND_PATH_NORTH_SOUTH_TUNNEL/MAIN": {
-    "parent_map": "MAP_UNDERGROUND_PATH_NORTH_SOUTH_TUNNEL",
-    "name": "Underground Path North-South Tunnel",
-    "encounter_region": null,
-    "has_land": false,
-    "has_water": false,
-    "has_fishing": false,
-    "kanto": true,
-    "locations": [
-      "HIDDEN_ITEM_UNDERGROUND_PATH_NORTH_SOUTH_TUNNEL_ANTIDOTE",
-      "HIDDEN_ITEM_UNDERGROUND_PATH_NORTH_SOUTH_TUNNEL_PARALYZE_HEAL",
-      "HIDDEN_ITEM_UNDERGROUND_PATH_NORTH_SOUTH_TUNNEL_AWAKENING",
-      "HIDDEN_ITEM_UNDERGROUND_PATH_NORTH_SOUTH_TUNNEL_POTION",
-      "HIDDEN_ITEM_UNDERGROUND_PATH_NORTH_SOUTH_TUNNEL_ETHER",
-      "HIDDEN_ITEM_UNDERGROUND_PATH_NORTH_SOUTH_TUNNEL_ICE_HEAL",
-      "HIDDEN_ITEM_UNDERGROUND_PATH_NORTH_SOUTH_TUNNEL_BURN_HEAL"
-    ],
-    "events": [],
-    "exits": {},
-    "warps": {
-      "MAP_UNDERGROUND_PATH_NORTH_SOUTH_TUNNEL:0/MAP_UNDERGROUND_PATH_NORTH_ENTRANCE:1": "Underground Path North-South Tunnel North Stairs",
-      "MAP_UNDERGROUND_PATH_NORTH_SOUTH_TUNNEL:1/MAP_UNDERGROUND_PATH_SOUTH_ENTRANCE:1": "Underground Path North-South Tunnel South Stairs"
-    }
-  },
-  "REGION_UNDERGROUND_PATH_SOUTH_ENTRANCE/MAIN": {
-    "parent_map": "MAP_UNDERGROUND_PATH_SOUTH_ENTRANCE",
-    "name": "Underground Path South Entrance",
-    "encounter_region": null,
-    "has_land": false,
-    "has_water": false,
-    "has_fishing": false,
-    "kanto": true,
-    "locations": [],
-    "events": [],
-    "exits": {},
-    "warps": {
-      "MAP_UNDERGROUND_PATH_SOUTH_ENTRANCE:0/MAP_ROUTE6:0": "Underground Path South Entrance Exit",
-      "MAP_UNDERGROUND_PATH_SOUTH_ENTRANCE:1/MAP_UNDERGROUND_PATH_NORTH_SOUTH_TUNNEL:1": "Underground Path South Entrance Stairs"
-    }
-  },
   "REGION_SSANNE_EXTERIOR/MAIN": {
     "parent_map": "MAP_SSANNE_EXTERIOR",
     "name": "S.S. Anne Exterior",
@@ -1099,62 +1041,6 @@
       "MAP_POKEMON_TOWER_7F:0/MAP_POKEMON_TOWER_6F:0": "Pokemon Tower 7F Stairs"
     }
   },
-  "REGION_UNDERGROUND_PATH_EAST_ENTRANCE/MAIN": {
-    "parent_map": "MAP_UNDERGROUND_PATH_EAST_ENTRANCE",
-    "name": "Underground Path East Entrance",
-    "encounter_region": null,
-    "has_land": false,
-    "has_water": false,
-    "has_fishing": false,
-    "kanto": true,
-    "locations": [],
-    "events": [],
-    "exits": {},
-    "warps": {
-      "MAP_UNDERGROUND_PATH_EAST_ENTRANCE:0/MAP_ROUTE8:0": "Underground Path East Entrance Exit",
-      "MAP_UNDERGROUND_PATH_EAST_ENTRANCE:1/MAP_UNDERGROUND_PATH_EAST_WEST_TUNNEL:0": "Underground Path East Entrance Stairs"
-    }
-  },
-  "REGION_UNDERGROUND_PATH_EAST_WEST_TUNNEL/MAIN": {
-    "parent_map": "MAP_UNDERGROUND_PATH_EAST_WEST_TUNNEL",
-    "name": "Underground Path East-West Tunnel",
-    "encounter_region": null,
-    "has_land": false,
-    "has_water": false,
-    "has_fishing": false,
-    "kanto": true,
-    "locations": [
-      "HIDDEN_ITEM_UNDERGROUND_PATH_EAST_WEST_TUNNEL_ICE_HEAL",
-      "HIDDEN_ITEM_UNDERGROUND_PATH_EAST_WEST_TUNNEL_ANTIDOTE",
-      "HIDDEN_ITEM_UNDERGROUND_PATH_EAST_WEST_TUNNEL_ETHER",
-      "HIDDEN_ITEM_UNDERGROUND_PATH_EAST_WEST_TUNNEL_BURN_HEAL",
-      "HIDDEN_ITEM_UNDERGROUND_PATH_EAST_WEST_TUNNEL_AWAKENING",
-      "HIDDEN_ITEM_UNDERGROUND_PATH_EAST_WEST_TUNNEL_PARALYZE_HEAL",
-      "HIDDEN_ITEM_UNDERGROUND_PATH_EAST_WEST_TUNNEL_POTION"
-    ],
-    "events": [],
-    "exits": {},
-    "warps": {
-      "MAP_UNDERGROUND_PATH_EAST_WEST_TUNNEL:0/MAP_UNDERGROUND_PATH_EAST_ENTRANCE:1": "Underground Path East-West Tunnel East Stairs",
-      "MAP_UNDERGROUND_PATH_EAST_WEST_TUNNEL:1/MAP_UNDERGROUND_PATH_WEST_ENTRANCE:1": "Underground Path East-West Tunnel West Stairs"
-    }
-  },
-  "REGION_UNDERGROUND_PATH_WEST_ENTRANCE/MAIN": {
-    "parent_map": "MAP_UNDERGROUND_PATH_WEST_ENTRANCE",
-    "name": "Underground Path West Entrance",
-    "encounter_region": null,
-    "has_land": false,
-    "has_water": false,
-    "has_fishing": false,
-    "kanto": true,
-    "locations": [],
-    "events": [],
-    "exits": {},
-    "warps": {
-      "MAP_UNDERGROUND_PATH_WEST_ENTRANCE:0/MAP_ROUTE7:0": "Underground Path West Entrance Exit",
-      "MAP_UNDERGROUND_PATH_WEST_ENTRANCE:1/MAP_UNDERGROUND_PATH_EAST_WEST_TUNNEL:1": "Underground Path West Entrance Stairs"
-    }
-  },
   "REGION_ROCKET_HIDEOUT_B1F/NORTH": {
     "parent_map": "MAP_ROCKET_HIDEOUT_B1F",
     "name": "Rocket Hideout B1F (North)",
@@ -1472,7 +1358,7 @@
   },
   "REGION_SAFARI_ZONE_WEST/SOUTH": {
     "parent_map": "MAP_SAFARI_ZONE_WEST",
-    "name": "Safari Zone West Area South",
+    "name": "Safari Zone West Area (South)",
     "encounter_region": "Safari Zone West Area",
     "has_land": true,
     "has_water": false,
@@ -2273,6 +2159,7 @@
     "locations": [],
     "events": [],
     "exits": {
+      "REGION_SILPH_CO_1F/MAIN": "Silph Co. Elevator 1F Stop",
       "REGION_SILPH_CO_2F/MAIN": "Silph Co. Elevator 2F Stop",
       "REGION_SILPH_CO_3F/MAIN": "Silph Co. Elevator 3F Stop",
       "REGION_SILPH_CO_4F/MAIN": "Silph Co. Elevator 4F Stop",
@@ -2302,7 +2189,7 @@
     "warps": {
       "MAP_SEAFOAM_ISLANDS_1F:0/MAP_SEAFOAM_ISLANDS_B1F:0": "Seafoam Islands 1F Northwest Ladder",
       "MAP_SEAFOAM_ISLANDS_1F:1/MAP_SEAFOAM_ISLANDS_B1F:1": "Seafoam Islands 1F Northeast Ladder",
-      "MAP_SEAFOAM_ISLANDS_1F:3/MAP_ROUTE20:1": "Seafoam Islands 1F Exit (West)",
+      "MAP_SEAFOAM_ISLANDS_1F:3/MAP_ROUTE20:0": "Seafoam Islands 1F Exit (West)",
       "MAP_SEAFOAM_ISLANDS_1F:5/MAP_SEAFOAM_ISLANDS_B1F:9": "Seafoam Islands 1F Drop (Left)",
       "MAP_SEAFOAM_ISLANDS_1F:6/MAP_SEAFOAM_ISLANDS_B1F:10": "Seafoam Islands 1F Drop (Right)"
     }
@@ -2320,7 +2207,7 @@
     "exits": {},
     "warps": {
       "MAP_SEAFOAM_ISLANDS_1F:2/MAP_SEAFOAM_ISLANDS_B1F:2": "Seafoam Islands 1F Southeast Ladder",
-      "MAP_SEAFOAM_ISLANDS_1F:4/MAP_ROUTE20:0": "Seafoam Islands 1F Exit (East)"
+      "MAP_SEAFOAM_ISLANDS_1F:4/MAP_ROUTE20:1": "Seafoam Islands 1F Exit (East)"
     }
   },
   "REGION_SEAFOAM_ISLANDS_B1F/WEST": {
@@ -2341,7 +2228,7 @@
       "MAP_SEAFOAM_ISLANDS_B1F:3/MAP_SEAFOAM_ISLANDS_B2F:3": "Seafoam Islands B1F Northwest Ladder (Top)",
       "MAP_SEAFOAM_ISLANDS_B1F:4/MAP_SEAFOAM_ISLANDS_B2F:4": "Seafoam Islands B1F Center Ladder",
       "MAP_SEAFOAM_ISLANDS_B1F:7/MAP_SEAFOAM_ISLANDS_B2F:7": "Seafoam Islands B1F Drop (Left)",
-      "MAP_SEAFOAM_ISLANDS_B1F:9/MAP_SEAFOAM_ISLANDS_1F:5": ""
+      "MAP_SEAFOAM_ISLANDS_B1F:9/MAP_SEAFOAM_ISLANDS_1F:5": "!Seafoam Islands 1F Drop (Left)"
     }
   },
   "REGION_SEAFOAM_ISLANDS_B1F/SOUTH": {
@@ -2375,7 +2262,7 @@
     "warps": {
       "MAP_SEAFOAM_ISLANDS_B1F:1/MAP_SEAFOAM_ISLANDS_1F:1": "Seafoam Islands B1F Northeast Ladder",
       "MAP_SEAFOAM_ISLANDS_B1F:8/MAP_SEAFOAM_ISLANDS_B2F:8": "Seafoam Islands B1F Drop (Right)",
-      "MAP_SEAFOAM_ISLANDS_B1F:10/MAP_SEAFOAM_ISLANDS_1F:6": ""
+      "MAP_SEAFOAM_ISLANDS_B1F:10/MAP_SEAFOAM_ISLANDS_1F:6": "!Seafoam Islands 1F Drop (Right)"
     }
   },
   "REGION_SEAFOAM_ISLANDS_B1F/SOUTHEAST": {
@@ -2407,7 +2294,7 @@
     "exits": {},
     "warps": {
       "MAP_SEAFOAM_ISLANDS_B2F:3/MAP_SEAFOAM_ISLANDS_B1F:3": "Seafoam Islands B2F Northwest Ladder",
-      "MAP_SEAFOAM_ISLANDS_B2F:7/MAP_SEAFOAM_ISLANDS_B1F:7": "",
+      "MAP_SEAFOAM_ISLANDS_B2F:7/MAP_SEAFOAM_ISLANDS_B1F:7": "!Seafoam Islands B1F Drop (Left)",
       "MAP_SEAFOAM_ISLANDS_B2F:9/MAP_SEAFOAM_ISLANDS_B3F:5": "Seafoam Islands B2F Drop (Left)"
     }
   },
@@ -2443,7 +2330,7 @@
     "exits": {},
     "warps": {
       "MAP_SEAFOAM_ISLANDS_B2F:1/MAP_SEAFOAM_ISLANDS_B3F:1": "Seafoam Islands B2F Northeast Ladder",
-      "MAP_SEAFOAM_ISLANDS_B2F:8/MAP_SEAFOAM_ISLANDS_B1F:8": "",
+      "MAP_SEAFOAM_ISLANDS_B2F:8/MAP_SEAFOAM_ISLANDS_B1F:8": "!Seafoam Islands B1F Drop (Right)",
       "MAP_SEAFOAM_ISLANDS_B2F:10/MAP_SEAFOAM_ISLANDS_B3F:6": "Seafoam Islands B2F Drop (Right)"
     }
   },
@@ -2518,8 +2405,8 @@
       "REGION_SEAFOAM_ISLANDS_B4F/EAST_WATER": "Seafoam Islands B3F South Waterfall (Drop)"
     },
     "warps": {
-      "MAP_SEAFOAM_ISLANDS_B3F:5/MAP_SEAFOAM_ISLANDS_B2F:9": "",
-      "MAP_SEAFOAM_ISLANDS_B3F:6/MAP_SEAFOAM_ISLANDS_B2F:10": ""
+      "MAP_SEAFOAM_ISLANDS_B3F:5/MAP_SEAFOAM_ISLANDS_B2F:9": "!Seafoam Islands B2F Drop (Left)",
+      "MAP_SEAFOAM_ISLANDS_B3F:6/MAP_SEAFOAM_ISLANDS_B2F:10": "!Seafoam Islands B2F Drop (Right)"
     }
   },
   "REGION_SEAFOAM_ISLANDS_B3F/EAST": {
@@ -2623,8 +2510,8 @@
       "REGION_SEAFOAM_ISLANDS_B4F/NEAR_ARTICUNO": "Seafoam Islands B4F (Near Articuno) Landing Spot"
     },
     "warps": {
-      "MAP_SEAFOAM_ISLANDS_B4F:2/MAP_SEAFOAM_ISLANDS_B3F:7": "",
-      "MAP_SEAFOAM_ISLANDS_B4F:3/MAP_SEAFOAM_ISLANDS_B3F:8": ""
+      "MAP_SEAFOAM_ISLANDS_B4F:2/MAP_SEAFOAM_ISLANDS_B3F:7": "!Seafoam Islands B3F Drop (Left)",
+      "MAP_SEAFOAM_ISLANDS_B4F:3/MAP_SEAFOAM_ISLANDS_B3F:8": "!Seafoam Islands B3F Drop (Right)"
     }
   },
   "REGION_SEAFOAM_ISLANDS_B4F/NEAR_ARTICUNO": {
@@ -2681,7 +2568,7 @@
     },
     "warps": {
       "MAP_POKEMON_MANSION_1F:2/MAP_POKEMON_MANSION_B1F:0": "Pokemon Mansion 1F South Stairs",
-      "MAP_POKEMON_MANSION_1F:4,5,6/MAP_POKEMON_MANSION_3F:3,4,5": ""
+      "MAP_POKEMON_MANSION_1F:4,5,6/MAP_POKEMON_MANSION_3F:3,4,5": "!Pokemon Mansion 3F Drop (Left)"
     }
   },
   "REGION_POKEMON_MANSION_1F/SOUTHEAST": {
@@ -2738,7 +2625,7 @@
       "REGION_POKEMON_MANSION_2F/MAIN": "Pokemon Mansion 2F Center Barrier (Bottom)"
     },
     "warps": {
-      "MAP_POKEMON_MANSION_2F:4,5/MAP_POKEMON_MANSION_3F:6,7": ""
+      "MAP_POKEMON_MANSION_2F:4,5/MAP_POKEMON_MANSION_3F:6,7": "!Pokemon Mansion 3F Drop (Right)"
     }
   },
   "REGION_POKEMON_MANSION_2F/EAST": {
@@ -2921,7 +2808,7 @@
     },
     "warps": {
       "MAP_VICTORY_ROAD_2F:2/MAP_VICTORY_ROAD_3F:1": "Victory Road 2F Center Ladder",
-      "MAP_VICTORY_ROAD_2F:6/MAP_VICTORY_ROAD_3F:4": ""
+      "MAP_VICTORY_ROAD_2F:6/MAP_VICTORY_ROAD_3F:4": "!Victory Road 3F Drop"
     }
   },
   "REGION_VICTORY_ROAD_2F/NORTHWEST": {
@@ -3661,12 +3548,28 @@
     "has_fishing": false,
     "kanto": false,
     "locations": [
-      "ITEM_FOUR_ISLAND_ICEFALL_CAVE_B1F_NEVER_MELT_ICE",
+      "ITEM_FOUR_ISLAND_ICEFALL_CAVE_B1F_NEVER_MELT_ICE"
+    ],
+    "events": [],
+    "exits": {
+      "REGION_FOUR_ISLAND_ICEFALL_CAVE_B1F/SOUTH": "Icefall Cave B1F Sliding Ice (South)"
+    },
+    "warps": {}
+  },
+  "REGION_FOUR_ISLAND_ICEFALL_CAVE_B1F/SOUTH": {
+    "parent_map": "MAP_FOUR_ISLAND_ICEFALL_CAVE_B1F",
+    "name": "Icefall Cave B1F (South)",
+    "encounter_region": "Icefall Cave B1F",
+    "has_land": true,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": false,
+    "locations": [
       "ITEM_FOUR_ISLAND_ICEFALL_CAVE_B1F_FULL_RESTORE"
     ],
     "events": [],
     "exits": {
-      "REGION_FOUR_ISLAND_ICEFALL_CAVE_B1F/NORTH": "Icefall Cave B1F Sliding Ice"
+      "REGION_FOUR_ISLAND_ICEFALL_CAVE_B1F/NORTH": "Icefall Cave B1F Sliding Ice (North)"
     },
     "warps": {
       "MAP_FOUR_ISLAND_ICEFALL_CAVE_B1F:2/MAP_FOUR_ISLAND_ICEFALL_CAVE_1F:4": "Icefall Cave B1F South Ladder"
@@ -4028,7 +3931,7 @@
     "warps": {
       "MAP_SIX_ISLAND_DOTTED_HOLE_1F:0/MAP_SIX_ISLAND_RUIN_VALLEY:0": "Dotted Hole 1F Exit",
       "MAP_SIX_ISLAND_DOTTED_HOLE_1F:1/MAP_SIX_ISLAND_DOTTED_HOLE_B1F:0": "Dotted Hole 1F Drop",
-      "MAP_SIX_ISLAND_DOTTED_HOLE_1F:3/MAP_SIX_ISLAND_DOTTED_HOLE_B1F:2": ""
+      "MAP_SIX_ISLAND_DOTTED_HOLE_1F:3/MAP_SIX_ISLAND_DOTTED_HOLE_B1F:2": "!Dotted Hole Incorrect Drop"
     }
   },
   "REGION_SIX_ISLAND_DOTTED_HOLE_1F/EAST": {
@@ -4062,7 +3965,7 @@
     "events": [],
     "exits": {},
     "warps": {
-      "MAP_SIX_ISLAND_DOTTED_HOLE_B1F:0/MAP_SIX_ISLAND_DOTTED_HOLE_1F:1": "",
+      "MAP_SIX_ISLAND_DOTTED_HOLE_B1F:0/MAP_SIX_ISLAND_DOTTED_HOLE_1F:1": "!Dotted Hole 1F Drop",
       "MAP_SIX_ISLAND_DOTTED_HOLE_B1F:1/MAP_SIX_ISLAND_DOTTED_HOLE_B2F:0": "Dotted Hole B1F Drop (Top)",
       "MAP_SIX_ISLAND_DOTTED_HOLE_B1F:2/MAP_SIX_ISLAND_DOTTED_HOLE_1F:3": "Dotted Hole B1F Drop (Right)",
       "MAP_SIX_ISLAND_DOTTED_HOLE_B1F:3/MAP_SIX_ISLAND_DOTTED_HOLE_1F:3!": "Dotted Hole B1F Drop (Bottom)",
@@ -4081,7 +3984,7 @@
     "events": [],
     "exits": {},
     "warps": {
-      "MAP_SIX_ISLAND_DOTTED_HOLE_B2F:0/MAP_SIX_ISLAND_DOTTED_HOLE_B1F:1": "",
+      "MAP_SIX_ISLAND_DOTTED_HOLE_B2F:0/MAP_SIX_ISLAND_DOTTED_HOLE_B1F:1": "!Dotted Hole B1F Drop (Top)",
       "MAP_SIX_ISLAND_DOTTED_HOLE_B2F:1/MAP_SIX_ISLAND_DOTTED_HOLE_1F:3!": "Dotted Hole B2F Drop (Top)",
       "MAP_SIX_ISLAND_DOTTED_HOLE_B2F:2/MAP_SIX_ISLAND_DOTTED_HOLE_1F:3!": "Dotted Hole B2F Drop (Right)",
       "MAP_SIX_ISLAND_DOTTED_HOLE_B2F:3/MAP_SIX_ISLAND_DOTTED_HOLE_1F:3!": "Dotted Hole B2F Drop (Bottom)",
@@ -4100,7 +4003,7 @@
     "events": [],
     "exits": {},
     "warps": {
-      "MAP_SIX_ISLAND_DOTTED_HOLE_B3F:0/MAP_SIX_ISLAND_DOTTED_HOLE_B2F:4": "",
+      "MAP_SIX_ISLAND_DOTTED_HOLE_B3F:0/MAP_SIX_ISLAND_DOTTED_HOLE_B2F:4": "!Dotted Hole B2F Drop (Left)",
       "MAP_SIX_ISLAND_DOTTED_HOLE_B3F:1/MAP_SIX_ISLAND_DOTTED_HOLE_1F:3!": "Dotted Hole B3F Drop (Top)",
       "MAP_SIX_ISLAND_DOTTED_HOLE_B3F:2/MAP_SIX_ISLAND_DOTTED_HOLE_B4F:0": "Dotted Hole B3F Drop (Right)",
       "MAP_SIX_ISLAND_DOTTED_HOLE_B3F:3/MAP_SIX_ISLAND_DOTTED_HOLE_1F:3!": "Dotted Hole B3F Drop (Bottom)",
@@ -4119,7 +4022,7 @@
     "events": [],
     "exits": {},
     "warps": {
-      "MAP_SIX_ISLAND_DOTTED_HOLE_B4F:0/MAP_SIX_ISLAND_DOTTED_HOLE_B3F:2": "",
+      "MAP_SIX_ISLAND_DOTTED_HOLE_B4F:0/MAP_SIX_ISLAND_DOTTED_HOLE_B3F:2": "!Dotted Hole B3F Drop (Right)",
       "MAP_SIX_ISLAND_DOTTED_HOLE_B4F:1/MAP_SIX_ISLAND_DOTTED_HOLE_1F:3!": "Dotted Hole B4F Drop (Top)",
       "MAP_SIX_ISLAND_DOTTED_HOLE_B4F:2/MAP_SIX_ISLAND_DOTTED_HOLE_1F:3!": "Dotted Hole B4F Drop (Right)",
       "MAP_SIX_ISLAND_DOTTED_HOLE_B4F:3/MAP_SIX_ISLAND_DOTTED_HOLE_SAPPHIRE_ROOM:1": "Dotted Hole B4F Drop (Bottom)",
@@ -4141,7 +4044,7 @@
     "exits": {},
     "warps": {
       "MAP_SIX_ISLAND_DOTTED_HOLE_SAPPHIRE_ROOM:0/MAP_SIX_ISLAND_DOTTED_HOLE_1F:2": "Dotted Hole Sapphire Room Ladder",
-      "MAP_SIX_ISLAND_DOTTED_HOLE_SAPPHIRE_ROOM:1/MAP_SIX_ISLAND_DOTTED_HOLE_B4F:3": ""
+      "MAP_SIX_ISLAND_DOTTED_HOLE_SAPPHIRE_ROOM:1/MAP_SIX_ISLAND_DOTTED_HOLE_B4F:3": "!Dotted Hole B4F Drop (Bottom)"
     }
   },
   "REGION_SIX_ISLAND_PATTERN_BUSH/MAIN": {
@@ -4186,23 +4089,6 @@
     "exits": {},
     "warps": {
       "MAP_SIX_ISLAND_ALTERING_CAVE:0/MAP_SIX_ISLAND_OUTCAST_ISLAND:0": "Altering Cave Exit"
-    }
-  },
-  "REGION_SEVEN_ISLAND_SEVAULT_CANYON_TANOBY_KEY": {
-    "parent_map": "MAP_SEVEN_ISLAND_SEVAULT_CANYON_TANOBY_KEY",
-    "name": "Tanoby Key",
-    "encounter_region": null,
-    "has_land": false,
-    "has_water": false,
-    "has_fishing": false,
-    "kanto": false,
-    "locations": [],
-    "events": [
-      "EVENT_UNLOCK_RUINS"
-    ],
-    "exits": {},
-    "warps": {
-      "MAP_SEVEN_ISLAND_SEVAULT_CANYON_TANOBY_KEY:0/MAP_SEVEN_ISLAND_SEVAULT_CANYON:0": "Tanoby Key Exit"
     }
   },
   "REGION_SEVEN_ISLAND_TANOBY_RUINS_MONEAN_CHAMBER/MAIN": {

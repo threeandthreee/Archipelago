@@ -13,10 +13,40 @@ from pkg_resources import resource_listdir, resource_isdir
 from typing import Dict, List, NamedTuple, Set, FrozenSet, Any, Tuple
 from BaseClasses import ItemClassification
 
-APWORLD_VERSION = "1.0.0 Beta 4"
+APWORLD_VERSION = "1.0.1"
 POPTRACKER_CHECKSUM = 0x4A497E8F
 NUM_REAL_SPECIES = 386
 
+@dataclass
+class GameOption:
+    default: int
+    options: Dict[str | int | bool, int]
+    option_group: int
+    option_number: int
+
+GAME_OPTIONS: Dict[str, GameOption] = {
+    "Text Speed": GameOption(3, {"Slow": 0, "Mid": 1, "Fast": 2, "Instant": 3}, 1, 0),
+    "Turbo Button": GameOption(0, {"Off": 0, False: 0, "A": 1, "B": 2, "A/B": 3}, 1, 2),
+    "Auto Run": GameOption(0, {"Off": 0, False: 0, "On": 1, True: 1}, 1, 4),
+    "Button Mode": GameOption(0, {"Help": 0, "L/R": 1, "L=A": 2}, 1, 5),
+    "Frame": GameOption(0, dict(zip(range(1, 11), range(10))), -1, 0),
+    "Battle Scene": GameOption(1, {"Off": 0, False: 0, "On": 1, True: 1}, 1, 7),
+    "Battle Style": GameOption(0, {"Shift": 0, "Set": 1}, 1, 8),
+    "Show Effectiveness": GameOption(1, {"Off": 0, False: 0, "On": 1, True: 1}, 1, 9),
+    "Experience Multiplier": GameOption(100, dict(zip([i * 10 for i in range(101)], [i * 10 for i in range(101)])), -2, 0),
+    "Experience Distribution": GameOption(0, {"Gen III": 0, "Gen VI": 1, "Gen VIII": 2}, 1, 10),
+    "Sound": GameOption(0, {"Mono": 0, "Stereo": 1}, 1, 12),
+    "Low HP Beep": GameOption(1, {"Off": 0, False: 0, "On": 1, True: 1}, 1, 13),
+    "Skip Fanfares": GameOption(0, {"Off": 0, False: 0, "On": 1, True: 1}, 1, 14),
+    "Bike Music": GameOption(1, {"Off": 0, False: 0, "On": 1, True: 1}, 1, 15),
+    "Surf Music": GameOption(1, {"Off": 0, False: 0, "On": 1, True: 1}, 2, 0),
+    "Guaranteed Catch": GameOption(0, {"Off": 0, False: 0, "On": 1, True: 1}, 2, 1),
+    "Guaranteed Run": GameOption(0, {"Off": 0, False: 0, "On": 1, True: 1}, 2, 2),
+    "Encounter Rates": GameOption(0, {"Vanilla": 0, "Normalized": 1}, 2, 3),
+    "Blind Trainers": GameOption(0, {"Off": 0, False: 0, "On": 1, True: 1}, 2, 4),
+    "Skip Nicknames": GameOption(0, {"Off": 0, False: 0, "On": 1, True: 1}, 2, 5),
+    "Item Messages": GameOption(1, {"All": 0, "Progression": 1, "None": 2}, 2, 6)
+}
 
 class Warp:
     """
@@ -88,16 +118,17 @@ class LocationCategory(IntEnum):
     TOWN_VISIT = 3
     SHOP_ITEM = 4
     TRAINER = 5
-    FAME_ENTRY = 6
-    POKEDEX = 7
-    EVENT = 8
-    EVENT_WILD_POKEMON = 9
-    EVENT_STATIC_POKEMON = 10
-    EVENT_LEGENDARY_POKEMON = 11
-    EVENT_EVOLUTION_POKEMON = 12
-    EVENT_TRAINER_SCALING = 13
-    EVENT_WILD_POKEMON_SCALING = 14
-    EVENT_STATIC_POKEMON_SCALING = 15
+    TRAINER_REMATCH = 6
+    FAME_ENTRY = 7
+    POKEDEX = 8
+    EVENT = 9
+    EVENT_WILD_POKEMON = 10
+    EVENT_STATIC_POKEMON = 11
+    EVENT_LEGENDARY_POKEMON = 12
+    EVENT_EVOLUTION_POKEMON = 13
+    EVENT_TRAINER_SCALING = 14
+    EVENT_WILD_POKEMON_SCALING = 15
+    EVENT_STATIC_POKEMON_SCALING = 16
 
 
 class LocationData(NamedTuple):

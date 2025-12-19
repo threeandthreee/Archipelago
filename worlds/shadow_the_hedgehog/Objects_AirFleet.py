@@ -141,4 +141,45 @@ SETObject(ObjectType.GUN_BEETLE, Levels.STAGE_AIR_FLEET, 229, '81', region=REGIO
 SETObject(ObjectType.GUN_BEETLE, Levels.STAGE_AIR_FLEET, 230, '82', region=REGION_INDICIES.AIR_FLEET_PULLEY),
 SETObject(ObjectType.GUN_BEETLE, Levels.STAGE_AIR_FLEET, 231, '83', region=REGION_INDICIES.AIR_FLEET_PULLEY),
 
+SETObject(ObjectType.KEY, Levels.STAGE_AIR_FLEET, 50, 'Key 1', region=REGION_INDICIES.AIR_FLEET_PULLEY),
+SETObject(ObjectType.KEY, Levels.STAGE_AIR_FLEET, 312, 'Key 2', region=REGION_INDICIES.AIR_FLEET_PULLEY),
+SETObject(ObjectType.KEY, Levels.STAGE_AIR_FLEET, 313, 'Key 3', region=REGION_INDICIES.AIR_FLEET_PULLEY),
+SETObject(ObjectType.KEY, Levels.STAGE_AIR_FLEET, 317, 'Key 4', region=REGION_INDICIES.AIR_FLEET_PULLEY),
+SETObject(ObjectType.KEY, Levels.STAGE_AIR_FLEET, 318, 'Key 5', region=REGION_INDICIES.AIR_FLEET_PULLEY),
+SETObject(ObjectType.GOAL_RING, Levels.STAGE_AIR_FLEET, 519, 'Goal Ring',region=REGION_INDICIES.AIR_FLEET_PULLEY),
+
+
+SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_AIR_FLEET, 51, 'Triangle Jump Start A',
+          region=REGION_INDICIES.AIR_FLEET_PULLEY),
+SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_AIR_FLEET, 333, 'Triangle Jump Start B',
+          region=REGION_INDICIES.AIR_FLEET_PULLEY),
+SETObject(ObjectType.ITEM_IN_METAL_BOX, Levels.STAGE_AIR_FLEET, 205, 'Down After Wind',
+          region=REGION_INDICIES.AIR_FLEET_PULLEY),
+
+
+
+SETObject(ObjectType.ITEM_IN_BOX, Levels.STAGE_AIR_FLEET, 337, 'Secret Room 1A',
+          region=REGION_INDICIES.AIR_FLEET_RAILS),
+SETObject(ObjectType.ITEM_IN_BOX, Levels.STAGE_AIR_FLEET, 338, 'Secret Room 1B',
+          region=REGION_INDICIES.AIR_FLEET_RAILS),
+
+
+SETObject(ObjectType.ITEM_IN_BOX, Levels.STAGE_AIR_FLEET, 243, 'Secret Room 2A',
+          region=REGION_INDICIES.AIR_FLEET_RAILS),
+SETObject(ObjectType.ITEM_IN_BOX, Levels.STAGE_AIR_FLEET, 245, 'Secret Room 2B',
+          region=REGION_INDICIES.AIR_FLEET_RAILS),
+SETObject(ObjectType.ITEM_IN_BOX, Levels.STAGE_AIR_FLEET, 246, 'Secret Room 2C',
+          region=REGION_INDICIES.AIR_FLEET_RAILS),
+
+
+SETObject(ObjectType.ITEM_IN_BOX, Levels.STAGE_AIR_FLEET, 87, 'Secret Long Rail',
+          region=REGION_INDICIES.AIR_FLEET_RAILS),
+SETObject(ObjectType.ITEM_IN_BOX, Levels.STAGE_AIR_FLEET, 345, 'Secret Room 3A',
+          region=REGION_INDICIES.AIR_FLEET_RAILS),
+SETObject(ObjectType.ITEM_IN_BOX, Levels.STAGE_AIR_FLEET, 346, 'Secret Room 3B',
+          region=REGION_INDICIES.AIR_FLEET_RAILS),
+SETObject(ObjectType.ITEM_IN_BOX, Levels.STAGE_AIR_FLEET, 343, 'Secret Room 3C',
+          region=REGION_INDICIES.AIR_FLEET_RAILS),
+
+
 ]

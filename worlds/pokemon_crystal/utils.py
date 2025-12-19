@@ -3,12 +3,13 @@ from collections.abc import Iterable
 from typing import TYPE_CHECKING
 
 from Options import Toggle
-from .data import data, StartingTown, FlyRegion, CUSTOM_MART_SLOT_NAMES
+from .data import data, StartingTown, FlyRegion, RegionData
+from .mart_data import CUSTOM_MART_SLOT_NAMES
 from .options import FreeFlyLocation, Route32Condition, JohtoOnly, RandomizeBadges, UndergroundsRequirePower, \
     Route3Access, EliteFourRequirement, Goal, Route44AccessRequirement, BlackthornDarkCaveAccess, RedRequirement, \
     MtSilverRequirement, HMBadgeRequirements, RedGyaradosAccess, EarlyFly, RadioTowerRequirement, \
     BreedingMethodsRequired, Shopsanity, KantoTrainersanity, JohtoTrainersanity, RandomizePokemonRequests, \
-    EnhancedOptionSet, RandomizeTypes, RandomizeEvolution
+    EnhancedOptionSet, RandomizeTypes, RandomizeEvolution, RandomizeTrades, TradesRequired, MagnetTrainAccess
 from ..Files import APTokenTypes
 
 if TYPE_CHECKING:
@@ -33,14 +34,20 @@ def __adjust_meta_options(world: "PokemonCrystalWorld"):
 
 def __adjust_option_problems(world: "PokemonCrystalWorld"):
     __adjust_options_radio_tower_and_route_44(world)
+    __adjust_options_victory_road_badges(world)
     __adjust_options_johto_only(world)
+    __adjust_options_restrictive_region_travel(world)
     __adjust_options_gyarados(world)
     __adjust_options_early_fly(world)
     __adjust_options_encounters_and_breeding(world)
     __adjust_options_race_mode(world)
     __adjust_options_pokemon_requests(world)
+    __adjust_options_trades(world)
     __adjust_options_dark_areas(world)
     __adjust_options_randomize_types(world)
+    __adjust_options_tm_plando(world)
+    __adjust_options_traps(world)
+    __adjust_options_mischief_bounds(world)
 
 
 def __adjust_options_radio_tower_and_route_44(world: "PokemonCrystalWorld"):
@@ -86,6 +93,16 @@ def __adjust_options_radio_tower_and_route_44(world: "PokemonCrystalWorld"):
             world.player_name)
 
 
+def __adjust_options_victory_road_badges(world: "PokemonCrystalWorld"):
+    if (world.options.elite_four_requirement == EliteFourRequirement.option_johto_badges
+            and world.options.elite_four_count > 8):
+        world.options.elite_four_count.value = 8
+        logging.warning(
+            "Pokemon Crystal: Elite Four count cannot be greater than 8 if Elite Four requirement is Johto Badges. "
+            "Changing Elite Four Count to 8 for player %s.",
+            world.player_name)
+
+
 def __adjust_options_johto_only(world: "PokemonCrystalWorld"):
     if world.options.johto_only:
 
@@ -94,6 +111,13 @@ def __adjust_options_johto_only(world: "PokemonCrystalWorld"):
             logging.warning(
                 "Pokemon Crystal: Red goal is incompatible with Johto Only "
                 "without Silver Cave. Changing goal to Elite Four for player %s.",
+                world.player_name)
+
+        if world.options.goal == Goal.option_diploma and world.options.johto_only != JohtoOnly.option_off:
+            world.options.goal.value = Goal.option_elite_four
+            logging.warning(
+                "Pokemon Crystal: Diploma goal is incompatible with Johto Only. "
+                "Changing goal to Elite Four for player %s.",
                 world.player_name)
 
         if (world.options.elite_four_requirement.value == EliteFourRequirement.option_gyms
@@ -184,6 +208,15 @@ def __adjust_options_johto_only(world: "PokemonCrystalWorld"):
                     world.player_name)
 
 
+def __adjust_options_restrictive_region_travel(world: "PokemonCrystalWorld") -> None:
+    if world.options.randomize_badges != RandomizeBadges.option_completely_random:
+        if world.options.magnet_train_access == MagnetTrainAccess.option_pass_and_power:
+            world.options.magnet_train_access.value = MagnetTrainAccess.option_pass
+            logging.warning("Pokemon Crystal: Magnet Train requires power not compatible with badges in gyms. "
+                            "Changing Magnet Train Access to Pass for player %s.",
+                            world.player_name)
+
+
 def __adjust_options_gyarados(world: "PokemonCrystalWorld"):
     if (world.options.red_gyarados_access
             and world.options.randomize_badges.value == RandomizeBadges.option_vanilla
@@ -248,6 +281,15 @@ def __adjust_options_pokemon_requests(world: "PokemonCrystalWorld"):
         world.options.randomize_pokemon_requests.value = RandomizePokemonRequests.option_off
 
 
+def __adjust_options_trades(world: "PokemonCrystalWorld"):
+    if (world.options.trades_required and world.options.randomize_trades.value in (RandomizeTrades.option_vanilla,
+                                                                                   RandomizeTrades.option_received)
+            and not world.options.randomize_wilds):
+        logging.warning("Pokemon Crystal: Requested trade Pokemon must be randomized for vanilla wilds. "
+                        "Disabling Trades Required for player %s (%s).", world.player, world.player_name)
+        world.options.trades_required.value = TradesRequired.option_false
+
+
 def __adjust_options_dark_areas(world: "PokemonCrystalWorld"):
     if (world.options.dark_areas != world.options.dark_areas.default
             and world.options.randomize_badges != RandomizeBadges.option_completely_random):
@@ -266,6 +308,46 @@ def __adjust_options_randomize_types(world: "PokemonCrystalWorld"):
         world.options.randomize_types.value = RandomizeTypes.option_completely_random
 
 
+def __adjust_options_tm_plando(world: "PokemonCrystalWorld"):
+    if 12 in world.options.tm_plando.value and "Sweet Scent" not in world.options.tm_plando.value.values() \
+            and (world.options.dexsanity or world.options.dexcountsanity):
+        logging.warning(
+            "Pokemon Crystal: A Sweet Scent TM must exist if Dexsanity or Dexcountsanity are enabled. "
+            "Resetting TM12 to vanilla for Player %s (%s).", world.player, world.player_name)
+        world.options.tm_plando.value.pop(12)
+
+
+def __adjust_options_traps(world: "PokemonCrystalWorld"):
+    if world.options.filler_trap_percentage > world.settings.maximum_filler_trap_percentage:
+        maximum_trap_weight = world.settings.maximum_filler_trap_percentage
+        logging.warning(
+            "Pokemon Crystal: Trap Weight is greater than allowed maximum. "
+            f"Reducing filler trap percentage to {maximum_trap_weight} for Player %s (%s).",
+            world.player,
+            world.player_name
+        )
+        world.options.filler_trap_percentage.value = maximum_trap_weight
+
+
+def __adjust_options_mischief_bounds(world: "PokemonCrystalWorld"):
+    if world.options.enable_mischief and \
+            world.options.mischief_lower_bound.value > world.options.mischief_upper_bound.value:
+        world.options.mischief_upper_bound.value = world.options.mischief_lower_bound.value
+        logging.warning("Pokemon Crystal: Adjusted mischief bounds for player %s (%s) :3",
+                        world.player,
+                        world.player_name
+                        )
+
+
+def should_include_region(region: RegionData, world: "PokemonCrystalWorld"):
+    # check if region should be included
+    return (region.johto
+            or world.options.johto_only.value == JohtoOnly.option_off
+            or (region.silver_cave and world.options.johto_only == JohtoOnly.option_include_silver_cave)) and (
+            not world.options.skip_elite_four or not region.elite_4
+    )
+
+
 def pokemon_convert_friendly_to_ids(world: "PokemonCrystalWorld", pokemon: Iterable[str]) -> set[str]:
     if not pokemon: return set()
 
@@ -282,7 +364,7 @@ def pokemon_convert_friendly_to_ids(world: "PokemonCrystalWorld", pokemon: Itera
 
 
 def randomize_starting_town(world: "PokemonCrystalWorld"):
-    if not world.options.randomize_starting_town: return
+    if world.is_universal_tracker or not world.options.randomize_starting_town: return
 
     location_pool = data.starting_towns[:]
     location_pool = [loc for loc in location_pool if _starting_town_valid(world, loc)]
@@ -340,12 +422,17 @@ def _starting_town_valid(world: "PokemonCrystalWorld", starting_town: StartingTo
         return "South" not in world.options.saffron_gatehouse_tea or world.options.undergrounds_require_power not in (
             UndergroundsRequirePower.option_both, UndergroundsRequirePower.option_north_south) or kanto_shopsanity
     if starting_town.name == "Cerulean City":
-        return "North" not in world.options.saffron_gatehouse_tea or immediate_hiddens or kanto_shopsanity
+        return ("North" not in world.options.saffron_gatehouse_tea or immediate_hiddens or kanto_shopsanity
+                or full_kanto_trainersanity)
     if starting_town.name == "Celadon City":
         return "West" not in world.options.saffron_gatehouse_tea or immediate_hiddens or kanto_shopsanity
-    if starting_town.name in ("Lavender Town", "Fuchsia City"):
-        return "East" not in world.options.saffron_gatehouse_tea or (
-                immediate_hiddens and world.options.randomize_berry_trees) or kanto_shopsanity
+    if starting_town.name == "Lavender Town":
+        return "East" not in world.options.saffron_gatehouse_tea or full_kanto_trainersanity or kanto_shopsanity or (
+                not world.options.route_12_access and immediate_hiddens and world.options.randomize_berry_trees)
+    if starting_town.name == "Fuchsia City":
+        return ("East" not in world.options.saffron_gatehouse_tea and not world.options.route_12_access) or (
+                immediate_hiddens and world.options.randomize_berry_trees) or (
+                not world.options.route_12_access and kanto_shopsanity) or full_kanto_trainersanity
 
     return True
 
@@ -426,7 +513,7 @@ def get_mart_slot_location_name(mart: str, index: int):
         return f"Shop Item {index + 1}"
 
 
-def convert_to_ingame_text(text: str):
+def convert_to_ingame_text(text: str, string_terminator: bool = False) -> list[int]:
     charmap = {
         "…": 0x75, " ": 0x7f, "A": 0x80, "B": 0x81, "C": 0x82, "D": 0x83, "E": 0x84, "F": 0x85, "G": 0x86, "H": 0x87,
         "I": 0x88, "J": 0x89, "K": 0x8a, "L": 0x8b, "M": 0x8c, "N": 0x8d, "O": 0x8e, "P": 0x8f, "Q": 0x90, "R": 0x91,
@@ -439,7 +526,10 @@ def convert_to_ingame_text(text: str):
         ",": 0xf4, "0": 0xf6, "1": 0xf7, "2": 0xf8, "3": 0xf9, "4": 0xfa, "5": 0xfb, "6": 0xfc, "7": 0xfd, "8": 0xfe,
         "9": 0xff, "_": 0xe3, "♀": 0xf5
     }
-    return [charmap[char] if char in charmap else charmap["?"] for char in text]
+    ingame_string = [charmap.get(char, charmap["?"]) for char in text]
+    if string_terminator:
+        ingame_string.append(0x50)
+    return ingame_string
 
 
 def bound(value: int, lower_bound: int, upper_bound: int) -> int:
@@ -452,12 +542,16 @@ def replace_map_tiles(patch, map_name: str, x: int, y: int, tiles):
     base_address = data.rom_addresses[f"{map_name}_Blocks"]
 
     logging.debug(f"Writing {len(tiles)} new tile(s) to map {map_name} at {x},{y}")
-    write_bytes(patch, tiles, base_address + tile_index)
+    write_appp_tokens(patch, tiles, base_address + tile_index)
 
 
-def write_bytes(patch, byte_array, address):
+def write_appp_tokens(patch, byte_array, address):
     patch.write_token(
         APTokenTypes.WRITE,
         address,
         bytes(byte_array)
     )
+
+
+def write_rom_bytes(rom, byte_array, address):
+    rom[address:address + len(byte_array)] = bytes(byte_array)

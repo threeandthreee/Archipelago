@@ -120,9 +120,7 @@ DIDDY_KONG_RACING_REGIONS: dict[str, list[str]] = {
     RegionName.SMOKEY: [
         LocationName.SMOKEY_2
     ],
-    RegionName.WIZPIG_1: [
-        LocationName.WIZPIG_1
-    ],
+    RegionName.WIZPIG_1: [],
     RegionName.FUTURE_FUN_LAND: [],
     RegionName.SPACEDUST_ALLEY: [
         LocationName.SPACEDUST_ALLEY_1,
@@ -140,9 +138,7 @@ DIDDY_KONG_RACING_REGIONS: dict[str, list[str]] = {
         LocationName.STAR_CITY_1,
         LocationName.STAR_CITY_2
     ],
-    RegionName.WIZPIG_2: [
-        LocationName.WIZPIG_2
-    ]
+    RegionName.WIZPIG_2: []
 }
 
 VANILLA_REGION_ORDER: list[str] = [
@@ -193,29 +189,28 @@ MAP_VALUE_TO_REGION_NAME: dict[int, str] = {
 
 
 def create_regions(world: DiddyKongRacingWorld) -> None:
+    for region_name, locations in DIDDY_KONG_RACING_REGIONS.items():
+        if region_name == RegionName.WIZPIG_2 and world.options.victory_condition.value == 0:
+            break
+
+        region = create_region(world, region_name, locations)
+        world.multiworld.regions.append(region)
+
     if world.options.victory_condition.value == 0:
+        victory_region = RegionName.WIZPIG_1
         victory_item_location = LocationName.WIZPIG_1
     elif world.options.victory_condition.value == 1:
+        victory_region = RegionName.WIZPIG_2
         victory_item_location = LocationName.WIZPIG_2
     else:
         raise Exception("Unexpected victory condition")
 
-    world.multiworld.regions += [
-        create_region(world, region_name, locations, victory_item_location)
-        for region_name, locations in DIDDY_KONG_RACING_REGIONS.items()
-    ]
-
-    world.get_location(victory_item_location).place_locked_item(
-        world.create_event_item(ItemName.VICTORY)
-    )
+    place_victory_item(world, victory_region, victory_item_location)
 
 
-def create_region(world: DiddyKongRacingWorld, name: str, locations: list[str], victory_item_location: str) -> Region:
+def create_region(world: DiddyKongRacingWorld, name: str, locations: list[str]) -> Region:
     region = Region(name, world.player, world.multiworld)
     if locations:
-        if victory_item_location in locations:
-            region.add_locations({victory_item_location: None})
-
         active_locations = world.location_name_to_id
         location_to_id = {
             location: active_locations.get(location, 0) for location in locations
@@ -224,6 +219,14 @@ def create_region(world: DiddyKongRacingWorld, name: str, locations: list[str], 
         region.add_locations(location_to_id, DiddyKongRacingLocation)
 
     return region
+
+
+def place_victory_item(world: DiddyKongRacingWorld, region_name: str, location_name: str):
+    victory_region = world.get_region(region_name)
+    victory_region.add_locations({location_name: None})
+    world.get_location(location_name).place_locked_item(
+        world.create_event_item(ItemName.VICTORY)
+    )
 
 
 def connect_regions(world: DiddyKongRacingWorld) -> None:
@@ -251,9 +254,11 @@ def connect_regions(world: DiddyKongRacingWorld) -> None:
         RegionName.SMOKEY_CASTLE,
         RegionName.SMOKEY
     ])
-    add_named_exits(world, RegionName.FUTURE_FUN_LAND, [
-        RegionName.WIZPIG_2
-    ])
+
+    if world.options.victory_condition.value == 1:
+        add_named_exits(world, RegionName.FUTURE_FUN_LAND, [
+            RegionName.WIZPIG_2
+        ])
 
     # Skip for Universal Tracker, this will be done from slot_data
     if not hasattr(world.multiworld, "generation_is_fake"):
@@ -321,7 +326,7 @@ def connect_track_regions(world: DiddyKongRacingWorld) -> None:
 
 
 def reconnect_found_entrance(world: DiddyKongRacingWorld, key: str) -> None:
-    found_region_map_value = int(key.removeprefix(DATASTORAGE_KEY_PREFIX.replace("{player}", str(world.player))))
+    found_region_map_value = int(key[key.rfind("_") + 1:])
     found_region_name = MAP_VALUE_TO_REGION_NAME[found_region_map_value]
     found_region_index = VANILLA_REGION_ORDER.index(found_region_name)
     found_region = world.get_region(found_region_name)

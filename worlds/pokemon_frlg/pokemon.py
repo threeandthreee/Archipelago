@@ -9,6 +9,8 @@ from .options import (Dexsanity, HmCompatibility, RandomizeAbilities, RandomizeB
                       RandomizeLegendaryPokemon, RandomizeMiscPokemon, RandomizeMoves, RandomizeMoveTypes,
                       RandomizeStarters, RandomizeTrainerParties, RandomizeTypes, RandomizeWildPokemon,
                       TmTutorCompatibility, WildPokemonGroups)
+from .universal_tracker import (ut_set_legendary_pokemon, ut_set_misc_pokemon, ut_set_requested_trade_pokemon,
+                                ut_set_tm_hm_compatibility, ut_set_wild_pokemon)
 from .util import bool_array_to_int, bound, int_to_bool_array, HM_TO_COMPATIBILITY_ID
 
 if TYPE_CHECKING:
@@ -524,6 +526,10 @@ def randomize_base_stats(world: "PokemonFRLGWorld") -> None:
 
 
 def randomize_wild_encounters(world: "PokemonFRLGWorld") -> None:
+    if world.is_universal_tracker:
+        ut_set_wild_pokemon(world)
+        return
+
     game_version = world.options.game_version.current_key
 
     if world.options.wild_pokemon == RandomizeWildPokemon.option_vanilla:
@@ -819,6 +825,10 @@ def randomize_starters(world: "PokemonFRLGWorld") -> None:
 
 
 def randomize_legendaries(world: "PokemonFRLGWorld") -> None:
+    if world.is_universal_tracker:
+        ut_set_legendary_pokemon(world)
+        return
+
     game_version = world.options.game_version.current_key
 
     if world.options.legendary_pokemon != RandomizeLegendaryPokemon.option_vanilla:
@@ -908,6 +918,10 @@ def randomize_legendaries(world: "PokemonFRLGWorld") -> None:
 
 
 def randomize_misc_pokemon(world: "PokemonFRLGWorld") -> None:
+    if world.is_universal_tracker:
+        ut_set_misc_pokemon(world)
+        return
+
     game_version = world.options.game_version.current_key
 
     if world.options.misc_pokemon != RandomizeMiscPokemon.option_vanilla:
@@ -1066,6 +1080,10 @@ def randomize_misc_pokemon(world: "PokemonFRLGWorld") -> None:
 
 
 def randomize_requested_trade_pokemon(world: "PokemonFRLGWorld") -> None:
+    if world.is_universal_tracker:
+        ut_set_requested_trade_pokemon(world)
+        return
+
     game_version = world.options.game_version.current_key
     for trade_id, trade_pokemon in world.modified_trade_pokemon.items():
         species = world.random.choice(world.logic.wild_pokemon)
@@ -1140,6 +1158,10 @@ def randomize_trainer_parties(world: "PokemonFRLGWorld") -> None:
 
 
 def randomize_tm_hm_compatibility(world: "PokemonFRLGWorld") -> None:
+    if world.is_universal_tracker:
+        ut_set_tm_hm_compatibility(world)
+        return
+
     for species in world.modified_species.values():
         compatibility_array = int_to_bool_array(species.tm_hm_compatibility)
 

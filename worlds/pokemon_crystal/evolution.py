@@ -21,7 +21,7 @@ def randomize_evolution(world: "PokemonCrystalWorld") -> dict[str, list[str]]:
     # Values: All Pokemon that evolve into this Pokemon. Relevant for breeding
     evolved_pkmn_dict: dict[str, list[str]] = defaultdict(list)
 
-    if not world.options.randomize_evolution:
+    if world.is_universal_tracker or not world.options.randomize_evolution:
         # Build the dict from original evolution data for breeding compatibility
         for pokemon_name, pokemon_data in world.generated_pokemon.items():
             for evolution in pokemon_data.evolutions:
@@ -191,7 +191,7 @@ def __handle_no_valid_evolution(world: "PokemonCrystalWorld",
         return dict.fromkeys(blocked_final_evolutions, 1)
 
 
-def generate_evolution_data(world: "PokemonCrystalWorld"):
+def get_logically_available_evolutions(world: "PokemonCrystalWorld") -> set[str]:
     evolution_pokemon = set()
 
     def recursive_evolution_add(evolving_pokemon):
@@ -207,7 +207,7 @@ def generate_evolution_data(world: "PokemonCrystalWorld"):
     for pokemon in world.logic.available_pokemon:
         recursive_evolution_add(pokemon)
 
-    world.logic.available_pokemon.update(evolution_pokemon)
+    return evolution_pokemon
 
 
 def get_random_pokemon_evolution(random: Random, pkmn_name: str, pkmn_data: PokemonData):

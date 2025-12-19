@@ -190,7 +190,8 @@ def level_scaling(multiworld: MultiWorld):
                         for rematch_id in TRAINER_REMATCH_MAP[f"{scaling_id}_REWARD"]:
                             rematch_trainer_data = world.modified_trainers[rematch_id[:-7]]
                             rematch_base_level = data.trainers[rematch_id[:-7]].party.base_level
-                            new_rematch_base_level = new_base_level * (rematch_base_level / trainer_base_level)
+                            new_rematch_base_level = min(new_base_level * (rematch_base_level / trainer_base_level),
+                                                         new_base_level + (rematch_base_level - trainer_base_level))
                             for pokemon in rematch_trainer_data.party.pokemon:
                                 new_level = round(min((new_rematch_base_level * pokemon.level / rematch_base_level),
                                                       (new_rematch_base_level + pokemon.level - rematch_base_level)))

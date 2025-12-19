@@ -159,4 +159,44 @@ DESIRABLE_OBJECTS_LAVA_SHELTER = [
     SETObject(ObjectType.SHADOW_ANDROID, Levels.STAGE_LAVA_SHELTER, 197, '72.2',
               region=REGION_INDICIES.LAVA_SHELTER_PULLEY_DARK),
 
+    SETObject(ObjectType.KEY, Levels.STAGE_LAVA_SHELTER, 47, 'Key 1', region=0),
+    SETObject(ObjectType.KEY, Levels.STAGE_LAVA_SHELTER, 67, 'Key 2', region=REGION_INDICIES.LAVA_SHELTER_PULLEY),
+    SETObject(ObjectType.KEY, Levels.STAGE_LAVA_SHELTER, 143, 'Key 3', region=REGION_INDICIES.LAVA_SHELTER_PULLEY_OR_LAVA),
+    SETObject(ObjectType.KEY, Levels.STAGE_LAVA_SHELTER, 224, 'Key 4', region=REGION_INDICIES.LAVA_SHELTER_PULLEY_DARK),
+    SETObject(ObjectType.KEY, Levels.STAGE_LAVA_SHELTER, 225, 'Key 5', region=REGION_INDICIES.LAVA_SHELTER_PULLEY_OR_LAVA),
+    SETObject(ObjectType.GOAL_RING, Levels.STAGE_LAVA_SHELTER, 404, 'Goal Ring',region=REGION_INDICIES.LAVA_SHELTER_PULLEY_OR_LAVA),
+
+    SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_LAVA_SHELTER, 294, 'Triangle Jump Balloons Start A',
+              region=0),
+    SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_LAVA_SHELTER, 291, 'Triangle Jump Balloons Start B',
+              region=0),
+    SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_LAVA_SHELTER, 213, 'Pulley Item A',
+              region=REGION_INDICIES.LAVA_SHELTER_PULLEY),
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_LAVA_SHELTER, 319, 'Pulley Item B',
+              region=REGION_INDICIES.LAVA_SHELTER_PULLEY),
+    SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_LAVA_SHELTER, 215, 'Pulley Item C',
+              region=REGION_INDICIES.LAVA_SHELTER_PULLEY),
+
+    SETObject(ObjectType.ITEM_IN_BOX, Levels.STAGE_LAVA_SHELTER, 152, 'Box in Room with Defense 2',
+              region=REGION_INDICIES.LAVA_SHELTER_PULLEY_OR_LAVA),
+
+    SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_LAVA_SHELTER, 300, 'Later Triangle Jump A',
+              region=REGION_INDICIES.LAVA_SHELTER_PULLEY_OR_LAVA),
+    SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_LAVA_SHELTER, 299, 'Later Triangle Jump B',
+              region=REGION_INDICIES.LAVA_SHELTER_PULLEY_OR_LAVA),
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_LAVA_SHELTER, 358, 'Life on Rails',
+              region=REGION_INDICIES.LAVA_SHELTER_PULLEY_OR_LAVA),
+
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_LAVA_SHELTER, 251, 'Secret Section A',
+              region=REGION_INDICIES.LAVA_SHELTER_AIR_SAUCER),
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_LAVA_SHELTER, 180, 'Secret Section B',
+              region=REGION_INDICIES.LAVA_SHELTER_AIR_SAUCER),
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_LAVA_SHELTER, 252, 'Secret Section C',
+              region=REGION_INDICIES.LAVA_SHELTER_AIR_SAUCER),
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_LAVA_SHELTER, 253, 'Secret Section D',
+              region=REGION_INDICIES.LAVA_SHELTER_AIR_SAUCER)
+
+
+
+
 ]

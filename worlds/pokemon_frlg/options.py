@@ -2,10 +2,11 @@
 Option definitions for Pokémon FireRed/LeafGreen
 """
 from dataclasses import dataclass
-from schema import Optional, Schema, And
+from schema import And, Optional, Or, Schema
 from Options import (Choice, DeathLink, DefaultOnToggle, NamedRange, OptionDict, OptionSet, PerGameCommonOptions, Range,
                      Toggle)
-from .data import data, ability_name_map, fly_blacklist_map, fly_plando_maps, move_name_map, starting_town_blacklist_map
+from .data import (data, ability_name_map, fly_blacklist_map, fly_plando_maps, move_name_map,
+                   starting_town_blacklist_map, GAME_OPTIONS)
 
 
 class GameVersion(Choice):
@@ -64,22 +65,153 @@ class StartingTownBlacklist(OptionSet):
     valid_keys = list(starting_town_blacklist_map.keys())
 
 
-class DungeonEntranceShuffle(Choice):
+class ShufflePokemonCenterEntrances(Toggle):
     """
-    Shuffles dungeon entrances.
+    Shuffles the Pokemon Center entrances amongst each other.
 
-    - Off: Dungeon entrances are not shuffled
-    - Simple: Single entrance dungeons and multi entrance dungeons are shuffled separately from each other. Both entrances for multi entrance dungeons will connect to the same dungeon
-    - Restricted: Single entrance dungeons and multi entrance dungeons are shuffled separately from each other. Both entrances for multi entrance dungeons do not need to lead to the same dungeon
-    - Full: All dungeon entrances are shuffled together
+    The Player's House is included in this pool but will not be shuffled.
     """
-    display_name = "Dungeon Entrance Shuffle"
+    display_name = "Shuffle Pokemon Center Entrances"
+
+
+class ShuffleGymEntrances(Toggle):
+    """
+    Shuffles the gym entrances amongst each other.
+    """
+    display_name = "Shuffle Gym Entrances"
+
+
+class ShuffleMartEntrances(Toggle):
+    """
+    Shuffles the Poke Mart entrances amongst each other.
+
+    This does not include the Celadon Department Store entrances.
+    """
+    display_name = "Shuffle Mart Entrances"
+
+
+class ShuffleHarborEntrances(Toggle):
+    """
+    Shuffles the harbor entrances amongst each other.
+    """
+    display_name = "Shuffle Harbor Entrances"
+
+
+class ShuffleBuildingEntrances(Choice):
+    """
+    Shuffles the building entrances amongst each other.
+
+    The Celadon Department Store entrances are included in this pool.
+
+    A building is considered a multi entrance building if the two entrances are normally connected inside the building.
+    For instance, the Celadon Condominium is not considered a multi entrance building and the Route 16 Gate counts as
+    two separate multi entrance buildings.
+
+    - Off: Building entrances are not shuffled
+    - Simple: Single entrance buildings and multi entrance buildings are shuffled separately from each other. Both entrances for multi entrance buildings will connect to the same building
+    - Restricted: Single entrance buildings and multi entrance buildings are shuffled separately from each other. Both entrances for multi entrance buildings do not need to lead to the same building
+    - Full: All building entrances are shuffled together
+    """
+    display_name = "Shuffle Building Entrances"
     default = 0
     option_off = 0
     option_simple = 1
     option_restricted = 2
     option_full = 3
 
+
+class ShuffleDungeonEntrances(Choice):
+    """
+    Shuffles the dungeon entrances amongst each other.
+
+    - Off: Dungeon entrances are not shuffled
+    - Seafoam: Swaps the two Seafoam Island entrances.
+    - Simple: Single entrance dungeons and multi entrance dungeons are shuffled separately from each other. Both entrances for multi entrance dungeons will connect to the same dungeon
+    - Restricted: Single entrance dungeons and multi entrance dungeons are shuffled separately from each other. Both entrances for multi entrance dungeons do not need to lead to the same dungeon
+    - Full: All dungeon entrances are shuffled together
+    """
+    display_name = "Shuffle Dungeon Entrances"
+    default = 0
+    option_off = 0
+    option_seafoam = 1
+    option_simple = 2
+    option_restricted = 3
+    option_full = 4
+
+
+class ShuffleInteriorWarps(Toggle):
+    """
+    Shuffles the interior warps of buildings and dungeons amongst each other.
+
+    The Safari Zone will behave like a normal dungeon when interiors are shuffled.
+
+    The elevator warps in the Celadon Department Store, Rocket Hideout, and Silph Co. are not shuffled.
+
+    The Safari Zone Entrance <-> Safari Zone Center warp is not shuffled.
+
+    The only warps in Lost Cave that are shuffled are the two ladders.
+    """
+    display_name = "Shuffle Interior Warps"
+
+
+class ShuffleWarpTiles(Choice):
+    """
+    Shuffles the warp tiles in buildings and dungeons amongst each other.
+
+    - Off: Warp tiles are not shuffled
+    - Simple: All warp tiles in a building or dungeon are shuffled amongst each other, but they will never lead to another building or dungeon
+    - Full: All warp tiles are shuffled together
+    """
+    display_name = "Shuffle Warp Tiles"
+    default = 0
+    option_off = 0
+    option_simple = 1
+    option_full = 2
+
+
+class ShuffleDropdowns(Choice):
+    """
+    Shuffles the dropdowns in dungeons amongst each other.
+
+    The incorrect dropdowns in Dotted Hole are not shuffled.
+
+    - Off: Dropdowns are not shuffled
+    - Simple: All dropdowns of a dungeon are shuffled amongst each other, but they will never lead to another dungeon
+    - Full: All dropdowns are shuffled together
+    """
+    display_name = "Shuffle Dropdowns"
+    default = 0
+    option_off = 0
+    option_simple = 1
+    option_full = 2
+
+
+class MixEntranceWarpPools(OptionSet):
+    """
+    Shuffle the selected entrances/warps into a mixed pool instead of separate ones. Has no effect on pools whose
+    entrances/warps aren't shuffled. Entrances/warps can only be mixed with other entrance/warps that have the same
+    restrictions. Can specify "All" as a shortcut for adding in all entrances/warps that can be mixed.
+
+    The avaialble pools that can be mixed are:
+    - Gyms
+    - Marts
+    - Harbors
+    - Buildings
+    - Dungeons
+    - Interiors
+    """
+    display_name = "Mix Entrance/Warp Pools"
+    valid_keys = ["Gyms", "Marts", "Harbors", "Buildings", "Dungeons", "Interiors", "All"]
+
+
+class DecoupleEntrancesWarps(Toggle):
+    """
+    Decouple entrances/warps when shuffling them. This means that you are no longer guaranteed to end up back where you
+    came from when you go back through an entrance/warp.
+
+    Simple Building/Dungeon shuffle are not compatible with this option and will be changed to Restricted shuffle.
+    """
+    display_name = "Decouple Entrances/Warps"
 
 class RandomizeFlyDestinations(Choice):
     """
@@ -182,6 +314,21 @@ class Shopsanity(Toggle):
     display_name = "Shopsanity"
 
 
+class VendingMachines(Toggle):
+    """
+    Shuffles the Celadon Department Store vending machine items into the general item pool.
+
+    At least one Fresh Water, Soda Pop, and Lemonade are guaranteed to be placed in a shop location.
+    """
+    display_name = "Vending Machines"
+
+
+class Prizesanity(Toggle):
+    """
+    Shuffles the Celadon Game Corner Prize Room items and TMs into the general item pool.
+    """
+    display_name = "Prizesanity"
+
 class ShopSlots(NamedRange):
     """
     Sets the number of slots per shop that can have progression items when shopsanity is on. Shop slots that cannot be
@@ -250,12 +397,22 @@ class Rematchsanity(Toggle):
     item will give an item for rematchsanity.
 
     Each trainer rematch will add a random filler item into the pool.
-
-    IMPORTANT NOTE: The conditions for triggering trainer rematches has been changed from the vanilla game. The first
-                    rematch is unlocked by obtaining the Vs. Seeker and then subsequent rematches are unlocked for every
-                    2 gyms beaten.
     """
     display_name = "Rematchsanity"
+
+
+class RematchRequirements(Choice):
+    """
+    Sets the requirement for being able to battle trainer's rematches.
+
+    - Badges: Obtain some number of Badges
+    - Gyms: Beat some number of Gyms
+    """
+    display_name = "Rematch Requirements"
+    default = 1
+    option_badges = 0
+    option_gyms = 1
+
 
 class Dexsanity(NamedRange):
     """
@@ -353,18 +510,20 @@ class ShuffleTMCase(Toggle):
     display_name = "Shuffle TM Case"
 
 
-class ShuffleLedgeJump(Toggle):
+class ShuffleJumpingShoes(Toggle):
     """
-    Shuffles the ability to jump down ledges into the item pool. If not shuffled then you will start with it.
+    Shuffles the Jumping Shoes into the item pool. If not shuffled then you will start with it.
+
+    The Jumping Shoes are a new item that grants you the ability to jump down ledges.
     """
-    display_name = "Shuffle Ledge Jump"
+    display_name = "Shuffle Jumping Shoes"
 
 
 class PostGoalLocations(Toggle):
     """
     Shuffles locations into the item pool that are only accessible after your goal is completed.
 
-    If Cerulean Cave access is locked by your goal then Cerulean Cave won't be included in Dungeon Entrance Shuffle.
+    If Cerulean Cave access is locked by your goal then Cerulean Cave won't be included in Shuffled Dungeons.
     """
     display_name = "Post Goal Locations"
 
@@ -487,17 +646,17 @@ class FameCheckerRequired(DefaultOnToggle):
     display_name = "Fame Checker Required"
 
 
-class BicycleRequiresLedgeJump(DefaultOnToggle):
+class BicycleRequiresJumpingShoes(DefaultOnToggle):
     """
-    Sets whether the Bicycle requires you to have the Ledge Jump ability in order to jump ledges.
+    Sets whether the Bicycle requires you to have the Jumping Shoes in order to jump down ledges while on the Bicycle.
     """
-    display_name = "Bicycle Requires Ledge Jump"
+    display_name = "Bicycle Requires Jumping Shoes"
 
 
 class AcrobaticBicycle(Toggle):
     """
-    Sets whether the Bicycle is able to jump up ledges in addition to jumping down ledges. If the Bicycle Requires Ledge
-    Jump setting is on then the Ledge Jump ability is necessary in order to jump up ledges as well.
+    Sets whether the Bicycle is able to jump up ledges in addition to jumping down ledges. If the Bicycle Requires
+    Jumping Shoes setting is on then the Jumping Shoes is necessary in order to jump up ledges as well.
     """
     display_name = "Acrobatic Bicycle"
 
@@ -576,12 +735,14 @@ class ModifyWorldState(OptionSet):
     - Total Darkness: Changes dark caves to be completely black and provide no vision without Flash
     - Block Vermilion Sailing: Prevents you from sailing to Vermilion City on the Seagallop until you have gotten
                                the S.S. Ticket
+    - All Elevators Locked: Prevents you from using the elevators in the Celadon Department Store and Silph Co. until
+                            you have gotten the Lift Key
     """
     display_name = "Modify World State"
     valid_keys = ["Modify Route 2", "Remove Cerulean Roadblocks", "Block Tunnels", "Modify Route 9",
                   "Modify Route 10", "Block Tower", "Route 12 Boulders", "Modify Route 12", "Modify Route 16",
                   "Open Silph", "Remove Saffron Rockets", "Route 23 Trees", "Modify Route 23", "Victory Road Rocks",
-                  "Early Gossipers", "Total Darkness", "Block Vermilion Sailing"]
+                  "Early Gossipers", "Total Darkness", "Block Vermilion Sailing", "All Elevators Locked"]
 
 
 class AdditionalDarkCaves(OptionSet):
@@ -1245,21 +1406,6 @@ class AllPokemonSeen(Toggle):
     display_name = "All Pokemon Seen"
 
 
-class ExpModifier(Range):
-    """
-    Sets the EXP multiplier that is used when the in game option for experience is set to Custom.
-
-    100 is default
-    50 is half
-    200 is double
-    etc.
-    """
-    display_name = "Exp Modifier"
-    range_start = 1
-    range_end = 1000
-    default = 100
-
-
 class StartingMoney(Range):
     """
     Sets the amount of money that you start with.
@@ -1344,50 +1490,63 @@ class GameOptions(OptionDict):
     Allows you to preset the in game options.
     The available options and their allowed values are the following:
 
+    - Text Speed: Slow, Mid, Fast, Instant
+    - Turbo Button: Off, A, B, A/B
     - Auto Run: Off, On
+    - Button Mode: Help, L/R, L=A
+    - Frame: 1-10
     - Battle Scene: Off, On
     - Battle Style: Shift, Set
-    - Bike Music: Off, On
-    - Blind Trainers: Off, On
-    - Button Mode: Help, LR, L=A
-    - Encounter Rates: Vanilla, Normalized
-    - Experience: None, Half, Normal, Double, Triple, Quadruple, Custom
-    - Frame: 1-10
-    - Guaranteed Catch: Off, On
-    - Item Messages: All, Progression, None
-    - Low HP Beep: Off, On
     - Show Effectiveness: Off, On
-    - Skip Fanfares: Off, On
+    - Experience Multiplier: 0-1000 in increments of 10 (0, 10, 20, etc.)
+    - Experience Distribution: Gen III, Gen VI, Gen VIII
     - Sound: Mono, Stereo
+    - Low HP Beep: Off, On
+    - Skip Fanfares: Off, On
+    - Bike Music: Off, On
     - Surf Music: Off, On
-    - Text Speed: Slow, Mid, Fast, Instant
-    - Turbo A: Off, On
+    - Guaranteed Catch: Off, On
+    - Guaranteed Run: Off, On
+    - Encounter Rates: Vanilla, Normalized
+    - Blind Trainers: Off, On
+    - Skip Nicknames: Off, On
+    - Item Messages: All, Progression, None
     """
     display_name = "Game Options"
-    default = {"Text Speed": "Instant", "Turbo A": "Off", "Auto Run": "Off", "Button Mode": "Help", "Frame": 1,
-               "Battle Scene": "On", "Battle Style": "Shift", "Show Effectiveness": "On", "Experience": "Custom",
-               "Sound": "Mono", "Low HP Beep": "On", "Skip Fanfares": "Off", "Bike Music": "On", "Surf Music": "On",
-               "Guaranteed Catch": "Off", "Encounter Rates": "Vanilla", "Blind Trainers": "Off",
-               "Item Messages": "Progression"}
     schema = Schema({
-        "Text Speed": And(str, lambda s: s in ("Slow", "Mid", "Fast", "Instant")),
-        "Turbo A": And(str, lambda s: s in ("Off", "On")),
-        "Auto Run": And(str, lambda s: s in ("Off", "On")),
-        "Button Mode": And(str, lambda s: s in ("Help", "LR", "L=A")),
-        "Frame": And(int, lambda n: 1 <= n <= 10),
-        "Battle Scene": And(str, lambda s: s in ("Off", "On")),
-        "Battle Style": And(str, lambda s: s in ("Shift", "Set")),
-        "Show Effectiveness": And(str, lambda s: s in ("Off", "On")),
-        "Experience": And(str, lambda s: s in ("None", "Half", "Normal", "Double", "Triple", "Quadruple", "Custom")),
-        "Sound": And(str, lambda s: s in ("Mono", "Stereo")),
-        "Low HP Beep": And(str, lambda s: s in ("Off", "On")),
-        "Skip Fanfares": And(str, lambda s: s in ("Off", "On")),
-        "Bike Music": And(str, lambda s: s in ("Off", "On")),
-        "Surf Music": And(str, lambda s: s in ("Off", "On")),
-        "Guaranteed Catch": And(str, lambda s: s in ("Off", "On")),
-        "Encounter Rates": And(str, lambda s: s in ("Vanilla", "Normalized")),
-        "Blind Trainers": And(str, lambda s: s in ("Off", "On")),
-        "Item Messages": And(str, lambda s: s in ("All", "Progression", "None"))
+        Optional("Text Speed"): And(str, lambda s: s in GAME_OPTIONS["Text Speed"].options.keys()),
+        Optional("Turbo Button"): Or(And(str, lambda s: s in GAME_OPTIONS["Turbo Button"].options.keys()),
+                                     And(bool, lambda s: s in GAME_OPTIONS["Turbo Button"].options.keys()),),
+        Optional("Auto Run"): Or(And(str, lambda s: s in GAME_OPTIONS["Auto Run"].options.keys()),
+                                 And(bool, lambda s: s in GAME_OPTIONS["Auto Run"].options.keys()),),
+        Optional("Button Mode"): And(str, lambda s: s in GAME_OPTIONS["Button Mode"].options.keys()),
+        Optional("Frame"): And(int, lambda i: i in GAME_OPTIONS["Frame"].options.keys()),
+        Optional("Battle Scene"): Or(And(str, lambda s: s in GAME_OPTIONS["Battle Scene"].options.keys()),
+                                     And(bool, lambda s: s in GAME_OPTIONS["Battle Scene"].options.keys()),),
+        Optional("Battle Style"): And(str, lambda s: s in GAME_OPTIONS["Battle Style"].options.keys()),
+        Optional("Show Effectiveness"): Or(And(str, lambda s: s in GAME_OPTIONS["Show Effectiveness"].options.keys()),
+                                           And(bool, lambda s: s in GAME_OPTIONS["Show Effectiveness"].options.keys()),),
+        Optional("Experience Multiplier"): And(int, lambda s: s in GAME_OPTIONS["Experience Multiplier"].options.keys()),
+        Optional("Experience Distribution"): And(str, lambda s: s in GAME_OPTIONS["Experience Distribution"].options.keys()),
+        Optional("Sound"): And(str, lambda s: s in GAME_OPTIONS["Sound"].options.keys()),
+        Optional("Low HP Beep"): Or(And(str, lambda s: s in GAME_OPTIONS["Low HP Beep"].options.keys()),
+                                    And(bool, lambda s: s in GAME_OPTIONS["Low HP Beep"].options.keys()),),
+        Optional("Skip Fanfares"): Or(And(str, lambda s: s in GAME_OPTIONS["Skip Fanfares"].options.keys()),
+                                      And(bool, lambda s: s in GAME_OPTIONS["Skip Fanfares"].options.keys()),),
+        Optional("Bike Music"): Or(And(str, lambda s: s in GAME_OPTIONS["Bike Music"].options.keys()),
+                                   And(bool, lambda s: s in GAME_OPTIONS["Bike Music"].options.keys()),),
+        Optional("Surf Music"): Or(And(str, lambda s: s in GAME_OPTIONS["Surf Music"].options.keys()),
+                                   And(bool, lambda s: s in GAME_OPTIONS["Surf Music"].options.keys()),),
+        Optional("Guaranteed Catch"): Or(And(str, lambda s: s in GAME_OPTIONS["Guaranteed Catch"].options.keys()),
+                                         And(bool, lambda s: s in GAME_OPTIONS["Guaranteed Catch"].options.keys()),),
+        Optional("Guaranteed Run"): Or(And(str, lambda s: s in GAME_OPTIONS["Guaranteed Run"].options.keys()),
+                                       And(bool, lambda s: s in GAME_OPTIONS["Guaranteed Run"].options.keys()),),
+        Optional("Encounter Rates"): And(str, lambda s: s in GAME_OPTIONS["Encounter Rates"].options.keys()),
+        Optional("Blind Trainers"): Or(And(str, lambda s: s in GAME_OPTIONS["Blind Trainers"].options.keys()),
+                                       And(bool, lambda s: s in GAME_OPTIONS["Blind Trainers"].options.keys()),),
+        Optional("Skip Nicknames"): Or(And(str, lambda s: s in GAME_OPTIONS["Skip Nicknames"].options.keys()),
+                                       And(bool, lambda s: s in GAME_OPTIONS["Skip Nicknames"].options.keys()),),
+        Optional("Item Messages"): And(str, lambda s: s in GAME_OPTIONS["Item Messages"].options.keys()),
     })
 
 
@@ -1418,7 +1577,17 @@ class PokemonFRLGOptions(PerGameCommonOptions):
     kanto_only: KantoOnly
     random_starting_town: RandomStartingTown
     starting_town_blacklist: StartingTownBlacklist
-    dungeon_entrance_shuffle: DungeonEntranceShuffle
+    shuffle_pokemon_centers: ShufflePokemonCenterEntrances
+    shuffle_gyms: ShuffleGymEntrances
+    shuffle_marts: ShuffleMartEntrances
+    shuffle_harbors: ShuffleHarborEntrances
+    shuffle_buildings: ShuffleBuildingEntrances
+    shuffle_dungeons: ShuffleDungeonEntrances
+    shuffle_interiors: ShuffleInteriorWarps
+    shuffle_warp_tiles: ShuffleWarpTiles
+    shuffle_dropdowns: ShuffleDropdowns
+    mix_entrance_warp_pools: MixEntranceWarpPools
+    decouple_entrances_warps: DecoupleEntrancesWarps
     randomize_fly_destinations: RandomizeFlyDestinations
     fly_destination_plando: FlyDestinationPlando
 
@@ -1426,11 +1595,14 @@ class PokemonFRLGOptions(PerGameCommonOptions):
     shuffle_hidden: ShuffleHiddenItems
     extra_key_items: ExtraKeyItems
     shopsanity: Shopsanity
+    vending_machines: VendingMachines
+    prizesanity: Prizesanity
     shop_slots: ShopSlots
     shop_prices: ShopPrices
     consistent_shop_prices: ConsistentShopPrices
     trainersanity: Trainersanity
     rematchsanity: Rematchsanity
+    rematch_requirements: RematchRequirements
     dexsanity: Dexsanity
     famesanity: Famesanity
     shuffle_fly_unlocks: ShuffleFlyUnlocks
@@ -1439,7 +1611,7 @@ class PokemonFRLGOptions(PerGameCommonOptions):
     shuffle_running_shoes: ShuffleRunningShoes
     shuffle_berry_pouch: ShuffleBerryPouch
     shuffle_tm_case: ShuffleTMCase
-    shuffle_ledge_jump: ShuffleLedgeJump
+    shuffle_jumping_shoes: ShuffleJumpingShoes
     post_goal_locations: PostGoalLocations
     card_key: CardKey
     island_passes: IslandPasses
@@ -1450,7 +1622,7 @@ class PokemonFRLGOptions(PerGameCommonOptions):
     itemfinder_required: ItemfinderRequired
     flash_required: FlashRequired
     fame_checker_required: FameCheckerRequired
-    bicycle_requires_ledge_jump: BicycleRequiresLedgeJump
+    bicycle_requires_jumping_shoes: BicycleRequiresJumpingShoes
     acrobatic_bicycle: AcrobaticBicycle
     evolutions_required: EvolutionsRequired
     evolution_methods_required: EvolutionMethodsRequired
@@ -1513,7 +1685,6 @@ class PokemonFRLGOptions(PerGameCommonOptions):
     reusable_tm_tutors: ReusableTmsTutors
     min_catch_rate: MinCatchRate
     all_pokemon_seen: AllPokemonSeen
-    exp_modifier: ExpModifier
     starting_money: StartingMoney
     better_shops: BetterShops
     free_fly_location: FreeFlyLocation

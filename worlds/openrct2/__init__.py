@@ -1,10 +1,11 @@
 import math
 from typing import TextIO
 from Utils import local_path
+from random import choice as random_message #I know this looks wrong, but it's only used to randomly select a message for the launcher!
 
 import worlds.LauncherComponents as LauncherComponents
 from BaseClasses import ItemClassification, Region, Location, Tutorial
-from worlds.generic.Rules import add_rule
+from worlds.generic.Rules import add_rule, add_item_rule
 
 from .Constants import base_id, apworld_version
 from .data.scenario_info import scenario_info
@@ -39,20 +40,39 @@ def launch_client() -> None:  # Shoutout to Serpent.ai for the launcher code!
     from .Client import main
     LauncherComponents.launch_subprocess(main, name="OpenRCT2Client")
 
+messages = ["OpenRCT2 is a really good value!", "OpenRCT2 looks too intense for me!", "I want to go on something "
+    "more thrilling than OpenRCT2.","Just looking at OpenRCT2 makes me feel sick.","I'm not paying that much to "
+    "go on OpenRCT2!", "I want to go home.", "Help! I'm drowning!", "OpenRCT2 was great!", "I've been queuing for "
+    "OpenRCT2 for ages!", "I'm not paying that much to go on OpenRCT2!","I'm not going on OpenRCT2 - it isn't safe.",
+    "I'm not paying that much to use the bathroom!", "OpenRCT2 has crashed!", "OpenRCT2 has broken down.", "This on-"
+    "Ride Photo from OpenRCT2 is a really good value!"]
 
-LauncherComponents.components.append(
+try: LauncherComponents.components.append(
     LauncherComponents.Component(
         "OpenRCT2 Client",
         func=launch_client,
         component_type=LauncherComponents.Type.CLIENT,
         # OpenRCT2 icon credit to the OpenRCT2 team: 
         # https://github.com/OpenRCT2/OpenRCT2/blob/develop/resources/logo/icon_x96.png
-        icon='openrct2icon' 
+        icon='openrct2icon',
+        description="Open the OpenRCT2 client to connect your game to the multiworld!\n"
+            + random_message(messages)
+    )
+) # On older versions of Archipelago, having description text breaks the program.
+except: LauncherComponents.components.append(
+    LauncherComponents.Component(
+        "OpenRCT2 Client",
+        func=launch_client,
+        component_type=LauncherComponents.Type.CLIENT,
+        # OpenRCT2 icon credit to the OpenRCT2 team: 
+        # https://github.com/OpenRCT2/OpenRCT2/blob/develop/resources/logo/icon_x96.png
+        icon='openrct2icon',
     )
 )
 
 
-LauncherComponents.icon_paths['openrct2icon'] = local_path('data', 'openrct2icon.png')
+
+LauncherComponents.icon_paths['openrct2icon'] = f"ap:{__name__}/icons/openrct2icon.png"
 
 def get_previous_region_from_OpenRCT2_location(location_number: int):
     if location_number <= 2:
@@ -84,7 +104,8 @@ class OpenRCT2World(World):
         "Gentle Rides": item_info["Gentle Rides"],
         "Thrill Rides": item_info["Thrill Rides"],
         "Water Rides": item_info["Water Rides"],
-        "Rides": item_info["Rides"]
+        "Rides": item_info["Rides"],
+        "Tracked Rides": item_info["tracked_rides"]
     }
 
     def __init__(self, multiworld, player: int):
@@ -94,7 +115,7 @@ class OpenRCT2World(World):
         self.location_prices = []  # This list is passed to OpenRCT2 to create the unlock shop
         self.rules = []
         self.unique_rides = []
-        print(item_info)
+        # print(item_info)
 
     # Okay future Colby, listen up. Here's the plan. We're going to take the item_table and shuffle it in the next
     # section. We'll generate the unlock shop with the item locations and apply our logic to it. Prereqs can only be
@@ -149,14 +170,35 @@ class OpenRCT2World(World):
 
 
     def create_regions(self) -> None:
-        logic_length = (len(self.item_table))
+
+        #Okay, I've gotta go to church, so here's my plan when I work on this. First, I need to check how many awards
+        # we're including. Take that number and subtract it from the logic length since it'll no longer be a 
+        # traditional item in the unlock shop. After populating all the other regions, make a new set of regions for
+        #awards. These will have awards you can normally get, and awards that have prereqs. Also, figure out how to
+        #force those locations to not have progression items, only useful, possibly filler. Good luck. Also, comment
+        #everything to not hurt future Colbys little brain.
+        
+        logic_length = (len(self.item_table)) #Used to calculate the number of levels of the unlock shop
+
+        print("Here's the value for options:")
+        print(self.options.awards.value)
+        #Since awards won't be in the unlock shop, we remove them from the list of items that will go to the shop.
+        if self.options.awards == 0: #all awards
+            logic_length -= len(location_info["awards"])
+            if self.options.exclude_safest_park:
+                logic_length += 1 # add back item if safest park is disabled.
+        elif self.options.awards == 1: #positive awards
+            logic_length -= len(location_info["positive_awards"])
+            if self.options.exclude_safest_park: #add back item if safest park is disabled.
+                logic_length += 1
+
 
         def locations_to_region(location, ending_location, chosen_region):
             locations = []
             while location < ending_location + 1:
                 if location < 8:
                     locations.append(OpenRCT2Location(self.player, f"White_{location}",
-                                                    self.location_name_to_id[f"White_{location}"], chosen_region))
+                        self.location_name_to_id[f"White_{location}"], chosen_region))
                 else:
                     color_map = {
                         0: "Black",
@@ -170,7 +212,7 @@ class OpenRCT2World(World):
                     }
                     color = color_map[location % 8]
                     locations.append(OpenRCT2Location(self.player, f"{color}_{math.floor(location/8 - 1)}",
-                                                    self.location_name_to_id[f"{color}_{math.floor(location/8 - 1)}"], chosen_region))
+                        self.location_name_to_id[f"{color}_{math.floor(location/8 - 1)}"], chosen_region))
                 location += 1
             return locations
 
@@ -230,7 +272,7 @@ class OpenRCT2World(World):
                 num_rides = 4
             elif count == 3:  # 15 total items, we want 10 rides
                 num_rides = 10
-            elif count == 4:  # 23 total items, we want 15 rides and now toilets
+            elif count == 4:  # 23 total items, we want 15 rides
                 num_rides = 15
             elif count == 5:  # 31 total items, we want 18 rides, food, drinks, toilets, and some rules if applicable
                 num_rides = 18
@@ -249,9 +291,78 @@ class OpenRCT2World(World):
                     add_rule(region_entrance, lambda state: state.has("First Aid", self.player, 1))
             add_rule(region_entrance, lambda state: state.has_group("Rides", self.player, num_rides))
             count += 1
+        #print("Here's the total level of regions: " + str(current_level))
         final_region = self.multiworld.get_region("OpenRCT2_Level_" + str(current_level), self.player)
         final_region.connect(victory)
 
+        #Adds the award regions if enabled
+        if self.options.awards == 0: #all awards
+            negative_awards_region = Region("Negative_awards", self.player, self.multiworld)
+            negative_awards_region.locations = [
+            OpenRCT2Location(self.player, "Most Untidy Park in the Multiverse", 
+            self.location_name_to_id["Most Untidy Park in the Multiverse"], negative_awards_region),
+            OpenRCT2Location(self.player, "Worst Value in the Multiverse", 
+            self.location_name_to_id["Worst Value in the Multiverse"], negative_awards_region),
+            OpenRCT2Location(self.player, "Worst Food in the Multiverse", 
+            self.location_name_to_id["Worst Food in the Multiverse"], negative_awards_region),
+            OpenRCT2Location(self.player, "Total Disappointment", 
+            self.location_name_to_id["Total Disappointment"], negative_awards_region),
+            OpenRCT2Location(self.player, "Most Confusing Layout in the Multiverse", 
+            self.location_name_to_id["Most Confusing Layout in the Multiverse"], negative_awards_region)
+            ]
+            #Alrighty future Colby, you've gotta ensure every location in the region only has traps. I couldn't figure it out before bed. HAVE FUN!
+            for location in negative_awards_region.locations:
+                add_item_rule(location, lambda item: item.trap)
+            #Connect the award region to the unlock shop
+            s.connect(negative_awards_region)
+        if self.options.awards == 0 or self.options.awards == 1: #positive awards
+            positive_awards_region = Region("Positive_awards", self.player, self.multiworld)
+            positive_awards_region.locations = [
+            OpenRCT2Location(self.player, "Most Tidy Park in the Multiverse" , 
+            self.location_name_to_id["Most Tidy Park in the Multiverse"], positive_awards_region),
+            OpenRCT2Location(self.player, "Best Roller Coasters in the Multiverse", 
+            self.location_name_to_id["Best Roller Coasters in the Multiverse"], positive_awards_region),
+            OpenRCT2Location(self.player, "Most Beautiful Park in the Multiverse", 
+            self.location_name_to_id["Most Beautiful Park in the Multiverse"], positive_awards_region),
+            OpenRCT2Location(self.player, "Best Staff in the Multiverse", 
+            self.location_name_to_id["Best Staff in the Multiverse"], positive_awards_region),
+            OpenRCT2Location(self.player, "Best Food in the Multiverse", 
+            self.location_name_to_id["Best Food in the Multiverse"], positive_awards_region),
+            OpenRCT2Location(self.player, "Best Toilets in the Multiverse", 
+            self.location_name_to_id["Best Toilets in the Multiverse"], positive_awards_region),
+            OpenRCT2Location(self.player, "Best Water Rides in the Multiverse", 
+            self.location_name_to_id["Best Water Rides in the Multiverse"], positive_awards_region),
+            OpenRCT2Location(self.player, "Best Custom Designed Rides in the Multiverse", 
+            self.location_name_to_id["Best Custom Designed Rides in the Multiverse"], positive_awards_region),
+            OpenRCT2Location(self.player, "Most Dazzling Colors in the Multiverse", 
+            self.location_name_to_id["Most Dazzling Colors in the Multiverse"], positive_awards_region),
+            OpenRCT2Location(self.player, "Best Gentle Rides in the Multiverse", 
+            self.location_name_to_id["Best Gentle Rides in the Multiverse"], positive_awards_region)
+            ]
+            if not self.options.exclude_safest_park: #Adds the safest park award.
+                positive_awards_region.locations.append(OpenRCT2Location(self.player, "Hypothetical Safest Park in the Multiverse", 
+                self.location_name_to_id["Hypothetical Safest Park in the Multiverse"], positive_awards_region))
+            #Rules for the specific awards. This may not matter since the items will never be progression.
+            add_rule(self.multiworld.get_location("Best Roller Coasters in the Multiverse", self.player), 
+            lambda state: state.has_group("Roller Coasters", self.player, 6))
+            add_rule(self.multiworld.get_location("Best Food in the Multiverse", self.player), 
+            lambda state: state.has("Food Stall", self.player, 4))
+            add_rule(self.multiworld.get_location("Best Toilets in the Multiverse", self.player), 
+            lambda state: state.has("Toilets", self.player, 1))
+            #This is going to bite me in the butt when I discover a scenario that only has 1 water ride
+            add_rule(self.multiworld.get_location("Best Water Rides in the Multiverse", self.player), 
+            lambda state: state.has_group("Water Rides", self.player, 2))
+            add_rule(self.multiworld.get_location("Best Custom Designed Rides in the Multiverse", self.player), 
+            lambda state: state.has_group("Roller Coasters" or "Thrill Rides", self.player, 6))
+            add_rule(self.multiworld.get_location("Most Dazzling Colors in the Multiverse", self.player), 
+            lambda state: state.has_group("Tracked Rides", self.player, 5))
+            add_rule(self.multiworld.get_location("Best Gentle Rides in the Multiverse", self.player), 
+            lambda state: state.has_group("Gentle Rides", self.player, 5))
+
+            for location in positive_awards_region.locations:
+                add_item_rule(location, lambda item: item.useful)
+            #Connect the award region to the unlock shop
+            s.connect(positive_awards_region)
     def create_items(self) -> None:
         for item in self.item_table:
             self.multiworld.itempool.append(self.create_item(item))
@@ -272,6 +383,29 @@ class OpenRCT2World(World):
     def set_rules(self) -> None:
         # print("Here's the precollected Items")
         # print(self.multiworld.precollected_items[self.player])
+
+        # Remove the items tied to awards from the unlock shop
+        if self.options.awards.value == 0: # 0:all_awards
+            traps_removed = 0
+            for item in list(self.item_table):  # copy to avoid issues
+                if item in item_info["trap_items"]:
+                    self.item_table.remove(item)
+                    traps_removed += 1
+                    if traps_removed == 5:
+                        break
+
+        if self.options.awards == 0 or self.options.awards == 1: # 0:all_awards, 1:positive
+            items_removed = 0
+            items_to_remove = 11
+            if self.options.exclude_locations:
+                items_to_remove = 10
+            for item in list(self.item_table):  # copy to avoid issues
+                if item in item_info["useful_items"]:
+                    self.item_table.remove(item)
+                    items_removed += 1
+                    if items_removed == items_to_remove:
+                        break
+                    
         self.random.shuffle(self.item_table)
         # print(self.item_table)
 
@@ -411,8 +545,8 @@ class OpenRCT2World(World):
                             unlock["RidePrereq"] = \
                                 [self.random.randint(1, 3), chosen_prereq, excitement, intensity, nausea, length, total_customers]
                         elif (chosen_prereq in item_info["tracked_rides"]
-                              and (self.options.scenario_length.value == "synchronous_short" or 
-                              self.options.scenario_length.value == "synchronous_long")):
+                              and (self.options.scenario_length.value == 0 or #Sync Short
+                              self.options.scenario_length.value == 1)):#Sync Long
                             unlock["RidePrereq"] = [self.random.randint(1, 3), chosen_prereq, 0, 0, 0, 0, total_customers]
                         else:
                             if number > 100:
@@ -510,6 +644,7 @@ class OpenRCT2World(World):
             add_rule(self.multiworld.get_region("Victory", self.player).entrances[0],
                      lambda state, selected_prereq=ride: state.has(selected_prereq, self.player))
 
+
     def generate_basic(self) -> None:
         # place "Victory" at the end of the unlock tree and set collection as win condition
         self.multiworld.get_location("Victory", self.player).place_locked_item(
@@ -520,6 +655,7 @@ class OpenRCT2World(World):
         spoiler_handle.write(f'Starting Ride:       {self.starting_ride}\n')
 
     def fill_slot_data(self):
+        # Sets up the objectives for the player, as determined in the YAML
         guests = self.options.guest_objective.value
         park_value = self.options.park_value_objective.value
         roller_coasters = self.options.roller_coaster_objective.value
@@ -535,11 +671,9 @@ class OpenRCT2World(World):
                       "RideIncome": [0, False], "ShopIncome": [0, False], "ParkRating": [park_rating, False],
                       "LoanPaidOff": [pay_off_loan, False], "Monopoly": [monopoly, False],
                       "UniqueRides": [unique_rides, False]}
+
+        # Generates the seed, a combination of player name, scenario, and the multiworld seed.
         seed = self.multiworld.player_name[self.player] + str(self.options.scenario) + str(self.multiworld.seed_name)
-        # print("SEEED!")
-        # print(seed)
-        # print(objectives)
-        # print(self.item_id_to_name)
 
         # Fixes Location Prices for OpenRCT2
         for index, location in enumerate(self.location_prices):
@@ -568,7 +702,7 @@ class OpenRCT2World(World):
         # print(self.location_prices)
         slot_data = self.options.as_dict("difficulty", "scenario_length", "scenario", "death_link", "randomization_range",
         "stat_rerolls", "randomize_park_values", "ignore_ride_stat_changes", "visibility", "preferred_intensity", 
-        "all_rides_and_scenery_base", "all_rides_and_scenery_expansion")
+        "all_rides_and_scenery_base", "all_rides_and_scenery_expansion", "fireworks", "awards", "exclude_safest_park")
         slot_data["objectives"] = objectives
         slot_data["rules"] = self.rules
         slot_data["seed"] = seed
@@ -577,6 +711,9 @@ class OpenRCT2World(World):
         slot_data["location_prices"] = self.location_prices
         # print("Here's all the rules!")
         # print(self.multiworld.rules)
+        # print(self.options.scenario.value)
+        if self.options.scenario.value == 31 or self.options.scenario.value == 129 or self.options.scenario.value == 130:
+            raise Exception("Invalid scenario selected. What the p*ck past Colby?")
         return slot_data
 
     def create_item(self, item: str) -> OpenRCT2Item:
@@ -587,4 +724,6 @@ class OpenRCT2World(World):
             classification = ItemClassification.filler
         if item in item_info["trap_items"]:
             classification = ItemClassification.trap
+        # if classification == ItemClassification.useful:
+        #     print(item)
         return OpenRCT2Item(item, classification, self.item_name_to_id[item], self.player)

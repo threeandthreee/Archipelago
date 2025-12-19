@@ -48,7 +48,7 @@ class BoomerangGuy(ItemInfo):
                 ld [$DB7D], a
 
                 ld a, [$472B]
-                ldh [$F1], a
+                ldh [$FFF1], a
                 ld a, $06
                 rst 8
                 
@@ -57,14 +57,14 @@ class BoomerangGuy(ItemInfo):
             # Show the right item above link
             rom.patch(0x19, 0x0786, 0x0793, ASM("""
                 ld a, [$472B]
-                ldh [$F1], a
+                ldh [$FFF1], a
                 ld a, $01
                 rst 8
             """), fill_nop=True)
             # Give the proper message for this item
             rom.patch(0x19, 0x075A, 0x076A, ASM("""
                 ld a, [$472B]
-                ldh [$F1], a
+                ldh [$FFF1], a
                 ld a, $0A
                 rst 8
             """), fill_nop=True)

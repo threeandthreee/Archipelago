@@ -22,14 +22,14 @@ giveItems:
     """), fill_nop=True)
     rom.patch(0x36, 0x1139, 0x1144, ASM("""
         ld  a, $04
-        ldh [$F6], a
+        ldh [$FFF6], a
         ld  a, $0E
         rst 8
     """), fill_nop=True)
 
     rom.patch(0x36, 0x1162, 0x1192, ASM("""
         ld  a, $01
-        ldh [$F6], a
+        ldh [$FFF6], a
         ld  a, $0E
         rst 8
     """), fill_nop=True)

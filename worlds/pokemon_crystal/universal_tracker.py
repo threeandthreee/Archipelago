@@ -20,8 +20,7 @@ def load_ut_slot_data(world: "PokemonCrystalWorld"):
             pass
 
     world.generated_dexcountsanity = world.ut_slot_data["dexcountsanity_counts"]
-    dexsanity_slot_data = world.ut_slot_data["dexsanity_pokemon"]
-    world.generated_dexsanity = {get_pokemon_id_by_rom_id(id) for id in dexsanity_slot_data}
+    world.generated_dexsanity = {get_pokemon_id_by_rom_id(id) for id in world.ut_slot_data["dexsanity_pokemon"]}
 
     starting_town_id = world.ut_slot_data["starting_town"]
     if starting_town_id:
@@ -42,6 +41,14 @@ def load_ut_slot_data(world: "PokemonCrystalWorld"):
     request_pokemon = world.ut_slot_data["request_pokemon"]
     world.generated_request_pokemon = [get_pokemon_id_by_rom_id(id) for id in request_pokemon]
 
+    if world.options.trades_required:
+        for trade_id, trade_data in world.ut_slot_data["trades"].items():
+            world.generated_trades[trade_id] = replace(world.generated_trades[trade_id],
+                                                       requested_pokemon=get_pokemon_id_by_rom_id(
+                                                           int(trade_data["requested"])),
+                                                       received_pokemon=get_pokemon_id_by_rom_id(
+                                                           int(trade_data["received"])))
+
     world.generated_wild = dict()
     world.generated_static = dict()
     for keystring, encounter_ids in world.ut_slot_data["region_encounters"].items():
@@ -55,6 +62,9 @@ def load_ut_slot_data(world: "PokemonCrystalWorld"):
         else:
             wild_encounters = [EncounterMon(1, poke) for poke in encounters]
             world.generated_wild[key] = wild_encounters
+
+    for i, encounter in enumerate(world.ut_slot_data["contest_encounters"]):
+        world.generated_contest[i] = replace(world.generated_contest[i], pokemon=get_pokemon_id_by_rom_id(encounter))
 
     for breeder_str, child in world.ut_slot_data["breeding_info"].items():
         breeder = int(breeder_str)
@@ -86,3 +96,4 @@ def load_ut_slot_data(world: "PokemonCrystalWorld"):
                                                 tm_hm=[LOGIC_MOVES[hm_index] for hm_index in hms])
 
     world.grass_location_mapping = world.ut_slot_data["grass_location_mapping"]
+    world.generated_unown_signs = world.ut_slot_data["unown_signs"]

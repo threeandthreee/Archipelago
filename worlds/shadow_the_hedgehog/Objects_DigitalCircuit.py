@@ -108,4 +108,41 @@ SETObject(ObjectType.SHADOW_BOX, Levels.STAGE_DIGITAL_CIRCUIT, 63, "Special Weap
                  region=REGION_INDICIES.DIGITAL_CIRCUIT_DARK_WARP_HOLE),
         SETObject(ObjectType.GUN_BEETLE, Levels.STAGE_DIGITAL_CIRCUIT, 414, '70',
                  region=REGION_INDICIES.DIGITAL_CIRCUIT_DARK_WARP_HOLE),
+
+SETObject(ObjectType.KEY, Levels.STAGE_DIGITAL_CIRCUIT, 468, 'Key 1', region=0),
+SETObject(ObjectType.KEY, Levels.STAGE_DIGITAL_CIRCUIT, 509, 'Key 2', region=0),
+SETObject(ObjectType.KEY, Levels.STAGE_DIGITAL_CIRCUIT, 484, 'Key 3', region=0),
+SETObject(ObjectType.KEY, Levels.STAGE_DIGITAL_CIRCUIT, 491, 'Key 4', region=0),
+SETObject(ObjectType.KEY, Levels.STAGE_DIGITAL_CIRCUIT, 505, 'Key 5', region=REGION_INDICIES.DIGITAL_CIRCUIT_DARK_WARP_HOLE),
+SETObject(ObjectType.GOAL_RING, Levels.STAGE_DIGITAL_CIRCUIT, 622, 'Goal Ring',region=0),
+
+SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_DIGITAL_CIRCUIT, 533, 'Left At Start',region=0),
+SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_DIGITAL_CIRCUIT, 618, 'Left Twice',region=0),
+SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_DIGITAL_CIRCUIT, 588, 'Left All',region=0),
+SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_DIGITAL_CIRCUIT, 6, 'Right At Start',region=0),
+SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_DIGITAL_CIRCUIT, 617, 'Right Twice',region=0),
+SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_DIGITAL_CIRCUIT, 589, 'Right Again',region=0),
+
+SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_DIGITAL_CIRCUIT, 545, 'Check 1',region=0),
+SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_DIGITAL_CIRCUIT, 219, 'After First Light',region=0),
+SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_DIGITAL_CIRCUIT, 62, 'Near Shadow Box 1',region=0),
+SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_DIGITAL_CIRCUIT, 174, 'Atop Light Lift',region=0),
+SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_DIGITAL_CIRCUIT, 275, 'After Next Light',region=0),
+SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_DIGITAL_CIRCUIT, 482, 'In Warp Circuit',region=0),
+SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_DIGITAL_CIRCUIT, 526, 'Circuit Fork Left',region=0),
+SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_DIGITAL_CIRCUIT, 525, 'Circuit Fork Right',region=0),
+SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_DIGITAL_CIRCUIT, 621, 'Worm Cage',region=0),
+SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_DIGITAL_CIRCUIT, 583, 'Before Hero Last Circuit',region=0),
+
+
+SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_DIGITAL_CIRCUIT, 479, 'Key Circuit A',
+          region=REGION_INDICIES.DIGITAL_CIRCUIT_KEY_WARP_HOLE),
+SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_DIGITAL_CIRCUIT, 481, 'Key Circuit B',
+          region=REGION_INDICIES.DIGITAL_CIRCUIT_KEY_WARP_HOLE),
+SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_DIGITAL_CIRCUIT, 480, 'Key Circuit C',
+          region=REGION_INDICIES.DIGITAL_CIRCUIT_KEY_WARP_HOLE),
+
+
+
+
 ]

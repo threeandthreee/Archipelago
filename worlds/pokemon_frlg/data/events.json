@@ -70,11 +70,6 @@
     "item": "Help Bill",
     "category": "EVENT"
   },
-  "EVENT_BUY_VENDING_MACHINE_LEMONADE": {
-    "name": "Celadon Department Store Roof - Vending Machine Item 3",
-    "item": "Lemonade",
-    "category": "EVENT"
-  },
   "EVENT_RESCUE_MR_FUJI": {
     "name": "Pokemon Tower 7F - Hostage",
     "item": "Rescue Mr. Fuji",

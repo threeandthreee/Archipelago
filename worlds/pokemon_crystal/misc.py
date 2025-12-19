@@ -3,6 +3,7 @@ from math import floor
 from typing import TYPE_CHECKING
 
 from .data import MiscOption
+from .options import JohtoOnly, RequireFlash, EnableMischief
 
 if TYPE_CHECKING:
     from . import PokemonCrystalWorld
@@ -11,20 +12,59 @@ if TYPE_CHECKING:
 def randomize_mischief(world: "PokemonCrystalWorld"):
     if not world.options.enable_mischief: return
 
+    mild_mischief = list(world.generated_misc.mild)
+    wild_mischief = list(world.generated_misc.wild)
+
+    # Dynamic mischief assignments go here
+    # (Currently nothing)
+
+    # Decide which mischief is eligible
+    all_mischief = list(mild_mischief)
+    if world.options.enable_mischief.value >= EnableMischief.option_wild:
+        all_mischief += wild_mischief
+
+    mischief_pool = {MiscOption[name] for name in world.options.custom_mischief_pool.value if not name.startswith("_")}
+    if "_Mild" in world.options.custom_mischief_pool.value:
+        mischief_pool |= set(mild_mischief)
+    if "_Wild" in world.options.custom_mischief_pool.value:
+        mischief_pool |= set(wild_mischief)
+
+    if not mischief_pool:
+        eligible_mischief = all_mischief
+    else:
+        eligible_mischief = [misc_option for misc_option in all_mischief if misc_option in mischief_pool]
+
+    # Don't waste mischief slots if they can't be experienced
+    def safe_remove_mischief(misc_option):
+        if misc_option.value in eligible_mischief:
+            eligible_mischief.remove(misc_option)
+
+    if world.options.johto_only != JohtoOnly.option_off:
+        safe_remove_mischief(MiscOption.FuchsiaGym)
+        safe_remove_mischief(MiscOption.SaffronGym)
+        safe_remove_mischief(MiscOption.FanClubChairman)
+        safe_remove_mischief(MiscOption.VermilionGym)
+
+    if not world.options.dexsanity or ("Land" not in world.options.wild_encounter_methods_required and
+                                       "Surfing" not in world.options.wild_encounter_methods_required):
+        safe_remove_mischief(MiscOption.WhirlDexLocations)
+
+    if world.options.require_flash != RequireFlash.option_hard_required:
+        safe_remove_mischief(MiscOption.DarkAreas)
+
+    if world.options.metronome_only:
+        safe_remove_mischief(MiscOption.OhkoMoves)
+
+    if not world.options.randomize_starters:
+        safe_remove_mischief(MiscOption.UnLuckyEgg)
+
     # Decide which mischief is active
-    all_mischief = world.generated_misc.selected
-
-    if MiscOption.WhirlDexLocations in all_mischief and \
-            (not world.options.dexsanity or ("Land" not in world.options.wild_encounter_methods_required and \
-                                             "Surfing" not in world.options.wild_encounter_methods_required)):
-        # Don't waste a mischief slot if this can't be experienced
-        all_mischief.remove(MiscOption.WhirlDexLocations)
-
-    lower_count = len(all_mischief) // 2
-    upper_count = floor(len(all_mischief) * 0.75)
+    lower_count = floor(len(eligible_mischief) * world.options.mischief_lower_bound.value / 100)
+    upper_count = floor(len(eligible_mischief) * world.options.mischief_upper_bound.value / 100)
     mischief_count = world.random.randint(lower_count, upper_count)
 
-    world.generated_misc = replace(world.generated_misc, selected=world.random.sample(all_mischief, mischief_count))
+    world.generated_misc = replace(world.generated_misc,
+                                   selected=world.random.sample(eligible_mischief, mischief_count))
 
     if MiscOption.RadioTowerQuestions.value in world.generated_misc.selected:
         # Randomize Yes/No answers for Radio Card quiz
@@ -76,7 +116,8 @@ def randomize_mischief(world: "PokemonCrystalWorld"):
 
 
 def get_misc_spoiler_log(world: "PokemonCrystalWorld", write):
-    write(f"{len(world.generated_misc.selected)} mischief options enabled.\n")
+    write(f"{len(world.generated_misc.selected)} mischief options enabled: "
+          f"{', '.join([mischief.name for mischief in world.generated_misc.selected])}\n")
 
     if MiscOption.RadioTowerQuestions.value in world.generated_misc.selected:
         radio_tower_answers = " -> ".join(

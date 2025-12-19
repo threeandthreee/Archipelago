@@ -14,6 +14,7 @@ for prog_item in prog_map:
     progressive_item_list[progressiveName].append(prog_item)
 
 class DarkCloudItem(Item):
+    # type = None
     game: str = dc1_name
 
     def __init__(self, name: str,

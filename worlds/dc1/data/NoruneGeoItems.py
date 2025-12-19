@@ -1,7 +1,3 @@
-# TODO for miracle chests, split out only necessary items to be required rather than the whole building.
-#      Ex lamps don't yield miracle chests, but a cabin addition might
-# Grouping of item IDs per building for Norune Village
-
 from BaseClasses import ItemClassification
 from worlds.dc1.Items import DarkCloudItem
 from worlds.dc1.Options import DarkCloudOptions
@@ -67,7 +63,6 @@ windmill_ids = ["Progressive Windmill 1", "Progressive Windmill 1", "Progressive
 other_ids = ["Norune Trees", "Norune Trees", "Norune Bridge", "Norune Road", "Norune Road", "Norune Road",
              "Norune Road", "Norune Road", "Norune River", "Norune River", "Norune River", "Norune River"]
 
-# TODO split these lists into 2 based on items that spawn from the first half of a dungeon or the second
 # Atla that give MCs by content quality (unless handled otherwise). If MC shuffle is on, these all need to be required
 mc_useful = []
 mc_filler = ["Progressive Macho's House", "Progressive Macho's House", "Progressive Claude's House",
@@ -91,9 +86,9 @@ def create_norune_atla(options: DarkCloudOptions, player: int) -> list["DarkClou
     """Create atla items for Norune Village based on option settings."""
     items = []
 
-    norune_progression = required
-    norune_useful = useful
-    norune_filler = filler
+    norune_progression = required.copy()
+    norune_useful = useful.copy()
+    norune_filler = filler.copy()
 
     # Dran's windmill is only full required if Dran is required
     if options.all_bosses:

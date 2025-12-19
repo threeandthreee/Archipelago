@@ -52,10 +52,14 @@ class EBWeb(WebWorld):
         ["Pink Switch"]
     )
 
+
     tutorials = [setup_en]
 
     option_groups = eb_option_groups
     # option_presets = eb_option_presets
+
+class EBItem(Item):
+    game: str = "EarthBound"
 
 
 class EarthBoundWorld(World):
@@ -95,10 +99,10 @@ class EarthBoundWorld(World):
         self.progressive_filler_bracelets: int = 0
         self.progressive_filler_other: int = 0
         self.world_version: str = world_version
-        self.armor_list: Dict[str, EBArmor]
-        self.weapon_list: Dict[str, EBWeapon]
-        self.boss_slots: Dict[str, SlotInfo]
-        self.boss_info: Dict[str, BossData]
+        self.armor_list = Dict[str, EBArmor]
+        self.weapon_list = Dict[str, EBWeapon]
+        self.boss_slots = Dict[str, SlotInfo]
+        self.boss_info = Dict[str, BossData]
         self.starting_character: str | None = None
         self.locals = []
         self.rom_name = None
@@ -332,7 +336,7 @@ class EarthBoundWorld(World):
             add_item_rule(self.multiworld.get_location("Dalaam - Throne Character", self.player), lambda item: item.name in self.item_name_groups["Characters"])
             add_item_rule(self.multiworld.get_location("Deep Darkness - Barf Character", self.player), lambda item: item.name in self.item_name_groups["Characters"])
 
-        fill_restrictive(self.multiworld, self.multiworld.get_all_state(False), prefill_locations, prefill_items, True, True)
+        fill_restrictive(self.multiworld, self.multiworld.get_all_state(False, collect_pre_fill_items=False), prefill_locations, prefill_items, True, True)
         setup_hints(self)
 
     def get_pre_fill_items(self) -> list[Item]:
@@ -345,9 +349,13 @@ class EarthBoundWorld(World):
 
     @classmethod
     def stage_generate_output(cls, multiworld: MultiWorld, output_directory: str) -> None:
-        multiworld.eb_spheres = list(multiworld.get_spheres())
-        for world in multiworld.get_game_worlds("EarthBound"):
-            world.get_all_spheres.set()
+        try:
+            multiworld.earthbound_locations_by_sphere = list(multiworld.get_spheres())
+        except Exception:
+            raise
+        finally:
+            for world in multiworld.get_game_worlds("EarthBound"):
+                world.get_all_spheres.set()
 
     def generate_output(self, output_directory: str) -> None:
         self.has_generated_output = True  # Make sure data defined in generate output doesn't get added to spoiler only mode
@@ -473,9 +481,9 @@ class EarthBoundWorld(World):
                 if area not in spoiler_excluded_areas:
                     spoiler_handle.write(f" {area}: Level {self.area_levels[area]}\n")
 
-    def create_item(self, name: str) -> Item:
+    def create_item(self, name: str) -> EBItem:
         data = item_table[name]
-        return Item(name, data.classification, data.code, self.player)
+        return EBItem(name, data.classification, data.code, self.player)
 
     def get_filler_item_name(self) -> str:  # Todo: make this suck less
         weights = {"rare": self.options.rare_filler_weight.value, "uncommon": self.options.uncommon_filler_weight.value, "common": self.options.common_filler_weight.value,

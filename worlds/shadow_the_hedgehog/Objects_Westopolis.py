@@ -101,4 +101,24 @@ SETObject(ObjectType.GUN_BEETLE, Levels.STAGE_WESTOPOLIS, 454, '78', region=0),
 SETObject(ObjectType.BLACK_WARRIOR, Levels.STAGE_WESTOPOLIS, 459, '79', region=0),
 SETObject(ObjectType.BLACK_WING, Levels.STAGE_WESTOPOLIS, 461, '80', region=0),
 SETObject(ObjectType.BLACK_WING, Levels.STAGE_WESTOPOLIS, 460, '81', region=0),
+
+SETObject(ObjectType.KEY, Levels.STAGE_WESTOPOLIS, 486, 'Key 1', region=0),
+SETObject(ObjectType.KEY, Levels.STAGE_WESTOPOLIS, 99, 'Key 2', region=REGION_INDICIES.WESTOPOLIS_PULLEY),
+SETObject(ObjectType.KEY, Levels.STAGE_WESTOPOLIS, 162, 'Key 3', region=0),
+SETObject(ObjectType.KEY, Levels.STAGE_WESTOPOLIS, 263, 'Key 4', region=0),
+SETObject(ObjectType.KEY, Levels.STAGE_WESTOPOLIS, 246, 'Key 5', region=0),
+SETObject(ObjectType.GOAL_RING, Levels.STAGE_WESTOPOLIS, 539, 'Goal Ring',region=0),
+
+
+SETObject(ObjectType.ITEM_IN_BOX, Levels.STAGE_WESTOPOLIS, 255, 'Box After Doom',region=0),
+SETObject(ObjectType.ITEM_IN_METAL_BOX, Levels.STAGE_WESTOPOLIS, 487, 'Other Side of Key 1',region=0),
+SETObject(ObjectType.ITEM_IN_METAL_BOX, Levels.STAGE_WESTOPOLIS, 59, 'After Check 2',region=0),
+SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_WESTOPOLIS, 493, 'Weapon Required Balloon',
+          region=REGION_INDICIES.WESTOPOLIS_WEAPON),
+SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_WESTOPOLIS, 525, 'Slide By Goal Ring',region=0),
+
+
+SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_WESTOPOLIS, 523, 'End Descend A',region=0),
+SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_WESTOPOLIS, 524, 'End Descend B',region=0),
+SETObject(ObjectType.ITEM_IN_METAL_BOX, Levels.STAGE_WESTOPOLIS, 455, 'Box at End',region=0)
 ]

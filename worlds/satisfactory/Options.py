@@ -147,7 +147,7 @@ class ResourceSinkPointsPerMinute(NamedRange):
         "~20 crystal oscillator/min": 60000,
         "~50 motor/min": 76000,
         "~10 heavy modular frame/min": 100000,
-        "~10 radio control unit": 300000,
+        "~10 radio control unit/min": 300000,
         "~10 fused modular frame/min": 625000,
         "~10 supercomputer/min": 1000000,
         "~10 pressure conversion cube/min": 2500000,
@@ -482,7 +482,7 @@ class GoalSelection(OptionSet):
         "AWESOME Sink Points (total)",
         "AWESOME Sink Points (per minute)",
         "Exploration Collectables",
-        # "Erect a FICSMAS Tree",
+        "Erect a FICSMAS Tree"
     }
     default = {"Space Elevator Phase"}
     schema = Schema(And(set, len),

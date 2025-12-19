@@ -27,23 +27,23 @@ def fixWrongWarp(rom):
 
 def bugfixBossroomTopPush(rom):
     rom.patch(0x14, 0x14D9, ASM("""
-        ldh  a, [$99]
+        ldh  a, [$FF99]
         dec  a
-        ldh  [$99], a
+        ldh  [$FF99], a
     """), ASM("""
         jp   $7F80
     """), fill_nop=True)
     rom.patch(0x14, 0x3F80, "00" * 0x80, ASM("""
-        ldh  a, [$99]
+        ldh  a, [$FF99]
         cp   $50
         jr   nc, up
 down:
         inc  a
-        ldh  [$99], a
+        ldh  [$FF99], a
         jp   $54DE
 up:
         dec  a
-        ldh  [$99], a
+        ldh  [$FF99], a
         jp   $54DE
     """), fill_nop=True)
 
@@ -81,7 +81,7 @@ def cleanup(rom):
 
 
 def disablePhotoPrint(rom):
-    rom.patch(0x28, 0x07CC, ASM("ldh [$01], a\nldh [$02], a"), "", fill_nop=True) # do not reset the serial link
+    rom.patch(0x28, 0x07CC, ASM("ldh [$FF01], a\nldh [$FF02], a"), "", fill_nop=True) # do not reset the serial link
     rom.patch(0x28, 0x0483, ASM("ld a, $13"), ASM("jr $EA", 0x4483)) # Do not print on A press, but jump to cancel
     rom.patch(0x28, 0x0492, ASM("ld hl, $4439"), ASM("ret"), fill_nop=True) # Do not show the print/cancel overlay
 
@@ -116,7 +116,7 @@ def quickswap(rom, button):
 
 def injectMainLoop(rom):
     rom.patch(0x00, 0x0346, ASM("""
-        ldh  a, [$FE]
+        ldh  a, [$FFFE]
         and  a
         jr   z, $08
     """), ASM("""
@@ -125,17 +125,17 @@ def injectMainLoop(rom):
         rst  8
     """), fill_nop=True)
 
-def warpHome(rom):
+def warpHome(rom, force_inside=False):
     # Patch the S&Q menu to allow 3 options
     rom.patch(0x01, 0x012A, 0x0150, ASM("""
         ld   hl, $C13F
         call $6BA8 ; make sound on keypress
-        ldh  a, [$CC] ; load joystick status
+        ldh  a, [$FFCC] ; load joystick status
         and  $04      ; if up
         jr   z, noUp
         dec  [hl]
 noUp:
-        ldh  a, [$CC] ; load joystick status
+        ldh  a, [$FFCC] ; load joystick status
         and  $08      ; if down
         jr   z, noDown
         inc  [hl]
@@ -204,7 +204,7 @@ noWrapDown:
 
     one_way = {ENTRANCE_INFO[x].room for x in one_way}
 
-    if warp.room in one_way:
+    if warp.room in one_way or force_inside or warp.room > 0x100:
         # we're starting at a one way exit room
         # warp indoors to avoid soft locks
         type = 0x01
@@ -213,7 +213,7 @@ noWrapDown:
         x = 0x50
         y = 0x7f
 
-    rom.patch(0x01, 0x3E20, 0x3E6B, ASM("""
+    rom.patch(0x01, 0x3E20, 0x4000, ASM("""
         ; First, handle save & quit
         cp   $01
         jp   z, $40F9
@@ -240,11 +240,11 @@ noWrapDown:
         ld   a, $%02x ; Y
         ld   [$D405], a
 
-        ldh  a, [$98]
+        ldh  a, [$FF98]
         swap a
         and  $0F
         ld   e, a
-        ldh  a, [$99]
+        ldh  a, [$FF99]
         sub  $08
         and  $F0
         or   e
@@ -252,21 +252,22 @@ noWrapDown:
 
         ld   a, $07
         ld   [$DB96], a
+        
+        ; Clear all entity status, so they are no longer rendered.
+        ld   hl, $C280
+        xor  a
+        ld   [$C18E], a ; clear wRoomEvent so minibosses
+        ld   c, 16
+clearOAMLoop:
+        ld   [hl+], a
+        dec  c
+        jr   nz, clearOAMLoop
+        
         ret
         jp   $40BE  ; return to normal "return to game" handling
     """ % (type, map, room, x, y)), fill_nop=True)
 
-   # Patch the RAM clear not to delete our custom dialog when we screen transition
-   # This is kind of horrible as it relies on bank 1 being loaded, lol
-    rom.patch(0x01, 0x042C, "C629", "6B7E")
-    rom.patch(0x01, 0x3E6B, 0x3E7B, ASM("""
-        ld bc, $A0
-        call $29DC
-        ld bc, $1200
-        ld hl, $C100
-        call $29DF
-        ret
-    """), fill_nop=True)
+
     # Patch the S&Q screen to have 3 options.
     be = BackgroundEditor(rom, 0x0D)
     for n in range(2, 18):
@@ -563,7 +564,7 @@ def addBootsControls(rom, boots_controls: int):
           "wAButtonSlot": 0xDB01,
           "wBButtonSlot": 0xDB00,
           "wPegasusBootsChargeMeter": 0xC14B,
-          "hPressedButtonsMask": 0xCB
+          "hPressedButtonsMask": 0xFFCB
     }
     for c,v in consts.items():
         assembler.const(c, v)
@@ -690,7 +691,7 @@ def addWarpImprovements(rom, extra_warps):
 
     # Insert redirect to above code
     rom.patch(0x02, 0x1109, ASM("""
-    ldh a, [$F6]
+    ldh a, [$FFF6]
     cp 1
     
     """), ASM("""
@@ -821,23 +822,23 @@ success:
     ld   [$DB95], a ; Gameplay type
     xor a
     ld   [$D401], a                  ; wWarp0MapCategory
-    ldh [$DD], a                     ; unset teleport flag(!!!)
+    ldh [$FFDD], a                     ; unset teleport flag(!!!)
     ld   [$D402], a                  ; wWarp0Map
     ld   a, [$DBB4]                  ; wDBB4
     ld   [$D403], a                  ; wWarp0Room
 
     ld   a, $68
     ld   [$D404], a                  ; wWarp0DestinationX
-    ldh  [$98], a                    ; LinkPositionY
+    ldh  [$FF98], a                    ; LinkPositionY
     ld  [$D475], a
     ld   a, $70
     ld   [$D405], a                  ; wWarp0DestinationY
-    ldh  [$99], a                    ; LinkPositionX
+    ldh  [$FF99], a                    ; LinkPositionX
     ld   a, $66                        
     ld   [$D416], a                  ; wWarp0PositionTileIndex
     ld   a, $07
     ld   [$DB96], a                  ; wGameplaySubtype
-    ldh a, [$A2]
+    ldh a, [$FFA2]
     ld  [$DBC8], a
     call $0C83                       ; ApplyMapFadeOutTransition
     xor  a                                        ; $5DF3: $AF
@@ -846,3 +847,8 @@ success:
 exit:
     ret
         """))
+
+def mapExtraCharacters(rom):
+    # patches ß Ä Ö Ü " sprites into CodepointToTileMap so they can be used in text boxes.
+    # " is already mapped but its easier to use on a different slot because of how the assembler handles strings.
+    rom.patch(0x1C, 0x06CE, ASM("db $59, $5A, $5B, $5C, $5D"), ASM("db $54, $55, $56, $57, $41"))

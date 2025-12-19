@@ -1,6 +1,8 @@
-from ..pokemon import get_random_colors, convert_color
-from unittest import TestCase
 import random
+from unittest import TestCase
+
+from ..pokemon import get_random_colors, convert_color
+
 
 class ColorTests(TestCase):
     def test_get_random_colors(self):

@@ -9,10 +9,10 @@ import zipfile
 
 from .Locations import KHBBSLocation, location_table
 from .Items import KHBBSItem, item_table
-from worlds.Files import APPlayerContainer, AutoPatchRegister
+from worlds.Files import APPlayerContainer
 
 
-class KHBBSContainer(APPlayerContainer, metaclass=AutoPatchRegister):
+class KHBBSContainer(APPlayerContainer):
     game: str = 'Kingdom Hearts Birth by Sleep'
     patch_file_ending = ".zip"
 

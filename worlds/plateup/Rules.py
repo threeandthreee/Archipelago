@@ -30,21 +30,21 @@ def add_rule(spot: Location | Entrance, rule, combine="and"):
 
 
 def restrict_locations_by_progression(world: "PlateUpWorld"):
-    # Chain each dish day's location to require the previous day's location.
-    # Additionally, for non-starting dishes, require the corresponding Unlock item to access Day 1.
+    # Chain dish day locations to require the previous day.
+    # For non-starting dishes, Day 1 requires the corresponding Unlock item.
     dish_order = getattr(world, 'valid_dish_locations', [])
     starting_dish = getattr(world, 'starting_dish', None)
     for i in range(len(dish_order) - 1):
         current_loc_name = dish_order[i]
         next_loc_name = dish_order[i + 1]
-        if next_loc_name in world.location_name_to_id:
+        # Only set rules when both exist in this world's locations
+        if next_loc_name in world.location_name_to_id and current_loc_name in world.location_name_to_id:
             try:
                 loc = world.get_location(next_loc_name)
-                # Ensure next location requires reaching the previous one
+                # Next requires reaching the previous
                 add_rule(loc, lambda state, cur=current_loc_name: state.can_reach(cur, "Location", world.player))
 
-                # If this next location is a Day 1 of a dish that isn't the starting dish,
-                # add requirement for the corresponding Unlock item.
+                # If next is Day 1 of a non-starting dish, require Unlock
                 if next_loc_name.endswith(" - Day 1"):
                     dish_name = next_loc_name.rsplit(" - Day ", 1)[0]
                     if starting_dish and dish_name != starting_dish:
@@ -65,11 +65,13 @@ def filter_selected_dishes(world: "PlateUpWorld"):
     # in world.set_selected_dishes/create_items so item pool unlocks match.
     selected = getattr(world, "selected_dishes", [])
 
+    planned_table = getattr(world, "_location_name_to_id", {})
     valid_locs = []
     for dish in selected:
         for day in range(1, 15 + 1):
             loc_name = f"{dish} - Day {day}"
-            if loc_name in DISH_LOCATIONS:
+            # Only include if defined and present in the planned location table used by regions
+            if loc_name in DISH_LOCATIONS and loc_name in planned_table:
                 valid_locs.append(loc_name)
 
     world.valid_dish_locations = valid_locs

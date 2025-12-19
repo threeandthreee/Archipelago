@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Dict, List, Set, Tuple, cast, Iterable
 from BaseClasses import CollectionState
 from worlds.generic.Rules import CollectionRule, add_rule
 from .data import data, NAME_TO_SPECIES_ID, EvolutionMethodEnum, LocationCategory
+from .items import PokemonFRLGGlitchedToken
 from .locations import PokemonFRLGLocation
 from .options import (CeruleanCaveRequirement, EliteFourRequirement, FlashRequired, Goal, IslandPasses,
                       ItemfinderRequired, PewterCityRoadblock, Route22GateRequirement, Route23GuardRequirement,
@@ -83,8 +84,9 @@ class PokemonFRLGLogic:
     oaks_aides_require_evos: bool
     randomizing_entrances: bool
     guaranteed_hm_access: bool
-    bicycle_requires_ledge_jump: bool
+    bicycle_requires_jumping_shoes: bool
     acrobatic_bicycle: bool
+    rematches_require_gyms: bool
     dexsanity_state_item_names_lookup: Dict[str, Tuple[str, ...]]
     oaks_aides_species_item_names: List[Tuple[str, ...]]
     pokemon_hm_use: Dict[str, List[str]]
@@ -104,8 +106,9 @@ class PokemonFRLGLogic:
         self.oaks_aides_require_evos = False
         self.randomizing_entrances = False
         self.guaranteed_hm_access = False
-        self.bicycle_requires_ledge_jump = True
+        self.bicycle_requires_jumping_shoes = True
         self.acrobatic_bicycle = False
+        self.rematches_require_gyms = True
         self.dexsanity_state_item_names_lookup = {}
         self.oaks_aides_species_item_names = []
         self.evolution_state_item_names_lookup = {}
@@ -193,13 +196,13 @@ class PokemonFRLGLogic:
         return state.has_all(("Rescue Selphy", data.species[self.resort_gorgeous_pokemon].name), self.player)
 
     def can_jump_down_ledge(self, state: CollectionState) -> bool:
-        return (state.has("Ledge Jump", self.player) or
-                (not self.bicycle_requires_ledge_jump and state.has("Bicycle", self.player)))
+        return (state.has("Jumping Shoes", self.player) or
+                (not self.bicycle_requires_jumping_shoes and state.has("Bicycle", self.player)))
 
     def can_jump_up_ledge(self, state: CollectionState) -> bool:
         return (self.acrobatic_bicycle and
-                (state.has_all(("Ledge Jump", "Bicycle"), self.player) or
-                 (not self.bicycle_requires_ledge_jump and state.has("Bicycle", self.player))))
+                (state.has_all(("Jumping Shoes", "Bicycle"), self.player) or
+                 (not self.bicycle_requires_jumping_shoes and state.has("Bicycle", self.player))))
 
     def has_island_pass(self, state: CollectionState, group: int) -> bool:
         return state.has(ISLAND_PASSES[group - 1], self.player) or state.has("Progressive Pass", self.player, group)
@@ -225,16 +228,27 @@ class PokemonFRLGLogic:
         return state.has("Vs. Seeker", self.player)
 
     def trainer_rematch_2(self, state: CollectionState) -> bool:
-        return state.has("Vs. Seeker", self.player) and self.has_n_gyms(state, 2)
+        if self.rematches_require_gyms:
+            return state.has("Vs. Seeker", self.player) and self.has_n_gyms(state, 2)
+        return state.has("Vs. Seeker", self.player) and self.has_n_badges(state, 2)
 
     def trainer_rematch_3(self, state: CollectionState) -> bool:
-        return state.has("Vs. Seeker", self.player) and self.has_n_gyms(state, 4)
+        if self.rematches_require_gyms:
+            return state.has("Vs. Seeker", self.player) and self.has_n_gyms(state, 4)
+        return state.has("Vs. Seeker", self.player) and self.has_n_badges(state, 4)
 
     def trainer_rematch_4(self, state: CollectionState) -> bool:
-        return state.has("Vs. Seeker", self.player) and self.has_n_gyms(state, 6)
+        if self.rematches_require_gyms:
+            return state.has("Vs. Seeker", self.player) and self.has_n_gyms(state, 6)
+        return state.has("Vs. Seeker", self.player) and self.has_n_badges(state, 6)
 
     def trainer_rematch_5(self, state: CollectionState) -> bool:
-        return state.has("Vs. Seeker", self.player) and self.has_n_gyms(state, 8)
+        if self.rematches_require_gyms:
+            return state.has("Vs. Seeker", self.player) and self.has_n_gyms(state, 8)
+        return state.has("Vs. Seeker", self.player) and self.has_n_badges(state, 8)
+
+    def can_buy_coins(self, state: CollectionState) -> bool:
+        return state.has("Coin Case", self.player) and state.can_reach_region("Celadon Game Corner", self.player)
 
     def can_take_fossil(self, state: CollectionState, n: int) -> bool:
         if state.has("Miguel Takes Fossil", self.player):
@@ -248,10 +262,21 @@ class PokemonFRLGLogic:
         return False
 
     def can_stop_seafoam_b3f_current(self, state) -> bool:
-        return self.can_strength(state) and state.can_reach_region("Seafoam Islands 1F", self.player)
+        return (self.can_strength(state)
+                and state.can_reach_region("Seafoam Islands 1F", self.player)
+                and state.can_reach_region("Seafoam Islands B1F (West)", self.player)
+                and state.can_reach_region("Seafoam Islands B1F (Northeast)", self.player)
+                and state.can_reach_region("Seafoam Islands B2F (Northwest)", self.player)
+                and state.can_reach_region("Seafoam Islands B2F (Northeast)", self.player))
 
     def can_stop_seafoam_b4f_current(self, state: CollectionState) -> bool:
         return self.can_strength(state) and state.can_reach_region("Seafoam Islands B3F (West)", self.player)
+
+    def can_push_mansion_switch(self, state: CollectionState) -> bool:
+        return (state.can_reach_region("Pokemon Mansion 1F", self.player)
+                or state.can_reach_region("Pokemon Mansion 2F", self.player)
+                or state.can_reach_region("Pokemon Mansion 3F (North)", self.player)
+                or state.can_reach_region("Pokemon Mansion B1F", self.player))
 
     def can_turn_in_meteorite(self, state: CollectionState) -> bool:
         return state.has_all(("Rescue Lostelle", "Meteorite"), self.player)
@@ -351,8 +376,9 @@ def set_logic_options(world: "PokemonFRLGWorld") -> None:
     logic.dexsanity_requires_evos = "Dexsanity" in world.options.evolutions_required.value
     logic.hms_require_evos = "HM Requirement" in world.options.evolutions_required.value
     logic.oaks_aides_require_evos = "Oak's Aides" in world.options.evolutions_required.value
-    logic.bicycle_requires_ledge_jump = bool(world.options.bicycle_requires_ledge_jump.value)
+    logic.bicycle_requires_jumping_shoes = bool(world.options.bicycle_requires_jumping_shoes.value)
     logic.acrobatic_bicycle = bool(world.options.acrobatic_bicycle.value)
+    logic.rematches_require_gyms = bool(world.options.rematch_requirements)
 
     # Until locations have been created, assume all Pokémon species are present in the world.
     dexsanity_state_item_names = {}
@@ -845,6 +871,17 @@ def set_entrance_rules(world: "PokemonFRLGWorld") -> None:
     if options.extra_key_items:
         add_rule_safe("Rocket Hideout",
                       lambda state: state.has("Hideout Key", player))
+    if "All Elevators Locked" in options.modify_world_state.value:
+        add_rule_safe("Celadon Department Store Elevator 1F Stop",
+                      lambda state: state.has("Lift Key", player))
+        add_rule_safe("Celadon Department Store Elevator 2F Stop",
+                      lambda state: state.has("Lift Key", player))
+        add_rule_safe("Celadon Department Store Elevator 3F Stop",
+                      lambda state: state.has("Lift Key", player))
+        add_rule_safe("Celadon Department Store Elevator 4F Stop",
+                      lambda state: state.has("Lift Key", player))
+        add_rule_safe("Celadon Department Store Elevator 5F Stop",
+                      lambda state: state.has("Lift Key", player))
     add_rule_safe("Celadon Gym Cuttable Trees",
                   lambda state: logic.can_cut(state))
 
@@ -956,12 +993,6 @@ def set_entrance_rules(world: "PokemonFRLGWorld") -> None:
                       lambda state: False)
     add_rule_safe("Route 16 Play Poke Flute (Left)",
                   lambda state: state.has("Poke Flute", player)),
-    add_rule_safe("Route 16 Gate 1F Bike Checkpoint (Right)",
-                  lambda state: state.has("Bicycle", player))
-
-    # Route 18
-    add_rule_safe("Route 18 Gate 1F Bike Checkpoint (Right)",
-                  lambda state: state.has("Bicycle", player))
 
     # Fuchsia City
     if options.gym_keys:
@@ -1065,6 +1096,29 @@ def set_entrance_rules(world: "PokemonFRLGWorld") -> None:
                   lambda state: logic.has_card_key(state, 10))
     add_rule_safe("Silph Co. 11F Barrier (Bottom)",
                   lambda state: logic.has_card_key(state, 11))
+    if "All Elevators Locked" in options.modify_world_state.value:
+        add_rule_safe("Silph Co. Elevator 1F Stop",
+                      lambda state: state.has("Lift Key", player))
+        add_rule_safe("Silph Co. Elevator 2F Stop",
+                      lambda state: state.has("Lift Key", player))
+        add_rule_safe("Silph Co. Elevator 3F Stop",
+                      lambda state: state.has("Lift Key", player))
+        add_rule_safe("Silph Co. Elevator 4F Stop",
+                      lambda state: state.has("Lift Key", player))
+        add_rule_safe("Silph Co. Elevator 5F Stop",
+                      lambda state: state.has("Lift Key", player))
+        add_rule_safe("Silph Co. Elevator 6F Stop",
+                      lambda state: state.has("Lift Key", player))
+        add_rule_safe("Silph Co. Elevator 7F Stop",
+                      lambda state: state.has("Lift Key", player))
+        add_rule_safe("Silph Co. Elevator 8F Stop",
+                      lambda state: state.has("Lift Key", player))
+        add_rule_safe("Silph Co. Elevator 9F Stop",
+                      lambda state: state.has("Lift Key", player))
+        add_rule_safe("Silph Co. Elevator 10F Stop",
+                      lambda state: state.has("Lift Key", player))
+        add_rule_safe("Silph Co. Elevator 11F Stop",
+                      lambda state: state.has("Lift Key", player))
 
     # Route 19
     add_rule_safe("Route 19 Surfing Spot",
@@ -1085,6 +1139,8 @@ def set_entrance_rules(world: "PokemonFRLGWorld") -> None:
     add_rule_safe("Seafoam Islands B3F (West) Landing Spot (Bottom)",
                   lambda state: logic.can_stop_seafoam_b3f_current(state))
     add_rule_safe("Seafoam Islands B3F (South Water) Water Battle",
+                  lambda state: logic.can_stop_seafoam_b3f_current(state))
+    add_rule_safe("Seafoam Islands B3F (South Water) Fishing Battle",
                   lambda state: logic.can_stop_seafoam_b3f_current(state))
     add_rule_safe("Seafoam Islands B3F (East) Landing Spot (Bottom)",
                   lambda state: logic.can_stop_seafoam_b3f_current(state))
@@ -1119,6 +1175,20 @@ def set_entrance_rules(world: "PokemonFRLGWorld") -> None:
                   lambda state: state.has("Defeat Blaine", player))
     add_rule_safe("Pokemon Mansion 1F Exit (East)",
                   lambda state: not logic.randomizing_entrances)
+
+    # Pokemon Mansion
+    add_rule_safe("Pokemon Mansion 1F South Barrier",
+                  lambda state: logic.can_push_mansion_switch(state))
+    add_rule_safe("Pokemon Mansion 1F Southeast Barrier",
+                  lambda state: logic.can_push_mansion_switch(state))
+    add_rule_safe("Pokemon Mansion 2F Center Barrier (Top)",
+                  lambda state: logic.can_push_mansion_switch(state))
+    add_rule_safe("Pokemon Mansion 2F Center Barrier (Bottom)",
+                  lambda state: logic.can_push_mansion_switch(state))
+    add_rule_safe("Pokemon Mansion 3F Barrier (Top)",
+                  lambda state: logic.can_push_mansion_switch(state))
+    add_rule_safe("Pokemon Mansion 3F Barrier (Bottom)",
+                  lambda state: logic.can_push_mansion_switch(state))
 
     # Route 21
     add_rule_safe("Route 21 Surfing Spot",
@@ -1491,21 +1561,21 @@ def set_location_rules(world: "PokemonFRLGWorld") -> None:
                   lambda state: state.has("Defeat Brock", player))
 
     # Route 3
-    add_rule_safe("Route 3 - Lass Janice Rematch Reward 1",
+    add_rule_safe("Route 3 - Lass Janice Rematch Reward",
                   lambda state: logic.trainer_rematch_1(state))
-    add_rule_safe("Route 3 - Lass Janice Rematch Reward 2",
+    add_rule_safe("Route 3 - Lass Janice Rematch Reward (4 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_3(state))
-    add_rule_safe("Route 3 - Bug Catcher Colton Rematch Reward 1",
+    add_rule_safe("Route 3 - Bug Catcher Colton Rematch Reward",
                   lambda state: logic.trainer_rematch_1(state))
-    add_rule_safe("Route 3 - Bug Catcher Colton Rematch Reward 2",
+    add_rule_safe("Route 3 - Bug Catcher Colton Rematch Reward (4 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_3(state))
-    add_rule_safe("Route 3 - Bug Catcher Colton Rematch Reward 3",
+    add_rule_safe("Route 3 - Bug Catcher Colton Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
-    add_rule_safe("Route 3 - Youngster Ben Rematch Reward 1",
+    add_rule_safe("Route 3 - Youngster Ben Rematch Reward",
                   lambda state: logic.trainer_rematch_1(state))
-    add_rule_safe("Route 3 - Youngster Ben Rematch Reward 2",
+    add_rule_safe("Route 3 - Youngster Ben Rematch Reward (4 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_3(state))
-    add_rule_safe("Route 3 - Youngster Ben Rematch Reward 3",
+    add_rule_safe("Route 3 - Youngster Ben Rematch Reward (6 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_4(state))
 
     # Cerulean City
@@ -1523,33 +1593,33 @@ def set_location_rules(world: "PokemonFRLGWorld") -> None:
                   lambda state: state.has("Berry Pouch", player))
 
     # Route 24
-    add_rule_safe("Route 24 - Youngster Timmy Rematch Reward 1",
+    add_rule_safe("Route 24 - Youngster Timmy Rematch Reward",
                   lambda state: logic.trainer_rematch_1(state))
-    add_rule_safe("Route 24 - Youngster Timmy Rematch Reward 2",
+    add_rule_safe("Route 24 - Youngster Timmy Rematch Reward (4 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_3(state))
-    add_rule_safe("Route 24 - Youngster Timmy Rematch Reward 3",
+    add_rule_safe("Route 24 - Youngster Timmy Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
-    add_rule_safe("Route 24 - Lass Reli Rematch Reward 1",
+    add_rule_safe("Route 24 - Lass Reli Rematch Reward",
                   lambda state: logic.trainer_rematch_1(state))
-    add_rule_safe("Route 24 - Lass Reli Rematch Reward 2",
+    add_rule_safe("Route 24 - Lass Reli Rematch Reward (4 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_3(state))
 
     # Route 25
-    add_rule_safe("Route 25 - Hiker Franklin Rematch Reward",
+    add_rule_safe("Route 25 - Hiker Franklin Rematch Reward (2 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_2(state))
-    add_rule_safe("Route 25 - Picnicker Kelsey Rematch Reward 1",
+    add_rule_safe("Route 25 - Picnicker Kelsey Rematch Reward",
                   lambda state: logic.trainer_rematch_1(state))
-    add_rule_safe("Route 25 - Picnicker Kelsey Rematch Reward 2",
+    add_rule_safe("Route 25 - Picnicker Kelsey Rematch Reward (4 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_3(state))
-    add_rule_safe("Route 25 - Picnicker Kelsey Rematch Reward 3",
+    add_rule_safe("Route 25 - Picnicker Kelsey Rematch Reward (6 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_4(state))
     add_rule_safe("Route 25 - Item Near Bush",
                   lambda state: logic.can_cut(state))
-    add_rule_safe("Route 25 - Youngster Chad Rematch Reward 1",
+    add_rule_safe("Route 25 - Youngster Chad Rematch Reward",
                   lambda state: logic.trainer_rematch_1(state))
-    add_rule_safe("Route 25 - Youngster Chad Rematch Reward 2",
+    add_rule_safe("Route 25 - Youngster Chad Rematch Reward (4 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_3(state))
-    add_rule_safe("Route 25 - Youngster Chad Rematch Reward 3",
+    add_rule_safe("Route 25 - Youngster Chad Rematch Reward (6 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_4(state))
 
     # Underground Path North-South Tunnel
@@ -1558,23 +1628,23 @@ def set_location_rules(world: "PokemonFRLGWorld") -> None:
                                 state.has("Pokedex", player))
 
     # Route 6
-    add_rule_safe("Route 6 - Camper Ricky Rematch Reward 1",
+    add_rule_safe("Route 6 - Camper Ricky Rematch Reward",
                   lambda state: logic.trainer_rematch_1(state))
-    add_rule_safe("Route 6 - Camper Ricky Rematch Reward 2",
+    add_rule_safe("Route 6 - Camper Ricky Rematch Reward (4 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_3(state))
-    add_rule_safe("Route 6 - Camper Ricky Rematch Reward 3",
+    add_rule_safe("Route 6 - Camper Ricky Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
-    add_rule_safe("Route 6 - Picnicker Isabelle Rematch Reward 1",
+    add_rule_safe("Route 6 - Picnicker Isabelle Rematch Reward",
                   lambda state: logic.trainer_rematch_1(state))
-    add_rule_safe("Route 6 - Picnicker Isabelle Rematch Reward 2",
+    add_rule_safe("Route 6 - Picnicker Isabelle Rematch Reward (4 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_3(state))
-    add_rule_safe("Route 6 - Picnicker Isabelle Rematch Reward 3",
+    add_rule_safe("Route 6 - Picnicker Isabelle Rematch Reward (6 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_4(state))
-    add_rule_safe("Route 6 - Camper Jeff Rematch Reward 1",
+    add_rule_safe("Route 6 - Camper Jeff Rematch Reward",
                   lambda state: logic.trainer_rematch_1(state))
-    add_rule_safe("Route 6 - Camper Jeff Rematch Reward 2",
+    add_rule_safe("Route 6 - Camper Jeff Rematch Reward (4 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_3(state))
-    add_rule_safe("Route 6 - Camper Jeff Rematch Reward 3",
+    add_rule_safe("Route 6 - Camper Jeff Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
 
     # Vermilion City
@@ -1588,13 +1658,13 @@ def set_location_rules(world: "PokemonFRLGWorld") -> None:
                                 state.has("Pokedex", player))
 
     # Route 11
-    add_rule_safe("Route 11 - Engineer Bernie Rematch Reward",
+    add_rule_safe("Route 11 - Engineer Bernie Rematch Reward (4 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_3(state))
-    add_rule_safe("Route 11 - Youngster Yasu Rematch Reward 1",
+    add_rule_safe("Route 11 - Youngster Yasu Rematch Reward (2 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_2(state))
-    add_rule_safe("Route 11 - Youngster Yasu Rematch Reward 2",
+    add_rule_safe("Route 11 - Youngster Yasu Rematch Reward (6 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_4(state))
-    add_rule_safe("Route 11 - Gamer Darian Rematch Reward",
+    add_rule_safe("Route 11 - Gamer Darian Rematch Reward (4 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_3(state))
     add_rule_safe("Route 11 Gate 2F - Oak's Aide Gift (Pokedex Progress)",
                   lambda state: logic.has_n_pokemon(state, options.oaks_aide_route_11.value) and
@@ -1604,33 +1674,33 @@ def set_location_rules(world: "PokemonFRLGWorld") -> None:
                                 state.has("Pokedex", player))
 
     # Route 9
-    add_rule_safe("Route 9 - Picnicker Alicia Rematch Reward 1",
+    add_rule_safe("Route 9 - Picnicker Alicia Rematch Reward (2 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_2(state))
-    add_rule_safe("Route 9 - Picnicker Alicia Rematch Reward 2",
+    add_rule_safe("Route 9 - Picnicker Alicia Rematch Reward (4 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_3(state))
-    add_rule_safe("Route 9 - Picnicker Alicia Rematch Reward 3",
+    add_rule_safe("Route 9 - Picnicker Alicia Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
-    add_rule_safe("Route 9 - Hiker Jeremy Rematch Reward",
+    add_rule_safe("Route 9 - Hiker Jeremy Rematch Reward (4 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_3(state))
-    add_rule_safe("Route 9 - Camper Chris Rematch Reward 1",
+    add_rule_safe("Route 9 - Camper Chris Rematch Reward (2 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_2(state))
-    add_rule_safe("Route 9 - Camper Chris Rematch Reward 2",
+    add_rule_safe("Route 9 - Camper Chris Rematch Reward (4 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_3(state))
-    add_rule_safe("Route 9 - Camper Chris Rematch Reward 3",
+    add_rule_safe("Route 9 - Camper Chris Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
 
     # Route 10
     add_rule_safe("Route 10 - Hidden Item Behind Cuttable Tree",
                   lambda state: logic.can_cut(state))
-    add_rule_safe("Route 10 - PokeManiac Herman Rematch Reward 1",
+    add_rule_safe("Route 10 - PokeManiac Herman Rematch Reward (4 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_3(state))
-    add_rule_safe("Route 10 - PokeManiac Herman Rematch Reward 2",
+    add_rule_safe("Route 10 - PokeManiac Herman Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
-    add_rule_safe("Route 10 - Hiker Trent Rematch Reward",
+    add_rule_safe("Route 10 - Hiker Trent Rematch Reward (4 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_3(state))
-    add_rule_safe("Route 10 - PokeManiac Mark Rematch Reward 1",
+    add_rule_safe("Route 10 - PokeManiac Mark Rematch Reward (4 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_3(state))
-    add_rule_safe("Route 10 - PokeManiac Mark Rematch Reward 2",
+    add_rule_safe("Route 10 - PokeManiac Mark Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
     add_rule_safe("Route 10 Pokemon Center 1F - Oak's Aide Gift (Pokedex Progress)",
                   lambda state: logic.has_n_pokemon(state, options.oaks_aide_route_10.value) and
@@ -1644,20 +1714,20 @@ def set_location_rules(world: "PokemonFRLGWorld") -> None:
                   lambda state: state.has("Rescue Mr. Fuji", player))
 
     # Route 8
-    add_rule_safe("Route 8 - Gamer Rich Rematch Reward",
+    add_rule_safe("Route 8 - Gamer Rich Rematch Reward (4 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_3(state))
-    add_rule_safe("Route 8 - Super Nerd Glenn Rematch Reward",
+    add_rule_safe("Route 8 - Super Nerd Glenn Rematch Reward (4 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_3(state))
     add_rule_safe("Route 8 - Twins Eli & Anne Reward",
                   lambda state: state.has_any(logic.wild_pokemon, player))
-    add_rule_safe("Route 8 - Twins Eli & Anne Rematch Reward",
+    add_rule_safe("Route 8 - Twins Eli & Anne Rematch Reward (4 Badges/Gyms)",
                   lambda state: state.has_any(logic.wild_pokemon, player) and
                                 logic.trainer_rematch_3(state))
-    add_rule_safe("Route 8 - Lass Megan Rematch Reward 1",
+    add_rule_safe("Route 8 - Lass Megan Rematch Reward (2 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_2(state))
-    add_rule_safe("Route 8 - Lass Megan Rematch Reward 2",
+    add_rule_safe("Route 8 - Lass Megan Rematch Reward (6 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_4(state))
-    add_rule_safe("Route 8 - Biker Jaren Rematch Reward",
+    add_rule_safe("Route 8 - Biker Jaren Rematch Reward (4 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_3(state))
 
     # Celadon City
@@ -1666,26 +1736,6 @@ def set_location_rules(world: "PokemonFRLGWorld") -> None:
     add_rule_safe("Celadon Game Corner - Scientist Gift",
                   lambda state: state.has("Coin Case", player))
     add_rule_safe("Celadon Game Corner - Gentleman Gift",
-                  lambda state: state.has("Coin Case", player))
-    add_rule_safe("Celadon Game Corner Prize Room - Prize Pokemon 1",
-                  lambda state: state.has("Coin Case", player))
-    add_rule_safe("Celadon Game Corner Prize Room - Prize Pokemon 2",
-                  lambda state: state.has("Coin Case", player))
-    add_rule_safe("Celadon Game Corner Prize Room - Prize Pokemon 3",
-                  lambda state: state.has("Coin Case", player))
-    add_rule_safe("Celadon Game Corner Prize Room - Prize Pokemon 4",
-                  lambda state: state.has("Coin Case", player))
-    add_rule_safe("Celadon Game Corner Prize Room - Prize Pokemon 5",
-                  lambda state: state.has("Coin Case", player))
-    add_rule_safe("Prize Pokemon 1 Scaling",
-                  lambda state: state.has("Coin Case", player))
-    add_rule_safe("Prize Pokemon 2 Scaling",
-                  lambda state: state.has("Coin Case", player))
-    add_rule_safe("Prize Pokemon 3 Scaling",
-                  lambda state: state.has("Coin Case", player))
-    add_rule_safe("Prize Pokemon 4 Scaling",
-                  lambda state: state.has("Coin Case", player))
-    add_rule_safe("Prize Pokemon 5 Scaling",
                   lambda state: state.has("Coin Case", player))
     add_rule_safe("Celadon Game Corner - Northwest Hidden Item",
                   lambda state: state.has("Coin Case", player))
@@ -1711,6 +1761,52 @@ def set_location_rules(world: "PokemonFRLGWorld") -> None:
                   lambda state: state.has("Coin Case", player))
     add_rule_safe("Celadon Game Corner - Southeast Hidden Item",
                   lambda state: state.has("Coin Case", player))
+    add_rule_safe("Celadon Game Corner Prize Room - Prize Item 1",
+                  lambda state: logic.can_buy_coins(state))
+    add_rule_safe("Celadon Game Corner Prize Room - Prize Item 2",
+                  lambda state: logic.can_buy_coins(state))
+    add_rule_safe("Celadon Game Corner Prize Room - Prize Item 3",
+                  lambda state: logic.can_buy_coins(state))
+    add_rule_safe("Celadon Game Corner Prize Room - Prize Item 4",
+                  lambda state: logic.can_buy_coins(state))
+    add_rule_safe("Celadon Game Corner Prize Room - Prize Item 5",
+                  lambda state: logic.can_buy_coins(state))
+    add_rule_safe("Celadon Game Corner Prize Room - Prize TM 1",
+                  lambda state: logic.can_buy_coins(state))
+    add_rule_safe("Celadon Game Corner Prize Room - Prize TM 2",
+                  lambda state: logic.can_buy_coins(state))
+    add_rule_safe("Celadon Game Corner Prize Room - Prize TM 3",
+                  lambda state: logic.can_buy_coins(state))
+    add_rule_safe("Celadon Game Corner Prize Room - Prize TM 4",
+                  lambda state: logic.can_buy_coins(state))
+    add_rule_safe("Celadon Game Corner Prize Room - Prize TM 5",
+                  lambda state: logic.can_buy_coins(state))
+    add_rule_safe("Celadon Game Corner Prize Room - Prize Pokemon 1",
+                  lambda state: logic.can_buy_coins(state))
+    add_rule_safe("Celadon Game Corner Prize Room - Prize Pokemon 2",
+                  lambda state: logic.can_buy_coins(state))
+    add_rule_safe("Celadon Game Corner Prize Room - Prize Pokemon 3",
+                  lambda state: logic.can_buy_coins(state))
+    add_rule_safe("Celadon Game Corner Prize Room - Prize Pokemon 4",
+                  lambda state: logic.can_buy_coins(state))
+    add_rule_safe("Celadon Game Corner Prize Room - Prize Pokemon 5",
+                  lambda state: logic.can_buy_coins(state))
+    add_rule_safe("Prize Pokemon 1 Scaling",
+                  lambda state: logic.can_buy_coins(state))
+    add_rule_safe("Prize Pokemon 2 Scaling",
+                  lambda state: logic.can_buy_coins(state))
+    add_rule_safe("Prize Pokemon 3 Scaling",
+                  lambda state: logic.can_buy_coins(state))
+    add_rule_safe("Prize Pokemon 4 Scaling",
+                  lambda state: logic.can_buy_coins(state))
+    add_rule_safe("Prize Pokemon 5 Scaling",
+                  lambda state: logic.can_buy_coins(state))
+    add_rule_safe("Celadon Department Store Roof - Thirsty Girl Gift (Give Fresh Water)",
+                  lambda state: state.has("Fresh Water", player))
+    add_rule_safe("Celadon Department Store Roof - Thirsty Girl Gift (Give Soda Pop)",
+                  lambda state: state.has("Soda Pop", player))
+    add_rule_safe("Celadon Department Store Roof - Thirsty Girl Gift (Give Lemonade)",
+                  lambda state: state.has("Lemonade", player))
     add_rule_safe("Celadon Condominiums 1F - Brock Gift",
                   lambda state: state.has("Defeat Brock", player))
     add_rule_safe("Celadon Condominiums 1F - Misty Gift",
@@ -1736,74 +1832,74 @@ def set_location_rules(world: "PokemonFRLGWorld") -> None:
                   lambda state: state.has("Itemfinder", player))
 
     # Route 12
-    add_rule_safe("Route 12 - Fisherman Elliot Rematch Reward",
+    add_rule_safe("Route 12 - Fisherman Elliot Rematch Reward (4 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_3(state))
     add_rule_safe("Route 12 - Young Couple Gia & Jes Reward",
                   lambda state: state.has_any(logic.wild_pokemon, player))
-    add_rule_safe("Route 12 - Young Couple Gia & Jes Rematch Reward 1",
+    add_rule_safe("Route 12 - Young Couple Gia & Jes Rematch Reward (4 Badges/Gyms)",
                   lambda state: state.has_any(logic.wild_pokemon, player) and
                                 logic.trainer_rematch_3(state))
-    add_rule_safe("Route 12 - Young Couple Gia & Jes Rematch Reward 2",
+    add_rule_safe("Route 12 - Young Couple Gia & Jes Rematch Reward (8 Badges/Gyms)",
                   lambda state: state.has_any(logic.wild_pokemon, player) and
                                 logic.trainer_rematch_5(state))
     add_rule_safe("Route 12 - Hidden Item Under Snorlax",
                   lambda state: state.has("Itemfinder", player))
-    add_rule_safe("Route 12 - Rocker Luca Rematch Reward",
+    add_rule_safe("Route 12 - Rocker Luca Rematch Reward (4 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_3(state))
     add_rule_safe("Route 12 Fishing House - Fishing Guru Gift (Show Magikarp)",
                   lambda state: state.has("Magikarp", player) and
                                 state.has("Pokedex", player))
 
     # Route 13
-    add_rule_safe("Route 13 - Picnicker Susie Rematch Reward 1",
+    add_rule_safe("Route 13 - Picnicker Susie Rematch Reward (4 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_3(state))
-    add_rule_safe("Route 13 - Picnicker Susie Rematch Reward 2",
+    add_rule_safe("Route 13 - Picnicker Susie Rematch Reward (6 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_4(state))
-    add_rule_safe("Route 13 - Picnicker Susie Rematch Reward 3",
+    add_rule_safe("Route 13 - Picnicker Susie Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
-    add_rule_safe("Route 13 - Beauty Sheila Rematch Reward",
+    add_rule_safe("Route 13 - Beauty Sheila Rematch Reward (6 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_4(state))
-    add_rule_safe("Route 13 - Bird Keeper Robert Rematch Reward 1",
+    add_rule_safe("Route 13 - Bird Keeper Robert Rematch Reward (4 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_3(state))
-    add_rule_safe("Route 13 - Bird Keeper Robert Rematch Reward 2",
+    add_rule_safe("Route 13 - Bird Keeper Robert Rematch Reward (6 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_4(state))
 
     # Route 14
-    add_rule_safe("Route 14 - Bird Keeper Marlon Rematch Reward 1",
+    add_rule_safe("Route 14 - Bird Keeper Marlon Rematch Reward (4 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_3(state))
-    add_rule_safe("Route 14 - Bird Keeper Marlon Rematch Reward 2",
+    add_rule_safe("Route 14 - Bird Keeper Marlon Rematch Reward (6 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_4(state))
-    add_rule_safe("Route 14 - Bird Keeper Benny Rematch Reward 1",
+    add_rule_safe("Route 14 - Bird Keeper Benny Rematch Reward (4 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_3(state))
-    add_rule_safe("Route 14 - Bird Keeper Benny Rematch Reward 2",
+    add_rule_safe("Route 14 - Bird Keeper Benny Rematch Reward (6 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_4(state))
     add_rule_safe("Route 14 - Twins Kiri & Jan Reward",
                   lambda state: state.has_any(logic.wild_pokemon, player))
-    add_rule_safe("Route 14 - Biker Lukas Rematch Reward",
+    add_rule_safe("Route 14 - Biker Lukas Rematch Reward (6 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_4(state))
 
     # Route 15
-    add_rule_safe("Route 15 - Beauty Grace Rematch Reward",
+    add_rule_safe("Route 15 - Beauty Grace Rematch Reward (6 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_4(state))
-    add_rule_safe("Route 15 - Bird Keeper Chester Rematch Reward 1",
+    add_rule_safe("Route 15 - Bird Keeper Chester Rematch Reward (4 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_3(state))
-    add_rule_safe("Route 15 - Bird Keeper Chester Rematch Reward 2",
+    add_rule_safe("Route 15 - Bird Keeper Chester Rematch Reward (6 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_4(state))
-    add_rule_safe("Route 15 - Picnicker Becky Rematch Reward 1",
+    add_rule_safe("Route 15 - Picnicker Becky Rematch Reward (4 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_3(state))
-    add_rule_safe("Route 15 - Picnicker Becky Rematch Reward 2",
+    add_rule_safe("Route 15 - Picnicker Becky Rematch Reward (6 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_4(state))
-    add_rule_safe("Route 15 - Picnicker Becky Rematch Reward 3",
+    add_rule_safe("Route 15 - Picnicker Becky Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
     add_rule_safe("Route 15 - Crush Kin Ron & Mya Reward",
                   lambda state: state.has_any(logic.wild_pokemon, player))
-    add_rule_safe("Route 15 - Crush Kin Ron & Mya Rematch Reward 1",
+    add_rule_safe("Route 15 - Crush Kin Ron & Mya Rematch Reward (4 Badges/Gyms)",
                   lambda state: state.has_any(logic.wild_pokemon, player) and
                                 logic.trainer_rematch_3(state))
-    add_rule_safe("Route 15 - Crush Kin Ron & Mya Rematch Reward 2",
+    add_rule_safe("Route 15 - Crush Kin Ron & Mya Rematch Reward (6 Badges/Gyms)",
                   lambda state: state.has_any(logic.wild_pokemon, player) and
                                 logic.trainer_rematch_4(state))
-    add_rule_safe("Route 15 - Crush Kin Ron & Mya Rematch Reward 3",
+    add_rule_safe("Route 15 - Crush Kin Ron & Mya Rematch Reward (8 Badges/Gyms)",
                   lambda state: state.has_any(logic.wild_pokemon, player) and
                                 logic.trainer_rematch_5(state))
     add_rule_safe("Route 15 Gate 2F - Oak's Aide Gift (Pokedex Progress)",
@@ -1815,26 +1911,26 @@ def set_location_rules(world: "PokemonFRLGWorld") -> None:
                   lambda state: state.has_any(logic.wild_pokemon, player))
     add_rule_safe("Route 16 - Hidden Item Under Snorlax",
                   lambda state: state.has("Itemfinder", player))
-    add_rule_safe("Route 16 - Biker Ruben Rematch Reward",
+    add_rule_safe("Route 16 - Biker Ruben Rematch Reward (6 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_4(state))
-    add_rule_safe("Route 16 - Cue Ball Camron Rematch Reward",
+    add_rule_safe("Route 16 - Cue Ball Camron Rematch Reward (6 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_4(state))
     add_rule_safe("Route 16 Gate 2F - Oak's Aide Gift (Pokedex Progress)",
                   lambda state: logic.has_n_pokemon(state, options.oaks_aide_route_16.value) and
                                 state.has("Pokedex", player))
 
     # Route 17
-    add_rule_safe("Route 17 - Cue Ball Isaiah Rematch Reward",
+    add_rule_safe("Route 17 - Cue Ball Isaiah Rematch Reward (6 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_4(state))
-    add_rule_safe("Route 17 - Cue Ball Corey Rematch Reward",
+    add_rule_safe("Route 17 - Cue Ball Corey Rematch Reward (6 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_4(state))
-    add_rule_safe("Route 17 - Biker Jaxon Rematch Reward",
+    add_rule_safe("Route 17 - Biker Jaxon Rematch Reward (6 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_4(state))
 
     # Route 18
-    add_rule_safe("Route 18 - Bird Keeper Jacob Rematch Reward 1",
+    add_rule_safe("Route 18 - Bird Keeper Jacob Rematch Reward (4 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_3(state))
-    add_rule_safe("Route 18 - Bird Keeper Jacob Rematch Reward 2",
+    add_rule_safe("Route 18 - Bird Keeper Jacob Rematch Reward (6 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_4(state))
     add_rule_safe("Route 18 Gate 2F - Trade Pokemon",
                   lambda state: logic.has_trade_pokemon(state, "Route 18 Gate 2F - Trade Pokemon") and
@@ -1861,23 +1957,23 @@ def set_location_rules(world: "PokemonFRLGWorld") -> None:
                   lambda state: state.has("Defeat Sabrina", player))
 
     # Route 19
-    add_rule_safe("Route 19 - Swimmer Tony Rematch Reward",
+    add_rule_safe("Route 19 - Swimmer Tony Rematch Reward (6 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_4(state))
-    add_rule_safe("Route 19 - Swimmer Matthew Rematch Reward",
+    add_rule_safe("Route 19 - Swimmer Matthew Rematch Reward (6 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_4(state))
     add_rule_safe("Route 19 - Sis and Bro Lia & Luc Reward",
                   lambda state: state.has_any(logic.wild_pokemon, player))
-    add_rule_safe("Route 19 - Swimmer Alice Rematch Reward",
+    add_rule_safe("Route 19 - Swimmer Alice Rematch Reward (6 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_4(state))
 
     # Route 20
-    add_rule_safe("Route 20 - Swimmer Darrin Rematch Reward",
+    add_rule_safe("Route 20 - Swimmer Darrin Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
-    add_rule_safe("Route 20 - Swimmer Melissa Rematch Reward",
+    add_rule_safe("Route 20 - Swimmer Melissa Rematch Reward (6 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_4(state))
-    add_rule_safe("Route 20 - Picnicker Missy Rematch Reward 1",
+    add_rule_safe("Route 20 - Picnicker Missy Rematch Reward (6 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_4(state))
-    add_rule_safe("Route 20 - Picnicker Missy Rematch Reward 2",
+    add_rule_safe("Route 20 - Picnicker Missy Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
 
     # Cinnabar Island
@@ -1911,17 +2007,17 @@ def set_location_rules(world: "PokemonFRLGWorld") -> None:
                       lambda state: state.has("Defeat Champion", player))
 
     # Route 21
-    add_rule_safe("Route 21 - Fisherman Wade Rematch Reward",
+    add_rule_safe("Route 21 - Fisherman Wade Rematch Reward (6 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_4(state))
     add_rule_safe("Route 21 - Sis and Bro Lil & Ian Reward",
                   lambda state: state.has_any(logic.wild_pokemon, player))
-    add_rule_safe("Route 21 - Sis and Bro Lil & Ian Rematch Reward 1",
+    add_rule_safe("Route 21 - Sis and Bro Lil & Ian Rematch Reward (6 Badges/Gyms)",
                   lambda state: state.has_any(logic.wild_pokemon, player) and
                                 logic.trainer_rematch_4(state))
-    add_rule_safe("Route 21 - Sis and Bro Lil & Ian Rematch Reward 2",
+    add_rule_safe("Route 21 - Sis and Bro Lil & Ian Rematch Reward (8 Badges/Gyms)",
                   lambda state: state.has_any(logic.wild_pokemon, player) and
                                 logic.trainer_rematch_5(state))
-    add_rule_safe("Route 21 - Swimmer Jack Rematch Reward",
+    add_rule_safe("Route 21 - Swimmer Jack Rematch Reward (6 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_4(state))
 
     # Victory Road
@@ -2018,31 +2114,31 @@ def set_location_rules(world: "PokemonFRLGWorld") -> None:
                   lambda state: logic.can_rock_smash(state))
     add_rule_safe("Kindle Road - Item Behind Smashable Rock",
                   lambda state: logic.can_rock_smash(state))
-    add_rule_safe("Kindle Road - Crush Girl Tanya Rematch Reward 1",
+    add_rule_safe("Kindle Road - Crush Girl Tanya Rematch Reward (6 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_4(state))
-    add_rule_safe("Kindle Road - Crush Girl Tanya Rematch Reward 2",
+    add_rule_safe("Kindle Road - Crush Girl Tanya Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
     add_rule_safe("Kindle Road - Crush Kin Mik & Kia Reward",
                   lambda state: state.has_any(logic.wild_pokemon, player))
-    add_rule_safe("Kindle Road - Crush Kin Mik & Kia Rematch Reward 1",
+    add_rule_safe("Kindle Road - Crush Kin Mik & Kia Rematch Reward (6 Badges/Gyms)",
                   lambda state: state.has_any(logic.wild_pokemon, player) and
                                 logic.trainer_rematch_4(state))
-    add_rule_safe("Kindle Road - Crush Kin Mik & Kia Rematch Reward 2",
+    add_rule_safe("Kindle Road - Crush Kin Mik & Kia Rematch Reward (8 Badges/Gyms)",
                   lambda state: state.has_any(logic.wild_pokemon, player) and
                                 logic.trainer_rematch_5(state))
-    add_rule_safe("Kindle Road - Black Belt Hugh Rematch Reward 1",
+    add_rule_safe("Kindle Road - Black Belt Hugh Rematch Reward (6 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_4(state))
-    add_rule_safe("Kindle Road - Black Belt Hugh Rematch Reward 2",
+    add_rule_safe("Kindle Road - Black Belt Hugh Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
-    add_rule_safe("Kindle Road - Black Belt Shea Rematch Reward 1",
+    add_rule_safe("Kindle Road - Black Belt Shea Rematch Reward (6 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_4(state))
-    add_rule_safe("Kindle Road - Black Belt Shea Rematch Reward 2",
+    add_rule_safe("Kindle Road - Black Belt Shea Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
-    add_rule_safe("Kindle Road - Crush Girl Sharon Rematch Reward 1",
+    add_rule_safe("Kindle Road - Crush Girl Sharon Rematch Reward (6 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_4(state))
-    add_rule_safe("Kindle Road - Crush Girl Sharon Rematch Reward 2",
+    add_rule_safe("Kindle Road - Crush Girl Sharon Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
-    add_rule_safe("Kindle Road - Swimmer Finn Rematch Reward",
+    add_rule_safe("Kindle Road - Swimmer Finn Rematch Reward (6 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_4(state))
 
     # Ember Spa
@@ -2109,10 +2205,10 @@ def set_location_rules(world: "PokemonFRLGWorld") -> None:
     # Bond Bridge
     add_rule_safe("Bond Bridge - Twins Joy & Meg Reward",
                   lambda state: state.has_any(logic.wild_pokemon, player))
-    add_rule_safe("Bond Bridge - Twins Joy & Meg Rematch Reward",
+    add_rule_safe("Bond Bridge - Twins Joy & Meg Rematch Reward (6 Badges/Gyms)",
                   lambda state: state.has_any(logic.wild_pokemon, player) and
                                 logic.trainer_rematch_4(state))
-    add_rule_safe("Bond Bridge - Tuber Amira Rematch Reward",
+    add_rule_safe("Bond Bridge - Tuber Amira Rematch Reward (6 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_4(state))
 
     # Berry Forest
@@ -2141,11 +2237,11 @@ def set_location_rules(world: "PokemonFRLGWorld") -> None:
                   lambda state: state.has("Restore Pokemon Network Machine", player))
 
     # Memorial Pillar
-    add_rule_safe("Memorial Pillar - Bird Keeper Milo Rematch Reward",
+    add_rule_safe("Memorial Pillar - Bird Keeper Milo Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
-    add_rule_safe("Memorial Pillar - Bird Keeper Chaz Rematch Reward",
+    add_rule_safe("Memorial Pillar - Bird Keeper Chaz Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
-    add_rule_safe("Memorial Pillar - Bird Keeper Harold Rematch Reward",
+    add_rule_safe("Memorial Pillar - Bird Keeper Harold Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
     add_rule_safe("Memorial Pillar - Memorial Man Gift",
                   lambda state: state.has("Lemonade", player))
@@ -2154,22 +2250,22 @@ def set_location_rules(world: "PokemonFRLGWorld") -> None:
     add_rule_safe("Water Labyrinth - Gentleman Info",
                   lambda state: state.has_any(("Togepi", "Togetic"), player) and
                                 state.has("Pokedex", player))
-    add_rule_safe("Water Labyrinth - Pokemon Breeder Alize Rematch Reward",
+    add_rule_safe("Water Labyrinth - Pokemon Breeder Alize Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
 
     # Resort Gorgeous
-    add_rule_safe("Resort Gorgeous - Painter Rayna Rematch Reward",
+    add_rule_safe("Resort Gorgeous - Painter Rayna Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
-    add_rule_safe("Resort Gorgeous - Youngster Destin Rematch Reward",
+    add_rule_safe("Resort Gorgeous - Youngster Destin Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
     add_rule_safe("Selphy's House - Selphy Gift (Show Pokemon)",
                   lambda state: logic.can_show_selphy_pokemon(state) and
                                 state.has("Pokedex", player))
 
     # Water Path
-    add_rule_safe("Water Path - Hiker Earl Rematch Reward",
+    add_rule_safe("Water Path - Hiker Earl Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
-    add_rule_safe("Water Path - Swimmer Samir Rematch Reward",
+    add_rule_safe("Water Path - Swimmer Samir Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
     add_rule_safe("Water Path - Twins Miu & Mia Reward",
                   lambda state: state.has_any(logic.wild_pokemon, player))
@@ -2184,9 +2280,9 @@ def set_location_rules(world: "PokemonFRLGWorld") -> None:
                   lambda state: logic.can_strength(state))
     add_rule_safe("Ruin Valley - Southeast Item",
                   lambda state: logic.can_strength(state))
-    add_rule_safe("Ruin Valley - PokeManiac Hector Rematch Reward",
+    add_rule_safe("Ruin Valley - PokeManiac Hector Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
-    add_rule_safe("Ruin Valley - Ruin Maniac Larry Rematch Reward",
+    add_rule_safe("Ruin Valley - Ruin Maniac Larry Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
 
     # Dotted Hole
@@ -2194,11 +2290,11 @@ def set_location_rules(world: "PokemonFRLGWorld") -> None:
                   lambda state: state.has("Learn Yes Nah Chansey", player))
 
     # Green Path
-    add_rule_safe("Green Path - Psychic Jaclyn Rematch Reward",
+    add_rule_safe("Green Path - Psychic Jaclyn Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
 
     # Outcast Island
-    add_rule_safe("Outcast Island - Swimmer Nicole Rematch Reward",
+    add_rule_safe("Outcast Island - Swimmer Nicole Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
     add_rule_safe("Outcast Island - Sis and Bro Ava & Geb Reward",
                   lambda state: state.has_any(logic.wild_pokemon, player))
@@ -2213,11 +2309,11 @@ def set_location_rules(world: "PokemonFRLGWorld") -> None:
                       lambda state: state.has("Defeat Champion", player))
 
     # Canyon Entrance
-    add_rule_safe("Canyon Entrance - Juggler Mason Rematch Reward",
+    add_rule_safe("Canyon Entrance - Juggler Mason Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
-    add_rule_safe("Canyon Entrance - Pokemon Ranger Nicolas Rematch Reward",
+    add_rule_safe("Canyon Entrance - Pokemon Ranger Nicolas Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
-    add_rule_safe("Canyon Entrance - Pokemon Ranger Madeline Rematch Reward",
+    add_rule_safe("Canyon Entrance - Pokemon Ranger Madeline Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
     add_rule_safe("Canyon Entrance - Young Couple Eve & Jon Reward",
                   lambda state: state.has_any(logic.wild_pokemon, player))
@@ -2225,22 +2321,22 @@ def set_location_rules(world: "PokemonFRLGWorld") -> None:
     # Sevault Canyon
     add_rule_safe("Sevault Canyon - Cool Couple Lex & Nya Reward",
                   lambda state: state.has_any(logic.wild_pokemon, player))
-    add_rule_safe("Sevault Canyon - Cool Couple Lex & Nya Rematch Reward",
+    add_rule_safe("Sevault Canyon - Cool Couple Lex & Nya Rematch Reward (8 Badges/Gyms)",
                   lambda state: state.has_any(logic.wild_pokemon, player) and
                                 logic.trainer_rematch_5(state))
-    add_rule_safe("Sevault Canyon - Tamer Evan Rematch Reward",
+    add_rule_safe("Sevault Canyon - Tamer Evan Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
-    add_rule_safe("Sevault Canyon - Pokemon Ranger Jackson Rematch Reward",
+    add_rule_safe("Sevault Canyon - Pokemon Ranger Jackson Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
-    add_rule_safe("Sevault Canyon - Pokemon Ranger Katelyn Rematch Reward",
+    add_rule_safe("Sevault Canyon - Pokemon Ranger Katelyn Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
-    add_rule_safe("Sevault Canyon - Crush Girl Cyndy Rematch Reward",
+    add_rule_safe("Sevault Canyon - Crush Girl Cyndy Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
     add_rule_safe("Sevault Canyon - Item Behind Smashable Rocks",
                   lambda state: logic.can_strength(state) and logic.can_rock_smash(state))
-    add_rule_safe("Sevault Canyon - Cooltrainer Leroy Rematch Reward",
+    add_rule_safe("Sevault Canyon - Cooltrainer Leroy Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
-    add_rule_safe("Sevault Canyon - Cooltrainer Michelle Rematch Reward",
+    add_rule_safe("Sevault Canyon - Cooltrainer Michelle Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
 
     # Tanoby Key
@@ -2252,9 +2348,9 @@ def set_location_rules(world: "PokemonFRLGWorld") -> None:
                   lambda state: state.has("Unlock Ruins", player))
 
     # Trainer Tower Exterior
-    add_rule_safe("Trainer Tower Exterior - Psychic Rodette Rematch Reward",
+    add_rule_safe("Trainer Tower Exterior - Psychic Rodette Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
-    add_rule_safe("Trainer Tower Exterior - Psychic Dario Rematch Reward",
+    add_rule_safe("Trainer Tower Exterior - Psychic Dario Rematch Reward (8 Badges/Gyms)",
                   lambda state: logic.trainer_rematch_5(state))
 
     # Cerulean Cave
@@ -2266,7 +2362,7 @@ def set_location_rules(world: "PokemonFRLGWorld") -> None:
                   lambda state: logic.can_rock_smash(state))
 
     # Navel Rock
-    add_rule_safe("Navel Rock - Hidden Item Near Ho-Oh",
+    add_rule_safe("Navel Rock Summit - Hidden Item Near Ho-Oh",
                   lambda state: state.has("Itemfinder", player))
 
 
@@ -2307,7 +2403,10 @@ def set_rules(world: "PokemonFRLGWorld") -> None:
         multiworld.completion_condition[player] = lambda state: state.has("Defeat Champion (Rematch)", player)
 
     if options.pokemon_request_locations and not options.kanto_only:
-        logic.resort_gorgeous_pokemon = NAME_TO_SPECIES_ID[world.random.choice(logic.wild_pokemon)]
+        if not world.is_universal_tracker:
+            logic.resort_gorgeous_pokemon = NAME_TO_SPECIES_ID[world.random.choice(logic.wild_pokemon)]
+        else:
+            logic.resort_gorgeous_pokemon = world.ut_slot_data["resort_gorgeous_pokemon"]
 
     set_entrance_rules(world)
     set_location_rules(world)
@@ -2317,7 +2416,11 @@ def set_rules(world: "PokemonFRLGWorld") -> None:
         assert isinstance(location, PokemonFRLGLocation)
         if (options.itemfinder_required != ItemfinderRequired.option_off and
                 location.category == LocationCategory.HIDDEN_ITEM):
-            add_rule(location, lambda state: state.has("Itemfinder", player))
+            if world.is_universal_tracker and options.itemfinder_required == ItemfinderRequired.option_logic:
+                add_rule(location, lambda state: state.has("Itemfinder", player)
+                                                 or state.has(PokemonFRLGGlitchedToken.TOKEN_NAME, player))
+            else:
+                add_rule(location, lambda state: state.has("Itemfinder", player))
         if options.fame_checker_required and location.category == LocationCategory.FAME_ENTRY:
             add_rule(location, lambda state: state.has("Fame Checker", player))
         if location.category == LocationCategory.POKEDEX:
@@ -2353,9 +2456,26 @@ def set_rules(world: "PokemonFRLGWorld") -> None:
 
         for region in dark_cave_regions:
             for exit in world.get_region(region).exits:
-                add_rule(exit, lambda state: logic.can_flash(state))
+                if world.is_universal_tracker and options.flash_required == FlashRequired.option_logic:
+                    add_rule(exit, lambda state: logic.can_flash(state)
+                                                 or state.has(PokemonFRLGGlitchedToken.TOKEN_NAME, player))
+                else:
+                    add_rule(exit, lambda state: logic.can_flash(state))
             for location in world.get_region(region).locations:
-                add_rule(location, lambda state: logic.can_flash(state))
+                if world.is_universal_tracker and options.flash_required == FlashRequired.option_logic:
+                    add_rule(location, lambda state: logic.can_flash(state)
+                                                     or state.has(PokemonFRLGGlitchedToken.TOKEN_NAME, player))
+                else:
+                    add_rule(location, lambda state: logic.can_flash(state))
+
+    # Add bicycle logic
+    cycling_road_regions = ["Route 16 (Southwest)", "Route 17", "Route 18 (West)"]
+
+    for region in cycling_road_regions:
+        for exit in world.get_region(region).exits:
+            add_rule(exit, lambda state: state.has("Bicycle", player))
+        for location in world.get_region(region).locations:
+            add_rule(location, lambda state: state.has("Bicycle", player))
 
 
 def set_hm_compatible_pokemon(world: "PokemonFRLGWorld") -> None:
@@ -2370,6 +2490,9 @@ def set_hm_compatible_pokemon(world: "PokemonFRLGWorld") -> None:
 
 
 def verify_hm_accessibility(world: "PokemonFRLGWorld") -> None:
+    if world.is_universal_tracker:
+        return
+
     logic = world.logic
 
     def can_use_hm(state: CollectionState, hm: str) -> bool:

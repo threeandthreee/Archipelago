@@ -67,6 +67,7 @@ sa1rom
 !left = #$0003
 
 ; Game variables
+!current_revenge_chapter = $7A69
 !received_sub_games = $7A85
 !current_selected_sub_game = $7A91
 !completed_sub_games = $7A93
@@ -81,6 +82,8 @@ sa1rom
 !received_planets = $408004
 !play_sfx = $408006
 !activate_candy = $408008
+!mirror_game = $40800A
+!mirror_room = $40800C
 
 
 org $008C29
@@ -97,6 +100,17 @@ hook_soft_reset:
     NOP
     NOP
     NOP
+
+org $00C3EA
+always_check_dyna:
+    CMP #$0007
+
+
+org $00C406
+hook_dyna_clear:
+    JSL dyna_clear
+    NOP #4
+
 
 org $00C46F
 hook_set_star_complete:
@@ -129,8 +143,8 @@ org $059810
 org $07DEB2
     NOP #3 ; Grants the initial treasure of TGCO for some reason, probably for the tutorial?
 
-org $07DF3E
-    NOP #3 ; Dyna Blade initialization, just need to preserve switch state
+org $07DF3B
+    NOP #6 ; Dyna Blade initialization, just need to preserve switch state
 
 org $07DF95
     JSL load_game
@@ -241,6 +255,9 @@ SetEntityFlag:
     RTS
 
 hook_maxim_tomato:
+    LDA $32EA
+    CMP #$0006
+    BEQ .ArenaMaxim
     LDA $7573
     BEQ .Maxim
     JML $05981E
@@ -248,6 +265,7 @@ hook_maxim_tomato:
     print "Maxims: ", hex(snestopc(realbase()))
     LDA #$0000
     BNE .Continue
+    .DoMaxim:
     LDA $28
     CMP $737A, Y
     BEQ .Full
@@ -258,6 +276,11 @@ hook_maxim_tomato:
     LDY $39
     JSL SetEntityFlagY
     JML $059840
+    .ArenaMaxim:
+    print "Arena Maxims: ", hex(snestopc(realbase()))
+    LDA #$0000
+    BNE .Continue
+    BRA .DoMaxim
 
 hook_one_up:
     print "OneUp: ", hex(snestopc(realbase()))
@@ -732,9 +755,14 @@ set_treasure:
     STX $14
     LDX #$0040
     STX $16
+    ;// quick return if game mode == 2
+    LDX $7390
+    CPX #$0002
+    BEQ .Return
     JSR determine_treasure
     ORA [$14], Y
     STA [$14], Y
+    .Return:
     RTL
 
 hook_copy_ability:
@@ -1022,7 +1050,12 @@ block_tgco_access:
     BRA .SetWithPull
     .Block:
     PLB
-    JML $019223
+    LDY #$0002
+    LDA $6986, Y
+    STA $330C
+    LDA $6A00, Y
+    STA $3310
+    JML $019254
 
 set_star_complete:
     JSL set_treasure
@@ -1069,10 +1102,15 @@ MainLoop:
     STA !play_sfx
     .Candy:
     LDA !activate_candy
-    BEQ .Return
+    BEQ .Mirror
     JSL invincibility_candy
     LDA #$0000
     STA !activate_candy
+    .Mirror:
+    LDA $32EA
+    STA !mirror_game
+    LDA $32F2
+    STA !mirror_room
     .Return:
     PLX
     RTL
@@ -1330,6 +1368,21 @@ subgame_requirement_visual:
     STA $73B6
     PLB
     JML $CABCDA
+
+dyna_clear:
+    LDA #$0001
+    LDX $02
+    DEX
+    .Loop:
+    BEQ .Continue
+    ASL
+    DEX
+    BRA .Loop
+    .Continue:
+    ORA $407A63
+    STA $407A63
+    LDA #$0009
+    RTL
 
 org $CEE9C4
 hook_credits:

@@ -1,49 +1,49 @@
 {
   "BADGE_1": {
     "name": "Pewter Gym - Prize",
-    "tags": ["Gym Prizes", "Kanto", "Pewter City"],
+    "tags": ["Gym Prizes", "Kanto", "Pewter City", "Pewter Gym"],
     "category": "NPC_GIFT",
     "include": []
   },
   "BADGE_2": {
     "name": "Cerulean Gym - Prize",
-    "tags": ["Gym Prizes", "Kanto", "Cerulean City"],
+    "tags": ["Gym Prizes", "Kanto", "Cerulean City", "Cerulean Gym"],
     "category": "NPC_GIFT",
     "include": []
   },
   "BADGE_3": {
     "name": "Vermilion Gym - Prize",
-    "tags": ["Gym Prizes", "Kanto", "Vermilion City"],
+    "tags": ["Gym Prizes", "Kanto", "Vermilion City", "Vermilion Gym"],
     "category": "NPC_GIFT",
     "include": []
   },
   "BADGE_4": {
     "name": "Celadon Gym - Prize",
-    "tags": ["Gym Prizes", "Kanto", "Celadon City"],
+    "tags": ["Gym Prizes", "Kanto", "Celadon City", "Celadon Gym"],
     "category": "NPC_GIFT",
     "include": []
   },
   "BADGE_5": {
     "name": "Fuchsia Gym - Prize",
-    "tags": ["Gym Prizes", "Kanto", "Fuchsia City"],
+    "tags": ["Gym Prizes", "Kanto", "Fuchsia City", "Fuchsia Gym"],
     "category": "NPC_GIFT",
     "include": []
   },
   "BADGE_6": {
     "name": "Saffron Gym - Prize",
-    "tags": ["Gym Prizes", "Kanto", "Saffron City"],
+    "tags": ["Gym Prizes", "Kanto", "Saffron City", "Saffron Gym"],
     "category": "NPC_GIFT",
     "include": []
   },
   "BADGE_7": {
     "name": "Cinnabar Gym - Prize",
-    "tags": ["Gym Prizes", "Kanto", "Cinnabar Island"],
+    "tags": ["Gym Prizes", "Kanto", "Cinnabar Island", "Cinnabar Gym"],
     "category": "NPC_GIFT",
     "include": []
   },
   "BADGE_8": {
     "name": "Viridian Gym - Prize",
-    "tags": ["Gym Prizes", "Kanto", "Viridian City"],
+    "tags": ["Gym Prizes", "Kanto", "Viridian City", "Viridian Gym"],
     "category": "NPC_GIFT",
     "include": []
   },
@@ -140,7 +140,7 @@
     "include": []
   },
   "ITEM_SAFARI_ZONE_WEST_GOLD_TEETH": {
-    "name": "Safari Zone West - Northeast Item",
+    "name": "Safari Zone West Area - Northeast Item",
     "tags": ["Overworld Items", "Kanto", "Safari Zone"],
     "category": "OVERWORLD_ITEM",
     "include": []
@@ -293,12 +293,12 @@
   },
   "HIDDEN_ITEM_CERULEAN_CITY_GYM_MACHINE_PART": {
     "name": "Cerulean Gym - Hidden Item in Water",
-    "tags": ["Hidden Items", "Kanto", "Cerulean City"],
+    "tags": ["Hidden Items", "Kanto", "Cerulean City", "Cerulean Gym"],
     "category": "HIDDEN_ITEM",
     "include": ["Extra Key Items"]
   },
   "NPC_GIFT_GOT_SAFARI_PASS": {
-    "name": "Fuchsia Safari Zone Office - Safari Zone Worker Gift",
+    "name": "Safari Zone Office - Safari Zone Worker Gift",
     "tags": ["NPC Gifts", "Kanto", "Fuchsia City"],
     "category": "NPC_GIFT",
     "include": ["Extra Key Items"]
@@ -555,7 +555,7 @@
     "include": ["Gym Keys"]
   },
   "ITEM_SAFARI_ZONE_EAST_RESTHOUSE_FUCHSIA_KEY": {
-    "name": "Safari Zone East Rest House - Item",
+    "name": "Safari Zone East Area Rest House - Item",
     "tags": ["Overworld Items", "Kanto", "Safari Zone"],
     "category": "OVERWORLD_ITEM",
     "include": ["Gym Keys"]
@@ -1414,7 +1414,7 @@
     "include": []
   },
   "ITEM_SSANNE_KITCHEN_GREAT_BALL": {
-    "name": "S.S. Anne 1F Kitchen - Item",
+    "name": "S.S. Anne Kitchen - Item",
     "tags": ["Overworld Items", "Kanto", "S.S. Anne"],
     "category": "OVERWORLD_ITEM",
     "include": []
@@ -1787,7 +1787,7 @@
     "include": ["Hidden Items"]
   },
   "HIDDEN_ITEM_NAVEL_ROCK_SUMMIT_SACRED_ASH": {
-    "name": "Navel Rock - Hidden Item Near Ho-Oh",
+    "name": "Navel Rock Summit - Hidden Item Near Ho-Oh",
     "tags": ["Hidden Items", "Sevii Islands", "Navel Rock"],
     "category": "HIDDEN_ITEM",
     "include": ["Hidden Items"]
@@ -2640,7 +2640,7 @@
   },
   "HIDDEN_ITEM_VIRIDIAN_CITY_GYM_MACHO_BRACE": {
     "name": "Viridian Gym - Hidden Item Under Giovanni",
-    "tags": ["Hidden Items", "Kanto", "Viridian City"],
+    "tags": ["Hidden Items", "Kanto", "Viridian City", "Viridian Gym"],
     "category": "HIDDEN_ITEM",
     "include": ["Hidden Items"]
   },
@@ -2792,19 +2792,19 @@
   },
   "NPC_GIFT_GOT_TM03_FROM_MISTY": {
     "name": "Cerulean Gym - Misty TM",
-    "tags": ["NPC Gifts", "Gym TMs", "Kanto", "Cerulean City"],
+    "tags": ["NPC Gifts", "Gym TMs", "Kanto", "Cerulean City", "Cerulean Gym"],
     "category": "NPC_GIFT",
     "include": []
   },
   "NPC_GIFT_GOT_TM04_FROM_SABRINA": {
     "name": "Saffron Gym - Sabrina TM",
-    "tags": ["NPC Gifts", "Gym TMs", "Kanto", "Saffron City"],
+    "tags": ["NPC Gifts", "Gym TMs", "Kanto", "Saffron City", "Saffron Gym"],
     "category": "NPC_GIFT",
     "include": []
   },
   "NPC_GIFT_GOT_TM06_FROM_KOGA": {
     "name": "Fuchsia Gym - Koga TM",
-    "tags": ["NPC Gifts", "Gym TMs", "Kanto", "Fuchsia City"],
+    "tags": ["NPC Gifts", "Gym TMs", "Kanto", "Fuchsia City", "Fuchsia Gym"],
     "category": "NPC_GIFT",
     "include": []
   },
@@ -2816,7 +2816,7 @@
   },
   "NPC_GIFT_GOT_TM19_FROM_ERIKA": {
     "name": "Celadon Gym - Erika TM",
-    "tags": ["NPC Gifts", "Gym TMs", "Kanto", "Celadon City"],
+    "tags": ["NPC Gifts", "Gym TMs", "Kanto", "Celadon City", "Celadon Gym"],
     "category": "NPC_GIFT",
     "include": []
   },
@@ -2828,7 +2828,7 @@
   },
   "NPC_GIFT_GOT_TM26_FROM_GIOVANNI": {
     "name": "Viridian Gym - Giovanni TM",
-    "tags": ["NPC Gifts", "Gym TMs", "Kanto", "Viridian City"],
+    "tags": ["NPC Gifts", "Gym TMs", "Kanto", "Viridian City", "Viridian Gym"],
     "category": "NPC_GIFT",
     "include": []
   },
@@ -2858,19 +2858,19 @@
   },
   "NPC_GIFT_GOT_TM34_FROM_SURGE": {
     "name": "Vermilion Gym - Lt. Surge TM",
-    "tags": ["NPC Gifts", "Gym TMs", "Kanto", "Vermilion City"],
+    "tags": ["NPC Gifts", "Gym TMs", "Kanto", "Vermilion City", "Vermilion Gym"],
     "category": "NPC_GIFT",
     "include": []
   },
   "NPC_GIFT_GOT_TM38_FROM_BLAINE": {
     "name": "Cinnabar Gym - Blaine TM",
-    "tags": ["NPC Gifts", "Gym TMs", "Kanto", "Cinnabar Island"],
+    "tags": ["NPC Gifts", "Gym TMs", "Kanto", "Cinnabar Island", "Cinnabar Gym"],
     "category": "NPC_GIFT",
     "include": []
   },
   "NPC_GIFT_GOT_TM39_FROM_BROCK": {
     "name": "Pewter Gym - Brock TM",
-    "tags": ["NPC Gifts", "Gym TMs", "Kanto", "Pewter City"],
+    "tags": ["NPC Gifts", "Gym TMs", "Kanto", "Pewter City", "Pewter Gym"],
     "category": "NPC_GIFT",
     "include": []
   },
@@ -3109,6 +3109,24 @@
     "category": "SHOP_ITEM",
     "include": []
   },
+  "SHOP_CELADON_CITY_DEPT_VENDING_MACHINES_1": {
+    "name": "Celadon Department Store Roof - Vending Machine Item 1",
+    "tags": ["Vending Machines", "Kanto", "Celadon City"],
+    "category": "SHOP_ITEM",
+    "include": []
+  },
+  "SHOP_CELADON_CITY_DEPT_VENDING_MACHINES_2": {
+    "name": "Celadon Department Store Roof - Vending Machine Item 2",
+    "tags": ["Vending Machines", "Kanto", "Celadon City"],
+    "category": "SHOP_ITEM",
+    "include": []
+  },
+  "SHOP_CELADON_CITY_DEPT_VENDING_MACHINES_3": {
+    "name": "Celadon Department Store Roof - Vending Machine Item 3",
+    "tags": ["Vending Machines", "Kanto", "Celadon City"],
+    "category": "SHOP_ITEM",
+    "include": []
+  },
   "SHOP_CELADON_CITY_DEPT_VITAMIN_1": {
     "name": "Celadon Department Store 5F - Vitamin Shop Item 1",
     "tags": ["Shops", "Kanto", "Celadon City"],
@@ -3142,6 +3160,66 @@
   "SHOP_CELADON_CITY_DEPT_VITAMIN_6": {
     "name": "Celadon Department Store 5F - Vitamin Shop Item 6",
     "tags": ["Shops", "Kanto", "Celadon City"],
+    "category": "SHOP_ITEM",
+    "include": []
+  },
+  "SHOP_CELADON_CITY_GAME_CORNER_PRIZE_1": {
+    "name": "Celadon Game Corner Prize Room - Prize Item 1",
+    "tags": ["Prizes", "Kanto", "Celadon City"],
+    "category": "SHOP_ITEM",
+    "include": []
+  },
+  "SHOP_CELADON_CITY_GAME_CORNER_PRIZE_2": {
+    "name": "Celadon Game Corner Prize Room - Prize Item 2",
+    "tags": ["Prizes", "Kanto", "Celadon City"],
+    "category": "SHOP_ITEM",
+    "include": []
+  },
+  "SHOP_CELADON_CITY_GAME_CORNER_PRIZE_3": {
+    "name": "Celadon Game Corner Prize Room - Prize Item 3",
+    "tags": ["Prizes", "Kanto", "Celadon City"],
+    "category": "SHOP_ITEM",
+    "include": []
+  },
+  "SHOP_CELADON_CITY_GAME_CORNER_PRIZE_4": {
+    "name": "Celadon Game Corner Prize Room - Prize Item 4",
+    "tags": ["Prizes", "Kanto", "Celadon City"],
+    "category": "SHOP_ITEM",
+    "include": []
+  },
+  "SHOP_CELADON_CITY_GAME_CORNER_PRIZE_5": {
+    "name": "Celadon Game Corner Prize Room - Prize Item 5",
+    "tags": ["Prizes", "Kanto", "Celadon City"],
+    "category": "SHOP_ITEM",
+    "include": []
+  },
+  "SHOP_CELADON_CITY_GAME_CORNER_TM_PRIZE_1": {
+    "name": "Celadon Game Corner Prize Room - Prize TM 1",
+    "tags": ["Prizes", "Kanto", "Celadon City"],
+    "category": "SHOP_ITEM",
+    "include": []
+  },
+  "SHOP_CELADON_CITY_GAME_CORNER_TM_PRIZE_2": {
+    "name": "Celadon Game Corner Prize Room - Prize TM 2",
+    "tags": ["Prizes", "Kanto", "Celadon City"],
+    "category": "SHOP_ITEM",
+    "include": []
+  },
+  "SHOP_CELADON_CITY_GAME_CORNER_TM_PRIZE_3": {
+    "name": "Celadon Game Corner Prize Room - Prize TM 3",
+    "tags": ["Prizes", "Kanto", "Celadon City"],
+    "category": "SHOP_ITEM",
+    "include": []
+  },
+  "SHOP_CELADON_CITY_GAME_CORNER_TM_PRIZE_4": {
+    "name": "Celadon Game Corner Prize Room - Prize TM 4",
+    "tags": ["Prizes", "Kanto", "Celadon City"],
+    "category": "SHOP_ITEM",
+    "include": []
+  },
+  "SHOP_CELADON_CITY_GAME_CORNER_TM_PRIZE_5": {
+    "name": "Celadon Game Corner Prize Room - Prize TM 5",
+    "tags": ["Prizes", "Kanto", "Celadon City"],
     "category": "SHOP_ITEM",
     "include": []
   },
@@ -3699,55 +3777,55 @@
   },
   "SHOP_TWO_ISLAND_1": {
     "name": "Two Island Town - Market Stall Item 1",
-    "tags": ["Shops", "Sevii Islands", "Two Island", "Two Island Town"],
+    "tags": ["Shops", "Market Stall", "Sevii Islands", "Two Island", "Two Island Town"],
     "category": "SHOP_ITEM",
     "include": []
   },
   "SHOP_TWO_ISLAND_2": {
     "name": "Two Island Town - Market Stall Item 2",
-    "tags": ["Shops", "Sevii Islands", "Two Island", "Two Island Town"],
+    "tags": ["Shops", "Market Stall", "Sevii Islands", "Two Island", "Two Island Town"],
     "category": "SHOP_ITEM",
     "include": []
   },
   "SHOP_TWO_ISLAND_3": {
     "name": "Two Island Town - Market Stall Item 3",
-    "tags": ["Shops", "Sevii Islands", "Two Island", "Two Island Town"],
+    "tags": ["Shops", "Market Stall", "Sevii Islands", "Two Island", "Two Island Town"],
     "category": "SHOP_ITEM",
     "include": []
   },
   "SHOP_TWO_ISLAND_4": {
     "name": "Two Island Town - Market Stall Item 4",
-    "tags": ["Shops", "Sevii Islands", "Two Island", "Two Island Town"],
+    "tags": ["Shops", "Market Stall", "Sevii Islands", "Two Island", "Two Island Town"],
     "category": "SHOP_ITEM",
     "include": []
   },
   "SHOP_TWO_ISLAND_5": {
     "name": "Two Island Town - Market Stall Item 5",
-    "tags": ["Shops", "Sevii Islands", "Two Island", "Two Island Town"],
+    "tags": ["Shops", "Market Stall", "Sevii Islands", "Two Island", "Two Island Town"],
     "category": "SHOP_ITEM",
     "include": []
   },
   "SHOP_TWO_ISLAND_6": {
     "name": "Two Island Town - Market Stall Item 6",
-    "tags": ["Shops", "Sevii Islands", "Two Island", "Two Island Town"],
+    "tags": ["Shops", "Market Stall", "Sevii Islands", "Two Island", "Two Island Town"],
     "category": "SHOP_ITEM",
     "include": []
   },
   "SHOP_TWO_ISLAND_7": {
     "name": "Two Island Town - Market Stall Item 7",
-    "tags": ["Shops", "Sevii Islands", "Two Island", "Two Island Town"],
+    "tags": ["Shops", "Market Stall", "Sevii Islands", "Two Island", "Two Island Town"],
     "category": "SHOP_ITEM",
     "include": []
   },
   "SHOP_TWO_ISLAND_8": {
     "name": "Two Island Town - Market Stall Item 8",
-    "tags": ["Shops", "Sevii Islands", "Two Island", "Two Island Town"],
+    "tags": ["Shops", "Market Stall", "Sevii Islands", "Two Island", "Two Island Town"],
     "category": "SHOP_ITEM",
     "include": []
   },
   "SHOP_TWO_ISLAND_9": {
     "name": "Two Island Town - Market Stall Item 9",
-    "tags": ["Shops", "Sevii Islands", "Two Island", "Two Island Town"],
+    "tags": ["Shops", "Market Stall", "Sevii Islands", "Two Island", "Two Island Town"],
     "category": "SHOP_ITEM",
     "include": []
   },
@@ -3844,7 +3922,7 @@
   },
   "TRAINER_BEAUTY_BRIDGET_REWARD": {
     "name": "Celadon Gym - Beauty Bridget Reward",
-    "tags": ["Trainers", "Kanto", "Celadon City"],
+    "tags": ["Trainers", "Kanto", "Celadon City", "Celadon Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
@@ -3855,9 +3933,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_BEAUTY_GRACE_2_REWARD": {
-    "name": "Route 15 - Beauty Grace Rematch Reward",
+    "name": "Route 15 - Beauty Grace Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 15"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_BEAUTY_LOLA_REWARD": {
@@ -3868,7 +3946,7 @@
   },
   "TRAINER_BEAUTY_LORI_REWARD": {
     "name": "Celadon Gym - Beauty Lori Reward",
-    "tags": ["Trainers", "Kanto", "Celadon City"],
+    "tags": ["Trainers", "Kanto", "Celadon City", "Celadon Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
@@ -3885,14 +3963,14 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_BEAUTY_SHEILA_2_REWARD": {
-    "name": "Route 13 - Beauty Sheila Rematch Reward",
+    "name": "Route 13 - Beauty Sheila Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 13"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_BEAUTY_TAMIA_REWARD": {
     "name": "Celadon Gym - Beauty Tamia Reward",
-    "tags": ["Trainers", "Kanto", "Celadon City"],
+    "tags": ["Trainers", "Kanto", "Celadon City", "Celadon Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
@@ -3963,9 +4041,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_BIKER_JAREN_2_REWARD": {
-    "name": "Route 8 - Biker Jaren Rematch Reward",
+    "name": "Route 8 - Biker Jaren Rematch Reward (4 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 8"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_BIKER_JAXON_REWARD": {
@@ -3975,9 +4053,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_BIKER_JAXON_2_REWARD": {
-    "name": "Route 17 - Biker Jaxon Rematch Reward",
+    "name": "Route 17 - Biker Jaxon Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 17"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_BIKER_LAO_REWARD": {
@@ -3993,9 +4071,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_BIKER_LUKAS_2_REWARD": {
-    "name": "Route 14 - Biker Lukas Rematch Reward",
+    "name": "Route 14 - Biker Lukas Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 14"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_BIKER_MALIK_REWARD": {
@@ -4023,9 +4101,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_BIKER_RUBEN_2_REWARD": {
-    "name": "Route 16 - Biker Ruben Rematch Reward",
+    "name": "Route 16 - Biker Ruben Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 16"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_BIKER_VIRGIL_REWARD": {
@@ -4053,15 +4131,15 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_BIRD_KEEPER_BENNY_2_REWARD": {
-    "name": "Route 14 - Bird Keeper Benny Rematch Reward 1",
+    "name": "Route 14 - Bird Keeper Benny Rematch Reward (4 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 14"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_BIRD_KEEPER_BENNY_3_REWARD": {
-    "name": "Route 14 - Bird Keeper Benny Rematch Reward 2",
+    "name": "Route 14 - Bird Keeper Benny Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 14"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_BIRD_KEEPER_CARTER_REWARD": {
@@ -4077,9 +4155,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_BIRD_KEEPER_CHAZ_2_REWARD": {
-    "name": "Memorial Pillar - Bird Keeper Chaz Rematch Reward",
+    "name": "Memorial Pillar - Bird Keeper Chaz Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Sevii Islands", "Five Island", "Memorial Pillar"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_BIRD_KEEPER_CHESTER_REWARD": {
@@ -4089,15 +4167,15 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_BIRD_KEEPER_CHESTER_2_REWARD": {
-    "name": "Route 15 - Bird Keeper Chester Rematch Reward 1",
+    "name": "Route 15 - Bird Keeper Chester Rematch Reward (4 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 15"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_BIRD_KEEPER_CHESTER_3_REWARD": {
-    "name": "Route 15 - Bird Keeper Chester Rematch Reward 2",
+    "name": "Route 15 - Bird Keeper Chester Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 15"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_BIRD_KEEPER_DONALD_REWARD": {
@@ -4119,9 +4197,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_BIRD_KEEPER_HAROLD_2_REWARD": {
-    "name": "Memorial Pillar - Bird Keeper Harold Rematch Reward",
+    "name": "Memorial Pillar - Bird Keeper Harold Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Sevii Islands", "Five Island", "Memorial Pillar"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_BIRD_KEEPER_JACOB_REWARD": {
@@ -4131,15 +4209,15 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_BIRD_KEEPER_JACOB_2_REWARD": {
-    "name": "Route 18 - Bird Keeper Jacob Rematch Reward 1",
+    "name": "Route 18 - Bird Keeper Jacob Rematch Reward (4 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 18"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_BIRD_KEEPER_JACOB_3_REWARD": {
-    "name": "Route 18 - Bird Keeper Jacob Rematch Reward 2",
+    "name": "Route 18 - Bird Keeper Jacob Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 18"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_BIRD_KEEPER_MARLON_REWARD": {
@@ -4149,15 +4227,15 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_BIRD_KEEPER_MARLON_2_REWARD": {
-    "name": "Route 14 - Bird Keeper Marlon Rematch Reward 1",
+    "name": "Route 14 - Bird Keeper Marlon Rematch Reward (4 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 14"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_BIRD_KEEPER_MARLON_3_REWARD": {
-    "name": "Route 14 - Bird Keeper Marlon Rematch Reward 2",
+    "name": "Route 14 - Bird Keeper Marlon Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 14"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_BIRD_KEEPER_MILO_REWARD": {
@@ -4167,9 +4245,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_BIRD_KEEPER_MILO_2_REWARD": {
-    "name": "Memorial Pillar - Bird Keeper Milo Rematch Reward",
+    "name": "Memorial Pillar - Bird Keeper Milo Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Sevii Islands", "Five Island", "Memorial Pillar"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_BIRD_KEEPER_MITCH_REWARD": {
@@ -4197,15 +4275,15 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_BIRD_KEEPER_ROBERT_2_REWARD": {
-    "name": "Route 13 - Bird Keeper Robert Rematch Reward 1",
+    "name": "Route 13 - Bird Keeper Robert Rematch Reward (4 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 13"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_BIRD_KEEPER_ROBERT_3_REWARD": {
-    "name": "Route 13 - Bird Keeper Robert Rematch Reward 2",
+    "name": "Route 13 - Bird Keeper Robert Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 13"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_BIRD_KEEPER_ROGER_REWARD": {
@@ -4234,7 +4312,7 @@
   },
   "TRAINER_BLACK_BELT_ATSUSHI_REWARD": {
     "name": "Viridian Gym - Black Belt Atsushi Reward",
-    "tags": ["Trainers", "Kanto", "Viridian City"],
+    "tags": ["Trainers", "Kanto", "Viridian City", "Viridian Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
@@ -4263,20 +4341,20 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_BLACK_BELT_HUGH_2_REWARD": {
-    "name": "Kindle Road - Black Belt Hugh Rematch Reward 1",
+    "name": "Kindle Road - Black Belt Hugh Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Sevii Islands", "One Island", "Kindle Road"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_BLACK_BELT_HUGH_3_REWARD": {
-    "name": "Kindle Road - Black Belt Hugh Rematch Reward 2",
+    "name": "Kindle Road - Black Belt Hugh Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Sevii Islands", "One Island", "Kindle Road"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_BLACK_BELT_KIYO_REWARD": {
     "name": "Viridian Gym - Black Belt Kiyo Reward",
-    "tags": ["Trainers", "Kanto", "Viridian City"],
+    "tags": ["Trainers", "Kanto", "Viridian City", "Viridian Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
@@ -4299,20 +4377,20 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_BLACK_BELT_SHEA_2_REWARD": {
-    "name": "Kindle Road - Black Belt Shea Rematch Reward 1",
+    "name": "Kindle Road - Black Belt Shea Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Sevii Islands", "One Island", "Kindle Road"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_BLACK_BELT_SHEA_3_REWARD": {
-    "name": "Kindle Road - Black Belt Shea Rematch Reward 2",
+    "name": "Kindle Road - Black Belt Shea Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Sevii Islands", "One Island", "Kindle Road"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_BLACK_BELT_TAKASHI_REWARD": {
     "name": "Viridian Gym - Black Belt Takashi Reward",
-    "tags": ["Trainers", "Kanto", "Viridian City"],
+    "tags": ["Trainers", "Kanto", "Viridian City", "Viridian Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
@@ -4359,21 +4437,21 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_BUG_CATCHER_COLTON_2_REWARD": {
-    "name": "Route 3 - Bug Catcher Colton Rematch Reward 1",
+    "name": "Route 3 - Bug Catcher Colton Rematch Reward",
     "tags": ["Trainers", "Kanto", "Route 3"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_BUG_CATCHER_COLTON_3_REWARD": {
-    "name": "Route 3 - Bug Catcher Colton Rematch Reward 2",
+    "name": "Route 3 - Bug Catcher Colton Rematch Reward (4 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 3"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_BUG_CATCHER_COLTON_4_REWARD": {
-    "name": "Route 3 - Bug Catcher Colton Rematch Reward 3",
+    "name": "Route 3 - Bug Catcher Colton Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 3"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_BUG_CATCHER_CONNER_REWARD": {
@@ -4462,7 +4540,7 @@
   },
   "TRAINER_BURGLAR_DUSTY_REWARD": {
     "name": "Cinnabar Gym - Burglar Dusty Reward",
-    "tags": ["Trainers", "Kanto", "Cinnabar Island"],
+    "tags": ["Trainers", "Kanto", "Cinnabar Island", "Cinnabar Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
@@ -4474,13 +4552,13 @@
   },
   "TRAINER_BURGLAR_QUINN_REWARD": {
     "name": "Cinnabar Gym - Burglar Quinn Reward",
-    "tags": ["Trainers", "Kanto", "Cinnabar Island"],
+    "tags": ["Trainers", "Kanto", "Cinnabar Island", "Cinnabar Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
   "TRAINER_BURGLAR_RAMON_REWARD": {
     "name": "Cinnabar Gym - Burglar Ramon Reward",
-    "tags": ["Trainers", "Kanto", "Cinnabar Island"],
+    "tags": ["Trainers", "Kanto", "Cinnabar Island", "Cinnabar Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
@@ -4503,21 +4581,21 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_CAMPER_CHRIS_2_REWARD": {
-    "name": "Route 9 - Camper Chris Rematch Reward 1",
+    "name": "Route 9 - Camper Chris Rematch Reward (2 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 9"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_CAMPER_CHRIS_3_REWARD": {
-    "name": "Route 9 - Camper Chris Rematch Reward 2",
+    "name": "Route 9 - Camper Chris Rematch Reward (4 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 9"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_CAMPER_CHRIS_4_REWARD": {
-    "name": "Route 9 - Camper Chris Rematch Reward 3",
+    "name": "Route 9 - Camper Chris Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 9"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_CAMPER_DREW_REWARD": {
@@ -4545,21 +4623,21 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_CAMPER_JEFF_2_REWARD": {
-    "name": "Route 6 - Camper Jeff Rematch Reward 1",
+    "name": "Route 6 - Camper Jeff Rematch Reward",
     "tags": ["Trainers", "Kanto", "Route 6"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_CAMPER_JEFF_3_REWARD": {
-    "name": "Route 6 - Camper Jeff Rematch Reward 2",
+    "name": "Route 6 - Camper Jeff Rematch Reward (4 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 6"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_CAMPER_JEFF_4_REWARD": {
-    "name": "Route 6 - Camper Jeff Rematch Reward 3",
+    "name": "Route 6 - Camper Jeff Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 6"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_CAMPER_JUSTIN_REWARD": {
@@ -4570,7 +4648,7 @@
   },
   "TRAINER_CAMPER_LIAM_REWARD": {
     "name": "Pewter Gym - Camper Liam Reward",
-    "tags": ["Trainers", "Kanto", "Pewter City"],
+    "tags": ["Trainers", "Kanto", "Pewter City", "Pewter Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
@@ -4581,21 +4659,21 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_CAMPER_RICKY_2_REWARD": {
-    "name": "Route 6 - Camper Ricky Rematch Reward 1",
+    "name": "Route 6 - Camper Ricky Rematch Reward",
     "tags": ["Trainers", "Kanto", "Route 6"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_CAMPER_RICKY_3_REWARD": {
-    "name": "Route 6 - Camper Ricky Rematch Reward 2",
+    "name": "Route 6 - Camper Ricky Rematch Reward (4 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 6"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_CAMPER_RICKY_4_REWARD": {
-    "name": "Route 6 - Camper Ricky Rematch Reward 3",
+    "name": "Route 6 - Camper Ricky Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 6"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_CAMPER_RILEY_REWARD": {
@@ -4624,7 +4702,7 @@
   },
   "TRAINER_CHANNELER_AMANDA_REWARD": {
     "name": "Saffron Gym - Channeler Amanda Reward",
-    "tags": ["Trainers", "Kanto", "Saffron City"],
+    "tags": ["Trainers", "Kanto", "Saffron City", "Saffron Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
@@ -4702,7 +4780,7 @@
   },
   "TRAINER_CHANNELER_STACY_REWARD": {
     "name": "Saffron Gym - Channeler Stacy Reward",
-    "tags": ["Trainers", "Kanto", "Saffron City"],
+    "tags": ["Trainers", "Kanto", "Saffron City", "Saffron Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
@@ -4714,7 +4792,7 @@
   },
   "TRAINER_CHANNELER_TASHA_REWARD": {
     "name": "Saffron Gym - Channeler Tasha Reward",
-    "tags": ["Trainers", "Kanto", "Saffron City"],
+    "tags": ["Trainers", "Kanto", "Saffron City", "Saffron Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
@@ -4749,14 +4827,14 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_COOLTRAINER_LEROY_2_REWARD": {
-    "name": "Sevault Canyon - Cooltrainer Leroy Rematch Reward",
+    "name": "Sevault Canyon - Cooltrainer Leroy Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Sevii Islands", "Seven Island", "Sevault Canyon"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_COOLTRAINER_MARY_REWARD": {
     "name": "Celadon Gym - Cooltrainer Mary Reward",
-    "tags": ["Trainers", "Kanto", "Celadon City"],
+    "tags": ["Trainers", "Kanto", "Celadon City", "Celadon Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
@@ -4767,9 +4845,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_COOLTRAINER_MICHELLE_2_REWARD": {
-    "name": "Sevault Canyon - Cooltrainer Michelle Rematch Reward",
+    "name": "Sevault Canyon - Cooltrainer Michelle Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Sevii Islands", "Seven Island", "Sevault Canyon"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_COOLTRAINER_NAOMI_REWARD": {
@@ -4786,19 +4864,19 @@
   },
   "TRAINER_COOLTRAINER_SAMUEL_REWARD": {
     "name": "Viridian Gym - Cooltrainer Samuel Reward",
-    "tags": ["Trainers", "Kanto", "Viridian City"],
+    "tags": ["Trainers", "Kanto", "Viridian City", "Viridian Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
   "TRAINER_COOLTRAINER_WARREN_REWARD": {
     "name": "Viridian Gym - Cooltrainer Warren Reward",
-    "tags": ["Trainers", "Kanto", "Viridian City"],
+    "tags": ["Trainers", "Kanto", "Viridian City", "Viridian Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
   "TRAINER_COOLTRAINER_YUJI_REWARD": {
     "name": "Viridian Gym - Cooltrainer Yuji Reward",
-    "tags": ["Trainers", "Kanto", "Viridian City"],
+    "tags": ["Trainers", "Kanto", "Viridian City", "Viridian Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
@@ -4809,9 +4887,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_COOL_COUPLE_LEX_NYA_2_REWARD": {
-    "name": "Sevault Canyon - Cool Couple Lex & Nya Rematch Reward",
+    "name": "Sevault Canyon - Cool Couple Lex & Nya Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Sevii Islands", "Seven Island", "Sevault Canyon"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_COOL_COUPLE_RAY_TYRA_REWARD": {
@@ -4827,9 +4905,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_CRUSH_GIRL_CYNDY_2_REWARD": {
-    "name": "Sevault Canyon - Crush Girl Cyndy Rematch Reward",
+    "name": "Sevault Canyon - Crush Girl Cyndy Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Sevii Islands", "Seven Island", "Sevault Canyon"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_CRUSH_GIRL_JOCELYN_REWARD": {
@@ -4845,15 +4923,15 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_CRUSH_GIRL_SHARON_2_REWARD": {
-    "name": "Kindle Road - Crush Girl Sharon Rematch Reward 1",
+    "name": "Kindle Road - Crush Girl Sharon Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Sevii Islands", "One Island", "Kindle Road"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_CRUSH_GIRL_SHARON_3_REWARD": {
-    "name": "Kindle Road - Crush Girl Sharon Rematch Reward 2",
+    "name": "Kindle Road - Crush Girl Sharon Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Sevii Islands", "One Island", "Kindle Road"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_CRUSH_GIRL_TANYA_REWARD": {
@@ -4863,15 +4941,15 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_CRUSH_GIRL_TANYA_2_REWARD": {
-    "name": "Kindle Road - Crush Girl Tanya Rematch Reward 1",
+    "name": "Kindle Road - Crush Girl Tanya Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Sevii Islands", "One Island", "Kindle Road"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_CRUSH_GIRL_TANYA_3_REWARD": {
-    "name": "Kindle Road - Crush Girl Tanya Rematch Reward 2",
+    "name": "Kindle Road - Crush Girl Tanya Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Sevii Islands", "One Island", "Kindle Road"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_CRUSH_KIN_MIK_KIA_REWARD": {
@@ -4881,15 +4959,15 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_CRUSH_KIN_MIK_KIA_2_REWARD": {
-    "name": "Kindle Road - Crush Kin Mik & Kia Rematch Reward 1",
+    "name": "Kindle Road - Crush Kin Mik & Kia Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Sevii Islands", "One Island", "Kindle Road"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_CRUSH_KIN_MIK_KIA_3_REWARD": {
-    "name": "Kindle Road - Crush Kin Mik & Kia Rematch Reward 2",
+    "name": "Kindle Road - Crush Kin Mik & Kia Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Sevii Islands", "One Island", "Kindle Road"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_CRUSH_KIN_RON_MYA_REWARD": {
@@ -4899,21 +4977,21 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_CRUSH_KIN_RON_MYA_2_REWARD": {
-    "name": "Route 15 - Crush Kin Ron & Mya Rematch Reward 1",
+    "name": "Route 15 - Crush Kin Ron & Mya Rematch Reward (4 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 15"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_CRUSH_KIN_RON_MYA_3_REWARD": {
-    "name": "Route 15 - Crush Kin Ron & Mya Rematch Reward 2",
+    "name": "Route 15 - Crush Kin Ron & Mya Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 15"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_CRUSH_KIN_RON_MYA_4_REWARD": {
-    "name": "Route 15 - Crush Kin Ron & Mya Rematch Reward 3",
+    "name": "Route 15 - Crush Kin Ron & Mya Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 15"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_CUE_BALL_CAMRON_REWARD": {
@@ -4923,9 +5001,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_CUE_BALL_CAMRON_2_REWARD": {
-    "name": "Route 16 - Cue Ball Camron Rematch Reward",
+    "name": "Route 16 - Cue Ball Camron Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 16"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_CUE_BALL_COREY_REWARD": {
@@ -4935,9 +5013,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_CUE_BALL_COREY_2_REWARD": {
-    "name": "Route 17 - Cue Ball Corey Rematch Reward",
+    "name": "Route 17 - Cue Ball Corey Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 17"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_CUE_BALL_ISAIAH_REWARD": {
@@ -4947,9 +5025,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_CUE_BALL_ISAIAH_2_REWARD": {
-    "name": "Route 17 - Cue Ball Isaiah Rematch Reward",
+    "name": "Route 17 - Cue Ball Isaiah Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 17"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_CUE_BALL_JAMAL_REWARD": {
@@ -5038,7 +5116,7 @@
   },
   "TRAINER_ENGINEER_BAILY_REWARD": {
     "name": "Vermilion Gym - Engineer Baily Reward",
-    "tags": ["Trainers", "Kanto", "Vermilion City"],
+    "tags": ["Trainers", "Kanto", "Vermilion City", "Vermilion Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
@@ -5049,9 +5127,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_ENGINEER_BERNIE_2_REWARD": {
-    "name": "Route 11 - Engineer Bernie Rematch Reward",
+    "name": "Route 11 - Engineer Bernie Rematch Reward (4 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 11"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_ENGINEER_BRAXTON_REWARD": {
@@ -5097,9 +5175,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_FISHERMAN_ELLIOT_2_REWARD": {
-    "name": "Route 12 - Fisherman Elliot Rematch Reward",
+    "name": "Route 12 - Fisherman Elliot Rematch Reward (4 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 12"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_FISHERMAN_HANK_REWARD": {
@@ -5145,9 +5223,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_FISHERMAN_WADE_2_REWARD": {
-    "name": "Route 21 - Fisherman Wade Rematch Reward",
+    "name": "Route 21 - Fisherman Wade Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 21"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_GAMER_DARIAN_REWARD": {
@@ -5157,9 +5235,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_GAMER_DARIAN_2_REWARD": {
-    "name": "Route 11 - Gamer Darian Rematch Reward",
+    "name": "Route 11 - Gamer Darian Rematch Reward (4 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 11"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_GAMER_DIRK_REWARD": {
@@ -5187,9 +5265,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_GAMER_RICH_2_REWARD": {
-    "name": "Route 8 - Gamer Rich Rematch Reward",
+    "name": "Route 8 - Gamer Rich Rematch Reward (4 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 8"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_GAMER_STAN_REWARD": {
@@ -5230,7 +5308,7 @@
   },
   "TRAINER_GENTLEMAN_TUCKER_REWARD": {
     "name": "Vermilion Gym - Gentleman Tucker Reward",
-    "tags": ["Trainers", "Kanto", "Vermilion City"],
+    "tags": ["Trainers", "Kanto", "Vermilion City", "Vermilion Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
@@ -5277,9 +5355,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_HIKER_EARL_2_REWARD": {
-    "name": "Water Path - Hiker Earl Rematch Reward",
+    "name": "Water Path - Hiker Earl Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Sevii Islands", "Six Island", "Water Path"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_HIKER_ERIC_REWARD": {
@@ -5295,9 +5373,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_HIKER_FRANKLIN_2_REWARD": {
-    "name": "Route 25 - Hiker Franklin Rematch Reward",
+    "name": "Route 25 - Hiker Franklin Rematch Reward (2 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 25"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_HIKER_JEREMY_REWARD": {
@@ -5307,9 +5385,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_HIKER_JEREMY_2_REWARD": {
-    "name": "Route 9 - Hiker Jeremy Rematch Reward",
+    "name": "Route 9 - Hiker Jeremy Rematch Reward (4 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 9"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_HIKER_LENNY_REWARD": {
@@ -5349,9 +5427,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_HIKER_TRENT_2_REWARD": {
-    "name": "Route 10 - Hiker Trent Rematch Reward",
+    "name": "Route 10 - Hiker Trent Rematch Reward (4 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 10"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_HIKER_WAYNE_REWARD": {
@@ -5380,13 +5458,13 @@
   },
   "TRAINER_JUGGLER_KAYDEN_REWARD": {
     "name": "Fuchsia Gym - Juggler Kayden Reward",
-    "tags": ["Trainers", "Kanto", "Fuchsia City"],
+    "tags": ["Trainers", "Kanto", "Fuchsia City", "Fuchsia Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
   "TRAINER_JUGGLER_KIRK_REWARD": {
     "name": "Fuchsia Gym - Juggler Kirk Reward",
-    "tags": ["Trainers", "Kanto", "Fuchsia City"],
+    "tags": ["Trainers", "Kanto", "Fuchsia City", "Fuchsia Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
@@ -5397,14 +5475,14 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_JUGGLER_MASON_2_REWARD": {
-    "name": "Canyon Entrance - Juggler Mason Rematch Reward",
+    "name": "Canyon Entrance - Juggler Mason Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Sevii Islands", "Seven Island", "Canyon Entrance"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_JUGGLER_NATE_REWARD": {
     "name": "Fuchsia Gym - Juggler Nate Reward",
-    "tags": ["Trainers", "Kanto", "Fuchsia City"],
+    "tags": ["Trainers", "Kanto", "Fuchsia City", "Fuchsia Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
@@ -5416,7 +5494,7 @@
   },
   "TRAINER_JUGGLER_SHAWN_REWARD": {
     "name": "Fuchsia Gym - Juggler Shawn Reward",
-    "tags": ["Trainers", "Kanto", "Fuchsia City"],
+    "tags": ["Trainers", "Kanto", "Fuchsia City", "Fuchsia Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
@@ -5493,15 +5571,15 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_LASS_JANICE_2_REWARD": {
-    "name": "Route 3 - Lass Janice Rematch Reward 1",
+    "name": "Route 3 - Lass Janice Rematch Reward",
     "tags": ["Trainers", "Kanto", "Route 3"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_LASS_JANICE_3_REWARD": {
-    "name": "Route 3 - Lass Janice Rematch Reward 2",
+    "name": "Route 3 - Lass Janice Rematch Reward (4 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 3"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_LASS_JOANA_REWARD": {
@@ -5518,13 +5596,13 @@
   },
   "TRAINER_LASS_KAY_REWARD": {
     "name": "Celadon Gym - Lass Kay Reward",
-    "tags": ["Trainers", "Kanto", "Celadon City"],
+    "tags": ["Trainers", "Kanto", "Celadon City", "Celadon Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
   "TRAINER_LASS_LISA_REWARD": {
     "name": "Celadon Gym - Lass Lisa Reward",
-    "tags": ["Trainers", "Kanto", "Celadon City"],
+    "tags": ["Trainers", "Kanto", "Celadon City", "Celadon Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
@@ -5535,15 +5613,15 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_LASS_MEGAN_2_REWARD": {
-    "name": "Route 8 - Lass Megan Rematch Reward 1",
+    "name": "Route 8 - Lass Megan Rematch Reward (2 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 8"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_LASS_MEGAN_3_REWARD": {
-    "name": "Route 8 - Lass Megan Rematch Reward 2",
+    "name": "Route 8 - Lass Megan Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 8"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_LASS_MIRIAM_REWARD": {
@@ -5565,15 +5643,15 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_LASS_RELI_2_REWARD": {
-    "name": "Route 24 - Lass Reli Rematch Reward 1",
+    "name": "Route 24 - Lass Reli Rematch Reward",
     "tags": ["Trainers", "Kanto", "Route 24"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_LASS_RELI_3_REWARD": {
-    "name": "Route 24 - Lass Reli Rematch Reward 2",
+    "name": "Route 24 - Lass Reli Rematch Reward (4 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 24"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_LASS_ROBIN_REWARD": {
@@ -5590,49 +5668,49 @@
   },
   "TRAINER_LEADER_BLAINE_REWARD": {
     "name": "Cinnabar Gym - Leader Blaine Reward",
-    "tags": ["Trainers", "Kanto", "Cinnabar Island"],
+    "tags": ["Trainers", "Kanto", "Cinnabar Island", "Cinnabar Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
   "TRAINER_LEADER_BROCK_REWARD": {
     "name": "Pewter Gym - Leader Brock Reward",
-    "tags": ["Trainers", "Kanto", "Pewter City"],
+    "tags": ["Trainers", "Kanto", "Pewter City", "Pewter Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
   "TRAINER_LEADER_ERIKA_REWARD": {
     "name": "Celadon Gym - Leader Erika Reward",
-    "tags": ["Trainers", "Kanto", "Celadon City"],
+    "tags": ["Trainers", "Kanto", "Celadon City", "Celadon Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
   "TRAINER_LEADER_GIOVANNI_REWARD": {
     "name": "Viridian Gym - Leader Giovanni Reward",
-    "tags": ["Trainers", "Kanto", "Viridian City"],
+    "tags": ["Trainers", "Kanto", "Viridian City", "Viridian Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
   "TRAINER_LEADER_KOGA_REWARD": {
     "name": "Fuchsia Gym - Leader Koga Reward",
-    "tags": ["Trainers", "Kanto", "Fuchsia City"],
+    "tags": ["Trainers", "Kanto", "Fuchsia City", "Fuchsia Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
   "TRAINER_LEADER_LT_SURGE_REWARD": {
     "name": "Vermilion Gym - Leader Lt. Surge Reward",
-    "tags": ["Trainers", "Kanto", "Vermilion City"],
+    "tags": ["Trainers", "Kanto", "Vermilion City", "Vermilion Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
   "TRAINER_LEADER_MISTY_REWARD": {
     "name": "Cerulean Gym - Leader Misty Reward",
-    "tags": ["Trainers", "Kanto", "Cerulean City"],
+    "tags": ["Trainers", "Kanto", "Cerulean City", "Cerulean Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
   "TRAINER_LEADER_SABRINA_REWARD": {
     "name": "Saffron Gym - Leader Sabrina Reward",
-    "tags": ["Trainers", "Kanto", "Saffron City"],
+    "tags": ["Trainers", "Kanto", "Saffron City", "Saffron Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
@@ -5661,9 +5739,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_PAINTER_RAYNA_2_REWARD": {
-    "name": "Resort Gorgeous - Painter Rayna Rematch Reward",
+    "name": "Resort Gorgeous - Painter Rayna Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Sevii Islands", "Five Island", "Resort Gorgeous"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_PICNICKER_ALICIA_REWARD": {
@@ -5673,21 +5751,21 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_PICNICKER_ALICIA_2_REWARD": {
-    "name": "Route 9 - Picnicker Alicia Rematch Reward 1",
+    "name": "Route 9 - Picnicker Alicia Rematch Reward (2 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 9"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_PICNICKER_ALICIA_3_REWARD": {
-    "name": "Route 9 - Picnicker Alicia Rematch Reward 2",
+    "name": "Route 9 - Picnicker Alicia Rematch Reward (4 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 9"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_PICNICKER_ALICIA_4_REWARD": {
-    "name": "Route 9 - Picnicker Alicia Rematch Reward 3",
+    "name": "Route 9 - Picnicker Alicia Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 9"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_PICNICKER_ALMA_REWARD": {
@@ -5709,21 +5787,21 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_PICNICKER_BECKY_2_REWARD": {
-    "name": "Route 15 - Picnicker Becky Rematch Reward 1",
+    "name": "Route 15 - Picnicker Becky Rematch Reward (4 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 15"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_PICNICKER_BECKY_3_REWARD": {
-    "name": "Route 15 - Picnicker Becky Rematch Reward 2",
+    "name": "Route 15 - Picnicker Becky Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 15"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_PICNICKER_BECKY_4_REWARD": {
-    "name": "Route 15 - Picnicker Becky Rematch Reward 3",
+    "name": "Route 15 - Picnicker Becky Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 15"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_PICNICKER_CAITLIN_REWARD": {
@@ -5758,7 +5836,7 @@
   },
   "TRAINER_PICNICKER_DIANA_REWARD": {
     "name": "Cerulean Gym - Picnicker Diana Reward",
-    "tags": ["Trainers", "Kanto", "Cerulean City"],
+    "tags": ["Trainers", "Kanto", "Cerulean City", "Cerulean Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
@@ -5787,21 +5865,21 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_PICNICKER_ISABELLE_2_REWARD": {
-    "name": "Route 6 - Picnicker Isabelle Rematch Reward 1",
+    "name": "Route 6 - Picnicker Isabelle Rematch Reward",
     "tags": ["Trainers", "Kanto", "Route 6"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_PICNICKER_ISABELLE_3_REWARD": {
-    "name": "Route 6 - Picnicker Isabelle Rematch Reward 2",
+    "name": "Route 6 - Picnicker Isabelle Rematch Reward (4 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 6"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_PICNICKER_ISABELLE_4_REWARD": {
-    "name": "Route 6 - Picnicker Isabelle Rematch Reward 3",
+    "name": "Route 6 - Picnicker Isabelle Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 6"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_PICNICKER_KELSEY_REWARD": {
@@ -5811,21 +5889,21 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_PICNICKER_KELSEY_2_REWARD": {
-    "name": "Route 25 - Picnicker Kelsey Rematch Reward 1",
+    "name": "Route 25 - Picnicker Kelsey Rematch Reward",
     "tags": ["Trainers", "Kanto", "Route 25"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_PICNICKER_KELSEY_3_REWARD": {
-    "name": "Route 25 - Picnicker Kelsey Rematch Reward 2",
+    "name": "Route 25 - Picnicker Kelsey Rematch Reward (4 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 25"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_PICNICKER_KELSEY_4_REWARD": {
-    "name": "Route 25 - Picnicker Kelsey Rematch Reward 3",
+    "name": "Route 25 - Picnicker Kelsey Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 25"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_PICNICKER_KINDRA_REWARD": {
@@ -5859,15 +5937,15 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_PICNICKER_MISSY_2_REWARD": {
-    "name": "Route 20 - Picnicker Missy Rematch Reward 1",
+    "name": "Route 20 - Picnicker Missy Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 20"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_PICNICKER_MISSY_3_REWARD": {
-    "name": "Route 20 - Picnicker Missy Rematch Reward 2",
+    "name": "Route 20 - Picnicker Missy Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 20"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_PICNICKER_NANCY_REWARD": {
@@ -5889,26 +5967,26 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_PICNICKER_SUSIE_2_REWARD": {
-    "name": "Route 13 - Picnicker Susie Rematch Reward 1",
+    "name": "Route 13 - Picnicker Susie Rematch Reward (4 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 13"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_PICNICKER_SUSIE_3_REWARD": {
-    "name": "Route 13 - Picnicker Susie Rematch Reward 2",
+    "name": "Route 13 - Picnicker Susie Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 13"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_PICNICKER_SUSIE_4_REWARD": {
-    "name": "Route 13 - Picnicker Susie Rematch Reward 3",
+    "name": "Route 13 - Picnicker Susie Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 13"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_PICNICKER_TINA_REWARD": {
     "name": "Celadon Gym - Picnicker Tina Reward",
-    "tags": ["Trainers", "Kanto", "Celadon City"],
+    "tags": ["Trainers", "Kanto", "Celadon City", "Celadon Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
@@ -5931,9 +6009,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_PKMN_BREEDER_ALIZE_2_REWARD": {
-    "name": "Water Labyrinth - Pokemon Breeder Alize Rematch Reward",
+    "name": "Water Labyrinth - Pokemon Breeder Alize Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Sevii Islands", "Five Island", "Water Labyrinth"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_PKMN_BREEDER_ALLISON_REWARD": {
@@ -5961,9 +6039,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_PKMN_RANGER_JACKSON_2_REWARD": {
-    "name": "Sevault Canyon - Pokemon Ranger Jackson Rematch Reward",
+    "name": "Sevault Canyon - Pokemon Ranger Jackson Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Sevii Islands", "Seven Island", "Sevault Canyon"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_PKMN_RANGER_KATELYN_REWARD": {
@@ -5973,9 +6051,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_PKMN_RANGER_KATELYN_2_REWARD": {
-    "name": "Sevault Canyon - Pokemon Ranger Katelyn Rematch Reward",
+    "name": "Sevault Canyon - Pokemon Ranger Katelyn Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Sevii Islands", "Seven Island", "Sevault Canyon"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_PKMN_RANGER_LOGAN_REWARD": {
@@ -5991,9 +6069,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_PKMN_RANGER_MADELINE_2_REWARD": {
-    "name": "Canyon Entrance - Pokemon Ranger Madeline Rematch Reward",
+    "name": "Canyon Entrance - Pokemon Ranger Madeline Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Sevii Islands", "Seven Island", "Canyon Entrance"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_PKMN_RANGER_NICOLAS_REWARD": {
@@ -6003,9 +6081,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_PKMN_RANGER_NICOLAS_2_REWARD": {
-    "name": "Canyon Entrance - Pokemon Ranger Nicolas Rematch Reward",
+    "name": "Canyon Entrance - Pokemon Ranger Nicolas Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Sevii Islands", "Seven Island", "Canyon Entrance"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_POKEMANIAC_ASHTON_REWARD": {
@@ -6033,9 +6111,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_POKEMANIAC_HECTOR_2_REWARD": {
-    "name": "Ruin Valley - PokeManiac Hector Rematch Reward",
+    "name": "Ruin Valley - PokeManiac Hector Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Sevii Islands", "Six Island", "Ruin Valley"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_POKEMANIAC_HERMAN_REWARD": {
@@ -6045,15 +6123,15 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_POKEMANIAC_HERMAN_2_REWARD": {
-    "name": "Route 10 - PokeManiac Herman Rematch Reward 1",
+    "name": "Route 10 - PokeManiac Herman Rematch Reward (4 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 10"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_POKEMANIAC_HERMAN_3_REWARD": {
-    "name": "Route 10 - PokeManiac Herman Rematch Reward 2",
+    "name": "Route 10 - PokeManiac Herman Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 10"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_POKEMANIAC_MARK_REWARD": {
@@ -6063,15 +6141,15 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_POKEMANIAC_MARK_2_REWARD": {
-    "name": "Route 10 - PokeManiac Mark Rematch Reward 1",
+    "name": "Route 10 - PokeManiac Mark Rematch Reward (4 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 10"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_POKEMANIAC_MARK_3_REWARD": {
-    "name": "Route 10 - PokeManiac Mark Rematch Reward 2",
+    "name": "Route 10 - PokeManiac Mark Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 10"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_POKEMANIAC_STEVE_REWARD": {
@@ -6088,7 +6166,7 @@
   },
   "TRAINER_PSYCHIC_CAMERON_REWARD": {
     "name": "Saffron Gym - Psychic Cameron Reward",
-    "tags": ["Trainers", "Kanto", "Saffron City"],
+    "tags": ["Trainers", "Kanto", "Saffron City", "Saffron Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
@@ -6099,9 +6177,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_PSYCHIC_DARIO_2_REWARD": {
-    "name": "Trainer Tower Exterior - Psychic Dario Rematch Reward",
+    "name": "Trainer Tower Exterior - Psychic Dario Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Sevii Islands", "Seven Island", "Trainer Tower Exterior"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_PSYCHIC_JACLYN_REWARD": {
@@ -6111,26 +6189,26 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_PSYCHIC_JACLYN_2_REWARD": {
-    "name": "Green Path - Psychic Jaclyn Rematch Reward",
+    "name": "Green Path - Psychic Jaclyn Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Sevii Islands", "Six Island", "Green Path"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_PSYCHIC_JOHAN_REWARD": {
     "name": "Saffron Gym - Psychic Johan Reward",
-    "tags": ["Trainers", "Kanto", "Saffron City"],
+    "tags": ["Trainers", "Kanto", "Saffron City", "Saffron Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
   "TRAINER_PSYCHIC_LAURA_REWARD": {
-    "name": "Lost Cave Room 4 - Psychic Laura Reward",
+    "name": "Lost Cave B1F Room 4 - Psychic Laura Reward",
     "tags": ["Trainers", "Sevii Islands", "Five Island", "Lost Cave"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
   "TRAINER_PSYCHIC_PRESTON_REWARD": {
     "name": "Saffron Gym - Psychic Preston Reward",
-    "tags": ["Trainers", "Kanto", "Saffron City"],
+    "tags": ["Trainers", "Kanto", "Saffron City", "Saffron Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
@@ -6141,14 +6219,14 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_PSYCHIC_RODETTE_2_REWARD": {
-    "name": "Trainer Tower Exterior - Psychic Rodette Rematch Reward",
+    "name": "Trainer Tower Exterior - Psychic Rodette Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Sevii Islands", "Seven Island", "Trainer Tower Exterior"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_PSYCHIC_TYRON_REWARD": {
     "name": "Saffron Gym - Psychic Tyron Reward",
-    "tags": ["Trainers", "Kanto", "Saffron City"],
+    "tags": ["Trainers", "Kanto", "Saffron City", "Saffron Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
@@ -6201,9 +6279,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_ROCKER_LUCA_2_REWARD": {
-    "name": "Route 12 - Rocker Luca Rematch Reward",
+    "name": "Route 12 - Rocker Luca Rematch Reward (4 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 12"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_RUIN_MANIAC_BENJAMIN_REWARD": {
@@ -6231,13 +6309,13 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_RUIN_MANIAC_LARRY_2_REWARD": {
-    "name": "Ruin Valley - Ruin Maniac Larry Rematch Reward",
+    "name": "Ruin Valley - Ruin Maniac Larry Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Sevii Islands", "Six Island", "Ruin Valley"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_RUIN_MANIAC_LAWSON_REWARD": {
-    "name": "Lost Cave Room 1 - Ruin Maniac Lawson Reward",
+    "name": "Lost Cave B1F Room 1 - Ruin Maniac Lawson Reward",
     "tags": ["Trainers", "Sevii Islands", "Five Island", "Lost Cave"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
@@ -6262,7 +6340,7 @@
   },
   "TRAINER_SAILOR_DWAYNE_REWARD": {
     "name": "Vermilion Gym - Sailor Dwayne Reward",
-    "tags": ["Trainers", "Kanto", "Vermilion City"],
+    "tags": ["Trainers", "Kanto", "Vermilion City", "Vermilion Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
@@ -6405,15 +6483,15 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_SIS_AND_BRO_LIL_IAN_2_REWARD": {
-    "name": "Route 21 - Sis and Bro Lil & Ian Rematch Reward 1",
+    "name": "Route 21 - Sis and Bro Lil & Ian Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 21"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_SIS_AND_BRO_LIL_IAN_3_REWARD": {
-    "name": "Route 21 - Sis and Bro Lil & Ian Rematch Reward 2",
+    "name": "Route 21 - Sis and Bro Lil & Ian Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 21"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_SUPER_NERD_AIDAN_REWARD": {
@@ -6424,19 +6502,19 @@
   },
   "TRAINER_SUPER_NERD_AVERY_REWARD": {
     "name": "Cinnabar Gym - Super Nerd Avery Reward",
-    "tags": ["Trainers", "Kanto", "Cinnabar Island"],
+    "tags": ["Trainers", "Kanto", "Cinnabar Island", "Cinnabar Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
   "TRAINER_SUPER_NERD_DEREK_REWARD": {
     "name": "Cinnabar Gym - Super Nerd Derek Reward",
-    "tags": ["Trainers", "Kanto", "Cinnabar Island"],
+    "tags": ["Trainers", "Kanto", "Cinnabar Island", "Cinnabar Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
   "TRAINER_SUPER_NERD_ERIK_REWARD": {
     "name": "Cinnabar Gym - Super Nerd Erik Reward",
-    "tags": ["Trainers", "Kanto", "Cinnabar Island"],
+    "tags": ["Trainers", "Kanto", "Cinnabar Island", "Cinnabar Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
@@ -6447,9 +6525,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_SUPER_NERD_GLENN_2_REWARD": {
-    "name": "Route 8 - Super Nerd Glenn Rematch Reward",
+    "name": "Route 8 - Super Nerd Glenn Rematch Reward (4 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 8"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_SUPER_NERD_JOVAN_REWARD": {
@@ -6472,7 +6550,7 @@
   },
   "TRAINER_SUPER_NERD_ZAC_REWARD": {
     "name": "Cinnabar Gym - Super Nerd Zac Reward",
-    "tags": ["Trainers", "Kanto", "Cinnabar Island"],
+    "tags": ["Trainers", "Kanto", "Cinnabar Island", "Cinnabar Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
@@ -6489,9 +6567,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_SWIMMER_FEMALE_ALICE_2_REWARD": {
-    "name": "Route 19 - Swimmer Alice Rematch Reward",
+    "name": "Route 19 - Swimmer Alice Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 19"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_SWIMMER_FEMALE_AMARA_REWARD": {
@@ -6531,9 +6609,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_SWIMMER_FEMALE_MELISSA_2_REWARD": {
-    "name": "Route 20 - Swimmer Melissa Rematch Reward",
+    "name": "Route 20 - Swimmer Melissa Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 20"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_SWIMMER_FEMALE_NICOLE_REWARD": {
@@ -6543,9 +6621,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_SWIMMER_FEMALE_NICOLE_2_REWARD": {
-    "name": "Outcast Island - Swimmer Nicole Rematch Reward",
+    "name": "Outcast Island - Swimmer Nicole Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Sevii Islands", "Six Island", "Outcast Island"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_SWIMMER_FEMALE_NORA_REWARD": {
@@ -6591,9 +6669,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_SWIMMER_MALE_DARRIN_2_REWARD": {
-    "name": "Route 20 - Swimmer Darrin Rematch Reward",
+    "name": "Route 20 - Swimmer Darrin Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 20"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_SWIMMER_MALE_DAVID_REWARD": {
@@ -6621,9 +6699,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_SWIMMER_MALE_FINN_2_REWARD": {
-    "name": "Kindle Road - Swimmer Finn Rematch Reward",
+    "name": "Kindle Road - Swimmer Finn Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Sevii Islands", "One Island", "Kindle Road"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_SWIMMER_MALE_GARRETT_REWARD": {
@@ -6639,9 +6717,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_SWIMMER_MALE_JACK_2_REWARD": {
-    "name": "Route 21 - Swimmer Jack Rematch Reward",
+    "name": "Route 21 - Swimmer Jack Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 21"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_SWIMMER_MALE_JEROME_REWARD": {
@@ -6652,7 +6730,7 @@
   },
   "TRAINER_SWIMMER_MALE_LUIS_REWARD": {
     "name": "Cerulean Gym - Swimmer Luis Reward",
-    "tags": ["Trainers", "Kanto", "Cerulean City"],
+    "tags": ["Trainers", "Kanto", "Cerulean City", "Cerulean Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
@@ -6663,9 +6741,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_SWIMMER_MALE_MATTHEW_2_REWARD": {
-    "name": "Route 19 - Swimmer Matthew Rematch Reward",
+    "name": "Route 19 - Swimmer Matthew Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 19"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_SWIMMER_MALE_MYMO_REWARD": {
@@ -6699,9 +6777,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_SWIMMER_MALE_SAMIR_2_REWARD": {
-    "name": "Water Path - Swimmer Samir Rematch Reward",
+    "name": "Water Path - Swimmer Samir Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Sevii Islands", "Six Island", "Water Path"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_SWIMMER_MALE_SPENCER_REWARD": {
@@ -6723,20 +6801,20 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_SWIMMER_MALE_TONY_2_REWARD": {
-    "name": "Route 19 - Swimmer Tony Rematch Reward",
+    "name": "Route 19 - Swimmer Tony Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 19"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_TAMER_COLE_REWARD": {
     "name": "Viridian Gym - Tamer Cole Reward",
-    "tags": ["Trainers", "Kanto", "Viridian City"],
+    "tags": ["Trainers", "Kanto", "Viridian City", "Viridian Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
   "TRAINER_TAMER_EDGAR_REWARD": {
     "name": "Fuchsia Gym - Tamer Edgar Reward",
-    "tags": ["Trainers", "Kanto", "Fuchsia City"],
+    "tags": ["Trainers", "Kanto", "Fuchsia City", "Fuchsia Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
@@ -6747,20 +6825,20 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_TAMER_EVAN_2_REWARD": {
-    "name": "Sevault Canyon - Tamer Evan Rematch Reward",
+    "name": "Sevault Canyon - Tamer Evan Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Sevii Islands", "Seven Island", "Sevault Canyon"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_TAMER_JASON_REWARD": {
     "name": "Viridian Gym - Tamer Jason Reward",
-    "tags": ["Trainers", "Kanto", "Viridian City"],
+    "tags": ["Trainers", "Kanto", "Viridian City", "Viridian Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
   "TRAINER_TAMER_PHIL_REWARD": {
     "name": "Fuchsia Gym - Tamer Phil Reward",
-    "tags": ["Trainers", "Kanto", "Fuchsia City"],
+    "tags": ["Trainers", "Kanto", "Fuchsia City", "Fuchsia Gym"],
     "category": "TRAINER",
     "include": ["Trainersanity"]
   },
@@ -7095,9 +7173,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_TUBER_AMIRA_2_REWARD": {
-    "name": "Bond Bridge - Tuber Amira Rematch Reward",
+    "name": "Bond Bridge - Tuber Amira Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Sevii Islands", "Three Island", "Bond Bridge"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_TWINS_ELI_ANNE_REWARD": {
@@ -7107,9 +7185,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_TWINS_ELI_ANNE_2_REWARD": {
-    "name": "Route 8 - Twins Eli & Anne Rematch Reward",
+    "name": "Route 8 - Twins Eli & Anne Rematch Reward (4 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 8"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_TWINS_JOY_MEG_REWARD": {
@@ -7119,9 +7197,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_TWINS_JOY_MEG_2_REWARD": {
-    "name": "Bond Bridge - Twins Joy & Meg Rematch Reward",
+    "name": "Bond Bridge - Twins Joy & Meg Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Sevii Islands", "Three Island", "Bond Bridge"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_TWINS_KIRI_JAN_REWARD": {
@@ -7143,21 +7221,21 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_YOUNGSTER_BEN_2_REWARD": {
-    "name": "Route 3 - Youngster Ben Rematch Reward 1",
+    "name": "Route 3 - Youngster Ben Rematch Reward",
     "tags": ["Trainers", "Kanto", "Route 3"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_YOUNGSTER_BEN_3_REWARD": {
-    "name": "Route 3 - Youngster Ben Rematch Reward 2",
+    "name": "Route 3 - Youngster Ben Rematch Reward (4 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 3"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_YOUNGSTER_BEN_4_REWARD": {
-    "name": "Route 3 - Youngster Ben Rematch Reward 3",
+    "name": "Route 3 - Youngster Ben Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 3"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_YOUNGSTER_CALVIN_REWARD": {
@@ -7173,21 +7251,21 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_YOUNGSTER_CHAD_2_REWARD": {
-    "name": "Route 25 - Youngster Chad Rematch Reward 1",
+    "name": "Route 25 - Youngster Chad Rematch Reward",
     "tags": ["Trainers", "Kanto", "Route 25"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_YOUNGSTER_CHAD_3_REWARD": {
-    "name": "Route 25 - Youngster Chad Rematch Reward 2",
+    "name": "Route 25 - Youngster Chad Rematch Reward (4 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 25"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_YOUNGSTER_CHAD_4_REWARD": {
-    "name": "Route 25 - Youngster Chad Rematch Reward 3",
+    "name": "Route 25 - Youngster Chad Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 25"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_YOUNGSTER_CORDELL_REWARD": {
@@ -7215,9 +7293,9 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_YOUNGSTER_DESTIN_2_REWARD": {
-    "name": "Resort Gorgeous - Youngster Destin Rematch Reward",
+    "name": "Resort Gorgeous - Youngster Destin Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Sevii Islands", "Five Island", "Resort Gorgeous"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_YOUNGSTER_DILLON_REWARD": {
@@ -7263,21 +7341,21 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_YOUNGSTER_TIMMY_2_REWARD": {
-    "name": "Route 24 - Youngster Timmy Rematch Reward 1",
+    "name": "Route 24 - Youngster Timmy Rematch Reward",
     "tags": ["Trainers", "Kanto", "Route 24"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_YOUNGSTER_TIMMY_3_REWARD": {
-    "name": "Route 24 - Youngster Timmy Rematch Reward 2",
+    "name": "Route 24 - Youngster Timmy Rematch Reward (4 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 24"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_YOUNGSTER_TIMMY_4_REWARD": {
-    "name": "Route 24 - Youngster Timmy Rematch Reward 3",
+    "name": "Route 24 - Youngster Timmy Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 24"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_YOUNGSTER_TYLER_REWARD": {
@@ -7293,15 +7371,15 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_YOUNGSTER_YASU_2_REWARD": {
-    "name": "Route 11 - Youngster Yasu Rematch Reward 1",
+    "name": "Route 11 - Youngster Yasu Rematch Reward (2 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 11"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_YOUNGSTER_YASU_3_REWARD": {
-    "name": "Route 11 - Youngster Yasu Rematch Reward 2",
+    "name": "Route 11 - Youngster Yasu Rematch Reward (6 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 11"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_YOUNG_COUPLE_EVE_JON_REWARD": {
@@ -7317,15 +7395,15 @@
     "include": ["Trainersanity"]
   },
   "TRAINER_YOUNG_COUPLE_GIA_JES_2_REWARD": {
-    "name": "Route 12 - Young Couple Gia & Jes Rematch Reward 1",
+    "name": "Route 12 - Young Couple Gia & Jes Rematch Reward (4 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 12"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_YOUNG_COUPLE_GIA_JES_3_REWARD": {
-    "name": "Route 12 - Young Couple Gia & Jes Rematch Reward 2",
+    "name": "Route 12 - Young Couple Gia & Jes Rematch Reward (8 Badges/Gyms)",
     "tags": ["Trainers", "Kanto", "Route 12"],
-    "category": "TRAINER",
+    "category": "TRAINER_REMATCH",
     "include": ["Rematchsanity"]
   },
   "TRAINER_YOUNG_COUPLE_LEA_JED_REWARD": {
@@ -7378,7 +7456,7 @@
     "include": ["Famesanity"]
   },
   "FAME_CHECKER_BILL_2": {
-    "name": "Cerulean City Pokemon Center 1F - Youngster Info",
+    "name": "Cerulean Pokemon Center 1F - Youngster Info",
     "tags": ["Fame Entries", "Bill Fame Entries", "Kanto", "Cerulean City"],
     "category": "FAME_ENTRY",
     "include": ["Famesanity"]
@@ -7415,13 +7493,13 @@
   },
   "FAME_CHECKER_BLAINE_2": {
     "name": "Cinnabar Gym - Blaine Info",
-    "tags": ["Fame Entries", "Blaine Fame Entries", "Kanto", "Cinnabar Island"],
+    "tags": ["Fame Entries", "Blaine Fame Entries", "Kanto", "Cinnabar Island", "Cinnabar Gym"],
     "category": "FAME_ENTRY",
     "include": ["Famesanity"]
   },
   "FAME_CHECKER_BLAINE_3": {
     "name": "Cinnabar Gym - Super Nerd Derek Info",
-    "tags": ["Fame Entries", "Blaine Fame Entries", "Kanto", "Cinnabar Island"],
+    "tags": ["Fame Entries", "Blaine Fame Entries", "Kanto", "Cinnabar Island", "Cinnabar Gym"],
     "category": "FAME_ENTRY",
     "include": ["Famesanity"]
   },
@@ -7433,7 +7511,7 @@
   },
   "FAME_CHECKER_BLAINE_5": {
     "name": "Cinnabar Gym - Photo Info 1",
-    "tags": ["Fame Entries", "Blaine Fame Entries", "Kanto", "Cinnabar Island"],
+    "tags": ["Fame Entries", "Blaine Fame Entries", "Kanto", "Cinnabar Island", "Cinnabar Gym"],
     "category": "FAME_ENTRY",
     "include": ["Famesanity"]
   },
@@ -7451,7 +7529,7 @@
   },
   "FAME_CHECKER_BROCK_2": {
     "name": "Pewter Gym - Brock Info",
-    "tags": ["Fame Entries", "Brock Fame Entries", "Kanto", "Pewter City"],
+    "tags": ["Fame Entries", "Brock Fame Entries", "Kanto", "Pewter City", "Pewter Gym"],
     "category": "FAME_ENTRY",
     "include": ["Famesanity"]
   },
@@ -7559,25 +7637,25 @@
   },
   "FAME_CHECKER_ERIKA_2": {
     "name": "Celadon Gym - Erika Info 1",
-    "tags": ["Fame Entries", "Erika Fame Entries", "Kanto", "Celadon City"],
+    "tags": ["Fame Entries", "Erika Fame Entries", "Kanto", "Celadon City", "Celadon Gym"],
     "category": "FAME_ENTRY",
     "include": ["Famesanity"]
   },
   "FAME_CHECKER_ERIKA_3": {
     "name": "Celadon Gym - Lass Lisa Info",
-    "tags": ["Fame Entries", "Erika Fame Entries", "Kanto", "Celadon City"],
+    "tags": ["Fame Entries", "Erika Fame Entries", "Kanto", "Celadon City", "Celadon Gym"],
     "category": "FAME_ENTRY",
     "include": ["Famesanity"]
   },
   "FAME_CHECKER_ERIKA_4": {
     "name": "Celadon Gym - Beauty Tamia Info",
-    "tags": ["Fame Entries", "Erika Fame Entries", "Kanto", "Celadon City"],
+    "tags": ["Fame Entries", "Erika Fame Entries", "Kanto", "Celadon City", "Celadon Gym"],
     "category": "FAME_ENTRY",
     "include": ["Famesanity"]
   },
   "FAME_CHECKER_ERIKA_5": {
     "name": "Celadon Gym - Erika Info 2",
-    "tags": ["Fame Entries", "Erika Fame Entries", "Kanto", "Celadon City"],
+    "tags": ["Fame Entries", "Erika Fame Entries", "Kanto", "Celadon City", "Celadon Gym"],
     "category": "FAME_ENTRY",
     "include": ["Famesanity"]
   },
@@ -7607,13 +7685,13 @@
   },
   "FAME_CHECKER_GIOVANNI_4": {
     "name": "Viridian Gym - Giovanni Info",
-    "tags": ["Fame Entries", "Giovanni Fame Entries", "Kanto", "Viridian City"],
+    "tags": ["Fame Entries", "Giovanni Fame Entries", "Kanto", "Viridian City", "Viridian Gym"],
     "category": "FAME_ENTRY",
     "include": ["Famesanity"]
   },
   "FAME_CHECKER_GIOVANNI_5": {
     "name": "Viridian Gym - Gym Guy Info",
-    "tags": ["Fame Entries", "Giovanni Fame Entries", "Kanto", "Viridian City"],
+    "tags": ["Fame Entries", "Giovanni Fame Entries", "Kanto", "Viridian City", "Viridian Gym"],
     "category": "FAME_ENTRY",
     "include": ["Famesanity"]
   },
@@ -7631,13 +7709,13 @@
   },
   "FAME_CHECKER_KOGA_2": {
     "name": "Fuchsia Gym - Koga Info",
-    "tags": ["Fame Entries", "Koga Fame Entries", "Kanto", "Fuchsia City"],
+    "tags": ["Fame Entries", "Koga Fame Entries", "Kanto", "Fuchsia City", "Fuchsia Gym"],
     "category": "FAME_ENTRY",
     "include": ["Famesanity"]
   },
   "FAME_CHECKER_KOGA_3": {
     "name": "Fuchsia Gym - Juggler Kirk Info",
-    "tags": ["Fame Entries", "Koga Fame Entries", "Kanto", "Fuchsia City"],
+    "tags": ["Fame Entries", "Koga Fame Entries", "Kanto", "Fuchsia City", "Fuchsia Gym"],
     "category": "FAME_ENTRY",
     "include": ["Famesanity"]
   },
@@ -7739,25 +7817,25 @@
   },
   "FAME_CHECKER_LTSURGE_2": {
     "name": "Vermilion Gym - Lt. Surge Info",
-    "tags": ["Fame Entries", "Lt. Surge Fame Entries", "Kanto", "Vermilion City"],
+    "tags": ["Fame Entries", "Lt. Surge Fame Entries", "Kanto", "Vermilion City", "Vermilion Gym"],
     "category": "FAME_ENTRY",
     "include": ["Famesanity"]
   },
   "FAME_CHECKER_LTSURGE_3": {
     "name": "Vermilion Gym - Gentleman Tucker Info 1",
-    "tags": ["Fame Entries", "Lt. Surge Fame Entries", "Kanto", "Vermilion City"],
+    "tags": ["Fame Entries", "Lt. Surge Fame Entries", "Kanto", "Vermilion City", "Vermilion Gym"],
     "category": "FAME_ENTRY",
     "include": ["Famesanity"]
   },
   "FAME_CHECKER_LTSURGE_4": {
     "name": "Vermilion Gym - Gentleman Tucker Info 2",
-    "tags": ["Fame Entries", "Lt. Surge Fame Entries", "Kanto", "Vermilion City"],
+    "tags": ["Fame Entries", "Lt. Surge Fame Entries", "Kanto", "Vermilion City", "Vermilion Gym"],
     "category": "FAME_ENTRY",
     "include": ["Famesanity"]
   },
   "FAME_CHECKER_LTSURGE_5": {
     "name": "Vermilion Gym - Sailor Dwayne Info",
-    "tags": ["Fame Entries", "Lt. Surge Fame Entries", "Kanto", "Vermilion City"],
+    "tags": ["Fame Entries", "Lt. Surge Fame Entries", "Kanto", "Vermilion City", "Vermilion Gym"],
     "category": "FAME_ENTRY",
     "include": ["Famesanity"]
   },
@@ -7775,13 +7853,13 @@
   },
   "FAME_CHECKER_MISTY_2": {
     "name": "Cerulean Gym - Misty Info",
-    "tags": ["Fame Entries", "Misty Fame Entries", "Kanto", "Cerulean City"],
+    "tags": ["Fame Entries", "Misty Fame Entries", "Kanto", "Cerulean City", "Cerulean Gym"],
     "category": "FAME_ENTRY",
     "include": ["Famesanity"]
   },
   "FAME_CHECKER_MISTY_3": {
     "name": "Cerulean Gym - Swimmer Luis Info",
-    "tags": ["Fame Entries", "Misty Fame Entries", "Kanto", "Cerulean City"],
+    "tags": ["Fame Entries", "Misty Fame Entries", "Kanto", "Cerulean City", "Cerulean Gym"],
     "category": "FAME_ENTRY",
     "include": ["Famesanity"]
   },
@@ -7829,7 +7907,7 @@
   },
   "FAME_CHECKER_MRFUJI_5": {
     "name": "Cinnabar Gym - Photo Info 2",
-    "tags": ["Fame Entries", "Mr. Fuji Fame Entries", "Kanto", "Cinnabar Island"],
+    "tags": ["Fame Entries", "Mr. Fuji Fame Entries", "Kanto", "Cinnabar Island", "Cinnabar Gym"],
     "category": "FAME_ENTRY",
     "include": ["Famesanity"]
   },
@@ -7889,13 +7967,13 @@
   },
   "FAME_CHECKER_SABRINA_3": {
     "name": "Saffron Gym - Sabrina Info 1",
-    "tags": ["Fame Entries", "Sabrina Fame Entries", "Kanto", "Saffron City"],
+    "tags": ["Fame Entries", "Sabrina Fame Entries", "Kanto", "Saffron City", "Saffron Gym"],
     "category": "FAME_ENTRY",
     "include": ["Famesanity"]
   },
   "FAME_CHECKER_SABRINA_4": {
     "name": "Saffron Gym - Sabrina Info 2",
-    "tags": ["Fame Entries", "Sabrina Fame Entries", "Kanto", "Saffron City"],
+    "tags": ["Fame Entries", "Sabrina Fame Entries", "Kanto", "Saffron City", "Saffron Gym"],
     "category": "FAME_ENTRY",
     "include": ["Famesanity"]
   },
@@ -7907,7 +7985,7 @@
   },
   "FAME_CHECKER_SABRINA_6": {
     "name": "Saffron Gym - Psychic Tyron Info",
-    "tags": ["Fame Entries", "Sabrina Fame Entries", "Kanto", "Saffron City"],
+    "tags": ["Fame Entries", "Sabrina Fame Entries", "Kanto", "Saffron City", "Saffron Gym"],
     "category": "FAME_ENTRY",
     "include": ["Famesanity"]
   },

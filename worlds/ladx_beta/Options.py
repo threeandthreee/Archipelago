@@ -411,6 +411,7 @@ class TextMode(Choice, LADXROption):
     rich_text_doc = True
     option_normal = 0
     option_fast = 1
+    option_none = 2
     default = option_fast
 
 
@@ -630,15 +631,24 @@ class ExpandStart(Range):
     default = 5
 
 
-class StabilizeItemPool(DefaultOffToggle):
+class MoreFiller(DefaultOnToggle):
     """
-    By default, some rupees in the item pool are randomly swapped with bombs,
-    arrows, powders, or capacity upgrades. This set of items is also used as
-    filler. This option disables that swapping and makes *Nothing* the filler
-    item.
+    Removes some rupees from the vanilla item pool to make more room for filler.
     """
-    display_name = "Stabilize Item Pool"
-    rich_text_doc = True
+    display_name = "More Filler"
+
+
+class FillerPool(Choice):
+    """
+    Sets which items can be added to the item pool to replace removed items.
+    """
+    display_name = "Filler Pool"
+    option_ammo = 0
+    option_rupees = 1
+    option_seashells = 2
+    # option_powerups = 3
+    option_traps = 4
+    option_nothing = 5
 
 
 class ForeignItemIcons(Choice):
@@ -655,6 +665,18 @@ class ForeignItemIcons(Choice):
     option_guess_by_name = 0
     option_indicate_progression = 1
     default = option_guess_by_name
+
+
+class Follower(Choice):
+    """
+    Gives you a pet follower in the game.
+    """
+    display_name = "Follower"
+    option_none = 0
+    option_fox = 1
+    option_navi = 2
+    option_ghost = 3
+    option_yip_yip = 4
 
 
 ladx_option_groups = [
@@ -681,7 +703,8 @@ ladx_option_groups = [
         ShuffleStoneBeaks,
         TradeQuest,
         Rooster,
-        StabilizeItemPool,
+        MoreFiller,
+        FillerPool,
     ]),
     OptionGroup("Quality of Life & Aesthetic", [
         NagMessages,
@@ -698,6 +721,7 @@ ladx_option_groups = [
         MusicChangeCondition,
         LowHpBeep,
         NoFlash,
+        Follower,
     ]),
     OptionGroup("In-Game Hints", [
         InGameHintCount,
@@ -747,13 +771,16 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     in_game_hint_excluded_items: InGameHintExcludedItems
     in_game_hint_priority_items: InGameHintPriorityItems
     overworld: Overworld
-    stabilize_item_pool: StabilizeItemPool
     death_link: DeathLink
+    more_filler: MoreFiller
+    filler_pool: FillerPool
     start_inventory_from_pool: StartInventoryPool
     expand_start: ExpandStart
+    follower: Follower
 
     warp_improvements: Removed
     additional_warp_points: Removed
+    stabilize_item_pool: Removed
     tarins_gift: Removed
     experimental_dungeon_shuffle: Removed
     experimental_entrance_shuffle: Removed

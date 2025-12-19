@@ -87,7 +87,7 @@ class SSWeb(WebWorld):
     rich_text_options_doc = True
 
 
-class SSContainer(APPlayerContainer, metaclass=AutoPatchRegister):
+class SSContainer(APPlayerContainer):
     """
     This class defines the container file for Skyward Sword.
     """

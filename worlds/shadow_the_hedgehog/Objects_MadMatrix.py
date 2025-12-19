@@ -166,4 +166,23 @@ DESIRABLE_OBJECTS_MAD_MATRIX  = [
 SETObject(ObjectType.WARP_HOLE, Levels.STAGE_MAD_MATRIX, 105, 'Other Warp Hole',
               region=REGION_INDICIES.MAD_MATRIX_GUN),
 
+    SETObject(ObjectType.KEY, Levels.STAGE_MAD_MATRIX, 442, 'Key 1', region=REGION_INDICIES.MAD_MATRIX_GUN),
+    SETObject(ObjectType.KEY, Levels.STAGE_MAD_MATRIX, 454, 'Key 2', region=REGION_INDICIES.MAD_MATRIX_YELLOW_ENTRY),
+    SETObject(ObjectType.KEY, Levels.STAGE_MAD_MATRIX, 453, 'Key 3', region=REGION_INDICIES.MAD_MATRIX_GREEN_PROGRESSION),
+    SETObject(ObjectType.KEY, Levels.STAGE_MAD_MATRIX, 457, 'Key 4', region=REGION_INDICIES.MAD_MATRIX_RED_ENTRY),
+    SETObject(ObjectType.KEY, Levels.STAGE_MAD_MATRIX, 448, 'Key 5', region=REGION_INDICIES.MAD_MATRIX_RED_ENTRY),
+    SETObject(ObjectType.GOAL_RING, Levels.STAGE_MAD_MATRIX, 606, 'Goal Ring',region=REGION_INDICIES.MAD_MATRIX_RED_ENTRY),
+
+
+    SETObject(ObjectType.ITEM_IN_BOX, Levels.STAGE_MAD_MATRIX, 172, 'Green Entrance',
+              region=REGION_INDICIES.MAD_MATRIX_GUN),
+    SETObject(ObjectType.ITEM_IN_BOX, Levels.STAGE_MAD_MATRIX, 505, 'Near Key Door',
+              region=REGION_INDICIES.MAD_MATRIX_GUN),
+    SETObject(ObjectType.ITEM_IN_BOX, Levels.STAGE_MAD_MATRIX, 498, 'Shield Box In Red',
+              region=REGION_INDICIES.MAD_MATRIX_GUN),
+    SETObject(ObjectType.ITEM_IN_BOX, Levels.STAGE_MAD_MATRIX, 501, '5 Ring Box In Red',
+              region=REGION_INDICIES.MAD_MATRIX_GUN),
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_MAD_MATRIX, 204, 'Near Check 5',
+              region=REGION_INDICIES.MAD_MATRIX_GREEN_ENTRY)
+
 ]

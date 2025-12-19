@@ -121,4 +121,73 @@ DESIRABLE_OBJECTS_THE_DOOM = [
     SETObject(ObjectType.GOLD_BEETLE, Levels.STAGE_THE_DOOM, 363, 'Gold Beetle',
               region=REGION_INDICIES.THE_DOOM_GOLD_BEETLE),
 
+
+#STAGE_THE_DOOM:         [0xC9, 0xCA, 0xCB, 0xCC, 0x05], #Ordered
+
+    SETObject(ObjectType.KEY, Levels.STAGE_THE_DOOM, 107, 'Key 1', region=0),
+    SETObject(ObjectType.KEY, Levels.STAGE_THE_DOOM, 108, 'Key 2', region=0),
+    SETObject(ObjectType.KEY, Levels.STAGE_THE_DOOM, 112, 'Key 3', region=REGION_INDICIES.THE_DOOM_BOMBS),
+    SETObject(ObjectType.KEY, Levels.STAGE_THE_DOOM, 110, 'Key 4', region=REGION_INDICIES.THE_DOOM_PULLEY_2),
+    SETObject(ObjectType.KEY, Levels.STAGE_THE_DOOM, 154, 'Key 5', region=REGION_INDICIES.THE_DOOM_DOOR_1_SWITCH),
+
+    SETObject(ObjectType.GOAL_RING, Levels.STAGE_THE_DOOM, 414, 'Goal Ring', region=REGION_INDICIES.THE_DOOM_DOOR_1_SWITCH),
+
+    SETObject(ObjectType.ITEM_IN_METAL_BOX, Levels.STAGE_THE_DOOM, 131, 'Start',
+              region=0),
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_THE_DOOM, 185, 'By Key 1',
+              region=0),
+    SETObject(ObjectType.ITEM_IN_METAL_BOX, Levels.STAGE_THE_DOOM, 191, 'Door Room A',
+              region=0),
+    SETObject(ObjectType.ITEM_IN_METAL_BOX, Levels.STAGE_THE_DOOM, 137, 'Door Room B',
+              region=0),
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_THE_DOOM, 115, 'By Key 2',
+              region=0),
+
+    SETObject(ObjectType.ITEM_IN_METAL_BOX, Levels.STAGE_THE_DOOM, 388, 'After Bomb A',
+              region=REGION_INDICIES.THE_DOOM_BOMBS),
+    SETObject(ObjectType.ITEM_IN_METAL_BOX, Levels.STAGE_THE_DOOM, 389, 'After Bomb B',
+              region=REGION_INDICIES.THE_DOOM_BOMBS),
+    SETObject(ObjectType.ITEM_IN_METAL_BOX, Levels.STAGE_THE_DOOM, 386, 'After Bomb C',
+              region=REGION_INDICIES.THE_DOOM_BOMBS),
+    SETObject(ObjectType.ITEM_IN_METAL_BOX, Levels.STAGE_THE_DOOM, 387, 'After Bomb D',
+              region=REGION_INDICIES.THE_DOOM_BOMBS),
+    SETObject(ObjectType.ITEM_IN_METAL_BOX, Levels.STAGE_THE_DOOM, 391, 'After Bomb E',
+              region=REGION_INDICIES.THE_DOOM_BOMBS),
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_THE_DOOM, 184, 'Up Bomb Lift A',
+              region=REGION_INDICIES.THE_DOOM_BOMBS),
+
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_THE_DOOM, 95, 'Near Key 4',
+              region=REGION_INDICIES.THE_DOOM_BOMBS),
+    SETObject(ObjectType.ITEM_IN_METAL_BOX, Levels.STAGE_THE_DOOM, 133, 'Nearer Key 4',
+              region=REGION_INDICIES.THE_DOOM_BOMBS),
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_THE_DOOM, 193, 'Right Next to Key 4',
+              region=REGION_INDICIES.THE_DOOM_BOMBS),
+
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_THE_DOOM, 197, 'Fan Room Item A',
+              region=REGION_INDICIES.THE_DOOM_FAN_ROOM),
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_THE_DOOM, 198, 'Fan Room Item B',
+              region=REGION_INDICIES.THE_DOOM_FAN_ROOM),
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_THE_DOOM, 199, 'Fan Room Item C',
+              region=REGION_INDICIES.THE_DOOM_FAN_ROOM),
+
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_THE_DOOM, 203, 'Lift Cross A',
+              region=REGION_INDICIES.THE_DOOM_DOOR_1_SWITCH),
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_THE_DOOM, 350, 'Lift Cross B',
+              region=REGION_INDICIES.THE_DOOM_DOOR_1_SWITCH),
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_THE_DOOM, 351, 'Lift Cross C',
+              region=REGION_INDICIES.THE_DOOM_DOOR_1_SWITCH),
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_THE_DOOM, 352, 'Lift Cross D',
+              region=REGION_INDICIES.THE_DOOM_DOOR_1_SWITCH),
+
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_THE_DOOM, 284, 'Blast Room A',
+              region=REGION_INDICIES.THE_DOOM_BOMBS),
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_THE_DOOM, 283, 'Blast Room B',
+              region=REGION_INDICIES.THE_DOOM_BOMBS),
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_THE_DOOM, 281, 'Blast Room C',
+              region=REGION_INDICIES.THE_DOOM_BOMBS),
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_THE_DOOM, 282, 'Blast Room D',
+              region=REGION_INDICIES.THE_DOOM_BOMBS)
+
+
+
 ]

@@ -2,8 +2,8 @@
 
 
 ## Quick Links
-- [Main Page](../../../../games/OpenRCT2/info/en)
-- [Options Page](../../../../games/OpenRCT2/player-options)
+- [Main Page](../info/en)
+- [Options Page](../player-options)
 - [OpenRCT2 Plugins](https://openrct2plugins.org/)
 
 ## Required Software
@@ -25,7 +25,7 @@ the game to the client, and the client to the server.
 ### Install
 
 If you haven't installed OpenRCT2 or the base game(s), follow the guide for your operating system on the official\
-[OpenRCT2 Website](https://openrct2.io/getting-started/index.html).
+[OpenRCT2 Website](https://docs.openrct2.io/en/latest/installing/index.html).
 
 ### Install the Roller Coaster Tycoon Randomizer Plugin
 

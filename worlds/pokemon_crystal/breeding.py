@@ -10,15 +10,16 @@ if TYPE_CHECKING:
 
 
 def randomize_breeding(world: "PokemonCrystalWorld", preevolutions: dict[str, list[str]]) -> None:
-    if not world.options.randomize_breeding: return
+    if world.is_universal_tracker or not world.options.randomize_breeding: return
 
     blocklist = pokemon_convert_friendly_to_ids(world, world.options.breeding_blocklist)
     global_breeding_pool = [poke for poke in world.generated_pokemon.keys() if poke not in blocklist]
 
-    if not global_breeding_pool:
-        global_breeding_pool = list(world.generated_pokemon.keys())
-
     if "UNOWN" in global_breeding_pool: global_breeding_pool.remove("UNOWN")
+
+    if not global_breeding_pool:
+        global_breeding_pool = sorted(world.generated_pokemon.keys())
+        global_breeding_pool.remove("UNOWN")
 
     global_base_pool = [poke for poke in global_breeding_pool if world.generated_pokemon[poke].is_base]
 
@@ -44,7 +45,7 @@ def randomize_breeding(world: "PokemonCrystalWorld", preevolutions: dict[str, li
         elif world.options.randomize_breeding == RandomizeBreeding.option_any_base:
             world.generated_pokemon[pokemon] = replace(pokemon_data, produces_egg=world.random.choice(global_base_pool))
         elif world.options.randomize_breeding == RandomizeBreeding.option_line_base:
-            local_breeding_pool = list(set(_recursive_get_bases(pokemon, preevolutions)))
+            local_breeding_pool = sorted(set(_recursive_get_bases(pokemon, preevolutions)))
 
             if not local_breeding_pool:
                 local_breeding_pool = global_base_pool
@@ -58,7 +59,7 @@ def _recursive_get_bases(pokemon: str, preevolutions: dict[str, list[str]]) -> l
     return sum([_recursive_get_bases(poke, preevolutions) for poke in preevolutions[pokemon]], [])
 
 
-def generate_breeding_data(world: "PokemonCrystalWorld"):
+def get_logically_available_breeding(world: "PokemonCrystalWorld") -> set[str]:
     breeding_pokemon = set()
 
     for pokemon_id, data in world.generated_pokemon.items():
@@ -78,7 +79,7 @@ def generate_breeding_data(world: "PokemonCrystalWorld"):
             if logical_access is LogicalAccess.InLogic:
                 breeding_pokemon.add("NIDORAN_M")
 
-    world.logic.available_pokemon.update(breeding_pokemon)
+    return breeding_pokemon
 
 
 def can_breed(world: "PokemonCrystalWorld", parent: str) -> bool:

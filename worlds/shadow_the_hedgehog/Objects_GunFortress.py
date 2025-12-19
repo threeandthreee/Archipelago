@@ -218,4 +218,40 @@ DESIRABLE_OBJECTS_GUN_FORTRESS = [
               region=REGION_INDICIES.GUN_FORTRESS_ROCKET_NORMAL),
     SETObject(ObjectType.GUN_ROBOT, Levels.STAGE_GUN_FORTRESS, 357, '90',
               region=REGION_INDICIES.GUN_FORTRESS_ROCKET_NORMAL),
+
+    SETObject(ObjectType.KEY, Levels.STAGE_GUN_FORTRESS, 297, 'Key 1', region=0),
+    SETObject(ObjectType.KEY, Levels.STAGE_GUN_FORTRESS, 300, 'Key 2', region=REGION_INDICIES.GUN_FORTRESS_ZIPWIRE_NORMAL),
+    SETObject(ObjectType.KEY, Levels.STAGE_GUN_FORTRESS, 298, 'Key 3', region=REGION_INDICIES.GUN_FORTRESS_ZIPWIRE),
+    SETObject(ObjectType.KEY, Levels.STAGE_GUN_FORTRESS, 299, 'Key 4', region=REGION_INDICIES.GUN_FORTRESS_ROCKET_NORMAL),
+    SETObject(ObjectType.KEY, Levels.STAGE_GUN_FORTRESS, 190, 'Key 5', region=REGION_INDICIES.GUN_FORTRESS_ROCKET_NORMAL),
+    SETObject(ObjectType.GOAL_RING, Levels.STAGE_GUN_FORTRESS, 476, 'Goal Ring',region=REGION_INDICIES.GUN_FORTRESS_KEY_OR_ZIPLINE),
+
+    SETObject(ObjectType.ITEM_IN_BOX, Levels.STAGE_GUN_FORTRESS, 401, 'Solider Platform',
+              region=0),
+    SETObject(ObjectType.ITEM_IN_BOX, Levels.STAGE_GUN_FORTRESS, 148, 'Doom Room',
+              region=0),
+    SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_GUN_FORTRESS, 181, 'Parachute Balloon A',
+              region=REGION_INDICIES.GUN_FORTRESS_ROCKET_NORMAL),
+    SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_GUN_FORTRESS, 182, 'Parachute Balloon B',
+              region=REGION_INDICIES.GUN_FORTRESS_ROCKET_NORMAL),
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_GUN_FORTRESS, 355, 'Next to Key 5',
+              region=REGION_INDICIES.GUN_FORTRESS_ROCKET_NORMAL),
+
+    SETObject(ObjectType.ITEM_IN_BOX, Levels.STAGE_GUN_FORTRESS, 341, 'Key Box 1',
+              region=REGION_INDICIES.GUN_FORTRESS_KEY_DOOR),
+    SETObject(ObjectType.ITEM_IN_BOX, Levels.STAGE_GUN_FORTRESS, 342, 'Key Box 2',
+              region=REGION_INDICIES.GUN_FORTRESS_KEY_DOOR),
+    SETObject(ObjectType.ITEM_IN_BOX, Levels.STAGE_GUN_FORTRESS, 344, 'Key Box 3',
+              region=REGION_INDICIES.GUN_FORTRESS_KEY_DOOR),
+
+    SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_GUN_FORTRESS, 98, 'Circle Zipwire Ride A',
+              region=REGION_INDICIES.GUN_FORTRESS_ROCKET_NORMAL),
+    SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_GUN_FORTRESS, 100, 'Circle Zipwire Ride B',
+              region=REGION_INDICIES.GUN_FORTRESS_ROCKET_NORMAL),
+    SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_GUN_FORTRESS, 406, 'Circle Zipwire Ride C',
+              region=REGION_INDICIES.GUN_FORTRESS_ROCKET_NORMAL),
+
+
+
+
 ]

@@ -30,10 +30,10 @@ class DayLeaseInterval(Range):
     default = 5
 
 class DishCount(Range):
-    """How many dishes the player starts with (1-15) or 0 for disabled."""
+    """How many dishes the player starts with (1-17) or 0 for disabled."""
     display_name = "Starting Dish Count"
     range_start = 0
-    range_end = 15
+    range_end = 17
     default = 1
 
 class ItemsKept(Range):
@@ -65,6 +65,27 @@ class ApplianceSpeedMode(Choice):
     option_separate = 1
     default = 0
 
+class PlayerSpeedUpgradeCount(Range):
+    """How many Player Speed Upgrade items to place (0-10)."""
+    display_name = "Player Speed Upgrade Count"
+    range_start = 0
+    range_end = 10
+    default = 5
+
+class ApplianceSpeedUpgradeCount(Range):
+    """How many Appliance Speed Upgrade items to place (0-10)."""
+    display_name = "Appliance Speed Upgrade Count"
+    range_start = 0
+    range_end = 10
+    default = 5
+
+class StartingMoneyCap(Range):
+    """Starting total money cap (in gold). You cannot hold more than this amount at any time until increased by items."""
+    display_name = "Starting Money Cap"
+    range_start = 10
+    range_end = 40
+    default = 20
+
 
 
 @dataclass
@@ -78,3 +99,7 @@ class PlateUpOptions(PerGameCommonOptions):
     death_link_behavior: DeathLinkBehavior
     appliance_speed_mode: ApplianceSpeedMode
     day_lease_interval: DayLeaseInterval
+    player_speed_upgrade_count: PlayerSpeedUpgradeCount
+    appliance_speed_upgrade_count: ApplianceSpeedUpgradeCount
+    starting_money_cap: StartingMoneyCap
+    # removed item count; items are generated automatically from total days

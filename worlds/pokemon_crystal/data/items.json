@@ -491,11 +491,15 @@
       "KeyItem"
     ]
   },
-  "SILVER_LEAF": {
-    "name": "Silver Leaf",
-    "classification": "FILLER",
-    "price": 1000,
-    "tags": []
+  "OMANYTE_TILE": {
+    "name": "Omanyte Tile",
+    "classification": "PROGRESSION",
+    "deprioritized": true,
+    "price": 0,
+    "tags": [
+      "Alph Puzzle Tile",
+      "Tracker"
+    ]
   },
   "SUPER_ROD": {
     "name": "Super Rod",
@@ -635,11 +639,15 @@
       "Berries"
     ]
   },
-  "GOLD_LEAF": {
-    "name": "Gold Leaf",
-    "classification": "FILLER",
-    "price": 1000,
-    "tags": []
+  "AERO_TILE": {
+    "name": "Aerodactyl Tile",
+    "classification": "PROGRESSION",
+    "deprioritized": true,
+    "price": 0,
+    "tags": [
+      "Alph Puzzle Tile",
+      "Tracker"
+    ]
   },
   "SOFT_SAND": {
     "name": "Soft Sand",
@@ -1002,12 +1010,14 @@
       "KeyItem"
     ]
   },
-  "EGG_TICKET": {
-    "name": "Egg Ticket",
-    "classification": "FILLER",
+  "PROG_ROD": {
+    "name": "Progressive Rod",
+    "classification": "PROGRESSION",
     "price": 0,
     "tags": [
-      "INVALID"
+      "Key Items",
+      "Tracker",
+      "KeyItem"
     ]
   },
   "LOST_ITEM": {
@@ -1215,11 +1225,15 @@
     "price": 2,
     "tags": []
   },
-  "GORGEOUS_BOX": {
-    "name": "Gorgeous Box",
-    "classification": "FILLER",
-    "price": 10,
-    "tags": []
+  "KABUTO_TILE": {
+    "name": "Kabuto Tile",
+    "classification": "PROGRESSION",
+    "deprioritized": true,
+    "price": 0,
+    "tags": [
+      "Alph Puzzle Tile",
+      "Tracker"
+    ]
   },
   "SUN_STONE": {
     "name": "Sun Stone",
@@ -1294,11 +1308,15 @@
       "KeyItem"
     ]
   },
-  "BRICK_PIECE": {
-    "name": "Brick Piece",
-    "classification": "FILLER",
-    "price": 50,
-    "tags": []
+  "HO_OH_TILE": {
+    "name": "Ho-Oh Tile",
+    "classification": "PROGRESSION",
+    "deprioritized": true,
+    "price": 0,
+    "tags": [
+      "Alph Puzzle Tile",
+      "Tracker"
+    ]
   },
   "SURF_MAIL": {
     "name": "Surf Mail",
@@ -1609,9 +1627,10 @@
     "classification": "PROGRESSION",
     "price": 0,
     "tags": [
+      "Gear",
       "Key Items",
       "Unique",
-      "INVALID",
+      "Tracker",
       "KeyItem"
     ]
   },
