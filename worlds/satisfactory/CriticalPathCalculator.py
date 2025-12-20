@@ -59,8 +59,8 @@ class CriticalPathCalculator:
 
                 self.select_minimal_required_parts_for(node.unlock_cost)
 
-                if node.unlock_items:
-                    self.required_item_names.update(node.unlock_items)
+                if node.requires_items:
+                    self.required_item_names.update(node.requires_items)
 
         self.select_minimal_required_parts_for_building("MAM")
         self.select_minimal_required_parts_for_building("AWESOME Sink")
@@ -103,7 +103,6 @@ class CriticalPathCalculator:
         self.required_item_names.update({"Building: " + building for building in self.required_buildings})
 
         self.calculate_excluded_things()
-
 
     def select_minimal_required_parts_for_building(self, building: str) -> None:
         self.select_minimal_required_parts_for(self.logic.buildings[building].inputs)

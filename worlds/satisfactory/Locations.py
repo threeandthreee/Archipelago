@@ -290,7 +290,7 @@ class Locations:
             ShopSlot(self.state_logic, 7, 20, 1338706),
             ShopSlot(self.state_logic, 8, 20, 1338707),
             ShopSlot(self.state_logic, 9, 50, 1338708),
-            ShopSlot(self.state_logic, 10, 50, 1338709),
+            ShopSlot(self.state_logic, 10, 50, 1338709)
         ]
 
         if max_tier > 8:
@@ -320,8 +320,8 @@ class Locations:
         location_table = self.get_base_location_table(self.max_tiers)
         location_table.extend(self.get_hub_locations(True, self.max_tiers))
         location_table.extend(self.get_hard_drive_locations(True, self.max_tiers, set()))
-        location_table.append(LocationData("Overworld", "UpperBound", 1338999))
         location_table.extend(self.get_ficsmas_locations(True))
+        location_table.append(LocationData("Overworld", "UpperBound", 1338999))
 
         return {location.name: location.code for location in location_table}
 

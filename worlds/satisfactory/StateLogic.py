@@ -80,7 +80,7 @@ class StateLogic:
     def can_produce_all(self, state: CollectionState, parts: Optional[Iterable[str]]) -> bool:
         return parts is None or \
             state.has_all(map(to_part_event, parts), self.player)
-    
+
     def has_obtained_all(self, state: CollectionState, items: Optional[Iterable[str]]) -> bool:
         if not items:
             return True

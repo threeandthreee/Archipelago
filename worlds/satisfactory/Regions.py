@@ -134,7 +134,7 @@ def create_regions_and_return_locations(multiworld: MultiWorld, options: Satisfa
         if building.can_produce and building_name in critical_path.required_buildings:
             connect(regions, "Overworld", building_name,
                     lambda state, name=building_name: state_logic.can_build(state, name))
-
+        
     for tree_name, tree in game_logic.man_trees.items():
         if tree_name == "Ficsmas" and not "Erect a FICSMAS Tree" in options.goal_selection:
             continue
@@ -147,13 +147,13 @@ def create_regions_and_return_locations(multiworld: MultiWorld, options: Satisfa
 
             if not node.depends_on:
                 connect(regions, tree_name, f"{tree_name}: {node.name}",
-                        lambda state, parts=node.unlock_cost, items=node.unlock_items: \
+                        lambda state, parts=node.unlock_cost, items=node.requires_items: \
                                 state_logic.can_produce_all(state, parts) and state_logic.has_obtained_all(state, items))
             else:
                 for parent in node.depends_on:
                     if f"{tree_name}: {parent}" in region_names:
                         connect(regions, f"{tree_name}: {parent}", f"{tree_name}: {node.name}",
-                                lambda state, parts=node.unlock_cost, items=node.unlock_items: \
+                                lambda state, parts=node.unlock_cost, items=node.requires_items: \
                                         state_logic.can_produce_all(state, parts) and state_logic.has_obtained_all(state, items))
 
 

@@ -145,7 +145,6 @@ class Items:
         "Bundle: Packaged Rocket Fuel": ItemData(G.Parts, 1338131),
         "Bundle: Packaged Ionized Fuel": ItemData(G.Parts, 1338132),
         "Bundle: Dark Matter Crystal": ItemData(G.Parts, 1338133),
-
         # 1338134 - 1338149 Reserved for future parts
         # 1338150 - 1338199 Equipment / Ammo
         "Bundle: Bacon Agaric": ItemData(G.Ammo, 1338150, count=0),
@@ -203,7 +202,6 @@ class Items:
         "FICSMAS Data Cartridge Day 8": ItemData(G.Ammo | G.Ficsmas, 1338198, C.progression),
         "FICSMAS Data Cartridge Day 14": ItemData(G.Ammo | G.Ficsmas, 1338199, C.progression),
 #
-
         # 1338200+ Recipes / buildings / schematics
         "Recipe: Reinforced Iron Plate": ItemData(G.Recipe, 1338200, C.progression),
         "Recipe: Adhered Iron Plate": ItemData(G.Recipe, 1338201, C.progression),
@@ -480,7 +478,7 @@ class Items:
 # 
         "Recipe: Dark Matter Residue": ItemData(G.Recipe, 1338467, C.progression),
 
-# Ficsmas
+        # Ficsmas
         "Recipe: FICSMAS Tree Branch": ItemData(G.Recipe | G.Ficsmas, 1338468, C.progression),
         "Recipe: Blue FICSMAS Ornament": ItemData(G.Recipe | G.Ficsmas, 1338469, C.progression),
         "Recipe: Red FICSMAS Ornament": ItemData(G.Recipe | G.Ficsmas, 1338470, C.progression),
@@ -492,7 +490,7 @@ class Items:
         "Recipe: FICSMAS Ornament Bundle": ItemData(G.Recipe | G.Ficsmas, 1338476, C.progression),
         "Recipe: FICSMAS Wreath": ItemData(G.Recipe | G.Ficsmas, 1338477, C.progression),
         "Recipe: FICSMAS Wonder Star": ItemData(G.Recipe | G.Ficsmas, 1338478, C.progression),
-        "Recipe: Sweet Fireworks": ItemData(G.Recipe | G.Ficsmas, 1338479, C.useful), #TODO: probably no room to fit these in the item pool
+        "Recipe: Sweet Fireworks": ItemData(G.Recipe | G.Ficsmas, 1338479, C.useful),
         "Recipe: Fancy Fireworks": ItemData(G.Recipe | G.Ficsmas, 1338480, C.useful),
         "Recipe: Sparkly Fireworks": ItemData(G.Recipe | G.Ficsmas, 1338481, C.useful),
 #
@@ -629,18 +627,18 @@ class Items:
         "Building: Basic Shelf Unit": ItemData(G.Building, 1338732, C.useful, 0),
         "Building: Beam Expansion Pack": ItemData(G.Beams, 1338733, C.filler, 0),
         "Building: Ventilation Bundle": ItemData(G.Building, 1338734, C.filler, 0),
-###
-### Ficsmas
-        "Building: FICSMAS Candy Cane": ItemData(G.Building | G.Ficsmas, 1338735, 0),
-        "Building: FICSMAS Decoration": ItemData(G.Building | G.Ficsmas, 1338736, 0),
-        "Building: FICSMAS Gift Tree": ItemData(G.Building | G.Ficsmas, 1338737, 0),
-        "Building: FICSMAS Power Light": ItemData(G.Building | G.Ficsmas, 1338738, 0),
-        "Building: FICSMAS Snow Cannon": ItemData(G.Building | G.Ficsmas, 1338739, 0),
-        "Building: FICSMAS Snow Dispenser": ItemData(G.Building | G.Ficsmas, 1338740, 0),
-        "Building: FICSMAS Snowman": ItemData(G.Building | G.Ficsmas, 1338741, 0),
-        "Building: Giant FICSMAS Tree": ItemData(G.Building | G.Ficsmas, 1338742, 0),
-###
 
+### Ficsmas
+        "Building: FICSMAS Candy Cane": ItemData(G.Building | G.Ficsmas, 1338735, count=0),
+        "Building: FICSMAS Decoration": ItemData(G.Building | G.Ficsmas, 1338736, count=0),
+        "Building: FICSMAS Gift Tree": ItemData(G.Building | G.Ficsmas, 1338737, count=0),
+        "Building: FICSMAS Power Light": ItemData(G.Building | G.Ficsmas, 1338738, count=0),
+        "Building: FICSMAS Snow Cannon": ItemData(G.Building | G.Ficsmas, 1338739, count=0),
+        "Building: FICSMAS Snow Dispenser": ItemData(G.Building | G.Ficsmas, 1338740, count=0),
+        "Building: FICSMAS Snowman": ItemData(G.Building | G.Ficsmas, 1338741, count=0),
+        "Building: Giant FICSMAS Tree": ItemData(G.Building | G.Ficsmas, 1338742, count=0),
+###
+###
         # 1338735 - 1338749 Reserved for buildings
         "Customizer: Asphalt Foundation Material": ItemData(G.Customizer | G.Foundations, 1338750, C.filler, 0),
         "Customizer: Concrete Foundation Material": ItemData(G.Customizer | G.Foundations, 1338751, C.filler, 0),
@@ -666,11 +664,11 @@ class Items:
         "Customizer: Chrome Paint Finish": ItemData(G.Customizer, 1338771, C.filler, 0), 
         "Customizer: Carbon Steel Finish": ItemData(G.Customizer, 1338772, C.filler, 0), 
         "Customizer: Caterium Paint Finish": ItemData(G.Customizer, 1338773, C.filler, 0), 
-
-### ficsmas
+        ### ficsmas
         "Customizer: Basic FICSMAS Skins": ItemData(G.Customizer | G.Ficsmas, 1338774, C.filler, 0), 
         "Customizer: Premium FICSMAS Skins": ItemData(G.Customizer | G.Ficsmas, 1338775, C.filler, 0), 
-###
+        ###
+
 
         # 1338776 - 1338799 Reserved for Cosmetics
 
@@ -694,7 +692,7 @@ class Items:
         "Transport: Hypertube Wall Hole": ItemData(G.Transport | G.HyperTubes, 1338812, C.filler),
         # Personal Elevator (including additional floors)
         "Transport: Personal Elevator": ItemData(G.Transport, 1338813, C.useful),  # 1.1
-
+        
         # 1338820 - 1338899 more parts / equipment / ammo
         "Bundle: FICSMAS Tree Branch": ItemData(G.Parts | G.Ficsmas, 1338820),
         "Bundle: Blue FICSMAS Ornament": ItemData(G.Parts | G.Ficsmas, 1338821),
@@ -930,7 +928,7 @@ class Items:
         "Single: Candy Cane Basher": ItemData(G.Equipment | G.Ficsmas, 1339831, count=0),
         "Single: Fancy Fireworks": ItemData(G.Ammo | G.Ficsmas, 1339832, count=0),
         "Single: Sparkly Fireworks": ItemData(G.Ammo | G.Ficsmas, 1339833, count=0),
-        "Single: Sweet Fireworks": ItemData(G.Ammo | G.Ficsmas, 1339834, count=0),
+        "Single: Sweet Fireworks": ItemData(G.Ammo | G.Ficsmas, 1339834, count=0)
     }
 
     item_names_and_ids: ClassVar[dict[str, int]] = {name: data.code for name, data in item_data.items()}
