@@ -551,8 +551,6 @@ class LinksAwakeningWorld(World):
                                                   f"{patch.patch_file_ending}")
 
         patch.write(out_path)
-        import Patch
-        Patch.create_rom_file(out_path)
 
     def generate_multi_key(self):
         return bytearray(self.random.getrandbits(8) for _ in range(10)) + self.player.to_bytes(2, 'big')
