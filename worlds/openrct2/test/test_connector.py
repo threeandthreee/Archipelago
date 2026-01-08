@@ -35,7 +35,7 @@ class TestConn(unittest.TestCase):
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         loop.run_until_complete(self.asynctests())
-
+    
     async def ping(self, data):
         self.gamesock.sendobj(data)
         for i in range(data.get('multiply', 1)):
@@ -50,11 +50,8 @@ class TestConn(unittest.TestCase):
 
 
     async def asynctests(self):
-        self.ctx = FakeCtx()
-        self.gamesock = OpenRCT2Socket(self.ctx)
-        print('waiting for game connection...')
-        await self.gamesock.connected_to_game.wait()
-
+        ctx = FakeCtx()
+        gamesock = OpenRCT2Socket(ctx)
         with self.subTest("small packet"):
             data = {'cmd': 'Ping', 'extra': 123}
             await self.ping(data)

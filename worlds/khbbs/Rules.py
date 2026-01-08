@@ -75,26 +75,11 @@ def set_rules(khbbsworld):
     # Location Rules
     if options.character == 2:
         add_rule(khbbsworld.get_location("(T) The Land of Departure Defeat Eraqus Max HP Increase"),
-            lambda state: (
-                state.has_all({
-                "Wayfinder Ventus",
-                "Wayfinder Aqua",
-                "Wayfinder Terra"}, player)
-            ))
+            lambda state: has_x_worlds(state, player, 6))
         add_rule(khbbsworld.get_location("(T) The Land of Departure Defeat Eraqus Chaos Ripper"),
-            lambda state: (
-                state.has_all({
-                "Wayfinder Ventus",
-                "Wayfinder Aqua",
-                "Wayfinder Terra"}, player)
-            ))
+            lambda state: has_x_worlds(state, player, 6))
         add_rule(khbbsworld.get_location("(T) The Land of Departure Defeat Eraqus Xehanort's Report 8"),
-            lambda state: (
-                state.has_all({
-                "Wayfinder Ventus",
-                "Wayfinder Aqua",
-                "Wayfinder Terra"}, player)
-            ))
+            lambda state: has_x_worlds(state, player, 6))
         add_rule(khbbsworld.get_location("(T) Dwarf Woodlands Vault Flame Salvo Chest"),
             lambda state: (
                 has_fire(state, player, minigames)
@@ -243,16 +228,25 @@ def set_rules(khbbsworld):
             lambda state: has_defensive_tools(state, player))
         add_rule(khbbsworld.get_location("(T) The Keyblade Graveyard Defeat Terra-Xehanort"),
             lambda state: has_defensive_tools(state, player))
+        if options.command_board:
+            add_rule(khbbsworld.get_location("(T) Mirage Arena Win a Command Board game"),
+                lambda state: state.has_group_unique("Command Board", player, 1))
+            add_rule(khbbsworld.get_location("(T) Mirage Arena Win 3 Command Board games"),
+                lambda state: state.has_group_unique("Command Board", player, 1))
+            add_rule(khbbsworld.get_location("(T) Mirage Arena Win 5 Command Board games"),
+                lambda state: state.has_group_unique("Command Board", player, 1))
+            add_rule(khbbsworld.get_location("(T) Mirage Arena Win 7 Command Board games"),
+                lambda state: state.has_group_unique("Command Board", player, 1))
+        if options.minigames:
+            add_rule(khbbsworld.get_location("(T) Mirage Arena Country Chase: Finish 5 laps in 2:30"),
+                lambda state: state.has("Disney Town", player))
+            add_rule(khbbsworld.get_location("(T) Mirage Arena Disney Drive: Finish 5 laps in 5 minutes"),
+                lambda state: state.has("Disney Town", player))
+            add_rule(khbbsworld.get_location("(T) Mirage Arena Grand Spree: Finish 5 laps in 5 minutes"),
+                lambda state: state.has("Disney Town", player))
+            add_rule(khbbsworld.get_location("(T) Mirage Arena Castle Circuit: Finish 5 laps in 5:30"),
+                lambda state: state.has("Disney Town", player))
         if options.mirage_arena:
-            if options.command_board:
-                add_rule(khbbsworld.get_location("(T) Mirage Arena Win a Command Board game"),
-                    lambda state: state.has_group_unique("Command Board", player, 1))
-                add_rule(khbbsworld.get_location("(T) Mirage Arena Win 3 Command Board games"),
-                    lambda state: state.has_group_unique("Command Board", player, 1))
-                add_rule(khbbsworld.get_location("(T) Mirage Arena Win 5 Command Board games"),
-                    lambda state: state.has_group_unique("Command Board", player, 1))
-                add_rule(khbbsworld.get_location("(T) Mirage Arena Win 7 Command Board games"),
-                    lambda state: state.has_group_unique("Command Board", player, 1))
             if options.super_bosses:
                 add_rule(khbbsworld.get_location("(T) Mirage Arena Villains' Vendetta Ultima Weapon"),
                     lambda state: (
@@ -310,18 +304,19 @@ def set_rules(khbbsworld):
                         has_x_worlds(state, player, 6)
                         and state.has("Radiant Garden", player)
                     ))
-                add_rule(khbbsworld.get_location("(T) Mirage Arena Monster of the Sea Mini"),
-                    lambda state: (
-                        has_x_worlds(state, player, 8)
-                        and state.has("Disney Town", player)
-                        and has_defensive_tools(state, player)
-                    ))
-                add_rule(khbbsworld.get_location("(T) Mirage Arena Complete Monster of the Sea"),
-                    lambda state: (
-                        has_x_worlds(state, player, 8)
-                        and state.has("Disney Town", player)
-                        and has_defensive_tools(state, player)
-                    ))
+                if options.minigames:
+                    add_rule(khbbsworld.get_location("(T) Mirage Arena Monster of the Sea Mini"),
+                        lambda state: (
+                            has_x_worlds(state, player, 8)
+                            and state.has("Disney Town", player)
+                            and has_defensive_tools(state, player)
+                        ))
+                    add_rule(khbbsworld.get_location("(T) Mirage Arena Complete Monster of the Sea"),
+                        lambda state: (
+                            has_x_worlds(state, player, 8)
+                            and state.has("Disney Town", player)
+                            and has_defensive_tools(state, player)
+                        ))
             add_rule(khbbsworld.get_location("(T) Mirage Arena Complete Day of Reckoning"),
                 lambda state: has_x_worlds(state, player, 2))
             add_rule(khbbsworld.get_location("(T) Mirage Arena Complete Risky Riches"),
@@ -368,15 +363,6 @@ def set_rules(khbbsworld):
                     has_x_worlds(state, player, 8)
                     and has_defensive_tools(state, player)
                 ))
-            if options.minigames:
-                add_rule(khbbsworld.get_location("(T) Mirage Arena Country Chase: Finish 5 laps in 2:30"),
-                    lambda state: state.has("Disney Town", player))
-                add_rule(khbbsworld.get_location("(T) Mirage Arena Disney Drive: Finish 5 laps in 5 minutes"),
-                    lambda state: state.has("Disney Town", player))
-                add_rule(khbbsworld.get_location("(T) Mirage Arena Grand Spree: Finish 5 laps in 5 minutes"),
-                    lambda state: state.has("Disney Town", player))
-                add_rule(khbbsworld.get_location("(T) Mirage Arena Castle Circuit: Finish 5 laps in 5:30"),
-                    lambda state: state.has("Disney Town", player))
         if options.super_bosses:
             add_rule(khbbsworld.get_location("(T) The Land of Departure Defeat Unknown No Name"),
                 lambda state: (
@@ -396,6 +382,7 @@ def set_rules(khbbsworld):
                     "Wayfinder Aqua",
                     "Wayfinder Terra"}, player)
                 and has_defensive_tools(state, player)
+                and has_x_worlds(state, player, 8)
             ))
         add_rule(khbbsworld.get_location("(A) Dwarf Woodlands Vault Magnet Chest"),
             lambda state: (
@@ -438,7 +425,7 @@ def set_rules(khbbsworld):
                 or can_airslide(state, player)
                 or options.advanced_logic
             ))
-        add_rule(khbbsworld.get_location("(A) The Mysterious Tower Mysterious Tower Donald Sticker"),
+        add_rule(khbbsworld.get_location("(A) The Mysterious Tower Tower Entrance Donald Sticker"),
             lambda state: (
                 state.has("Doubleflight", player)
                 or (state.has("High Jump", player) and can_airslide(state, player))
@@ -585,16 +572,25 @@ def set_rules(khbbsworld):
             lambda state: has_defensive_tools(state, player))
         add_rule(khbbsworld.get_location("(A) The Keyblade Graveyard Defeat Ventus-Vanitas"),
             lambda state: has_defensive_tools(state, player))
+        if options.command_board:
+            add_rule(khbbsworld.get_location("(A) Mirage Arena Win a Command Board game"),
+                lambda state: state.has_group_unique("Command Board", player, 1))
+            add_rule(khbbsworld.get_location("(A) Mirage Arena Win 3 Command Board games"),
+                lambda state: state.has_group_unique("Command Board", player, 1))
+            add_rule(khbbsworld.get_location("(A) Mirage Arena Win 5 Command Board games"),
+                lambda state: state.has_group_unique("Command Board", player, 1))
+            add_rule(khbbsworld.get_location("(A) Mirage Arena Win 7 Command Board games"),
+                lambda state: state.has_group_unique("Command Board", player, 1))
+        if options.minigames:
+            add_rule(khbbsworld.get_location("(A) Mirage Arena Country Chase: Finish 5 laps in 2:30"),
+                lambda state: state.has("Disney Town", player))
+            add_rule(khbbsworld.get_location("(A) Mirage Arena Disney Drive: Finish 5 laps in 5 minutes"),
+                lambda state: state.has("Disney Town", player))
+            add_rule(khbbsworld.get_location("(A) Mirage Arena Grand Spree: Finish 5 laps in 5 minutes"),
+                lambda state: state.has("Disney Town", player))
+            add_rule(khbbsworld.get_location("(A) Mirage Arena Castle Circuit: Finish 5 laps in 5:30"),
+                lambda state: state.has("Disney Town", player))
         if options.mirage_arena:
-            if options.command_board:
-                add_rule(khbbsworld.get_location("(A) Mirage Arena Win a Command Board game"),
-                    lambda state: state.has_group_unique("Command Board", player, 1))
-                add_rule(khbbsworld.get_location("(A) Mirage Arena Win 3 Command Board games"),
-                    lambda state: state.has_group_unique("Command Board", player, 1))
-                add_rule(khbbsworld.get_location("(A) Mirage Arena Win 5 Command Board games"),
-                    lambda state: state.has_group_unique("Command Board", player, 1))
-                add_rule(khbbsworld.get_location("(A) Mirage Arena Win 7 Command Board games"),
-                    lambda state: state.has_group_unique("Command Board", player, 1))
             if options.super_bosses:
                 add_rule(khbbsworld.get_location("(A) Mirage Arena Villains' Vendetta Ultima Weapon"),
                     lambda state: (
@@ -654,18 +650,19 @@ def set_rules(khbbsworld):
                         has_x_worlds(state, player, 6)
                         and state.has("Radiant Garden", player)
                     ))
-                add_rule(khbbsworld.get_location("(A) Mirage Arena Monster of the Sea Mini"),
-                    lambda state: (
-                        has_x_worlds(state, player, 8)
-                        and state.has("Disney Town", player)
-                        and has_defensive_tools(state, player)
-                    ))
-                add_rule(khbbsworld.get_location("(A) Mirage Arena Complete Monster of the Sea"),
-                    lambda state: (
-                        has_x_worlds(state, player, 8)
-                        and state.has("Disney Town", player)
-                        and has_defensive_tools(state, player)
-                    ))
+                if options.minigames:
+                    add_rule(khbbsworld.get_location("(A) Mirage Arena Monster of the Sea Mini"),
+                        lambda state: (
+                            has_x_worlds(state, player, 8)
+                            and state.has("Disney Town", player)
+                            and has_defensive_tools(state, player)
+                        ))
+                    add_rule(khbbsworld.get_location("(A) Mirage Arena Complete Monster of the Sea"),
+                        lambda state: (
+                            has_x_worlds(state, player, 8)
+                            and state.has("Disney Town", player)
+                            and has_defensive_tools(state, player)
+                        ))
             add_rule(khbbsworld.get_location("(A) Mirage Arena Complete Day of Reckoning"),
                 lambda state: has_x_worlds(state, player, 2))
             add_rule(khbbsworld.get_location("(A) Mirage Arena Wheels of Misfortune Max HP Increase"),
@@ -715,15 +712,6 @@ def set_rules(khbbsworld):
                     has_x_worlds(state, player, 8)
                     and has_defensive_tools(state, player)
                 ))
-            if options.minigames:
-                add_rule(khbbsworld.get_location("(A) Mirage Arena Country Chase: Finish 5 laps in 2:30"),
-                    lambda state: state.has("Disney Town", player))
-                add_rule(khbbsworld.get_location("(A) Mirage Arena Disney Drive: Finish 5 laps in 5 minutes"),
-                    lambda state: state.has("Disney Town", player))
-                add_rule(khbbsworld.get_location("(A) Mirage Arena Grand Spree: Finish 5 laps in 5 minutes"),
-                    lambda state: state.has("Disney Town", player))
-                add_rule(khbbsworld.get_location("(A) Mirage Arena Castle Circuit: Finish 5 laps in 5:30"),
-                    lambda state: state.has("Disney Town", player))
         if options.super_bosses:
             add_rule(khbbsworld.get_location("(A) The Land of Departure Defeat Unknown No Name"),
                 lambda state: (
@@ -913,16 +901,25 @@ def set_rules(khbbsworld):
             lambda state: has_defensive_tools(state, player))
         add_rule(khbbsworld.get_location("(V) The Keyblade Graveyard Defeat Final Vanitas"),
             lambda state: has_defensive_tools(state, player))
+        if options.command_board:
+            add_rule(khbbsworld.get_location("(V) Mirage Arena Win a Command Board game"),
+                lambda state: state.has_group_unique("Command Board", player, 1))
+            add_rule(khbbsworld.get_location("(V) Mirage Arena Win 3 Command Board games"),
+                lambda state: state.has_group_unique("Command Board", player, 1))
+            add_rule(khbbsworld.get_location("(V) Mirage Arena Win 5 Command Board games"),
+                lambda state: state.has_group_unique("Command Board", player, 1))
+            add_rule(khbbsworld.get_location("(V) Mirage Arena Win 7 Command Board games"),
+                lambda state: state.has_group_unique("Command Board", player, 1))
+        if options.minigames:
+            add_rule(khbbsworld.get_location("(V) Mirage Arena Country Chase: Finish 5 laps in 2:30"),
+                lambda state: state.has("Disney Town", player))
+            add_rule(khbbsworld.get_location("(V) Mirage Arena Disney Drive: Finish 5 laps in 5 minutes"),
+                lambda state: state.has("Disney Town", player))
+            add_rule(khbbsworld.get_location("(V) Mirage Arena Grand Spree: Finish 5 laps in 5 minutes"),
+                lambda state: state.has("Disney Town", player))
+            add_rule(khbbsworld.get_location("(V) Mirage Arena Castle Circuit: Finish 5 laps in 5:30"),
+                lambda state: state.has("Disney Town", player))
         if options.mirage_arena:
-            if options.command_board:
-                add_rule(khbbsworld.get_location("(V) Mirage Arena Win a Command Board game"),
-                    lambda state: state.has_group_unique("Command Board", player, 1))
-                add_rule(khbbsworld.get_location("(V) Mirage Arena Win 3 Command Board games"),
-                    lambda state: state.has_group_unique("Command Board", player, 1))
-                add_rule(khbbsworld.get_location("(V) Mirage Arena Win 5 Command Board games"),
-                    lambda state: state.has_group_unique("Command Board", player, 1))
-                add_rule(khbbsworld.get_location("(V) Mirage Arena Win 7 Command Board games"),
-                    lambda state: state.has_group_unique("Command Board", player, 1))
             if options.super_bosses:
                 add_rule(khbbsworld.get_location("(V) Mirage Arena Villains' Vendetta Ultima Weapon"),
                     lambda state: (
@@ -987,18 +984,19 @@ def set_rules(khbbsworld):
                         has_x_worlds(state, player, 6)
                         and state.has("Radiant Garden", player)
                     ))
-                add_rule(khbbsworld.get_location("(V) Mirage Arena Monster of the Sea Mini"),
-                    lambda state: (
-                        has_x_worlds(state, player, 8)
-                        and state.has("Disney Town", player)
-                        and has_defensive_tools(state, player)
-                    ))
-                add_rule(khbbsworld.get_location("(V) Mirage Arena Complete Monster of the Sea"),
-                    lambda state: (
-                        has_x_worlds(state, player, 8)
-                        and state.has("Disney Town", player)
-                        and has_defensive_tools(state, player)
-                    ))
+                if options.minigames:
+                    add_rule(khbbsworld.get_location("(V) Mirage Arena Monster of the Sea Mini"),
+                        lambda state: (
+                            has_x_worlds(state, player, 8)
+                            and state.has("Disney Town", player)
+                            and has_defensive_tools(state, player)
+                        ))
+                    add_rule(khbbsworld.get_location("(V) Mirage Arena Complete Monster of the Sea"),
+                        lambda state: (
+                            has_x_worlds(state, player, 8)
+                            and state.has("Disney Town", player)
+                            and has_defensive_tools(state, player)
+                        ))
             add_rule(khbbsworld.get_location("(V) Mirage Arena Complete Day of Reckoning"),
                 lambda state: has_x_worlds(state, player, 2))            
             add_rule(khbbsworld.get_location("(V) Mirage Arena Complete Risky Riches"),
@@ -1030,15 +1028,6 @@ def set_rules(khbbsworld):
                     has_x_worlds(state, player, 8)
                     and has_defensive_tools(state, player)
                 ))
-            if options.minigames:
-                add_rule(khbbsworld.get_location("(V) Mirage Arena Country Chase: Finish 5 laps in 2:30"),
-                    lambda state: state.has("Disney Town", player))
-                add_rule(khbbsworld.get_location("(V) Mirage Arena Disney Drive: Finish 5 laps in 5 minutes"),
-                    lambda state: state.has("Disney Town", player))
-                add_rule(khbbsworld.get_location("(V) Mirage Arena Grand Spree: Finish 5 laps in 5 minutes"),
-                    lambda state: state.has("Disney Town", player))
-                add_rule(khbbsworld.get_location("(V) Mirage Arena Castle Circuit: Finish 5 laps in 5:30"),
-                    lambda state: state.has("Disney Town", player))
         if options.super_bosses:
             add_rule(khbbsworld.get_location("(V) The Land of Departure Defeat Unknown No Name"),
                 lambda state: (

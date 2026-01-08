@@ -86,7 +86,7 @@
       "REGION_ROUTE2/NORTHEAST": "Route 2 Center Cuttable Tree (Bottom)"
     },
     "warps": {
-      "MAP_ROUTE2:6,7/MAP_ROUTE2_EAST_BUILDING:0": "Route 2 Gate (North)"
+      "MAP_ROUTE2:8,9/MAP_ROUTE2_EAST_BUILDING:1": "Route 2 Gate (North)"
     }
   },
   "REGION_ROUTE2/SOUTHEAST": {
@@ -106,7 +106,7 @@
       "REGION_ROUTE2/SOUTHWEST": "Route 2 South Cuttable Trees (Right)"
     },
     "warps": {
-      "MAP_ROUTE2:8,9/MAP_ROUTE2_EAST_BUILDING:1": "Route 2 Gate (South)"
+      "MAP_ROUTE2:6,7/MAP_ROUTE2_EAST_BUILDING:0": "Route 2 Gate (South)"
     }
   },
   "REGION_ROUTE2_VIRIDIAN_FOREST_SOUTH_ENTRANCE/MAIN": {
@@ -155,8 +155,8 @@
     "events": [],
     "exits": {},
     "warps": {
-      "MAP_ROUTE2_EAST_BUILDING:0/MAP_ROUTE2:6": "Route 2 Gate Exit (North)",
-      "MAP_ROUTE2_EAST_BUILDING:1/MAP_ROUTE2:8": "Route 2 Gate Exit (South)"
+      "MAP_ROUTE2_EAST_BUILDING:0/MAP_ROUTE2:6": "Route 2 Gate Exit (South)",
+      "MAP_ROUTE2_EAST_BUILDING:1/MAP_ROUTE2:8": "Route 2 Gate Exit (North)"
     }
   },
   "REGION_ROUTE2_HOUSE/MAIN": {
@@ -280,7 +280,7 @@
     "events": [],
     "exits": {
       "REGION_ROUTE4/EAST": "Route 4 Southeast Ledge (Bottom)",
-      "REGION_CERULEAN_CITY/MAIN": "Route 4 Exit (East)"
+      "REGION_CERULEAN_CITY/MAIN": "Route 4 Exit (Southeast)"
     },
     "warps": {}
   },
@@ -310,7 +310,8 @@
     ],
     "events": [],
     "exits": {
-      "REGION_ROUTE4/EAST": "Route 4 Northeast Ledge (Top)"
+      "REGION_ROUTE4/EAST": "Route 4 Northeast Ledge (Top)",
+      "REGION_CERULEAN_CITY/NEAR_CAVE": "Route 4 Exit (Northeast)"
     },
     "warps": {}
   },
@@ -479,6 +480,64 @@
     },
     "warps": {
       "MAP_ROUTE5_SOUTH_ENTRANCE:1/MAP_SAFFRON_CITY:9": "Route 5 Gate Exit (South)"
+    }
+  },
+  "REGION_UNDERGROUND_PATH_NORTH_ENTRANCE/MAIN": {
+    "parent_map": "MAP_UNDERGROUND_PATH_NORTH_ENTRANCE",
+    "name": "Underground Path North Entrance",
+    "encounter_region": null,
+    "has_land": false,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [
+      "TRADE_POKEMON_NIDORAN"
+    ],
+    "exits": {},
+    "warps": {
+      "MAP_UNDERGROUND_PATH_NORTH_ENTRANCE:0/MAP_ROUTE5:0": "Underground Path North Entrance Exit",
+      "MAP_UNDERGROUND_PATH_NORTH_ENTRANCE:1/MAP_UNDERGROUND_PATH_NORTH_SOUTH_TUNNEL:0": "Underground Path North Entrance Stairs"
+    }
+  },
+  "REGION_UNDERGROUND_PATH_NORTH_SOUTH_TUNNEL/MAIN": {
+    "parent_map": "MAP_UNDERGROUND_PATH_NORTH_SOUTH_TUNNEL",
+    "name": "Underground Path North-South Tunnel",
+    "encounter_region": null,
+    "has_land": false,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [
+      "HIDDEN_ITEM_UNDERGROUND_PATH_NORTH_SOUTH_TUNNEL_ANTIDOTE",
+      "HIDDEN_ITEM_UNDERGROUND_PATH_NORTH_SOUTH_TUNNEL_PARALYZE_HEAL",
+      "HIDDEN_ITEM_UNDERGROUND_PATH_NORTH_SOUTH_TUNNEL_AWAKENING",
+      "HIDDEN_ITEM_UNDERGROUND_PATH_NORTH_SOUTH_TUNNEL_POTION",
+      "HIDDEN_ITEM_UNDERGROUND_PATH_NORTH_SOUTH_TUNNEL_ETHER",
+      "HIDDEN_ITEM_UNDERGROUND_PATH_NORTH_SOUTH_TUNNEL_ICE_HEAL",
+      "HIDDEN_ITEM_UNDERGROUND_PATH_NORTH_SOUTH_TUNNEL_BURN_HEAL"
+    ],
+    "events": [],
+    "exits": {},
+    "warps": {
+      "MAP_UNDERGROUND_PATH_NORTH_SOUTH_TUNNEL:0/MAP_UNDERGROUND_PATH_NORTH_ENTRANCE:1": "Underground Path North-South Tunnel North Stairs",
+      "MAP_UNDERGROUND_PATH_NORTH_SOUTH_TUNNEL:1/MAP_UNDERGROUND_PATH_SOUTH_ENTRANCE:1": "Underground Path North-South Tunnel South Stairs"
+    }
+  },
+  "REGION_UNDERGROUND_PATH_SOUTH_ENTRANCE/MAIN": {
+    "parent_map": "MAP_UNDERGROUND_PATH_SOUTH_ENTRANCE",
+    "name": "Underground Path South Entrance",
+    "encounter_region": null,
+    "has_land": false,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {},
+    "warps": {
+      "MAP_UNDERGROUND_PATH_SOUTH_ENTRANCE:0/MAP_ROUTE6:0": "Underground Path South Entrance Exit",
+      "MAP_UNDERGROUND_PATH_SOUTH_ENTRANCE:1/MAP_UNDERGROUND_PATH_NORTH_SOUTH_TUNNEL:1": "Underground Path South Entrance Stairs"
     }
   },
   "REGION_ROUTE6/MAIN": {
@@ -651,6 +710,62 @@
     },
     "warps": {
       "MAP_ROUTE7_EAST_ENTRANCE:1/MAP_SAFFRON_CITY:8": "Route 7 Gate Exit (East)"
+    }
+  },
+  "REGION_UNDERGROUND_PATH_EAST_ENTRANCE/MAIN": {
+    "parent_map": "MAP_UNDERGROUND_PATH_EAST_ENTRANCE",
+    "name": "Underground Path East Entrance",
+    "encounter_region": null,
+    "has_land": false,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {},
+    "warps": {
+      "MAP_UNDERGROUND_PATH_EAST_ENTRANCE:0/MAP_ROUTE8:0": "Underground Path East Entrance Exit",
+      "MAP_UNDERGROUND_PATH_EAST_ENTRANCE:1/MAP_UNDERGROUND_PATH_EAST_WEST_TUNNEL:0": "Underground Path East Entrance Stairs"
+    }
+  },
+  "REGION_UNDERGROUND_PATH_EAST_WEST_TUNNEL/MAIN": {
+    "parent_map": "MAP_UNDERGROUND_PATH_EAST_WEST_TUNNEL",
+    "name": "Underground Path East-West Tunnel",
+    "encounter_region": null,
+    "has_land": false,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [
+      "HIDDEN_ITEM_UNDERGROUND_PATH_EAST_WEST_TUNNEL_ICE_HEAL",
+      "HIDDEN_ITEM_UNDERGROUND_PATH_EAST_WEST_TUNNEL_ANTIDOTE",
+      "HIDDEN_ITEM_UNDERGROUND_PATH_EAST_WEST_TUNNEL_ETHER",
+      "HIDDEN_ITEM_UNDERGROUND_PATH_EAST_WEST_TUNNEL_BURN_HEAL",
+      "HIDDEN_ITEM_UNDERGROUND_PATH_EAST_WEST_TUNNEL_AWAKENING",
+      "HIDDEN_ITEM_UNDERGROUND_PATH_EAST_WEST_TUNNEL_PARALYZE_HEAL",
+      "HIDDEN_ITEM_UNDERGROUND_PATH_EAST_WEST_TUNNEL_POTION"
+    ],
+    "events": [],
+    "exits": {},
+    "warps": {
+      "MAP_UNDERGROUND_PATH_EAST_WEST_TUNNEL:0/MAP_UNDERGROUND_PATH_EAST_ENTRANCE:1": "Underground Path East-West Tunnel East Stairs",
+      "MAP_UNDERGROUND_PATH_EAST_WEST_TUNNEL:1/MAP_UNDERGROUND_PATH_WEST_ENTRANCE:1": "Underground Path East-West Tunnel West Stairs"
+    }
+  },
+  "REGION_UNDERGROUND_PATH_WEST_ENTRANCE/MAIN": {
+    "parent_map": "MAP_UNDERGROUND_PATH_WEST_ENTRANCE",
+    "name": "Underground Path West Entrance",
+    "encounter_region": null,
+    "has_land": false,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": true,
+    "locations": [],
+    "events": [],
+    "exits": {},
+    "warps": {
+      "MAP_UNDERGROUND_PATH_WEST_ENTRANCE:0/MAP_ROUTE7:0": "Underground Path West Entrance Exit",
+      "MAP_UNDERGROUND_PATH_WEST_ENTRANCE:1/MAP_UNDERGROUND_PATH_EAST_WEST_TUNNEL:1": "Underground Path West Entrance Stairs"
     }
   },
   "REGION_ROUTE8/MAIN": {
@@ -1719,9 +1834,9 @@
       "MAP_ROUTE16_NORTH_ENTRANCE_1F:1/MAP_ROUTE16:2": "Route 16 Gate 1F Exit (Northeast)"
     }
   },
-  "REGION_ROUTE16_NORTH_ENTRANCE_1F/SOUTHEAST": {
+  "REGION_ROUTE16_NORTH_ENTRANCE_1F/SOUTH": {
     "parent_map": "MAP_ROUTE16_NORTH_ENTRANCE_1F",
-    "name": "Route 16 Gate 1F (Southeast)",
+    "name": "Route 16 Gate 1F (South)",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -1729,29 +1844,11 @@
     "kanto": true,
     "locations": [],
     "events": [],
-    "exits": {
-      "REGION_ROUTE16_NORTH_ENTRANCE_1F/SOUTHWEST": "Route 16 Gate 1F Bike Checkpoint (Right)"
-    },
+    "exits": {},
     "warps": {
+      "MAP_ROUTE16_NORTH_ENTRANCE_1F:2/MAP_ROUTE16:3": "Route 16 Gate 1F Exit (Southwest)",
       "MAP_ROUTE16_NORTH_ENTRANCE_1F:3/MAP_ROUTE16:4": "Route 16 Gate 1F Exit (Southeast)",
       "MAP_ROUTE16_NORTH_ENTRANCE_1F:4/MAP_ROUTE16_NORTH_ENTRANCE_2F:0": "Route 16 Gate 1F Stairs"
-    }
-  },
-  "REGION_ROUTE16_NORTH_ENTRANCE_1F/SOUTHWEST": {
-    "parent_map": "MAP_ROUTE16_NORTH_ENTRANCE_1F",
-    "name": "Route 16 Gate 1F (Southwest)",
-    "encounter_region": null,
-    "has_land": false,
-    "has_water": false,
-    "has_fishing": false,
-    "kanto": true,
-    "locations": [],
-    "events": [],
-    "exits": {
-      "REGION_ROUTE16_NORTH_ENTRANCE_1F/SOUTHEAST": "Route 16 Gate 1F Bike Checkpoint (Left)"
-    },
-    "warps": {
-      "MAP_ROUTE16_NORTH_ENTRANCE_1F:2/MAP_ROUTE16:3": "Route 16 Gate 1F Exit (Southwest)"
     }
   },
   "REGION_ROUTE16_NORTH_ENTRANCE_2F": {
@@ -1846,9 +1943,9 @@
       "MAP_ROUTE18:1/MAP_ROUTE18_EAST_ENTRANCE_1F:1": "Route 18 Gate (East)"
     }
   },
-  "REGION_ROUTE18_EAST_ENTRANCE_1F/WEST": {
+  "REGION_ROUTE18_EAST_ENTRANCE_1F/MAIN": {
     "parent_map": "MAP_ROUTE18_EAST_ENTRANCE_1F",
-    "name": "Route 18 Gate 1F (West)",
+    "name": "Route 18 Gate 1F",
     "encounter_region": null,
     "has_land": false,
     "has_water": false,
@@ -1856,27 +1953,9 @@
     "kanto": true,
     "locations": [],
     "events": [],
-    "exits": {
-      "REGION_ROUTE18_EAST_ENTRANCE_1F/EAST": "Route 18 Gate 1F Bike Checkpoint (Left)"
-    },
+    "exits": {},
     "warps": {
-      "MAP_ROUTE18_EAST_ENTRANCE_1F:0/MAP_ROUTE18:0": "Route 18 Gate 1F Exit (West)"
-    }
-  },
-  "REGION_ROUTE18_EAST_ENTRANCE_1F/EAST": {
-    "parent_map": "MAP_ROUTE18_EAST_ENTRANCE_1F",
-    "name": "Route 18 Gate 1F (East)",
-    "encounter_region": null,
-    "has_land": false,
-    "has_water": false,
-    "has_fishing": false,
-    "kanto": true,
-    "locations": [],
-    "events": [],
-    "exits": {
-      "REGION_ROUTE18_EAST_ENTRANCE_1F/WEST": "Route 18 Gate 1F Bike Checkpoint (Right)"
-    },
-    "warps": {
+      "MAP_ROUTE18_EAST_ENTRANCE_1F:0/MAP_ROUTE18:0": "Route 18 Gate 1F Exit (West)",
       "MAP_ROUTE18_EAST_ENTRANCE_1F:1/MAP_ROUTE18:1": "Route 18 Gate 1F Exit (East)",
       "MAP_ROUTE18_EAST_ENTRANCE_1F:2/MAP_ROUTE18_EAST_ENTRANCE_2F:0": "Route 18 Gate 1F Stairs"
     }
@@ -1984,7 +2063,7 @@
       "REGION_ROUTE20/EAST": "Route 20 (Near North Cave) Surfing Spot"
     },
     "warps": {
-      "MAP_ROUTE20:0/MAP_SEAFOAM_ISLANDS_1F:4": "Seafoam Islands (North)"
+      "MAP_ROUTE20:0/MAP_SEAFOAM_ISLANDS_1F:3": "Seafoam Islands (North)"
     }
   },
   "REGION_ROUTE20/NEAR_SOUTH_CAVE": {
@@ -2003,7 +2082,7 @@
       "REGION_ROUTE20/WEST": "Route 20 (Near South Cave) Surfing Spot"
     },
     "warps": {
-      "MAP_ROUTE20:1/MAP_SEAFOAM_ISLANDS_1F:3": "Seafoam Islands (South)"
+      "MAP_ROUTE20:1/MAP_SEAFOAM_ISLANDS_1F:4": "Seafoam Islands (South)"
     }
   },
   "REGION_ROUTE20/WEST": {

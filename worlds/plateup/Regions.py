@@ -37,9 +37,10 @@ def create_plateup_regions(world: "PlateUpWorld"):
 
         required_franchises = world.options.franchise_count.value
         interval = max(1, int(world.options.day_lease_interval.value))
-        # Speed upgrades gating: split total franchise days into ~5 chunks
+        # Speed upgrades gating: split total franchise days into chunks based on configured player speed upgrades
         total_days = 15 * required_franchises
-        speed_interval = max(1, math.ceil(total_days / 5))
+        speed_slots = max(1, int(world.options.player_speed_upgrade_count.value))
+        speed_interval = max(1, math.ceil(total_days / speed_slots))
 
         def run_suffix(run: int) -> str:
             if run == 0:
@@ -88,7 +89,7 @@ def create_plateup_regions(world: "PlateUpWorld"):
                 req = leases_required_for(run, d)
                 # Speed upgrades required based on global day progression
                 global_day = run * 15 + d
-                speed_req = min(5, (global_day - 1) // speed_interval)
+                speed_req = min(int(world.options.player_speed_upgrade_count.value), (global_day - 1) // speed_interval)
 
                 def rule_factory(pl=prev_label, s=suff, req=req, spd=speed_req):
                     return lambda state: (
@@ -115,7 +116,7 @@ def create_plateup_regions(world: "PlateUpWorld"):
                 # Entering next run Day 1 corresponds to global day 15*run + 16
                 req = leases_required_for(run + 1, 1)
                 global_day = (run + 1) * 15 + 1
-                speed_req = min(5, (global_day - 1) // speed_interval)
+                speed_req = min(int(world.options.player_speed_upgrade_count.value), (global_day - 1) // speed_interval)
                 prev_suff = suff
 
                 def next_run_rule_factory(pl=prev_label, ps=prev_suff, req=req, spd=speed_req):
@@ -237,8 +238,9 @@ def create_plateup_regions(world: "PlateUpWorld"):
         interval = max(1, int(world.options.day_lease_interval.value))
         # Use floor here; only create stars that correspond to an existing day (star*3)
         max_stars = required_days // 3
-        # Speed upgrades gating: split required_days into ~5 chunks
-        speed_interval = max(1, math.ceil(required_days / 5))
+        # Speed upgrades gating: split required_days into chunks based on configured player speed upgrades
+        speed_slots = max(1, int(world.options.player_speed_upgrade_count.value))
+        speed_interval = max(1, math.ceil(required_days / speed_slots))
 
         # Create per-day regions
         day_regions = {}
@@ -261,8 +263,8 @@ def create_plateup_regions(world: "PlateUpWorld"):
 
             # Leases required to ENTER day d: floor((d-1)/interval)
             leases_required = (day - 1) // interval
-            # Speed upgrades required to ENTER day d: floor((d-1)/speed_interval), max 5
-            speed_required = min(5, (day - 1) // speed_interval)
+            # Speed upgrades required to ENTER day d: floor((d-1)/speed_interval), capped at configured count
+            speed_required = min(int(world.options.player_speed_upgrade_count.value), (day - 1) // speed_interval)
 
             # Access requires completion of previous day (location sits in source region => safe)
             def entrance_rule_factory(d=day, req=leases_required, spd=speed_required):
@@ -397,10 +399,13 @@ def create_plateup_regions(world: "PlateUpWorld"):
     try:
         dish_count = world.options.dish.value
         if dish_count > 0:
-            dishes = [
-                "Salad", "Steak", "Burger", "Coffee", "Pizza", "Dumplings", "Turkey",
-                "Pie", "Cakes", "Spaghetti", "Fish", "Tacos", "Hot Dogs", "Breakfast", "Stir Fry"
-            ][:dish_count]
+            dishes = getattr(world, "selected_dishes", None)
+            if not dishes or len(dishes) != dish_count:
+                try:
+                    world.set_selected_dishes()
+                except Exception:
+                    pass
+                dishes = getattr(world, "selected_dishes", [])
             for dish in dishes:
                 for d in range(1, 16):
                     loc_name = f"{dish} - Day {d}"

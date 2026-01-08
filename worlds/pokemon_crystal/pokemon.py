@@ -3,13 +3,14 @@ from dataclasses import replace
 from typing import TYPE_CHECKING
 
 from BaseClasses import ItemClassification
-from .data import data as crystal_data, LogicalAccess, EncounterType
+from .data import data as crystal_data, LogicalAccess, EncounterType, MiscOption
 from .evolution import get_random_pokemon_evolution
 from .items import get_random_filler_item
 from .moves import get_tmhm_compatibility, randomize_learnset, moves_convert_friendly_to_ids
 from .options import RandomizeTypes, RandomizePalettes, RandomizeBaseStats, RandomizeStarters, RandomizeTrades, \
-    DexsanityStarters, EncounterGrouping, RandomizePokemonRequests
-from .utils import pokemon_convert_friendly_to_ids
+    DexsanityStarters, EncounterGrouping, RandomizePokemonRequests, Goal
+from .pokemon_data import ALL_UNOWN
+from .utils import pokemon_convert_friendly_to_ids, should_include_region
 
 if TYPE_CHECKING:
     from .world import PokemonCrystalWorld
@@ -32,7 +33,7 @@ def randomize_pokemon_data(world: "PokemonCrystalWorld"):
                     for second_evo in evo_poke.evolutions:
                         evolution_line_list.append(second_evo.pokemon)
 
-            new_types = get_random_types(world.random)
+            new_types = get_random_types(world)
             for pokemon in evolution_line_list:
                 world.generated_pokemon[pokemon] = replace(
                     world.generated_pokemon[pokemon],
@@ -72,9 +73,22 @@ def randomize_pokemon_data(world: "PokemonCrystalWorld"):
             bst=sum(new_base_stats)
         )
 
+    if MiscOption.DontFuckleWithShuckle.value in world.generated_misc.selected:
+        new_base_stats = list(world.generated_pokemon["SHUCKLE"].base_stats)
+        attack = new_base_stats[1]
+        new_base_stats[1] = new_base_stats[2]
+        new_base_stats[2] = attack
+        sp_atk = new_base_stats[4]
+        new_base_stats[4] = new_base_stats[5]
+        new_base_stats[5] = sp_atk
+        world.generated_pokemon["SHUCKLE"] = replace(
+            world.generated_pokemon["SHUCKLE"],
+            base_stats=new_base_stats,
+        )
+
 
 def randomize_starters(world: "PokemonCrystalWorld"):
-    if not world.options.randomize_starters: return
+    if world.is_universal_tracker or not world.options.randomize_starters: return
 
     blocklist = pokemon_convert_friendly_to_ids(world, world.options.starter_blocklist.value)
 
@@ -124,42 +138,81 @@ def randomize_starters(world: "PokemonCrystalWorld"):
         for trainer_name, trainer in rival_fights:
             set_rival_fight_starter(trainer_name, trainer, final_evo_pokemon)
 
-    new_helditems = (get_random_filler_item(world),
-                     get_random_filler_item(world),
-                     get_random_filler_item(world))
+    if MiscOption.UnLuckyEgg.value in world.generated_misc.selected:
+        new_helditems = ("LUCKY_EGG", "LUCKY_EGG", "LUCKY_EGG")
+    else:
+        new_helditems = (get_random_filler_item(world),
+                         get_random_filler_item(world),
+                         get_random_filler_item(world))
 
     world.generated_starter_helditems = new_helditems
 
 
-def randomize_traded_pokemon(world: "PokemonCrystalWorld"):
-    if not world.options.randomize_trades: return
+def randomize_trade_received_pokemon(world: "PokemonCrystalWorld"):
+    if world.is_universal_tracker: return
 
-    randomize_received = world.options.randomize_trades.value in (RandomizeTrades.option_received,
-                                                                  RandomizeTrades.option_both)
-    randomize_requested = world.options.randomize_trades.value in (RandomizeTrades.option_requested,
-                                                                   RandomizeTrades.option_both)
-    new_trades = []
-    for trade in world.generated_trades:
-        received_pokemon = get_random_pokemon(world) if randomize_received else trade.received_pokemon
+    if world.options.randomize_trades.value not in (RandomizeTrades.option_received,
+                                                    RandomizeTrades.option_both): return
 
-        new_trades.append(
-            replace(
-                trade,
-                requested_gender=0,  # no gender
-                held_item=get_random_filler_item(world) if received_pokemon != "ABRA" else "TM_9",
-                requested_pokemon=get_random_pokemon(world) if randomize_requested else trade.requested_pokemon,
-                received_pokemon=received_pokemon
-            )
+    for trade_id, trade in world.generated_trades.items():
+        received_pokemon = trade.received_pokemon
+        world.generated_trades[trade_id] = replace(
+            trade,
+            received_pokemon=get_random_pokemon(world),
+            held_item=get_random_filler_item(world) if received_pokemon != "ABRA" else "TM_9"
         )
 
-    world.generated_trades = new_trades
+
+def get_logically_available_trade_pokemon(world: "PokemonCrystalWorld") -> set[str]:
+    logical_pokemon = set[str]()
+
+    if world.options.trades_required:
+        for trade_id, trade in world.generated_trades.items():
+            try:
+                world.get_location(trade_id)
+                logical_pokemon.add(trade.received_pokemon)
+            except KeyError:
+                continue
+
+    return logical_pokemon
 
 
-def randomize_requested_pokemon(world: "PokemonCrystalWorld"):
+def randomize_trade_requested_pokemon(world: "PokemonCrystalWorld"):
+    if world.is_universal_tracker: return
+
+    randomize_requested = world.options.randomize_trades.value not in (RandomizeTrades.option_requested,
+                                                                       RandomizeTrades.option_both)
+
+    logically_available_pokemon = sorted(list(world.logic.available_pokemon))
+
+    assert logically_available_pokemon
+    while len(logically_available_pokemon) < len(world.generated_trades):
+        logically_available_pokemon.append(world.random.choice(logically_available_pokemon))
+
+    world.random.shuffle(logically_available_pokemon)
+
+    for trade_id, trade in world.generated_trades.items():
+        if randomize_requested:
+            requested_pokemon = logically_available_pokemon.pop()
+        else:
+            requested_pokemon = trade.requested_pokemon \
+                if trade.requested_pokemon in logically_available_pokemon else logically_available_pokemon.pop()
+
+        world.generated_trades[trade_id] = replace(
+            trade,
+            requested_gender=0 if world.options.randomize_trades else trade.requested_gender,  # no gender
+            requested_pokemon=requested_pokemon,
+        )
+
+
+def randomize_request_pokemon(world: "PokemonCrystalWorld"):
+    if world.is_universal_tracker: return
+
     if world.options.randomize_pokemon_requests in (RandomizePokemonRequests.option_items_and_pokemon,
                                                     RandomizePokemonRequests.option_pokemon):
 
-        logically_available_pokemon = [pokemon for pokemon in world.logic.available_pokemon if pokemon != "UNOWN"]
+        logically_available_pokemon = sorted(
+            [pokemon for pokemon in world.logic.available_pokemon if pokemon != "UNOWN"])
 
         assert logically_available_pokemon
         while len(logically_available_pokemon) < len(world.generated_request_pokemon):
@@ -174,6 +227,17 @@ def randomize_requested_pokemon(world: "PokemonCrystalWorld"):
         world.generated_request_pokemon = [
             world.random.choice(logically_available_pokemon) if mon not in world.logic.available_pokemon else mon for
             mon in world.generated_request_pokemon]
+
+
+def fill_trade_locations(world: "PokemonCrystalWorld"):
+    if not world.options.trades_required: return
+
+    for trade_id, trade in world.generated_trades.items():
+        try:
+            location = world.get_location(trade_id)
+            location.place_locked_item(world.create_event(trade.received_pokemon))
+        except KeyError:
+            continue
 
 
 def fill_wild_encounter_locations(world: "PokemonCrystalWorld"):
@@ -267,10 +331,15 @@ def fill_wild_encounter_locations(world: "PokemonCrystalWorld"):
             location = world.get_location(f"{region_key.region_name()}_1")
             location.place_locked_item((world.create_event(static.pokemon)))
 
+    if "Bug Catching Contest" in world.options.wild_encounter_methods_required or world.is_universal_tracker:
+        for i, slot in enumerate(world.generated_contest):
+            location = world.get_location(f"Bug Catching Contest Slot {i + 1}")
+            location.place_locked_item(world.create_event(slot.pokemon))
+
 
 def get_random_pokemon(world: "PokemonCrystalWorld", priority_pokemon: set[str] | None = None, types=None,
                        base_only=False, force_fully_evolved_at=None, current_level=None, starter=False,
-                       exclude_unown=False, blocklist: set[str] | None = None):
+                       exclude_unown=False, blocklist: set[str] | None = None) -> str:
     bst_range = world.options.starters_bst_average * .10
 
     def filter_out_pokemon(pkmn_name, pkmn_data):
@@ -349,6 +418,30 @@ def _locations_to_pokemon(world: "PokemonCrystalWorld", locations: Iterable[str]
     return pokemon_convert_friendly_to_ids(world, pokemon)
 
 
+def get_chamber_event_for_unown(unown_letter: str) -> str:
+    char = unown_letter[-1]
+    if char < "L": return "ENGINE_UNLOCKED_UNOWNS_A_TO_K"
+    if char < "S": return "ENGINE_UNLOCKED_UNOWNS_L_TO_R"
+    if char < "X": return "ENGINE_UNLOCKED_UNOWNS_S_TO_W"
+    return "ENGINE_UNLOCKED_UNOWNS_X_TO_Z"
+
+
+def randomize_unown_signs(world: "PokemonCrystalWorld"):
+    if world.options.goal != Goal.option_unown_hunt: return
+    available_signs = []
+    for region in crystal_data.regions.values():
+        if not should_include_region(region, world): continue
+        for sign in region.signs:
+            available_signs.append(sign)
+
+    all_unown = list(ALL_UNOWN)
+    world.random.shuffle(all_unown)
+    world.random.shuffle(available_signs)
+
+    for unown in all_unown:
+        world.generated_unown_signs[available_signs.pop()] = unown
+
+
 def get_priority_dexsanity(world: "PokemonCrystalWorld") -> set[str]:
     return _locations_to_pokemon(world, world.options.priority_locations.value)
 
@@ -372,12 +465,16 @@ def get_random_base_stats(random, bst=None):
     return [int((stat * bst) / total) for stat in randoms]
 
 
-def get_random_types(random):
+def get_random_types(world: "PokemonCrystalWorld") -> list[str]:
     all_types = list(crystal_data.types.keys())
-    new_types = [random.choice(all_types)]
+    if world.options.shared_primary_type:
+        new_types = [type_id for type_id, type_data in crystal_data.types.items() if
+                     type_data.rom_id == world.options.shared_primary_type.value - 1]
+    else:
+        new_types = [world.random.choice(all_types)]
     # approx. 110/251 Pokemon are dual type in gen 2
-    if random.randint(0, 24) < 11:
-        new_types.append(random.choice([t for t in all_types if t not in new_types]))
+    if world.random.randint(0, 24) < 11:
+        new_types.append(world.random.choice([t for t in all_types if t not in new_types]))
     return new_types
 
 

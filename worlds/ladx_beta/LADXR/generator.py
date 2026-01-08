@@ -43,6 +43,7 @@ from .patches import droppedKey as _
 from .patches import goldenLeaf as _
 from .patches import songs as _
 from .patches import bowwow as _
+from .patches import follower as _
 from .patches import desert as _
 from .patches import reduceRNG as _
 from .patches import madBatter as _
@@ -145,6 +146,7 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
     assembler.const("HARD_MODE", 1 if options["hard_mode"] else 0)
 
     patches.core.cleanup(rom)
+    patches.core.mapExtraCharacters(rom)
     patches.core.fixD7exit(rom)
     patches.save.singleSaveSlot(rom)
     patches.phone.patchPhone(rom)
@@ -202,9 +204,8 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
     patches.songs.upgradeMamu(rom)
 
     patches.tradeSequence.patchTradeSequence(rom, options)
-    patches.bowwow.fixBowwow(rom, everywhere=False)
-    # if ladxr_settings["bowwow"] != 'normal':
-    #    patches.bowwow.bowwowMapPatches(rom)
+    patches.bowwow.fixBowwow(rom)
+    patches.follower.patchFollowerCreation(rom, extra_spawn_index=int(options.get("follower", 0)))
     patches.desert.desertAccess(rom)
     # if ladxr_settings["overworld"] == 'dungeondive':
     #    patches.overworld.patchOverworldTilesets(rom)
@@ -237,11 +238,10 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
         patches.hardMode.oneHitKO(rom)
     #if ladxr_settings["superweapons"]:
     #    patches.weapons.patchSuperWeapons(rom)
-    if options["text_mode"] == Options.TextMode.option_fast:
+    if options["text_mode"] >= Options.TextMode.option_fast:
         patches.aesthetics.fastText(rom)
-    #if ladxr_settings["textmode"] == 'none':
-    #    patches.aesthetics.fastText(rom)
-    #    patches.aesthetics.noText(rom)
+    if options["text_mode"] == Options.TextMode.option_none:
+        patches.aesthetics.noText(rom)
     if not options["nag_messages"]:
         patches.aesthetics.removeNagMessages(rom)
     if options["low_hp_beep"] == Options.LowHpBeep.option_slow:
@@ -308,7 +308,9 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
     if not args.romdebugmode:
         patches.core.addFrameCounter(rom, len(item_list))
 
-    patches.core.warpHome(rom)  # Needs to be done after setting the start location.
+    
+    patches.core.warpHome(rom, options.get("entrance_shuffle", 0) >= 5) # chaos, insane
+    
     patches.titleScreen.setRomInfo(rom, patch_data)
     if options["ap_title_screen"]:
         patches.titleScreen.setTitleGraphics(rom)

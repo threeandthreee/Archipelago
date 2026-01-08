@@ -17,7 +17,7 @@ from .Client import SMRPGClient
 from .Options import SMRPGOptions, build_flag_string
 from worlds.AutoWorld import World, WebWorld
 from worlds.generic.Rules import add_rule, add_item_rule
-from .Rom import SMRPGDeltaPatch
+from .Rom import get_base_rom_path, SMRPGDeltaPatch
 
 from .smrpg_web_randomizer.randomizer.management.commands import make_seed
 
@@ -90,6 +90,12 @@ class SMRPGWorld(World):
         return_location = SMRPGLocation(self.player, name, id, parent)
         return_location.event = event
         return return_location
+
+    @classmethod
+    def stage_assert_generate(cls, _: "MultiWorld") -> None:
+        rom_file = get_base_rom_path()
+        if not os.path.exists(rom_file):
+            raise FileNotFoundError(rom_file)
 
     def create_regions(self):
         menu = Region("Menu", self.player, self.multiworld)
@@ -208,47 +214,73 @@ class SMRPGWorld(World):
         boss_locations = [x[0] for x in boss_locations]
         bad_boss_locations = set(deepcopy(Locations.force_defeated_locations))
         bad_boss_locations = [x[0] for x in bad_boss_locations]
+
         exclude_keep = False
         exclude_factory = True
         if self.options.StarPiecesInBowsersKeep == Options.StarPiecesInBowsersKeep.option_false:
             exclude_keep = True
+
         star_pieces = 6
         if self.options.StarPieceGoal == Options.StarPieceGoal.option_seven:
             star_pieces = 7
+
         if exclude_factory:
             boss_locations = [x for x in boss_locations if x not in Locations.factory_bosses]
         if exclude_keep:
             boss_locations = [x for x in boss_locations if x not in Locations.keep_bosses]
-        star_pieces = self.multiworld.random.sample([x for x in boss_locations if x not in bad_boss_locations], star_pieces)
+        if self.options.IncludeCulex == Options.IncludeCulex.option_false:
+            boss_locations = [x for x in boss_locations if x not in Locations.culex_locations]
+
+        star_piece_targets = self.multiworld.random.sample(
+            [x for x in boss_locations if x not in bad_boss_locations],
+            star_pieces
+        )
         for location in boss_locations:
-            if location in star_pieces:
+            if location in star_piece_targets:
                 self.multiworld.get_location(location, self.player).place_locked_item(
                     self.create_item("Star Piece"))
             else:
                 self.multiworld.get_location(location, self.player).place_locked_item(
-                    self.create_item("Defeated!"))
+                    self.create_item("Defeated!")
+                )
         boss_locations = deepcopy(Locations.star_piece_locations)
         boss_locations = [x[0] for x in boss_locations]
+
         if exclude_keep:
             for location in boss_locations:
                 if Locations.location_table[location].region == Locations.SMRPGRegions.bowsers_keep:
                     self.multiworld.get_location(location, self.player).place_locked_item(
-                        self.create_item("Defeated!"))
+                        self.create_item("Defeated!")
+                    )
         if exclude_factory:
             for location in boss_locations:
                 if Locations.location_table[location].region == Locations.SMRPGRegions.factory:
                     self.multiworld.get_location(location, self.player).place_locked_item(
-                        self.create_item("Defeated!"))
+                        self.create_item("Defeated!")
+                    )
+        if self.options.IncludeCulex == Options.IncludeCulex.option_false:
+            for location in boss_locations:
+                if location in Locations.culex_locations:
+                    self.multiworld.get_location(location, self.player).place_locked_item(
+                        self.create_item("Defeated!")
+                    )
+
         star_locations = deepcopy(Locations.star_allowed_locations)
         stars = self.multiworld.random.sample(star_locations, 9)
         for location in star_locations:
             if location in stars:
                 self.multiworld.get_location(location, self.player).place_locked_item(
-                    self.create_item("Invincibility Star"))
+                    self.create_item("Invincibility Star")
+                )
+
         smithy = self.multiworld.get_location("Boss - Smithy Spot", self.player)
         smithy.place_locked_item(self.create_item("Star Road Restored!"))
         self.multiworld.completion_condition[self.player] = lambda state: state.has("Star Road Restored!", self.player)
-        unfilled_boxes = [x for x in self.multiworld.get_unfilled_locations(self.player) if x.name not in Locations.no_reward_locations]
+
+        unfilled_boxes = [
+            x for x in self.multiworld.get_unfilled_locations(self.player)
+            if x.name not in Locations.no_reward_locations
+        ]
         self.multiworld.random.choice(unfilled_boxes).place_locked_item(self.create_item("You Missed!"))
 
     def create_items(self):

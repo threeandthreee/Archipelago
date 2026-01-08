@@ -45,45 +45,46 @@ def GetObjectSanityTypes():
 
 def GetPlayableObjectTypes():
     return [
-                        ObjectType.GUN_SOLDIER,
-                        ObjectType.GOLD_BEETLE, ObjectType.SHADOW_BOX,
-                          ObjectType.ENERGY_CORE, ObjectType.KEY_DOOR,
-                          ObjectType.ENERGY_CORE_IN_WOOD_BOX,
-
-                          ObjectType.GLYPHIC_CANYON_TEMPLE,
-                          ObjectType.CRYPTIC_CASTLE_LANTERN,
-                          ObjectType.CREAM,
-                          ObjectType.CHEESE,
-                          ObjectType.PRISON_ISLAND_DISC,
-                          ObjectType.CENTRAL_CITY_BIG_BOMB,
-                          #ObjectType.SMALL_BOMB,
-                          ObjectType.DOOM_RESEARCHER,
-                          ObjectType.SKY_TROOPS_EGG_SHIP,
-                          ObjectType.SKY_TROOPS_TEMPLE,
-                          ObjectType.MAD_MATRIX_BOMB,
-                          ObjectType.MAD_MATRIX_TERMINAL,
-                          ObjectType.THE_ARK_DEFENSE_UNIT,
-                          ObjectType.SPACE_GADGET_DEFENSE_UNIT,
-                          ObjectType.GUN_FORTRESS_COMPUTER,
-                          ObjectType.LAVA_SHELTER_DEFENSE,
-
-                          ObjectType.GUN_BEETLE,
-                          ObjectType.BIG_FOOT,
-                          ObjectType.GUN_ROBOT,
-                          ObjectType.EGG_CLOWN,
-                          ObjectType.EGG_PAWN,
-                          ObjectType.SHADOW_ANDROID,
-                          ObjectType.BLACK_ASSASSIN,
-                          ObjectType.BLACK_VOLT,
-                          ObjectType.BLACK_HAWK,
-                          ObjectType.BLACK_WARRIOR,
-                          ObjectType.BLACK_OAK,
-                          ObjectType.BLACK_WING,
-                          ObjectType.BLACK_WORM,
-                          ObjectType.BLACK_LARVAE,
-                          ObjectType.ARTIFICIAL_CHAOS
-
-                          ]
+            ObjectType.GUN_SOLDIER,
+            ObjectType.GOLD_BEETLE, ObjectType.SHADOW_BOX,
+            ObjectType.ENERGY_CORE, ObjectType.KEY_DOOR,
+            ObjectType.ENERGY_CORE_IN_WOOD_BOX,
+            ObjectType.GLYPHIC_CANYON_TEMPLE,
+            ObjectType.CRYPTIC_CASTLE_LANTERN,
+            ObjectType.CREAM,
+            ObjectType.CHEESE,
+            ObjectType.PRISON_ISLAND_DISC,
+            ObjectType.CENTRAL_CITY_BIG_BOMB,
+            ObjectType.DOOM_RESEARCHER,
+            ObjectType.SKY_TROOPS_EGG_SHIP,
+            ObjectType.SKY_TROOPS_TEMPLE,
+            ObjectType.MAD_MATRIX_BOMB,
+            ObjectType.MAD_MATRIX_TERMINAL,
+            ObjectType.THE_ARK_DEFENSE_UNIT,
+            ObjectType.SPACE_GADGET_DEFENSE_UNIT,
+            ObjectType.GUN_FORTRESS_COMPUTER,
+            ObjectType.LAVA_SHELTER_DEFENSE,
+            ObjectType.GUN_BEETLE,
+            ObjectType.BIG_FOOT,
+            ObjectType.GUN_ROBOT,
+            ObjectType.EGG_CLOWN,
+            ObjectType.EGG_PAWN,
+            ObjectType.SHADOW_ANDROID,
+            ObjectType.BLACK_ASSASSIN,
+            ObjectType.BLACK_VOLT,
+            ObjectType.BLACK_HAWK,
+            ObjectType.BLACK_WARRIOR,
+            ObjectType.BLACK_OAK,
+            ObjectType.BLACK_WING,
+            ObjectType.BLACK_WORM,
+            ObjectType.BLACK_LARVAE,
+            ObjectType.ARTIFICIAL_CHAOS,
+            ObjectType.KEY,
+            ObjectType.ITEM_CAPSULE,
+            ObjectType.BALLOON_ITEM,
+            ObjectType.ITEM_IN_METAL_BOX,
+            ObjectType.ITEM_IN_BOX
+    ]
 
 def GetObjectChecks():
     object_check_types = GetPlayableObjectTypes()
@@ -121,6 +122,9 @@ def GetGunTypes():
 
 def GetEggTypes():
     return [ObjectType.EGG_CLOWN, ObjectType.EGG_PAWN, ObjectType.SHADOW_ANDROID ]
+
+def GetItemBoxTypes():
+    return [ ObjectType.ITEM_CAPSULE, ObjectType.ITEM_IN_BOX, ObjectType.ITEM_IN_METAL_BOX, ObjectType.BALLOON_ITEM]
 
 def GetStandardEnemyTypes():
     alien_types = GetAlienTypes()
@@ -287,8 +291,6 @@ def GetTypeId(objectType):
     if objectType == ObjectType.ENERGY_CORE_IN_METAL_BOX:
         return 0x0A
 
-
-
     if objectType == ObjectType.DIGITAL_CORE:
         return 0x7DB
 
@@ -355,10 +357,48 @@ def GetTypeId(objectType):
     #if objectType == ObjectType.PARTNER:
     #    return 0x190
 
+    if objectType == ObjectType.KEY:
+        return 0x1D
+
+    if objectType == ObjectType.GOAL_RING:
+        return 0x14
+
+    if objectType == ObjectType.ITEM_CAPSULE: #Item Capsule
+        return 0x12
+
+    if objectType == ObjectType.BALLOON_ITEM: # Balloon
+        return 0x13
+
+    if objectType == ObjectType.ITEM_IN_BOX:
+        return 0x09
+
+    if objectType == ObjectType.ITEM_IN_METAL_BOX:
+        return 0x0A
+
+    #if objectType == ObjectType.FIRE:
+    #    return 0x34
+
+    #if objectType == ObjectType.POISON_GAS:
+    #    return 0x35
+
+    if objectType == ObjectType.DARK_SPIN_ENTRY:
+        return 0x61
+
+    if objectType == ObjectType.DEFENSE_PROGRAM:
+        return 0x7D4
+
+    #if objectType == ObjectType.RING_OF_FIRE:
+    #    return 0xC85
+
+    #if objectType == ObjectType.HELICOPTER:
+    #    return 0xFA2
+
+    if objectType == ObjectType.CLEAR_TRIGGER:
+        return 0x2595
 
     return None
 
-def CheckVehicleAttributes(objectType, extra_bytes, index):
+def CheckVehicleAttributes(objectType, extra_bytes, index, link_id):
 
     if objectType == "Server":
         byte = extra_bytes[3]
@@ -434,17 +474,17 @@ def CheckVehicleAttributes(objectType, extra_bytes, index):
 
         type_name = "Box"
         if box_item == 0x00:
-            type_name = "Empty Box"
+            type_name = "Empty "+objectType
         elif box_item == 0x01:
-            type_name = "Item In Box"
+            type_name = "Item In "+objectType
         elif box_item == 0x02:
-            type_name = "Weapon In Box"
+            type_name = "Weapon In "+objectType
         elif box_item == 0x03:
-            type_name = "Rings in Box"
+            type_name = "Rings In "+objectType
         elif box_item == 0x04:
-            type_name = "Heal Unit In Box"
+            type_name = "Heal Unit In "+objectType
         elif box_item == 0x05:
-            type_name = "Core in Box"
+            type_name = "Core In "+objectType
         else:
             print("Unknown box type:", type_name, box_item_bytes, box_item, index)
 
@@ -454,6 +494,9 @@ def CheckVehicleAttributes(objectType, extra_bytes, index):
         box_type = extra_bytes[0:4]
         box_weapon_bytes = extra_bytes[4:8]
         return "Weapon Box"
+
+    if objectType == "Key":
+        return "Key " + str(hex(link_id))
 
 
     return objectType
@@ -705,7 +748,8 @@ def TypeToString(type):
     elif type == 0x2589:
         return "Destructible"
 
-
+    elif type == 0x1D:
+        return "Key"
 
     return str(type)
 
@@ -740,13 +784,13 @@ def StateToString(type, state):
 
     return state
 
-def PrintSETChange(address, index, type, previous, new, additional_bytes):
+def PrintSETChange(address, index, type, previous, new, additional_bytes, link_id):
 
     #if not use:
     #    return
 
     typeString = TypeToString(type)
-    typeString = CheckVehicleAttributes(typeString, additional_bytes, index)
+    typeString = CheckVehicleAttributes(typeString, additional_bytes, index, link_id)
 
     found = False
     for v in ObjectType.__dict__.items():
@@ -761,9 +805,10 @@ def PrintSETChange(address, index, type, previous, new, additional_bytes):
 
     handle_types = []
     unhandled_types = ["Destructible",
-                       "City Laser", "Rings", "Box", "Empty Box",
-                       "Item In Box", "Weapon In Box", "Rings in Box",
-                       "Heal Unit In Box", "Weapon Box"]
+                       "City Laser", "Rings", "Box", "Empty Wood Box", "Empty Metal Box",
+                       "Weapon In Wood Box", "Weapon In Metal Box", "Rings In Wood Box", "Rings In Metal Box",
+                       "Black Wing", "Gun Beetle",
+                       "Heal Unit In Metal Box", "Heal Unit In Wooden Box", "Weapon Box"]
 
     if len(handle_types) > 0 and typeString not in handle_types:
         return []
@@ -792,35 +837,12 @@ def PrintSETChange(address, index, type, previous, new, additional_bytes):
 
     l = True
     if oldStateString is None:
-        l = False
-        file = "C://Users/Alex/Documents/Crystal/Shadow/parse.txt"
-        lines = [ m.strip().split(" ") for m in open(file).readlines() if m != ""]
-        data = [
-            {
-                "index": l[1],
-                "region": l[3],
-                "counter": l[5]
-            }
-            for l in lines ]
-
-        relevant_lines = [ d for d in data if d["index"] == str(index)]
-        if len(relevant_lines) == 0:
-            l = True
-        else:
-            relevant_line = [d for d in data if d["index"] == str(index)][0]
-
-            region = relevant_line["region"]
-            counter = relevant_line["counter"]
-
-            prints.append( "SETObject(ObjectType."+typeString.upper().replace(" ","_")+",Levels.STAGE_DEATH_RUINS"
-                   f"{index}, \'{counter}\', region={region}),")
+        l = True
 
     if l:
         prints.append(f"SET has changed: index={index}, type={typeString}, old={oldStateString}, new={newStateString}")
 
     return prints
-
-
 
 
 def GetSETFileLength(level):

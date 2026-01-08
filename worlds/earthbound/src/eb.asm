@@ -2939,7 +2939,7 @@ db $99, $a0, $50, $a4, $9f, $50, $a4, $98, $95, $50, $93, $a2, $95, $94, $99, $a
 db $a3, $5c, $10, $0a, $50, $9f, $a2, $50, $95, $a8, $a0, $9c, $9f, $a2, $95, $50
 db $a4, $98, $95, $50, $95, $a0, $99, $9c, $9f, $97, $a5, $95, $6f, $00, $19, $02
 db $73, $a2, $95, $94, $99, $a4, $a3, $02, $19, $02, $75, $a0, $99, $9c, $9f, $97
-db $a5, $95, $02, $1c, $07, $02, $11, $09, $02, $32, $a4, $ee, $00, $d0, $a5, $ee
+db $a5, $95, $02, $1c, $07, $02, $11, $09, $02, $37, $a4, $ee, $00, $d0, $a5, $ee
 db $00, $12, $0a, $0a, $a4, $ee, $1f, $e4, $01, $00, $05, $18, $04, $1f, $e4, $02
 db $00, $05, $1f, $e4, $04, $00, $05, $1f, $ea, $01, $00, $1f, $f2, $01, $00, $5e
 db $02, $1f, $ea, $02, $00, $1f, $f2, $02, $00, $5e, $02, $1f, $ea, $03, $00, $1f
@@ -9116,6 +9116,21 @@ db $E1, $03
 ORG $C91EA8; TEST THIS!!!! SKY RUNNER FIX
 db $d2
 
+ORG $C99CCD
+db $0A
+dl DisableOSSOnLumine
+
+ORG $C0D668 ;Fix vanilla ambush detection
+LDA $9889
+
+ORG $EEC777
+db $73, $98, $99, $95, $96, $50, $0A
+dl TwosonCopBossText
+
+ORG $EEBDA4
+db $0A
+dl SetupNessForMagicantBoost
+
 
 ;New data table go here
 
@@ -11269,7 +11284,7 @@ ADC #$0030
 BRA ..CompareID
 ..GotName:
 TAX
-LDA #$002F
+LDA #$007F
 LDY #$FF80
 MVN $F47E
 PLY
@@ -13282,7 +13297,7 @@ db $18, $0A
 db $08
 dd $C5D835
 db $08
-dd $C50198
+dd $C51568
 db $02
 .NotSpecial:
 db $19, $20
@@ -18359,6 +18374,25 @@ dd LavaPantsUseTxt
 db $1B, $01
 db $1B, $0F, $00, $00
 db $02
+
+DisableOSSOnLumine:
+db $1f, $eb, $ff, $06
+db $1F, $41, $06
+db $0A
+dl $C99CD1
+
+TwosonCopBossText:
+db $08
+dd $EEEEBC
+db $0A
+dl $EEC785
+
+SetupNessForMagicantBoost:
+db $18, $01, $01
+db $19, $10, $01
+db $70
+db $0A
+dl $EEBDA8
 
 ;ORG $C7617D
 ;dd DisplayAndGetMoney

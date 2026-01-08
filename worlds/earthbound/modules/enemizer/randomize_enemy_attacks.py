@@ -201,6 +201,7 @@ psi_actions = {
 }
 
 
+
 def randomize_enemy_attacks(world: "EarthBoundWorld", rom: "LocalRom") -> None:
     """Generates random attacks for enemies.
        Certain attacks need to have an argument variable attached.

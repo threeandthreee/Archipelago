@@ -37,13 +37,13 @@ VANILLA_RACE_2_LOCATIONS: list[list[str]] = [
 
 
 def set_rules(world: DiddyKongRacingWorld) -> None:
-    # Skip for Universal Tracker, this will be called from interpret_slot_data, otherwise entrances won't exist yet
+    # Skip for Universal Tracker, these will be called from interpret_slot_data as they depend on slot data
     if not hasattr(world.multiworld, "generation_is_fake"):
         set_region_access_rules(world)
+        set_door_unlock_rules(world)
+        set_race_2_location_rules(world)
 
-    set_door_unlock_rules(world)
     set_overworld_balloon_rules(world)
-    set_race_2_location_rules(world)
     set_amulet_rules(world)
 
     world.multiworld.completion_condition[world.player] = lambda state: state.has(ItemName.VICTORY, world.player)
@@ -90,9 +90,11 @@ def set_region_access_rules(world: DiddyKongRacingWorld) -> None:
         RegionName.SPACEDUST_ALLEY: spacedust_alley_door_1(world),
         RegionName.DARKMOON_CAVERNS: darkmoon_caverns_door_1(world),
         RegionName.SPACEPORT_ALPHA: spaceport_alpha_door_1(world),
-        RegionName.STAR_CITY: star_city_door_1(world),
-        RegionName.WIZPIG_2: wizpig_2(world),
+        RegionName.STAR_CITY: star_city_door_1(world)
     }
+
+    if world.options.victory_condition.value == 1:
+        region_access_rules[RegionName.WIZPIG_2] = wizpig_2(world)
 
     for region, rule in region_access_rules.items():
         entrance_name = convert_region_name_to_entrance_name(region)

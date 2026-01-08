@@ -163,7 +163,7 @@ class RAGameboy():
         return response
 
     async def async_recv(self, timeout=1.0):
-        response = await asyncio.wait_for(asyncio.get_event_loop().sock_recv(self.socket, 4096), timeout)
+        response = await asyncio.wait_for(asyncio.get_running_loop().sock_recv(self.socket, 4096), timeout)
         return response
 
     async def check_safe_gameplay(self, throw=True):
@@ -521,7 +521,7 @@ class LinksAwakeningClient():
         wDialogIndex = (await self.gameboy.async_read_memory(LAClientConstants.wDialogIndex))[0]
         wDialogIndexHi = (await self.gameboy.async_read_memory(LAClientConstants.wDialogIndexHi))[0]
         dialog_index = wDialogIndexHi << 8 | wDialogIndex
-        hint_data = ctx.slot_data.get("hint_data", {}).get(dialog_index.__str__(), None)
+        hint_data = ctx.slot_data.get("hint_data", {}).get(str(dialog_index), None)
         if hint_data and dialog_index not in ctx.hinted_locations:
             ctx.hinted_locations.add(dialog_index)
             await ctx.send_msgs([{

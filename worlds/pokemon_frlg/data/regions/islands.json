@@ -1925,6 +1925,23 @@
       "MAP_SEVEN_ISLAND_SEVAULT_CANYON:1/MAP_SEVEN_ISLAND_SEVAULT_CANYON_HOUSE:0": "Sevault Canyon Chansey House"
     }
   },
+  "REGION_SEVEN_ISLAND_SEVAULT_CANYON_TANOBY_KEY": {
+    "parent_map": "MAP_SEVEN_ISLAND_SEVAULT_CANYON_TANOBY_KEY",
+    "name": "Tanoby Key",
+    "encounter_region": null,
+    "has_land": false,
+    "has_water": false,
+    "has_fishing": false,
+    "kanto": false,
+    "locations": [],
+    "events": [
+      "EVENT_UNLOCK_RUINS"
+    ],
+    "exits": {},
+    "warps": {
+      "MAP_SEVEN_ISLAND_SEVAULT_CANYON_TANOBY_KEY:0/MAP_SEVEN_ISLAND_SEVAULT_CANYON:0": "Tanoby Key Exit"
+    }
+  },
   "REGION_SEVEN_ISLAND_SEVAULT_CANYON_HOUSE/MAIN": {
     "parent_map": "MAP_SEVEN_ISLAND_SEVAULT_CANYON_HOUSE",
     "name": "Sevault Canyon Chansey House",

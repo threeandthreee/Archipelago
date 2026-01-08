@@ -1860,11 +1860,11 @@
     "region": "Elite Four",
     "kanto": true,
     "connections": [
-      "Pokemon League Lorelei's Room",
-      "Pokemon League Bruno's Room",
-      "Pokemon League Agatha's Room",
-      "Pokemon League Lance's Room",
-      "Pokemon League Champion's Room"
+      "Lorelei's Room",
+      "Bruno's Room",
+      "Agatha's Room",
+      "Lance's Room",
+      "Champion's Room"
     ],
     "category": "EVENT_TRAINER_SCALING",
     "locations": {
@@ -1880,7 +1880,7 @@
     }
   },
   "TRAINER_SCALING_POKEMON_LEAGUE_CHAMPIONS_ROOM/MAIN": {
-    "region": "Pokemon League Champion's Room",
+    "region": "Champion's Room",
     "kanto": true,
     "connections": [],
     "category": "EVENT_TRAINER_SCALING",
@@ -2457,11 +2457,11 @@
     "region": "Elite Four Rematch",
     "kanto": false,
     "connections": [
-      "Pokemon League Lorelei's Room",
-      "Pokemon League Bruno's Room",
-      "Pokemon League Agatha's Room",
-      "Pokemon League Lance's Room",
-      "Pokemon League Champion's Room"
+      "Lorelei's Room",
+      "Bruno's Room",
+      "Agatha's Room",
+      "Lance's Room",
+      "Champion's Room"
     ],
     "category": "EVENT_TRAINER_SCALING",
     "locations": {
@@ -2477,7 +2477,7 @@
     }
   },
   "TRAINER_SCALING_POKEMON_LEAGUE_CHAMPIONS_ROOM_REMATCH/MAIN": {
-    "region": "Pokemon League Champion's Room",
+    "region": "Champion's Room",
     "kanto": false,
     "connections": [],
     "category": "EVENT_TRAINER_SCALING",

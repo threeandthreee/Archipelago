@@ -503,7 +503,7 @@ class Context:
         self.read_data["race_mode"] = lambda: decoded_obj.get("race_mode", 0)
         mdata_ver = decoded_obj["minimum_versions"]["server"]
         if mdata_ver > version_tuple:
-            raise RuntimeError(f"Supplied Multidata (.archipelago) requires a server of at least version {mdata_ver},"
+            raise RuntimeError(f"Supplied Multidata (.archipelago) requires a server of at least version {mdata_ver}, "
                                f"however this server is of version {version_tuple}")
         self.generator_version = Version(*decoded_obj["version"])
         clients_ver = decoded_obj["minimum_versions"].get("clients", {})
@@ -906,9 +906,12 @@ class Context:
         if targets:
             self.broadcast(targets, [{"cmd": "SetReply", "key": key, "value": self.client_game_state[team, slot]}])
 
+from pony.orm import db_session
 class Ashipelago:
+
     webhook_active = False
     webhook_queue: queue.SimpleQueue
+    room_id: int
     room_url: str
     seed_url: str
     admin_password: str
@@ -928,6 +931,7 @@ class Ashipelago:
 
     # Initializes required fields needed to properly manage the newly started room
     def start_room(self, room: Room, is_tracked: int, webhook_settings: dict, admin_password):
+        self.room_id = room.id
         self.room_url = urlsafe_b64encode(room.id.bytes).rstrip(b'=').decode('ascii')
         self.seed_url = urlsafe_b64encode(room.seed.id.bytes).rstrip(b'=').decode('ascii')
         self.admin_password = admin_password
@@ -1100,6 +1104,13 @@ class Ashipelago:
             "players": player_list
         }
         self._push_to_webhook(connection)
+
+    # Manually refreshes the room timeout
+    def refresh_room(self):
+        with db_session:
+            room = Room.get(id=self.room_id)
+            room.multisave = pickle.dumps(self.ctx.get_save())
+            room.last_activity = datetime.datetime.utcnow()
 
     # Helper function used to enqueue a message to be pushed to Dynxbot
     def _push_to_webhook(self, message: typing.Dict[str, typing.Any]):
@@ -1373,6 +1384,7 @@ async def on_client_joined(ctx: Context, client: Client):
 
     # Ashipelago customization
     ctx.dynx.push_player_connection()
+    ctx.dynx.refresh_room()
 
 async def on_client_left(ctx: Context, client: Client):
     if len(ctx.clients[client.team][client.slot]) < 1:

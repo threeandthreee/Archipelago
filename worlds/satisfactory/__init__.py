@@ -1,4 +1,5 @@
 from typing import TextIO, ClassVar, Any
+from collections.abc import Iterable
 from BaseClasses import Item, ItemClassification, CollectionState
 from NetUtils import Hint
 from .GameLogic import GameLogic
@@ -87,27 +88,38 @@ class SatisfactoryWorld(World):
             self.items.build_item_pool(self.random, precollected_items, number_of_locations)
 
     def set_rules(self) -> None:
-        resource_sink_goal: bool = "AWESOME Sink Points (total)" in self.options.goal_selection \
-                                   or "AWESOME Sink Points (per minute)" in self.options.goal_selection
-
         required_parts = set(self.game_logic.space_elevator_phases[self.options.final_elevator_phase.value - 1].keys())
+        required_buildings = set()
+        required_items = set()
 
-        if resource_sink_goal:
-            required_parts.union(self.game_logic.buildings["AWESOME Sink"].inputs)
+        if "Space Elevator Phase" in self.options.goal_selection:
+            required_buildings.add("Space Elevator")
+
+        if "AWESOME Sink Points (total)" in self.options.goal_selection \
+                or "AWESOME Sink Points (per minute)" in self.options.goal_selection:
+            required_buildings.add("AWESOME Sink")
+
+        if "Erect a FICSMAS Tree" in self.options.goal_selection:
+            required_parts.add("FICSMAS Wonder Star")
+            required_buildings.add("MAM")
+            required_items.update(
+                ("FICSMAS Data Cartridge Day 4", "FICSMAS Data Cartridge Day 8", "FICSMAS Data Cartridge Day 14"))            
 
         self.multiworld.completion_condition[self.player] = \
-            lambda state: self.state_logic.can_produce_all(state, required_parts)
+            lambda state: self.state_logic.can_produce_all(state, required_parts) \
+                and self.state_logic.can_build_all(state, required_buildings) \
+                and self.state_logic.has_obtained_all(state, required_items)
 
     def collect(self, state: CollectionState, item: Item) -> bool:
         change = super().collect(state, item)
         if change and item.name in self.game_logic.indirect_recipes:
-            state.prog_items[self.player][self.game_logic.indirect_recipes[item.name]] = 1
+            state.prog_items[self.player][self.game_logic.indirect_recipes[item.name]] += 1
         return change
 
     def remove(self, state: CollectionState, item: Item) -> bool:
         change = super().remove(state, item)
         if change and item.name in self.game_logic.indirect_recipes:
-            del state.prog_items[self.player][self.game_logic.indirect_recipes[item.name]]
+            state.prog_items[self.player][self.game_logic.indirect_recipes[item.name]] -= 1
         return change
 
     def fill_slot_data(self) -> dict[str, object]:
@@ -140,7 +152,7 @@ class SatisfactoryWorld(World):
                 "Options": {
                     "GoalSelection": self.options.goal_selection.value,
                     "GoalRequirement": self.options.goal_requirement.value,
-                    "FinalElevatorTier": self.options.final_elevator_phase.value,
+                    "FinalElevatorPhase": self.options.final_elevator_phase.value,
                     "FinalResourceSinkPointsTotal": self.options.goal_awesome_sink_points_total.value,
                     "FinalResourceSinkPointsPerMinute": self.options.goal_awesome_sink_points_per_minute.value,
                     "FreeSampleEquipment": self.options.free_sample_equipment.value,
@@ -229,22 +241,29 @@ class SatisfactoryWorld(World):
         else:
             return Items.create_item_uninitialized(name, self.player)
 
-    def modify_multidata(self, multidata: dict[str, Any]) -> None:
-        locations_visible_from_start: list[int] = list(range(1338000, 1338099))  # ids of Hub 1-1,1 to 2-5,10
+    def extend_hint_information(self, _: dict[int, dict[int, str]]):
+        """
+        Normally used for adding entrance information, 
+        but in this case we want to create hints for locations that hold usefull items.
+        Since we only know item placements after generation is completed it was either this 
+            or fill_slot_data or modify_multidata, and this method seemed the best fit
+        """
+
+        locations_visible_from_start: set[int] = set(range(1338000, 1338099))  # ids of Hub 1-1,1 to 2-5,10
 
         if "Building: AWESOME Shop" in self.options.start_inventory \
                 or "Building: AWESOME Shop" in self.options.start_inventory_from_pool \
-                or 1338622 in multidata["precollected_items"][self.player]:  # id of Building: AWESOME Shop
-            locations_visible_from_start.extend(range(1338700, 1338709))  # ids of shop locations 1 to 10
+                or self.options.awesome_logic_placement.value == Placement.starting_inventory:
+            locations_visible_from_start.update(range(1338700, 1338709))  # ids of shop locations 1 to 10
 
-        for location_id in locations_visible_from_start:
-            if location_id in multidata["locations"][self.player]:
-                item_id, player_id, flags = multidata["locations"][self.player][location_id]
+            location_names_with_useful_items: Iterable[str] = [
+                location.name
+                for location in self.get_locations()
+                if location.address in locations_visible_from_start and location.item \
+                        and location.item.flags & (ItemClassification.progression | ItemClassification.useful) > 0
+            ]
 
-                if player_id != self.player and flags & (
-                        ItemClassification.progression | ItemClassification.useful) > 0:
-                    hint = Hint(player_id, self.player, location_id, item_id, False, item_flags=flags)
-                    multidata["precollected_hints"][self.player].add(hint)
+            self.options.start_location_hints.value.update(location_names_with_useful_items)
 
     def push_precollected_by_name(self, item_name: str) -> None:
         item = self.create_item(item_name)

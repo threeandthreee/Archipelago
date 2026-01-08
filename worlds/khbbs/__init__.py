@@ -35,8 +35,8 @@ class KHBBSWeb(WebWorld):
 
 class KHBBSWorld(World):
     """
-    Kingdom Hearts is an action RPG following Sora on his journey 
-    through many worlds to find Riku and Kairi.
+    Kingdom Hearts Birth by Sleep is an action RPG following three friends, 
+    Terra, Ventus, and Aqua on a journey through many worlds to defeat Xehanort.
     """
     game = "Kingdom Hearts Birth by Sleep"
     options_dataclass = KHBBSOptions
@@ -61,7 +61,7 @@ class KHBBSWorld(World):
                 "Castle of Dreams", "Enchanted Dominion", "The Mysterious Tower", 
                 "Radiant Garden", "Olympus Coliseum", "Deep Space",
                 "Never Land", "Disney Town"]
-            if self.options.mirage_arena:
+            if self.options.mirage_arena or self.options.command_board or self.options.minigames:
                 possible_starting_worlds.append("Mirage Arena")
             if self.options.character == 1 and self.options.realm_of_darkness:
                 possible_starting_worlds.append("Realm of Darkness")
@@ -80,7 +80,7 @@ class KHBBSWorld(World):
                 continue
             if name in starting_worlds:
                 continue
-            if name == "Mirage Arena" and not self.options.mirage_arena:
+            if name == "Mirage Arena" and not (self.options.mirage_arena or self.options.command_board or self.options.minigames):
                 continue
             if name == "Realm of Darkness" and not self.options.realm_of_darkness:
                 continue
@@ -90,7 +90,8 @@ class KHBBSWorld(World):
                 item_pool += [self.create_item(name) for _ in range(0, quantity)]
         
         # These are magic commands (normally filler) but a few locations require them so guaranteeing some in the pool
-        item_pool += [self.create_item("Fire")]
+        if self.options.character != 0: #Ventus doesn't need Fire
+            item_pool += [self.create_item("Fire")]
         if self.options.character != 1: #Aqua starts with Thunder
             item_pool += [self.create_item("Thunder")]
 

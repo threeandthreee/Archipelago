@@ -3,7 +3,7 @@
 * The Options Menu has been expanded with many new options and multiple pages that can be cycled between using the R and L buttons
   * General Options
     * Text Speed: Sets the speed at which text displays
-    * Turbo A: Sets whether holding down A will auto advance text
+    * Turbo Button: Sets what button can be held down to auto advance text
     * Auto Run: Sets whether you will run by default without needing to hold B
     * Button Mode: Sets how the R and L buttons behave
     * Frame: Sets the frame used for text boxes
@@ -11,7 +11,8 @@
     * Battle Scene: Sets whether battle animations play or not
     * Battle Style: Sets whether you are asked to swap Pokémon when the opponent is sending out a new Pokémon 
     * Show Effectiveness: Sets whether move effectiveness is shown in the move detail panel in battle
-    * Experience: Sets how much exp you gain in battle
+    * Experience Multiplier: Sets how much exp you gain in battle
+    * Experience Distribution: Sets how exp should be distributed (Gen III, Gen VI, or Gen VIII)
   * Sound Options
     * Sound: Sets whether to use Mono or Stereo
     * Low HP Beep: Sets whether the low HP beep plays when your Pokémon is at low health
@@ -20,8 +21,10 @@
     * Surf Music: Sets whether the surfing music will play when you are surfing
   * Quality of Life Options
     * Guaranteed Catch: Sets whether Poké Balls are guaranteeed to catch Pokémon or not
+    * Guaranteed Run: Sets whether you are guaranteed to run from battle (trapping moves and abilities will still prevent you from running)
     * Encounter Rates: Sets whether encounter rates are vanilla or normalized
     * Blind Trainers: Sets whether trainers will approach the player when you enter their line of sight
+    * Skip Nicknames: Sets whether the prompt for nicknaming your Pokémon will be skipped
     * Item Messages: Sets what type of items will display messages in game when received from Archipelago
 * Pressing the START button while you are hovering over a move in battle will open up a textbox with more details about the move including power, accuracy, priority, etc. Pressing any of START, A, or B will close this textbox
 * Damage type icons have been added to moves in the move summary screen and in battle
@@ -41,6 +44,7 @@ predetermined priority
 * The text displayed when a Trainer is about to send out a new Pokémon has been shortened so that you can still see the name of the Pokémon when deciding if you want to swap
 * Increased the rate at which a Pokémon's HP drains in battle to be based on the Pokémon's max HP
 * Added a GO HOME option to the menu that teleports you to your starting location
+* The Exp. Share has been converted to a key item that can be turned on/off by using it in the bag. The way Exp is distributed when it's on is determined by the Experience Distribution game option
 * All evolution items have been turned into key items that can be used repeatedly. A new evolution item, the Link Cable, has been added to the game
 * A new page has been added to Pokémon's Dex entires that lists out the areas where you can find them and what they can evolve into
 * Talking to the Mystery Gift Man on the 2nd floor of any Pokémon Center will allow you to respawn any static encounters you haven't caught yet
@@ -62,6 +66,7 @@ predetermined priority
   * Changed the 50 coin purchase to a 100 coin purchase
   * Added a 1000 and 1500 coin purchase option
   * Made it so that you can purchase coins even if it would put you over the max coins of 9999
+* The checks for needing the Bicycle for Cycling Road now happen once you enter Cycling Road instead of in the Gates before it
 * The Saffron City guards will block your way from both directions
 * You are able to pick up both Pokémon in the Saffron Dojo
 * Your Rival in Silph Co. will give you the new Link Cable item

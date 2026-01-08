@@ -56,9 +56,9 @@ class FinalTerraXehanortII(Toggle):
 
 class MirageArena(Toggle):
     """
-    Determines if Mirage Arena locations should be included.
+    Determines if Mirage Arena battle locations should be included.
     """
-    display_name = "Mirage Arena"
+    display_name = "Mirage Arena Battles"
 
 class CommandBoard(Toggle):
     """
@@ -102,7 +102,7 @@ class KeybladeMaxStrength(Range):
     """
     display_name = "Keyblade Maximum STR Bonus"
     default = 10
-    range_start = 10
+    range_start = 2
     range_end = 10
 
 class KeybladeMinMagic(Range):

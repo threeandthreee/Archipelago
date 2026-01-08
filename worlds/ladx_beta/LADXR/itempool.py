@@ -68,11 +68,11 @@ DEFAULT_ITEM_POOL = {
 
 
 class ItemPool:
-    def __init__(self, logic, settings, rnd, stabilize_item_pool: bool):
+    def __init__(self, logic, settings, rnd, more_filler: bool):
         self.__pool = {}
         self.__setup(logic, settings)
 
-        if not stabilize_item_pool:
+        if more_filler:
             self.__randomizeRupees(settings, rnd)
 
     def add(self, item, count=1):
@@ -265,7 +265,7 @@ class ItemPool:
         #     self.remove(RUPEES_50, rupees50 // 5)
         
     def __randomizeRupees(self, options, rnd):
-        # Remove rupees from the item pool and replace them with other items to create more variety
+        # Remove rupees from the item pool to create more variety, will replace them with other items later
         rupee_item = []
         rupee_item_count = []
         for k, v in self.__pool.items():
@@ -274,12 +274,11 @@ class ItemPool:
                 rupee_item_count.append(v)
         rupee_chests = sum(v for k, v in self.__pool.items() if k.startswith("RUPEES_"))
         for n in range(rupee_chests // 5):
-            new_item = rnd.choices((BOMB, SINGLE_ARROW, ARROWS_10, MAGIC_POWDER, MEDICINE), (10, 5, 10, 10, 1))[0]
             while True:
                 remove_item = rnd.choices(rupee_item, rupee_item_count)[0]
                 if self.get(remove_item) > 0:
                     break
-            self.add(new_item)
+            self.add('FILLER')
             self.remove(remove_item)
 
     def toDict(self):

@@ -139,8 +139,6 @@ DESIRABLE_OBJECTS_LETHAL_HIGHWAY  = [
     SETObject(ObjectType.GOLD_BEETLE, Levels.STAGE_LETHAL_HIGHWAY, 374, 'Gold Beetle',
               region=REGION_INDICIES.LETHAL_HIGHWAY_ROCKET),
 
-    # TODO Potential missed Larva enemy here!
-
     SETObject(ObjectType.GUN_SOLDIER, Levels.STAGE_LETHAL_HIGHWAY, 282, '61',
               region=REGION_INDICIES.LETHAL_HIGHWAY_ROCKET),
     SETObject(ObjectType.BLACK_WARRIOR, Levels.STAGE_LETHAL_HIGHWAY, 284, '62',
@@ -197,4 +195,25 @@ DESIRABLE_OBJECTS_LETHAL_HIGHWAY  = [
 
     SETObject(ObjectType.BLACK_LARVAE, Levels.STAGE_LETHAL_HIGHWAY, 357, '83.4',
               region=REGION_INDICIES.LETHAL_HIGHWAY_ROCKET, count=6),
+    SETObject(ObjectType.BLACK_LARVAE, Levels.STAGE_LETHAL_HIGHWAY, 251, '83.99',
+              region=REGION_INDICIES.LETHAL_HIGHWAY_ROCKET, count=4),
+
+    SETObject(ObjectType.KEY, Levels.STAGE_LETHAL_HIGHWAY, 337, 'Key 1', region=0),
+    SETObject(ObjectType.KEY, Levels.STAGE_LETHAL_HIGHWAY, 157, 'Key 2', region=0),
+    SETObject(ObjectType.KEY, Levels.STAGE_LETHAL_HIGHWAY, 152, 'Key 3', region=0),
+    SETObject(ObjectType.KEY, Levels.STAGE_LETHAL_HIGHWAY, 227, 'Key 4', region=REGION_INDICIES.LETHAL_HIGHWAY_ROCKET),
+    SETObject(ObjectType.KEY, Levels.STAGE_LETHAL_HIGHWAY, 352, 'Key 5', region=REGION_INDICIES.LETHAL_HIGHWAY_PULLEY),
+    SETObject(ObjectType.GOAL_RING, Levels.STAGE_LETHAL_HIGHWAY, 81, 'Goal Ring',region=REGION_INDICIES.LETHAL_HIGHWAY_PULLEY),
+
+
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_LETHAL_HIGHWAY, 100, 'Rotating Item Box 1',
+              region=0),
+    SETObject(ObjectType.ITEM_IN_BOX, Levels.STAGE_LETHAL_HIGHWAY, 128, '5 Rings in Box',
+              region=0),
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_LETHAL_HIGHWAY, 171, 'Highway Down',
+              region=REGION_INDICIES.LETHAL_HIGHWAY_ROCKET),
+    SETObject(ObjectType.ITEM_IN_METAL_BOX, Levels.STAGE_LETHAL_HIGHWAY, 255, 'Life Behind Blast Area',
+              region=REGION_INDICIES.LETHAL_HIGHWAY_ROCKET),
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_LETHAL_HIGHWAY, 367, 'Cage Under End Pass',
+              region=REGION_INDICIES.LETHAL_HIGHWAY_ROCKET),
 ]

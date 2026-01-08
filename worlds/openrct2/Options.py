@@ -1,5 +1,5 @@
 from enum import IntEnum
-from Options import DefaultOnToggle, Toggle, Range, Choice, PerGameCommonOptions, OptionGroup
+from Options import DefaultOnToggle, Toggle, Range, Choice, PerGameCommonOptions, OptionGroup, Visibility as OptionVisibility
 from dataclasses import dataclass
 
 class Scenario(IntEnum):
@@ -167,6 +167,11 @@ class Visibility(IntEnum):
     recipient = 2
     progression_recipient = 3
     full = 4
+
+class Awards(IntEnum):
+    all_awards = 0
+    positive = 1
+    none = 2
 
 class Difficulty(IntEnum):
     very_easy = 0
@@ -407,7 +412,8 @@ class DeathLink(Choice):
     """If you die, everybody dies, and vise versa!
     - This manifests itself in exploding rides. Somebody dying will cause a random ride to crash,
     and building rides badly will cause others to die. There's a 20 second timer between deathlink events.
-    Fix that coaster quickly!
+    Fix that coaster quickly! This option can be enabled/disabled in game as well by typing !!toggledeathlink
+    in the chat tab of the unlock shop.
     """
     display_name = "DeathLink"
     option_disabled = DeathLinkMode.disabled.value
@@ -435,6 +441,26 @@ class SelectedVisibility(Choice):
     option_full = Visibility.full.value
     default = Visibility.recipient.value
 
+class Awards(Choice):
+    """Choose what types (if any) of awards will have checks behind them. 
+    Negative awards will always reward a trap item, even if they're otherwise disabled!
+
+    All Awards will have a check behind every award in the game. 
+
+    Positive will only place a check behind awards with positive attributes.
+    
+    None will not place checks behind awards.
+    """
+    display_name = "Awards"
+    option_all = Awards.all_awards.value
+    option_positive = Awards.positive.value
+    option_none = Awards.none.value
+    default = Awards.all_awards.value
+
+class ExcludeSafestPark(OpenRCT2Toggle):
+    """Exclude the Safest Park Award from having a check. This may be useful depending on deathlink settings."""
+    display_name = "Exclude Safest Park Award"
+
 class SelectedDifficulty(Choice):
     """Choose a difficulty for the randomization. This will make rides have more difficult stat results (If that's enabled), as well as affect
     things like the loan interest rate.
@@ -449,7 +475,8 @@ class SelectedDifficulty(Choice):
 
 class SelectedIntensity(Choice):
     """Choose a preferred intensity for your guests. Less intense will limit guests to a maximum of 4 intensity, and more intense will limit guests
-    to a minimum of 8 intensity in most circumstances. Normal is recommended for most players.
+    to a minimum of 8 intensity in most circumstances. Normal is highly recommended for most players! Seriously, unless you really know what you 
+    are doing and want the (likely very tedious) challenge, you shouldn't change this.
     """
     display_name = "Preferred Intensity"
     option_less_intense = PreferredIntensity.less_intense.value
@@ -634,13 +661,14 @@ class ShopMinimumNausea(Range):
     default = 0
 
 class ShopMinimumLength(Range):
-    """If the shop determines you need a ride with a minimum length, this value in meters will be the lowest it 
-    can ask for. If this value is higher than the maximum, the generator will assume it is a mistake and set it to 0.
+    """If the shop determines you need a ride with a minimum length (In Meters), this value in meters will 
+    be the lowest it can ask for. If this value is higher than the maximum, the generator will assume it is a 
+    mistake and set it to 0.
     """
     display_name = "Minimum Shop Length Requirement"
     range_start = 0
     range_end = 2500
-    default = 610
+    default = 0
 
 class ShopMinimumTotalCustomers(Range):
     """If the shop determines you need a ride with a minimum total number of customers, this value will be the 
@@ -649,7 +677,7 @@ class ShopMinimumTotalCustomers(Range):
     """
     display_name = "Minimum Shop Customers Requirement"
     range_start = 0
-    range_end = 2000
+    range_end = 1000
     default = 0
 
 class ShopMaximumExcitement(Range):
@@ -677,12 +705,13 @@ class ShopMaximumNausea(Range):
     default = 4
 
 class ShopMaximumLength(Range):
-    """If the shop determines you need a ride with a minimum length, this value will be the highest it can ask for.
+    """If the shop determines you need a ride with a minimum length (In Meters), 
+    this value will be the highest it can ask for.
     """
     display_name = "Maximum Shop Length Requirement"
     range_start = 0
     range_end = 2500
-    default = 1250
+    default = 500
 
 class ShopMaximumTotalCustomers(Range):
     """If the shop determines you need a ride with a minimum total number of customers, this value will be the 
@@ -690,15 +719,15 @@ class ShopMaximumTotalCustomers(Range):
     """
     display_name = "Maximum Shop Total Customers Requirement"
     range_start = 0
-    range_end = 2000
-    default = 800
+    range_end = 1000
+    default = 400
 
 class BalanceGuestCounts(OpenRCT2OnToggle):
     """Attempts to balance the minimum guest requirements to the ride they're attached to. Low throughput rides
     like Spiral Slides will tend towards the minimum, while high throughput rides like roller coasters will 
     tend towards the maximum.
     """
-    display_name = "Randomize Park Values"
+    display_name = "Balance Guest Counts"
 
 class RequiredUniqueRides(Range):
     """Requires specific rides to be built before scenario completion is awarded. These will tend to appear in the later half of the game.
@@ -707,6 +736,15 @@ class RequiredUniqueRides(Range):
     range_start = 0
     range_end = 10
     default = 5
+
+class LocalityOfUniqueRides(Choice):
+    """No-op; still here to prevent old YAMLs from breaking"""
+    display_name = "Placement of Unique Rides"
+    option_off = 0
+    option_local = 1
+    option_remote = 2
+    default = 0
+    visibility = OptionVisibility.none
 
 class ParkRatingObjective(Range):
     """If enabled, choose the minimum park rating needed to beat the scenario."""
@@ -722,6 +760,10 @@ class PayOffLoan(OpenRCT2OnToggle):
 class MonopolyMode(OpenRCT2Toggle):
     """Monopoly Mode is a new objective type. Every unowned tile will be set to purchasable (Or purchasable construction rights for any unowned tile with a grounded path. Elevated paths will not be purchasable). To complete the objective, all tiles on the map must be purchased. Multiple Objectives can be enabled!"""
     display_name = "Monopoly Mode"
+
+class Fireworks(OpenRCT2OnToggle):
+    """Have an explosive firework display on victory! Strongly discouraged if you intend to keep playing after victory or if you expect to have a huge park."""
+    display_name = "Fireworks"
 
 class IncludeGamespeedItems(OpenRCT2OnToggle):
     """If included, the ability to use the speed toggle will be restricted behind an item. 4 items total will be added, each progressively unlocking a faster speed."""
@@ -784,8 +826,8 @@ class Skips(Range):
     be found in the item pool."""
     display_name = "Skips"
     range_start = 0
-    range_end = 10
-    default = 3
+    range_end = 100
+    default = 7
 
 openrct2_option_groups = [
     OptionGroup("Scenario Options", [
@@ -805,9 +847,11 @@ openrct2_option_groups = [
         RollerCoasterIntensity,
         RollerCoasterNausea,
         RequiredUniqueRides,
+        LocalityOfUniqueRides,
         ParkRatingObjective,
         PayOffLoan,
-        MonopolyMode
+        MonopolyMode,
+        Fireworks
     ]),
     OptionGroup("Rules", [
         SelectedDifficultGuestGeneration,
@@ -829,7 +873,9 @@ openrct2_option_groups = [
         ShopMinimumTotalCustomers,
         ShopMaximumTotalCustomers,
         BalanceGuestCounts,
-        SelectedVisibility
+        SelectedVisibility,
+        Awards,
+        ExcludeSafestPark
     ]),
     OptionGroup("Item & Trap Options", [
         Filler,
@@ -862,6 +908,8 @@ class openRCT2Options(PerGameCommonOptions):
     shop_minimum_total_customers: ShopMinimumTotalCustomers
     shop_maximum_total_customers: ShopMaximumTotalCustomers
     balance_guest_counts: BalanceGuestCounts
+    awards: Awards
+    exclude_safest_park: ExcludeSafestPark
     ignore_ride_stat_changes: IgnoreRideStatChanges
     scenario_length: SelectedScenarioLength
     scenario: SelectedScenario
@@ -897,10 +945,12 @@ class openRCT2Options(PerGameCommonOptions):
     roller_coaster_intensity: RollerCoasterIntensity
     roller_coaster_nausea: RollerCoasterNausea
     required_unique_rides: RequiredUniqueRides
+    unique_rides_placement: LocalityOfUniqueRides
     # include_park_rating_objective: Include_Park_Rating_Objective
     park_rating_objective: ParkRatingObjective
     pay_off_loan: PayOffLoan
     monopoly_mode: MonopolyMode
+    fireworks: Fireworks
     include_gamespeed_items: IncludeGamespeedItems
     # park rules. Depending on the option, these may affect which items are created
     difficult_guest_generation: SelectedDifficultGuestGeneration

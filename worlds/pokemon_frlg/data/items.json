@@ -181,6 +181,11 @@
     "classification": "PROGRESSION",
     "tags": ["Key Items", "Fossils", "Unique Items"]
   },
+  "ITEM_EXP_SHARE": {
+    "name": "Exp. Share",
+    "classification": "USEFUL",
+    "tags": ["Key Items", "Unique Items"]
+  },
   "ITEM_FAME_CHECKER": {
     "name": "Fame Checker",
     "classification": "PROGRESSION",
@@ -233,6 +238,11 @@
   },
   "ITEM_ITEMFINDER": {
     "name": "Itemfinder",
+    "classification": "PROGRESSION",
+    "tags": ["Key Items", "Unique Items"]
+  },
+  "ITEM_JUMPING_SHOES": {
+    "name": "Jumping Shoes",
     "classification": "PROGRESSION",
     "tags": ["Key Items", "Unique Items"]
   },
@@ -470,12 +480,6 @@
     "name": "Water Stone",
     "classification": "PROGRESSION",
     "tags": ["Key Items", "Evolution Items"]
-  },
-
-  "ITEM_LEDGE_JUMP": {
-    "name": "Ledge Jump",
-    "classification": "PROGRESSION",
-    "tags": ["Abilities"]
   },
 
   "ITEM_FLY_PALLET": {
@@ -1276,11 +1280,6 @@
   },
   "ITEM_MACHO_BRACE": {
     "name": "Macho Brace",
-    "classification": "USEFUL",
-    "tags": ["Held Items"]
-  },
-  "ITEM_EXP_SHARE": {
-    "name": "Exp. Share",
     "classification": "USEFUL",
     "tags": ["Held Items"]
   },

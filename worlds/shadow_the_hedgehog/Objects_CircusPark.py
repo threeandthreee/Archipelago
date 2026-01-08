@@ -86,4 +86,41 @@ DESIRABLE_OBJECTS_CIRCUS_PARK  = [
     SETObject(ObjectType.EGG_PAWN, Levels.STAGE_CIRCUS_PARK, 111, '49', region=REGION_INDICIES.CIRCUS_PARK_ROCKET),
     SETObject(ObjectType.EGG_CLOWN, Levels.STAGE_CIRCUS_PARK, 114, '50', region=REGION_INDICIES.CIRCUS_PARK_ROCKET),
 
+    SETObject(ObjectType.KEY, Levels.STAGE_CIRCUS_PARK, 218, 'Key 1', region=REGION_INDICIES.CIRCUS_PARK_ZIP_WIRE),
+    SETObject(ObjectType.KEY, Levels.STAGE_CIRCUS_PARK, 180, 'Key 2', region=REGION_INDICIES.CIRCUS_PARK_ROCKET_EASY),
+    SETObject(ObjectType.KEY, Levels.STAGE_CIRCUS_PARK, 216, 'Key 3', region=REGION_INDICIES.CIRCUS_PARK_ROCKET_EASY),
+    SETObject(ObjectType.KEY, Levels.STAGE_CIRCUS_PARK, 192, 'Key 4', region=REGION_INDICIES.CIRCUS_PARK_ROCKET),
+    SETObject(ObjectType.KEY, Levels.STAGE_CIRCUS_PARK, 217, 'Key 5', region=REGION_INDICIES.CIRCUS_PARK_PULLEY),
+    SETObject(ObjectType.GOAL_RING, Levels.STAGE_CIRCUS_PARK, 329, 'Goal Ring',region=REGION_INDICIES.CIRCUS_PARK_PULLEY),
+
+
+    SETObject(ObjectType.ITEM_IN_BOX, Levels.STAGE_CIRCUS_PARK, 174, 'After Check 1',
+              region=0),
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_CIRCUS_PARK, 238, 'Homing Chain',
+              region=0),
+    SETObject(ObjectType.ITEM_IN_BOX, Levels.STAGE_CIRCUS_PARK, 127, 'Homing Chain Below',
+              region=0),
+    SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_CIRCUS_PARK, 221, 'Homing Chain Left',
+              region=REGION_INDICIES.CIRCUS_PARK_ZIP_WIRE),
+    SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_CIRCUS_PARK, 220, 'Homing Chain Right',
+              region=REGION_INDICIES.CIRCUS_PARK_ZIP_WIRE),
+    SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_CIRCUS_PARK, 275, 'Rocket Before Check 2B?',
+              region=REGION_INDICIES.CIRCUS_PARK_ROCKET_ITEM),
+    SETObject(ObjectType.ITEM_IN_BOX, Levels.STAGE_CIRCUS_PARK, 132, 'Shield In Box Near Bazooka Enemy',
+              region=REGION_INDICIES.CIRCUS_PARK_ROCKET_EASY),
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_CIRCUS_PARK, 184, 'Gong Reward',
+              region=REGION_INDICIES.CIRCUS_PARK_ROCKET_EASY),
+    SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_CIRCUS_PARK, 242, 'Near Key Door Triangle Jump',
+              region=REGION_INDICIES.CIRCUS_PARK_ROCKET_EASY),
+
+    SETObject(ObjectType.ITEM_IN_BOX, Levels.STAGE_CIRCUS_PARK, 299, 'Back of Circus Tent A',
+              region=REGION_INDICIES.CIRCUS_PARK_ROCKET),
+    SETObject(ObjectType.ITEM_IN_BOX, Levels.STAGE_CIRCUS_PARK, 295, 'Back of Circus Tent B',
+              region=REGION_INDICIES.CIRCUS_PARK_ROCKET),
+    SETObject(ObjectType.ITEM_IN_BOX, Levels.STAGE_CIRCUS_PARK, 314, 'Back of Circus Tent C',
+              region=REGION_INDICIES.CIRCUS_PARK_ROCKET),
+
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_CIRCUS_PARK, 247, 'Back of Key Door Tower',
+              region=REGION_INDICIES.CIRCUS_PARK_ROCKET_EASY)
+
 ]

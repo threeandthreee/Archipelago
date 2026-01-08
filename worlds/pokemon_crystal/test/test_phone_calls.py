@@ -1,17 +1,19 @@
-import yaml
 import pkgutil
+from unittest import TestCase
 
-from test.bases import TestBase
-from ..phone_data import poke_cmd, data_to_script
+import yaml
+
 from ..data import PhoneScriptData
+from ..phone_data import poke_cmd, data_to_script
 
 
-class PhoneCallsTest(TestBase):
+class PhoneCallsTest(TestCase):
     max_phone_trap_bytes = 1024
     max_line_length = 18
 
     def test_phone_calls(self):
-        phone_scripts = yaml.safe_load(pkgutil.get_data("worlds.pokemon_crystal", "data/phone_data.yaml").decode('utf-8-sig'))
+        phone_scripts = yaml.safe_load(
+            pkgutil.get_data("worlds.pokemon_crystal", "data/phone_data.yaml").decode('utf-8-sig'))
 
         for script_name, script_data in phone_scripts.items():
             script = data_to_script(PhoneScriptData(script_name, script_data.get("caller"), script_data.get("script")))

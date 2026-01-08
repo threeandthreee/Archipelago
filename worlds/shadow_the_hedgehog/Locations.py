@@ -1,11 +1,9 @@
-#from __future__ import annotations
+
 import copy
-from dataclasses import dataclass
-from math import floor
 from typing import Dict, Optional
 
-from BaseClasses import Location, Region, ItemClassification, Item, LocationProgressType
-from . import Regions, Levels, Weapons, Objects, Options, Names
+from BaseClasses import Location, Region, LocationProgressType
+from . import Regions, Levels, Weapons, Objects, Names
 from .Levels import *
 from . import Utils as ShadowUtils
 from .ObjectTypes import ObjectType
@@ -274,7 +272,8 @@ MissionClearLocations = [
         {
             REGION_INDICIES.CRYPTIC_CASTLE_TORCH: 2,
             REGION_INDICIES.CRYPTIC_CASTLE_HAWK: 1,
-            REGION_INDICIES.CRYPTIC_CASTLE_BOMB_EASY_2: 2
+            REGION_INDICIES.CRYPTIC_CASTLE_BOMB_EASY_2: 1,
+            REGION_INDICIES.CRYPTIC_CASTLE_HAWK_2: 1
         }
         )
         .setRequirement(REGION_RESTRICTION_TYPES.Torch),
@@ -790,7 +789,8 @@ CheckpointLocations = \
             0: [1],
             REGION_INDICIES.CRYPTIC_CASTLE_TORCH: [2],
             REGION_INDICIES.CRYPTIC_CASTLE_HAWK: [3,4,5],
-            REGION_INDICIES.CRYPTIC_CASTLE_BOMB_EASY_2: [6,7,8]
+            REGION_INDICIES.CRYPTIC_CASTLE_BOMB_EASY_2: [6,8],
+            REGION_INDICIES.CRYPTIC_CASTLE_HAWK_2: [7]
         }
     ),
     CheckpointLocation(STAGE_PRISON_ISLAND, 7)
@@ -1425,10 +1425,6 @@ def create_locations(world, regions: Dict[str, Region]):
 
         within_region.locations.append(completion_location)
 
-        # TODO:
-        # Work out each stages required tokens and add a location
-        # If the various settings are enabled
-
     override_settings = world.options.percent_overrides
 
     if world.options.objective_sanity:
@@ -1521,20 +1517,20 @@ def create_locations(world, regions: Dict[str, Region]):
             completion_location = ShadowTheHedgehogLocation(world.player, checkpoint.name, checkpoint.locationId, within_region)
             within_region.locations.append(completion_location)
 
-    if world.options.key_sanity:
-        for key in keysanity_locations:
-            if key.stageId not in world.available_levels:
-                continue
-
-            if world.options.exclude_go_mode_items and key.stageId == STAGE_THE_LAST_WAY and \
-                    not world.options.include_last_way_shuffle:
-                continue
-
-            found_key_level_info = [c for c in KeyLocations if c.stageId == key.stageId][0]
-            region_index = found_key_level_info.getRegion(key.count)
-            within_region = regions[Regions.stage_id_to_region(key.stageId, region_index)]
-            completion_location = ShadowTheHedgehogLocation(world.player, key.name, key.locationId, within_region)
-            within_region.locations.append(completion_location)
+    #if world.options.key_sanity:
+    #    for key in keysanity_locations:
+    #        if key.stageId not in world.available_levels:
+    #            continue
+#
+#            if world.options.exclude_go_mode_items and key.stageId == STAGE_THE_LAST_WAY and \
+#                    not world.options.include_last_way_shuffle:
+#                continue
+#
+#            found_key_level_info = [c for c in KeyLocations if c.stageId == key.stageId][0]
+#            region_index = found_key_level_info.getRegion(key.count)
+#            within_region = regions[Regions.stage_id_to_region(key.stageId, region_index)]
+#            completion_location = ShadowTheHedgehogLocation(world.player, key.name, key.locationId, within_region)
+#            within_region.locations.append(completion_location)
 
     for boss in boss_locations:
         if boss.stageId not in world.available_levels:
@@ -1608,6 +1604,7 @@ def create_locations(world, regions: Dict[str, Region]):
         rifle_location = ShadowTheHedgehogLocation(world.player, "Complete Shadow Rifle", LOCATION_ID_SHADOW_RIFLE_COMPLETE, menu_region)
         menu_region.locations.append(rifle_location)
 
+
     if world.options.shadow_boxes:
         for box_location in [ x for x in object_locations if x.other == ObjectType.SHADOW_BOX and
                               x.stageId in world.available_levels]:
@@ -1625,6 +1622,11 @@ def create_locations(world, regions: Dict[str, Region]):
         for core_location in [ x for x in object_locations if (x.other == ObjectType.ENERGY_CORE or
                                  x.other == ObjectType.ENERGY_CORE_IN_WOOD_BOX) and
                                                               x.stageId in world.available_levels]:
+
+            if world.options.exclude_go_mode_items and core_location.stageId == STAGE_THE_LAST_WAY and \
+                    not world.options.include_last_way_shuffle:
+                continue
+
             if core_location.regionId is not None:
                 stage_region_name = Regions.stage_id_to_region(core_location.stageId, core_location.regionId)
                 stage_region = regions[stage_region_name]
@@ -1653,11 +1655,31 @@ def create_locations(world, regions: Dict[str, Region]):
 
         for beetle_location in [ x for x in object_locations if x.other == ObjectType.GOLD_BEETLE and
                                  x.stageId in world.available_levels]:
+
+            if world.options.exclude_go_mode_items and beetle_location.stageId == STAGE_THE_LAST_WAY and \
+                    not world.options.include_last_way_shuffle:
+                continue
+
             stage_region_name = Regions.stage_id_to_region(beetle_location.stageId, beetle_location.regionId)
             stage_region = regions[stage_region_name]
             beetle_location = ShadowTheHedgehogLocation(world.player, beetle_location.name,
                                                        beetle_location.locationId, stage_region)
             stage_region.locations.append(beetle_location)
+
+    if world.options.key_sanity:
+
+        for key_location in [ x for x in object_locations if x.other == ObjectType.KEY and
+                                 x.stageId in world.available_levels]:
+
+            if world.options.exclude_go_mode_items and key_location.stageId == STAGE_THE_LAST_WAY and \
+                    not world.options.include_last_way_shuffle:
+                continue
+
+            stage_region_name = Regions.stage_id_to_region(key_location.stageId, key_location.regionId)
+            stage_region = regions[stage_region_name]
+            key_location = ShadowTheHedgehogLocation(world.player, key_location.name,
+                                                       key_location.locationId, stage_region)
+            stage_region.locations.append(key_location)
 
 
     if world.options.objective_sanity and world.options.objective_sanity_system != Options.ObjectiveSanitySystem.option_count_up:
@@ -1715,8 +1737,25 @@ def create_locations(world, regions: Dict[str, Region]):
     if world.options.enemy_sanity and world.options.objective_sanity_system != Options.ObjectiveSanitySystem.option_count_up:
         enemy_types = Objects.GetStandardEnemyTypes()
         for objective_location in [x for x in object_locations if x.other in enemy_types and x not in object_location_checks and
-                                   x.stageId in world.available_levels and x.stageId not in Levels.BOSS_STAGES
-                                                                  and (world.options.difficult_enemy_sanity or not x.flag) ]:
+                                   x.stageId in world.available_levels
+                                    and (world.options.boss_enemy_sanity or x.stageId not in Levels.BOSS_STAGES)
+                                    and (world.options.difficult_enemy_sanity or not x.flag) ]:
+
+            if world.options.exclude_go_mode_items and objective_location.stageId == STAGE_THE_LAST_WAY and \
+                    not world.options.include_last_way_shuffle:
+                continue
+
+            stage_region_name = Regions.stage_id_to_region(objective_location.stageId, objective_location.regionId)
+            stage_region = regions[stage_region_name]
+            new_objective_location = ShadowTheHedgehogLocation(world.player, objective_location.name,
+                                                           objective_location.locationId, stage_region)
+            stage_region.locations.append(new_objective_location)
+
+    if world.options.item_sanity:
+        item_types = Objects.GetItemBoxTypes()
+        for objective_location in [x for x in object_locations if x.other in item_types and
+                                   x.stageId in world.available_levels
+                                    and (world.options.difficult_enemy_sanity or not x.flag) ]:
 
             if world.options.exclude_go_mode_items and objective_location.stageId == STAGE_THE_LAST_WAY and \
                     not world.options.include_last_way_shuffle:
@@ -1795,9 +1834,14 @@ def count_locations(world):
 
     charactersanity_locations = [ ml for ml in charactersanity_locations if ml.other in world.available_characters ]
 
-    keysanity_locations = [ks for ks in keysanity_locations if ks.stageId
-                             in world.available_levels and (not world.options.exclude_go_mode_items or ks.stageId != STAGE_THE_LAST_WAY or \
-                                world.options.include_last_way_shuffle)]
+    object_locations = [ml for ml in object_locations if ml.stageId
+                                  in world.available_levels and (
+                                              not world.options.exclude_go_mode_items or ml.stageId != STAGE_THE_LAST_WAY or \
+                                              world.options.include_last_way_shuffle)]
+
+    #keysanity_locations = [ks for ks in keysanity_locations if ks.stageId
+    #                         in world.available_levels and (not world.options.exclude_go_mode_items or ks.stageId != STAGE_THE_LAST_WAY or \
+    #                            world.options.include_last_way_shuffle)]
 
     boss_locations = [ b for b in boss_locations if b.stageId in world.available_levels ]
 
@@ -1871,7 +1915,8 @@ def count_locations(world):
         count = increment_location_count(count, len(charactersanity_locations), "ch")
 
     if world.options.key_sanity:
-        count = increment_location_count(count, len(keysanity_locations), "k")
+        count = increment_location_count(count, len([x for x in object_locations if x.other == ObjectType.KEY
+                                                     if x.stageId in world.available_levels]), "c")
 
     count = increment_location_count(count, len(boss_locations), "b")
     #if world.options.include_last_way_shuffle and world.options.story_shuffle == Options.StoryShuffle.option_test3:
@@ -1947,11 +1992,23 @@ def count_locations(world):
         enemy_types = Objects.GetStandardEnemyTypes()
         enemy_sanity_object_checks = [x for x in object_locations if
          x.other in enemy_types and x not in object_location_checks and x.stageId in world.available_levels and
-                                      x.stageId not in Levels.BOSS_STAGES  and (world.options.difficult_enemy_sanity or not x.flag) and
+                                      (world.options.boss_enemy_sanity or x.stageId not in Levels.BOSS_STAGES)
+                                      and (world.options.difficult_enemy_sanity or not x.flag) and
                                       (not world.options.exclude_go_mode_items or x.stageId != STAGE_THE_LAST_WAY or
                                        world.options.include_last_way_shuffle)]
 
         count = increment_location_count(count, len(enemy_sanity_object_checks), "oe")
+
+    if world.options.item_sanity:
+        item_types = Objects.GetItemBoxTypes()
+        possible = [x for x in object_locations if x.other in item_types and
+                                   x.stageId in world.available_levels
+                                    and (world.options.difficult_enemy_sanity or not x.flag) and
+                    (not world.options.exclude_go_mode_items or x.stageId != STAGE_THE_LAST_WAY or
+                     world.options.include_last_way_shuffle)
+                    ]
+
+        count = increment_location_count(count, len(possible), "i")
 
     return count
 

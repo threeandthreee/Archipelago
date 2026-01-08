@@ -1019,6 +1019,7 @@ class FE8Randomizer:
                 break
             i = self.random.choice(available_indices)
             result[i] += overflow
+            overflow = 0
             if result[i] > 255:
                 overflow = result[i]-255
                 result[i] = 255

@@ -33,19 +33,6 @@ def addBank34(rom, item_list):
         jp z, SwitchBackTo3E
 
         ld   de, wCustomMessage
-        ; Copy "Got " to de
-        ld  a, 71
-        ld  [de], a
-        inc de
-        ld  a, 111
-        ld  [de], a
-        inc de
-        ld  a, 116
-        ld  [de], a
-        inc de
-        ld  a, 32
-        ld  [de], a
-        inc de
         ; Copy in our item name
         call   MessageCopyString
     SwitchBackTo3E:
@@ -55,11 +42,11 @@ def addBank34(rom, item_list):
 
     ; this should be shared but I got link errors            
     OffsetPointerByRoomNumber:
-        ldh  a, [$F6] ; map room
+        ldh  a, [$FFF6] ; map room
         ld   e, a
         ld   a, [$DBA5] ; is indoor
         ld   d, a
-        ldh  a, [$F7]   ; mapId
+        ldh  a, [$FFF7]   ; mapId
         cp   $FF
         jr   nz, .notColorDungeon
 
@@ -82,24 +69,30 @@ def addBank34(rom, item_list):
 
     }
 
-    name = AnItemText
-
     def add_or_get_name(name):
-        formatted_name = formatText(name)[:-1][:64] # remove last char, limit to 64
         nonlocal nextItemLookup
-        if formatted_name in nameLookup:
-            return nameLookup[formatted_name]
-        if len(formatted_name) + 1 + nextItemLookup >= 0x4000:
+        if name in nameLookup:
+            return nameLookup[name]
+        if len(name) + 1 + nextItemLookup >= 0x4000:
             return nameLookup[AnItemText]
-        asm = ASM(f'db "{formatted_name}", $ff\n')
-        rom.patch(0x34, nextItemLookup, None, asm)
-        patch_len = len(binascii.unhexlify(asm))
-        nameLookup[formatted_name] = nextItemLookup + 0x4000
-        nextItemLookup += patch_len
-        return nameLookup[formatted_name]
+        # Item names of exactly 255 characters will cause overwrites to occur in the text box
+        # Custom text is only 95 bytes long, restrict to 4 lines (64)
+        formatted = formatText("Got " + name, skip_names=True)[:-1][:59] # strip \xff before truncating
+        # make room for 'for'/'from'
+        last_len = len(formatted) % 16
+        if 16 > last_len > 11: # push to new line
+            for _ in range(last_len, 16):
+                formatted += b' '
+        formatted += b'\xff'
 
-    item_text_addr = add_or_get_name(AnItemText)
-    #error_text_addr = add_or_get_name("Please report this check to #bug-reports in the AP discord")
+        rom.patch(0x34, nextItemLookup, None, binascii.hexlify(formatted))
+        patch_len = len(formatted)
+        nameLookup[name] = nextItemLookup + 0x4000
+        nextItemLookup += patch_len
+        return nameLookup[name]
+
+    add_or_get_name(AnItemText)
+
     def swap16(x):
         assert x <= 0xFFFF
         return (x >> 8) | ((x & 0xFF) << 8)
@@ -116,9 +109,6 @@ def addBank34(rom, item_list):
         if not item.custom_item_name:
             continue
         assert item.room < TotalRoomCount, item.room
-        # Item names of exactly 255 characters will cause overwrites to occur in the text box
-        # assert len(item.custom_item_name) < 0x100
-        # Custom text is only 95 bytes long, add_or_get_name restricts to 64
         addr = add_or_get_name(item.custom_item_name)
         rom.patch(0x34, ItemNameLookupTable + item.room *
                   ItemNameLookupSize, None, to_hex_address(addr))

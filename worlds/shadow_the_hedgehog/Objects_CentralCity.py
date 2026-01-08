@@ -307,4 +307,33 @@ DESIRABLE_OBJECTS_CENTRAL_CITY  = [
               region=REGION_INDICIES.CENTRAL_CITY_ROCKET_2),
 SETObject(ObjectType.ENERGY_CORE_IN_WOOD_BOX, Levels.STAGE_CENTRAL_CITY, 495, 'Dark Core in Box',
                   region=REGION_INDICIES.CENTRAL_CITY_ROCKET_2),
+
+SETObject(ObjectType.KEY, Levels.STAGE_CENTRAL_CITY, 51, 'Key 1', region=REGION_INDICIES.CENTRAL_CITY_BOMB_OR_BAZOOKA),
+SETObject(ObjectType.KEY, Levels.STAGE_CENTRAL_CITY, 242, 'Key 2', region=0),
+SETObject(ObjectType.KEY, Levels.STAGE_CENTRAL_CITY, 527, 'Key 3', region=REGION_INDICIES.CENTRAL_CITY_BOMB_OR_BAZOOKA_2),
+SETObject(ObjectType.KEY, Levels.STAGE_CENTRAL_CITY, 376, 'Key 4', region=REGION_INDICIES.CENTRAL_CITY_ROCKET_2),
+SETObject(ObjectType.KEY, Levels.STAGE_CENTRAL_CITY, 299, 'Key 5', region=REGION_INDICIES.CENTRAL_CITY_BOMB_OR_BAZOOKA_3),
+
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_CENTRAL_CITY, 598, 'Near Hero Core',
+              region=REGION_INDICIES.CENTRAL_CITY_BOMB_OR_BAZOOKA),
+    SETObject(ObjectType.ITEM_IN_BOX, Levels.STAGE_CENTRAL_CITY, 388, 'At Check 2',
+              region=0),
+    SETObject(ObjectType.ITEM_IN_BOX, Levels.STAGE_CENTRAL_CITY, 133, 'Path in Central Section',
+              region=0),
+    SETObject(ObjectType.ITEM_IN_BOX, Levels.STAGE_CENTRAL_CITY, 220, 'Behind After Rocket',
+              region=REGION_INDICIES.CENTRAL_CITY_ROCKET_1),
+    SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_CENTRAL_CITY, 395, 'Turret Balloon',
+              region=REGION_INDICIES.CENTRAL_CITY_GUN_TURRET),
+    SETObject(ObjectType.ITEM_IN_BOX, Levels.STAGE_CENTRAL_CITY, 396, 'After Check 4',
+              region=REGION_INDICIES.CENTRAL_CITY_ROCKET_2),
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_CENTRAL_CITY, 521, 'Life Behind Rocket after Check 4',
+              region=REGION_INDICIES.CENTRAL_CITY_ROCKET_2),
+    SETObject(ObjectType.ITEM_IN_BOX, Levels.STAGE_CENTRAL_CITY, 459, 'Box Below Last Bomb Section',
+              region=REGION_INDICIES.CENTRAL_CITY_BOMB_OR_BAZOOKA_3),
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_CENTRAL_CITY, 584, 'Shield Above Loop Stretch',
+              region=REGION_INDICIES.CENTRAL_CITY_BOMB_OR_BAZOOKA_3),
+    SETObject(ObjectType.ITEM_IN_BOX, Levels.STAGE_CENTRAL_CITY, 481, 'Box First Up Bombs Section Last',
+              region=REGION_INDICIES.CENTRAL_CITY_BOMB_OR_BAZOOKA_3)
+
+
 ]

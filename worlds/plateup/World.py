@@ -4,6 +4,7 @@ from collections import Counter
 
 from BaseClasses import ItemClassification, CollectionState
 from worlds.AutoWorld import World
+from . import Web_World
 from .Items import ITEMS, PlateUpItem
 from .Locations import DISH_LOCATIONS, FRANCHISE_LOCATION_DICT, DAY_LOCATION_DICT, EXCLUDED_LOCATIONS
 from .Options import PlateUpOptions, Goal
@@ -16,6 +17,7 @@ from .Rules import (
 
 class PlateUpWorld(World):
     game = "plateup"
+    web = Web_World.PlateUpWebWorld()
     options_dataclass = PlateUpOptions
     options: PlateUpOptions
 
@@ -26,14 +28,18 @@ class PlateUpWorld(World):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.excluded_locations = set()
+        # Initialize attributes to avoid hasattr checks
+        self.selected_dishes = []
+        self.starting_dish = None
+        self.valid_dish_locations = []
 
     def generate_location_table(self):
-        """Return a planned location table based on the goal and options."""
+        """Plan locations based on goal/options and selected dishes."""
         goal = self.options.goal.value
         dish_count = self.options.dish.value
         if goal == 0:
-            # Franchise goal: include all per-run locations (days/stars) for each run up to required,
-            # plus milestone locations up to required. ID thresholds no longer work past run 10 due to offset jumps.
+            # Franchise goal: include per-run day/star locations up to required,
+            # plus milestone locations up to required.
             required = self.options.franchise_count.value
             locs = {}
 
@@ -64,9 +70,7 @@ class PlateUpWorld(World):
                 else:
                     run_idx = run_index_from_name(name)
                     if run_idx is not None and (run_idx + 1) <= required:
-                        # Exclude post-day-15 checks (Day 16-20) from the location table;
-                        # these are not part of franchise progression locations.
-                        # Keep textual 1-5 day labels and star labels.
+                        # Exclude post-day-15 checks (Day 16–20) from progression locations.
                         if "Complete Day " in name:
                             try:
                                 day_str = name.split("Complete Day ", 1)[1].split(" ")[0].strip()
@@ -76,13 +80,11 @@ class PlateUpWorld(World):
                             except Exception:
                                 pass
                         locs[name] = loc
-            # Include configured dish locations as non-progression checks as well
+            # Include selected dish day locations as non-progression checks
             if dish_count > 0:
-                selected = [
-                    "Salad", "Steak", "Burger", "Coffee", "Pizza", "Dumplings", "Turkey",
-                    "Pie", "Cakes", "Spaghetti", "Fish", "Tacos", "Hot Dogs", "Breakfast", "Stir Fry"
-                ][:dish_count]
-                for dish in selected:
+                if not self.selected_dishes or len(self.selected_dishes) != dish_count:
+                    self.set_selected_dishes()
+                for dish in self.selected_dishes:
                     for day in range(1, 15 + 1):
                         loc_name = f"{dish} - Day {day}"
                         loc_id = DISH_LOCATIONS.get(loc_name)
@@ -103,14 +105,11 @@ class PlateUpWorld(World):
                     star = int(name.removeprefix("Complete Star ").strip())
                     if star <= max_stars:
                         locs[name] = loc
-            # Only add dish locations if dish_count > 0; include only those for the
-            # dishes that will be selected by set_selected_dishes (first N for determinism).
+            # Add dish locations when enabled; only those in selected_dishes
             if dish_count > 0:
-                selected = [
-                    "Salad", "Steak", "Burger", "Coffee", "Pizza", "Dumplings", "Turkey",
-                    "Pie", "Cakes", "Spaghetti", "Fish", "Tacos", "Hot Dogs", "Breakfast", "Stir Fry"
-                ][:dish_count]
-                for dish in selected:
+                if not self.selected_dishes or len(self.selected_dishes) != dish_count:
+                    self.set_selected_dishes()
+                for dish in self.selected_dishes:
                     for day in range(1, 15 + 1):
                         loc_name = f"{dish} - Day {day}"
                         loc_id = DISH_LOCATIONS.get(loc_name)
@@ -119,7 +118,7 @@ class PlateUpWorld(World):
             return locs
 
     def validate_ids(self):
-        """Ensure that item and location IDs are unique."""
+        """Ensure item and location IDs are unique."""
         item_ids = list(self.item_name_to_id.values())
         dupe_items = [item for item, count in Counter(item_ids).items() if count > 1]
         if dupe_items:
@@ -133,6 +132,8 @@ class PlateUpWorld(World):
     def create_regions(self):
         """Create regions using the planned location table."""
         from .Regions import create_plateup_regions
+        # Ensure selected dishes are initialized
+        self.set_selected_dishes()
         self._location_name_to_id = self.generate_location_table()
         self.validate_ids()
         create_plateup_regions(self)
@@ -142,54 +143,82 @@ class PlateUpWorld(World):
         if name in self.item_name_to_id:
             item_id = self.item_name_to_id[name]
         else:
-            raise ValueError(f"Item '{name}' not found in ITEMS")
+            # Rebuild mapping from current ITEMS in case the class-level cache is stale
+            from .Items import ITEMS as CURRENT_ITEMS
+            self.item_name_to_id = {n: data[0] for n, data in CURRENT_ITEMS.items()}
+            if name in self.item_name_to_id:
+                item_id = self.item_name_to_id[name]
+            else:
+                raise ValueError(f"Item '{name}' not found in ITEMS")
         return PlateUpItem(name, classification, item_id, self.player)
 
     def create_items(self):
         self.set_selected_dishes()
-        """Create the initial item pool based on the planned location table."""
-        # Base planned locations from the table used by region creation
+        """Create the item pool for all planned locations."""
+        # Base planned locations used by region creation
         base_locations = len(self.generate_location_table())
-        # All dish locations are included in the base location table now
+        # Dish locations are included in the base table
         total_locations = base_locations
         item_pool = []
 
         # Always remove one dish to be the starting dish (if any)
-        self.starting_dish = None
-        unlock_dishes = []
-        if hasattr(self, "selected_dishes") and self.selected_dishes:
-            self.starting_dish = self.selected_dishes[0]
-            unlock_dishes = self.selected_dishes[1:]
+        self.starting_dish = self.selected_dishes[0] if self.selected_dishes else None
+        unlock_dishes = self.selected_dishes[1:] if len(self.selected_dishes) > 1 else []
 
-        # Add unlock items for the rest of the selected dishes
+        # Add unlock items for the rest of the selected dishes (or all if none selected)
         for dish in unlock_dishes:
             unlock_name = f"{dish} Unlock"
-            item_pool.append(self.create_item(unlock_name, classification=ItemClassification.progression))
+            # Ensure mapping is current
+            try:
+                from .Items import ITEMS as CURRENT_ITEMS
+                self.item_name_to_id = {n: data[0] for n, data in CURRENT_ITEMS.items()}
+            except Exception:
+                pass
+            if unlock_name in self.item_name_to_id:
+                item_pool.append(self.create_item(unlock_name, classification=ItemClassification.progression))
+            else:
+                logging.error(f"[Player {self.multiworld.player_name[self.player]}] Unlock item missing: {unlock_name}. ITEMS should include unlocks generated from Locations.dish_dictionary.")
 
         # Add progression items.
-        item_pool.extend([
-            self.create_item("Speed Upgrade Player", classification=ItemClassification.progression)
-            for _ in range(5)
-        ])
+        # Add Player speed upgrades based on configured count
+        player_speed_count = int(self.options.player_speed_upgrade_count.value)
+        if player_speed_count > 0:
+            item_pool.extend([
+                self.create_item("Speed Upgrade Player", classification=ItemClassification.progression)
+                for _ in range(player_speed_count)
+            ])
 
         speed_mode = self.options.appliance_speed_mode.value
-        if speed_mode == 0:
-            item_pool.extend([
-                self.create_item("Speed Upgrade Appliance", classification=ItemClassification.progression)
-                for _ in range(5)
-            ])
-        else:
-            for _ in range(5):
+        appliance_speed_count = int(self.options.appliance_speed_upgrade_count.value)
+        if appliance_speed_count > 0:
+            if speed_mode == 0:
                 item_pool.extend([
-                    self.create_item("Speed Upgrade Cook", classification=ItemClassification.progression),
-                    self.create_item("Speed Upgrade Clean", classification=ItemClassification.progression),
-                    self.create_item("Speed Upgrade Chop", classification=ItemClassification.progression)
+                    self.create_item("Speed Upgrade Appliance", classification=ItemClassification.progression)
+                    for _ in range(appliance_speed_count)
                 ])
+            else:
+                for _ in range(appliance_speed_count):
+                    item_pool.extend([
+                        self.create_item("Speed Upgrade Cook", classification=ItemClassification.progression),
+                        self.create_item("Speed Upgrade Clean", classification=ItemClassification.progression),
+                        self.create_item("Speed Upgrade Chop", classification=ItemClassification.progression)
+                    ])
 
+        # Determine total days to drive item counts
         if self.options.goal.value == Goal.option_franchise_x_times:
-            total_days = 15 * self.options.franchise_count.value
+            total_days = 15 * int(self.options.franchise_count.value)
         else:
-            total_days = self.options.day_count.value
+            total_days = int(self.options.day_count.value)
+
+        # Place Money Cap Increase at ~1 per 10 days
+        money_cap_items = max(1, total_days // 10)
+        logging.debug(f"[Player {self.multiworld.player_name[self.player]}] Auto Money Cap items by cadence: total_days={total_days}, placing={money_cap_items}")
+        if money_cap_items > 0:
+            item_pool.extend([
+                self.create_item("Money Cap Increase", classification=ItemClassification.filler)
+                for _ in range(money_cap_items)
+            ])
+
         # Number of Day Lease items required depends on configurable interval
         interval = max(1, int(self.options.day_lease_interval.value))
         lease_count = math.ceil(total_days / interval)
@@ -198,9 +227,10 @@ class PlateUpWorld(World):
             for _ in range(lease_count)
         ])
 
-        # Add trap items, but do not exceed planned total locations
+        # Add traps at ~10% of total locations, minimum 3
         remaining_capacity = max(0, total_locations - len(item_pool))
-        trap_to_add = min(3, remaining_capacity)
+        desired_traps = max(3, total_days // 10)  # scale with run length
+        trap_to_add = min(desired_traps, remaining_capacity)
         item_pool.extend([
             self.create_item("Random Customer Card", classification=ItemClassification.trap)
             for _ in range(trap_to_add)
@@ -217,11 +247,10 @@ class PlateUpWorld(World):
     def set_rules(self):
         """Set progression rules and top-up the item pool based on final locations."""
 
-        # Only filter dishes if dish count > 0 (for rule wiring / ordering)
+        # Filter dishes only when enabled
         if self.options.dish.value > 0:
             filter_selected_dishes(self)
         else:
-            # If dish count is 0, ensure these are empty
             self.selected_dishes = []
             self.valid_dish_locations = []
 
@@ -264,7 +293,8 @@ class PlateUpWorld(World):
             "death_link",
             "death_link_behavior",
             "appliance_speed_mode",
-            "day_lease_interval"
+            "day_lease_interval",
+                "starting_money_cap"
         )
         options_dict["items_kept"] = self.options.appliances_kept.value
         if self.options.dish.value == 0:
@@ -273,7 +303,17 @@ class PlateUpWorld(World):
         else:
             options_dict["starting_dish"] = getattr(self, "starting_dish", None)
             options_dict["selected_dishes"] = getattr(self, "selected_dishes", [])
-        options_dict["dish_unlocks"] = 1
+            # Diagnostics: count of planned dish day locations included
+            planned = getattr(self, "_location_name_to_id", {})
+            count = 0
+            for dish in options_dict["selected_dishes"]:
+                for day in range(1, 16):
+                    name = f"{dish} - Day {day}"
+                    if name in planned:
+                        count += 1
+            options_dict["dish_locations_present"] = count
+        # Diagnostics
+        options_dict["dish_unlocks"] = 0 if self.options.dish.value == 0 else 1
         return options_dict
 
     def get_filler_item_name(self):
@@ -288,8 +328,23 @@ class PlateUpWorld(World):
 
     def set_selected_dishes(self):
         dish_count = self.options.dish.value
-        all_dishes = [
-            "Salad", "Steak", "Burger", "Coffee", "Pizza", "Dumplings", "Turkey",
-            "Pie", "Cakes", "Spaghetti", "Fish", "Tacos", "Hot Dogs", "Breakfast", "Stir Fry"
-        ]
-        self.selected_dishes = all_dishes[:dish_count]
+        try:
+            from .Locations import dish_dictionary
+            all_dishes = list(dish_dictionary.values())
+        except Exception:
+            all_dishes = [
+                "Salad", "Steak", "Burger", "Coffee", "Pizza", "Dumplings", "Turkey",
+                "Pie", "Cakes", "Spaghetti", "Fish", "Tacos", "Hot Dogs", "Breakfast", "Stir Fry",
+                "Sandwiches", "Sundaes"
+            ]
+        if dish_count <= 0:
+            self.selected_dishes = []
+            return
+        # Sanitize any pre-set selection (e.g., plando)
+        if self.selected_dishes:
+            sanitized = [d for d in self.selected_dishes if d in all_dishes]
+            if len(sanitized) >= dish_count:
+                self.selected_dishes = sanitized[:dish_count]
+                return
+        # Deterministic per-seed random selection, without replacement
+        self.selected_dishes = self.random.sample(all_dishes, k=min(dish_count, len(all_dishes)))

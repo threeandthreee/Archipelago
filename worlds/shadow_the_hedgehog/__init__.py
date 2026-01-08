@@ -84,12 +84,14 @@ class ShtHWorld(World):
         self.go_mode_weapons_only = []
         self.available_levels = []
         self.available_story_levels = []
+        self.available_select_stages = []
         self.token_locations = []
         self.required_tokens = {}
         self.excess_item_count = 0
         self.shuffled_story_mode = None
         self.random_value = None
         self.starting_items = []
+        self.gates = {}
 
         for token in Items.TOKENS:
             self.required_tokens[token] = 0
@@ -103,28 +105,29 @@ class ShtHWorld(World):
         Rules.set_rules(self.multiworld, self, self.player)
 
         sphere_one_useful = []
-        while len(sphere_one_useful) == 0:
-            sphere_one_locs = self.multiworld.get_reachable_locations(CollectionState(self.multiworld), self.player)
-            sphere_one_useful = [s for s in sphere_one_locs if not s.locked]
+        if not hasattr(self.multiworld, "re_gen_passthrough"):
+            while len(sphere_one_useful) == 0:
+                sphere_one_locs = self.multiworld.get_reachable_locations(CollectionState(self.multiworld), self.player)
+                sphere_one_useful = [s for s in sphere_one_locs if not s.locked]
 
-            if len(sphere_one_useful) > 0:
-                break
+                if len(sphere_one_useful) > 0:
+                    break
 
-            locked_items = [ c for c in sphere_one_locs if c.locked and c not in self.starting_items]
-            for item in locked_items:
-                print("Locked item given:", item.item.name)
-                self.starting_items.append(item)
-                item = Item(item.item.name,ItemClassification.progression, None, self.player)
-                self.multiworld.push_precollected(item)
+                locked_items = [ c for c in sphere_one_locs if c.locked and c not in self.starting_items]
+                for item in locked_items:
+                    print("Locked item given:", item.item.name)
+                    self.starting_items.append(item)
+                    item = Item(item.item.name,ItemClassification.progression, None, self.player)
+                    self.multiworld.push_precollected(item)
 
-            if len(locked_items) != 0:
-                continue
+                if len(locked_items) != 0:
+                    continue
 
-            push_items = Regions.FindStartingItems(self, required=True)
-            for item in push_items:
-                print("Push emergency item:", item)
-                self.starting_items.append(item)
-                self.multiworld.push_precollected(self.create_item(item))
+                push_items = Regions.FindStartingItems(self, required=True)
+                for item in push_items:
+                    print("Push emergency item:", item)
+                    self.starting_items.append(item)
+                    self.multiworld.push_precollected(self.create_item(item))
 
         # Test here
 
@@ -138,8 +141,6 @@ class ShtHWorld(World):
         player_items = [ a for a in self.multiworld.itempool if a.player == self.player ]
         if len(player_items) not in [l_count, l_x]:
             print("Invalid item pool vs locations")
-
-
 
 
     def check_invalid_configurations(self):
@@ -221,9 +222,12 @@ class ShtHWorld(World):
         if not self.options.enemy_objective_sanity and self.options.enemy_sanity:
             self.options.enemy_sanity = Options.Enemysanity(False)
 
-        # TODO: Add handle for having excluded all stages
+        if self.options.enable_traps:
+            if not self.options.poison_trap_enabled and not self.options.ammo_trap_enabled and not self.options.checkpoint_trap_enabled:
+                self.options.enable_traps = Options.EnableTraps(False)
 
-
+        if self.options.level_progression == Options.LevelProgression.option_story:
+            self.options.select_gates = Options.SelectGates(Options.SelectGates.option_off)
 
     def calculate_non_objective_sanity_maximums(self):
         relevant_mission_clears =  [m for m in Locations.MissionClearLocations if
@@ -428,6 +432,21 @@ class ShtHWorld(World):
                 if "key_sanity" in passthrough:
                     self.options.key_sanity = passthrough["key_sanity"]
 
+                if "key_collection_method" in passthrough:
+                    self.options.key_collection_method = passthrough["key_collection_method"]
+
+                if "keys_required_for_doors" in passthrough:
+                    self.options.keys_required_for_doors = passthrough["keys_required_for_doors"]
+
+                if "select_gates" in passthrough:
+                    self.options.select_gates = passthrough["select_gates"]
+
+                if "select_gates_count" in passthrough:
+                    self.options.select_gates_count = passthrough["select_gates_count"]
+
+                if "gate_unlock_requirement" in passthrough:
+                    self.options.gate_unlock_requirement = passthrough["gate_unlock_requirement"]
+
                 if "enemy_sanity" in passthrough:
                     self.options.enemy_sanity = passthrough["enemy_sanity"]
 
@@ -504,6 +523,12 @@ class ShtHWorld(World):
                 if "shuffled_story_mode" in passthrough:
                     self.shuffled_story_mode = Story.StringToStory(passthrough["shuffled_story_mode"])
 
+                if "gates" in passthrough:
+                    self.gates = passthrough["gates"]
+
+                if "gate_requirements" in passthrough:
+                    self.gate_requirements = passthrough["gate_requirements"]
+
                 if "shadow_mod" in passthrough:
                     self.options.shadow_mod = passthrough["shadow_mod"]
 
@@ -579,6 +604,15 @@ class ShtHWorld(World):
                 if "exclude_go_mode_items" in passthrough:
                     self.options.exclude_go_mode_items = passthrough["exclude_go_mode_items"]
 
+                if "first_levels" in passthrough:
+                    self.first_regions = passthrough["first_levels"]
+
+                if "boss_enemy_sanity" in passthrough:
+                    self.options.boss_enemy_sanity = passthrough["boss_enemy_sanity"]
+
+                if "item_sanity" in passthrough:
+                    self.options.item_sanity = passthrough["item_sanity"]
+
         # Set maximum of levels required
         # Exclude missions listed in exclude_locations
         maximum_force_missions = self.options.force_objective_sanity_max.value
@@ -589,7 +623,12 @@ class ShtHWorld(World):
 
         Regions.early_region_checks(self)
 
-        if self.options.starting_level_method == Options.StartingLevelMethod.option_stage_and_item:
+        if not hasattr(self.multiworld, "re_gen_passthrough"):
+            Regions.DetermineFirstStages(self)
+            self.gates = Regions.DetermineGates(self)
+            self.gate_requirements = {}
+
+        if not hasattr(self.multiworld, "re_gen_passthrough") and self.options.starting_level_method == Options.StartingLevelMethod.option_stage_and_item:
             extra_items = Regions.FindStartingItems(self, required=False)
             for item in extra_items:
                 self.starting_items.append(item)
@@ -750,7 +789,9 @@ class ShtHWorld(World):
 
     def get_filler_item_name(self) -> str:
         # Use the same weights for filler items that are used in the base randomizer.
-        item_info = Items.ChooseJunkItems(self.random, Items.GetJunkItemInfo(), self.options, 1)[0]
+        #random, junk, traps, options, junk_count, available_weapons
+        item_info = Items.ChooseJunkItems(self.random, Items.GetJunkItemInfo(), Items.GetTraps(), self.options, 1,
+                                          self.available_weapons)[0]
         return item_info.name
 
 
@@ -789,6 +830,14 @@ class ShtHWorld(World):
             "required_final_boss_tokens": self.required_tokens[Items.Progression.FinalBossToken],
             "requires_emeralds": self.options.goal_chaos_emeralds.value,
             "key_sanity": self.options.key_sanity.value,
+            "key_collection_method": self.options.key_collection_method.value,
+            "keys_required_for_doors": self.options.keys_required_for_doors.value,
+            "gates": self.gates,
+            "gate_requirements": self.gate_requirements,
+            "select_gates": self.options.select_gates.value,
+            "select_gates_count": self.options.select_gates_count.value,
+            "gate_unlock_requirement": self.options.gate_unlock_requirement.value,
+
             "enemy_sanity": self.options.enemy_sanity.value,
             "enemy_objective_sanity": self.options.enemy_objective_sanity.value,
             "weapon_sanity_unlock": self.options.weapon_sanity_unlock.value,
@@ -849,12 +898,34 @@ class ShtHWorld(World):
             "objective_sanity_behaviour": self.options.objective_sanity_behaviour.value,
             "chaos_control_logic_level": self.options.chaos_control_logic_level.value,
             "difficult_enemy_sanity": self.options.difficult_enemy_sanity.value,
-            "exclude_go_mode_items": self.options.exclude_go_mode_items.value
+            "exclude_go_mode_items": self.options.exclude_go_mode_items.value,
+            "boss_enemy_sanity": self.options.boss_enemy_sanity.value,
+            "item_sanity": self.options.item_sanity.value
         }
 
         return slot_data
 
+    def PrintGates(self, spoiler_handle, gates, gate_requirements):
+        if spoiler_handle is not None:
+            spoiler_handle.write(f"{self.multiworld.get_player_name(self.player)}'s Gate Unlocks\n")
+            for gate_number, gate_stages in gates.items():
+                spoiler_handle.write(f"Gate {gate_number} = {gate_stages}\n")
+
+            spoiler_handle.write("\n")
+
+            spoiler_handle.write(f"{self.multiworld.get_player_name(self.player)}'s Gate Requirements\n")
+            for gate_number, requirements in gate_requirements.items():
+                spoiler_handle.write(f"Gate {gate_number} = {requirements}\n")
+
+            spoiler_handle.write("\n")
+
+
+
     def write_spoiler(self, spoiler_handle: typing.TextIO):
         if self.options.story_shuffle != Options.StoryShuffle.option_off:
             Story.PrintStoryMode(self, spoiler_handle)
+
+        if self.options.select_gates != Options.SelectGates.option_off:
+            self.PrintGates(spoiler_handle, self.gates, self.gate_requirements)
+
 

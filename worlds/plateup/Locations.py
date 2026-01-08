@@ -108,6 +108,8 @@ dish_dictionary = {
     113: "Hot Dogs",
     114: "Breakfast",
     115: "Stir Fry",
+    116: "Sandwiches",
+    117: "Sundaes",
 }
 
 DISH_LOCATIONS: Dict[str, int] = {}

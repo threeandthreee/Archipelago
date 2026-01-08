@@ -181,6 +181,15 @@ class Enemysanity(Toggle):
     """
     display_name = "Enemy Sanity"
 
+
+class BossEnemysanity(Toggle):
+    """
+        Determines whether boss enemy sanity is enabled.
+        This can be used in tandem with enemy objective sanity.
+    """
+    display_name = "Boss Enemy Sanity"
+
+
 class DifficultEnemysanity(Toggle):
     """
         Determines whether enemies marked as difficult are included as part of enemy sanity.
@@ -194,7 +203,24 @@ class Keysanity(Toggle):
     """
     display_name = "Key Sanity"
 
+class KeysRequiredForDoors(Range):
+    """
+        Determines how many keys are required to open doors.
+    """
+    display_name = "Keys Required For Doors"
+    range_start = 0
+    range_end = 5
+    default = 5
 
+class KeyCollectionMethod(Choice):
+    """
+        Determines how keys can be collected.
+    """
+    display_name = "Key Collection Method"
+    option_local = 0
+    option_arch = 1
+    option_both = 2
+    default = option_arch
 
 class Checkpointsanity(DefaultOnToggle):
     """
@@ -260,6 +286,9 @@ class RingFiller(DefaultOnToggle):
     """Determines if ring filler is included."""
     display_name = "Ring Filler"
 
+class AmmoBoostFiller(DefaultOnToggle):
+    """Determines if ammo boost filler is included."""
+    display_name = "Ammo Boost Filler"
 
 class EnemySanityPercentage(Range):
     """Determines the percentage of enemysanity checks in a stage to be included."""
@@ -276,6 +305,49 @@ class StartingStages(Range):
     range_start = 0
     range_end = 22
     default = 1
+
+class SelectGates(Choice):
+    """
+        Determines distribution behaviour for select gates.
+    """
+    display_name = "Select Gates"
+    option_off = 0
+    option_early = 1
+    option_medium = 2
+    option_late = 3
+    default = option_medium
+
+class SelectGatesCount(Range):
+    """
+        Determines the number of select gates.
+    """
+    display_name = "Select Gates"
+    range_start = 1
+    range_end = 10
+    default = 2
+
+
+
+
+class GateUnlockRequirement(Choice):
+    """
+        Determines distribution behaviour for select gates.
+    """
+    display_name = "Gate Unlock Requirement"
+    option_items = 0
+    option_objective = 1
+    option_chaos_emeralds = 2
+    option_objective_available = 3
+    default = option_objective_available
+
+class GateDensity(Range):
+    """
+    Determines the density of items required for gates
+    """
+    display_name = "Gate Density"
+    range_start = 0
+    range_end = 100
+    default = 0
 
 class ForceObjectiveSanityChance(Range):
     """Determines the probability of a objective-sanity stage being force-added to Priority Locations"""
@@ -303,6 +375,12 @@ class ExcludedStages(OptionSet):
     display_name = "Excluded Stages"
     #default = {}
     valid_keys = [i for i in Names.getLevelNames() ]
+
+class Itemsanity(Toggle):
+    """
+        Determines whether item box sanity is enabled.
+    """
+    display_name = "Item Sanity"
 
 class ExceedingItemsFiller(Choice):
     """
@@ -720,6 +798,55 @@ class ExcludeGoModeItems(DefaultOnToggle):
     """
     display_name = "Exclude Go Mode Items"
 
+
+class EnableTraps(Toggle):
+    """
+        Enables traps for the multiworld
+    """
+    display_name = "Enable Traps"
+
+class PoisonTraps(Choice):
+    """
+        Enables traps for the multiworld
+    """
+    display_name = "Enable Poison Traps"
+    option_off = 0
+    option_low = 1
+    option_medium = 2
+    option_high = 3
+    default = option_off
+
+class AmmoTraps(Choice):
+    """
+        Enables traps for the multiworld
+    """
+    display_name = "Enable Ammo Traps"
+    option_off = 0
+    option_low = 1
+    option_medium = 2
+    option_high = 3
+    default = option_off
+
+class CheckpointTraps(Choice):
+    """
+        Enables traps for the multiworld
+    """
+    display_name = "Enable Checkpoint Traps"
+    option_off = 0
+    option_low = 1
+    option_medium = 2
+    option_high = 3
+    default = option_off
+
+class TrapFillPercentage(Range):
+    """
+        Enables traps for the multiworld
+    """
+    display_name = "Trap Fill Percentage"
+    range_start = 1
+    range_end = 100
+    default = 5
+
 @dataclass
 class ShadowTheHedgehogOptions(PerGameCommonOptions):
     #goal: Goal
@@ -744,11 +871,18 @@ class ShadowTheHedgehogOptions(PerGameCommonOptions):
     enemy_objective_sanity: EnemyObjectiveSanity
     character_sanity: CharacterSanity
     enemy_sanity: Enemysanity
+    boss_enemy_sanity: BossEnemysanity
+    item_sanity: Itemsanity
     enemy_sanity_percentage: EnemySanityPercentage
     difficult_enemy_sanity: DifficultEnemysanity
     key_sanity: Keysanity
+    keys_required_for_doors: KeysRequiredForDoors
+    key_collection_method: KeyCollectionMethod
     checkpoint_sanity: Checkpointsanity
     starting_stages: StartingStages
+    select_gates: SelectGates
+    select_gates_count: SelectGatesCount
+    gate_unlock_requirement: GateUnlockRequirement
     force_objective_sanity_chance: ForceObjectiveSanityChance
     force_objective_sanity_max: ForceObjectiveSanityMax
     force_objective_sanity_max_counter: ForceObjectiveSanityMaxCounter
@@ -760,6 +894,7 @@ class ShadowTheHedgehogOptions(PerGameCommonOptions):
     vehicle_logic: VehicleLogic
     enable_gauge_items: GaugeFiller
     enable_ring_items: RingFiller
+    enable_ammo_boost_items: AmmoBoostFiller
     ring_link: RingLink
     auto_clear_missions: AutoClearMissions
     level_progression: LevelProgression
@@ -801,11 +936,17 @@ class ShadowTheHedgehogOptions(PerGameCommonOptions):
     plando_starting_stages: PlandoStartingStages
     story_and_select_start_together: StoryAndSelectStartTogether
     select_percentage: SelectPercentage
+    gate_density: GateDensity
 
     exceeding_items_filler: ExceedingItemsFiller
     exceeding_items_filler_random: ExceedingItemsFillerRandom
     start_inventory_excess_items: StartInventoryExcessItems
     exclude_go_mode_items: ExcludeGoModeItems
+    enable_traps: EnableTraps
+    ammo_trap_enabled: AmmoTraps
+    checkpoint_trap_enabled: CheckpointTraps
+    poison_trap_enabled: PoisonTraps
+    trap_fill_percentage: TrapFillPercentage
 
 
 shadow_option_groups = [

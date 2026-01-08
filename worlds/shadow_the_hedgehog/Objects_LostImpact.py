@@ -180,5 +180,78 @@ DESIRABLE_OBJECTS_LOST_IMPACT = [
     SETObject(ObjectType.ARTIFICIAL_CHAOS, Levels.STAGE_LOST_IMPACT, 286, '71',
               region=REGION_INDICIES.LOST_IMPACT_GUN_LIFT),
     SETObject(ObjectType.GOLD_BEETLE, Levels.STAGE_LOST_IMPACT, 281, 'Gold Beetle',
-              region=REGION_INDICIES.LOST_IMPACT_GUN_LIFT)
+              region=REGION_INDICIES.LOST_IMPACT_GUN_LIFT),
+
+    SETObject(ObjectType.KEY, Levels.STAGE_LOST_IMPACT, 126, 'Key 1', region=0),
+    SETObject(ObjectType.KEY, Levels.STAGE_LOST_IMPACT, 101, 'Key 2', region=REGION_INDICIES.LOST_IMPACT_GUN_LIFT),
+    SETObject(ObjectType.KEY, Levels.STAGE_LOST_IMPACT, 323, 'Key 3', region=REGION_INDICIES.LOST_IMPACT_ROCKET),
+    SETObject(ObjectType.KEY, Levels.STAGE_LOST_IMPACT, 116, 'Key 4', region=REGION_INDICIES.LOST_IMPACT_GUN_LIFT),
+    SETObject(ObjectType.KEY, Levels.STAGE_LOST_IMPACT, 117, 'Key 5', region=REGION_INDICIES.LOST_IMPACT_BOMB_WALL),
+    SETObject(ObjectType.GOAL_RING, Levels.STAGE_LOST_IMPACT, 352, 'Goal Ring',region=REGION_INDICIES.LOST_IMPACT_GUN_LIFT),
+
+    SETObject(ObjectType.ITEM_IN_METAL_BOX, Levels.STAGE_LOST_IMPACT, 180, 'Near Shadow Box 1',
+              region=0),
+    SETObject(ObjectType.ITEM_IN_METAL_BOX, Levels.STAGE_LOST_IMPACT, 309, 'Up Lift 1 A',
+              region=0),
+    SETObject(ObjectType.ITEM_IN_METAL_BOX, Levels.STAGE_LOST_IMPACT, 248, 'Up Lift 1 B',
+              region=0),
+
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_LOST_IMPACT, 328, 'Lift Section 1A',
+              region=REGION_INDICIES.LOST_IMPACT_GUN_LIFT),
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_LOST_IMPACT, 330, 'Lift Section 1B',
+              region=REGION_INDICIES.LOST_IMPACT_GUN_LIFT),
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_LOST_IMPACT, 329, 'Lift Section 1C',
+              region=REGION_INDICIES.LOST_IMPACT_GUN_LIFT),
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_LOST_IMPACT, 161, 'Room After Lift A',
+              region=REGION_INDICIES.LOST_IMPACT_GUN_LIFT),
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_LOST_IMPACT, 179, 'Room After Lift B',
+              region=REGION_INDICIES.LOST_IMPACT_GUN_LIFT),
+
+    SETObject(ObjectType.ITEM_IN_METAL_BOX, Levels.STAGE_LOST_IMPACT, 214, '3 Right At Turn A',
+              region=REGION_INDICIES.LOST_IMPACT_GUN_LIFT),
+    SETObject(ObjectType.ITEM_IN_METAL_BOX, Levels.STAGE_LOST_IMPACT, 224, '3 Right At Turn B',
+              region=REGION_INDICIES.LOST_IMPACT_GUN_LIFT),
+    SETObject(ObjectType.ITEM_IN_METAL_BOX, Levels.STAGE_LOST_IMPACT, 316, '3 Right At Turn C',
+              region=REGION_INDICIES.LOST_IMPACT_GUN_LIFT),
+
+    SETObject(ObjectType.ITEM_IN_METAL_BOX, Levels.STAGE_LOST_IMPACT, 315, 'With Bomb Jump A',
+              region=REGION_INDICIES.LOST_IMPACT_GUN_LIFT),
+    SETObject(ObjectType.ITEM_IN_METAL_BOX, Levels.STAGE_LOST_IMPACT, 132, 'With Bomb Jump B',
+              region=REGION_INDICIES.LOST_IMPACT_GUN_LIFT),
+
+    SETObject(ObjectType.ITEM_IN_METAL_BOX, Levels.STAGE_LOST_IMPACT, 222, 'Left Way A',
+              region=REGION_INDICIES.LOST_IMPACT_GUN_LIFT),
+    SETObject(ObjectType.ITEM_IN_METAL_BOX, Levels.STAGE_LOST_IMPACT, 219, 'Left Way B',
+              region=REGION_INDICIES.LOST_IMPACT_GUN_LIFT),
+
+    SETObject(ObjectType.ITEM_IN_METAL_BOX, Levels.STAGE_LOST_IMPACT, 227, 'Near Keydoor',
+              region=REGION_INDICIES.LOST_IMPACT_GUN_LIFT),
+
+    SETObject(ObjectType.ITEM_IN_METAL_BOX, Levels.STAGE_LOST_IMPACT, 301, 'Side Room A',
+              region=REGION_INDICIES.LOST_IMPACT_GUN_LIFT),
+    SETObject(ObjectType.ITEM_IN_METAL_BOX, Levels.STAGE_LOST_IMPACT, 303, 'Side Room B',
+              region=REGION_INDICIES.LOST_IMPACT_GUN_LIFT),
+
+    SETObject(ObjectType.ITEM_IN_METAL_BOX, Levels.STAGE_LOST_IMPACT, 125, 'Before Meteors A',
+              region=REGION_INDICIES.LOST_IMPACT_GUN_LIFT),
+    SETObject(ObjectType.ITEM_IN_METAL_BOX, Levels.STAGE_LOST_IMPACT, 243, 'Before Meteors B',
+              region=REGION_INDICIES.LOST_IMPACT_GUN_LIFT),
+    SETObject(ObjectType.ITEM_IN_METAL_BOX, Levels.STAGE_LOST_IMPACT, 244, 'Before Meteors C',
+              region=REGION_INDICIES.LOST_IMPACT_GUN_LIFT),
+
+    SETObject(ObjectType.ITEM_IN_METAL_BOX, Levels.STAGE_LOST_IMPACT, 124, 'Room Corners A',
+              region=REGION_INDICIES.LOST_IMPACT_GUN_LIFT),
+    SETObject(ObjectType.ITEM_IN_METAL_BOX, Levels.STAGE_LOST_IMPACT, 247, 'Room Corners B',
+              region=REGION_INDICIES.LOST_IMPACT_GUN_LIFT),
+    SETObject(ObjectType.ITEM_IN_METAL_BOX, Levels.STAGE_LOST_IMPACT, 135, 'Room Corners C',
+              region=REGION_INDICIES.LOST_IMPACT_GUN_LIFT),
+    SETObject(ObjectType.ITEM_IN_METAL_BOX, Levels.STAGE_LOST_IMPACT, 225, 'Room Corners D',
+              region=REGION_INDICIES.LOST_IMPACT_GUN_LIFT),
+
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_LOST_IMPACT, 279, 'Key 5 Room A',
+              region=REGION_INDICIES.LOST_IMPACT_BOMB_WALL),
+    SETObject(ObjectType.ITEM_CAPSULE, Levels.STAGE_LOST_IMPACT, 278, 'Key 5 Room B',
+              region=REGION_INDICIES.LOST_IMPACT_BOMB_WALL)
+
+
 ]

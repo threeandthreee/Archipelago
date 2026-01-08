@@ -79,7 +79,6 @@ class DKC2World(World):
     # borrowed from DKC3's description
     game = "Donkey Kong Country 2"
     web = DKC2Web()
-
     settings: ClassVar[DKC2Settings]
     
     options_dataclass = DKC2Options

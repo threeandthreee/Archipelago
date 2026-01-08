@@ -8,7 +8,7 @@ class PlateUpItem(Item):
         self.code = code
 
     def __repr__(self):
-        return "<PlateUpItem {} (ID: {})>".format(self.name, self.code)
+        return "<{}>".format(self.name)
 
 
 ITEMS = {
@@ -118,6 +118,7 @@ ITEMS = {
 
     #region progression
     "Day Lease": (15, ItemClassification.progression),
+    "Money Cap Increase": (16, ItemClassification.useful),
 
 
 
@@ -129,22 +130,29 @@ ITEMS = {
     #endregion
 }
 
-# Add unlock items for each dish
-for dish_id, dish_name in {
-    101: "Salad",
-    102: "Steak",
-    103: "Burger",
-    104: "Coffee",
-    105: "Pizza",
-    106: "Dumplings",
-    107: "Turkey",
-    108: "Pie",
-    109: "Cakes",
-    110: "Spaghetti",
-    111: "Fish",
-    112: "Tacos",
-    113: "Hot Dogs",
-    114: "Breakfast",
-    115: "Stir Fry",
-}.items():
-    ITEMS[f"{dish_name} Unlock"] = (30000 + dish_id, ItemClassification.progression)
+# Add unlock items for each dish from a single source of truth
+try:
+    from .Locations import dish_dictionary
+    for dish_id, dish_name in dish_dictionary.items():
+        ITEMS[f"{dish_name} Unlock"] = (30000 + dish_id, ItemClassification.progression)
+except Exception:
+    for dish_id, dish_name in {
+        101: "Salad",
+        102: "Steak",
+        103: "Burger",
+        104: "Coffee",
+        105: "Pizza",
+        106: "Dumplings",
+        107: "Turkey",
+        108: "Pie",
+        109: "Cakes",
+        110: "Spaghetti",
+        111: "Fish",
+        112: "Tacos",
+        113: "Hot Dogs",
+        114: "Breakfast",
+        115: "Stir Fry",
+        116: "Sandwiches",
+        117: "Sundaes",
+    }.items():
+        ITEMS[f"{dish_name} Unlock"] = (30000 + dish_id, ItemClassification.progression)

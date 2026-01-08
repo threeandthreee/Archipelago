@@ -1,13 +1,13 @@
 import logging
 from typing import TYPE_CHECKING
 
-from BaseClasses import Region, ItemClassification, Entrance
+from BaseClasses import Region, ItemClassification
 from .data import data, RegionData, EncounterMon, StaticPokemon, LogicalAccess, EncounterKey, FishingRodType, \
     TreeRarity, EncounterType
 from .items import PokemonCrystalItem
 from .locations import PokemonCrystalLocation
-from .options import FreeFlyLocation, JohtoOnly, BlackthornDarkCaveAccess, Goal, FlyCheese
-from .utils import get_fly_regions
+from .options import FreeFlyLocation, JohtoOnly, BlackthornDarkCaveAccess, Goal, FlyCheese, Route42Access
+from .utils import get_fly_regions, should_include_region
 
 if TYPE_CHECKING:
     from .world import PokemonCrystalWorld
@@ -78,7 +78,7 @@ def create_regions(world: "PokemonCrystalWorld") -> dict[str, Region]:
     regions: dict[str, Region] = {}
     connections: list[tuple[str, str, str]] = []
     johto_only = world.options.johto_only.value
-    skip_e4 = world.options.skip_elite_four.value
+    rematches = world.options.rematchsanity or world.options.randomize_phone_call_items
 
     wild_name_level_list: list[tuple[str, list[int]]] = []
     trainer_name_level_list: list[tuple[str, int]] = []
@@ -86,16 +86,8 @@ def create_regions(world: "PokemonCrystalWorld") -> dict[str, Region]:
 
     wild_scaling_locations = set()
 
-    def should_include_region(region):
-        # check if region should be included
-        return (region.johto
-                or johto_only == JohtoOnly.option_off
-                or (region.silver_cave and johto_only == JohtoOnly.option_include_silver_cave)) and (
-                not skip_e4 or not region.elite_4
-        )
-
     def exclude_scaling(trainer: str):
-        if not world.options.rematchsanity and trainer in REMATCHES:
+        if not rematches and (trainer in REMATCHES):
             return True
         elif johto_only != JohtoOnly.option_off and trainer in KANTO_LOCKED:
             return True
@@ -233,7 +225,7 @@ def create_regions(world: "PokemonCrystalWorld") -> dict[str, Region]:
                 parent_region.connect(new_region)
 
     for region_name, region_data in data.regions.items():
-        if should_include_region(region_data):
+        if should_include_region(region_data, world):
             new_region = Region(region_name, world.player, world.multiworld)
 
             regions[region_name] = new_region
@@ -300,7 +292,7 @@ def create_regions(world: "PokemonCrystalWorld") -> dict[str, Region]:
                 connections.append((f"{region_name} -> {region_exit}", region_name, region_exit))
 
     for name, source, dest in connections:
-        if should_include_region(data.regions[source]) and should_include_region(data.regions[dest]):
+        if should_include_region(data.regions[source], world) and should_include_region(data.regions[dest], world):
             regions[source].connect(regions[dest], name)
 
     if world.options.skip_elite_four:
@@ -333,6 +325,19 @@ def create_regions(world: "PokemonCrystalWorld") -> dict[str, Region]:
     if world.options.blackthorn_dark_cave_access == BlackthornDarkCaveAccess.option_waterfall:
         regions["REGION_DARK_CAVE_BLACKTHORN_ENTRANCE:SOUTH_WEST"].connect(
             regions["REGION_DARK_CAVE_BLACKTHORN_ENTRANCE:NORTH_WEST"])
+
+    if world.options.route_42_access != Route42Access.option_blocked:
+        regions["REGION_ROUTE_42:WEST"].connect(regions["REGION_ROUTE_42:CENTER"])
+        regions["REGION_ROUTE_42:CENTER"].connect(regions["REGION_ROUTE_42:WEST"])
+        regions["REGION_ROUTE_42:EAST"].connect(regions["REGION_ROUTE_42:CENTER"])
+        regions["REGION_ROUTE_42:CENTER"].connect(regions["REGION_ROUTE_42:EAST"])
+
+    if world.options.route_42_access in \
+            (Route42Access.option_blocked, Route42Access.option_whirlpool_open_mortar):
+        regions["REGION_MOUNT_MORTAR_1F_OUTSIDE:BELOW_WATERFALL"].connect(
+            regions["REGION_MOUNT_MORTAR_1F_INSIDE:FRONT"])
+        regions["REGION_MOUNT_MORTAR_1F_INSIDE:FRONT"].connect(
+            regions["REGION_MOUNT_MORTAR_1F_OUTSIDE:BELOW_WATERFALL"])
 
     if world.options.dexsanity or world.options.dexcountsanity:
         pokedex_region = Region("Pokedex", world.player, world.multiworld)
@@ -367,22 +372,10 @@ def setup_free_fly_regions(world: "PokemonCrystalWorld"):
                                                  FreeFlyLocation.option_free_fly_and_map_card):
         free_fly_location = world.free_fly_location
         fly_region = world.get_region(free_fly_location.exit_region)
-        connection = Entrance(
-            world.player,
-            f"Free Fly {free_fly_location.exit_region}",
-            fly
-        )
-        fly.exits.append(connection)
-        connection.connect(fly_region)
+        fly.connect(fly_region, f"Free Fly {free_fly_location.exit_region}")
 
     if world.options.free_fly_location.value in (FreeFlyLocation.option_free_fly_and_map_card,
                                                  FreeFlyLocation.option_map_card):
         map_card_fly_location = world.map_card_fly_location
         map_card_region = world.get_region(map_card_fly_location.exit_region)
-        connection = Entrance(
-            world.player,
-            f"Free Fly {map_card_fly_location.exit_region}",
-            fly
-        )
-        fly.exits.append(connection)
-        connection.connect(map_card_region)
+        fly.connect(map_card_region, f"Free Fly {map_card_fly_location.exit_region}")

@@ -197,4 +197,46 @@ DESIRABLE_OBJECTS_SKY_TROOPS  = [
     SETObject(ObjectType.BLACK_WARRIOR, Levels.STAGE_SKY_TROOPS, 103, '65',
               region=REGION_INDICIES.SKY_TROOPS_HAWK_OR_VOLT),
 
+    SETObject(ObjectType.KEY, Levels.STAGE_SKY_TROOPS, 236, 'Key 1', region=REGION_INDICIES.SKY_TROOPS_GUN_JUMPER_EASY),
+    SETObject(ObjectType.KEY, Levels.STAGE_SKY_TROOPS, 237, 'Key 2', region=REGION_INDICIES.SKY_TROOPS_ROCKET_NORMAL),
+    SETObject(ObjectType.KEY, Levels.STAGE_SKY_TROOPS, 238, 'Key 3', region=REGION_INDICIES.SKY_TROOPS_ROCKET),
+    SETObject(ObjectType.KEY, Levels.STAGE_SKY_TROOPS, 235, 'Key 4', region=REGION_INDICIES.SKY_TROOPS_ROCKET),
+    SETObject(ObjectType.KEY, Levels.STAGE_SKY_TROOPS, 241, 'Key 5', region=REGION_INDICIES.SKY_TROOPS_HAWK_OR_VOLT),
+    SETObject(ObjectType.GOAL_RING, Levels.STAGE_SKY_TROOPS, 11, 'Goal Ring',region=REGION_INDICIES.SKY_TROOPS_HAWK_OR_VOLT),
+
+    SETObject(ObjectType.ITEM_IN_BOX, Levels.STAGE_SKY_TROOPS, 84, 'Start',
+              region=0),
+    SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_SKY_TROOPS, 328, 'Para Rocket Descend A',
+              region=REGION_INDICIES.SKY_TROOPS_ROCKET_NORMAL),
+    SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_SKY_TROOPS, 329, 'Para Rocket Descend B',
+              region=REGION_INDICIES.SKY_TROOPS_ROCKET_NORMAL),
+    SETObject(ObjectType.ITEM_IN_METAL_BOX, Levels.STAGE_SKY_TROOPS, 282, 'Before Jumper Section',
+              region=REGION_INDICIES.SKY_TROOPS_ROCKET_NORMAL),
+
+    SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_SKY_TROOPS, 307, 'Sky A',
+              region=REGION_INDICIES.SKY_TROOPS_HAWK_RIDE),
+    SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_SKY_TROOPS, 303, 'Sky B',
+              region=REGION_INDICIES.SKY_TROOPS_HAWK_RIDE),
+    SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_SKY_TROOPS, 308, 'Sky C',
+              region=REGION_INDICIES.SKY_TROOPS_HAWK_RIDE),
+
+    SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_SKY_TROOPS, 232, 'Sky Mid A',
+              region=REGION_INDICIES.SKY_TROOPS_HAWK_OR_VOLT),
+    SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_SKY_TROOPS, 309, 'Sky Mid B',
+              region=REGION_INDICIES.SKY_TROOPS_HAWK_OR_VOLT),
+    SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_SKY_TROOPS, 231, 'Sky Mid C',
+              region=REGION_INDICIES.SKY_TROOPS_HAWK_OR_VOLT),
+
+    SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_SKY_TROOPS, 225, 'Sky Volt A',
+              region=REGION_INDICIES.SKY_TROOPS_BLACK_VOLT),
+    SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_SKY_TROOPS, 304, 'Sky Volt B',
+              region=REGION_INDICIES.SKY_TROOPS_BLACK_VOLT),
+    SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_SKY_TROOPS, 302, 'Sky Volt C',
+              region=REGION_INDICIES.SKY_TROOPS_BLACK_VOLT),
+    SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_SKY_TROOPS, 305, 'Sky Volt D',
+              region=REGION_INDICIES.SKY_TROOPS_BLACK_VOLT),
+    SETObject(ObjectType.BALLOON_ITEM, Levels.STAGE_SKY_TROOPS, 306, 'Sky Volt E',
+              region=REGION_INDICIES.SKY_TROOPS_BLACK_VOLT)
+
+
 ]

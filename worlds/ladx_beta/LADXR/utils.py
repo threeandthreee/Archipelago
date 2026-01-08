@@ -1,3 +1,4 @@
+import unicodedata
 from typing import Optional
 
 from .locations.items import *
@@ -143,6 +144,71 @@ _NAMES = {
     MESSAGE: "A Special Message From Our Sponsors",
 }
 
+_PREFILTER = {
+    'à': '<agrave>',
+    'â': '<acirc>',
+    'ä': '<auml>',
+    'è': '<egrave>',
+    'é': '<eacute>',
+    'ê': '<ecirc>',
+    'ù': '<ugrave>',
+    'û': '<ucirc>',
+    'ü': '<uuml>',
+    'ô': '<ocirc>',
+    'ö': '<ouml>',
+    'ç': '<ccedil>',
+    'î': '<icirc>',
+    'ß': '<szlig>',
+    'ẞ': '<szlig>',
+    'Ä': '<Auml>',
+    'Ö': '<Ouml>',
+    'Ü': '<Uuml>',
+    'Ø': 'O',
+    'ø': 'o',
+    'Æ': 'AE',
+    'æ': 'ae',
+    'Œ': 'OE',
+    'œ': 'oe',
+    'Ł': 'L',
+    'ł': 'l',
+    'Đ': 'D',
+    'đ': 'd',
+    '“': '<dquote>',
+    '”': '<dquote>',
+    '"': '<dquote>',
+    '‘': "'",
+    '’': "'",
+    '–': '-',
+    '—': '-',
+    '…': '...',
+    '©': '(c)',
+    '№': 'No.',
+    '§': 'S',
+    '×': 'x',
+    '°': 'deg',
+    '{': '(',
+    '}': ')',
+    '[': '(',
+    ']': ')',
+    '💀': '<master>',
+    '👦': '<link>',
+    '👧': '<marin>',
+    '👨': '<tarkin>',
+    '🎀': '<ribbon>',
+    '🥫': '<dogfood>',
+    '🍌': '<bananas>',
+    '🍍': '<pineapple>',
+    '🌺': '<hibiscus>',
+    '🧹': '<broom>',
+    '🪝': '<hook>',
+    '✉️': '<letter>',
+    '🔎': '<glass>',
+    '⬆️': '<arrowU>',
+    '⬇️': '<arrowD>',
+    '⬅️': '<arrowL>',
+    '➡️': '<arrowR>',
+}
+
 _CHARACTERS = {
     b"'":  b"^",
     b'<agrave>': b'\x80',
@@ -158,10 +224,11 @@ _CHARACTERS = {
     b'<ouml>'  : b'\x8A',
     b'<ccedil>': b'\x8B',
     b'<icirc>' : b'\x8C',
-    # b'<szlig>' : b'\x8D',
-    # b'<Auml>'  : b'\x8E',
-    # b'<Ouml>'  : b'\x8F',
-    # b'<Uuml>'  : b'\x90',
+    b'<szlig>' : b'\x8D',
+    b'<Auml>'  : b'\x8E',
+    b'<Ouml>'  : b'\x8F',
+    b'<Uuml>'  : b'\x90',
+    b'<dquote>': b'\x91',
     b'<bigA>'  : b'\xD0',
     b'<bigB>'  : b'\xD1',
     b'<bigC>'  : b'\xD2',
@@ -194,14 +261,16 @@ _CHARACTERS = {
     b'<arrowR>': b'\xF3',
 }
 
-
 def setReplacementName(key: str, value: str) -> None:
     _NAMES[key] = value
 
 
-def formatText(instr: str, *, center: bool = False, ask: Optional[str] = None) -> bytes:
-    instr = instr.format(**_NAMES)
-    s = instr.encode("ascii")
+def formatText(instr: str, *, center: bool = False, ask: Optional[str] = None, skip_names: bool = False) -> bytes:
+    if not skip_names:
+        instr = instr.format(**_NAMES)
+    for character, replacement in _PREFILTER.items():
+        instr = instr.replace(character, replacement)
+    s = unicodedata.normalize("NFKD", instr).encode("ascii", "ignore")
     for character, encodedCharacter in _CHARACTERS.items():
         s = s.replace(character, encodedCharacter)
 

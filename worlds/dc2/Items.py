@@ -1,4 +1,5 @@
 from enum import IntEnum
+from Options import OptionError
 from typing import NamedTuple
 from BaseClasses import Item, MultiWorld
 
@@ -21,6 +22,7 @@ class DC2ItemCategory(IntEnum):
     REPLACE = 14,
     RIDEPOD = 15,
     MATERIAL = 16,
+    REWARD = 17
 
 
 class DC2ItemData(NamedTuple):
@@ -530,13 +532,19 @@ _all_items = [DC2ItemData(row[0], row[1], row[2]) for row in [
     ("Sun Badge",                      427, DC2ItemCategory.MISC), 
     ("Moon Badge",                     428, DC2ItemCategory.MISC),   
     
-    
-    
     ("Chapter 1 Complete",                     1000, DC2ItemCategory.EVENT),   
     ("Chapter 2 Complete",                     1001, DC2ItemCategory.EVENT),   
     ("Chapter 3 Complete",                     1002, DC2ItemCategory.EVENT),   
     ("Chapter 4 Complete",                     1003, DC2ItemCategory.EVENT),   
     ("Chapter 5 Complete",                     1004, DC2ItemCategory.EVENT),   
+
+
+    ("Essential Pack",                    2000, DC2ItemCategory.REWARD),
+    ("Gem Pack A",                    2001, DC2ItemCategory.REWARD),
+    ("Gem Pack B",                    2002, DC2ItemCategory.REWARD),
+    ("Coin Pack A",                    2003, DC2ItemCategory.REWARD),
+    ("Coin Pack B",                    2004, DC2ItemCategory.REWARD),
+    ("Crystal Pack",                    2005, DC2ItemCategory.REWARD),
 ]]
 
 item_descriptions = {
@@ -558,10 +566,19 @@ def BuildItemPool(multiworld: MultiWorld, count, options):
     for item in key_items:
         item_pool.append(item)
         remaining_count = remaining_count - 1
-    
+
+    reward_items = [item for item in _all_items if item.category == DC2ItemCategory.REWARD]
     consumable_items = [item for item in _all_items if item.category in [DC2ItemCategory.CONSUMABLE, item.category == DC2ItemCategory.MATERIAL, item.category == DC2ItemCategory.GEM, item.category == DC2ItemCategory.COIN]]
     georama_items = [item for item in _all_items if item.category == DC2ItemCategory.GEORAMA_RESOURCE]
     weapon_items = [item for item in _all_items if item.category in [DC2ItemCategory.WEAPON_MAX_L, DC2ItemCategory.WEAPON_MAX_R, DC2ItemCategory.WEAPON_MONICA_L, DC2ItemCategory.WEAPON_MONICA_R, DC2ItemCategory.RIDEPOD]]
+
+    if options.resource_pack_count.value > 0:
+        if options.resource_pack_count.value > remaining_count:
+            raise OptionError("Resource pack count exceeds remaining item count")
+        for i in range(options.resource_pack_count.value):
+            item = multiworld.random.choice(reward_items)
+            item_pool.append(item)
+            remaining_count = remaining_count - 1
 
     for i in range(int(remaining_count * 0.9)):
         item = multiworld.random.choice(consumable_items)

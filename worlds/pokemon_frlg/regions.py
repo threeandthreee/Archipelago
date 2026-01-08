@@ -1,28 +1,16 @@
 """
 Functions related to AP regions for Pokémon FireRed and LeafGreen (see ./data/regions for region definitions)
 """
-from typing import TYPE_CHECKING, Dict, List, Tuple, Callable
+from typing import TYPE_CHECKING, Dict, List, Set, Tuple, Callable
 from BaseClasses import CollectionState, ItemClassification, Region
 from .data import (data, EncounterType, LocationCategory, fly_destination_areas, fly_destination_maps,
                    fly_destination_random, fly_destination_regions, fly_plando_maps, starting_town_blacklist_map)
 from .items import PokemonFRLGItem
 from .locations import PokemonFRLGLocation
-from .options import LevelScaling, RandomizeFlyDestinations
+from .options import LevelScaling, PewterCityRoadblock, RandomizeFlyDestinations
 
 if TYPE_CHECKING:
     from . import PokemonFRLGWorld
-
-INDIRECT_CONDITIONS: Dict[str, List[str]] = {
-    "Seafoam Islands 1F": ["Seafoam Islands B3F (West) Surfing Spot (Bottom)",
-                           "Seafoam Islands B3F (West) Landing Spot (Bottom)",
-                           "Seafoam Islands B3F (East) Landing Spot (Bottom)",
-                           "Seafoam Islands B3F (East) Surfing Spot (Bottom)",
-                           "Seafoam Islands B3F (South Water) Water Battle"],
-    "Seafoam Islands B3F (West)": ["Seafoam Islands B4F Surfing Spot (Left)",
-                                   "Seafoam Islands B4F (Near Articuno) Landing Spot"],
-    "Victory Road 3F (Southwest)": ["Victory Road 2F Southeast Rock Barrier (Left)"],
-    "Vermilion City": ["Depart Seagallop (Navel Rock)", "Depart Seagallop (Birth Island)"]
-}
 
 STATIC_POKEMON_SPOILER_NAMES = {
     "TRADE_POKEMON_MR_MIME": "Route 2 Trade House",
@@ -111,10 +99,12 @@ fly_destination_entrance_map = {
 
 class PokemonFRLGRegion(Region):
     distance: int | None
+    entrance_hints: Set[str]
 
     def __init__(self, name, player, multiworld):
         super().__init__(name, player, multiworld)
         self.distance = None
+        self.entrance_hints = set()
 
 
 def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
@@ -185,6 +175,7 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
                                 LocationCategory.EVENT_WILD_POKEMON,
                                 encounter_region,
                                 spoiler_name=f"{encounter_region_name} ({type_name})",
+                                encounter_key=f"{type_name.replace(' ', '_').upper()}_{map_name}"
                             )
                             encounter_location.show_in_spoiler = False
 
@@ -252,12 +243,12 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
     def exclude_warp(warp: str):
         source_warp = data.warps[warp]
         dest_warp = data.warps[data.warp_map[warp]]
-        if source_warp.name == "":
+        if source_warp.name.startswith("!"):
             return True
         if dest_warp.parent_region_id is None:
             return True
         # These two warps need to always be included even if the destination warps parent region isn't
-        if source_warp.name in ("Pokemon League", "Pokemon League Champion's Room Exit (South)"):
+        if source_warp.name in ("Pokemon League", "Champion's Room Exit (South)"):
             return False
         if exclude_region(dest_warp.parent_region_id):
             return True
@@ -327,7 +318,10 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
                                         event_data.category,
                                         new_region,
                                         spoiler_name=STATIC_POKEMON_SPOILER_NAMES[event_id]
-                                        if event_id in STATIC_POKEMON_SPOILER_NAMES else None)
+                                        if event_id in STATIC_POKEMON_SPOILER_NAMES else None,
+                                        encounter_key=event_id
+                                        if event_data.category == LocationCategory.EVENT_STATIC_POKEMON
+                                        or event_data.category == LocationCategory.EVENT_LEGENDARY_POKEMON else None)
             event.place_locked_item(PokemonFRLGItem(event_data.item,
                                                     ItemClassification.progression,
                                                     None,
@@ -353,8 +347,8 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
             dest_region_name = data.regions[dest_warp.parent_region_id].name
             if world.options.skip_elite_four:
                 if source_warp.name == "Pokemon League":
-                    dest_region_name = "Pokemon League Champion's Room"
-                elif source_warp.name == "Pokemon League Champion's Room Exit (South)":
+                    dest_region_name = "Champion's Room"
+                elif source_warp.name == "Champion's Room Exit (South)":
                     dest_region_name = "Indigo Plateau Pokemon Center 1F"
             connections.append((source_warp.name, region_name, dest_region_name))
 
@@ -503,51 +497,64 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
         world.encounter_level_list = [i[1] for i in encounter_name_level_list]
 
     if world.options.random_starting_town:
-        forbidden_starting_towns = ["SPAWN_INDIGO_PLATEAU"]
-        if not world.options.shuffle_badges:
-            forbidden_starting_towns.extend(["SPAWN_ROUTE4", "SPAWN_ROUTE10"])
-        if world.options.kanto_only:
-            forbidden_starting_towns.extend(["SPAWN_ONE_ISLAND", "SPAWN_TWO_ISLAND", "SPAWN_THREE_ISLAND",
-                                             "SPAWN_FOUR_ISLAND", "SPAWN_FIVE_ISLAND", "SPAWN_SIX_ISLAND",
-                                             "SPAWN_SEVEN_ISLAND"])
-        blacklisted_starting_towns = [v for k, v in starting_town_blacklist_map.items()
-                                      if k in world.options.starting_town_blacklist.value]
-        allowed_starting_towns = [town for town in starting_town_map.keys()
-                                  if town not in forbidden_starting_towns and town not in blacklisted_starting_towns]
-        if len(allowed_starting_towns) == 0:
-            allowed_starting_towns = [town for town in starting_town_map.keys() if town not in forbidden_starting_towns]
-        world.starting_town = world.random.choice(allowed_starting_towns)
+        if not world.is_universal_tracker:
+            forbidden_starting_towns = ["SPAWN_INDIGO_PLATEAU"]
+            if not world.options.shuffle_badges:
+                forbidden_starting_towns.extend(["SPAWN_ROUTE4", "SPAWN_ROUTE10"])
+            elif world.options.pewter_city_roadblock in (PewterCityRoadblock.option_brock,
+                                                         PewterCityRoadblock.option_any_gym):
+                forbidden_starting_towns.append("SPAWN_ROUTE4")
+            if world.options.kanto_only:
+                forbidden_starting_towns.extend(["SPAWN_ONE_ISLAND", "SPAWN_TWO_ISLAND", "SPAWN_THREE_ISLAND",
+                                                 "SPAWN_FOUR_ISLAND", "SPAWN_FIVE_ISLAND", "SPAWN_SIX_ISLAND",
+                                                 "SPAWN_SEVEN_ISLAND"])
+            blacklisted_starting_towns = [v for k, v in starting_town_blacklist_map.items()
+                                          if k in world.options.starting_town_blacklist.value]
+            allowed_starting_towns = [town for town in starting_town_map.keys()
+                                      if town not in forbidden_starting_towns and town not in blacklisted_starting_towns]
+            if len(allowed_starting_towns) == 0:
+                allowed_starting_towns = [town for town in starting_town_map.keys() if town not in forbidden_starting_towns]
+            world.starting_town = world.random.choice(allowed_starting_towns)
+            world.starting_respawn = world.starting_town
+        else:
+            starting_town_lookup = {data.constants[k]: k for k in starting_town_map.keys()}
+            world.starting_town = starting_town_lookup[world.ut_slot_data["starting_town"]]
 
     if world.options.randomize_fly_destinations != RandomizeFlyDestinations.option_off:
-        fly_destinations = {}
-        if world.options.randomize_fly_destinations == RandomizeFlyDestinations.option_area:
-            fly_destinations = fly_destination_areas.copy()
-        elif world.options.randomize_fly_destinations == RandomizeFlyDestinations.option_map:
-            fly_destinations = fly_destination_maps.copy()
-        elif world.options.randomize_fly_destinations == RandomizeFlyDestinations.option_region:
-            fly_destinations = fly_destination_regions.copy()
-        elif world.options.randomize_fly_destinations == RandomizeFlyDestinations.option_completely_random:
-            fly_destinations = fly_destination_random.copy()
-        maps_already_chosen = set()
-        for exit in regions["Sky"].exits:
-            use_plando = False
-            fly_data = None
-            allowed_fly_destinations = [fly for fly in fly_destinations[exit.name]
-                                        if fly.map not in maps_already_chosen and fly.region in regions.keys()]
-            if exit.name in world.options.fly_destination_plando.value.keys():
-                fly_plando = fly_plando_maps[world.options.fly_destination_plando.value[exit.name]]
-                if (fly_plando.map not in maps_already_chosen and
-                    fly_plando.region in regions.keys() and
-                    fly_plando in allowed_fly_destinations):
-                    use_plando = True
-                    fly_data = fly_plando
-            if not use_plando:
-                fly_data = world.random.choice(allowed_fly_destinations)
-            regions[exit.connected_region.name].entrances.remove(exit)
-            exit.connected_region = regions[fly_data.region]
-            regions[fly_data.region].entrances.append(exit)
-            world.fly_destination_data[fly_destination_entrance_map[exit.name]] = fly_data
-            maps_already_chosen.add(fly_data.map)
+        if not world.is_universal_tracker:
+            fly_destinations = {}
+            if world.options.randomize_fly_destinations == RandomizeFlyDestinations.option_area:
+                fly_destinations = fly_destination_areas.copy()
+            elif world.options.randomize_fly_destinations == RandomizeFlyDestinations.option_map:
+                fly_destinations = fly_destination_maps.copy()
+            elif world.options.randomize_fly_destinations == RandomizeFlyDestinations.option_region:
+                fly_destinations = fly_destination_regions.copy()
+            elif world.options.randomize_fly_destinations == RandomizeFlyDestinations.option_completely_random:
+                fly_destinations = fly_destination_random.copy()
+            maps_already_chosen = set()
+            for exit in regions["Sky"].exits:
+                use_plando = False
+                fly_data = None
+                allowed_fly_destinations = [fly for fly in fly_destinations[exit.name]
+                                            if fly.map not in maps_already_chosen and fly.region in regions.keys()]
+                if exit.name in world.options.fly_destination_plando.value.keys():
+                    fly_plando = fly_plando_maps[world.options.fly_destination_plando.value[exit.name]]
+                    if (fly_plando.map not in maps_already_chosen and
+                        fly_plando.region in regions.keys() and
+                        fly_plando in allowed_fly_destinations):
+                        use_plando = True
+                        fly_data = fly_plando
+                if not use_plando:
+                    fly_data = world.random.choice(allowed_fly_destinations)
+                regions[exit.connected_region.name].entrances.remove(exit)
+                exit.connect(regions[fly_data.region])
+                world.fly_destination_data[fly_destination_entrance_map[exit.name]] = fly_data
+                maps_already_chosen.add(fly_data.map)
+        else:
+            for exit in regions["Sky"].exits:
+                region = regions[world.ut_slot_data["fly_destinations"][exit.name]]
+                regions[exit.connected_region.name].entrances.remove(exit)
+                exit.connect(region)
 
     regions["Title Screen"].connect(regions[starting_town_map[world.starting_town]], "Start Game")
     regions["Title Screen"].connect(regions["Player's PC"], "Use PC")
@@ -559,6 +566,24 @@ def create_regions(world: "PokemonFRLGWorld") -> Dict[str, Region]:
 
 
 def create_indirect_conditions(world: "PokemonFRLGWorld"):
-    for region, entrances in INDIRECT_CONDITIONS.items():
-        for entrance in entrances:
-            world.multiworld.register_indirect_condition(world.get_region(region), world.get_entrance(entrance))
+    indirect_conditions: List[Tuple[List[str], List[str]]] = [
+        (["Seafoam Islands 1F", "Seafoam Islands B1F (West)", "Seafoam Islands B1F (Northeast)",
+         "Seafoam Islands B2F (Northwest)", "Seafoam Islands B2F (Northeast)"],
+         ["Seafoam Islands B3F (West) Surfing Spot (Bottom)", "Seafoam Islands B3F (West) Landing Spot (Bottom)",
+          "Seafoam Islands B3F (East) Landing Spot (Bottom)", "Seafoam Islands B3F (East) Surfing Spot (Bottom)",
+          "Seafoam Islands B3F (South Water) Water Battle"]),
+        (["Seafoam Islands B3F (West)"],
+         ["Seafoam Islands B4F Surfing Spot (Left)", "Seafoam Islands B4F (Near Articuno) Landing Spot"]),
+        (["Pokemon Mansion 1F", "Pokemon Mansion 2F", "Pokemon Mansion 3F (North)", "Pokemon Mansion B1F"],
+         ["Pokemon Mansion 1F South Barrier", "Pokemon Mansion 1F Southeast Barrier",
+          "Pokemon Mansion 2F Center Barrier (Top)", "Pokemon Mansion 2F Center Barrier (Bottom)",
+          "Pokemon Mansion 3F Barrier (Top)", "Pokemon Mansion 3F Barrier (Bottom)"]),
+        (["Victory Road 3F (Southwest)"],
+         ["Victory Road 2F Southeast Rock Barrier (Left)"]),
+        (["Vermilion City"],
+         ["Depart Seagallop (Navel Rock)", "Depart Seagallop (Birth Island)"])
+    ]
+    for indirect_condition in indirect_conditions:
+        for region in indirect_condition[0]:
+            for entrance in indirect_condition[1]:
+                world.multiworld.register_indirect_condition(world.get_region(region), world.get_entrance(entrance))

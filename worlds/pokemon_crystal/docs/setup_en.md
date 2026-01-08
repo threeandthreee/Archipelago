@@ -54,6 +54,31 @@ with [PopTracker](https://github.com/black-sliver/PopTracker/releases)
 8. On your first time opening a patch with BizHawk Client, you will also be asked to locate `EmuHawk.exe` in your
    BizHawk install. For mGBA users, you can select `Cancel` and manually open mGBA.
 
+### Option Overrides
+
+Pokemon Crystal has several options which do not affect Archipelago's logic, and as such can be changed after
+generation without significantly changing the randomizer experience.
+
+To do that, open the `host.yaml` file in your Archipelago folder and locate the `pokemon_crystal_settings` section.
+In it, add an `option_overrides` setting like so:
+
+```yaml
+pokemon_crystal_settings:
+  rom_file: "Pokemon - Crystal Version (UE) [C][!].gbc"
+  option_overrides:
+    # Enter your overrides here
+```
+
+You can then type in the options you would like to override as you would in a player YAML. Option weights and triggers
+are supported.
+
+The following options can always be overridden: `trainer_name`, `trainer_palette`, `game_options`,
+`field_move_menu_order`, `default_pokedex_mode`, `shopsanity_restrict_rare_candies`, `reusable_tms`,
+`minimum_catch_rate`, `skip_elite_four`, `better_marts`, `build_a_mart`, `experience_modifier`, `starting_money`.
+
+You can change these settings at any time after patching the ROM and re-apply them by patching the ROM again. Your
+save data will be preserved.
+
 If you're playing a single-player seed, and you don't care about autotracking or hints, you can stop here, close the
 client, and load the patched ROM in any emulator. However, for multiworlds and other Archipelago features, continue
 below using BizHawk or mGBA as your emulator.
@@ -89,4 +114,5 @@ Pokémon Crystal has a fully functional map tracker that supports auto-tracking.
 2. Put the tracker pack into `packs/` in your PopTracker install.
 3. Open PopTracker, and load the Pokémon Crystal pack.
 4. For autotracking, click on the "AP" symbol at the top.
-5. Enter the Archipelago server address (the one you connected your client to), slot name, and password. If you did not set a password for your room, leave that field empty. 
+5. Enter the Archipelago server address (the one you connected your client to), slot name, and password. If you did not
+   set a password for your room, leave that field empty. 

@@ -69,7 +69,6 @@ river_ids = ["Progressive Matataki River", "Progressive Matataki River", "Progre
 other_ids = ["Matataki Trees", "Matataki Trees", "Matataki Bridge"]
 
 
-# TODO split these lists into 2 based on items that spawn from the first half of a dungeon or the second
 # Atla that give MCs by content quality (unless handled otherwise). If MC shuffle is on, these all need to be required
 mc_useful = ["Progressive Owl Shop", "Progressive Owl Shop",
              "Progressive Bunbuku's House",
@@ -80,7 +79,6 @@ mc_useful_2 = ["Progressive Kye's House", "Progressive Kye's House", "Progressiv
                "Progressive Couscous's House", "Progressive Gob's House",
                "Progressive Watermill 2", "Progressive Watermill 3", ]
 mc_filler_2 = ["Progressive Bunbuku's House",]
-
 # Always required/useful/filler items
 required = river_ids + cacao_ids
 useful = pao_ids + baron_ids + gob_ids + owl_ids
@@ -92,36 +90,36 @@ def create_matataki_atla(options: DarkCloudOptions, player: int) -> list["DarkCl
 
     items = []
 
-    matataki_progression = required
-    matataki_useful = useful
-    matataki_filler = filler
+    matataki_required = required.copy()
+    matataki_useful = useful.copy()
+    matataki_filler = filler.copy()
 
     # Mush house is only full required if Utan is required
     if options.all_bosses or options.boss_goal == 2:
-        matataki_progression.extend(mush_ids)
-        matataki_progression.extend(mush_ids_mc)
-        matataki_progression.extend(mush_ids_mc2)
+        matataki_required.extend(mush_ids)
+        matataki_required.extend(mush_ids_mc)
+        matataki_required.extend(mush_ids_mc2)
     else:
         matataki_useful.extend(mush_ids)
         if options.miracle_sanity:
-            matataki_progression.extend(mush_ids_mc)
-            matataki_progression.extend(mush_ids_mc2)
+            matataki_required.extend(mush_ids_mc)
+            matataki_required.extend(mush_ids_mc2)
         else:
             matataki_useful.extend(mush_ids_mc)
             matataki_useful.extend(mush_ids_mc2)
 
     if options.miracle_sanity:
-        matataki_progression.extend(mc_useful)
-        matataki_progression.extend(mc_useful_2)
-        matataki_progression.extend(mc_filler)
-        matataki_progression.extend(mc_filler_2)
+        matataki_required.extend(mc_useful)
+        matataki_required.extend(mc_useful_2)
+        matataki_required.extend(mc_filler)
+        matataki_required.extend(mc_filler_2)
     else:
         matataki_useful.extend(mc_useful)
         matataki_useful.extend(mc_useful_2)
         matataki_filler.extend(mc_filler)
         matataki_filler.extend(mc_filler_2)
 
-    for i in matataki_progression:
+    for i in matataki_required:
         items.append(DarkCloudItem(i, ItemClassification.progression, ids[i], player))
 
     for i in matataki_useful:
@@ -130,6 +128,4 @@ def create_matataki_atla(options: DarkCloudOptions, player: int) -> list["DarkCl
     for i in matataki_filler:
         items.append(DarkCloudItem(i, ItemClassification.filler, ids[i], player))
 
-    # print(len(items))
-    # print (items)
     return items

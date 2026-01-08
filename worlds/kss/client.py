@@ -20,7 +20,7 @@ KSS_KIRBY_HP = SRAM_1_START + 0x137C
 KSS_DEMO_STATE = SRAM_1_START + 0x138E
 KSS_GAME_STATE = SRAM_1_START + 0x1390
 KSS_GOURMET_RACE_WON = SRAM_1_START + 0x171D
-KSS_DYNA_COMPLETED = SRAM_1_START + 0x1A63
+KSS_DYNA_UNLOCKED = SRAM_1_START + 0x1A63
 KSS_DYNA_SWITCHES = SRAM_1_START + 0x1A64
 KSS_DYNA_IRON_MAM = SRAM_1_START + 0x1A67
 KSS_REVENGE_CHAPTERS = SRAM_1_START + 0x1A69
@@ -34,6 +34,7 @@ KSS_TGC0_GOLD = SRAM_1_START + 0x1B0F  # 3-byte 24-bit int
 KSS_COPY_ABILITIES = SRAM_1_START + 0x1B1D  # originally Milky Way Wishes deluxe essences
 KSS_MWW_ITEMS = SRAM_1_START + 0x1B20
 # Remapped for sending
+KSS_DYNA_COMPLETED = SRAM_1_START + 0x7A63
 KSS_SENT_DYNA_SWITCH = SRAM_1_START + 0x7A64
 KSS_COMPLETED_PLANETS = SRAM_1_START + 0x7A6B
 KSS_SENT_TGCO_TREASURE = SRAM_1_START + 0x7B05  # 8 bytes
@@ -45,17 +46,29 @@ KSS_RECEIVED_ITEMS = SRAM_1_START + 0x8002
 KSS_RECEIVED_PLANETS = SRAM_1_START + 0x8004
 KSS_PLAY_SFX = SRAM_1_START + 0x8006
 KSS_ACTIVATE_CANDY = SRAM_1_START + 0x8008
+KSS_MIRROR_GAME = SRAM_1_START + 0x800A
+KSS_MIRROR_ROOM = SRAM_1_START + 0x800C
 
 KSS_ROMNAME = SRAM_1_START + 0x8100
 KSS_DEATH_LINK_ADDR = SRAM_1_START + 0x9000
 KSS_CONSUMABLE_FILTER = SRAM_1_START + 0x9001
 
+KSS_DEATH_MESSAGES = {
+    0: ("Pop Star was too much for ", "."),
+    1: ("", " failed to defeat Dyna Blade."),
+    2: ("", " is not very good at eating."), # like 85% sure you can't actually die naturally in Gourmet Race
+    3: ("", " got lost in the great cave."),
+    4: ("Meta Knight defeated ", " and took over Pop Star."),
+    5: ("", " was lost in the stars."),
+    6: ("", " was defeated in The Arena."),
+}
 
 class KSSSNIClient(SNIClient):
     game = "Kirby Super Star"
     patch_suffix = ".apkss"
     item_queue: typing.List[NetworkItem] = []
     consumable_filter: int = 0
+    tracker_key: str = ""
 
     async def deathlink_kill_player(self, ctx: "SNIContext") -> None:
         from SNIClient import DeathState, snes_buffered_write, snes_read, snes_flush_writes
@@ -120,6 +133,10 @@ class KSSSNIClient(SNIClient):
         if not demo_state:
             return
 
+        if not self.tracker_key and ctx.slot:
+            self.tracker_key = f"KSS_STAGE_{ctx.team}_{ctx.slot}"
+            ctx.set_notify(self.tracker_key)
+
         current_subgames = int.from_bytes(await snes_read(ctx, KSS_CURRENT_SUBGAMES, 2), "little")
         if current_subgames & 0x0080 != 0:
             await ctx.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
@@ -128,21 +145,43 @@ class KSSSNIClient(SNIClient):
         game_state = int.from_bytes(await snes_read(ctx, KSS_GAME_STATE, 1), "little")
 
         kirby_hp = int.from_bytes(await snes_read(ctx, KSS_KIRBY_HP, 2), "little")
+        mirror_game = int.from_bytes(await snes_read(ctx, KSS_MIRROR_GAME, 2), "little")
         if "DeathLink" in ctx.tags and game_state == 3 and ctx.last_death_link + 1 < time.time() \
                 and ctx.death_state == DeathState.alive:
             if kirby_hp == 0:
-                # TODO: see if I can get gamemode specific messages
-                await ctx.handle_deathlink_state(True, f"Pop Star was too much for {ctx.player_names[ctx.slot]}.")
+                death_pre, death_post = KSS_DEATH_MESSAGES[mirror_game]
+                await ctx.handle_deathlink_state(True, f"{death_pre}{ctx.player_names[ctx.slot]}{death_post}")
         elif "DeathLink" in ctx.tags and game_state == 3 and kirby_hp > 0:
             ctx.death_state = DeathState.alive
 
+        if self.tracker_key:
+            mirror_room = int.from_bytes(await snes_read(ctx, KSS_MIRROR_ROOM, 2), "little")
+            if game_state in (0, 1):
+                tracker_val = "M_M"
+            else:
+                tracker_val = f"{mirror_game}_{mirror_room}"
+            if ctx.stored_data.get(self.tracker_key, None) != tracker_val:
+                await ctx.send_msgs([{
+                        "cmd": "Set",
+                        "key": self.tracker_key,
+                        "default": "M_M",
+                        "want_reply": False,
+                        "operations": [
+                            {"operation": "replace", "value": tracker_val}
+                        ]
+                    }])
+            print(ctx.stored_data.get(self.tracker_key, None))
+
         save_abilities = 0
         i = 0
+        non_mww = 0
         for i, ability in enumerate([item for item in ctx.items_received if item.item & 0x100]):
             save_abilities |= (1 << ((ability.item & 0xFF) - 1))
+            if ability.item & 0xFF > 0x13:
+                non_mww += 1
         snes_buffered_write(ctx, KSS_COPY_ABILITIES, int.to_bytes(save_abilities, 3, "little"))
         if save_abilities:
-            snes_buffered_write(ctx, KSS_MWW_ITEMS, int.to_bytes(i+1, 1, "little"))
+            snes_buffered_write(ctx, KSS_MWW_ITEMS, int.to_bytes(i - non_mww + 1, 1, "little"))
 
         known_treasures = int.from_bytes(await snes_read(ctx, KSS_TGCO_TREASURE, 8), "little")
         known_value = int.from_bytes(await snes_read(ctx, KSS_TGC0_GOLD, 4), "little")
@@ -162,8 +201,14 @@ class KSSSNIClient(SNIClient):
             unlocked_planets |= (1 << planet)
         snes_buffered_write(ctx, KSS_RECEIVED_PLANETS, unlocked_planets.to_bytes(2, "little"))
 
+        dyna_stage = int.from_bytes(await snes_read(ctx, KSS_DYNA_UNLOCKED, 1), "little")
+        stage_count = min(4, sum(1 for item in ctx.items_received if (item.item & 0x802) == 0x802))
+        if dyna_stage != stage_count:
+            snes_buffered_write(ctx, KSS_DYNA_UNLOCKED, stage_count.to_bytes(1, "little"))
+
+
         unlocked_switches = int.from_bytes(await snes_read(ctx, KSS_DYNA_SWITCHES, 1), "little")
-        for switch_item in [item for item in ctx.items_received if item.item & 0x800]:
+        for switch_item in [item for item in ctx.items_received if (item.item & 0x803) in (0x800, 0x801)]:
             switch = switch_item.item & 0xFF
             unlocked_switches |= (1 << switch)
         snes_buffered_write(ctx, KSS_DYNA_SWITCHES, unlocked_switches.to_bytes(1, "little"))
@@ -232,9 +277,9 @@ class KSSSNIClient(SNIClient):
                 new_checks.append(location)
 
         dyna_stage = int.from_bytes(await snes_read(ctx, KSS_DYNA_COMPLETED, 1), "little")
-        for i in range(dyna_stage):
+        for i in range(5):
             location = BASE_ID + 4 + i
-            if location not in ctx.checked_locations:
+            if dyna_stage & (1 << i) and location not in ctx.checked_locations:
                 new_checks.append(location)
 
         dyna_mam = int.from_bytes(await snes_read(ctx, KSS_DYNA_IRON_MAM, 1), "little")

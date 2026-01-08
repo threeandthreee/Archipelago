@@ -21,7 +21,7 @@ The materials required for constructing Assemblers and Foundries is altered to i
 The player can choose from a number of goals using their YAML settings:
 
 - Complete the selected number of **[Space Elevator](https://satisfactory.wiki.gg/wiki/Space_Elevator) Phases**.
-  - The goal completes upon submitting the final Space Elevator Phase. Any other progression you may have access to (HUB, MAM, AWESOME Shop) is not required for goal completion.
+  - The goal completes upon submitting your selected Space Elevator Phase. Any other progression you may have access to (HUB, MAM, AWESOME Shop) is not required for goal completion.
   - Selecting Phase 5 is equivalent to beating the vanilla game by launching Project Assembly.
   - Expect Phase 1 to take ~3 hours to finish, Phase 2 to take ~8 hours, Phase 3 to take ~2 days, Phase 4 to take ~1 week, and Phase 5 to take ~1.5 weeks on default settings.
 - Supply items to the [AWESOME Sink](https://satisfactory.wiki.gg/wiki/AWESOME_Sink) **totalling a configurable amount of points** to finish.
@@ -37,9 +37,11 @@ The player can choose from a number of goals using their YAML settings:
   - The goal completes upon submitting the HUB milestone.
   - There is no partial progress system for this goal - combining it with another goal is recommended.
   - Time to finish this goal varies significantly depending on your map knowledge, equipment, and movement skills.
+- Complete the FICSMAS seasonal event MAM Tree
+  - The goal completes upon researching the Wonder Star MAM Tree Node. TODO Jarno update with decision on data cartridges
+  - If you are outside the natural FICSMAS season you must use [an additional mod](https://ficsit.app/mod/FicsmasEveryday) to enable it.
 
 You can also configure whether completing your slot requires *any one* goal or *all* goals to be met.
-
 
 ## What Satisfactory items can appear in other players' worlds?
 
@@ -112,9 +114,9 @@ EnergyLink is an energy storage supported by certain games that is shared across
 In Satisfactory, if enabled in the player settings, all base-game Power Storage buildings will act as Energy Link interfaces.
 They will deposit surplus produced energy and draw energy from the shared storage when needed.
 
-Just like the base game, there is no limit to the discharge/draw rate of one building,
+Just like the base game, there is no limit to the discharge rate of one building,
 and each Power Storage provides 100 MW of charging throughput.
-The shared storage has unlimited capacity, and only a small amount of energy is lost during depositing.
+The shared storage has unlimited capacity and a small amount of energy is lost upon deposit.
 The amount of energy currently in the shared storage is displayed in the Archipelago client
 and appears in the Power Storage building UI.
 
