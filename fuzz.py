@@ -1,4 +1,4 @@
-__version__ = "0.2.2"
+__version__ = "0.4.3"
 
 import sys
 import os
@@ -24,6 +24,7 @@ from Options import (
     OptionSet,
     FreeText,
     PlandoConnections,
+    OptionCounter,
     OptionList,
     PlandoTexts,
     OptionDict,
@@ -48,6 +49,7 @@ from functools import wraps
 from io import StringIO
 from multiprocessing import Pool
 
+import gc
 import importlib
 import json
 import functools
@@ -68,6 +70,17 @@ OUT_DIR = f"fuzz_output"
 settings.no_gui = True
 settings.skip_autosave = True
 MP_HOOKS = []
+MANAGER = None
+
+# This whole thing is to prevent infinite growth of ABC caches
+# See https://github.com/python/cpython/issues/92810
+from abc import ABCMeta
+ABC_CLASSES = [obj for obj in gc.get_objects() if isinstance(obj, ABCMeta)]
+
+
+def clear_abc_caches():
+    for cls in ABC_CLASSES:
+        cls._abc_caches_clear()
 
 
 # We patch this because AP can't keep its hands to itself and has to start a thread to clean stuff up.
@@ -190,13 +203,16 @@ def generate_random_yaml(world_name, meta):
     if world is None:
         raise Exception(f"Failed to resolve apworld from apworld name: {world_name}")
 
+    global_meta = meta.get(None, {})
+    game_meta = meta.get(game_name, {})
+
     game_options = {}
     option_groups = get_option_groups(world)
     for group, options in option_groups.items():
         for option_name, option_value in options.items():
-            override = meta.get(None, {}).get(option_name)
+            override = global_meta.get(option_name)
             if not override:
-                override = meta.get(game_name, {}).get(option_name)
+                override = game_meta.get(option_name)
 
             if override is not None:
                 game_options[option_name] = override
@@ -206,6 +222,9 @@ def generate_random_yaml(world_name, meta):
                 get_random_value(option_name, option_value)
             )
 
+    if "triggers" in game_meta:
+        game_options["triggers"] = game_meta["triggers"]
+
     yaml_content = {
         "description": f"{game_name} Template, generated with https://github.com/Eijebong/Archipelago-fuzzer/tree/{__version__}",
         "game": game_name,
@@ -214,6 +233,9 @@ def generate_random_yaml(world_name, meta):
         },
         game_name: game_options,
     }
+
+    if "triggers" in meta:
+        yaml_content["triggers"] = meta["triggers"]
 
     res = yaml.safe_dump(yaml_content, sort_keys=False)
 
@@ -239,6 +261,19 @@ def get_random_value(name, option):
         # Just return Link for now.
         return "Link"
 
+    if issubclass(option, OptionCounter):
+        # ItemDict subclasses like StartInventory might not have valid_keys and
+        # instead rely on verify_item_name for runtime validation against world.item_names
+        if not option.valid_keys:
+            return option.default
+        selected_keys = random.sample(
+            list(option.valid_keys),
+            k=random.randint(0, len(option.valid_keys))
+        )
+        min_val = option.min if option.min is not None else 0
+        max_val = option.max if option.max is not None else 1000
+        return {key: random.randint(min_val, max_val) for key in selected_keys}
+
     if issubclass(option, OptionDict):
         # This is for example factorio's start_items and worldgen settings. I don't think it's worth randomizing those as I'm not expecting the generation outcome to change from them.
         # Plus I have no idea how to randomize them in the first place :)
@@ -254,11 +289,10 @@ def get_random_value(name, option):
     if issubclass(option, Range):
         return random.randint(option.range_start, option.range_end)
 
-    if issubclass(option, (ItemSet, ItemDict, LocationSet)):
+    if issubclass(option, (ItemSet, LocationSet)):
         # I don't know what to do here so just return the default value instead of a random one.
-        # This affects options like start inventory, local items, non local
-        # items so it's not the end of the world if they don't get randomized
-        # but we might want to look into that later on
+        # This affects options like local items, non local items so it's not the end of the world
+        # if they don't get randomized but we might want to look into that later on
         return option.default
 
     if issubclass(option, OptionSet):
@@ -275,9 +309,17 @@ def get_random_value(name, option):
         return option("random").value
 
     if issubclass(option, FreeText):
-        return "".join(
-            random.choice(string.ascii_letters) for i in range(random.randint(0, 255))
+        special_symbols = '&<>"\'\\/@#$%^*()[]{}|;:,.'
+        whitespace = ' \t\n'
+        multibyte_utf8 = (
+            'ÀÁÂÃÄÅÆÇÈÉÊËΒΓΔбвг'
+            '中文日本語한글'
+            '🎮🎯🎲🔥💀𝕳𝖊𝖑𝖑𝖔'
         )
+
+        all_chars = string.ascii_letters + string.digits + special_symbols + whitespace + multibyte_utf8
+
+        return "".join(random.choice(all_chars) for _ in range(random.randint(0, 255)))
 
     return option.default
 
@@ -327,7 +369,6 @@ def gen_wrapper(yaml_path, apworld_name, i, args, queue, tmp):
             queue.put_nowait((myself, apworld_name, i, yaml_path, out_buf))
             queue.join()
         timer = threading.Timer(args.timeout, stop)
-        timer.start()
 
 
     raised = None
@@ -343,6 +384,9 @@ def gen_wrapper(yaml_path, apworld_name, i, args, queue, tmp):
                         hook.setup_worker(args)
                         MP_HOOKS.append(hook)
 
+                if timer:
+                    timer.start()
+
                 mw = call_generate(yaml_path, args, output_path)
             except Exception as e:
                 raised = e
@@ -356,7 +400,11 @@ def gen_wrapper(yaml_path, apworld_name, i, args, queue, tmp):
                     # dumping YAMLs, and that would be bad.
                     if timer is not None:
                         timer.cancel()
-                        timer.join()
+                        if timer.ident is not None:
+                            timer.join()
+
+                    clear_abc_caches()
+
                 root_logger = logging.getLogger()
                 handlers = root_logger.handlers[:]
                 for handler in handlers:
@@ -507,7 +555,7 @@ def print_status():
     print("Timeouts:", TIMEOUTS)
     print("Ignored:", OPTION_ERRORS)
     print()
-    print("Time taken:{:.2f}s".format(time.time() - START))
+    print("Time taken:{:.2f}s".format(time.perf_counter() - START))
 
 
 def find_hook(hook_path):
@@ -558,20 +606,30 @@ class BaseHook:
 
 
 def write_report(report):
-    computed_report = {}
+    errors = {}
 
     for game_name, game_report in report.items():
-        computed_report[game_name] = defaultdict(lambda: [])
+        errors[game_name] = defaultdict(lambda: [])
 
         for exc_type, exc_report in game_report.items():
             for exc_str, yamls in exc_report.items():
                 if exc_type == FillError:
-                    computed_report[game_name]["FillError"].extend(yamls)
+                    errors[game_name]["FillError"].extend(yamls)
                 else:
                     if exc_str:
-                        computed_report[game_name][exc_str].extend(yamls)
+                        errors[game_name][exc_str].extend(yamls)
                     else:
-                        computed_report[game_name][str(exc_type)].extend(yamls)
+                        errors[game_name][str(exc_type)].extend(yamls)
+
+    stats = {
+        "total": SUCCESS + FAILURE + TIMEOUTS + OPTION_ERRORS,
+        "success": SUCCESS,
+        "failure": FAILURE,
+        "timeout": TIMEOUTS,
+        "ignored": OPTION_ERRORS,
+    }
+
+    computed_report = {"stats": stats, "errors": errors}
 
     with open(os.path.join(OUT_DIR, "report.json"), "w", encoding='utf-8') as fd:
         fd.write(json.dumps(computed_report))
@@ -639,8 +697,9 @@ if __name__ == "__main__":
                     static_yamls.append(fd.read())
 
 
-        manager = multiprocessing.Manager()
-        queue = manager.Queue(1000)
+        global MANAGER
+        MANAGER = multiprocessing.Manager()
+        queue = MANAGER.Queue(1000)
         def handle_timeouts():
             while True:
                 try:
@@ -684,6 +743,9 @@ if __name__ == "__main__":
             random_yamls = [
                 generate_random_yaml(actual_apworld, meta) for _ in range(yamls_this_run)
             ]
+
+            if i % 100 == 0:
+                clear_abc_caches()
 
             SUBMITTED += 1
 
@@ -741,7 +803,7 @@ if __name__ == "__main__":
         multiprocessing.set_start_method(start_method)
         tmp = tempfile.TemporaryDirectory(prefix="apfuzz")
         with Pool(processes=args.jobs, maxtasksperchild=None) as p:
-            START = time.time()
+            START = time.perf_counter()
             main(p, args, tmp.name)
     except KeyboardInterrupt:
         pass
@@ -754,10 +816,13 @@ if __name__ == "__main__":
 
         tmp.cleanup()
 
+        if MANAGER is not None:
+            MANAGER._process.kill()
+
         if not crashed:
             print_status()
             write_report(REPORT)
-            sys.exit((FAILURE + TIMEOUTS) != 0)
+            os._exit((FAILURE + TIMEOUTS) != 0)
 
-        sys.exit(2)
+        os._exit(2)
 
