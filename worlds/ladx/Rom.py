@@ -63,7 +63,7 @@ def write_patch_data(world: "LinksAwakeningWorld", patch: LADXProcedurePatch):
         "multi_key": binascii.hexlify(world.multi_key).decode(),
         "player": patch.player,
         "player_name": patch.player_name,
-        "other_player_names": list(world.multiworld.player_name.values()),
+        "other_player_names": list(world.multiworld.player_name.values())[:100],
         "rom_item_placements": world.rom_item_placements,
         "hint_texts": generate_hint_texts(world),
         "world_setup": {
