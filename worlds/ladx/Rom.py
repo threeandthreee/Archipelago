@@ -6,6 +6,8 @@ import json
 import pkgutil
 import bsdiff4
 import binascii
+import zlib
+import base64
 from typing import TYPE_CHECKING
 from .Common import *
 from .LADXR import generator
@@ -54,15 +56,7 @@ class LADXProcedurePatch(worlds.Files.APProcedurePatch):
 
 
 def write_patch_data(world: "LinksAwakeningWorld", patch: LADXProcedurePatch):
-    data_dict = {
-        "generated_world_version": world.world_version.as_simple_string(),
-        "out_base": world.multiworld.get_out_file_name_base(patch.player),
-        "is_race": world.multiworld.is_race,
-        "seed": world.multiworld.seed,
-        "seed_name": world.multiworld.seed_name,
-        "multi_key": binascii.hexlify(world.multi_key).decode(),
-        "player": patch.player,
-        "player_name": patch.player_name,
+    rom_data = {
         "other_player_names": list(world.multiworld.player_name.values()),
         "rom_item_placements": world.rom_item_placements,
         "hint_texts": generate_hint_texts(world),
@@ -74,6 +68,21 @@ def write_patch_data(world: "LinksAwakeningWorld", patch: LADXProcedurePatch):
             "miniboss_mapping": world.ladxr_logic.world_setup.miniboss_mapping,
         },
         "ladxr_settings_dict": world.ladxr_settings_dict,
+    }
+    rom_data_string = json.dumps(rom_data, separators=(",", ":")).encode("utf-8")
+    compressed_rom_data = zlib.compress(rom_data_string, level=9)
+    encoded_rom_data = base64.b64encode(compressed_rom_data).decode("ascii")
+
+    data_dict = {
+        "generated_world_version": world.world_version.as_simple_string(),
+        "out_base": world.multiworld.get_out_file_name_base(patch.player),
+        "is_race": world.multiworld.is_race,
+        "seed": world.multiworld.seed,
+        "seed_name": world.multiworld.seed_name,
+        "multi_key": binascii.hexlify(world.multi_key).decode(),
+        "player": patch.player,
+        "player_name": patch.player_name,
+        "rom_data": encoded_rom_data,
     }
     patch.write_file("data.json", json.dumps(data_dict).encode('utf-8'))
 

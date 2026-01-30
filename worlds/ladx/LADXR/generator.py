@@ -1,4 +1,7 @@
 import binascii
+import json
+import zlib
+import base64
 import importlib.util
 import importlib.machinery
 import random
@@ -90,16 +93,20 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
     random.seed(patch_data["seed"] + patch_data["player"])
     multi_key = binascii.unhexlify(patch_data["multi_key"].encode())
 
-    ladxr_settings = LADXRSettings(patch_data["ladxr_settings_dict"])
+    compressed_rom_data = base64.b64decode(patch_data["rom_data"])
+    rom_data_string = zlib.decompress(compressed_rom_data)
+    rom_data = json.loads(rom_data_string)
+
+    ladxr_settings = LADXRSettings(rom_data["ladxr_settings_dict"])
     world_setup = LADXRWorldSetup()
-    world_setup.goal = patch_data["world_setup"]["goal"]
-    world_setup.multichest = patch_data["world_setup"]["multichest"]
-    world_setup.entrance_mapping = patch_data["world_setup"]["entrance_mapping"]
-    world_setup.boss_mapping = patch_data["world_setup"]["boss_mapping"]
-    world_setup.miniboss_mapping = patch_data["world_setup"]["miniboss_mapping"]
+    world_setup.goal = rom_data["world_setup"]["goal"]
+    world_setup.multichest = rom_data["world_setup"]["multichest"]
+    world_setup.entrance_mapping = rom_data["world_setup"]["entrance_mapping"]
+    world_setup.boss_mapping = rom_data["world_setup"]["boss_mapping"]
+    world_setup.miniboss_mapping = rom_data["world_setup"]["miniboss_mapping"]
     ladxr_logic = LADXRLogic(configuration_options=ladxr_settings, world_setup=world_setup)
     item_list = [item for item in ladxr_logic.iteminfo_list if not isinstance(item, KeyLocation)]
-    for spot in patch_data["rom_item_placements"]:
+    for spot in rom_data["rom_item_placements"]:
         ladxr_item = next((item for item in item_list if item.nameId == spot["name_id"]), None)
         if not ladxr_item:
             continue
@@ -112,7 +119,7 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
 
     rom_patches = []
     rom = ROMWithTables(base_rom, rom_patches)
-    rom.player_names = patch_data["other_player_names"]
+    rom.player_names = rom_data["other_player_names"]
     pymods = []
     if args.pymod:
         for pymod in args.pymod:
@@ -172,7 +179,7 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
     patches.core.easyColorDungeonAccess(rom)
     patches.owl.removeOwlEvents(rom)
     patches.enemies.fixArmosKnightAsMiniboss(rom)
-    patches.bank3e.addBank3E(rom, multi_key, patch_data["player"], patch_data["other_player_names"])
+    patches.bank3e.addBank3E(rom, multi_key, patch_data["player"], rom_data["other_player_names"])
     patches.bank3f.addBank3F(rom)
     patches.bank34.addBank34(rom, item_list)
     patches.core.removeGhost(rom)
@@ -288,7 +295,7 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
     patches.core.addBootsControls(rom, ladxr_settings.bootscontrols)
 
     random.seed(patch_data["seed"] + patch_data["player"])
-    hints.addHints(rom, random, patch_data["hint_texts"])
+    hints.addHints(rom, random, rom_data["hint_texts"])
 
     if world_setup.goal == "raft":
         patches.goal.setRaftGoal(rom)
