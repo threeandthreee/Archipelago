@@ -372,10 +372,11 @@ class LinksAwakeningClient():
     retroarch_port = None
     gameboy = None
 
-    def __init__(self, retroarch_address="127.0.0.1", retroarch_port=55355):
-        self.retroarch_address = retroarch_address
-        self.retroarch_port = retroarch_port
-        pass
+    def __init__(self):
+        retroarch_host = LinksAwakeningWorld.settings.retroarch_host
+        [address, port] = retroarch_host.split(':')
+        self.retroarch_address = address
+        self.retroarch_port = int(port)
 
     stop_bizhawk_spam = False
     async def wait_for_retroarch_connection(self):

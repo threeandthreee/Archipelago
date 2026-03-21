@@ -77,6 +77,9 @@ class LinksAwakeningSettings(settings.Group):
         rom_start: "C:/BizHawk-2.9-win-x64/EmuHawk.exe --lua=data/lua/connector_ladx_bizhawk.lua"
         """
 
+    class RetroarchHost(str):
+        """Address and port of Retroarch connection"""
+
     class DisplayMsgs(settings.Bool):
         """Display message inside of Bizhawk"""
 
@@ -117,6 +120,7 @@ class LinksAwakeningSettings(settings.Group):
 
     rom_file: RomFile = RomFile(RomFile.copy_to)
     rom_start: typing.Union[RomStart, bool] = True
+    retroarch_host: RetroarchHost = RetroarchHost('127.0.0.1:55355')
     gfx_mod_file: GfxModFile = GfxModFile()
 
 class LinksAwakeningWebWorld(WebWorld):
