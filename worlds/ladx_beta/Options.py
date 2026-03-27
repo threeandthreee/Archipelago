@@ -678,7 +678,7 @@ class ForeignItemIcons(Choice, LADXROption):
     ladxr_name = 'foreignitemicons'
 
 
-class Follower(Choice):
+class Follower(Choice, LADXROption):
     """
     Gives you a pet follower in the game.
     """
@@ -688,6 +688,7 @@ class Follower(Choice):
     option_navi = 2
     option_ghost = 3
     option_yip_yip = 4
+    ladxr_name = 'follower'
 
 
 ladx_option_groups = [
