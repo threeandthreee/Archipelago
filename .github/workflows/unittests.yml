@@ -65,8 +65,10 @@ jobs:
         python ModuleUpdate.py --yes --force --append "WebHostLib/requirements.txt"
         python Launcher.py --update_settings  # make sure host.yaml exists for tests
     - name: Unittests
+      env:
+        AP_TEST_WORLDS: "ladx_beta"
       run: |
-        AP_TEST_WORLDS=ladx_beta pytest -n auto
+        pytest -n auto
 
   hosting:
     runs-on: ${{ matrix.os }}
