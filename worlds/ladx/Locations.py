@@ -1,5 +1,5 @@
-from BaseClasses import Region, Entrance, Location, CollectionState
-import typing
+from BaseClasses import Region, Entrance, Location
+from typing import Dict, Set
 
 from .LADXR.checkMetadata import checkMetadataTable
 from .Common import *
@@ -25,7 +25,7 @@ links_awakening_dungeon_names = [
 def meta_to_name(meta):
     return f"{meta.name} ({meta.area})"
 
-def get_location_name_groups() -> typing.Dict[str, typing.Set[str]]:
+def get_location_name_groups() -> Dict[str, Set[str]]:
     groups = {
         "Instrument Pedestals": {
             "Full Moon Cello (Tail Cave)",
