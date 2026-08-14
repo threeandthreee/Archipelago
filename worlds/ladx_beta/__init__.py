@@ -611,6 +611,7 @@ class LinksAwakeningWorld(World):
                 "shuffle_annoying",
                 "shuffle_water",
                 "trendy_game",
+                "block_free_powder",
                 "gfxmod",
                 "shuffle_nightmare_keys",
                 "shuffle_small_keys",
