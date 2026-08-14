@@ -548,6 +548,20 @@ class TrendyGame(Choice, LADXROption):
     may_override = Override.NOT_RACE
 
 
+class BlockFreePowder(DefaultOffToggle, LADXROption):
+    """
+    Trendy game, floating, and freestanding magic powder won't do anything
+    unless you have received/found the magic powder item.
+
+    This has no logic implications, because these powder pickups are never
+    considered in logic.
+    """
+    display_name = "Block Free Powder"
+    rich_text_doc = True
+    ladxr_name = 'blockfreepowder'
+    may_override = Override.NOT_RACE
+
+
 class GfxMod(DefaultOffToggle, LADXROption):
     """
     If enabled, the patcher will prompt the user for a modification file to change sprites in the game and optionally some text.
@@ -730,6 +744,7 @@ ladx_option_groups = [
     OptionGroup("Gameplay Adjustments", [
         HardMode,
         TrendyGame,
+        BlockFreePowder,
     ]),
     OptionGroup("World Layout", [
         Overworld,
@@ -824,6 +839,7 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     start_inventory_from_pool: StartInventoryPool
     expand_start: ExpandStart
     follower: Follower
+    block_free_powder: BlockFreePowder
 
     warp_improvements: Removed
     additional_warp_points: Removed
