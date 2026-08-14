@@ -593,6 +593,19 @@ class StabilizeItemPool(DefaultOffToggle):
     rich_text_doc = True
 
 
+class BlockFreePowder(DefaultOffToggle, LADXROption):
+    """
+    Trendy game, floating, and freestanding magic powder won't do anything
+    unless you have received/found the magic powder item.
+
+    This has no logic implications, because these powder pickups are never
+    considered in logic.
+    """
+    display_name = "Block Free Powder"
+    rich_text_doc = True
+    ladxr_name = 'blockfreepowder'
+
+
 class ForeignItemIcons(Choice, LADXROption):
     """
     Choose how to display foreign items.
@@ -616,6 +629,7 @@ ladx_option_groups = [
         TarinsGift,
         HardMode,
         TrendyGame,
+        BlockFreePowder,
     ]),
     OptionGroup("World Layout", [
         Overworld,
@@ -689,6 +703,7 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     tarins_gift: TarinsGift
     overworld: Overworld
     stabilize_item_pool: StabilizeItemPool
+    block_free_powder: BlockFreePowder
     start_inventory_from_pool: StartInventoryPool
 
     warp_improvements: Removed
