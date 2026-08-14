@@ -600,6 +600,7 @@ class LinksAwakeningWorld(World):
                 "experimental_dungeon_shuffle",
                 "experimental_entrance_shuffle",
                 "trendy_game",
+                "block_free_powder",
                 "gfxmod",
                 "shuffle_nightmare_keys",
                 "shuffle_small_keys",
