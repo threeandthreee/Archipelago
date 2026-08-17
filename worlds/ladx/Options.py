@@ -342,16 +342,30 @@ class Stealing(Choice, LADXROption):
     default = option_out_of_logic
 
 
+class OpenMabe(DefaultOffToggle, LADXROption):
+    """
+    Replaces rock on the east side of Mabe Village with bushes,
+    allowing access to Ukuku Prairie without Power Bracelet.
+    """
+    display_name = "Open Mabe"
+    ladxr_name = "openmabe"
+    rich_text_doc = True
+
+
 class Overworld(Choice, LADXROption):
     """
-    **Open Mabe:** Replaces rock on the east side of Mabe Village with bushes,
-    allowing access to Ukuku Prairie without Power Bracelet.
+    **Dungeon Dive:** Create a different overworld where all the dungeons are directly accessible
+    and almost no chests are located in the overworld.
+
+    **No Dungeons:** All dungeons only consist of a boss fight and a instrument reward.
+    Rest of the dungeon is removed.
     """
     display_name = "Overworld"
     ladxr_name = "overworld"
     rich_text_doc = True
     option_normal = 0
-    option_open_mabe = 1
+    option_dungeon_dive = 2
+    option_no_dungeons = 3
     default = option_normal
 
 
@@ -618,6 +632,7 @@ ladx_option_groups = [
         TrendyGame,
     ]),
     OptionGroup("World Layout", [
+        OpenMabe,
         Overworld,
         Warps,
         DungeonShuffle,
@@ -690,6 +705,7 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     overworld: Overworld
     stabilize_item_pool: StabilizeItemPool
     start_inventory_from_pool: StartInventoryPool
+    open_mabe: OpenMabe
 
     warp_improvements: Removed
     additional_warp_points: Removed

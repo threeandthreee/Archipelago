@@ -325,12 +325,6 @@ class LinksAwakeningWorld(World):
                     itempool.append(item)
 
         self.multi_key = self.generate_multi_key()
-
-        # Add special case for trendy shop access
-        trendy_region = self.multiworld.get_region("Trendy Shop", self.player)
-        event_location = Location(self.player, "Can Play Trendy Game", parent=trendy_region)
-        trendy_region.locations.insert(0, event_location)
-        event_location.place_locked_item(self.create_event("Can Play Trendy Game"))
        
         self.dungeon_locations_by_dungeon = [[], [], [], [], [], [], [], [], []]     
         for r in self.multiworld.get_regions(self.player):
@@ -379,7 +373,7 @@ class LinksAwakeningWorld(World):
                 if entrance_mapping['d1'] not in ['d1', 'd4']:
                     start_items = [item for item in start_items if item.name != 'Tail Key']
                 # Exclude shovel unless starting in Mabe Village
-                if entrance_mapping['start_house'] not in ['start_house', 'shop']:
+                if entrance_mapping.get('start_house') not in ['start_house', 'shop']:
                     start_items = [item for item in start_items if item.name != 'Shovel']
                 base_collection_state = CollectionState(self.multiworld)
                 base_collection_state.sweep_for_advancements(self.get_locations())
@@ -610,6 +604,7 @@ class LinksAwakeningWorld(World):
                 "nag_messages",
                 "hard_mode",
                 "overworld",
+                "open_mabe",
             ]
 
             # use the default behaviour to grab options

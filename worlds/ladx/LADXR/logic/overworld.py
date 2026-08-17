@@ -149,7 +149,7 @@ class World:
 
         # "Ukuku Prairie"
         ukuku_prairie = Location()
-        if options.overworld == "openmabe":
+        if options.openmabe:
             ukuku_prairie.connect(mabe_village, r.bush)
         else:
             ukuku_prairie.connect(mabe_village, POWER_BRACELET)
