@@ -72,7 +72,7 @@ class Explorer:
                 return True
         return False
 
-    def addItem(self, item, count=1):
+    def addItem(self, item: str | None, count=1):
         if item is None:
             return
         if item.startswith("RUPEES_"):

@@ -1,6 +1,6 @@
 from dataclasses import dataclass, asdict
 import logging
-from typing import Any, Tuple
+from typing import Any, Dict, Tuple
 from enum import IntEnum
 from Options import (Choice, Toggle, DefaultOnToggle, Range, PerGameCommonOptions, OptionGroup, Removed,
                      DeathLink, StartInventoryPool, ItemSet)
@@ -31,6 +31,8 @@ class Override(IntEnum):
 class LADXROption:
     may_override: Override = Override.NEVER
     ladxr_name: str | None
+    value: Any
+    name_lookup: Dict[Any, str]
     def to_ladxr_option(self, all_options) -> Tuple[Any, Any]:
         if not self.ladxr_name:
             return None, None

@@ -7,7 +7,7 @@ import pkgutil
 import bsdiff4
 import binascii
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 from .Common import *
 from .LADXR import generator
 from .LADXR.main import get_parser
@@ -57,7 +57,7 @@ class LADXProcedurePatch(worlds.Files.APProcedurePatch):
 def write_patch_data(world: "LinksAwakeningWorld", patch: LADXProcedurePatch):
     data_dict = {
         "generated_world_version": world.world_version.as_simple_string(),
-        "out_base": world.multiworld.get_out_file_name_base(patch.player),
+        "out_base": world.multiworld.get_out_file_name_base(cast(int, patch.player)),
         "is_race": world.multiworld.is_race,
         "seed": world.multiworld.seed,
         "seed_name": world.multiworld.seed_name,

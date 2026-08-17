@@ -30,7 +30,7 @@ from .Locations import (LinksAwakeningLocation,
                         links_awakening_location_name_groups)
 from .Options import (DungeonItemShuffle, ShuffleInstruments, LinksAwakeningOptions, ladx_option_groups,
                       convert_ap_options_to_ladxr)
-from .Rom import LADXProcedurePatch, write_patch_data
+from .Rom import LADXProcedurePatch, write_patch_data, LADX_HASH
 
 DEVELOPER_MODE = False
 TEST_PATCH = False
@@ -53,7 +53,7 @@ class LinksAwakeningSettings(settings.Group):
         """File name of the Link's Awakening DX rom"""
         copy_to = "Legend of Zelda, The - Link's Awakening DX (USA, Europe) (SGB Enhanced).gbc"
         description = "LADX ROM File"
-        md5s = [LADXProcedurePatch.hash]
+        md5s = [LADX_HASH]
 
         @classmethod
         def validate(cls, path: str) -> None:
@@ -153,8 +153,8 @@ class LinksAwakeningWorld(World):
     web = LinksAwakeningWebWorld()
 
     options_dataclass = LinksAwakeningOptions
-    options: LinksAwakeningOptions
-    settings: ClassVar[LinksAwakeningSettings]
+    options: LinksAwakeningOptions # pyright: ignore[reportIncompatibleVariableOverride]
+    settings: ClassVar[LinksAwakeningSettings] # pyright: ignore[reportIncompatibleVariableOverride]
     topology_present = True  # show path to required location checks in spoiler
 
     # ID of first item and location, could be hard-coded but code may be easier
@@ -365,7 +365,7 @@ class LinksAwakeningWorld(World):
                     # Properly fill locations within dungeon
                     location.dungeon = r.dungeon_index
 
-        self.local_front_fill(itempool, self.options.expand_start)
+        self.local_front_fill(itempool, int(self.options.expand_start))
 
         self.multiworld.itempool += itempool
 
@@ -379,26 +379,38 @@ class LinksAwakeningWorld(World):
 
         # Feed filled locations into LADXR logic
         for location in self.multiworld.get_filled_locations(self.player):
+            item = cast(Item, location.item)
             if not hasattr(location, 'ladxr_item'):
                 continue
             for ladxr_location in self.ladxr_logic.location_list: # ladxr_location is more like a region in ap
                 for ladxr_item in ladxr_location.items: # ladxr_item is more like a location in ap
                     if f"{ladxr_item.metadata.name} ({ladxr_item.metadata.area})" == location.name:
-                        if location.item.player == self.player:
-                            ladxr_item.item = location.item.item_data.ladxr_id
+                        if item.player == self.player:
+                            item = cast(LinksAwakeningItem, item)
+                            ladxr_item.item = item.item_data.ladxr_id
                         else:
                             ladxr_item.item = 'MESSAGE' # Nothing item
 
-        def explore(additional_item: str | None = None) -> tuple[list[LADXRItemInfo], list[LinksAwakeningItem]]:
+        def explore(
+            additional_item: LinksAwakeningItem | None = None
+        ) -> tuple[list[LADXRItemInfo], list[LinksAwakeningItem]]:
             explorer = LADXRExplorer()
             for item in to_place.values():
                 explorer.addItem(item.item_data.ladxr_id, 1)
             if additional_item:
                 explorer.addItem(additional_item.item_data.ladxr_id, 1)
             explorer.visit(self.ladxr_logic.start)
-            reachable_locations = [l for l in explorer.getAccessableLocations() for l in l.items if l.metadata.area != "None"]
+            reachable_locations = [
+                l for l in explorer.getAccessableLocations()
+                for l in l.items
+                if l.metadata.area != "None"
+            ]
             advancement_ladxr_ids = list(explorer.getRequiredItemsForNextLocations())
-            advancement_items = [i for i in itempool if i.item_data.ladxr_id in advancement_ladxr_ids and i.name not in self.options.non_local_items]
+            advancement_items = [
+                i for i in itempool
+                if i.item_data.ladxr_id in advancement_ladxr_ids
+                and i.name not in self.options.non_local_items
+            ]
             self.random.shuffle(advancement_items)
             return reachable_locations, advancement_items
 
