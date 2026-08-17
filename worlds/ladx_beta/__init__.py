@@ -1,7 +1,7 @@
 import binascii
 import dataclasses
 import os
-import typing
+from typing import cast, Any, Dict, ClassVar
 import struct
 
 import settings
@@ -119,7 +119,7 @@ class LinksAwakeningSettings(settings.Group):
 
 
     rom_file: RomFile = RomFile(RomFile.copy_to)
-    rom_start: typing.Union[RomStart, bool] = True
+    rom_start: RomStart | bool = True
     retroarch_host: RetroarchHost = RetroarchHost('127.0.0.1:55355')
     gfx_mod_file: GfxModFile = GfxModFile()
 
@@ -134,7 +134,7 @@ class LinksAwakeningWebWorld(WebWorld):
     )]
     theme = "ocean"
     option_groups = ladx_option_groups
-    options_presets: typing.Dict[str, typing.Dict[str, typing.Any]] = {
+    options_presets: Dict[str, Dict[str, Any]] = {
         "Keysanity": {
             "shuffle_nightmare_keys": "any_world",
             "shuffle_small_keys": "any_world",
@@ -154,7 +154,7 @@ class LinksAwakeningWorld(World):
 
     options_dataclass = LinksAwakeningOptions
     options: LinksAwakeningOptions
-    settings: typing.ClassVar[LinksAwakeningSettings]
+    settings: ClassVar[LinksAwakeningSettings]
     topology_present = True  # show path to required location checks in spoiler
 
     # ID of first item and location, could be hard-coded but code may be easier
@@ -183,7 +183,7 @@ class LinksAwakeningWorld(World):
 
     ladxr_settings: LADXRSettings
     ladxr_logic: LADXRLogic
-    ladxr_itempool: LADXRItemPool
+    ladxr_itempool: Dict
 
     ladx_in_game_hints: dict = {}
 
@@ -278,8 +278,8 @@ class LinksAwakeningWorld(World):
 
         self.multiworld.completion_condition[self.player] = lambda state: state.has("An Alarm Clock", player=self.player)
 
-    def create_item(self, item_name: str):
-        return LinksAwakeningItem(self.item_name_to_data[item_name], self, self.player)
+    def create_item(self, name: str):
+        return LinksAwakeningItem(self.item_name_to_data[name], self, self.player)
 
     def create_event(self, event: str):
         return Item(event, ItemClassification.progression, None, self.player)
@@ -323,6 +323,7 @@ class LinksAwakeningWorld(World):
                         # TODO: we should be able to pinpoint the region we want, save a lookup table please
                         found = False
                         for r in self.multiworld.get_regions(self.player):
+                            r = cast(LinksAwakeningRegion, r)
                             if r.dungeon_index != item.item_data.dungeon_index:
                                 continue
                             for loc in r.locations:
@@ -351,10 +352,12 @@ class LinksAwakeningWorld(World):
        
         self.dungeon_locations_by_dungeon = [[], [], [], [], [], [], [], [], []]     
         for r in self.multiworld.get_regions(self.player):
+            r = cast(LinksAwakeningRegion, r)
             # Set aside dungeon locations
             if r.dungeon_index:
                 self.dungeon_locations_by_dungeon[r.dungeon_index - 1] += r.locations
                 for location in r.locations:
+                    location = cast(LinksAwakeningLocation, location)
                     # Don't place dungeon items on pit button chest, to reduce chance of the filler blowing up
                     # TODO: no need for this if small key shuffle
                     if location.name == "Pit Button Chest (Tail Cave)" or location.item:
@@ -507,6 +510,7 @@ class LinksAwakeningWorld(World):
         self.ladx_in_game_hints = generate_hint_texts(self)
         # copy items back to locations
         for r in self.multiworld.get_regions(self.player):
+            r = cast(LinksAwakeningRegion, r)
             for loc in r.locations:
                 if isinstance(loc, LinksAwakeningLocation):
                     assert(loc.item)
@@ -552,7 +556,7 @@ class LinksAwakeningWorld(World):
     def generate_multi_key(self):
         return bytearray(self.random.getrandbits(8) for _ in range(10)) + self.player.to_bytes(2, 'big')
 
-    def modify_multidata(self, multidata: dict):
+    def modify_multidata(self, multidata):
         multidata["connect_names"][binascii.hexlify(self.multi_key).decode()] = multidata["connect_names"][self.player_name]
 
     def collect(self, state, item: Item) -> bool:

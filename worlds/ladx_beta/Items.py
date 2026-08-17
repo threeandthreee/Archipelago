@@ -1,10 +1,10 @@
 from BaseClasses import Item, ItemClassification
 from . import Common
-import typing
+from typing import Dict, Set, NamedTuple
 from enum import IntEnum
 from .LADXR.locations.constants import CHEST_ITEMS
 
-class ItemData(typing.NamedTuple):
+class ItemData(NamedTuple):
     item_name: str
     ladxr_id: str
     classification: ItemClassification
@@ -309,7 +309,7 @@ links_awakening_items_by_name = {
     item.item_name : item for item in links_awakening_items
 }
 
-links_awakening_item_name_groups: typing.Dict[str, typing.Set[str]] = {
+links_awakening_item_name_groups: Dict[str, Set[str]] = {
     "Instruments": {
         "Full Moon Cello",
         "Conch Horn",
