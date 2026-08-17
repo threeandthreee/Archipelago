@@ -41,6 +41,9 @@ class Logic(Choice, LADXROption):
     """
     Affects where items are allowed to be placed.
 
+    **Casual:** Same as normal, except that a few more complex options are removed,
+    like removing bushes with powder and killing enemies with powder or bombs.
+
     **Normal:** Playable without using any tricks or glitches. Can require
     knowledge from a vanilla playthrough, such as how to open Color Dungeon.
 
@@ -59,7 +62,7 @@ class Logic(Choice, LADXROption):
     display_name = "Logic"
     rich_text_doc = True
     ladxr_name = "logic"
-    # option_casual = 0
+    option_casual = 0
     option_normal = 1
     option_hard = 2
     option_glitched = 3
@@ -405,16 +408,30 @@ class Stealing(Choice, LADXROption):
     default = option_out_of_logic
 
 
+class OpenMabe(DefaultOffToggle, LADXROption):
+    """
+    Replaces rock on the east side of Mabe Village with bushes,
+    allowing access to Ukuku Prairie without Power Bracelet.
+    """
+    display_name = "Open Mabe"
+    ladxr_name = "openmabe"
+    rich_text_doc = True
+
+
 class Overworld(Choice, LADXROption):
     """
-    **Open Mabe:** Replaces rock on the east side of Mabe Village with bushes,
-    allowing access to Ukuku Prairie without Power Bracelet.
+    **Dungeon Dive:** Create a different overworld where all the dungeons are directly accessible
+    and almost no chests are located in the overworld.
+
+    **No Dungeons:** All dungeons only consist of a boss fight and a instrument reward.
+    Rest of the dungeon is removed.
     """
     display_name = "Overworld"
     ladxr_name = "overworld"
     rich_text_doc = True
     option_normal = 0
-    option_open_mabe = 1
+    option_dungeon_dive = 2
+    option_no_dungeons = 3
     default = option_normal
 
 
@@ -747,6 +764,7 @@ ladx_option_groups = [
         BlockFreePowder,
     ]),
     OptionGroup("World Layout", [
+        OpenMabe,
         Overworld,
         Warps,
         RandomStartLocation,
@@ -840,6 +858,7 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     expand_start: ExpandStart
     follower: Follower
     block_free_powder: BlockFreePowder
+    open_mabe: OpenMabe
 
     warp_improvements: Removed
     additional_warp_points: Removed

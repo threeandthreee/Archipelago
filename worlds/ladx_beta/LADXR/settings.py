@@ -178,7 +178,7 @@ If random start location and/or dungeon shuffle is enabled, then these will be s
 [Never] you can never steal from the shop."""),
             Setting('bowwow', 'Special', 'g', 'Good boy mode', options=[('normal', '', 'Disabled'), ('always', 'a', 'Enabled'), ('swordless', 's', 'Enabled (swordless)')], default='normal',
                 description='Allows BowWow to be taken into any area, damage bosses and more enemies. If enabled you always start with bowwow. Swordless option removes the swords from the game and requires you to beat the game without a sword and just bowwow.'),
-            Setting('overworld', 'Special', 'O', 'Overworld', options=[('normal', '', 'Normal'), ('dungeondive', 'D', 'Dungeon dive'), ('nodungeons', 'N', 'No dungeons'), ('random', 'R', 'Randomized'), ('openmabe', 'M', 'Open Mabe')], default='normal',
+            Setting('overworld', 'Special', 'O', 'Overworld', options=[('normal', '', 'Normal'), ('dungeondive', 'D', 'Dungeon dive'), ('nodungeons', 'N', 'No dungeons'), ('random', 'R', 'Randomized')], default='normal',
                 description="""
 [Dungeon Dive] Create a different overworld where all the dungeons are directly accessible and almost no chests are located in the overworld.
 [No dungeons] All dungeons only consist of a boss fight and a instrument reward. Rest of the dungeon is removed.
@@ -238,6 +238,7 @@ If random start location and/or dungeon shuffle is enabled, then these will be s
             Setting('aptitlescreen', 'User options', 'a', 'AP Title Screen', description="", default=True),
             Setting('textshuffle', 'User options', 'a', 'Text Shuffle', description="", default=False),
             Setting('blockfreepowder', 'User options', 'a', 'Block Free Powder', description="", default=False),
+            Setting('openmabe', 'User options', 'a', 'Open Mabe', description="", default=False),
         ]
         self.__by_key = {s.key: s for s in self.__all}
 

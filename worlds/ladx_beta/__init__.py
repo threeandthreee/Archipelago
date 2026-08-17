@@ -622,6 +622,7 @@ class LinksAwakeningWorld(World):
                 "nag_messages",
                 "hard_mode",
                 "overworld",
+                "open_mabe",
             ]
 
             # use the default behaviour to grab options

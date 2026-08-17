@@ -196,6 +196,8 @@ class ItemPool:
 
         if settings.overworld == "dungeondive":
             self.remove(SWORD)
+            self.remove(SHOVEL)
+            self.remove(TOADSTOOL)
             self.remove(MAX_ARROWS_UPGRADE)
             self.remove(MAX_BOMBS_UPGRADE)
             self.remove(MAX_POWDER_UPGRADE)
@@ -209,6 +211,7 @@ class ItemPool:
             self.remove(SONG2)
             self.remove(SONG3)
             self.remove(HEART_PIECE, 8)
+            self.add(HEART_CONTAINER, 2)
             self.remove(RUPEES_50, 9)
             self.remove(RUPEES_20, 2)
             self.remove(MEDICINE, 3)
@@ -246,11 +249,10 @@ class ItemPool:
             self.remove(RED_TUNIC)
             self.remove(SEASHELL, 2)
             self.remove(RUPEES_20, 6)
-            self.remove(RUPEES_50, 17)
+            self.remove(RUPEES_50, 18)
             self.remove(MEDICINE, 3)
             self.remove(GEL, 4)
             self.remove(MESSAGE, 1)
-            self.remove(BOMB, 1)
             self.remove(RUPEES_100, 3)
             self.add(RUPEES_500, 3)
 
