@@ -285,11 +285,7 @@ class LinksAwakeningWorld(World):
             for _ in range(count):
                 item = self.create_item(item_name)
 
-                if (
-                    not self.options.tradequest 
-                    and isinstance(item.item_data, TradeItemData)
-                    and item.item_data.vanilla_location
-                ):
+                if not self.options.tradequest and isinstance(item.item_data, TradeItemData):
                     location = self.multiworld.get_location(item.item_data.vanilla_location, self.player)
                     location.place_locked_item(item)
                     location.show_in_spoiler = False
