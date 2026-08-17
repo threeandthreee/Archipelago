@@ -24,6 +24,9 @@ class Logic(Choice, LADXROption):
     """
     Affects where items are allowed to be placed.
 
+    **Casual:** Same as normal, except that a few more complex options are removed,
+    like removing bushes with powder and killing enemies with powder or bombs.
+
     **Normal:** Playable without using any tricks or glitches. Can require
     knowledge from a vanilla playthrough, such as how to open Color Dungeon.
 
@@ -42,7 +45,7 @@ class Logic(Choice, LADXROption):
     display_name = "Logic"
     rich_text_doc = True
     ladxr_name = "logic"
-    # option_casual = 0
+    option_casual = 0
     option_normal = 1
     option_hard = 2
     option_glitched = 3
