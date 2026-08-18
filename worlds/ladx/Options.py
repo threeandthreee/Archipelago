@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 import os.path
-import typing
+from typing import Any, Dict, Tuple
 import logging
 from Options import Choice, Toggle, DefaultOnToggle, Range, FreeText, PerGameCommonOptions, OptionGroup, Removed, StartInventoryPool
 from collections import defaultdict
@@ -13,7 +13,11 @@ logger = logging.getLogger("Link's Awakening Logger")
 
 
 class LADXROption:
-    def to_ladxr_option(self, all_options):
+    value: Any
+    name_lookup: Dict[Any, str]
+    ladxr_name: str | None
+
+    def to_ladxr_option(self, all_options) -> Tuple[Any, Any]:
         if not self.ladxr_name:
             return None, None
 

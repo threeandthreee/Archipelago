@@ -34,7 +34,7 @@ class DungeonItemData(ItemData):
 
 
 class TradeItemData(ItemData):
-    vanilla_location = None
+    vanilla_location: str
 
     def __new__(cls, item_name, ladxr_id, classification, vanilla_location):
         self = super(ItemData, cls).__new__(cls, (item_name, ladxr_id, classification))
@@ -45,7 +45,7 @@ class TradeItemData(ItemData):
 class LinksAwakeningItem(Item):
     game: str = Common.LINKS_AWAKENING
 
-    def __init__(self, item_data, world, player):
+    def __init__(self, item_data: ItemData, world, player):
         classification = item_data.classification
         if callable(classification):
             classification = classification(world, player)

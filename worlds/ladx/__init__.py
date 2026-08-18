@@ -27,7 +27,7 @@ from .Locations import (LinksAwakeningLocation, LinksAwakeningRegion,
                         create_regions_from_ladxr, get_locations_to_id,
                         links_awakening_location_name_groups)
 from .Options import DungeonItemShuffle, ShuffleInstruments, LinksAwakeningOptions, ladx_option_groups
-from .Rom import LADXProcedurePatch, write_patch_data
+from .Rom import LADXProcedurePatch, write_patch_data, LADX_HASH
 
 DEVELOPER_MODE = False
 
@@ -50,7 +50,7 @@ class LinksAwakeningSettings(settings.Group):
         """File name of the Link's Awakening DX rom"""
         copy_to = "Legend of Zelda, The - Link's Awakening DX (USA, Europe) (SGB Enhanced).gbc"
         description = "LADX ROM File"
-        md5s = [LADXProcedurePatch.hash]
+        md5s = [LADX_HASH]
 
         @classmethod
         def validate(cls, path: str) -> None:
@@ -138,8 +138,8 @@ class LinksAwakeningWorld(World):
     web = LinksAwakeningWebWorld()
 
     options_dataclass = LinksAwakeningOptions
-    options: LinksAwakeningOptions
-    settings: ClassVar[LinksAwakeningSettings]
+    options: LinksAwakeningOptions # pyright: ignore[reportIncompatibleVariableOverride]
+    settings: ClassVar[LinksAwakeningSettings] # pyright: ignore[reportIncompatibleVariableOverride]
     topology_present = True  # show path to required location checks in spoiler
 
     # ID of first item and location, could be hard-coded but code may be easier
