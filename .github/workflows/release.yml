@@ -2,6 +2,9 @@
 
 name: Release
 
+on:
+  workflow_dispatch:
+  
 env:
   ENEMIZER_VERSION: 7.1
   # NOTE: since appimage/appimagetool and appimage/type2-runtime does not have tags anymore,
