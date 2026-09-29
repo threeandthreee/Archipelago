@@ -163,7 +163,7 @@ class LinksAwakeningEntrance(Entrance):
         else:
             self.condition = None
 
-    def access_rule(self, state): # pyright: ignore[reportIncompatibleMethodOverride]
+    def access_rule(self, state):
         if isinstance(self.condition, str):
             return state.has(self.condition, self.player)
         if self.condition is None:

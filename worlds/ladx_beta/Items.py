@@ -34,7 +34,7 @@ class DungeonItemData(ItemData):
 
 
 class TradeItemData(ItemData):
-    vanilla_location: str
+    vanilla_location = None
 
     def __new__(cls, item_name, ladxr_id, classification, vanilla_location):
         self = super(ItemData, cls).__new__(cls, (item_name, ladxr_id, classification))
@@ -45,7 +45,7 @@ class TradeItemData(ItemData):
 class LinksAwakeningItem(Item):
     game: str = Common.LINKS_AWAKENING
 
-    def __init__(self, item_data: ItemData, world, player):
+    def __init__(self, item_data, world, player):
         classification = item_data.classification
         if callable(classification):
             classification = classification(world, player)
@@ -301,11 +301,11 @@ links_awakening_items = [
     ItemData(ItemName.PIECE_OF_POWER, "PIECE_OF_POWER", ItemClassification.filler),
 ]
 
-ladxr_item_to_la_item_name: Dict[str, str] = {
+ladxr_item_to_la_item_name = {
     item.ladxr_id: item.item_name for item in links_awakening_items
 }
 
-links_awakening_items_by_name: Dict[str, ItemData] = {
+links_awakening_items_by_name = {
     item.item_name : item for item in links_awakening_items
 }
 
