@@ -4,8 +4,7 @@ import struct
 import sys
 from typing import ByteString, Callable
 import json
-from PyMemoryEditor import OpenProcess, PyMemoryEditorError
-
+from PyMemoryEditor import OpenProcess, ProcessNotFoundError, ProcessIDNotExistsError, ClosedProcess
 from dataclasses import dataclass
 
 import Utils
@@ -229,8 +228,10 @@ class JakAndDaxterMemoryReader:
 
         if self.connected:
             try:
-                OpenProcess(name=jak1_gk)  # Ping to see if it's alive.
-            except PyMemoryEditorError as e:
+                # TODO - When PyMemoryEditor issue #15 is resolved, swap out this line for the commented one.
+                # self.gk_process.read_process_memory(0, bytes, 1)  # Ping to see if it's alive.
+                OpenProcess(process_name=jak1_gk)
+            except (ProcessNotFoundError, ProcessIDNotExistsError, ClosedProcess):
                 msg = (f"Error reading game memory! (Did the game crash?)\n"
                        f"Please close all open windows and reopen the Jak and Daxter Client "
                        f"from the Archipelago Launcher.\n"
@@ -240,7 +241,6 @@ class JakAndDaxterMemoryReader:
                        f"   Then click Advanced > Open REPL.\n"
                        f"   Then close and reopen the Jak and Daxter Client from the Archipelago Launcher.")
                 self.log_error(logger, msg)
-                logger.error(e)
                 self.connected = False
         else:
             return
@@ -275,11 +275,10 @@ class JakAndDaxterMemoryReader:
 
     async def connect(self):
         try:
-            self.gk_process = OpenProcess(name=jak1_gk)  # The GOAL Kernel
+            self.gk_process = OpenProcess(process_name=jak1_gk)  # The GOAL Kernel
             logger.debug(f"Found the gk process: {self.gk_process.pid}")
-        except PyMemoryEditorError as e:
+        except ProcessNotFoundError:
             self.log_error(logger, "Could not find the game process.")
-            logger.error(e)
             self.connected = False
             return
 
@@ -321,7 +320,7 @@ class JakAndDaxterMemoryReader:
                 self.connected = True
             else:
                 raise Exception(memory_version_offset, sizeof_uint32)
-        except Exception as e:
+        except (ProcessNotFoundError, ProcessIDNotExistsError, ClosedProcess, Exception):
             if memory_version is None:
                 msg = (f"Could not find a version number in the OpenGOAL memory structure!\n"
                        f"   Expected Version: {str(expected_memory_version)}\n"
@@ -344,7 +343,6 @@ class JakAndDaxterMemoryReader:
                        f"   Click Versions and verify the latest version is marked 'Active'.\n"
                        f"   Close all launchers, games, clients, and console windows, then restart Archipelago.")
             self.log_error(logger, msg)
-            logger.error(e)
             self.connected = False
 
     async def print_status(self):
@@ -463,7 +461,7 @@ class JakAndDaxterMemoryReader:
                 self.finished_game = True
                 self.log_success(logger, "Congratulations! You finished the game!")
 
-        except (PyMemoryEditorError, OSError) as e:
+        except (ProcessNotFoundError, ProcessIDNotExistsError, ClosedProcess):
             msg = (f"Error reading game memory! (Did the game crash?)\n"
                    f"Please close all open windows and reopen the Jak and Daxter Client "
                    f"from the Archipelago Launcher.\n"
@@ -473,7 +471,6 @@ class JakAndDaxterMemoryReader:
                    f"   Then click Advanced > Open REPL.\n"
                    f"   Then close and reopen the Jak and Daxter Client from the Archipelago Launcher.")
             self.log_error(logger, msg)
-            logger.error(e)
             self.connected = False
 
         return self.location_outbox

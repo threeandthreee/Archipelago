@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from queue import Queue
 from typing import Callable
 
-from PyMemoryEditor import OpenProcess, PyMemoryEditorError
+from PyMemoryEditor import OpenProcess, ProcessNotFoundError, ProcessIDNotExistsError, ClosedProcess
 
 import asyncio
 from asyncio import StreamReader, StreamWriter, Lock
@@ -65,8 +65,8 @@ class JakAndDaxterReplClient:
 
     # The REPL client needs the REPL/compiler process running, but that process
     # also needs the game running. Therefore, the REPL client needs both running.
-    gk_process: OpenProcess | None = None
-    goalc_process: OpenProcess | None = None
+    gk_process: OpenProcess = None
+    goalc_process: OpenProcess = None
 
     item_inbox: dict[int, NetworkItem] = {}
     inbox_index = 0
@@ -101,8 +101,10 @@ class JakAndDaxterReplClient:
 
         if self.connected:
             try:
-                OpenProcess(name=jak1_gk)
-            except PyMemoryEditorError as e:
+                # TODO - When PyMemoryEditor issue #15 is resolved, swap out this line for the commented one.
+                # self.gk_process.read_process_memory(0, bytes, 1)  # Ping to see if it's alive.
+                OpenProcess(process_name=jak1_gk)
+            except (ProcessNotFoundError, ProcessIDNotExistsError, ClosedProcess):
                 msg = (f"Error reading game memory! (Did the game crash?)\n"
                        f"Please close all open windows and reopen the Jak and Daxter Client "
                        f"from the Archipelago Launcher.\n"
@@ -112,11 +114,12 @@ class JakAndDaxterReplClient:
                        f"   Then click Advanced > Open REPL.\n"
                        f"   Then close and reopen the Jak and Daxter Client from the Archipelago Launcher.")
                 self.log_error(logger, msg)
-                logger.error(e)
                 self.connected = False
             try:
-                OpenProcess(name=jak1_goalc)
-            except PyMemoryEditorError as e:
+                # TODO - When PyMemoryEditor issue #15 is resolved, swap out this line for the commented one.
+                # self.goalc_process.read_process_memory(0, bytes, 1)  # Ping to see if it's alive.
+                OpenProcess(process_name=jak1_goalc)
+            except (ProcessNotFoundError, ProcessIDNotExistsError, ClosedProcess):
                 msg = (f"Error sending data to compiler! (Did the compiler crash?)\n"
                        f"Please close all open windows and reopen the Jak and Daxter Client "
                        f"from the Archipelago Launcher.\n"
@@ -126,7 +129,6 @@ class JakAndDaxterReplClient:
                        f"   Then click Advanced > Open REPL.\n"
                        f"   Then close and reopen the Jak and Daxter Client from the Archipelago Launcher.")
                 self.log_error(logger, msg)
-                logger.error(e)
                 self.connected = False
         else:
             return
@@ -178,19 +180,17 @@ class JakAndDaxterReplClient:
 
     async def connect(self):
         try:
-            self.gk_process = OpenProcess(name=jak1_gk)  # The GOAL Kernel
+            self.gk_process = OpenProcess(process_name=jak1_gk)  # The GOAL Kernel
             logger.debug("Found the gk process: " + str(self.gk_process.pid))
-        except PyMemoryEditorError as e:
+        except ProcessNotFoundError:
             self.log_error(logger, "Could not find the game process.")
-            logger.error(e)
             return
 
         try:
-            self.goalc_process = OpenProcess(name=jak1_goalc)  # The GOAL Compiler and REPL
+            self.goalc_process = OpenProcess(process_name=jak1_goalc)  # The GOAL Compiler and REPL
             logger.debug("Found the goalc process: " + str(self.goalc_process.pid))
-        except PyMemoryEditorError as e:
+        except ProcessNotFoundError:
             self.log_error(logger, "Could not find the compiler process.")
-            logger.error(e)
             return
 
         try:
