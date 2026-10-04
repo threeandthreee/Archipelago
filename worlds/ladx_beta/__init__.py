@@ -241,7 +241,7 @@ class LinksAwakeningWorld(World):
 
         self.ladxr_settings.validate()
         world_setup = LADXRWorldSetup()
-        world_setup.randomize(self.ladxr_settings, self.random, self.options)
+        world_setup.randomize(self.ladxr_settings, self.random)
         self.ladxr_logic = LADXRLogic(configuration_options=self.ladxr_settings, world_setup=world_setup)
         self.ladxr_itempool = LADXRItemPool(self.ladxr_logic, self.ladxr_settings, self.random, bool(self.options.stabilize_item_pool)).toDict()
 
@@ -544,6 +544,8 @@ class LinksAwakeningWorld(World):
                                                   f"{patch.patch_file_ending}")
 
         patch.write(out_path)
+        import Patch
+        Patch.create_rom_file(out_path)
 
         if TEST_PATCH:
             import Patch
@@ -604,12 +606,14 @@ class LinksAwakeningWorld(World):
                 "logic",
                 "tradequest",
                 "rooster",
-                "random_start_location",
-                "dungeon_shuffle",
-                "entrance_shuffle",
+                "entrance_rules",
+                "shuffle_start",
+                "shuffle_dungeons",
+                "shuffle_basic",
                 "shuffle_junk",
-                "shuffle_annoying",
+                "shuffle_connectors",
                 "shuffle_water",
+                "shuffle_annoying",
                 "trendy_game",
                 "block_free_powder",
                 "gfxmod",
