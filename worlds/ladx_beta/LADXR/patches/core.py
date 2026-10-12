@@ -553,19 +553,6 @@ def fixD7exit(rom):
 def addBootsControls(rom, bootscontrols):
     if bootscontrols == 'vanilla':
         return
-    consts = {
-          "INVENTORY_PEGASUS_BOOTS": 0x8,
-          "INVENTORY_POWER_BRACELET": 0x3,
-          "UsePegasusBoots": 0x1705,
-          "J_A": (1 << 4),
-          "J_B": (1 << 5),
-          "wAButtonSlot": 0xDB01,
-          "wBButtonSlot": 0xDB00,
-          "wPegasusBootsChargeMeter": 0xC14B,
-          "hPressedButtonsMask": 0xFFCB
-    }
-    for c,v in consts.items():
-        assembler.const(c, v)
 
     BOOTS_START_ADDR = 0x11E8
     condition = {
