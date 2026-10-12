@@ -393,6 +393,9 @@ class InstrumentCount(Range, LADXROption):
     range_end = 8
     default = 8
 
+    def to_ladxr_option(self, all_options):
+        return (self.ladxr_name, int(all_options["instrument_count"]))
+
 
 class NagMessages(DefaultOffToggle, LADXROption):
     """
