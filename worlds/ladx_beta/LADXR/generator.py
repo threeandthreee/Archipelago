@@ -134,6 +134,38 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
             pass # if user just doesnt provide gfxmod file, let patching continue
 
     assembler.resetConsts()
+    assembler.const("INV_SIZE", 16)
+    assembler.const("wHasFlippers", 0xDB3E)
+    assembler.const("wHasMedicine", 0xDB3F)
+    assembler.const("wTradeSequenceItem", 0xDB40)  # we use it to store flags of which trade items we have
+    assembler.const("wTradeSequenceItem2", 0xDB7F)  # Normally used to store that we have exchanged the trade item, we use it to store flags of which trade items we have
+    assembler.const("wSeashellsCount", 0xDB41)
+    assembler.const("wGoldenLeaves", 0xDB42)  # New memory location where to store the golden leaf counter
+    assembler.const("wCollectedTunics", 0xDB6D)  # Memory location where to store which tunic options are available (and boots)
+    assembler.const("wCustomMessage", 0xC0A0)
+    assembler.const("wOverworldRoomStatus", 0xD800)
+
+    # Unused wram address, use it to track consecutive safe frames for death link
+    assembler.const("wConsecutiveSafe", 0xDBA8)
+
+    # We store the link info in unused color dungeon flags, so it gets preserved in the savegame.
+    assembler.const("wMWRecvIndexHi", 0xDDF6)
+    assembler.const("wMWRecvIndexLo", 0xDDF7)
+    assembler.const("wMWCommand", 0xDDF8)
+    assembler.const("wMWItemCode", 0xDDF9)
+    assembler.const("wMWItemSenderHi", 0xDDFA)
+    assembler.const("wMWItemSenderLo", 0xDDFB)
+    assembler.const("wMWMultipurposeC", 0xDDFC)
+    assembler.const("wMWMultipurposeD", 0xDDFD)
+    assembler.const("wMWMultipurposeE", 0xDDFE)
+    assembler.const("wMWMultipurposeF", 0xDDFF)
+
+    assembler.const("wZolSpawnCount", 0xDE10)
+    assembler.const("wCuccoSpawnCount", 0xDE11)
+    assembler.const("wDropBombSpawnCount", 0xDE12)
+    assembler.const("wLinkSpawnDelay", 0xDE13)
+
+    #assembler.const("HARDWARE_LINK", 1)
     assembler.const("HARD_MODE", 1 if ladxr_settings.hardmode else 0)
 
     patches.core.cleanup(rom)
