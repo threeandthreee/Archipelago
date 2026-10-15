@@ -733,11 +733,19 @@ class ExpandStart(Range):
     """
     Starting from Tarin's Gift, locally place progression items until the target
     number of locations or more can be reached. Does nothing if set to *1*.
+    When set to *2* it will only ever place an item on Tarin's Gift.
+    May interfere with plando.
     """
     display_name = "Expand Start"
     range_start = 1
     range_end = 10
     default = 5
+    special_range_names = {
+        "disabled": 1,
+        "only_tarins_gift": 2,
+        "recommended": 5,
+        "high": 10,
+    }
 
 
 class MoreFiller(DefaultOnToggle):

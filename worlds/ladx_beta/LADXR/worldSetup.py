@@ -25,8 +25,29 @@ start_locations = [
     "animal_phone",
 ]
 
+# Blacklist entrances that need multiple items to leave
+# or feather because feather start is prone to fill errors
 start_blacklist = [
-    "mamu"
+    # multiple items
+    "mamu",
+    "prairie_madbatter_connector_entrance",
+    "castle_jump_cave",
+    "richard_house:inside",
+    "d6_connecter_entrance:inside",
+    "d6_connector_exit:inside",
+    # feather start
+    "toadstool_exit",
+    "graveyard_cave_left:inside",
+    "graveyard_cave_right:inside",
+    # excluding for bomb/feather combination needed for high exit
+    "prairie_right_cave_top:inside",
+    "prairie_right_cave_bottom:inside",
+    "prairie_right_cave_high:inside",
+    # excluding these because of the castle gate
+    "castle_main_entrance",
+    "castle_secret_exit",
+    # problem when connectors not shuffled
+    "prairie_madbatter",
 ]
 
 
@@ -163,7 +184,8 @@ class EntranceShuffler:
     logic: "logic.Logic"
 
     zones: set[Zone]
-    dead_ends: set[str]
+    no_path_to: set[str]
+    entrance_pairs: dict[str, str]
 
     def __init__(self, settings):
         self.settings = settings
@@ -177,8 +199,6 @@ class EntranceShuffler:
         self.all_shuffled_entrances = set()
         self.entrance_pools = { "global": set() }
         self.zones = set()
-        self.dead_ends = set()
-        self.entrance_pairs = set()
 
         # categorize entrances into types
         entrance_type_groups: dict[str, set[str]] = {}
@@ -226,22 +246,16 @@ class EntranceShuffler:
         self.logic = logic.Logic(self.settings, world_setup=world_setup)
 
         # set up zones while categorizing some entrances
-        possible_dead_ends = set()
-        not_dead_ends = set()
+        has_path_to = set()
         possible_entrance_pairs = {}
         for en in self.logic.world.entrances.keys():
             zone = Zone(self.logic, self.all_shuffled_entrances, en)
             self.zones.add(zone)
-            if en in self.all_shuffled_entrances:
-                if not zone.paths[en]:
-                    possible_dead_ends.add(en)
-                else:
-                    not_dead_ends.update(zone.paths[en])
-                    if len(zone.paths[en]) == 1:
-                        possible_entrance_pairs[en] = next(iter(zone.paths[en]))
-        self.dead_ends = possible_dead_ends - not_dead_ends
-        if self.keep_two_way: # bird_cave:inside is a choke point, works best as a dead end
-            self.dead_ends.add('bird_cave:inside')
+            if en in self.all_shuffled_entrances and zone.paths[en]:
+                has_path_to.update(zone.paths[en])
+                if len(zone.paths[en]) == 1:
+                    possible_entrance_pairs[en] = next(iter(zone.paths[en]))
+        self.no_path_to = self.all_shuffled_entrances - has_path_to
         self.entrance_pairs = {a: b for a, b in possible_entrance_pairs.items() if possible_entrance_pairs.get(b) == a}
 
         # merge zones with the same location set
@@ -295,12 +309,12 @@ class EntranceShuffler:
 
                 # save entrance pairs for the end
                 if fill_stage < 3:
-                    exits -= set(self.entrance_pairs) 
+                    exits -= set(self.entrance_pairs)
 
-                # if half of the unmapped exits in the pool are dead ends, force a dead end
-                # or else we end up trying to map a dead end to a dead end later
-                if len((exits - mapped_exits) & self.dead_ends) * 2 >= len(exits):
-                    exits &= self.dead_ends  
+                # if half of the unmapped exits in the pool have no path to them
+                # force one so we don't get stuck with a pair later
+                if len((exits - mapped_exits) & self.no_path_to) * 2 >= len(exits):
+                    exits &= self.no_path_to  
 
                 # fill stage 0, strictly expand map
                 # fill stage 1, anything that doesnt reduce exits is fine
@@ -329,35 +343,35 @@ class EntranceShuffler:
                     break
             if not ex: # no valid exits for any entrances, move to next fill stage
                 fill_stage += 1
-                print(f'----moving to fill_stage {fill_stage}----')
+                #print(f'----moving to fill_stage {fill_stage}----')
                 if fill_stage == 4:
                     break
 
-        # insert remaining entrance pairs
-        entrances = sorted(self.entrance_pairs.keys())
-        rnd.shuffle(entrances)
-        for en in entrances:
-            if en in self.entrance_mapping:
-                continue
-            targets = self._find_targets_for_entrance(en, False, self.inside_to_outside)
-            targets &= set(self.entrance_mapping)
-            if targets:
-                target = rnd.choice(sorted(targets))
-                self._insert(en, self.entrance_pairs[en], target)
-
-        # if decoupled, leftover unmapped entrances can be inserted paired with itself
-        if not self.keep_two_way:
-            entrances = sorted(self.all_entrances - set(self.entrance_mapping) - set(self.entrance_mapping.values()))
+        if not self.inside_to_outside:
+            # insert remaining entrance pairs
+            entrances = sorted(self.entrance_pairs.keys())
             rnd.shuffle(entrances)
             for en in entrances:
-                targets = self._find_targets_for_entrance(en, False, self.inside_to_outside)
+                if en in self.entrance_mapping:
+                    continue
+                targets = self._find_targets_for_entrance(en, False, False)
                 targets &= set(self.entrance_mapping)
+                targets.discard(self.entrance_mapping['start_house:inside']) # avoid start connection
                 if targets:
                     target = rnd.choice(sorted(targets))
-                    self._insert(en, en, target)
+                    self._insert(en, self.entrance_pairs[en], target)
 
-        print(f'unmapped entrances {self.all_entrances-set(self.entrance_mapping)}')
-        print(f'unmapped exits {self.all_entrances-set(self.entrance_mapping.values())}')
+            # if decoupled, leftover unmapped entrances can be inserted paired with itself
+            if not self.keep_two_way:
+                entrances = sorted(self.all_entrances - set(self.entrance_mapping) - set(self.entrance_mapping.values()))
+                rnd.shuffle(entrances)
+                for en in entrances:
+                    targets = self._find_targets_for_entrance(en, False, False)
+                    targets &= set(self.entrance_mapping)
+                    targets.discard(self.entrance_mapping['start_house:inside']) # avoid start connection
+                    if targets:
+                        target = rnd.choice(sorted(targets))
+                        self._insert(en, en, target)
         
         # verify valid mapping
         world_setup = WorldSetup()
@@ -365,11 +379,11 @@ class EntranceShuffler:
         final_logic = logic.Logic(self.settings, world_setup=world_setup)
         assert len(final_logic.location_list) == len(self.verification_logic.location_list)
         assert len(final_logic.iteminfo_list) == len(self.verification_logic.iteminfo_list)
-
+        #print(f'start_house:inside -> {self.entrance_mapping["start_house:inside"]}')
         return self.entrance_mapping
 
     def _connect(self, en: str, ex: str) -> None:
-        print(f'{en} -> {ex}')
+        #print(f'{en} -> {ex}')
         self.entrance_mapping[en] = ex
         if self.keep_two_way:
             self.entrance_mapping[ex] = en
