@@ -134,7 +134,7 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
             pass # if user just doesnt provide gfxmod file, let patching continue
 
     assembler.resetConsts()
-    assembler.const("HARD_MODE", 1 if options["hard_mode"] else 0)
+    assembler.const("HARD_MODE", 1 if ladxr_settings.hardmode else 0)
 
     patches.core.cleanup(rom)
     patches.core.mapExtraCharacters(rom)
