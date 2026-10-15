@@ -350,7 +350,11 @@ class EntranceShuffler:
             entrances = sorted(self.all_entrances - set(self.entrance_mapping) - set(self.entrance_mapping.values()))
             rnd.shuffle(entrances)
             for en in entrances:
-                self._insert(en, en, target)
+                targets = self._find_targets_for_entrance(en, False, self.inside_to_outside)
+                targets &= set(self.entrance_mapping)
+                if targets:
+                    target = rnd.choice(sorted(targets))
+                    self._insert(en, en, target)
 
         print(f'unmapped entrances {self.all_entrances-set(self.entrance_mapping)}')
         print(f'unmapped exits {self.all_entrances-set(self.entrance_mapping.values())}')
