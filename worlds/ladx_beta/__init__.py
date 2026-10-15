@@ -3,6 +3,7 @@ import dataclasses
 import os
 import typing
 import struct
+import random
 
 import settings
 import Utils
@@ -241,9 +242,19 @@ class LinksAwakeningWorld(World):
 
         self.ladxr_settings.validate()
         world_setup = LADXRWorldSetup()
-        world_setup.randomize(self.ladxr_settings, self.random)
+
+        if self.multiworld.plando_options & self.multiworld.plando_options.connections:
+            plando = self.options.entrance_plando.value
+        else:
+            plando = {}
+        if self.options.entrance_shuffle_seed.value:
+            rnd = random.Random(self.options.entrance_shuffle_seed.value)
+        else:
+            rnd = self.random
+        world_setup.randomize(self.ladxr_settings, self.random, plando)
+
         self.ladxr_logic = LADXRLogic(configuration_options=self.ladxr_settings, world_setup=world_setup)
-        self.ladxr_itempool = LADXRItemPool(self.ladxr_logic, self.ladxr_settings, self.random, bool(self.options.stabilize_item_pool)).toDict()
+        self.ladxr_itempool = LADXRItemPool(self.ladxr_logic, self.ladxr_settings, rnd, bool(self.options.stabilize_item_pool)).toDict()
 
         regions = create_regions_from_ladxr(self.player, self.multiworld, self.ladxr_logic)
         self.multiworld.regions += regions

@@ -3,7 +3,8 @@ import logging
 from typing import Any, Tuple
 from enum import IntEnum
 from Options import (Choice, Toggle, DefaultOnToggle, Range, PerGameCommonOptions, OptionGroup, Removed,
-                     DeathLink, StartInventoryPool, ItemSet)
+                     DeathLink, StartInventoryPool, ItemSet, OptionDict)
+from schema import Schema, Optional
 
 DefaultOffToggle = Toggle
 
@@ -215,6 +216,28 @@ class ShuffleAnnoying(EntranceShuffle):
     """
     display_name = "Shuffle Annoying"
     ladxr_name = "shuffleannoying"
+
+
+class EntranceShuffleSeed(Range):
+    """
+    Specify seed number for entrance shuffle.
+    Everybody with the same seed will get the same entrance shuffle result
+    as long as their entrance shuffle and logic settings are the same.
+    At zero, no seed is used.
+    """
+    display_name = "Entrance Shuffle Seed"
+    range_start = 0
+    range_end = 1000000
+
+
+class EntrancePlando(OptionDict):
+    """
+    Define some or all entrance connections.
+    """
+    display_name = "Entrance Plando"
+    schema = Schema({
+        Optional(str): str
+    })
 
 
 class APTitleScreen(DefaultOnToggle, LADXROption):
@@ -815,6 +838,7 @@ ladx_option_groups = [
         ShuffleConnectors,
         ShuffleWater,
         ShuffleAnnoying,
+        EntranceShuffleSeed,
     ]),
     OptionGroup("Item Pool", [
         ShuffleInstruments,
@@ -902,6 +926,8 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     expand_start: ExpandStart
     follower: Follower
     block_free_powder: BlockFreePowder
+    entrance_plando: EntrancePlando
+    entrance_shuffle_seed: EntranceShuffleSeed
 
     warp_improvements: Removed
     additional_warp_points: Removed

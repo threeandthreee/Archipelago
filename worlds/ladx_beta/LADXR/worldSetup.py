@@ -50,6 +50,8 @@ start_blacklist = [
     "prairie_madbatter",
 ]
 
+class EntranceRandoException(Exception):
+    pass
 
 class WorldSetup:
     def __init__(self):
@@ -72,17 +74,22 @@ class WorldSetup:
         self.is_partial = False
 
 
-    def pickEntrances(self, settings, rnd, world_setup):
+    def pickEntrances(self, settings, rnd, world_setup, plando: dict[str, str]):
         if settings.overworld in {"random", "dungeonchain", "alttp"}:
             return
         if settings.overworld == "dungeondive":
             self.entrance_mapping = {"d%d" % (n): "d%d:inside" % (n) for n in range(9)}
             self.entrance_mapping.update({"d%d:inside" % (n): "d%d" % (n) for n in range(9)})
 
-        entrance_shuffler = EntranceShuffler(settings)
-        self.entrance_mapping = entrance_shuffler.shuffle_entrances(rnd, world_setup)
+        
+        try:
+            entrance_shuffler = EntranceShuffler(settings, plando)
+            self.entrance_mapping = entrance_shuffler.shuffle_entrances(rnd, world_setup)
+        except EntranceRandoException:
+            entrance_shuffler = EntranceShuffler(settings)
+            self.entrance_mapping = entrance_shuffler.shuffle_entrances(rnd, world_setup)
 
-    def randomize(self, settings, rnd):
+    def randomize(self, settings, rnd, plando: dict[str, str]={}):
         if settings.boss != "default":
             values = list(range(9))
             if settings.heartcontainers:
@@ -117,7 +124,7 @@ class WorldSetup:
             self.goal = int(settings.goal)
 
         self.multichest = rnd.choices(MULTI_CHEST_OPTIONS, MULTI_CHEST_WEIGHTS)[0]
-        self.pickEntrances(settings, rnd, self)
+        self.pickEntrances(settings, rnd, self, plando)
 
     def loadFromRom(self, rom):
         import patches.overworld
@@ -187,7 +194,7 @@ class EntranceShuffler:
     no_path_to: set[str]
     entrance_pairs: dict[str, str]
 
-    def __init__(self, settings):
+    def __init__(self, settings, plando: dict[str, str] = {}):
         self.settings = settings
         self.inside_to_outside = settings.entrancerules in {"normal", "chaos"}
         self.keep_two_way = settings.entrancerules in {"normal", "wild"}
@@ -239,6 +246,12 @@ class EntranceShuffler:
         # unmap entrances to be shuffled
         to_unmap = { en for pool in self.entrance_pools.values() for en in pool }
         self.initial_entrance_mapping = { k:v for k, v in self.initial_entrance_mapping.items() if k not in to_unmap }
+
+        # apply plando
+        self.initial_entrance_mapping.update(plando)
+        if self.keep_two_way:
+            for en, ex in plando.items():
+                self.initial_entrance_mapping[ex] = en
 
         # create a partial logic for our disconnected state
         world_setup.entrance_mapping = self.initial_entrance_mapping
