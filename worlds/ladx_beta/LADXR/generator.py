@@ -326,7 +326,7 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
         patches.core.addFrameCounter(rom, len(item_list))
 
     
-    patches.core.warpHome(rom, ladxr_settings.entranceshuffle in ("chaos", "insane"))
+    patches.core.warpHome(rom, ladxr_settings.entrancerules in ("chaos", "insane", "madness"))
     
     patches.titleScreen.setRomInfo(rom, patch_data)
     if ladxr_settings.aptitlescreen:
