@@ -69,7 +69,7 @@ class Logic(Choice, LADXROption):
     default = option_normal
 
 
-class TradeQuest(DefaultOffToggle, LADXROption):
+class TradeQuest(DefaultOnToggle, LADXROption):
     """
     Trade quest items are randomized. Each NPC takes its normal trade quest
     item and gives a randomized item in return.
