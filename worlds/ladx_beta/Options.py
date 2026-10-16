@@ -3,7 +3,7 @@ import logging
 from typing import Any, Tuple
 from enum import IntEnum
 from Options import (Choice, Toggle, DefaultOnToggle, Range, PerGameCommonOptions, OptionGroup, Removed,
-                     DeathLink, StartInventoryPool, ItemSet, OptionDict)
+                     DeathLink, StartInventoryPool, ItemSet, OptionDict, NamedRange)
 from schema import Schema, Optional
 
 DefaultOffToggle = Toggle
@@ -754,7 +754,7 @@ class InGameHintPriorityItems(ItemSet):
     rich_text_doc = True
 
 
-class ExpandStart(Range):
+class ExpandStart(NamedRange):
     """
     Starting from Tarin's Gift, locally place progression items until the target
     number of locations or more can be reached. Does nothing if set to *1*.

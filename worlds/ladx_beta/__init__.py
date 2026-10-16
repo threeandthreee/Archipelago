@@ -366,7 +366,7 @@ class LinksAwakeningWorld(World):
                     # Properly fill locations within dungeon
                     location.dungeon = r.dungeon_index
 
-        self.local_front_fill(itempool, self.options.expand_start)
+        self.local_front_fill(itempool, int(self.options.expand_start))
 
         self.multiworld.itempool += itempool
 
