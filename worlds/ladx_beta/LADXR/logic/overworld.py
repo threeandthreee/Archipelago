@@ -690,31 +690,43 @@ class DungeonDiveOverworld:
         self.entrances = {}
 
         start_house = Location("Start House").add(StartItem())
-        Location().add(ShopItem(0)).connect(start_house, OR(COUNT("RUPEES", 200), SWORD))
-        Location().add(ShopItem(1)).connect(start_house, OR(COUNT("RUPEES", 980), SWORD))
-        Location().add(Song(0x0B1)).connect(start_house, OCARINA)  # Marins song
-        start_house.add(DroppedKey(0xB2))  # Sword on the beach
-        egg = Location().connect(start_house, AND(r.bush, BOMB))
-        Location().add(MadBatter(0x1E1)).connect(start_house, MAGIC_POWDER)
+        overworld = Location("Overworld")
+        Location().add(ShopItem(0)).connect(overworld, OR(COUNT("RUPEES", 200), SWORD))
+        Location().add(ShopItem(1)).connect(overworld, OR(COUNT("RUPEES", 980), SWORD))
+        Location().add(Song(0x0B1)).connect(overworld, OCARINA)  # Marins song
+        overworld.add(DroppedKey(0xB2))  # Sword on the beach
+        egg = Location().connect(overworld, AND(r.bush, BOMB))
+        Location().add(MadBatter(0x1E1)).connect(overworld, MAGIC_POWDER)
         if options.boomerang == 'trade':
-            Location().add(BoomerangGuy()).connect(start_house, AND(BOMB, OR(BOOMERANG, HOOKSHOT, MAGIC_ROD, PEGASUS_BOOTS, FEATHER, SHOVEL)))
+            Location().add(BoomerangGuy()).connect(overworld, AND(BOMB, OR(BOOMERANG, HOOKSHOT, MAGIC_ROD, PEGASUS_BOOTS, FEATHER, SHOVEL)))
         elif options.boomerang == 'gift':
-            Location().add(BoomerangGuy()).connect(start_house, BOMB)
+            Location().add(BoomerangGuy()).connect(overworld, BOMB)
 
         nightmare = Location("Nightmare")
         windfish = Location("Windfish").connect(nightmare, AND(MAGIC_POWDER, SWORD, OR(BOOMERANG, BOW)))
 
-        self.start = start_house
+        self.start = overworld
         self.entrances = {
-            "d1:inside": EntranceExterior(start_house, None),
-            "d2:inside": EntranceExterior(start_house, None),
-            "d3:inside": EntranceExterior(start_house, None),
-            "d4:inside": EntranceExterior(start_house, None),
-            "d5:inside": EntranceExterior(start_house, FLIPPERS),
-            "d6:inside": EntranceExterior(start_house, None),
-            "d7:inside": EntranceExterior(start_house, None),
-            "d8:inside": EntranceExterior(start_house, None),
-            "d0:inside": EntranceExterior(start_house, None),
+            "start_house": EntranceExterior(start_house, None),
+            "d1": EntranceExterior(overworld, None),
+            "d2": EntranceExterior(overworld, None),
+            "d3": EntranceExterior(overworld, None),
+            "d4": EntranceExterior(overworld, None),
+            "d5": EntranceExterior(overworld, FLIPPERS),
+            "d6": EntranceExterior(overworld, None),
+            "d7": EntranceExterior(overworld, None),
+            "d8": EntranceExterior(overworld, None),
+            "d0": EntranceExterior(overworld, None),
+            "start_house:inside": EntranceExterior(overworld, None),
+            "d1:inside": EntranceExterior(None, None),
+            "d2:inside": EntranceExterior(None, None),
+            "d3:inside": EntranceExterior(None, None),
+            "d4:inside": EntranceExterior(None, None),
+            "d5:inside": EntranceExterior(None, None),
+            "d6:inside": EntranceExterior(None, None),
+            "d7:inside": EntranceExterior(None, None),
+            "d8:inside": EntranceExterior(None, None),
+            "d0:inside": EntranceExterior(None, None),
         }
         self.egg = egg
         self.nightmare = nightmare

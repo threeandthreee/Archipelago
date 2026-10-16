@@ -229,11 +229,11 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
     patches.bowwow.fixBowwow(rom)
     patches.follower.patchFollowerCreation(rom, extra_spawn=ladxr_settings.follower)
     patches.desert.desertAccess(rom)
-    # if ladxr_settings.overworld == 'dungeondive':
-    #    patches.overworld.patchOverworldTilesets(rom)
-    #    patches.overworld.createDungeonOnlyOverworld(rom)
-    # elif ladxr_settings.overworld == 'nodungeons':
-    #    patches.dungeon.patchNoDungeons(rom)
+    if ladxr_settings.overworld == 'dungeondive':
+        patches.overworld.patchOverworldTilesets(rom)
+        patches.overworld.createDungeonOnlyOverworld(rom)
+    elif ladxr_settings.overworld == 'nodungeons':
+        patches.dungeon.patchNoDungeons(rom)
     #elif ladxr_settings.overworld == 'random':
     #    patches.overworld.patchOverworldTilesets(rom)
     #    mapgen.store_map(rom, world.ladxr_logic.world.map)

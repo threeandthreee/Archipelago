@@ -75,13 +75,6 @@ class WorldSetup:
 
 
     def pickEntrances(self, settings, rnd, world_setup, plando: dict[str, str]):
-        if settings.overworld in {"random", "dungeonchain", "alttp"}:
-            return
-        if settings.overworld == "dungeondive":
-            self.entrance_mapping = {"d%d" % (n): "d%d:inside" % (n) for n in range(9)}
-            self.entrance_mapping.update({"d%d:inside" % (n): "d%d" % (n) for n in range(9)})
-
-        
         try:
             entrance_shuffler = EntranceShuffler(settings, plando)
             self.entrance_mapping = entrance_shuffler.shuffle_entrances(rnd, world_setup)
@@ -200,8 +193,13 @@ class EntranceShuffler:
         self.keep_two_way = settings.entrancerules in {"normal", "wild"}
         self.one_on_one = settings.entrancerules != "madness"
 
-        self.initial_entrance_mapping = {k: f"{k}:inside" for k in ENTRANCE_INFO.keys()}
-        self.initial_entrance_mapping.update({f"{k}:inside": k for k in ENTRANCE_INFO.keys()})
+        if settings.overworld == "dungeondive":
+            self.initial_entrance_mapping = {"d%d" % (n): "d%d:inside" % (n) for n in range(9)}
+            self.initial_entrance_mapping.update({"start_house": "start_house:inside"})
+        else:
+            self.initial_entrance_mapping = {k: f"{k}:inside" for k in ENTRANCE_INFO.keys()}
+        self.initial_entrance_mapping.update({f"{k}:inside": k for k in self.initial_entrance_mapping.keys()})
+
         self.all_entrances = {k for k in self.initial_entrance_mapping.keys()}
         self.all_shuffled_entrances = set()
         self.entrance_pools = { "global": set() }
@@ -241,6 +239,7 @@ class EntranceShuffler:
 
         # create a logic before messing with entrances for verification later
         world_setup = WorldSetup()
+        world_setup.entrance_mapping = self.initial_entrance_mapping
         self.verification_logic = logic.Logic(self.settings, world_setup=world_setup)
 
         # unmap entrances to be shuffled

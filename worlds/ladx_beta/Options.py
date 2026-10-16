@@ -488,6 +488,8 @@ class Overworld(Choice, LADXROption):
     rich_text_doc = True
     option_normal = 0
     option_open_mabe = 1
+    option_no_dungeons = 2
+    option_dungeon_dive = 3
     default = option_normal
 
 

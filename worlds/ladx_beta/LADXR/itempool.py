@@ -246,11 +246,10 @@ class ItemPool:
             self.remove(RED_TUNIC)
             self.remove(SEASHELL, 2)
             self.remove(RUPEES_20, 6)
-            self.remove(RUPEES_50, 17)
+            self.remove(RUPEES_50, 18)
             self.remove(MEDICINE, 3)
             self.remove(GEL, 4)
             self.remove(MESSAGE, 1)
-            self.remove(BOMB, 1)
             self.remove(RUPEES_100, 3)
             self.add(RUPEES_500, 3)
 
