@@ -60,7 +60,7 @@ class Logic(Choice, LADXROption):
     display_name = "Logic"
     rich_text_doc = True
     ladxr_name = "logic"
-    # option_casual = 0
+    option_casual = 0
     option_normal = 1
     option_hard = 2
     option_glitched = 3
