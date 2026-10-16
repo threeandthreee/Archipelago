@@ -370,6 +370,10 @@ class LinksAwakeningWorld(World):
 
         self.multiworld.itempool += itempool
 
+    def extend_hint_information(self, hint_data: dict[int, dict[int, str]]) -> None:
+        hint_data[self.player] = {l.address: l.ladxr_item.metadata.area
+            for l in self.multiworld.get_locations(self.player) if l.item and not l.is_event}
+
     start_item_blacklist = [
         'Gold Leaf',
         'Rupees',
