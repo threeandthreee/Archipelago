@@ -253,6 +253,15 @@ class LinksAwakeningWorld(World):
         else:
             rnd = self.random
         world_setup.randomize(self.ladxr_settings, self.ladxr_itempool, rnd, plando)
+        
+        # use mapping from slot data for universal tracker gens
+        if getattr(self.multiworld, "generation_is_fake", False):
+            re_gen_passthrough = getattr(self.multiworld, "re_gen_passthrough", {})
+            if re_gen_passthrough and self.game in re_gen_passthrough:
+                slot_data: dict[str, typing.Any] = re_gen_passthrough[self.game]
+                entrance_mapping = slot_data.get("entrance_mapping", {})
+                if entrance_mapping:
+                    world_setup.entrance_mapping = entrance_mapping
 
         self.ladxr_logic = LADXRLogic(configuration_options=self.ladxr_settings, world_setup=world_setup)
 
@@ -561,6 +570,11 @@ class LinksAwakeningWorld(World):
 
     def get_filler_item_name(self) -> str:
         return self.random.choices(self.filler_choices, self.filler_weights)[0]
+
+    @staticmethod
+    def interpret_slot_data(slot_data: dict[str, typing.Any]) -> dict[str, typing.Any]:
+        # Trigger a regen in UT
+        return slot_data
 
     def fill_slot_data(self):
         hint_data = {
