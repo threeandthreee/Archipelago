@@ -26,7 +26,6 @@ start_locations = [
 ]
 
 # Blacklist entrances that need multiple items to leave
-# or feather because feather start is prone to fill errors
 start_blacklist = [
     # multiple items
     "mamu",
@@ -35,10 +34,6 @@ start_blacklist = [
     "richard_house:inside",
     "d6_connecter_entrance:inside",
     "d6_connector_exit:inside",
-    # feather start
-    "toadstool_exit",
-    "graveyard_cave_left:inside",
-    "graveyard_cave_right:inside",
     # excluding for bomb/feather combination needed for high exit
     "prairie_right_cave_top:inside",
     "prairie_right_cave_bottom:inside",
@@ -50,7 +45,10 @@ start_blacklist = [
     "prairie_madbatter",
 ]
 
-class EntranceRandoException(Exception):
+class EntranceConnectionException(Exception):
+    pass
+
+class ItemFillException(Exception):
     pass
 
 class WorldSetup:
@@ -74,15 +72,30 @@ class WorldSetup:
         self.is_partial = False
 
 
-    def pickEntrances(self, settings, rnd, world_setup, plando: dict[str, str]):
-        try:
-            entrance_shuffler = EntranceShuffler(settings, plando)
-            self.entrance_mapping = entrance_shuffler.shuffle_entrances(rnd, world_setup)
-        except EntranceRandoException:
-            entrance_shuffler = EntranceShuffler(settings)
-            self.entrance_mapping = entrance_shuffler.shuffle_entrances(rnd, world_setup)
+    def pickEntrances(self, settings, itempool, rnd, world_setup, plando: dict[str, str]):
+        MAX_RETRIES = 5
+        retries = 0
+        done = False
+        entrance_shuffler = EntranceShuffler(settings, plando)
+        while(not done):
+            try:
+                self.entrance_mapping = entrance_shuffler.shuffle_entrances(rnd, world_setup, itempool)
+                done = True
+            except ItemFillException as e:
+                print('failed fill, retrying')
+                if retries >= MAX_RETRIES:
+                    raise e
+            except EntranceConnectionException as e:
+                print('failed to connect, retrying')
+                if retries >= MAX_RETRIES:
+                    raise e
+                if plando: # this should only really happen from an invalid entrance plando
+                    plando = {}
+                    entrance_shuffler = EntranceShuffler(settings, plando)
+            retries += 1
 
-    def randomize(self, settings, rnd, plando: dict[str, str]={}):
+
+    def randomize(self, settings, itempool, rnd, plando: dict[str, str]={}):
         if settings.boss != "default":
             values = list(range(9))
             if settings.heartcontainers:
@@ -117,7 +130,7 @@ class WorldSetup:
             self.goal = int(settings.goal)
 
         self.multichest = rnd.choices(MULTI_CHEST_OPTIONS, MULTI_CHEST_WEIGHTS)[0]
-        self.pickEntrances(settings, rnd, self, plando)
+        self.pickEntrances(settings, itempool, rnd, self, plando)
 
     def loadFromRom(self, rom):
         import patches.overworld
@@ -299,7 +312,7 @@ class EntranceShuffler:
                 if a.locations > b.locations:
                     a.subtract(b)
         
-    def shuffle_entrances(self, rnd, world_setup: WorldSetup):
+    def shuffle_entrances(self, rnd, world_setup: WorldSetup, itempool: dict[str, int]):
         self.entrance_mapping = self.initial_entrance_mapping.copy()
 
         if self.settings.randomstartlocation == "limited" and self.settings.overworld != "dungeondive":
@@ -403,10 +416,50 @@ class EntranceShuffler:
         # verify valid mapping
         world_setup = WorldSetup()
         world_setup.entrance_mapping = self.entrance_mapping
+        
+        if len(self.all_shuffled_entrances - set(self.entrance_mapping)):
+            raise EntranceConnectionException
         final_logic = logic.Logic(self.settings, world_setup=world_setup)
-        assert len(final_logic.location_list) == len(self.verification_logic.location_list)
-        assert len(final_logic.iteminfo_list) == len(self.verification_logic.iteminfo_list)
-        #print(f'start_house:inside -> {self.entrance_mapping["start_house:inside"]}')
+        valid_location_list = len(final_logic.location_list) == len(self.verification_logic.location_list)
+        valid_iteminfo_list = len(final_logic.iteminfo_list) == len(self.verification_logic.iteminfo_list)
+        if not valid_location_list or not valid_iteminfo_list:
+            raise EntranceConnectionException
+
+
+        # if we can explore forward to a handful of locations, it should be valid to fill
+        def explore(extra_items: list[str] = []) -> tuple[int, set[str]]:
+            explorer = Explorer()
+            for item in items_selected + extra_items:
+                explorer.addItem(item, 1)
+            explorer.visit(final_logic.start)
+            locs = len([l for l in explorer.getAccessableLocations()
+                for l in l.items if l.metadata.area != "None"])
+            return locs, explorer.getRequiredItemsForNextLocations()
+
+        possible_items = []
+        for item, amount in itempool.items():
+            if not item.startswith('RUPEE') and not item.startswith('KEY'):
+                possible_items.extend([item]*amount)
+        ITEMS_TO_REACH = 10
+        items_selected = []
+        location_count, advancement_items = explore()
+        while len(items_selected) < ITEMS_TO_REACH:
+            selected_an_item = False
+            items_to_try = [item for item in possible_items if item in advancement_items]
+            rnd.shuffle(items_to_try)
+            for item in items_to_try:
+                new_location_count, new_advancement_items = explore([item])
+                if new_location_count > location_count:
+                    items_selected.append(item)
+                    possible_items.remove(item)
+                    location_count = new_location_count
+                    advancement_items = new_advancement_items
+                    selected_an_item = True
+                    break
+            if not selected_an_item:
+                raise ItemFillException
+        
+        
         return self.entrance_mapping
 
     def _connect(self, en: str, ex: str) -> None:

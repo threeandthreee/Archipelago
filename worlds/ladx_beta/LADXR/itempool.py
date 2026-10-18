@@ -68,9 +68,9 @@ DEFAULT_ITEM_POOL = {
 
 
 class ItemPool:
-    def __init__(self, logic, settings, rnd, more_filler: bool):
+    def __init__(self, world_setup, settings, rnd, more_filler: bool):
         self.__pool = {}
-        self.__setup(logic, settings)
+        self.__setup(world_setup, settings)
 
         if more_filler:
             self.__randomizeRupees(settings, rnd)
@@ -103,13 +103,13 @@ class ItemPool:
                 return
         raise RuntimeError("Wanted to remove more rupees from the pool then we have")
 
-    def __setup(self, logic, settings):
+    def __setup(self, world_setup, settings):
         default_item_pool = DEFAULT_ITEM_POOL
-        if settings.overworld == "random":
-            default_item_pool = logic.world.map.get_item_pool()
+        #if settings.overworld == "random":
+        #    default_item_pool = logic.world.map.get_item_pool()
         for item, count in default_item_pool.items():
             self.add(item, count)
-        goal = logic.world_setup.goal
+        goal = world_setup.goal
         if isinstance(goal, str) and goal.startswith('='):
             instruments_to_remove = [i for i in range(1, 9) if str(i) not in goal]
             for i in instruments_to_remove:

@@ -22,7 +22,6 @@ from .LADXR.locations.itemInfo import ItemInfo as LADXRItemInfo
 from .LADXR.logic import Logic as LADXRLogic
 from .LADXR.settings import Settings as LADXRSettings
 from .LADXR.worldSetup import WorldSetup as LADXRWorldSetup
-from .LADXR.explorer import Explorer as LADXRExplorer
 from .LADXR.hints import generate_hint_texts
 from .Locations import (LinksAwakeningLocation,
                         LinksAwakeningRegion,
@@ -242,6 +241,8 @@ class LinksAwakeningWorld(World):
 
         self.ladxr_settings.validate()
         world_setup = LADXRWorldSetup()
+        self.ladxr_itempool = LADXRItemPool(
+            world_setup, self.ladxr_settings, self.random, bool(self.options.stabilize_item_pool)).toDict()
 
         if self.multiworld.plando_options & self.multiworld.plando_options.connections:
             plando = self.options.entrance_plando.value
@@ -251,10 +252,9 @@ class LinksAwakeningWorld(World):
             rnd = random.Random(self.options.entrance_shuffle_seed.value)
         else:
             rnd = self.random
-        world_setup.randomize(self.ladxr_settings, self.random, plando)
+        world_setup.randomize(self.ladxr_settings, self.ladxr_itempool, rnd, plando)
 
         self.ladxr_logic = LADXRLogic(configuration_options=self.ladxr_settings, world_setup=world_setup)
-        self.ladxr_itempool = LADXRItemPool(self.ladxr_logic, self.ladxr_settings, rnd, bool(self.options.stabilize_item_pool)).toDict()
 
         regions = create_regions_from_ladxr(self.player, self.multiworld, self.ladxr_logic)
         self.multiworld.regions += regions
@@ -379,8 +379,6 @@ class LinksAwakeningWorld(World):
         'Rupees',
         'Seashell',
         'Small Key',
-        'Feather', # fill algorithm has a hard time with feather start
-        'Rooster', # same reason as feather
     ]
 
     def local_front_fill(self, itempool: list[Item], target: int) -> None:
