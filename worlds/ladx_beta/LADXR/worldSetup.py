@@ -206,9 +206,19 @@ class EntranceShuffler:
         self.zones = set()
 
         # categorize entrances into types
-        entrance_type_groups: dict[str, set[str]] = {}
+        entrance_type_groups: dict[str, set[str]] = {
+            "dungeon": set(),
+            "connector": set(),
+            "single": set(),
+            "dummy": set(),
+            "insanity": set(),
+            "water": set(),
+            "trade": set(),
+            "start": set(),
+        }
         for k, v in ENTRANCE_INFO.items():
-            entrance_type_groups.setdefault(v.type, set())    
+            if k not in self.all_entrances:
+                continue
             entrance_type_groups[v.type].add(k)
             entrance_type_groups[v.type].add(f"{k}:inside")
         if self.settings.tradequest:
@@ -292,7 +302,7 @@ class EntranceShuffler:
     def shuffle_entrances(self, rnd, world_setup: WorldSetup):
         self.entrance_mapping = self.initial_entrance_mapping.copy()
 
-        if self.settings.randomstartlocation == "limited":
+        if self.settings.randomstartlocation == "limited" and self.settings.overworld != "dungeondive":
             start_location = rnd.choice(start_locations)
             self.entrance_mapping["start_house"] = f"{start_location}:inside"
             self.entrance_mapping["start_house:inside"] = start_location
@@ -325,25 +335,30 @@ class EntranceShuffler:
 
                 # if half of the unmapped exits in the pool have no path to them
                 # force one so we don't get stuck with a pair later
-                if len((exits - mapped_exits) & self.no_path_to) * 2 >= len(exits):
+                if en != 'start_house:inside' and len((exits - mapped_exits) & self.no_path_to) * 2 >= len(exits):
                     exits &= self.no_path_to  
 
                 # fill stage 0, strictly expand map
                 # fill stage 1, anything that doesnt reduce exits is fine
                 if fill_stage <= 1:
+                    valid_exits = set()
                     for zone in self.zones:
                         for entrance, destinations in zone.paths.items():
-                            if len(destinations - entrances_reached) < (2 - fill_stage):
-                                exits.discard(entrance)
+                            if len(destinations - entrances_reached) >= (2 - fill_stage):
+                                valid_exits.add(entrance)
                     # avoid problem starts while we're here
                     if en == 'start_house:inside':
-                        exits.difference_update(start_blacklist)
+                        valid_exits.difference_update(start_blacklist)
+                    exits &= valid_exits
 
                 # drop exits to seen zones if it doesnt empty the pool
                 exits_to_seen_zones = {en for zone in seen_zones for en in set(zone.paths)}
                 if exits - exits_to_seen_zones:
                     exits -= exits_to_seen_zones
                 
+                if fill_stage == 2:
+                    exits &= self.no_path_to
+
                 if not exits:
                     continue
 
@@ -425,6 +440,7 @@ class EntranceShuffler:
         mapped_exit = self.entrance_mapping.get(entrance, None)
         if mapped_exit:
             self._recursive_traverse_entrances(mapped_exit, seen_entrances)
-        zone = next(z for z in self.zones if entrance in z.paths)
-        for destination in zone.paths[entrance]:
-            self._recursive_traverse_entrances(destination, seen_entrances)
+        zone = next((z for z in self.zones if entrance in z.paths), None)
+        if zone:
+            for destination in zone.paths[entrance]:
+                self._recursive_traverse_entrances(destination, seen_entrances)
