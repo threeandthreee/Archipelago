@@ -130,7 +130,11 @@ class WorldSetup:
             self.goal = int(settings.goal)
 
         self.multichest = rnd.choices(MULTI_CHEST_OPTIONS, MULTI_CHEST_WEIGHTS)[0]
-        self.pickEntrances(settings, itempool, rnd, self, plando)
+        if settings.overworld == 'dungeondive':
+            self.entrance_mapping = {"d%d" % (n): "d%d:inside" % (n) for n in range(9)}
+            self.entrance_mapping.update({"d%d:inside" % (n): "d%d" % (n) for n in range(9)})
+        else:
+            self.pickEntrances(settings, itempool, rnd, self, plando)
 
     def loadFromRom(self, rom):
         import patches.overworld
@@ -206,12 +210,8 @@ class EntranceShuffler:
         self.keep_two_way = settings.entrancerules in {"normal", "wild"}
         self.one_on_one = settings.entrancerules != "madness"
 
-        if settings.overworld == "dungeondive":
-            self.initial_entrance_mapping = {"d%d" % (n): "d%d:inside" % (n) for n in range(9)}
-            self.initial_entrance_mapping.update({"start_house": "start_house:inside"})
-        else:
-            self.initial_entrance_mapping = {k: f"{k}:inside" for k in ENTRANCE_INFO.keys()}
-        self.initial_entrance_mapping.update({f"{k}:inside": k for k in self.initial_entrance_mapping.keys()})
+        self.initial_entrance_mapping = {k: f"{k}:inside" for k in ENTRANCE_INFO.keys()}
+        self.initial_entrance_mapping.update({f"{k}:inside": k for k in ENTRANCE_INFO.keys()})
 
         self.all_entrances = {k for k in self.initial_entrance_mapping.keys()}
         self.all_shuffled_entrances = set()
@@ -315,7 +315,7 @@ class EntranceShuffler:
     def shuffle_entrances(self, rnd, world_setup: WorldSetup, itempool: dict[str, int]):
         self.entrance_mapping = self.initial_entrance_mapping.copy()
 
-        if self.settings.randomstartlocation == "limited" and self.settings.overworld != "dungeondive":
+        if self.settings.randomstartlocation == "limited":
             start_location = rnd.choice(start_locations)
             self.entrance_mapping["start_house"] = f"{start_location}:inside"
             self.entrance_mapping["start_house:inside"] = start_location

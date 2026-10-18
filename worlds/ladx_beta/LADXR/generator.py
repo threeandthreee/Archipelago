@@ -315,8 +315,8 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
 
     # Patch the generated logic into the rom
     patches.chest.setMultiChest(rom, world_setup.multichest)
-    #if ladxr_settings.overworld not in {"dungeondive", "random"}:
-    patches.entrances.changeEntrances(rom, world_setup.entrance_mapping)
+    if ladxr_settings.overworld not in {"dungeondive", "random"}:
+        patches.entrances.changeEntrances(rom, world_setup.entrance_mapping)
     for ladxr_item in item_list:
         ladxr_item.patch(rom, ladxr_item.item, multiworld=ladxr_item.mw)
     patches.enemies.changeBosses(rom, world_setup.boss_mapping)
