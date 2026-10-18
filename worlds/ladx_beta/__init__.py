@@ -403,7 +403,7 @@ class LinksAwakeningWorld(World):
                 test_collection_state.sweep_for_advancements(self.get_locations())
                 new_reachable_locations = get_reachable_locations(test_collection_state)
                 if len(new_reachable_locations) > len(reachable_locations):
-                    potential_locations = [l for l in reachable_locations if not l.item]
+                    potential_locations = sorted([l for l in reachable_locations if not l.item])
                     location = next( # always start with Tarin's Gift
                         (l for l in potential_locations if l.name == "Tarin's Gift (Mabe Village)"),
                         self.random.choice(potential_locations))
