@@ -203,3 +203,54 @@ jobs:
           archive: false
           if-no-files-found: error
           retention-days: 7
+  
+  build-ubuntu2204-arm64:
+    runs-on: ubuntu-22.04-arm
+    steps:
+      - uses: actions/checkout@v6.0.2
+      - name: Install base dependencies
+        run: |
+          sudo apt update
+          sudo apt -y install build-essential xz-utils wget libglib2.0-0
+      - name: Get a recent python
+        uses: actions/setup-python@v6.2.0
+        with:
+          python-version: '~3.13.15'
+          check-latest: true
+      - name: Build
+        run: |
+          python3.13 -m venv venv
+          source venv/bin/activate
+          python -m pip install --upgrade pip charset-normalizer
+          python setup.py build_exe --yes
+          echo -e "setup.py build output:\n `ls build`"
+          mkdir -p dist
+          DIR_NAME="`ls build | grep exe`"
+          export TAR_NAME="Archipelago_${DIR_NAME#exe.}.tar.gz"
+          (cd build && mv "$DIR_NAME" Archipelago && tar -cv Archipelago | gzip -8 > ../dist/$TAR_NAME && mv Archipelago "$DIR_NAME")
+          echo "TAR_NAME=$TAR_NAME" >> $GITHUB_ENV
+      - name: Check build loads expected worlds
+        shell: bash
+        run: |
+          cd build/exe*
+          mv Players/Templates/meta.yaml .
+          ls -1 Players/Templates | sort > setup-player-templates.txt
+          rm -R Players/Templates
+          timeout 30 ./ArchipelagoLauncher "Generate Template Options" || true
+          ls -1 Players/Templates | sort > generated-player-templates.txt
+          cmp setup-player-templates.txt generated-player-templates.txt \
+            || diff setup-player-templates.txt generated-player-templates.txt
+          mv meta.yaml Players/Templates/
+      - name: Test Generate
+        shell: bash
+        run: |
+          cd build/exe*
+          cp Players/Templates/VVVVVV.yaml Players/
+          timeout 30 ./ArchipelagoGenerate
+      - name: Store .tar.gz
+        uses: actions/upload-artifact@v7.0.0
+        with:
+          path: dist/${{ env.TAR_NAME }}
+          archive: false
+          if-no-files-found: error
+          retention-days: 7
