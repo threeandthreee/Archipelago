@@ -206,8 +206,6 @@ class RoomEditor:
                 self.attribset = (int(bank, 16), int(addr, 16) + 0x4000)
 
         tiles = [0] * 80
-        hidden_tile_objects = []
-        override_tile_objects = []
         for layer in data["layers"]:
             if "data" in layer:
                 for n in range(80):
@@ -224,14 +222,9 @@ class RoomEditor:
                         type_id = entityData.NAME.index(obj["name"])
                         self.addEntity(x, y, type_id)
                     elif obj["type"] == "hidden_tile":
-                        hidden_tile_objects.append(Object(x, y, int(obj["name"], 16)))
-                    elif obj["type"] == "override_tile":
-                        override_tile_objects.append(Object(x, y, int(obj["name"], 16)))
-                    elif obj["type"] == "warp_exit":
-                        result[f"warp_exit_{obj['name']}"] = (x * 16 + 8, y * 16 + 16)
-        self.buildObjectList(tiles, reduce_size=not isinstance(self.room, int) or self.room < 0x100)
-        self.objects = hidden_tile_objects + self.objects + override_tile_objects
-        return result
+                        self.objects.append(Object(x, y, int(obj["name"], 16)))
+        self.buildObjectList(tiles, reduce_size=True)
+        return data
 
     def getTileArray(self):
         if self.room < 0x100:
