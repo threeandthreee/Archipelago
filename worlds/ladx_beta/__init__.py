@@ -380,8 +380,27 @@ class LinksAwakeningWorld(World):
         self.multiworld.itempool += itempool
 
     def extend_hint_information(self, hint_data: dict[int, dict[int, str]]) -> None:
-        hint_data[self.player] = {l.address: l.ladxr_item.metadata.area
-            for l in self.multiworld.get_locations(self.player) if l.item and not l.is_event}
+        dungeon_name_to_inside = {
+            "Color Dungeon": "d0:inside",
+            "Tail Cave": "d1:inside",
+            "Bottle Grotto": "d2:inside",
+            "Key Cavern": "d3:inside",
+            "Angler's Tunnel": "d4:inside",
+            "Catfish's Maw": "d5:inside",
+            "Face Shrine": "d6:inside",
+            "Eagle's Tower": "d7:inside",
+            "Turtle Rock": "d8:inside",
+        }
+        hint_data[self.player] = {}
+        for location in self.multiworld.get_locations(self.player):
+            if not location.item or location.is_event:
+                continue
+            area = location.ladxr_item.metadata.area
+            if area not in dungeon_name_to_inside:
+                continue
+            target = dungeon_name_to_inside[area]
+            entrances = [en for en, ex in self.ladxr_logic.world_setup.entrance_mapping.items() if ex == target]
+            hint_data[self.player][location.address] = ", ".join(entrances)
 
     start_item_blacklist = [
         'Gold Leaf',
