@@ -182,6 +182,7 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
     patches.core.easyColorDungeonAccess(rom)
     patches.owl.removeOwlEvents(rom)
     patches.enemies.fixArmosKnightAsMiniboss(rom)
+    patches.enemies.enemyQoL(rom)
     patches.bank3e.addBank3E(rom, multi_key, patch_data["player"], patch_data["other_player_names"])
     patches.bank3f.addBank3F(rom)
     patches.bank34.addBank34(rom, item_list)
