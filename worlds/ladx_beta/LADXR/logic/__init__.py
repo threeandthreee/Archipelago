@@ -81,9 +81,11 @@ class Logic:
                     else:
                         se.location.connect(te.location, te.requirement, one_way=True)
                     if se.enterIsSet():
-                        se.location.connect(te.location, se.one_way_enter_requirement, one_way=True)
+                        exitRequirement = te.one_way_exit_requirement if te.exitIsSet() else te.requirement
+                        se.location.connect(te.location, AND(exitRequirement, se.one_way_enter_requirement), one_way=True)
                     if te.exitIsSet():
-                        se.location.connect(te.location, te.one_way_exit_requirement, one_way=True)
+                        entranceRequirement = se.one_way_enter_requirement if se.enterIsSet() else se.requirement
+                        se.location.connect(te.location, AND(entranceRequirement, te.one_way_exit_requirement), one_way=True)
 
         egg_trigger = AND(OCARINA, SONG1)
         if configuration_options.logic == 'glitched' or configuration_options.logic == 'hell':
