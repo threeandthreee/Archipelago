@@ -198,6 +198,7 @@ def reduceMessageLengths(rom, rnd):
 
     rom.texts[0x09] = formatText("Ahhh... It has  the Sleepy {TOADSTOOL}, it does! We'll mix it up something in a jiffy, we will!")
     rom.texts[0x0A] = formatText("The last thing I kin remember was bitin' into a big juicy {TOADSTOOL}... Then, I had the darndest dream... I was a raccoon! Yeah, sounds strange, but it sure was fun!")
+    rom.texts[0x0E] = formatText("{TOADSTOOL}!")
     rom.texts[0x0F] = formatText("You pick the {TOADSTOOL}... As you hold it over your head, a mellow aroma flows into your nostrils.")
     rom.texts[0x13] = formatText("You've learned the ^{SONG1}!^ This song will always remain in your heart!")
     rom.texts[0x18] = formatText("Will you give me 28 {RUPEES} for my secret?", ask="Give Don't")
@@ -240,6 +241,8 @@ def reduceMessageLengths(rom, rnd):
     rom.texts[0xac] = formatText("You got 50 {RUPEES}! Very Nice!", center=True)
     rom.texts[0xad] = formatText("You got 100 {RUPEES}! You're Happy!", center=True)
     rom.texts[0xae] = formatText("You got 200 {RUPEES}! You're Ecstatic!", center=True)
+    rom.texts[0xcf] = formatText("Hoot!")
+    rom.texts[0xd0] = formatText("... ... ... ...\n COME, #####...\nLET US AWAKEN...\n   TOGETHER!!@")
     rom.texts[0xdc] = formatText("Ribbit! Ribbit! I'm Mamu, on vocals! But I don't need to tell you that, do I? Everybody knows me! Want to hang out and listen to us jam? For 300 Rupees, we'll let you listen to a previously unreleased cut! What do you do?", ask="Pay Leave")
     rom.texts[0xe8] = formatText("You've found a {GOLD_LEAF}! Press START to see how many you've collected!")
     rom.texts[0xed] = formatText("You've got the Mirror Shield! You can now turnback the beams you couldn't block before!")
