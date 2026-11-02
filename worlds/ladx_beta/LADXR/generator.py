@@ -268,6 +268,7 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
     if ladxr_settings.textmode == 'none':
         patches.aesthetics.fastText(rom)
         patches.aesthetics.noText(rom)
+        patches.aesthetics.removeDungeonTexts(rom)
     if not ladxr_settings.nagmessages:
         patches.aesthetics.removeNagMessages(rom)
     if ladxr_settings.lowhpbeep == 'slow':

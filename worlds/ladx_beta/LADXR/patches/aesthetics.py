@@ -250,6 +250,22 @@ def reduceMessageLengths(rom, rnd):
     rom.texts[0xf0] = formatText("Want to go on a raft ride for a hundred {RUPEES}?", ask="Yes No Way")
 
 
+def removeDungeonTexts(rom):
+    # remove dungeon name dialogs
+    rom.patch(0x01, 0x21FB, ASM("""
+        ldh a, [$FFF7]
+        add LOW($056)
+        call OpenDialogInTable0
+    """), "", fill_nop=True)
+
+    # remove hint for where to go next after clearing dungeon
+    rom.patch(0x07, 0x25A1, ASM("""
+        ldh  a, [$FFF7]
+        add  LOW($150)
+        call OpenDialogInTable1
+    """), "", fill_nop=True)
+
+
 def allowColorDungeonSpritesEverywhere(rom):
     # Set sprite set numbers $01-$40 to map to the color dungeon sprites
     rom.patch(0x00, 0x2E6F, "00", "15")
