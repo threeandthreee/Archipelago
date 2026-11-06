@@ -735,9 +735,9 @@ class InGameHintCount(Range):
     nothing.
 
     There are:
-    - 10 overworld owl statues
-    - 21 dungeon owl statues
     - 7 hint books in the library
+    - 10 overworld owl statues
+    - 21 dungeon owl statues (all color dungeons owls are the same text)
     """
     display_name = "In-Game Hint Count"
     rich_text_doc = True

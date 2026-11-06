@@ -4,19 +4,9 @@ from BaseClasses import ItemClassification
 from ..Locations import LinksAwakeningLocation
 
 
-hint_text_ids = [
+overworld_hint_text_ids = [
     # Overworld owl statues
     0x1B6, 0x1B7, 0x1B8, 0x1B9, 0x1BA, 0x1BB, 0x1BC, 0x1BD, 0x1BE, 0x22D,
-
-    0x288, 0x280,  # D1
-    0x28A, 0x289, 0x281,  # D2
-    0x282, 0x28C, 0x28B,  # D3
-    0x283,  # D4
-    0x28D, 0x284,  # D5
-    0x285, 0x28F, 0x28E,  # D6
-    0x291, 0x290, 0x286,  # D7
-    0x293, 0x287, 0x292,  # D8
-    0x263,  # D0
 
     # Hint books
     0x267,  # color dungeon
@@ -26,6 +16,18 @@ hint_text_ids = [
     0x207,  # Pre open: 0x206
     0x209,  # Pre open: 0x208
     0x20B,  # Pre open: 0x20A
+]
+
+dungeon_hint_text_ids = [
+    0x288, 0x280,  # D1
+    0x28A, 0x289, 0x281,  # D2
+    0x282, 0x28C, 0x28B,  # D3
+    0x283,  # D4
+    0x28D, 0x284,  # D5
+    0x285, 0x28F, 0x28E,  # D6
+    0x291, 0x290, 0x286,  # D7
+    0x293, 0x287, 0x292,  # D8
+    0x263,  # D0
 ]
 
 hint_items = (POWER_BRACELET, SHIELD, BOW, HOOKSHOT, MAGIC_ROD, PEGASUS_BOOTS, OCARINA, FEATHER, SHOVEL,
@@ -99,7 +101,11 @@ def generate_hint_texts(world):
             "location": item.location.address,
             "player": item.location.player,
         }
-    text_ids = hint_text_ids.copy()
+    text_ids = []
+    if world.ladxr_settings.overworld in ('normal', 'openmabe', 'nodungeons'):
+        text_ids += overworld_hint_text_ids
+    if world.ladxr_settings.overworld in ('normal', 'openmabe', 'dungeondive'):
+        text_ids += dungeon_hint_text_ids
     world.random.shuffle(text_ids)
     for i, text_id in enumerate(text_ids):
         hint_data[str(text_id)] = gen_hint(i)
