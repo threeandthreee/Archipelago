@@ -3,7 +3,7 @@ import logging
 from typing import Any, Tuple
 from enum import IntEnum
 from Options import (Choice, Toggle, DefaultOnToggle, Range, PerGameCommonOptions, OptionGroup, Removed,
-                     DeathLink, StartInventoryPool, ItemSet, OptionDict, NamedRange)
+                     DeathLink, StartInventoryPool, ItemSet, ItemDict, OptionSet, OptionDict, NamedRange)
 from schema import Schema, Optional
 
 DefaultOffToggle = Toggle
@@ -287,6 +287,7 @@ class ShuffleNightmareKeys(DungeonItemShuffle, LADXROption):
     display_name = "Shuffle Nightmare Keys"
     ladxr_item = "NIGHTMARE_KEY"
     ladxr_name = "shufflenightmarekeys"
+    option_start_with = 6
 
 
 class ShuffleSmallKeys(DungeonItemShuffle, LADXROption):
@@ -304,9 +305,10 @@ class ShuffleSmallKeys(DungeonItemShuffle, LADXROption):
     display_name = "Shuffle Small Keys"
     ladxr_item = "KEY"
     ladxr_name = "shufflesmallkeys"
+    option_start_with = 6
 
 
-class ShuffleMaps(DungeonItemShuffle):
+class ShuffleMaps(DungeonItemShuffle, LADXROption):
     """
     **Original Dungeon:** The item will be within its original dungeon.
 
@@ -320,9 +322,11 @@ class ShuffleMaps(DungeonItemShuffle):
     """
     display_name = "Shuffle Maps"
     ladxr_item = "MAP"
+    ladxr_name = "shufflemaps"
+    option_start_with = 6
 
 
-class ShuffleCompasses(DungeonItemShuffle):
+class ShuffleCompasses(DungeonItemShuffle, LADXROption):
     """
     **Original Dungeon:** The item will be within its original dungeon.
 
@@ -336,9 +340,11 @@ class ShuffleCompasses(DungeonItemShuffle):
     """
     display_name = "Shuffle Compasses"
     ladxr_item = "COMPASS"
+    ladxr_name = "shufflecompasses"
+    option_start_with = 6
 
 
-class ShuffleStoneBeaks(DungeonItemShuffle):
+class ShuffleStoneBeaks(DungeonItemShuffle, LADXROption):
     """
     **Original Dungeon:** The item will be within its original dungeon.
 
@@ -352,6 +358,8 @@ class ShuffleStoneBeaks(DungeonItemShuffle):
     """
     display_name = "Shuffle Stone Beaks"
     ladxr_item = "STONE_BEAK"
+    ladxr_name = "shufflestonebeaks"
+    option_start_with = 6
 
 
 class ShuffleInstruments(DungeonItemShuffle):
@@ -773,24 +781,85 @@ class ExpandStart(NamedRange):
     }
 
 
-class MoreFiller(DefaultOnToggle):
+class ItemPool(OptionSet):
     """
-    Removes some rupees from the vanilla item pool to make more room for filler.
+    Item pool adjustments. To add items to the pool, other items must have been
+    removed. If there is no room, it will just skip adding some with a warning
+    at generation.
+    
+    In addition to some of these options, space can be made in the item pool by
+    setting dungeon items to `remove`.
+
+    Adjustments that remove items from the pool generally won't work on
+    `dungeon_dive` and `no_dungeons`, as they've already been removed.
+    Exceptions are heart containers, medicine, and the boomerang.
+
+    **Reduce Rupees**: Reduce number of rupee items to 25, increasing the value
+    of remaining rupees. Normally removes 6 items.
+
+    **Greatly Reduce Rupees**: Reduce number of rupee items to 15, increasing
+    the value of remaining rupees. Normally removes 16 items.
+
+    **Consolidate Hearts**: Remove heart pieces, adds heart containers to
+    compensate. Normally removes 9 items.
+
+    **Remove Heart Containers**: Remove heart pieces and heart containers.
+    Normally removes 20 items.
+
+    **Remove Tunics**: Normally removes 2 items.
+
+    **Remove Capacity Upgrades**: Normally removes 3 items.
+
+    **Remove Extras**: Removes medicine, zol attacks, and master stalfos'
+    message. Normally removes 8 items.
+
+    **Remove Boomerang**: Removes 1 item.
+
+    **Extra Keys**: Adds one small key to each dungeon.
+
+    **Extra Nightmare Keys**: Adds one nightmare key to each dungeon.
+
+    **Extra Equipment**: Adds extra *Bomb*, *Bow*, *Feather*, *Flippers*,
+    *Hookshot*, *Magic Rod*, *Ocarina*, *Pegasus Boots*, and *Power Bracelet*
+    to the item pool. 9 items total.
+
+    **Add Bad Heart Containers**: Adds *Bad Heart Containers*, which **reduce**
+    maximum health. Normally adds 13 items (adds 2 when *Remove Heart
+    Containers* is set).
     """
-    display_name = "More Filler"
+    display_name = "Item Pool"
+    rich_text_doc = True
+    valid_keys = [
+        "Reduce Rupees",
+        "Greatly Reduce Rupees",
+        "Consolidate Hearts",
+        "Remove Heart Containers",
+        "Remove Tunics",
+        "Remove Capacity Upgrades",
+        "Remove Extras",
+        "Remove Boomerang",
+        "Extra Keys",
+        "Extra Nightmare Keys",
+        "Extra Equipment",
+        "Add Bad Heart Containers",
+    ]
+    default = [
+        "Reduce Rupees",
+    ]
 
 
-class FillerPool(Choice):
+class FillerPool(ItemDict):
     """
-    Sets which items can be added to the item pool to replace removed items.
+    Weighted options to randomly select from when replacing removed items.
     """
     display_name = "Filler Pool"
-    option_ammo = 0
-    option_rupees = 1
-    option_seashells = 2
-    # option_powerups = 3
-    option_traps = 4
-    option_nothing = 5
+    default = {
+        "Bomb": 10,
+        "Single Arrow": 5,
+        "10 Arrows": 10,
+        "Magic Powder": 10,
+        "Medicine": 1,
+    }
 
 
 class ForeignItemIcons(Choice, LADXROption):
@@ -851,7 +920,7 @@ ladx_option_groups = [
         ShuffleStoneBeaks,
         TradeQuest,
         Rooster,
-        MoreFiller,
+        ItemPool,
         FillerPool,
     ]),
     OptionGroup("Quality of Life & Aesthetic", [
@@ -922,7 +991,7 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     in_game_hint_priority_items: InGameHintPriorityItems
     overworld: Overworld
     death_link: DeathLink
-    more_filler: MoreFiller
+    item_pool: ItemPool
     filler_pool: FillerPool
     start_inventory_from_pool: StartInventoryPool
     expand_start: ExpandStart
@@ -938,3 +1007,5 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     experimental_dungeon_shuffle: Removed
     experimental_entrance_shuffle: Removed
     in_game_hints: Removed
+    more_filler: Removed
+    entrance_shuffle: Removed

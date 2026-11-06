@@ -185,7 +185,11 @@ class LinksAwakeningWorld(World):
     ladxr_logic: LADXRLogic
     ladxr_itempool: LADXRItemPool
 
-    ladx_in_game_hints: dict = {}
+    ladx_in_game_hints: dict
+
+    priority_filler: list[str]
+    filler_choices: list[str]
+    filler_weights: list[int]
 
     multi_key: bytearray
 
@@ -198,20 +202,44 @@ class LinksAwakeningWorld(World):
     }
 
 
-    filler_choices = ("Nothing",)
-    filler_weights = (1,)
     def generate_early(self) -> None:
-        if self.options.filler_pool == 'ammo':
-            self.filler_choices = ("Bomb", "Single Arrow", "10 Arrows", "Magic Powder", "Medicine")
-            self.filler_weights = ( 10,     5,              10,          10,             1)
-        elif self.options.filler_pool == 'rupees':
-            self.filler_choices = ("20 Rupees", "50 Rupees")
-            self.filler_weights = ( 3,           1)
-        elif self.options.filler_pool == 'seashells':
-            self.filler_choices = ("Seashell",)
-        elif self.options.filler_pool == 'traps':
-            self.filler_choices = ("Zol Attack",)
-            
+        pass
+
+
+    def create_regions(self) -> None:
+        # Initialize
+        self.ladxr_settings_dict = convert_ap_options_to_ladxr(self.options)
+        self.ladxr_settings = LADXRSettings(self.ladxr_settings_dict)
+
+        self.ladxr_settings.validate()
+        world_setup = LADXRWorldSetup()
+        ladxr_itempool = LADXRItemPool(world_setup, self.ladxr_settings, self.options)
+        self.priority_filler = []
+        if "Extra Keys" in self.options.item_pool:
+            for n in range(9):
+                self.priority_filler.add("KEY%d" % (n + 1))
+        if "Extra Nightmare Keys" in self.options.item_pool:
+            for n in range(9):
+                self.priority_filler.add("NIGHTMARE_KEY%d" % (n + 1))
+        if "Extra Equipment" in self.options.item_pool:
+            self.priority_filler.append([
+                "BOMB",
+                "BOW",
+                "FEATHER",
+                "FLIPPERS",
+                "HOOKSHOT",
+                "MAGIC_ROD",
+                "OCARINA",
+                "PEGASUS_BOOTS",
+                "POWER_BRACELET",
+            ])
+        if "Add Bad Heart Containers" in self.options.item_pool:
+            heart_containers = ladxr_itempool.get('HEART_CONTAINER')
+            heart_pieces = ladxr_itempool.get('HEART_PIECE')
+            to_add = 2 + heart_containers + heart_pieces // 4
+            self.priority_filler.append(['BAD_HEART_CONTAINER'] * to_add)
+        self.filler_choices = list(self.options.filler_pool.keys())
+        self.filler_weights = list(self.options.filler_pool.values())
 
         self.dungeon_item_types = {}
         for dungeon_item_type in ["maps", "compasses", "small_keys", "nightmare_keys", "stone_beaks", "instruments"]:
@@ -232,17 +260,14 @@ class LinksAwakeningWorld(World):
                 self.options.non_local_items.value |= {
                     ladxr_item_to_la_item_name[f"{option.ladxr_item}{i}"] for i in range(1, num_items + 1)
                 }
-
-
-    def create_regions(self) -> None:
-        # Initialize
-        self.ladxr_settings_dict = convert_ap_options_to_ladxr(self.options)
-        self.ladxr_settings = LADXRSettings(self.ladxr_settings_dict)
-
-        self.ladxr_settings.validate()
-        world_setup = LADXRWorldSetup()
-        self.ladxr_itempool = LADXRItemPool(
-            world_setup, self.ladxr_settings, self.random, bool(self.options.stabilize_item_pool)).toDict()
+            elif dungeon_item_type != 'instruments' and option == 'start_with':
+                for dungeon_index in range(1, num_items + 1):
+                    ladxr_item = f"{option.ladxr_item}{dungeon_index}"
+                    for count in range(ladxr_itempool.get(ladxr_item)):
+                        self.push_precollected(self.create_item(ladxr_item))
+                    ladxr_itempool.replace(ladxr_item, "FILLER", -1)
+        
+        self.ladxr_itempool = ladxr_itempool.toDict()
 
         if self.multiworld.plando_options & self.multiworld.plando_options.connections:
             plando = self.options.entrance_plando.value
@@ -291,7 +316,18 @@ class LinksAwakeningWorld(World):
 
         self.multiworld.completion_condition[self.player] = lambda state: state.has("An Alarm Clock", player=self.player)
 
+    def get_filler_item_name(self) -> str:
+        return self.random.choices(self.filler_choices, self.filler_weights)[0]
+
+    def create_filler(self):
+        if self.priority_filler:
+            filler_item_name = self.priority_filler.pop()
+        else:
+            filler_item_name = self.get_filler_item_name()
+        return self.create_item(filler_item_name)
+
     def create_item(self, item_name: str):
+        item_name = ladxr_item_to_la_item_name.get(item_name, item_name)
         return LinksAwakeningItem(self.item_name_to_data[item_name], self, self.player)
 
     def create_event(self, event: str):
@@ -586,9 +622,6 @@ class LinksAwakeningWorld(World):
         if change and item.name in self.rupees:
             state.prog_items[self.player]["RUPEES"] -= self.rupees[item.name]
         return change    
-
-    def get_filler_item_name(self) -> str:
-        return self.random.choices(self.filler_choices, self.filler_weights)[0]
 
     @staticmethod
     def interpret_slot_data(slot_data: dict[str, typing.Any]) -> dict[str, typing.Any]:
