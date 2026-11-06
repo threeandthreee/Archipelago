@@ -148,7 +148,7 @@ MainLoop:
     ld hl, SpaceFrom
     call MessageCopyString
     ; Paste the player name
-    ld  a, [wMWItemSenderLo]
+    ld  a, [wMWMultipurposeB]
     call MessageAddPlayerName
     ld   a, $C9
     ; OpenDialog()

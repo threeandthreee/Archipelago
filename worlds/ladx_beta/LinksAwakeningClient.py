@@ -71,8 +71,8 @@ class LAClientConstants:
     wMWRecvIndexLo = 0xDDF7   #     If given something different it will be ignored.
     wMWCommand = 0xDDF8       # RW: See MWCommands
     wMWItemCode = 0xDDF9      # RW: Item code to give the player
-    wMWItemSenderHi = 0xDDFA  # RW: Unused, but maybe will set up more rom banks in the future
-    wMWItemSenderLo = 0xDDFB  # RW: ID for sending player
+    wMWMultipurposeA = 0xDDFA # RW
+    wMWMultipurposeB = 0xDDFB # RW
     wMWMultipurposeC = 0xDDFC # RW
     wMWMultipurposeD = 0xDDFD # RW
     wMWMultipurposeE = 0xDDFE # RW
@@ -92,11 +92,12 @@ class LAClientConstants:
 
 
 class MWCommands(IntEnum):
-    # bit 0: send item
+    # bit 0: send item (a=show_dialog, b=sender_slot)
     # bit 1: consider receive index for item send and tick up
-    # bit 2: collect location
+    # bit 2: collect location (cd=location_address, e=location_mask)
     # bit 3: send death link
-    # bit 4,5: clear trade item (bit in wMWMultipurposeF)
+    # bit 4,5: clear trade item (f=trade_mask)
+    # bit 6: sync world state (ab=target_addr, cd=consumable_addr, e=target_mask, f=consumable_mask)
     # bit 7: no commands happen unless this is set, the gb will unset this bit
     #        after executing the command allowing for confirmation in client
     NONE =              0b00000000
@@ -107,6 +108,7 @@ class MWCommands(IntEnum):
     DEATH_LINK =        0b00001000
     CLEAR_TRADE_1 =     0b00010000
     CLEAR_TRADE_2 =     0b00100000
+    SYNC_WORLD_STATE =  0b01000000
     EXECUTE_COMMAND =   0b10000000
 
 
@@ -347,11 +349,12 @@ class RAGameboy():
         if splits[2] == "-1":
             logger.info(splits[3])
 
-    def send_mw_command(self, command, item_code=0xFF, item_sender=0x0000,
-                        mp_c=0x00, mp_d=0x00, mp_e=0x00, mp_f=0x00,
-                        mp_cd=0x0000, mp_ef=0x0000):
+    def send_mw_command(self, command, item_code=0xFF,
+                        mp_a=0x00, mp_b=0x00, mp_c=0x00, mp_d=0x00, mp_e=0x00, mp_f=0x00,
+                        mp_ab=0x0000, mp_cd=0x0000, mp_ef=0x0000):
         command |= MWCommands.EXECUTE_COMMAND
-        [sender_high, sender_low] = struct.pack('>H', item_sender)
+        if mp_ab:
+            [mp_a, mp_b] = struct.pack('>H', mp_ab)
         if mp_cd:
             [mp_c, mp_d] = struct.pack('>H', mp_cd)
         if mp_ef:
@@ -486,7 +489,7 @@ class LinksAwakeningClient():
             if item.player == ctx.slot:
                 args["command"] |= MWCommands.SEND_ITEM_SPECIAL
                 args["item_code"] = item.item - Common.BASE_ID
-                args["item_sender"] = clamp(0, ctx.slot, 101)
+                args["mp_b"] = clamp(0, ctx.slot, 101)
             if trade:
                 args["command"] |= trade["cmd"]
                 args["mp_f"] = trade["mask"]
@@ -566,7 +569,7 @@ class LinksAwakeningClient():
             item = ctx.recvd_checks[recv_index]
             self.gameboy.send_mw_command(command=MWCommands.SEND_ITEM,
                                          item_code=item.item - Common.BASE_ID,
-                                         item_sender=clamp(0, item.player, 101),
+                                         mp_b=clamp(0, item.player, 101),
                                          mp_cd=recv_index)
             return
 
