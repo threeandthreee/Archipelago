@@ -171,6 +171,7 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
     patches.core.cleanup(rom)
     patches.core.mapExtraCharacters(rom)
     patches.core.fixD7exit(rom)
+    patches.core.fixHealthFullCheck(rom)
     patches.save.singleSaveSlot(rom)
     patches.phone.patchPhone(rom)
     patches.photographer.fixPhotographer(rom)
