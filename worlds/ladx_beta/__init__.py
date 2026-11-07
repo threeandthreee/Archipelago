@@ -11,6 +11,7 @@ from BaseClasses import CollectionState, Entrance, Item, ItemClassification, Loc
 from Fill import fill_restrictive
 from worlds.AutoWorld import WebWorld, World
 from worlds.LauncherComponents import Component, components, SuffixIdentifier, Type, launch, icon_paths
+from worlds.generic.Rules import forbid_item
 from .Common import *
 from .ForeignItemIcons import ForeignItemIconMatcher
 from .Items import (DungeonItemData, DungeonItemType, ItemName, LinksAwakeningItem, TradeItemData,
@@ -19,6 +20,8 @@ from .Items import (DungeonItemData, DungeonItemType, ItemName, LinksAwakeningIt
 from .LADXR.itempool import ItemPool as LADXRItemPool
 from .LADXR.locations.instrument import Instrument
 from .LADXR.locations.itemInfo import ItemInfo as LADXRItemInfo
+from .LADXR.locations.chest import Chest as LADXRChest
+from .LADXR.locations.droppedKey import DroppedKey as LADXRDroppedKey
 from .LADXR.logic import Logic as LADXRLogic
 from .LADXR.settings import Settings as LADXRSettings
 from .LADXR.worldSetup import WorldSetup as LADXRWorldSetup
@@ -482,8 +485,16 @@ class LinksAwakeningWorld(World):
         return self.pre_fill_items
 
     def pre_fill(self) -> None:
-        allowed_locations_by_item = {}
+        for location in self.multiworld.get_locations(self.player):
+            if (
+                not isinstance(location, LinksAwakeningLocation)
+                or isinstance(location.ladxr_item, LADXRChest) 
+                or isinstance(location.ladxr_item, LADXRDroppedKey)
+            ):
+                continue
+            forbid_item(location, ladxr_item_to_la_item_name['GEL'], self.player)
 
+        allowed_locations_by_item = {}
 
         # Set up filter rules
 

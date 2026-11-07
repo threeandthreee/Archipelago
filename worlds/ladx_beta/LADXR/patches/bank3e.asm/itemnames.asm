@@ -171,11 +171,11 @@ ItemNamePointers:
     dw ItemNameNightmareKey9
     dw ItemNameToadstool
     dw ItemNameGuardianAcorn
-    dw ItemNameNone ; 0x52
-    dw ItemNameNone ; 0x53
-    dw ItemNameNone ; 0x54
-    dw ItemNameNone ; 0x55
-    dw ItemNameNone ; 0x56
+    dw ItemNameGel ; 0x52
+    dw ItemNameGel ; 0x53
+    dw ItemNameGel ; 0x54
+    dw ItemNameGel ; 0x55
+    dw ItemNameGel ; 0x56
     dw ItemNameNone ; 0x57
     dw ItemNameNone ; 0x58
     dw ItemNameNone ; 0x59

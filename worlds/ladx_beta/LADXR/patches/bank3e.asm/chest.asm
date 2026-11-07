@@ -127,12 +127,12 @@ GiveItemFromChest:
     dw AddNightmareKey ; NIGHTMARE_KEY8
     dw AddNightmareKey ; NIGHTMARE_KEY9
     dw AddToadstool ; Toadstool
-    dw NoItem ; $51
-    dw NoItem ; $52
-    dw NoItem ; $53
-    dw NoItem ; $54
-    dw NoItem ; $55
-    dw NoItem ; $56
+    dw NoItem ; $51 ; (guardian acorn)
+    dw StartZolDrop ; $52 ; Rupees20 disguise
+    dw StartZolDrop ; $53 ; Rupees100 disguise
+    dw StartZolDrop ; $54 ; Seashell disguise
+    dw StartZolDrop ; $55 ; Medicine disguise
+    dw StartZolDrop ; $56 ; Rupees50 disguise
     dw NoItem ; $57
     dw NoItem ; $58
     dw NoItem ; $59
@@ -326,6 +326,13 @@ AddSeaShell:
     inc  a
     daa
     ld   [wSeashellsCount], a
+    ret
+
+StartZolDrop:
+    ld   a, 5
+    ld   [wZolSpawnCount], a
+    ld   a, $1D ; JINGLE_WRONG_ANSWER
+    ldh  [$FFF2], a ; hJingle
     ret
 
 PieceOfHeart:
@@ -711,6 +718,11 @@ ItemMessage:
     ; Fill the custom message slot with this item message.
     call BuildItemMessage
     ldh  a, [$FFF1]
+    cp   $80
+    jr   nc, .bigItem
+    cp   $52
+    ret  nc   ; no message on trap item
+.bigItem:
     ld   d, $00
     ld   e, a
     ld   hl, ItemMessageTable
@@ -836,6 +848,11 @@ ItemSpriteTable:
     db $46, $1C        ; NIGHTMARE_KEY9
     db $4C, $1C        ; Toadstool
     db $AE, $14        ; Guardian Acorn
+    db $38, $19 ; $52 ; Rupees20 disguise
+    db $38, $18 ; $53 ; Rupees100 disguise
+    db $9E, $14 ; $54 ; Seashell disguise
+    db $A0, $14 ; $55 ; Medicine disguise
+    db $A6, $15 ; $56 ; Rupees50 disguise
 
 LargeItemSpriteTable:
     db $AC, $02, $AC, $22 ; heart piece
@@ -884,7 +901,7 @@ ItemMessageTable:
     db $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9
     ; $40
     db $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9
-    db $0F, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
+    db $0F, $C9, $C9, $C9, $C9, $C9, $C9, $00, $00, $00, $00, $00, $00, $00, $00, $00
     db $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
     db $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
     ; $80
