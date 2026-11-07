@@ -359,7 +359,7 @@ class RAGameboy():
             [mp_c, mp_d] = struct.pack('>H', mp_cd)
         if mp_ef:
             [mp_e, mp_f] = struct.pack('>H', mp_ef)
-        msg = [command, item_code, sender_high, sender_low, mp_c, mp_d, mp_e, mp_f]
+        msg = [command, item_code, mp_a, mp_b, mp_c, mp_d, mp_e, mp_f]
         self.write_memory(LAClientConstants.wMWCommand, msg)
 
 
@@ -493,6 +493,7 @@ class LinksAwakeningClient():
             if trade:
                 args["command"] |= trade["cmd"]
                 args["mp_f"] = trade["mask"]
+            # TODO skip dialog?
             self.gameboy.send_mw_command(**args)
             break # one per cycle
         locations_to_scout = ctx.checked_locations - ctx.scouted_locations
@@ -567,6 +568,7 @@ class LinksAwakeningClient():
         recv_index = wMWRecvIndexHi << 8 | wMWRecvIndexLo
         if recv_index in ctx.recvd_checks:
             item = ctx.recvd_checks[recv_index]
+            # TODO skip dialog?
             self.gameboy.send_mw_command(command=MWCommands.SEND_ITEM,
                                          item_code=item.item - Common.BASE_ID,
                                          mp_b=clamp(0, item.player, 101),
