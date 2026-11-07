@@ -578,21 +578,23 @@ class LinksAwakeningWorld(World):
                 if isinstance(loc, LinksAwakeningLocation):
                     assert(loc.item)
                     spot = {}
-                    # If we're a links awakening item, just use the item
-                    if isinstance(loc.item, LinksAwakeningItem):
-                        spot["item"] = loc.item.item_data.ladxr_id
 
-                    # If the item name contains "sword", use a sword icon, etc
-                    # Otherwise, use a cute letter as the icon
-                    elif self.options.foreign_item_icons == 'guess_by_name':
-                        game = self.multiworld.game[loc.item.player]
-                        spot["item"] = matcher.get_icon_for_other_world(loc.item.name, game)
-
-                    else:
+                    if self.options.foreign_item_icons == 'indicate_progression':
                         if loc.item.advancement:
                             spot["item"] = 'PIECE_OF_POWER'
                         else:
                             spot["item"] = 'GUARDIAN_ACORN'
+
+                    # If we're a links awakening item, just use the item
+                    elif isinstance(loc.item, LinksAwakeningItem):
+                        spot["item"] = loc.item.item_data.ladxr_id
+
+                    # If the item name contains "sword", use a sword icon, etc
+                    # Otherwise, use a cute letter as the icon
+                    else:
+                        game = self.multiworld.game[loc.item.player]
+                        spot["item"] = matcher.get_icon_for_other_world(loc.item.name, game)
+
 
                     spot["custom_item_name"] = loc.item.name
 
