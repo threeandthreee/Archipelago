@@ -3,7 +3,8 @@ import logging
 from typing import Any, Tuple
 from enum import IntEnum
 from Options import (Choice, Toggle, DefaultOnToggle, Range, PerGameCommonOptions, OptionGroup, Removed,
-                     DeathLink, StartInventoryPool, ItemSet, ItemDict, OptionSet, OptionDict, NamedRange)
+                     DeathLink, StartInventoryPool, ItemSet, ItemDict, OptionSet, OptionDict, NamedRange,
+                     FreeText)
 from schema import Schema, Optional
 
 DefaultOffToggle = Toggle
@@ -218,16 +219,14 @@ class ShuffleAnnoying(EntranceShuffle):
     ladxr_name = "shuffleannoying"
 
 
-class EntranceShuffleSeed(Range):
+class EntranceShuffleSeed(FreeText):
     """
-    Specify seed number for entrance shuffle.
+    Specify seed for entrance shuffle. Does not have to be numeric.
     Everybody with the same seed will get the same entrance shuffle result
     as long as their entrance shuffle and logic settings are the same.
     At zero, no seed is used.
     """
     display_name = "Entrance Shuffle Seed"
-    range_start = 0
-    range_end = 1000000
 
 
 class EntrancePlando(OptionDict):
