@@ -945,6 +945,13 @@ GAME_SPECIFIC_PHRASES: dict[str, dict[str, str]] = {
         "Trinket": PIECE_OF_POWER,
     },
 
+    "Yacht Dice": {
+        "Story Chapter": MAP,
+        "Fun Fact": MAP,
+        "Encouragement": HEART_CONTAINER,
+        "Point": RUPEES_20,
+    },
+
     "Zelda II: The Adventure of Link": {
         **PHRASE_GROUPS["Zelda"],
         "Thrust": SWORD,
