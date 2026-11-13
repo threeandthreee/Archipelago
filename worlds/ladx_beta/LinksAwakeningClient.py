@@ -21,7 +21,7 @@ import typing
 from enum import IntEnum
 
 
-from CommonClient import (CommonContext, ClientCommandProcessor, get_base_parser, gui_enabled, logger, server_loop)
+from CommonClient import CommonContext, ClientCommandProcessor, get_base_parser, gui_enabled, logger, server_loop
 from NetUtils import ClientStatus
 from . import LinksAwakeningWorld
 from . import Common
@@ -91,25 +91,29 @@ class LAClientConstants:
     VictoryGameplayAndSub = 0x0102
 
 
+class SpecialItems:
+    death = 0x57
+
+
 class MWCommands(IntEnum):
-    # bit 0: send item (a=show_dialog, b=sender_slot)
+    # bit 0: send item (a=sender_slot) (slot 0xff hides dialog)
     # bit 1: consider receive index for item send and tick up
-    # bit 2: collect location (cd=location_address, e=location_mask)
-    # bit 3: send death link
-    # bit 4,5: clear trade item (f=trade_mask)
-    # bit 6: sync world state (ab=target_addr, cd=consumable_addr, e=target_mask, f=consumable_mask)
+    # bit 2: collect location (cd=location_address, e=location_mask) TODO: check dungeon key (mp_b?)
+    # bit 3,4: clear trade item (f=trade_mask)
+    # bit 5: run through item sends for precollected items stored on rom (shouldnt be triggered from client)
+    # bit 6: unused
     # bit 7: no commands happen unless this is set, the gb will unset this bit
     #        after executing the command allowing for confirmation in client
-    NONE =              0b00000000
-    SEND_ITEM_SPECIAL = 0b00000001
-    SEND_ITEM =         0b00000011
-    COLLECT =           0b00000100
-    COLLECT_WITH_ITEM = 0b00000101
-    DEATH_LINK =        0b00001000
-    CLEAR_TRADE_1 =     0b00010000
-    CLEAR_TRADE_2 =     0b00100000
-    SYNC_WORLD_STATE =  0b01000000
-    EXECUTE_COMMAND =   0b10000000
+    NONE =                 0b00000000
+    SEND_ITEM_SPECIAL =    0b00000001
+    SEND_ITEM =            0b00000011
+    COLLECT =              0b00000100
+    COLLECT_WITH_ITEM =    0b00000101
+    CLEAR_TRADE_1 =        0b00001000
+    CLEAR_TRADE_2 =        0b00010000
+    PROCESS_PRECOLLECTED = 0b00100011
+    UNUSED =               0b01000000
+    EXECUTE_COMMAND =      0b10000000
 
 
 class DeathLinkStatus(IntEnum):
@@ -489,7 +493,7 @@ class LinksAwakeningClient():
             if item.player == ctx.slot:
                 args["command"] |= MWCommands.SEND_ITEM_SPECIAL
                 args["item_code"] = item.item - Common.BASE_ID
-                args["mp_b"] = clamp(0, ctx.slot, 101)
+                args["mp_a"] = clamp(0, ctx.slot, 101)
             if trade:
                 args["command"] |= trade["cmd"]
                 args["mp_f"] = trade["mask"]
@@ -546,33 +550,35 @@ class LinksAwakeningClient():
             return
 
         [wMWRecvIndexHi, wMWRecvIndexLo, wMWCommand] = cmd_block
+        busy = wMWCommand & MWCommands.EXECUTE_COMMAND
 
         if self.death_link_status == DeathLinkStatus.NONE:
             if not wHealth: # natural death
                 await death_link_cb()
                 self.death_link_status = DeathLinkStatus.DYING
         elif self.death_link_status == DeathLinkStatus.PENDING:
-            if wMWCommand & MWCommands.DEATH_LINK:
-                if not wMWCommand & MWCommands.EXECUTE_COMMAND:
-                    self.death_link_status = DeathLinkStatus.DYING
-                    self.gameboy.send_mw_command(command=MWCommands.NONE)
-            else:
-                self.gameboy.send_mw_command(command=MWCommands.DEATH_LINK)
+            if not busy:
+                self.death_link_status = DeathLinkStatus.DYING
+                self.gameboy.send_mw_command(
+                    command=MWCommands.SEND_ITEM_SPECIAL,
+                    item_code=SpecialItems.death,
+                    mp_a=0xFF)
         elif self.death_link_status == DeathLinkStatus.DYING:
-            if wHealth:
+            if wHealth and not busy:
                 self.death_link_status = DeathLinkStatus.NONE
 
-        if wMWCommand & MWCommands.EXECUTE_COMMAND or self.death_link_status:
+        if busy or self.death_link_status:
             return
 
         recv_index = wMWRecvIndexHi << 8 | wMWRecvIndexLo
         if recv_index in ctx.recvd_checks:
             item = ctx.recvd_checks[recv_index]
             # TODO skip dialog?
-            self.gameboy.send_mw_command(command=MWCommands.SEND_ITEM,
-                                         item_code=item.item - Common.BASE_ID,
-                                         mp_b=clamp(0, item.player, 101),
-                                         mp_cd=recv_index)
+            self.gameboy.send_mw_command(
+                command=MWCommands.SEND_ITEM,
+                item_code=item.item - Common.BASE_ID,
+                mp_a=clamp(0, item.player, 101),
+                mp_cd=recv_index)
             return
 
         if self.collect_enabled:

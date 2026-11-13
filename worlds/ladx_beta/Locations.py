@@ -1,7 +1,7 @@
 from BaseClasses import Region, Entrance, Location, CollectionState
-import typing
 
 from .LADXR.checkMetadata import checkMetadataTable
+from .LADXR.locations.tradeSequence import TradeSequenceItem
 from .Common import *
 from worlds.generic.Rules import add_item_rule
 from .Items import ladxr_item_to_la_item_name
@@ -25,7 +25,7 @@ links_awakening_dungeon_names = [
 def meta_to_name(meta):
     return f"{meta.name} ({meta.area})"
 
-def get_location_name_groups() -> typing.Dict[str, typing.Set[str]]:
+def get_location_name_groups() -> dict[str, set[str]]:
     groups = {
         "Instrument Pedestals": {
             "Full Moon Cello (Tail Cave)",
@@ -128,7 +128,7 @@ def translate_item_name(item):
     return item
 
 
-class GameStateAdapater:
+class GameStateAdapter:
     def __init__(self, state, player):
         self.state = state
         self.player = player
@@ -175,7 +175,7 @@ class LinksAwakeningEntrance(Entrance):
         if self.condition is None:
             return True
 
-        return self.condition.test(GameStateAdapater(state, self.player))
+        return self.condition.test(GameStateAdapter(state, self.player))
 
 
 # Helper to apply function to every ladxr region
@@ -203,7 +203,7 @@ def ladxr_region_to_name(n):
     return name
 
 
-def create_regions_from_ladxr(player, multiworld, logic):
+def create_regions_from_ladxr(player, multiworld, logic, settings):
     tmp = set()
 
     def print_items(n):
@@ -219,7 +219,6 @@ def create_regions_from_ladxr(player, multiworld, logic):
     used_names = {}
 
     regions = {}
-
     # Create regions
     for l in logic.location_list:
         # Temporarily uniqueify the name, until all regions are named
@@ -231,7 +230,12 @@ def create_regions_from_ladxr(player, multiworld, logic):
 
         r = LinksAwakeningRegion(
             name=name, ladxr_region=l, hint="", player=player, world=multiworld)
-        r.locations += [LinksAwakeningLocation(player, r, i) for i in l.items]
+
+        r.locations += [
+            LinksAwakeningLocation(player, r, i)
+            for i in l.items
+            if settings.tradequest or not isinstance(i, TradeSequenceItem)
+        ]
         regions[l] = r
 
     for ladxr_location in logic.location_list:

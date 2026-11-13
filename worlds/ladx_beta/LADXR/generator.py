@@ -184,7 +184,8 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
     patches.owl.removeOwlEvents(rom)
     patches.enemies.fixArmosKnightAsMiniboss(rom)
     patches.enemies.enemyQoL(rom)
-    patches.bank3e.addBank3E(rom, multi_key, patch_data["player"], patch_data["other_player_names"])
+    patches.bank3e.addBank3E(rom, multi_key, patch_data["player"], patch_data["other_player_names"],
+        patch_data["precollected_items"])
     patches.bank3f.addBank3F(rom)
     patches.bank34.addBank34(rom, item_list)
     patches.core.removeGhost(rom)
@@ -321,7 +322,7 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
     if ladxr_settings.overworld not in {"dungeondive", "random"}:
         patches.entrances.changeEntrances(rom, world_setup.entrance_mapping)
     for ladxr_item in item_list:
-        ladxr_item.patch(rom, ladxr_item.item, multiworld=ladxr_item.mw)
+        ladxr_item.patch(rom, ladxr_item.item or ladxr_item.default_item, multiworld=getattr(ladxr_item, 'mw', None))
     patches.enemies.changeBosses(rom, world_setup.boss_mapping)
     patches.enemies.changeMiniBosses(rom, world_setup.miniboss_mapping)
 

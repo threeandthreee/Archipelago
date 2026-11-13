@@ -133,11 +133,11 @@ GiveItemFromChest:
     dw StartZolDrop ; $54 ; Seashell disguise
     dw StartZolDrop ; $55 ; Medicine disguise
     dw StartZolDrop ; $56 ; Rupees50 disguise
-    dw NoItem ; $57
-    dw NoItem ; $58
-    dw NoItem ; $59
-    dw NoItem ; $5A
-    dw NoItem ; $5B
+    dw GiveDeath  ; $57
+    dw SpecialSlimeStorm ; $58
+    dw SpecialBombDrop ; $59
+    dw SpecialHealOne ; $5A
+    dw SpecialHealth ; $5B
     dw NoItem ; $5C
     dw NoItem ; $5D
     dw NoItem ; $5E
@@ -174,43 +174,45 @@ GiveItemFromChest:
     dw NoItem ; $7D
     dw NoItem ; $7E
     dw NoItem ; $7F
-    dw PieceOfHeart     ; Heart piece
-    dw GiveBowwow
-    dw Give10Arrows
-    dw Give1Arrow
-    dw UpgradeMaxPowder
-    dw UpgradeMaxBombs
-    dw UpgradeMaxArrows
-    dw GiveRedTunic
-    dw GiveBlueTunic
-    dw GiveExtraHeart
-    dw TakeHeart
-    dw GiveSong1
-    dw GiveSong2
-    dw GiveSong3
-    dw GiveInstrument
-    dw GiveInstrument
-    dw GiveInstrument
-    dw GiveInstrument
-    dw GiveInstrument
-    dw GiveInstrument
-    dw GiveInstrument
-    dw GiveInstrument
-    dw GiveRooster
-    dw GiveTradeItem1
-    dw GiveTradeItem2
-    dw GiveTradeItem3
-    dw GiveTradeItem4
-    dw GiveTradeItem5
-    dw GiveTradeItem6
-    dw GiveTradeItem7
-    dw GiveTradeItem8
-    dw GiveTradeItem9
-    dw GiveTradeItem10
-    dw GiveTradeItem11
-    dw GiveTradeItem12
-    dw GiveTradeItem13
-    dw GiveTradeItem14
+    dw PieceOfHeart     ; $80 ; Heart piece
+    dw GiveBowwow       ; $81 
+    dw Give10Arrows     ; $82
+    dw Give1Arrow       ; $83
+    dw UpgradeMaxPowder ; $84
+    dw UpgradeMaxBombs  ; $85
+    dw UpgradeMaxArrows ; $86
+    dw GiveRedTunic     ; $87
+    dw GiveBlueTunic    ; $88
+    dw GiveExtraHeart   ; $89
+    dw TakeHeart        ; $8A
+    dw GiveSong1        ; $8B
+    dw GiveSong2        ; $8C
+    dw GiveSong3        ; $8D
+    dw GiveInstrument   ; $8E
+    dw GiveInstrument   ; $8F
+    dw GiveInstrument   ; $90
+    dw GiveInstrument   ; $91
+    dw GiveInstrument   ; $92
+    dw GiveInstrument   ; $93
+    dw GiveInstrument   ; $94
+    dw GiveInstrument   ; $95
+    dw GiveRooster      ; $96
+    dw GiveTradeItem1   ; $97
+    dw GiveTradeItem2   ; $98
+    dw GiveTradeItem3   ; $99
+    dw GiveTradeItem4   ; $9A
+    dw GiveTradeItem5   ; $9B
+    dw GiveTradeItem6   ; $9C
+    dw GiveTradeItem7   ; $9D
+    dw GiveTradeItem8   ; $9E
+    dw GiveTradeItem9   ; $9F
+    dw GiveTradeItem10  ; $A0
+    dw GiveTradeItem11  ; $A1
+    dw GiveTradeItem12  ; $A2
+    dw GiveTradeItem13  ; $A3
+    dw GiveTradeItem14  ; $A4
+    dw SpecialPieceOfPower ; $A5
+    dw SpecialCuccoParty ; $A6
 
 NoItem:
     ret
@@ -328,12 +330,6 @@ AddSeaShell:
     ld   [wSeashellsCount], a
     ret
 
-StartZolDrop:
-    ld   a, 5
-    ld   [wZolSpawnCount], a
-    ld   a, $1D ; JINGLE_WRONG_ANSWER
-    ldh  [$FFF2], a ; hJingle
-    ret
 
 PieceOfHeart:
 #IF HARD_MODE
@@ -853,6 +849,7 @@ ItemSpriteTable:
     db $9E, $14 ; $54 ; Seashell disguise
     db $A0, $14 ; $55 ; Medicine disguise
     db $A6, $15 ; $56 ; Rupees50 disguise
+    db $A0, $14       ; Death
 
 LargeItemSpriteTable:
     db $AC, $02, $AC, $22 ; heart piece

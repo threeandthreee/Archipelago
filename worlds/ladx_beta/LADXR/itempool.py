@@ -41,13 +41,17 @@ DEFAULT_ITEM_POOL = {
     GEL: 4,
     MESSAGE: 1,
 
-    COMPASS1: 1, COMPASS2: 1, COMPASS3: 1, COMPASS4: 1, COMPASS5: 1, COMPASS6: 1, COMPASS7: 1, COMPASS8: 1, COMPASS9: 1,
+    COMPASS1: 1, COMPASS2: 1, COMPASS3: 1, COMPASS4: 1,
+    COMPASS5: 1, COMPASS6: 1, COMPASS7: 1, COMPASS8: 1, COMPASS9: 1,
     KEY1: 3, KEY2: 5, KEY3: 9, KEY4: 5, KEY5: 3, KEY6: 3, KEY7: 3, KEY8: 7, KEY9: 3,
     MAP1: 1, MAP2: 1, MAP3: 1, MAP4: 1, MAP5: 1, MAP6: 1, MAP7: 1, MAP8: 1, MAP9: 1,
-    NIGHTMARE_KEY1: 1, NIGHTMARE_KEY2: 1, NIGHTMARE_KEY3: 1, NIGHTMARE_KEY4: 1, NIGHTMARE_KEY5: 1, NIGHTMARE_KEY6: 1, NIGHTMARE_KEY7: 1, NIGHTMARE_KEY8: 1, NIGHTMARE_KEY9: 1,
-    STONE_BEAK1: 1, STONE_BEAK2: 1, STONE_BEAK3: 1, STONE_BEAK4: 1, STONE_BEAK5: 1, STONE_BEAK6: 1, STONE_BEAK7: 1, STONE_BEAK8: 1, STONE_BEAK9: 1,
+    NIGHTMARE_KEY1: 1, NIGHTMARE_KEY2: 1, NIGHTMARE_KEY3: 1, NIGHTMARE_KEY4: 1,
+    NIGHTMARE_KEY5: 1, NIGHTMARE_KEY6: 1, NIGHTMARE_KEY7: 1, NIGHTMARE_KEY8: 1, NIGHTMARE_KEY9: 1,
+    STONE_BEAK1: 1, STONE_BEAK2: 1, STONE_BEAK3: 1, STONE_BEAK4: 1,
+    STONE_BEAK5: 1, STONE_BEAK6: 1, STONE_BEAK7: 1, STONE_BEAK8: 1, STONE_BEAK9: 1,
     
-    INSTRUMENT1: 1, INSTRUMENT2: 1, INSTRUMENT3: 1, INSTRUMENT4: 1, INSTRUMENT5: 1, INSTRUMENT6: 1, INSTRUMENT7: 1, INSTRUMENT8: 1,
+    INSTRUMENT1: 1, INSTRUMENT2: 1, INSTRUMENT3: 1, INSTRUMENT4: 1,
+    INSTRUMENT5: 1, INSTRUMENT6: 1, INSTRUMENT7: 1, INSTRUMENT8: 1,
 
     TRADING_ITEM_YOSHI_DOLL: 1,
     TRADING_ITEM_RIBBON: 1,
@@ -69,10 +73,10 @@ DEFAULT_ITEM_POOL = {
 
 
 class ItemPool:    
-    def __init__(self, world_setup, settings, ap_options):
+    def __init__(self, world_setup, world):
         self.min_rupees = 1970
         self.__pool = {}
-        self.__setup(world_setup, settings, ap_options)
+        self.__setup(world_setup, world)
 
     def add(self, item, count=1):
         self.__pool[item] = self.__pool.get(item, 0) + count
@@ -143,7 +147,8 @@ class ItemPool:
             number += self.get(f'RUPEES_{value}')
         return number
 
-    def __setup(self, world_setup, settings, ap_options):
+    def __setup(self, world_setup, world):
+        settings = world.ladxr_settings
         default_item_pool = DEFAULT_ITEM_POOL
 
         for item, count in default_item_pool.items():
@@ -207,6 +212,22 @@ class ItemPool:
             self.remove(GEL, 4)
             self.remove(MESSAGE, 1)
 
+        if not settings.tradequest:
+            self.remove(TRADING_ITEM_YOSHI_DOLL)
+            self.remove(TRADING_ITEM_RIBBON)
+            self.remove(TRADING_ITEM_DOG_FOOD)
+            self.remove(TRADING_ITEM_BANANAS)
+            self.remove(TRADING_ITEM_STICK)
+            self.remove(TRADING_ITEM_HONEYCOMB)
+            self.remove(TRADING_ITEM_PINEAPPLE)
+            self.remove(TRADING_ITEM_HIBISCUS)
+            self.remove(TRADING_ITEM_LETTER)
+            self.remove(TRADING_ITEM_BROOM)
+            self.remove(TRADING_ITEM_FISHING_HOOK)
+            self.remove(TRADING_ITEM_NECKLACE)
+            self.remove(TRADING_ITEM_SCALE)
+            self.remove(TRADING_ITEM_MAGNIFYING_GLASS)
+
         # total number of items shouldnt change after this point
         target_item_count = self.count()
 
@@ -224,32 +245,61 @@ class ItemPool:
         if not settings.rooster:
             self.remove(ROOSTER)
         num_rupees = self.numberRupees()
-        if num_rupees > 15 and 'Greatly Reduce Rupees' in ap_options.item_pool:
+        if num_rupees > 15 and 'Greatly Reduce Rupees' in world.options.item_pool:
             self.removeRupees(num_rupees - 15)
-        elif num_rupees > 25 and 'Reduce Rupees' in ap_options.item_pool:
+        elif num_rupees > 25 and 'Reduce Rupees' in world.options.item_pool:
             self.removeRupees(num_rupees - 25)
-        if 'Remove Heart Containers' in ap_options.item_pool:
+        if 'Remove Heart Containers' in world.options.item_pool:
             self.remove(HEART_PIECE, -1)
             self.remove(HEART_CONTAINER, -1)
-        elif 'Consolidate Hearts' in ap_options.item_pool:
+        elif 'Consolidate Hearts' in world.options.item_pool:
             self.add(HEART_CONTAINER, self.get(HEART_PIECE) // 4)
             self.remove(HEART_PIECE, -1)
-        if 'Remove Tunics' in ap_options.item_pool:
+        if 'Remove Tunics' in world.options.item_pool:
             self.remove(BLUE_TUNIC)
             self.remove(RED_TUNIC)
-        if 'Remove Capacity Upgrades' in ap_options.item_pool:
+        if 'Remove Capacity Upgrades' in world.options.item_pool:
             self.remove(MAX_ARROWS_UPGRADE)
             self.remove(MAX_BOMBS_UPGRADE)
             self.remove(MAX_POWDER_UPGRADE)
-        if 'Remove Extras' in ap_options.item_pool:
+        if 'Remove Extras' in world.options.item_pool:
             self.remove(MEDICINE, -1)
             self.remove(GEL, -1)
             self.remove(MESSAGE)
-        if 'Remove Boomerang' in ap_options.item_pool:
+        if 'Remove Boomerang' in world.options.item_pool:
             self.remove(BOOMERANG)
 
         self.add(FILLER, target_item_count - self.count())
         self.balanceRupees()
+
+        # additions
+        items_to_add = []
+        if "Extra Keys" in world.options.item_pool:
+            for n in range(9):
+                items_to_add.extend("KEY%d" % (n + 1))
+        if "Extra Nightmare Keys" in world.options.item_pool:
+            for n in range(9):
+                items_to_add.extend("NIGHTMARE_KEY%d" % (n + 1))
+        if "Extra Equipment" in world.options.item_pool:
+            items_to_add.extend([
+                BOMB,
+                BOW,
+                FEATHER,
+                FLIPPERS,
+                HOOKSHOT,
+                MAGIC_ROD,
+                OCARINA,
+                PEGASUS_BOOTS,
+                POWER_BRACELET,
+            ])
+        if "Add Bad Heart Containers" in world.options.item_pool:
+            heart_containers = self.get('HEART_CONTAINER')
+            heart_pieces = self.get('HEART_PIECE')
+            to_add = 2 + heart_containers + heart_pieces // 4
+            items_to_add.extend(['BAD_HEART_CONTAINER'] * to_add)
+
+        # we could try to swap these in for filler now but its easier to just let AP do it
+        world.priority_filler = items_to_add
 
     def toDict(self):
         return self.__pool.copy()

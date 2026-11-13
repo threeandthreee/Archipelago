@@ -176,7 +176,7 @@ ItemNamePointers:
     dw ItemNameGel ; 0x54
     dw ItemNameGel ; 0x55
     dw ItemNameGel ; 0x56
-    dw ItemNameNone ; 0x57
+    dw ItemNameDeath ; 0x57
     dw ItemNameNone ; 0x58
     dw ItemNameNone ; 0x59
     dw ItemNameNone ; 0x5a
@@ -421,6 +421,8 @@ ItemNameToadstool:
     db m"Got the {TOADSTOOL}", $ff
 ItemNameGuardianAcorn:
     db m"Got a Guardian Acorn", $ff
+ItemNameDeath:
+    db m"Got <master>", $ff
 
 ItemNameHeartPiece:
     db m"Got the {HEART_PIECE}", $ff

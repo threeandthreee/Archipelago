@@ -14,9 +14,9 @@ from worlds.LauncherComponents import Component, components, SuffixIdentifier, T
 from worlds.generic.Rules import forbid_item
 from .Common import *
 from .ForeignItemIcons import ForeignItemIconMatcher
-from .Items import (DungeonItemData, DungeonItemType, ItemName, LinksAwakeningItem, TradeItemData,
-                    ladxr_item_to_la_item_name, links_awakening_items, links_awakening_items_by_name,
-                    links_awakening_item_name_groups)
+from .Items import (LinksAwakeningItem, ladxr_item_to_la_item_name, links_awakening_items,
+                    links_awakening_items_by_name, links_awakening_item_name_groups,
+                    item_prefixes_to_skip_text_in_prefill, start_items_to_block_by_prefix, rupees)
 from .LADXR.itempool import ItemPool as LADXRItemPool
 from .LADXR.locations.instrument import Instrument
 from .LADXR.locations.itemInfo import ItemInfo as LADXRItemInfo
@@ -26,11 +26,8 @@ from .LADXR.logic import Logic as LADXRLogic
 from .LADXR.settings import Settings as LADXRSettings
 from .LADXR.worldSetup import WorldSetup as LADXRWorldSetup
 from .LADXR.hints import generate_hint_texts
-from .Locations import (LinksAwakeningLocation,
-                        LinksAwakeningRegion,
-                        create_regions_from_ladxr,
-                        links_awakening_location_name_to_id,
-                        links_awakening_location_name_groups)
+from .Locations import (LinksAwakeningLocation, LinksAwakeningRegion, create_regions_from_ladxr,
+                        links_awakening_location_name_to_id, links_awakening_location_name_groups)
 from .Options import (DungeonItemShuffle, ShuffleInstruments, LinksAwakeningOptions, ladx_option_groups,
                       convert_ap_options_to_ladxr)
 from .Rom import LADXProcedurePatch, write_patch_data
@@ -168,9 +165,7 @@ class LinksAwakeningWorld(World):
     # The following two dicts are required for the generation to know which
     # items exist. They could be generated from json or something else. They can
     # include events, but don't have to since events will be placed manually.
-    item_name_to_id = {
-        item.item_name : BASE_ID + item.item_id for item in links_awakening_items
-    }
+    item_name_to_id = { item.item_name: BASE_ID + item.item_id for item in links_awakening_items }
 
     item_name_to_data = links_awakening_items_by_name
 
@@ -196,14 +191,6 @@ class LinksAwakeningWorld(World):
 
     multi_key: bytearray
 
-    rupees = {
-        ItemName.RUPEES_20: 20,
-        ItemName.RUPEES_50: 50,
-        ItemName.RUPEES_100: 100,
-        ItemName.RUPEES_200: 200,
-        ItemName.RUPEES_500: 500,
-    }
-
 
     def generate_early(self) -> None:
         pass
@@ -216,31 +203,8 @@ class LinksAwakeningWorld(World):
 
         self.ladxr_settings.validate()
         world_setup = LADXRWorldSetup()
-        ladxr_itempool = LADXRItemPool(world_setup, self.ladxr_settings, self.options)
-        self.priority_filler = []
-        if "Extra Keys" in self.options.item_pool:
-            for n in range(9):
-                self.priority_filler.add("KEY%d" % (n + 1))
-        if "Extra Nightmare Keys" in self.options.item_pool:
-            for n in range(9):
-                self.priority_filler.add("NIGHTMARE_KEY%d" % (n + 1))
-        if "Extra Equipment" in self.options.item_pool:
-            self.priority_filler.append([
-                "BOMB",
-                "BOW",
-                "FEATHER",
-                "FLIPPERS",
-                "HOOKSHOT",
-                "MAGIC_ROD",
-                "OCARINA",
-                "PEGASUS_BOOTS",
-                "POWER_BRACELET",
-            ])
-        if "Add Bad Heart Containers" in self.options.item_pool:
-            heart_containers = ladxr_itempool.get('HEART_CONTAINER')
-            heart_pieces = ladxr_itempool.get('HEART_PIECE')
-            to_add = 2 + heart_containers + heart_pieces // 4
-            self.priority_filler.append(['BAD_HEART_CONTAINER'] * to_add)
+        ladxr_itempool = LADXRItemPool(world_setup, self) # also populates priority_filler
+        
         self.filler_choices = list(self.options.filler_pool.keys())
         self.filler_weights = list(self.options.filler_pool.values())
 
@@ -293,7 +257,7 @@ class LinksAwakeningWorld(World):
 
         self.ladxr_logic = LADXRLogic(configuration_options=self.ladxr_settings, world_setup=world_setup)
 
-        regions = create_regions_from_ladxr(self.player, self.multiworld, self.ladxr_logic)
+        regions = create_regions_from_ladxr(self.player, self.multiworld, self.ladxr_logic, self.ladxr_settings)
         self.multiworld.regions += regions
 
         # Connect Menu -> Start
@@ -360,17 +324,11 @@ class LinksAwakeningWorld(World):
             for _ in range(count):
                 item = self.create_item(item_name)
 
-                if not self.options.tradequest and isinstance(item.item_data, TradeItemData):
-                    location = self.multiworld.get_location(item.item_data.vanilla_location, self.player)
-                    location.place_locked_item(item)
-                    location.show_in_spoiler = False
-                    continue
-
-                if isinstance(item.item_data, DungeonItemData):
+                if item.item_data.dungeon_item_type:
                     item_type = item.item_data.ladxr_id[:-1]
                     shuffle_type = self.dungeon_item_types[item_type]
 
-                    if item.item_data.dungeon_item_type == DungeonItemType.INSTRUMENT and shuffle_type == ShuffleInstruments.option_vanilla:
+                    if item.item_data.dungeon_item_type == 'INSTRUMENT' and shuffle_type == ShuffleInstruments.option_vanilla:
                         # Find instrument, lock
                         # TODO: we should be able to pinpoint the region we want, save a lookup table please
                         found = False
@@ -441,13 +399,6 @@ class LinksAwakeningWorld(World):
             entrances = [en for en, ex in self.ladxr_logic.world_setup.entrance_mapping.items() if ex == target]
             hint_data[self.player][location.address] = ", ".join(entrances)
 
-    start_item_blacklist = [
-        'Gold Leaf',
-        'Rupees',
-        'Seashell',
-        'Small Key',
-    ]
-
     def local_front_fill(self, itempool: list[Item], target: int) -> None:
         def get_reachable_locations(collection_state: CollectionState) -> list[Location]:
             return [l for r in collection_state.reachable_regions[self.player] for l in r.locations if not l.is_event]
@@ -455,7 +406,7 @@ class LinksAwakeningWorld(World):
         start_items = [item for item in itempool
             if item.advancement
             and item.name not in self.options.non_local_items
-            and not any(x for x in self.start_item_blacklist if x in item.name)]
+            and not any(x for x in start_items_to_block_by_prefix if x in item.item_data.ladxr_id)]
         self.random.shuffle(start_items)
         collection_state = CollectionState(self.multiworld)
         collection_state.sweep_for_advancements(self.get_locations())
@@ -568,6 +519,15 @@ class LinksAwakeningWorld(World):
 
         fill_restrictive(self.multiworld, partial_all_state, all_dungeon_locs_to_fill, all_dungeon_items_to_fill, lock=True, single_player_placement=True, allow_partial=False)
 
+    def post_fill(self):
+        # sort precollected for better processing in game
+        def sort_key(item):
+            if any(x for x in item_prefixes_to_skip_text_in_prefill if item.item_data.ladxr_id.startswith(x)):
+                return 1
+            return 0
+            
+        self.multiworld.precollected_items[self.player].sort(key=sort_key)
+
     def generate_output(self, output_directory: str):
         self.rom_item_placements = []
         matcher = ForeignItemIconMatcher()
@@ -626,14 +586,14 @@ class LinksAwakeningWorld(World):
 
     def collect(self, state, item: Item) -> bool:
         change = super().collect(state, item)
-        if change and item.name in self.rupees:
-            state.prog_items[self.player]["RUPEES"] += self.rupees[item.name]
+        if change and isinstance(item, LinksAwakeningItem) and item.item_data.ladxr_id in rupees:
+            state.prog_items[self.player]["RUPEES"] += rupees[item.item_data.ladxr_id]
         return change
 
     def remove(self, state, item: Item) -> bool:
         change = super().remove(state, item)
-        if change and item.name in self.rupees:
-            state.prog_items[self.player]["RUPEES"] -= self.rupees[item.name]
+        if change and isinstance(item, LinksAwakeningItem) and item.item_data.ladxr_id in rupees:
+            state.prog_items[self.player]["RUPEES"] -= rupees[item.item_data.ladxr_id]
         return change    
 
     @staticmethod
