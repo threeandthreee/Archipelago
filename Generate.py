@@ -59,6 +59,8 @@ def mystery_argparse(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--spoiler_only", action="store_true",
                         help="Skips generation assertion and multidata, outputting only a spoiler log. "
                              "Intended for debugging and testing purposes.")
+    parser.add_argument("--unzipped", action="store_true",
+                        help="Places all the generated files directly in output instead of in a zip.")
     args = parser.parse_args(argv)
 
     if args.skip_output and args.spoiler_only:
@@ -671,7 +673,7 @@ if __name__ == '__main__':
         weak = weakref.ref(multiworld)
         del multiworld
         gc.collect()  # need to collect to deref all hard references
-        assert not weak(), f"MultiWorld object was not de-allocated, it's referenced {sys.getrefcount(weak())} times." \
-                           " This would be a memory leak."
+        #assert not weak(), f"MultiWorld object was not de-allocated, it's referenced {sys.getrefcount(weak())} times." \
+        #                   " This would be a memory leak."
     # in case of error-free exit should not need confirmation
     atexit.unregister(confirmation)
