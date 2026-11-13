@@ -12,9 +12,9 @@ class TunicFairy(ItemInfo):
     def patch(self, rom, option, *, multiworld=None):
         # Old index, maybe not needed anymore
         # rom.banks[0x36][0x11BF + self.index] = CHEST_ITEMS[option]
-        rom.banks[0x3e][0x3800 + 0x301 + self.patch_room] = CHEST_ITEMS[option]
+        rom.banks[0x3e][0x3800 + self.patch_room] = CHEST_ITEMS[option]
         if multiworld:
-            rom.banks[0x3e][0x3300 + 0x301 + self.patch_room] = multiworld
+            rom.banks[0x3e][0x3300 + self.patch_room] = multiworld
         
     def read(self, rom):
         value = rom.banks[0x36][0x11BF + self.index]
