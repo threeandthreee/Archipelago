@@ -525,13 +525,13 @@ class LinksAwakeningWorld(World):
             if any(x for x in item_prefixes_to_skip_text_in_prefill if item.item_data.ladxr_id.startswith(x)):
                 return 1
             return 0
-            
         self.multiworld.precollected_items[self.player].sort(key=sort_key)
+
+        self.ladx_in_game_hints = generate_hint_texts(self)
 
     def generate_output(self, output_directory: str):
         self.rom_item_placements = []
         matcher = ForeignItemIconMatcher()
-        self.ladx_in_game_hints = generate_hint_texts(self)
         # copy items back to locations
         for r in self.multiworld.get_regions(self.player):
             for loc in r.locations:
