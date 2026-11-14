@@ -393,8 +393,9 @@ class Goal(Choice, LADXROption):
     Ocarina are not needed.
 
     **Open:** The Egg will start pre-opened.
-
-	**Specific:** The Wind Fish's Egg will open with specific instruments, check the sign at the egg to see which.
+    
+    **Specific:** The Wind Fish's Egg will open with specific instruments,
+    check the sign at the egg to see which.
     """
     display_name = "Goal"
     rich_text_doc = True
@@ -727,38 +728,21 @@ class Warps(Choice, LADXROption):
     may_override = Override.NOT_RACE
 
 
-class InGameHintCount(Range):
+class InGameHintItems(ItemSet):
     """
-    Determines how many owl statues and library books will indicate the location
-    of your items in the multiworld. All others will give junk hints that reveal
-    nothing.
+    Choose which items to generate in-game hints for. Setting no items effectively disables hints.
 
     There are:
     - 7 hint books in the library
     - 10 overworld owl statues
-    - 21 dungeon owl statues (all color dungeons owls are the same text)
+    - 21 dungeon owl statues (all color dungeons owls are the same hint)
     """
-    display_name = "In-Game Hint Count"
+    display_name = "In-Game Hint Items"
     rich_text_doc = True
-    range_start = 0
-    range_end = 38
-    default = 26
-
-
-class InGameHintExcludedItems(ItemSet):
-    """
-    Indicated items will not be used for in-game hints.
-    """
-    display_name = "In-Game Hint Excluded Items"
-    rich_text_doc = True
-
-
-class InGameHintPriorityItems(ItemSet):
-    """
-    Indicated items will be prioritized for in-game hints.
-    """
-    display_name = "In-Game Hint Priority Items"
-    rich_text_doc = True
+    default = {
+        "Equipment",
+        "Entrance Keys"
+    }
 
 
 class ExpandStart(NamedRange):
@@ -766,7 +750,7 @@ class ExpandStart(NamedRange):
     Starting from Tarin's Gift, locally place progression items until the target
     number of locations or more can be reached. Does nothing if set to *1*.
     When set to *2* it will only ever place an item on Tarin's Gift.
-    May interfere with plando.
+    May interfere with item plando.
     """
     display_name = "Expand Start"
     range_start = 1
@@ -802,7 +786,7 @@ class ItemPool(OptionSet):
     **Consolidate Hearts**: Remove heart pieces, adds heart containers to
     compensate. Normally removes 9 items.
 
-    **Remove Heart Containers**: Remove heart pieces and heart containers.
+    **Remove Hearts**: Remove heart pieces and heart containers.
     Normally removes 20 items.
 
     **Remove Tunics**: Normally removes 2 items.
@@ -814,6 +798,9 @@ class ItemPool(OptionSet):
 
     **Remove Boomerang**: Removes 1 item.
 
+    **Strict Seashells**: On seashells goal, instead of replacing instruments
+    with seashells it just removes them, leaving 24 total seashells.
+
     **Extra Keys**: Adds one small key to each dungeon.
 
     **Extra Nightmare Keys**: Adds one nightmare key to each dungeon.
@@ -822,7 +809,7 @@ class ItemPool(OptionSet):
     *Hookshot*, *Magic Rod*, *Ocarina*, *Pegasus Boots*, and *Power Bracelet*
     to the item pool. 9 items total.
 
-    **Add Bad Heart Containers**: Adds *Bad Heart Containers*, which **reduce**
+    **Add Anti-Heart Containers**: Adds *Anti-Heart Containers*, which **reduce**
     maximum health. Normally adds 13 items (adds 2 when *Remove Heart
     Containers* is set).
     """
@@ -832,15 +819,17 @@ class ItemPool(OptionSet):
         "Reduce Rupees",
         "Greatly Reduce Rupees",
         "Consolidate Hearts",
-        "Remove Heart Containers",
+        "Split Hearts",
+        "Remove Hearts",
         "Remove Tunics",
         "Remove Capacity Upgrades",
         "Remove Extras",
         "Remove Boomerang",
+        "Strict Seashells",
         "Extra Keys",
         "Extra Nightmare Keys",
         "Extra Equipment",
-        "Add Bad Heart Containers",
+        "Add Anti-Heart Containers",
     ]
     default = [
         "Reduce Rupees",
@@ -896,6 +885,7 @@ ladx_option_groups = [
         HardMode,
         TrendyGame,
         BlockFreePowder,
+        InGameHintItems,
     ]),
     OptionGroup("World Layout", [
         Overworld,
@@ -939,11 +929,6 @@ ladx_option_groups = [
         NoFlash,
         Follower,
     ]),
-    OptionGroup("In-Game Hints", [
-        InGameHintCount,
-        InGameHintExcludedItems,
-        InGameHintPriorityItems,
-    ]),
 ]
 
 @dataclass
@@ -985,9 +970,7 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     low_hp_beep: LowHpBeep
     text_mode: TextMode
     no_flash: NoFlash
-    in_game_hint_count: InGameHintCount
-    in_game_hint_excluded_items: InGameHintExcludedItems
-    in_game_hint_priority_items: InGameHintPriorityItems
+    in_game_hint_items: InGameHintItems
     overworld: Overworld
     death_link: DeathLink
     item_pool: ItemPool
@@ -1008,3 +991,6 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     in_game_hints: Removed
     more_filler: Removed
     entrance_shuffle: Removed
+    in_game_hint_count: Removed
+    in_game_hint_excluded_items: Removed
+    in_game_hint_priority_items: Removed

@@ -30,10 +30,6 @@ dungeon_hint_text_ids = [
     0x263,  # D0
 ]
 
-hint_items = (POWER_BRACELET, SHIELD, BOW, HOOKSHOT, MAGIC_ROD, PEGASUS_BOOTS, OCARINA, FEATHER, SHOVEL,
-              MAGIC_POWDER, SWORD, FLIPPERS, TAIL_KEY, ANGLER_KEY, FACE_KEY,
-              BIRD_KEY, SLIME_KEY, GOLD_LEAF, BOOMERANG, BOWWOW)
-
 hints = [
     "{0} is at {1}",
     "If you want {0} start looking in {1}",
@@ -66,20 +62,27 @@ def addHints(rom, rnd, hint_texts):
         rom.texts[text_id] = formatText("Read this book?", ask="YES  NO")
 
 
-def generate_hint_texts(world):
+def generate_hint_texts(world) -> dict[str, dict[str, str]]:
     our_items = [
         location.item for location in world.multiworld.get_filled_locations()
         if location.item.player == world.player
-        and not location.is_event
+        and location.item.name in world.options.in_game_hint_items
         and not location.locked
-        and not location.item.name in world.options.in_game_hint_excluded_items
     ]
     world.random.shuffle(our_items)
-    our_items.sort(key=lambda item: item.name in world.options.in_game_hint_priority_items)
+    # limit to one copy of bombs and powder
+    seen_items = set()
+    trimmed_items = []
+    for item in our_items:
+        if item not in seen_items:
+            trimmed_items.append(item)
+            if item.item_data.ladxr_id in ('BOMB', 'MAGIC_POWDER'):
+                seen_items.add(item)
+    our_items = trimmed_items
 
     hint_data = {}
-    def gen_hint(i):
-        if i >= world.options.in_game_hint_count or not our_items:
+    def gen_hint():
+        if not our_items:
             return None
         else:
             item = our_items.pop()
@@ -107,6 +110,6 @@ def generate_hint_texts(world):
     if world.ladxr_settings.overworld in ('normal', 'openmabe', 'dungeondive'):
         text_ids += dungeon_hint_text_ids
     world.random.shuffle(text_ids)
-    for i, text_id in enumerate(text_ids):
-        hint_data[str(text_id)] = gen_hint(i)
+    for text_id in text_ids:
+        hint_data[str(text_id)] = gen_hint()
     return hint_data

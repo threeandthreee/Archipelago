@@ -228,21 +228,21 @@ class ItemPool:
             self.remove(TRADING_ITEM_SCALE)
             self.remove(TRADING_ITEM_MAGNIFYING_GLASS)
 
-        if settings.goal == "seashells":
-            self.remove(SEASHELL, 2)
-
-        # total number of items shouldnt change after this point
-        target_item_count = self.count()
-
         # goal adjustments
         goal = world_setup.goal
         if isinstance(goal, str) and goal.startswith('='):
             instruments_to_remove = [i for i in range(1, 9) if str(i) not in goal]
             for i in instruments_to_remove:
                 self.remove(f"INSTRUMENT{i}")
-        if settings.goal == "seashells":
+        elif settings.goal == "seashells":
+            self.remove(SEASHELL, 2)
             for n in range(8):
-                self.replace("INSTRUMENT%d" % (n + 1), SEASHELL)
+                self.remove("INSTRUMENT%d" % (n + 1))
+            if "Strict Seashells" not in world.options.item_pool:
+                self.add(SEASHELL, 8)
+
+        # total number of items shouldnt change after this point
+        target_item_count = self.count()
 
         # removals
         if not settings.rooster:
