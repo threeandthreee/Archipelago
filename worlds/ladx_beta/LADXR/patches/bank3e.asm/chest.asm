@@ -992,6 +992,50 @@ RenderItemForRoom:
     ldh  [$FFF1], a
     jp   RenderChestItem
 
+HandleSeashellMansionItem: ; TODO gotta swap room and call GiveItemAndMessageForRoomMultiworld
+    ; either gotta figure out how to get to upstream room or pick closer room
+    ; lets just try the closer room first and see if it works, 0x2c0 and 0x2c1
+    ; -0x29 and -0x28
+    ld   a, b
+    cp   $05 ; check if modified seashell count is 5
+    jr   nz, .checkSecond
+    ld   a, $c0
+    jr   .giveItem
+.checkSecond:
+    cp   $10
+    ret  nz
+    ld   a, $c1
+.giveItem:
+    ldh  [$FFF6], a
+    push bc
+    ld   a, $0E
+    rst  8
+    ld   a, $e9
+    ldh  [$FFF6], a
+    ; For player convenience, check if another reward is available
+    pop  af
+    cp   $05
+    jr   z, .check10
+.check20:
+    ld   a, [wSeashellsCount]
+    cp   $20
+    jr   nc, .resetMansionState
+    ret
+.check10:
+    ld   a, [wSeashellsCount]
+    cp   $10
+    ret  c
+.resetMansionState:
+    ; For safety, make sure we have the expected entity and state
+    ld   a, [$C3A0]
+    cp   $CF
+    ret  nz
+    ld   a, [$C290]
+    sub  $07
+    ret  nz
+    ld   [$C290], a
+    ret
+
 ; Increase the amount of checks we completed, unless we are on the multichest room.
 IncreaseCheckCounter:
     ldh  a, [$FFF6] ; map room

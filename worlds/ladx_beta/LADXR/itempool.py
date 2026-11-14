@@ -36,7 +36,7 @@ DEFAULT_ITEM_POOL = {
     RUPEES_200: 3,
     RUPEES_50: 19,
 
-    SEASHELL: 24,
+    SEASHELL: 26,
     MEDICINE: 3,
     GEL: 4,
     MESSAGE: 1,
@@ -160,7 +160,7 @@ class ItemPool:
             self.remove(MAX_ARROWS_UPGRADE)
             self.remove(MAX_BOMBS_UPGRADE)
             self.remove(MAX_POWDER_UPGRADE)
-            self.remove(SEASHELL, 24)
+            self.remove(SEASHELL, 26)
             self.remove(TAIL_KEY)
             self.remove(SLIME_KEY)
             self.remove(ANGLER_KEY)
@@ -228,6 +228,9 @@ class ItemPool:
             self.remove(TRADING_ITEM_SCALE)
             self.remove(TRADING_ITEM_MAGNIFYING_GLASS)
 
+        if settings.goal == "seashells":
+            self.remove(SEASHELL, 2)
+
         # total number of items shouldnt change after this point
         target_item_count = self.count()
 
@@ -276,10 +279,10 @@ class ItemPool:
         items_to_add = []
         if "Extra Keys" in world.options.item_pool:
             for n in range(9):
-                items_to_add.extend("KEY%d" % (n + 1))
+                items_to_add.append("KEY%d" % (n + 1))
         if "Extra Nightmare Keys" in world.options.item_pool:
             for n in range(9):
-                items_to_add.extend("NIGHTMARE_KEY%d" % (n + 1))
+                items_to_add.append("NIGHTMARE_KEY%d" % (n + 1))
         if "Extra Equipment" in world.options.item_pool:
             items_to_add.extend([
                 BOMB,
