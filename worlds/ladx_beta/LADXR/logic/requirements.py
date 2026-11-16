@@ -319,7 +319,7 @@ class RequirementsSettings:
             AND(FLIPPERS, OR(SWORD, MAGIC_ROD, BOW)),  # D4 boss
             AND(HOOKSHOT, SWORD),  # D5 boss
             BOMB,  # D6 boss
-            AND(OR(MAGIC_ROD, SWORD, HOOKSHOT), COUNT(SHIELD, 2)),  # D7 boss
+            AND(OR(MAGIC_ROD, SWORD, HOOKSHOT), SHIELD),  # D7 boss
             MAGIC_ROD,  # D8 boss
             self.attack_hookshot_no_bomb,  # D9 boss
         ]

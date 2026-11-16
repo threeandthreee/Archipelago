@@ -19,15 +19,15 @@ overworld_hint_text_ids = [
 ]
 
 dungeon_hint_text_ids = [
-    0x288, 0x280,  # D1
-    0x28A, 0x289, 0x281,  # D2
-    0x282, 0x28C, 0x28B,  # D3
-    0x283,  # D4
-    0x28D, 0x284,  # D5
-    0x285, 0x28F, 0x28E,  # D6
-    0x291, 0x290, 0x286,  # D7
-    0x293, 0x287, 0x292,  # D8
-    0x263,  # D0
+    [0x263],  # D0
+    [0x288, 0x280],  # D1
+    [0x28A, 0x289, 0x281],  # D2
+    [0x282, 0x28C, 0x28B],  # D3
+    [0x283],  # D4
+    [0x28D, 0x284],  # D5
+    [0x285, 0x28F, 0x28E],  # D6
+    [0x291, 0x290, 0x286],  # D7
+    [0x293, 0x287, 0x292],  # D8
 ]
 
 hints = [
@@ -105,10 +105,11 @@ def generate_hint_texts(world) -> dict[str, dict[str, str]]:
             "player": item.location.player,
         }
     text_ids = []
-    if world.ladxr_settings.overworld in ('normal', 'openmabe', 'nodungeons'):
+    if world.ladxr_settings.overworld != 'dungeondive':
         text_ids += overworld_hint_text_ids
-    if world.ladxr_settings.overworld in ('normal', 'openmabe', 'dungeondive'):
-        text_ids += dungeon_hint_text_ids
+    for i, e in enumerate(world.ladxr_logic.world_setup.dungeon_exclusions):
+        if not e['condensed']:
+            text_ids += dungeon_hint_text_ids[i]
     world.random.shuffle(text_ids)
     for text_id in text_ids:
         hint_data[str(text_id)] = gen_hint()

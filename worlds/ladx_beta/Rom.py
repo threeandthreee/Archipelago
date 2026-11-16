@@ -79,6 +79,7 @@ def write_patch_data(world: "LinksAwakeningWorld", patch: LADXProcedurePatch):
             "entrance_mapping": world.ladxr_logic.world_setup.entrance_mapping,
             "boss_mapping": world.ladxr_logic.world_setup.boss_mapping,
             "miniboss_mapping": world.ladxr_logic.world_setup.miniboss_mapping,
+            "dungeon_exclusions": world.ladxr_logic.world_setup.dungeon_exclusions,
         },
         "ladxr_settings_dict": world.ladxr_settings_dict,
     }

@@ -1,5 +1,5 @@
 from BaseClasses import Region, Entrance, Location, CollectionState
-
+from typing import NamedTuple
 from .LADXR.checkMetadata import checkMetadataTable
 from .LADXR.locations.tradeSequence import TradeSequenceItem
 from .Common import *
@@ -9,18 +9,28 @@ from .Items import ladxr_item_to_la_item_name
 
 prefilled_events = ["ANGLER_KEYHOLE", "RAFT", "MEDICINE2", "CASTLE_BUTTON"]
 
-links_awakening_dungeon_names = [
-    "Tail Cave",
-    "Bottle Grotto",
-    "Key Cavern",
-    "Angler's Tunnel",
-    "Catfish's Maw",
-    "Face Shrine",
-    "Eagle's Tower",
-    "Turtle Rock",
-    "Color Dungeon"
-]
 
+class DungeonStatus:
+    condensed: bool
+    excluded: bool
+
+class DungeonInfo(NamedTuple):
+    index: int
+    name: str
+    entrance: str
+    instrument: str | None
+
+dungeon_info = (
+    DungeonInfo(9, "Color Dungeon",   "d0", None),
+    DungeonInfo(1, "Tail Cave",       "d1", "Full Moon Cello"),
+    DungeonInfo(2, "Bottle Grotto",   "d2", "Conch Horn"),
+    DungeonInfo(3, "Key Cavern",      "d3", "Sea Lily's Bell"),
+    DungeonInfo(4, "Angler's Tunnel", "d4", "Surf Harp"),
+    DungeonInfo(5, "Catfish's Maw",   "d5", "Wind Marimba"),
+    DungeonInfo(6, "Face Shrine",     "d6", "Coral Triangle"),
+    DungeonInfo(7, "Eagle's Tower",   "d7", "Organ of Evening Calm"),
+    DungeonInfo(8, "Turtle Rock",     "d8", "Thunder Drum"),
+)
 
 def meta_to_name(meta):
     return f"{meta.name} ({meta.area})"

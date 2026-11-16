@@ -4,7 +4,7 @@ import os
 import typing
 import struct
 import random
-
+import logging
 import settings
 import Utils
 from BaseClasses import CollectionState, Entrance, Item, ItemClassification, Location, Tutorial
@@ -27,13 +27,16 @@ from .LADXR.settings import Settings as LADXRSettings
 from .LADXR.worldSetup import WorldSetup as LADXRWorldSetup
 from .LADXR.hints import generate_hint_texts
 from .Locations import (LinksAwakeningLocation, LinksAwakeningRegion, create_regions_from_ladxr,
-                        links_awakening_location_name_to_id, links_awakening_location_name_groups)
+                        links_awakening_location_name_to_id, links_awakening_location_name_groups,
+                        dungeon_info)
 from .Options import (DungeonItemShuffle, ShuffleInstruments, LinksAwakeningOptions, ladx_option_groups,
                       convert_ap_options_to_ladxr)
 from .Rom import LADXProcedurePatch, write_patch_data
 
 DEVELOPER_MODE = False
 TEST_PATCH = False
+
+logger = logging.getLogger("Link's Awakening Logger")
 
 def launch_client(*args):
     from .LinksAwakeningClient import launch as ladx_launch
@@ -174,7 +177,6 @@ class LinksAwakeningWorld(World):
     # Items can be grouped using their names to allow easy checking if any item
     # from that group has been collected. Group names can also be used for !hint
     item_name_groups = links_awakening_item_name_groups
-
     location_name_groups = links_awakening_location_name_groups
 
     prefill_dungeon_items = None
@@ -185,7 +187,6 @@ class LinksAwakeningWorld(World):
 
     ladx_in_game_hints: dict
 
-    priority_filler: list[str]
     filler_choices: list[str]
     filler_weights: list[int]
 
@@ -193,20 +194,45 @@ class LinksAwakeningWorld(World):
 
 
     def generate_early(self) -> None:
-        pass
-
-
-    def create_regions(self) -> None:
-        # Initialize
-        self.ladxr_settings_dict = convert_ap_options_to_ladxr(self.options)
-        self.ladxr_settings = LADXRSettings(self.ladxr_settings_dict)
-
-        self.ladxr_settings.validate()
-        world_setup = LADXRWorldSetup()
-        ladxr_itempool = LADXRItemPool(world_setup, self) # also populates priority_filler
-        
         self.filler_choices = list(self.options.filler_pool.keys())
         self.filler_weights = list(self.options.filler_pool.values())
+
+        if self.options.overworld == "dungeon_dive":
+            self.options.tradequest.value = False
+            if self.options.goal == "seashells":
+                self.options.goal.value = "instruments"
+                logger.warning("Switched goal to instruments. Seashell goal can't be used with dungeon dive.")
+        
+
+    def create_regions(self) -> None:
+        self.ladxr_settings_dict = convert_ap_options_to_ladxr(self.options)
+
+        world_setup = LADXRWorldSetup()
+
+        available_instruments: list[int] = []
+        for i, d_info in enumerate(dungeon_info):
+            is_excluded = d_info.name in self.options.exclude_dungeons
+            is_condensed = (is_excluded or d_info.name in self.options.condense_dungeons or
+                "All Dungeons" in self.options.condense_dungeons)
+            world_setup.dungeon_exclusions[i]["excluded"] = is_excluded
+            world_setup.dungeon_exclusions[i]["condensed"] = is_condensed
+            if not is_excluded and d_info.instrument:
+                available_instruments.append(d_info.index)
+        self.ladxr_settings_dict["goalcount"] = min(self.ladxr_settings_dict["goalcount"], len(available_instruments))
+        if self.ladxr_settings_dict["goalcount"] == 0 and self.ladxr_settings_dict["goal"] == "specific":
+            self.ladxr_settings_dict["goal"] = 0
+        
+        if "Specific" in self.options.exclude_dungeons and self.ladxr_settings_dict["goal"] == "specific":
+            self.random.shuffle(available_instruments)
+            for i in range(self.ladxr_settings_dict["goalcount"], len(available_instruments)):
+                j = available_instruments[i]
+                world_setup.dungeon_exclusions[j]["excluded"] = True
+                world_setup.dungeon_exclusions[j]["condensed"] = True
+
+        
+
+        self.ladxr_settings = LADXRSettings(self.ladxr_settings_dict)
+        ladxr_itempool = LADXRItemPool(world_setup, self.ladxr_settings, int(self.options.create_filler))
 
         self.dungeon_item_types = {}
         for dungeon_item_type in ["maps", "compasses", "small_keys", "nightmare_keys", "stone_beaks", "instruments"]:
@@ -268,6 +294,9 @@ class LinksAwakeningWorld(World):
 
         self.multiworld.regions.append(menu_region)
 
+        assert ladxr_itempool.count() == len(self.multiworld.get_locations(self.player)), \
+            f"{ladxr_itempool.count() - len(self.multiworld.get_locations(self.player))} too many items"
+
         # Place RAFT, other access events
         for region in regions:
             for loc in region.locations:
@@ -285,13 +314,6 @@ class LinksAwakeningWorld(World):
 
     def get_filler_item_name(self) -> str:
         return self.random.choices(self.filler_choices, self.filler_weights)[0]
-
-    def create_filler(self):
-        if self.priority_filler:
-            filler_item_name = self.priority_filler.pop()
-        else:
-            filler_item_name = self.get_filler_item_name()
-        return self.create_item(filler_item_name)
 
     def create_item(self, item_name: str):
         item_name = ladxr_item_to_la_item_name.get(item_name, item_name)
@@ -328,23 +350,11 @@ class LinksAwakeningWorld(World):
                     item_type = item.item_data.ladxr_id[:-1]
                     shuffle_type = self.dungeon_item_types[item_type]
 
-                    if item.item_data.dungeon_item_type == 'INSTRUMENT' and shuffle_type == ShuffleInstruments.option_vanilla:
-                        # Find instrument, lock
-                        # TODO: we should be able to pinpoint the region we want, save a lookup table please
-                        found = False
-                        for r in self.multiworld.get_regions(self.player):
-                            if r.dungeon_index != item.item_data.dungeon_index:
-                                continue
-                            for loc in r.locations:
-                                if not isinstance(loc, LinksAwakeningLocation):
-                                    continue
-                                if not isinstance(loc.ladxr_item, Instrument):
-                                    continue
-                                loc.place_locked_item(item)
-                                found = True
-                                break
-                            if found:
-                                break
+                    if(item.item_data.dungeon_item_type == 'INSTRUMENT' and
+                        shuffle_type == ShuffleInstruments.option_vanilla):
+                        d_info = dungeon_info[item.item_data.dungeon_index%9]
+                        loc = self.multiworld.get_location(f"{d_info.instrument}({d_info.name})")
+                        loc.place_locked_item(item)
                     else:
                         if shuffle_type == DungeonItemShuffle.option_original_dungeon:
                             self.prefill_original_dungeon[item.item_data.dungeon_index - 1].append(item)
@@ -363,12 +373,18 @@ class LinksAwakeningWorld(World):
         for r in self.multiworld.get_regions(self.player):
             # Set aside dungeon locations
             if r.dungeon_index:
-                self.dungeon_locations_by_dungeon[r.dungeon_index - 1] += r.locations
+                dungeon_excluded = self.ladxr_logic.world_setup.dungeon_exclusions[r.dungeon_index%9]["excluded"]
+                if dungeon_excluded:
+                    self.options.exclude_locations.value |= {l.name for l in r.locations}
+                else:
+                    self.dungeon_locations_by_dungeon[r.dungeon_index - 1] += [l for l in r.locations if not l.item]
                 for location in r.locations:
+                    # testing if we still need this
+                    #
                     # Don't place dungeon items on pit button chest, to reduce chance of the filler blowing up
                     # TODO: no need for this if small key shuffle
-                    if location.name == "Pit Button Chest (Tail Cave)" or location.item:
-                        self.dungeon_locations_by_dungeon[r.dungeon_index - 1].remove(location)
+                    #if location.name == "Pit Button Chest (Tail Cave)" or location.item:
+                    #    self.dungeon_locations_by_dungeon[r.dungeon_index - 1].remove(location)
                     # Properly fill locations within dungeon
                     location.dungeon = r.dungeon_index
 
@@ -377,17 +393,7 @@ class LinksAwakeningWorld(World):
         self.multiworld.itempool += itempool
 
     def extend_hint_information(self, hint_data: dict[int, dict[int, str]]) -> None:
-        dungeon_name_to_inside = {
-            "Color Dungeon": "d0:inside",
-            "Tail Cave": "d1:inside",
-            "Bottle Grotto": "d2:inside",
-            "Key Cavern": "d3:inside",
-            "Angler's Tunnel": "d4:inside",
-            "Catfish's Maw": "d5:inside",
-            "Face Shrine": "d6:inside",
-            "Eagle's Tower": "d7:inside",
-            "Turtle Rock": "d8:inside",
-        }
+        dungeon_name_to_inside = {d.name: f'{d.entrance}:inside' for d in dungeon_info}
         hint_data[self.player] = {}
         for location in self.multiworld.get_locations(self.player):
             if not location.item or location.is_event:

@@ -6,10 +6,9 @@ from Options import (Choice, Toggle, DefaultOnToggle, Range, PerGameCommonOption
                      DeathLink, StartInventoryPool, ItemSet, ItemDict, OptionSet, OptionDict, NamedRange,
                      FreeText)
 from schema import Schema, Optional
+from .Locations import dungeon_info
 
 DefaultOffToggle = Toggle
-
-logger = logging.getLogger("Link's Awakening Logger")
 
 
 def convert_ap_options_to_ladxr(options):
@@ -490,13 +489,16 @@ class Overworld(Choice, LADXROption):
     """
     **Open Mabe:** Replaces rock on the east side of Mabe Village with bushes,
     allowing access to Ukuku Prairie without Power Bracelet.
+
+    **Dungeon Dive:** Create a different overworld where all the dungeons are
+    directly accessible and almost no chests are located in the overworld.
     """
     display_name = "Overworld"
     ladxr_name = "overworld"
     rich_text_doc = True
     option_normal = 0
     option_open_mabe = 1
-    option_no_dungeons = 2
+    #option_no_dungeons = 2
     option_dungeon_dive = 3
     default = option_normal
 
@@ -753,6 +755,7 @@ class ExpandStart(NamedRange):
     May interfere with item plando.
     """
     display_name = "Expand Start"
+    rich_text_doc = True
     range_start = 1
     range_end = 10
     default = 5
@@ -764,76 +767,27 @@ class ExpandStart(NamedRange):
     }
 
 
-class ItemPool(OptionSet):
+class CreateFiller(NamedRange):
     """
-    Item pool adjustments. To add items to the pool, other items must have been
-    removed. If there is no room, it will just skip adding some with a warning
-    at generation.
-    
-    In addition to some of these options, space can be made in the item pool by
-    setting dungeon items to `remove`.
+    Removes non-essential items to make more room for filler.
+    The actual amount of filler removed will depend on other settings,
+    but it will create as much as it can, up to the selected target.
 
-    Adjustments that remove items from the pool generally won't work on
-    `dungeon_dive` and `no_dungeons`, as they've already been removed.
-    Exceptions are heart containers, medicine, and the boomerang.
-
-    **Reduce Rupees**: Reduce number of rupee items to 25, increasing the value
-    of remaining rupees. Normally removes 6 items.
-
-    **Greatly Reduce Rupees**: Reduce number of rupee items to 15, increasing
-    the value of remaining rupees. Normally removes 16 items.
-
-    **Consolidate Hearts**: Remove heart pieces, adds heart containers to
-    compensate. Normally removes 9 items.
-
-    **Remove Hearts**: Remove heart pieces and heart containers.
-    Normally removes 20 items.
-
-    **Remove Tunics**: Normally removes 2 items.
-
-    **Remove Capacity Upgrades**: Normally removes 3 items.
-
-    **Remove Extras**: Removes medicine, zol attacks, and master stalfos'
-    message. Normally removes 8 items.
-
-    **Remove Boomerang**: Removes 1 item.
-
-    **Strict Seashells**: On seashells goal, instead of replacing instruments
-    with seashells it just removes them, leaving 24 total seashells.
-
-    **Extra Keys**: Adds one small key to each dungeon.
-
-    **Extra Nightmare Keys**: Adds one nightmare key to each dungeon.
-
-    **Extra Equipment**: Adds extra *Bomb*, *Bow*, *Feather*, *Flippers*,
-    *Hookshot*, *Magic Rod*, *Ocarina*, *Pegasus Boots*, and *Power Bracelet*
-    to the item pool. 9 items total.
-
-    **Add Anti-Heart Containers**: Adds *Anti-Heart Containers*, which **reduce**
-    maximum health. Normally adds 13 items (adds 2 when *Remove Heart
-    Containers* is set).
+    Removing items from the pool with `start_inventory_from_pool`
+    or `start_with` on dungeon items will create filler for those
+    replacements independent of this count.
     """
-    display_name = "Item Pool"
+    display_name = "Create Filler"
     rich_text_doc = True
-    valid_keys = [
-        "Reduce Rupees",
-        "Greatly Reduce Rupees",
-        "Consolidate Hearts",
-        "Split Hearts",
-        "Remove Hearts",
-        "Remove Tunics",
-        "Remove Capacity Upgrades",
-        "Remove Extras",
-        "Remove Boomerang",
-        "Strict Seashells",
-        "Extra Keys",
-        "Extra Nightmare Keys",
-        "Extra Equipment",
-        "Add Anti-Heart Containers",
-    ]
-    default = [
-        "Reduce Rupees",
-    ]
+    range_start = 0
+    range_end = 50
+    default = 6
+    special_range_names = {
+        "none": 0,
+        "default": 6,
+        "reasonable": 20,
+        "maximum": 50,
+    }
 
 
 class FillerPool(ItemDict):
@@ -880,12 +834,40 @@ class Follower(Choice, LADXROption):
     ladxr_name = 'follower'
 
 
+class CondenseDungeons(OptionSet):
+    """
+    Transforms a dungeon into a tiny version, with mostly just a boss fight.
+
+    Condensing all dungeons is equivalent to the upstream *no dungeons* overworld.
+    """
+    display_name = "Condense Dungeons"
+    rich_text_doc = True
+    valid_keys = [d.name for d in dungeon_info]
+    valid_keys.append("All Dungeons")
+
+
+class ExcludeDungeons(OptionSet):
+    """
+    Excluding a dungeon condenses it, removes its instrument from the pool,
+    and excludes its remaining locations. Excluding a dungeon will also prevent
+    its instrument from being required in the *Specific* instruments goal.
+
+    **Specific**: Auto exludes any dungeons not required by the specific
+    instruments goal.
+    """
+    display_name = "Exclude Dungeons"
+    rich_text_doc = True
+    valid_keys = [d.name for d in dungeon_info]
+    valid_keys.append("Specific")
+
+
 ladx_option_groups = [
     OptionGroup("Gameplay Adjustments", [
         HardMode,
         TrendyGame,
         BlockFreePowder,
         InGameHintItems,
+        DeathLink,
     ]),
     OptionGroup("World Layout", [
         Overworld,
@@ -899,6 +881,7 @@ ladx_option_groups = [
         ShuffleWater,
         ShuffleAnnoying,
         EntranceShuffleSeed,
+        EntrancePlando,
     ]),
     OptionGroup("Item Pool", [
         ShuffleInstruments,
@@ -909,7 +892,7 @@ ladx_option_groups = [
         ShuffleStoneBeaks,
         TradeQuest,
         Rooster,
-        ItemPool,
+        CreateFiller,
         FillerPool,
     ]),
     OptionGroup("Quality of Life & Aesthetic", [
@@ -946,6 +929,8 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     shuffle_annoying: ShuffleAnnoying
     goal: Goal
     instrument_count: InstrumentCount
+    condense_dungeons: CondenseDungeons
+    exclude_dungeons: ExcludeDungeons
     link_palette: LinkPalette
     warps: Warps
     trendy_game: TrendyGame
@@ -973,7 +958,7 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     in_game_hint_items: InGameHintItems
     overworld: Overworld
     death_link: DeathLink
-    item_pool: ItemPool
+    create_filler: CreateFiller
     filler_pool: FillerPool
     start_inventory_from_pool: StartInventoryPool
     expand_start: ExpandStart

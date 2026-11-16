@@ -6,6 +6,7 @@ from .utils import Error
 from .explorer import Explorer
 from .settings import Settings
 from .logic.location import Location
+from ..Locations import dungeon_info
 
 
 MULTI_CHEST_OPTIONS = [MAGIC_POWDER, BOMB, MEDICINE, RUPEES_50, RUPEES_20, RUPEES_100, RUPEES_200, RUPEES_500, SEASHELL, GEL, ARROWS_10, SINGLE_ARROW]
@@ -70,6 +71,12 @@ class WorldSetup:
         self.multichest = RUPEES_20
         self.map = None  # Randomly generated map data
         self.is_partial = False
+        self.dungeon_exclusions = []
+        for _ in range(9):
+            self.dungeon_exclusions.append({
+                "excluded": False,
+                "condensed": False,
+            })
 
 
     def pickEntrances(self, settings, itempool, rnd, world_setup, plando: dict[str, str]):
@@ -122,8 +129,11 @@ class WorldSetup:
         elif settings.goal == "seashells":
             self.goal = settings.goal
         elif settings.goal == "specific":
-            instrument_count = max(1, int(settings.goalcount))
-            instruments = [c for c in "12345678"]
+            specific_options = [
+                str(d.index) for d in dungeon_info
+                if d.index != 9 and not self.dungeon_exclusions[d.index]["excluded"]]
+            instrument_count = max(1, min(int(settings.goalcount), len(specific_options)))
+            instruments = [c for c in specific_options]
             rnd.shuffle(instruments)
             self.goal = "=" + "".join(instruments[:instrument_count])
         else:

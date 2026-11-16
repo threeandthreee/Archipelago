@@ -1,3 +1,5 @@
+import logging
+from Options import OptionError
 from .locations.items import *
 FILLER = 'FILLER'
 
@@ -71,12 +73,13 @@ DEFAULT_ITEM_POOL = {
     "MEDICINE2": 1, "RAFT": 1, "ANGLER_KEYHOLE": 1, "CASTLE_BUTTON": 1
 }
 
+logger = logging.getLogger("Link's Awakening Logger")
 
 class ItemPool:    
-    def __init__(self, world_setup, world):
+    def __init__(self, world_setup, settings, create_filler):
         self.min_rupees = 1970
         self.__pool = {}
-        self.__setup(world_setup, world)
+        self.__setup(world_setup, settings, create_filler)
 
     def add(self, item, count=1):
         self.__pool[item] = self.__pool.get(item, 0) + count
@@ -147,19 +150,20 @@ class ItemPool:
             number += self.get(f'RUPEES_{value}')
         return number
 
-    def __setup(self, world_setup, world):
-        settings = world.ladxr_settings
+    def __setup(self, world_setup, settings, create_filler):
         default_item_pool = DEFAULT_ITEM_POOL
 
         for item, count in default_item_pool.items():
             self.add(item, count)
 
+        location_count = self.count()
+
         # overworld settings change overall item count
         if settings.overworld == "dungeondive":
+            location_count -= 73
             self.min_rupees -= 400
-            self.remove(MAX_ARROWS_UPGRADE)
-            self.remove(MAX_BOMBS_UPGRADE)
-            self.remove(MAX_POWDER_UPGRADE)
+            self.remove(SHOVEL)
+            self.remove(TOADSTOOL)
             self.remove(SEASHELL, 26)
             self.remove(TAIL_KEY)
             self.remove(SLIME_KEY)
@@ -169,50 +173,27 @@ class ItemPool:
             self.remove(GOLD_LEAF, 5)
             self.remove(SONG2)
             self.remove(SONG3)
-            self.remove(HEART_PIECE, 12)
-            self.add(HEART_CONTAINER, 3)
-            self.removeRupees(16)
-            self.remove(MESSAGE)
             self.remove(BOWWOW)
             self.remove(ROOSTER)
             self.remove("MEDICINE2")
             self.remove("RAFT")
             self.remove("ANGLER_KEYHOLE")
             self.remove("CASTLE_BUTTON")
-            self.remove(TRADING_ITEM_YOSHI_DOLL)
-            self.remove(TRADING_ITEM_RIBBON)
-            self.remove(TRADING_ITEM_DOG_FOOD)
-            self.remove(TRADING_ITEM_BANANAS)
-            self.remove(TRADING_ITEM_STICK)
-            self.remove(TRADING_ITEM_HONEYCOMB)
-            self.remove(TRADING_ITEM_PINEAPPLE)
-            self.remove(TRADING_ITEM_HIBISCUS)
-            self.remove(TRADING_ITEM_LETTER)
-            self.remove(TRADING_ITEM_BROOM)
-            self.remove(TRADING_ITEM_FISHING_HOOK)
-            self.remove(TRADING_ITEM_NECKLACE)
-            self.remove(TRADING_ITEM_SCALE)
-            self.remove(TRADING_ITEM_MAGNIFYING_GLASS)
-        elif settings.overworld == "nodungeons":
-            for n in range(9):
-                self.remove("MAP%d" % (n + 1))
-                self.remove("COMPASS%d" % (n + 1))
-                self.remove("STONE_BEAK%d" % (n + 1))
-                self.remove("KEY%d" % (n + 1), -1)
-                self.remove("NIGHTMARE_KEY%d" % (n + 1))
-            self.remove(BLUE_TUNIC)
-            self.remove(RED_TUNIC)
-            self.remove(MAX_ARROWS_UPGRADE)
-            self.remove(MAX_BOMBS_UPGRADE)
-            self.remove(MAX_POWDER_UPGRADE)
-            self.remove(SEASHELL, 2)
-            self.removeRupees(16)
-            self.remove(HEART_PIECE, 12)
-            self.add(HEART_CONTAINER, 4)
-            self.remove(GEL, 4)
-            self.remove(MESSAGE, 1)
+
+        condensed_location_adjustment_per_dungeon = (7, 10, 11, 17, 13, 12, 14, 11, 18)
+        for n in range(1, 10):
+            if world_setup.dungeon_exclusions[n%9]["condensed"]:
+                location_count -= condensed_location_adjustment_per_dungeon[n%9]
+                self.remove("MAP%d" % (n))
+                self.remove("COMPASS%d" % (n))
+                self.remove("STONE_BEAK%d" % (n))
+                self.remove("KEY%d" % (n), -1)
+                self.remove("NIGHTMARE_KEY%d" % (n))
+            if world_setup.dungeon_exclusions[n%9]["excluded"]:
+                self.remove("INSTRUMENT%d" % (n))
 
         if not settings.tradequest:
+            location_count -= 14
             self.remove(TRADING_ITEM_YOSHI_DOLL)
             self.remove(TRADING_ITEM_RIBBON)
             self.remove(TRADING_ITEM_DOG_FOOD)
@@ -235,74 +216,81 @@ class ItemPool:
             for i in instruments_to_remove:
                 self.remove(f"INSTRUMENT{i}")
         elif settings.goal == "seashells":
+            location_count -= 2
             self.remove(SEASHELL, 2)
             for n in range(8):
                 self.remove("INSTRUMENT%d" % (n + 1))
-            if "Strict Seashells" not in world.options.item_pool:
-                self.add(SEASHELL, 8)
 
-        # total number of items shouldnt change after this point
-        target_item_count = self.count()
+        # reserve extra filler if desired
+        self.add(FILLER, create_filler)
 
-        # removals
-        if not settings.rooster:
-            self.remove(ROOSTER)
-        num_rupees = self.numberRupees()
-        if num_rupees > 15 and 'Greatly Reduce Rupees' in world.options.item_pool:
-            self.removeRupees(num_rupees - 15)
-        elif num_rupees > 25 and 'Reduce Rupees' in world.options.item_pool:
-            self.removeRupees(num_rupees - 25)
-        if 'Remove Heart Containers' in world.options.item_pool:
-            self.remove(HEART_PIECE, -1)
-            self.remove(HEART_CONTAINER, -1)
-        elif 'Consolidate Hearts' in world.options.item_pool:
-            self.add(HEART_CONTAINER, self.get(HEART_PIECE) // 4)
-            self.remove(HEART_PIECE, -1)
-        if 'Remove Tunics' in world.options.item_pool:
-            self.remove(BLUE_TUNIC)
-            self.remove(RED_TUNIC)
-        if 'Remove Capacity Upgrades' in world.options.item_pool:
+        # try some corrections if we're over on items
+        diff = self.count() - location_count
+
+        def clamp(low, mid, hi):
+            return min(hi, max(mid, low))
+
+        def try_remove_rupees(leaving=0):
+            nonlocal diff
+            if diff > 0:
+                to_remove = clamp(0, self.numberRupees() - leaving, diff)
+                self.removeRupees(to_remove)
+                diff -= to_remove
+
+        def try_remove(item, leaving=0):
+            nonlocal diff
+            if diff > 0:
+                to_remove = clamp(0, self.get(item) - leaving, diff)
+                self.remove(item, to_remove)
+                diff -= to_remove
+
+        try_remove_rupees(leaving=25)
+        try_remove(MESSAGE)
+        try_remove(GEL)
+        try_remove(MEDICINE)
+        try_remove(SEASHELL, leaving=24)
+        while diff >= 3 and self.get(HEART_PIECE) >= 4:
+            self.add(HEART_CONTAINER)
+            self.remove(HEART_PIECE, 4)
+            diff -= 3
+        try_remove_rupees(leaving=20)
+        if diff >= 3:
             self.remove(MAX_ARROWS_UPGRADE)
             self.remove(MAX_BOMBS_UPGRADE)
             self.remove(MAX_POWDER_UPGRADE)
-        if 'Remove Extras' in world.options.item_pool:
-            self.remove(MEDICINE, -1)
-            self.remove(GEL, -1)
-            self.remove(MESSAGE)
-        if 'Remove Boomerang' in world.options.item_pool:
-            self.remove(BOOMERANG)
+            diff -= 3
+        if diff >= 2:
+            self.remove(BLUE_TUNIC)
+            self.remove(RED_TUNIC)
+            diff -= 2
+        try_remove(BOWWOW)
+        try_remove_rupees(leaving=15)
+        try_remove(SEASHELL, leaving=22)
+        try_remove_rupees(leaving=8)
+        try_remove(FILLER) # pull filler back out if we reserved too much
+        # desperation removals from here on
+        if diff > 0:
+            logger.warning("Location count is very low, trying more extreme item removals to fit.")
+        if(settings.overworld=="dungeondive" or settings.logic not in ("casual", "normal")): # flamethrower cave
+            try_remove(SHIELD, leaving=1)
+        if(settings.overworld=="dungeondive" and world_setup.dungeon_exclusions[6]["condensed"]):
+            try_remove(POWER_BRACELET, leaving=1)
+        if(settings.logic in ("glitched", "hell")):
+            try_remove(SONG1)
+        try_remove(SWORD, leaving=1)
+        try_remove(BOOMERANG)
+        try_remove(SEASHELL, leaving=20)
+        try_remove_rupees(leaving=(self.min_rupees // 500) + 2)
+        try_remove(HEART_CONTAINER)
+        if diff > 0:
+            raise OptionError(
+                f"Not enough locations. Need {diff} more at bare minimum. " +
+                "This is usually from combining dungeon_dive overworld with " +
+                "too many condensed/excluded dungeons."
+            )
 
-        self.add(FILLER, target_item_count - self.count())
+        self.add(FILLER, location_count - self.count())
         self.balanceRupees()
-
-        # additions
-        items_to_add = []
-        if "Extra Keys" in world.options.item_pool:
-            for n in range(9):
-                items_to_add.append("KEY%d" % (n + 1))
-        if "Extra Nightmare Keys" in world.options.item_pool:
-            for n in range(9):
-                items_to_add.append("NIGHTMARE_KEY%d" % (n + 1))
-        if "Extra Equipment" in world.options.item_pool:
-            items_to_add.extend([
-                BOMB,
-                BOW,
-                FEATHER,
-                FLIPPERS,
-                HOOKSHOT,
-                MAGIC_ROD,
-                OCARINA,
-                PEGASUS_BOOTS,
-                POWER_BRACELET,
-            ])
-        if "Add Bad Heart Containers" in world.options.item_pool:
-            heart_containers = self.get('HEART_CONTAINER')
-            heart_pieces = self.get('HEART_PIECE')
-            to_add = 2 + heart_containers + heart_pieces // 4
-            items_to_add.extend(['BAD_HEART_CONTAINER'] * to_add)
-
-        # we could try to swap these in for filler now but its easier to just let AP do it
-        world.priority_filler = items_to_add
 
     def toDict(self):
         return self.__pool.copy()
