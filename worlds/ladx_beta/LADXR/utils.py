@@ -1,4 +1,5 @@
 import unicodedata
+import re
 from typing import Optional
 
 from .locations.items import *
@@ -7,7 +8,7 @@ class Error(Exception):
     pass
 
 
-_NAMES = {
+AP_NAMES = {
     SWORD: "Progressive Sword",
     BOMB: "Bomb",
     POWER_BRACELET: "Progressive Power Bracelet",
@@ -143,6 +144,11 @@ _NAMES = {
     GEL: "Zol Attack",
     MESSAGE: "Master Stalfos' Message",
 }
+
+# Small Key (Bottle Grotto) -> Key to Bottle Grotto
+# Progressive Sword -> Sword
+_NAMES = {k: re.sub(r"(.*)\((.*)\)", r"\1to \2", v).replace("Small ", "").replace("Progressive ", "")
+    for k, v in AP_NAMES.items()}
 
 _PREFILTER = {
     'à': '<agrave>',

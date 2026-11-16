@@ -3,7 +3,7 @@ from . import Common
 from typing import NamedTuple
 from .LADXR.locations.items import *
 from .LADXR.locations.constants import CHEST_ITEMS
-from .LADXR.utils import _NAMES
+from .LADXR.utils import AP_NAMES
 
 
 dungeon_item_types = ('INSTRUMENT', 'NIGHTMARE_KEY', 'KEY', 'STONE_BEAK', 'MAP', 'COMPASS')
@@ -18,7 +18,7 @@ class ItemData():
     dungeon_index: int | None
 
     def __init__(self, ladxr_id, classification):
-        self.item_name = _NAMES[ladxr_id]
+        self.item_name = AP_NAMES[ladxr_id]
         self.ladxr_id = ladxr_id
         self.classification = classification
         self.item_id = CHEST_ITEMS[ladxr_id]
@@ -160,12 +160,12 @@ links_awakening_items_by_name: dict[str, ItemData] = {
 }
 
 links_awakening_item_name_groups: dict[str, set[str]] = {
-    group_name: [_NAMES[item] for item in group.items]
+    group_name: [AP_NAMES[item] for item in group.items]
     for group_name, group in item_groups.items()
     if group.goes_in_datapackage
 }
 links_awakening_item_name_groups.update({
-    group_name: [_NAMES[item] for item in items]
+    group_name: [AP_NAMES[item] for item in items]
     for group_name, items in data_package_only_item_groups.items()
 })
 
