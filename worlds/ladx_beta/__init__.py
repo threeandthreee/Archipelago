@@ -280,6 +280,9 @@ class LinksAwakeningWorld(World):
                 entrance_mapping = slot_data.get("entrance_mapping", {})
                 if entrance_mapping:
                     world_setup.entrance_mapping = entrance_mapping
+                condensed_dungeons = slot_data.get("condensed_dungeons", "")
+                for n in range(9):
+                    world_setup.condensed_dungeons[n]["condensed"] = str(n) in condensed_dungeons
 
         self.ladxr_logic = LADXRLogic(configuration_options=self.ladxr_settings, world_setup=world_setup)
 
@@ -673,5 +676,10 @@ class LinksAwakeningWorld(World):
             })
 
             slot_data.update({"entrance_mapping": self.ladxr_logic.world_setup.entrance_mapping})
+
+            slot_data["condensed_dungeons"] = "".join([
+                str(i) for i, d in enumerate(self.ladxr_logic.world_setup.dungeon_exclusions)
+                if d["condensed"]
+            ])
 
         return slot_data
