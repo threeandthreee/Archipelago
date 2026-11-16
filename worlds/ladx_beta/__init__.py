@@ -29,7 +29,7 @@ from .LADXR.hints import generate_hint_texts
 from .Locations import (LinksAwakeningLocation, LinksAwakeningRegion, create_regions_from_ladxr,
                         links_awakening_location_name_to_id, links_awakening_location_name_groups,
                         dungeon_info)
-from .Options import (DungeonItemShuffle, ShuffleInstruments, LinksAwakeningOptions, ladx_option_groups,
+from .Options import (Goal, DungeonItemShuffle, ShuffleInstruments, LinksAwakeningOptions, ladx_option_groups,
                       convert_ap_options_to_ladxr)
 from .Rom import LADXProcedurePatch, write_patch_data
 
@@ -200,7 +200,7 @@ class LinksAwakeningWorld(World):
         if self.options.overworld == "dungeon_dive":
             self.options.tradequest.value = False
             if self.options.goal == "seashells":
-                self.options.goal.value = "instruments"
+                self.options.goal.value = Goal.option_instruments
                 logger.warning("Switched goal to instruments. Seashell goal can't be used with dungeon dive.")
         
 
@@ -353,7 +353,7 @@ class LinksAwakeningWorld(World):
                     if(item.item_data.dungeon_item_type == 'INSTRUMENT' and
                         shuffle_type == ShuffleInstruments.option_vanilla):
                         d_info = dungeon_info[item.item_data.dungeon_index%9]
-                        loc = self.multiworld.get_location(f"{d_info.instrument}({d_info.name})")
+                        loc = self.multiworld.get_location(f"{d_info.instrument} ({d_info.name})", self.player)
                         loc.place_locked_item(item)
                     else:
                         if shuffle_type == DungeonItemShuffle.option_original_dungeon:
