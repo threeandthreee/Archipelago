@@ -242,7 +242,7 @@ def reduceMessageLengths(rom, rnd):
     rom.texts[0xad] = formatText("You got 100 {RUPEES}! You're Happy!", center=True)
     rom.texts[0xae] = formatText("You got 200 {RUPEES}! You're Ecstatic!", center=True)
     rom.texts[0xcf] = formatText("Hoot!")
-    rom.texts[0xd0] = formatText("... ... ... ...\n COME, #####...\nLET US AWAKEN...\n   TOGETHER!!@")
+    rom.texts[0xd0] = formatText("... ... ... ...\n COME, #####...\nLET US AWAKEN...\n   TOGETHER!!")
     rom.texts[0xdc] = formatText("Ribbit! Ribbit! I'm Mamu, on vocals! But I don't need to tell you that, do I? Everybody knows me! Want to hang out and listen to us jam? For 300 Rupees, we'll let you listen to a previously unreleased cut! What do you do?", ask="Pay Leave")
     rom.texts[0xe8] = formatText("You've found a {GOLD_LEAF}! Press START to see how many you've collected!")
     rom.texts[0xed] = formatText("You've got the Mirror Shield! You can now turnback the beams you couldn't block before!")
