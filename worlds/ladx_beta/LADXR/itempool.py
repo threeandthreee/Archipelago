@@ -191,7 +191,7 @@ class ItemPool:
                 self.remove("STONE_BEAK%d" % (n))
                 self.remove("KEY%d" % (n), -1)
                 self.remove("NIGHTMARE_KEY%d" % (n))
-            elif settings.owlstatues in ('dungeons', 'both'):
+            elif settings.owlstatues in ('dungeon', 'both'):
                 location_count += owl_statues_per_dungeon[n%9]
             if world_setup.dungeon_exclusions[n%9]["excluded"]:
                 self.remove("INSTRUMENT%d" % (n))

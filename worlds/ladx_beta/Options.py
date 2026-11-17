@@ -87,7 +87,7 @@ class Owlsanity(Choice, LADXROption):
     rich_text_doc = True
     ladxr_name = "owlstatues"
     option_none = 0
-    option_dungeons = 1
+    option_dungeon = 1
     option_overworld = 2
     option_both = 3
     default = option_none

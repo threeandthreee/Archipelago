@@ -29,8 +29,8 @@ from .LADXR.hints import generate_hint_texts
 from .Locations import (LinksAwakeningLocation, LinksAwakeningRegion, create_regions_from_ladxr,
                         links_awakening_location_name_to_id, links_awakening_location_name_groups,
                         dungeon_info)
-from .Options import (Goal, DungeonItemShuffle, ShuffleInstruments, LinksAwakeningOptions, ladx_option_groups,
-                      convert_ap_options_to_ladxr)
+from .Options import (Goal, DungeonItemShuffle, ShuffleInstruments, Owlsanity, LinksAwakeningOptions,
+                      ladx_option_groups, convert_ap_options_to_ladxr)
 from .Rom import LADXProcedurePatch, write_patch_data
 
 DEVELOPER_MODE = False
@@ -202,6 +202,10 @@ class LinksAwakeningWorld(World):
             if self.options.goal == "seashells":
                 self.options.goal.value = Goal.option_instruments
                 logger.warning("Switched goal to instruments. Seashell goal can't be used with dungeon dive.")
+            if self.options.owlsanity == Owlsanity.option_both:
+                self.options.owlsanity.value = Owlsanity.option_dungeon
+            elif self.options.owlsanity == Owlsanity.option_overworld:
+                self.options.owlsanity.value = Owlsanity.option_none
         
 
     def create_regions(self) -> None:
