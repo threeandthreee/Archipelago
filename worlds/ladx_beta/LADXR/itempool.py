@@ -180,6 +180,8 @@ class ItemPool:
             self.remove("ANGLER_KEYHOLE")
             self.remove("CASTLE_BUTTON")
 
+        overworld_owl_statues = 9
+        owl_statues_per_dungeon = (3, 3, 3, 3, 1, 2, 3, 3, 3)
         condensed_location_adjustment_per_dungeon = (7, 10, 11, 17, 13, 12, 14, 11, 18)
         for n in range(1, 10):
             if world_setup.dungeon_exclusions[n%9]["condensed"]:
@@ -189,8 +191,13 @@ class ItemPool:
                 self.remove("STONE_BEAK%d" % (n))
                 self.remove("KEY%d" % (n), -1)
                 self.remove("NIGHTMARE_KEY%d" % (n))
+            elif settings.owlstatues in ('dungeons', 'both'):
+                location_count += owl_statues_per_dungeon[n%9]
             if world_setup.dungeon_exclusions[n%9]["excluded"]:
                 self.remove("INSTRUMENT%d" % (n))
+
+        if settings.owlstatues in ('overworld', 'both'):
+            location_count += overworld_owl_statues
 
         if not settings.tradequest:
             location_count -= 14

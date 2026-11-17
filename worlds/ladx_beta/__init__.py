@@ -664,6 +664,7 @@ class LinksAwakeningWorld(World):
                 "nag_messages",
                 "hard_mode",
                 "overworld",
+                "owlsanity",
             ]
 
             # use the default behaviour to grab options

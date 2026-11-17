@@ -105,11 +105,12 @@ def generate_hint_texts(world) -> dict[str, dict[str, str]]:
             "player": item.location.player,
         }
     text_ids = []
-    if world.ladxr_settings.overworld != 'dungeondive':
+    if world.ladxr_settings.overworld != 'dungeondive' and world.ladxr_settings.owlstatues not in ('none', 'overworld'):
         text_ids += overworld_hint_text_ids
-    for i, e in enumerate(world.ladxr_logic.world_setup.dungeon_exclusions):
-        if not e['condensed']:
-            text_ids += dungeon_hint_text_ids[i]
+    if world.ladxr_settings.owlstatues not in ('none', 'dungeons'):
+        for i, e in enumerate(world.ladxr_logic.world_setup.dungeon_exclusions):
+            if not e['condensed']:
+                text_ids += dungeon_hint_text_ids[i]
     world.random.shuffle(text_ids)
     for text_id in text_ids:
         hint_data[str(text_id)] = gen_hint()

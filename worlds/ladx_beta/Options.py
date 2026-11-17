@@ -75,7 +75,22 @@ class TradeQuest(DefaultOnToggle, LADXROption):
     item and gives a randomized item in return.
     """
     display_name = "Trade Quest"
+    rich_text_doc = True
     ladxr_name = "tradequest"
+
+
+class Owlsanity(Choice, LADXROption):
+    """
+    Replaces the hints from owl statues with additional randomized items.
+    """
+    display_name = "Owl Statues that Give Items"
+    rich_text_doc = True
+    ladxr_name = "owlstatues"
+    option_none = 0
+    option_dungeons = 1
+    option_overworld = 2
+    option_both = 3
+    default = option_none
 
 
 class TextShuffle(DefaultOffToggle, LADXROption):
@@ -892,6 +907,7 @@ ladx_option_groups = [
         ShuffleStoneBeaks,
         TradeQuest,
         Rooster,
+        Owlsanity,
         CreateFiller,
         FillerPool,
     ]),
@@ -966,6 +982,7 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     block_free_powder: BlockFreePowder
     entrance_plando: EntrancePlando
     entrance_shuffle_seed: EntranceShuffleSeed
+    owlsanity: Owlsanity
 
     warp_improvements: Removed
     additional_warp_points: Removed

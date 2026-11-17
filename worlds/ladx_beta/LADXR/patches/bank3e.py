@@ -86,6 +86,7 @@ MainJumpTable:
         dw   UpdateInventoryMenu                  ; 10
         dw   LocalOnlyItemAndMessage              ; 11
         dw   HandleSeashellMansionItem            ; 12
+        dw   HandleOverworldOwlStatue             ; 13
 StartGameMarinMessage:
         ; Injection to reset our frame counter
         call $27D0 ; Enable SRAM

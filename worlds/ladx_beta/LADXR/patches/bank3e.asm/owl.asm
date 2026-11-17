@@ -1,3 +1,22 @@
+HandleOverworldOwlStatue:
+    ; overworld owls we
+    call GetRoomStatusAddressInHL
+    ld   a, [hl]
+    and  $20
+    ret  nz
+    ld   a, [hl]
+    or   $20
+    ld   [hl], a
+
+    ldh  a, [$FFF6]
+    add  $02
+    ldh  [$FFF6], a
+    call GiveItemAndMessageForRoomMultiworld
+    ldh  a, [$FFF6]
+    sub  $02
+    ldh  [$FFF6], a
+
+
 HandleOwlStatue:
     call GetRoomStatusAddressInHL
     ld   a, [hl]
@@ -7,12 +26,18 @@ HandleOwlStatue:
     or   $20
     ld   [hl], a
 
-    ld   hl, $7B16
+    ; manipulate room address on dungeon owls to fit into table
+    ; sub 0x100 and then flip bits 0 and 6 of the low byte
+    ld   hl, $7700 ; sub 0x100
     call OffsetPointerByRoomNumber
+    ; flip bits 0 and 6
+    ld   a, l
+    xor  $41
+    ld   l, a
     ld   a, [hl]
     ldh  [$FFF1], a
-    call ItemMessage
-    call GiveItemFromChest
+    call ItemMessageMultiworldOwl
+    call GiveItemFromChestMultiworldOwl
     ret
 
 

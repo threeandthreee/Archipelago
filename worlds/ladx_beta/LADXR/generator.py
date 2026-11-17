@@ -216,10 +216,10 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
     patches.tarin.updateTarin(rom)
     patches.fishingMinigame.updateFinishingMinigame(rom)
     patches.health.upgradeHealthContainers(rom)
-    # if ladxr_settings.owlstatues in ("dungeon", "both"):
-    #    patches.owl.upgradeDungeonOwlStatues(rom)
-    # if ladxr_settings.owlstatues in ("overworld", "both"):
-    #    patches.owl.upgradeOverworldOwlStatues(rom)
+    if ladxr_settings.owlstatues in ("dungeon", "both"):
+        patches.owl.upgradeDungeonOwlStatues(rom)
+    if ladxr_settings.owlstatues in ("overworld", "both"):
+        patches.owl.upgradeOverworldOwlStatues(rom)
     patches.goldenLeaf.fixGoldenLeaf(rom)
     patches.heartPiece.fixHeartPiece(rom)
     patches.seashell.fixSeashell(rom)

@@ -205,7 +205,7 @@ Use the warp-to-home from the Save & Quit menu if you get stuck (hold A+B+Start+
 [Dungeon Dive] Create a different overworld where all the dungeons are directly accessible and almost no chests are located in the overworld.
 [No dungeons] All dungeons only consist of a boss fight and a instrument reward. Rest of the dungeon is removed.
 [Random] Creates a randomized overworld WARNING: This will error out often during generation, work in progress."""),
-            Setting('owlstatues', 'Special', 'o', 'Owl statues', options=[('', '', 'Never'), ('dungeon', 'D', 'In dungeons'), ('overworld', 'O', 'On the overworld'), ('both', 'B', 'Dungeons and Overworld')], default='',
+            Setting('owlstatues', 'Special', 'o', 'Owl statues', options=[('none', '', 'Never'), ('dungeon', 'D', 'In dungeons'), ('overworld', 'O', 'On the overworld'), ('both', 'B', 'Dungeons and Overworld')], default='none',
                 description='Replaces the hints from owl statues with additional randomized items'),
             Setting('superweapons', 'Special', 'q', 'Enable super weapons', default=False,
                 description='All items will be more powerful, faster, harder, bigger stronger. You name it.'),

@@ -1,5 +1,6 @@
 from BaseClasses import Item, ItemClassification
 from . import Common
+from collections.abc import Callable
 from typing import NamedTuple
 from .LADXR.locations.items import *
 from .LADXR.locations.constants import CHEST_ITEMS
@@ -40,10 +41,21 @@ class LinksAwakeningItem(Item):
 
 
 class ItemGroup(NamedTuple):
-    classification: ItemClassification
+    classification: ItemClassification | Callable
     items: list[str]
     goes_in_datapackage: bool = True
 
+def stone_beak_classification(world, player):
+    if world.options.owlsanity == "none":
+        return ItemClassification.useful
+    else:
+        return ItemClassification.progression
+
+def seashell_classification(world, player):
+    if world.options.goal == "seashells":
+        return ItemClassification.progression_skip_balancing
+    else:
+        return ItemClassification.progression_deprioritized_skip_balancing
 
 # group items for classification, but also for data package item groups
 item_groups: dict[str, ItemGroup] = {
@@ -52,7 +64,7 @@ item_groups: dict[str, ItemGroup] = {
     "Nightmare Keys": ItemGroup(ItemClassification.progression, [f'NIGHTMARE_KEY{i}' for i in range(1, 10)]),
     "Maps": ItemGroup(ItemClassification.filler, [f'MAP{i}' for i in range(1, 10)]),
     "Compasses": ItemGroup(ItemClassification.filler, [f'COMPASS{i}' for i in range(1, 10)]),
-    "Stone Beaks": ItemGroup(ItemClassification.useful, [f'STONE_BEAK{i}' for i in range(1, 10)]),
+    "Stone Beaks": ItemGroup(stone_beak_classification, [f'STONE_BEAK{i}' for i in range(1, 10)]),
     "Equipment": ItemGroup(ItemClassification.progression, [
         SWORD,
         BOMB,
@@ -106,7 +118,7 @@ item_groups: dict[str, ItemGroup] = {
     "Gold Leaf": ItemGroup(ItemClassification.progression_deprioritized_skip_balancing, [
         GOLD_LEAF,
     ], False),
-    "Seashells": ItemGroup(ItemClassification.progression_skip_balancing, [
+    "Seashells": ItemGroup(seashell_classification, [
         SEASHELL
     ], False),
     "Traps": ItemGroup(ItemClassification.trap, [
