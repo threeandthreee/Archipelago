@@ -10,7 +10,7 @@ class Error(Exception):
 
 AP_NAMES = {
     SWORD: "Progressive Sword",
-    BOMB: "Bomb",
+    BOMB: "Bombs",
     POWER_BRACELET: "Progressive Power Bracelet",
     SHIELD: "Progressive Shield",
     BOW: "Bow",

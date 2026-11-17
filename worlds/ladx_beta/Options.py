@@ -811,7 +811,7 @@ class FillerPool(ItemDict):
     """
     display_name = "Filler Pool"
     default = {
-        "Bomb": 10,
+        "Bombs": 10,
         "Single Arrow": 5,
         "10 Arrows": 10,
         "Magic Powder": 10,
