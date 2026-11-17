@@ -18,7 +18,7 @@ checkMetadataTable = {
     "0x2A2": CheckMetadata("Witch Item", "Koholint Prairie"), #http://artemis251.fobby.net/zelda/maps/underworld2/02A2.GIF
     "0x2A1": CheckMetadata("Shop 200 Item", "Mabe Village"), #http://artemis251.fobby.net/zelda/maps/underworld2/02A1.GIF
     "0x2A7": CheckMetadata("Shop 980 Item", "Mabe Village"), #http://artemis251.fobby.net/zelda/maps/underworld2/02A1.GIF
-    "0x2A1-2": CheckMetadata("Shop 10 Item", "Mabe Village"), #http://artemis251.fobby.net/zelda/maps/underworld2/02A1.GIF
+    #"0x2A1-2": CheckMetadata("Shop 10 Item", "Mabe Village"), #http://artemis251.fobby.net/zelda/maps/underworld2/02A1.GIF
     "0x113": CheckMetadata("Pit Button Chest", "Tail Cave"), #http://artemis251.fobby.net/zelda/maps/underworld1/0113.GIF
     "0x115": CheckMetadata("Four Zol Chest", "Tail Cave"), #http://artemis251.fobby.net/zelda/maps/underworld1/0115.GIF
     "0x10E": CheckMetadata("Spark, Mini-Moldorm Chest", "Tail Cave"), #http://artemis251.fobby.net/zelda/maps/underworld1/010E.GIF
