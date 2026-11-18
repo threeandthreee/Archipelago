@@ -279,6 +279,7 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
         patches.aesthetics.removeLowHPBeep(rom)
     if 0 <= int(ladxr_settings.linkspalette):
         patches.aesthetics.forceLinksPalette(rom, int(ladxr_settings.linkspalette))
+    patches.aesthetics.add_ap_icons(rom)
     if args.romdebugmode:
         # The default rom has this build in, just need to set a flag and we get this save.
         rom.patch(0, 0x0003, "00", "01")

@@ -141,8 +141,19 @@ AP_NAMES = {
     TRADING_ITEM_NECKLACE: "Necklace",
     TRADING_ITEM_SCALE: "Scale",
     TRADING_ITEM_MAGNIFYING_GLASS: "Magnifying Glass",
+    
+    GUARDIAN_ACORN: "Guardian Acorn",
+    PIECE_OF_POWER: "Piece of Power",
+    RECOVERY_HEART: "Recovery Heart",
+    FAIRY: "Fairy",
+
+    DEATH: "Death",
     GEL: "Zol Attack",
-    MESSAGE: "Master Stalfos' Message",
+    SLIME_STORM: "Slime Storm",
+    BOMB_DROP: "Bomb Drop",
+    CUCCO_PARTY: "Cucco Party",
+
+    MESSAGE: "Nothing",
 }
 
 # Small Key (Bottle Grotto) -> Key to Bottle Grotto

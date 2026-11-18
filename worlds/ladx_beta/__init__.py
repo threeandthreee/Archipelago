@@ -549,21 +549,29 @@ class LinksAwakeningWorld(World):
         for r in self.multiworld.get_regions(self.player):
             for loc in r.locations:
                 if isinstance(loc, LinksAwakeningLocation):
-                    assert(loc.item)
+                    if loc.item.is_event:
+                        continue
+
                     spot = {}
 
-                    if self.options.foreign_item_icons == 'indicate_progression':
-                        if loc.item.advancement:
-                            spot["item"] = 'PIECE_OF_POWER'
+                    # for our items, just use the item
+                    if loc.item.player == self.player:
+                        spot["item"] = loc.item.item_data.ladxr_id
+
+                    # indicate progression at higher priority over displaying ladx items for other slots
+                    elif self.options.foreign_item_icons == 'indicate_progression':
+                        if loc.item.trap or (loc.item.advancement and not loc.item.deprioritized):
+                            spot["item"] = 'ARCHIPELAGO_COLORCYCLE'
+                        elif loc.item.advancement:
+                            spot["item"] = 'ARCHIPELAGO_COLOR'
                         else:
-                            spot["item"] = 'GUARDIAN_ACORN'
+                            spot["item"] = 'ARCHIPELAGO_FLAT'
 
                     # If we're a links awakening item, just use the item
                     elif isinstance(loc.item, LinksAwakeningItem):
                         spot["item"] = loc.item.item_data.ladxr_id
 
-                    # If the item name contains "sword", use a sword icon, etc
-                    # Otherwise, use a cute letter as the icon
+                    # Foreign icon matching
                     else:
                         game = self.multiworld.game[loc.item.player]
                         spot["item"] = matcher.get_icon_for_other_world(loc.item.name, game)

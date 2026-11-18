@@ -17,7 +17,13 @@ RenderChestItem:
     cp   $8E
     ret  c
     cp   $96
-    ret  nc
+    jr   c, .continue
+    cp   $A6
+    jr   z, .continue
+    cp   $A7
+    ret  nz
+
+.continue:
 
     ; But check if we are not state >3 before that, else the fade-out at the instrument room breaks.
     ldh  a, [$FFF0] ; hActiveEntityState
@@ -218,7 +224,11 @@ GiveItemFromChest:
     dw GiveTradeItem13  ; $A3
     dw GiveTradeItem14  ; $A4
     dw SpecialPieceOfPower ; $A5
-    dw SpecialCuccoParty ; $A6
+    dw NoItem           ; $A6 ; AP Prog
+    dw NoItem           ; $A7 ; AP Trap
+    dw NoItem           ; $A8 ; AP Fine
+    dw NoItem           ; $A9 ; AP Junk
+    dw SpecialCuccoParty ; $AA
 
 NoItem:
     ret
@@ -860,7 +870,13 @@ ItemSpriteTable:
     db $9E, $14 ; $54 ; Seashell disguise
     db $A0, $14 ; $55 ; Medicine disguise
     db $A6, $15 ; $56 ; Rupees50 disguise
-    db $A0, $14       ; Death
+    db $A0, $14 ; $57 ; Death
+    db $A0, $14 ; $58 ; Slime Storm
+    db $80, $15 ; $59 ; Bomb Drop
+    db $A8, $04 ; $5A ; Recovery Heart
+    db $20, $21 ; $5B ; Fairy
+    db $60, $0C ; $5C ; Hammer
+    db $62, $09 ; $5D ; Candle
 
 LargeItemSpriteTable:
     db $AC, $02, $AC, $22 ; heart piece
@@ -900,7 +916,12 @@ LargeItemSpriteTable:
     db $D8, $0D, $DA, $0D ; TradeItem12
     db $DC, $0D, $DE, $0D ; TradeItem13
     db $E0, $0D, $E2, $0D ; TradeItem14
-    db $14, $42, $14, $62 ; Piece Of Power
+    db $14, $42, $14, $62 ; A5 ; Piece Of Power
+    db $14, $4E, $14, $6E ; A6 ; Triforce
+    db $52, $0E, $52, $2E ; A7 ; AP Colorcycle
+    db $52, $0A, $52, $2A ; A8 ; AP Color
+    db $58, $0A, $58, $2A ; A9 ; AP Flat
+    db $A6, $2B, $A4, $2B ; AA ; Cucco Party
 
 ItemMessageTable:
     db $90, $3D, $89, $93, $94, $95, $96, $97, $98, $99, $9A, $9B, $9C, $9D, $D9, $A2
@@ -909,13 +930,13 @@ ItemMessageTable:
     db $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9
     ; $40
     db $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9
-    db $0F, $C9, $C9, $C9, $C9, $C9, $C9, $00, $00, $00, $00, $00, $00, $00, $00, $00
+    db $0F, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $00, $00
     db $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
     db $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00
     ; $80
     db $4F, $C8, $CA, $CB, $E2, $E3, $E4, $CC, $CD, $2A, $2B, $C9, $C9, $C9, $C9, $C9
     db $C9, $C9, $C9, $C9, $C9, $C9, $B8, $44, $C9, $C9, $C9, $C9, $C9, $C9, $C9, $C9
-    db $C9, $C9, $C9, $C9, $9D, $C9
+    db $C9, $C9, $C9, $C9, $9D, $C9, $C9, $C9, $C9, $C9, $C9
 
 RenderDroppedKey:
     ;TODO: See EntityInitKeyDropPoint for a few special cases to unload.

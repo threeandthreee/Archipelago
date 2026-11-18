@@ -186,10 +186,10 @@ def reduceMessageLengths(rom, rnd):
     rom.texts[0x01] = formatText(rnd.choice(lines).strip().decode("unicode_escape"), skip_names=True)
 
     # Reduce length of a bunch of common texts
-    rom.texts[0xEA] = formatText("You've got a Guardian Acorn!")
+    rom.texts[0xEA] = formatText("You've got a {GUARDIAN_ACORN}!")
     rom.texts[0xEB] = rom.texts[0xEA]
     rom.texts[0xEC] = rom.texts[0xEA]
-    rom.texts[0x08] = formatText("You got a Piece of Power!")
+    rom.texts[0x08] = formatText("You got a {PIECE_OF_POWER}!")
     rom.texts[0xEF] = formatText("You found a {SEASHELL}!")
     rom.texts[0xA7] = formatText("You've got the {COMPASS}!")
 
@@ -440,6 +440,12 @@ noChange:
             rom.room_sprite_data_overworld[room_nr] = data
         else:
             rom.room_sprite_data_indoor[room_nr - 0x100] = data
+
+
+def add_ap_icons(rom):
+    # write over bingo board, same place upstream puts alttp hammer
+    ap_icons = bytearray(pkgutil.get_data(__name__, "apicons.bin"))
+    rom.banks[0x3F][0x2800+0x520:0x2800+0x520+0x80] = ap_icons
 
 
 def bin_to_rgb(word):

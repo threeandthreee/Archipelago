@@ -124,7 +124,10 @@ item_groups: dict[str, ItemGroup] = {
     "Traps": ItemGroup(ItemClassification.trap, [
         BAD_HEART_CONTAINER,
         GEL,
-        MESSAGE,
+        DEATH,
+        SLIME_STORM,
+        BOMB_DROP,
+        CUCCO_PARTY,
     ], False),
     "Misc Useful": ItemGroup(ItemClassification.useful, [
         HEART_PIECE,
@@ -139,6 +142,11 @@ item_groups: dict[str, ItemGroup] = {
         ARROWS_10,
         SINGLE_ARROW,
         MEDICINE,
+        GUARDIAN_ACORN,
+        PIECE_OF_POWER,
+        RECOVERY_HEART,
+        FAIRY,
+        MESSAGE,
     ], False),
 }
 

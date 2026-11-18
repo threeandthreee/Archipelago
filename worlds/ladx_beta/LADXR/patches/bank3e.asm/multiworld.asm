@@ -226,6 +226,7 @@ GiveDeath:
     ; set health gain to zero
     xor  a
     ld   [$DB93], a ; wAddHealthBuffer
+    ret
 StartZolDrop:
     ld   a, $05
     ld   [wZolSpawnCount], a
@@ -262,7 +263,7 @@ SpecialHealth:
 SpecialHealOne:
     ld   hl, $DB93
     ld   [hl], $04
-
+    ret
 LinkSpawnSlime:
     ld   a, $1B
     ld   e, $08

@@ -79,6 +79,8 @@ BLOCKED_ASSOCIATIONS: list[str] = [
     "POWER",    # POWER_BRACELET, PIECE_OF_POWER
     "SINGLE",   # SINGLE_ARROW
     "STONE",    # STONE_BEAK
+
+    "ARCHIPELAGO",
 ]
 
 # Generic single word synonyms for Link's Awakening items. This is used for
