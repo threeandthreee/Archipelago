@@ -150,10 +150,12 @@ This does nothing unless other settings are enabled to add entrances to the pool
 [Limited] They are shuffled with each other.
 [Global] They are added to the global entrance pool.
 Use the warp-to-home from the Save & Quit menu if you get stuck (hold A+B+Start+Select until it works)."""),
-            Setting('boss', 'Gameplay', 'B', 'Boss shuffle', options=[('default', '', 'Normal'), ('shuffle', 's', 'Shuffle'), ('random', 'r', 'Randomize')], default='default',
+            Setting('boss', 'Gameplay', 'B', 'Boss shuffle', options=[('disabled', '', 'Normal'), ('shuffle', 's', 'Shuffle'), ('randomize', 'r', 'Randomize')], default='disabled',
                 description='Randomizes the dungeon bosses that each dungeon has'),
-            Setting('miniboss', 'Gameplay', 'b', 'Miniboss shuffle', options=[('default', '', 'Normal'), ('shuffle', 's', 'Shuffle'), ('random', 'r', 'Randomize')], default='default',
+            Setting('miniboss', 'Gameplay', 'b', 'Miniboss shuffle', options=[('disabled', '', 'Normal'), ('shuffle', 's', 'Shuffle'), ('randomize', 'r', 'Randomize')], default='disabled',
                 description='Randomizes the dungeon minibosses that each dungeon has'),
+            Setting('enemies', 'Gameplay', 'e', 'Enemizer', options=[('disabled', '', 'None'), ('overworld', 'o', 'Overworld')], default='disabled',
+                description='Randomizes which enemies are placed.'),
             Setting('goal', 'Gameplay', 'G', 'Goal', options=[('8', '8', '8 instruments'), ('7', '7', '7 instruments'), ('6', '6', '6 instruments'),
                                                          ('5', '5', '5 instruments'), ('4', '4', '4 instruments'), ('3', '3', '3 instruments'),
                                                          ('2', '2', '2 instruments'), ('1', '1', '1 instrument'), ('0', '0', 'No instruments'),

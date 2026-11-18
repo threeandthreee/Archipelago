@@ -326,6 +326,8 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
         ladxr_item.patch(rom, ladxr_item.item or ladxr_item.default_item, multiworld=getattr(ladxr_item, 'mw', None))
     patches.enemies.changeBosses(rom, world_setup.boss_mapping)
     patches.enemies.changeMiniBosses(rom, world_setup.miniboss_mapping)
+    if ladxr_settings.enemies == "overworld":
+        patches.enemies.randomizeEnemies(rom, random)
 
     if not args.romdebugmode:
         patches.core.addFrameCounter(rom, len(item_list))

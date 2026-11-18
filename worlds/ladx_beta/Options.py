@@ -262,12 +262,52 @@ class APTitleScreen(DefaultOnToggle, LADXROption):
     may_override = Override.ALWAYS
 
 
-class BossShuffle(Choice):
+class BossShuffle(Choice, LADXROption):
+    """
+    Change the bosses at the end of dungeons.
+
+    **Shuffle:** All the same bosses, just moved around.
+
+    **Randomize:** Completely random boss at each spot.
+    Some bosses may be duplicated, others may be missing.
+    """
     display_name = "Boss Shuffle"
-    none = 0
-    shuffle = 1
-    random = 2
-    default = none
+    rich_text_doc = True
+    option_disabled = 0
+    option_shuffle = 1
+    option_randomize = 2
+    default = option_disabled
+    ladxr_name = "boss"
+
+
+class MinibossShuffle(Choice, LADXROption):
+    """
+    Change the minibosses in dungeons and on the overworld.
+
+    **Shuffle:** All the same minibosses, just moved around.
+
+    **Randomize:** Completely random miniboss at each spot.
+    Some minibosses may be duplicated, others may be missing.
+    """
+    display_name = "Miniboss Shuffle"
+    rich_text_doc = True
+    option_disabled = 0
+    option_shuffle = 1
+    option_randomize = 2
+    default = option_disabled
+    ladxr_name = "miniboss"
+
+
+class Enemizer(Choice, LADXROption):
+    """
+    Randomizes which enemies are placed. Does not affect logic.
+    """
+    display_name = "Enemizer"
+    rich_text_doc = True
+    option_disabled = 0
+    option_overworld = 1
+    default = option_disabled
+    ladxr_name = "enemies"
 
 
 class DungeonItemShuffle(Choice):
@@ -886,7 +926,8 @@ ladx_option_groups = [
     ]),
     OptionGroup("World Layout", [
         Overworld,
-        Warps,
+        CondenseDungeons,
+        ExcludeDungeons,
         EntranceRules,
         ShuffleStart,
         ShuffleDungeons,
@@ -897,6 +938,11 @@ ladx_option_groups = [
         ShuffleAnnoying,
         EntranceShuffleSeed,
         EntrancePlando,
+    ]),
+    OptionGroup("Enemies", [
+        BossShuffle,
+        MinibossShuffle,
+        Enemizer,
     ]),
     OptionGroup("Item Pool", [
         ShuffleInstruments,
@@ -912,6 +958,7 @@ ladx_option_groups = [
         FillerPool,
     ]),
     OptionGroup("Quality of Life & Aesthetic", [
+        Warps,
         NagMessages,
         Quickswap,
         BootsControls,
@@ -983,6 +1030,9 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     entrance_plando: EntrancePlando
     entrance_shuffle_seed: EntranceShuffleSeed
     owlsanity: Owlsanity
+    boss_shuffle: BossShuffle
+    miniboss_shuffle: MinibossShuffle
+    enemizer: Enemizer
 
     warp_improvements: Removed
     additional_warp_points: Removed

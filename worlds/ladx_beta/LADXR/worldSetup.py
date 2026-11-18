@@ -103,7 +103,7 @@ class WorldSetup:
 
 
     def randomize(self, settings, itempool, rnd, plando: dict[str, str]={}):
-        if settings.boss != "default":
+        if settings.boss != "disabled":
             values = list(range(9))
             if settings.heartcontainers:
                 # Color dungeon boss does not drop a heart container so we cannot shuffle him when we
@@ -117,7 +117,7 @@ class WorldSetup:
                     values.remove(value)
             if settings.heartcontainers:
                 self.boss_mapping += [8]
-        if settings.miniboss != "default":
+        if settings.miniboss != "disabled":
             values = [name for name in self.miniboss_mapping.values()]
             for key in self.miniboss_mapping.keys():
                 self.miniboss_mapping[key] = rnd.choice(values)
