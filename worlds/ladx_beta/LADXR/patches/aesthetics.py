@@ -444,8 +444,8 @@ noChange:
 
 def add_ap_icons(rom):
     # write over bingo board, same place upstream puts alttp hammer
-    ap_icons = bytearray(pkgutil.get_data(__name__, "apicons.bin"))
-    rom.banks[0x3F][0x2800+0x520:0x2800+0x520+0x80] = ap_icons
+    ap_icons = bytearray(pkgutil.get_data(__name__, "apicon.bin"))
+    rom.banks[0x3F][0x2800+0x520:0x2800+0x520+0x20] = ap_icons
 
 
 def bin_to_rgb(word):

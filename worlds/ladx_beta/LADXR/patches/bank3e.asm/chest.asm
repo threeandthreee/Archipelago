@@ -918,9 +918,9 @@ LargeItemSpriteTable:
     db $E0, $0D, $E2, $0D ; TradeItem14
     db $14, $42, $14, $62 ; A5 ; Piece Of Power
     db $14, $4E, $14, $6E ; A6 ; Triforce
-    db $52, $0E, $52, $2E ; A7 ; AP Colorcycle
-    db $52, $0A, $52, $2A ; A8 ; AP Color
-    db $58, $0A, $58, $2A ; A9 ; AP Flat
+    db $52, $0E, $52, $2E ; A7 ; AP 1
+    db $52, $0A, $52, $2A ; A8 ; AP 2
+    db $52, $08, $52, $28 ; A9 ; AP 3
     db $A6, $2B, $A4, $2B ; AA ; Cucco Party
 
 ItemMessageTable:
