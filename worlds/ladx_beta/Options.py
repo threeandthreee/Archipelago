@@ -91,6 +91,8 @@ class Owlsanity(Choice, LADXROption):
     option_overworld = 2
     option_both = 3
     default = option_none
+    alias_true = option_both
+    alias_false = option_none
 
 
 class TextShuffle(DefaultOffToggle, LADXROption):
@@ -278,6 +280,8 @@ class BossShuffle(Choice, LADXROption):
     option_randomize = 2
     default = option_disabled
     ladxr_name = "boss"
+    alias_true = option_shuffle
+    alias_false = option_disabled
 
 
 class MinibossShuffle(Choice, LADXROption):
@@ -296,6 +300,8 @@ class MinibossShuffle(Choice, LADXROption):
     option_randomize = 2
     default = option_disabled
     ladxr_name = "miniboss"
+    alias_true = option_shuffle
+    alias_false = option_disabled
 
 
 class Enemizer(Choice, LADXROption):
@@ -308,6 +314,8 @@ class Enemizer(Choice, LADXROption):
     option_overworld = 1
     default = option_disabled
     ladxr_name = "enemies"
+    alias_true = option_overworld
+    alias_false = option_disabled
 
 
 class DungeonItemShuffle(Choice):
