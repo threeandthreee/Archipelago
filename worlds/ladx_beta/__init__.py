@@ -567,11 +567,11 @@ class LinksAwakeningWorld(World):
                     # indicate progression at higher priority over displaying ladx items for other slots
                     elif self.options.foreign_item_icons == 'indicate_progression':
                         if loc.item.trap or (loc.item.advancement and not loc.item.deprioritized):
-                            spot["item"] = 'ARCHIPELAGO_COLORCYCLE'
+                            spot["item"] = 'ARCHIPELAGO_1'
                         elif loc.item.advancement:
-                            spot["item"] = 'ARCHIPELAGO_COLOR'
+                            spot["item"] = 'ARCHIPELAGO_2'
                         else:
-                            spot["item"] = 'ARCHIPELAGO_FLAT'
+                            spot["item"] = 'ARCHIPELAGO_3'
 
                     # If we're a links awakening item, just use the item
                     elif isinstance(loc.item, LinksAwakeningItem):
