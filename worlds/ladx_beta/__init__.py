@@ -148,12 +148,78 @@ class LinksAwakeningWebWorld(WebWorld):
     theme = "ocean"
     option_groups = ladx_option_groups
     options_presets: typing.Dict[str, typing.Dict[str, typing.Any]] = {
+        "Beginner": {
+            "expand_start": "high",
+            "logic": "casual",
+            "goal": "seashells",
+            "warps": "improved_additional",
+            "overworld": "open_mabe",
+            "shuffle_maps": "start_with",
+            "shuffle_compasses": "start_with",
+            "shuffle_stone_beaks": "start_with",
+            "create_filler": 16,
+            "filler_pool": {
+                "Seashell": 8,
+                "Medicine": 4,
+                "Fairy": 4, 
+            },
+        },
         "Keysanity": {
             "shuffle_nightmare_keys": "any_world",
             "shuffle_small_keys": "any_world",
             "shuffle_maps": "any_world",
             "shuffle_compasses": "any_world",
             "shuffle_stone_beaks": "any_world",
+            "in_game_hint_items": {
+                "Entrance Keys",
+                "Equipment",
+                "Nightmare Keys",
+            },
+        },
+        "4 Specific": {
+            "goal": "specific",
+            "instrument_count": 4,
+            "exclude_dungeons": [ "Specific" ],
+            "tradequest": False,
+        },
+        "Boss Rush": {
+            "overworld": "dungeon_dive",
+            "condense_dungeons": [ "All Dungeons" ]
+        },
+        "Shuffle Everything": {
+            "expand_start": "disabled",
+            "warps": "improved_additional",
+            "shuffle_instruments": "any_world",
+            "shuffle_nightmare_keys": "any_world",
+            "shuffle_small_keys": "any_world",
+            "shuffle_maps": "any_world",
+            "shuffle_compasses": "any_world",
+            "shuffle_stone_beaks": "any_world",
+            "owlsanity": "both",
+            "in_game_hint_items": [ "Equipment" ],
+            "filler_pool": {
+                "Bombs": 10,
+                "Single Arrow": 5,
+                "10 Arrows": 10,
+                "Magic Powder": 10,
+                "Medicine": 1,
+                "Cucco Party": 1,
+                "Slime Storm": 5,
+                "Bomb Drop": 5,
+                "Zol Attack": 10,
+                "Fairy": 5,
+            },
+            "entrance_rules": "wild",
+            "shuffle_start": "global",
+            "shuffle_dungeons": "global",
+            "shuffle_basic": "global",
+            "shuffle_junk": "global",
+            "shuffle_connectors": "global",
+            "shuffle_water": "global",
+            "shuffle_annoying": "global",
+            "boss_shuffle": "shuffle",
+            "miniboss_shuffle": "shuffle",
+            "enemizer": "overworld",
         }
     }
 
