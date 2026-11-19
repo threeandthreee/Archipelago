@@ -86,7 +86,6 @@ MainJumpTable:
         dw   UpdateInventoryMenu                  ; 10
         dw   LocalOnlyItemAndMessage              ; 11
         dw   HandleSeashellMansionItem            ; 12
-        dw   HandleOverworldOwlStatue             ; 13
 StartGameMarinMessage:
         ; Injection to reset our frame counter
         call $27D0 ; Enable SRAM
@@ -246,7 +245,9 @@ def get_precollected_id_block(item_names):
     filler = [0xFF] * (len(item_ids) - max_items)
     item_ids.extend(filler)
     # transition to no text boxes
-    item_ids.insert(skip_text_index, 0xFF)
+    #item_ids.insert(skip_text_index, 0xFF)
+    # actually, just skip all the text
+    item_ids.insert(0, 0xFF)
     # end
     item_ids.append(0xFF)
 

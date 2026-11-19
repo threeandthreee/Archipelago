@@ -38,18 +38,11 @@ RenderChestItem:
     call $0AD2
     ret
 
-GiveItemFromChestMultiworldOwl:
-    call IncreaseCheckCounter
-    ld   hl, $7300
-    call DungeonOwlOffset
-    jp   GiveItemFromChestMultiworldInner
-
 GiveItemFromChestMultiworld:
     call IncreaseCheckCounter
     ; Check our "item is for other player" flag
     ld   hl, $7300
     call OffsetPointerByRoomNumber
-GiveItemFromChestMultiworldInner:
     ld   a, [hl]
     ld   hl, $0055
     cp   [hl]
@@ -718,16 +711,10 @@ GiveTradeItem14:
     set  5, [hl]
     ret
 
-ItemMessageMultiworldOwl:
-    ld   hl, $7300
-    call DungeonOwlOffset
-    jp   ItemMessageMultiworldInner
-
 ItemMessageMultiworld:
     ; Check our "item is for other player" flag
     ld   hl, $7300
     call OffsetPointerByRoomNumber
-ItemMessageMultiworldInner:
     ld   a, [hl]
     ld   hl, $0055
     cp   [hl]

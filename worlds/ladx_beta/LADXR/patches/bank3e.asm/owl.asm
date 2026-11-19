@@ -1,22 +1,3 @@
-HandleOverworldOwlStatue:
-    ; overworld owls we
-    call GetRoomStatusAddressInHL
-    ld   a, [hl]
-    and  $20
-    ret  nz
-    ld   a, [hl]
-    or   $20
-    ld   [hl], a
-
-    ldh  a, [$FFF6]
-    add  $02
-    ldh  [$FFF6], a
-    call GiveItemAndMessageForRoomMultiworld
-    ldh  a, [$FFF6]
-    sub  $02
-    ldh  [$FFF6], a
-
-
 HandleOwlStatue:
     call GetRoomStatusAddressInHL
     ld   a, [hl]
@@ -26,25 +7,38 @@ HandleOwlStatue:
     or   $20
     ld   [hl], a
 
-    
-    ld   hl, $7800
-    call DungeonOwlOffset
-    ldh  [$FFF1], a
-    call GiveItemFromChestMultiworldOwl
-    call ItemMessageMultiworldOwl
-    ret
-
-
-; manipulate room address on dungeon owls to fit into table
-; sub 0x100 and then flip bits 0 and 6 of the low byte
-DungeonOwlOffset:
-    dec  h ; sub 0x100
+    ; use OffsetPointerByRoomNumber to get current map
+    ; we're going to set our fake room differently depending on it
+    ; see locations.owlStatue for transformation
+    ld   hl, $0000
     call OffsetPointerByRoomNumber
-    ; flip bits 0 and 6
+    push hl ; store it to fix at end
+    ld   a, h
+    and  a
+    jr   z, .mapZero
+    dec  a
+    jr   z, .mapOne
+    dec  a
+    jr   z, .mapTwo
+.mapThree:
+.mapZero:
+    inc  hl
     ld   a, l
-    xor  $41
-    ld   l, a
-    ld   a, [hl]
+    jr   .finish
+.mapTwo:
+    inc  hl
+    inc  hl
+    jr   .mapZero
+.mapOne:
+    ld   a, l
+    sub  $31
+    xor  $75
+.finish:
+    ldh  [$FFF6], a
+    call GiveItemAndMessageForRoomMultiworld
+    pop  hl
+    ld   a, l
+    ldh  [$FFF6], a
     ret
 
 

@@ -139,7 +139,7 @@ def upgradeOverworldOwlStatues(rom):
         cp   $6F
         jr   nz, skip
 
-        ld   a, $13
+        ld   a, $09
         rst 8
         jp   $20CF
 skip:

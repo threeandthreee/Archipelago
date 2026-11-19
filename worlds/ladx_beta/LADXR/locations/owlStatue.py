@@ -5,11 +5,14 @@ from .constants import *
 class OwlStatue(ItemInfo):
     def __init__(self, room):
         super().__init__(room)
-        self.patch_room = self.room + 0x316
         if self.room < 0x100: # overworld owl
-            self.patch_room = self.room + 0x02
-        else: # dungeon owl
-            self.patch_room = (self.room - 0x100) ^ 0x41
+            self.patch_room = (self.room + 0x01) & 0xFF
+        elif self.room < 0x200:
+            self.patch_room = 0x100 | (((self.room - 0x31) & 0xFF) ^ 0x75)
+        elif self.room < 0x300:
+            self.patch_room = 0x200 | ((self.room + 0x03) & 0xFF)
+        else: 
+            self.patch_room = 0x300 | ((self.room + 0x01) & 0xFF)
 
     def configure(self, options):
         if options.owlstatues == "both":
