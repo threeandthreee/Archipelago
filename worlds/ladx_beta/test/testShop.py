@@ -13,7 +13,7 @@ class PlandoTest(LADXTestBase):
         "expand_start": 2,
         "plando_items": [{
             "items": {
-                "Sword": 2,
+                "Progressive Sword": 2,
             },
             "locations": [
                 "Shop 200 Item (Mabe Village)",
@@ -39,5 +39,5 @@ class PlandoTest(LADXTestBase):
         location_names = ["Shop 200 Item (Mabe Village)", "Shop 980 Item (Mabe Village)"]
         locations = [self.multiworld.get_location(loc, 1) for loc in location_names]
         for loc in locations:
-            self.assertEqual("Sword", loc.item.name)
+            self.assertEqual("Progressive Sword", loc.item.name)
             self.assertFalse(loc.can_reach(self.multiworld.state))
