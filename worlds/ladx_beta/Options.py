@@ -4,11 +4,14 @@ from typing import Any, Tuple
 from enum import IntEnum
 from Options import (Choice, Toggle, DefaultOnToggle, Range, PerGameCommonOptions, OptionGroup, Removed,
                      DeathLink, StartInventoryPool, ItemSet, ItemDict, OptionSet, OptionDict, NamedRange,
-                     FreeText)
+                     FreeText, Option)
 from schema import Schema, Optional
 from .Locations import dungeon_info
+from .LADXR.worldSetup import WorldSetup
 
 DefaultOffToggle = Toggle
+
+base_world_setup = WorldSetup()
 
 
 def convert_ap_options_to_ladxr(options):
@@ -29,7 +32,11 @@ class Override(IntEnum):
     ALWAYS = 2
 
 
-class LADXROption:
+class Rich(Option):
+    rich_text_doc = True
+    default = True
+
+class LADXROption(Rich):
     may_override: Override = Override.NEVER
     ladxr_name: str | None
     def to_ladxr_option(self, all_options) -> Tuple[Any, Any]:
@@ -41,6 +48,9 @@ class LADXROption:
 class Logic(Choice, LADXROption):
     """
     Affects where items are allowed to be placed.
+
+    **Casual:** Prevents players from needing to use bombs or magic powder
+    for bush breaking and general combat.
 
     **Normal:** Playable without using any tricks or glitches. Can require
     knowledge from a vanilla playthrough, such as how to open Color Dungeon.
@@ -58,7 +68,6 @@ class Logic(Choice, LADXROption):
     or very time consuming.
     """
     display_name = "Logic"
-    rich_text_doc = True
     ladxr_name = "logic"
     option_casual = 0
     option_normal = 1
@@ -75,16 +84,15 @@ class TradeQuest(DefaultOnToggle, LADXROption):
     item and gives a randomized item in return.
     """
     display_name = "Trade Quest"
-    rich_text_doc = True
     ladxr_name = "tradequest"
 
 
 class Owlsanity(Choice, LADXROption):
     """
     Replaces the hints from owl statues with additional randomized items.
+    These owl statues will not give hints.
     """
-    display_name = "Owl Statues that Give Items"
-    rich_text_doc = True
+    display_name = "Owlsanity"
     ladxr_name = "owlstatues"
     option_none = 0
     option_dungeon = 1
@@ -137,7 +145,6 @@ class EntranceRules(Choice, LADXROption):
     option_madness = 4
     default = option_normal
     display_name = "Entrance Rules"
-    rich_text_doc = True
     ladxr_name = "entrancerules"
              
 
@@ -146,7 +153,6 @@ class EntranceShuffle(Choice, LADXROption):
     option_limited = 1
     option_global = 2
     default = option_disabled
-    rich_text_doc = True
 
 
 class ShuffleStart(EntranceShuffle):
@@ -235,24 +241,69 @@ class ShuffleAnnoying(EntranceShuffle):
     ladxr_name = "shuffleannoying"
 
 
-class EntranceShuffleSeed(FreeText):
+class WorldSetupSeed(FreeText, Rich):
     """
-    Specify seed for entrance shuffle. Does not have to be numeric.
-    Everybody with the same seed will get the same entrance shuffle result
-    as long as their entrance shuffle and logic settings are the same.
-    At zero, no seed is used.
+    Specify seed for entrance shuffle, boss shuffle, miniboss shuffle, and enemizer.
+    Does not have to be numeric. Everybody with the same seed will get the same result
+    if their relevant settings are the same. At zero, no seed is used.
     """
-    display_name = "Entrance Shuffle Seed"
+    display_name = "World Setup Seed"
 
 
-class EntrancePlando(OptionDict):
+class LADXPlando(OptionDict, Rich):
+    def verify(self, world, player_name, plando_options):
+        super().verify(world, player_name, plando_options)
+        # verify values
+        data = set(self.value.values())
+        dataset = set(word.casefold() for word in data) if self.valid_keys_casefold else set(data)
+        extra = dataset - self._valid_keys
+        if extra:
+            raise OptionError(
+                f"Found unexpected value {', '.join(extra)} in {getattr(self, 'display_name', self)}. "
+                f"Allowed values: {self._valid_keys}."
+            )
+        schema = Schema({
+            Optional(str): str
+        })
+
+class EntrancePlando(LADXPlando):
     """
-    Define some or all entrance connections.
+    Define some or all entrance connections. If your entrance rules keep entrances
+    coupled, the inverse of your plando connections will be automatically applied for
+    you. So if you set up `"mabe_phone": "d1:inside"`, you will also automatically get
+    `"d1:inside": "mabe_phone"`. However depending on your shuffle groups, this can
+    still leave the groups imbalanced, causing a mapping failure. This can be avoided
+    by also mapping the complement, so in this case: `"d1": "mabe_phone:inside"`.
     """
     display_name = "Entrance Plando"
-    schema = Schema({
-        Optional(str): str
-    })
+    valid_keys = set(base_world_setup.entrance_mapping)
+    valid_values = valid_keys
+
+
+class BossPlando(LADXPlando):
+    """
+    Define some or all boss placements. Color dungeon and its boss are not mappable,
+    and there can only be one `ANGLER_FISH` and `EVIL_EAGLE`.
+    """
+    display_name = "Boss Plando"
+    valid_keys = set(d.entrance for d in dungeon_info if d.index != 9)
+    valid_values = set(d.boss for d in dungeon_info if d.index != 9)
+
+    def verify(self, world, player_name, plando_options):
+        super().verify(world, player_name, plando_options)
+        fish_count = sum(1 for boss in self.value.values() if boss == "ANGLER_FISH")
+        eagle_count = sum(1 for boss in self.value.values() if boss == "EVIL_EAGLE")
+        if fish_count > 1 or eagle_count > 1:
+            raise OptionError("There can only be one each of ANGLER_FISH and EVIL_EAGLE in boss mapping.")
+
+
+class MinibossPlando(LADXPlando):
+    """
+    Define some or all miniboss placements.
+    """
+    display_name = "Miniboss Plando"
+    valid_keys = set(base_world_setup.miniboss_mapping)
+    valid_values = set(base_world_setup.miniboss_mapping.values())
 
 
 class APTitleScreen(DefaultOnToggle, LADXROption):
@@ -274,7 +325,6 @@ class BossShuffle(Choice, LADXROption):
     Some bosses may be duplicated, others may be missing.
     """
     display_name = "Boss Shuffle"
-    rich_text_doc = True
     option_disabled = 0
     option_shuffle = 1
     option_randomize = 2
@@ -294,7 +344,6 @@ class MinibossShuffle(Choice, LADXROption):
     Some minibosses may be duplicated, others may be missing.
     """
     display_name = "Miniboss Shuffle"
-    rich_text_doc = True
     option_disabled = 0
     option_shuffle = 1
     option_randomize = 2
@@ -309,7 +358,6 @@ class Enemizer(Choice, LADXROption):
     Randomizes which enemies are placed. Does not affect logic.
     """
     display_name = "Enemizer"
-    rich_text_doc = True
     option_disabled = 0
     option_overworld = 1
     default = option_disabled
@@ -318,9 +366,8 @@ class Enemizer(Choice, LADXROption):
     alias_false = option_disabled
 
 
-class DungeonItemShuffle(Choice):
+class DungeonItemShuffle(Choice, Rich):
     display_name = "Dungeon Item Shuffle"
-    rich_text_doc = True
     option_original_dungeon = 0
     option_own_dungeons = 1
     option_own_world = 2
@@ -451,21 +498,20 @@ class Goal(Choice, LADXROption):
     **Instruments:** The Wind Fish's Egg will only open if you have the required
     number of Instruments of the Sirens, and play the Ballad of the Wind Fish.
 
-    **Seashells:** The Egg will open when you bring 20 seashells. The Ballad and
-    Ocarina are not needed.
-
-    **Open:** The Egg will start pre-opened.
-    
     **Specific:** The Wind Fish's Egg will open with specific instruments,
     check the sign at the egg to see which.
+
+    **Seashells:** The Egg will open when you bring 20 seashells (out of 26).
+    The Ballad and Ocarina are not needed.
+
+    **Open:** The Egg will start pre-opened.
     """
     display_name = "Goal"
-    rich_text_doc = True
     ladxr_name = "goal"
     option_instruments = 1
-    option_seashells = 2
-    option_open = 3
-    option_specific = 4
+    option_specific = 2
+    option_seashells = 10
+    option_open = 100
 
     default = option_instruments
 
@@ -509,7 +555,6 @@ class MusicChangeCondition(Choice, LADXROption):
     **Always:** You always have the post-sword music.
     """
     display_name = "Music Change Condition"
-    rich_text_doc = True
     option_sword = 0
     option_always = 1
     default = option_always
@@ -528,7 +573,6 @@ class HardMode(Choice, LADXROption):
     """
     display_name = "Hard Mode"
     ladxr_name = "hardmode"
-    rich_text_doc = True
     option_none = 0
     option_oracle = 1
     option_hero = 2
@@ -550,18 +594,21 @@ class Stealing(Choice, LADXROption):
 
 class Overworld(Choice, LADXROption):
     """
-    **Open Mabe:** Replaces rock on the east side of Mabe Village with bushes,
+    **Open Mabe:** Replaces rocks on the east side of Mabe Village with bushes,
     allowing access to Ukuku Prairie without Power Bracelet.
+
+    **Open Beach:** Replaces rocks on the east side of the beach with bushes,
+    allowing access to Martha's Bay without Power Bracelet. Similar to Open
+    Mabe but a bit slower access due to the 3 tile pit.
 
     **Dungeon Dive:** Create a different overworld where all the dungeons are
     directly accessible and almost no chests are located in the overworld.
     """
     display_name = "Overworld"
     ladxr_name = "overworld"
-    rich_text_doc = True
     option_normal = 0
     option_open_mabe = 1
-    #option_no_dungeons = 2
+    option_open_beach = 2
     option_dungeon_dive = 3
     default = option_normal
 
@@ -573,7 +620,6 @@ class Quickswap(Choice, LADXROption):
     display_name = "Quickswap"
     ladxr_name = "quickswap"
     may_override = Override.ALWAYS
-    rich_text_doc = True
     option_none = 0
     option_a = 1
     option_b = 2
@@ -587,7 +633,6 @@ class TextMode(Choice, LADXROption):
     display_name = "Text Mode"
     ladxr_name = "textmode"
     may_override = Override.ALWAYS
-    rich_text_doc = True
     option_normal = 0
     option_fast = 1
     option_none = 2
@@ -632,7 +677,6 @@ class BootsControls(Choice, LADXROption):
     **Press B:** Holding down B activates boots.
     """
     display_name = "Boots Controls"
-    rich_text_doc = True
     option_vanilla = 0
     option_bracelet = 1
     option_press_a = 2
@@ -684,7 +728,6 @@ class TrendyGame(Choice, LADXROption):
     screen.
     """
     display_name = "Trendy Game"
-    rich_text_doc = True
     option_easy = 0
     option_normal = 1
     option_hard = 2
@@ -705,7 +748,6 @@ class BlockFreePowder(DefaultOffToggle, LADXROption):
     considered in logic.
     """
     display_name = "Block Free Powder"
-    rich_text_doc = True
     ladxr_name = 'blockfreepowder'
     may_override = Override.NOT_RACE
 
@@ -739,7 +781,6 @@ class Palette(Choice, LADXROption):
     **Inverted:** Inverted.
     """
     display_name = "Palette"
-    rich_text_doc = True
     option_normal = 0
     option_1bit = 1
     option_2bit = 2
@@ -761,7 +802,6 @@ class Music(Choice, LADXROption):
     display_name = "Music"
     ladxr_name = "music"
     may_override = Override.ALWAYS
-    rich_text_doc = True
     option_vanilla = 0
     option_shuffled = 1
     option_off = 2
@@ -784,7 +824,6 @@ class Warps(Choice, LADXROption):
     Tracy's house (the Mambo teleport spot) and Eagle's Tower.
     """
     display_name = "Warps"
-    rich_text_doc = True
     option_vanilla = 0
     option_improved = 1
     option_improved_additional = 2
@@ -793,7 +832,7 @@ class Warps(Choice, LADXROption):
     may_override = Override.NOT_RACE
 
 
-class InGameHintItems(ItemSet):
+class InGameHintItems(ItemSet, Rich):
     """
     Choose which items to generate in-game hints for. Setting no items effectively disables hints.
 
@@ -803,14 +842,13 @@ class InGameHintItems(ItemSet):
     - 21 dungeon owl statues (all color dungeons owls are the same hint)
     """
     display_name = "In-Game Hint Items"
-    rich_text_doc = True
     default = {
         "Equipment",
         "Entrance Keys"
     }
 
 
-class ExpandStart(NamedRange):
+class ExpandStart(NamedRange, Rich):
     """
     Starting from Tarin's Gift, locally place progression items until the target
     number of locations or more can be reached. Does nothing if set to *1*.
@@ -818,7 +856,6 @@ class ExpandStart(NamedRange):
     May interfere with item plando.
     """
     display_name = "Expand Start"
-    rich_text_doc = True
     range_start = 1
     range_end = 10
     default = 5
@@ -830,7 +867,7 @@ class ExpandStart(NamedRange):
     }
 
 
-class CreateFiller(NamedRange):
+class CreateFiller(NamedRange, Rich):
     """
     Removes non-essential items to make more room for filler.
     The actual amount of filler removed will depend on other settings,
@@ -841,7 +878,6 @@ class CreateFiller(NamedRange):
     replacements independent of this count.
     """
     display_name = "Create Filler"
-    rich_text_doc = True
     range_start = 0
     range_end = 50
     default = 6
@@ -853,7 +889,7 @@ class CreateFiller(NamedRange):
     }
 
 
-class FillerPool(ItemDict):
+class FillerPool(ItemDict, Rich):
     """
     Weighted options to randomly select from when replacing removed items.
     """
@@ -877,7 +913,6 @@ class ForeignItemIcons(Choice, LADXROption):
     (progression) or Guardian Acorn (non-progression).
     """
     display_name = "Foreign Item Icons"
-    rich_text_doc = True
     option_guess_by_name = 0
     option_indicate_progression = 1
     default = option_guess_by_name
@@ -897,19 +932,21 @@ class Follower(Choice, LADXROption):
     ladxr_name = 'follower'
 
 
-class CondenseDungeons(OptionSet):
+class CondenseDungeons(OptionSet, Rich):
     """
     Transforms a dungeon into a tiny version, with mostly just a boss fight.
 
-    Condensing all dungeons is equivalent to the upstream *no dungeons* overworld.
+    **All Dungeons**: Equivalent to the upstream *no dungeons* overworld.
+
+    Dungeon names: Color Dungeon, Tail Cave, Bottle Grotto, Key Cavern,
+    Angler's Tunnel, Catfish's Maw, Face Shrine, Eagle's Tower, Turtle Rock
     """
     display_name = "Condense Dungeons"
-    rich_text_doc = True
     valid_keys = [d.name for d in dungeon_info]
-    valid_keys.append("All Dungeons")
+    valid_keys.insert(0, "All Dungeons")
 
 
-class ExcludeDungeons(OptionSet):
+class ExcludeDungeons(OptionSet, Rich):
     """
     Excluding a dungeon condenses it, removes its instrument from the pool,
     and excludes its remaining locations. Excluding a dungeon will also prevent
@@ -917,42 +954,23 @@ class ExcludeDungeons(OptionSet):
 
     **Specific**: Auto exludes any dungeons not required by the specific
     instruments goal.
+
+    Dungeon names: Color Dungeon, Tail Cave, Bottle Grotto, Key Cavern,
+    Angler's Tunnel, Catfish's Maw, Face Shrine, Eagle's Tower, Turtle Rock
     """
     display_name = "Exclude Dungeons"
-    rich_text_doc = True
     valid_keys = [d.name for d in dungeon_info]
-    valid_keys.append("Specific")
+    valid_keys.insert(0, "Specific")
 
 
 ladx_option_groups = [
-    OptionGroup("Gameplay Adjustments", [
-        HardMode,
-        TrendyGame,
-        BlockFreePowder,
-        InGameHintItems,
-        DeathLink,
-    ]),
-    OptionGroup("World Layout", [
+    OptionGroup("World", [
         Overworld,
         CondenseDungeons,
         ExcludeDungeons,
-        EntranceRules,
-        ShuffleStart,
-        ShuffleDungeons,
-        ShuffleBasic,
-        ShuffleJunk,
-        ShuffleConnectors,
-        ShuffleWater,
-        ShuffleAnnoying,
-        EntranceShuffleSeed,
-        EntrancePlando,
+        Warps,
     ]),
-    OptionGroup("Enemies", [
-        BossShuffle,
-        MinibossShuffle,
-        Enemizer,
-    ]),
-    OptionGroup("Item Pool", [
+    OptionGroup("Items", [
         ShuffleInstruments,
         ShuffleNightmareKeys,
         ShuffleSmallKeys,
@@ -962,11 +980,32 @@ ladx_option_groups = [
         TradeQuest,
         Rooster,
         Owlsanity,
+        InGameHintItems,
         CreateFiller,
         FillerPool,
     ]),
+    OptionGroup("Entrances", [
+        EntranceRules,
+        ShuffleStart,
+        ShuffleDungeons,
+        ShuffleBasic,
+        ShuffleJunk,
+        ShuffleConnectors,
+        ShuffleWater,
+        ShuffleAnnoying,
+    ]),
+    OptionGroup("Enemies", [
+        BossShuffle,
+        MinibossShuffle,
+        Enemizer,
+    ]),
+    OptionGroup("Seeding & Plando", [
+        WorldSetupSeed,
+        EntrancePlando,
+        BossPlando,
+        MinibossPlando,
+    ]),
     OptionGroup("Quality of Life & Aesthetic", [
-        Warps,
         NagMessages,
         Quickswap,
         BootsControls,
@@ -982,12 +1021,22 @@ ladx_option_groups = [
         LowHpBeep,
         NoFlash,
         Follower,
+        TrendyGame,
+    ]),
+    OptionGroup("Miscellaneous", [
+        HardMode,
+        BlockFreePowder,
+        DeathLink,
     ]),
 ]
 
 @dataclass
 class LinksAwakeningOptions(PerGameCommonOptions):
+    expand_start: ExpandStart
+    goal: Goal
+    instrument_count: InstrumentCount
     logic: Logic
+    stealing: Stealing
     tradequest: TradeQuest
     rooster: Rooster
     entrance_rules: EntranceRules
@@ -998,8 +1047,6 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     shuffle_connectors: ShuffleConnectors
     shuffle_water: ShuffleWater
     shuffle_annoying: ShuffleAnnoying
-    goal: Goal
-    instrument_count: InstrumentCount
     condense_dungeons: CondenseDungeons
     exclude_dungeons: ExcludeDungeons
     link_palette: LinkPalette
@@ -1020,7 +1067,6 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     nag_messages: NagMessages
     ap_title_screen: APTitleScreen
     boots_controls: BootsControls
-    stealing: Stealing
     quickswap: Quickswap
     hard_mode: HardMode
     low_hp_beep: LowHpBeep
@@ -1032,15 +1078,16 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     create_filler: CreateFiller
     filler_pool: FillerPool
     start_inventory_from_pool: StartInventoryPool
-    expand_start: ExpandStart
     follower: Follower
     block_free_powder: BlockFreePowder
-    entrance_plando: EntrancePlando
-    entrance_shuffle_seed: EntranceShuffleSeed
     owlsanity: Owlsanity
     boss_shuffle: BossShuffle
     miniboss_shuffle: MinibossShuffle
     enemizer: Enemizer
+    world_setup_seed: WorldSetupSeed
+    entrance_plando: EntrancePlando
+    boss_plando: BossPlando
+    miniboss_plando: MinibossPlando
 
     warp_improvements: Removed
     additional_warp_points: Removed

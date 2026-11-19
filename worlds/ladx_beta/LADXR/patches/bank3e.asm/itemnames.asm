@@ -176,11 +176,11 @@ ItemNamePointers:
     dw ItemNameGel ; 0x54
     dw ItemNameGel ; 0x55
     dw ItemNameGel ; 0x56
-    dw ItemNameNone ; 0x57
-    dw ItemNameNone ; 0x58 slime storm
-    dw ItemNameNone ; 0x59 bomb drop
-    dw ItemNameNone ; 0x5a recovery heart
-    dw ItemNameNone ; 0x5b
+    dw ItemNameDeath ; 0x57 deat
+    dw ItemNameSlimeStorm ; 0x58 slime storm
+    dw ItemNameBombDrop ; 0x59 bomb drop
+    dw ItemNameRecoveryHeart ; 0x5a recovery heart
+    dw ItemNameFairy ; 0x5b fairy
     dw ItemNameNone ; 0x5c
     dw ItemNameNone ; 0x5d
     dw ItemNameNone ; 0x5e
@@ -255,12 +255,11 @@ ItemNamePointers:
     dw ItemTradeQuest13
     dw ItemTradeQuest14
     dw ItemPieceOfPower
-    dw ItemNameNone ; AP Prog
-    dw ItemNameNone ; AP Trap
-    dw ItemNameNone ; AP Fine
-    dw ItemNameNone ; AP Junk
+    dw ItemNameNone ; Triforce
+    dw ItemNameNone ; AP 1
+    dw ItemNameNone ; AP 2
+    dw ItemNameNone ; AP 3
     dw ItemNameCuccoParty ; Cucco party
-    dw ItemNameNone ; Fairy
 
 ItemNameNone:
     db m"NONE", $ff
@@ -509,7 +508,18 @@ ItemNameGuardianAcorn:
 ItemPieceOfPower:
     db m"You've got a {PIECE_OF_POWER}", $ff
 
+ItemNameDeath:
+    db m"<master>", $ff
+ItemNameSlimeStorm:
+    db m"Got a slime storm", $ff
+ItemNameBombDrop:
+    db m"Got {BOMB}", $ff
+ItemNameRecoveryHeart:
+    db m"Got a little heart", $ff
+ItemNameFairy:
+    db m"Got a fairy", $ff
+
 ItemNameCuccoParty:
-    db m"Cucco party!", $ff
+    db m"Got a cucco party", $ff
 
 MultiNamePointers:

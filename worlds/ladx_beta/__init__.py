@@ -127,14 +127,24 @@ class LinksAwakeningSettings(settings.Group):
     gfx_mod_file: GfxModFile = GfxModFile()
 
 class LinksAwakeningWebWorld(WebWorld):
-    tutorials = [Tutorial(
-        "Multiworld Setup Guide",
-        "A guide to setting up Links Awakening DX for MultiWorld.",
-        "English",
-        "setup_en.md",
-        "setup/en",
-        ["zig"]
-    )]
+    tutorials = [
+        Tutorial(
+            "Multiworld Setup Guide",
+            "A guide to setting up Links Awakening DX for MultiWorld.",
+            "English",
+            "setup_en.md",
+            "setup/en",
+            ["zig"]
+        ),
+        Tutorial(
+            "Entrance/Boss/Miniboss Plando Guide",
+            "Vanilla mappings for each and some tips.",
+            "English",
+            "plando_en.md",
+            "plando/en",
+            ["threeandthree"]
+        )
+    ]
     theme = "ocean"
     option_groups = ladx_option_groups
     options_presets: typing.Dict[str, typing.Dict[str, typing.Any]] = {
@@ -266,15 +276,21 @@ class LinksAwakeningWorld(World):
         
         self.ladxr_itempool = ladxr_itempool.toDict()
 
+        entrance_plando = {}
+        boss_plando = {}
+        miniboss_plando = {}
         if self.multiworld.plando_options & self.multiworld.plando_options.connections:
-            plando = self.options.entrance_plando.value
-        else:
-            plando = {}
-        if self.options.entrance_shuffle_seed.value:
-            rnd = random.Random(self.options.entrance_shuffle_seed.value)
+            entrance_plando = self.options.entrance_plando.value
+        if self.multiworld.plando_options & self.multiworld.plando_options.bosses:
+            boss_plando = {int(k): boss_to_dungeon_index[v] for k, v in self.options.boss_plando.value.items()}
+            miniboss_plando = self.options.miniboss_plando.value
+
+        if self.options.world_setup_seed.value:
+            rnd = random.Random(self.options.world_setup_seed.value)
         else:
             rnd = self.random
-        world_setup.randomize(self.ladxr_settings, self.ladxr_itempool, rnd, plando)
+        world_setup.randomize(self.ladxr_settings, self.ladxr_itempool, rnd,
+            entrance_plando, boss_plando, miniboss_plando)
         
         # use mapping from slot data for universal tracker gens
         if getattr(self.multiworld, "generation_is_fake", False):

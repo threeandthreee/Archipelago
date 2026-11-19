@@ -209,9 +209,11 @@ MainLoop:
     ld   [wTradeSequenceItem2], a
 
 .finish:
+    ld   hl, wMWCommand
     bit  5, [hl]
     jr   nz, .ret
 .clearCmdAndRet:
+    ld   hl, wMWCommand
     res  7, [hl]
 .ret:
     ret

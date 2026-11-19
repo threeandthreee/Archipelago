@@ -7,7 +7,11 @@ from .explorer import Explorer
 from .settings import Settings
 from .logic.location import Location
 from ..Locations import dungeon_info
+from Options import OptionError
+import logging
 
+
+logger = logging.getLogger("Link's Awakening Logger")
 
 MULTI_CHEST_OPTIONS = [MAGIC_POWDER, BOMB, MEDICINE, RUPEES_50, RUPEES_20, RUPEES_100, RUPEES_200, RUPEES_500, SEASHELL, GEL, ARROWS_10, SINGLE_ARROW]
 MULTI_CHEST_WEIGHTS = [20,           20,   20,       50,        50,        20,         10,         5,          5,        20,  10,        10]
@@ -79,50 +83,65 @@ class WorldSetup:
             })
 
 
-    def pickEntrances(self, settings, itempool, rnd, world_setup, plando: dict[str, str]):
+    def pickEntrances(self, settings, itempool, rnd, world_setup, entrance_plando: dict[str, str]):
         MAX_RETRIES = 5
         retries = 0
         done = False
-        entrance_shuffler = EntranceShuffler(settings, plando)
+        entrance_shuffler = EntranceShuffler(settings, entrance_plando)
         while(not done):
             try:
                 self.entrance_mapping = entrance_shuffler.shuffle_entrances(rnd, world_setup, itempool)
                 done = True
             except ItemFillException as e:
-                print('failed fill, retrying')
+                logger.warning('failed fill, retrying')
                 if retries >= MAX_RETRIES:
                     raise e
             except EntranceConnectionException as e:
-                print('failed to connect, retrying')
+                logger.warning('failed to connect, retrying')
                 if retries >= MAX_RETRIES:
-                    raise e
-                if plando: # this should only really happen from an invalid entrance plando
-                    plando = {}
-                    entrance_shuffler = EntranceShuffler(settings, plando)
+                    if entrance_plando:
+                        # this is probably a bad plando
+                        raise OptionError("Provided entrance_plando seems to have issues.")
+                    else:
+                        raise e
             retries += 1
 
 
-    def randomize(self, settings, itempool, rnd, plando: dict[str, str]={}):
+    def randomize(self, settings, itempool, rnd, entrance_plando: dict[str, str],
+        boss_plando: dict[int, int], miniboss_plando: dict[str, str]):
+        
         if settings.boss != "disabled":
-            values = list(range(9))
-            if settings.heartcontainers:
-                # Color dungeon boss does not drop a heart container so we cannot shuffle him when we
-                # have heart container shuffling
-                values.remove(8)
-            self.boss_mapping = []
-            for n in range(8 if settings.heartcontainers else 9):
-                value = rnd.choice(values)
-                self.boss_mapping.append(value)
-                if value in (3, 6) or settings.boss == "shuffle":
-                    values.remove(value)
-            if settings.heartcontainers:
-                self.boss_mapping += [8]
+            boss_mapping_dict = boss_plando.copy()
+            boss_mapping_dict[9] = 9 # assign color dungeon
+            available_shuffle_bosses = [n for n in range(1, 9) if n not in boss_mapping_dict.values()]
+            available_randomize_bosses = [n for n in range(1, 9)
+                if n not in boss_mapping_dict.values() or n not in (4, 7)]
+            unmapped_bosses = [n for n in range(1, 9) if n not in boss_mapping_dict]
+            rnd.shuffle(unmapped_bosses)
+            for n in unmapped_bosses:
+                if settings.boss == "shuffle":
+                    value = rnd.choice(available_shuffle_bosses)
+                    available_shuffle_bosses.remove(value)
+                else:
+                    value = rnd.choice(available_randomize_bosses)
+                    if value in (4, 7):
+                        available_randomize_bosses.remove(value)
+                boss_mapping_dict[n] = value
+            self.boss_mapping = [i-1 for i in boss_mapping_dict.values()]
+        
         if settings.miniboss != "disabled":
-            values = [name for name in self.miniboss_mapping.values()]
+            if settings.miniboss == "shuffle":
+                available_minibosses = [x for x in self.miniboss_mapping.values()
+                    if x not in miniboss_plando.values()]
+            else:
+                available_minibosses = [x for x in self.miniboss_mapping.values()]
             for key in self.miniboss_mapping.keys():
-                self.miniboss_mapping[key] = rnd.choice(values)
-                if settings.miniboss == 'shuffle':
-                    values.remove(self.miniboss_mapping[key])
+                if key in miniboss_plando:
+                    self.miniboss_mapping[key] = miniboss_plando[key]
+                else:
+                    self.miniboss_mapping[key] = rnd.choice(available_minibosses)
+                    if settings.miniboss == "shuffle":
+                        available_minibosses.remove(self.miniboss_mapping[key])
 
         if settings.goal == 'open':
             self.goal = -1
@@ -144,7 +163,7 @@ class WorldSetup:
             self.entrance_mapping = {"d%d" % (n): "d%d:inside" % (n) for n in range(9)}
             self.entrance_mapping.update({"d%d:inside" % (n): "d%d" % (n) for n in range(9)})
         else:
-            self.pickEntrances(settings, itempool, rnd, self, plando)
+            self.pickEntrances(settings, itempool, rnd, self, entrance_plando)
 
     def loadFromRom(self, rom):
         import patches.overworld
@@ -393,7 +412,6 @@ class EntranceShuffler:
                     break
             if not ex: # no valid exits for any entrances, move to next fill stage
                 fill_stage += 1
-                #print(f'----moving to fill_stage {fill_stage}----')
                 if fill_stage == 4:
                     break
 
@@ -473,7 +491,6 @@ class EntranceShuffler:
         return self.entrance_mapping
 
     def _connect(self, en: str, ex: str) -> None:
-        #print(f'{en} -> {ex}')
         self.entrance_mapping[en] = ex
         if self.keep_two_way:
             self.entrance_mapping[ex] = en

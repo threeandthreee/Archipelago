@@ -19,18 +19,21 @@ class DungeonInfo(NamedTuple):
     name: str
     entrance: str
     instrument: str | None
+    boss: str
 
 dungeon_info = (
-    DungeonInfo(9, "Color Dungeon",   "d0", None),
-    DungeonInfo(1, "Tail Cave",       "d1", "Full Moon Cello"),
-    DungeonInfo(2, "Bottle Grotto",   "d2", "Conch Horn"),
-    DungeonInfo(3, "Key Cavern",      "d3", "Sea Lily's Bell"),
-    DungeonInfo(4, "Angler's Tunnel", "d4", "Surf Harp"),
-    DungeonInfo(5, "Catfish's Maw",   "d5", "Wind Marimba"),
-    DungeonInfo(6, "Face Shrine",     "d6", "Coral Triangle"),
-    DungeonInfo(7, "Eagle's Tower",   "d7", "Organ of Evening Calm"),
-    DungeonInfo(8, "Turtle Rock",     "d8", "Thunder Drum"),
+    DungeonInfo(9, "Color Dungeon",   "d0", None,                    "HARDHIT_BEETLE"),
+    DungeonInfo(1, "Tail Cave",       "d1", "Full Moon Cello",       "MOLDORM"),
+    DungeonInfo(2, "Bottle Grotto",   "d2", "Conch Horn",            "GENIE"),
+    DungeonInfo(3, "Key Cavern",      "d3", "Sea Lily's Bell",       "SLIME_EYE"),
+    DungeonInfo(4, "Angler's Tunnel", "d4", "Surf Harp",             "ANGLER_FISH"),
+    DungeonInfo(5, "Catfish's Maw",   "d5", "Wind Marimba",          "SLIME_EEL"),
+    DungeonInfo(6, "Face Shrine",     "d6", "Coral Triangle",        "FACADE"),
+    DungeonInfo(7, "Eagle's Tower",   "d7", "Organ of Evening Calm", "EVIL_EAGLE"),
+    DungeonInfo(8, "Turtle Rock",     "d8", "Thunder Drum",          "HOT_HEAD"),
 )
+
+boss_to_dungeon_index = {d.boss: d.index for d in dungeon_info}
 
 def meta_to_name(meta):
     return f"{meta.name} ({meta.area})"

@@ -40,15 +40,16 @@ RenderChestItem:
 
 GiveItemFromChestMultiworldOwl:
     call IncreaseCheckCounter
-    ld   hl, $7616
+    ld   hl, $7300
+    call DungeonOwlOffset
     jp   GiveItemFromChestMultiworldInner
 
 GiveItemFromChestMultiworld:
     call IncreaseCheckCounter
     ; Check our "item is for other player" flag
     ld   hl, $7300
-GiveItemFromChestMultiworldInner:
     call OffsetPointerByRoomNumber
+GiveItemFromChestMultiworldInner:
     ld   a, [hl]
     ld   hl, $0055
     cp   [hl]
@@ -718,14 +719,15 @@ GiveTradeItem14:
     ret
 
 ItemMessageMultiworldOwl:
-    ld   hl, $7616
+    ld   hl, $7300
+    call DungeonOwlOffset
     jp   ItemMessageMultiworldInner
 
 ItemMessageMultiworld:
     ; Check our "item is for other player" flag
     ld   hl, $7300
-ItemMessageMultiworldInner:
     call OffsetPointerByRoomNumber
+ItemMessageMultiworldInner:
     ld   a, [hl]
     ld   hl, $0055
     cp   [hl]

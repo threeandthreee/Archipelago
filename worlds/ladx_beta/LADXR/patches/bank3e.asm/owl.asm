@@ -26,20 +26,26 @@ HandleOwlStatue:
     or   $20
     ld   [hl], a
 
-    ; manipulate room address on dungeon owls to fit into table
-    ; sub 0x100 and then flip bits 0 and 6 of the low byte
-    ld   hl, $7700 ; sub 0x100
+    
+    ld   hl, $7800
+    call DungeonOwlOffset
+    ldh  [$FFF1], a
+    call GiveItemFromChestMultiworldOwl
+    call ItemMessageMultiworldOwl
+    ret
+
+
+; manipulate room address on dungeon owls to fit into table
+; sub 0x100 and then flip bits 0 and 6 of the low byte
+DungeonOwlOffset:
+    dec  h ; sub 0x100
     call OffsetPointerByRoomNumber
     ; flip bits 0 and 6
     ld   a, l
     xor  $41
     ld   l, a
     ld   a, [hl]
-    ldh  [$FFF1], a
-    call ItemMessageMultiworldOwl
-    call GiveItemFromChestMultiworldOwl
     ret
-
 
 
 GetRoomStatusAddressInHL:

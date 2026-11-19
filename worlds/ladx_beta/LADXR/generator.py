@@ -206,6 +206,8 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
         patches.maptweaks.tweakBirdKeyRoom(rom)
     if ladxr_settings.overworld == 'openmabe':
         patches.maptweaks.openMabe(rom)
+    elif ladxr_settings.overworld == 'openbeach':
+        patches.maptweaks.openBeach(rom)
     patches.chest.fixChests(rom)
     patches.shop.fixShop(rom)
     patches.rooster.patchRooster(rom)
@@ -270,7 +272,7 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
     if ladxr_settings.textmode == 'none':
         patches.aesthetics.fastText(rom)
         patches.aesthetics.noText(rom)
-        patches.aesthetics.removeDungeonTexts(rom)
+    patches.aesthetics.removeDungeonTexts(rom)
     if not ladxr_settings.nagmessages:
         patches.aesthetics.removeNagMessages(rom)
     if ladxr_settings.lowhpbeep == 'slow':
@@ -327,7 +329,9 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
     patches.enemies.changeBosses(rom, world_setup.boss_mapping)
     patches.enemies.changeMiniBosses(rom, world_setup.miniboss_mapping)
     if ladxr_settings.enemies == "overworld":
-        patches.enemies.randomizeEnemies(rom, random)
+        world_setup_seed = patch_data["world_setup_seed"]
+        world_setup_rnd = random.Random(world_setup_seed) if world_setup_seed else random
+        patches.enemies.randomizeEnemies(rom, world_setup_rnd)
 
     if not args.romdebugmode:
         patches.core.addFrameCounter(rom, len(item_list))

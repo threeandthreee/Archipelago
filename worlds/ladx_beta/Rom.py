@@ -81,6 +81,7 @@ def write_patch_data(world: "LinksAwakeningWorld", patch: LADXProcedurePatch):
             "miniboss_mapping": world.ladxr_logic.world_setup.miniboss_mapping,
             "dungeon_exclusions": world.ladxr_logic.world_setup.dungeon_exclusions,
         },
+        "world_setup_seed": world.options.world_setup_seed.value,
         "ladxr_settings_dict": world.ladxr_settings_dict,
     }
     patch.write_file("data.json", json.dumps(data_dict).encode('utf-8'))

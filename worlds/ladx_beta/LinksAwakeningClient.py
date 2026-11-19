@@ -30,8 +30,22 @@ from .TrackerConsts import storage_key
 from .ItemTracker import ItemTracker
 from .Locations import links_awakening_location_meta_to_id
 from .Tracker import LocationTracker, MagpieBridge, Check
+from .LADXR.locations.constants import CHEST_ITEMS
+from .LADXR.locations.items import *
 
+links_awakening_item_code_to_ladxr_name = {v:k for k,v in CHEST_ITEMS.items()}
 links_awakening_location_id_to_meta = {v:k for k,v in links_awakening_location_meta_to_id.items()}
+
+no_text_exceptions = [
+    GUARDIAN_ACORN,
+    PIECE_OF_POWER,
+    MEDICINE,
+    STONE_BEAK,
+]
+
+yes_text_exceptions = [
+    "RUPEES"
+]
 
 
 class GameboyException(Exception):
@@ -89,10 +103,6 @@ class LAClientConstants:
     MinGameplayValue = 0x06
     MaxGameplayValue = 0x1A
     VictoryGameplayAndSub = 0x0102
-
-
-class SpecialItems:
-    death = 0x57
 
 
 class MWCommands(IntEnum):
@@ -434,6 +444,18 @@ class LinksAwakeningClient():
         if magpie:
             magpie.gps_tracker = self.gps_tracker
 
+    def get_sender(self, item):
+        item_code = item.item - Common.BASE_ID
+        ladxr_name = links_awakening_item_code_to_ladxr_name[item_code]
+        # sender 0xFF means skip text box
+        if item.flags & 0b001: # progression: skip text only if on exception list
+            if any(prefix for prefix in yes_text_exceptions if ladxr_name.startswith(prefix)):
+                return 0xFF
+        else: # skip text unless on exception list
+            if not any(prefix for prefix in no_text_exceptions if ladxr_name.startswith(prefix)):
+                return 0xFF
+        return clamp(0, item.player, 101)
+
     # The key location is blocked from collection unless the value location
     # has also been checked.
     dependent_location_meta_ids = {
@@ -493,7 +515,7 @@ class LinksAwakeningClient():
             if item.player == ctx.slot:
                 args["command"] |= MWCommands.SEND_ITEM_SPECIAL
                 args["item_code"] = item.item - Common.BASE_ID
-                args["mp_a"] = clamp(0, ctx.slot, 101)
+                args["mp_a"] = self.get_sender(item)
             if trade:
                 args["command"] |= trade["cmd"]
                 args["mp_f"] = trade["mask"]
@@ -561,7 +583,7 @@ class LinksAwakeningClient():
                 self.death_link_status = DeathLinkStatus.DYING
                 self.gameboy.send_mw_command(
                     command=MWCommands.SEND_ITEM_SPECIAL,
-                    item_code=SpecialItems.death,
+                    item_code=CHEST_ITEMS[DEATH],
                     mp_a=0xFF)
         elif self.death_link_status == DeathLinkStatus.DYING:
             if wHealth and not busy:
@@ -573,11 +595,10 @@ class LinksAwakeningClient():
         recv_index = wMWRecvIndexHi << 8 | wMWRecvIndexLo
         if recv_index in ctx.recvd_checks:
             item = ctx.recvd_checks[recv_index]
-            # TODO skip dialog?
             self.gameboy.send_mw_command(
                 command=MWCommands.SEND_ITEM,
                 item_code=item.item - Common.BASE_ID,
-                mp_a=clamp(0, item.player, 101),
+                mp_a=self.get_sender(item),
                 mp_cd=recv_index)
             return
 
