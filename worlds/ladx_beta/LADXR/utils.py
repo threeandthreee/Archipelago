@@ -9,10 +9,10 @@ class Error(Exception):
 
 
 AP_NAMES = {
-    SWORD: "Sword",
+    SWORD: "Progressive Sword",
     BOMB: "Bombs",
-    POWER_BRACELET: "Power Bracelet",
-    SHIELD: "Shield",
+    POWER_BRACELET: "Progressive Power Bracelet",
+    SHIELD: "Progressive Shield",
     BOW: "Bow",
     HOOKSHOT: "Hookshot",
     MAGIC_ROD: "Magic Rod",
@@ -157,7 +157,9 @@ AP_NAMES = {
 }
 
 # Small Key (Bottle Grotto) -> Key to Bottle Grotto
-_NAMES = {k: re.sub(r"(.*)\((.*)\)", r"\1to \2", v).replace("Small ", "") for k, v in AP_NAMES.items()}
+# Progressive Sword -> Sword
+_NAMES = {k: re.sub(r"(.*)\((.*)\)", r"\1to \2", v).replace("Small ", "").replace("Progressive ", "")
+    for k, v in AP_NAMES.items()}
 
 _PREFILTER = {
     'à': '<agrave>',
