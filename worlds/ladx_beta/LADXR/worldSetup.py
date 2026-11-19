@@ -127,7 +127,8 @@ class WorldSetup:
                     if value in (4, 7):
                         available_randomize_bosses.remove(value)
                 boss_mapping_dict[n] = value
-            self.boss_mapping = [i-1 for i in boss_mapping_dict.values()]
+            for k, v in boss_mapping_dict.items():
+                self.boss_mapping[k-1] = v-1
         
         if settings.miniboss != "disabled":
             if settings.miniboss == "shuffle":
