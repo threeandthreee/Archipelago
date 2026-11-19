@@ -351,6 +351,7 @@ class RequirementsSettings:
         if options.logic == "casual":
             # In casual mode, remove the more complex kill methods
             self.bush.remove(MAGIC_POWDER)
+            self.bush.remove(BOMB)
             self.attack_hookshot_powder.remove(MAGIC_POWDER)
             self.attack.remove(BOMB)
             self.attack_hookshot.remove(BOMB)

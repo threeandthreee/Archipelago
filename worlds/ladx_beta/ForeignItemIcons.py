@@ -80,6 +80,12 @@ BLOCKED_ASSOCIATIONS: list[str] = [
     "SINGLE",   # SINGLE_ARROW
     "STONE",    # STONE_BEAK
 
+    # Trap items that dont have original icons
+    "DEATH",
+    "SLIME",
+    "DROP",
+    "PARTY",
+
     "ARCHIPELAGO",
 ]
 

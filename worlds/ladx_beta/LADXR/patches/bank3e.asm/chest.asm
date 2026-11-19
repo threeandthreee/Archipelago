@@ -218,10 +218,10 @@ GiveItemFromChest:
     dw GiveTradeItem13  ; $A3
     dw GiveTradeItem14  ; $A4
     dw SpecialPieceOfPower ; $A5
-    dw NoItem           ; $A6 ; AP Prog
-    dw NoItem           ; $A7 ; AP Trap
-    dw NoItem           ; $A8 ; AP Fine
-    dw NoItem           ; $A9 ; AP Junk
+    dw NoItem           ; $A6 ; Triforce (icon only)
+    dw NoItem           ; $A7 ; AP 1
+    dw NoItem           ; $A8 ; AP 2
+    dw NoItem           ; $A9 ; AP 3
     dw SpecialCuccoParty ; $AA
 
 NoItem:
