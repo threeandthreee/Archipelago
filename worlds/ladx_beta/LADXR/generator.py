@@ -330,7 +330,7 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
     patches.enemies.changeMiniBosses(rom, world_setup.miniboss_mapping)
     if ladxr_settings.enemies == "overworld":
         world_setup_seed = patch_data["world_setup_seed"]
-        world_setup_rnd = random.Random(world_setup_seed) if world_setup_seed else random
+        world_setup_rnd = random.Random(f"{world_setup_seed}{patch_data['seed']}") if world_setup_seed else random
         patches.enemies.randomizeEnemies(rom, world_setup_rnd)
 
     if not args.romdebugmode:

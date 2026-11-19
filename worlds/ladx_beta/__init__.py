@@ -286,7 +286,7 @@ class LinksAwakeningWorld(World):
             miniboss_plando = self.options.miniboss_plando.value
 
         if self.options.world_setup_seed.value:
-            rnd = random.Random(self.options.world_setup_seed.value)
+            rnd = random.Random(f'{self.options.world_setup_seed.value}{self.multiworld.seed}')
         else:
             rnd = self.random
         world_setup.randomize(self.ladxr_settings, self.ladxr_itempool, rnd,
@@ -342,11 +342,14 @@ class LinksAwakeningWorld(World):
         self.multiworld.completion_condition[self.player] = lambda state: state.has("An Alarm Clock", player=self.player)
 
     def get_filler_item_name(self) -> str:
-        return self.random.choices(self.filler_choices, self.filler_weights)[0]
+        if getattr(self, 'filler_choices', None):
+            return self.random.choices(self.filler_choices, self.filler_weights)[0]
+        else:
+            return 'Nothing'
 
     def create_item(self, item_name: str):
         item_name = ladxr_item_to_la_item_name.get(item_name, item_name)
-        return LinksAwakeningItem(self.item_name_to_data[item_name], self, self.player)
+        return LinksAwakeningItem(links_awakening_items_by_name[item_name], self, self.player)
 
     def create_event(self, event: str):
         return Item(event, ItemClassification.progression, None, self.player)
