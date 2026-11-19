@@ -143,6 +143,14 @@ class LinksAwakeningWebWorld(WebWorld):
             "plando_en.md",
             "plando/en",
             ["threeandthree"]
+        ),
+        Tutorial(
+            "Location Count Guide",
+            "Details on how options change the location count.",
+            "English",
+            "location_counts_en.md",
+            "location_counts/en",
+            ["threeandthree"],
         )
     ]
     theme = "ocean"
