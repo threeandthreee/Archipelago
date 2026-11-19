@@ -227,6 +227,9 @@ class ItemPool:
             self.remove(SEASHELL, 2)
             for n in range(8):
                 self.remove("INSTRUMENT%d" % (n + 1))
+        elif settings.goal == "open":
+            for n in range(8):
+                self.remove("INSTRUMENT%d" % (n + 1))
 
         # reserve extra filler if desired
         self.add(FILLER, create_filler)
