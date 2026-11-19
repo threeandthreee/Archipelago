@@ -159,6 +159,9 @@ data_package_only_item_groups: dict[str, list[str]] = {
         SWORD,
         BOOMERANG,
     ],
+    "Sword": [SWORD],
+    "Shield": [SHIELD],
+    "Power Bracelet": [POWER_BRACELET],
     "Bracelet": [POWER_BRACELET],
 }
 
