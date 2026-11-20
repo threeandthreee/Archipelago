@@ -41,7 +41,11 @@ class Logic:
             (dungeon8.Dungeon8, dungeon8.NoDungeon8),
         )
         for i, (standard, nodungeon) in enumerate(no_dungeon_logics):
-            logic = nodungeon if world_setup.dungeon_exclusions[i]["condensed"] else standard
+            if i == 0:
+                n = 9
+            else:
+                n = i
+            logic = nodungeon if n in world_setup.condensed_dungeons else standard
             world.updateIndoorLocation(f"d{i}", logic(configuration_options, world_setup, r).entrance)
 
         if configuration_options.overworld != "random":

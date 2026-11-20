@@ -26,7 +26,7 @@ def removeKeyDoors(rom):
             re.store(rom)
 
 
-def patchNoDungeons(rom, dungeon_exclusions):
+def patchNoDungeons(rom, condensed_dungeons):
     def setMinimap(dungeon_nr, x, y, room):
         for n in range(64):
             if rom.banks[0x14][0x0220 + 64 * dungeon_nr + n] == room:
@@ -34,7 +34,7 @@ def patchNoDungeons(rom, dungeon_exclusions):
         rom.banks[0x14][0x0220 + 64 * dungeon_nr + x + y * 8] = room
         
     #D1
-    if dungeon_exclusions[1]["condensed"]:
+    if 1 in condensed_dungeons:
         setMinimap(0, 3, 6, 0x06)
         setMinimap(0, 3, 5, 0x02)
         re = RoomEditor(rom, 0x117)
@@ -52,7 +52,7 @@ def patchNoDungeons(rom, dungeon_exclusions):
         re.store(rom)
 
     #D2
-    if dungeon_exclusions[2]["condensed"]:
+    if 2 in condensed_dungeons:
         setMinimap(1, 2, 6, 0x2B)
         setMinimap(1, 1, 6, 0x2A)
         re = RoomEditor(rom, 0x136)
@@ -62,7 +62,7 @@ def patchNoDungeons(rom, dungeon_exclusions):
         re.store(rom)
 
     #D3
-    if dungeon_exclusions[3]["condensed"]:
+    if 3 in condensed_dungeons:
         setMinimap(2, 1, 6, 0x5A)
         setMinimap(2, 1, 5, 0x59)
         re = RoomEditor(rom, 0x152)
@@ -71,7 +71,7 @@ def patchNoDungeons(rom, dungeon_exclusions):
         re.store(rom)
 
     #D4
-    if dungeon_exclusions[4]["condensed"]:
+    if 4 in condensed_dungeons:
         setMinimap(3, 3, 6, 0x66)
         setMinimap(3, 3, 5, 0x62)
         re = RoomEditor(rom, 0x17A)
@@ -81,7 +81,7 @@ def patchNoDungeons(rom, dungeon_exclusions):
         re.store(rom)
 
     #D5
-    if dungeon_exclusions[5]["condensed"]:
+    if 5 in condensed_dungeons:
         setMinimap(4, 7, 6, 0x85)
         setMinimap(4, 7, 5, 0x82)
         re = RoomEditor(rom, 0x1A1)
@@ -95,7 +95,7 @@ def patchNoDungeons(rom, dungeon_exclusions):
         re.store(rom)
 
     #D6
-    if dungeon_exclusions[6]["condensed"]:
+    if 6 in condensed_dungeons:
         setMinimap(5, 3, 6, 0xBC)
         setMinimap(5, 3, 5, 0xB5)
         re = RoomEditor(rom, 0x1D4)
@@ -106,7 +106,7 @@ def patchNoDungeons(rom, dungeon_exclusions):
         re.store(rom)
 
     #D7
-    if dungeon_exclusions[7]["condensed"]:
+    if 7 in condensed_dungeons:
         setMinimap(6, 1, 6, 0x2E)
         setMinimap(6, 1, 5, 0x2C)
         re = RoomEditor(rom, 0x20E)
@@ -126,7 +126,7 @@ def patchNoDungeons(rom, dungeon_exclusions):
         re.store(rom)
 
     #D8
-    if dungeon_exclusions[8]["condensed"]:
+    if 8 in condensed_dungeons:
         setMinimap(7, 3, 6, 0x34)
         setMinimap(7, 3, 5, 0x30)
         re = RoomEditor(rom, 0x25D)
@@ -134,6 +134,6 @@ def patchNoDungeons(rom, dungeon_exclusions):
         re.store(rom)
 
     #D0
-    if dungeon_exclusions[0]["condensed"]:
+    if 9 in condensed_dungeons:
         setMinimap(11, 2, 6, 0x00)
         setMinimap(11, 3, 6, 0x01)

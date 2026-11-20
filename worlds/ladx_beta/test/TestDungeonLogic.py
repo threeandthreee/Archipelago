@@ -1,6 +1,6 @@
 from . import LADXTestBase
 
-from ..Items import ladxr_item_to_la_item_name as item_name
+from ..Items import ladxr_to_ap_item_name as item_name
 from ..LADXR.locations.items import *
 
 class TestD6(LADXTestBase):

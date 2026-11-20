@@ -6,6 +6,7 @@ from Options import (Choice, Toggle, DefaultOnToggle, Range, PerGameCommonOption
                      DeathLink, StartInventoryPool, ItemSet, ItemDict, OptionSet, OptionDict, NamedRange,
                      FreeText, Option)
 from schema import Schema, Optional
+from .Items import possible_filler, hint_groups
 from .Locations import dungeon_info
 from .LADXR.worldSetup import WorldSetup
 
@@ -39,16 +40,19 @@ class Rich(Option):
 class LADXROption(Rich):
     may_override: Override = Override.NEVER
     ladxr_name: str | None
+
     def to_ladxr_option(self, all_options) -> Tuple[Any, Any]:
         if not self.ladxr_name:
             return None, None
         return (self.ladxr_name, self.name_lookup[self.value].replace("_", ""))
 
+    def set_to(self, option: str) -> None:
+        option_value = getattr(self, f'option_{option}')
+        self.value = option_value
+
 
 class Logic(Choice, LADXROption):
     """
-    Affects where items are allowed to be placed.
-
     **Casual:** Prevents players from needing to use bombs or magic powder
     for bush breaking and general combat.
 
@@ -90,7 +94,7 @@ class TradeQuest(DefaultOnToggle, LADXROption):
 class Owlsanity(Choice, LADXROption):
     """
     Replaces the hints from owl statues with additional randomized items.
-    These owl statues will not give hints.
+    These owl statues will no longer give hints.
     """
     display_name = "Owlsanity"
     ladxr_name = "owlstatues"
@@ -124,11 +128,9 @@ class Rooster(DefaultOnToggle, LADXROption):
 
 class EntranceRules(Choice, LADXROption):
     """
-    Sets how doors work when shuffled.
+    **Normal:** Inside always leads to outside, outside always leads to inside.
 
-    **Normal:** Doors function normally.
-
-    **Wild:** Connections can go from overworld to overworld, or inside to inside.
+    **Wild:** Inside can lead to outside, outside can lead to inside.
 
     **Chaos:** Entrances and exits are decoupled.
 
@@ -317,7 +319,7 @@ class APTitleScreen(DefaultOnToggle, LADXROption):
 
 class BossShuffle(Choice, LADXROption):
     """
-    Change the bosses at the end of dungeons.
+    Changes the bosses at the end of dungeons.
 
     **Shuffle:** All the same bosses, just moved around.
 
@@ -336,7 +338,7 @@ class BossShuffle(Choice, LADXROption):
 
 class MinibossShuffle(Choice, LADXROption):
     """
-    Change the minibosses in dungeons and on the overworld.
+    Changes the minibosses in dungeons and on the overworld.
 
     **Shuffle:** All the same minibosses, just moved around.
 
@@ -374,7 +376,7 @@ class DungeonItemShuffle(Choice, Rich):
     option_any_world = 3
     option_different_world = 4
     # option_delete = 5
-    # option_start_with = 6
+    # option_start_inventory = 6
     alias_true = 3
     alias_false = 0
     ladxr_item: str
@@ -391,11 +393,13 @@ class ShuffleNightmareKeys(DungeonItemShuffle, LADXROption):
     **Any World:** The item could be anywhere.
 
     **Different World:** The item will be somewhere in another world.
+
+    **Start Inventory:** The item will be in your starting inventory.
     """
     display_name = "Shuffle Nightmare Keys"
     ladxr_item = "NIGHTMARE_KEY"
     ladxr_name = "shufflenightmarekeys"
-    option_start_with = 6
+    option_start_inventory = 6
 
 
 class ShuffleSmallKeys(DungeonItemShuffle, LADXROption):
@@ -409,11 +413,13 @@ class ShuffleSmallKeys(DungeonItemShuffle, LADXROption):
     **Any World:** The item could be anywhere.
 
     **Different World:** The item will be somewhere in another world.
+
+    **Start Inventory:** The item will be in your starting inventory.
     """
     display_name = "Shuffle Small Keys"
     ladxr_item = "KEY"
     ladxr_name = "shufflesmallkeys"
-    option_start_with = 6
+    option_start_inventory = 6
 
 
 class ShuffleMaps(DungeonItemShuffle, LADXROption):
@@ -427,11 +433,13 @@ class ShuffleMaps(DungeonItemShuffle, LADXROption):
     **Any World:** The item could be anywhere.
 
     **Different World:** The item will be somewhere in another world.
+
+    **Start Inventory:** The item will be in your starting inventory.
     """
     display_name = "Shuffle Maps"
     ladxr_item = "MAP"
     ladxr_name = "shufflemaps"
-    option_start_with = 6
+    option_start_inventory = 6
 
 
 class ShuffleCompasses(DungeonItemShuffle, LADXROption):
@@ -445,11 +453,13 @@ class ShuffleCompasses(DungeonItemShuffle, LADXROption):
     **Any World:** The item could be anywhere.
 
     **Different World:** The item will be somewhere in another world.
+
+    **Start Inventory:** The item will be in your starting inventory.
     """
     display_name = "Shuffle Compasses"
     ladxr_item = "COMPASS"
     ladxr_name = "shufflecompasses"
-    option_start_with = 6
+    option_start_inventory = 6
 
 
 class ShuffleStoneBeaks(DungeonItemShuffle, LADXROption):
@@ -463,14 +473,16 @@ class ShuffleStoneBeaks(DungeonItemShuffle, LADXROption):
     **Any World:** The item could be anywhere.
 
     **Different World:** The item will be somewhere in another world.
+
+    **Start Inventory:** The item will be in your starting inventory.
     """
     display_name = "Shuffle Stone Beaks"
     ladxr_item = "STONE_BEAK"
     ladxr_name = "shufflestonebeaks"
-    option_start_with = 6
+    option_start_inventory = 6
 
 
-class ShuffleInstruments(DungeonItemShuffle):
+class ShuffleInstruments(DungeonItemShuffle, LADXROption):
     """
     **Original Dungeon:** The item will be within its original dungeon.
 
@@ -486,22 +498,24 @@ class ShuffleInstruments(DungeonItemShuffle):
     """
     display_name = "Shuffle Instruments"
     ladxr_item = "INSTRUMENT"
-    default = 100
-    option_vanilla = 100
-    alias_false = 100
+    option_vanilla = -1
+    default = option_vanilla
+    alias_false = option_vanilla
+    ladxr_name = "shuffleinstruments"
+
+    def is_in_original_dungeon(self):
+        return self.value <= self.option_original_dungeon
 
 
 class Goal(Choice, LADXROption):
     """
-    The Goal of the game.
-
     **Instruments:** The Wind Fish's Egg will only open if you have the required
     number of Instruments of the Sirens, and play the Ballad of the Wind Fish.
 
     **Specific:** The Wind Fish's Egg will open with specific instruments,
     check the sign at the egg to see which.
 
-    **Seashells:** The Egg will open when you bring 20 seashells (out of 26).
+    **Seashells:** The Egg will open when you bring 20 seashells.
     The Ballad and Ocarina are not needed.
 
     **Open:** The Egg will start pre-opened.
@@ -526,7 +540,7 @@ class InstrumentCount(Range, LADXROption):
     """
     Sets the number of instruments required to open the Egg.
     """
-    display_name = "Instrument Count"
+    display_name = "Required Instrument Count"
     ladxr_name = "goalcount"
     range_start = 0
     range_end = 8
@@ -534,6 +548,26 @@ class InstrumentCount(Range, LADXROption):
 
     def to_ladxr_option(self, all_options):
         return (self.ladxr_name, int(all_options["instrument_count"]))
+
+    def set_min(self, n: int):
+        self.value = min(self.value, n)
+
+
+class SpecificOptionalDungeons(Choice, LADXROption):
+    """
+    Choose what happens to dungeons without instruments in the specific
+    instruments goal. Color Dungeon will not be affected. Does nothing if
+    instruments are shuffled outside of their dungeons.
+
+    Condensing a dungeon strips it down to three rooms, mostly just a
+    boss fight.
+    """
+    display_name = "Specific Optional Dungeons"
+    ladxr_name = "specificoptionaldungeons"
+    option_normal = 0
+    option_condensed = 1
+    option_condensed_and_excluded = 2
+    default = option_normal
 
 
 class NagMessages(DefaultOffToggle, LADXROption):
@@ -598,11 +632,10 @@ class Overworld(Choice, LADXROption):
     allowing access to Ukuku Prairie without Power Bracelet.
 
     **Open Beach:** Replaces rocks on the east side of the beach with bushes,
-    allowing access to Martha's Bay without Power Bracelet. Similar to Open
-    Mabe but a bit slower access due to the 3 tile pit.
+    allowing access to Martha's Bay without Power Bracelet.
 
-    **Dungeon Dive:** Create a different overworld where all the dungeons are
-    directly accessible and almost no chests are located in the overworld.
+    **Dungeon Dive:** Creates a different overworld where all the dungeons are
+    directly accessible and very few are located in the overworld.
     """
     display_name = "Overworld"
     ladxr_name = "overworld"
@@ -629,6 +662,8 @@ class Quickswap(Choice, LADXROption):
 class TextMode(Choice, LADXROption):
     """
     **Fast:** Makes text appear twice as fast.
+
+    **None:** Fast, but all dialogs are emptied. Empty text boxes will still come up.
     """
     display_name = "Text Mode"
     ladxr_name = "textmode"
@@ -820,7 +855,7 @@ class Warps(Choice, LADXROption):
     **Improved:** Adds remake style warp screen to the game. Choose your warp
     destination on the map after jumping in a portal and press *B* to select.
 
-    **Improved Additional:** Improved warps, and adds a warp point at Crazy
+    **Improved Additional:** Additionally, adds a warp point at Crazy
     Tracy's house (the Mambo teleport spot) and Eagle's Tower.
     """
     display_name = "Warps"
@@ -832,28 +867,28 @@ class Warps(Choice, LADXROption):
     may_override = Override.NOT_RACE
 
 
-class InGameHintItems(ItemSet, Rich):
+class InGameHintItemGroups(OptionSet, Rich):
     """
-    Choose which items to generate in-game hints for. Setting no items effectively disables hints.
+    Choose which item groups to generate in-game hints for. Disabling everything
+    effectively disables hints.
 
-    There are:
-    - 7 hint books in the library
-    - 10 overworld owl statues
-    - 21 dungeon owl statues (all color dungeons owls are the same hint)
+    Available groups: Entrance Keys, Equipment, Instruments, Nightmare Keys,
+    Seashells, Small Keys, Songs, Stone Beaks, Trading Items
     """
     display_name = "In-Game Hint Items"
     default = {
         "Equipment",
         "Entrance Keys"
     }
+    valid_keys = hint_groups
 
 
 class ExpandStart(NamedRange, Rich):
     """
     Starting from Tarin's Gift, locally place progression items until the target
-    number of locations or more can be reached. Does nothing if set to *1*.
-    When set to *2* it will only ever place an item on Tarin's Gift.
-    May interfere with item plando.
+    number of locations or more can be reached. Does nothing if set to 1.
+    When set to 2 it will only ever place an item on Tarin's Gift.
+    Interferes with item plando at higher settings.
     """
     display_name = "Expand Start"
     range_start = 1
@@ -867,31 +902,35 @@ class ExpandStart(NamedRange, Rich):
     }
 
 
-class CreateFiller(NamedRange, Rich):
+class ReserveFiller(NamedRange, Rich):
     """
     Removes non-essential items to make more room for filler.
     The actual amount of filler removed will depend on other settings,
-    but it will create as much as it can, up to the selected target.
-
-    Removing items from the pool with `start_inventory_from_pool`
-    or `start_with` on dungeon items will create filler for those
-    replacements independent of this count.
+    but this option will usually define the minimum number of filler
+    items in the world. At extremely high reserve filler amounts or
+    extremely low location counts, you may end up with less filler
+    than specified, after it has run out of items to remove.
     """
-    display_name = "Create Filler"
+    display_name = "Reserve Filler"
     range_start = 0
-    range_end = 50
+    range_end = 175
     default = 6
     special_range_names = {
         "none": 0,
         "default": 6,
         "reasonable": 20,
-        "maximum": 50,
+        "extreme": 50,
     }
 
 
 class FillerPool(ItemDict, Rich):
     """
-    Weighted options to randomly select from when replacing removed items.
+    Weighted options to randomly select from when creating filler items.
+
+    Available items: 10 Arrows, 20 Rupees, Anti-Heart Container, Bomb Drop,
+    Bombs, Cucco Party, Death, Fairy, Guardian Acorn, Magic Powder,
+    Medicine, Nothing, Piece of Power, Recovery Heart, Seashell,
+    Single Arrow, Slime Storm, Zol Attack
     """
     display_name = "Filler Pool"
     default = {
@@ -901,6 +940,7 @@ class FillerPool(ItemDict, Rich):
         "Magic Powder": 10,
         "Medicine": 1,
     }
+    valid_keys = possible_filler
 
 
 class ForeignItemIcons(Choice, LADXROption):
@@ -909,8 +949,9 @@ class ForeignItemIcons(Choice, LADXROption):
 
     **Guess By Name:** Foreign items can look like any Link's Awakening item.
 
-    **Indicate Progression:** Foreign items are either a Piece of Power
-    (progression) or Guardian Acorn (non-progression).
+    **Indicate Progression:** Foreign items are displayed with an archipelago icon.
+    Color cycling indicates high value progression, two-tone indicates deprioritized
+    progression, flat indicates non-progression.
     """
     display_name = "Foreign Item Icons"
     option_guess_by_name = 0
@@ -936,38 +977,22 @@ class CondenseDungeons(OptionSet, Rich):
     """
     Transforms a dungeon into a tiny version, with mostly just a boss fight.
 
-    **All Dungeons**: Equivalent to the upstream *no dungeons* overworld.
+    Condensing all dungeons is equivalent to the upstream *no dungeons* overworld.
+
+    Excluding a full dungeon by entering its location group into
+    `exclude_locations` will automatically condense it.
 
     Dungeon names: Color Dungeon, Tail Cave, Bottle Grotto, Key Cavern,
     Angler's Tunnel, Catfish's Maw, Face Shrine, Eagle's Tower, Turtle Rock
     """
     display_name = "Condense Dungeons"
     valid_keys = [d.name for d in dungeon_info]
-    valid_keys.insert(0, "All Dungeons")
-
-
-class ExcludeDungeons(OptionSet, Rich):
-    """
-    Excluding a dungeon condenses it, removes its instrument from the pool,
-    and excludes its remaining locations. Excluding a dungeon will also prevent
-    its instrument from being required in the *Specific* instruments goal.
-
-    **Specific**: Auto exludes any dungeons not required by the specific
-    instruments goal.
-
-    Dungeon names: Color Dungeon, Tail Cave, Bottle Grotto, Key Cavern,
-    Angler's Tunnel, Catfish's Maw, Face Shrine, Eagle's Tower, Turtle Rock
-    """
-    display_name = "Exclude Dungeons"
-    valid_keys = [d.name for d in dungeon_info]
-    valid_keys.insert(0, "Specific")
 
 
 ladx_option_groups = [
     OptionGroup("World", [
         Overworld,
         CondenseDungeons,
-        ExcludeDungeons,
         Warps,
     ]),
     OptionGroup("Items", [
@@ -980,8 +1005,8 @@ ladx_option_groups = [
         TradeQuest,
         Rooster,
         Owlsanity,
-        InGameHintItems,
-        CreateFiller,
+        InGameHintItemGroups,
+        ReserveFiller,
         FillerPool,
     ]),
     OptionGroup("Entrances", [
@@ -1025,6 +1050,7 @@ ladx_option_groups = [
     ]),
     OptionGroup("Miscellaneous", [
         HardMode,
+        Stealing,
         BlockFreePowder,
         DeathLink,
     ]),
@@ -1033,9 +1059,10 @@ ladx_option_groups = [
 @dataclass
 class LinksAwakeningOptions(PerGameCommonOptions):
     expand_start: ExpandStart
+    logic: Logic
     goal: Goal
     instrument_count: InstrumentCount
-    logic: Logic
+    specific_optional_dungeons: SpecificOptionalDungeons
     stealing: Stealing
     tradequest: TradeQuest
     rooster: Rooster
@@ -1048,7 +1075,6 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     shuffle_water: ShuffleWater
     shuffle_annoying: ShuffleAnnoying
     condense_dungeons: CondenseDungeons
-    exclude_dungeons: ExcludeDungeons
     link_palette: LinkPalette
     warps: Warps
     trendy_game: TrendyGame
@@ -1072,10 +1098,10 @@ class LinksAwakeningOptions(PerGameCommonOptions):
     low_hp_beep: LowHpBeep
     text_mode: TextMode
     no_flash: NoFlash
-    in_game_hint_items: InGameHintItems
+    in_game_hint_item_groups: InGameHintItemGroups
     overworld: Overworld
     death_link: DeathLink
-    create_filler: CreateFiller
+    reserve_filler: ReserveFiller
     filler_pool: FillerPool
     start_inventory_from_pool: StartInventoryPool
     follower: Follower

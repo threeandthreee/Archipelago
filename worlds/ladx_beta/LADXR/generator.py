@@ -100,7 +100,8 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
     world_setup.entrance_mapping = patch_data["world_setup"]["entrance_mapping"]
     world_setup.boss_mapping = patch_data["world_setup"]["boss_mapping"]
     world_setup.miniboss_mapping = patch_data["world_setup"]["miniboss_mapping"]
-    world_setup.dungeon_exclusions = patch_data["world_setup"]["dungeon_exclusions"]
+    world_setup.condensed_dungeons = patch_data["world_setup"]["condensed_dungeons"]
+    world_setup.excluded_dungeons = patch_data["world_setup"]["excluded_dungeons"]
     ladxr_logic = LADXRLogic(configuration_options=ladxr_settings, world_setup=world_setup)
     item_list = [item for item in ladxr_logic.iteminfo_list if not isinstance(item, KeyLocation)]
     for spot in patch_data["rom_item_placements"]:
@@ -238,7 +239,7 @@ def generateRom(base_rom: bytes, args, patch_data: Dict):
     if ladxr_settings.overworld == 'dungeondive':
         patches.overworld.patchOverworldTilesets(rom)
         patches.overworld.createDungeonOnlyOverworld(rom)
-    patches.dungeon.patchNoDungeons(rom, world_setup.dungeon_exclusions)
+    patches.dungeon.patchNoDungeons(rom, world_setup.condensed_dungeons)
     #elif ladxr_settings.overworld == 'random':
     #    patches.overworld.patchOverworldTilesets(rom)
     #    mapgen.store_map(rom, world.ladxr_logic.world.map)

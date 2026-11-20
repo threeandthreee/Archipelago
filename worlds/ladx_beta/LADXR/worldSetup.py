@@ -4,6 +4,7 @@ from .entranceInfo import ENTRANCE_INFO
 from . import logic
 from .utils import Error
 from .explorer import Explorer
+from .itempool import ItemPool
 from .settings import Settings
 from .logic.location import Location
 from ..Locations import dungeon_info
@@ -75,22 +76,20 @@ class WorldSetup:
         self.multichest = RUPEES_20
         self.map = None  # Randomly generated map data
         self.is_partial = False
-        self.dungeon_exclusions = []
-        for _ in range(9):
-            self.dungeon_exclusions.append({
-                "excluded": False,
-                "condensed": False,
-            })
+        self.condensed_dungeons: list[int] = []
+        self.excluded_dungeons: list[int] = []
+        self.reserve_filler: int = 0
+        self.itempool: LADXRItemPool
 
 
-    def pickEntrances(self, settings, itempool, rnd, world_setup, entrance_plando: dict[str, str]):
+    def pickEntrances(self, settings, rnd, world_setup, entrance_plando: dict[str, str]):
         MAX_RETRIES = 5
         retries = 0
         done = False
         entrance_shuffler = EntranceShuffler(settings, entrance_plando)
         while(not done):
             try:
-                self.entrance_mapping = entrance_shuffler.shuffle_entrances(rnd, world_setup, itempool)
+                self.entrance_mapping = entrance_shuffler.shuffle_entrances(rnd, world_setup, self.itempool)
                 done = True
             except ItemFillException as e:
                 logger.warning('failed fill, retrying')
@@ -107,8 +106,8 @@ class WorldSetup:
             retries += 1
 
 
-    def randomize(self, settings, itempool, rnd, entrance_plando: dict[str, str],
-        boss_plando: dict[int, int], miniboss_plando: dict[str, str]):
+    def randomize(self, settings, rnd, entrance_plando: dict[str, str],
+        boss_plando: dict[int, int], miniboss_plando: dict[str, str], precollected: dict[str, int]):
         
         if settings.boss != "disabled":
             boss_mapping_dict = boss_plando.copy()
@@ -149,22 +148,26 @@ class WorldSetup:
         elif settings.goal == "seashells":
             self.goal = settings.goal
         elif settings.goal == "specific":
-            specific_options = [
-                str(d.index) for d in dungeon_info
-                if d.index != 9 and not self.dungeon_exclusions[d.index]["excluded"]]
-            instrument_count = max(1, min(int(settings.goalcount), len(specific_options)))
-            instruments = [c for c in specific_options]
-            rnd.shuffle(instruments)
-            self.goal = "=" + "".join(instruments[:instrument_count])
+            specific_options = [d.index for d in dungeon_info
+                if d.index != 9 and d.index not in self.excluded_dungeons]
+            rnd.shuffle(specific_options)
+            n = int(settings.goalcount)
+            self.goal = "=" + "".join([str(i) for i in specific_options[:n]])
+            if settings.shuffleinstruments in ("vanilla", "originaldungeon"):
+                if settings.specificoptionaldungeons in ("condensed", "condensedandexcluded"):
+                    self.condensed_dungeons = list(set(self.condensed_dungeons + specific_options[n:]))
+                if settings.specificoptionaldungeons == "condensedandexcluded":
+                    self.excluded_dungeons = list(set(self.excluded_dungeons + specific_options[n:]))
         else:
             self.goal = int(settings.goal)
 
         self.multichest = rnd.choices(MULTI_CHEST_OPTIONS, MULTI_CHEST_WEIGHTS)[0]
+        self.itempool = ItemPool(self, settings, precollected)
         if settings.overworld == 'dungeondive':
             self.entrance_mapping = {"d%d" % (n): "d%d:inside" % (n) for n in range(9)}
             self.entrance_mapping.update({"d%d:inside" % (n): "d%d" % (n) for n in range(9)})
         else:
-            self.pickEntrances(settings, itempool, rnd, self, entrance_plando)
+            self.pickEntrances(settings, rnd, self, entrance_plando)
 
     def loadFromRom(self, rom):
         import patches.overworld
@@ -342,7 +345,7 @@ class EntranceShuffler:
                 if a.locations > b.locations:
                     a.subtract(b)
         
-    def shuffle_entrances(self, rnd, world_setup: WorldSetup, itempool: dict[str, int]):
+    def shuffle_entrances(self, rnd, world_setup: WorldSetup, itempool: ItemPool):
         self.entrance_mapping = self.initial_entrance_mapping.copy()
 
         if self.settings.randomstartlocation == "limited":
@@ -466,7 +469,7 @@ class EntranceShuffler:
             return locs, explorer.getRequiredItemsForNextLocations()
 
         possible_items = []
-        for item, amount in itempool.items():
+        for item, amount in itempool.toDict().items():
             if not item.startswith('RUPEE') and not item.startswith('KEY'):
                 possible_items.extend([item]*amount)
         ITEMS_TO_REACH = 10

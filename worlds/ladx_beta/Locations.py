@@ -4,7 +4,7 @@ from .LADXR.checkMetadata import checkMetadataTable
 from .LADXR.locations.tradeSequence import TradeSequenceItem
 from .Common import *
 from worlds.generic.Rules import add_item_rule
-from .Items import ladxr_item_to_la_item_name
+from .Items import ladxr_to_ap_item_name
 
 
 prefilled_events = ["ANGLER_KEYHOLE", "RAFT", "MEDICINE2", "CASTLE_BUTTON"]
@@ -135,8 +135,8 @@ class LinksAwakeningRegion(Region):
 
 
 def translate_item_name(item):
-    if item in ladxr_item_to_la_item_name:
-        return ladxr_item_to_la_item_name[item]
+    if item in ladxr_to_ap_item_name:
+        return ladxr_to_ap_item_name[item]
 
     return item
 
@@ -149,8 +149,8 @@ class GameStateAdapter:
     def __contains__(self, item):
         if item.endswith("_USED"):
             return False
-        if item in ladxr_item_to_la_item_name:
-            item = ladxr_item_to_la_item_name[item]
+        if item in ladxr_to_ap_item_name:
+            item = ladxr_to_ap_item_name[item]
 
         return self.state.has(item, self.player)
 
@@ -161,7 +161,7 @@ class GameStateAdapter:
         elif item.endswith("_USED"):
             return 0
         else:
-            item = ladxr_item_to_la_item_name[item]
+            item = ladxr_to_ap_item_name[item]
         return self.state.prog_items[self.player].get(item, default)
 
 
@@ -169,9 +169,9 @@ class LinksAwakeningEntrance(Entrance):
     def __init__(self, player: int, name, region, condition):
         super().__init__(player, name, region)
         if isinstance(condition, str):
-            if condition in ladxr_item_to_la_item_name:
+            if condition in ladxr_to_ap_item_name:
                 # Test if in inventory
-                self.condition = ladxr_item_to_la_item_name[condition]
+                self.condition = ladxr_to_ap_item_name[condition]
             else:
                 # Event
                 self.condition = condition

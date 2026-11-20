@@ -63,10 +63,14 @@ def addHints(rom, rnd, hint_texts):
 
 
 def generate_hint_texts(world) -> dict[str, dict[str, str]]:
+    possible_items = set()
+    for name, group in world.item_name_groups.items():
+        if name in world.options.in_game_hint_item_groups.value:
+            possible_items |= group
     our_items = [
         location.item for location in world.multiworld.get_filled_locations()
         if location.item.player == world.player
-        and location.item.name in world.options.in_game_hint_items
+        and location.item.name in possible_items
         and not location.locked
     ]
     world.random.shuffle(our_items)
@@ -108,9 +112,9 @@ def generate_hint_texts(world) -> dict[str, dict[str, str]]:
     if world.ladxr_settings.overworld != 'dungeondive' and world.ladxr_settings.owlstatues not in ('none', 'overworld'):
         text_ids += overworld_hint_text_ids
     if world.ladxr_settings.owlstatues not in ('none', 'dungeons'):
-        for i, e in enumerate(world.ladxr_logic.world_setup.dungeon_exclusions):
-            if not e['condensed']:
-                text_ids += dungeon_hint_text_ids[i]
+        for n in range(1, 10):
+            if n not in world.ladxr_world_setup.condensed_dungeons:
+                text_ids += dungeon_hint_text_ids[n%9]
     world.random.shuffle(text_ids)
     for text_id in text_ids:
         hint_data[str(text_id)] = gen_hint()

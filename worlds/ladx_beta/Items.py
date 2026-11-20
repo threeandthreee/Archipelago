@@ -43,6 +43,7 @@ class LinksAwakeningItem(Item):
 class ItemGroup(NamedTuple):
     classification: ItemClassification | Callable
     items: list[str]
+    in_game_hintable: bool = True
     goes_in_datapackage: bool = True
 
 def stone_beak_classification(world, player):
@@ -62,8 +63,8 @@ item_groups: dict[str, ItemGroup] = {
     "Instruments": ItemGroup(ItemClassification.progression, [f'INSTRUMENT{i}' for i in range(1, 9)]),
     "Small Keys": ItemGroup(ItemClassification.progression, [f'KEY{i}' for i in range(1, 10)]),
     "Nightmare Keys": ItemGroup(ItemClassification.progression, [f'NIGHTMARE_KEY{i}' for i in range(1, 10)]),
-    "Maps": ItemGroup(ItemClassification.filler, [f'MAP{i}' for i in range(1, 10)]),
-    "Compasses": ItemGroup(ItemClassification.filler, [f'COMPASS{i}' for i in range(1, 10)]),
+    "Maps": ItemGroup(ItemClassification.filler, [f'MAP{i}' for i in range(1, 10)], False),
+    "Compasses": ItemGroup(ItemClassification.filler, [f'COMPASS{i}' for i in range(1, 10)], False),
     "Stone Beaks": ItemGroup(stone_beak_classification, [f'STONE_BEAK{i}' for i in range(1, 10)]),
     "Equipment": ItemGroup(ItemClassification.progression, [
         SWORD,
@@ -98,7 +99,7 @@ item_groups: dict[str, ItemGroup] = {
         RUPEES_100,
         RUPEES_200,
         RUPEES_500,
-    ]),
+    ], False),
     "Trading Items": ItemGroup(ItemClassification.progression, [
         TRADING_ITEM_YOSHI_DOLL,
         TRADING_ITEM_RIBBON,
@@ -117,10 +118,10 @@ item_groups: dict[str, ItemGroup] = {
     ]),
     "Gold Leaf": ItemGroup(ItemClassification.progression_deprioritized_skip_balancing, [
         GOLD_LEAF,
-    ], False),
+    ], False, False),
     "Seashells": ItemGroup(seashell_classification, [
         SEASHELL
-    ], False),
+    ], True, False),
     "Traps": ItemGroup(ItemClassification.trap, [
         BAD_HEART_CONTAINER,
         GEL,
@@ -128,7 +129,7 @@ item_groups: dict[str, ItemGroup] = {
         SLIME_STORM,
         BOMB_DROP,
         CUCCO_PARTY,
-    ], False),
+    ], False, False),
     "Misc Useful": ItemGroup(ItemClassification.useful, [
         HEART_PIECE,
         HEART_CONTAINER,
@@ -137,7 +138,7 @@ item_groups: dict[str, ItemGroup] = {
         MAX_POWDER_UPGRADE,
         MAX_BOMBS_UPGRADE,
         MAX_ARROWS_UPGRADE,
-    ], False),
+    ], False, False),
     "Misc Filler": ItemGroup(ItemClassification.filler, [
         ARROWS_10,
         SINGLE_ARROW,
@@ -147,7 +148,7 @@ item_groups: dict[str, ItemGroup] = {
         RECOVERY_HEART,
         FAIRY,
         MESSAGE,
-    ], False),
+    ], False, False),
 }
 
 data_package_only_item_groups: dict[str, list[str]] = {
@@ -171,9 +172,11 @@ links_awakening_items: list[ItemData] = [
     for item in group.items
 ]
 
-ladxr_item_to_la_item_name: dict[str, str] = {
+ladxr_to_ap_item_name: dict[str, str] = {
     item.ladxr_id: item.item_name for item in links_awakening_items
 }
+
+ap_to_ladxr_item_name: dict[str, str] = {v: k for k, v in ladxr_to_ap_item_name.items()}
 
 links_awakening_items_by_name: dict[str, ItemData] = {
     item.item_name: item for item in links_awakening_items
@@ -217,3 +220,15 @@ rupees = {
     RUPEES_200: 200,
     RUPEES_500: 500,
 }
+
+possible_filler = [
+    ladxr_to_ap_item_name[item]
+    for name, group in item_groups.items()
+    for item in group.items
+    if name in ['Seashells', 'Traps', 'Misc Filler']
+]
+possible_filler.extend([ladxr_to_ap_item_name[i] for i in (BOMB, MAGIC_POWDER, RUPEES_20)])
+possible_filler.sort()
+
+hint_groups = [name for name, group in item_groups.items() if group.in_game_hintable]
+hint_groups.sort()

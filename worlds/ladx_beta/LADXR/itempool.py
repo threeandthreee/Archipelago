@@ -76,10 +76,10 @@ DEFAULT_ITEM_POOL = {
 logger = logging.getLogger("Link's Awakening Logger")
 
 class ItemPool:    
-    def __init__(self, world_setup, settings, create_filler):
+    def __init__(self, world_setup, settings, precollected):
         self.min_rupees = 1970
         self.__pool = {}
-        self.__setup(world_setup, settings, create_filler)
+        self.__setup(world_setup, settings, precollected)
 
     def add(self, item, count=1):
         self.__pool[item] = self.__pool.get(item, 0) + count
@@ -150,7 +150,7 @@ class ItemPool:
             number += self.get(f'RUPEES_{value}')
         return number
 
-    def __setup(self, world_setup, settings, create_filler):
+    def __setup(self, world_setup, settings, precollected):
         default_item_pool = DEFAULT_ITEM_POOL
 
         for item, count in default_item_pool.items():
@@ -184,7 +184,7 @@ class ItemPool:
         owl_statues_per_dungeon = (3, 3, 3, 3, 1, 2, 3, 3, 3)
         condensed_location_adjustment_per_dungeon = (7, 10, 11, 17, 13, 12, 14, 11, 18)
         for n in range(1, 10):
-            if world_setup.dungeon_exclusions[n%9]["condensed"]:
+            if n in world_setup.condensed_dungeons:
                 location_count -= condensed_location_adjustment_per_dungeon[n%9]
                 self.remove("MAP%d" % (n))
                 self.remove("COMPASS%d" % (n))
@@ -193,7 +193,7 @@ class ItemPool:
                 self.remove("NIGHTMARE_KEY%d" % (n))
             elif settings.owlstatues in ('dungeon', 'both'):
                 location_count += owl_statues_per_dungeon[n%9]
-            if world_setup.dungeon_exclusions[n%9]["excluded"]:
+            if n in world_setup.excluded_dungeons:
                 self.remove("INSTRUMENT%d" % (n))
 
         if settings.owlstatues in ('overworld', 'both'):
@@ -232,7 +232,12 @@ class ItemPool:
                 self.remove("INSTRUMENT%d" % (n + 1))
 
         # reserve extra filler if desired
-        self.add(FILLER, create_filler)
+        self.add(FILLER, world_setup.reserve_filler)
+
+        # pull out precollected items while correcting amounts based on pool
+        for name, amount in precollected.items():
+            amount = min(self.get(name), amount)
+            self.remove(name, amount)
 
         # try some corrections if we're over on items
         diff = self.count() - location_count
@@ -277,18 +282,17 @@ class ItemPool:
         try_remove_rupees(leaving=15)
         try_remove(SEASHELL, leaving=22)
         try_remove_rupees(leaving=8)
-        try_remove(FILLER) # pull filler back out if we reserved too much
-        # desperation removals from here on
-        if diff > 0:
-            logger.warning("Location count is very low, trying more extreme item removals to fit.")
-        if(settings.overworld=="dungeondive" or settings.logic not in ("casual", "normal")): # flamethrower cave
+        # getting into desperation removals
+        if settings.overworld=="dungeondive":
             try_remove(SHIELD, leaving=1)
-        if(settings.overworld=="dungeondive" and world_setup.dungeon_exclusions[6]["condensed"]):
+        if settings.overworld=="dungeondive" and 6 in world_setup.condensed_dungeons:
             try_remove(POWER_BRACELET, leaving=1)
-        if(settings.logic in ("glitched", "hell")):
+        if settings.logic in ("glitched", "hell"):
             try_remove(SONG1)
         try_remove(SWORD, leaving=1)
         try_remove(BOOMERANG)
+        try_remove(FILLER) # pull filler back out if we reserved too much
+        # last hope removals
         try_remove(SEASHELL, leaving=20)
         try_remove_rupees(leaving=(self.min_rupees // 500) + 2)
         try_remove(HEART_CONTAINER)
