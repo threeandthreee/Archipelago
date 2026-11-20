@@ -17,7 +17,7 @@ from .ForeignItemIcons import ForeignItemIconMatcher
 from .Items import (LinksAwakeningItem, ladxr_to_ap_item_name, ap_to_ladxr_item_name, links_awakening_items,
     links_awakening_items_by_name, links_awakening_item_name_groups,
     item_prefixes_to_skip_text_in_prefill, start_items_to_block_by_prefix, rupees)
-from .LADXR.itempool import DEFAULT_ITEM_POOL
+from .LADXR.itempool import DEFAULT_ITEM_POOL, ItemPool as LADXRItemPool
 from .LADXR.locations.instrument import Instrument
 from .LADXR.locations.itemInfo import ItemInfo as LADXRItemInfo
 from .LADXR.locations.chest import Chest as LADXRChest
@@ -247,6 +247,7 @@ class LinksAwakeningWorld(World):
     options: LinksAwakeningOptions
     settings: typing.ClassVar[LinksAwakeningSettings]
     topology_present = True  # show path to required location checks in spoiler
+    ut_can_gen_without_yaml = True
 
     # ID of first item and location, could be hard-coded but code may be easier
     # to read with this as a propery.
@@ -338,11 +339,20 @@ class LinksAwakeningWorld(World):
                         ladxr_to_ap_item_name[ladxr_item]: DEFAULT_ITEM_POOL[ladxr_item]
                     })
 
-        self.ladxr_settings_dict = convert_ap_options_to_ladxr(self.options)
-        self.ladxr_settings = LADXRSettings(self.ladxr_settings_dict)
-
 
     def create_regions(self) -> None:
+        if getattr(self.multiworld, "generation_is_fake", False):
+            re_gen_passthrough = getattr(self.multiworld, "re_gen_passthrough", {})
+            if re_gen_passthrough and self.game in re_gen_passthrough:
+                is_ut_regen = True
+                ut_slot_data: dict[str, typing.Any] = re_gen_passthrough[self.game]
+
+        if is_ut_regen:
+            self.ladxr_settings_dict = ut_slot_data["ladxr_settings"]
+        else:
+            self.ladxr_settings_dict = convert_ap_options_to_ladxr(self.options)
+        self.ladxr_settings = LADXRSettings(self.ladxr_settings_dict)
+
         entrance_plando = {}
         boss_plando = {}
         miniboss_plando = {}
@@ -357,26 +367,33 @@ class LinksAwakeningWorld(World):
         else:
             rnd = self.random
 
-        # handle start inventory from pool ourselves since our item pool dynamically removes items
+        # use mapping from slot data for universal tracker gens
+        if is_ut_regen:
+            self.ladxr_world_setup.goal = ut_slot_data["world_setup_goal"]
+            self.ladxr_world_setup.entrance_mapping = ut_slot_data["entrance_mapping"]
+            self.ladxr_world_setup.boss_mapping = ut_slot_data["boss_mapping"]
+            self.ladxr_world_setup.miniboss_mapping = ut_slot_data["miniboss_mapping"]
+            self.ladxr_world_setup.condensed_dungeons = ut_slot_data["condensed_dungeons"]
+            self.ladxr_world_setup.excluded_dungeons = ut_slot_data["excluded_dungeons"]
+
+        # handle start_inventory_from_pool ourselves since our item pool dynamically removes items
         # we would rather remove less stuff from our default item pool than create more filler
         precollected = {ap_to_ladxr_item_name[k]: v for k, v in self.options.start_inventory_from_pool.value.items()}
-        # removes precollected items from pool and updates precollected dict with actual count
-        self.ladxr_world_setup.randomize(
-            self.ladxr_settings, rnd, entrance_plando, boss_plando, miniboss_plando, precollected)
-        # empty sifp and push precollected ourself
+        
+        # for universal tracker, just create the itempool for world_setup because we've already
+        # fed in the other results
+        if ut_gen:
+            self.ladxr_world_setup.itempool = LADXRItemPool(
+                self.ladxr_world_setup, self.ladxr_settings, precollected)
+        else:
+            self.ladxr_world_setup.randomize(
+                self.ladxr_settings, rnd, entrance_plando, boss_plando, miniboss_plando, precollected)
+        # when the itempool was created, precollected items were removed and the precollected dict
+        # was updated with counts of what was actually in the pool
+        # so now we empty sifp and push precollected ourselves
         self.options.start_inventory_from_pool.value = {}
         for name, amount in precollected.items():
             self.push_precollected(self.create_item(name))
-
-        # use mapping from slot data for universal tracker gens
-        if getattr(self.multiworld, "generation_is_fake", False):
-            re_gen_passthrough = getattr(self.multiworld, "re_gen_passthrough", {})
-            if re_gen_passthrough and self.game in re_gen_passthrough:
-                slot_data: dict[str, typing.Any] = re_gen_passthrough[self.game]
-                self.ladxr_world_setup.entrance_mapping = slot_data["entrance_mapping"]
-                self.ladxr_world_setup.boss_mapping = slot_data["boss_mapping"]
-                self.ladxr_world_setup.miniboss_mapping = slot_data["miniboss_mapping"]
-                self.ladxr_world_setup.goal = slot_data["world_setup_goal"]
 
         self.ladxr_logic = LADXRLogic(configuration_options=self.ladxr_settings, world_setup=self.ladxr_world_setup)
 
@@ -788,6 +805,7 @@ class LinksAwakeningWorld(World):
                 "miniboss_mapping": self.ladxr_world_setup.miniboss_mapping,
                 "condensed_dungeons": self.ladxr_world_setup.condensed_dungeons,
                 "excluded_dungeons": self.ladxr_world_setup.excluded_dungeons,
+                "ladxr_settings": self.ladxr_settings_dict,
             })
 
         return slot_data
