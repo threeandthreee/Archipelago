@@ -341,6 +341,7 @@ class LinksAwakeningWorld(World):
 
 
     def create_regions(self) -> None:
+        is_ut_regen = False
         if getattr(self.multiworld, "generation_is_fake", False):
             re_gen_passthrough = getattr(self.multiworld, "re_gen_passthrough", {})
             if re_gen_passthrough and self.game in re_gen_passthrough:
@@ -382,7 +383,7 @@ class LinksAwakeningWorld(World):
         
         # for universal tracker, just create the itempool for world_setup because we've already
         # fed in the other results
-        if ut_gen:
+        if is_ut_regen:
             self.ladxr_world_setup.itempool = LADXRItemPool(
                 self.ladxr_world_setup, self.ladxr_settings, precollected)
         else:
