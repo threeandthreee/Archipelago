@@ -193,7 +193,7 @@ class ItemPool:
                 self.remove("NIGHTMARE_KEY%d" % (n))
             elif settings.owlstatues in ('dungeon', 'both'):
                 location_count += owl_statues_per_dungeon[n%9]
-            if n in world_setup.excluded_dungeons:
+            if n in world_setup.excluded_dungeons and settings.shuffleinstruments in ('vanilla', 'originaldungeon'):
                 self.remove("INSTRUMENT%d" % (n))
 
         if settings.owlstatues in ('overworld', 'both'):
