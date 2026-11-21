@@ -451,8 +451,8 @@ class LinksAwakeningClient():
         if item.flags & 0b001: # progression: skip text only if on exception list
             if any(prefix for prefix in yes_text_exceptions if ladxr_name.startswith(prefix)):
                 return 0xFF
-        else: # skip text unless on exception list
-            if not any(prefix for prefix in no_text_exceptions if ladxr_name.startswith(prefix)):
+        else: # skip text unless on exception list or from server
+            if not any(prefix for prefix in no_text_exceptions if ladxr_name.startswith(prefix)) and item.player > 0:
                 return 0xFF
         return clamp(0, item.player, 101)
 
