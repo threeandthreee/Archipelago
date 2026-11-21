@@ -183,6 +183,7 @@ class ItemPool:
         overworld_owl_statues = 9
         owl_statues_per_dungeon = (3, 3, 3, 3, 1, 2, 3, 3, 3)
         condensed_location_adjustment_per_dungeon = (7, 10, 11, 17, 13, 12, 14, 11, 18)
+        excluded_filler_adjustment_per_dungeon = (2, 2, 3, 2, 2, 2, 2, 2, 2)
         for n in range(1, 10):
             if n in world_setup.condensed_dungeons:
                 location_count -= condensed_location_adjustment_per_dungeon[n%9]
@@ -195,6 +196,7 @@ class ItemPool:
                 location_count += owl_statues_per_dungeon[n%9]
             if n in world_setup.excluded_dungeons and settings.shuffleinstruments in ('vanilla', 'originaldungeon'):
                 self.remove("INSTRUMENT%d" % (n))
+                self.add(FILLER, excluded_filler_adjustment_per_dungeon[n%9])
 
         if settings.owlstatues in ('overworld', 'both'):
             location_count += overworld_owl_statues
