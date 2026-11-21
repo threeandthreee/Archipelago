@@ -5,7 +5,16 @@ At default options, the game has **222 locations**.
 The minimum location count is **26** with:
 ```
 overworld: dungeon_dive
-condense_dungeons: [ All Dungeons ]
+condense_dungeons:
+    - Color Dungeon
+    - Tail Cave
+    - Bottle Grotto
+    - Key Cavern
+    - Angler's Tunnel
+    - Catfish's Maw
+    - Face Shrine
+    - Eagle's Tower
+    - Turtle Rock
 ```
 
 The maximum location count is **255** with:
