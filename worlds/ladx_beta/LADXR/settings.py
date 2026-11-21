@@ -268,7 +268,7 @@ Use the warp-to-home from the Save & Quit menu if you get stuck (hold A+B+Start+
             Setting('aptitlescreen', 'User options', 'a', 'AP Title Screen', description="", default=True),
             Setting('textshuffle', 'User options', 'a', 'Text Shuffle', description="", default=False),
             Setting('blockfreepowder', 'User options', 'a', 'Block Free Powder', description="", default=False),
-            Setting('specificoptionaldungeons', 'x', 'x', 'x', description="", options=[('normal', 'n', 'Normal'), ('condensed', 'c', 'Condensed'), ('condensedandexcluded', 'e', 'Condensed and Excluded')], default='normal')
+            Setting('specificoptionaldungeons', 'x', 'x', 'x', description="", options=[('normal', 'n', 'Normal'), ('condense', 'c', 'Condense'), ('condenseandexclude', 'e', 'Condense and Exclude')], default='normal')
         ]
         self.__by_key = {s.key: s for s in self.__all}
 

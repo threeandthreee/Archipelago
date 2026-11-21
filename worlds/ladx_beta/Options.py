@@ -565,8 +565,10 @@ class SpecificOptionalDungeons(Choice, LADXROption):
     display_name = "Specific Optional Dungeons"
     ladxr_name = "specificoptionaldungeons"
     option_normal = 0
-    option_condensed = 1
-    option_condensed_and_excluded = 2
+    option_condense = 1
+    alias_condensed = 1
+    option_condense_and_exclude = 2
+    alias_condensed_and_excluded = 2
     default = option_normal
 
 

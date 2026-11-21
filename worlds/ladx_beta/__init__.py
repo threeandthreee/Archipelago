@@ -181,7 +181,7 @@ class LinksAwakeningWebWorld(WebWorld):
         },
         "4 Specific": {
             "goal": "specific",
-            "specific_optional_dungeons": "condensed_and_excluded",
+            "specific_optional_dungeons": "condense_and_exclude",
             "instrument_count": 4,
         },
         "Boss Rush": {

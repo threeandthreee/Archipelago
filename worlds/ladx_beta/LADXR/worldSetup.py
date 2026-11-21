@@ -154,9 +154,9 @@ class WorldSetup:
             n = int(settings.goalcount)
             self.goal = "=" + "".join([str(i) for i in specific_options[:n]])
             if settings.shuffleinstruments in ("vanilla", "originaldungeon"):
-                if settings.specificoptionaldungeons in ("condensed", "condensedandexcluded"):
+                if settings.specificoptionaldungeons in ("condense", "condenseandexclude"):
                     self.condensed_dungeons = list(set(self.condensed_dungeons + specific_options[n:]))
-                if settings.specificoptionaldungeons == "condensedandexcluded":
+                if settings.specificoptionaldungeons == "condenseandexclude":
                     self.excluded_dungeons = list(set(self.excluded_dungeons + specific_options[n:]))
         else:
             self.goal = int(settings.goal)
