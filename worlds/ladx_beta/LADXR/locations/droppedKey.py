@@ -19,10 +19,15 @@ class DroppedKey(ItemInfo):
             extra = 0x01F8
         super().__init__(room, extra)
     def patch(self, rom, option, *, multiworld=None):
-        if option.startswith(MAP) or option.startswith(COMPASS) or option.startswith(STONE_BEAK) or option.startswith(NIGHTMARE_KEY) or option.startswith(KEY):
-            if not option.endswith("OPENED"):
-                if self._location.dungeon == int(option[-1]) and self.room not in {0x166, 0x223}:
-                    option = option[:-1]
+        if (
+            (option.startswith(MAP) and option != MAP) or
+            (option.startswith(COMPASS) and option != COMPASS) or
+            (option.startswith(STONE_BEAK) and option != STONE_BEAK) or
+            (option.startswith(NIGHTMARE_KEY) and option != NIGHTMARE_KEY) or
+            (option.startswith(KEY) and option != KEY)
+        ):
+            if self._location.dungeon == int(option[-1]) and multiworld is None and self.room not in {0x166, 0x223}:
+                option = option[:-1]
         item_id = CHEST_ITEMS[option]
         if option == GEL:
             randomnumber = self.room  # TODO: We need some way to get some seed depended randomness in here.
