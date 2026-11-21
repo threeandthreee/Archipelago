@@ -232,3 +232,9 @@ possible_filler.sort()
 
 hint_groups = [name for name, group in item_groups.items() if group.in_game_hintable]
 hint_groups.sort()
+
+# items that need to be location restricted if local
+dropped_key_and_chest_only = (
+    GEL,
+    SLIME_STORM,
+)

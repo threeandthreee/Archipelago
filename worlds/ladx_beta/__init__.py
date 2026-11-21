@@ -15,7 +15,7 @@ from worlds.generic.Rules import forbid_item
 from .Common import *
 from .ForeignItemIcons import ForeignItemIconMatcher
 from .Items import (LinksAwakeningItem, ladxr_to_ap_item_name, ap_to_ladxr_item_name, links_awakening_items,
-    links_awakening_items_by_name, links_awakening_item_name_groups,
+    links_awakening_items_by_name, links_awakening_item_name_groups, dropped_key_and_chest_only,
     item_prefixes_to_skip_text_in_prefill, start_items_to_block_by_prefix, rupees)
 from .LADXR.itempool import DEFAULT_ITEM_POOL, ItemPool as LADXRItemPool
 from .LADXR.locations.instrument import Instrument
@@ -560,14 +560,16 @@ class LinksAwakeningWorld(World):
         return self.pre_fill_items
 
     def pre_fill(self) -> None:
+        # some of our items dont work on all locations in game
         for location in self.multiworld.get_locations(self.player):
-            if (
-                not isinstance(location, LinksAwakeningLocation)
-                or isinstance(location.ladxr_item, LADXRChest) 
-                or isinstance(location.ladxr_item, LADXRDroppedKey)
+            if(
+                not isinstance(location, LinksAwakeningLocation) or
+                isinstance(location.ladxr_item, LADXRDroppedKey) or
+                isinstance(location.ladxr_item, LADXRChest)
             ):
                 continue
-            forbid_item(location, ladxr_to_ap_item_name['GEL'], self.player)
+            for item in dropped_key_and_chest_only:
+                forbid_item(location, ladxr_to_ap_item_name[item], self.player)
 
         allowed_locations_by_item = {}
 

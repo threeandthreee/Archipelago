@@ -9,6 +9,9 @@ class Chest(ItemInfo):
         self.addr = room + 0x560
 
     def patch(self, rom, option, *, multiworld=None):
+        if option == SLIME_STORM:
+            option = GEL
+
         rom.banks[0x14][self.addr] = CHEST_ITEMS[option]
 
         if self.room == 0x1B6:
