@@ -293,10 +293,10 @@ class ItemPool:
             try_remove(SONG1)
         try_remove(SWORD, leaving=1)
         try_remove(BOOMERANG)
-        try_remove(FILLER) # pull filler back out if we reserved too much
         # last hope removals
         try_remove(SEASHELL, leaving=20)
         try_remove_rupees(leaving=(self.min_rupees // 500) + 2)
+        try_remove(FILLER) # pull filler back out if we reserved too much
         try_remove(HEART_CONTAINER)
         if diff > 0:
             raise OptionError(
